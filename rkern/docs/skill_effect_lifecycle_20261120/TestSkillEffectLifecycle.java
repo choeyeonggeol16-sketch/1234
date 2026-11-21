@@ -98,6 +98,7 @@ public final class TestSkillEffectLifecycle {
             verifyPrimeManagedSources();
             verifyWisdomPotionSources();
             verifyLegacyPassiveIndependentSources();
+            verifyLegacyAdvancePassive();
             verifyDedicatedCastRegistrations();
             verifyStopOnlyInventory();
             verifyRegistry();
@@ -1112,19 +1113,40 @@ public final class TestSkillEffectLifecycle {
         verify(pc.getEffectedER() == originalEr, "last evasion source disappears", 이베이젼);
     }
 
-    /** All remaining 71 numeric stop-only definitions retain an end handler. */
+    /** Reapplying an Advance passive cannot increment max HP/MP twice. */
+    private static void verifyLegacyAdvancePassive() {
+        final Player pc = new Player();
+        pc.addBaseMaxHp((short) 1000);
+        pc.addBaseMaxMp(300);
+        final int baseHp = pc.getMaxHp(), baseMp = pc.getMaxMp();
+        final int hpBonus = pc.getBaseMaxHp() / 5, mpBonus = pc.getBaseMaxMp() / 5;
+        verify(CSkillInfo.isManaged(어드밴스), "Advance has independent Pump source", 어드밴스);
+        pc.setSkillEffect(어드밴스, 0);
+        PcPassiveEffects.apply(pc, PcPassiveEffects.Kind.어드밴스);
+        verify(pc.getMaxHp() == baseHp + hpBonus && pc.getMaxMp() == baseMp + mpBonus,
+                "Advance grants the two base-scaled bonuses", 어드밴스);
+        PcPassiveEffects.apply(pc, PcPassiveEffects.Kind.어드밴스);
+        verify(pc.getMaxHp() == baseHp + hpBonus && pc.getMaxMp() == baseMp + mpBonus,
+                "Advance repeat grant is idempotent", 어드밴스);
+        pc.removeSkillEffect(어드밴스);
+        verify(pc.getMaxHp() == baseHp && pc.getMaxMp() == baseMp
+                        && pc.getAdvenHp() == 0 && pc.getAdvenMp() == 0,
+                "Advance expiry restores recorded source only", 어드밴스);
+    }
+
+    /** All remaining 70 numeric stop-only definitions retain an end handler. */
     private static void verifyStopOnlyInventory() {
         final int[] stopOnlyIds = {
             2, 32, 91, 105, 112, 136, 780, 985, 1000,
-            1001, 1002, 1003, 1005, 1006, 1016, 1565, 1566, 1607,
-            2794, 5256, 5984, 7239, 7241, 7791, 7792, 7793, 7794,
-            7795, 8382, 8463, 9999, 12120, 12132, 12133, 12134, 12135,
-            12136, 13001, 13002, 13003, 15644, 20075, 20076, 20077, 20079,
-            20082, 22017, 23442, 23445, 24444, 24445, 25133, 25155, 30010,
-            40007, 50009, 55441, 55662, 55664, 60001, 61614, 61615, 61616,
-            72388, 80007, 80008, 80009, 80012, 131313, 778844, 979744
+            1001, 1002, 1003, 1005, 1006, 1016, 1565, 1566, 2794,
+            5256, 5984, 7239, 7241, 7791, 7792, 7793, 7794, 7795,
+            8382, 8463, 9999, 12120, 12132, 12133, 12134, 12135, 12136,
+            13001, 13002, 13003, 15644, 20075, 20076, 20077, 20079, 20082,
+            22017, 23442, 23445, 24444, 24445, 25133, 25155, 30010, 40007,
+            50009, 55441, 55662, 55664, 60001, 61614, 61615, 61616, 72388,
+            80007, 80008, 80009, 80012, 131313, 778844, 979744
         };
-        verify(stopOnlyIds.length == 71, "stop-only numeric inventory size", 0);
+        verify(stopOnlyIds.length == 70, "stop-only numeric inventory size", 0);
         for (int id : stopOnlyIds) {
             final CSkillInfo info = CSkillInfo.get(id);
             verify(info != null && !info.hasCast() && info.stopHandler() != null,

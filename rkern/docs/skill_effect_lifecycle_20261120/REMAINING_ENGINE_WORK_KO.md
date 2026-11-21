@@ -60,3 +60,5 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 - 지혜의 물약(STATUS_WISDOM_POTION, 1004)은 소비 아이템 직접 SP/MPR +2, 종료 -2를 CSkillInfo.Pump 기반 관리형 독립 출처로 전환했다. 반복 음용 시 같은 ID를 idempotent refresh하고 만료 시 정확히 해당 효과만 회수한다. 종료 전용 ledger 76→75로 갱신하고 별도 중첩/재사용 회귀를 추가했다.
 
 - 종료 전용 외부 패시브 4종(일루션리치, 일루션골렘, 솔리드캐리지, 이베이젼)을 부여/종료 양쪽에서 독립 CSkillInfo 보정으로 이관했다. 기존 일루션리치 SP+4 종료에서 AC+10을 더하고, 일루션골렘 AC-10 종료에서 SP-4를 빼던 **서로 바뀐 원복 결함**을 수정했다. ER +15/+18의 서로 다른 출처는 첫 종료 후에도 두 번째 효과가 유지된다. 재적용 idempotence/순차 만료 회귀 추가. stop-only 75→71.
+
+- 1607 어드밴스 외부 패시브: 부여 시 base HP/MP 20%를 직접 addMaxHp/addMaxMp 하던 중복 적용 경로와 종료 시 직접 차감 경로를 소유 스킬 효과의 캡처값(MAX_HP/MAX_MP)으로 교체. 기존 AdvenHp/AdvenMp 기록과 HP·MP 알림, 파티 갱신 유지, 재적용/만료 테스트 추가. stop-only 71→70.

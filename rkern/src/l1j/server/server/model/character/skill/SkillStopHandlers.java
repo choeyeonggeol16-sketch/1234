@@ -2152,8 +2152,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.addMaxHp(-pc.getAdvenHp());
-		pc.addMaxMp(-pc.getAdvenMp());
+		pc.removeSkillModifierFromOwner(skillId);
 		pc.setAdvenHp(0);
 		pc.setAdvenMp(0);
 
