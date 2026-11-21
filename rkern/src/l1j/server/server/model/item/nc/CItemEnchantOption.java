@@ -969,6 +969,14 @@ public final class CItemEnchantOption {
                 final int[] roomtisBonus = itemType2 == 2 && isRoomtisItem(itemId)
                         ? EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel())
                         : null;
+                final int accessoryType = item.getItem().getType();
+                final boolean genericAccessory = itemType2 == 2
+                        && ((itemgrade >= 0 && itemgrade <= 2 && accessoryType >= 8 && accessoryType <= 12)
+                            || (itemgrade == 5 && (accessoryType == 9 || accessoryType == 11)));
+                final int[] genericBonus = genericAccessory && snapperBonus == null && roomtisBonus == null
+                        && item.getEnchantLevel() > 0
+                        ? EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel())
+                        : null;
 
 				/** 아이템 안전인챈 표시 추가 **/
 				
@@ -1802,69 +1810,14 @@ public final class CItemEnchantOption {
 						break;
 					}
 					// TODO 반지 귀걸이 인챈에대한 HP표기
-				} else if (itemType2 == 2 && ((itemgrade >= 0 && itemgrade <= 2) || itemgrade == 5 || itemgrade == 6)
-						&& item.getItem().get장신구처리() != 10 && item.getEnchantLevel() > 0) {
-					switch (item.getEnchantLevel()) {
-					case 1:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 5);
-						break;
-					case 2:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 10);
-						break;
-					case 3:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 20);
-						break;
-					case 4:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 30);
-						break;
-					case 5:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 40);
-						break;
-					case 6:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 40);
-						break;
-					case 7:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 50);
-						break;
-					case 8:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 50);
-						break;
-					case 9:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 60);
-						break;
-					
-					case 10:
-						os.writeC(14);
-						if (item.getItem().get장신구처리() == 8) {
-						os.writeH(item.getItem().get_addhp() + 100);
-						} else{
-							os.writeH(item.getItem().get_addhp() + 70);
-						}
-						break;
-					default:
-						break;
-					}
-				} else if (item.getEnchantLevel() >= 6 && itemType2 == 2 && item.getItem().get장신구처리() == 10) {
-					int enchantAddHp = (item.getEnchantLevel() - 4) * 10;
-					if (item.getEnchantLevel() >= 10) {
-						enchantAddHp = 100;
-					} else {
-					if (enchantAddHp >= 50) {
-						enchantAddHp = 50;
-					}
-					}
-					os.writeC(14);
-					os.writeH(item.getItem().get_addhp() + enchantAddHp);
-				} else if (item.getItem().get_addhp() != 0) {
+				} else if (genericBonus != null) {
+                    final int extraHp = genericBonus[ItemStat.MAX_HP.ordinal()];
+                    if (extraHp > 0) {
+                        os.writeAddMaxHP(item.getItem().get_addhp() + extraHp);
+                    } else if (item.getItem().get_addhp() > 0) {
+                        os.writeAddMaxHP(item.getItem().get_addhp());
+                    }
+                } else if (item.getItem().get_addhp() != 0) {
 					os.writeC(14);
 					os.writeH(item.getItem().get_addhp());
 				}
