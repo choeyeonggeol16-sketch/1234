@@ -203,10 +203,10 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 4909,DRAGON_HUNTER_BLESS,startEventIconBuff,managed_timed,offNoop
 4914,God_buff,startGodBuff,managed_pump,offGodBuff
 5256,버닝,,stop_only,offSimpleInventoryIcon
-5263,일루션리치,,stop_only,offLegacyIllusionLich
-5285,이베이젼,,stop_only,offLegacyEvasion
-5300,솔리드캐리지,,stop_only,offLegacySolidCarriage
-5307,일루션골렘,,stop_only,offLegacyIllusionGolem
+5263,일루션리치,,managed_external,offLegacyIllusionLich
+5285,이베이젼,,managed_external,offLegacyEvasion
+5300,솔리드캐리지,,managed_external,offLegacySolidCarriage
+5307,일루션골렘,,managed_external,offLegacyIllusionGolem
 5934,HUNTER_BLESS,startEventIconBuff,managed_timed,offMiso1
 5983,HUNTER_BLESS2,startEventIconBuff,managed_timed,offNoop
 5984,HUNTER_BLESS1,,stop_only,offHunterBless1
