@@ -67,6 +67,7 @@ public final class TestSkillEffectLifecycle {
             BuffRestoreRegistryInit.init();
             verifyLifecycle();
             verifyPackedPrimaryStatLanes();
+            verifyModifierRetention();
             verifyIndependentModifiers();
             verifyLegacyHpAndPotential();
             verifyCompoundBuffs();
@@ -119,6 +120,21 @@ public final class TestSkillEffectLifecycle {
         CSkillEffect.Bonus.PRIMARY_PENALTY.pump(255L << 8, modifiers);
         CSkillEffect.Bonus.PRIMARY_PENALTY.pump(1L << 8, modifiers);
         verify(modifiers.primaryPenalty == 0, "primary penalty pump independent lanes", 0);
+    }
+
+    /** The final removed modifier must release its retained backing state. */
+    private static void verifyModifierRetention() throws ReflectiveOperationException {
+        L1PcInstance pc = new L1PcInstance();
+        SkillEffectContainer effects = new SkillEffectContainer(pc);
+        var stateField = SkillEffectContainer.class.getDeclaredField("skillModifiers");
+        stateField.setAccessible(true);
+        effects.applySkillModifier(PRIDE, 18);
+        effects.applySkillModifier(GIGANTIC, 24);
+        verify(stateField.get(effects) != null, "active modifier storage retained", PRIDE);
+        verify(effects.removeSkillModifier(PRIDE, false), "first modifier removal", PRIDE);
+        verify(stateField.get(effects) != null, "other modifier storage preserved", GIGANTIC);
+        verify(effects.removeSkillModifier(GIGANTIC, false), "final modifier removal", GIGANTIC);
+        verify(stateField.get(effects) == null, "final modifier storage released", GIGANTIC);
     }
 
     private static void verifyLifecycle() {
