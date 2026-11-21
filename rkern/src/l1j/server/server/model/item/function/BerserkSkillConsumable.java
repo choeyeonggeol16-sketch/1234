@@ -62,7 +62,7 @@ final class BerserkSkillConsumable {
                     SC_SkillSound.send(pc, pc.getId(), 8531);
                     SC_SkillSound.broadcast(pc, pc.getId(), 8531);
                     L1SkillUse.cast(pc, L1SkillId.보조버프, pc.getId(), pc.getX(), pc.getY(), null, 0, L1SkillUse.TYPE_SPELLSC);
-                    pc.getResistance().addSpecialResistance(eKind.ALL, 20);
+                    pc.applySkillModifierFromOwner(L1SkillId.버서크, 0);
                     pc.setCurrentHp(pc.getCurrentHp() - 100);
                     pc.sendPackets("버서크 효과: 모든 내성 +20, 근거리대미지 +20 증가");
                 });

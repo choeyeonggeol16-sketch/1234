@@ -94,6 +94,7 @@ public final class TestSkillEffectLifecycle {
             verifyFreezeLifetime();
             verifyBraveLifetime();
             verifyOwnerDispatchAndExpiry();
+            verifyExternallyGrantedResistanceSources();
             verifyStopOnlyInventory();
             verifyRegistry();
         } catch (Throwable failure) {
@@ -971,6 +972,33 @@ public final class TestSkillEffectLifecycle {
         int replacementGeneration = replacement.tryArmHeartbeat();
         verify(replacementGeneration != generation && replacement.onHeartbeat(generation) == 0L
                 && replacement.contains(pride), "retired heartbeat cannot tick a new container", pride);
+    }
+
+    /** Item-granted sources must coexist and retire independently at resistance cap. */
+    private static void verifyExternallyGrantedResistanceSources() {
+        Player pc = new Player();
+        final var resistance = pc.getResistance();
+        resistance.addSpecialResistance(eKind.ALL, 126);
+        verify(CSkillInfo.isManaged(버서크) && CSkillInfo.isManaged(버닝샷),
+                "item-granted special resistance registered", 버서크);
+        pc.applySkillModifierFromOwner(버서크, 0);
+        pc.setSkillEffect(버서크, 38_000);
+        pc.applySkillModifierFromOwner(버닝샷, 0);
+        pc.setSkillEffect(버닝샷, 38_000);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 127,
+                "overlapping item buffs respect visible cap", 버닝샷);
+        resistance.addSpecialResistance(eKind.ALL, -126);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 23,
+                "both item sources remain separately counted", 버서크);
+        pc.removeSkillEffect(버서크);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 3,
+                "retiring Berserk preserves Burning Shot", 버서크);
+        pc.removeSkillEffect(버닝샷);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 0,
+                "retiring last item source restores baseline", 버닝샷);
+        pc.removeSkillEffect(버닝샷);
+        verify(resistance.getSpecialResistance(eKind.ALL) == 0,
+                "duplicate item expiry cannot underflow", 버닝샷);
     }
 
     /** All 80 externally granted/stop-only numeric IDs must keep their end handler. */

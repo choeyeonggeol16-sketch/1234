@@ -65,7 +65,7 @@ final class BurningShotSkillConsumable {
                         SC_Paralysis.send(pc, SC_Paralysis.TYPE_BIND, true);
                         SC_SkillSound.send(pc, pc.getId(), 10909);
                         SC_SkillSound.broadcast(pc, pc.getId(), 10909);
-                        pc.getResistance().addSpecialResistance(eKind.ALL, 3);
+                        pc.applySkillModifierFromOwner(L1SkillId.버닝샷, 0);
                         L1EffectInstance eff1 = L1EffectSpawn.getInstance().spawnEffect(881162, Config.버닝샷 * 1000, pc.getX(), pc.getY(), pc.getMapId());
                         SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
                         pc.sendPackets("버닝샷: 기본 데미지 +" + A + "%,전체내성 +3,PVP대미지감소+8,   지속시간 동안 이동 및 귀환 불가, 활 사거리 감소");
