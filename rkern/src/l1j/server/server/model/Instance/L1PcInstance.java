@@ -6374,8 +6374,11 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
         final long now = System.nanoTime();
         if (now - due < 0L) return;
         final long next = now + EINHASAD_INTERVAL_NANOS;
-        if (!EINHASAD_DEADLINE.compareAndSet(this, due, next == 0L ? 1L : next)) return;
-        if (isLogoutStarted() || einhasadDeadlineNanos == 0L) return;
+        final long nextDeadline = next == 0L ? 1L : next;
+        if (!EINHASAD_DEADLINE.compareAndSet(this, due, nextDeadline)) return;
+        // If a zone exit cancelled and re-entry restarted this deadline while
+        // the callback was being delivered, do not credit the old zone visit.
+        if (isLogoutStarted() || einhasadDeadlineNanos != nextDeadline) return;
 
         final Account account = getAccount();
         if (account == null) return;
