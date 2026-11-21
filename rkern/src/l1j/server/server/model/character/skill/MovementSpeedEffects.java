@@ -66,6 +66,21 @@ public final class MovementSpeedEffects {
                 || activeHaste(target, skillId) != 0) return;
         if (target instanceof L1NpcInstance && skillId != MOB_BERSERKERS && target.hasSkillEffect(MOB_BERSERKERS))
             return;
+
+        // Match endSlow: a surviving independent slow timer wins once the
+        // final haste source ends. Do not silently overwrite it with normal.
+        final int slow = activeSlow(target, 0);
+        if (slow != 0) {
+            target.setMoveSpeed(SLOWED);
+            if (target.getId() != 0) {
+                if (target instanceof L1PcInstance pc) {
+                    SC_SkillHaste.send(pc, pc.getId(), SLOWED,
+                            Math.max(0, pc.getSkillEffectTimeSec(slow)));
+                }
+                SC_SkillHaste.broadcastFast(target, target.getId(), SLOWED, 0);
+            }
+            return;
+        }
         reset(target, false);
     }
 

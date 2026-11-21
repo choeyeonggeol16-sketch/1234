@@ -155,3 +155,5 @@ Java 21 전체 생산 소스 1,933개 컴파일을 [a5db8a3](https://github.com/
 
 - MovementSpeedEffects.endSlow는 마지막 슬로우 스킬 종료 시 다른 느려짐이 없고 이동속도가 느림(2)이면 기존처럼 초기화한다. 다만 다른 HASTE/GREATER_HASTE/STATUS_HASTE, 착용 헤이스트 장비 또는 NPC MOB_BERSERKERS가 유지 중이면 속도를 정상(0)으로 버리지 않고 가속(1)을 복원한다.
 - PC에는 복원한 헤이스트 타이머의 남은 시간을 함께 보낸다. NPC는 기존 SC_SkillHaste 광역 갱신을 사용한다. 추가 워커·큐·상태 필드 없이 소유 타이머 기반으로 복구한다.
+
+- 역방향도 정리했다. 마지막 헤이스트가 종료될 때 아직 SLOW/MOB_SLOW 계열이 살아 있다면 NORMAL(0)이 아니라 SLOWED(2)로 돌아가며 남은 슬로우 시간을 보낸다. 가속 장비·남은 다른 헤이스트·NPC MOB_BERSERKERS의 기존 우선순위는 변경하지 않았다.
