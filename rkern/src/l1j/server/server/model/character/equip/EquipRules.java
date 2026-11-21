@@ -8,6 +8,7 @@ import l1j.server.server.model.L1EquipmentSlot;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.item.function.EquipmentItemActions;
 
 public final class EquipRules {
 
@@ -38,6 +39,14 @@ public final class EquipRules {
         for (int i = 0; i < count; i++) {
             final L1ItemInstance item = planned[i];
             if (item == null || item.getItem() == null) return false;
+            // Presets must obey the same class and level restrictions as
+            // ordinary item use. Check silently before changing any equipment.
+            if (!EquipmentItemActions.canUseByClass(pc, item.getItem())) return false;
+            final int level = pc.getLevel();
+            final int minLevel = item.getItem().getMinLevel();
+            final int maxLevel = item.getItem().getMaxLevel();
+            if ((minLevel != 0 && level < minLevel)
+                    || (maxLevel != 0 && level > maxLevel)) return false;
             final int type = item.getItem().getType2();
             if (type == 1) {
                 if (!L1PolyMorph.isEquipableWeapon(sprite, item.getItem().getType())
