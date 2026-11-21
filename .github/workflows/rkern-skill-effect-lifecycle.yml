@@ -26,6 +26,8 @@ on:
       - rkern/src/l1j/server/server/GMCommands.java
       - rkern/src/l1j/server/server/UserCommands.java
       - rkern/src/l1j/server/server/model/network/core/cs/packet/**
+      - rkern/src/l1j/server/server/model/network/thread/CIOThreadCallback.java
+      - rkern/docs/ain_heartbeat_20261121/**
       - rkern/src/l1j/server/server/model/Instance/L1PcInstance.java
       - rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java
       - rkern/src/l1j/server/server/model/item/function/GreenPotion.java
@@ -55,6 +57,7 @@ jobs:
             rkern/docs/jproring_cio_integration_20261120
             rkern/docs/skill_effect_lifecycle_20261120
             rkern/docs/poison_effect_20261121
+            rkern/docs/ain_heartbeat_20261121
       - name: Ensure retired match references are absent
         run: |
           if grep -RnE 'L1PetMatch|L1DeathMatch|DeathMatch|PetMatch|DEATH_MATCH|PET_MATCH|deathmatch|petmatch' rkern/src --include='*.java'; then
@@ -105,6 +108,7 @@ jobs:
           sources.append(root / "docs/skill_effect_lifecycle_20261120/BenchmarkSkillEffectLifecycle.java")
           sources.append(root / "docs/poison_effect_20261121/TestPoisonEffectLifecycle.java")
           sources.append(root / "docs/poison_effect_20261121/TestCurseParalysisLifecycle.java")
+          sources.append(root / "docs/ain_heartbeat_20261121/TestEinhasadHeartbeat.java")
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8", "-source", "21",
@@ -126,4 +130,9 @@ jobs:
                           "l1j.server.server.model.TestCurseParalysisLifecycle"],
                          cwd=work, check=True, timeout=60)
           print("PASS curse paralysis lifecycle regression", flush=True)
+          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
+                          "-XX:ActiveProcessorCount=2", "-cp", cp,
+                          "l1j.server.server.model.Instance.TestEinhasadHeartbeat"],
+                         cwd=work, check=True, timeout=60)
+          print("PASS Einhasad creature heartbeat regression", flush=True)
           PY

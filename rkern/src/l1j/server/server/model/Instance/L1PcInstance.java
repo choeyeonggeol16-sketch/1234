@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -28,7 +29,6 @@ import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.Controller.PremiumTimeController;
 import l1j.server.server.GMCommands;
 import l1j.server.server.Opcodes;
-import l1j.server.server.RepeatTask;
 import l1j.server.server.SkillCheck;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.auth.captcha.Captcha;
@@ -6347,61 +6347,43 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		save();
 	}
 
-	public void startEinhasadTimer() {
-		synchronized (this) {
-			if (_einhasadTimer != null) {
-				return;
-			}
-            final EinhasadTimer next = new EinhasadTimer();
-            // Do not retain an unscheduled timer after bounded scheduler rejection.
-            if (ThreadPool.getInstance().schedule(next, EinhasadTimer.INTERVAL) != null) {
-                _einhasadTimer = next;
-            } else {
-                next.cancel();
-            }
-		}
-	}
 
-	public void stopEinhasadTimer() {
-		synchronized (this) {
-			if (_einhasadTimer == null) {
-				return;
-			}
-			_einhasadTimer.cancel();
-			_einhasadTimer = null;
-		}
-	}
+    // Fifteen minutes in the safety zone. One primitive deadline per PC,
+    // checked by the existing CIO creature heartbeat.
+    private static final long EINHASAD_INTERVAL_NANOS = 900_000_000_000L;
+    private static final AtomicLongFieldUpdater<L1PcInstance> EINHASAD_DEADLINE =
+            AtomicLongFieldUpdater.newUpdater(L1PcInstance.class, "einhasadDeadlineNanos");
+    private volatile long einhasadDeadlineNanos;
 
-	EinhasadTimer _einhasadTimer;
+    /** Called on zone entry and each movement; existing deadline is preserved. */
+    public void startEinhasadTimer() {
+        if (einhasadDeadlineNanos != 0L || isLogoutStarted()) return;
+        final long deadline = System.nanoTime() + EINHASAD_INTERVAL_NANOS;
+        EINHASAD_DEADLINE.compareAndSet(this, 0L, deadline == 0L ? 1L : deadline);
+    }
 
-	class EinhasadTimer extends RepeatTask {
+    /** Leaving the zone or logging out invalidates any pending recovery. */
+    public void stopEinhasadTimer() {
+        einhasadDeadlineNanos = 0L;
+    }
 
-		public static final int INTERVAL = 15 * 60 * 1000;
+    /** Executed on the PC's controller by the existing CIO creature heartbeat. */
+    public void einhasadHeartbeatFromController() {
+        final long due = einhasadDeadlineNanos;
+        if (due == 0L) return;
+        final long now = System.nanoTime();
+        if (now - due < 0L) return;
+        final long next = now + EINHASAD_INTERVAL_NANOS;
+        if (!EINHASAD_DEADLINE.compareAndSet(this, due, next == 0L ? 1L : next)) return;
+        if (isLogoutStarted() || einhasadDeadlineNanos == 0L) return;
 
-		public EinhasadTimer() {
-			super(INTERVAL);
-		}
-
-        @Override
-        protected void onScheduleRejected() {
-            // The rejected tick is not running anymore; movement/login may
-            // safely attempt to arm a new timer without a permanently stale ref.
-            synchronized (L1PcInstance.this) {
-                if (_einhasadTimer == this) _einhasadTimer = null;
-            }
+        final Account account = getAccount();
+        if (account == null) return;
+        account.recoverBlessOfAin(1L, 2000000);
+        if (account.getBlessOfAin() > 10000) {
+            SC_REST_EXP_INFO_NOTI.send(this);
         }
-
-		@Override
-		public void execute() {
-            // Preserve the existing increment and cap, with one atomic update
-            // so a concurrent recharge cannot be overwritten by a stale read.
-            getAccount().recoverBlessOfAin(1L, 2000000);
-
-			if (getAccount().getBlessOfAin() > 10000) {
-				SC_REST_EXP_INFO_NOTI.send(L1PcInstance.this);
-			}
-		}
-	}
+    }
 
 	public long getFishingShopBuyTime_1() {
 		return FishingShopBuyTime_1;

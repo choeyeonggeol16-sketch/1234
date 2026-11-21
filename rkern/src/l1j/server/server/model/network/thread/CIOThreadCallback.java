@@ -1023,7 +1023,12 @@ public final class CIOThreadCallback {
         @Override public void runOnController(L1PcInstance pc) {
             if (h.isCancelled() || pc != actor || pc.getSessionStamp() != sessionStamp) return;
             try {
-                pc.getRegenController().TimerExpired();
+                try {
+                    pc.getRegenController().TimerExpired();
+                } finally {
+                    // The existing creature tick also advances Einhasad.
+                    pc.einhasadHeartbeatFromController();
+                }
             } finally {
                 finishPcWheelTask(owner, this, 1, CREATURE_HEARTBEAT_MS);
             }
