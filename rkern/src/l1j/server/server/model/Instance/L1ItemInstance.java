@@ -623,12 +623,12 @@ public class L1ItemInstance extends L1Object {
 				return String.format("%s의 자존심", pInfo.get_target_name());
 		}
 
-		StringBuilder name = new StringBuilder();
+		StringBuilder name = new StringBuilder(64);
 
 		if (isSpecialEnchantable()) {
 			name.append("\\f3");
 		}
-		name.append(getNumberedName(count));
+		appendNumberedName(name, count);
 		int itemType2 = getItem().getType2();
 		int itemId = getItem().getItemId();
 
@@ -656,7 +656,7 @@ public class L1ItemInstance extends L1Object {
 		}
 
 		if (itemId == MJINNHelper.INN_KEYID) {
-			name.append(" (" + getHotel_Town() + ")");
+			name.append(" (").append(getHotel_Town()).append(')');
 		}
 
 
@@ -689,79 +689,20 @@ public class L1ItemInstance extends L1Object {
 
 	/** 속성 인챈트 **/
 	public String getNumberedName(int count) {
-		StringBuilder name = new StringBuilder();
+		StringBuilder name = new StringBuilder(48);
+		appendNumberedName(name, count);
+	}
+
+	private void appendNumberedName(StringBuilder name, int count) {
 
 		if (isIdentified()) {
 			if (getItem().getType2() == 1 || getItem().getType2() == 2) {
 				
-				switch (getAttrEnchantLevel()) {
-				case 1:
-					name.append("$6115");
-					break; // 화령1단
-				case 2:
-					name.append("$6116");
-					break; // 화령2단
-				case 3:
-					name.append("$6117");
-					break; // 화령3단 (불의속성)
-				case 4:
-					name.append("$14361");
-					break; // 화령4단
-				case 5:
-					name.append("$14365");
-					break; // 화령5단
-				case 6:
-					name.append("$6118");
-					break; // 수령1단
-				case 7:
-					name.append("$6119");
-					break; // 수령2단
-				case 8:
-					name.append("$6120");
-					break; // 수령3단 (물의속성)
-				case 9:
-					name.append("$14362");
-					break; // 수령4단
-				case 10:
-					name.append("$14366");
-					break; // 수령5단
-				case 11:
-					name.append("$6121");
-					break; // 풍령1단
-				case 12:
-					name.append("$6122");
-					break; // 풍령2단
-				case 13:
-					name.append("$6123");
-					break; // 풍령3단 (바람의속성)
-				case 14:
-					name.append("$14363");
-					break; // 풍령4단
-				case 15:
-					name.append("$14367");
-					break; // 풍령5단
-				case 16:
-					name.append("$6124");
-					break; // 지령1단
-				case 17:
-					name.append("$6125");
-					break; // 지령2단
-				case 18:
-					name.append("$6126");
-					break; // 지령3단 (땅의속성)
-				case 19:
-					name.append("$14364");
-					break; // 지령4단
-				case 20:
-					name.append("$14368");
-					break; // 지령5단
-				default:
-					break;
-				}
+				name.append(get_attribute_enchant_description(getAttrEnchantLevel()));
 				if (getEnchantLevel() >= 0) {
-					name.append("+" + getEnchantLevel() + " ");
+					name.append('+').append(getEnchantLevel()).append(' ');
 				} else if (getEnchantLevel() < 0) {
-					name.append(String.valueOf(getEnchantLevel()) + " ");
+					name.append(getEnchantLevel()).append(' ');
 				}
 			}
 		}
@@ -839,17 +780,17 @@ public class L1ItemInstance extends L1Object {
 
 		if (isIdentified()) {
 			if (getItem().getMaxChargeCount() > 0) {
-				name.append(" (" + getChargeCount() + ")");
+				name.append(" (").append(getChargeCount()).append(')');
 			}
 			if (getItem().getItemId() == 20383) {
 				name.append(" (" + getChargeCount() + ")");
 			}
 			if (getItem().getMaxUseTime() > 0 && getItem().getType2() != 0) {
-				name.append(" [" + getRemainingTime() + "]");
+				name.append(" [").append(getRemainingTime()).append(']');
 			}
 		}
 		if (count > 1) {
-			name.append(" (" + count + ")");
+			name.append(" (").append(count).append(')');
 		}
 		return name.toString();
 	}
