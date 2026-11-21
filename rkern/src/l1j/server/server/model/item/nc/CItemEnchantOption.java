@@ -966,6 +966,9 @@ public final class CItemEnchantOption {
                 final int[] snapperBonus = itemType2 == 2 && isSnapperRing(itemId)
                         ? EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel())
                         : null;
+                final int[] roomtisBonus = itemType2 == 2 && isRoomtisItem(itemId)
+                        ? EquipmentEnchantOptions.accessoryBonusSnapshot(item.getItem(), item.getEnchantLevel())
+                        : null;
 
 				/** 아이템 안전인챈 표시 추가 **/
 				
@@ -1056,7 +1059,15 @@ public final class CItemEnchantOption {
 					} else {
 						os.write(0x00);
 					}
-				} else if (item.getEnchantLevel() >= 5 && itemType2 == 2
+				} else if (roomtisBonus != null) {
+                    // This equipment's AC enchant effect must come from the actual
+                    // equip/unequip calculation, not from item-ID or grade guesses.
+                    final int ac = -roomtisBonus[ItemStat.AC.ordinal()];
+                    if (ac > 0) {
+                        os.writeC(2);
+                        os.writeC(ac + op_addAc);
+                    }
+                } else if (item.getEnchantLevel() >= 5 && itemType2 == 2
 						&& (item.getItem().get장신구처리() == 8 || item.getItem().get장신구처리() == 12)) {
 					int enchantAc = item.getEnchantLevel() - 4;
 					if (item.getEnchantLevel() >= 10) {
@@ -1079,121 +1090,6 @@ public final class CItemEnchantOption {
 						os.writeC(item.getEnchantLevel());
 					}
 					/** 룸티스 검은빛 귀걸이 AC표현처리 부분 **/
-				} else if (itemId == 22229) {
-					int enchant = item.getEnchantLevel();
-					if (enchant >= 6) {
-						os.writeC(0x02);
-						 if (enchant >= 9)
-								os.writeC(10);
-						else if (enchant >= 8)
-							os.writeC(9);
-						else if (enchant >= 7)
-							os.writeC(8);
-						else
-							os.writeC(7);
-					}
-				} else if (itemId == 222337) {
-					int enchant = item.getEnchantLevel();
-					if (enchant >= 5) {
-						os.writeC(0x02);
-						 if (enchant >= 9)
-								os.writeC(11);
-						else if (enchant >= 8)
-							os.writeC(10);
-						else if (enchant >= 7)
-							os.writeC(9);
-						else if (enchant >= 6)
-							os.writeC(8);
-						else
-							os.writeC(7);
-					}
-				} else if (itemId == 22231) {
-					int enchant = item.getEnchantLevel();
-					if (enchant >= 6) {
-						os.writeC(0x02);
-						if (enchant >= 8)
-							os.writeC(3);
-						else if (enchant >= 7)
-							os.writeC(2);
-						else
-							os.writeC(1);
-					}
-				} else if (itemId == 222339) {
-					int enchant = item.getEnchantLevel();
-					if (enchant >= 5) {
-						os.writeC(0x02);
-						if (enchant >= 8)
-							os.writeC(4);
-						else if (enchant >= 7)
-							os.writeC(3);
-						else if (enchant >= 6)
-							os.writeC(2);
-						else
-							os.writeC(1);
-					}
-				} else if (itemType2 == 2 && itemId == 222340 || itemId == 222341) {
-					os.writeC(2);
-					switch (item.getEnchantLevel()) {
-					case 1:
-						os.writeC(1 + op_addAc);
-						break;
-					case 2:
-						os.writeC(2 + op_addAc);
-						break;
-					case 3:
-						if (itemId == 222341) {
-							os.writeC(4 + op_addAc);
-						} else {
-							os.writeC(3 + op_addAc);
-						}
-						break;
-					case 4:
-						if (itemId == 222341) {
-							os.writeC(5 + op_addAc);
-						} else {
-							os.writeC(4 + op_addAc);
-						}
-						break;
-					case 5:
-						if (itemId == 222341) {
-							os.writeC(6 + op_addAc);
-						} else {
-							os.writeC(5 + op_addAc);
-						}
-						break;
-					case 6:
-						if (itemId == 222341) {
-							os.writeC(7 + op_addAc);
-						} else {
-							os.writeC(6 + op_addAc);
-						}
-						break;
-					case 7:
-						if (itemId == 222341) {
-							os.writeC(8 + op_addAc);
-						} else {
-							os.writeC(7 + op_addAc);
-						}
-						break;
-					case 8:
-						if (itemId == 222341) {
-							os.writeC(9 + op_addAc);
-						} else {
-							os.writeC(8 + op_addAc);
-						}
-						break;
-					case 9:
-						if (itemId == 222341) {
-							os.writeC(10 + op_addAc);
-						} else {
-							os.writeC(9 + op_addAc);
-						}
-						break;
-					default:
-						os.writeC(0 + op_addAc);
-					}
-
-					/** 스냅퍼의 회복 반지/스냅퍼의 집중 반지/스냅퍼의 마나 반지 AC부분 처리 **/
 				} else if (itemType2 == 2 && itemId == 22224 || itemId == 22225 || itemId == 22227) {
 					os.writeC(2);
 					switch (item.getEnchantLevel()) {
@@ -6369,6 +6265,12 @@ public final class CItemEnchantOption {
         return (itemId >= 22224 && itemId <= 22228)
                 || itemId == 222290 || itemId == 222291
                 || (itemId >= 222330 && itemId <= 222336);
+    }
+
+    private static boolean isRoomtisItem(int id) {
+        return id == 22229 || id == 22230 || id == 22231
+                || id == 222337 || id == 222338 || id == 222339
+                || id == 222340 || id == 222341;
     }
 
 }
