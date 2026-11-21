@@ -37,7 +37,7 @@ public final class TestSkillEffectLifecycle {
         @Override public int hdGetBuffIconDuration() { return 38; }
     }
 
-    private static final class Player extends L1PcInstance {
+    private static class Player extends L1PcInstance {
         private final Map<Integer, Integer> effects = new HashMap<>();
         @Override public boolean submitSkillPumpStart(int id, int duration) {
             CSkillInfo.pumpStartFromOwner(this, id, duration);
@@ -49,6 +49,11 @@ public final class TestSkillEffectLifecycle {
         @Override public void removeSkillEffect(int id) {
             if (effects.remove(id) != null) SkillStopHandlers.dispatch(this, id);
         }
+    }
+
+    private static final class BlindPlayer extends Player {
+        int hideCalls;
+        @Override public void hideBlindToInvis() { hideCalls++; }
     }
 
     private static void verify(boolean condition, String operation, int skillId) {
@@ -1193,7 +1198,7 @@ public final class TestSkillEffectLifecycle {
 
     /** A cure retires both dispellable blindness IDs but not Lindbior's source. */
     private static void verifyBlindOverlapAndRemoveCurse() {
-        final Player pc = new Player();
+        final BlindPlayer pc = new BlindPlayer();
         pc.setSkillEffect(CURSE_BLIND, 30_000);
         pc.setSkillEffect(DARKNESS, 30_000);
         pc.setSkillEffect(LINDBIOR_SPIRIT_EFFECT, 30_000);
@@ -1206,9 +1211,11 @@ public final class TestSkillEffectLifecycle {
         verify(!pc.hasSkillEffect(DARKNESS), "Remove Curse retires DARKNESS", DARKNESS);
         verify(pc.hasSkillEffect(LINDBIOR_SPIRIT_EFFECT) && pc.isBlind(),
                 "unrelated Lindbior blindness survives the cure", LINDBIOR_SPIRIT_EFFECT);
+        verify(pc.hideCalls == 0, "intermediate blindness removal must not reset vision", DARKNESS);
 
         pc.removeSkillEffect(LINDBIOR_SPIRIT_EFFECT);
         verify(!pc.isBlind(), "last blindness source expires normally", LINDBIOR_SPIRIT_EFFECT);
+        verify(pc.hideCalls == 1, "only final blindness removal resets visibility", LINDBIOR_SPIRIT_EFFECT);
     }
 
     /** Remaining numeric stop-only effects retain their own end handler. */
