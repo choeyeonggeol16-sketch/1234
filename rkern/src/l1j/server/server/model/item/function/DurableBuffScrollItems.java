@@ -35,7 +35,7 @@ final class DurableBuffScrollItems {
                 try {
                     if (pc.hasSkillEffect(L1SkillId.루돌프의버프)) pc.removeSkillEffect(L1SkillId.루돌프의버프);
                     pc.setSkillEffect(L1SkillId.루돌프의버프, 3600 * 1000);
-                    pc.getAbility().addAddedWis((byte) 1);
+                    pc.applySkillModifierFromOwner(L1SkillId.루돌프의버프, 0);
                     try {
                         SC_InventoryIcon.icoNew(pc, L1SkillId.루돌프의버프, 5087, 3600, true);
                     } catch (RuntimeException outputFailure) {

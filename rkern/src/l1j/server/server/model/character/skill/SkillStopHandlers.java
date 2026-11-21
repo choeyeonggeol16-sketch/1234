@@ -2008,7 +2008,7 @@ public final class SkillStopHandlers {
 	private static StopResult offRudolphBuff(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
-		pc.getAbility().addAddedWis((byte) -1);
+		pc.removeSkillModifierFromOwner(skillId);
 		SC_SPMR.send(pc);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;

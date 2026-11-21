@@ -54,6 +54,7 @@ public final class CSkillInfo {
         registerManaged(SHINING_ARMOR, SkillHandlers::startEvasionBuff, ER);
         // 9483 is a separate externally granted passive from spell 116.
         registerManaged(샤이닝아머, null, fixed(ER, 10));
+        registerManaged(루돌프의버프, null, fixed(PRIMARY_STATS, 1L << 24));
         registerManaged(USER_WANTED, null,
                 fixed(WEAPON_DAMAGE_RATE, 3), fixed(MELEE_HIT, 3),
                 fixed(RANGED_DAMAGE, 3), fixed(RANGED_HIT, 3),

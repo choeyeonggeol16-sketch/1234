@@ -98,6 +98,7 @@ public final class TestSkillEffectLifecycle {
             verifyStunLifetimeAndCastLock();
             verifyFreezeLifetime();
             verifyBlindOverlapAndRemoveCurse();
+            verifyRudolphIndependentModifier();
             verifyBraveLifetime();
             verifyOwnerDispatchAndExpiry();
             verifyExternallyGrantedResistanceSources();
@@ -1218,10 +1219,34 @@ public final class TestSkillEffectLifecycle {
         verify(pc.hideCalls == 1, "only final blindness removal resets visibility", LINDBIOR_SPIRIT_EFFECT);
     }
 
+    /** Rudolph is an external item buff; refreshing it must never stack WIS. */
+    private static void verifyRudolphIndependentModifier() {
+        final Player pc = new Player();
+        final int id = 루돌프의버프;
+        final int baseline = pc.getAbility().getAddedWis();
+        verify(CSkillInfo.isManaged(id) && !CSkillInfo.get(id).hasCast(),
+                "Rudolph is an external managed stat source", id);
+        pc.setSkillEffect(id, 3_600_000);
+        pc.applySkillModifierFromOwner(id, 0);
+        pc.applySkillModifierFromOwner(id, 0);
+        verify(pc.getAbility().getAddedWis() == baseline + 1,
+                "Rudolph reapplication cannot stack WIS", id);
+        pc.removeSkillEffect(id);
+        verify(pc.getAbility().getAddedWis() == baseline,
+                "Rudolph stop removes only its own WIS", id);
+        pc.setSkillEffect(id, 3_600_000);
+        pc.applySkillModifierFromOwner(id, 0);
+        verify(pc.getAbility().getAddedWis() == baseline + 1,
+                "Rudolph reactivation recaptures one WIS", id);
+        pc.removeSkillEffect(id);
+        verify(pc.getAbility().getAddedWis() == baseline,
+                "Rudolph repeated expiry preserves WIS baseline", id);
+    }
+
     /** Remaining numeric stop-only effects retain their own end handler. */
     private static void verifyStopOnlyInventory() {
         final int[] stopOnlyIds = {
-            2, 32, 91, 105, 112, 136, 780, 985, 1000,
+            2, 32, 91, 105, 112, 136, 780, 1000,
             1001, 1002, 1003, 1005, 1006, 1016, 1565, 1566, 2794,
             5256, 5984, 7239, 7241, 7791, 7792, 7793, 7794, 7795,
             8382, 8463, 9999, 12120, 13001, 13002, 13003, 15644, 20075,
@@ -1230,7 +1255,7 @@ public final class TestSkillEffectLifecycle {
             61614, 61615, 61616, 72388, 80007, 80008, 80009, 131313,
             778844, 979744
         };
-        verify(stopOnlyIds.length == 64, "stop-only numeric inventory size", 0);
+        verify(stopOnlyIds.length == 63, "stop-only numeric inventory size", 0);
         for (int id : stopOnlyIds) {
             final CSkillInfo info = CSkillInfo.get(id);
             verify(info != null && !info.hasCast() && info.stopHandler() != null,

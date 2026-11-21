@@ -160,7 +160,7 @@ skill_id,registered_name,cast_entry,cast_route,stop_entry
 507,CLAN_BUFF3,startClanStance,managed_timed,offClanStance
 508,CLAN_BUFF4,startClanStance,managed_timed,offClanStance
 780,할파스,,stop_only,offHalpas
-985,루돌프의버프,,stop_only,offRudolphBuff
+985,루돌프의버프,,managed_external,offRudolphBuff
 1000,STATUS_BRAVE,,stop_only,offBraveSpeedReset
 1001,STATUS_HASTE,,stop_only,offHasteFamily
 1002,STATUS_BLUE_POTION,,stop_only,offNoop
