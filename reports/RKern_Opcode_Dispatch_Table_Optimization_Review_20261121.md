@@ -133,3 +133,89 @@ public static boolean isDirectOpcode(int opcode) {
 - `rkern/src/l1j/server/server/model/network/core/connection/CUserSocket.java`: `dispatchPlaintext()` (L3169–3185), `dispatchDecodedFrame()` (L3402 이후)
 - `rkern/src/l1j/server/server/model/network/packet/CPacketHandler.java`: `HANDLERS`, `DIRECT_OPCODE`, `isFastOpcode()`, `isDirectOpcode()`
 - `rkern/src/l1j/server/server/model/network/safe/CPacketFilter.java`: 동적 필터 상태 및 reload
+## 7. 송신 행동 패킷 묶음 암호화 (2026-11-21 추가 검증)
+
+> 이 절은 같은 날 수행한 암호화 A/B 측정 결과와, 별도로 확인한 GitHub 소스 경로를 통합한 기록이다. 기존 opcode 분기 최적화(1~6절)와 서로 독립적인 후보이며 **운영 Java 코드는 수정하지 않았다**.
+
+### 7.1 병목 후보와 기존 구현
+
+소스:
+
+- [CUserSocket.java — \`preparePackedEncryption()\`](../rkern/src/l1j/server/server/model/network/core/connection/CUserSocket.java): 2902–2929행
+- [CUserSocket.java — \`encrypt()\`](../rkern/src/l1j/server/server/model/network/core/connection/CUserSocket.java): 181–195행
+- [CPacketCryptor.java — \`encrypt()\`](../rkern/src/l1j/server/server/model/network/codec/CPacketCryptor.java): 8바이트 처리 및 6바이트 행동 패킷 전용 분기
+
+현재 RKern의 **행동 패킷 전용 병합 SEND**는 여러 논리 프레임을 하나의 송신 버퍼에 담는다. 하지만 암호화는 8바이트 wire frame(헤더 2B + 암호화 대상 6B)마다 \`CUserSocket.encrypt()\`를 호출한다.
+
+\`\`\`java
+// 현행 _actionOnly 처리, 개념을 설명하기 위한 발췌
+for (int offset = 0; offset < length; offset += 8) {
+    if (!encrypt(writer, offset + CIOBufferPool.HEADER_BYTES, 6))
+        return false;
+}
+\`\`\`
+
+32개의 행동 프레임이라면 암호화 진입이 **32회** 발생한다. 각각의 RC4 상태 갱신을 제거할 수는 없지만, 공통 cryptor 조회, buffer/base/order 접근, 진입/분기 비용은 묶어서 줄일 수 있다. 큰 패킷의 RC4 본체를 대체하는 최적화는 별개다.
+
+### 7.2 개선 방식
+
+- **행동 패킷 1~3개:** 기존 \`encrypt()\` 경로 유지.
+- **행동 패킷 4개 이상:** 기존 \`CPacketCryptor\` 객체에서 \`encryptActionBurst(writer, offset, frameCount)\` 같은 전용 경로를 한 번 호출.
+- 묶음 내부에서 **각 6바이트 payload를 기존 순서로 독립 암호화**한다. 2바이트 길이 헤더는 암호화하지 않는다.
+- RC4 상태 배열과 암호문은 프레임마다 기존과 동일해야 한다. **서로 다른 프레임을 하나의 연속 RC4 스트림으로 바꾸지 않는다.**
+- 기존 \`CUserSocket.encrypt()\`의 **첫 송신 평문(\`_handshakePlainPending\`) 처리**를 포함해, 암호화 상태와 예외·실패 반환 의미를 보존해야 한다.
+- 일반/혼합 프레임을 포함한 \`_actionOnly == false\` 경로는 현행 프레임 단위 처리를 유지한다.
+- 기존 SEND 병합, FIFO ticket, 연결별 cipher 소유권, CIO 소유 실행, 버퍼 풀을 그대로 사용한다. **새 스레드·큐·객체를 만들지 않는다.**
+
+### 7.3 암호문·상태 일치 검사
+
+2026-11-21 테스트 결과로 보고된 수치:
+
+| 검사 | 결과 |
+|---|---:|
+| 초기 비교 | 4,800조건 / 163,200 프레임, 암호문·RC4 상태 일치 |
+| 최종 누적 비교 | **738,240 프레임 일치** |
+| 내부 RC4 상태 불일치 | **0건** |
+| 첫 송신 평문 처리 | 정상 |
+| 묶음 사이 일반 패킷 혼합 | 정상 |
+| 성능 측정 | **총 522회** |
+
+이 수치는 해당 독립 A/B 실행에서 보고된 결과다. 여기서 GitHub 운영 빌드에 변경을 적용하거나 실제 게임 TCP 송신 경로의 성능을 측정한 것은 아니다.
+
+### 7.4 암호화 처리량 비교 — 9회 교차 반복 중앙값
+
+**기존 행동 패킷별 \`encrypt()\` 호출 대비 묶음 전용 경로의 암호화 처리량 변화:**
+
+| 묶음 프레임 수 | 32세션 | 5,000세션 |
+|---|---:|---:|
+| 1 | -5.2% | -6.0% |
+| 4 | +11.3% | +10.7% |
+| 8 | +17.1% | +18.8% |
+| 32 | **+22.3%** | **+23.9%** |
+| 128 | +24.1% | +22.7% |
+
+**5,000세션·4개 소유 스레드 별도 검증:**
+
+| 묶음 프레임 수 | 암호화 처리량 변화 | CPU/프레임 |
+|---|---:|---:|
+| 4 | +14.4% | 13.30ns → 11.84ns |
+| 8 | +26.7% | 14.56ns → 11.51ns |
+| 32 | **+34.1%** | **13.69ns → 10.35ns** |
+| 128 | **+38.3%** | **13.22ns → 10.05ns** |
+
+위 수치는 **행동 프레임 암호화 구간의 처리량** 개선이다. 아직 서버 전체 송신 req/s 또는 TCP throughput 개선율로 측정한 수치는 아니다. 실제 서버 측 개선 폭은 병합 프레임 분포와 암호화가 차지하는 CPU 비중에 달려 있다.
+
+### 7.5 운영 적용 시 필요한 검증
+
+1. \`_actionOnly\` 구간에서 프레임 수가 1, 2, 3, 4, 8, 32, 128개인 경우를 모두 검사. **2~3프레임 경계는 실제 A/B 수치가 없으므로 기존 경로 유지가 보수적 선택**이다.
+2. 첫 송신 평문, 재접속·키 초기화, 섞인 일반 패킷, 접속 종료 중 SEND, 예외·부분 전송 시 상태 갱신 및 FIFO 일치.
+3. 5,000소켓 기준 작은 행동 프레임 burst와 일반 패킷 혼합 워크로드에서 **실제 SEND 처리량, CPU/패킷, p99/p99.9 지연**을 같은 실행 조건에서 비교.
+4. 개선된 경로에서 프레임마다 cipher 순서가 단 한 번만 전진하도록 검증; 암호문과 송신 데이터 바이트 단위 비교.
+5. 어떤 조건에서든 결과가 역전되거나 정확성이 손상되면 적용하지 않는다.
+
+### 7.6 채택 판단
+
+- **송신 행동 패킷 묶음 암호화: 개발 적용·실제 네트워크 A/B 권장.** 독립 암호화 비교에서 4프레임 이상 의미 있는 이득이 반복 확인됐다.
+- **기존 송신 RC4 본체 대체: 이번 후보 아님.** 이전 8바이트 루프 단순화 및 byte[256] 상태 테이블 변형은 기존 방식보다 느렸다.
+- **opcode 분기 테이블 통합: 기존 6절의 보류 판단 유지.**
+- **이번 GitHub 변경: 이 보고서의 7절 추가뿐. Java 운영 소스 변경 없음.**
