@@ -104,7 +104,6 @@ final class ManaPotionEffects {
 			sendMessage(pc, 698);
 			return;
 		}
-		cancelAbsoluteBarrier(pc);// 앱솔루트 해제
 		int time = 0;
 		switch (itemId) {
 		case 30083:
@@ -122,8 +121,9 @@ final class ManaPotionEffects {
 			time = 1800;
 			break;
 		default:
-			break;
+			return; // An unknown item must not create a permanent (zero-time) buff.
 		}
+		cancelAbsoluteBarrier(pc); // 앱솔루트 해제
 		// The two blue-potion variants are mutually exclusive, as in BluePotion.
 		// Remove the previous timer before publishing the replacement icon.
 		if (pc.hasSkillEffect(STATUS_BLUE_POTION)) pc.removeSkillEffect(STATUS_BLUE_POTION);
