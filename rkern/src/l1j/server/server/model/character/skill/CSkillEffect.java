@@ -91,6 +91,12 @@ interface CSkillEffect {
         WEAPON_HIT_RATE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.weaponHitRate += (int) captured;
         }},
+        BOW_HIT_RATE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.bowHitRate += (int) captured;
+        }},
+        BOW_DAMAGE_RATE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+            out.bowDamageRate += (int) captured;
+        }},
         BASE_MAGIC_HIT { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
             out.baseMagicHit += (int) captured;
         }},

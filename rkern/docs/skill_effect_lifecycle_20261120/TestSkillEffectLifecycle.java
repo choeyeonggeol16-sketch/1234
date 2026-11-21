@@ -95,6 +95,7 @@ public final class TestSkillEffectLifecycle {
             verifyBraveLifetime();
             verifyOwnerDispatchAndExpiry();
             verifyExternallyGrantedResistanceSources();
+            verifyPrimeManagedSources();
             verifyStopOnlyInventory();
             verifyRegistry();
         } catch (Throwable failure) {
@@ -1001,20 +1002,65 @@ public final class TestSkillEffectLifecycle {
                 "duplicate item expiry cannot underflow", 버닝샷);
     }
 
-    /** Numeric-only stop definitions are verified against the updated ledger. */
+    /** Prime and castle Prime must reclaim only their captured individual bonuses. */
+    private static void verifyPrimeManagedSources() {
+        Player pc = new Player();
+        pc.addBaseMaxHp((short) 900);
+        final int baseHp = pc.getMaxHp();
+        pc.addBowHitRate(7);
+        pc.addBowDmgRate(8);
+        pc.addHitRate(9);
+        pc.addDmgRate(10);
+        pc.addMagicHit(4);
+        pc.getAbility().addSp(3);
+        final int bowHit = pc.getBowHitRate(), bowDamage = pc.getBowDmgRate();
+        final int hit = pc.getHitRate(), damage = pc.getDmgRate();
+        final int magicHit = pc.getMagicHit(), spellPower = pc.getAbility().getSp();
+        verify(CSkillInfo.isManaged(프라임) && CSkillInfo.isManaged(프라임1),
+                "both Prime definitions use the new owner Pump", 프라임);
+        pc.applySkillModifierFromOwner(프라임, 0);
+        pc.setSkillEffect(프라임, 600_000);
+        pc.validateSkillModifiersFromOwner();
+        pc.validateSkillModifiersFromOwner();
+        verify(pc.getBowHitRate() == bowHit + 3 && pc.getBowDmgRate() == bowDamage + 3
+                    && pc.getHitRate() == hit + 3 && pc.getDmgRate() == damage + 3
+                    && pc.getMagicHit() == magicHit + 2 && pc.getAbility().getSp() == spellPower + 2
+                    && pc.getMaxHp() == baseHp, "Prime ordinary source capture", 프라임);
+        pc.addBowHitRate(2);
+        pc.addBowDmgRate(2);
+        pc.removeSkillEffect(프라임);
+        verify(pc.getBowHitRate() == bowHit + 2 && pc.getBowDmgRate() == bowDamage + 2
+                    && pc.getHitRate() == hit && pc.getDmgRate() == damage
+                    && pc.getMagicHit() == magicHit && pc.getAbility().getSp() == spellPower,
+                "Prime removal preserves independent bow/base sources", 프라임);
+        pc.applySkillModifierFromOwner(프라임1, 0);
+        pc.setSkillEffect(프라임1, 600_000);
+        verify(pc.getBowHitRate() == bowHit + 11 && pc.getBowDmgRate() == bowDamage + 11
+                    && pc.getHitRate() == hit + 9 && pc.getDmgRate() == damage + 9
+                    && pc.getMagicHit() == magicHit + 6 && pc.getAbility().getSp() == spellPower + 6
+                    && pc.getMaxHp() == baseHp + 500,
+                "castle Prime source and HP apply once", 프라임1);
+        pc.removeSkillEffect(프라임1);
+        verify(pc.getBowHitRate() == bowHit + 2 && pc.getBowDmgRate() == bowDamage + 2
+                    && pc.getHitRate() == hit && pc.getDmgRate() == damage
+                    && pc.getMagicHit() == magicHit && pc.getAbility().getSp() == spellPower
+                    && pc.getMaxHp() == baseHp, "castle Prime removal leaves only baseline", 프라임1);
+    }
+
+    /** Exhaustively verify remaining 76 stop-only numeric registrations. */
     private static void verifyStopOnlyInventory() {
         final int[] stopOnlyIds = {
             2, 32, 91, 105, 112, 136, 780, 985, 1000,
             1001, 1002, 1003, 1004, 1005, 1006, 1016, 1565, 1566,
-            1607, 2754, 2794, 5256, 5263, 5285, 5300, 5307, 5984,
-            7239, 7241, 7791, 7792, 7793, 7794, 7795, 8382, 8463,
-            9999, 12120, 12132, 12133, 12134, 12135, 12136, 13001, 13002,
-            13003, 15644, 20075, 20076, 20077, 20079, 20082, 22017, 23442,
-            23445, 24444, 24445, 25133, 25155, 30010, 40007, 50009, 55441,
-            55662, 55664, 60001, 61614, 61615, 61616, 72388, 80007, 80008,
-            80009, 80012, 131313, 191918, 778844, 979744
+            1607, 2794, 5256, 5263, 5285, 5300, 5307, 5984, 7239,
+            7241, 7791, 7792, 7793, 7794, 7795, 8382, 8463, 9999,
+            12120, 12132, 12133, 12134, 12135, 12136, 13001, 13002, 13003,
+            15644, 20075, 20076, 20077, 20079, 20082, 22017, 23442, 23445,
+            24444, 24445, 25133, 25155, 30010, 40007, 50009, 55441, 55662,
+            55664, 60001, 61614, 61615, 61616, 72388, 80007, 80008, 80009,
+            80012, 131313, 778844, 979744
         };
-        verify(stopOnlyIds.length == 78, "stop-only numeric inventory size", 0);
+        verify(stopOnlyIds.length == 76, "stop-only numeric inventory size", 0);
         for (int id : stopOnlyIds) {
             final CSkillInfo info = CSkillInfo.get(id);
             verify(info != null && !info.hasCast() && info.stopHandler() != null,

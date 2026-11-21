@@ -5778,8 +5778,15 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_DamageReduction += i;
 	}
 
+	// Skill-derived bow hit/damage rates, separate from equipment and base values.
+	private volatile long pumpedBowRates;
+
+	public void setPumpedBowRates(long value) {
+		if (pumpedBowRates != value) pumpedBowRates = value;
+	}
+
 	public int getBowDmgRate() {
-		return _bowDmgRate;
+		return _bowDmgRate + (int) pumpedBowRates;
 	}
 
 	public void addBowDmgRate(int i) {
@@ -5795,7 +5802,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public int getBowHitRate() {
-		return _bowHitRate;
+		return _bowHitRate + (int) (pumpedBowRates >>> 32);
 	}
 
 	public void addBowHitRate(int i) {

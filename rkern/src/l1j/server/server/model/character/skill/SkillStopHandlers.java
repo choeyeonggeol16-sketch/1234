@@ -1943,12 +1943,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		pc.addBowHitRate(-3);
-		pc.addBowDmgRate(-3);
-		pc.addDmgRate(-3);
-		pc.addHitRate(-3);
-		pc.getAbility().addSp(-2);
-		pc.addMagicHit(-2);
+		pc.removeSkillModifierFromOwner(skillId);
 
 		SC_InventoryIcon.icoEnd(pc, L1SkillId.프라임);
 		SC_SPMR.send(pc);
@@ -1962,13 +1957,7 @@ public final class SkillStopHandlers {
 		L1PcInstance pc = (L1PcInstance) cha;
 
 		SC_InventoryIcon.icoEnd(pc, L1SkillId.프라임);
-		pc.addBowHitRate(-9);
-		pc.addBowDmgRate(-9);
-		pc.addDmgRate(-9);
-		pc.addHitRate(-9);
-		pc.getAbility().addSp(-6);
-		pc.addMagicHit(-6);
-		pc.addMaxHp(-500);
+		pc.removeSkillModifierFromOwner(skillId);
 
 		SC_SPMR.send(pc);
 		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
