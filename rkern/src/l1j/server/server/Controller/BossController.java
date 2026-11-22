@@ -3,6 +3,7 @@ package l1j.server.server.Controller;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,17 +38,38 @@ public final class BossController {
     private static final Logger _log = Logger.getLogger(BossController.class.getName());
 
 
-    /*
-     * 기존 ThreadPool schedule 작업을 직접 cancel하지 않고
-     * 버전이 다른 작업은 실행 시점에 폐기한다.
-     */
     private static final AtomicInteger SCHEDULE_VERSION = new AtomicInteger();
+    // Retire superseded long-delay boss callbacks immediately on reload.
+    // Keep only a bounded number of completed futures between reloads.
+    private static final ArrayList<ScheduledFuture<?>> SCHEDULED = new ArrayList<>();
+
+    private static int invalidateSchedule() {
+        synchronized (SCHEDULED) {
+            final int next = SCHEDULE_VERSION.incrementAndGet();
+            for (int i = 0, n = SCHEDULED.size(); i < n; i++)
+                SCHEDULED.get(i).cancel(false);
+            SCHEDULED.clear();
+            return next;
+        }
+    }
+
+    private static void trackSchedule(int version, ScheduledFuture<?> task) {
+        synchronized (SCHEDULED) {
+            if (version != SCHEDULE_VERSION.get()) {
+                task.cancel(false);
+                return;
+            }
+            if (SCHEDULED.size() >= 512)
+                SCHEDULED.removeIf(ScheduledFuture::isDone);
+            SCHEDULED.add(task);
+        }
+    }
 
     private BossController() {
     }
 
     public static void start() {
-        final int version = SCHEDULE_VERSION.incrementAndGet();
+        final int version = invalidateSchedule();
         scheduleAll(version, "START");
     }
 
@@ -60,7 +82,7 @@ public final class BossController {
             // Only invalidate existing delayed callbacks after a complete,
             // successful DB reload. Failed reload leaves the old schedule live.
             BossMonsterSpawnList.init();
-            final int version = SCHEDULE_VERSION.incrementAndGet();
+            final int version = invalidateSchedule();
             scheduleAll(version, "RELOAD");
             return true;
         } catch (Throwable t) {
@@ -107,7 +129,7 @@ public final class BossController {
         //    _log.warning(String.format("[BossController] 스폰 시각 계산 실패 npcId=%d name=%s version=%d — 10분 후 재시도",
       //              boss.getNpcId(), boss.getMonName(), version));
 //
-            ThreadPool.getInstance().scheduleRequired(new Runnable() {
+            trackSchedule(version, ThreadPool.getInstance().scheduleRequired(new Runnable() {
                 @Override
                 public void run() {
                     if (version != SCHEDULE_VERSION.get()) {
@@ -115,7 +137,7 @@ public final class BossController {
                     }
                     scheduleNext(boss, version);
                 }
-            }, 600_000L);
+            }, 600_000L));
             return;
         }
 
@@ -129,7 +151,7 @@ public final class BossController {
 
         final long finalDelay = delayMs + jitterMs;
 
-        ThreadPool.getInstance().scheduleRequired(new Runnable() {
+        trackSchedule(version, ThreadPool.getInstance().scheduleRequired(new Runnable() {
             @Override
             public void run() {
                 /*
@@ -143,7 +165,7 @@ public final class BossController {
                 }
                 spawnAndReschedule(boss, version);
             }
-        }, finalDelay);
+        }, finalDelay));
 
         final long totalSec = finalDelay / 1000L;
 
@@ -253,7 +275,7 @@ public final class BossController {
                 _log.warning(String.format("[BossController] 스폰 실패 npcId=%d name=%s — 10분 후 재시도",
                         boss.getNpcId(), boss.getMonName()));
 
-                ThreadPool.getInstance().scheduleRequired(new Runnable() {
+                trackSchedule(version, ThreadPool.getInstance().scheduleRequired(new Runnable() {
                     @Override
                     public void run() {
                         if (version != SCHEDULE_VERSION.get()) {
@@ -261,7 +283,7 @@ public final class BossController {
                         }
                         spawnAndReschedule(boss, version);
                     }
-                }, 600_000L);
+                }, 600_000L));
                 return;
             }
         } catch (Exception e) {
