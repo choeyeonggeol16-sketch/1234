@@ -26,7 +26,21 @@ import l1j.server.server.storage.cached.CTransaction;
  */
 public class LetterTable {
     private static final Logger LOG = Logger.getLogger(LetterTable.class.getName());
+    /** Common lane only for multi-recipient atomic deliveries. */
     public static final int MAIL_ORDER_KEY = CacheD.accountOrderKey("$letter-global");
+
+    /** Independent FIFO for each recipient's list/read/save/delete and one-to-one mail.
+     * Stable across case variants without constructing a concatenated key string.
+     */
+    public static int mailboxOrderKey(String receiver) {
+        if (receiver == null || receiver.isEmpty())
+            throw new IllegalArgumentException("Missing mail receiver");
+        final String normalized = receiver.toLowerCase(Locale.ROOT);
+        int hash = "$letter-mailbox/".hashCode();
+        for (int i = 0, n = normalized.length(); i < n; i++)
+            hash = 31 * hash + normalized.charAt(i);
+        return (hash & 0x3fffffff) | 0x40000000;
+    }
     private static final LetterTable INSTANCE = new LetterTable();
     public static LetterTable getInstance() { return INSTANCE; }
     public LetterTable() {}
@@ -124,11 +138,12 @@ public class LetterTable {
 
     private static void enqueue(Letter letter, L1PcInstance owner, Runnable afterCommit) {
         final String receipt=UUID.randomUUID().toString();
+        final int mailboxKey=mailboxOrderKey(letter.receiver);
         final CUserSocket session=owner==null ? null : owner.getNetConnection();
         final int stamp=owner==null ? 0 : owner.getSessionStamp();
-        CacheD.getInstance().submitDbJobOrdered(MAIL_ORDER_KEY, () -> {
+        CacheD.getInstance().submitDbJobOrdered(mailboxKey, () -> {
             try {
-                CTransaction.persistWarehouseMove(receipt,MAIL_ORDER_KEY,0,
+                CTransaction.persistWarehouseMove(receipt,mailboxKey,0,
                         new CTransaction.Mutation[]{LetterTable::assertTransactional,
                             con -> insertLetters(con,java.util.Collections.singletonList(letter))});
                 if (afterCommit!=null && owner!=null) {

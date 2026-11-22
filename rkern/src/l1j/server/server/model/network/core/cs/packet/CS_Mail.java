@@ -91,7 +91,7 @@ public final class CS_Mail {
         List<Letter> letters=new ArrayList<>(1);
         letters.add(new Letter(IdFactory.getInstance().nextId(),paper,
                 new Timestamp(System.currentTimeMillis()),sender.getName(),receiver,0,subject,content));
-        sendBatch(sender,letters,50);
+        sendBatch(sender,letters,50,LetterTable.mailboxOrderKey(receiver));
     }
 
     private static void writeBloodPledgeMail(L1PcInstance sender,String receiverName,
@@ -109,13 +109,13 @@ public final class CS_Mail {
             letters.add(new Letter(IdFactory.getInstance().nextId(),paper,date,sender.getName(),
                     member.name,1,subject,content));
         }
-        if (!letters.isEmpty()) sendBatch(sender,letters,1000);
+        if (!letters.isEmpty()) sendBatch(sender,letters,1000,LetterTable.MAIL_ORDER_KEY);
     }
 
-    private static void sendBatch(L1PcInstance sender,List<Letter> letters,int price) {
+    private static void sendBatch(L1PcInstance sender,List<Letter> letters,int price,int mailKey) {
         // The fee and every recipient insert share ONE receipt and connection.
         // No live inventory, post delay or success notification changes here.
-        try (L1InventoryTransaction tx=L1InventoryTransaction.begin(sender,LetterTable.MAIL_ORDER_KEY)) {
+        try (L1InventoryTransaction tx=L1InventoryTransaction.begin(sender,mailKey)) {
             if (!tx.debit(L1ItemId.ADENA,price)) {
                 SC_ServerMessage.send(sender,189,"");
                 return;
@@ -166,11 +166,12 @@ public final class CS_Mail {
         final CUserSocket session=pc.getNetConnection();
         final int stamp=pc.getSessionStamp();
         final int owner=pc.getId();
+        final int mailboxKey=LetterTable.mailboxOrderKey(pc.getName());
         final String receipt=UUID.randomUUID().toString();
         try {
-            CacheD.getInstance().submitDbJobOrdered(LetterTable.MAIL_ORDER_KEY,()->{
+            CacheD.getInstance().submitDbJobOrdered(mailboxKey,()->{
                 try {
-                    CTransaction.persistWarehouseMove(receipt,owner,LetterTable.MAIL_ORDER_KEY,
+                    CTransaction.persistWarehouseMove(receipt,owner,mailboxKey,
                             new CTransaction.Mutation[]{LetterTable::assertTransactional,action});
                     CIOThreadCallback.getInstance().completeSessionReply(session,()->{
                         if (current(pc,session,stamp)) afterCommit.run();

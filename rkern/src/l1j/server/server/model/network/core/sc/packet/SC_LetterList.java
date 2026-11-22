@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
+import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.Opcodes;
@@ -81,17 +82,44 @@ public final class SC_LetterList {
         return new Data(type, id, content);
     }
 
-    public static void sendListAsync(L1PcInstance pc, int type, int count) {
-        if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()) return;
-        final CUserSocket owner = pc.getNetConnection();
-        CacheD.getInstance().submitDbJob(() -> {
-            final Data packet = new Data(pc, type, count);
-            if (!CIOThreadCallback.getInstance().completeSessionReply(owner, () -> {
-                if (pc.getNetConnection() == owner && owner.isConnected()) packet.send(owner);
-            })) {
-                _log.warning("Mail list callback rejected: " + pc.getName());
-            }
+    private static boolean currentMailboxSession(L1PcInstance pc, CUserSocket owner, int stamp) {
+        return owner != null && pc.getNetConnection() == owner && pc.getSessionStamp() == stamp
+                && owner.isConnected() && owner.getActiveChar() == pc;
+    }
+
+    private static void sendListFailure(L1PcInstance pc, CUserSocket owner, int stamp) {
+        CIOThreadCallback.getInstance().completeSessionReply(owner, () -> {
+            if (currentMailboxSession(pc, owner, stamp))
+                SC_SystemMessage.send(pc, "편지 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
         });
+    }
+
+    public static void sendListAsync(L1PcInstance pc, int type, int count) {
+        if (pc == null) return;
+        final CUserSocket owner = pc.getNetConnection();
+        if (owner == null || !owner.isConnected()) return;
+        final int stamp = pc.getSessionStamp();
+        final int mailboxKey = LetterTable.mailboxOrderKey(pc.getName());
+        try {
+            CacheD.getInstance().submitDbJobOrdered(mailboxKey, () -> {
+                final Data packet;
+                try {
+                    packet = new Data(pc, type, count);
+                } catch (RuntimeException failure) {
+                    _log.log(Level.WARNING, "Mail list query failed for " + pc.getName(), failure);
+                    sendListFailure(pc, owner, stamp);
+                    return;
+                }
+                if (!CIOThreadCallback.getInstance().completeSessionReply(owner, () -> {
+                    if (currentMailboxSession(pc, owner, stamp)) packet.send(owner);
+                })) {
+                    _log.warning("Mail list callback rejected: " + pc.getName());
+                }
+            });
+        } catch (RuntimeException rejected) {
+            _log.log(Level.WARNING, "Mail list request rejected for " + pc.getName(), rejected);
+            sendListFailure(pc, owner, stamp);
+        }
     }
 
 	// ==================== 레거시 생성자 오버로딩 ====================
@@ -183,7 +211,7 @@ public Data(L1PcInstance pc, int type, int count) {
 					}
 				}
 			} catch (SQLException e) {
-				_log.log(Level.SEVERE, "SC_LetterList list query error for " + pc.getName(), e);
+                throw new IllegalStateException("Mail list query failed for " + pc.getName(), e);
 			}
 		}
 		_letters = list;
