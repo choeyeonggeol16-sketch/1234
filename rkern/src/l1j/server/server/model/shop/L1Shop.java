@@ -1343,7 +1343,6 @@ public class L1Shop {
 		L1ItemInstance item = null;
 		for (L1ShopBuyOrder order : orderList.getList()) {
 			int itemId = order.getItem().getItemId();
-			int enchant = order.getItem().getEnchant();
 			int amount = order.getCount();
 			ThreadLocalRandom random = ThreadLocalRandom.current();
 			item = detachedShopItem(itemId);
@@ -1393,10 +1392,6 @@ public class L1Shop {
 				}
 
 				/** 여의주 인챈상점 추가 [1] **/
-			} else if (_npcId == 010) { // -- 깃털상점 수량2개이상 구매시 체크해야하니 번호적기
-				item.setIdentified(true);
-				item.setEnchantLevel(enchant);
-				item.setCount(amount);// 추가
 			}
 			item = grantPrepared(inv, item);
 		}
@@ -1493,7 +1488,6 @@ public class L1Shop {
 		L1ItemInstance item = null;
 		for (L1ShopBuyOrder order : orderList.getList()) {
 			int itemId = order.getItem().getItemId();
-			int enchant = order.getItem().getEnchant();
 			int amount = order.getCount();
 			ThreadLocalRandom random = ThreadLocalRandom.current();
 			item = detachedShopItem(itemId);
@@ -1521,10 +1515,6 @@ public class L1Shop {
 				}
 
 				/** 여의주 인챈상점 추가 [1] **/
-			} else if (_npcId == 010) { // -- 깃털상점 수량2개이상 구매시 체크해야하니 번호적기
-				item.setIdentified(true);
-				item.setEnchantLevel(enchant);
-				item.setCount(amount);// 추가
 			}
 			item.setIdentified(true);
 			item = grantPrepared(inv, item);
