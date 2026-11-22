@@ -1,0 +1,65 @@
+name: RKern temporary unused-source audit
+on:
+  push:
+    branches:
+      - rkern/nc-intrusive-inventory-20261122
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan production Java references and runtime data
+        shell: bash
+        run: |
+          python3 - <<'PY' | tee dead-code-audit.txt
+          from pathlib import Path
+          from collections import defaultdict
+          import re
+          root=Path("rkern")
+          production=list((root/"src").rglob("*.java"))
+          byname=defaultdict(list)
+          for p in production: byname[p.stem].append(p)
+          names=set(byname)
+          references=defaultdict(set)
+          src_sizes={}
+          accepted={".java",".xml",".properties",".conf",".cfg",".ini",".json",".yml",".yaml",".sql",".txt",".js",".html",".htm",".csv"}
+          files=[]
+          for base in ["src","data","config","resources","sql","db","settings"]:
+              folder=root/base
+              if not folder.exists():continue
+              files.extend(p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in accepted)
+          rx=re.compile(r"[A-Za-z_$][A-Za-z0-9_$]*")
+          for p in files:
+              if p.stat().st_size>20_000_000:continue
+              try: text=p.read_text(encoding="utf-8",errors="replace")
+              except OSError:continue
+              path=str(p)
+              for word in set(rx.findall(text)).intersection(names):
+                  references[word].add(path)
+              if p.suffix==".java":src_sizes[path]=len(text.splitlines())
+          print(f"Total production Java files: {len(production)}; scanned files: {len(files)}")
+          print("Exact simple-identifier references outside defining file(s):")
+          candidates=[]
+          for name, paths in byname.items():
+              owners=set(map(str,paths))
+              others=references[name]-owners
+              if len(others)==0 and len(paths)==1:
+                  candidates.append((name,str(paths[0]),src_sizes.get(str(paths[0]),0)))
+          candidates.sort(key=lambda x:(-x[2],x[0]))
+          print(f"ZERO_EXTERNAL_REFERENCES: {len(candidates)}")
+          for name,path,lines in candidates:
+              print(f"ZERO | {lines:5d} | {path}")
+          print("END_ZERO")
+          print("Specific obsolete tokens, references across scanned source:")
+          for name in ["L1BossCycle","L1BossSpawn","INIT_BOSS_SPAWN","InitBossSpawn"]:
+              print(name,sorted(references.get(name,set())))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rkern-dead-code-audit
+          path: dead-code-audit.txt
+          retention-days: 1
