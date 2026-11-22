@@ -1942,17 +1942,17 @@ public class L1PcInstance extends L1Character {
 	
 	@Override
 	public void onPerceive(L1PcInstance pc) {
-	    if (isGmInvis() /* || isGhost() || isInvisble() */) {
+	    if (pc == null || pc == this || isGmInvis() /* || isGhost() || isInvisble() */) {
 	        return;
 	    }
 
-	    pc.addKnownObject(this);
+	    boolean admitted;
 
 	    if (pc.is_combat_field()) {
 
 	        if (isGm() || pc.isGm()) {
 
-	            SC_WorldPutObject.get(
+	            admitted = SC_WorldPutObject.get(
 	                    pc.getNetConnection(),
 	                    this);
 
@@ -1961,7 +1961,7 @@ public class L1PcInstance extends L1Character {
 	            if (get_current_combat_team_id()
 	                    == pc.get_current_combat_team_id()) {
 
-	                SC_WorldPutObject.get(
+	                admitted = SC_WorldPutObject.get(
 	                        pc.getNetConnection(),
 	                        this,
 	                        "   \\aJ아군",
@@ -1969,7 +1969,7 @@ public class L1PcInstance extends L1Character {
 
 	            } else {
 
-	                SC_WorldPutObject.get(
+	                admitted = SC_WorldPutObject.get(
 	                        pc.getNetConnection(),
 	                        this,
 	                        "   \\f3적군",
@@ -1981,13 +1981,13 @@ public class L1PcInstance extends L1Character {
 
 	        if (isGm() || pc.isGm()) {
 
-	            SC_WorldPutObject.get(
+	            admitted = SC_WorldPutObject.get(
 	                    pc.getNetConnection(),
 	                    this);
 
 	        } else {
 
-	            SC_WorldPutObject.get(
+	            admitted = SC_WorldPutObject.get(
 	                    pc.getNetConnection(),
 	                    this,
 	                    "ID비공개",
@@ -2009,14 +2009,14 @@ public class L1PcInstance extends L1Character {
 	                    && getClan() != null
 	                    && pc.getClan() == getClan()) {
 
-	                SC_WorldPutObject.get(
+	                admitted = SC_WorldPutObject.get(
 	                        pc.getNetConnection(),
 	                        this,
 	                        true);
 
 	            } else {
 
-	                SC_WorldPutObject.get(
+	                admitted = SC_WorldPutObject.get(
 	                        pc.getNetConnection(),
 	                        this,
 	                        false);
@@ -2024,11 +2024,14 @@ public class L1PcInstance extends L1Character {
 
 	        } else {
 
-	            SC_WorldPutObject.get(
+	            admitted = SC_WorldPutObject.get(
 	                    pc.getNetConnection(),
 	                    this);
 	        }
 	    }
+
+	    if (!admitted) return;
+	    pc.addKnownObject(this);
 
 	    if (pc.isPinkName()) {
 	        SC_PinkName.send(pc, pc.getId(), pc.getPinkNameTime());
@@ -2072,7 +2075,7 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public void broadcastRemoveAllKnownObjects() {
-		for (L1Object known : getKnownObjects()) {
+		for (L1Object known : knownObjectsSnapshot()) {
 			if (known == null) {
 				continue;
 			}
@@ -2644,7 +2647,7 @@ public class L1PcInstance extends L1Character {
 		final int epoch = groundSightEpoch;
 		if ((epoch & 1) == 0) {
 			// Old session/world entries must not suppress the new client's sprites.
-			for (L1Object known : getKnownObjects())
+			for (L1Object known : knownObjectsSnapshot())
 				if (known instanceof L1ItemInstance) removeKnownObject(known);
 			groundSightRetry = false;
 			groundSightEpoch = epoch + 1;
@@ -8515,7 +8518,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	public void onWorldMove(int oldMap, int oldX, int oldY) {
 		
-		for (L1PcInstance viewer : getKnownPlayers()) {
+		for (L1PcInstance viewer : knownPlayersSnapshot()) {
 			if (viewer == null || viewer == this) {
 				continue;
 			}
@@ -8523,7 +8526,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				viewer.outOfSight(this);
 			}
 		}
-		for (L1Object known : getKnownObjects()) {
+		for (L1Object known : knownObjectsSnapshot()) {
 			if (known == null || known == this) {
 				continue;
 			}
@@ -8584,7 +8587,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			groundSightRetry = false;
 			resyncGround = true;
 		}
-		for (L1Object known : getKnownObjects()) {
+		for (L1Object known : knownObjectsSnapshot()) {
 			if (known instanceof L1ItemInstance item) {
 				if (!L1GroundInventory.isVisibleGroundItem(this, item))
 					L1GroundInventory.forgetItem(this, item);
