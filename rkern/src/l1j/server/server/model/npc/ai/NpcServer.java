@@ -176,6 +176,27 @@ public final class NpcServer {
      * damage/hate/perceive/cast-complete 같은 외부 사건으로 owner를 즉시 깨운다.
      * 동일 NPC에 wake가 폭주해도 CAS 하나로 한 번만 queue에 들어간다.
      */
+    /** Accept a lease and publish through the existing coalesced wake.
+     * Never execute arbitrary AI callbacks on an external producer.
+     */
+    public void HandleEvent(L1NpcInstance npc, CNPCEvent event) {
+        if (!beginPost()) {
+            CNPCEvent.Release(event);
+            return;
+        }
+        try {
+            if (npc == null) {
+                CNPCEvent.Release(event);
+                return;
+            }
+            if (npc.PostNpcEvent(event) && npc.aiEngineIsRunning()) {
+                signalDeferred(npc);
+            }
+        } finally {
+            endPost();
+        }
+    }
+
     public void wake(L1NpcInstance npc) {
         if (!beginPost()) return;
         try {

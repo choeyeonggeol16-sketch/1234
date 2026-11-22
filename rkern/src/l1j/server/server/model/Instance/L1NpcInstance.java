@@ -6,8 +6,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.jctools.queues.MpscLinkedQueue;
-
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
@@ -39,7 +37,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.ActionSpriteMapper;
 import l1j.server.server.model.npc.ai.CDesirePQ;
-import l1j.server.server.model.npc.ai.HateEvent;
+import l1j.server.server.model.npc.ai.CNPCEvent;
 import l1j.server.server.model.npc.ai.NpcDigestItems;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.npc.ai.NpcPotionPolicy;
@@ -69,12 +67,12 @@ public class L1NpcInstance extends L1Character {
     public static final int CHAT_TIMING_HIDE = 2;
     public static final int CHAT_TIMING_GAME_TIME = 3;
 
-    /** HateEvent 내부 SeeCreature sentinel. 실제 hate 값으로 사용하지 않는다. */
+    /** CNPCEvent 내부 SeeCreature sentinel. 실제 hate 값으로 사용하지 않는다. */
     public static final int HATE_EVENT_SIGHT = Integer.MIN_VALUE;
     public static final int HATE_EVENT_INVISIBILITY = Integer.MIN_VALUE + 1;
 
     /*
-     * ATTACKED / CLAN_ATTACKED도 기존 pooled HateEvent를 그대로 사용한다.
+     * ATTACKED / CLAN_ATTACKED도 pooled CNPCEvent를 그대로 사용한다.
      * 0x7D = direct ATTACKED, 0x7E = CLAN_ATTACKED, 하위 24bit = damage.
      * 일반 hate 값과 이벤트 입력을 섞지 않는다.
      */
@@ -693,7 +691,53 @@ public class L1NpcInstance extends L1Character {
     protected void onDeath(L1Character lastAttacker) {
     }
 
-    public final MpscLinkedQueue<HateEvent> _hateQueue = new MpscLinkedQueue<>();
+    // No eager queue object or per-event queue node. MPSC producers publish
+    // their own lease with CAS; only the existing NPC owner consumes a batch.
+    private volatile CNPCEvent _npcEventInbox;
+    private volatile int _npcEventEpoch = 1;
+    private static final AtomicReferenceFieldUpdater<L1NpcInstance, CNPCEvent> NPC_EVENT_INBOX =
+            AtomicReferenceFieldUpdater.newUpdater(L1NpcInstance.class, CNPCEvent.class, "_npcEventInbox");
+
+    public final int npcEventEpoch() {
+        return _npcEventEpoch;
+    }
+
+    public final boolean PostNpcEvent(CNPCEvent event) {
+        for (;;) {
+            final CNPCEvent head = _npcEventInbox;
+            if (head == CNPCEvent.CLOSED || _destroyed || isDead()
+                    || event.epoch != _npcEventEpoch) {
+                CNPCEvent.Release(event);
+                return false;
+            }
+            event.next = head;
+            if (NPC_EVENT_INBOX.compareAndSet(this, head, event)) return true;
+        }
+    }
+
+    /** Owner takes a finite FIFO snapshot; arrivals during handling form the next batch. */
+    public final CNPCEvent TakeNpcEvents() {
+        for (;;) {
+            final CNPCEvent head = _npcEventInbox;
+            if (head == null || head == CNPCEvent.CLOSED) return null;
+            if (NPC_EVENT_INBOX.compareAndSet(this, head, null)) {
+                return CNPCEvent.Reverse(head);
+            }
+        }
+    }
+
+    private void CloseNpcEvents() {
+        CNPCEvent.ReleaseChain(NPC_EVENT_INBOX.getAndSet(this, CNPCEvent.CLOSED));
+    }
+
+    // Called before a successful corpse resurrection while the existing
+    // resurrection monitor is held. Old in-flight producer leases cannot
+    // be applied to the new life, even if their CAS races with reopening.
+    private void ReopenNpcEvents() {
+        CloseNpcEvents();
+        ++_npcEventEpoch;
+        NPC_EVENT_INBOX.set(this, null);
+    }
 
     /**
      * SeeCreature event. 외부/world thread는 candidate만 queue에 싣고 실제 target 변경은 AI owner가 수행한다.
@@ -711,17 +755,16 @@ public class L1NpcInstance extends L1Character {
             onNpcAI();
         }
 
-        _hateQueue.offer(HateEvent.obtain(cha, HATE_EVENT_SIGHT));
-        NpcServer.getInstance().wake(this);
+        NpcServer.getInstance().HandleEvent(this,
+                NpcEventFactory.CreateSeeCreatureEvent(this, cha));
     }
 
     public void setHate(L1Character cha, int hate) {
         if (cha == null || cha.getId() == getId()) {
             return;
         }
-        _hateQueue.offer(HateEvent.obtain(cha, hate));
-        
-        NpcServer.getInstance().wake(this);
+        NpcServer.getInstance().HandleEvent(this,
+                NpcEventFactory.CreateHateEvent(this, cha, hate));
     }
 
     /**
@@ -738,20 +781,13 @@ public class L1NpcInstance extends L1Character {
             return;
         }
 
-        final int encoded =
-                HATE_EVENT_ATTACKED_TAG
-                        | (Math.min(
-                                damage,
-                                HATE_EVENT_DAMAGE_VALUE_MASK)
-                                & HATE_EVENT_DAMAGE_VALUE_MASK);
-
-        _hateQueue.offer(HateEvent.obtain(cha, encoded));
-        NpcServer.getInstance().wake(this);
+        NpcServer.getInstance().HandleEvent(this,
+                NpcEventFactory.CreateAttackedEvent(this, cha, damage));
     }
 
     /**
      * Retail CLAN_ATTACKED event.
-     * damage를 pooled HateEvent의 tagged int에 싣고 AI owner에서 해석한다.
+     * damage를 pooled CNPCEvent의 tagged int에 싣고 AI owner에서 해석한다.
      */
     public final void setClanHate(
             L1Character cha,
@@ -763,15 +799,8 @@ public class L1NpcInstance extends L1Character {
             return;
         }
 
-        final int encoded =
-                HATE_EVENT_CLAN_TAG
-                        | (Math.min(
-                                damage,
-                                HATE_EVENT_DAMAGE_VALUE_MASK)
-                                & HATE_EVENT_DAMAGE_VALUE_MASK);
-
-        _hateQueue.offer(HateEvent.obtain(cha, encoded));
-        NpcServer.getInstance().wake(this);
+        NpcServer.getInstance().HandleEvent(this,
+                NpcEventFactory.CreateClanAttackedEvent(this, cha, damage));
     }
 
     public static boolean isAttackHateEvent(final int value) {
@@ -789,7 +818,8 @@ public class L1NpcInstance extends L1Character {
     }
 
     public boolean hasPendingHate() {
-        return !_hateQueue.isEmpty();
+        final CNPCEvent head = _npcEventInbox;
+        return head != null && head != CNPCEvent.CLOSED;
     }
 
     public void setLink(L1Character cha) {
@@ -1097,6 +1127,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void allTargetClear() {
+        if (_destroyed || isDead()) CloseNpcEvents();
         if (this instanceof L1MonsterInstance) {
             CDesirePQ.clear(
                     (L1MonsterInstance) this);
@@ -1226,6 +1257,7 @@ public class L1NpcInstance extends L1Character {
 
     @Override
     public void dispose() {
+        CloseNpcEvents();
         l1j.server.server.model.character.effect.action.realize.OnEffectThread.cancelNpc(this);
         _mobGroupInfo = null;
         _inventory = null;
@@ -1999,6 +2031,7 @@ public class L1NpcInstance extends L1Character {
             ++_corpseTimerGeneration;
         }
         _corpseQueuedGeneration = 0;
+        if (isDead()) ReopenNpcEvents();
         super.resurrect(hp);        
         L1SkillUse.cast(
                 null,

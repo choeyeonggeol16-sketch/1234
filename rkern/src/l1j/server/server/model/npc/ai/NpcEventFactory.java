@@ -23,6 +23,28 @@ import l1j.server.server.templates.L1Npc;
 
 public final class NpcEventFactory {
 
+    public static CNPCEvent CreateSeeCreatureEvent(L1NpcInstance npc, L1Character creature) {
+        return CNPCEvent.Create(creature, L1NpcInstance.HATE_EVENT_SIGHT, npc.npcEventEpoch());
+    }
+
+    public static CNPCEvent CreateAttackedEvent(L1NpcInstance npc, L1Character creature, int damage) {
+        return CNPCEvent.Create(creature, L1NpcInstance.HATE_EVENT_ATTACKED_TAG
+                | Math.min(damage, L1NpcInstance.HATE_EVENT_DAMAGE_VALUE_MASK), npc.npcEventEpoch());
+    }
+
+    public static CNPCEvent CreateClanAttackedEvent(L1NpcInstance npc, L1Character creature, int damage) {
+        return CNPCEvent.Create(creature, L1NpcInstance.HATE_EVENT_CLAN_TAG
+                | Math.min(damage, L1NpcInstance.HATE_EVENT_DAMAGE_VALUE_MASK), npc.npcEventEpoch());
+    }
+
+    public static CNPCEvent CreateHateEvent(L1NpcInstance npc, L1Character creature, int hate) {
+        return CNPCEvent.Create(creature, hate, npc.npcEventEpoch());
+    }
+
+    public static CNPCEvent CreateInvisibilityEvent(L1NpcInstance npc, L1Character creature) {
+        return CNPCEvent.Create(creature, L1NpcInstance.HATE_EVENT_INVISIBILITY, npc.npcEventEpoch());
+    }
+
     /*
      * owner-side primitive AI events.
      * 객체 event를 만들지 않고 L1NpcInstance field에 coalesce한다.
@@ -201,7 +223,7 @@ public final class NpcEventFactory {
 	 * NC식 SEE_CREATURE 진입점.
 	 *
 	 * 외부/world thread에서는 target/hate를 직접 변경하지 않는다.
-	 * candidate만 HateEvent queue에 싣고 실제 판정/반영은 AI owner에서 한다.
+	 * candidate만 CNPCEvent inbox에 싣고 실제 판정/반영은 AI owner에서 한다.
 	 */
 	public static void seeCreature(
 			L1NpcInstance npc,
@@ -1157,9 +1179,8 @@ public final class NpcEventFactory {
 				continue;
 			}
 
-			monster._hateQueue.offer(
-					HateEvent.obtain(pc, L1NpcInstance.HATE_EVENT_INVISIBILITY));
-			NpcServer.getInstance().wake(monster);
+			NpcServer.getInstance().HandleEvent(monster,
+					CreateInvisibilityEvent(monster, pc));
 		}
 	}
 
@@ -1322,7 +1343,7 @@ public final class NpcEventFactory {
 				 * Guard ↔ Monster SeeCreature.
 				 *
 				 * 외부/world thread에서는 target을 직접 바꾸지 않는다.
-				 * seeCreature() -> HateEvent -> AI owner에서 반영한다.
+				 * seeCreature() -> CNPCEvent -> AI owner에서 반영한다.
 				 */
 				if (guardEvent) {
 					if (moved instanceof L1GuardInstance

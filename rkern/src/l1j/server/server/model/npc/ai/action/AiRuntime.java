@@ -17,7 +17,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.CDesirePQ;
-import l1j.server.server.model.npc.ai.HateEvent;
+import l1j.server.server.model.npc.ai.CNPCEvent;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.npc.ai.NpcServer;
 
@@ -62,7 +62,7 @@ public final class AiRuntime {
 
         try {
             final boolean targetChecked =
-                    drainHate(npc, nowMs);
+                    HandleEvent(npc, nowMs);
 
             if (notContinued(npc)) {
                 stop(npc);
@@ -624,11 +624,10 @@ public final class AiRuntime {
         NpcServer.getInstance().unregister(npc);
     }
 
-    private static boolean drainHate(
+    private static boolean HandleEvent(
             final L1NpcInstance npc,
             final long nowMs) {
 
-        HateEvent event;
         boolean changed = false;
         boolean realHateChanged = false;
         boolean attackDesireChanged = false;
@@ -648,15 +647,19 @@ public final class AiRuntime {
 
         // The retail seven-second lifetime gate belongs to CLAN_ATTACKED,
         // not to SEE_CREATURE. Never retain a one-shot sight event for 7s.
-        while ((event = npc._hateQueue.poll()) != null) {
+        CNPCEvent pending = null;
+        while (pending != null || (pending = npc.TakeNpcEvents()) != null) {
+            final CNPCEvent event = pending;
+            pending = event.next;
             try {
+                if (event.epoch != npc.npcEventEpoch() || npc.isDestroyed()) continue;
                 final L1Character cha = event.cha;
 
                 if (cha == null) {
                     continue;
                 }
 
-                final int eventValue = event.hate;
+                final int eventValue = event.value;
 
                 if (eventValue
                         == L1NpcInstance.HATE_EVENT_SIGHT) {
@@ -841,12 +844,12 @@ public final class AiRuntime {
             } catch (Throwable t) {
                 LOG.log(
                         Level.WARNING,
-                        "[NpcAI] drainHate 연산 중 에러 발생 (NPC ID: "
+                        "[NpcAI] HandleEvent 연산 중 에러 발생 (NPC ID: "
                                 + npc.getNpcId() + ")",
                         t);
 
             } finally {
-                HateEvent.release(event);
+                CNPCEvent.Release(event);
             }
         }
 
