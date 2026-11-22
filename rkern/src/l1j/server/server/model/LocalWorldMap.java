@@ -54,6 +54,49 @@ public final class LocalWorldMap {
     private final ThreadLocal<SightScratch> _sightScratch =
             ThreadLocal.withInitial(SightScratch::new);
 
+    // Unlike the legacy single queryNearbyReusable buffer, this scoped
+    // snapshot survives callbacks that recursively query nearby objects.
+    private static final class NearbyFrame {
+        @SuppressWarnings("unchecked")
+        ArrayList<L1Object>[] slots =
+                (ArrayList<L1Object>[]) new ArrayList<?>[4];
+        int depth;
+    }
+    private final ThreadLocal<NearbyFrame> _nearbyFrames =
+            ThreadLocal.withInitial(NearbyFrame::new);
+
+    /** Borrow a reentrant thread-local snapshot; release in finally. */
+    public List<L1Object> borrowNearby(L1Object origin, int radius) {
+        final NearbyFrame frame = _nearbyFrames.get();
+        final int depth = frame.depth;
+        if (depth == frame.slots.length)
+            frame.slots = java.util.Arrays.copyOf(frame.slots, depth << 1);
+        ArrayList<L1Object> result = frame.slots[depth];
+        if (result == null) {
+            result = new ArrayList<>(64);
+            frame.slots[depth] = result;
+        }
+        frame.depth = depth + 1;
+        try {
+            queryNearby(origin, radius, result);
+            return result;
+        } catch (RuntimeException | Error failure) {
+            result.clear();
+            frame.depth = depth;
+            throw failure;
+        }
+    }
+
+    public void releaseNearby(List<L1Object> result) {
+        final NearbyFrame frame = _nearbyFrames.get();
+        final int depth = frame.depth - 1;
+        if (depth < 0 || frame.slots[depth] != result)
+            throw new IllegalStateException("AOI nearby release out of order");
+        frame.depth = depth;
+        if (result.size() > 512) frame.slots[depth] = null;
+        result.clear();
+    }
+
     private static volatile long _lastPosWarn;
 
     public LocalWorldMap() {

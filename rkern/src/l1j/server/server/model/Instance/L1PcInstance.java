@@ -56,6 +56,7 @@ import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Karma;
+import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PcInventory;
@@ -8547,23 +8548,20 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if (!canSeeObject(known)) outOfSight(known);
 		}
 
-		final List<L1Object> nearby = L1World.getInstance().getClusterGrid().queryNearby(this, Config.PC_RECOGNIZE_RANGE);
-
-		for (int i = 0, size = nearby.size(); i < size; i++) {
-			final L1Object visible = nearby.get(i);
-
-			if (visible == null || visible == this || !canSeeObject(visible)) {
-				continue;
-			}
-			reconcileSight(visible);
-			if (visible instanceof L1PcInstance) {
-				final L1PcInstance viewer = (L1PcInstance) visible;
-				if (viewer.canSeeObject(this)) {
-					viewer.inSight(this);
-				} else {
-					viewer.outOfSight(this);
+		final LocalWorldMap grid = L1World.getInstance().getClusterGrid();
+		final List<L1Object> nearby = grid.borrowNearby(this, Config.PC_RECOGNIZE_RANGE);
+		try {
+			for (int i = 0, size = nearby.size(); i < size; i++) {
+				final L1Object visible = nearby.get(i);
+				if (visible == null || visible == this || !canSeeObject(visible)) continue;
+				reconcileSight(visible);
+				if (visible instanceof L1PcInstance viewer) {
+					if (viewer.canSeeObject(this)) viewer.inSight(this);
+					else viewer.outOfSight(this);
 				}
 			}
+		} finally {
+			grid.releaseNearby(nearby);
 		}
 	}
 	
@@ -8612,11 +8610,17 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				outOfSight(known);
 			}
 		}
-		for (L1Object visible : L1World.getInstance().getClusterGrid().queryNearby(this, Config.PC_RECOGNIZE_RANGE)) {
-			if (visible == null || visible == this) continue;
-			if (resyncGround && visible instanceof L1ItemInstance item)
-				L1GroundInventory.reconcileItem(this, item, true);
-			else reconcileSight(visible);
+		final LocalWorldMap grid = L1World.getInstance().getClusterGrid();
+		final List<L1Object> nearby = grid.borrowNearby(this, Config.PC_RECOGNIZE_RANGE);
+		try {
+			for (L1Object visible : nearby) {
+				if (visible == null || visible == this) continue;
+				if (resyncGround && visible instanceof L1ItemInstance item)
+					L1GroundInventory.reconcileItem(this, item, true);
+				else reconcileSight(visible);
+			}
+		} finally {
+			grid.releaseNearby(nearby);
 		}
 	}
 	
@@ -8625,13 +8629,16 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			return;
 		}
 
-		for (L1Object visible : L1World.getInstance().getClusterGrid().queryNearbyReusable(this, Config.PC_RECOGNIZE_RANGE)) {
-			if (visible == null
-					|| !canSeeObject(visible)
-					|| !L1HpBar.isHpBarTarget(visible) ) {
-				continue;
+		final LocalWorldMap grid = L1World.getInstance().getClusterGrid();
+		final List<L1Object> nearby = grid.borrowNearby(this, Config.PC_RECOGNIZE_RANGE);
+		try {
+			for (L1Object visible : nearby) {
+				if (visible == null || !canSeeObject(visible)
+						|| !L1HpBar.isHpBarTarget(visible)) continue;
+				SC_HPMeter.send(this, (L1Character) visible);
 			}
-			SC_HPMeter.send(this, (L1Character) visible);
+		} finally {
+			grid.releaseNearby(nearby);
 		}
 	}
 	
