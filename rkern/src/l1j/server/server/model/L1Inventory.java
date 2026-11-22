@@ -1419,7 +1419,7 @@ public class L1Inventory extends L1Object {
                                     }
                                     CacheD.applyCommittedWarehouseMove(move, () -> {
                                         for (int i = 0; i < size; i++) {
-                                            L1ItemInstance result = tradeItem(sources[i], counts[i], dest);
+                                            L1ItemInstance result = tradeWarehouseDepositLocked(sources[i], counts[i], dest, null);
                                             if (result == null)
                                                 throw new IllegalStateException("Warehouse batch memory replay failed item=" + ids[i]);
                                             if (move.replayCarry(ids[i]) == result)
@@ -1712,19 +1712,23 @@ public class L1Inventory extends L1Object {
                     sessionStamp, () -> {
                 // RECV packet handling uses this same session monitor.
                 synchronized (session) {
-                    if (!session.isConnected() || pc.getSessionStamp() != sessionStamp
-                            || pc.getNetConnection() != session || getItem(item.getId()) != item
-                            || item.getCount() != sourceCount
-                            || (destStack != null && (dest.getItem(destStack.getId()) != destStack
-                                    || destStack.getCount() != destCount)))
-                        throw new IllegalStateException("Warehouse deposit preimage changed after DB COMMIT");
-                    CacheD.applyCommittedWarehouseMove(move, () -> {
-                        L1ItemInstance applied = tradeItem(item, count, dest);
-                        if (applied == null)
-                            throw new IllegalStateException("Warehouse deposit replay failed");
-                        if (move.replayCarry() == applied)
-                            L1World.getInstance().storeObject(applied);
-                    });
+                    synchronized (L1Inventory.this) {
+                        synchronized (dest) {
+                            if (!session.isConnected() || pc.getSessionStamp() != sessionStamp
+                                    || pc.getNetConnection() != session || getItem(item.getId()) != item
+                                    || item.getCount() != sourceCount
+                                    || (destStack != null && (dest.getItem(destStack.getId()) != destStack
+                                            || destStack.getCount() != destCount)))
+                                throw new IllegalStateException("Warehouse deposit preimage changed after DB COMMIT");
+                            CacheD.applyCommittedWarehouseMove(move, () -> {
+                                L1ItemInstance applied = tradeWarehouseDepositLocked(item, count, dest, null);
+                                if (applied == null)
+                                    throw new IllegalStateException("Warehouse deposit replay failed");
+                                if (move.replayCarry() == applied)
+                                    L1World.getInstance().storeObject(applied);
+                            });
+                        }
+                    }
                     Warehouse.recordCommittedMove(pc, dest, true, item, count);
                     pc.endItemTransfer();
                     try { pc.getLight().turnOnOffLight(); }
@@ -1743,13 +1747,23 @@ public class L1Inventory extends L1Object {
         }
     }
 
-	public synchronized L1ItemInstance tradeItem(int objectId, int count, Warehouse inventory) {
+	public L1ItemInstance tradeItem(int objectId, int count, Warehouse inventory) {
         return tradeItem(objectId, count, inventory, null);
 	}
 
-    public synchronized L1ItemInstance tradeItem(int objectId, int count, Warehouse inventory,
+    public L1ItemInstance tradeItem(int objectId, int count, Warehouse inventory,
             Runnable onCommitted) {
-        return tradeItem(getItem(objectId), count, inventory, onCommitted);
+        synchronized (this) {
+            final L1ItemInstance item = getItem(objectId);
+            if (inventory == null || item == null) {
+                if (rejectPendingItemTransfer())
+                    throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
+                return null;
+            }
+            synchronized (inventory) {
+                return tradeWarehouseDepositLocked(item, count, inventory, onCommitted);
+            }
+        }
     }
 
 	public synchronized L1ItemInstance tradeItem(int objectId, int count, L1Inventory inventory) {
@@ -1757,12 +1771,28 @@ public class L1Inventory extends L1Object {
 		return tradeItem(item, count, inventory);
 	}
 
-	public synchronized L1ItemInstance tradeItem(L1ItemInstance item, int count, Warehouse inventory) {
+	public L1ItemInstance tradeItem(L1ItemInstance item, int count, Warehouse inventory) {
         return tradeItem(item, count, inventory, null);
     }
 
-    public synchronized L1ItemInstance tradeItem(L1ItemInstance item, int count,
+    public L1ItemInstance tradeItem(L1ItemInstance item, int count,
             Warehouse inventory, Runnable onCommitted) {
+        synchronized (this) {
+            if (inventory == null || item == null) {
+                if (rejectPendingItemTransfer())
+                    throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
+                return null;
+            }
+            synchronized (inventory) {
+                return tradeWarehouseDepositLocked(item, count, inventory, onCommitted);
+            }
+        }
+    }
+
+    // Both monitors are already held in inventory -> warehouse order.
+    private L1ItemInstance tradeWarehouseDepositLocked(L1ItemInstance item, int count,
+            Warehouse inventory, Runnable onCommitted) {
+        assert Thread.holdsLock(this) && Thread.holdsLock(inventory);
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		if (item == null || inventory == null) {

@@ -598,23 +598,27 @@ public abstract class Warehouse extends L1Object {
             move.commit(() -> CIOThreadCallback.getInstance().completeWarehouseMove(pc,
                     stamp, () -> {
                 synchronized (session) {
-                    if (!session.isConnected() || pc.getSessionStamp() != stamp
-                            || pc.getNetConnection() != session || getItem(item.getId()) != item
-                            || item.getCount() != sourceCount
-                            || (destStack != null && (inventory.getItem(destStack.getId()) != destStack
-                                   || destStack.getCount() != destCount
-                                   || destStack.getChargeCount() != destCharge))
-                            || (fee != null && (inventory.getItem(fee.getId()) != fee
-                                   || fee.getCount() != feeCount)))
-                        throw new IllegalStateException("Warehouse withdrawal preimage changed after DB COMMIT");
-                    CacheD.applyCommittedWarehouseMove(move, () -> {
-                        L1ItemInstance applied = tradePreparedItem(item, count, inventory,
-                                feeItemId, feeAmount, withdrawalEndTime, null);
-                        if (applied == null)
-                            throw new IllegalStateException("Warehouse withdrawal replay failed");
-                        if (move.replayCarry() == applied)
-                            L1World.getInstance().storeObject(applied);
-                    });
+                    synchronized (inventory) {
+                        synchronized (Warehouse.this) {
+                            if (!session.isConnected() || pc.getSessionStamp() != stamp
+                                    || pc.getNetConnection() != session || getItem(item.getId()) != item
+                                    || item.getCount() != sourceCount
+                                    || (destStack != null && (inventory.getItem(destStack.getId()) != destStack
+                                           || destStack.getCount() != destCount
+                                           || destStack.getChargeCount() != destCharge))
+                                    || (fee != null && (inventory.getItem(fee.getId()) != fee
+                                           || fee.getCount() != feeCount)))
+                                throw new IllegalStateException("Warehouse withdrawal preimage changed after DB COMMIT");
+                            CacheD.applyCommittedWarehouseMove(move, () -> {
+                                L1ItemInstance applied = tradePreparedItemLocked(item, count, inventory,
+                                        feeItemId, feeAmount, withdrawalEndTime, null);
+                                if (applied == null)
+                                    throw new IllegalStateException("Warehouse withdrawal replay failed");
+                                if (move.replayCarry() == applied)
+                                    L1World.getInstance().storeObject(applied);
+                            });
+                        }
+                    }
                     recordCommittedMove(pc, Warehouse.this, false, item, count);
                     pc.endItemTransfer();
                     // Defer the next selected item until CacheD releases this
@@ -630,38 +634,49 @@ public abstract class Warehouse extends L1Object {
         }
     }
 
-    public synchronized L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory) {
-        return tradeItem(item, count, inventory, 0, 0);
+    public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory) {
+        return tradeItem(item, count, inventory, 0, 0, null);
     }
 
-    public synchronized L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory,
-                                                  int feeItemId, int feeAmount) {
+    public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory,
+            int feeItemId, int feeAmount) {
         return tradeItem(item, count, inventory, feeItemId, feeAmount, null);
     }
 
-    public synchronized L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory,
-                                                  int feeItemId, int feeAmount, Runnable onCommitted) {
-        return tradePreparedItem(item, count, inventory, feeItemId, feeAmount, null, onCommitted);
+    public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory,
+            int feeItemId, int feeAmount, Runnable onCommitted) {
+        if (inventory == null) return null;
+        synchronized (inventory) {
+            synchronized (this) {
+                return tradePreparedItemLocked(item, count, inventory, feeItemId, feeAmount, null, onCommitted);
+            }
+        }
     }
 
     /** Supplementary timed items acquire their deadline in the committed character row. */
-    public synchronized L1ItemInstance tradeSupplementaryItem(L1ItemInstance item, int count,
+    public L1ItemInstance tradeSupplementaryItem(L1ItemInstance item, int count,
             L1Inventory inventory, Timestamp endTime) {
         return tradeSupplementaryItem(item, count, inventory, endTime, null);
     }
 
-    public synchronized L1ItemInstance tradeSupplementaryItem(L1ItemInstance item, int count,
+    public L1ItemInstance tradeSupplementaryItem(L1ItemInstance item, int count,
             L1Inventory inventory, Timestamp endTime, Runnable onCommitted) {
-        if (!(this instanceof SupplementaryService)) return null;
-        // Per-instance deadlines cannot be represented by a merged stack.
-        if (endTime != null && item != null && item.isStackable()
-                && inventory != null && inventory.findItemId(item.getItemId()) != null) return null;
-        return tradePreparedItem(item, count, inventory, 0, 0, copyTime(endTime), onCommitted);
+        if (!(this instanceof SupplementaryService) || inventory == null) return null;
+        synchronized (inventory) {
+            synchronized (this) {
+                // Per-instance deadlines cannot be represented by a merged stack.
+                if (endTime != null && item != null && item.isStackable()
+                        && inventory.findItemId(item.getItemId()) != null) return null;
+                return tradePreparedItemLocked(item, count, inventory, 0, 0, copyTime(endTime), onCommitted);
+            }
+        }
     }
 
-    private synchronized L1ItemInstance tradePreparedItem(L1ItemInstance item, int count,
+    // All transfers use inventory -> warehouse. Callers must hold both monitors.
+    private L1ItemInstance tradePreparedItemLocked(L1ItemInstance item, int count,
             L1Inventory inventory, int feeItemId, int feeAmount, Timestamp withdrawalEndTime,
             Runnable onCommitted) {
+        assert Thread.holdsLock(inventory) && Thread.holdsLock(this);
         assertWarehouseActive();
         if ((feeItemId == 0) != (feeAmount == 0) || feeAmount < 0) return null;
         if (feeAmount != 0 && feeItemId != 40308 && feeItemId != 40494) return null;
