@@ -59,7 +59,7 @@ public final class BossController {
                 task.cancel(false);
                 return;
             }
-            if (SCHEDULED.size() >= 512)
+            if (SCHEDULED.size() >= 512 && (SCHEDULED.size() & 255) == 0)
                 SCHEDULED.removeIf(ScheduledFuture::isDone);
             SCHEDULED.add(task);
         }
