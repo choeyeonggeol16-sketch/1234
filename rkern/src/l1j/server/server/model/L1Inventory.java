@@ -313,43 +313,6 @@ public class L1Inventory extends L1Object {
 		return result;
 	}
 	
-	public synchronized L1ItemInstance TalkIsland_storeItem(int id, int count) {
-        if (rejectPendingItemTransfer())
-            throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (count <= 0) {
-			return null;
-		}
-		L1Item temp = ItemTable.getInstance().getTemplate(id);
-		if (temp == null) {
-			return null;
-		}
-
-		if (temp.isStackable()) {
-			L1ItemInstance item = new L1ItemInstance(temp, count);
-
-			if (findItemId(id) == null) {
-				
-				item.setId(IdFactory.getInstance().nextId());
-				L1World.getInstance().storeObject(item);
-			}
-
-			item.setIdentified(true);
-
-			return storeItem(item);
-		}
-
-		L1ItemInstance result = null;
-		L1ItemInstance item = null;
-		for (int i = 0; i < count; i++) {
-			item = new L1ItemInstance(temp, 1);
-			item.setId(IdFactory.getInstance().nextId());
-			item.setIdentified(true);
-			L1World.getInstance().storeObject(item);
-			storeItem(item);
-			result = item;
-		}
-		return result;
-	}
 	public synchronized L1ItemInstance storeItemTrea(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
