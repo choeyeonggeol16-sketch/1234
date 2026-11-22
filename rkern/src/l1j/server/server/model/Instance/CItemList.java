@@ -53,6 +53,32 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         snapshot = null;
     }
 
+    /** Reject a still-owned item before any caller changes counts or persistence. */
+    public static void requireDetached(L1ItemInstance item) {
+        Objects.requireNonNull(item, "inventory item");
+        if (item.inventoryLinkOwner != null)
+            throw new IllegalStateException("Item already linked: " + item.getId());
+    }
+
+    /** Reconnect snapshots contain new, detached objects. Claim ALL before
+     * changing old membership, so a rejected row cannot empty the container. */
+    public List<L1ItemInstance> replaceDetached(Collection<? extends L1ItemInstance> items) {
+        final L1ItemInstance[] rows = items.toArray(new L1ItemInstance[0]);
+        synchronized (this) {
+            final List<L1ItemInstance> previous = snapshotLocked();
+            int claimed = 0;
+            try {
+                for (; claimed < rows.length; claimed++) claim(rows[claimed]);
+            } catch (RuntimeException | Error e) {
+                while (claimed != 0) OWNER.setVolatile(rows[--claimed], null);
+                throw e;
+            }
+            clear();
+            for (L1ItemInstance item : rows) appendClaimed(item);
+            return previous;
+        }
+    }
+
     @Override public synchronized boolean add(L1ItemInstance item) {
         claim(item);
         appendClaimed(item);
