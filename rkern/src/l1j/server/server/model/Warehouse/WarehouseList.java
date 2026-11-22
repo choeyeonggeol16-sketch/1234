@@ -18,6 +18,41 @@ public abstract class WarehouseList {
         return warehouse;
     }
 
+    // Session binding invalidates an older deferred logout, even when the
+    // same warehouse object is reused by a reconnecting account.
+    synchronized Warehouse bindWarehouse(String name, long lease) {
+        if (lease <= 0L) throw new IllegalArgumentException("Warehouse session lease");
+        Warehouse warehouse = findWarehouse(name);
+        final long current = warehouse.cacheSessionLease;
+        if (current > lease || current <= -lease)
+            throw new IllegalStateException("Stale warehouse session lease");
+        warehouse.cacheSessionLease = lease;
+        return warehouse;
+    }
+
+    synchronized void releaseWarehouse(String name, long lease) {
+        if (lease <= 0L || name == null) return;
+        Warehouse warehouse = warehouses.get(name);
+        if (warehouse == null || warehouse.cacheSessionLease != lease) return;
+        warehouse.cacheSessionLease = -lease;
+        retireWhenIdle(name, warehouse, lease);
+    }
+
+    private synchronized void retireWhenIdle(String name, Warehouse expected, long lease) {
+        if (warehouses.get(name) != expected || expected.cacheSessionLease != -lease) return;
+        synchronized (expected) {
+            // Lock order is the same as explicit deletion: list -> warehouse
+            // -> CacheD. CacheD dispatches callbacks only outside its lock.
+            final CacheD cache = CacheD.getInstance();
+            final int key = expected.transferOrderKey();
+            if (!cache.isWarehouseOwnerIdle(key)
+                    && cache.deferWarehouseRetirement(key, expected,
+                            () -> retireWhenIdle(name, expected, lease))) return;
+            expected.retireWarehouse();
+            warehouses.remove(name);
+        }
+    }
+
     // Only explicit owner-close may evict: no idle eviction of unsaved inventory.
     public synchronized void delWarehouse(String name) {
         Warehouse old = warehouses.get(name);

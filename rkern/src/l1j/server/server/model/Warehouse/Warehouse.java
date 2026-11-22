@@ -37,6 +37,8 @@ public abstract class Warehouse extends L1Object {
     // An evicted warehouse must never accept writes from a caller retaining
     // an old reference. No extra registry, worker, or per-operation allocation.
     private volatile boolean retired;
+    // Protected by the owning WarehouseList monitor. Negative means release requested.
+    long cacheSessionLease;
 
     protected final void assertWarehouseActive() {
         if (retired) throw new IllegalStateException("Warehouse reference retired: " + name);

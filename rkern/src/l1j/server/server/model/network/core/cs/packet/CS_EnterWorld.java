@@ -205,8 +205,9 @@ public final class CS_EnterWorld {
         final l1j.server.server.templates.L1CharName known = CharacterTable.getInstance().getCharName(charName);
         final int charId = known == null ? 0 : known.getId();
         final int accountKey = CacheD.accountOrderKey(sessionAccount.getName());
+        final int specialKey = CacheD.accountOrderKey("special:" + (known == null ? charName : known.getName()));
         try {
-            CacheD.getInstance().submitDbJobOrdered(charId, accountKey, () -> {
+            CacheD.getInstance().submitWarehouseLoginJob(charId, accountKey, specialKey, () -> {
                 final EnterData data;
                 final Throwable failure;
                 EnterData prepared = null;

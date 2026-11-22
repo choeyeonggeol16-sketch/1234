@@ -176,6 +176,15 @@ import l1j.server.server.utils.ServerMessage;
 import l1j.server.swing.chocco;
 public class L1PcInstance extends L1Character {
     private volatile long cacheDSessionEpoch;
+    private volatile long warehouseCacheLease;
+
+    public synchronized long beginWarehouseCacheLease() {
+        if (isLogoutStarted()) throw new IllegalStateException("Warehouse restore after logout");
+        if (warehouseCacheLease == 0L) {
+            warehouseCacheLease = l1j.server.server.model.Warehouse.WarehouseManager.nextSessionLease();
+        }
+        return warehouseCacheLease;
+    }
 
     public void setCacheDSessionEpoch(long epoch) { cacheDSessionEpoch = epoch; }
     public long getCacheDSessionEpoch() { return cacheDSessionEpoch; }
@@ -2540,6 +2549,18 @@ public class L1PcInstance extends L1Character {
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout slot cleanup failed: " + getId(), e); }
             try { _inventory.clearItems(); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout inventory cleanup failed: " + getId(), e); }
+            // Four global caches belong to the restored session, not to the
+            // number of accounts that have ever connected. Package inventory
+            // already belongs directly to this PC.
+            final long warehouseLease = warehouseCacheLease;
+            if (warehouseLease != 0L) {
+                try {
+                    l1j.server.server.model.Warehouse.WarehouseManager.getInstance()
+                            .releaseSessionWarehouses(getAccountName(), getName(), warehouseLease);
+                } catch (RuntimeException e) {
+                    _log.log(Level.SEVERE, "Logout warehouse cache release failed: " + getId(), e);
+                }
+            }
             try { _dwarfForPackage.clearItems(); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout package cleanup failed: " + getId(), e); }
             try { removeAllKnownObjects(); }

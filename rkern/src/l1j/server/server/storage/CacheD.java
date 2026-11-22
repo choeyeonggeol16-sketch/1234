@@ -709,6 +709,10 @@ public final class CacheD {
     private final Int2IntOpenHashMap itemOwners = warehouse.itemOwners;
     private final Int2IntOpenHashMap itemCommandsByOwner = new Int2IntOpenHashMap();
     private final Int2IntOpenHashMap dbJobsByOwner = new Int2IntOpenHashMap();
+    // Allocated only for closing caches with outstanding ordered writes.
+    // One callback per warehouse identity, keyed by its existing owner lane.
+    private final Int2ObjectOpenHashMap<java.util.IdentityHashMap<Object, Runnable>>
+            warehouseRetirements = new Int2ObjectOpenHashMap<>();
     private final Int2IntOpenHashMap ownerApplyJobsByOwner = new Int2IntOpenHashMap();
     // Only non-economy warehouse reservations that are still unprepared.
     // Avoid a linear ready-queue scan on every owner/session boundary check.
@@ -1079,6 +1083,21 @@ public final class CacheD {
 
     private DbJob submitDbJobInternal(int ownerId, int secondaryOwnerId,
                                      Runnable task, boolean retryOnFailure, boolean failClosedOnError) {
+        return submitDbJobInternal(ownerId, secondaryOwnerId, NO_EXTRA_OWNERS,
+                task, retryOnFailure, failClosedOnError);
+    }
+
+    /** Login reads all four account/special warehouse snapshots under their
+     * existing persistence lanes, including the distinct special owner. */
+    public void submitWarehouseLoginJob(int characterId, int accountKey, int specialKey, Runnable task) {
+        if (accountKey <= 0 || specialKey <= 0) throw new IllegalArgumentException("Warehouse login owners");
+        final int[] extra = specialKey == accountKey || specialKey == characterId
+                ? NO_EXTRA_OWNERS : new int[] { specialKey };
+        submitDbJobInternal(characterId, accountKey, extra, task, false, false);
+    }
+
+    private DbJob submitDbJobInternal(int ownerId, int secondaryOwnerId, int[] extraOwners,
+                                     Runnable task, boolean retryOnFailure, boolean failClosedOnError) {
         Objects.requireNonNull(task, "task");
         ownerId = Math.max(0, ownerId);
         secondaryOwnerId = Math.max(0, secondaryOwnerId);
@@ -1091,6 +1110,10 @@ public final class CacheD {
                             || deletedIds.contains(secondaryOwnerId)))) {
                 throw new RejectedExecutionException("CacheD owner is being deleted");
             }
+            for (int owner : extraOwners) {
+                if (deletingIds.contains(owner) || deletedIds.contains(owner))
+                    throw new RejectedExecutionException("CacheD owner is being deleted");
+            }
             if (pendingDbJobs >= MAX_DB_JOBS) {
                 throw new RejectedExecutionException("CacheD DB request backlog is full");
             }
@@ -1099,7 +1122,8 @@ public final class CacheD {
             if (secondaryOwnerId > 0 && secondaryOwnerId != ownerId) {
                 dbJobsByOwner.addTo(secondaryOwnerId, 1);
             }
-            final DbJob job = new DbJob(ownerId, secondaryOwnerId, task, retryOnFailure, failClosedOnError);
+            for (int owner : extraOwners) dbJobsByOwner.addTo(owner, 1);
+            final DbJob job = new DbJob(ownerId, secondaryOwnerId, extraOwners, task, retryOnFailure, failClosedOnError);
             enqueueNext(job, 0L);
             signalReadyChange();
             return job;
@@ -1192,6 +1216,65 @@ public final class CacheD {
         if (state.secondaryOwnerId > 0 && state.secondaryOwnerId != state.ownerId)
             completeOwnerRelease(state.secondaryOwnerId);
         for (int owner : state.extraOwnerIds) completeOwnerRelease(owner);
+        enqueueWarehouseRetirements(state);
+    }
+
+    /** Unlike flushDbOwner, this is a zero-pending predicate even when
+     * invoked by a lane-neutral CacheD completion job. No waiting and no SQL. */
+    public boolean isWarehouseOwnerIdle(int ownerId) {
+        synchronized (lock) {
+            return dbJobsByOwner.get(ownerId) == 0
+                    && ownerApplyJobsByOwner.get(ownerId) == 0
+                    && unpreparedWarehouseJobsByOwner.get(ownerId) == 0;
+        }
+    }
+
+    /** Register atomically with the idle transition. False means the caller
+     * may retire now while still holding its warehouse mutation monitor. */
+    public boolean deferWarehouseRetirement(int ownerId, Object identity, Runnable action) {
+        synchronized (lock) {
+            if (isWarehouseOwnerIdle(ownerId)) return false;
+            java.util.IdentityHashMap<Object, Runnable> waiters = warehouseRetirements.get(ownerId);
+            if (waiters == null) {
+                waiters = new java.util.IdentityHashMap<>();
+                warehouseRetirements.put(ownerId, waiters);
+            }
+            waiters.put(identity, action);
+            return true;
+        }
+    }
+
+    // CacheD.lock held. At most one neutral maintenance job replaces this
+    // completed DB job, preserving the existing queue capacity. No new worker,
+    // timer, lane, or running callback under CacheD.lock.
+    private void enqueueWarehouseRetirements(DbJob completed) {
+        if (warehouseRetirements.isEmpty()) return;
+        ArrayList<Runnable> actions = null;
+        actions = collectWarehouseRetirements(completed.ownerId, actions);
+        if (completed.secondaryOwnerId != completed.ownerId)
+            actions = collectWarehouseRetirements(completed.secondaryOwnerId, actions);
+        for (int owner : completed.extraOwnerIds)
+            actions = collectWarehouseRetirements(owner, actions);
+        if (actions == null) return;
+        final ArrayList<Runnable> batch = actions;
+        pendingDbJobs++;
+        enqueueNext(new DbJob(0, 0, () -> {
+            for (Runnable action : batch) {
+                try { action.run(); }
+                catch (RuntimeException failure) {
+                    LOG.log(Level.SEVERE, "Deferred warehouse retirement failed", failure);
+                }
+            }
+        }, false), 0L);
+    }
+
+    private ArrayList<Runnable> collectWarehouseRetirements(int ownerId, ArrayList<Runnable> actions) {
+        if (ownerId <= 0 || !isWarehouseOwnerIdle(ownerId)) return actions;
+        final java.util.IdentityHashMap<Object, Runnable> waiters = warehouseRetirements.remove(ownerId);
+        if (waiters == null) return actions;
+        if (actions == null) actions = new ArrayList<>(waiters.size());
+        actions.addAll(waiters.values());
+        return actions;
     }
 
     private void quarantineDbJob(DbJob state, SQLException failure) {

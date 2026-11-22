@@ -1,6 +1,51 @@
 package l1j.server.server.model.Warehouse;
 
-public class WarehouseManager {	
+public class WarehouseManager {
+    private static final java.util.concurrent.atomic.AtomicLong SESSION_LEASES =
+            new java.util.concurrent.atomic.AtomicLong();
+    private static final java.util.logging.Logger LOG =
+            java.util.logging.Logger.getLogger(WarehouseManager.class.getName());
+
+    public static long nextSessionLease() {
+        final long lease = SESSION_LEASES.incrementAndGet();
+        if (lease <= 0L) throw new IllegalStateException("Warehouse session lease exhausted");
+        return lease;
+    }
+
+    public PrivateWarehouse bindPrivateWarehouse(String name, long lease) {
+        return (PrivateWarehouse) plist.bindWarehouse(name, lease);
+    }
+
+    public ElfWarehouse bindElfWarehouse(String name, long lease) {
+        return (ElfWarehouse) elist.bindWarehouse(name, lease);
+    }
+
+    public SupplementaryService bindSupplementaryService(String name, long lease) {
+        return (SupplementaryService) supplist.bindWarehouse(name, lease);
+    }
+
+    public SpecialWarehouse bindSpecialWarehouse(String name, long lease) {
+        return (SpecialWarehouse) speciallist.bindWarehouse(name, lease);
+    }
+
+    public void releaseSessionWarehouses(String account, String character, long lease) {
+        if (lease <= 0L) return;
+        release(plist, account, lease);
+        release(elist, account, lease);
+        release(supplist, account, lease);
+        release(speciallist, character, lease);
+    }
+
+    private static void release(WarehouseList list, String name, long lease) {
+        try {
+            list.releaseWarehouse(name, lease);
+        } catch (RuntimeException failure) {
+            // Keep the cache fail-closed if world removal or a fence fails;
+            // do not abort other logout cleanup.
+            LOG.log(java.util.logging.Level.SEVERE, "Warehouse retirement failed: " + name, failure);
+        }
+    }
+	
 	private static volatile WarehouseManager uniqueInstance = null;
 	private final PrivateWarehouseList plist = new PrivateWarehouseList();
 	private final ElfWarehouseList elist = new ElfWarehouseList();

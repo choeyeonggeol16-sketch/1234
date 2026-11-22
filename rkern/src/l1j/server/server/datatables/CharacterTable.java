@@ -186,43 +186,50 @@ public class CharacterTable {
     }
 
     public void restoreInventory(L1PcInstance pc, List<L1ItemInstance> loadedItems) {
-        if (loadedItems == null) pc.getInventory().loadItems();
-        else pc.getInventory().loadItems(loadedItems);
-		PrivateWarehouse warehouse = WarehouseManager.getInstance().getPrivateWarehouse(pc.getAccountName());
-		warehouse.loadItems();
-		ElfWarehouse elfwarehouse = WarehouseManager.getInstance().getElfWarehouse(pc.getAccountName());
-		elfwarehouse.loadItems();
-		pc.getDwarfForPackageInventory().loadItems();
-		SupplementaryService supplementaryservice = WarehouseManager.getInstance().getSupplementaryService(pc.getAccountName());
-		supplementaryservice.loadItems();
-		SpecialWarehouse specialwarehose = WarehouseManager.getInstance().getSpecialWarehouse(pc.getName());
-		specialwarehose.loadItems();
-	}
+        final long warehouseLease = pc.beginWarehouseCacheLease();
+        final WarehouseManager manager = WarehouseManager.getInstance();
+        try {
+            if (loadedItems == null) pc.getInventory().loadItems();
+            else pc.getInventory().loadItems(loadedItems);
+            manager.bindPrivateWarehouse(pc.getAccountName(), warehouseLease).loadItems();
+            manager.bindElfWarehouse(pc.getAccountName(), warehouseLease).loadItems();
+            pc.getDwarfForPackageInventory().loadItems();
+            manager.bindSupplementaryService(pc.getAccountName(), warehouseLease).loadItems();
+            manager.bindSpecialWarehouse(pc.getName(), warehouseLease).loadItems();
+        } finally {
+            if (pc.isLogoutStarted())
+                manager.releaseSessionWarehouses(pc.getAccountName(), pc.getName(), warehouseLease);
+        }
+    }
 
     public void restoreInventory(L1PcInstance pc, List<L1ItemInstance> loadedItems,
                                  CachedRowSet[] warehouseRows) {
         if (warehouseRows == null || warehouseRows.length != 5) {
             throw new IllegalStateException("Missing warehouse snapshots: " + pc.getName());
         }
+        long warehouseLease = 0L;
         try {
-            // Fail before applying any inventory if a detached SQL snapshot is missing.
             for (CachedRowSet row : warehouseRows) {
                 if (row == null) throw new IllegalStateException("Incomplete warehouse snapshots: " + pc.getName());
             }
+            warehouseLease = pc.beginWarehouseCacheLease();
             if (loadedItems == null) pc.getInventory().loadItems();
             else pc.getInventory().loadItems(loadedItems);
             WarehouseManager manager = WarehouseManager.getInstance();
-            manager.getPrivateWarehouse(pc.getAccountName()).loadItemsFromSnapshot(warehouseRows[0]);
-            manager.getElfWarehouse(pc.getAccountName()).loadItemsFromSnapshot(warehouseRows[1]);
+            manager.bindPrivateWarehouse(pc.getAccountName(), warehouseLease).loadItemsFromSnapshot(warehouseRows[0]);
+            manager.bindElfWarehouse(pc.getAccountName(), warehouseLease).loadItemsFromSnapshot(warehouseRows[1]);
             pc.getDwarfForPackageInventory().loadItemsFromSnapshot(warehouseRows[2]);
-            manager.getSupplementaryService(pc.getAccountName()).loadItemsFromSnapshot(warehouseRows[3]);
-            manager.getSpecialWarehouse(pc.getName()).loadItemsFromSnapshot(warehouseRows[4]);
+            manager.bindSupplementaryService(pc.getAccountName(), warehouseLease).loadItemsFromSnapshot(warehouseRows[3]);
+            manager.bindSpecialWarehouse(pc.getName(), warehouseLease).loadItemsFromSnapshot(warehouseRows[4]);
         } catch (SQLException e) {
             throw new IllegalStateException("Warehouse restore failed: " + pc.getName(), e);
         } finally {
             for (CachedRowSet row : warehouseRows) {
                 if (row != null) try { row.close(); } catch (SQLException ignored) {}
             }
+            if (warehouseLease != 0L && pc.isLogoutStarted())
+                WarehouseManager.getInstance().releaseSessionWarehouses(
+                        pc.getAccountName(), pc.getName(), warehouseLease);
         }
     }
 
