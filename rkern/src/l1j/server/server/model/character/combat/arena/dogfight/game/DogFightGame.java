@@ -42,7 +42,7 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
 	private IFighterGameEndedHandler m_ended_handler;
 	private Object m_fighter_dead_lock;
 	private ArrayList<DogFightInstance> m_all_fighters;
-	private static HashMap<Integer, ArrayList<DogFightInstance>> m_fighters;
+	private final HashMap<Integer, ArrayList<DogFightInstance>> m_fighters;
 	private HashMap<Integer, ArrayList<DogFightInstance>> m_down_fighters;
 	private DogFightGame(){
 		m_is_run = false;
@@ -82,7 +82,7 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
 		fighters.add(fighter.set_dead_notify(this));
 	}
 	
-	public static DogFightInstance get_leader(int corner_id){
+	public DogFightInstance get_leader(int corner_id){
 		ArrayList<DogFightInstance> fighters = m_fighters.get(corner_id);
 		if(fighters == null || fighters.size() <= 0)
 			return null;
@@ -90,7 +90,7 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
 	}
 	
 	public static DogFightInstance getDogFight(int i) {
-		return get_leader(i);
+		return DogFightHistory.getInstance().get_leader(i);
 	}
 	
 	public L1NpcInstance get_caster(){
@@ -279,7 +279,7 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
 					fighter.deleteMe();
 			}
 		}
-		m_fighters = null;
+		m_fighters.clear();
 	}
 }
 
