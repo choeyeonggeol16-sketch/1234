@@ -17,6 +17,8 @@ import java.util.Objects;
 import java.util.Spliterator;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
 
 /** Intrusive, ordered inventory membership. The list monitor protects only links;
  * never invoke persistence, packets, or callers under it. Existing owner locks
@@ -185,6 +187,12 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     }
 
     public L1ItemInstance GetByIndex(int objectId) {
+        // World registration can lag list publication during receipt replay.
+        // Use the global index for registered objects, but the list remains
+        // authoritative if registration has not happened yet.
+        final L1Object object = L1World.getInstance().findObject(objectId);
+        if (object instanceof L1ItemInstance item
+                && item.getId() == objectId && contains(item)) return item;
         final List<L1ItemInstance> rows = snapshot;
         if (rows != null) {
             for (int i = 0, n = rows.size(); i < n; i++) {
@@ -213,6 +221,22 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
             for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
                 if (item.getItem().getItemId() == classId) return item;
             return null;
+        }
+    }
+
+    /** Check the number of matching instances, not their accumulated quantity. */
+    public boolean HasInstancesByClassID(int classId, int count) {
+        if (count <= 0) return true;
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) {
+            for (int i = 0, n = rows.size(); i < n; i++)
+                if (rows.get(i).getItemId() == classId && --count == 0) return true;
+            return false;
+        }
+        synchronized (this) {
+            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+                if (item.getItemId() == classId && --count == 0) return true;
+            return false;
         }
     }
 
