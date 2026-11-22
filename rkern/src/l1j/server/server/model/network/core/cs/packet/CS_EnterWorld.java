@@ -2,17 +2,12 @@ package l1j.server.server.model.network.core.cs.packet;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.sql.rowset.CachedRowSet;
-import javax.sql.rowset.RowSetMetaDataImpl;
-import javax.sql.rowset.RowSetProvider;
 import javax.swing.SwingUtilities;
 
 import l1j.server.Config;
@@ -44,6 +39,10 @@ import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Warehouse.SupplementaryService;
 import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.Warehouse.PrivateWarehouse;
+import l1j.server.server.model.Warehouse.ElfWarehouse;
+import l1j.server.server.model.Warehouse.SpecialWarehouse;
+import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
 import l1j.server.server.model.character.experience.amplifier.ExpAmplifierLoader;
 import l1j.server.server.model.character.login.skill.BuffRestoreRegistry;
@@ -165,7 +164,7 @@ public final class CS_EnterWorld {
     private static final class EnterData {
         L1PcInstance pc;
         ArrayList<L1ItemInstance> items;
-        CachedRowSet[] warehouseRows;
+        List<List<L1ItemInstance>> warehouseItems;
         SC_ATTENDANCE_USER_DATA_EXTEND.LoginSnapshot attendance;
         int[] skills;
         List<Integer> mastery;
@@ -227,8 +226,8 @@ public final class CS_EnterWorld {
                                 throw new IllegalStateException("World replaced during login DB load");
                             completeEnterWorld(charName, client, sessionAccount, data, failure);
                         }, terminal -> {
-                    // CachedRowSet is detached data, so discarding a rejected
-                    // login needs no SQL or game-state mutation on this thread.
+                    // The snapshots contain only detached items. Releasing
+                    // rejected login data needs no JDBC or world mutation.
                     discardEnterData(data);
                     if (terminal != null) {
                         _log.log(Level.WARNING, "Enter owner completion failed: " + charName, terminal);
@@ -255,7 +254,7 @@ public final class CS_EnterWorld {
             if (item.getItemId() == 700024 && data.templateOrbBookmarks == null)
                 data.templateOrbBookmarks = L1BookMark.ShowBookmarkitem(null, 700024);
         }
-        data.warehouseRows = readWarehouseRows(data.pc.getAccountName(), data.pc.getName());
+        data.warehouseItems = readWarehouseItems(data.pc.getAccountName(), data.pc.getName());
         if (Config.USE_ATTENDANCE_SYSTEM && data.pc.getLevel() >= 50)
             data.attendance = SC_ATTENDANCE_USER_DATA_EXTEND.readLoginSnapshot(data.pc.getAccountName());
         data.mastery = new ArrayList<>();
@@ -286,9 +285,7 @@ public final class CS_EnterWorld {
     }
 
     private static void discardEnterData(EnterData data) {
-        if (data == null || data.warehouseRows == null) return;
-        for (CachedRowSet row : data.warehouseRows)
-            if (row != null) try { row.close(); } catch (SQLException ignored) {}
+        if (data != null) data.warehouseItems = null;
     }
 
     private static void completeEnterWorld(String charName, CUserSocket client, Account account,
@@ -513,7 +510,8 @@ public final class CS_EnterWorld {
         pc.startObjectAutoUpdate();
         pc.beginGameTimeCarrier();
         clampHpMp(pc);
-        CharacterTable.getInstance().restoreInventory(pc, data.items, data.warehouseRows);
+        CharacterTable.getInstance().restoreInventoryFromSnapshots(pc, data.items, data.warehouseItems);
+        data.warehouseItems = null;
         sendItemPacketChunked(pc);
         loadItems(pc, true, null);
 
@@ -904,73 +902,34 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         CacheD.getInstance().submitDbJobOrdered(CacheD.accountOrderKey(name), () -> Account.ban(name, reason));
     }
 
-    private static CachedRowSet[] readWarehouseRows(String accountName, String charName) throws SQLException {
-        final String[] sql = {
-                "SELECT * FROM character_warehouse WHERE account_name = ?",
-                "SELECT * FROM character_elf_warehouse WHERE account_name = ?",
-                "SELECT * FROM character_package_warehouse WHERE account_name = ?",
-                "SELECT * FROM character_supplementary_service WHERE account_name = ?",
-                "SELECT * FROM character_special_warehouse WHERE char_name = ?"
-        };
-        final CachedRowSet[] rows = new CachedRowSet[5];
+    private static final String[] WAREHOUSE_LOGIN_SQL = {
+            "SELECT * FROM character_warehouse WHERE account_name = ?",
+            "SELECT * FROM character_elf_warehouse WHERE account_name = ?",
+            "SELECT * FROM character_package_warehouse WHERE account_name = ?",
+            "SELECT * FROM character_supplementary_service WHERE account_name = ?",
+            "SELECT * FROM character_special_warehouse WHERE char_name = ?"
+    };
+
+    private static List<List<L1ItemInstance>> readWarehouseItems(String accountName, String charName) throws SQLException {
+        final List<List<L1ItemInstance>> items = new ArrayList<>(WAREHOUSE_LOGIN_SQL.length);
         try (Connection con = DatabaseFactory.getInstance().getConnection()) {
-            for (int i = 0; i < rows.length; i++) {
-                try (PreparedStatement ps = con.prepareStatement(sql[i])) {
+            for (int i = 0; i < WAREHOUSE_LOGIN_SQL.length; i++) {
+                try (PreparedStatement ps = con.prepareStatement(WAREHOUSE_LOGIN_SQL[i])) {
                     ps.setString(1, i == 4 ? charName : accountName);
                     try (ResultSet rs = ps.executeQuery()) {
-                        rows[i] = copyWarehouseRows(rs);
+                        items.add(switch (i) {
+                            case 0 -> PrivateWarehouse.readDetachedSnapshot(rs);
+                            case 1 -> ElfWarehouse.readDetachedSnapshot(rs);
+                            case 2 -> L1DwarfForPackageInventory.readDetachedSnapshot(rs);
+                            case 3 -> SupplementaryService.readDetachedSnapshot(rs);
+                            case 4 -> SpecialWarehouse.readDetachedSnapshot(rs);
+                            default -> throw new AssertionError("Invalid warehouse index: " + i);
+                        });
                     }
                 }
             }
-        } catch (SQLException | RuntimeException e) {
-            for (CachedRowSet row : rows) {
-                if (row != null) try { row.close(); } catch (SQLException ignored) {}
-            }
-            throw e;
         }
-        return rows;
-    }
-
-    private static CachedRowSet copyWarehouseRows(ResultSet rs) throws SQLException {
-        final ResultSetMetaData sourceMeta = rs.getMetaData();
-        final int count = sourceMeta.getColumnCount();
-        final RowSetMetaDataImpl copyMeta = new RowSetMetaDataImpl();
-        final boolean[] integral = new boolean[count + 1];
-        copyMeta.setColumnCount(count);
-        for (int i = 1; i <= count; i++) {
-            final int type = sourceMeta.getColumnType(i);
-            integral[i] = type == Types.BIT || type == Types.BOOLEAN || type == Types.TINYINT;
-            copyMeta.setColumnName(i, sourceMeta.getColumnLabel(i));
-            copyMeta.setColumnType(i, integral[i] ? Types.INTEGER : type);
-            copyMeta.setNullable(i, sourceMeta.isNullable(i));
-        }
-
-        final CachedRowSet copy = RowSetProvider.newFactory().createCachedRowSet();
-        try {
-            copy.setMetaData(copyMeta);
-            while (rs.next()) {
-                copy.afterLast();
-                copy.moveToInsertRow();
-                for (int i = 1; i <= count; i++) {
-                    if (integral[i]) {
-                        final int value = rs.getInt(i);
-                        if (rs.wasNull()) copy.updateNull(i);
-                        else copy.updateInt(i, value);
-                    } else {
-                        final Object value = rs.getObject(i);
-                        if (value == null) copy.updateNull(i);
-                        else copy.updateObject(i, value);
-                    }
-                }
-                copy.insertRow();
-                copy.moveToCurrentRow();
-            }
-            copy.beforeFirst();
-            return copy;
-        } catch (SQLException | RuntimeException e) {
-            try { copy.close(); } catch (SQLException ignored) {}
-            throw e;
-        }
+        return items;
     }
 
     private static void loadItems(L1PcInstance pc, boolean sendOption,

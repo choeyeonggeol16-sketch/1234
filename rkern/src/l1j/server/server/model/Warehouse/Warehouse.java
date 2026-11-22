@@ -452,7 +452,7 @@ public abstract class Warehouse extends L1Object {
     }
 
     /** Publish a validated snapshot once; reconnect must not append duplicate IDs. */
-    protected final synchronized void installLoadedSnapshot(List<L1ItemInstance> loaded) throws SQLException {
+    public final synchronized void installLoadedSnapshot(List<L1ItemInstance> loaded) throws SQLException {
         assertWarehouseActive();
         java.util.HashSet<Integer> ids = new java.util.HashSet<>();
         for (L1ItemInstance item : loaded) {

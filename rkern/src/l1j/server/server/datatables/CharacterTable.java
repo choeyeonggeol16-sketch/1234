@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.sql.rowset.CachedRowSet;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
@@ -202,31 +201,28 @@ public class CharacterTable {
         }
     }
 
-    public void restoreInventory(L1PcInstance pc, List<L1ItemInstance> loadedItems,
-                                 CachedRowSet[] warehouseRows) {
-        if (warehouseRows == null || warehouseRows.length != 5) {
+    public void restoreInventoryFromSnapshots(L1PcInstance pc, List<L1ItemInstance> loadedItems,
+                                  List<List<L1ItemInstance>> warehouseItems) {
+        if (warehouseItems == null || warehouseItems.size() != 5) {
             throw new IllegalStateException("Missing warehouse snapshots: " + pc.getName());
         }
         long warehouseLease = 0L;
         try {
-            for (CachedRowSet row : warehouseRows) {
-                if (row == null) throw new IllegalStateException("Incomplete warehouse snapshots: " + pc.getName());
+            for (List<L1ItemInstance> items : warehouseItems) {
+                if (items == null) throw new IllegalStateException("Incomplete warehouse snapshots: " + pc.getName());
             }
             warehouseLease = pc.beginWarehouseCacheLease();
             if (loadedItems == null) pc.getInventory().loadItems();
             else pc.getInventory().loadItems(loadedItems);
             WarehouseManager manager = WarehouseManager.getInstance();
-            manager.bindPrivateWarehouse(pc.getAccountName(), warehouseLease).loadItemsFromSnapshot(warehouseRows[0]);
-            manager.bindElfWarehouse(pc.getAccountName(), warehouseLease).loadItemsFromSnapshot(warehouseRows[1]);
-            pc.getDwarfForPackageInventory().loadItemsFromSnapshot(warehouseRows[2]);
-            manager.bindSupplementaryService(pc.getAccountName(), warehouseLease).loadItemsFromSnapshot(warehouseRows[3]);
-            manager.bindSpecialWarehouse(pc.getName(), warehouseLease).loadItemsFromSnapshot(warehouseRows[4]);
+            manager.bindPrivateWarehouse(pc.getAccountName(), warehouseLease).installLoadedSnapshot(warehouseItems.get(0));
+            manager.bindElfWarehouse(pc.getAccountName(), warehouseLease).installLoadedSnapshot(warehouseItems.get(1));
+            pc.getDwarfForPackageInventory().installLoadedSnapshot(warehouseItems.get(2));
+            manager.bindSupplementaryService(pc.getAccountName(), warehouseLease).installLoadedSnapshot(warehouseItems.get(3));
+            manager.bindSpecialWarehouse(pc.getName(), warehouseLease).installLoadedSnapshot(warehouseItems.get(4));
         } catch (SQLException e) {
             throw new IllegalStateException("Warehouse restore failed: " + pc.getName(), e);
         } finally {
-            for (CachedRowSet row : warehouseRows) {
-                if (row != null) try { row.close(); } catch (SQLException ignored) {}
-            }
             if (warehouseLease != 0L && pc.isLogoutStarted())
                 WarehouseManager.getInstance().releaseSessionWarehouses(
                         pc.getAccountName(), pc.getName(), warehouseLease);

@@ -53,6 +53,11 @@ public class L1DwarfForPackageInventory extends Warehouse {
 
     public synchronized void loadItemsFromSnapshot(ResultSet rows) throws SQLException {
         if (rows == null) return;
+        installLoadedSnapshot(readDetachedSnapshot(rows));
+    }
+
+    /** Read detached items only; no warehouse/world mutation or JDBC writes. */
+    public static java.util.List<L1ItemInstance> readDetachedSnapshot(ResultSet rows) throws SQLException {
         List<L1ItemInstance> loaded = new ArrayList<>();
         while (rows.next()) {
             int id = rows.getInt("id");
@@ -78,7 +83,7 @@ public class L1DwarfForPackageInventory extends Warehouse {
         }
         // Package gifts may contain several adena rows. Keep their SQL identity
         // until withdrawal, where the normal inventory stack merge is atomic.
-        installLoadedSnapshot(loaded);
+        return loaded;
     }
 
     @Override

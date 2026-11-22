@@ -53,6 +53,11 @@ public class SpecialWarehouse extends Warehouse {
 
     public synchronized void loadItemsFromSnapshot(ResultSet rs) throws SQLException {
         if (rs == null) return;
+        installLoadedSnapshot(readDetachedSnapshot(rs));
+    }
+
+    /** Read detached items only; no warehouse/world mutation or JDBC writes. */
+    public static java.util.List<L1ItemInstance> readDetachedSnapshot(ResultSet rs) throws SQLException {
 			java.util.ArrayList<L1ItemInstance> loaded = new java.util.ArrayList<>();
 			L1ItemInstance item = null;
 			L1Item itemTemplate = null;
@@ -86,8 +91,7 @@ public class SpecialWarehouse extends Warehouse {
                 }
                 loaded.add(item);
 			}
-            installLoadedSnapshot(loaded);
-
+        return loaded;
     }
 
 
