@@ -38,6 +38,7 @@ import l1j.server.server.storage.cached.CTransaction;
 
 public final class CS_Mail {
     private static final Logger LOG=Logger.getLogger(CS_Mail.class.getName());
+    private static final int[] NO_RECIPIENT_LANES = new int[0];
     private CS_Mail() {}
 
     public static void handle(CUserSocket client,int type,int value0,int value1,
@@ -139,9 +140,8 @@ public final class CS_Mail {
                 ? recipientLanes(letters,mailKey,sender.getId()) : null;
         // The fee and every recipient insert share ONE receipt and connection.
         // No live inventory, post delay or success notification changes here.
-        try (L1InventoryTransaction tx=recipients == null
-                ? L1InventoryTransaction.begin(sender,mailKey)
-                : L1InventoryTransaction.begin(sender,mailKey,recipients)) {
+        try (L1InventoryTransaction tx=L1InventoryTransaction.beginMail(sender,mailKey,
+                recipients == null ? NO_RECIPIENT_LANES : recipients)) {
             if (!tx.debit(L1ItemId.ADENA,price)) {
                 SC_ServerMessage.send(sender,189,"");
                 return;

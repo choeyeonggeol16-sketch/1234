@@ -315,6 +315,15 @@ public final class CacheD {
             this(characterId, warehouseKey, economy, NO_EXTRA_OWNERS);
         }
         private WarehouseMove(int characterId, int warehouseKey, boolean economy, int[] additional) {
+            this(characterId, warehouseKey, economy, additional, false);
+        }
+
+        /** Mailbox lanes only order SQL; unlike the sender's item owner, they
+         * never supply an inventory preimage. Queue behind pending mailbox
+         * work instead of rejecting an unrelated sender's mail transaction.
+         */
+        private WarehouseMove(int characterId, int warehouseKey, boolean economy,
+                int[] additional, boolean queueBehindMailboxWork) {
             this.economy = economy;
             this.characterId = characterId;
             this.warehouseKey = warehouseKey;
@@ -339,11 +348,12 @@ public final class CacheD {
                 // until the preceding owner's SQL transaction has finished.
                 // This also quarantines owners after an uncertain COMMIT.
                 if (cache.dbJobsByOwner.get(characterId) != 0
-                        || cache.dbJobsByOwner.get(warehouseKey) != 0)
+                        || (!queueBehindMailboxWork && cache.dbJobsByOwner.get(warehouseKey) != 0))
                     throw new RejectedExecutionException("Prior warehouse DB write not yet committed");
-                for (int owner : extraOwnerIds)
-                    if (cache.dbJobsByOwner.get(owner) != 0)
-                        throw new RejectedExecutionException("Prior party DB write not yet committed");
+                if (!queueBehindMailboxWork)
+                    for (int owner : extraOwnerIds)
+                        if (cache.dbJobsByOwner.get(owner) != 0)
+                            throw new RejectedExecutionException("Prior party DB write not yet committed");
                 if (!cache.accepting || cache.pendingDbJobs >= MAX_DB_JOBS)
                     throw new RejectedExecutionException("CacheD warehouse move backlog or shutdown");
                 // Reserve queue capacity and both FIFO lanes BEFORE touching
@@ -629,6 +639,21 @@ public final class CacheD {
         if (TRADE_CONTEXT.get() != null || WAREHOUSE_MOVE_CONTEXT.get() != null)
             throw new IllegalStateException("Nested CacheD persistence scope");
         WarehouseMove scope = new WarehouseMove(ownerId, secondaryKey, true, additionalOwners);
+        WAREHOUSE_MOVE_CONTEXT.set(scope);
+        return scope;
+    }
+
+    /** Mail-only economy receipt: keep the sender's item preimage admission
+     * strict; FIFO-queue the recipient mailbox lanes regardless of prior jobs.
+     * A failed/uncertain earlier transaction still fences subsequent jobs.
+     */
+    public static WarehouseMove beginMailEconomyMove(int senderId, int mailboxKey, int[] otherMailboxKeys) {
+        if (senderId <= 0 || mailboxKey <= 0 || senderId == mailboxKey
+                || otherMailboxKeys == null)
+            throw new IllegalArgumentException("Mail owner lanes");
+        if (TRADE_CONTEXT.get() != null || WAREHOUSE_MOVE_CONTEXT.get() != null)
+            throw new IllegalStateException("Nested CacheD persistence scope");
+        WarehouseMove scope = new WarehouseMove(senderId, mailboxKey, true, otherMailboxKeys, true);
         WAREHOUSE_MOVE_CONTEXT.set(scope);
         return scope;
     }

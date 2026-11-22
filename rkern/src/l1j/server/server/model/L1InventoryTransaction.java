@@ -118,7 +118,15 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
      */
     public static L1InventoryTransaction begin(L1PcInstance pc, int resourceKey, int[] recipientKeys) {
         return new L1InventoryTransaction(pc, null, resourceKey, false,
-                Objects.requireNonNull(recipientKeys, "recipientKeys"));
+                Objects.requireNonNull(recipientKeys, "recipientKeys"), false);
+    }
+
+    /** Mail recipients are ordered DB resources, not inventory participants.
+     * Independent senders may queue writes to the same mailbox.
+     */
+    public static L1InventoryTransaction beginMail(L1PcInstance sender, int mailboxKey, int[] recipients) {
+        return new L1InventoryTransaction(sender, null, mailboxKey, false,
+                Objects.requireNonNull(recipients, "recipients"), true);
     }
     public static L1InventoryTransaction begin(L1PcInstance first, L1PcInstance second) {
         if (second == null || first == second) throw new IllegalArgumentException("Distinct participants required");
@@ -164,12 +172,18 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
     private L1InventoryTransaction(L1PcInstance first, L1PcInstance second, int resourceKey,
             boolean trade, int[] recipientKeys) {
+        this(first, second, resourceKey, trade, recipientKeys, false);
+    }
+    private L1InventoryTransaction(L1PcInstance first, L1PcInstance second, int resourceKey,
+            boolean trade, int[] recipientKeys, boolean mail) {
         primary = Objects.requireNonNull(first);
         owners = new InventoryTransactionOwners(first, second, trade);
         try {
-            move = recipientKeys == null
-                    ? CacheD.beginEconomyMove(first.getId(), resourceKey)
-                    : CacheD.beginEconomyMove(first.getId(), resourceKey, recipientKeys);
+            move = mail
+                    ? CacheD.beginMailEconomyMove(first.getId(), resourceKey, recipientKeys)
+                    : recipientKeys == null
+                            ? CacheD.beginEconomyMove(first.getId(), resourceKey)
+                            : CacheD.beginEconomyMove(first.getId(), resourceKey, recipientKeys);
             move.onError(this);
         } catch (RuntimeException failure) {
             owners.release();
