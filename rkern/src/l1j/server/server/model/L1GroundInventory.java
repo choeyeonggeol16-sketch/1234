@@ -122,6 +122,21 @@ public class L1GroundInventory extends L1Inventory {
         }
     }
 
+    @Override
+    public synchronized void clearItems() {
+        // Base clearItems only unregisters object IDs. Ground objects also own
+        // world visibility and their expiry timers.
+        for (L1ItemInstance item : getItems()) {
+            if (item == null) continue;
+            synchronized (item) {
+                item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
+                L1World.getInstance().removeVisibleObject(item);
+            }
+        }
+        super.clearItems();
+        L1World.getInstance().removeVisibleObject(this);
+    }
+
     private static void debug(String event, L1ItemInstance item, String extra) {
         if (!DEBUG_GROUND_ITEM_TIMER) {
             return;
