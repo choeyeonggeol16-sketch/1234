@@ -619,13 +619,24 @@ public class L1PcInventory extends L1Inventory {
 
 	@Override
 	public void updateItem(L1ItemInstance item) {
-		updateItem(item, COL_COUNT);
-		// Ordinary stack changes must enter CacheD's owner/item FIFO BEFORE a
-		// subsequent receipt-guarded use. A five-minute inventory auto-save
-		// cannot be the only persistence path for an already consumed stack.
-		// CacheD coalesces repeated updates (no synchronous JDBC here).
-		saveItem(item, COL_COUNT);
+        // Persist admission precedes packets; rejection leaves client unchanged.
+        saveItem(item, COL_COUNT);
+        try { updateItem(item, COL_COUNT); }
+        catch (RuntimeException notice) {
+            RECEIPT_NOTICE_LOG.log(java.util.logging.Level.WARNING,
+                    "Accepted inventory count notice failed", notice);
+        }
 	}
+
+    @Override
+    protected void updateStoredCharge(L1ItemInstance item) {
+        saveItem(item, COL_CHARGE_COUNT);
+        try { updateItem(item, COL_COUNT | COL_CHARGE_COUNT); }
+        catch (RuntimeException notice) {
+            RECEIPT_NOTICE_LOG.log(java.util.logging.Level.WARNING,
+                    "Accepted inventory charge notice failed", notice);
+        }
+    }
 
 	private static final int MASK_STATUS  = COL_BLESS_LEVEL | COL_BLESS_LEVEL2 | COL_DURABILITY 
 			| COL_ENCHANTLVL | COL_ATTRENCHANTLVL | COL_IS_ID | COL_ITEMID;

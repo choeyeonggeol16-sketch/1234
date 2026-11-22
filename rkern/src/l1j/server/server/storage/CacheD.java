@@ -58,14 +58,19 @@ public final class CacheD {
         final boolean delete;
         final int ownerId;
         final int previousOwnerId;
+        final int petTemplateId;
+        final String petReceiptId;
         boolean finished;
         SQLException error;
 
-        ItemCommand(ItemSnapshot snapshot, boolean delete, int ownerId, int previousOwnerId) {
+        ItemCommand(ItemSnapshot snapshot, boolean delete, int ownerId, int previousOwnerId,
+                    int petTemplateId) {
             this.snapshot = snapshot;
             this.delete = delete;
             this.ownerId = ownerId;
             this.previousOwnerId = previousOwnerId;
+            this.petTemplateId = petTemplateId;
+            this.petReceiptId = petTemplateId == 0 ? null : UUID.randomUUID().toString();
         }
     }
 
@@ -1721,7 +1726,10 @@ public final class CacheD {
             }
             final ItemSnapshot snapshot = delete ? ItemSnapshot.captureId(item, resolvedOwner)
                     : ItemSnapshot.capture(item, ownerId);
-            final ItemCommand command = new ItemCommand(snapshot, delete, resolvedOwner, previousOwner);
+            final int petTemplateId = delete && (item.getItemId() == 40314 || item.getItemId() == 40316)
+                    ? item.getItemId() : 0;
+            final ItemCommand command = new ItemCommand(snapshot, delete, resolvedOwner, previousOwner,
+                    petTemplateId);
             // Publish the latest logical owner immediately. Subsequent item
             // dirty snapshots must not accidentally use the previous owner
             // while the UPDATE/DELETE is still queued for an SQL worker.
@@ -2030,7 +2038,19 @@ public final class CacheD {
                         DB_JOB_CONTEXT.remove();
                     }
                 } else if (selected instanceof ItemCommand) {
-                    if (((ItemCommand) selected).delete) {
+                    final ItemCommand command = (ItemCommand) selected;
+                    if (command.delete && command.petTemplateId != 0) {
+                        // Pet and collar rows commit or roll back together.
+                        CTransaction.persistEconomy(command.petReceiptId, command.ownerId, 0,
+                                new CTransaction.Mutation[]{
+                                    con -> CTransaction.requireTransactionalTables(con, "character_items", "pets"),
+                                    con -> l1j.server.server.datatables.PetTable.deletePetRow(con, itemSnapshot.id),
+                                    con -> MySqlCharactersItemStorage.deletePetCollarSnapshot(con,
+                                            itemSnapshot.id, command.ownerId, command.petTemplateId)
+                                });
+                        l1j.server.server.datatables.PetTable.getInstance()
+                                .forgetCommittedPet(itemSnapshot.id);
+                    } else if (command.delete) {
                         MySqlCharactersItemStorage.deleteSnapshot(itemSnapshot);
                     } else {
                         MySqlCharactersItemStorage.storeSnapshot(itemSnapshot);

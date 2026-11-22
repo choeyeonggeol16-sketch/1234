@@ -130,6 +130,19 @@ public class PetTable {
 		}
 	}
 
+    /** SQL part of the pet+collar durable receipt. */
+    public static void deletePetRow(Connection con, int itemobjid) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM pets WHERE item_obj_id=?")) {
+            ps.setInt(1, itemobjid);
+            ps.executeUpdate();
+        }
+    }
+
+    /** Only after receipt-confirmed SQL COMMIT. */
+    public void forgetCommittedPet(int itemobjid) {
+        synchronized (_pets) { _pets.remove(itemobjid); }
+    }
+
 	public void deletePet(int itemobjid) {
 		String sql = "DELETE FROM pets WHERE item_obj_id=?";
 		try (Connection con = DatabaseFactory.getInstance().getConnection();

@@ -313,6 +313,40 @@ public class L1Inventory extends L1Object {
 		return result;
 	}
 	
+    /** Revert item and count cache together if persistence admission fails. */
+    private void changeStackCount(L1ItemInstance item, int change) {
+        final int before = item.getCount();
+        final long after = (long) before + change;
+        if (after <= 0 || after > MAX_AMOUNT) throw new IllegalArgumentException("Invalid item count");
+        if (change > 0) addItemCountCache(item.getItemId(), change);
+        else removeItemCountCache(item.getItemId(), -change);
+        try {
+            item.setCount((int) after);
+            updateItem(item);
+        } catch (RuntimeException failure) {
+            item.setCount(before);
+            try {
+                if (change > 0) removeItemCountCache(item.getItemId(), change);
+                else addItemCountCache(item.getItemId(), -change);
+            } catch (RuntimeException rollback) { failure.addSuppressed(rollback); }
+            throw failure;
+        }
+    }
+
+    protected void updateStoredCharge(L1ItemInstance item) { updateItem(item); }
+
+    private void addStackCharge(L1ItemInstance item, int amount) {
+        final int before = item.getChargeCount();
+        final long after = (long) before + amount;
+        if (after < 0 || after > Integer.MAX_VALUE) throw new IllegalArgumentException("Invalid item charge");
+        item.setChargeCount((int) after);
+        try { updateStoredCharge(item); }
+        catch (RuntimeException failure) {
+            item.setChargeCount(before);
+            throw failure;
+        }
+    }
+
 	public synchronized L1ItemInstance storeItemTrea(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
@@ -323,10 +357,8 @@ public class L1Inventory extends L1Object {
 		if (item.isStackable()) {
 			L1ItemInstance findItem = findItemId(itemId);
 			if (findItem != null) {
-				addItemCountCache(itemId, item.getCount());
-				findItem.setCount(findItem.getCount() + item.getCount());
-				updateItem(findItem);
-				return findItem;
+                changeStackCount(findItem, item.getCount());
+                return findItem;
 			}
 		}
 		item.setX(getX());
@@ -382,10 +414,8 @@ public class L1Inventory extends L1Object {
 			L1ItemInstance findItem = findItemId(itemId);
 			
 			if (findItem != null) {
-				addItemCountCache(itemId, item.getCount());
-				findItem.setCount(findItem.getCount() + item.getCount());
-				updateItem(findItem);
-				return findItem;
+                changeStackCount(findItem, item.getCount());
+                return findItem;
 			}
 		}
 		if (item.get_item_level() > 0) {
@@ -409,9 +439,8 @@ public class L1Inventory extends L1Object {
 			L1ItemInstance findItem = findItemId(itemId);
 			if (findItem != null) {
 				chargeCount -= java.util.concurrent.ThreadLocalRandom.current().nextInt(5);
-				findItem.setChargeCount(findItem.getChargeCount() + chargeCount);
-				updateItem(findItem);
-				return findItem;
+                addStackCharge(findItem, chargeCount);
+                return findItem;
 			}
 			break;
 		}
@@ -574,10 +603,8 @@ public class L1Inventory extends L1Object {
 			L1ItemInstance findItem = findItemId(itemId);
 			
 			if (findItem != null) {
-				addItemCountCache(itemId, item.getCount());
-				findItem.setCount(findItem.getCount() + item.getCount());
-				updateItem(findItem);
-				return findItem;
+                changeStackCount(findItem, item.getCount());
+                return findItem;
 			}
 		}
 		if (item.get_item_level() > 0) {
@@ -600,9 +627,8 @@ public class L1Inventory extends L1Object {
 			L1ItemInstance findItem = findItemId(itemId);
 			if (findItem != null) {
 				chargeCount -= java.util.concurrent.ThreadLocalRandom.current().nextInt(5);
-				findItem.setChargeCount(findItem.getChargeCount() + chargeCount);
-				updateItem(findItem);
-				return findItem;
+                addStackCharge(findItem, chargeCount);
+                return findItem;
 			}
 			break;
 		}
@@ -1129,7 +1155,9 @@ public class L1Inventory extends L1Object {
 		if (item.getCount() == count) {
 			int itemId = item.getItem().getItemId();
 			if (itemId == 40314 || itemId == 40316) {
-				PetTable.getInstance().deletePet(item.getId());
+                // PC pet record + collar row are one CacheD receipt.
+                if (!(this instanceof L1PcInventory))
+                    PetTable.getInstance().deletePet(item.getId());
 			} else if (itemId >= 49016 && itemId <= 49025) {
 				LetterTable lettertable = new LetterTable();
 				lettertable.deleteLetter(item.getId());
@@ -1151,13 +1179,11 @@ public class L1Inventory extends L1Object {
 		} else {
 			
 			int itemId = item.getItemId();
-			removeItemCountCache(itemId, count);
 
 			// [디버그 로그]
 			//System.out.println(String.format("[아이템소모-일부] ID: %d, 소모수량: %d, 맵잔량: %d", itemId, count, _itemCountMap.getOrDefault(itemId, 0)));
 			
-			item.setCount(item.getCount() - count);
-			updateItem(item);
+			changeStackCount(item, -count);
 		}
 		return count;
 	}
@@ -1180,7 +1206,9 @@ public class L1Inventory extends L1Object {
 		if (item.getCount() == count) {
 			int itemId = item.getItem().getItemId();
 			if (itemId == 40314 || itemId == 40316) {
-				PetTable.getInstance().deletePet(item.getId());
+                // PC pet record + collar row are one CacheD receipt.
+                if (!(this instanceof L1PcInventory))
+                    PetTable.getInstance().deletePet(item.getId());
 			} else if (itemId >= 49016 && itemId <= 49025) {
 				LetterTable lettertable = new LetterTable();
 				lettertable.deleteLetter(item.getId());
@@ -1202,13 +1230,11 @@ public class L1Inventory extends L1Object {
 		} else {
 			
 			int itemId = item.getItemId();
-			removeItemCountCache(itemId, count);
 
 			// [디버그 로그]
 		//	System.out.println(String.format("[아이템소모-일부] ID: %d, 소모수량: %d, 맵잔량: %d", itemId, count, _itemCountMap.getOrDefault(itemId, 0)));
 			
-			item.setCount(item.getCount() - count);
-			updateItem(item);
+			changeStackCount(item, -count);
 		}
 		return count;
 	}
