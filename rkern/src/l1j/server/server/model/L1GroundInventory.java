@@ -107,8 +107,9 @@ public class L1GroundInventory extends L1Inventory {
     }
 
     @Override
-    public void deleteItem(L1ItemInstance item) {
+    public synchronized void deleteItem(L1ItemInstance item) {
         if (item == null) return;
+        // Ground lock must precede item lock (pickup holds ground before transfer).
         synchronized (item) {
             if (!_items.remove(item)) return;
             item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);

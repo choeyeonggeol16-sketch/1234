@@ -1661,7 +1661,7 @@ public class L1Inventory extends L1Object {
         }
     }
 
-	public synchronized L1ItemInstance tradeItem(int objectId, int count, L1Inventory inventory) {
+	public L1ItemInstance tradeItem(int objectId, int count, L1Inventory inventory) {
 		L1ItemInstance item = getItem(objectId);
 		return tradeItem(item, count, inventory);
 	}
@@ -1824,7 +1824,51 @@ public class L1Inventory extends L1Object {
 
 	}
 
-	public synchronized L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory) {
+    /*
+     * Every inventory-to-inventory transfer locks BOTH owners in one order.
+     * Ground is always first: character pickup already owns its tile monitor.
+     * Non-ground pairs use a stable identity order. Collision tie lock is
+     * entered only on the extremely rare identityHashCode collision.
+     *
+     * Do not synchronize this entry method: doing so would acquire source
+     * before the destination, reversing pickup (ground -> character) and
+     * drop (character -> ground) or two opposite character transfers.
+     */
+    private static final Object ITEM_TRANSFER_TIE_LOCK = new Object();
+
+    public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory) {
+        if (item == null || inventory == null || inventory == this) return null;
+
+        final L1Inventory first;
+        if (this instanceof L1GroundInventory && !(inventory instanceof L1GroundInventory)) {
+            first = this;
+        } else if (inventory instanceof L1GroundInventory && !(this instanceof L1GroundInventory)) {
+            first = inventory;
+        } else {
+            final int sourceOrder = System.identityHashCode(this);
+            final int targetOrder = System.identityHashCode(inventory);
+            if (sourceOrder == targetOrder) {
+                synchronized (ITEM_TRANSFER_TIE_LOCK) {
+                    synchronized (this) {
+                        synchronized (inventory) {
+                            return tradeItemLocked(item, count, inventory);
+                        }
+                    }
+                }
+            }
+            first = sourceOrder < targetOrder ? this : inventory;
+        }
+
+        final L1Inventory second = first == this ? inventory : this;
+        synchronized (first) {
+            synchronized (second) {
+                return tradeItemLocked(item, count, inventory);
+            }
+        }
+    }
+
+    /** Both owner monitors must be held before any ownership/count mutation. */
+    private L1ItemInstance tradeItemLocked(L1ItemInstance item, int count, L1Inventory inventory) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		if (item == null || inventory == null || inventory == this) {
