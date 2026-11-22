@@ -198,8 +198,11 @@ public class L1FollowerInstance extends L1NpcInstance {
 
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		perceivedFrom.addKnownObject(this);
-		l1j.server.server.model.network.core.sc.packet.SC_FollowerPack.send(perceivedFrom, this);
+		if (perceivedFrom == null) return;
+		
+		if (l1j.server.server.model.network.core.sc.packet.SC_FollowerPack.send(perceivedFrom, this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 	}
 
 	private void createNewItem(L1PcInstance pc, int item_id, int count) {

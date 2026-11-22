@@ -471,9 +471,12 @@ public class L1PetInstance extends L1NpcInstance {
 
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		perceivedFrom.addKnownObject(this);
+		if (perceivedFrom == null) return;
 		
-		SC_PetPack.send(perceivedFrom, this);
+		
+		if (SC_PetPack.send(perceivedFrom, this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 
 		/** 피바 갱신 **/
 		if (_petMaster != null && _petMaster == perceivedFrom) {

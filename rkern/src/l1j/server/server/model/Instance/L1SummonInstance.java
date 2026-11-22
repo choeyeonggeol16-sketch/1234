@@ -466,8 +466,11 @@ public class L1SummonInstance extends L1NpcInstance {
 
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		perceivedFrom.addKnownObject(this);
-		SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(perceivedFrom, this, perceivedFrom);
+		if (perceivedFrom == null) return;
+		
+		if (SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(perceivedFrom, this, perceivedFrom)) {
+			perceivedFrom.addKnownObject(this);
+		}
 	}
 
 	@Override

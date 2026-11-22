@@ -455,8 +455,10 @@ public class L1DollInstance extends L1NpcInstance {
 	public void onPerceive(L1PcInstance perceivedFrom) {
 		if (perceivedFrom == null) return;
 		if (isDeleted()) return;
-		perceivedFrom.addKnownObject(this);
-		SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(perceivedFrom, this);
+		
+		if (SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(perceivedFrom, this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 	}
 
 	@Override
