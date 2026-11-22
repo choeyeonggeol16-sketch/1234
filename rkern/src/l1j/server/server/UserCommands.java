@@ -21,7 +21,6 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.AuctionSystemTable;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.datatables.ItemTradeTable;
 import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -41,11 +40,8 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.sc.packet.SC_Ability;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
-import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_LetterList;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_ShowHelp;
@@ -63,7 +59,6 @@ import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.utils.FullStater;
 import l1j.server.server.utils.SQLUtil;
-import l1j.server.server.utils.TYUtil;
 
 
 public class UserCommands{
@@ -109,14 +104,6 @@ public class UserCommands{
 //			 CommandArgs().setOwner(pc).setParam(param));
 //			 break;
 			
-			case "탐":
-			case "탐포인트":
-				SC_SystemMessage.send(pc, "보유 탐 포인트: " + pc.getNetConnection().getAccount().getTamPoint() + " 개");
-				break;
-			case "엔코인":
-				pc.sendPackets("보유 N코인:[\\aG"
-						+ pc.getNetConnection().getAccount().Ncoin_point + "\\aA]");
-				break;
 			case "혈맹포인트":
 				혈맹포인트(pc);
 				break;
@@ -146,25 +133,7 @@ public class UserCommands{
 				countR4(pc, param);
 				break;
 				*/
-			case "수배차단":
-				수배차단(pc, param);
-				break;
-			case "물품판매":
-				물품1(pc, param);
-			break;
 
-			case "물품구입":
-				물품2(pc, param);
-			break;
-			case "물품취소":
-				물품3(pc, param);
-			break;
-			case "구매취소":
-				countR5(pc, param);
-				break;
-			case "외창":
-				outsideChat(pc, param);
-				break;			
 //			case "복구":									복구(pc);																		break;
 			case "나이":
 				age(pc, param);
@@ -197,9 +166,6 @@ public class UserCommands{
 			case "멘트":
 				Ment(pc, param);
 				break;
-			case "수호성":
-				Lineff(pc, param);
-				break;
 			case "라우풀":
 				Lawful(pc, param);
 				break;
@@ -209,13 +175,7 @@ public class UserCommands{
 			case "bpment":
 				Ment4(pc, param);
 				break;
-			case "마스터멘트":
-				master(pc, param);
-				break;
 
-			case "좌표복구":
-				좌표복구(pc);
-				break;
 			case "라이트":
 				maphack(pc, param);
 				break;
@@ -226,9 +186,6 @@ public class UserCommands{
                 l1j.server.server.appcenter.AppCenterService.registerMarketSearch(pc,param);
                 break;
 			// case "아덴시세": AdSc(pc); break;
-			case "물품멘트":
-				물품멘트(pc, param);
-				break;
 //			case "퀘스트멘트":
 //				퀘스트멘트(pc, param);
 //				break;				
@@ -245,20 +202,6 @@ public class UserCommands{
 				break;
 			case "구슬조회":
 				L1NeigeSaveChar.commands(pc, param);
-				break;
-//			case "수배":
-//				if (Config.수배작동유무) {
-//					hunt(pc, param);
-//				} else {
-//					pc.sendPackets(new SC_SystemMessage("현재 " + cmd + " 명령어는 사용할 수 없습니다. "));
-//				}
-//				break;
-			case "원격교환":
-				if (Config.STANDBY_SERVER == false) {
-				원격교환(pc, param, pc.getNetConnection());
-				} else {
-					SC_SystemMessage.send(pc, "오픈대기중에는 원격교환이 금지됩니다.");
-				}
 				break;
 //			case "이름변경":
 //				changename(pc, param);
@@ -281,19 +224,11 @@ public class UserCommands{
 							+ pc.getNetConnection().getAccount().Ncoin_point + "\\fH)원");
 				}
 				break;*/
-//			case "엔코인선물":							giftNCoin(pc, param);																break;
 //			case "봉인해제신청":							Sealedoff(pc, param);															break;
-			case "고정":
-			case "고정신청":
-				phone(pc, param);
-				break;
 			//case "무인가입":						autoclanjoin(pc);break;
 			case "암호변경":
 			case "비번변경":
 				changepassword(pc, param);
-				break;
-			case "체력바":
-				monsterHpBar(pc, param);
 				break;
 			default:
 				pc.sendPackets("명령어를 잘못 입력했습니다.");
@@ -335,52 +270,8 @@ public class UserCommands{
         });
 	}
 
-	private static void 물품1(L1PcInstance pc, String count) {
-		try {
-			int i = 0;
-			try {
-				i = Integer.parseInt(count);
-			} catch (NumberFormatException e) {
-			}
-			if (i <= 0) {
-				// pc.sendPackets(new SC_SystemMessage(".위탁판매  (판매금액)을 적어주세요."));
-				SC_SystemMessage.send(pc, "\\fY---------------------------------------------------");
-				SC_SystemMessage.send(pc, "\\fY[사용방법] .물품판매 (판매금액)을 입력하면 해당금액의 인증서가 들어옵니다");
-				SC_SystemMessage.send(pc, "\\fY그 인증서를 판매할 물품에 클릭하시면 물품거래게시판에 등록이 됩니다.");
-				SC_SystemMessage.send(pc, "\\fY---------------------------------------------------");
-				return;
-			}
-			if (i > 200) {
-				SC_SystemMessage.send(pc, "판매금액은 20억이상 판매하실수없습니다."); 
-				return;
-			}
-			if (i >= 0 && i < 1) {
-				SC_SystemMessage.send(pc, "최소판매금액은 1000만이상 입니다.");
-				return;
-			}
-			if (pc.getInventory().checkItem(474747)) { // 위탁판매 증서 아이템번호는 본인 팩에
-														// 맞게
-				SC_SystemMessage.send(pc, "물품판매 증서를 소지 하고 있으면 불가능 합니다.");
-			} else {
-				SC_SystemMessage.send(pc, "\\fY[물품판매 인증서]를 얻었습니다.");
-				SC_SystemMessage.send(pc, "\\fY판매물품에 사용하면 게시판에 등록이 됩니다.");
-				pc.getInventory().storeItem(474747, i); // 위탁판매 증서 아이템번호는 본인 팩에
-															// 맞게
-			}
-			
-		} catch (Exception exception) {
-			SC_SystemMessage.send(pc, ".물품판매 (판매수표갯수)");
-			SC_SystemMessage.send(pc, "예)  .물품판매 5 (5천만)");
-		}
-	}
 
-	private static void 물품2(L1PcInstance pc, String count) {
-		ItemTradeTable.getInstance().buyTopic(pc, count, false);
-	}
 
-	private static void 물품3(L1PcInstance pc, String count) {
-		ItemTradeTable.getInstance().cancelTopic(pc, count);
-	}
 
 	public static void setChart(L1PcInstance pc, String param) {
 		boolean isOn;
@@ -509,17 +400,6 @@ public class UserCommands{
 		}
 	}
 	
-	private void Lineff(L1PcInstance pc, String param) {
-		if (param.equalsIgnoreCase("끔")) {
-			pc.sendPackets("\\f:수호성 이팩트가 비활성화 되었습니다.");
-			pc.setLinMeff(2);
-		} else if (param.equalsIgnoreCase("켬")) {
-			pc.sendPackets("\\f:수호성 이팩트가 활성화 되었습니다.");
-			pc.setLinMeff(1);
-		} else {
-			pc.sendPackets(".수호성 [켬/끔] 입력 하시면 됩니다.");
-		}
-	}
 	private void Lawful(L1PcInstance pc, String param) {
 		if (param.equalsIgnoreCase("끔")) {
 			pc.sendPackets("\\f:PVP에 따른 라우풀 조절을 중지합니다.");
@@ -530,17 +410,6 @@ public class UserCommands{
 		} else {
 			pc.sendPackets(".라우풀 [켬/끔] 입력 하시면 됩니다.");
 			pc.sendPackets("이 모드는 라우풀 성향이 PVP에 영향을 받지 않도록 설정할 수 있습니다.");
-		}
-	}
-	private void master(L1PcInstance pc, String param) {
-		if (param.equalsIgnoreCase("끔")) {
-			pc.마스터 = false;
-			pc.sendPackets("카운터베리어 마스터 멘트 끔");
-		} else if (param.equalsIgnoreCase("켬")) {
-			pc.마스터 = true;
-			pc.sendPackets("카운터베리어 마스터 멘트 켬");
-		} else {
-			pc.sendPackets(".마스터멘트 [켬/끔] 입력 하시면 됩니다.");
 		}
 	}
 
@@ -713,148 +582,6 @@ public class UserCommands{
 			SQLUtil.close(con);
 		}
 	}
-	public void 원격교환(L1PcInstance pc, String cmd, CUserSocket clientthread) {
-		try {
-			StringTokenizer st = new StringTokenizer(cmd);
-			String Trade_name = st.nextToken();
-			L1PcInstance target = null;
-			target = L1World.getInstance().getPlayer(Trade_name);
-			clientthread.getActiveChar();
-            if(pc.getIsChangeItem() || pc.getIsChangeItem1() ||
-                    pc.getIsChangeItem2() || pc.getIsChangeItem3() ||
-                    pc.getIsChangeItem4() || pc.getIsChangeItem5() || 
-                    pc.getIsChangeItem6() || pc.getIsChangeItem7() ||
-                    pc.getIsChangeItem8() || pc.getIsChangeItem9() ||
-                    pc.getIsChangeItem10() || pc.getIsChangeItem11() ||
-                    pc.getIsChangeItem12() || pc.getIsChangeItem13() ||
-                    pc.getIsChangeItem14() || pc.getIsChangeItem15() ||
-                    pc.getIsChangeItem16() || pc.getIsChangeItem17() ||
-                    pc.getIsChangeItem18() || pc.getIsChangeItem19() ||
-                    pc.getIsChangeItem20()     )
-                 {
-                     pc.sendPackets("변경권을 사용중이거나, 취소하셨으므로 리스후에 교환가능합니다.");
-                     return;
-                 }
-                 if(target.getIsChangeItem() || target.getIsChangeItem1() ||
-                 		target.getIsChangeItem2() || target.getIsChangeItem3() ||
-                 		target.getIsChangeItem4() || target.getIsChangeItem5() ||
-                 		target.getIsChangeItem6() || target.getIsChangeItem7() ||
-                 		target.getIsChangeItem8() || target.getIsChangeItem9() ||
-                 		target.getIsChangeItem10() || target.getIsChangeItem11() ||
-                 		target.getIsChangeItem12() || target.getIsChangeItem13() ||
-                 		target.getIsChangeItem14() || target.getIsChangeItem15() ||
-                 		target.getIsChangeItem16() || target.getIsChangeItem17() ||
-                 		target.getIsChangeItem18() || target.getIsChangeItem19() ||
-                 		target.getIsChangeItem20()     )
-                      {
-                          pc.sendPackets("상대방이 변경권을 사용중이거나, 취소하셨으므로 리스후에 교환가능합니다.");
-                          return;
-                      }
-			if (target != null) {
-				if (target.isGm()) {
-					SC_SystemMessage.send(pc, "\\f:운영자에게는 원격거래를 신청할 수 없습니다.");
-					return;
-				}
-				if (target.isPrivateShop() || target.isFishing() 
-						 || target.isParalyzed() ) {
-					SC_SystemMessage.send(pc, "\\f:상대방이 원격교환을 받을수 없는 상태입니다.");
-					return;
-				}
-				if (Trade_name.equals(pc.getName())) {
-					SC_SystemMessage.send(pc, "\\f:자신에게는 원격교환을 신청할 수 없습니다.");
-					return;
-				}
-				if (target.getTradeID() > 0) {
-					SC_SystemMessage.send(pc, "\\f:상대방은 현재 교환 중인 상태 입니다.");
-					return;
-				}
-				int[] 원격맵 = TYUtil.GetIntTokenizeIntArray(Config.원격맵);
-		        for (int i = 0; i < 원격맵.length; i++) {
-		          if (pc.getMapId() == 원격맵[i]){
-		        		SC_SystemMessage.send(pc, "\\f:해당 맵에서는 원격교환이 불가능합니다.");
-						return;
-					}
-		        }
-				
-		        int[] 원격맵1 = TYUtil.GetIntTokenizeIntArray(Config.원격맵);
-		        for (int i = 0; i < 원격맵1.length; i++) {
-		          if (target.getMapId() == 원격맵1[i]){
-		        	  SC_SystemMessage.send(pc, "\\f:해당 유저는 원격교환이 불가능한 곳에 있습니다.");
-						return;
-					}
-		        }
-		        
-				if (pc.getAccountName().equalsIgnoreCase(target.getAccountName())) {
-					SC_Disconnect.send(pc);
-					SC_Disconnect.send(target);
-					SC_SystemMessage.send(pc, "\\f:뭔데 ?");
-					return;
-				}
-				if (!target.isParalyzed()) {
-					pc.setTradeID(target.getId());
-					target.setTradeID(pc.getId());
-					SC_MessageYN.send(target, 252, pc.getName());
-					SC_SystemMessage.send(pc, "\\f:" + target.getName() + "님에게 거래를 신청했습니다.");
-				} else {
-					SC_SystemMessage.send(pc, "\\f:상대방이 거래를 취소 하였습니다.");
-				}
-			} else {
-				SC_SystemMessage.send(pc, "\\f:해당 유저는 접속해 있지 않습니다.");
-				
-			}
-		} catch (Exception e) {
-			SC_SystemMessage.send(pc, "\\f:.원격교환 [캐릭터명]");
-		}
-	}
-	private void hunt(L1PcInstance pc, String cmd) {
-		int price = Config.수배금액;
-		try{
-			StringTokenizer tok = new StringTokenizer(cmd);
-			String name = tok.nextToken();
-			if(name == null || name.equals(""))
-				throw new Exception();
-			
-			L1PcInstance target = L1World.getInstance().getPlayer(name);
-			if(target == null){
-				pc.sendPackets(String.format("%s 님을 찾을 수 없습니다.", name));
-				return;
-			}
-			if(target.hasSkillEffect(L1SkillId.나루토감사캔디)){
-				pc.sendPackets(String.format("%s 님은 수배 차단 중 입니다.", name));
-				return;
-			}
-			if(target.hasSkillEffect(L1SkillId.USER_WANTED) || target.hasSkillEffect(L1SkillId.USER_WANTED1)){
-				pc.sendPackets(String.format("%s 님은 이미 수배중입니다.", name));
-				return;
-			}
-			if(target.isGm()){
-				pc.sendPackets("운영자에게 수배를 걸수없습니다.");
-				return;
-			}
-			if (!(pc.getInventory().checkItem(40308, price))) {
-				pc.sendPackets("아데나가 부족합니다");
-				return;
-			}
-			
-			String message = String.format("\\fY%s 님께서 %s님에게 수배를 걸었습니다.", pc.getName(), target.getName());
-			String message1 = String.format("\\fY수배범을 잡을 시 확률적으로 수배범 2단으로 승급됩니다.");
-			pc.sendPackets(message);
-			target.sendPackets(message);
-			target.sendPackets(message1);
-			//target.sendPackets("\\fY수배효과: 추타+3,명중+3,AC-3,SP+3");
-			//L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\fY["+target.getName()+"]님이 수배범이 되었습니다."));
-			//L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\fY[수배자]: "+pc.getName()));
-			
-			
-			target.setSkillEffect(L1SkillId.USER_WANTED, -1);
-			target.doWanted(true);
-			pc.getInventory().consumeItem(40308, price);
-		}catch(Exception e){
-			pc.sendPackets("\\fY.수배 [캐릭터명] ("+Config.수배금액 / 10000 +"만)");
-			pc.sendPackets("\\fY수배효과: 추타+3,명중+3,AC-3,SP+3");
-			
-		}
-	}
 	private void 퀘스트멘트(L1PcInstance pc, String param) {
 		
 		try {
@@ -904,88 +631,8 @@ public class UserCommands{
 			return true;
 		return false;
 	}
-	private void 물품멘트(L1PcInstance pc, String param) {
-		int count = 0;
-		int ccount = 0;
-		
-		
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String status = st.nextToken();
-			if (status.equalsIgnoreCase("켬")) {
-				if (pc.물품멘트 == true) {
-					SC_SystemMessage.send(pc, "이미 물품멘트 활성화 상태입니다.");
-					return;
-				}
-				
-				pc.물품멘트 = true;
-				
-				SC_SystemMessage.send(pc, "\\f:현 시간부로 거래게시판에 물품이 업로드 될 경우 채팅창에 출력됩니다.");
-				
-			} else if (status.equalsIgnoreCase("끔")) {
-				if (pc.물품멘트 == false) {
-					SC_SystemMessage.send(pc, "이미 물품멘트는 비활성화상태입니다.");
-					return;
-				}
-				
-				pc.물품멘트 = false;
-				
-				SC_SystemMessage.send(pc, "\\f:물품멘트가 비활성화되었습니다.");
-			
-			}
-		} catch (Exception eee) {
-			SC_SystemMessage.send(pc, ".물품멘트 [켬/끔] 으로 입력하세요.");
-			SC_SystemMessage.send(pc, "켬으로 할 시 거래게시판 물품이 업로드 됐을 경우 실시간으로 채팅창에 출력됩니다.");
-		}
-	}
 	
-	private void phone(L1PcInstance pc, String param) {
-		try {
-			long curtime = System.currentTimeMillis() / 1000;
-			if (pc.getQuizTime() + 10 > curtime) {
-				long sec = (pc.getQuizTime() + 10) - curtime;
-				pc.sendPackets(sec + "초 후에 사용할 수 있습니다.");
-				return;
-			}
 
-			StringTokenizer tok = new StringTokenizer(param);
-			String phone = tok.nextToken();
-			Account account = Account.load(pc.getAccountName());
-			if (param.length() < 10) {
-				pc.sendPackets("없는 번호입니다. 다시 입력해주세요.");
-				pc.sendPackets("* 경고: 잘못된 정보 입력시 게임 이용에 제재를 받을 수 있습니다.");
-				return;
-			}
-			if (param.length() > 11) {
-				pc.sendPackets("잘못된 번호입니다. 다시 입력해주세요.");
-				pc.sendPackets("* 경고: 잘못된 정보 입력시 게임 이용에 제재를 받을 수 있습니다.");
-				return;
-			}
-			if (isDisitAlpha(phone) == false) {
-				pc.sendPackets("숫자로만 입력하세요.");
-				pc.sendPackets("* 경고: 잘못된 정보 입력시 게임 이용에 제재를 받을 수 있습니다.");
-				return;
-			}
-			if (account.getphone() != null) {
-				pc.sendPackets("이미 전화번호가 설정되어 있습니다.");
-				pc.sendPackets("번호 변경시 메티스에게 편지로 연락처를 보내세요.");
-				return;
-			}
-
-			account.setphone(phone);
-			Account.updatePhone(account);
-			pc.sendPackets(" " + phone + " 설정 완료. 초기화 시 문자발송됩니다.");
-			보안버프(pc);
-		} catch (Exception e) {
-			pc.sendPackets("고정을 하시게 되시면 재오픈 또는 공지를 사전에 알수있습니다.");
-		}
-	}
-
-	private static void 보안버프(L1PcInstance pc) {
-		pc.getAC().addAc(-1);
-		SC_PacketBox.send(pc, pc, SC_PacketBox.ICON_SECURITY_SERVICES);
-		SC_OwnCharStatus.send(pc);
-	}
 
 	private void spawnNotifyOnOff(L1PcInstance pc, String param) {
 		try {
@@ -1310,75 +957,6 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 	}
 
 
-	private void 수배차단(L1PcInstance pc, String param) {
-		try {
-			if (!(pc.getInventory().checkItem(40308, Config.수배금액))) {
-				pc.sendPackets("아데나가 부족합니다");
-				return;
-			}
-			if (param.equalsIgnoreCase("켬")) {
-				SC_InventoryIcon.icoEnd(pc, L1SkillId.수배);
-				pc.removeSkillEffect(L1SkillId.USER_WANTED);
-				SC_InventoryIcon.icoEnd(pc, L1SkillId.수배1);
-				pc.removeSkillEffect(L1SkillId.USER_WANTED1);
-				pc.setSkillEffect(L1SkillId.나루토감사캔디, -1);
-				SC_InventoryIcon.iconNewUnLimit(pc, L1SkillId.나루토감사캔디, 3257, true);
-				pc.getInventory().consumeItem(40308, Config.수배금액); 
-				SC_SystemMessage.send(pc, "\\f:▶수배 시스템을 OFF하였습니다. ◀");
-			} else if (param.equalsIgnoreCase("끔")) {
-
-				pc.removeSkillEffect(L1SkillId.나루토감사캔디);
-				SC_InventoryIcon.icoEnd(pc, L1SkillId.나루토감사캔디);
-				pc.getInventory().consumeItem(40308, Config.수배금액); 
-				SC_SystemMessage.send(pc, "\\f:▶ 수배시스템을 ON하였습니다.◀");
-			} else if(param.equalsIgnoreCase("")) {
-				pc.sendPackets(".수배차단 켬/끔");
-				pc.sendPackets("다른사람 및 본인은 수배를 걸지 못합니다.");
-			}
-		} catch (Exception eeeeeeee) {
-			
-		}
-	}
-	   private void 좌표복구(L1PcInstance pc){
-	    
-		Connection connection = null;
-		PreparedStatement preparedstatement = null;
-		Connection connection2 = null;
-		PreparedStatement preparedstatement2 = null;
-		ResultSet rs = null;
-		try {
-			connection2 = DatabaseFactory.getInstance().getConnection();
-			preparedstatement2 = connection2.prepareStatement("SELECT * FROM characters WHERE account_name = ?");
-			preparedstatement2.setString(1, pc.getAccountName());
-			rs = preparedstatement2.executeQuery();
-			while (rs.next()) {
-				int objid = rs.getInt("objid");
-				int mapid = rs.getInt("MapID");
-				
-				if (mapid != 99 && mapid != 6202 && mapid != 3 && mapid != 1284 && mapid != 34 && mapid != 1708
-						&& mapid != 38 && mapid !=5001 && mapid != 997 && mapid !=  5166 && mapid !=  39 && mapid != 701 && mapid !=  2000) {
-					try {
-						connection = DatabaseFactory.getInstance().getConnection();
-						preparedstatement = connection.prepareStatement("UPDATE characters SET LocX=33438, LocY=32805, MapID=4 WHERE objid = ?");
-						preparedstatement.setInt(1, objid);
-						preparedstatement.executeUpdate();
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-						SQLUtil.close(preparedstatement);
-						SQLUtil.close(connection);
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			SQLUtil.close(rs);
-			SQLUtil.close(preparedstatement2);
-			SQLUtil.close(connection2);
-		}
-		SC_SystemMessage.send(pc, "모든 케릭터의 좌표가 정상적으로 복구 되었습니다.");
-	    }
 	    
 	private void to_Change_Passwd(L1PcInstance pc, String passwd) {
 		Selector.exec("select account_name from characters where char_name=?", new SelectorHandler() {
@@ -1465,22 +1043,6 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 		}
 	}
 
-	private void outsideChat(L1PcInstance pc, String param) {
-		try {
-			if (param.equalsIgnoreCase("켬")) {
-				pc.setOutSideChat(true);
-			} else if (param.equalsIgnoreCase("끔")) {
-				pc.setOutSideChat(false);
-			} else if (param.equalsIgnoreCase("상태")) {
-
-			} else
-				throw new Exception();
-
-			pc.sendPackets(String.format("외창 : %s", pc.isOutsideChat() ? "켜짐" : "꺼짐"));
-		} catch (Exception e) {
-			pc.sendPackets(".외창 [켬/끔/상태]");
-		}
-	}
 	private void 계좌조회 (L1PcInstance pc) {
 		try {			
 
@@ -2316,53 +1878,6 @@ SC_SystemMessage.send(pc, "\\aHREAL:(힘: " + target.getAbility().getTotalStr() 
 	}
 
 	
-	private static void countR5(L1PcInstance pc, String count) {
-		int i = 0;
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		try {
-			i = Integer.parseInt(count);
-		} catch (NumberFormatException e) {
-		}
-		int status = 0;
-		String charname = null;
-		String buyername = null;
-		String buyeraccount = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement(
-					"SELECT  name, status, buyername, buyerAccountName from Auction where id Like '" + i + "'");
-			rs = pstm.executeQuery();
-			while (rs.next()) {
-				charname = rs.getString("name");
-				status = rs.getInt("status");
-				buyeraccount = rs.getString("buyerAccountName");
-				buyername = rs.getString("buyername");
-			}
-			if (status == 0) {
-				pc.sendPackets("구매 취소가 불가능한 상태입니다.");
-				return;
-			}
-			if (status == 2) {
-				pc.sendPackets("판매가 완료된 상태입니다.");
-				return;
-			}
-			if (pc.getAccountName().equalsIgnoreCase(buyeraccount) || pc.isGm()) {
-				AuctionSystemTable.getInstance().AuctionUpdate(i, "", "", "입금대기", 0);
-				WriteCancle(buyername, charname);
-				//WriteCancle("메티스", charname);
-				pc.sendPackets("정상취소 되었습니다");
-			} else {
-				pc.sendPackets("등록하신 물품이 아닙니다");
-			}
-		} catch (SQLException e) {
-			pc.sendPackets(".구매취소 (게시글번호) 라고 적어주십시요.");
-			pc.sendPackets("예)  .구매취소 0035");
-		} finally {
-			SQLUtil.close(rs, pstm, con);
-		}
-	}
 	
 	// TODO 중개 거래 게시판
 
@@ -2379,15 +1894,4 @@ SC_SystemMessage.send(pc, "\\aHREAL:(힘: " + target.getAbility().getTotalStr() 
 	 * SurveyFactory.createLFCSurvey(), 30 * 1000)); }
 	 */
 
-	public static void monsterHpBar(L1PcInstance pc, String param) {
-		if (param.equals("켬") || param.equals("온")) {
-			pc.setMonsterHpBar(true);
-			SC_SystemMessage.send(pc, "몬스터 체력바 보기가 [활성화] 되었습니다.");
-		} else if (param.equals("끔") || param.equals("오프")) {
-			pc.setMonsterHpBar(false);
-			SC_SystemMessage.send(pc, "몬스터 체력바 보기가 [비활성화] 되었습니다.");
-		} else {
-			SC_SystemMessage.send(pc, ".체력바 [켬/온/끔/오프] 라고 입력해 주세요.");
-		}
-	}
 }

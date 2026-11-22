@@ -408,9 +408,6 @@ public class GMCommands {
 		case "인형박스":
 			AlchemyProbabilityBox.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
-		case "체력바":
-			UserCommands.monsterHpBar(gm, param);
-			break;
 		case "도움말":
 			showHelp(gm);
 			break;

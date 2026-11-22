@@ -15,7 +15,7 @@ public final class SC_ShowHelp {
 			".라이트 켬/끔 (.light on/off)\n" +
 			".멘트 켬/끔 (.ment on/off)\n" +
 			".파티멘트 켬/끔 (.bpment on/off)\n" +
-			".. (좌표복구)\n" +
+			".. (텔레포트 상태 복구)\n" +
 			"\n";
 
     private SC_ShowHelp() {}
