@@ -4,11 +4,10 @@ package l1j.server.server.model;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
+import l1j.server.server.model.Instance.CItemList;
 
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
@@ -33,7 +32,7 @@ import l1j.server.server.templates.L1Item;
 public class L1Inventory extends L1Object {
 	private static final long serialVersionUID = 1L;
 
-	protected final List<L1ItemInstance> _items = new CopyOnWriteArrayList<L1ItemInstance>();
+	protected final CItemList _items = new CItemList();
 	
 	public static final int MAX_AMOUNT = 2000000000; // 2G
 	public static final int MAX_WEIGHT = 1500;
@@ -52,13 +51,7 @@ public class L1Inventory extends L1Object {
 	 * 일반/NPC 인벤토리는 별도 ConcurrentHashMap을 만들지 않고 필요 시 목록에서 계산한다.
 	 */
 	public int getItemCountDirect(int itemId) {
-		int total = 0;
-		for (L1ItemInstance item : _items) {
-			if (item != null && item.getItemId() == itemId) {
-				total += item.getCount();
-			}
-		}
-		return total;
+		return _items.GetItemCountByClassID(itemId);
 	}
 
 	/** PC 인벤토리 캐시 갱신 훅. 일반 인벤토리는 아무것도 하지 않는다. */
@@ -91,12 +84,7 @@ public class L1Inventory extends L1Object {
 	}
 	
 	public boolean isEquippedDirect(int itemId) {
-		for (L1ItemInstance item : _items) {
-			if (item != null && item.getItemId() == itemId && item.isEquipped()) {
-				return true;
-			}
-		}
-		return false;
+		return _items.IsEquippedByClassID(itemId);
 	}
 
 	public boolean isEquippedAny(int... itemIds) {
@@ -2105,14 +2093,7 @@ public class L1Inventory extends L1Object {
 		return null;
 	}
 	public L1ItemInstance findItemId(int id) {
-		for (L1ItemInstance item : _items) {
-			if (item == null)
-				continue;
-			if (item.getItem().getItemId() == id) {
-				return item;
-			}
-		}
-		return null;
+		return _items.GetFirstItemByClassID(id);
 	}
 
 	public L1ItemInstance[] findItemsId(int id) {
@@ -2166,16 +2147,7 @@ public class L1Inventory extends L1Object {
 	}
 	
 	public L1ItemInstance getItem(int objectId) {
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item == null)
-				continue;
-			if (item.getId() == objectId) {
-				return item;
-			}
-		}
-		return null;
+		return _items.GetByIndex(objectId);
 	}
 
 	public boolean checkItem(int id) {
@@ -2322,11 +2294,7 @@ public class L1Inventory extends L1Object {
 	}
 
 	public void shuffle() {
-		if(_items == null || _items.size() <= 1)
-			return;
-		try{
-			Collections.shuffle(_items);
-		}catch(Exception e){}
+		_items.shuffle();
 	}
 
 	public void clearItems() {
