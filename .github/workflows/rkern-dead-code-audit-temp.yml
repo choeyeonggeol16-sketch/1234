@@ -31,7 +31,7 @@ jobs:
               folder=root/base
               if not folder.exists():continue
               files.extend(p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in accepted)
-          rx=re.compile(r"[A-Za-z_$][A-Za-z0-9_$]*")
+          rx=re.compile(r"\\b[\\w$]+\\b")
           for p in files:
               if p.stat().st_size>20_000_000:continue
               try: text=p.read_text(encoding="utf-8",errors="replace")
