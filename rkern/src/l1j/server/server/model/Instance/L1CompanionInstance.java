@@ -1129,9 +1129,12 @@ public class L1CompanionInstance extends L1NpcInstance{
     
     @Override
     public void onPerceive(L1PcInstance perceivedFrom) {
-        perceivedFrom.addKnownObject(this);
+		if (perceivedFrom == null) return;
         
-        SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(perceivedFrom, this);
+        
+        if (SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(perceivedFrom, this)) {
+			perceivedFrom.addKnownObject(this);
+		}
         if(perceivedFrom.getId() == get_master_id()){
             SC_COMPANION_STATUS_NOTI.send(perceivedFrom, this, CompanionUpdateFlag.UPDATE_ALL);
         }

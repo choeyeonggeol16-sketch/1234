@@ -109,8 +109,11 @@ public class L1SupportInstance extends L1NpcInstance {
 
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		perceivedFrom.addKnownObject(this);
-		l1j.server.server.model.network.core.sc.packet.SC_SupportPack.send(perceivedFrom, this);
+		if (perceivedFrom == null) return;
+		
+		if (l1j.server.server.model.network.core.sc.packet.SC_SupportPack.send(perceivedFrom, this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 	}
 
 	public boolean isExsistMaster() {

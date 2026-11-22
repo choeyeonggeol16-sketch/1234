@@ -50,11 +50,13 @@ public class L1TowerInstance extends L1NpcInstance {
 		if (perceivedFrom == null)
 			return;
 
-		perceivedFrom.addKnownObject(this);
+		
 
-		SC_WorldPutObject.get(
+		if (SC_WorldPutObject.get(
 				perceivedFrom.getNetConnection(),
-				this);
+				this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 	}
 
 	@Override
