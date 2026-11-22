@@ -11,7 +11,6 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.CSkillInfo;

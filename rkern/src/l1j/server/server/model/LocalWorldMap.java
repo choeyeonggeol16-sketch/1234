@@ -790,7 +790,7 @@ public final class LocalWorldMap {
                 // A failed ground SEND is repaired on the next real movement,
                 // not by a recursive refresh that could spin on a full socket.
                 if (pc.needsGroundSightRepair())
-                    pc.getCreatureController().RefreshSight(true);
+                    pc.getCreatureController().RefreshSight();
             }
         } finally {
             scratch.viewers.clear();
