@@ -2180,10 +2180,7 @@ public class L1Inventory extends L1Object {
 				return true;
 			}
 		} else {
-			Object[] itemList = findItemsId(id);
-			if (itemList.length >= count) {
-				return true;
-			}
+			return _items.HasInstancesByClassID(id, count);
 		}
 		return false;
 	}
