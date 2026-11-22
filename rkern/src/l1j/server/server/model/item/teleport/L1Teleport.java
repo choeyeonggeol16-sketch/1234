@@ -155,12 +155,15 @@ public class L1Teleport {
 		} finally {
 			// 최종 언락 및 메모리 정리 
 			try {
-				if (restoreGroundSight && (pc.groundSightEpoch() & 1) == 0) {
-					// Never keep a session whose client map reset did not complete.
-					final var client = pc.getNetConnection();
-					if (client != null && client.isConnected()) client.kick();
+				try {
+					if (restoreGroundSight && (pc.groundSightEpoch() & 1) == 0) {
+						// Never keep a session whose client map reset did not complete.
+						final var client = pc.getNetConnection();
+						if (client != null && client.isConnected()) client.kick();
+					}
+				} finally {
+					pc.tpEndFinish();
 				}
-				pc.tpEndFinish();
 			} finally {
 				// Never retain actors on a long-lived owner thread on an
 				// exceptional unlock path.

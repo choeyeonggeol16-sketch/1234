@@ -705,6 +705,10 @@ public final class LocalWorldMap {
                         pc.getCreatureController().ReconcileSight(candidate, leaving);
                     }
                 }
+                // A failed ground SEND is repaired on the next real movement,
+                // not by a recursive refresh that could spin on a full socket.
+                if (pc.needsGroundSightRepair())
+                    pc.getCreatureController().RefreshSight(true);
             }
         } finally {
             scratch.viewers.clear();

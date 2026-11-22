@@ -41,7 +41,7 @@ public class L1GroundInventory extends L1Inventory {
         if (item == null || !viewer.canSeeObject(item)) return false;
         final L1GroundInventory ground = L1World.getInstance().findGroundInventory(
                 item.getX(), item.getY(), item.getMapId());
-        return ground != null && ground._items.contains(item);
+        return ground != null && ground.getClusterMapId() >= 0 && ground._items.contains(item);
     }
 
     private static void showItem(L1PcInstance viewer, L1ItemInstance item,
@@ -49,9 +49,10 @@ public class L1GroundInventory extends L1Inventory {
         if (!ready(viewer, epoch) || (!changed && viewer.knownsObject(item))) return;
         final var client = viewer.getNetConnection();
         if (client == null || client.getActiveChar() != viewer) return;
-        if (SC_DropItem.send(client, item) && ready(viewer, epoch)
-                && viewer.getNetConnection() == client && client.isConnected()) {
-            viewer.addKnownObject(item);
+        final boolean sent = SC_DropItem.send(client, item);
+        if (ready(viewer, epoch) && viewer.getNetConnection() == client && client.isConnected()) {
+            if (sent) viewer.addKnownObject(item);
+            else viewer.markGroundSightRetry();
         }
     }
 
@@ -60,9 +61,18 @@ public class L1GroundInventory extends L1Inventory {
         if (!ready(viewer, epoch) || !viewer.knownsObject(item)) return;
         final var client = viewer.getNetConnection();
         if (client == null || client.getActiveChar() != viewer) return;
-        if (SC_RemoveObject.send(client, item) && ready(viewer, epoch)
-                && viewer.getNetConnection() == client) {
+        final L1Object current = L1World.getInstance().findObject(item.getId());
+        // A queued old deletion must not erase a newly registered known sprite
+        // using the same object ID.
+        if (current instanceof L1ItemInstance replacement && replacement != item
+                && viewer.knownsObject(replacement) && isVisibleGroundItem(viewer, replacement)) {
             viewer.removeKnownObject(item);
+            return;
+        }
+        final boolean sent = SC_RemoveObject.send(client, item);
+        if (ready(viewer, epoch) && viewer.getNetConnection() == client && client.isConnected()) {
+            if (sent) viewer.removeKnownObject(item);
+            else viewer.markGroundSightRetry();
         }
     }
 
@@ -99,8 +109,10 @@ public class L1GroundInventory extends L1Inventory {
     /** Reuse existing AOI scratch and controller tickets; no new worker or queue. */
     private void notifyGroundChange(L1ItemInstance item, boolean changed) {
         final L1World world = L1World.getInstance();
-        final var viewers = world.borrowVisiblePlayerFast(this,
-                l1j.server.Config.PC_RECOGNIZE_RANGE);
+        final int range = l1j.server.Config.PC_RECOGNIZE_RANGE;
+        // L1's screen test is directional. Collect a superset and use the
+        // viewer's actual canSeeObject test when the ticket executes.
+        final var viewers = world.borrowVisiblePlayerFast(this, range < 0 ? 22 : range);
         try {
             for (int i = 0, n = viewers.size(); i < n; i++) {
                 final L1PcInstance viewer = viewers.get(i);
@@ -117,7 +129,7 @@ public class L1GroundInventory extends L1Inventory {
         if (item == null) return;
         if (DEBUG_GROUND_ITEM_TIMER) debug("SPAWN", item, "before OnSpawned");
         item.OnSpawned();
-        notifyGroundChange(item, false);
+        notifyGroundChange(item, true);
     }
 
     @Override

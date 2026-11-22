@@ -1147,6 +1147,7 @@ public class L1PcInstance extends L1Character {
 	private CUserSocket _netConnection;
 	// Odd: current client world can accept ground sprites. Even: map/world reset.
 	private volatile int groundSightEpoch;
+	private volatile boolean groundSightRetry;
 	private static Logger _log = Logger.getLogger(L1PcInstance.class.getName());
 
 	public L1PcInstance() {
@@ -2618,6 +2619,12 @@ public class L1PcInstance extends L1Character {
 
 	public int groundSightEpoch() { return groundSightEpoch; }
 
+	public void markGroundSightRetry() { groundSightRetry = true; }
+
+	public boolean needsGroundSightRepair() {
+		return (groundSightEpoch & 1) != 0 && groundSightRetry && !isLogoutStarted();
+	}
+
 	public boolean suspendGroundSight() {
 		final int epoch = groundSightEpoch;
 		if ((epoch & 1) == 0) return false;
@@ -2628,7 +2635,13 @@ public class L1PcInstance extends L1Character {
 	public void resumeGroundSight() {
 		if (isLogoutStarted() || getNetConnection() == null) return;
 		final int epoch = groundSightEpoch;
-		if ((epoch & 1) == 0) groundSightEpoch = epoch + 1;
+		if ((epoch & 1) == 0) {
+			// Old session/world entries must not suppress the new client's sprites.
+			for (L1Object known : getKnownObjects())
+				if (known instanceof L1ItemInstance) removeKnownObject(known);
+			groundSightRetry = false;
+			groundSightEpoch = epoch + 1;
+		}
 		getCreatureController().RefreshSight();
 	}
 
@@ -8597,6 +8610,10 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public void refreshSight() { refreshSight(false); }
 
 	public void refreshSight(boolean resyncGround) {
+		if (needsGroundSightRepair()) {
+			groundSightRetry = false;
+			resyncGround = true;
+		}
 		for (L1Object known : getKnownObjects()) {
 			if (known instanceof L1ItemInstance item) {
 				if (!L1GroundInventory.isVisibleGroundItem(this, item))
