@@ -2,7 +2,7 @@ package l1j.server.server.model;
 
 import static l1j.server.server.model.character.skill.L1SkillId.*;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.ThreadPool;
@@ -63,7 +63,7 @@ public class L1Magic {
 	
 	private L1ItemInstance weapon = null;
 
-	private static Random _random = new Random(System.nanoTime());
+	
 
 	public boolean _CriticalDamage = false;
 
@@ -494,7 +494,7 @@ public class L1Magic {
 			}
 			break;
 		default:
-			// rnd = _random.nextInt(100) + 1;
+			// rnd = ThreadLocalRandom.current().nextInt(100) + 1;
 			if (probability > 90) {
 				probability = 90;
 			}
@@ -554,7 +554,7 @@ public class L1Magic {
 					|| skillId == L1SkillId.POLLUTE_WATER || skillId == L1SkillId.AREA_OF_SILENCE || skillId == L1SkillId.SILENCE || skillId == L1SkillId.EARTH_BIND 
 					|| skillId == L1SkillId.ELEMENTAL_FALL_DOWN )) {
 				
-				int rnd1 = _random.nextInt(100) + 1;
+				int rnd1 = ThreadLocalRandom.current().nextInt(100) + 1;
 				if (rnd1 <= Config.매직실드확률) {
 					
 					SC_SkillSound.send(_targetPc, _targetPc.getId(), 14446);
@@ -601,7 +601,7 @@ public class L1Magic {
 		if (!isSuccess & skillId == TURN_UNDEAD) {
 			if (_calcType == PC_NPC) {
 				_targetNpc.setHate(_pc, 1);
-				int ran = _random.nextInt(100) + 1;
+				int ran = ThreadLocalRandom.current().nextInt(100) + 1;
 				if (ran <= 50) {
 					SC_SkillSound.broadcast(_targetNpc, _targetNpc.getId(), 8987);
 					SC_SkillHaste.broadcast(_targetNpc, _targetNpc.getId(), 1, 0);
@@ -1404,7 +1404,7 @@ public class L1Magic {
 			}
 			if (dice1 > 0) {
 				for (int i = 0; i < diceCount1; i++) {
-					probability += (_random.nextInt(dice1) + 1);
+					probability += (ThreadLocalRandom.current().nextInt(dice1) + 1);
 				}
 			}
 
@@ -1530,7 +1530,7 @@ public class L1Magic {
 							probability = armor.getEnchantLevel() - 5;
 						}
 
-						if (_random.nextInt(100) < probability) {
+						if (ThreadLocalRandom.current().nextInt(100) < probability) {
 							damage *= 0.8D;
 						}
 
@@ -1594,7 +1594,7 @@ public class L1Magic {
 				awakeeff2 = 4177;
 			}
 
-			int chance3 = _random.nextInt(100) + 1;
+			int chance3 = ThreadLocalRandom.current().nextInt(100) + 1;
 			if(_pc.getWeaponSwap() != null){
 				weapon = _pc.getWeaponSwap();
 				_weaponAttrLevel = weapon.getAttrEnchantLevel();
@@ -1633,7 +1633,7 @@ public class L1Magic {
 			}
 			if(_pc.getLevel() != 99){
 				if(_pc.getMagicadd() != 1 && _pc.getAccount().getTree_select() == 562){
-					int chancet = _random.nextInt(100) + 1;
+					int chancet = ThreadLocalRandom.current().nextInt(100) + 1;
 					if(chancet < 3){
 						damage += 15;
 						if(_pc.getLinMeff() != 2){
@@ -1646,7 +1646,7 @@ public class L1Magic {
 				if(_pc.getMagicadd() == 1){
 					if(_calcType == PC_PC){
 						if(_pc.getAccount().getTree_select() != 0){
-							int chancet = _random.nextInt(100) + 1;
+							int chancet = ThreadLocalRandom.current().nextInt(100) + 1;
 							int s = _pc.getAccount().getTree_select();
 							if(chancet < 3){
 								if(_pc.getLinMeff() != 2){
@@ -1675,7 +1675,7 @@ public class L1Magic {
 							}
 						}
 						if(_pc.getAccount().getTree_select2() != 0){
-							int chancet = _random.nextInt(100) + 1;
+							int chancet = ThreadLocalRandom.current().nextInt(100) + 1;
 							int s = _pc.getAccount().getTree_select2();
 							if(chancet < 3){
 								if(_pc.getLinMeff() != 2){
@@ -1698,7 +1698,7 @@ public class L1Magic {
 							}
 						}
 						if(_pc.getAccount().getTree_select3() != 0){
-							int chancet = _random.nextInt(100) + 1;
+							int chancet = ThreadLocalRandom.current().nextInt(100) + 1;
 							int s = _pc.getAccount().getTree_select3();
 							if(chancet < 3){
 								if(_pc.getLinMeff() != 2){
@@ -1743,7 +1743,7 @@ public class L1Magic {
 						}
 					}else{
 						if(_pc.getAccount().getTree_select() != 0){
-							int chancet = _random.nextInt(100) + 1;
+							int chancet = ThreadLocalRandom.current().nextInt(100) + 1;
 							int s = _pc.getAccount().getTree_select();
 							if(chancet < 3){
 								if(_pc.getLinMeff() != 2){
@@ -1772,7 +1772,7 @@ public class L1Magic {
 							}
 						}
 						if(_pc.getAccount().getTree_select2() != 0){
-							int chancet = _random.nextInt(100) + 1;
+							int chancet = ThreadLocalRandom.current().nextInt(100) + 1;
 							int s = _pc.getAccount().getTree_select2();
 							if(chancet < 3){
 								if(_pc.getLinMeff() != 2){
@@ -1795,7 +1795,7 @@ public class L1Magic {
 							}
 						}
 						if(_pc.getAccount().getTree_select3() != 0){
-							int chancet = _random.nextInt(100) + 1;
+							int chancet = ThreadLocalRandom.current().nextInt(100) + 1;
 							int s = _pc.getAccount().getTree_select3();
 							if(chancet < 3){
 								if(_pc.getLinMeff() != 2){
@@ -1959,7 +1959,7 @@ public class L1Magic {
 		
 		if(_targetPc.getAccount().getTree_select4() != 0){
 			int a = _targetPc.getAccount().getTree_select4();
-			int r = _random.nextInt(100) + 1;
+			int r = ThreadLocalRandom.current().nextInt(100) + 1;
 			if(r <= 2){
 				switch(a){
 				case 20796:
@@ -2004,7 +2004,7 @@ public class L1Magic {
 //
 //				if (skillId == DISINTEGRATE) {
 //					if (_pc.hasSkillEffect(L1SkillId.네메시스)) {
-//					int 랜덤 = _random.nextInt(100) + 1;
+//					int 랜덤 = ThreadLocalRandom.current().nextInt(100) + 1;
 //					int 렙차 = _pc.getLevel() - _targetPc.getLevel();
 //					int 기본확률 = Config.이터기본;
 //					int 양렙차 = 기본확률 + (렙차 * Config.이터양);
@@ -2345,7 +2345,7 @@ public class L1Magic {
 //
 //				int qq = Config.이터몬스터;
 //			
-//					int 랜덤 = _random.nextInt(100) + 1;
+//					int 랜덤 = ThreadLocalRandom.current().nextInt(100) + 1;
 //
 //					if (랜덤 <= qq) {
 //
@@ -2481,7 +2481,7 @@ public class L1Magic {
 		dice += getSpellPower() / 2;
 
 		for (int i = 0; i < diceCount; i++) {
-			int plus_dmg = (_random.nextInt(dice) + 1);
+			int plus_dmg = (ThreadLocalRandom.current().nextInt(dice) + 1);
 			magicDamage += plus_dmg;
 		}
 
@@ -2616,8 +2616,8 @@ public class L1Magic {
 
 			int a = 0;
 			int b = _pc.getAbility().getTotalInt();
-			int c = _random.nextInt(dice);
-			int d = _random.nextInt(10);
+			int c = ThreadLocalRandom.current().nextInt(dice);
+			int d = ThreadLocalRandom.current().nextInt(10);
 			if(b< 8){
 				b = 8;
 			}
@@ -2637,7 +2637,7 @@ public class L1Magic {
 			int diceCount = value + magicBonus;
 			
 			for (int i = 0; i < diceCount; i++) {
-				magicDamage += (_random.nextInt(dice) + 1);
+				magicDamage += (ThreadLocalRandom.current().nextInt(dice) + 1);
 			}
 			magicDamage *= alignmentRevision;
 			magicDamage = (magicDamage * getLeverage()) / 10;
@@ -2682,7 +2682,7 @@ public class L1Magic {
 			targetPcLvMr = _targetNpc.getLevel();
 		}
 
-		Random random = new Random();
+		ThreadLocalRandom random = ThreadLocalRandom.current();
 		ran1 = random.nextInt(15) + 1;
 		mrset = mrs - ran1;
 
@@ -2759,7 +2759,7 @@ public class L1Magic {
 			prop += _pc.get_magic_critical_rate();
 		}
 
-		int num = _random.nextInt(100) + 1;
+		int num = ThreadLocalRandom.current().nextInt(100) + 1;
 
 		if (prop == 0) {
 			return false;
@@ -2798,7 +2798,7 @@ public class L1Magic {
 						int 요정 = (int) ((double)Config.이터제약  * Config.리버레이션절감);
 						DamagePoison.doInfection(_pc, _targetPc, 1000, 요정, true, 1);
 					} else {
-						int B = _random.nextInt(Config.이터이차최대-Config.이터이차최소) + Config.이터이차최소;
+						int B = ThreadLocalRandom.current().nextInt(Config.이터이차최대-Config.이터이차최소) + Config.이터이차최소;
 						DamagePoison.doInfection(_pc, _targetPc, 1000, B, true, 1);
 					}
 				}
@@ -2816,7 +2816,7 @@ public void Start1() {
 			@Override
 			public void run(){
 				if (!_targetNpc.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) {
-				int B = _random.nextInt(Config.이터이차최대-Config.이터이차최소) + Config.이터이차최소;
+				int B = ThreadLocalRandom.current().nextInt(Config.이터이차최대-Config.이터이차최소) + Config.이터이차최소;
 				DamagePoison.doInfection(_pc, _targetPc, 1000, B, true, 1);
 				
 				}

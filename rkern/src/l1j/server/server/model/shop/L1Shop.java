@@ -3,7 +3,7 @@ package l1j.server.server.model.shop;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.Controller.BugRaceController;
@@ -296,7 +296,7 @@ public class L1Shop {
 		}
 		
 		L1ItemInstance item = null;
-		Random random = new Random(System.nanoTime());
+		ThreadLocalRandom random = ThreadLocalRandom.current();
 		for (L1ShopBuyOrder order : orderList.getList()) {
 			int itemId = order.getItem().getItemId();
 			int amount = order.getCount();
@@ -992,7 +992,7 @@ public class L1Shop {
 			int itemId = order.getItem().getItemId();
 			int enchant = order.getItem().getEnchant();
 			int amount = order.getCount();
-			Random random = new Random(System.nanoTime());
+			ThreadLocalRandom random = ThreadLocalRandom.current();
 			item = detachedShopItem(itemId);
 			item.setIdentified(true);
 			if (getSellingItems().contains(item)) {
@@ -1302,7 +1302,7 @@ public class L1Shop {
 		for (L1ShopBuyOrder order : orderList.getList()) {
 			int itemId = order.getItem().getItemId();
 			int amount = order.getCount();
-			Random random = new Random(System.nanoTime());
+			ThreadLocalRandom random = ThreadLocalRandom.current();
 			item = detachedShopItem(itemId);
 			item.setIdentified(true);
 			if (getSellingItems().contains(item)) {
@@ -1345,7 +1345,7 @@ public class L1Shop {
 			int itemId = order.getItem().getItemId();
 			int enchant = order.getItem().getEnchant();
 			int amount = order.getCount();
-			Random random = new Random(System.nanoTime());
+			ThreadLocalRandom random = ThreadLocalRandom.current();
 			item = detachedShopItem(itemId);
 			if (getSellingItems().contains(item)) {
 				return;
@@ -1495,7 +1495,7 @@ public class L1Shop {
 			int itemId = order.getItem().getItemId();
 			int enchant = order.getItem().getEnchant();
 			int amount = order.getCount();
-			Random random = new Random(System.nanoTime());
+			ThreadLocalRandom random = ThreadLocalRandom.current();
 			item = detachedShopItem(itemId);
 			if (getSellingItems().contains(item)) {
 				return;
