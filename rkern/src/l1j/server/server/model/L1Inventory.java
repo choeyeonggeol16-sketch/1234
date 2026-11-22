@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import l1j.server.server.model.Instance.CItemList;
 
 import l1j.server.Config;
@@ -446,8 +445,7 @@ public class L1Inventory extends L1Object {
 		case 810007:
 			L1ItemInstance findItem = findItemId(itemId);
 			if (findItem != null) {
-				Random random = new Random(System.nanoTime());
-				chargeCount -= random.nextInt(5);
+				chargeCount -= java.util.concurrent.ThreadLocalRandom.current().nextInt(5);
 				findItem.setChargeCount(findItem.getChargeCount() + chargeCount);
 				updateItem(findItem);
 				return findItem;
@@ -638,8 +636,7 @@ public class L1Inventory extends L1Object {
 		case 810007:
 			L1ItemInstance findItem = findItemId(itemId);
 			if (findItem != null) {
-				Random random = new Random(System.nanoTime());
-				chargeCount -= random.nextInt(5);
+				chargeCount -= java.util.concurrent.ThreadLocalRandom.current().nextInt(5);
 				findItem.setChargeCount(findItem.getChargeCount() + chargeCount);
 				updateItem(findItem);
 				return findItem;

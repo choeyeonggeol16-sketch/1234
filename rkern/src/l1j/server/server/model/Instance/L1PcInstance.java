@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -3059,9 +3058,8 @@ public class L1PcInstance extends L1Character {
 	public void receiveDamage(L1Character attacker, int damage, int attr) {
 		if (damage == 0)
 			return;
-		Random random = new Random(System.nanoTime());
 		int player_mr = getResistance().getEffectedMrBySkill();
-		int rnd = random.nextInt(100) + 1;
+		int rnd = java.util.concurrent.ThreadLocalRandom.current().nextInt(100) + 1;
 		if (player_mr >= rnd) {
 			damage /= 2;
 		}
