@@ -1,6 +1,5 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.NpcActionRange;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
@@ -71,7 +70,9 @@ public final class CS_QueryPersonalShop {
          * NPC 개인상점
          */
         if (shopObject instanceof L1NpcShopInstance) {
-            if (pc.isDead() || !NpcActionRange.isWithin(pc, shopObject, NpcActionRange.get())) return;
+            if (pc.isDead() || pc.getMapId() != shopObject.getMapId()
+                    || Math.abs((long) pc.getX() - shopObject.getX()) > 12
+                    || Math.abs((long) pc.getY() - shopObject.getY()) > 12) return;
 
             SC_PERSONAL_SHOP_ITEM_LIST_NOTI
                     .do_send_for_npc(

@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 
 import l1j.server.Config;
-import l1j.server.server.NpcActionRange;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Inventory;
@@ -29,7 +28,9 @@ final class PlayerShopTransactions {
 
     static boolean canReach(L1PcInstance customer, L1PcInstance shop) {
         return customer != shop && shop.isPrivateShop() && !customer.isGhost() && !customer.isDead()
-                && NpcActionRange.isWithin(customer, shop, NpcActionRange.get());
+                && customer.getMapId() == shop.getMapId()
+                && Math.abs((long) customer.getX() - shop.getX()) <= 12
+                && Math.abs((long) customer.getY() - shop.getY()) <= 12;
     }
 
     static void execute(L1PcInstance customer, L1PcInstance shop, boolean purchase,

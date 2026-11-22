@@ -3,7 +3,6 @@ package l1j.server.server.model.network.core.cs.packet;
 import java.util.ArrayList;
 
 import l1j.server.Config;
-import l1j.server.server.NpcActionRange;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.L1Clan;
@@ -60,7 +59,9 @@ public final class CS_Result {
 		String npcName = "";
 
 		if (findObject != null) {
-            if (!NpcActionRange.isWithin(pc, findObject, NpcActionRange.get())) {
+            if (pc.getMapId() != findObject.getMapId()
+                    || Math.abs((long) pc.getX() - findObject.getX()) > 12
+                    || Math.abs((long) pc.getY() - findObject.getY()) > 12) {
                 if (resultType == 5 && size == 0 && findObject instanceof L1NpcInstance dwarf
                         && dwarf.getNpcTemplate().getImpl().equalsIgnoreCase("L1Dwarf")) {
                     L1Clan clan = pc.getClan();

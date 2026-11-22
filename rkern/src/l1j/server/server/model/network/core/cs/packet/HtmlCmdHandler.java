@@ -3,7 +3,6 @@ package l1j.server.server.model.network.core.cs.packet;
 import java.util.Random;
 
 import l1j.server.Config;
-import l1j.server.server.NpcActionRange;
 import l1j.server.server.datatables.NpcActionTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -107,7 +106,9 @@ final class HtmlCmdHandler {
     /** Shared live target admission for ordinary HTML and XML amount commands.
      * Shared by talk, HTML, and amount admission; full talk-channel lifecycle is separate. */
     static boolean isNpcTargetInRange(L1PcInstance pc, L1NpcInstance npc) {
-        return NpcActionRange.isWithin(pc, npc, 6);
+        return pc.getMapId() == npc.getMapId()
+                && Math.abs((long) pc.getX() - npc.getX()) <= 6
+                && Math.abs((long) pc.getY() - npc.getY()) <= 6;
     }
 
     static void trackDialogue(CUserSocket client, L1NpcInstance npc, boolean newTalk) {
