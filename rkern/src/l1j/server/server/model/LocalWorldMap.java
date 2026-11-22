@@ -126,7 +126,7 @@ public final class LocalWorldMap {
 
         private L1Object[] _objects = new L1Object[OBJECT_INIT_CAPACITY];
         private int _objectCount;
-        private int _groundCount;
+        private int _groundCount; // item objects + NPC lookup tiles
 
         private L1PcInstance[] _players;
         private int _playerCount;
@@ -260,7 +260,7 @@ public final class LocalWorldMap {
                 _objects = grown;
             }
             _objects[_objectCount++] = obj;
-            if (obj instanceof L1ItemInstance) _groundCount++;
+            if (isGroundEntry(obj)) _groundCount++;
             if (_objectCount == DENSE_THRESHOLD) {
                 buildDenseIndex(_objectCount * 2);
             }
@@ -293,7 +293,7 @@ public final class LocalWorldMap {
             }
             final int newSlot = _objectCount++;
             _objects[newSlot] = obj;
-            if (obj instanceof L1ItemInstance) _groundCount++;
+            if (isGroundEntry(obj)) _groundCount++;
             final int[] dense = _denseSlots;
             if (_objectCount * 2 > dense.length) {
                 buildDenseIndex(_objectCount * 2);
@@ -305,9 +305,17 @@ public final class LocalWorldMap {
             }
         }
 
+        // Player AOI ignores ground tile buckets, but NPCs still need them.
+        // Count both tile buckets and items as ground-only cell entries so
+        // a stationary viewport can skip an entire crowded 8x8 tile cell.
+        private static boolean isGroundEntry(L1Object object) {
+            return object instanceof L1ItemInstance
+                    || object instanceof L1GroundInventory;
+        }
+
         private void replaceGroundCount(L1Object previous, L1Object current) {
-            if (previous instanceof L1ItemInstance) _groundCount--;
-            if (current instanceof L1ItemInstance) _groundCount++;
+            if (isGroundEntry(previous)) _groundCount--;
+            if (isGroundEntry(current)) _groundCount++;
         }
 
         private void addPlayerUnsafe(L1PcInstance pc) {
@@ -338,7 +346,7 @@ public final class LocalWorldMap {
             // The short scan beats a hash lookup for ordinary sparse cells.
             for (int i = 0; i < _objectCount; i++) {
                 if (_objects[i] == obj) {
-                    if (obj instanceof L1ItemInstance) _groundCount--;
+                    if (isGroundEntry(obj)) _groundCount--;
                     final int last = --_objectCount;
                     _objects[i] = _objects[last];
                     _objects[last] = null;
@@ -353,7 +361,7 @@ public final class LocalWorldMap {
         private void removeDenseUnsafe(L1Object obj) {
             final int index = findObjectSlot(obj.getId());
             if (index >= 0 && _objects[index] == obj) {
-                if (obj instanceof L1ItemInstance) _groundCount--;
+                if (isGroundEntry(obj)) _groundCount--;
                 final int last = _objectCount - 1;
                 removeDenseEntry(obj.getId());
                 if (index != last) {
