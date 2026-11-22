@@ -148,14 +148,6 @@ public class UserCommands {
         pc.setQuizTime(now);
     }
 
-void showTradePriceNotice(L1PcInstance pc) {
-		pc.sendPackets("----------------------------------------------------");
-		pc.sendPackets("아이템매니아: 초월 → 기타 → 게임머니= ㅍㅍ");
-		pc.sendPackets("유저거래시세:(" + Config.Ad_Sc + ") 아데나 = 5,000원");
-		pc.sendPackets("시세 이하 판매자/구매자 즉시 압류 조취");
-		pc.sendPackets("----------------------------------------------------");
-	}
-
     private static void setDropMessage(L1PcInstance pc, String param, boolean party, boolean korean) {
         final boolean enabled;
         if (param.equalsIgnoreCase(korean ? "켬" : "on")) {

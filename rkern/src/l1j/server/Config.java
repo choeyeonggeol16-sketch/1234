@@ -1444,7 +1444,6 @@ public final class Config {
 	public static int summon_hpdmg;
 	public static boolean IS_PARTY_EXP;
 	public static double ADD_PARTY_EXP;
-	public static int Ad_Sc;
 	public static int Tax_Rate;
 	public static int Tax_RateMin;
 	public static int Tax_RateMax;
@@ -3286,7 +3285,6 @@ public final class Config {
 			DEDMG1 = Integer.parseInt(ServerCodes.getProperty("Dedmg1", "1"));
 			RANK_POTION = Integer.parseInt(ServerCodes.getProperty("RankPotion", "10"));
 			Bless_Chance = Integer.parseInt(ServerCodes.getProperty("blessChance", "1"));
-			Ad_Sc = Integer.parseInt(ServerCodes.getProperty("AdSc", "10"));
 			Tax_Rate = Integer.parseInt(ServerCodes.getProperty("TaxRate", "10"));
 			Tax_RateMin = Integer.parseInt(ServerCodes.getProperty("TaxRateMin", "10"));
 			Tax_RateMax = Integer.parseInt(ServerCodes.getProperty("TaxRateMax", "10"));

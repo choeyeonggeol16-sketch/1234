@@ -1278,12 +1278,6 @@ public class GMCommands {
 		case "보스알림":
 			spawnNotifyOnOff(gm, param);
 			break;
-		case "아덴시세":
-			UserCommands.getInstance().showTradePriceNotice(gm);
-			break;
-		case "매니아체크":
-			SC_ShowCmd.sendMovie(gm, "http://kimsuin123.megaplug.kr/pricemania/pricePreviewboard1.html", -1);
-			break;
 		case "비트코인":
 			SC_ShowCmd.sendMovie(gm, "https://www.bithumb.com/u5/US506", -1);
 			break;
