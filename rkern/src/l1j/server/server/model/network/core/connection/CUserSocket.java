@@ -110,18 +110,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         if (optional) { SOFT_SEND_REJECTIONS.incrementAndGet(); return false; }
         return rejectSend(reason);
     }
-    // A bounded, allocation-free completion-worker blockage diagnostic.
-    // Slow opcode handlers are counted without printing per-packet logs.
-    private static final long SLOW_HANDLER_NS = TimeUnit.MILLISECONDS.toNanos(10);
-    private static final AtomicLongArray SLOW_OPCODE_COUNTS = new AtomicLongArray(256);
-    private static final AtomicLong SLOW_MAX_NS = new AtomicLong();
-
-    public static long slowOpcodeCount(int opcode) {
-        return SLOW_OPCODE_COUNTS.get(opcode & 0xFF);
-    }
-
-    public static long maxOpcodeHandlerNanos() { return SLOW_MAX_NS.get(); }
-
     public static long sendRejections(int reason) {
         if (reason <= 0 || reason >= SEND_REJECTIONS.length())
             throw new IllegalArgumentException("invalid SEND rejection reason");
@@ -3302,19 +3290,6 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
                 && (_closing != 0 || _client.isConnected());
     }
 
-    private void executeMeasured(CPacketHandler.PacketHandler handler, int opcode, ReadBuffer decoded) {
-        final long started = System.nanoTime();
-        try {
-            handler.execute(decoded, _client);
-        } finally {
-            final long elapsed = System.nanoTime() - started;
-            if (elapsed >= SLOW_HANDLER_NS) {
-                SLOW_OPCODE_COUNTS.incrementAndGet(opcode & 0xFF);
-                SLOW_MAX_NS.accumulateAndGet(elapsed, Math::max);
-            }
-        }
-    }
-
     /**
      * A fused READ owns the SEND serializer only while decoding/framing.
      * Game opcode handlers can run for tens of milliseconds; retaining the
@@ -3340,7 +3315,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         // Only the current socket READ pump can set this flag. A full buffer
         // owns the SEND burst and its finally always flushes it.
         if (_readPassBurstActive) {
-            if (handler != null) executeMeasured(handler, opcode, decoded);
+            if (handler != null) handler.execute(decoded, _client);
             // With large responses, READ pressure may stop the pass after a
             // single request. Submit its already accepted output immediately;
             // do not make that request wait for the outer frame-loop epilogue.
@@ -3357,7 +3332,7 @@ public final class CUserSocket implements AutoCloseable, CIOThreadCallback.Packe
         }
         ++burst.depth;
         try {
-            if (handler != null) executeMeasured(handler, opcode, decoded);
+            if (handler != null) handler.execute(decoded, _client);
             // The ordinary single-frame path exits the scope below. Its
             // finally performs the one mandatory flush, including on throw.
             // Nested dispatch must still flush immediately even while the
