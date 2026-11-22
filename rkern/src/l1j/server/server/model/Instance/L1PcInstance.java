@@ -8547,7 +8547,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if (!canSeeObject(known)) outOfSight(known);
 		}
 
-		final List<L1Object> nearby = L1World.getInstance().getClusterGrid().queryNearbyReusable(this, Config.PC_RECOGNIZE_RANGE);
+		final List<L1Object> nearby = L1World.getInstance().getClusterGrid().queryNearby(this, Config.PC_RECOGNIZE_RANGE);
 
 		for (int i = 0, size = nearby.size(); i < size; i++) {
 			final L1Object visible = nearby.get(i);
@@ -8612,7 +8612,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				outOfSight(known);
 			}
 		}
-		for (L1Object visible : L1World.getInstance().getClusterGrid().queryNearbyReusable(this, Config.PC_RECOGNIZE_RANGE)) {
+		for (L1Object visible : L1World.getInstance().getClusterGrid().queryNearby(this, Config.PC_RECOGNIZE_RANGE)) {
 			if (visible == null || visible == this) continue;
 			if (resyncGround && visible instanceof L1ItemInstance item)
 				L1GroundInventory.reconcileItem(this, item, true);
