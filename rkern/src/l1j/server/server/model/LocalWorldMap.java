@@ -399,6 +399,7 @@ public final class LocalWorldMap {
             if (obj instanceof L1PcInstance) {
                 removePlayerUnsafe((L1PcInstance) obj);
             }
+            trimObjectCapacity();
         }
 
         private void removeDenseUnsafe(L1Object obj) {
@@ -415,10 +416,37 @@ public final class LocalWorldMap {
                 _objects[last] = null;
                 if (_objectCount < DENSE_RELEASE) {
                     _denseSlots = null;
+                } else if (_denseSlots.length >= (long) _objectCount * 8L) {
+                    // Dense item piles can shrink to a handful of objects:
+                    // release the oversized id-index before the cell retires.
+                    buildDenseIndex(_objectCount << 1);
                 }
+                trimObjectCapacity();
             }
             if (obj instanceof L1PcInstance) {
                 removePlayerUnsafe((L1PcInstance) obj);
+            }
+        }
+
+        /** Shrink only after a 4x occupancy drop; never allocate on reads/moves. */
+        private void trimObjectCapacity() {
+            final int capacity = _objects.length;
+            if (capacity <= 32 || _objectCount > (capacity >>> 2)) return;
+            final int reduced = Math.max(32, capacity >>> 1);
+            final L1Object[] compact = new L1Object[reduced];
+            System.arraycopy(_objects, 0, compact, 0, _objectCount);
+            _objects = compact;
+        }
+
+        private void trimPlayerCapacity() {
+            final L1PcInstance[] players = _players;
+            if (players == null) return;
+            if (_playerCount == 0) {
+                _players = null;
+            } else if (players.length > 16 && _playerCount <= (players.length >>> 2)) {
+                final L1PcInstance[] compact = new L1PcInstance[Math.max(16, players.length >>> 1)];
+                System.arraycopy(players, 0, compact, 0, _playerCount);
+                _players = compact;
             }
         }
 
@@ -437,9 +465,7 @@ public final class LocalWorldMap {
                 }
             }
 
-            if (_playerCount == 0) {
-                _players = null;
-            }
+            trimPlayerCapacity();
         }
 
         private void removePlayerByIdUnsafe(int id) {
@@ -457,9 +483,7 @@ public final class LocalWorldMap {
                 }
             }
 
-            if (_playerCount == 0) {
-                _players = null;
-            }
+            trimPlayerCapacity();
         }
 
         private boolean isEmptyUnsafe() {
