@@ -97,21 +97,28 @@ public class L1GroundInventory extends L1Inventory {
 
     @Override
     public void updateItem(L1ItemInstance item) {
-        if (item == null || item.getClusterMapId() < 0 || !_items.contains(item)) return;
-        // Direct item-state notification: one shared frame for visible users.
-        SC_DropItem.broadcast(item, true);
+        if (item == null) return;
+        // Serialize the state snapshot against world leave on the same item
+        // monitor already used by CWorld. This is not a controller event.
+        synchronized (item) {
+            if (item.getClusterMapId() < 0 || !_items.contains(item)) return;
+            SC_DropItem.broadcast(item, true);
+        }
     }
 
     @Override
     public void deleteItem(L1ItemInstance item) {
-        if (item == null || !_items.remove(item)) return;
-        item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
-        // World leave publishes the item itself to User::OutOfSight.
-        L1World.getInstance().removeVisibleObject(item);
-        if (_items.isEmpty()) {
-            L1World.getInstance().removeVisibleObject(this);
-            if (DEBUG_GROUND_ITEM_TIMER)
-                debug("GROUND-EMPTY", item, "inventory removed from visible world");
+        if (item == null) return;
+        synchronized (item) {
+            if (!_items.remove(item)) return;
+            item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
+            // World leave publishes the item itself to User::OutOfSight.
+            L1World.getInstance().removeVisibleObject(item);
+            if (_items.isEmpty()) {
+                L1World.getInstance().removeVisibleObject(this);
+                if (DEBUG_GROUND_ITEM_TIMER)
+                    debug("GROUND-EMPTY", item, "inventory removed from visible world");
+            }
         }
     }
 
