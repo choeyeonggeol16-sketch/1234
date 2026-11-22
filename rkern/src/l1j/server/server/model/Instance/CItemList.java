@@ -35,7 +35,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     }
     private transient L1ItemInstance first, last;
     private transient int size;
-    private transient List<L1ItemInstance> snapshot;
+    private transient volatile List<L1ItemInstance> snapshot;
 
     private void claim(L1ItemInstance item) {
         Objects.requireNonNull(item, "inventory item");
@@ -73,7 +73,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
                 while (claimed != 0) OWNER.setVolatile(rows[--claimed], null);
                 throw e;
             }
-            clear();
+            clearLocked();
             for (L1ItemInstance item : rows) appendClaimed(item);
             return previous;
         }
@@ -122,12 +122,14 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     }
 
     @Override public synchronized L1ItemInstance remove(int index) {
-        final L1ItemInstance item = get(index);
+        final L1ItemInstance item = getLocked(index);
         unlink(item);
         return item;
     }
 
-    @Override public synchronized void clear() {
+    @Override public synchronized void clear() { clearLocked(); }
+
+    private void clearLocked() {
         L1ItemInstance item = first;
         first = last = null;
         size = 0;
@@ -141,14 +143,18 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         }
     }
 
-    @Override public synchronized int size() { return size; }
+    @Override public int size() {
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) return rows.size();
+        synchronized (this) { return size; }
+    }
 
     @Override public synchronized boolean contains(Object value) {
         return value instanceof L1ItemInstance item && item.inventoryLinkOwner == this;
     }
 
     @Override public synchronized int indexOf(Object value) {
-        if (!contains(value)) return -1;
+        if (!(value instanceof L1ItemInstance owned) || owned.inventoryLinkOwner != this) return -1;
         int index = 0;
         for (L1ItemInstance item = first; item != null; item = item.inventoryNext, index++)
             if (item == value) return index;
@@ -157,41 +163,95 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
 
     @Override public int lastIndexOf(Object value) { return indexOf(value); }
 
-    @Override public synchronized L1ItemInstance get(int index) {
+    @Override public L1ItemInstance get(int index) {
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) return rows.get(index);
+        synchronized (this) { return getLocked(index); }
+    }
+
+    private L1ItemInstance getLocked(int index) {
         Objects.checkIndex(index, size);
-        if (index == 0) return first;
-        if (index == size - 1) return last;
-        return snapshotLocked().get(index);
+        // Do not build a full snapshot for a single positional lookup.
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) return rows.get(index);
+        if (index < (size >>> 1)) {
+            L1ItemInstance item = first;
+            for (int i = 0; i < index; i++) item = item.inventoryNext;
+            return item;
+        }
+        L1ItemInstance item = last;
+        for (int i = size - 1; i > index; i--) item = item.inventoryPrev;
+        return item;
     }
 
-    public synchronized L1ItemInstance GetByIndex(int objectId) {
-        for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-            if (item.getId() == objectId) return item;
-        return null;
+    public L1ItemInstance GetByIndex(int objectId) {
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) {
+            for (int i = 0, n = rows.size(); i < n; i++) {
+                final L1ItemInstance item = rows.get(i);
+                if (item.getId() == objectId) return item;
+            }
+            return null;
+        }
+        synchronized (this) {
+            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+                if (item.getId() == objectId) return item;
+            return null;
+        }
     }
 
-    public synchronized L1ItemInstance GetFirstItemByClassID(int classId) {
-        for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-            if (item.getItem().getItemId() == classId) return item;
-        return null;
+    public L1ItemInstance GetFirstItemByClassID(int classId) {
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) {
+            for (int i = 0, n = rows.size(); i < n; i++) {
+                final L1ItemInstance item = rows.get(i);
+                if (item.getItem().getItemId() == classId) return item;
+            }
+            return null;
+        }
+        synchronized (this) {
+            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+                if (item.getItem().getItemId() == classId) return item;
+            return null;
+        }
     }
 
-    public synchronized int GetItemCountByClassID(int classId) {
+    public int GetItemCountByClassID(int classId) {
         int total = 0;
-        for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-            if (item.getItemId() == classId) total += item.getCount();
-        return total;
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) {
+            for (int i = 0, n = rows.size(); i < n; i++) {
+                final L1ItemInstance item = rows.get(i);
+                if (item.getItemId() == classId) total += item.getCount();
+            }
+            return total;
+        }
+        synchronized (this) {
+            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+                if (item.getItemId() == classId) total += item.getCount();
+            return total;
+        }
     }
 
-    public synchronized boolean IsEquippedByClassID(int classId) {
-        for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-            if (item.getItemId() == classId && item.isEquipped()) return true;
-        return false;
+    public boolean IsEquippedByClassID(int classId) {
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) {
+            for (int i = 0, n = rows.size(); i < n; i++) {
+                final L1ItemInstance item = rows.get(i);
+                if (item.getItemId() == classId && item.isEquipped()) return true;
+            }
+            return false;
+        }
+        synchronized (this) {
+            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+                if (item.getItemId() == classId && item.isEquipped()) return true;
+            return false;
+        }
     }
 
     private List<L1ItemInstance> snapshotLocked() {
         if (snapshot == null) {
-            if (size == 0) return Collections.emptyList();
+            if (size == 0) return snapshot = Collections.emptyList();
             final L1ItemInstance[] rows = new L1ItemInstance[size];
             int index = 0;
             for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
@@ -201,7 +261,13 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         return snapshot;
     }
 
-    private synchronized List<L1ItemInstance> snapshot() { return snapshotLocked(); }
+    private List<L1ItemInstance> snapshot() {
+        // Immutable membership snapshot: a volatile load safely publishes
+        // the cached rows. A racing writer invalidates under its lock.
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) return rows;
+        synchronized (this) { return snapshotLocked(); }
+    }
     @Override public Iterator<L1ItemInstance> iterator() { return snapshot().iterator(); }
     @Override public ListIterator<L1ItemInstance> listIterator(int index) { return snapshot().listIterator(index); }
     @Override public Spliterator<L1ItemInstance> spliterator() { return snapshot().spliterator(); }
