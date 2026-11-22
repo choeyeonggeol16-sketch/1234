@@ -2240,10 +2240,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD6541(L1PcInstance pc, String param) {
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM tb_kda", new Object[0]);
 				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_matching_apclist", new Object[0]);
-				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_matching_list", new Object[0]);
-				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_warehouse", new Object[0]);
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_warehouse_list", new Object[0]);
@@ -2370,10 +2366,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_data", new Object[0]);
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM tb_kda", new Object[0]);
-				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_matching_apclist", new Object[0]);
-				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_matching_list", new Object[0]);
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM clan_warehouse", new Object[0]);
 				Thread.sleep(300);

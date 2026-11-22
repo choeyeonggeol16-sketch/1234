@@ -705,7 +705,6 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
     	        }
     	    }
     	}
-       // ClanMatching(pc);
 
         // 이벤트 맵 만료 아이템 정리
         if (pc.getInventory().hasItemDirect(810006)) pc.getInventory().consumeItem(810006);
