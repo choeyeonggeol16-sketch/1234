@@ -1298,7 +1298,6 @@ public final class Config {
 	public static int SPAWN_HOME_POINT_RANGE;
 	public static int SPAWN_HOME_POINT_COUNT;
 	public static int SPAWN_HOME_POINT_DELAY;
-	public static boolean INIT_BOSS_SPAWN;
 	public static int ELEMENTAL_STONE_AMOUNT;
 	public static int HOUSE_TAX_INTERVAL;
 	public static int MAX_DOLL_COUNT;
@@ -2364,7 +2363,6 @@ public final class Config {
 			SPAWN_HOME_POINT_COUNT = Integer.parseInt(altSettings.getProperty("SpawnHomePointCount", "2"));
 			SPAWN_HOME_POINT_DELAY = Integer.parseInt(altSettings.getProperty("SpawnHomePointDelay", "100"));
 			SPAWN_HOME_POINT_RANGE = Integer.parseInt(altSettings.getProperty("SpawnHomePointRange", "8"));
-			INIT_BOSS_SPAWN = Boolean.parseBoolean(altSettings.getProperty("InitBossSpawn", "true"));
 			ELEMENTAL_STONE_AMOUNT = Integer.parseInt(altSettings.getProperty("ElementalStoneAmount", "300"));
 			HOUSE_TAX_INTERVAL = Integer.parseInt(altSettings.getProperty("HouseTaxInterval", "10"));
 			MAX_DOLL_COUNT = Integer.parseInt(altSettings.getProperty("MaxDollCount", "1"));
