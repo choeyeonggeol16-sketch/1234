@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.zip.GZIPInputStream;
 
 /** Bundled app center assets; inventory image indices correspond to character_shop.invgfx. */
@@ -15,12 +16,13 @@ final class AppCenterAssets {
         Asset(byte[] b,String t){bytes=b;contentType=t;}
     }
     private static final Map<String,Asset> FILES=create();
+    private static final AtomicReferenceArray<Asset> ATLAS_CACHE = new AtomicReferenceArray<>(21);
     private AppCenterAssets(){}
     static Asset get(String path){
         Asset a=FILES.get(path);
         if(a!=null)return a;
         int n=atlasNumber(path);
-        return n<0?null:new Asset(atlasBytes(n),"image/png");
+        return n<0?null:cachedAtlas(n);
     }
     static boolean isStaticPath(String path){
         return path!=null&&(FILES.containsKey(path)||atlasNumber(path)>=0);
@@ -37,6 +39,24 @@ final class AppCenterAssets {
         }
         return n<=20?n:-1;
     }
+    /**
+     * Atlas PNGs were previously inflated and decoded for every HTTP GET,
+     * including concurrent GETs for the same image. Cache immutable bytes
+     * once per atlas; synchronized miss path prevents decode stampedes.
+     */
+    private static Asset cachedAtlas(int n) {
+        Asset asset = ATLAS_CACHE.get(n);
+        if (asset != null) return asset;
+        synchronized (ATLAS_CACHE) {
+            asset = ATLAS_CACHE.get(n);
+            if (asset == null) {
+                asset = new Asset(atlasBytes(n), "image/png");
+                ATLAS_CACHE.set(n, asset);
+            }
+            return asset;
+        }
+    }
+
     private static byte[] atlasBytes(int n){
         return switch(n){
             case 0 -> AppCenterPackedAssets00.data0();
