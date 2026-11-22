@@ -334,8 +334,15 @@ public final class CacheD {
                 int id = extraOwnerIds[i];
                 if (id <= 0 || id == characterId || id == warehouseKey)
                     throw new IllegalArgumentException("Repeated economy owner");
-                for (int j = 0; j < i; j++) if (id == extraOwnerIds[j])
-                    throw new IllegalArgumentException("Repeated economy owner");
+                if (queueBehindMailboxWork) {
+                    // Clan recipient keys are sorted and unique at admission.
+                    // Validate in O(n), not O(n^2), on the game-owner thread.
+                    if (i > 0 && id <= extraOwnerIds[i - 1])
+                        throw new IllegalArgumentException("Unsorted or repeated mail owner");
+                } else {
+                    for (int j = 0; j < i; j++) if (id == extraOwnerIds[j])
+                        throw new IllegalArgumentException("Repeated economy owner");
+                }
             }
             final CacheD cache = CacheD.getInstance();
             synchronized (cache.lock) {
