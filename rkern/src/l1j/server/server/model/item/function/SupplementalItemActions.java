@@ -43,7 +43,6 @@ final class SupplementalItemActions {
 		case 31119:
 		case 31120:
 		case 210083:
-		case 474747:
 		case 60035:
 		case 410094:
 		case 210082:
@@ -208,7 +207,6 @@ final class SupplementalItemActions {
 			AdvancedAbilityItems.use(pc, l1iteminstance, itemId);
 			break;
 		case 3000195:
-		case 474748:
 		case 474750:
 		case 474751:
 		case 145001:

@@ -59,7 +59,6 @@ public class L1SkillId {
 	public static final int 엘븐스트라이크대기 = 24444;
 	public static final int 엘리멘탈대기 = 24445;
 	public static final int 접속보상쿨타임 = 24446;
-	public static final int 라우풀고정 = 24447;
 	//public static final int 리버레이션 = 1565;
 	public static final int 리버레이션 = 2794;
 	public static final int 리버레이션대기 = 25121;

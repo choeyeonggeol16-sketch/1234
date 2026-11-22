@@ -123,8 +123,10 @@ public final class CS_BoardWrite {
 
             return;
 
-        case 45000178:
         case 4747470:
+            return;
+
+        case 45000178:
 
             if (pc.getAccessLevel() == 0
                     || pc.getAccessLevel()

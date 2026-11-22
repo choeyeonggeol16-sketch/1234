@@ -252,17 +252,6 @@ public class L1PcInstance extends L1Character {
 	public synchronized void setDisNum(int i) {
 		_disNum = i;
 	}
-	/**성향 고정 by Neige**/
-	private int _lawfulStop = 0;
-
-	public synchronized int getLawfulStop() {
-		return _lawfulStop;
-	}
-
-	public synchronized void setLawfulStop(int i) {
-		_lawfulStop = i;
-	}
-	
 	private L1StatReset _statReset;
 
 	public void setStatReset(L1StatReset sr) {
@@ -853,7 +842,6 @@ public class L1PcInstance extends L1Character {
 	public int tt_clanid = -1;
 	public int tt_partyid = -1;
 	public int tt_level = 0;
-	public boolean 물품멘트 = false;
 	public boolean 퀘스트멘트 = false;
 	public boolean RootMent = true;// 루팅 멘트]
 	public boolean RootMent1 = true;// 루팅 멘트]

@@ -13,7 +13,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_AuctionSystemBoard;
 import l1j.server.server.model.network.core.sc.packet.SC_Board;
-import l1j.server.server.model.network.core.sc.packet.SC_Boarditem;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -32,7 +31,6 @@ final class SupplementalRewardRouter {
         case 474752:
             TradingBoardAccessItems.use(pc, l1iteminstance, itemId, l1iteminstance1);
             break;
-        case 474748:
         case 810011:
         case 3000048:
         case 40328:

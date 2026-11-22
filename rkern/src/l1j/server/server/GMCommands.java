@@ -60,7 +60,6 @@ import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.HouseTable;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.datatables.ItemTradeTable;
 import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.NpcTable;
@@ -376,12 +375,6 @@ public class GMCommands {
 //				new MJShiftObjectCommandExecutor().execute(new CommandArgs().setOwner(gm).setParam(param));
 //			break;
 //		case "무인가입":						autoclanjoin(gm);break;
-		case "물품판매":
-			물품1(gm, param);
-		break;
-		case "물품구입":
-			물품2(gm, param);
-		break;
 	
 		case "라이트테스트":
 			boolean isOn = false;
@@ -393,9 +386,6 @@ public class GMCommands {
 				isOn = false;
 			}
 			break;
-		case "물품취소":
-			물품3(gm, param);
-		break;
 		case "경기장":
 			StadiumManager.getInstance().open_stadium(gm, param);
 			break;
@@ -1122,9 +1112,6 @@ public class GMCommands {
 			break;
 		case "인형청소":
 			인형청소(gm);
-			break;
-		case "물품멘트":
-			물품멘트(gm, param);
 			break;
 		case "퀘스트멘트":
 			퀘스트멘트(gm, param);
@@ -2193,72 +2180,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 	}
 
 	
-	public static void WriteLetter22(L1PcInstance gm, String in4, int in2,
-			String in5) {
-		int nu1 = 949;
-		SimpleDateFormat formatter = new SimpleDateFormat("yy/MM/dd",
-				Locale.KOREA);
-		Date currentTime = new Date();
-		String dTime = formatter.format(currentTime);
-		String subject = "위탁물품판매완료";
-		String content = "+ "
-				+ in2
-				+ " "
-				+ in5
-				+ "\n물품이 판매되었습니다. \n\n반드시 리스타트 후에 \n부가 아이템 창고에서\n수표를 회수하십시오.\n\n";
-		String name = "위탁관리인";
-		L1PcInstance target = L1World.getInstance().getPlayer(in4);
-		LetterTable.getInstance().writeLetter(nu1, dTime, name, in4, 0,
-				subject, content, target, () -> {
-            if (target != null && target.getOnlineStatus() != 0) {
-			LetterList(target, 0, 20);
-			SC_SystemMessage.send(target, "\\fY물품이 판매되었습니다.");
-			SC_SystemMessage.send(target, "\\fY리스 후 부가아이템창고에서 찾으실 수 있습니다.");
-			SC_SkillSound.send(target, target.getId(), 1091);
-			SC_ServerMessage.send(target, 428);
-			SC_LetterList.sendListAsync(gm, 0, 20);
-		}
-        });
-	}
-
-	private static void 물품1(L1PcInstance gm, String count) {
-		try {
-			int i = 0;
-			try {
-				i = Integer.parseInt(count);
-			} catch (NumberFormatException e) {
-			}
-			if (i <= 0) {
-				// pc.sendPackets(new SC_SystemMessage(".위탁판매  (판매금액)을 적어주세요."));
-				SC_SystemMessage.send(gm, "\\fY---------------------------------------------------");
-				SC_SystemMessage.send(gm, "\\fY[사용방법] .물품판매 (판매금액)을 입력하면 해당금액의 인증서가 들어옵니다");
-				SC_SystemMessage.send(gm, "\\fY그 인증서를 판매할 물품에 클릭하시면 물품거래게시판에 등록이 됩니다.");
-				SC_SystemMessage.send(gm, "\\fY---------------------------------------------------");
-				return;
-			}
-			if (i > 2000000000) {
-				SC_SystemMessage.send(gm, "판매금액은 20억이상 판매하실수없습니다.");
-				return;
-			}
-			if (i >= 1 && i < 10000000) {
-				SC_SystemMessage.send(gm, "최소판매금액은 1000만이상 입니다.");
-				return;
-			}
-			if (gm.getInventory().checkItem(474747)) { // 위탁판매 증서 아이템번호는 본인 팩에
-														// 맞게
-				SC_SystemMessage.send(gm, "물품판매 증서를 소지 하고 있으면 불가능 합니다.");
-			} else {
-				SC_SystemMessage.send(gm, "\\fY[물품판매 인증서]를 얻었습니다.");
-				SC_SystemMessage.send(gm, "\\fY판매물품에 사용하면 게시판에 등록이 됩니다.");
-				gm.getInventory().storeItem(474747, i); // 위탁판매 증서 아이템번호는 본인 팩에
-															// 맞게
-			}
-			
-		} catch (Exception exception) {
-			SC_SystemMessage.send(gm, ".물품판매 (판매금액)");
-			SC_SystemMessage.send(gm, "예)  .물품판매 5000000");
-		}
-	}
 private void \uC11C\uBC84\uCD08\uAE30\uD6541(L1PcInstance pc, String param) {
 		
 		Connection con = null;
@@ -2355,8 +2276,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD6541(L1PcInstance pc, String param) {
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM tb_dungeon_time_char_information", new Object[0]);
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM passive_user_info", new Object[0]);
-				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM board_item", new Object[0]);
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_auto_set", new Object[0]);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_auto_set", new Object[0]);
@@ -2489,8 +2408,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				Thread.sleep(300);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM passive_user_info", new Object[0]);
 				Thread.sleep(300);
-				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM board_item", new Object[0]);
-				Thread.sleep(300);
 				Thread.sleep(3000);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_auto_set", new Object[0]);
 				L1QueryUtil.execute(con, "\u0044\u0045\u004C\u0045\u0054\u0045 FROM character_auto_set", new Object[0]);
@@ -2523,13 +2440,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			}
 		
 
-	}
-	private static void 물품2(L1PcInstance gm, String count) {
-		ItemTradeTable.getInstance().buyTopic(gm, count, true);
-	}
-
-	private static void 물품3(L1PcInstance gm, String count) {
-		ItemTradeTable.getInstance().cancelTopic(gm, count);
 	}
 
 	public static void autofish(L1PcInstance gm) {
@@ -4046,40 +3956,6 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 			}
 		} catch (Exception eee) {
 			SC_SystemMessage.send(gm, ".퀘스트멘트 [켬/끔] 으로 입력하세요.");
-			
-		}
-	}
-	private void 물품멘트(L1PcInstance gm, String param) {
-		int count = 0;
-		int ccount = 0;
-		
-		
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String status = st.nextToken();
-			if (status.equalsIgnoreCase("켬")) {
-				if (gm.물품멘트 == true) {
-					SC_SystemMessage.send(gm, "이미 물품멘트 활성화 상태입니다.");
-					return;
-				}
-				
-				gm.물품멘트 = true;
-				
-				SC_SystemMessage.send(gm, "\\f:현 시간부로 거래게시판에 물품이 업로드 될 경우 채팅창에 출력됩니다.");
-				
-			} else if (status.equalsIgnoreCase("끔")) {
-				if (gm.물품멘트 == false) {
-					SC_SystemMessage.send(gm, "이미 물품멘트는 비활성화상태입니다.");
-					return;
-				}
-				
-				gm.물품멘트 = false;
-				
-				SC_SystemMessage.send(gm, "\\f:물품멘트가 비활성화되었습니다.");
-			
-			}
-		} catch (Exception eee) {
-			SC_SystemMessage.send(gm, ".물품멘트 [켬/끔] 으로 입력하세요.");
 			
 		}
 	}

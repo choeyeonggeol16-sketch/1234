@@ -10,16 +10,12 @@ import static l1j.server.server.model.character.skill.L1SkillId.SHOCK_STUN;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1NeigeSaveChar;
@@ -29,22 +25,17 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
-import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.sc.packet.SC_Ability;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_LetterList;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_ShowHelp;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_War;
 
 public class UserCommands {
     private static final UserCommands INSTANCE = new UserCommands();
     private static final Logger LOG = Logger.getLogger(UserCommands.class.getName());
-    private static final DateTimeFormatter LETTER_DATE = DateTimeFormatter.ofPattern("yy/MM/dd", Locale.KOREA);
 
     private UserCommands() {}
 
@@ -81,7 +72,6 @@ public class UserCommands {
                 case "ment" -> setDropMessage(pc, param, false, false);
                 case "파티멘트" -> setDropMessage(pc, param, true, true);
                 case "bpment" -> setDropMessage(pc, param, true, false);
-                case "라우풀" -> setLawfulProtection(pc, param);
                 case "라이트" -> setLight(pc, param, true);
                 case "light" -> setLight(pc, param, false);
                 case "시세" -> l1j.server.server.appcenter.AppCenterService.registerMarketSearch(pc, param);
@@ -106,31 +96,6 @@ public class UserCommands {
             pc.sendPackets("명령어 처리 중 오류가 발생했습니다.");
         }
     }
-
-    public static void notifyConsignmentSale(L1PcInstance pc, String in4, int in2,
-			String in5) {
-		int nu1 = 949;
-		String dTime = LETTER_DATE.format(LocalDate.now());
-		String subject = "위탁물품판매완료";
-		String content = "+ "
-				+ in2
-				+ " "
-				+ in5
-				+ "\n물품이 판매되었습니다. \n\n반드시 리스타트 후에 \n부가 아이템 창고에서\n수표를 회수하십시오.\n\n";
-		String name = "위탁관리인";
-		L1PcInstance target = L1World.getInstance().getPlayer(in4);
-		LetterTable.getInstance().writeLetter(nu1, dTime, name, in4, 0,
-				subject, content, target, () -> {
-            if (target != null && target.getOnlineStatus() != 0) {
-			SC_LetterList.sendListAsync(target, 0, 20);
-			SC_SystemMessage.send(target, "\\fY물품이 판매되었습니다.");
-			SC_SystemMessage.send(target, "\\fY리스 후 부가아이템창고에서 찾으실 수 있습니다.");
-			SC_SkillSound.send(target, target.getId(), 1091);
-			SC_ServerMessage.send(target, 428);
-			SC_LetterList.sendListAsync(pc, 0, 20);
-		}
-        });
-	}
 
     public static void setChart(L1PcInstance pc, String param) {
         if (pc == null || !KdaChartScheduler.isLoaded()) {
@@ -220,19 +185,6 @@ void showTradePriceNotice(L1PcInstance pc) {
             }
         }
     }
-
-    private void setLawfulProtection(L1PcInstance pc, String param) {
-		if (param.equalsIgnoreCase("끔")) {
-			pc.sendPackets("\\f:PVP에 따른 라우풀 조절을 중지합니다.");
-			pc.setLawfulStop(0);
-			pc.killSkillEffectTimer(L1SkillId.라우풀고정);
-		} else if (param.equalsIgnoreCase("켬")) {
-			SC_MessageYN.send(pc, CS_Attr.MSGCODE_622_Lawful, 622, "라우풀 성향 변화에 PVP를 제외하시겠습니까? (비용: 1천만 아데나)");
-		} else {
-			pc.sendPackets(".라우풀 [켬/끔] 입력 하시면 됩니다.");
-			pc.sendPackets("이 모드는 라우풀 성향이 PVP에 영향을 받지 않도록 설정할 수 있습니다.");
-		}
-	}
 
 /** Consume only the light commands; other chat and commands retain their existing paths. */
     public static boolean handleLightCommand(L1PcInstance pc, String text) {

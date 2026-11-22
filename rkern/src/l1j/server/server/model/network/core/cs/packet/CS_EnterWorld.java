@@ -1076,7 +1076,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 
 	private static List<BuffInfo> loadBuff(L1PcInstance pc) throws SQLException {
 		List<BuffInfo> buffList = new ArrayList<>();
-		String sql = "SELECT skill_id, remaining_time, poly_id FROM character_buff WHERE char_obj_id = ?";
+		String sql = "SELECT skill_id, remaining_time, poly_id FROM character_buff WHERE char_obj_id = ? AND skill_id <> 24447";
 
 		try (Connection con = DatabaseFactory.getInstance().getConnection();
 				PreparedStatement pstm = con.prepareStatement(sql)) {

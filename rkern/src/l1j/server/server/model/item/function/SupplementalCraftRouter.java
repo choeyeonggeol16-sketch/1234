@@ -57,9 +57,6 @@ final class SupplementalCraftRouter {
         case 210083:
             CharacterSlotReceipt.useCharacterSlotExpansionAtomic(client, pc, l1iteminstance);
             break;
-        case 474747:
-            ConsignmentItemActions.register(pc, l1iteminstance, l1iteminstance1);
-            break;
         case 60035:
         case 40925:
         case 40926:

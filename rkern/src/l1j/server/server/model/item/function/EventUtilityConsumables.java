@@ -13,7 +13,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_AuctionSystemBoard;
 import l1j.server.server.model.network.core.sc.packet.SC_Board;
-import l1j.server.server.model.network.core.sc.packet.SC_Boarditem;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -45,28 +44,6 @@ final class EventUtilityConsumables {
     }
     static void use(L1PcInstance pc, L1ItemInstance l1iteminstance, int itemId, L1ItemInstance l1iteminstance1) {
         switch (itemId) {
-		case 474748: {
-		    SC_SkillSound.send(pc, pc.getId(), 21178);
-
-		    SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "거래는 1천만 수표로만 이용이 가능합니다.");
-
-		    final L1NpcInstance boardNpc =
-		            L1World.getInstance()
-		                    .findNpcByNpcId(4747470);
-
-		    if (boardNpc != null) {
-		        SC_Boarditem.sendListAsync(pc, boardNpc, 0);
-		    }
-
-		    SC_SystemMessage.send(pc, "[.물품판매] [.물품구입]으로 판매/구매 가능합니다.");
-
-		    SC_SystemMessage.send(pc, "[.물품취소] 를 통해 본인이 등록한 물품을 취소할 수 있습니다.");
-
-		    SC_SystemMessage.send(pc, "[.물품멘트 켬]하시면 실시간으로 판매등록된 물품들이 채팅창에 출력이 됩니다.");
-
-		    break;
-		}
-
 
 		case 810011:
 			SC_ChatPacket.sendDirect(pc, pc, "몽환의 섬 입구 크루나에게 물건을 구입할 수 있다.");

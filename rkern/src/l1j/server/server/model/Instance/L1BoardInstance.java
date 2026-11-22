@@ -26,7 +26,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_AuctionSystemBoard;
 import l1j.server.server.model.network.core.sc.packet.SC_Board;
 
-import l1j.server.server.model.network.core.sc.packet.SC_Boarditem;
 import l1j.server.server.model.network.core.sc.packet.SC_EnchantRanking;
 
 import l1j.server.server.model.network.core.sc.packet.SC_KillRanking;
@@ -67,12 +66,7 @@ public class L1BoardInstance extends L1NpcInstance {
 			SC_PacketBox.send(player, SC_PacketBox.GREEN_MESSAGE, "거래 전, 공지사항의 '거래 게시판 이용 수칙'을 반드시 정독해주시기 바랍니다.");
 			SC_AuctionSystemBoard.sendListAsync(player, this, 0);
 		} else if (this.getNpcTemplate().get_npcId() == 4747470) {
-			SC_SkillSound.send(player, player.getId(), 21178);
-			SC_PacketBox.send(player, SC_PacketBox.GREEN_MESSAGE, "거래는 1천만 수표로만 이용이 가능합니다.");
-			SC_Boarditem.sendListAsync(player, this, 0);
-			SC_SystemMessage.send(player, "[.물품판매] [.물품구입]으로 판매/구매 가능합니다.");
-			SC_SystemMessage.send(player, "[.물품취소] 를 통해 본인이 등록한 물품을 취소할 수 있습니다.");
-			SC_SystemMessage.send(player, "[.물품멘트 켬]하시면 실시간으로 판매등록된 물품들이 채팅창에 출력이 됩니다.");
+			return;
 		} else if (this.getNpcTemplate().get_npcId() == 42000133) {// 랭킹 게시판 2
 			SC_KillRanking.sendList(player, this);
 			
@@ -88,7 +82,7 @@ public class L1BoardInstance extends L1NpcInstance {
 		if (this.getNpcTemplate().get_npcId() == 45000178) {
 			SC_AuctionSystemBoard.sendListAsync(player, this, number);
 		} else if (this.getNpcTemplate().get_npcId() == 4747470) {
-			SC_Boarditem.sendListAsync(player, this, number);
+			return;
 		} else if (this.getNpcTemplate().get_npcId() == 42000133) {// 랭킹 게시판 2
 			SC_KillRanking.sendReadAsync(player, number);
 		} else {
@@ -107,7 +101,7 @@ public class L1BoardInstance extends L1NpcInstance {
 		} else if (this.getNpcTemplate().get_npcId() == 45000178) {
 			SC_AuctionSystemBoard.sendReadAsync(player, number);
 		} else if (this.getNpcTemplate().get_npcId() == 4747470) {
-			SC_Boarditem.sendReadAsync(player, number);
+			return;
 		} else if (this.getNpcTemplate().get_npcId() == 42000133) {
 			SC_KillRanking.sendReadAsync(player, number);
 		} else {

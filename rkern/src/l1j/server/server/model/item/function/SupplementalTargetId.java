@@ -31,7 +31,6 @@ final class SupplementalTargetId {
 		case 703:
 		case 698:
 		case 776:
-		case 474747:
 		case 400001:
 		case 500001:
 		case 600001:

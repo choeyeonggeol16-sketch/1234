@@ -228,10 +228,6 @@ public final class BuffRestoreRegistryInit {
         registerSetTrue(L1SkillId.비욘드,         pc -> pc.비욘드(true));
         registerSetTrue(L1SkillId.가드피어호러,      pc -> pc.가드피어호러(true));
 
-        // 라우풀고정
-        BuffRestoreRegistry.register(L1SkillId.라우풀고정,
-                (pc, sid, polyId, rt, icon) -> pc.setLawfulStop(1));
-
         // ================= 13. 경험치보너스20 (이중 setSkillEffect 특수) =================
         BuffRestoreRegistry.register(L1SkillId.경험치보너스20, (pc, sid, polyId, rt, icon) -> {
             if (rt > 0) {

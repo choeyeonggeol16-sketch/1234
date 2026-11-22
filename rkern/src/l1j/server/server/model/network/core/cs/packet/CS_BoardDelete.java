@@ -41,6 +41,8 @@ public final class CS_BoardDelete {
         final L1BoardInstance board =
                 (L1BoardInstance) obj;
 
+        if (board.getNpcId() == 4747470) return;
+
         final L1BoardPost topic =
                 L1BoardPost.findById(topicId);
 

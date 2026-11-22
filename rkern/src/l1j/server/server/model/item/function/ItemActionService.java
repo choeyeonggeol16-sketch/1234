@@ -17,6 +17,8 @@ final class ItemActionService {
     static void use(CUserSocket client, L1PcInstance pc, L1ItemInstance item,
             int itemObjectId, int targetId, int x, int y, String name, int skillId) {
         final int itemId=item.getItem().getItemId();
+        // Retired vouchers must not fall into the generic item-use path.
+        if (itemId == 474747 || itemId == 474748) return;
         if(SupplementalItemIds.contains(itemId)) {
             SupplementalItemActions.use(client,pc,item,targetId);
             return;

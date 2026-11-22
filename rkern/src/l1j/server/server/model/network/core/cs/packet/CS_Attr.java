@@ -76,7 +76,6 @@ public final class CS_Attr {
 	public static final int MSGCODE_622_Card2				= 8;
 	public static final int MSGCODE_622_Card3				= 9;
 	public static final int MSGCODE_622_Tree				= 10;
-	public static final int MSGCODE_622_Lawful				= 11;
 
 	public static final int MSGCODE_NO 			= 0;
 	public static final int MSGCODE_YES 			= 1;
@@ -138,43 +137,6 @@ public final class CS_Attr {
             ps.setInt(1, resetKill ? 0 : beforeKill); ps.setInt(2, resetDeath ? 0 : beforeDeath);
             ps.setInt(3, owner); ps.setInt(4, beforeKill); ps.setInt(5, beforeDeath);
             if (ps.executeUpdate() != 1) throw new SQLException("K/D reset before-image changed: " + owner);
-        }
-    }
-    private static void lockLawful(L1PcInstance pc) {
-        if (unavailable(pc) || pc.getLawfulStop() != 0 || pc.hasSkillEffect(L1SkillId.라우풀고정)) return;
-        final int owner = pc.getId();
-        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc,
-                CacheD.accountOrderKey("lawful-lock:" + owner))) {
-            if (!tx.debit(L1ItemId.ADENA, 10000000)) {
-                SC_SystemMessage.send(pc, "아데나가 부족합니다. [비용 :1,000만 아데나]"); return;
-            }
-            tx.requireTables("characters", "character_buff");
-            tx.sql(con -> insertLawfulLock(con, owner));
-            tx.commit(() -> {
-                if (pc.getLawfulStop() != 0 || pc.hasSkillEffect(L1SkillId.라우풀고정))
-                    throw new IllegalStateException("Lawful lock memory preimage changed");
-                pc.setLawfulStop(1);
-                pc.setSkillEffect(L1SkillId.라우풀고정, -1);
-                SC_SystemMessage.send(pc, "캐릭터의 성향이 PVP와는 관계 없도록 설정되었습니다.");
-            });
-        } catch (RuntimeException failure) { confirmationFailed(pc, failure); }
-    }
-    public static void insertLawfulLock(Connection con, int owner) throws SQLException {
-        // The character row anchors absence locks even on schemas without a
-        // unique (owner,skill) key. Do not use an unqualified upsert.
-        try (PreparedStatement ps = con.prepareStatement("SELECT objid FROM characters WHERE objid=? FOR UPDATE")) {
-            ps.setInt(1, owner);
-            try (ResultSet rows = ps.executeQuery()) { if (!rows.next()) throw new SQLException("Character missing"); }
-        }
-        try (PreparedStatement ps = con.prepareStatement(
-                "SELECT skill_id FROM character_buff WHERE char_obj_id=? AND skill_id=? FOR UPDATE")) {
-            ps.setInt(1, owner); ps.setInt(2, L1SkillId.라우풀고정);
-            try (ResultSet rows = ps.executeQuery()) { if (rows.next()) throw new SQLException("Lawful lock already persisted"); }
-        }
-        try (PreparedStatement ps = con.prepareStatement(
-                "INSERT INTO character_buff(char_obj_id,skill_id,remaining_time,poly_id) VALUES(?,?,0,0)")) {
-            ps.setInt(1, owner); ps.setInt(2, L1SkillId.라우풀고정);
-            if (ps.executeUpdate() != 1) throw new SQLException("Lawful lock insert failed");
         }
     }
     private static void recoverExperience(L1PcInstance pc, boolean scroll) {
@@ -239,9 +201,6 @@ public final class CS_Attr {
                 L1ItemInstance resetItem = pc.getKillDeathInitializeItem();
                 pc.setKillDeathInitializeItem(null);
                 if (c == MSGCODE_YES) resetKillDeath(pc, resetItem, true, true);
-                return;
-            case MSGCODE_622_Lawful:
-                if (c == MSGCODE_YES) lockLawful(pc);
                 return;
 			case MSGCODE_622_Name:
 				if (c == MSGCODE_YES) {
