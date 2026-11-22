@@ -3,8 +3,6 @@ package l1j.server.server.model;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.datatables.NoDropItem;
@@ -98,8 +96,8 @@ public class L1PcInventory extends L1Inventory {
     }
 
 	// PC 전용 빠른 조회 캐시
-	private final Map<Integer, Integer> _itemCountMap = new ConcurrentHashMap<>();
-	private final Map<Integer, Integer> _equippedCountMap = new ConcurrentHashMap<>();
+	private final CItemCountTable _itemCountMap = new CItemCountTable();
+	private final CItemCountTable _equippedCountMap = new CItemCountTable();
 
 	// PC 전용 장비 슬롯 추적
 	private static final int RING_WINDOW_SLOTS = 4;
@@ -181,10 +179,8 @@ public class L1PcInventory extends L1Inventory {
                 // the equipped-template count index consistent with the item.
                 final int newTemplateId = image.getItemId();
                 if (original.isEquipped()) {
-                    int oldCount = _equippedCountMap.getOrDefault(oldTemplate, 0);
-                    if (oldCount > 1) _equippedCountMap.put(oldTemplate, oldCount - 1);
-                    else _equippedCountMap.remove(oldTemplate);
-                    _equippedCountMap.put(newTemplateId, _equippedCountMap.getOrDefault(newTemplateId, 0) + 1);
+                    _equippedCountMap.subtract(oldTemplate, 1);
+                    _equippedCountMap.add(newTemplateId, 1);
                 }
                 original.setItem(image.getItem());
                 original.set_main_set_armor(false);
@@ -313,19 +309,14 @@ public class L1PcInventory extends L1Inventory {
 	@Override
 	protected void addItemCountCache(int itemId, int amount) {
 		if (amount <= 0) return;
-		_itemCountMap.put(itemId, _itemCountMap.getOrDefault(itemId, 0) + amount);
+		_itemCountMap.add(itemId, amount);
 	}
 
 	@Override
 	protected void removeItemCountCache(int itemId, int amount) {
 		if (amount <= 0) return;
 
-		int remain = _itemCountMap.getOrDefault(itemId, 0) - amount;
-		if (remain > 0) {
-			_itemCountMap.put(itemId, remain);
-		} else {
-			_itemCountMap.remove(itemId);
-		}
+		_itemCountMap.subtract(itemId, amount);
 	}
 
 	public void updateEquipmentWindow(L1ItemInstance item) {
@@ -542,7 +533,7 @@ public class L1PcInventory extends L1Inventory {
 	    int amount = item.getCount();
 
 	    // 맵에 더하기
-	    _itemCountMap.put(itemId, _itemCountMap.getOrDefault(itemId, 0) + amount);
+	    _itemCountMap.add(itemId, amount);
 	    
 	    // [디버그 로그]
 	  //  System.out.println(String.format("[아이템추가] ID: %d, 수량: %d, 맵총량: %d", itemId, amount, _itemCountMap.get(itemId)));
@@ -759,14 +750,7 @@ public class L1PcInventory extends L1Inventory {
 		int amount = item.getCount();
 
 		// 맵에서 빼기
-		int currentCount = _itemCountMap.getOrDefault(itemId, 0);
-		int newCount = currentCount - amount;
-
-		if (newCount <= 0) {
-			_itemCountMap.remove(itemId);
-		} else {
-			_itemCountMap.put(itemId, newCount);
-		}
+		_itemCountMap.subtract(itemId, amount);
 
 		// [디버그 로그]
 	//	System.out.println(String.format("[아이템삭제] ID: %d, 삭제수량: %d, 맵잔량: %d", itemId, amount, _itemCountMap.getOrDefault(itemId, 0)));
@@ -844,7 +828,7 @@ public class L1PcInventory extends L1Inventory {
 				try {
 					if (template.getType() != 4) clearArrowSelection();
 					item.setEquipped(true);
-					_equippedCountMap.put(itemId, _equippedCountMap.getOrDefault(itemId, 0) + 1);
+					_equippedCountMap.add(itemId, 1);
 					slot.equipItem(item);
 				} finally {
 					if (!item.isEquipped()) item.stopEquipmentTimer();
@@ -857,9 +841,7 @@ public class L1PcInventory extends L1Inventory {
 				beforeUnequip(template, itemId, loaded, weapon);
 				item.setEquipped(false);
 				item.stopEquipmentTimer();
-				final int current = _equippedCountMap.getOrDefault(itemId, 0);
-				if (current > 1) _equippedCountMap.put(itemId, current - 1);
-				else _equippedCountMap.remove(itemId);
+				_equippedCountMap.subtract(itemId, 1);
 				slot.unequipItem(item);
 			}
 
