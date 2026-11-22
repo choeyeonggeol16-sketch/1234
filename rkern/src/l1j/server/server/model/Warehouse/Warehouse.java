@@ -464,10 +464,14 @@ public abstract class Warehouse extends L1Object {
         // awaiting game replay, without treating the current read as a write.
         if (CacheD.getInstance().hasPendingOwnerApply(transferOrderKey()))
             throw new SQLException("Warehouse snapshot has pending writes: " + getName());
-        for (L1ItemInstance previous : _items)
+        final List<L1ItemInstance> previousItems;
+        try {
+            previousItems = _items.replaceDetached(loaded);
+        } catch (IllegalStateException e) {
+            throw new SQLException("Warehouse snapshot contains an owned item: " + getName(), e);
+        }
+        for (L1ItemInstance previous : previousItems)
             L1World.getInstance().removeObject(previous);
-        _items.clear();
-        _items.addAll(loaded);
         for (L1ItemInstance item : loaded)
             L1World.getInstance().storeObject(item);
     }
@@ -487,6 +491,7 @@ public abstract class Warehouse extends L1Object {
 		if (item == null || item.getCount() <= 0 || checkAddItemToWarehouse(item, item.getCount()) != 0) {
 			return null;
 		}
+        CItemList.requireDetached(item);
 		if (item.isStackable()) {
 			L1ItemInstance findItem = findItemId(item.getItem().getItemId());
 			if (findItem != null) {
@@ -502,14 +507,23 @@ public abstract class Warehouse extends L1Object {
 				return findItem;
 			}
 		}
-		item.setX(getX());
-		item.setY(getY());
-		item.setMap(getMapId());
-		insertItem(item);
+        final int oldX = item.getX(), oldY = item.getY();
+        final short oldMap = item.getMapId();
+        _items.add(item);
+        try {
+            item.setX(getX());
+            item.setY(getY());
+            item.setMap(getMapId());
+            insertItem(item);
+        } catch (RuntimeException e) {
+            _items.remove(item);
+            item.setX(oldX);
+            item.setY(oldY);
+            item.setMap(oldMap);
+            throw e;
+        }
         // The object now belongs to the warehouse, not its former PC.
-        // Keeping _cha points later persistence at the wrong owner.
         item._cha = null;
-		_items.add(item);
 		return item;
 	}
 
