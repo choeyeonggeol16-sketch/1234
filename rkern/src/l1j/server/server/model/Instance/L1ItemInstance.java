@@ -31,6 +31,10 @@ import l1j.server.server.utils.ItemPresentOutStream;
 
 public class L1ItemInstance extends L1Object {
 
+	// Intrusive list membership; only CItemList may modify these links.
+	transient volatile CItemList inventoryLinkOwner;
+	transient L1ItemInstance inventoryPrev, inventoryNext;
+
 	public static String to_simple_description(String name, int bless, int enchant, int elemental, int level) {
 		StringBuilder sb = new StringBuilder(name.length() + 32);
 		sb.append(get_blessed_description(bless));
