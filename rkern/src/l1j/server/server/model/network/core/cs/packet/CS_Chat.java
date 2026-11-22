@@ -31,7 +31,27 @@ public final class CS_Chat {
 
         if (UserCommands.handleLightCommand(pc, chatText)) return;
 
+        // Password commands are not connected to the general chat dispatcher.
+        // Never broadcast their arguments as world chat.
+        if (isPasswordCommand(chatText)) {
+            pc.sendPackets("현재 채팅 명령으로 암호를 변경할 수 없습니다.");
+            return;
+        }
+
         handleWorldChat(pc, chatText);
+    }
+
+    private static boolean isPasswordCommand(String text) {
+        int start = 0;
+        final int length = text.length();
+        while (start < length && Character.isWhitespace(text.charAt(start))) start++;
+        if (start == length || text.charAt(start) != '.') return false;
+
+        final String first = ".암호변경";
+        final String second = ".비번변경";
+        if (!text.startsWith(first, start) && !text.startsWith(second, start)) return false;
+        final int end = start + first.length();
+        return end == length || Character.isWhitespace(text.charAt(end));
     }
 
     private static void handleWorldChat(L1PcInstance pc, String chatText) {

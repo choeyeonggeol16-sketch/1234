@@ -112,7 +112,12 @@ public class UserCommands {
             }
         } catch (RuntimeException failure) {
             // Never record the command parameter: it can contain credentials.
-            LOG.log(Level.WARNING, "User command failed: characterId=" + pc.getId(), failure);
+            if (cmd.equals("암호변경") || cmd.equals("비번변경")) {
+                LOG.warning("Password command failed: characterId=" + pc.getId()
+                        + " exception=" + failure.getClass().getSimpleName());
+            } else {
+                LOG.log(Level.WARNING, "User command failed: characterId=" + pc.getId(), failure);
+            }
             pc.sendPackets("명령어 처리 중 오류가 발생했습니다.");
         }
     }
