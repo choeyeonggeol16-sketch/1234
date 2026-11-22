@@ -894,43 +894,28 @@ public class L1Inventory extends L1Object {
 		return item;
 	}
 
-	public boolean 제작리스트1(int itemid, int count, int en) {
-		if (count <= 0) {
-			return false;
-		}
-		if (ItemTable.getInstance().getTemplate(itemid).isStackable()) {
-			L1ItemInstance item = findItemId(itemid);
-			if (item != null && item.getCount() >= count && item.getEnchantLevel() == en) {
-				removeItem(item, count);
-				return true;
-			}
-		} else {
-			L1ItemInstance[] itemList = findItemsId(itemid);
-			if (itemList.length == count) {
-				int j = 0;
-				for (int i = 0; i < count; ++i) {
-					if (itemList[i].getEnchantLevel() == en) {
-						removeItem(itemList[i], 1);
-						if (++j == count)
-							break;
-					}
-				}
-				return true;
-			} else if (itemList.length > count) {
-				DataComparator dc = new DataComparator();
-				extracted(itemList, dc);
-				int j = 0;
-				for (int i = 0; i < itemList.length; ++i) {
-					if (itemList[i].getEnchantLevel() == en) {
-						removeItem(itemList[i], 1);
-						if (++j == count)
-							break;
-					}
-				}
-				return true;
-			}
-		}
-		return false;
+	public synchronized boolean 제작리스트1(int itemid, int count, int en) {
+        if (count <= 0) return false;
+        final L1Item template = ItemTable.getInstance().getTemplate(itemid);
+        if (template == null) return false;
+        if (template.isStackable()) {
+            final L1ItemInstance item = findItemId(itemid);
+            return item != null && item.getCount() >= count && item.getEnchantLevel() == en
+                    && removeItem(item, count) == count;
+        }
+        final L1ItemInstance[] items = findItemsId(itemid);
+        if (items.length < count) return false;
+        if (items.length > count) extracted(items, new DataComparator());
+        int eligible = 0;
+        for (L1ItemInstance item : items) if (item.getEnchantLevel() == en) ++eligible;
+        if (eligible < count) return false;
+        int removed = 0;
+        for (L1ItemInstance item : items) {
+            if (item.getEnchantLevel() != en) continue;
+            if (removeItem(item, 1) != 1) return false;
+            if (++removed == count) return true;
+        }
+        return false;
 	}
 	public L1ItemInstance[] findItemsId_HighEnchant(int id, int enchant) {
 		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
@@ -942,174 +927,97 @@ public class L1Inventory extends L1Object {
 		return itemList.toArray(new L1ItemInstance[] {});
 	}
 	
-	public boolean 제작리스트3(int itemid, int count, int en, int bless, int descid, int attr, int attr_en) {
-		L1ItemInstance item = findItemDescId(itemid);
-		if (item == null){
-			return false;
-		}
-		if (count <= 0) {
-			return false;
-		}
-		if (attr == 2){
-			attr_en += 5;
-		} else if (attr == 3){
-			attr_en += 10;
-		} else if (attr == 4){
-			attr_en += 15;
-		}
-		if (item.isStackable()) {
-			if (item != null && item.getCount() >= count && item.getEnchantLevel() == en 
-					&& item.getBless() == bless && item.getItem().getItemDescId() == descid
-					&& item.getAttrEnchantLevel() == attr_en) {
-				removeItem(item, count);
-				return true;
-			}
-		} else {
-			L1ItemInstance[] itemList = findItemsId_HighEnchant(item.getItem().getItemId(), en);
-			if (itemList.length == count) {
-				int j = 0;
-				for (int i = 0; i < count; ++i) {
-					if (itemList[i].getEnchantLevel() == en && itemList[i].getBless() == bless 
-							&& itemList[i].getItem().getItemDescId() ==  descid
-							&& itemList[i].getAttrEnchantLevel() == attr_en) {
-						removeItem(itemList[i], 1);
-						if (++j == count)
-							break;
-					}
-				}
-				return true;
-			} else if (itemList.length > count) {
-				DataComparator dc = new DataComparator();
-				extracted(itemList, dc);
-				int j = 0;
-				for (int i = 0; i < itemList.length; ++i) {
-					if (itemList[i].getEnchantLevel() == en && itemList[i].getBless() == bless
-							&&  itemList[i].getItem().getItemDescId() ==  descid
-							&& itemList[i].getAttrEnchantLevel() == attr_en) {
-						removeItem(itemList[i], 1);
-						if (++j == count)
-							break;
-					}
-				}
-				return true;
-			}
-		}
-		return false;
+	public synchronized boolean 제작리스트3(int itemid, int count, int en, int bless, int descid, int attr, int attr_en) {
+        final L1ItemInstance item = findItemDescId(itemid);
+        if (item == null || count <= 0) return false;
+        if (attr == 2) attr_en += 5;
+        else if (attr == 3) attr_en += 10;
+        else if (attr == 4) attr_en += 15;
+        if (item.isStackable())
+            return item.getCount() >= count && item.getEnchantLevel() == en
+                    && item.getBless() == bless && item.getItem().getItemDescId() == descid
+                    && item.getAttrEnchantLevel() == attr_en && removeItem(item, count) == count;
+        final L1ItemInstance[] items = findItemsId_HighEnchant(item.getItemId(), en);
+        if (items.length < count) return false;
+        if (items.length > count) extracted(items, new DataComparator());
+        int eligible = 0;
+        for (L1ItemInstance candidate : items)
+            if (candidate.getEnchantLevel() == en && candidate.getBless() == bless
+                    && candidate.getItem().getItemDescId() == descid
+                    && candidate.getAttrEnchantLevel() == attr_en) ++eligible;
+        if (eligible < count) return false;
+        int removed = 0;
+        for (L1ItemInstance candidate : items) {
+            if (candidate.getEnchantLevel() != en || candidate.getBless() != bless
+                    || candidate.getItem().getItemDescId() != descid
+                    || candidate.getAttrEnchantLevel() != attr_en) continue;
+            if (removeItem(candidate, 1) != 1) return false;
+            if (++removed == count) return true;
+        }
+        return false;
 	}
 
-	public boolean ConsumeItemDescId(int descId, int enchant, int count) {
-		L1ItemInstance item = findItemDescId(descId);
-		if (item != null) {
-			if (count <= 0) return false;
-			if (item.isStackable()) {
-				if (item.getCount() >= count) {
-					removeItem(item, count);
-					return true;
-				}
-			} else {
-				L1ItemInstance[] itemList = findItemsId_HighEnchant(item.getItem().getItemId(), enchant);
-				if (itemList.length >= count) {
-					for (int i = 0; i < count; i++) {
-						removeItem(itemList[i], 1);
-					}
-					return true;
-				}
-			}
-		}
-		return false;
+	public synchronized boolean ConsumeItemDescId(int descId, int enchant, int count) {
+        if (count <= 0) return false;
+        final L1ItemInstance item = findItemDescId(descId);
+        if (item == null) return false;
+        if (item.isStackable())
+            return item.getCount() >= count && removeItem(item, count) == count;
+        final L1ItemInstance[] items = findItemsId_HighEnchant(item.getItemId(), enchant);
+        if (items.length < count) return false;
+        for (int i = 0; i < count; i++)
+            if (removeItem(items[i], 1) != 1) return false;
+        return true;
 	}
-	public boolean consumeItem(int itemid, int count) {
-		L1Item tem = ItemTable.getInstance().getTemplate(itemid);
-		if (tem == null){
-			return false;
-		}
-		if (count <= 0) {
-			return false;
-		}
-		if (tem.isStackable()) {
-			L1ItemInstance item = findItemId(itemid);
-			if (item != null && item.getCount() >= count) {
-				removeItem(item, count);
-				return true;
-			}
-		} else {
-			L1ItemInstance[] itemList = findItemsId(itemid);
-			if (itemList.length == count) {
-				for (int i = 0; i < count; i++) {
-					removeItem(itemList[i], 1);
-				}
-				return true;
-			} else if (itemList.length > count) {
-				DataComparator dc = new DataComparator();
-				extracted(itemList, dc);
-				for (int i = 0; i < count; i++) {
-					removeItem(itemList[i], 1);
-				}
-				return true;
-			}
-		}
-		return false;
+	public synchronized boolean consumeItem(int itemid, int count) {
+        if (count <= 0) return false;
+        final L1Item template = ItemTable.getInstance().getTemplate(itemid);
+        if (template == null) return false;
+        if (template.isStackable()) {
+            final L1ItemInstance item = findItemId(itemid);
+            return item != null && item.getCount() >= count && removeItem(item, count) == count;
+        }
+        final L1ItemInstance[] items = findItemsId(itemid);
+        if (items.length < count) return false;
+        if (items.length > count) extracted(items, new DataComparator());
+        for (int i = 0; i < count; i++)
+            if (removeItem(items[i], 1) != 1) return false;
+        return true;
 	}
 	
-	public boolean consumeItem2(int descid, int count) {
-		if (count <= 0) {
-			return false;
-		}
-
-		L1ItemInstance[] itemList = findItemsId(descid, true);
-		if (itemList.length == count) {
-			for (int i = 0; i < count; i++) {
-				removeItem(itemList[i], 1);
-			}
-			return true;
-		} else if (itemList.length > count) {
-			DataComparator dc = new DataComparator();
-			extracted(itemList, dc);
-			for (int i = 0; i < count; i++) {
-				removeItem(itemList[i], 1);
-			}
-			return true;
-		}
-		
-		return false;
+	public synchronized boolean consumeItem2(int descid, int count) {
+        if (count <= 0) return false;
+        final L1ItemInstance[] items = findItemsId(descid, true);
+        if (items.length < count) return false;
+        if (items.length > count) extracted(items, new DataComparator());
+        for (int i = 0; i < count; i++)
+            if (removeItem(items[i], 1) != 1) return false;
+        return true;
 	}
 	
-	public boolean consumeItem(int itemid, int count, int descid) {
-		if (count <= 0) {
-			return false;
-		}
-		if (ItemTable.getInstance().getTemplate(itemid).isStackable()) {
-			L1ItemInstance item = findItemId(itemid);
-			if (item != null && item.getCount() >= count && item.getItem().getItemDescId() == descid) {
-				removeItem(item, count, descid);
-				return true;
-			}
-		} else {
-			L1ItemInstance[] itemList = findItemsId(itemid, descid);
-			if (itemList.length == count) {
-				for (int i = 0; i < count; i++) {
-					removeItem(itemList[i], 1, descid);
-				}
-				return true;
-			} else if (itemList.length > count) {
-				DataComparator dc = new DataComparator();
-				extracted(itemList, dc);
-				for (int i = 0; i < count; i++) {
-					removeItem(itemList[i], 1, descid );
-				}
-				return true;
-			}
-		}
-		return false;
+	public synchronized boolean consumeItem(int itemid, int count, int descid) {
+        if (count <= 0) return false;
+        final L1Item template = ItemTable.getInstance().getTemplate(itemid);
+        if (template == null) return false;
+        if (template.isStackable()) {
+            final L1ItemInstance item = findItemId(itemid);
+            return item != null && item.getCount() >= count
+                    && item.getItem().getItemDescId() == descid
+                    && removeItem(item, count, descid) == count;
+        }
+        final L1ItemInstance[] items = findItemsId(itemid, descid);
+        if (items.length < count) return false;
+        if (items.length > count) extracted(items, new DataComparator());
+        for (int i = 0; i < count; i++)
+            if (removeItem(items[i], 1, descid) != 1) return false;
+        return true;
 	}
 	
-	public boolean consumeItem(int itemid) {
-		L1ItemInstance item = findItemId(itemid);
-		if (item != null) {
-			removeItem(item, item.getCount());
-			return true;
-		}
-		return false;
+	public synchronized boolean consumeItem(int itemid) {
+        final L1ItemInstance item = findItemId(itemid);
+        if (item == null || item.getCount() <= 0) return false;
+        final int count = item.getCount();
+        return removeItem(item, count) == count;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1124,23 +1032,23 @@ public class L1Inventory extends L1Object {
 		}
 	}
 
-	public int removeItem(int objectId) {
+	public synchronized int removeItem(int objectId) {
 		L1ItemInstance item = getItem(objectId);
 		if (item == null) return 0;
 		return removeItem(item, item.getCount());
 	}
 
-	public int removeItem(int objectId, int count) {
+	public synchronized int removeItem(int objectId, int count) {
 		L1ItemInstance item = getItem(objectId);
 		return removeItem(item, count);
 	}
 
-	public int removeItem(L1ItemInstance item) {
+	public synchronized int removeItem(L1ItemInstance item) {
 		if (item == null) return 0;
 		return removeItem(item, item.getCount());
 	}
 
-	public int removeItem(L1ItemInstance item, int count) {
+	public synchronized int removeItem(L1ItemInstance item, int count) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		if (item == null || getItem(item.getId()) != item) {
@@ -1190,7 +1098,7 @@ public class L1Inventory extends L1Object {
 		return count;
 	}
 	
-	public int removeItem(L1ItemInstance item, int count, int descid) {
+	public synchronized int removeItem(L1ItemInstance item, int count, int descid) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		if (item == null || getItem(item.getId()) != item) {
@@ -1243,7 +1151,7 @@ public class L1Inventory extends L1Object {
 		return count;
 	}
 
-	public void deleteItem(L1ItemInstance item) {
+	public synchronized void deleteItem(L1ItemInstance item) {
 		_items.remove(item);
 	}
 

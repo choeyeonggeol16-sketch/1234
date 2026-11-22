@@ -512,7 +512,7 @@ public class L1PcInventory extends L1Inventory {
 	}
 
 	@Override
-	public void insertItem(L1ItemInstance item) {
+	public synchronized void insertItem(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		item._cha = _owner;
@@ -744,7 +744,7 @@ public class L1PcInventory extends L1Inventory {
 	}
 
 	@Override
-	public void deleteItem(L1ItemInstance item) {
+	public synchronized void deleteItem(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		
@@ -1240,28 +1240,49 @@ public class L1PcInventory extends L1Inventory {
 		return false;
 	}
 
-	public boolean consumeItem(L1ItemInstance item, int count) {
-		L1ItemInstance find = findItemObjId(item.getId());
-		if (find == null || find.getCount() < count)
-			return false;
-
-		removeItem(item, count);
-		return true;
+	public synchronized boolean consumeItem(L1ItemInstance item, int count) {
+        if (item == null || count <= 0 || getItem(item.getId()) != item
+                || item.getCount() < count) return false;
+        return removeItem(item, count) == count;
 	}
 
-	public boolean consumeItem(L1ItemInstance[] items, int[] counts) {
-		int size = items.length;
-		for (int i = size - 1; i >= 0; --i) {
-			L1ItemInstance item = items[i];
-			int count = counts[i];
-			L1ItemInstance find = findItemObjId(item.getId());
-			if (find == null || find.getCount() < count)
-				return false;
-		}
-
-		for (int i = size - 1; i >= 0; --i) {
-			removeItem(items[i], counts[i]);
-		}
-		return true;
+	public synchronized boolean consumeItem(L1ItemInstance[] items, int[] counts) {
+        if (items == null || counts == null || items.length != counts.length) return false;
+        final int size = items.length;
+        // Validate a whole request under the same inventory lock as item mutation.
+        // Duplicate object IDs are one combined debit, not separate stale reads.
+        for (int i = 0; i < size; i++) {
+            final L1ItemInstance item = items[i];
+            if (item == null || counts[i] <= 0 || getItem(item.getId()) != item) return false;
+            boolean first = true;
+            for (int j = 0; j < i; j++) {
+                if (items[j].getId() == item.getId()) {
+                    if (items[j] != item) return false;
+                    first = false;
+                    break;
+                }
+            }
+            if (!first) continue;
+            long required = counts[i];
+            for (int j = i + 1; j < size; j++) {
+                if (items[j] != null && items[j].getId() == item.getId()) {
+                    if (items[j] != item || counts[j] <= 0) return false;
+                    required += counts[j];
+                }
+            }
+            if (required > item.getCount()) return false;
+        }
+        for (int i = size - 1; i >= 0; i--) {
+            final L1ItemInstance item = items[i];
+            boolean handled = false;
+            for (int j = i + 1; j < size; j++)
+                if (items[j].getId() == item.getId()) { handled = true; break; }
+            if (handled) continue;
+            int amount = counts[i];
+            for (int j = 0; j < i; j++)
+                if (items[j].getId() == item.getId()) amount += counts[j];
+            if (removeItem(item, amount) != amount) return false;
+        }
+        return true;
 	}
 }
