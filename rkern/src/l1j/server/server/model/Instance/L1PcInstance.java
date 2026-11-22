@@ -8568,6 +8568,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 	
 	public void reconcileSight(L1Object obj) {
+		// Ground tile containers stay in NPC's spatial lookup, not player AOI.
+		if (obj instanceof L1GroundInventory) return;
 		if (obj instanceof L1ItemInstance item) {
 			if (!L1GroundInventory.isVisibleGroundItem(this, item))
 				L1GroundInventory.forgetItem(this, item);

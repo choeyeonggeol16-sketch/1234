@@ -707,7 +707,7 @@ public final class LocalWorldMap {
                         final L1Object[] objects = cell._objects;
                         for (int i = 0; i < cell._objectCount; i++) {
                             final L1Object candidate = objects[i];
-                            if (candidate == null) continue;
+                            if (candidate == null || candidate instanceof L1GroundInventory) continue;
                             if (groundDelta && candidate instanceof L1ItemInstance
                                     && (sameGroundSight || groundVisibleAt(oldPos, candidate, radius)
                                             == groundVisibleAt(newPos, candidate, radius))) continue;
@@ -751,7 +751,9 @@ public final class LocalWorldMap {
 
     private void publishViewDelta(int op, long oldPosition,
             long newPosition, L1Object object) {
-        if (object == null) return;
+        // Tile inventories remain spatial for NPC/pet looting, but they are
+        // never sent as player AOI objects. Only their CItem entries are.
+        if (object == null || object instanceof L1GroundInventory) return;
         final SightScratch local = _sightScratch.get();
         // Nested notifications cannot overwrite the outer candidate list.
         final SightScratch scratch = local.inUse ? new SightScratch() : local;
