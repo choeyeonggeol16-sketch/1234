@@ -125,6 +125,7 @@ public final class LocalWorldMap {
 
         private L1Object[] _objects = new L1Object[OBJECT_INIT_CAPACITY];
         private int _objectCount;
+        private int _groundCount;
 
         private L1PcInstance[] _players;
         private int _playerCount;
@@ -242,6 +243,7 @@ public final class LocalWorldMap {
                             && L1World.getInstance().findObject(id) != obj) {
                         return;
                     }
+                    replaceGroundCount(existing, obj);
                     _objects[i] = obj;
                     removePlayerByIdUnsafe(id);
                     if (obj instanceof L1PcInstance) {
@@ -257,6 +259,7 @@ public final class LocalWorldMap {
                 _objects = grown;
             }
             _objects[_objectCount++] = obj;
+            if (obj instanceof L1GroundInventory) _groundCount++;
             if (_objectCount == DENSE_THRESHOLD) {
                 buildDenseIndex(_objectCount * 2);
             }
@@ -273,6 +276,7 @@ public final class LocalWorldMap {
                 if (existing != obj && L1World.getInstance().findObject(id) != obj) {
                     return;
                 }
+                replaceGroundCount(existing, obj);
                 _objects[index] = obj;
                 removePlayerByIdUnsafe(id);
                 if (obj instanceof L1PcInstance) {
@@ -288,6 +292,7 @@ public final class LocalWorldMap {
             }
             final int newSlot = _objectCount++;
             _objects[newSlot] = obj;
+            if (obj instanceof L1GroundInventory) _groundCount++;
             final int[] dense = _denseSlots;
             if (_objectCount * 2 > dense.length) {
                 buildDenseIndex(_objectCount * 2);
@@ -297,6 +302,11 @@ public final class LocalWorldMap {
             if (obj instanceof L1PcInstance) {
                 addPlayerUnsafe((L1PcInstance) obj);
             }
+        }
+
+        private void replaceGroundCount(L1Object previous, L1Object current) {
+            if (previous instanceof L1GroundInventory) _groundCount--;
+            if (current instanceof L1GroundInventory) _groundCount++;
         }
 
         private void addPlayerUnsafe(L1PcInstance pc) {
@@ -327,6 +337,7 @@ public final class LocalWorldMap {
             // The short scan beats a hash lookup for ordinary sparse cells.
             for (int i = 0; i < _objectCount; i++) {
                 if (_objects[i] == obj) {
+                    if (obj instanceof L1GroundInventory) _groundCount--;
                     final int last = --_objectCount;
                     _objects[i] = _objects[last];
                     _objects[last] = null;
@@ -341,6 +352,7 @@ public final class LocalWorldMap {
         private void removeDenseUnsafe(L1Object obj) {
             final int index = findObjectSlot(obj.getId());
             if (index >= 0 && _objects[index] == obj) {
+                if (obj instanceof L1GroundInventory) _groundCount--;
                 final int last = _objectCount - 1;
                 removeDenseEntry(obj.getId());
                 if (index != last) {
@@ -611,10 +623,61 @@ public final class LocalWorldMap {
                 obj.getClusterY());
     }
 
+    /** Exact viewer -> tile predicate, matching Point.isInScreen and canSeeObject. */
+    private static boolean groundVisibleAt(long position, L1Object tile, int radius) {
+        if (position == NO_POSITION || positionMap(position) != tile.getMapId()) return false;
+        final int dx = tile.getX() - positionX(position);
+        final int dy = tile.getY() - positionY(position);
+        if (radius != -1) return Math.max(Math.abs(dx), Math.abs(dy)) <= radius;
+        final int distance = Math.abs(dx) + Math.abs(dy);
+        if (distance <= 19) return true;
+        if (distance > SCREEN_RADIUS) return false;
+        final int shifted = Math.abs(dx + 20) + Math.abs(dy + 20);
+        return shifted >= 23 && shifted <= 56;
+    }
+
+    private static int minAxisDistance(int value, int lo, int hi) {
+        return Math.max(0, Math.max(lo - value, value - hi));
+    }
+
+    private static int maxAxisDistance(int value, int lo, int hi) {
+        return Math.max(Math.abs(lo - value), Math.abs(hi - value));
+    }
+
+    /** 0: entirely outside, 1: entirely inside, -1: test boundary tiles. */
+    private static int groundCellSight(long position, int map, int cx, int cy, int radius) {
+        if (position == NO_POSITION || positionMap(position) != map) return 0;
+        final int x = positionX(position), y = positionY(position);
+        final int lx = cx << CELL_SHIFT, ly = cy << CELL_SHIFT;
+        final int hx = lx + CELL_SIZE - 1, hy = ly + CELL_SIZE - 1;
+        final int nearX = minAxisDistance(x, lx, hx), nearY = minAxisDistance(y, ly, hy);
+        final int farX = maxAxisDistance(x, lx, hx), farY = maxAxisDistance(y, ly, hy);
+        if (radius != -1) {
+            if (Math.max(nearX, nearY) > radius) return 0;
+            return Math.max(farX, farY) <= radius ? 1 : -1;
+        }
+        final int nearest = nearX + nearY, farthest = farX + farY;
+        if (nearest > SCREEN_RADIUS) return 0;
+        if (farthest <= 19) return 1;
+        final int nearShift = minAxisDistance(x - 20, lx, hx) + minAxisDistance(y - 20, ly, hy);
+        final int farShift = maxAxisDistance(x - 20, lx, hx) + maxAxisDistance(y - 20, ly, hy);
+        if (nearest > 19 && (farShift < 23 || nearShift > 56)) return 0;
+        if (farthest <= SCREEN_RADIUS && nearShift >= 23 && farShift <= 56) return 1;
+        return -1;
+    }
+
+    private static boolean unchangedGroundCell(long oldPos, long newPos,
+            int map, int cx, int cy, int radius) {
+        if (oldPos == newPos) return true;
+        final int oldSight = groundCellSight(oldPos, map, cx, cy, radius);
+        return oldSight >= 0 && oldSight == groundCellSight(newPos, map, cx, cy, radius);
+    }
+
     private void collectSightRect(int mapId, int minX, int maxX,
             int minY, int maxY, int skipMapId,
             int skipMinX, int skipMaxX, int skipMinY, int skipMaxY,
-            boolean playersOnly, ArrayList<L1Object> result) {
+            boolean playersOnly, boolean groundDelta, long oldPos, long newPos,
+            int radius, ArrayList<L1Object> result) {
         for (int cx = minX; cx <= maxX; cx++) {
             for (int cy = minY; cy <= maxY; cy++) {
                 if (mapId == skipMapId
@@ -634,9 +697,20 @@ public final class LocalWorldMap {
                             }
                         }
                     } else {
+                        // Interior ground-only cells have no sight work. In mixed
+                        // cells preserve creature reconciliation, but visit ground
+                        // inventories only on the exact old/new tile difference.
+                        final boolean sameGroundSight = groundDelta && cell._groundCount != 0
+                                && unchangedGroundCell(oldPos, newPos, mapId, cx, cy, radius);
+                        if (sameGroundSight && cell._groundCount == cell._objectCount) continue;
                         final L1Object[] objects = cell._objects;
                         for (int i = 0; i < cell._objectCount; i++) {
-                            if (objects[i] != null) result.add(objects[i]);
+                            final L1Object candidate = objects[i];
+                            if (candidate == null) continue;
+                            if (groundDelta && candidate instanceof L1GroundInventory
+                                    && (sameGroundSight || groundVisibleAt(oldPos, candidate, radius)
+                                            == groundVisibleAt(newPos, candidate, radius))) continue;
+                            result.add(candidate);
                         }
                     }
                 } finally {
@@ -647,7 +721,7 @@ public final class LocalWorldMap {
     }
 
     private void collectSightCandidates(long oldPos, long newPos,
-            int radius, boolean playersOnly, ArrayList<L1Object> result) {
+            int radius, boolean playersOnly, boolean groundDelta, ArrayList<L1Object> result) {
         result.clear();
         final int range = getCellRange(radius < 0 ? SCREEN_RADIUS : radius);
         int oldMap = -1;
@@ -661,7 +735,7 @@ public final class LocalWorldMap {
             oldMinY = cy - range;
             oldMaxY = cy + range;
             collectSightRect(oldMap, oldMinX, oldMaxX, oldMinY, oldMaxY,
-                    Integer.MIN_VALUE, 1, 0, 1, 0, playersOnly, result);
+                    Integer.MIN_VALUE, 1, 0, 1, 0, playersOnly, groundDelta, oldPos, newPos, radius, result);
         }
         if (newPos != NO_POSITION) {
             final int map = positionMap(newPos);
@@ -670,7 +744,7 @@ public final class LocalWorldMap {
             collectSightRect(map, cx - range, cx + range,
                     cy - range, cy + range,
                     oldMap, oldMinX, oldMaxX, oldMinY, oldMaxY,
-                    playersOnly, result);
+                    playersOnly, groundDelta, oldPos, newPos, radius, result);
         }
     }
 
@@ -685,7 +759,7 @@ public final class LocalWorldMap {
             final int radius = Config.PC_RECOGNIZE_RANGE;
             final boolean leaving = op == DELTA_VIEW_LEAVE;
             collectSightCandidates(oldPosition, newPosition, radius,
-                    true, scratch.viewers);
+                    true, false, scratch.viewers);
             for (int i = 0, n = scratch.viewers.size(); i < n; i++) {
                 final L1Object viewer = scratch.viewers.get(i);
                 if (viewer != null && viewer != object) {
@@ -697,8 +771,15 @@ public final class LocalWorldMap {
             // player's known objects. Never involve CIO shard affinity.
             if (object instanceof L1PcInstance) {
                 final L1PcInstance pc = (L1PcInstance) object;
+                // Movement between two established positions changes only the
+                // ground sight boundary. Login, leave and map resets retain full
+                // reconciliation; rejected SENDs retain the existing repair path.
+                final boolean groundDelta = op == DELTA_VIEW_MOVE
+                        && oldPosition != NO_POSITION && newPosition != NO_POSITION
+                        && positionMap(oldPosition) == positionMap(newPosition)
+                        && (pc.groundSightEpoch() & 1) != 0;
                 collectSightCandidates(oldPosition, newPosition, radius,
-                        false, scratch.objects);
+                        false, groundDelta, scratch.objects);
                 for (int i = 0, n = scratch.objects.size(); i < n; i++) {
                     final L1Object candidate = scratch.objects.get(i);
                     if (candidate != null && candidate != pc) {
