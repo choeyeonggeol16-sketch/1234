@@ -41,11 +41,14 @@ public class L1CataInstance extends L1NpcInstance {
 
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		perceivedFrom.addKnownObject(this);
+		if (perceivedFrom == null) return;
+		
 		if (0 < getCurrentHp()) {
 			onNpcAI();
 		}
-		SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this);
+		if (SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 	}
 
 	@SuppressWarnings("unused")

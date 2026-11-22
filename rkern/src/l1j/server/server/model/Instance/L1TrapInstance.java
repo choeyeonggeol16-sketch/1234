@@ -136,9 +136,13 @@ public class L1TrapInstance extends L1Object {
 		if (perceivedFrom == null)
 			return;
 		if (perceivedFrom.hasSkillEffect(L1SkillId.GMSTATUS_SHOWTRAPS)) {
+			
+			if (!perceivedFrom.knownsObject(this)
+				&& SC_Trap.send(perceivedFrom, getX(), getY(), getId(), _nameForView)) {
 			perceivedFrom.addKnownObject(this);
-			SC_Trap.send(perceivedFrom, getX(), getY(), getId(), _nameForView);
 			_knownPlayers.add(perceivedFrom);
+		}
+			
 		}
 	}
 }

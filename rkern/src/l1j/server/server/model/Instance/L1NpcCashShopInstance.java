@@ -20,11 +20,14 @@ public class L1NpcCashShopInstance extends L1NpcInstance {
 
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		perceivedFrom.addKnownObject(this);
+		if (perceivedFrom == null) return;
+		
 //		if(perceivedFrom.getAI() != null)
 //			return;
 //		
-		SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this);
+		if (SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 
 		if (_state == 1)
 			SC_DoActionShop.send(perceivedFrom, getId(), ActionCodes.ACTION_Shop, getShopName().getBytes());

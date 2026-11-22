@@ -26,8 +26,11 @@ public class L1MobTrapInstance extends L1NpcInstance {
 	/** 유저가 트랩을 발견시 **/
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		perceivedFrom.addKnownObject(this);
-		SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this);
+		if (perceivedFrom == null) return;
+		
+		if (SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 		startTrapAI();
 	}
 

@@ -138,12 +138,11 @@ public class L1UbSpawn implements Comparable<L1UbSpawn> {
 		L1World.getInstance().storeAndEnterWorld(mob);
 
 		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(mob)) {
-		    pc.addKnownObject(mob);
-		    mob.addKnownObject(pc);
-
-		    SC_WorldPutObject.get(
-		            pc.getNetConnection(),
-		            mob);
+		    if (pc == null || pc.knownsObject(mob)) continue;
+		    if (SC_WorldPutObject.get(pc.getNetConnection(), mob)) {
+		        pc.addKnownObject(mob);
+		        mob.addKnownObject(pc);
+		    }
 		}
 		mob.onNpcAI();
 		mob.getLight().turnOnOffLight();

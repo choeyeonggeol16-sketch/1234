@@ -49,9 +49,12 @@ public class L1DoorInstance extends L1NpcInstance {
 
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		perceivedFrom.addKnownObject(this);
+		if (perceivedFrom == null) return;
 		
-		l1j.server.server.model.network.core.sc.packet.SC_DoorPack.send(perceivedFrom, this);
+		
+		if (l1j.server.server.model.network.core.sc.packet.SC_DoorPack.send(perceivedFrom, this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 		sendDoorPacket(perceivedFrom);
 
 		if( !isDead() )

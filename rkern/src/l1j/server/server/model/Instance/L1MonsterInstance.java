@@ -154,8 +154,10 @@ public class L1MonsterInstance extends L1NpcInstance {
 	public void onPerceive(L1PcInstance perceivedFrom) {
 		if (perceivedFrom == null) return;
 	
-		perceivedFrom.addKnownObject(this);	
-		SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this);
+			
+		if (SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this)) {
+			perceivedFrom.addKnownObject(this);
+		}
 		if (getHiddenStatus() == HIDDEN_STATUS_SINK) {
 			SC_DoActionGFX.send(perceivedFrom.getNetConnection(), getId(), ActionCodes.ACTION_Hide);
 		} else if (getHiddenStatus() == HIDDEN_STATUS_FLY) {
