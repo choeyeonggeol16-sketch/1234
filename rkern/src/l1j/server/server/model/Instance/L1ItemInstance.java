@@ -1232,6 +1232,11 @@ public class L1ItemInstance extends L1Object {
 	 */
 	private volatile int _groundDeleteTimerGeneration;
 	
+	@Override
+	public void onPerceive(L1PcInstance viewer) {
+		if (viewer != null) L1GroundInventory.reconcileItem(viewer, this, false);
+	}
+
 	/**
 	 * 지면에 실제 spawn된 아이템만 삭제 타이머를 건다.
 	 */

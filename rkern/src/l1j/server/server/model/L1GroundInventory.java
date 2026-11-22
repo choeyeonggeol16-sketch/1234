@@ -26,9 +26,13 @@ public class L1GroundInventory extends L1Inventory {
         L1World.getInstance().addVisibleObject(this);
     }
 
-    @Override
-    public void onPerceive(L1PcInstance viewer) {
-        if (viewer != null) viewer.getCreatureController().ReconcileSight(this, false);
+    /** A ground item's visible identity is the item, not this tile bucket. */
+    public static boolean isVisibleGroundItem(L1PcInstance viewer, L1ItemInstance item) {
+        if (viewer == null || item == null || item.getClusterMapId() < 0
+                || !viewer.canSeeObject(item)) return false;
+        final L1GroundInventory ground = L1World.getInstance().findGroundInventory(
+                item.getX(), item.getY(), item.getMapId());
+        return ground != null && ground._items.contains(item);
     }
 
     private static boolean ready(L1PcInstance viewer, int epoch) {
@@ -36,14 +40,7 @@ public class L1GroundInventory extends L1Inventory {
                 && viewer.groundSightEpoch() == epoch;
     }
 
-    /** Resolve membership, rather than treating carried items as ground objects. */
-    public static boolean isVisibleGroundItem(L1PcInstance viewer, L1ItemInstance item) {
-        if (item == null || !viewer.canSeeObject(item)) return false;
-        final L1GroundInventory ground = L1World.getInstance().findGroundInventory(
-                item.getX(), item.getY(), item.getMapId());
-        return ground != null && ground.getClusterMapId() >= 0 && ground._items.contains(item);
-    }
-
+    /** CItem::SendItemSpawn equivalent; record KnownObject after SEND admission. */
     private static void showItem(L1PcInstance viewer, L1ItemInstance item,
             boolean changed, int epoch) {
         if (!ready(viewer, epoch) || (!changed && viewer.knownsObject(item))) return;
@@ -56,14 +53,13 @@ public class L1GroundInventory extends L1Inventory {
         }
     }
 
+    /** User::OutOfSight equivalent, with stale object-ID replacement protection. */
     public static void forgetItem(L1PcInstance viewer, L1ItemInstance item) {
         final int epoch = viewer.groundSightEpoch();
         if (!ready(viewer, epoch) || !viewer.knownsObject(item)) return;
         final var client = viewer.getNetConnection();
         if (client == null || client.getActiveChar() != viewer) return;
         final L1Object current = L1World.getInstance().findObject(item.getId());
-        // A queued old deletion must not erase a newly registered known sprite
-        // using the same object ID.
         if (current instanceof L1ItemInstance replacement && replacement != item
                 && viewer.knownsObject(replacement) && isVisibleGroundItem(viewer, replacement)) {
             viewer.removeKnownObject(item);
@@ -76,7 +72,6 @@ public class L1GroundInventory extends L1Inventory {
         }
     }
 
-    /** Executed by the viewer's existing controller, including delayed events. */
     public static void reconcileItem(L1PcInstance viewer, L1ItemInstance item, boolean changed) {
         final int epoch = viewer.groundSightEpoch();
         if (!ready(viewer, epoch)) return;
@@ -84,65 +79,35 @@ public class L1GroundInventory extends L1Inventory {
         else forgetItem(viewer, item);
     }
 
-    public void reconcileSight(L1PcInstance viewer, boolean changed) {
-        final int epoch = viewer.groundSightEpoch();
-        if (!ready(viewer, epoch)) return;
-        if (getClusterMapId() < 0 || !viewer.canSeeObject(this)) {
-            leaveSight(viewer);
-            return;
-        }
-        for (L1ItemInstance item : getItems()) {
-            if (!ready(viewer, epoch)) return;
-            if (!changed && viewer.knownsObject(item)) continue;
-            if (_items.contains(item) && viewer.canSeeObject(item))
-                showItem(viewer, item, changed, epoch);
-        }
-    }
-
-    public void leaveSight(L1PcInstance viewer) {
-        if (!ready(viewer, viewer.groundSightEpoch())) return;
-        for (L1ItemInstance item : getItems()) {
-            if (viewer.knownsObject(item)) reconcileItem(viewer, item, false);
-        }
-    }
-
-    /** Reuse existing AOI scratch and controller tickets; no new worker or queue. */
-    private void notifyGroundChange(L1ItemInstance item, boolean changed) {
-        final L1World world = L1World.getInstance();
-        final int range = l1j.server.Config.PC_RECOGNIZE_RANGE;
-        // L1's screen test is directional. Collect a superset and use the
-        // viewer's actual canSeeObject test when the ticket executes.
-        final var viewers = world.borrowVisiblePlayerFast(this, range < 0 ? 22 : range);
-        try {
-            for (int i = 0, n = viewers.size(); i < n; i++) {
-                final L1PcInstance viewer = viewers.get(i);
-                if (viewer != null)
-                    viewer.getCreatureController().GroundItemChanged(item, changed);
-            }
-        } finally {
-            world.releaseVisiblePlayerFast(viewers);
-        }
-    }
-
     @Override
     public void insertItem(L1ItemInstance item) {
         if (item == null) return;
         if (DEBUG_GROUND_ITEM_TIMER) debug("SPAWN", item, "before OnSpawned");
         item.OnSpawned();
-        notifyGroundChange(item, true);
+        // World entry publishes the item itself to User::InSight.
+        try {
+            L1World.getInstance().addVisibleObject(item);
+        } catch (RuntimeException | Error failure) {
+            try { L1World.getInstance().removeVisibleObject(item); }
+            catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
+            item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
+            throw failure;
+        }
     }
 
     @Override
     public void updateItem(L1ItemInstance item) {
-        if (item == null || !_items.contains(item)) return;
-        notifyGroundChange(item, true);
+        if (item == null || item.getClusterMapId() < 0 || !_items.contains(item)) return;
+        // Direct item-state notification: one shared frame for visible users.
+        SC_DropItem.broadcast(item, true);
     }
 
     @Override
     public void deleteItem(L1ItemInstance item) {
         if (item == null || !_items.remove(item)) return;
         item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
-        notifyGroundChange(item, false);
+        // World leave publishes the item itself to User::OutOfSight.
+        L1World.getInstance().removeVisibleObject(item);
         if (_items.isEmpty()) {
             L1World.getInstance().removeVisibleObject(this);
             if (DEBUG_GROUND_ITEM_TIMER)

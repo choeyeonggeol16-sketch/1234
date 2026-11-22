@@ -582,8 +582,16 @@ public final class CWorld {
     }
 
     private void addVisibleObject0(L1Object object, boolean registeredOnly) {
-        if (object == null)
+        if (object == null) return;
+        if (object instanceof L1GroundInventory) {
+            // Negative tile-key inventory is only for pickup/storage lookup.
+            synchronized (object) {
+                final int mapId = object.getMapId();
+                if (mapId >= 0 && mapId <= L1World.MAX_MAP_ID)
+                    world.visibleMap(mapId, true).put(object.getId(), object);
+            }
             return;
+        }
 
         final long newPos;
         synchronized (object) {
@@ -622,6 +630,14 @@ public final class CWorld {
 
     public void removeVisibleObject(L1Object object) {
         if (object == null) return;
+        if (object instanceof L1GroundInventory) {
+            synchronized (object) {
+                final int mapId = object.getMapId();
+                final L1IntRegistry<L1Object> map = world.visibleMap(mapId, false);
+                if (map != null) map.remove(object.getId(), object);
+            }
+            return;
+        }
         final long oldPos;
         synchronized (object) {
             oldPos = removeVisibleObjectLocked(object);

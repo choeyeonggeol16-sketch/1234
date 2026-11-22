@@ -320,23 +320,12 @@ public final class CCreatureController {
                 pc.getSessionStamp(), epoch);
     }
 
-    /** Ground insert/update/delete uses the viewer's existing sight serializer. */
-    public boolean GroundItemChanged(L1ItemInstance item, boolean changed) {
-        final int epoch = actorEpoch;
-        final L1PcInstance pc = actor;
-        if (item == null || pc == null || (epoch & 1) != 0
-                || actorEpoch != epoch || (pc.groundSightEpoch() & 1) == 0) return false;
-        return executeOrPublish(EXEC_SIGHT, 0, changed ? 2 : 0,
-                0, 0, 0, 0L, 0L, 0, item, null, pc.getSessionStamp(), epoch);
-    }
-
-    public boolean RefreshSight() { return RefreshSight(false); }
-
-    public boolean RefreshSight(boolean forceGround) {
+    /** Existing generic sight refresh; no item-specific controller ticket. */
+    public boolean RefreshSight() {
         final int epoch = actorEpoch;
         final L1PcInstance pc = actor;
         return pc != null && (epoch & 1) == 0 && actorEpoch == epoch
-                && requestSightRefresh(pc.getSessionStamp(), epoch, forceGround);
+                && requestSightRefresh(pc.getSessionStamp(), epoch);
     }
 
     public int ExecutableBacklog() {
@@ -350,26 +339,14 @@ public final class CCreatureController {
      * The synthetic work participates in executionWork just like a published
      * slot, but consumes no ring entry, reference, or newly allocated object.
      */
-    // Stable actor epochs are even. Use the otherwise unused bit to remember
-    // a rejected count/position update; normal sight overflow must not resend
-    // all known ground sprites.
-    private static final long SIGHT_GROUND_RESYNC = 1L << 32;
-
-    private boolean requestSightRefresh(int session, int epoch, boolean forceGround) {
+    private boolean requestSightRefresh(int session, int epoch) {
         final L1PcInstance pc = actor;
-        if (pc == null || actorEpoch != epoch || pc.getSessionStamp() != session) {
-            return false;
-        }
+        if (pc == null || actorEpoch != epoch || pc.getSessionStamp() != session) return false;
         final long identity = ((long) epoch << 32) | (session & 0xFFFF_FFFFL);
         for (;;) {
             final long pending = (long) EXEC_SIGHT_REFRESH.getVolatile(this);
-            if ((pending & ~SIGHT_GROUND_RESYNC) == identity
-                    && (!forceGround || (pending & SIGHT_GROUND_RESYNC) != 0)) return true;
-            final long next = forceGround ? identity | SIGHT_GROUND_RESYNC : identity;
-            if (EXEC_SIGHT_REFRESH.compareAndSet(this, pending, next)) {
-                // Only the first pending refresh needs a synthetic work signal.
-                // If a different session replaces it, the same signal will
-                // reconcile the newer actor instead of replaying stale sight.
+            if (pending == identity) return true;
+            if (EXEC_SIGHT_REFRESH.compareAndSet(this, pending, identity)) {
                 if (pending == 0L) signalAndDrain();
                 return true;
             }
@@ -399,8 +376,7 @@ public final class CCreatureController {
                     || kind == EXEC_REGEN_RESET || kind == EXEC_STOP_PSS_AUTO;
             if (tail - executionHead >= EXECUTION_LIMIT) {
                 if (kind == EXEC_SIGHT) {
-                    return requestSightRefresh(expectedSession, expectedEpoch,
-                            a0 == 2 && o0 instanceof L1ItemInstance);
+                    return requestSightRefresh(expectedSession, expectedEpoch);
                 }
                 if (kind == EXEC_DAMAGE || kind == EXEC_COUNTER_DAMAGE
                         || kind == EXEC_MAGIC_DAMAGE || kind == EXEC_UNARMED_DAMAGE || kind == EXEC_CAST_BUFF) {
@@ -505,9 +481,9 @@ public final class CCreatureController {
                 if (identity != 0L) {
                     try {
                         final L1PcInstance pc = actor;
-                        if (pc != null && actorEpoch == (int) ((identity & ~SIGHT_GROUND_RESYNC) >>> 32)
+                        if (pc != null && actorEpoch == (int) (identity >>> 32)
                                 && pc.getSessionStamp() == (int) identity) {
-                            pc.refreshSight((identity & SIGHT_GROUND_RESYNC) != 0);
+                            pc.refreshSight();
                         }
                     } catch (Throwable failure) {
                         EXECUTION_LOG.log(Level.SEVERE, "CCreatureController sight refresh failed", failure);
@@ -655,9 +631,7 @@ public final class CCreatureController {
             final L1PcInstance pc = actor;
             final L1Object observed = (L1Object) o0;
             if (pc != null && observed != null && pc != observed) {
-                if (observed instanceof L1ItemInstance item)
-                    L1GroundInventory.reconcileItem(pc, item, a0 == 2);
-                else if (observed.getClusterMapId() < 0) pc.outOfSight(observed);
+                if (observed.getClusterMapId() < 0) pc.outOfSight(observed);
                 else pc.reconcileSight(observed);
             }
             break;

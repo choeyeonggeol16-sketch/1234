@@ -736,10 +736,12 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         int viewers=0;
         CAsyncSendConstBuffer shared=null;
         final L1World world=L1World.getInstance();
-        final List<L1PcInstance> visible=world.borrowVisiblePlayerFast(item);
+        final int range=l1j.server.Config.PC_RECOGNIZE_RANGE;
+        // L1's screen test is directional: user -> item, not item -> user.
+        final List<L1PcInstance> visible=world.borrowVisiblePlayerFast(item,range<0?22:range);
         try {
             for(L1PcInstance pc:visible) {
-                if(pc==null)continue;
+                if(pc==null||!pc.canSeeObject(item))continue;
                 final l1j.server.server.model.network.core.connection.CUserSocket socket;
                 try { socket=eligibleBroadcastSocket(pc); }
                 catch(RuntimeException failure) {
@@ -757,13 +759,14 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                     // The writer is lazy: failure before source freeze is
                     // a broadcast-wide invalid packet, not a bad recipient.
                     if(!shared.hasFrozenSource())throw failure;
+                    if(addKnownObject)pc.markGroundSightRetry();
                     logOptionalNoticeFailure(failure);
                     continue;
                 }
                 if(admitted) {
                     if(addKnownObject)pc.addKnownObject(item);
                     viewers++;
-                }
+                } else if(addKnownObject) pc.markGroundSightRetry();
             }
         } finally {
             try {if(shared!=null)shared.close();}

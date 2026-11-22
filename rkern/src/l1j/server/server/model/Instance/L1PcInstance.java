@@ -8516,10 +8516,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public void outOfSight(L1Object obj) {
-		if (obj instanceof L1GroundInventory ground) {
-			ground.leaveSight(this);
-			return;
-		}
 		if (obj instanceof L1ItemInstance item) {
 			L1GroundInventory.forgetItem(this, item);
 			return;
@@ -8548,11 +8544,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if (known == null || known == this) {
 				continue;
 			}
-			if (!canSeeObject(known)) {
-				if (known instanceof L1ItemInstance)
-					getCreatureController().ReconcileSight(known, false);
-				else outOfSight(known);
-			}
+			if (!canSeeObject(known)) outOfSight(known);
 		}
 
 		final List<L1Object> nearby = L1World.getInstance().getClusterGrid().queryNearbyReusable(this, Config.PC_RECOGNIZE_RANGE);
@@ -8563,9 +8555,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if (visible == null || visible == this || !canSeeObject(visible)) {
 				continue;
 			}
-			if (visible instanceof L1GroundInventory)
-				getCreatureController().ReconcileSight(visible, false);
-			else reconcileSight(visible);
+			reconcileSight(visible);
 			if (visible instanceof L1PcInstance) {
 				final L1PcInstance viewer = (L1PcInstance) visible;
 				if (viewer.canSeeObject(this)) {
@@ -8578,12 +8568,11 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 	
 	public void reconcileSight(L1Object obj) {
-		if (obj instanceof L1GroundInventory ground) {
-			ground.reconcileSight(this, false);
-			return;
-		}
 		if (obj instanceof L1ItemInstance item) {
-			L1GroundInventory.reconcileItem(this, item, false);
+			if (!L1GroundInventory.isVisibleGroundItem(this, item))
+				L1GroundInventory.forgetItem(this, item);
+			else if (!knownsObject(item))
+				inSight(item);
 			return;
 		}
 		if (obj == null || obj == this) {
@@ -8607,9 +8596,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		}
 	}
 	
-	public void refreshSight() { refreshSight(false); }
-
-	public void refreshSight(boolean resyncGround) {
+	public void refreshSight() {
+		boolean resyncGround = false;
 		if (needsGroundSightRepair()) {
 			groundSightRetry = false;
 			resyncGround = true;
@@ -8624,8 +8612,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		}
 		for (L1Object visible : L1World.getInstance().getClusterGrid().queryNearbyReusable(this, Config.PC_RECOGNIZE_RANGE)) {
 			if (visible == null || visible == this) continue;
-			if (visible instanceof L1GroundInventory ground)
-				ground.reconcileSight(this, resyncGround);
+			if (resyncGround && visible instanceof L1ItemInstance item)
+				L1GroundInventory.reconcileItem(this, item, true);
 			else reconcileSight(visible);
 		}
 	}

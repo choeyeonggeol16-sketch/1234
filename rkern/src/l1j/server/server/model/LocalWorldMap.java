@@ -8,6 +8,7 @@ import gnu.trove.map.hash.TLongObjectHashMap;
 
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
 
 /**
  * Concurrent canonical 8x8 world map. No CIO shard replica, spatial delta pipe,
@@ -259,7 +260,7 @@ public final class LocalWorldMap {
                 _objects = grown;
             }
             _objects[_objectCount++] = obj;
-            if (obj instanceof L1GroundInventory) _groundCount++;
+            if (obj instanceof L1ItemInstance) _groundCount++;
             if (_objectCount == DENSE_THRESHOLD) {
                 buildDenseIndex(_objectCount * 2);
             }
@@ -292,7 +293,7 @@ public final class LocalWorldMap {
             }
             final int newSlot = _objectCount++;
             _objects[newSlot] = obj;
-            if (obj instanceof L1GroundInventory) _groundCount++;
+            if (obj instanceof L1ItemInstance) _groundCount++;
             final int[] dense = _denseSlots;
             if (_objectCount * 2 > dense.length) {
                 buildDenseIndex(_objectCount * 2);
@@ -305,8 +306,8 @@ public final class LocalWorldMap {
         }
 
         private void replaceGroundCount(L1Object previous, L1Object current) {
-            if (previous instanceof L1GroundInventory) _groundCount--;
-            if (current instanceof L1GroundInventory) _groundCount++;
+            if (previous instanceof L1ItemInstance) _groundCount--;
+            if (current instanceof L1ItemInstance) _groundCount++;
         }
 
         private void addPlayerUnsafe(L1PcInstance pc) {
@@ -337,7 +338,7 @@ public final class LocalWorldMap {
             // The short scan beats a hash lookup for ordinary sparse cells.
             for (int i = 0; i < _objectCount; i++) {
                 if (_objects[i] == obj) {
-                    if (obj instanceof L1GroundInventory) _groundCount--;
+                    if (obj instanceof L1ItemInstance) _groundCount--;
                     final int last = --_objectCount;
                     _objects[i] = _objects[last];
                     _objects[last] = null;
@@ -352,7 +353,7 @@ public final class LocalWorldMap {
         private void removeDenseUnsafe(L1Object obj) {
             final int index = findObjectSlot(obj.getId());
             if (index >= 0 && _objects[index] == obj) {
-                if (obj instanceof L1GroundInventory) _groundCount--;
+                if (obj instanceof L1ItemInstance) _groundCount--;
                 final int last = _objectCount - 1;
                 removeDenseEntry(obj.getId());
                 if (index != last) {
@@ -699,7 +700,7 @@ public final class LocalWorldMap {
                     } else {
                         // Interior ground-only cells have no sight work. In mixed
                         // cells preserve creature reconciliation, but visit ground
-                        // inventories only on the exact old/new tile difference.
+                        // item objects only on the exact old/new tile difference.
                         final boolean sameGroundSight = groundDelta && cell._groundCount != 0
                                 && unchangedGroundCell(oldPos, newPos, mapId, cx, cy, radius);
                         if (sameGroundSight && cell._groundCount == cell._objectCount) continue;
@@ -707,7 +708,7 @@ public final class LocalWorldMap {
                         for (int i = 0; i < cell._objectCount; i++) {
                             final L1Object candidate = objects[i];
                             if (candidate == null) continue;
-                            if (groundDelta && candidate instanceof L1GroundInventory
+                            if (groundDelta && candidate instanceof L1ItemInstance
                                     && (sameGroundSight || groundVisibleAt(oldPos, candidate, radius)
                                             == groundVisibleAt(newPos, candidate, radius))) continue;
                             result.add(candidate);
