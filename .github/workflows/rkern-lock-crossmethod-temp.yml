@@ -91,3 +91,39 @@ jobs:
           JAVA
           javac /tmp/SourceLocks.java
           java -Xmx2g -cp /tmp SourceLocks
+
+      - name: Inventory of all nonmonitor locks, blocking joins and SQL inside monitors
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,collections
+          patterns = {
+           'STAMPED_LOCK': re.compile(r'\bStampedLock\b|\.readLock\s*\(|\.writeLock\s*\(|\.tryOptimisticRead\s*\('),
+           'REENTRANT_LOCK': re.compile(r'\bReentrantLock\b|\.lockInterruptibly\s*\(|\.tryLock\s*\('),
+           'SYNC_WAIT': re.compile(r'\b(awaitTermination|CountDownLatch|Phaser|CyclicBarrier|Condition)\b|\.join\s*\(|\.await\s*\(|\.wait\s*\('),
+           'FUTURE_BLOCK': re.compile(r'CompletableFuture|\.get\s*\(\s*[0-9_a-zA-Z]+\s*,\s*TimeUnit|FutureTask'),
+           'CHM_COMPUTE': re.compile(r'\.compute(IfAbsent|IfPresent)?\s*\(|\.merge\s*\('),
+           'BLOCKING_JDBC': re.compile(r'\bgetConnection\s*\(|\.executeQuery\s*\(|\.executeUpdate\s*\(')
+          }
+          root=Path('rkern/src')
+          files=sorted(root.rglob('*.java'))
+          print('TOTAL_PRODUCTION_JAVA',len(files))
+          for tag, pattern in patterns.items():
+           grouped={}
+           for path in files:
+            lines=path.read_text(errors='replace').splitlines()
+            hits=[(i,s.strip()) for i,s in enumerate(lines,1) if pattern.search(s) and not s.lstrip().startswith('//')]
+            if hits:grouped[str(path)]=hits
+           print('GROUP',tag,'files',len(grouped),'occurrences',sum(map(len,grouped.values())))
+           if tag in ('STAMPED_LOCK','REENTRANT_LOCK','SYNC_WAIT','FUTURE_BLOCK'):
+            for name,hits in grouped.items():
+             print('SPECIAL',tag,name,' '.join(str(i)+':'+line[:75].replace(' ','_') for i,line in hits[:16]))
+           elif tag=='CHM_COMPUTE':
+            for name,hits in grouped.items():
+             if len(hits)>2:print('CHM',name,'count',len(hits))
+           elif tag=='BLOCKING_JDBC':
+            for name,hits in grouped.items():
+             if 'Warehouse' in name or 'CacheD' in name:
+              print('SQL',name,'count',len(hits),'lines',','.join(str(i) for i,line in hits[:60]))
+          
+          PY
