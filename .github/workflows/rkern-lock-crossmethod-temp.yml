@@ -1,0 +1,93 @@
+name: RKern cross-method deadlock deep audit
+on:
+  push:
+    branches: [rkern/nc-intrusive-inventory-20261122]
+  workflow_dispatch:
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Synchronized call site audit across all Java sources
+        run: |
+          cat > /tmp/SourceLocks.java <<'JAVA'
+          import java.util.*;
+          import java.nio.file.*;
+          import javax.tools.*;
+          import com.sun.source.tree.*;
+          import com.sun.source.util.*;
+          import javax.lang.model.element.Modifier;
+          public class SourceLocks {
+            static class Visitor extends TreePathScanner<Void,Void> {
+             final Trees tree;
+             final CompilationUnitTree unit;
+             final ArrayDeque<String> lockStack=new ArrayDeque<>();
+             final ArrayDeque<String> methodStack=new ArrayDeque<>();
+             final Map<String,List<String>> findings;
+             Visitor(Trees tree,CompilationUnitTree unit,Map<String,List<String>> findings) {
+              this.tree=tree;this.unit=unit;this.findings=findings;
+             }
+             String file(){return Paths.get(unit.getSourceFile().toUri()).toString().replaceAll("^.*?/rkern/src/","");}
+             int line(Tree node) {long pos=tree.getSourcePositions().getStartPosition(unit,node);return pos<0?-1:(int)unit.getLineMap().getLineNumber(pos);}
+             void log(String type,Tree node,String detail) {
+               String s=file()+":"+line(node)+" "+methodStack.peek()+" locks="+String.join(" -> ",lockStack.reversed())+" "+detail;
+               findings.computeIfAbsent(type,ignored->new ArrayList<>()).add(s);
+             }
+             @Override public Void visitMethod(MethodTree node,Void p) {
+               methodStack.push(node.getName().toString());
+               boolean lock=node.getModifiers().getFlags().contains(Modifier.SYNCHRONIZED);
+               if(lock)lockStack.push(node.getModifiers().getFlags().contains(Modifier.STATIC)?"class":"this");
+               try{return super.visitMethod(node,p);}finally{if(lock)lockStack.pop();methodStack.pop();}
+             }
+             @Override public Void visitSynchronized(SynchronizedTree node,Void p) {
+               lockStack.push(node.getExpression().toString().replaceAll("[()]",""));
+               try{return super.visitSynchronized(node,p);}finally{lockStack.pop();}
+             }
+             @Override public Void visitMethodInvocation(MethodInvocationTree node,Void p) {
+               String call=node.getMethodSelect().toString();
+               if(!lockStack.isEmpty()){
+                 if(call.endsWith(".tradeItem") || call.endsWith(".tradeSupplementaryItem") || call.endsWith(".tradeWarehouseDepositBatch")
+                    || call.equals("tradeItem") || call.equals("tradeSupplementaryItem") || call.equals("tradeWarehouseDepositBatch"))
+                    log("TRANSFER_UNDER_LOCK",node,call);
+                 if(call.endsWith(".getInventory") || call.endsWith(".findGroundInventory"))
+                    log("GROUND_LOOKUP_UNDER_LOCK",node,call);
+                 if(call.endsWith(".removeVisibleObject") || call.endsWith(".addVisibleObject") || call.endsWith(".leaveAndRemoveObject"))
+                    log("WORLD_VIS_UNDER_LOCK",node,call);
+                 if(call.endsWith(".storeItem") || call.endsWith(".removeItem") || call.endsWith(".deleteItem") || call.endsWith(".storeTradeItem")) 
+                    log("INVENTORY_MUTATION_UNDER_LOCK",node,call);
+                 if(call.endsWith(".completeSession") || call.endsWith(".kick") || call.endsWith(".send") || call.endsWith(".awaitTermination") || call.endsWith(".get"))
+                    log("SESSION_OR_BLOCK_UNDER_LOCK",node,call);
+               }
+               return super.visitMethodInvocation(node,p);
+             }
+            }
+            public static void main(String[] args)throws Exception {
+             List<Path> paths;try(var s=Files.walk(Paths.get("rkern/src"))){paths=s.filter(p->p.toString().endsWith(".java")).toList();}
+             JavaCompiler javac=ToolProvider.getSystemJavaCompiler();
+             Map<String,List<String>> out=new TreeMap<>();
+             DiagnosticCollector<JavaFileObject> diagnostics=new DiagnosticCollector<>();
+             int count=0;
+             try(StandardJavaFileManager fm=javac.getStandardFileManager(diagnostics,null,null)){
+              for(int i=0;i<paths.size();i+=60){
+               var files=fm.getJavaFileObjectsFromPaths(paths.subList(i,Math.min(i+60,paths.size())));
+               var task=(JavacTask)javac.getTask(null,fm,diagnostics,List.of("-proc:none","--release","21"),null,files);
+               var trees=Trees.instance(task);
+               for(var unit:task.parse()){count++;new Visitor(trees,unit,out).scan(unit,null);}
+              }
+             }
+             System.out.println("SCAN parsed="+count);
+             for(var e:out.entrySet()){
+              System.out.println("GROUP "+e.getKey()+" "+e.getValue().size());
+              for(String finding:e.getValue())System.out.println("MATCH "+e.getKey()+" "+finding);
+             }
+             if(count!=paths.size())System.exit(1);
+            }
+          }
+          
+          JAVA
+          javac /tmp/SourceLocks.java
+          java -Xmx2g -cp /tmp SourceLocks
