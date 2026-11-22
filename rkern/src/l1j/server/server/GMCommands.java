@@ -1292,7 +1292,7 @@ public class GMCommands {
 			spawnNotifyOnOff(gm, param);
 			break;
 		case "아덴시세":
-			UserCommands.getInstance().AdSc(gm);
+			UserCommands.getInstance().showTradePriceNotice(gm);
 			break;
 		case "매니아체크":
 			SC_ShowCmd.sendMovie(gm, "http://kimsuin123.megaplug.kr/pricemania/pricePreviewboard1.html", -1);

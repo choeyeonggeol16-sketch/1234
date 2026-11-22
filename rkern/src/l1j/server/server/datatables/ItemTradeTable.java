@@ -280,7 +280,7 @@ public class ItemTradeTable {
                     try {
                         if (gmCurrency) GMCommands.WriteLetter22(actor, listing.sellerCharacter,
                                 listing.enchant, listing.itemName);
-                        else UserCommands.WriteLetter22(actor, listing.sellerCharacter,
+                        else UserCommands.notifyConsignmentSale(actor, listing.sellerCharacter,
                                 listing.enchant, listing.itemName);
                     } catch (RuntimeException mailFailure) {
                         // Letter is notification only; money and goods are
