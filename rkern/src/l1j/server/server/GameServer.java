@@ -5,7 +5,6 @@ import java.util.Collection;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightLoader;
-import l1j.server.server.payment.PaymentCipher;
 import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.Server;
 import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceTimeController;
@@ -329,7 +328,6 @@ public class GameServer {
 		MonsterParalyzeDelay.getInstance();
 
 		CompanionLoader.getInstance();
-		PaymentCipher.getInstance();
 		DogFightLoader.getInstance();
 		
 		CastleWarBusiness.getInstance().run();

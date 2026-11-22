@@ -28,8 +28,6 @@ import javolution.util.FastTable;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightCommandExecutor;
-import l1j.server.server.payment.PaymentGmHandler;
-import l1j.server.server.payment.PaymentUserHandler;
 import l1j.server.SpecialEventHandler;
 import l1j.server.server.model.character.combat.arena.stadium.StadiumManager;
 import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv1;
@@ -351,12 +349,6 @@ public class GMCommands {
             break;
 		case "투견":
 			DogFightCommandExecutor.do_execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "코드":
-			PaymentGmHandler.do_execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "충전":
-			PaymentUserHandler.do_execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "펫":
 			CompanionCommandExecutor.exec(new CommandArgs().setOwner(gm).setParam(param));
