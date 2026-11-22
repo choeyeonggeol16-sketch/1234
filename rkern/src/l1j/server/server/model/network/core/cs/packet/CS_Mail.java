@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -112,10 +113,35 @@ public final class CS_Mail {
         if (!letters.isEmpty()) sendBatch(sender,letters,1000,LetterTable.MAIL_ORDER_KEY);
     }
 
+    /** The global batch has to reserve each recipient's FIFO as one transaction.
+     * Sorting/deduplicating keys avoids repeated ownership entries in CacheD.
+     */
+    private static int[] recipientLanes(List<Letter> letters, int primaryKey, int senderId) {
+        int[] keys = new int[letters.size()];
+        int length = 0;
+        for (int i = 0, size = letters.size(); i < size; i++) {
+            int key = LetterTable.mailboxOrderKey(letters.get(i).receiver);
+            if (key != primaryKey && key != senderId) keys[length++] = key;
+        }
+        Arrays.sort(keys, 0, length);
+        int unique = 0;
+        for (int i = 0; i < length; i++) {
+            if (unique == 0 || keys[i] != keys[unique - 1])
+                keys[unique++] = keys[i];
+        }
+        return unique == keys.length ? keys : Arrays.copyOf(keys, unique);
+    }
+
     private static void sendBatch(L1PcInstance sender,List<Letter> letters,int price,int mailKey) {
+        // A clan batch reserves every recipient lane before its single receipt
+        // so list/read/save/delete cannot overtake its committed INSERTs.
+        final int[] recipients = mailKey == LetterTable.MAIL_ORDER_KEY
+                ? recipientLanes(letters,mailKey,sender.getId()) : null;
         // The fee and every recipient insert share ONE receipt and connection.
         // No live inventory, post delay or success notification changes here.
-        try (L1InventoryTransaction tx=L1InventoryTransaction.begin(sender,mailKey)) {
+        try (L1InventoryTransaction tx=recipients == null
+                ? L1InventoryTransaction.begin(sender,mailKey)
+                : L1InventoryTransaction.begin(sender,mailKey,recipients)) {
             if (!tx.debit(L1ItemId.ADENA,price)) {
                 SC_ServerMessage.send(sender,189,"");
                 return;

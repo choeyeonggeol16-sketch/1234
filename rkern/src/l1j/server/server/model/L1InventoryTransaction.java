@@ -113,6 +113,13 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     public static L1InventoryTransaction begin(L1PcInstance pc, int resourceKey) {
         return new L1InventoryTransaction(pc, null, resourceKey, false);
     }
+    /** Reserve one atomic mail receipt alongside all recipient mailbox FIFO lanes.
+     * Mail recipients are resource keys, not additional inventory participants.
+     */
+    public static L1InventoryTransaction begin(L1PcInstance pc, int resourceKey, int[] recipientKeys) {
+        return new L1InventoryTransaction(pc, null, resourceKey, false,
+                Objects.requireNonNull(recipientKeys, "recipientKeys"));
+    }
     public static L1InventoryTransaction begin(L1PcInstance first, L1PcInstance second) {
         if (second == null || first == second) throw new IllegalArgumentException("Distinct participants required");
         return new L1InventoryTransaction(first, second, second.getId(), false);
@@ -153,10 +160,16 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         return new L1InventoryTransaction(first, second, second.getId(), true);
     }
     private L1InventoryTransaction(L1PcInstance first, L1PcInstance second, int resourceKey, boolean trade) {
+        this(first, second, resourceKey, trade, null);
+    }
+    private L1InventoryTransaction(L1PcInstance first, L1PcInstance second, int resourceKey,
+            boolean trade, int[] recipientKeys) {
         primary = Objects.requireNonNull(first);
         owners = new InventoryTransactionOwners(first, second, trade);
         try {
-            move = CacheD.beginEconomyMove(first.getId(), resourceKey);
+            move = recipientKeys == null
+                    ? CacheD.beginEconomyMove(first.getId(), resourceKey)
+                    : CacheD.beginEconomyMove(first.getId(), resourceKey, recipientKeys);
             move.onError(this);
         } catch (RuntimeException failure) {
             owners.release();
