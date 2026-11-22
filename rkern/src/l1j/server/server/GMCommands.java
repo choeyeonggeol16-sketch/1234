@@ -173,7 +173,6 @@ public class GMCommands {
  
 	private static Logger _log = Logger.getLogger(GMCommands.class.getName());
 	private static GMCommands _instance;
-	public static L1PcInstance _gm;
 	private static Random _random = new Random(System.nanoTime());
 	public List<L1MonsterInstance> fieldbosslist = new ArrayList<L1MonsterInstance>();
 	private static final ConcurrentHashMap<Integer, L1ClanJoinInstance> _clan_to_cj = new ConcurrentHashMap<Integer, L1ClanJoinInstance>(32);
@@ -304,7 +303,6 @@ public class GMCommands {
 
 		/** 파일로그저장 **/
 		LoggerInstance.getInstance().addCommand(gm.getName() + ": " + cmd + " " + param);
-		_gm = gm;
 
 		switch (cmd) {
 		case "psswindow":
