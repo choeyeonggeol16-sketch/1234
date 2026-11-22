@@ -1,0 +1,41 @@
+name: RKern temporary deadlock audit
+on:
+  push:
+    branches: [rkern/nc-intrusive-inventory-20261122]
+  workflow_dispatch:
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan all production Java lock, trade, and blocking call sites
+        run: |
+          python3 - <<'PY'
+          import pathlib,re,collections
+          root=pathlib.Path('rkern/src')
+          files=list(root.rglob('*.java'))
+          print('JAVA_COUNT',len(files))
+          for tag,pattern,limit in [
+          ('TRADE',r'\btradeItem\s*\(',350),
+          ('GROUND_CALL',r'(getInventory|findGroundInventory)\s*\(',200),
+          ('LOCK',r'\bsynchronized\s*\(',450),
+          ('BLOCK',r'(\.join\s*\(|\.await\s*\(|\.get\s*\(\s*(?:[0-9a-zA-Z_]+\s*,)?\s*\)|\.wait\s*\(|LockSupport\.(?:park|parkNanos)|Thread\.sleep\s*\(|\.lock\s*\(|\.lockInterruptibly\s*\(|\.take\s*\(|\.put\s*\()',200),
+          ]:
+           print('===',tag)
+           n=0
+           for p in files:
+            lines=p.read_text(errors='replace').splitlines()
+            for i,line in enumerate(lines,1):
+             if re.search(pattern,line) and not line.lstrip().startswith(('*','//')):
+              if tag=='LOCK' and not any(q in str(p) for q in ['/model/','/storage/','/network/','/Controller/','/datatables/']):continue
+              if tag=='GROUND_CALL' and not any(q in line for q in ['L1World','ground','Ground','getInventory(x, y','getInventory(p','getInventory(npc','getInventory(item','findGround']):continue
+              if tag=='TRADE' and not ('.tradeItem' in line or ' tradeItem' in line):continue
+              print(f'{tag} {p}:{i}: {line.strip()[:170]}')
+              n+=1
+              if n>=limit:break
+            if n>=limit:break
+           print('COUNT_PRINTED',tag,n)
+          
+          PY
