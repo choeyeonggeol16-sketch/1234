@@ -60,10 +60,7 @@ public final class CS_Result {
 		String npcName = "";
 
 		if (findObject != null) {
-            final int range = NpcActionRange.get();
-            if (pc.getMapId() != findObject.getMapId()
-                    || Math.abs((long) pc.getX() - findObject.getX()) > range
-                    || Math.abs((long) pc.getY() - findObject.getY()) > range) {
+            if (!NpcActionRange.isWithin(pc, findObject, NpcActionRange.get())) {
                 if (resultType == 5 && size == 0 && findObject instanceof L1NpcInstance dwarf
                         && dwarf.getNpcTemplate().getImpl().equalsIgnoreCase("L1Dwarf")) {
                     L1Clan clan = pc.getClan();

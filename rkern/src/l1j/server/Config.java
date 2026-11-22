@@ -1441,6 +1441,7 @@ public final class Config {
 	public static int LV99_EXP;
 	public static int 영웅유물;
 	/** ServerCodes.properties 설정 **/ // TODO
+	public static volatile int NPC_ACTION_RANGE = 12;
 	public static int summon_hpdmg;
 	public static boolean IS_PARTY_EXP;
 	public static double ADD_PARTY_EXP;
@@ -3035,6 +3036,14 @@ public final class Config {
 			InputStream is = new FileInputStream(new File(ServerCodes_SETTINGS_CONFIG_FILE));
 			ServerCodes.load(is);
 			is.close();
+			int npcActionRange = 12;
+			try {
+				int configured = Integer.parseInt(ServerCodes.getProperty("NpcActionRange", "12").trim());
+				if (configured > 0) npcActionRange = configured;
+			} catch (NumberFormatException ignored) {
+				// An invalid optional setting retains the previous default.
+			}
+			NPC_ACTION_RANGE = npcActionRange;
 			DROPMENT_ITEM.clear();
 			String ments = ServerCodes.getProperty("Dropmentitem", "").trim();
 			if(!GameUtils.isNullOrEmpty(ments)){

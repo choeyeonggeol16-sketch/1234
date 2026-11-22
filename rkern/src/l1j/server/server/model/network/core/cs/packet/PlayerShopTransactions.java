@@ -28,11 +28,8 @@ final class PlayerShopTransactions {
     private PlayerShopTransactions() {}
 
     static boolean canReach(L1PcInstance customer, L1PcInstance shop) {
-        final int range = NpcActionRange.get();
         return customer != shop && shop.isPrivateShop() && !customer.isGhost() && !customer.isDead()
-                && customer.getMapId() == shop.getMapId()
-                && Math.abs((long) customer.getX() - shop.getX()) <= range
-                && Math.abs((long) customer.getY() - shop.getY()) <= range;
+                && NpcActionRange.isWithin(customer, shop, NpcActionRange.get());
     }
 
     static void execute(L1PcInstance customer, L1PcInstance shop, boolean purchase,
