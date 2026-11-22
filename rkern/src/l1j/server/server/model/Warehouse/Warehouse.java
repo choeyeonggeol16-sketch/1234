@@ -12,7 +12,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import l1j.server.server.model.Instance.CItemList;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
@@ -31,7 +31,7 @@ import l1j.server.server.utils.SQLUtil;
 public abstract class Warehouse extends L1Object {
 	private static final long serialVersionUID = 1L;
 	
-	protected final List<L1ItemInstance> _items = new CopyOnWriteArrayList<L1ItemInstance>();
+	protected final CItemList _items = new CItemList();
     private final List<L1ItemInstance> readOnlyItems = Collections.unmodifiableList(_items);
 	private final String name;
     // An evicted warehouse must never accept writes from a caller retaining
@@ -479,12 +479,7 @@ public abstract class Warehouse extends L1Object {
 	protected abstract int getMax();
 	
 	public L1ItemInstance findItemId(int id) {
-		for (L1ItemInstance item : _items) {
-			if (item.getItem().getItemId() == id) {
-				return item;
-			}
-		}
-		return null;
+		return _items.GetFirstItemByClassID(id);
 	}
 
 	public synchronized L1ItemInstance storeTradeItem(L1ItemInstance item) {
@@ -966,14 +961,7 @@ public abstract class Warehouse extends L1Object {
 	}
 
 	public L1ItemInstance getItem(int objectId) {
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getId() == objectId) {
-				return item;
-			}
-		}
-		return null;
+		return _items.GetByIndex(objectId);
 	}
 	
 	public synchronized void removeItem(L1ItemInstance item) {
