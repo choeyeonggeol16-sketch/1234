@@ -908,8 +908,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 			pc = (L1PcInstance) ((L1SummonInstance) lastAttacker).getMaster();
 		}
 		if (pc != null && !pc.noPlayerCK && !pc.noPlayerck2 && !pc.isDead()) {
-			ArrayList<L1Character> targetList = _hateList.toTargetArrayList();
-			ArrayList<Integer> hateList = _hateList.toHateArrayList();
+			ArrayList<L1Character> targetList = new ArrayList<>();
+			ArrayList<Integer> hateList = new ArrayList<>();
+			_hateList.copySnapshotTo(targetList, hateList);
 			
 			int exp = getExp();
 			CalcExp.calcExp(pc, getId(), targetList, hateList, exp);
@@ -922,8 +923,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 		} else if (lastAttacker instanceof L1EffectInstance)
 
 		{
-			ArrayList<L1Character> targetList = _hateList.toTargetArrayList();
-			ArrayList<Integer> hateList = _hateList.toHateArrayList();
+			ArrayList<L1Character> targetList = new ArrayList<>();
+			ArrayList<Integer> hateList = new ArrayList<>();
+			_hateList.copySnapshotTo(targetList, hateList);
 			if (hateList.size() != 0) {
 				int maxHate = 0;
 				for (int i = hateList.size() - 1; i >= 0; i--) {
@@ -952,8 +954,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	}
 
 	private void distributeDrop(L1PcInstance pc) {
-		ArrayList<L1Character> dropTargetList = _dropHateList.toTargetArrayList();
-		ArrayList<Integer> dropHateList = _dropHateList.toHateArrayList();
+		ArrayList<L1Character> dropTargetList = new ArrayList<>();
+		ArrayList<Integer> dropHateList = new ArrayList<>();
+		_dropHateList.copySnapshotTo(dropTargetList, dropHateList);
 		try {
 			int npcId = getNpcTemplate().get_npcId();
 			if (npcId != 45640 || (npcId == 45640 && getCurrentSpriteId() == 2332)) {
