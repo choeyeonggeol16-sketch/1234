@@ -1,0 +1,246 @@
+package l1j.server.server.model;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import l1j.server.server.model.Instance.L1PcInstance;
+public final class KnownObjectIndex {
+    private static final L1Object[] NO_OBJECTS = new L1Object[0];
+    private static final L1PcInstance[] NO_PLAYERS = new L1PcInstance[0];
+    private static final int INITIAL_CAPACITY = 16;
+    public static final KnownObjectIndex CLOSED = new KnownObjectIndex(true);
+    private int[] hashes;
+    private L1Object[] table;
+    private int[] playerPositions;
+    private L1PcInstance[] players;
+    private int count;
+    private int playerCount;
+    private boolean closed;
+    private L1Object[] objectSnapshot = NO_OBJECTS;
+    private L1PcInstance[] playerSnapshot = NO_PLAYERS;
+    private boolean objectsDirty;
+    private boolean playersDirty;
+    private Set<L1Object> objectsView;
+    private Set<L1PcInstance> playersView;
+    public KnownObjectIndex() {
+        this(false);
+    }
+private KnownObjectIndex(boolean closed) {
+    this.closed = closed;
+}
+private static int spread(int hash) {
+    hash ^= hash >>> 16;
+    hash *= 0x7feb352d;
+    hash ^= hash >>> 15;
+    hash *= 0x846ca68b;
+    return hash ^ (hash >>> 16);
+}
+private void init() {
+    if (table == null) {
+        hashes = new int[INITIAL_CAPACITY];
+        table = new L1Object[INITIAL_CAPACITY];
+    }
+}
+private int locate(L1Object obj, int hash) {
+    if (table == null) return -1;
+    final int mask = table.length - 1;
+    int slot = spread(hash) & mask;
+    while (table[slot] != null) {
+        if (hashes[slot] == hash && table[slot] == obj) return slot;
+        slot = (slot + 1) & mask;
+    }
+return -1;
+}
+public synchronized boolean contains(L1Object obj) {
+    return obj != null && locate(obj, System.identityHashCode(obj)) >= 0;
+}
+public synchronized int size() {
+    return count;
+}
+public synchronized int playerSize() {
+    return playerCount;
+}
+public synchronized boolean add(L1Object obj) {
+    if (closed || obj == null) return false;
+    init();
+    final int hash = System.identityHashCode(obj);
+    if (locate(obj, hash) >= 0) return false;
+    if ((count + 1) * 3 >= table.length * 2) resize(table.length << 1);
+    final int mask = table.length - 1;
+    int slot = spread(hash) & mask;
+    while (table[slot] != null) slot = (slot + 1) & mask;
+    table[slot] = obj;
+    hashes[slot] = hash;
+    ++count;
+    objectSnapshot = NO_OBJECTS;
+    objectsDirty = true;
+    if (obj instanceof L1PcInstance pc) {
+        if (players == null) {
+            players = new L1PcInstance[4];
+            playerPositions = new int[table.length];
+        } else if (playerCount == players.length) {
+        players = Arrays.copyOf(players, players.length << 1);
+    }
+players[playerCount] = pc;
+playerPositions[slot] = ++playerCount;
+playerSnapshot = NO_PLAYERS;
+playersDirty = true;
+}
+return true;
+}
+private void resize(int capacity) {
+    final L1Object[] old = table;
+    final int[] oldHashes = hashes;
+    final int[] oldPositions = playerPositions;
+    table = new L1Object[capacity];
+    hashes = new int[capacity];
+    playerPositions = oldPositions == null ? null : new int[capacity];
+    final int mask = capacity - 1;
+    for (int i = 0; i < old.length; i++) {
+        final L1Object obj = old[i];
+        if (obj == null) continue;
+        final int hash = oldHashes[i];
+        int slot = spread(hash) & mask;
+        while (table[slot] != null) slot = (slot + 1) & mask;
+        table[slot] = obj;
+        hashes[slot] = hash;
+        if (playerPositions != null) playerPositions[slot] = oldPositions[i];
+    }
+}
+public synchronized boolean remove(L1Object obj) {
+    if (closed || obj == null) return false;
+    final int slot = locate(obj, System.identityHashCode(obj));
+    if (slot < 0) return false;
+    if (obj instanceof L1PcInstance) {
+        final int index = playerPositions[slot] - 1;
+        final int last = --playerCount;
+        final L1PcInstance swapped = players[last];
+        players[index] = swapped;
+        players[last] = null;
+        if (index != last) {
+            final int swappedSlot = locate(swapped, System.identityHashCode(swapped));
+            playerPositions[swappedSlot] = index + 1;
+        }
+    playerSnapshot = NO_PLAYERS;
+    playersDirty = true;
+}
+final int mask = table.length - 1;
+table[slot] = null;
+hashes[slot] = 0;
+if (playerPositions != null) playerPositions[slot] = 0;
+int scan = (slot + 1) & mask;
+while (table[scan] != null) {
+    final L1Object moved = table[scan];
+    final int hash = hashes[scan];
+    final int playerIndex = playerPositions == null ? 0 : playerPositions[scan];
+    table[scan] = null;
+    hashes[scan] = 0;
+    if (playerPositions != null) playerPositions[scan] = 0;
+    int destination = spread(hash) & mask;
+    while (table[destination] != null) destination = (destination + 1) & mask;
+    table[destination] = moved;
+    hashes[destination] = hash;
+    if (playerPositions != null) playerPositions[destination] = playerIndex;
+    scan = (scan + 1) & mask;
+}
+--count;
+objectSnapshot = NO_OBJECTS;
+objectsDirty = true;
+if (count == 0) {
+    hashes = null;
+    table = null;
+    playerPositions = null;
+    players = null;
+} else if (table.length > 64 && count < (table.length >>> 3)) {
+resize(table.length >>> 1);
+}
+return true;
+}
+public synchronized void clear() {
+    if (closed) return;
+    hashes = null;
+    table = null;
+    playerPositions = null;
+    players = null;
+    count = 0;
+    playerCount = 0;
+    objectSnapshot = NO_OBJECTS;
+    playerSnapshot = NO_PLAYERS;
+    objectsDirty = false;
+    playersDirty = false;
+}
+public synchronized void close() {
+    if (!closed) {
+        clear();
+        closed = true;
+    }
+}
+public synchronized L1Object[] objectsSnapshot() {
+    if (!objectsDirty) return objectSnapshot;
+    final L1Object[] snapshot = new L1Object[count];
+    int n = 0;
+    if (table != null) {
+        for (L1Object obj : table) if (obj != null) snapshot[n++] = obj;
+    }
+objectSnapshot = snapshot;
+objectsDirty = false;
+return snapshot;
+}
+public synchronized L1PcInstance[] playersSnapshot() {
+    if (!playersDirty) return playerSnapshot;
+    playerSnapshot = playerCount == 0 ? NO_PLAYERS : Arrays.copyOf(players, playerCount);
+    playersDirty = false;
+    return playerSnapshot;
+}
+public synchronized Set<L1Object> objectsView() {
+    if (objectsView == null) objectsView = new View<>(false);
+    return objectsView;
+}
+public synchronized Set<L1PcInstance> playersView() {
+    if (playersView == null) playersView = new View<>(true);
+    return playersView;
+}
+private final class View<T extends L1Object> extends AbstractSet<T> {
+    private final boolean playersOnly;
+    View(boolean playersOnly) {
+        this.playersOnly = playersOnly;
+    }
+@Override public int size() { return playersOnly ? playerSize() : KnownObjectIndex.this.size(); }
+@Override public boolean contains(Object obj) {
+    if (!(obj instanceof L1Object)) return false;
+    return (!playersOnly || obj instanceof L1PcInstance)
+    && KnownObjectIndex.this.contains((L1Object) obj);
+}
+@Override public boolean add(T obj) {
+    return (!playersOnly || obj instanceof L1PcInstance) && KnownObjectIndex.this.add(obj);
+}
+@Override public boolean remove(Object obj) {
+    return contains(obj) && KnownObjectIndex.this.remove((L1Object) obj);
+}
+@Override public void clear() {
+    if (!playersOnly) {
+        KnownObjectIndex.this.clear();
+        return;
+    }
+for (L1PcInstance pc : playersSnapshot()) KnownObjectIndex.this.remove(pc);
+}
+@Override public Iterator<T> iterator() {
+    final L1Object[] snapshot = playersOnly ? playersSnapshot() : objectsSnapshot();
+    return new Iterator<>() {
+        private int cursor;
+        private L1Object previous;
+        @Override public boolean hasNext() { return cursor < snapshot.length; }
+        @Override @SuppressWarnings("unchecked") public T next() {
+            if (!hasNext()) throw new NoSuchElementException();
+            return (T) (previous = snapshot[cursor++]);
+        }
+    @Override public void remove() {
+        if (previous == null) throw new IllegalStateException();
+        KnownObjectIndex.this.remove(previous);
+        previous = null;
+    }
+};
+}
+}
+}

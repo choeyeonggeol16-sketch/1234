@@ -3,7 +3,7 @@ package l1j.server.server.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -102,8 +102,15 @@ public class L1Character extends L1Object {
 	private volatile SkillEffectContainer _skillEffects;
 	private int retiredSkillHeartbeatGeneration;
 	
-	private Set<L1Object> _knownObjects;
-	private Set<L1PcInstance> _knownPlayer;
+	private transient volatile KnownObjectIndex _knownIndex;
+	private static final AtomicReferenceFieldUpdater<L1Character, KnownObjectIndex> KNOWN_INDEX =
+			AtomicReferenceFieldUpdater.newUpdater(L1Character.class, KnownObjectIndex.class, "_knownIndex");
+	private KnownObjectIndex knownIndex(boolean create) {
+		KnownObjectIndex index = _knownIndex;
+		if (index != null || !create) return index;
+		final KnownObjectIndex fresh = new KnownObjectIndex();
+		return KNOWN_INDEX.compareAndSet(this, null, fresh) ? fresh : _knownIndex;
+	}
 
 	public boolean isPassive(int passiveId) {
 		return false;
@@ -123,14 +130,8 @@ public class L1Character extends L1Object {
 
 	public void dispose() {
 		clearSkillEffectTimer();
-		if (_knownObjects != null) {
-			_knownObjects.clear();
-			_knownObjects = null;
-		}
-		if (_knownPlayer != null) {
-			_knownPlayer.clear();
-			_knownPlayer = null;
-		}
+		final KnownObjectIndex known = KNOWN_INDEX.getAndSet(this, KnownObjectIndex.CLOSED);
+		if (known != null && known != KnownObjectIndex.CLOSED) known.close();
 
 		if (resistance != null) {
 			resistance.dispose();
@@ -702,51 +703,36 @@ public class L1Character extends L1Object {
 	}
 
 	public boolean knownsObject(L1Object obj) {
-	    return _knownObjects != null && _knownObjects.contains(obj);
+		final KnownObjectIndex known = knownIndex(false);
+		return known != null && known.contains(obj);
 	}
-
 	public Set<L1Object> getKnownObjects() {
-	    return _knownObjects == null 
-	        ? Collections.emptySet()
-	        : _knownObjects;
+		final KnownObjectIndex known = knownIndex(false);
+		return known == null ? Collections.emptySet() : known.objectsView();
 	}
-
 	public Set<L1PcInstance> getKnownPlayers() {
-		   return _knownPlayer == null 
-			        ? Collections.emptySet()
-			        : _knownPlayer;
+		final KnownObjectIndex known = knownIndex(false);
+		return known == null ? Collections.emptySet() : known.playersView();
 	}
-	
+	public L1Object[] knownObjectsSnapshot() {
+		final KnownObjectIndex known = knownIndex(false);
+		return known == null ? KnownObjectIndex.CLOSED.objectsSnapshot() : known.objectsSnapshot();
+	}
+	public L1PcInstance[] knownPlayersSnapshot() {
+		final KnownObjectIndex known = knownIndex(false);
+		return known == null ? KnownObjectIndex.CLOSED.playersSnapshot() : known.playersSnapshot();
+	}
 	public void addKnownObject(L1Object obj) {
-		if (_knownObjects == null) {
-			_knownObjects = ConcurrentHashMap.newKeySet();
-		}
-		if (_knownObjects.add(obj)) {
-			if (obj instanceof L1PcInstance) {
-				if (_knownPlayer == null) {
-					_knownPlayer = ConcurrentHashMap.newKeySet();
-				}
-				_knownPlayer.add((L1PcInstance) obj);
-			}
-		}
+		if (obj == null) return;
+		knownIndex(true).add(obj);
 	}
-
 	public void removeKnownObject(L1Object obj) {
-		if (_knownObjects != null) {
-			_knownObjects.remove(obj);
-		}
-		if (obj instanceof L1PcInstance && _knownPlayer != null) {
-			_knownPlayer.remove((L1PcInstance) obj);
-		}
+		final KnownObjectIndex known = knownIndex(false);
+		if (known != null) known.remove(obj);
 	}
-
 	public void removeAllKnownObjects() {
-		if (_knownObjects != null) {
-			_knownObjects.clear();
-		}
-		if (_knownPlayer != null) {
-			_knownPlayer.clear();
-		}
+		final KnownObjectIndex known = knownIndex(false);
+		if (known != null) known.clear();
 	}
 
 	public String getName() {
