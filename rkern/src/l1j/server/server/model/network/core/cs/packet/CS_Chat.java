@@ -2,6 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.Config;
 import l1j.server.server.GMCommands;
+import l1j.server.server.UserCommands;
 import l1j.server.server.datatables.SpamTable;
 import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.L1World;
@@ -27,6 +28,8 @@ public final class CS_Chat {
         }
 
         if (l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.handleLinkCommand(pc, chatText)) return;
+
+        if (UserCommands.handleLightCommand(pc, chatText)) return;
 
         handleWorldChat(pc, chatText);
     }

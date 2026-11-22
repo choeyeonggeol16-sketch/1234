@@ -177,10 +177,10 @@ public class UserCommands{
 				break;
 
 			case "라이트":
-				maphack(pc, param);
+				setLight(pc, param, true);
 				break;
 			case "light":
-				maphack3(pc, param);
+				setLight(pc, param, false);
 				break;
             case "시세":
                 l1j.server.server.appcenter.AppCenterService.registerMarketSearch(pc,param);
@@ -660,58 +660,41 @@ public class UserCommands{
 		}
 	}
 
-	private void maphack(L1PcInstance pc, String param) {
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String on = st.nextToken();
-			if (pc.getMapId() == 132) {
-				SC_Ability.send(pc, 3, false);
-				pc.sendPackets("현재 맵에서는 해당명령어를 사용할 수 없습니다.");
-				return;
-			}
-			if (on.equalsIgnoreCase("켬")) {
-				SC_Ability.send(pc, 3, true);
-				pc.sendPackets("라이트: 켜짐");
-			} else if (on.equals("끔")) {
-				SC_Ability.send(pc, 3, false);
-				pc.sendPackets("라이트: 꺼짐");
-			}
-		} catch (Exception e) {
-			pc.sendPackets(".라이트 켬 또는 끔 으로 설정 해주시길 바랍니다.");
-		}
-	}
-	
-	private void maphack3(L1PcInstance pc, String param) {
-	    try {
-	        StringTokenizer st = new StringTokenizer(param);
-	        if (!st.hasMoreTokens()) {
-	            pc.sendPackets("Usage: .light [on/off]");
-	            return;
-	        }
+    /** Consume only the light commands; other chat and commands retain their existing paths. */
+    public static boolean handleLightCommand(L1PcInstance pc, String text) {
+        if (pc == null || text == null || text.isEmpty() || text.charAt(0) != '.') return false;
+        final boolean korean = text.startsWith(".라이트");
+        final boolean english = text.startsWith(".light");
+        if (!korean && !english) return false;
+        final int end = korean ? ".라이트".length() : ".light".length();
+        if (text.length() > end && !Character.isWhitespace(text.charAt(end))) return false;
+        setLight(pc, text.substring(end).trim(), korean);
+        return true;
+    }
 
-	        String on = st.nextToken();
-	        
-	        // 특정 맵(132번) 제한 로직
-	        if (pc.getMapId() == 132) {
-	            SC_Ability.send(pc, 3, false);
-	            pc.sendPackets("This command cannot be used in this map.");
-	            return;
-	        }
+    private static void setLight(L1PcInstance pc, String param, boolean korean) {
+        if (pc.getMapId() == 132) {
+            SC_Ability.send(pc, 3, false);
+            pc.sendPackets(korean ? "현재 맵에서는 해당명령어를 사용할 수 없습니다."
+                    : "This command cannot be used in this map.");
+            return;
+        }
 
-	        // 입력값 비교 (on/off)
-	        if (on.equalsIgnoreCase("on")) {
-	            SC_Ability.send(pc, 3, true);
-	            pc.sendPackets("Light: ON");
-	        } else if (on.equalsIgnoreCase("off")) {
-	            SC_Ability.send(pc, 3, false);
-	            pc.sendPackets("Light: OFF");
-	        } else {
-	            pc.sendPackets("Usage: .light [on/off]");
-	        }
-	    } catch (Exception e) {
-	        pc.sendPackets("Usage: .light [on/off]");
-	    }
-	}
+        final boolean enabled;
+        if (korean ? param.equals("켬") : param.equalsIgnoreCase("on")) {
+            enabled = true;
+        } else if (korean ? param.equals("끔") : param.equalsIgnoreCase("off")) {
+            enabled = false;
+        } else {
+            pc.sendPackets(korean ? ".라이트 [켬/끔]" : "Usage: .light [on/off]");
+            return;
+        }
+
+        if (SC_Ability.send(pc, 3, enabled)) {
+            pc.sendPackets(korean ? (enabled ? "라이트: 켜짐" : "라이트: 꺼짐")
+                    : (enabled ? "Light: ON" : "Light: OFF"));
+        }
+    }
 
 
 	/*
