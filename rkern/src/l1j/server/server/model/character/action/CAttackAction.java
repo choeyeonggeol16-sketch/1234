@@ -1,10 +1,5 @@
 package l1j.server.server.model.character.action;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -32,6 +27,7 @@ import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.Attack.Helper.DamageReductionHelper;
 import l1j.server.server.model.character.Attack.Helper.HitEvasionModel;
+import l1j.server.server.model.character.Attack.Helper.KeylinkBalanceConfig;
 import l1j.server.server.model.character.Attack.Helper.L1AttackHelper;
 import l1j.server.server.model.character.Attack.Helper.L1AttackPacketHelper;
 import l1j.server.server.model.character.Attack.Helper.L1DamageCalcHelper;
@@ -76,73 +72,6 @@ import l1j.server.server.utils.TYUtil;
 public final class CAttackAction extends CNewAction {
 
     private static final Logger LOG = Logger.getLogger(CAttackAction.class.getName());
-
-    // Defense class coefficients for the 2016 keylink MR curve (PC types 0..7).
-    // Reload publishes all eight primitive values together; combat only reads
-    // this volatile reference, with no file IO or allocations per attack.
-    private static volatile double[] keylinkClassFactors = {
-            2.30, 2.40, 2.20, 2.00, 2.20, 2.40, 2.20, 2.40
-    };
-    private static final Path KEYLINK_BALANCE_FILE = Path.of("./config/KeylinkBalance.properties");
-
-    static {
-        try {
-            reloadKeylinkBalance();
-        } catch (IOException | IllegalArgumentException ex) {
-            LOG.log(Level.WARNING, "KeylinkBalance.properties not loaded; using previous/default class factors", ex);
-        }
-    }
-
-    /** Reload only defender class factors, retaining the last valid snapshot on failure. */
-    public static synchronized void reloadKeylinkBalance() throws IOException {
-        final double[] next = new double[8];
-        final boolean[] seen = new boolean[8];
-        try (BufferedReader reader = Files.newBufferedReader(KEYLINK_BALANCE_FILE, StandardCharsets.UTF_8)) {
-            String line;
-            int lineNumber = 0;
-            while ((line = reader.readLine()) != null) {
-                ++lineNumber;
-                final String entry = line.trim();
-                if (entry.isEmpty() || entry.charAt(0) == '#' || entry.charAt(0) == '!') continue;
-                final int separator = entry.indexOf('=');
-                if (separator <= 0) {
-                    throw new IllegalArgumentException("KeylinkBalance line " + lineNumber + " must be Key=Value");
-                }
-                final String key = entry.substring(0, separator).trim();
-                final int type = switch (key) {
-                    case "Prince" -> 0;
-                    case "Knight" -> 1;
-                    case "Elf" -> 2;
-                    case "Wizard" -> 3;
-                    case "DarkElf" -> 4;
-                    case "DragonKnight" -> 5;
-                    case "Illusionist" -> 6;
-                    case "Warrior" -> 7;
-                    default -> throw new IllegalArgumentException(
-                            "Unknown KeylinkBalance key on line " + lineNumber + ": " + key);
-                };
-                if (seen[type]) {
-                    throw new IllegalArgumentException("Duplicate KeylinkBalance key: " + key);
-                }
-                final String raw = entry.substring(separator + 1).trim();
-                final double value;
-                try {
-                    value = Double.parseDouble(raw);
-                } catch (NumberFormatException ex) {
-                    throw new IllegalArgumentException("Invalid KeylinkBalance " + key + ": " + raw, ex);
-                }
-                if (!Double.isFinite(value) || value < 0.0 || value > 10.0) {
-                    throw new IllegalArgumentException(key + " must be between 0.0 and 10.0: " + raw);
-                }
-                next[type] = value;
-                seen[type] = true;
-            }
-        }
-        for (int i = 0; i < seen.length; ++i) {
-            if (!seen[i]) throw new IllegalArgumentException("KeylinkBalance missing class type " + i);
-        }
-        keylinkClassFactors = next;
-    }
 
     private static final AtomicIntegerFieldUpdater<CAttackAction> OWNED_BUSY =
             AtomicIntegerFieldUpdater.newUpdater(CAttackAction.class, "ownedAttackBusy");
@@ -1635,9 +1564,7 @@ public final class CAttackAction extends CNewAction {
 	}
 
     /**
-     * Keylink-only damage: use a single weapon-stat-driven multi-dice rule,
-     * without item-ID exceptions. Keep the 2009 keylink structure and the
-     * 2016 INT/SP and PC high-MR multipliers separate from normal spells.
+     * 키링크 전용 마법 데미지 계산.
      */
     private int calcKeylinkDamage(final L1Character target, final boolean pvp) {
         if (weapon == null || target == null) return 0;
@@ -1668,10 +1595,8 @@ public final class CAttackAction extends CNewAction {
         _isCritical = critChance > 0 && rng.nextInt(100) < Math.min(100, critChance);
         if (_isCritical) scaled = (int) Math.floor(scaled * 1.25);
 
-        // The 2009/2021 keylink experiments put enchant and additional magic
-        // damage inside MR, unlike the 2016 general-spell MD-after-MR equation.
-        // getBaseMagicDmg() and getTotalMagicHitup() already contain
-        // the cached class/level bonuses; never add them twice.
+        // 강화 및 추가 마법 데미지를 합산한 후 MR을 적용한다.
+        // 직업/레벨 보너스는 중복 합산하지 않는다.
         final int magicBonus = _pc.getBaseMagicDmg()
                 + weapon.getItem().getMagicDmgModifier()
                 + _weaponAddDmg; // original weapon bonus + weapon_damage DB snapshot
@@ -1713,7 +1638,7 @@ public final class CAttackAction extends CNewAction {
             return (displayedDamage / 2 + 2) + rng.nextInt(1, 6) + rng.nextInt(1, 6);
         }
         if (displayedDamage <= 34) {
-            // Display 32 -> 2d8+14 (post-2017 keylink revisions).
+            // Display 32 -> 2d8+14.
             return (displayedDamage / 2 - 2) + rng.nextInt(1, 9) + rng.nextInt(1, 9);
         }
         if (displayedDamage <= 35) {
@@ -1735,27 +1660,23 @@ public final class CAttackAction extends CNewAction {
     private static double keylinkMrMultiplier(final int mrMinusMh,
                                                final int defenderType, final int defenderWis) {
         if (defenderType >= 0 && defenderType <= 7) {
-            // The 2016 experimental curve is measured for MR-MH >= 10 only.
-            // Clamp to <= 1 so MR cannot amplify magic damage, and join the
-            // low-MR region continuously to avoid a damage increase at 9->10.
-            final double c = keylinkClassFactors[defenderType]
+            // 낮은 MR 구간과 연결하고 배율을 0~1로 제한한다.
+            final double c = KeylinkBalanceConfig.classFactor(defenderType)
                     - 0.02 * (Math.max(0, defenderWis) / 2);
             final int x = Math.max(0, mrMinusMh);
-            // The 2021 sapphire observations at MR-MH=-1 and 2 have exactly
-            // the same damage distribution, so keep this measured plateau.
+            // MR-MH가 2 이하이면 데미지를 감소시키지 않는다.
             if (x <= 2) return 1.0;
             if (x < 10) {
-                // Unmeasured 3..9: bounded, monotone connection to B(10).
-                // Do not use the incompatible pre-2016 MR law at this seam.
+                // MR-MH 3~9 구간을 보간한다.
                 final double b10 = Math.max(0.0,
                         Math.min(1.0, Math.floor(c * Math.pow(10.0, -0.3) * 100.0) / 100.0));
                 return Math.max(0.0,
                         Math.floor((1.0 - (1.0 - b10) * ((x - 2) / 8.0)) * 100.0) / 100.0);
             }
-            final double b2016 = Math.floor(c * Math.pow(x, -0.3) * 100.0) / 100.0;
-            return Math.max(0.0, Math.min(1.0, b2016));
+            final double multiplier = Math.floor(c * Math.pow(x, -0.3) * 100.0) / 100.0;
+            return Math.max(0.0, Math.min(1.0, multiplier));
         }
-        // NPC: preserve the existing 2009 MR fallback; no PC class factor.
+        // NPC는 직업 계수 없이 MR 감소율을 적용한다.
         final int effectiveMr = Math.max(0, mrMinusMh);
         if (effectiveMr <= 100) return 1.0 - 0.01 * (effectiveMr / 2);
         return Math.max(0.0, 0.6 - 0.01 * (effectiveMr / 10));
@@ -2163,26 +2084,6 @@ public final class CAttackAction extends CNewAction {
                 throw e;
             }
 		}
-		// 대미지치 및 명중율 확인용 메세지
-		if (!Config.ALT_ATKMSG) {
-			return;
-		}
-		if (_target == null)
-			return;
-		if (_pc != null && _pc.isGm()) {
-			StringBuffer sb = new StringBuffer();
-
-			sb.append("\\fT<데미지> [").append(damage).append(" DMG ==][HP ").append(_target.getCurrentHp()).append("]");
-
-			SC_SystemMessage.send(_pc, sb.toString());
-			sb = null;
-		}
-		if (_targetPc != null && _targetPc.isGm()) {
-			StringBuffer sb = new StringBuffer();
-			sb.append("\\fY<데미지> [").append(damage).append(" DMG ==][HP ").append(_target.getCurrentHp()).append("]");
-			SC_SystemMessage.send(_targetPc, sb.toString());
-			sb = null;
-		}
 	}
 
 	public void commit() {
@@ -2200,27 +2101,6 @@ public final class CAttackAction extends CNewAction {
             }
 		}
 
-		// 대미지치 및 명중율 확인용 메세지
-		if (!Config.ALT_ATKMSG) {
-			return;
-		}
-		if (_target == null)
-			return;
-		if (_pc != null && _pc.isGm()) {
-			StringBuffer sb = new StringBuffer();
-			sb.append("\\fT[").append(_pc.getName()).append("] ==> [").append(_target.getName()).append("][== ")
-					.append(_damage).append(" DMG ==][HP ").append(_target.getCurrentHp()).append("]");
-			SC_SystemMessage.send(_pc, sb.toString());
-			sb = null;
-		}
-		if (_targetPc != null && _targetPc.isGm()) {
-			StringBuffer sb = new StringBuffer();
-			sb.append("\\fY[").append(_target.getName()).append("] <== [")
-					.append((_pc == null ? _npc.getName() : _pc.getName())).append("][== ").append(_damage)
-					.append(" DMG ==][HP ").append(_target.getCurrentHp()).append("]");
-			SC_SystemMessage.send(_targetPc, sb.toString());
-			sb = null;
-		}
 	}
 
 	// ●●●● 플레이어에 계산 결과를 반영 ●●●●

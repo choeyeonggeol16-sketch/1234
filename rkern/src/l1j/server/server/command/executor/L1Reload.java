@@ -6,7 +6,7 @@ import gnu.trove.map.TIntObjectMap;
 import l1j.server.Config;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
 import l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig;
-import l1j.server.server.model.character.action.CAttackAction;
+import l1j.server.server.model.character.Attack.Helper.KeylinkBalanceConfig;
 import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019;
 import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightTicketIdManager;
@@ -121,7 +121,7 @@ public class L1Reload implements L1CommandExecutor {
         if (arg != null && (arg.trim().equalsIgnoreCase("키링크밸런스")
                 || arg.trim().equalsIgnoreCase("키링크"))) {
             try {
-                CAttackAction.reloadKeylinkBalance();
+                KeylinkBalanceConfig.reload();
                 SC_SystemMessage.send(gm, "키링크 방어자 직업 계수 8종 적용 완료 (KeylinkBalance.properties)");
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 SC_SystemMessage.send(gm, "키링크 밸런스 리로드 실패: " + ex.getMessage()
