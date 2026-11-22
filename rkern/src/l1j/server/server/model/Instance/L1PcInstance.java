@@ -2541,6 +2541,13 @@ public class L1PcInstance extends L1Character {
                 try { stopAllRegenerations(); }
                 catch (RuntimeException cleanup) { _log.log(Level.SEVERE, "Logout regeneration cleanup failed: " + getId(), cleanup); }
             }
+            // A clan outlives individual sessions; release only this exact PC.
+            try {
+                final L1Clan clan = getClan();
+                if (clan != null) clan.releaseClanMemberReference(this);
+            } catch (RuntimeException e) {
+                _log.log(Level.SEVERE, "Logout clan reference cleanup failed: " + getId(), e);
+            }
             try { CacheD.getInstance().requestCharacterItemOwnerRelease(getId(), getCacheDSessionEpoch()); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout CacheD owner release failed: " + getId(), e); }
             final L1World world = L1World.getInstance();

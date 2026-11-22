@@ -124,27 +124,25 @@ public final class PremiumTimeController implements Runnable {
 		final int id = pc.getId();
 		final long now = System.currentTimeMillis();
 
-		Holder h = holders.get(id);
-		if (h == null) {
-			Holder n = new Holder(id);
-			Holder prev = holders.putIfAbsent(id, n);
-			h = (prev != null) ? prev : n;
-		}
-
-		h.pc = pc;
-		h.cancelled.set(false);
-        h.bumpVer();
-        // A reconnect/refresh invalidates the previous deadline. Remove it
-        // now rather than retaining the old PC in the DelayQueue until due.
-        RewardTask stale = h.lastTask;
-        if (stale != null) {
-            stale.cancelled = true;
-            q.remove(stale);
+        synchronized (holders) {
+            if (!running.get()) return;
+            Holder h = holders.get(id);
+            if (h == null) {
+                h = new Holder(id);
+                holders.put(id, h);
+            }
+            h.pc = pc;
+            h.cancelled.set(false);
+            h.bumpVer();
+            final RewardTask stale = h.lastTask;
+            if (stale != null) {
+                stale.cancelled = true;
+                q.remove(stale);
+            }
+            h.lastTask = null;
+            if (rewardIntervalMs > 0L)
+                scheduleIfEarlier(h, now + rewardIntervalMs, h.ver.get());
         }
-
-        if (rewardIntervalMs > 0L) {
-			scheduleIfEarlier(h, now + rewardIntervalMs, h.ver.get());
-		}
 	}
 
 	/**
@@ -152,17 +150,20 @@ public final class PremiumTimeController implements Runnable {
 	 */
 	public void unregister(L1PcInstance pc) {
 		if (pc == null) return;
-		Holder h = holders.remove(pc.getId());
-		if (h == null) return;
-
-		h.cancelled.set(true);
-		h.bumpVer();
-        h.pc = null;
-        RewardTask stale = h.lastTask;
-        h.lastTask = null;
-        if (stale != null) {
-            stale.cancelled = true;
-            q.remove(stale);
+        synchronized (holders) {
+            final Holder h = holders.get(pc.getId());
+            // A stale logout cannot unregister its replacement connection.
+            if (h == null || h.pc != pc) return;
+            holders.remove(pc.getId());
+            h.cancelled.set(true);
+            h.bumpVer();
+            h.pc = null;
+            final RewardTask stale = h.lastTask;
+            h.lastTask = null;
+            if (stale != null) {
+                stale.cancelled = true;
+                q.remove(stale);
+            }
         }
     }
 

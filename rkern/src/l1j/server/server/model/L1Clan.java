@@ -713,8 +713,8 @@ public class L1Clan {
 		public String notes;
 		public int memberId;
 		public int type;
-		public boolean online;
-		public L1PcInstance player;
+		public volatile boolean online;
+		public volatile L1PcInstance player;
 
 		public ClanMember(String name, int rank, int level, String notes, int memberId, int type, boolean online,
 				L1PcInstance pc) {
@@ -926,26 +926,52 @@ public class L1Clan {
 	}
 
 	public void updateClanMemberOnline(L1PcInstance pc) {
-		for (ClanMember clan : clanMemberList) {
-			if (clan.memberId != pc.getId())
-				continue;
-
-			clan.online = pc.getOnlineStatus() == 1;
-			clan.player = pc;
+		if (pc == null) return;
+		final boolean online = pc.getOnlineStatus() == 1;
+		for (ClanMember member : clanMemberList) {
+			if (member.memberId != pc.getId()) continue;
+			synchronized (member) {
+				if (online) {
+					member.player = pc;
+					member.online = true;
+				} else if (member.player == pc) {
+					member.player = null;
+					member.online = false;
+				}
+			}
 			break;
 		}
 		ClanTable.updateOnlineUser(this);
 	}
 
+	/** Drop references held by long-lived clans without an extra DB write. */
+	public void releaseClanMemberReference(L1PcInstance pc) {
+		if (pc == null) return;
+		for (ClanMember member : clanMemberList) {
+			if (member.memberId != pc.getId()) continue;
+			synchronized (member) {
+				if (member.player == pc) {
+					member.player = null;
+					member.online = false;
+				}
+			}
+			break;
+		}
+	}
+
 	public int getCurrentOnlineMemebers() {
 		int cnt = 0;
-		for (ClanMember clan : clanMemberList) {
-			if (clan.player == null)
-				clan.online = false;
-			else
-				clan.online = clan.player.getOnlineStatus() == 1;
-			if (clan.online)
-				cnt++;
+		for (ClanMember member : clanMemberList) {
+			synchronized (member) {
+				final L1PcInstance current = member.player;
+				if (current == null || current.getOnlineStatus() != 1) {
+					member.player = null;
+					member.online = false;
+				} else {
+					member.online = true;
+					cnt++;
+				}
+			}
 		}
 		return cnt;
 	}

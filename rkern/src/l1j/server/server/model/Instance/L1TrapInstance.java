@@ -18,9 +18,10 @@
  */
 package l1j.server.server.model.Instance;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
@@ -43,7 +44,9 @@ public class L1TrapInstance extends L1Object {
 	private boolean _isEnable = true;
 	private final String _nameForView;
 
-	private List<L1PcInstance> _knownPlayers = new CopyOnWriteArrayList<L1PcInstance>();
+	// A persistent trap must not retain a disconnected character or its inventory.
+	private final Set<L1PcInstance> _knownPlayers =
+			Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
 	private static final Random _random = new Random(System.nanoTime());
 
@@ -97,16 +100,18 @@ public class L1TrapInstance extends L1Object {
 	public void disableTrap() {
 		_isEnable = false;
 
-		try {
-			try (var sharedRemove = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-			        SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-				for (L1PcInstance pc : _knownPlayers) {
-					pc.removeKnownObject(this);
-					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedRemove, pc);
-				}
-			}
-		} finally {
+		final L1PcInstance[] viewers;
+		synchronized (_knownPlayers) {
+			viewers = _knownPlayers.toArray(new L1PcInstance[0]);
 			_knownPlayers.clear();
+		}
+		try (var sharedRemove = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+			        SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+			for (L1PcInstance pc : viewers) {
+				if (pc == null) continue;
+				pc.removeKnownObject(this);
+				l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedRemove, pc);
+			}
 		}
 	}
 
