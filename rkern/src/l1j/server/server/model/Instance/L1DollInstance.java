@@ -225,8 +225,9 @@ public class L1DollInstance extends L1NpcInstance {
 		master.addDoll(this);
 		if (!isAiRunning()) startAI();
 
-		// 모든 옵션 로직 실행
+		// Apply direct options and lifecycle bonuses once on summon.
 		handleDollOption(1);
+		ItemBonusHooks.onDollSpawned(master, this);
 
 		CIOThreadCallback.getInstance().scheduleNpcTimer(
 				this,
@@ -400,9 +401,6 @@ public class L1DollInstance extends L1NpcInstance {
 
 		// 인형 타입별 고유 옵션 - 단일 Registry
 		DollRegistry.applyDirect(pc, getDollType(), f);
-
-		// 기존 query/proc/회복 후처리 유지
-        ItemBonusHooks.onDollSpawned(pc, this);
 
 		updateClientPackets(pc);
 	}
