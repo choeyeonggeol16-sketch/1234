@@ -826,6 +826,7 @@ public class L1Inventory extends L1Object {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		if (item == null || item.getCount() <= 0) return null;
+        CItemList.requireDetached(item);
 		if (item.isStackable()) {	
 			L1ItemInstance findItem = findItemId(item.getItem().getItemId());
 			
@@ -1289,9 +1290,17 @@ public class L1Inventory extends L1Object {
             persistTransferCount(fee);
             updateItem(fee);
         } else if (getItem(fee.getId()) == null) {
-            fee.setCount(original);
-            insertItem(fee);
+            CItemList.requireDetached(fee);
+            final int previousCount = fee.getCount();
             _items.add(fee);
+            try {
+                fee.setCount(original);
+                insertItem(fee);
+            } catch (RuntimeException e) {
+                fee.setCount(previousCount);
+                _items.remove(fee);
+                throw e;
+            }
             L1World.getInstance().storeObject(fee);
         } else {
             throw new IllegalStateException("Fee item identity changed during rollback");
