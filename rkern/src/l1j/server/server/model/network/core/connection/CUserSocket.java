@@ -52,18 +52,24 @@ import l1j.server.server.model.network.core.session.DominationHybrid;
  * game state remains subject to the session and creature ownership rules.
  */
 public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawEndpoint {
+    // One immutable, process-wide lookup replaces an eleven-way branch chain
+    // on the packet ingress hot path. Out-of-range opcodes remain rejected.
+    private static final boolean[] SESSION_OPCODE = new boolean[256];
+    static {
+        SESSION_OPCODE[Opcodes.C_LOGIN & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_ENTER_WORLD & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_CREATE_CUSTOM_CHARACTER & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_DELETE_CHARACTER & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_RESTART & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_QUIT & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_LOGOUT & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_CHANNEL & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_EXTENDED_PROTOBUF & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_EXTENDED & 0xFF] = true;
+        SESSION_OPCODE[Opcodes.C_HYPERTEXT_INPUT_RESULT & 0xFF] = true;
+    }
     public static boolean isSessionOpcode(int opcode) {
-        return opcode == (Opcodes.C_LOGIN & 0xFF)
-                || opcode == (Opcodes.C_ENTER_WORLD & 0xFF)
-                || opcode == (Opcodes.C_CREATE_CUSTOM_CHARACTER & 0xFF)
-                || opcode == (Opcodes.C_DELETE_CHARACTER & 0xFF)
-                || opcode == (Opcodes.C_RESTART & 0xFF)
-                || opcode == (Opcodes.C_QUIT & 0xFF)
-                || opcode == (Opcodes.C_LOGOUT & 0xFF)
-                || opcode == (Opcodes.C_CHANNEL & 0xFF)
-                || opcode == (Opcodes.C_EXTENDED_PROTOBUF & 0xFF)
-                || opcode == (Opcodes.C_EXTENDED & 0xFF)
-                || opcode == (Opcodes.C_HYPERTEXT_INPUT_RESULT & 0xFF);
+        return (opcode & ~255) == 0 && SESSION_OPCODE[opcode];
     }
     static boolean sessionOwner(int opcode, boolean ready) {
         return !ready || isSessionOpcode(opcode);
