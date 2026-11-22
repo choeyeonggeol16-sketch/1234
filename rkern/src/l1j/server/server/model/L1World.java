@@ -352,6 +352,10 @@ public class L1World {
      * broadcasts use distinct lists, and each worker reuses its own lists.
      */
     public List<L1PcInstance> borrowVisiblePlayerFast(L1Object object) {
+        return borrowVisiblePlayerFast(object, -1);
+    }
+
+    public List<L1PcInstance> borrowVisiblePlayerFast(L1Object object, int radius) {
         final VisibleScratch scratch = VISIBLE_SCRATCH.get();
         final int depth = scratch.depth;
         if (depth == scratch.lists.length) {
@@ -364,7 +368,7 @@ public class L1World {
         }
         scratch.depth = depth + 1;
         try {
-            _worldExecutor.getClusterGrid().queryScreenPlayers(object, list);
+            _worldExecutor.getClusterGrid().queryNearbyPlayers(object, radius, list);
             return list;
         } catch (RuntimeException | Error failure) {
             list.clear();

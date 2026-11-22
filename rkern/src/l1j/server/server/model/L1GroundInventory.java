@@ -27,98 +27,114 @@ public class L1GroundInventory extends L1Inventory {
     }
 
     @Override
-    public void onPerceive(L1PcInstance perceivedFrom) {
-        if (perceivedFrom == null || _items.isEmpty()) {
+    public void onPerceive(L1PcInstance viewer) {
+        if (viewer != null) viewer.getCreatureController().ReconcileSight(this, false);
+    }
+
+    private static boolean ready(L1PcInstance viewer, int epoch) {
+        return (epoch & 1) != 0 && !viewer.isLogoutStarted()
+                && viewer.groundSightEpoch() == epoch;
+    }
+
+    /** Resolve membership, rather than treating carried items as ground objects. */
+    public static boolean isVisibleGroundItem(L1PcInstance viewer, L1ItemInstance item) {
+        if (item == null || !viewer.canSeeObject(item)) return false;
+        final L1GroundInventory ground = L1World.getInstance().findGroundInventory(
+                item.getX(), item.getY(), item.getMapId());
+        return ground != null && ground._items.contains(item);
+    }
+
+    private static void showItem(L1PcInstance viewer, L1ItemInstance item,
+            boolean changed, int epoch) {
+        if (!ready(viewer, epoch) || (!changed && viewer.knownsObject(item))) return;
+        final var client = viewer.getNetConnection();
+        if (client == null || client.getActiveChar() != viewer) return;
+        if (SC_DropItem.send(client, item) && ready(viewer, epoch)
+                && viewer.getNetConnection() == client && client.isConnected()) {
+            viewer.addKnownObject(item);
+        }
+    }
+
+    public static void forgetItem(L1PcInstance viewer, L1ItemInstance item) {
+        final int epoch = viewer.groundSightEpoch();
+        if (!ready(viewer, epoch) || !viewer.knownsObject(item)) return;
+        final var client = viewer.getNetConnection();
+        if (client == null || client.getActiveChar() != viewer) return;
+        if (SC_RemoveObject.send(client, item) && ready(viewer, epoch)
+                && viewer.getNetConnection() == client) {
+            viewer.removeKnownObject(item);
+        }
+    }
+
+    /** Executed by the viewer's existing controller, including delayed events. */
+    public static void reconcileItem(L1PcInstance viewer, L1ItemInstance item, boolean changed) {
+        final int epoch = viewer.groundSightEpoch();
+        if (!ready(viewer, epoch)) return;
+        if (isVisibleGroundItem(viewer, item)) showItem(viewer, item, changed, epoch);
+        else forgetItem(viewer, item);
+    }
+
+    public void reconcileSight(L1PcInstance viewer, boolean changed) {
+        final int epoch = viewer.groundSightEpoch();
+        if (!ready(viewer, epoch)) return;
+        if (getClusterMapId() < 0 || !viewer.canSeeObject(this)) {
+            leaveSight(viewer);
             return;
         }
-
         for (L1ItemInstance item : getItems()) {
-	        if (item == null) {
-	            continue;
-	        }
+            if (!ready(viewer, epoch)) return;
+            if (!changed && viewer.knownsObject(item)) continue;
+            if (_items.contains(item) && viewer.canSeeObject(item))
+                showItem(viewer, item, changed, epoch);
+        }
+    }
 
-	        if (!perceivedFrom.knownsObject(item)) {
-	            perceivedFrom.addKnownObject(item);
-	        }
+    public void leaveSight(L1PcInstance viewer) {
+        if (!ready(viewer, viewer.groundSightEpoch())) return;
+        for (L1ItemInstance item : getItems()) {
+            if (viewer.knownsObject(item)) reconcileItem(viewer, item, false);
+        }
+    }
 
-	        SC_DropItem.send(
-	                perceivedFrom.getNetConnection(),
-	                item);
-	    }
+    /** Reuse existing AOI scratch and controller tickets; no new worker or queue. */
+    private void notifyGroundChange(L1ItemInstance item, boolean changed) {
+        final L1World world = L1World.getInstance();
+        final var viewers = world.borrowVisiblePlayerFast(this,
+                l1j.server.Config.PC_RECOGNIZE_RANGE);
+        try {
+            for (int i = 0, n = viewers.size(); i < n; i++) {
+                final L1PcInstance viewer = viewers.get(i);
+                if (viewer != null)
+                    viewer.getCreatureController().GroundItemChanged(item, changed);
+            }
+        } finally {
+            world.releaseVisiblePlayerFast(viewers);
+        }
     }
 
     @Override
     public void insertItem(L1ItemInstance item) {
-        if (item == null) {
-            return;
-        }
-
-        if (DEBUG_GROUND_ITEM_TIMER) {
-            debug("SPAWN", item, "before OnSpawned");
-        }
-
+        if (item == null) return;
+        if (DEBUG_GROUND_ITEM_TIMER) debug("SPAWN", item, "before OnSpawned");
         item.OnSpawned();
-
-        final int viewers = SC_DropItem.broadcast(item, true);
-
-        if (DEBUG_GROUND_ITEM_TIMER) {
-            debug("TIMER-ARM", item, "viewers=" + viewers);
-        }
+        notifyGroundChange(item, false);
     }
 
     @Override
     public void updateItem(L1ItemInstance item) {
-        if (item == null || !_items.contains(item)) {
-            return;
-        }
-        SC_DropItem.broadcast(item);
+        if (item == null || !_items.contains(item)) return;
+        notifyGroundChange(item, true);
     }
 
     @Override
     public void deleteItem(L1ItemInstance item) {
-        if (item == null) {
-            return;
-        }
-
-        if (DEBUG_GROUND_ITEM_TIMER) {
-            debug("DELETE-BEGIN", item, "contained=" + _items.contains(item));
-        }
-
-        final boolean removed = _items.remove(item);
-        if (!removed) {
-            return;
-        }
-
+        if (item == null || !_items.remove(item)) return;
         item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
-
-        if (DEBUG_GROUND_ITEM_TIMER) {
-            debug("TIMER-CANCEL", item, "generation invalidated");
-        }
-
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                SC_RemoveObject.nativeWriter(item.getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-            for(L1PcInstance pc:L1World.getInstance().getVisiblePlayerFast(item)) {
-                final var client=pc.getNetConnection();
-                if(client!=null && client.isConnected()) {
-                    final var socket=client;
-                    if(socket!=null && socket.isClientConnected())
-                        shared.send(socket,pc.getId());
-                }
-                pc.removeKnownObject(item);
-            }
-        }
-
-        if (DEBUG_GROUND_ITEM_TIMER) {
-            debug("DELETE-END", item,
-                    "removed=" + removed + " remaining=" + _items.size());
-        }
-
+        notifyGroundChange(item, false);
         if (_items.isEmpty()) {
             L1World.getInstance().removeVisibleObject(this);
-
-            if (DEBUG_GROUND_ITEM_TIMER) {
+            if (DEBUG_GROUND_ITEM_TIMER)
                 debug("GROUND-EMPTY", item, "inventory removed from visible world");
-            }
         }
     }
 

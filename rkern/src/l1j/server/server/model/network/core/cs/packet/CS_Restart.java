@@ -100,6 +100,7 @@ public final class CS_Restart {
             return;
         }
 
+        final boolean restoreGroundSight = pc.suspendGroundSight();
         try {
             int[] loc = Getback.GetBack_Restart(pc);
 
@@ -140,10 +141,10 @@ public final class CS_Restart {
 
             SC_WorldPutObject.broadcastPc(pc);
 
-            SC_WorldPutObject.put(
-                    pc.getNetConnection(),
-                    pc);
+            if (!SC_WorldPutObject.put(pc.getNetConnection(), pc))
+                throw new IllegalStateException("Restart self object not accepted");
 
+            if (restoreGroundSight) pc.resumeGroundSight();
             pc.onWorldMove(
                     pc.getMapId(),
                     pc.getX(),
@@ -160,6 +161,11 @@ public final class CS_Restart {
 
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (restoreGroundSight && (pc.groundSightEpoch() & 1) == 0) {
+                final CUserSocket client = pc.getNetConnection();
+                if (client != null && client.isConnected()) client.kick();
+            }
         }
     }
 

@@ -53,6 +53,7 @@ import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.L1EquipmentSlot;
 import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1HauntedHouse;
+import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Karma;
 import l1j.server.server.model.L1Object;
@@ -1144,6 +1145,8 @@ public class L1PcInstance extends L1Character {
 	private byte[] _shopChat;
 	private AtomicInteger _pinkNameTime;
 	private CUserSocket _netConnection;
+	// Odd: current client world can accept ground sprites. Even: map/world reset.
+	private volatile int groundSightEpoch;
 	private static Logger _log = Logger.getLogger(L1PcInstance.class.getName());
 
 	public L1PcInstance() {
@@ -2488,6 +2491,7 @@ public class L1PcInstance extends L1Character {
 
 	public void logout() {
         if (!_destroyed.compareAndSet(false, true)) return;
+        suspendGroundSight();
         try {
             try { PcInventoryExpiryScheduler.getInstance().unregister(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout expiry unregister failed: " + getId(), e); }
@@ -2608,7 +2612,24 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public void setNetConnection(CUserSocket clientthread) {
+		if (_netConnection != clientthread) suspendGroundSight();
 		_netConnection = clientthread;
+	}
+
+	public int groundSightEpoch() { return groundSightEpoch; }
+
+	public boolean suspendGroundSight() {
+		final int epoch = groundSightEpoch;
+		if ((epoch & 1) == 0) return false;
+		groundSightEpoch = epoch + 1;
+		return true;
+	}
+
+	public void resumeGroundSight() {
+		if (isLogoutStarted() || getNetConnection() == null) return;
+		final int epoch = groundSightEpoch;
+		if ((epoch & 1) == 0) groundSightEpoch = epoch + 1;
+		getCreatureController().RefreshSight();
 	}
 
 	public boolean isInParty() {
@@ -8482,6 +8503,14 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public void outOfSight(L1Object obj) {
+		if (obj instanceof L1GroundInventory ground) {
+			ground.leaveSight(this);
+			return;
+		}
+		if (obj instanceof L1ItemInstance item) {
+			L1GroundInventory.forgetItem(this, item);
+			return;
+		}
 		if (obj == null || obj == this || !knownsObject(obj)) {
 			return;
 		}
@@ -8507,7 +8536,9 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				continue;
 			}
 			if (!canSeeObject(known)) {
-				outOfSight(known);
+				if (known instanceof L1ItemInstance)
+					getCreatureController().ReconcileSight(known, false);
+				else outOfSight(known);
 			}
 		}
 
@@ -8519,7 +8550,9 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if (visible == null || visible == this || !canSeeObject(visible)) {
 				continue;
 			}
-			reconcileSight(visible);
+			if (visible instanceof L1GroundInventory)
+				getCreatureController().ReconcileSight(visible, false);
+			else reconcileSight(visible);
 			if (visible instanceof L1PcInstance) {
 				final L1PcInstance viewer = (L1PcInstance) visible;
 				if (viewer.canSeeObject(this)) {
@@ -8532,6 +8565,14 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 	
 	public void reconcileSight(L1Object obj) {
+		if (obj instanceof L1GroundInventory ground) {
+			ground.reconcileSight(this, false);
+			return;
+		}
+		if (obj instanceof L1ItemInstance item) {
+			L1GroundInventory.reconcileItem(this, item, false);
+			return;
+		}
 		if (obj == null || obj == this) {
 			return;
 		}
@@ -8553,17 +8594,22 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		}
 	}
 	
-	public void refreshSight() {
+	public void refreshSight() { refreshSight(false); }
+
+	public void refreshSight(boolean resyncGround) {
 		for (L1Object known : getKnownObjects()) {
-			if (known != null && !canSeeObject(known)) {
+			if (known instanceof L1ItemInstance item) {
+				if (!L1GroundInventory.isVisibleGroundItem(this, item))
+					L1GroundInventory.forgetItem(this, item);
+			} else if (known != null && !canSeeObject(known)) {
 				outOfSight(known);
 			}
 		}
 		for (L1Object visible : L1World.getInstance().getClusterGrid().queryNearbyReusable(this, Config.PC_RECOGNIZE_RANGE)) {
-			if (visible == null || visible == this) {
-				continue;
-			}
-			reconcileSight(visible);
+			if (visible == null || visible == this) continue;
+			if (visible instanceof L1GroundInventory ground)
+				ground.reconcileSight(this, resyncGround);
+			else reconcileSight(visible);
 		}
 	}
 	

@@ -11,6 +11,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.CSkillInfo;
@@ -319,6 +320,23 @@ public final class CCreatureController {
                 pc.getSessionStamp(), epoch);
     }
 
+    /** Ground insert/update/delete uses the viewer's existing sight serializer. */
+    public boolean GroundItemChanged(L1ItemInstance item, boolean changed) {
+        final int epoch = actorEpoch;
+        final L1PcInstance pc = actor;
+        if (item == null || pc == null || (epoch & 1) != 0
+                || actorEpoch != epoch || (pc.groundSightEpoch() & 1) == 0) return false;
+        return executeOrPublish(EXEC_SIGHT, 0, changed ? 2 : 0,
+                0, 0, 0, 0L, 0L, 0, item, null, pc.getSessionStamp(), epoch);
+    }
+
+    public boolean RefreshSight() {
+        final int epoch = actorEpoch;
+        final L1PcInstance pc = actor;
+        return pc != null && (epoch & 1) == 0 && actorEpoch == epoch
+                && requestSightRefresh(pc.getSessionStamp(), epoch);
+    }
+
     public int ExecutableBacklog() {
         final long count = executionTail - executionHead;
         return (int) Math.max(0L, Math.min(EXECUTION_LIMIT, count));
@@ -479,7 +497,7 @@ public final class CCreatureController {
                         final L1PcInstance pc = actor;
                         if (pc != null && actorEpoch == (int) (identity >>> 32)
                                 && pc.getSessionStamp() == (int) identity) {
-                            pc.refreshSight();
+                            pc.refreshSight(true);
                         }
                     } catch (Throwable failure) {
                         EXECUTION_LOG.log(Level.SEVERE, "CCreatureController sight refresh failed", failure);
@@ -627,7 +645,9 @@ public final class CCreatureController {
             final L1PcInstance pc = actor;
             final L1Object observed = (L1Object) o0;
             if (pc != null && observed != null && pc != observed) {
-                if (observed.getClusterMapId() < 0) pc.outOfSight(observed);
+                if (observed instanceof L1ItemInstance item)
+                    L1GroundInventory.reconcileItem(pc, item, a0 == 2);
+                else if (observed.getClusterMapId() < 0) pc.outOfSight(observed);
                 else pc.reconcileSight(observed);
             }
             break;

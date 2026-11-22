@@ -95,6 +95,7 @@ public class L1Teleport {
 		final ArrayList<L1PcInstance> subjects = TL_SUBJECTS.get();
 		subjects.clear();
 
+		final boolean restoreGroundSight = pc.suspendGroundSight();
 		try {
 			addSubject(subjects, pc);
 	        clearPcFromOldViewers(pc);
@@ -115,7 +116,7 @@ public class L1Teleport {
 			updateEssentialState(pc);
 
 			// 가시 범위(Known Objects) 처리
-			refreshVisibility(pc, oldMapId, oldX, oldY);
+			refreshVisibility(pc, oldMapId, oldX, oldY, restoreGroundSight);
 
 			// 버프 및 특수 효과 동기화
 			syncBuffsAndEffects(pc);
@@ -154,6 +155,11 @@ public class L1Teleport {
 		} finally {
 			// 최종 언락 및 메모리 정리 
 			try {
+				if (restoreGroundSight && (pc.groundSightEpoch() & 1) == 0) {
+					// Never keep a session whose client map reset did not complete.
+					final var client = pc.getNetConnection();
+					if (client != null && client.isConnected()) client.kick();
+				}
 				pc.tpEndFinish();
 			} finally {
 				// Never retain actors on a long-lived owner thread on an
@@ -216,17 +222,17 @@ public class L1Teleport {
 			L1PcInstance pc,
 			int oldMap,
 			int oldX,
-			int oldY) {
+			int oldY, boolean restoreGroundSight) {
 
 		if (pc.getMapId() != 631) {
 		    SC_WorldPutObject.broadcastPc(pc);
 		}
 
-		SC_WorldPutObject.put(
-		        pc.getNetConnection(),
-		        pc);
+		if (!SC_WorldPutObject.put(pc.getNetConnection(), pc))
+			throw new IllegalStateException("Teleport self object not accepted");
 
 		pc.removeAllKnownObjects();
+		if (restoreGroundSight) pc.resumeGroundSight();
 		pc.onWorldMove(oldMap, oldX, oldY);
 		CIOThreadCallback.getInstance().clearPcState(pc);
 		

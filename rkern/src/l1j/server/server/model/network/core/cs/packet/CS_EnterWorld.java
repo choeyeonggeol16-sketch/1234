@@ -308,6 +308,8 @@ public final class CS_EnterWorld {
             finalizeEnter(pc, client);
             pc.setCacheDSessionEpoch(CacheD.getInstance().registerLoadedCharacterSession(
                     pc.getAccountName(), pc.getName(), pc.getId()));
+            // Map, self object and all login initialization packets precede ground sprites.
+            pc.resumeGroundSight();
             client.publishGameSessionReady(pc);
             l1j.server.server.model.network.core.session.DominationHybrid.onEnterComplete(client, pc);
             // Repair level rewards after crash/relog, only after world/inventory
