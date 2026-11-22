@@ -187,14 +187,72 @@ public class LetterTable {
         enqueue(new Letter(id,code,date,sender,receiver,type,subject,content),null,null);
     }
 
-    /** Internal item/GM cleanup adapter; packet handlers must use owner-bound SQL. */
+    /** Physical character letter: SQL stays inside the item command's receipt.
+     * If metadata is already absent, the item may still be retired. A row
+     * belonging to another receiver is never erased by this item.
+     */
+    public static void deleteOwnedItemLetter(Connection con, int id, String receiver) throws SQLException {
+        if (id <= 0 || receiver == null || receiver.isEmpty())
+            throw new SQLException("Invalid linked letter receiver");
+        lockRecipient(con, receiver);
+        try (PreparedStatement ps = con.prepareStatement(
+                "DELETE FROM letter WHERE item_object_id=? AND receiver=?")) {
+            ps.setInt(1, id);
+            ps.setString(2, receiver);
+            int changed = ps.executeUpdate();
+            if (changed == 1) return;
+            if (changed > 1) throw new SQLException("Duplicate letter identity: " + id);
+        }
+        // Zero matched rows is either an already-deleted letter or an owner
+        // mismatch. Reject the mismatch; otherwise the character item could
+        // disappear while another player's mail survives.
+        try (PreparedStatement ps = con.prepareStatement(
+                "SELECT receiver FROM letter WHERE item_object_id=? FOR UPDATE")) {
+            ps.setInt(1, id);
+            try (ResultSet rows = ps.executeQuery()) {
+                if (rows.next())
+                    throw new SQLException("Linked letter receiver changed: " + id);
+            }
+        }
+    }
+
+    /** Legacy ID-only cleanup: resolve the receiver asynchronously, then
+     * submit the deletion under its actual mailbox FIFO rather than the
+     * unrelated global lane. Packet handlers use recipient-bound SQL instead.
+     */
     public void deleteLetter(int id) {
-        if (id<=0) return;
-        CacheD.getInstance().submitDbJobOrdered(MAIL_ORDER_KEY,()->{
-            try (Connection con=l1j.server.DatabaseFactory.getInstance().getConnection();
-                 PreparedStatement ps=con.prepareStatement("DELETE FROM letter WHERE item_object_id=?")) {
-                ps.setInt(1,id);ps.executeUpdate();
-            } catch(SQLException failure) { throw new IllegalStateException("Mail cleanup failed",failure); }
+        if (id <= 0) return;
+        CacheD.getInstance().submitDbJobRetryOrdered(0, () -> {
+            final String receiver;
+            try (Connection con = l1j.server.DatabaseFactory.getInstance().getConnection();
+                 PreparedStatement ps = con.prepareStatement(
+                         "SELECT receiver FROM letter WHERE item_object_id=?")) {
+                ps.setInt(1, id);
+                try (ResultSet rows = ps.executeQuery()) {
+                    if (!rows.next()) return;
+                    receiver = rows.getString(1);
+                }
+            } catch (SQLException failure) {
+                throw new IllegalStateException("Mail cleanup receiver lookup failed", failure);
+            }
+            final int mailboxKey = mailboxOrderKey(receiver);
+            final String receipt = UUID.randomUUID().toString();
+            CacheD.getInstance().submitDbJobRetryOrdered(mailboxKey, () -> {
+                try {
+                    CTransaction.persistWarehouseMove(receipt, mailboxKey, 0,
+                            new CTransaction.Mutation[]{LetterTable::assertTransactional,
+                                    con -> {
+                                        try (PreparedStatement ps = con.prepareStatement(
+                                                "DELETE FROM letter WHERE item_object_id=? AND receiver=?")) {
+                                            ps.setInt(1, id);
+                                            ps.setString(2, receiver);
+                                            ps.executeUpdate();
+                                        }
+                                    }});
+                } catch (SQLException failure) {
+                    throw new IllegalStateException("Mail cleanup failed", failure);
+                }
+            });
         });
     }
 

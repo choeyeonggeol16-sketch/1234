@@ -58,19 +58,23 @@ public final class CacheD {
         final boolean delete;
         final int ownerId;
         final int previousOwnerId;
-        final int petTemplateId;
-        final String petReceiptId;
+        final int auxiliaryTemplateId; // 40314/40316 pet or 49016..49025 letter item
+        final int mailboxKey;          // second FIFO owner only for physical letters
+        final String mailReceiver;
+        final String auxiliaryReceiptId;
         boolean finished;
         SQLException error;
 
         ItemCommand(ItemSnapshot snapshot, boolean delete, int ownerId, int previousOwnerId,
-                    int petTemplateId) {
+                    int auxiliaryTemplateId, int mailboxKey, String mailReceiver) {
             this.snapshot = snapshot;
             this.delete = delete;
             this.ownerId = ownerId;
             this.previousOwnerId = previousOwnerId;
-            this.petTemplateId = petTemplateId;
-            this.petReceiptId = petTemplateId == 0 ? null : UUID.randomUUID().toString();
+            this.auxiliaryTemplateId = auxiliaryTemplateId;
+            this.mailboxKey = mailboxKey;
+            this.mailReceiver = mailReceiver;
+            this.auxiliaryReceiptId = auxiliaryTemplateId == 0 ? null : UUID.randomUUID().toString();
         }
     }
 
@@ -1726,10 +1730,22 @@ public final class CacheD {
             }
             final ItemSnapshot snapshot = delete ? ItemSnapshot.captureId(item, resolvedOwner)
                     : ItemSnapshot.capture(item, ownerId);
-            final int petTemplateId = delete && (item.getItemId() == 40314 || item.getItemId() == 40316)
-                    ? item.getItemId() : 0;
+            final int templateId = item.getItemId();
+            final boolean pet = delete && (templateId == 40314 || templateId == 40316);
+            final boolean letterItem = delete && templateId >= 49016 && templateId <= 49025;
+            final String mailReceiver;
+            final int mailboxKey;
+            if (letterItem) {
+                if (item._cha == null || item._cha.getId() != resolvedOwner)
+                    throw new RejectedExecutionException("Mail item receiver ownership unavailable: " + id);
+                mailReceiver = item._cha.getName();
+                mailboxKey = l1j.server.server.datatables.LetterTable.mailboxOrderKey(mailReceiver);
+            } else {
+                mailReceiver = null;
+                mailboxKey = 0;
+            }
             final ItemCommand command = new ItemCommand(snapshot, delete, resolvedOwner, previousOwner,
-                    petTemplateId);
+                    pet || letterItem ? templateId : 0, mailboxKey, mailReceiver);
             // Publish the latest logical owner immediately. Subsequent item
             // dirty snapshots must not accidentally use the previous owner
             // while the UPDATE/DELETE is still queued for an SQL worker.
@@ -1917,7 +1933,10 @@ public final class CacheD {
     }
 
     private static int secondOwner(CPendingState state) {
-        if (state instanceof ItemCommand) return ((ItemCommand) state).previousOwnerId;
+        if (state instanceof ItemCommand) {
+            final ItemCommand command = (ItemCommand) state;
+            return command.mailboxKey != 0 ? command.mailboxKey : command.previousOwnerId;
+        }
         if (state instanceof DbJob) return ((DbJob) state).secondaryOwnerId;
         return 0;
     }
@@ -2039,14 +2058,28 @@ public final class CacheD {
                     }
                 } else if (selected instanceof ItemCommand) {
                     final ItemCommand command = (ItemCommand) selected;
-                    if (command.delete && command.petTemplateId != 0) {
+                    if (command.delete && command.mailboxKey != 0) {
+                        // Physical letter and its mailbox row commit atomically.
+                        // The same ItemCommand reserves both character and mailbox
+                        // FIFO lanes; failure retries the SAME durable receipt.
+                        CTransaction.persistEconomy(command.auxiliaryReceiptId,
+                                command.ownerId, command.mailboxKey,
+                                new CTransaction.Mutation[]{
+                                    con -> CTransaction.requireTransactionalTables(con, "character_items", "letter",
+                                            "characters"),
+                                    con -> l1j.server.server.datatables.LetterTable.deleteOwnedItemLetter(
+                                            con, itemSnapshot.id, command.mailReceiver),
+                                    con -> MySqlCharactersItemStorage.deleteLetterItemSnapshot(
+                                            con, itemSnapshot.id, command.ownerId, command.auxiliaryTemplateId)
+                                });
+                    } else if (command.delete && command.auxiliaryTemplateId != 0) {
                         // Pet and collar rows commit or roll back together.
-                        CTransaction.persistEconomy(command.petReceiptId, command.ownerId, 0,
+                        CTransaction.persistEconomy(command.auxiliaryReceiptId, command.ownerId, 0,
                                 new CTransaction.Mutation[]{
                                     con -> CTransaction.requireTransactionalTables(con, "character_items", "pets"),
                                     con -> l1j.server.server.datatables.PetTable.deletePetRow(con, itemSnapshot.id),
                                     con -> MySqlCharactersItemStorage.deletePetCollarSnapshot(con,
-                                            itemSnapshot.id, command.ownerId, command.petTemplateId)
+                                            itemSnapshot.id, command.ownerId, command.auxiliaryTemplateId)
                                 });
                         l1j.server.server.datatables.PetTable.getInstance()
                                 .forgetCommittedPet(itemSnapshot.id);

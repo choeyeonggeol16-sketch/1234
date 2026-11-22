@@ -1159,8 +1159,10 @@ public class L1Inventory extends L1Object {
                 if (!(this instanceof L1PcInventory))
                     PetTable.getInstance().deletePet(item.getId());
 			} else if (itemId >= 49016 && itemId <= 49025) {
-				LetterTable lettertable = new LetterTable();
-				lettertable.deleteLetter(item.getId());
+                // PC inventory persistence deletes the letter and item in one receipt.
+                // Ground/other inventories have no character_items row to couple.
+                if (!(this instanceof L1PcInventory))
+                    LetterTable.getInstance().deleteLetter(item.getId());
 			} else if (itemId >= 41383 && itemId <= 41400) {
 				L1FurnitureInstance furniture = null;
 				for (L1Object l1object : L1World.getInstance().getObject()) {
@@ -1210,8 +1212,10 @@ public class L1Inventory extends L1Object {
                 if (!(this instanceof L1PcInventory))
                     PetTable.getInstance().deletePet(item.getId());
 			} else if (itemId >= 49016 && itemId <= 49025) {
-				LetterTable lettertable = new LetterTable();
-				lettertable.deleteLetter(item.getId());
+                // PC inventory persistence deletes the letter and item in one receipt.
+                // Ground/other inventories have no character_items row to couple.
+                if (!(this instanceof L1PcInventory))
+                    LetterTable.getInstance().deleteLetter(item.getId());
 			} else if (itemId >= 41383 && itemId <= 41400) {
 				L1FurnitureInstance furniture = null;
 				for (L1Object l1object : L1World.getInstance().getObject()) {

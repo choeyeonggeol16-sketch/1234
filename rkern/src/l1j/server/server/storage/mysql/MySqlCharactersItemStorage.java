@@ -345,6 +345,21 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
             throw new SQLException("Trade item UPDATE owner/type changed: " + v.id);
     }
 
+    /** Atomic mail-link item delete: owner and physical letter template. */
+    public static void deleteLetterItemSnapshot(Connection con, int objectId,
+                                                int ownerId, int templateId) throws SQLException {
+        if (objectId <= 0 || ownerId <= 0 || templateId < 49016 || templateId > 49025)
+            throw new SQLException("Invalid physical letter item delete");
+        try (PreparedStatement ps = con.prepareStatement(
+                "DELETE FROM character_items WHERE id=? AND char_id=? AND item_id=?")) {
+            ps.setInt(1, objectId);
+            ps.setInt(2, ownerId);
+            ps.setInt(3, templateId);
+            if (ps.executeUpdate() != 1)
+                throw new SQLException("Linked letter item owner/template changed: " + objectId);
+        }
+    }
+
     /** Require collar object ID, owner ID and item template to still match. */
     public static void deletePetCollarSnapshot(Connection con, int objectId,
                                                int ownerId, int templateId) throws SQLException {
