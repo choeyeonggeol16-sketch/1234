@@ -80,19 +80,19 @@ public class WarehouseManager {
 	
 	/**아이템삭제 명령어*/
 	public PrivateWarehouse getPrivateItems(String name) {
-		return (PrivateWarehouse) plist.findWarehouse1(name);
+		return (PrivateWarehouse) plist.findWarehouse(name);
 	}
 	
 	public ElfWarehouse getElfItems(String name) {
-		return (ElfWarehouse) elist.findWarehouse1(name);
+		return (ElfWarehouse) elist.findWarehouse(name);
 	}
 	
 	public ClanWarehouse getClanItems(String name) {
-		return (ClanWarehouse) clist.findWarehouse1(name);
+		return (ClanWarehouse) clist.findWarehouse(name);
 	}
 	
 	public SupplementaryService getSupplementaryItems(String name) {
-		return (SupplementaryService) supplist.findWarehouse1(name);
+		return (SupplementaryService) supplist.findWarehouse(name);
 	}
 	
 	public void delPrivateWarehouse(String name) {

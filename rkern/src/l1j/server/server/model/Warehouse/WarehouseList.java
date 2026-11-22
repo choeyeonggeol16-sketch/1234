@@ -79,11 +79,4 @@ public abstract class WarehouseList {
         }
     }
 
-    public Warehouse findWarehouse1(String name) {
-        return findWarehouse(name);
-    }
-
-    public void delWarehouse1(String name) {
-        delWarehouse(name);
-    }
 }
