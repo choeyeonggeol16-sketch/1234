@@ -1,89 +1,89 @@
 package l1j.server.server.model.Warehouse;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import l1j.server.server.storage.CacheD;
 
 public abstract class WarehouseList {
-    private final HashMap<String, Warehouse> warehouses = new HashMap<>();
+    private final ConcurrentHashMap<String, Warehouse> warehouses = new ConcurrentHashMap<>();
 
     protected abstract Warehouse createWarehouse(String name);
 
-    public synchronized Warehouse findWarehouse(String name) {
-        Warehouse warehouse = warehouses.get(name);
-        if (warehouse == null) {
-            warehouse = createWarehouse(name);
-            warehouses.put(name, warehouse);
+    public Warehouse findWarehouse(String name) {
+        for (;;) {
+            Warehouse warehouse = warehouses.get(name);
+            if (warehouse == null) {
+                // Only construction runs under the map's bucket lock.
+                warehouse = warehouses.computeIfAbsent(name, this::createWarehouse);
+            }
+            if (!warehouse.isRetired()) return warehouse;
+            // World detachment completed before retired was published.
+            warehouses.remove(name, warehouse);
         }
-        return warehouse;
     }
 
-    // Session binding invalidates an older deferred logout, even when the
-    // same warehouse object is reused by a reconnecting account.
-    synchronized Warehouse bindWarehouse(String name, long lease) {
+    Warehouse bindWarehouse(String name, long lease) {
         if (lease <= 0L) throw new IllegalArgumentException("Warehouse session lease");
-        Warehouse warehouse = findWarehouse(name);
-        final long current = warehouse.cacheSessionLease;
-        if (current > lease || current <= -lease)
-            throw new IllegalStateException("Stale warehouse session lease");
-        warehouse.cacheSessionLease = lease;
-        return warehouse;
-    }
-
-    synchronized void releaseWarehouse(String name, long lease) {
-        if (lease <= 0L || name == null) return;
-        Warehouse warehouse = warehouses.get(name);
-        if (warehouse == null || warehouse.cacheSessionLease != lease) return;
-        warehouse.cacheSessionLease = -lease;
-        retireWhenIdle(name, warehouse, lease);
-    }
-
-    private synchronized void retireWhenIdle(String name, Warehouse expected, long lease) {
-        if (warehouses.get(name) != expected || expected.cacheSessionLease != -lease) return;
-        synchronized (expected) {
-            // Lock order is the same as explicit deletion: list -> warehouse
-            // -> CacheD. CacheD dispatches callbacks only outside its lock.
-            final CacheD cache = CacheD.getInstance();
-            final int key = expected.transferOrderKey();
-            if (!cache.isWarehouseOwnerIdle(key)
-                    && cache.deferWarehouseRetirement(key, expected,
-                            () -> retireWhenIdle(name, expected, lease))) return;
-            expected.retireWarehouse();
-            warehouses.remove(name);
-        }
-    }
-
-    // Only explicit owner-close may evict: no idle eviction of unsaved inventory.
-    public synchronized void delWarehouse(String name) {
-        Warehouse old = warehouses.get(name);
-        if (old != null) {
-            // Hold the warehouse's existing mutation monitor across the
-            // nonblocking CacheD fence and world-object detach. Otherwise a
-            // simultaneous item insertion can land between the fence and
-            // clearItems(), disappearing without a corresponding new owner.
-            synchronized (old) {
-                // A clan-warehouse session still owns this instance. Detaching it
-                // would allow a second cache object for the same SQL owner while
-                // the first session continues using its old reference.
-                if (old instanceof ClanWarehouse clan && clan.getWarehouseUsingChar() != 0) {
-                    throw new IllegalStateException("Clan warehouse is in use: " + name);
-                }
-                final CacheD cache = CacheD.getInstance();
-                final int key = old.transferOrderKey();
-                if (cache.hasPendingOwnerApply(key) || !cache.flushDbOwner(key, 0L)) {
-                    throw new IllegalStateException("Warehouse writes still pending: " + name);
-                }
-                old.retireWarehouse();
-                warehouses.remove(name);
+        for (;;) {
+            final Warehouse warehouse = findWarehouse(name);
+            synchronized (warehouse) {
+                if (warehouse.isRetired() || warehouses.get(name) != warehouse) continue;
+                final long current = warehouse.cacheSessionLease;
+                if (current > lease || current <= -lease)
+                    throw new IllegalStateException("Stale warehouse session lease");
+                warehouse.cacheSessionLease = lease;
+                return warehouse;
             }
         }
     }
 
-    public synchronized Warehouse findWarehouse1(String name) {
+    void releaseWarehouse(String name, long lease) {
+        if (lease <= 0L || name == null) return;
+        final Warehouse warehouse = warehouses.get(name);
+        if (warehouse == null) return;
+        synchronized (warehouse) {
+            if (warehouses.get(name) != warehouse || warehouse.cacheSessionLease != lease) return;
+            warehouse.cacheSessionLease = -lease;
+            retireWhenIdleLocked(name, warehouse, lease);
+        }
+    }
+
+    private void retryRetirement(String name, Warehouse expected, long lease) {
+        synchronized (expected) {
+            if (warehouses.get(name) != expected || expected.cacheSessionLease != -lease) return;
+            retireWhenIdleLocked(name, expected, lease);
+        }
+    }
+
+    // Only this warehouse is locked. Do not hold a map bucket lock or the
+    // CacheD lock across world detachment. Deferred work revalidates its lease.
+    private void retireWhenIdleLocked(String name, Warehouse expected, long lease) {
+        final CacheD cache = CacheD.getInstance();
+        if (cache.deferWarehouseRetirement(expected.transferOrderKey(), expected,
+                () -> retryRetirement(name, expected, lease))) return;
+        expected.retireWarehouse();
+        warehouses.remove(name, expected);
+    }
+
+    public void delWarehouse(String name) {
+        final Warehouse old = warehouses.get(name);
+        if (old == null) return;
+        synchronized (old) {
+            if (warehouses.get(name) != old || old.isRetired()) return;
+            if (old instanceof ClanWarehouse clan && clan.getWarehouseUsingChar() != 0)
+                throw new IllegalStateException("Clan warehouse is in use: " + name);
+            if (!CacheD.getInstance().canRetireWarehouseExplicitly(old.transferOrderKey()))
+                throw new IllegalStateException("Warehouse writes still pending: " + name);
+            old.retireWarehouse();
+            warehouses.remove(name, old);
+        }
+    }
+
+    public Warehouse findWarehouse1(String name) {
         return findWarehouse(name);
     }
 
-    public synchronized void delWarehouse1(String name) {
+    public void delWarehouse1(String name) {
         delWarehouse(name);
     }
 }

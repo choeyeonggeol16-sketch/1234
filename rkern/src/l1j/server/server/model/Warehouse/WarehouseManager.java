@@ -46,7 +46,7 @@ public class WarehouseManager {
         }
     }
 	
-	private static volatile WarehouseManager uniqueInstance = null;
+	private static final WarehouseManager INSTANCE = new WarehouseManager();
 	private final PrivateWarehouseList plist = new PrivateWarehouseList();
 	private final ElfWarehouseList elist = new ElfWarehouseList();
 	private final ClanWarehouseList clist = new ClanWarehouseList();
@@ -54,15 +54,9 @@ public class WarehouseManager {
 	private final SpecialWarehouseList speciallist = new SpecialWarehouseList();
 	
 	public static WarehouseManager getInstance() {
-		if(uniqueInstance == null) {
-			synchronized(ElfWarehouseList.class){
-				if(uniqueInstance == null)
-					uniqueInstance = new WarehouseManager();
-			}
-		}
-		return uniqueInstance;
+		return INSTANCE;
 	}
-	
+
 	public PrivateWarehouse getPrivateWarehouse(String name) {
 		return (PrivateWarehouse) plist.findWarehouse(name);
 	}

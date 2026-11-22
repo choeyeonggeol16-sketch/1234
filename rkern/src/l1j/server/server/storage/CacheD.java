@@ -1223,9 +1223,27 @@ public final class CacheD {
      * invoked by a lane-neutral CacheD completion job. No waiting and no SQL. */
     public boolean isWarehouseOwnerIdle(int ownerId) {
         synchronized (lock) {
-            return dbJobsByOwner.get(ownerId) == 0
-                    && ownerApplyJobsByOwner.get(ownerId) == 0
-                    && unpreparedWarehouseJobsByOwner.get(ownerId) == 0;
+            return isWarehouseOwnerIdleLocked(ownerId);
+        }
+    }
+
+    private boolean isWarehouseOwnerIdleLocked(int ownerId) {
+        return dbJobsByOwner.get(ownerId) == 0
+                && ownerApplyJobsByOwner.get(ownerId) == 0
+                && unpreparedWarehouseJobsByOwner.get(ownerId) == 0;
+    }
+
+    /** Preserve the explicit-delete fence, including its existing
+     * ordered DB job exception, in one CacheD monitor acquisition. */
+    public boolean canRetireWarehouseExplicitly(int ownerId) {
+        if (ownerId <= 0) throw new IllegalArgumentException("ownerId");
+        final DbJob executing = DB_JOB_CONTEXT.get();
+        synchronized (lock) {
+            if (ownerApplyJobsByOwner.get(ownerId) != 0
+                    || unpreparedWarehouseJobsByOwner.get(ownerId) != 0) return false;
+            if (executing != null)
+                return owns(executing, ownerId) && dbJobsByOwner.get(ownerId) == 1;
+            return !isWorkerThread() && dbJobsByOwner.get(ownerId) == 0;
         }
     }
 
@@ -1233,7 +1251,7 @@ public final class CacheD {
      * may retire now while still holding its warehouse mutation monitor. */
     public boolean deferWarehouseRetirement(int ownerId, Object identity, Runnable action) {
         synchronized (lock) {
-            if (isWarehouseOwnerIdle(ownerId)) return false;
+            if (isWarehouseOwnerIdleLocked(ownerId)) return false;
             java.util.IdentityHashMap<Object, Runnable> waiters = warehouseRetirements.get(ownerId);
             if (waiters == null) {
                 waiters = new java.util.IdentityHashMap<>();
@@ -1269,7 +1287,7 @@ public final class CacheD {
     }
 
     private ArrayList<Runnable> collectWarehouseRetirements(int ownerId, ArrayList<Runnable> actions) {
-        if (ownerId <= 0 || !isWarehouseOwnerIdle(ownerId)) return actions;
+        if (ownerId <= 0 || !isWarehouseOwnerIdleLocked(ownerId)) return actions;
         final java.util.IdentityHashMap<Object, Runnable> waiters = warehouseRetirements.remove(ownerId);
         if (waiters == null) return actions;
         if (actions == null) actions = new ArrayList<>(waiters.size());

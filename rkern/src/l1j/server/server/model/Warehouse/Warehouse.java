@@ -37,17 +37,20 @@ public abstract class Warehouse extends L1Object {
     // An evicted warehouse must never accept writes from a caller retaining
     // an old reference. No extra registry, worker, or per-operation allocation.
     private volatile boolean retired;
-    // Protected by the owning WarehouseList monitor. Negative means release requested.
+    // Protected by this warehouse's mutation monitor. Negative means release requested.
     long cacheSessionLease;
 
     protected final void assertWarehouseActive() {
         if (retired) throw new IllegalStateException("Warehouse reference retired: " + name);
     }
 
-    // Called under the warehouse mutation monitor by WarehouseList.
-    final synchronized void retireWarehouse() {
+    final boolean isRetired() { return retired; }
+
+    // Caller already owns this warehouse's mutation monitor.
+    final void retireWarehouse() {
+        assert Thread.holdsLock(this);
         assertWarehouseActive();
-        clearItems();
+        clearItemsLocked();
         retired = true;
     }
 
@@ -971,15 +974,16 @@ public abstract class Warehouse extends L1Object {
 		return readOnlyItems;
 	}
 
-	public synchronized void clearItems() {
+    public synchronized void clearItems() {
         assertWarehouseActive();
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			L1World.getInstance().removeObject(item);
-		}
-		_items.clear();
-	}
+        clearItemsLocked();
+    }
+
+    private void clearItemsLocked() {
+        final L1World world = L1World.getInstance();
+        for (L1ItemInstance item : _items) world.removeObject(item);
+        _items.clear();
+    }
 
 	public L1ItemInstance[] findItemsId(int id) {
 		ArrayList<L1ItemInstance> itemList = new ArrayList<>(4);
