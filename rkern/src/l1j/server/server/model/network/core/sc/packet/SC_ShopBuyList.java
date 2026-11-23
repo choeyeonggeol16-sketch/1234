@@ -34,6 +34,7 @@ public final class SC_ShopBuyList {
         }
         final L1NpcInstance npc = (L1NpcInstance) object;
         final int npcId = npc.getNpcTemplate().get_npcId();
+        if (npcId == 7320055) return false;
         final L1Shop shop = ShopTable.getInstance().get(npcId);
         if (shop == null) {
             SC_NoSell.send(pc, npc);
@@ -64,10 +65,6 @@ public final class SC_ShopBuyList {
         int adenDesc = 0x07;
          if (npcId == 7000077) {
             adenDesc = 14921;
-        } else if (npcId == 7320055) {
-            try {
-                if (client.getAccount() != null) adenDesc = client.getAccount().Ncoin_point;
-            } catch (Exception ignored) {}
         }
 
         final long needed = 11L + (long) count * 8L;

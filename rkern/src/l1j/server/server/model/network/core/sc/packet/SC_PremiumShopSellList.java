@@ -35,6 +35,7 @@ public final class SC_PremiumShopSellList {
     }
 
     public static boolean send(CUserSocket client, int npcId, int objId) {
+        if (npcId == 7320055) return false;
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
@@ -157,8 +158,6 @@ public final class SC_PremiumShopSellList {
             buffer.writeH(17619);
         } else if (npcId == 8500140) {
             buffer.writeH(17368);
-        } else if (npcId == 7320055) {
-            buffer.writeH(7626);
         } else if (npcId == 2999 || npcId == 2998) {
             buffer.writeH(30050);
         } else if (npcId == 200005 || npcId == 7320222 || npcId == 7320223) {

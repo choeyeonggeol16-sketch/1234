@@ -34,7 +34,6 @@ public final class SC_SurvivalCry {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
-        final int ncoin = pc != null ? pc.getNcoin() : 0;
         final Collection<L1AdenShopItem> collection = value == LIST
                 ? AdenShopTable.getInstance().toArray() : null;
         final L1AdenShopItem[] list = collection == null ? null : collection.toArray(new L1AdenShopItem[0]);
@@ -119,7 +118,7 @@ public final class SC_SurvivalCry {
                     buffer.writeH(3);
                     buffer.writeH(1);
                     buffer.writeH(4);
-                    buffer.writeD(ncoin);
+                    buffer.writeD(0); // Keep the original four-byte packet field.
                     buffer.writeH(0);
                     break;
                 case 3:

@@ -40,6 +40,10 @@ final class NpcMarketCommands {
     /** True stops the packet; ordinary shop listing keeps legacy fallthrough. */
     static boolean buy(L1PcInstance pc, L1Object obj, int objid) {
 		int npcid = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
+		if (npcid == 7320055) {
+			SC_SystemMessage.send(pc, "이 상점은 이용할 수 없습니다.");
+			return true;
+		}
 		if (pc.getInventory().getWeight100() > 90 && !pc.is_top_ranker()) {
 			SC_ServerMessage.send(pc, 3561);
 			return true;
@@ -58,7 +62,7 @@ final class NpcMarketCommands {
 				|| npcid == 7000077 || npcid == 900107 || npcid == 7200002 || npcid == 6000002 || npcid == 7310101 || npcid == 8500140
 				/*|| npcid == 7310103*/ || npcid == 7310113 || npcid == 91245 || npcid == 7310119 || npcid == 7310120
 				|| npcid == 7310126 || npcid == 7310124 || npcid == 7310128 || npcid == 70017 || npcid == 200005 || npcid == 7320250
-				|| npcid == 7320222 || npcid == 7320223 || npcid == 7320055 || npcid == 460000361 || npcid == 460000360
+				|| npcid == 7320222 || npcid == 7320223 || npcid == 460000361 || npcid == 460000360
 				|| npcid == 7320124 || npcid == 519 || npcid == 520 || npcid == 521 || npcid == 224 || npcid == 2999 || npcid == 2998) {
 			SC_PremiumShopSellList.send(pc, npcid, objid);
 			return true;
@@ -89,6 +93,10 @@ final class NpcMarketCommands {
     static void sell(L1PcInstance pc, L1Object obj, int objid) {
         String htmlid = null;
 				int npcid = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
+				if (npcid == 7320055) {
+					SC_SystemMessage.send(pc, "이 상점은 이용할 수 없습니다.");
+					return;
+				}
 				if (npcid == 70523 || npcid == 70805) {
 					htmlid = "ladar2";
 				} else if (npcid == 70537 || npcid == 70807) {
