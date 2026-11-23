@@ -58,6 +58,14 @@ public final class dFollow {
         if (follower == null) return;
         MoveIntentCache.clearGoal(follower);
         MoveIntentCache.clearProgress(follower);
-        SetMoving.clear(follower);
+        // close-range noTarget() runs repeatedly on every follower.
+        // Once the previous route is retired, do not invalidate A* state
+        // again on every idle tick. Only live movement needs this cleanup.
+        if (follower._moveTargetId != 0
+                || follower._moveSide != -1
+                || follower._moveCollision != 0
+                || follower._pathFindFailCount != 0) {
+            SetMoving.clear(follower);
+        }
     }
 }
