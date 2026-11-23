@@ -92,7 +92,13 @@ public final class CMoveAction {
         case CCreatureController.ACTION_FOLLOW_GROUP: {
             final L1MobGroupInfo group = creature.getMobGroupInfo();
             final L1NpcInstance leader =
-                    group != null ? group.getLeader() : null;
+                    group != null ? group.getActiveLeader() : null;
+            if (group == null || group.isLeader(creature)) {
+                // A follower became its own new group leader, or its group
+                // was disbanded while the last CIO timer was pending.
+                dFollow.clear(creature);
+                return CCreatureController.RESULT_DONE;
+            }
 
             // A leader may die, leave the group, switch maps or be
             // replaced between selection and the CIO movement tick.
@@ -397,10 +403,11 @@ public final class CMoveAction {
     /** Followers of an L1 mob-group leader share the same slot policy. */
     public static boolean followGroup(
             final L1NpcInstance creature, final L1NpcInstance leader) {
-        if (!validGroupLeader(
-                creature,
-                creature != null ? creature.getMobGroupInfo() : null,
-                leader)) {
+        final L1MobGroupInfo group =
+                creature != null ? creature.getMobGroupInfo() : null;
+        final L1NpcInstance activeLeader =
+                group != null ? group.getActiveLeader() : null;
+        if (!validGroupLeader(creature, group, activeLeader)) {
             dFollow.clear(creature);
             if (creature != null) {
                 ActionAccess.sleep(creature, 500L);
@@ -409,7 +416,7 @@ public final class CMoveAction {
             // invalid AI). Lack of a leader only postpones this movement.
             return false;
         }
-        return dFollow.follow(creature, leader);
+        return dFollow.follow(creature, activeLeader);
     }
 
     /**
