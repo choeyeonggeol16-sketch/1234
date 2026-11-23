@@ -388,6 +388,24 @@ public final class CDesirePQ {
         }
     }
 
+    /**
+     * Release the temporarily blocked ATTACK gate after a melee slot has
+     * already been reserved. Unlike releaseBlockedAttack(), this must not
+     * cancel the caller's newly refreshed TileOccupancyNpc claim.
+     */
+    public static void releaseBlockedAttackGateOnly(
+            final L1MonsterInstance npc,
+            final L1Character target) {
+
+        if (npc == null || target == null
+                || npc._desireBlockedAttackTargetId != target.getId()) {
+            return;
+        }
+        npc._desireBlockedAttackTargetId = 0;
+        npc._desireBlockedLanePos = 0;
+        npc._desireBlockedAttackMode = BLOCKED_ATTACK_NONE;
+    }
+
     // ------------------------------------------------------------------
     // CDesirePQ-like operations
     // ------------------------------------------------------------------
