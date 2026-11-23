@@ -28,8 +28,8 @@ public final class CDesireFactory {
     /**
      * CDesireFactory::MakeAttack(int, NpcAttackMoveType, bool,
      * float, float, int) at 0x0041B520.
-     * The two trailing numeric fields are copied as supplied by reference server.
-     * L1's existing attack event adapters do not infer their 3D meanings.
+     * Per-desire boost and level difference retain the NC field semantics.
+     * L1's default warrior Attack_BoostValue remains 300.
      */
     public static boolean MakeAttack(
             final L1MonsterInstance npc,
@@ -37,11 +37,11 @@ public final class CDesireFactory {
             final int moveType,
             final boolean flag,
             final float desireValue,
-            final float auxiliaryFloat,
-            final int auxiliaryInt,
+            final float boost,
+            final int levelDifference,
             final long nowMs) {
         return CDesirePQ.addAttackDesire(npc, target, moveType,
-                flag, desireValue, auxiliaryFloat, auxiliaryInt, nowMs);
+                flag, desireValue, boost, levelDifference, nowMs);
     }
 
     public static boolean MakeUseSkill(
