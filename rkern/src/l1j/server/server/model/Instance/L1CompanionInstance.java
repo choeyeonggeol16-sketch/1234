@@ -46,6 +46,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.npc.ai.action.dFollow;
 import l1j.server.server.model.npc.ai.action.dPetDefault;
+import l1j.server.server.model.npc.ai.action.CGetItemAction;
 import l1j.server.server.model.world.instance.shared.EffectTriggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_BUFF_NOTI;
@@ -390,7 +391,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     private static final long serialVersionUID = 1L;
     private int m_control_object_id;
     private CompanionClassInfo m_class_info;
-    private eCommand m_command_state;
+    private volatile eCommand m_command_state;
     private L1PcInstance m_master;
     private int m_master_id;
     private String m_master_name;
@@ -446,11 +447,19 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     public void set_command_state(eCommand command_state){
         m_command_state = command_state;
-        if(m_command_state.equals(eCommand.TM_GetItem)){
+        final boolean collecting = command_state == eCommand.TM_GetItem;
+        // Publish the pickup command to the existing CIO owner. Before,
+        // find_items() only assigned _targetItem; AiRuntime required
+        // isPickupItem() and never entered ACTION_GET_ITEM.
+        setPickupItem(collecting);
+        if (collecting) {
+            _itemSearchCooldown = 0;
             find_items();
-        }else{
-            if(!isAiRunning())
-                startAI();
+        } else {
+            _targetItem = null;
+        }
+        if (!isAiRunning()) {
+            startAI();
         }
     }
     public eCommand get_command_state(){
@@ -966,25 +975,11 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     
     private void find_items(){
-        if(m_master == null)
-            return;
-        
-        ArrayList<L1GroundInventory> ground_inventories = new ArrayList<L1GroundInventory>();
-        for(L1Object obj : L1World.getInstance().getVisibleObjects(this, 10)){
-            if(obj != null && obj instanceof L1GroundInventory)
-                ground_inventories.add((L1GroundInventory)obj);
-        }
-
-        for(L1GroundInventory inventory : ground_inventories){
-            for(L1ItemInstance item : inventory.getItems()){
-                if(item.getItemOwner() != null && item.getItemOwner().getId() != m_master.getId())
-                    continue;
-                
-                if(_inventory.checkAddItem(item, item.getCount()) == L1Inventory.OK){
-                    _targetItem = item;
-                }
-            }
-        }
+        if (m_master == null) return;
+        // NC GetItem desire scan: original ten-tile bound, only unowned
+        // items or items protected for this companion's master. Uses the
+        // shared reusable cluster query, not a new ArrayList each tick.
+        CGetItemAction.searchTarget(this, 10);
     }
     
     private void do_drain_items(){
