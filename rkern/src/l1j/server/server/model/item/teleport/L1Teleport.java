@@ -439,15 +439,7 @@ public class L1Teleport {
 			L1HauntedHouse.getInstance().clearBuff(pc);
 		}
 		
-		if (pc.getAutoHunt() && oldMapId != newMapId) {
-            if (newMapId == 4) {
-                if (oldMapId != 4) { 
-                    pc.setAutoHuntMapId(oldMapId);
-                }
-            } else {
-                pc.setAutoHuntMapId(newMapId);
-            }
-        }
+
 
 		// 특정 퀘스트/던전 상태 업데이트
 		updateQuestState(pc, oldMapId, newMapId);

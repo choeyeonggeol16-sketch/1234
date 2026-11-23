@@ -50,7 +50,6 @@ import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.L1EquipmentSlot;
-import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1Inventory;
@@ -6523,49 +6522,11 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		this._polyIdByEquip = i;
 	}
 
-	private int _autoPotion;
-
-	public int getAutoPotion() {
-		return _autoPotion;
-	}
-
-	public void setAutoPotion(int i) {
-		_autoPotion = i;
-	}
-
 	public boolean is시간제() {
 		return _equipSlot.hasTimedEquipment();
 	}
 	
 	
-	private int _autoDeadTime = 5;
-
-	public int getAutoDeadTime() {
-		return _autoDeadTime;
-	}
-
-	public void setAutoDeadTime(int i) {
-		_autoDeadTime = i;
-	}
-	private int _autoRange;
-
-	public int getAutoRange() {
-		return _autoRange;
-	}
-
-	public void setAutoRange(int i) {
-		_autoRange = i;
-	}
-
-	private int _autoMapId;
-
-	public int getAutoMapId() {
-		return _autoMapId;
-	}
-
-	public void setAutoMapId(int i) {
-		_autoMapId = i;
-	}
 	private long _buffTime;
 
 	public long getBuffTime() {
@@ -7547,266 +7508,16 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
     }
 
 	
-	private long _autoDropTime;
-	public long getAutoDropTime() {
-		return _autoDropTime;
-	}
-	public void setAutoDropTime(long l) {
-		_autoDropTime = l;
-	}
-	
-	
-	/* 자동사냥 무시 타겟 관련 변수 */
-	private int _autoIgnoreTarget = 0; // 무시할 몹의 ObjectId
-	private long _autoIgnoreTime = 0;  // 언제까지 무시할건지 시간 (Timestamp)
-
-	public int getAutoIgnoreTarget() { return _autoIgnoreTarget; }
-	public void setAutoIgnoreTarget(int id) { this._autoIgnoreTarget = id; }
-
-	public long getAutoIgnoreTime() { return _autoIgnoreTime; }
-	public void setAutoIgnoreTime(long time) { this._autoIgnoreTime = time; }
-
-	private long _autoDelayTime;
-	public long getAutoDelayTime() { return _autoDelayTime; }
-	public void setAutoDelayTime(long l) { _autoDelayTime = l; }
-	
-	private int _autoNearbyMobCount;
-	private long _autoThreatScanTime;
-
-	public int getAutoNearbyMobCount() {
-	    return _autoNearbyMobCount;
-	}
-
-	public void setAutoNearbyMobCount(int count) {
-	    _autoNearbyMobCount = count;
-	}
-
-	public long getAutoThreatScanTime() {
-	    return _autoThreatScanTime;
-	}
-
-	public void setAutoThreatScanTime(long time) {
-	    _autoThreatScanTime = time;
-	}
-	
 	private boolean isAutoHunt = false;
 
 	public boolean getAutoHunt() {
-	    return isAutoHunt;
+		return isAutoHunt;
 	}
 
 	public void setAutoHunt(boolean flag) {
-	    if (isAutoHunt != flag) {
-	        resetAutoRoam();
-	    }
-	    isAutoHunt = flag;
-	}
-	private int _autoRoamMapId = -1;
-	private int _autoRoamState;
-
-	private long _autoRoamHistory0;
-	private long _autoRoamHistory1;
-	private long _autoRoamHistory2;
-	private long _autoRoamHistory3;
-
-	public int getAutoRoamMapId() {
-	    return _autoRoamMapId;
+		isAutoHunt = flag;
 	}
 
-	public void setAutoRoamMapId(int mapId) {
-	    _autoRoamMapId = mapId;
-	}
-
-	public int getAutoRoamState() {
-	    return _autoRoamState;
-	}
-
-	public void setAutoRoamState(int state) {
-	    _autoRoamState = state;
-	}
-
-	public long getAutoRoamHistory0() {
-	    return _autoRoamHistory0;
-	}
-
-	public void setAutoRoamHistory0(long value) {
-	    _autoRoamHistory0 = value;
-	}
-
-	public long getAutoRoamHistory1() {
-	    return _autoRoamHistory1;
-	}
-
-	public void setAutoRoamHistory1(long value) {
-	    _autoRoamHistory1 = value;
-	}
-
-	public long getAutoRoamHistory2() {
-	    return _autoRoamHistory2;
-	}
-
-	public void setAutoRoamHistory2(long value) {
-	    _autoRoamHistory2 = value;
-	}
-
-	public long getAutoRoamHistory3() {
-	    return _autoRoamHistory3;
-	}
-
-	public void setAutoRoamHistory3(long value) {
-	    _autoRoamHistory3 = value;
-	}
-
-	public void resetAutoRoam() {
-	    _autoRoamMapId = -1;
-	    _autoRoamState = 0;
-	    _autoRoamHistory0 = 0L;
-	    _autoRoamHistory1 = 0L;
-	    _autoRoamHistory2 = 0L;
-	    _autoRoamHistory3 = 0L;
-	    _autoLocX = 0;
-	    _autoLocY = 0;
-	}
-
-	private int _autoMoveFailCount;
-
-	public int getAutoMoveFailCount() {
-		return _autoMoveFailCount;
-	}
-
-	public void setAutoMoveFailCount(int count) {
-		_autoMoveFailCount = count;
-	}
-	
-	private L1ItemInstance autoTargetItem;
-	public L1ItemInstance getAutoTargetItem() {
-	    return autoTargetItem;
-	}
-
-	public void setAutoTargetItem(L1ItemInstance item) {
-	    this.autoTargetItem = item;
-	}
-	
-	private boolean _isAutoSetting;
-
-	public boolean isAutoSetting() {
-		return _isAutoSetting;
-	}
-
-	public void setAutoSetting(boolean b) {
-		_isAutoSetting = b;
-	}
-
-	private int _autoPolyId;
-
-	public int getAutoPolyID() {
-		return _autoPolyId;
-	}
-
-	public void setAutoPolyID(int i) {
-		_autoPolyId = i;
-	}
-
-	private int _autoLocX;
-
-	public int getAutoLocX() {
-		return _autoLocX;
-	}
-
-	public void setAutoLocX(int i) {
-		_autoLocX = i;
-	}
-
-	private int _autoLocY;
-
-	public int getAutoLocY() {
-		return _autoLocY;
-	}
-
-	public void setAutoLocY(int i) {
-		_autoLocY = i;
-	}
-	
-	private L1Character _autoTarget;
-
-	public L1Character getAutoTarget() {
-		return _autoTarget;
-	}
-
-	public void setAutoTarget(L1Character mon) {
-		_autoTarget = mon;
-	}
-
-	private int _autoMoveCount = 0;
-
-	public int getAutoMoveCount() {
-		return _autoMoveCount;
-	}
-
-	public void setAutoMoveCount(int i) {
-		_autoMoveCount = i;
-	}
-
-    private long _autoSkillDelay;
-
-	public long getAutoSkillDelay() {
-		return _autoSkillDelay;
-	}
-
-	public void setAutoSkillDelay(long i) {
-		_autoSkillDelay = i;
-	}
-	
-	private long _autoTargetSearchTime;
-
-	public long getAutoTargetSearchTime() {
-	    return _autoTargetSearchTime;
-	}
-
-	public void setAutoTargetSearchTime(long time) {
-	    _autoTargetSearchTime = time;
-	}
-
-	private int _autoStatus;
-
-	public int getAutoStatus() {
-		return _autoStatus;
-	}
-
-	public void setAutoStatus(int i) {
-		_autoStatus = i;
-	}
-
-	private long _autoTimeAttack;
-
-	public long getAutoTimeAttack() {
-		return _autoTimeAttack;
-	}
-
-	public void setAutoTimeAttack(long time) {
-		_autoTimeAttack = time;
-	}
-
-	private long _autoTimeMove;
-
-	public long getAutoTimeMove() {
-		return _autoTimeMove;
-	}
-
-	public void setAutoTimeMove(long time) {
-		_autoTimeMove = time;
-	}
-
-	private boolean _autoDead;
-
-	public boolean isAutoDead() {
-		return _autoDead;
-	}
-
-	public void setAutoDead(boolean b) {
-		_autoDead = b;
-	}
-	
 	private int _manaDrainCount = 0;
 	private int _lastTargetId = 0;
 
@@ -7815,23 +7526,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	public int get_lastTargetId() { return _lastTargetId; }
 	public void set_lastTargetId(int i) { _lastTargetId = i; }
-	
-	private long _autoTeleportTime;
-
-	public long getAutoTeleportTime() {
-	    return _autoTeleportTime;
-	}
-	public void setAutoTeleportTime(long l) {
-	    _autoTeleportTime = l;
-	}
-	// --- 자동사냥 중 귀환 시 마지막 위치 및 맵 기억 변수 ---
-	private int autoHuntMapId = 0; // 자사하던 맵 ID
-	public int getAutoHuntMapId() {
-		return autoHuntMapId;
-	}
-	public void setAutoHuntMapId(int autoHuntMapId) {
-		this.autoHuntMapId = autoHuntMapId;
-	}
 	
 	private transient volatile int _sessionStamp = 0;
 	public int nextSessionStamp() { return ++_sessionStamp; }
@@ -8606,36 +8300,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		} finally {
 			grid.releaseNearby(nearby);
 		}
-	}
-	
-	private L1HateList _autoTargetList = new L1HateList();
-	public L1HateList getAutoTargetList() {
-		return _autoTargetList;
-	}
-	public void setAutoTargetList(L1HateList attackList) {
-		this._autoTargetList = attackList;
-	}
-	public void addAutoTargetList(L1Character mon) {
-		if (_autoTargetList.containsKey(mon)) {
-			return;
-		}
-		_autoTargetList.add(mon, 0);
-	}
-	public void removeAutoTargetList(L1Character mon) {
-		if (mon == null || !_autoTargetList.containsKey(mon)) {
-			return;
-		}
-		_autoTargetList.remove(mon);
-	}
-
-	private boolean _autoTargetDirty;
-
-	public boolean isAutoTargetDirty() {
-		return _autoTargetDirty;
-	}
-
-	public void setAutoTargetDirty(boolean dirty) {
-		_autoTargetDirty = dirty;
 	}
 	
 	// 트루타겟 

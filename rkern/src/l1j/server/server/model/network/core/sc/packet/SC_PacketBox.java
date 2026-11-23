@@ -520,9 +520,7 @@ public static void broadcastGreen(String message) {
 				buffer.writeC(_val2);
 				if (_bool1) buffer.writeC(1);
 				else buffer.writeC(0);
-				if (_pc != null) {
-					_pc.setAutoRange(_val1);
-				}
+
 				break;
 			}
 			break;
