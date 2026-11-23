@@ -135,10 +135,20 @@ public final class CMoveAction {
 
         switch (result) {
         case CCreatureController.RESULT_DONE:
-            // Scripted destination is owned only by this movement action.
-            // Do not erase the combat target/hate or a pending successor.
-            if (action == CCreatureController.ACTION_MOVE_TO_POINT
-                    || action == CCreatureController.ACTION_MOVE_TO_OBJECT) {
+            // NC dMoveTo removes its exact key before running
+            // MoveToFinished(0x41). Run the virtual callback only after the
+            // prior action is fully retired: a callback that submits MoveTo B
+            // must not be overwritten by A's subsequent doPendingAction().
+            if (action == CCreatureController.ACTION_MOVE_TO_POINT) {
+                final long completedXY = creature._scriptMoveGoalXY;
+                clearScriptMove(creature);
+                CCreatureController.doPendingAction(creature);
+                creature.onMoveToFinished(
+                        MoveIntentCache.unpackX(completedXY),
+                        MoveIntentCache.unpackY(completedXY));
+                return;
+            }
+            if (action == CCreatureController.ACTION_MOVE_TO_OBJECT) {
                 clearScriptMove(creature);
             }
             CCreatureController.doPendingAction(creature);
