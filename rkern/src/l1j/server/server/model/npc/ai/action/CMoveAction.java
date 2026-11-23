@@ -94,8 +94,14 @@ public final class CMoveAction {
             final L1NpcInstance leader =
                     group != null ? group.getLeader() : null;
 
-            if (leader == null) {
-                return CCreatureController.RESULT_INVALID;
+            // A leader may die, leave the group, switch maps or be
+            // replaced between selection and the CIO movement tick.
+            // This is a suspended FOLLOW_GROUP, not an invalid AI actor:
+            // never stop the whole NPC owner because its leader vanished.
+            if (!validGroupLeader(creature, group, leader)) {
+                dFollow.clear(creature);
+                ActionAccess.sleep(creature, 500L);
+                return CCreatureController.RESULT_RUNNING;
             }
 
             return ActionAccess.followGroup(creature, leader)
@@ -375,9 +381,34 @@ public final class CMoveAction {
                 creature, creature != null ? creature.getMaster() : null);
     }
 
+    /** A group membership transition never follows a dead/foreign leader. */
+    private static boolean validGroupLeader(
+            final L1NpcInstance creature, final L1MobGroupInfo group,
+            final L1NpcInstance leader) {
+        return creature != null && group != null && leader != null
+                && creature != leader
+                && leader.getMobGroupInfo() == group
+                && creature.getMobGroupInfo() == group
+                && !leader.isDead() && !leader.isDestroyed()
+                && leader.getCurrentHp() > 0
+                && leader.getMapId() == creature.getMapId();
+    }
+
     /** Followers of an L1 mob-group leader share the same slot policy. */
     public static boolean followGroup(
             final L1NpcInstance creature, final L1NpcInstance leader) {
+        if (!validGroupLeader(
+                creature,
+                creature != null ? creature.getMobGroupInfo() : null,
+                leader)) {
+            dFollow.clear(creature);
+            if (creature != null) {
+                ActionAccess.sleep(creature, 500L);
+            }
+            // Preserve CMoveAction's noTargetGroup contract (true means
+            // invalid AI). Lack of a leader only postpones this movement.
+            return false;
+        }
         return dFollow.follow(creature, leader);
     }
 
