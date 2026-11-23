@@ -9,6 +9,9 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
 
@@ -136,6 +139,46 @@ public final class TestNpcFollow {
                 == MoveIntentCache.NO_POS,
                 "current companion noTarget clears old follow goal at two tiles");
 
+        // Legacy pet, summon and magic doll must all call the same
+        // production action.dFollow as the modern companion. The previous
+        // noTarget distance >2 fast gate skipped arrival cleanup.
+        final L1PetInstance oldPet =
+                (L1PetInstance) unsafe.allocateInstance(L1PetInstance.class);
+        final L1SummonInstance summon =
+                (L1SummonInstance) unsafe.allocateInstance(L1SummonInstance.class);
+        final L1DollInstance doll =
+                (L1DollInstance) unsafe.allocateInstance(L1DollInstance.class);
+        oldPet.setId(900005);
+        summon.setId(900006);
+        doll.setId(900007);
+        location.set(oldPet, new L1Location(15, 16, map));
+        location.set(summon, new L1Location(15, 16, map));
+        location.set(doll, new L1Location(15, 16, map));
+
+        final Field legacyOwner = L1PetInstance.class.getDeclaredField("_petMaster");
+        legacyOwner.setAccessible(true);
+        legacyOwner.set(oldPet, pcMaster);
+        summon.setMaster(pcMaster);
+        doll.setMaster(pcMaster);
+
+        for (L1NpcInstance actor :
+                new L1NpcInstance[] { oldPet, summon, doll }) {
+            MoveIntentCache.setGoal(
+                    actor, MoveIntentCache.KIND_FOLLOW,
+                    pcMaster.getId(), pcMaster.getX(), pcMaster.getY(),
+                    12, 16);
+            check(MoveIntentCache.getGoal(
+                    actor, MoveIntentCache.KIND_FOLLOW,
+                    pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 2)
+                    != MoveIntentCache.NO_POS, "follower initial goal " + actor.getId());
+            check(!actor.noTarget(), "follower near-owner AI remains alive " + actor.getId());
+            check(MoveIntentCache.getGoal(
+                    actor, MoveIntentCache.KIND_FOLLOW,
+                    pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 2)
+                    == MoveIntentCache.NO_POS,
+                    "follower arrival must clear previous NC goal " + actor.getId());
+        }
+
         check(!CMoveAction.followGroup(follower, leader),
                 "group leader uses the same dFollow action");
         check(dFollow.follow(follower, null),
@@ -144,6 +187,6 @@ public final class TestNpcFollow {
                 "null follower must be rejected");
 
         System.out.println("PASS NC dFollow: nearest slot, cached goal, "
-                + "anchor drift, close-range release, current companion noTarget, group handoff, invalid master");
+                + "anchor drift, close-range release, pet/summon/doll/companion noTarget, group handoff, invalid master");
     }
 }
