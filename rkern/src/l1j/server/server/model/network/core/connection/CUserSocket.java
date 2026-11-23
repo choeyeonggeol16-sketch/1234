@@ -181,7 +181,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         _handshakePlainPending = false;
         _cryptor = null;
     }
-    private CPacketCryptor readCipher() { return _cryptor; }
     public boolean encrypt(CPacketWriteBuffer buffer, int offset, int length) {
         if (_handshakePlainPending) {
             _handshakePlainPending = false;
