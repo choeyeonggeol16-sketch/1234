@@ -194,5 +194,20 @@ public final class TestNpcDesireBoost {
                 "no initialized skill must not be executed as NPC cast");
         System.out.println("PASS NPC cast prerequisites: attacker, skill ID, "
                 + "normal-cast execution gate");
+
+        // NC dPAttack rejects distant targets and removes the ATTACK key.
+        // The L1 projection preserves the existing 40-tile maximum while
+        // assigning a distinct abort result (not generic INVALID/retry).
+        final Class<?> chase = Class.forName(
+                "l1j.server.server.model.npc.ai.action.CMoveToTargetAction");
+        final Field clearDistance = chase.getDeclaredField("TARGET_CLEAR_DISTANCE");
+        final Field distanceRejected = chase.getDeclaredField("RESULT_TARGET_TOO_FAR");
+        clearDistance.setAccessible(true);
+        distanceRejected.setAccessible(true);
+        check(clearDistance.getInt(null) == 40, "L1 target distance limit retained");
+        check(distanceRejected.getByte(null) !=
+                l1j.server.server.model.npc.ai.action.CCreatureController.RESULT_INVALID,
+                "distant target must not be generic INVALID/retry");
+        System.out.println("PASS NC dPAttack distance rejection mapping: 40 tile limit");
     }
 }
