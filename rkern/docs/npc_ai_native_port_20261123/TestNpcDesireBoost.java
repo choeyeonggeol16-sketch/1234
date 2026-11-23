@@ -209,5 +209,44 @@ public final class TestNpcDesireBoost {
                 l1j.server.server.model.npc.ai.action.CCreatureController.RESULT_INVALID,
                 "distant target must not be generic INVALID/retry");
         System.out.println("PASS NC dPAttack distance rejection mapping: 40 tile limit");
+
+        // 20-way melee hand-off: removing blocked A is allowed to clear
+        // A's gate, but MUST NOT cancel B's already-published claim.
+        final int blockedA = 888100;
+        final int winnerB = 888101;
+        owner._desireBlockedAttackTargetId = blockedA;
+        owner._desireResumeAttackTargetId = winnerB;
+        owner._desireResumeAttackMapId = 1;
+        owner._desireResumeAttackPos = 0; // no real world/map in this fixture
+        CDesirePQ.removeAttack(owner, blockedA);
+        check(owner._desireBlockedAttackTargetId == 0,
+                "retiring A clears only A's blocked gate");
+        check(owner._desireResumeAttackTargetId == winnerB,
+                "retiring A must preserve B's reserved attack claim");
+
+        // A dead/invalid ATTACK key can be pruned without targetRemove().
+        // This must clear the exact blocked gate and reservation ownership.
+        target.setId(888200);
+        owner._target = target; // resolveTarget fast path, avoids L1World startup
+        states = (byte[]) field("states").get(queue);
+        targets = (int[]) field("targetIds").get(queue);
+        values = (float[]) field("values").get(queue);
+        states[0] = CDesirePQ.PS_ATTACK;
+        targets[0] = target.getId();
+        values[0] = 180.0f;
+        field("size").setInt(queue, 1);
+        owner._desireBlockedAttackTargetId = target.getId();
+        owner._desireResumeAttackTargetId = target.getId();
+        owner._desireResumeAttackPos = 0;
+        Method prune = CDesirePQ.class.getDeclaredMethod(
+                "pruneHardInvalidAttackTargets", L1MonsterInstance.class);
+        prune.setAccessible(true);
+        prune.invoke(queue, owner);
+        check(owner._desireBlockedAttackTargetId == 0,
+                "invalid target prune clears blocked gate");
+        check(owner._desireResumeAttackTargetId == 0,
+                "invalid target prune releases its own claim metadata");
+        System.out.println("PASS ATTACK_FINISHED target cleanup: "
+                + "A gate retired, B claim preserved, invalid target pruned");
     }
 }
