@@ -29,7 +29,6 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightCommandExecutor;
 import l1j.server.SpecialEventHandler;
-import l1j.server.server.model.character.combat.arena.stadium.StadiumManager;
 import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv1;
 import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv10;
 import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv11;
@@ -144,9 +143,7 @@ import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_EVENT_COUNTDOWN_NOTI_PACKET;
 import l1j.server.server.shared.EPcStatus;
-import l1j.server.server.shared.ObjectWrapper;
 import l1j.server.server.shared.SimpleRgb;
 import l1j.server.server.shared.command.CommandArgs;
 import l1j.server.server.storage.sql.executors.Selector;
@@ -300,16 +297,6 @@ public class GMCommands {
 		case "psswindow":
 			l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.open(gm);
 			break;
-		case "pss2111":
-			l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019.gmProbe2111(gm, param);
-			break;
-		case "dd":
-			   String[] args = cmd.split(" ", 3);
-		        int sec = args.length > 1 ? Integer.parseInt(args[1]) : 60;
-		        String desc = args.length > 2 ? args[2] : "테스트 이벤트";
-		        SC_EVENT_COUNTDOWN_NOTI_PACKET.send(gm, sec, desc);
-		        gm.sendPackets("카운트다운 전송: " + sec + "초, " + desc);
-			break;
 //		case "아이피딜레이체크":
 //			try {
 //				StringTokenizer st = new StringTokenizer(param);
@@ -334,9 +321,6 @@ public class GMCommands {
 //				SC_SystemMessage.send(gm, "[ 중복 로그인 패킷 공격시에만 사용하세요 ]");
 //			}
 //			break;
-		case "자동종료":
-            gm.sendPackets("구형 서버 자동사냥 제거됨: 플레이서포터 사용");
-            break;
 		case "투견":
 			DogFightCommandExecutor.do_execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
@@ -346,9 +330,6 @@ public class GMCommands {
 		/*case "무인낚시":
 			autofish(gm);
 			break;*/
-		case "캐시경험치":
-			do_cache_exp(new CommandArgs().setOwner(gm).setParam(param));
-			break;
 //		case "대항전":
 //			new MJShiftBattleCommandExecutor().execute(new CommandArgs().setOwner(gm).setParam(param));
 //			break;
@@ -358,22 +339,6 @@ public class GMCommands {
 //			break;
 //		case "무인가입":						autoclanjoin(gm);break;
 	
-		case "라이트테스트":
-			boolean isOn = false;
-			if(isOn == false) {
-			SC_Ability.send(gm, 3, true); 
-			isOn = true;
-			} else {
-				SC_Ability.send(gm, 3, false); 
-				isOn = false;
-			}
-			break;
-		case "경기장":
-			StadiumManager.getInstance().open_stadium(gm, param);
-			break;
-		case "경기종료":
-			StadiumManager.getInstance().quit_stadium(gm, param);
-			break;
 		case "결투":
 			test_lfc(gm, param);
 			break;
@@ -383,17 +348,11 @@ public class GMCommands {
 		case "도움말":
 			showHelp(gm);
 			break;
-		case "산타이벤트":
-			GoldDragon(gm);
-			break;
 		case "혈맹정보":
 			searchclaner(gm, param);
 			break;
 		case "지배보스":
 			DominanceBoss(gm, param);
-			break;
-		case "인터서버":
-			l1j.server.server.model.network.core.session.DominationHybrid.gmCommand(gm, param);
 			break;
 		case "유저도움말":
 			SC_ShowHelp.send(gm, 1);
@@ -404,9 +363,6 @@ public class GMCommands {
 //		case "자동트리":
 //			gm.isAutoTreeple = true;
 //			break;
-		case "고정버프":
-			befixed(gm, param);
-			break;
 		case "케릭삭제":
 			standBy77(gm, param);
 			break;
@@ -420,26 +376,11 @@ public class GMCommands {
 		case "방어인챈성공":
 			EnchantArmorSuccess(gm, param);
 			break;
-		case "에르자베":
-			ErzabeBox(gm, param);
-			break;
-		case "샌드웜":
-			SandwormBox(gm, param);
-			break;
 		case "계정검사":
 			AccountCheck(gm, param);
 			break;
 		case "계정확인":
 			AccountCheck1(gm, param);
-			break;
-		case "진데스진레":
-			Jindeath(gm);
-			break;
-		case "진데스살키":
-			Jindeath1(gm);
-			break;
-		case "진데스진싸":
-			Jindeath2(gm);
 			break;
 		case "진데스제로스":
 			Jindeath3(gm);
@@ -468,9 +409,6 @@ public class GMCommands {
 		case "진데스나발":
 			Jindeath11(gm);
 			break;
-		case "데페작업":
-			jakjak(gm);
-			break;
 		case "아머작업":
 			jakjak2(gm);
 			break;
@@ -498,35 +436,8 @@ public class GMCommands {
 		case "룬스톤데페":
 			Stone2(gm);
 			break;
-		case "룬스톤아머":
-			Stone3(gm);
-			break;
 		case "보스":
 			addEventBoss(gm, param);
-			break;
-		case "판매삭제":
-			AuctionSystemTable.getInstance().deleteTopic(param);
-			break;
-		case "판매등록":
-			countR1(gm, param);
-			break;
-		case "구매신청":
-			countR2(gm, param);
-			break;
-		case "판매취소":
-			countR3(gm, param);
-			break;
-		case "판매완료":
-			countR4(gm, param);
-			break;
-		case "구매취소":
-			countR5(gm, param);
-			break;
-		case "할파스":
-			할파스의신의(gm, param);
-			break;
-		case "프로토":
-			showProto(gm, param);
 			break;
 		case "혈맹포인트":
 			혈맹포인트(gm);
@@ -838,31 +749,6 @@ public class GMCommands {
 		case "펑몹종료" : //From.Neige
 			Config.펑몹이벤트 = 1;
 			gm.sendPackets("펑몹이 등장하지 않도록 설정되었습니다.");
-			break;
-		case "포세이돈시작" : //From.Neige
-			Config.포세이돈 = 1;
-			Config.시그널1 = 0;
-			Config.시그널2 = 0;
-			Config.시그널3 = 0;
-			gm.sendPackets("포세이돈 이벤트를 시작합니다.");
-			//L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("동쪽 해역에서 폭풍우가 치고 있습니다."));
-			//RPacketBox.broadcastGreen("동쪽 해역에서 폭풍우가 치고 있습니다."));
-			break;
-		case "포세이돈종료" : //From.Neige
-			Config.포세이돈 = 0;
-			Config.시그널1 = 1;
-			Config.시그널2 = 1;
-			Config.시그널3 = 4;
-			gm.sendPackets("포세이돈 이벤트를 종료합니다.");
-			//L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("바다가 잠잠해졌습니다."));
-			//L1World.getInstance().broadcastPacketToAll(new RPacketBox(RPacketBox.GREEN_MESSAGE, "바다가 잠잠해졌습니다."));
-			break;
-		case "포세이돈테스트" : //From.Neige
-			Config.포세이돈 = 0;
-			Config.시그널1 = 1;
-			Config.시그널2 = 1;
-			Config.시그널3 = 3;
-			gm.sendPackets("포세이돈을 출몰 시킵니다.");
 			break;
 		case "배1"://From.Neige
 			gm.start_teleport(32732, 32799, 5, 4, 169, true, false);
@@ -5142,13 +5028,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 
 	private int _currentNum = -1 + 825;
 
-	private void showProto(L1PcInstance gm, String param) {
-		try {
-			_currentNum = Integer.parseInt(param);
-		} catch (Exception e) {
-		}
-	}
-
 	private void showNextProto(L1PcInstance gm, String param) {
 		SC_ShowCmd.sendText(gm, String.valueOf(_currentNum));
 		if (_currentNum != 13 && _currentNum != 14) {
@@ -5331,36 +5210,11 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			SC_SystemMessage.send(gm, "\\f:.원격교환 [캐릭터명]");
 		}
 	}
-	private void jakjak(L1PcInstance gm) { // 데페
-		L1ItemInstance item = null;
-		item = ItemTable.getInstance().createItem(210125);
-		SC_PacketBox.broadcastGreen("누군가가 샌드 웜의 모래 주머니에서 (" + item.getName() + ") 를(을) 획득하였습니다.");
-		SC_SystemMessage.broadcast("누군가가 샌드 웜의 모래 주머니에서 (" + item.getName() + ") 를(을) 획득하였습니다.");
-	}
-
 	private void jakjak2(L1PcInstance gm) { // 아머
 		L1ItemInstance item = null;
 		item = ItemTable.getInstance().createItem(5559);
 		SC_PacketBox.broadcastGreen("누군가가 샌드 웜의 모래 주머니에서 (" + item.getName() + ") 를(을) 획득하였습니다.");
 		SC_SystemMessage.broadcast("누군가가 샌드 웜의 모래 주머니에서 (" + item.getName() + ") 를(을) 획득하였습니다.");
-	}
-	private void Jindeath(L1PcInstance gm) {
-		L1ItemInstance item = null;
-		item = ItemTable.getInstance().createItem(505011);
-		SC_PacketBox.broadcastGreen("어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 \\f3("+ item.getName() +")\\f2 를(을) 획득하였습니다.");
-		SC_SystemMessage.broadcast("어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 ("+ item.getName() +") 를(을) 획득하였습니다.");
-	}
-	private void Jindeath1(L1PcInstance gm) {
-		L1ItemInstance item = null;
-		item = ItemTable.getInstance().createItem(505015);
-		SC_PacketBox.broadcastGreen("어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 \\f3("+ item.getName() +")\\f2 를(을) 획득하였습니다.");
-		SC_SystemMessage.broadcast("어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 ("+ item.getName() +") 를(을) 획득하였습니다.");
-	}
-	private void Jindeath2(L1PcInstance gm) {
-		L1ItemInstance item = null;
-		item = ItemTable.getInstance().createItem(505012);
-		SC_PacketBox.broadcastGreen("어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 \\f3("+ item.getName() +")\\f2 를(을) 획득하였습니다.");
-		SC_SystemMessage.broadcast("어느 아덴 용사 님께서 진 데스나이트의 유물 상자에서 ("+ item.getName() +") 를(을) 획득하였습니다.");
 	}
 	private void Jindeath3(L1PcInstance gm) {
 		L1ItemInstance item = null;
@@ -5469,13 +5323,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 	private void Stone2(L1PcInstance gm) { // 룬스톤 데페
 		L1ItemInstance item = null;
 		item = ItemTable.getInstance().createItem(210125);
-		SC_PacketBox.broadcastGreen("누군가가 빛나는 룬스톤에서 " + item.getName() + " 를(을) 획득하였습니다.");
-		SC_SystemMessage.broadcast("누군가가 빛나는 룬스톤에서 (" + item.getName() + ") 를(을) 획득하였습니다.");
-	}
-
-	private void Stone3(L1PcInstance gm) { // 룬스톤 아머
-		L1ItemInstance item = null;
-		item = ItemTable.getInstance().createItem(5559);
 		SC_PacketBox.broadcastGreen("누군가가 빛나는 룬스톤에서 " + item.getName() + " 를(을) 획득하였습니다.");
 		SC_SystemMessage.broadcast("누군가가 빛나는 룬스톤에서 (" + item.getName() + ") 를(을) 획득하였습니다.");
 	}
@@ -5748,180 +5595,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
         });
 	}
 
-	private static void countR1(L1PcInstance pc, String count) {
-		StringTokenizer st = new StringTokenizer(count);
-		try {
-			int i = 0;
-			int sellcount = 0;
-			String bankname = null;
-			String name = null;
-			String numeber = null;
-			try {
-				i = Integer.parseInt(st.nextToken());
-				sellcount = Integer.parseInt(st.nextToken());
-				bankname = st.nextToken();
-				name = st.nextToken();
-				numeber = st.nextToken();
-			} catch (NumberFormatException e) {
-			}
-
-			if (i <= 0) {
-				pc.sendPackets(".판매등록  (판매금액)을 적어주세요.");
-				return;
-			}
-			if (i > Config.MAX_SELL_ADENA) {
-				pc.sendPackets("최대판매 아데나는 " + Config.MAX_SELL_ADENA + " 아데나 이상 판매하실 수 없습니다.");
-				return;
-			}
-			if (i >= 1 && i < Config.MIN_SELL_ADENA) {
-				pc.sendPackets("최소판매 아데나는 " + Config.MIN_SELL_ADENA + " 아데나 이상 입니다.");
-				return;
-			}
-			if (sellcount < Config.MIN_SELL_CASH) {
-				pc.sendPackets("최소판매금액은 " + Config.MIN_SELL_CASH + "원 이상 입니다.");
-				return;
-			}
-			if (sellcount > Config.MAX_SELL_CASH) {
-				pc.sendPackets("최대판매금액은 " + Config.MAX_SELL_CASH + "원 이하 입니다.");
-				return;
-			}
-
-			String selltype = "판매중";
-			L1Item temp = ItemTable.getInstance().getTemplate(L1ItemId.ADENA);
-			L1ItemInstance adena = new L1ItemInstance(temp, i);
-
-			if (pc.getInventory().checkItem(L1ItemId.ADENA, i)) {
-				pc.getInventory().consumeItem(L1ItemId.ADENA, i);
-				AuctionSystemTable.getInstance().writeTopic(pc, selltype, adena, i, sellcount, bankname, numeber, name);
-				WriteSellLetter(pc.getName(), i, sellcount, bankname, name, numeber, pc.getName());
-				//WriteSellLetter("메티스", i, sellcount, bankname, name, numeber, pc.getName());
-			} else {
-				pc.sendPackets("입력하신 숫자가 소지하신 아데나보다 작습니다.");
-			}
-		} catch (Exception exception) {
-			pc.sendPackets(".판매등록 (아데나) (판매금액) (은행명) (예금주) (계좌)");
-			pc.sendPackets(".판매등록 10000000 5000 한국은행 홍길동 123123(-제외)");
-		}
-	}
-
-	private static void countR2(L1PcInstance pc, String count) {
-		if (pc.hasSkillEffect(BUYER_COOLTIME)) {
-			int n = pc.getSkillEffectTimeSec(BUYER_COOLTIME);
-			pc.sendPackets("이미 다른 물품을 구매중이거나 쿨타임이 적용중입니다.");
-			SC_SystemMessage.send(pc, String.format("%d초 후에 구매신청을 하실 수 있습니다.", n));
-			return;
-		}
-		int i = 0;
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-
-		try {
-			i = Integer.parseInt(count);
-		} catch (NumberFormatException e) {
-		}
-		String charname = null;
-		int adenacount = 0;
-		int sellcount = 0;
-		int status = 0;
-		String bank = null;
-		String banknumeber = null;
-		String bankname = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement(
-					"SELECT  id, name, count, sellcount, status, bank, banknumber, bankname from Auction where id Like '"
-							+ i + "'");
-			rs = pstm.executeQuery();
-			while (rs.next()) {
-				charname = rs.getString("name");
-				adenacount = rs.getInt("count");
-				sellcount = rs.getInt("sellcount");
-				status = rs.getInt("status");
-				bank = rs.getString("bank");
-				banknumeber = rs.getString("banknumber");
-				bankname = rs.getString("bankname");
-			}
-
-			if (charname == null) {
-				pc.sendPackets("잘못된 게시번호 입니다.");
-				return;
-			}
-			if (status == 1) {
-				pc.sendPackets("이미 다른사람이 구매신청을 한 상태입니다.");
-				return;
-			}
-			if (status == 2) {
-				pc.sendPackets("이미 판매 완료된 물품입니다.");
-				return;
-			}
-
-			try {
-				int time = 600;
-				WriteBuyLetter(pc.getName(), adenacount, sellcount, bank, bankname, banknumeber, charname,
-						pc.getName());
-				WriteBuyLetter(charname, adenacount, sellcount, bank, bankname, banknumeber, charname, pc.getName());
-				//WriteBuyLetter("메티스", adenacount, sellcount, bank, bankname, banknumeber, charname, pc.getName());
-				AuctionSystemTable.getInstance().AuctionUpdate(i, pc.getName(), pc.getAccountName(), "입금대기", 1);
-				pc.setSkillEffect(BUYER_COOLTIME, time * 1000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-		} catch (SQLException e) {
-			pc.sendPackets(".구매신청 (게시글번호)");
-			pc.sendPackets(".구매신청 0017");
-		} finally {
-			SQLUtil.close(rs, pstm, con);
-		}
-	}
-
-	private static void countR3(L1PcInstance pc, String count) {
-		int i = 0;
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		try {
-			i = Integer.parseInt(count);
-		} catch (NumberFormatException e) {
-		}
-		int itemid = 0;
-		int itemcount = 0;
-		String account = null;
-		int status = 0;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement(
-					"SELECT  item_id ,count ,AccountName ,status from Auction where id Like '" + i + "'");
-			rs = pstm.executeQuery();
-			while (rs.next()) {
-				itemid = rs.getInt("item_id");
-				itemcount = rs.getInt("count");
-				account = rs.getString("AccountName");
-				status = rs.getInt("status");
-			}
-			if (status == 1) {
-				pc.sendPackets("입금 대기상태 에서는 판매취소가 불가능 합니다.");
-				return;
-			}
-			if (status == 2) {
-				pc.sendPackets("판매가 완료된 상태입니다.");
-				return;
-			}
-			if (pc.getAccountName().equalsIgnoreCase(account) || pc.isGm()) {
-				pc.getInventory().storeItem(itemid, itemcount);
-				AuctionSystemTable.getInstance().deleteTopic(i);
-				pc.sendPackets("정상취소 되었습니다");
-			} else {
-				pc.sendPackets("등록하신 물품이 아닙니다");
-			}
-		} catch (SQLException e) {
-			pc.sendPackets(".판매취소 (게시글번호) 라고 적어주십시요.");
-			pc.sendPackets("예)  .판매취소 0035");
-		} finally {
-			SQLUtil.close(rs, pstm, con);
-		}
-	}
 	private String itemlevel(L1ItemInstance item) {
 
 		String ggg = "";
@@ -6352,106 +6025,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 		return ggg;
 	}
-	private static void countR4(L1PcInstance pc, String count) {
-		int i = 0;
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-
-		try {
-			i = Integer.parseInt(count);
-		} catch (NumberFormatException e) {
-		}
-		String charname = null;
-		int sellcount = 0;
-		int status = 0;
-		String buyerName = null;
-		String buyerAccountName = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement(
-					"SELECT  name, count, status, buyername, buyerAccountName from Auction where id Like '" + i + "'");
-			rs = pstm.executeQuery();
-			while (rs.next()) {
-				charname = rs.getString("name");
-				sellcount = rs.getInt("count");
-				status = rs.getInt("status");
-				buyerName = rs.getString("buyername");
-				buyerAccountName = rs.getString("buyerAccountName");
-			}
-
-			if (status == 1) {
-				if (pc.getName().equalsIgnoreCase(charname) || pc.isGm()) {
-					AuctionSystemTable.getInstance().AuctionComplete(i);
-					try {
-						WriteComplete(buyerName, sellcount, charname);
-						//WriteComplete("메티스", sellcount, charname);
-						Warehouse.present(buyerAccountName, 40308, 0, sellcount);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					pc.sendPackets("정상 판매 완료 되었습니다.");
-				} else {
-					pc.sendPackets("당신은 해당글의 판매자가 아닙니다.");
-				}
-			} else {
-				pc.sendPackets("아직 구매 신청자가 없습니다.");
-			}
-		} catch (SQLException e) {
-			pc.sendPackets(".판매완료(게시글번호)");
-			pc.sendPackets(".판매완료 0017");
-		} finally {
-			SQLUtil.close(rs, pstm, con);
-		}
-	}
-
-	private static void countR5(L1PcInstance pc, String count) {
-		int i = 0;
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		try {
-			i = Integer.parseInt(count);
-		} catch (NumberFormatException e) {
-		}
-		int status = 0;
-		String charname = null;
-		String buyername = null;
-		String buyeraccount = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement(
-					"SELECT  name, status, buyername, buyerAccountName from Auction where id Like '" + i + "'");
-			rs = pstm.executeQuery();
-			while (rs.next()) {
-				charname = rs.getString("name");
-				status = rs.getInt("status");
-				buyeraccount = rs.getString("buyerAccountName");
-				buyername = rs.getString("buyername");
-			}
-			if (status == 0) {
-				pc.sendPackets("구매 취소가 불가능한 상태입니다.");
-				return;
-			}
-			if (status == 2) {
-				pc.sendPackets("판매가 완료된 상태입니다.");
-				return;
-			}
-			if (pc.getAccountName().equalsIgnoreCase(buyeraccount) || pc.isGm()) {
-				AuctionSystemTable.getInstance().AuctionUpdate(i, "", "", "입금대기", 0);
-				WriteCancle(buyername, charname);
-				//WriteCancle("메티스", charname);
-				pc.sendPackets("정상취소 되었습니다");
-			} else {
-				pc.sendPackets("등록하신 물품이 아닙니다");
-			}
-		} catch (SQLException e) {
-			pc.sendPackets(".구매취소 (게시글번호) 라고 적어주십시요.");
-			pc.sendPackets("예)  .구매취소 0035");
-		} finally {
-			SQLUtil.close(rs, pstm, con);
-		}
-	}
 	// TODO 중개 거래 게시판
 
 	private void standBy77(L1PcInstance gm, String param) {
@@ -6539,96 +6112,10 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 
-	private void ErzabeBox(L1PcInstance gm, String pcName) {
-		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(pcName);
-			if (target != null) {
-				target._ErzabeBox = true;
-				gm.sendPackets("(에르자베의 알)" + target.getName() + " 님의 4대마법 습득율이 1회성으로 100% 적용됩니다.");
-			} else {
-				gm.sendPackets("그런 캐릭터는 없습니다.");
-			}
-		} catch (Exception e) {
-			gm.sendPackets(".에르자베 캐릭명 으로 입력해주세요.");
-		}
-	}
-
-	private void SandwormBox(L1PcInstance gm, String pcName) {
-		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(pcName);
-			if (target != null) {
-				target._SandwormBox = true;
-				gm.sendPackets("(샌드웜의 주머니)" + target.getName() + " 님의 4대마법 습득율이 1회성으로 100% 적용됩니다.");
-			} else {
-				gm.sendPackets("그런 캐릭터는 없습니다.");
-			}
-		} catch (Exception e) {
-			gm.sendPackets(".샌드웜 캐릭명 으로 입력해주세요.");
-		}
-	}
-
-	private void befixed(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer tok = new StringTokenizer(param);
-			String phone = tok.nextToken();
-			L1PcInstance target = L1World.getInstance().getPlayer(param);
-			if (target == null) {
-				gm.sendPackets("캐릭터가 없습니다.");
-				return;
-			}
-
-			Account account = Account.load(target.getAccountName());
-			if (account.getphone() != null) {
-				gm.sendPackets("이미 고정회원 입니다.");
-				return;
-			}
-			account.setphone("00000000000");
-			Account.updatePhone(account);
-			gm.sendPackets(" " + phone + " 설정 완료 되었습니다.");
-			target.sendPackets("고정신청이 완료되어 버프가 발동 됩니다.");
-			보안버프(target);
-		} catch (Exception e) {
-		}
-	}
-
 	private static void 보안버프(L1PcInstance gm) {
 		gm.getAC().addAc(-1);
 		SC_PacketBox.send(gm, gm, SC_PacketBox.ICON_SECURITY_SERVICES);
 		SC_OwnCharStatus.send(gm);
-	}
-	private void GoldDragon(L1PcInstance gm){
-		String locName = MapsTable.getInstance().getMapName(gm.getMapId());
-		try{
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6801, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1SpawnUtil.spawn2(gm.getX(), gm.getY(), (short) gm.getMapId(), 6802, 50, 3600*1000, 0);
-			L1World.getInstance().broadcastServerMessage("\\aI[이벤트 스폰]: 괴상한 산타클로스 무리("+locName+")");
-			SC_PacketBox.broadcastGreen("\\fO[이벤트 스폰]: 괴상한 산타클로스 무리 ("+locName+")");
-			SC_Weather.broadcastAll(3);
-		} catch (Exception e){
-			SC_SystemMessage.send(gm, ".산타");
-		}
 	}
 	private void searchclaner(L1PcInstance gm, String name) {
 		try {
@@ -6792,56 +6279,4 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 	}
 	
 	
-	private void do_cache_exp(CommandArgs args){
-		try{
-			final String character_name = args.nextString();
-			if(GameUtils.isNullOrEmpty(character_name))
-				throw new Exception();
-			
-			ObjectWrapper<LevelExpPair> wrapper = new ObjectWrapper<LevelExpPair>();
-			Selector.exec("select * from character_exp_cache where character_name=?", new SelectorHandler(){
-				@Override
-				public void handle(PreparedStatement pstm) throws Exception {
-					pstm.setString(1, character_name);
-				}
-
-				@Override
-				public void result(ResultSet rs) throws Exception {
-					if(rs.next()){
-						wrapper.value = new LevelExpPair();
-						wrapper.value.level = rs.getInt("lvl");
-						wrapper.value.exp = rs.getInt("exp");
-					}
-				}
-			});
-			if(wrapper.value == null){
-				args.notify(String.format("%s님의 캐시 경험치 데이터를 찾을 수 없습니다.", character_name));
-				return;
-			}
-			L1PcInstance pc = L1World.getInstance().getPlayer(character_name);
-			if(pc == null){
-				Updator.exec("update characters set level=?, exp=? where char_name=?", new Handler(){
-					@Override
-					public void handle(PreparedStatement pstm) throws Exception {
-						int idx = 0;
-						pstm.setInt(++idx, wrapper.value.level);
-						pstm.setInt(++idx, wrapper.value.exp);
-						pstm.setString(++idx, character_name);
-					}
-				});
-				args.notify(String.format("%s님의 데이터베이스 데이터를 업데이트 했습니다.(레벨:%d, 경험치:%d) ", 
-						character_name, wrapper.value.level, wrapper.value.exp));
-			}else{
-				pc.setExp(wrapper.value.exp);
-				args.notify(String.format("%s님의 경험치를 %d로 변경했습니다.", wrapper.value.exp));
-			}
-		}catch(Exception e){
-			args.notify(".캐시경험치 [캐릭명]");
-		}
-	}
-
-	static class LevelExpPair{
-		int level;
-		int exp;
-	}
 }
