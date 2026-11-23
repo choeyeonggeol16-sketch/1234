@@ -2,17 +2,14 @@ package l1j.server.server.model.npc.ai.action;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.utils.NpcAiUtil;
 
 /**
- * 타겟 반대 방향으로 이동하는 도망 action.
+ * CIO lifecycle bridge for native CNPC::dFlee / dFleeEx.
  *
- * 객체를 만들지 않는 stateless 구현이며,
- * 실제 위치/상태는 L1NpcInstance가 보유한다.
+ * The native distance and movement rules live in dFlee; this adapter keeps
+ * the existing L1 ACTION_ESCAPE and target/action hand-off semantics.
  */
 public final class CEscapeAction {
-
-    private static final int ESCAPE_DISTANCE = 15;
 
     private CEscapeAction() {
     }
@@ -56,36 +53,15 @@ public final class CEscapeAction {
     public static byte onTick(
             final L1NpcInstance creature,
             final L1Character target) {
+        return dFlee.dFlee(creature, target);
+    }
 
-        if (creature == null || target == null) {
-            return CCreatureController.RESULT_INVALID;
-        }
-
-        if (target.isDead()
-                || target.getCurrentHp() <= 0
-                || target.getMapId() != creature.getMapId()) {
-            return CCreatureController.RESULT_INVALID;
-        }
-
-        if (creature.getLocation()
-                .getTileLineDistance(target.getLocation()) > ESCAPE_DISTANCE) {
-            return CCreatureController.RESULT_DONE;
-        }
-
-        int dir = creature.targetReverseDirection(
-                target.getX(),
-                target.getY());
-
-        dir = NpcAiUtil.checkObject(
-                creature.getX(),
-                creature.getY(),
-                creature.getMapId(),
-                dir);
-
-        // 이동 불가 방향이어도 기존 sleep semantics는 유지한다.
-        ActionAccess.directionMove(creature, dir);
-
-        return CCreatureController.RESULT_RUNNING;
+    /** Native dFleeEx variant for distance-constrained NPC actions. */
+    public static byte onTickEx(
+            final L1NpcInstance creature,
+            final L1Character target,
+            final int fleeDistanceTiles) {
+        return dFlee.dFleeEx(creature, target, fleeDistanceTiles);
     }
 
     /**
@@ -105,7 +81,14 @@ public final class CEscapeAction {
         switch (result) {
         case CCreatureController.RESULT_DONE:
         case CCreatureController.RESULT_INVALID:
-            creature.tagertClear();
+            // NC removes only the finished FLEE's target key. Never wipe a
+            // newly chosen target B when stale flee A finishes on the CIO
+            // owner. targetRemove() retires A's hate/desire exclusively.
+            creature.targetRemove(target);
+            if (ActionAccess.currentAction(creature)
+                    == CCreatureController.ACTION_ESCAPE) {
+                CCreatureController.think(creature);
+            }
             return;
 
         case CCreatureController.RESULT_RUNNING:
