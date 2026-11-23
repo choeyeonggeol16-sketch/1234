@@ -11,6 +11,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1Item;
+import l1j.server.server.templates.L1EtcItem;
 
 /**
  * NC dGetItem/GetItemFinished regression against production classes.
@@ -40,7 +41,7 @@ public final class TestNpcGetItem {
         npc.setId(971001);
         npc.setPickupItem(true);
 
-        final L1Item template = instance(unsafe, L1Item.class);
+        final L1Item template = instance(unsafe, L1EtcItem.class);
         final L1ItemInstance itemA = instance(unsafe, L1ItemInstance.class);
         final L1ItemInstance itemB = instance(unsafe, L1ItemInstance.class);
         itemA.setId(971002);
@@ -63,11 +64,12 @@ public final class TestNpcGetItem {
         check(CGetItemAction.onTick(npc) == CCreatureController.RESULT_DONE,
                 "no item is a finished GET_ITEM action");
 
-        npc._targetItem = itemA;
+        // Leaving the L1 pet/companion collect command explicitly clears
+        // the desire key; direct NPC GET_ITEM (not auto scan) must still work.
+        npc._targetItem = null;
         npc.setPickupItem(false);
         check(CGetItemAction.onTick(npc) == CCreatureController.RESULT_DONE,
-                "leaving pickup command cancels the next item execution");
-        npc._targetItem = null;
+                "a cleared pickup command cannot execute a stale item");
         npc.setPickupItem(true);
         npc.setDead(true);
         npc._targetItem = itemA;
