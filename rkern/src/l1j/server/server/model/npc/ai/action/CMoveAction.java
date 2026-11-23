@@ -28,7 +28,7 @@ public final class CMoveAction {
     static final int DIR_HARD_BLOCK = -3;
     static final int DIR_SOFT_BLOCK = -4;
 
-    private static final int FOLLOW_RADIUS = 2;
+    static final int FOLLOW_RADIUS = 2;
     private static final int FOLLOW_ANCHOR_DRIFT = 2;
     private static final int FOLLOW_NO_PROGRESS_REPLAN = 4;
 
@@ -327,52 +327,23 @@ public final class CMoveAction {
         return delay + (creature.getId() & 0x1f);
     }
 
-    /** master follow. */
-    public static boolean followMaster(
-            final L1NpcInstance creature) {
-
-        if (creature == null) {
-            return true;
-        }
-
-        final L1Character master = creature.getMaster();
-        if (master == null
-                || master.getMapId() != creature.getMapId()) {
-            return true;
-        }
-
-        if (creature.getLocation()
-                .getTileLineDistance(master.getLocation()) <= FOLLOW_RADIUS) {
-            return false;
-        }
-
-        return followPosition(creature, master);
+    /** Existing NC dFollow adapter owns all L1 master-follow decisions. */
+    public static boolean followMaster(final L1NpcInstance creature) {
+        return dFollow.follow(
+                creature, creature != null ? creature.getMaster() : null);
     }
 
-    /** group leader follow. */
+    /** Followers of an L1 mob-group leader share the same slot policy. */
     public static boolean followGroup(
-            final L1NpcInstance creature,
-            final L1NpcInstance leader) {
-
-        if (creature == null
-                || leader == null
-                || leader.getMapId() != creature.getMapId()) {
-            return true;
-        }
-
-        if (creature.getLocation()
-                .getTileLineDistance(leader.getLocation()) <= FOLLOW_RADIUS) {
-            return false;
-        }
-
-        return followPosition(creature, leader);
+            final L1NpcInstance creature, final L1NpcInstance leader) {
+        return dFollow.follow(creature, leader);
     }
 
     /**
      * CNPC::GetFollowPosition 계열.
      * 선택한 slot을 anchor가 의미 있게 움직이기 전까지 유지한다.
      */
-    private static boolean followPosition(
+    static boolean followPosition(
             final L1NpcInstance creature,
             final L1Character anchor) {
 
@@ -527,7 +498,18 @@ public final class CMoveAction {
         final short mapId = (short) creature.getMapId();
         final int actorId = creature.getId();
 
+        /*
+         * NC GetFollowPosition scans all eight slots and chooses the valid
+         * one nearest to the follower. L1's 2D projection keeps the existing
+         * radius-2 ring (radius 1 only when the outer ring is unavailable),
+         * actual TileOccupancy collision, and stable MoveIntentCache goal.
+         *
+         * Tie order is deterministic per NPC, so 20 followers cannot start
+         * oscillating because of per-tick random slot selection.
+         */
         for (int radius = FOLLOW_RADIUS; radius >= 1; radius--) {
+            long bestGoal = MoveIntentCache.NO_POS;
+            long bestDistanceSq = Long.MAX_VALUE;
             for (int i = 0; i < order.length; i++) {
                 final int heading = (base + order[i]) & 7;
                 final int x = anchor.getX() + DX[heading] * radius;
@@ -536,20 +518,23 @@ public final class CMoveAction {
                 if (!map.isPassable(x, y)) {
                     continue;
                 }
-
-                if (x == creature.getX() && y == creature.getY()) {
-                    return MoveIntentCache.pack(x, y);
-                }
-
-                if (COLLISION.testStep(
-                        mapId,
-                        x,
-                        y,
-                        actorId) != WorldCollisionHash.MOVE_CLEAR) {
+                if ((x != creature.getX() || y != creature.getY())
+                        && COLLISION.testStep(
+                                mapId, x, y, actorId)
+                                != WorldCollisionHash.MOVE_CLEAR) {
                     continue;
                 }
 
-                return MoveIntentCache.pack(x, y);
+                final long dx = (long) x - creature.getX();
+                final long dy = (long) y - creature.getY();
+                final long distanceSq = dx * dx + dy * dy;
+                if (distanceSq < bestDistanceSq) {
+                    bestDistanceSq = distanceSq;
+                    bestGoal = MoveIntentCache.pack(x, y);
+                }
+            }
+            if (bestGoal != MoveIntentCache.NO_POS) {
+                return bestGoal;
             }
         }
 
