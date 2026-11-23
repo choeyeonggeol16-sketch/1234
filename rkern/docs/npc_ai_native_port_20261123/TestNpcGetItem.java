@@ -22,6 +22,27 @@ public final class TestNpcGetItem {
     private TestNpcGetItem() {
     }
 
+    // Constructor is never run: Unsafe creates a test-only NPC with an
+    // observing onGetItem() callback but no game world or database.
+    private static final class PickupProbe extends L1NpcInstance {
+        int completions;
+        L1ItemInstance expectedTransfer;
+        L1ItemInstance selectAfterCommit;
+
+        private PickupProbe() {
+            super(null);
+        }
+
+        @Override
+        public void onGetItem(final L1ItemInstance item) {
+            completions++;
+            expectedTransfer = item;
+            if (selectAfterCommit != null) {
+                _targetItem = selectAfterCommit;
+            }
+        }
+    }
+
     private static void check(boolean ok, String message) {
         if (!ok) throw new AssertionError(message);
     }
@@ -116,6 +137,27 @@ public final class TestNpcGetItem {
         check(companion.getSleepTime() == 1000L,
                 "successful GetItemFinished retains 1000 ms NC pickup cadence");
 
+        // Completion callbacks run only after a successful transfer, and
+        // a callback may immediately publish a new request. Completing A
+        // must not erase its successor B even if the object IDs are reused.
+        final PickupProbe probe = instance(unsafe, PickupProbe.class);
+        probe.setId(971006);
+        probe._targetItem = itemA;
+        probe.selectAfterCommit = itemB;
+        dGetItem.GetItemFinished(probe, itemA, itemA);
+        check(probe.completions == 1
+                && probe.expectedTransfer == itemA,
+                "successful GET_ITEM callback must receive the transferred item");
+        check(probe._targetItem == itemB,
+                "GetItemFinished(A) must preserve B selected inside the callback");
+
+        probe.selectAfterCommit = null;
+        dGetItem.GetItemFinished(probe, itemB, null);
+        check(probe.completions == 1,
+                "failed GET_ITEM must not fire the successful pickup callback");
+        check(probe._targetItem == null,
+                "failed successor B must retire exactly B");
+
         // Every live L1 pickup type must override its radius-10 search hook.
         final Method petSearch = L1PetInstance.class
                 .getDeclaredMethod("searchTargetItem");
@@ -128,6 +170,6 @@ public final class TestNpcGetItem {
         System.out.println("PASS NC dGetItem/GetItemFinished: same-ID replacement, "
                 + "stale pickup rejection, exact-key failure and success, "
                 + "pet high-item gate, companion owner restriction, "
-                + "CIO search overrides, 500/1000 ms cadence");
+                + "callback successor handoff, CIO search overrides, 500/1000 ms cadence");
     }
 }
