@@ -7,6 +7,8 @@ import sun.misc.Unsafe;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
 
@@ -93,6 +95,37 @@ public final class TestNpcFollow {
                 leader.getId(), 16, 16, 2) == MoveIntentCache.NO_POS,
                 "following complete: stale slot must be released");
 
+        // The actual modern L1 pet is L1CompanionInstance (NOT L1Pet).
+        // Exercise its noTarget() call path with a PC master. This catches
+        // the old bug where noTarget skipped dFollow at <=2 tiles, leaving
+        // the previous owner-local follow destination alive.
+        final L1CompanionInstance companion =
+                (L1CompanionInstance) unsafe.allocateInstance(L1CompanionInstance.class);
+        final L1PcInstance pcMaster =
+                (L1PcInstance) unsafe.allocateInstance(L1PcInstance.class);
+        companion.setId(900003);
+        pcMaster.setId(900004);
+        location.set(companion, new L1Location(14, 16, map));
+        location.set(pcMaster, new L1Location(16, 16, map));
+        companion.set_master(pcMaster);
+        final Field command = L1CompanionInstance.class.getDeclaredField("m_command_state");
+        command.setAccessible(true);
+        command.set(companion,
+                l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand.TM_Aggressive);
+        MoveIntentCache.setGoal(
+                companion, MoveIntentCache.KIND_FOLLOW,
+                pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 12, 16);
+        check(MoveIntentCache.getGoal(
+                companion, MoveIntentCache.KIND_FOLLOW,
+                pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 2)
+                != MoveIntentCache.NO_POS, "companion follow goal was set");
+        check(!companion.noTarget(), "current companion noTarget keeps AI alive near master");
+        check(MoveIntentCache.getGoal(
+                companion, MoveIntentCache.KIND_FOLLOW,
+                pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 2)
+                == MoveIntentCache.NO_POS,
+                "current companion noTarget clears old follow goal at two tiles");
+
         check(!CMoveAction.followGroup(follower, leader),
                 "group leader uses the same dFollow action");
         check(dFollow.follow(follower, null),
@@ -101,6 +134,6 @@ public final class TestNpcFollow {
                 "null follower must be rejected");
 
         System.out.println("PASS NC dFollow: nearest slot, cached goal, "
-                + "anchor drift, close-range release, group handoff, invalid master");
+                + "anchor drift, close-range release, current companion noTarget, group handoff, invalid master");
     }
 }
