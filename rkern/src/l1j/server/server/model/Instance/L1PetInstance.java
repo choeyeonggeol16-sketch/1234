@@ -20,6 +20,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.npc.ai.NpcPotionPolicy;
 import l1j.server.server.model.npc.ai.action.dFollow;
+import l1j.server.server.model.npc.ai.action.dPetDefault;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PetMenuPacket;
@@ -32,7 +33,6 @@ import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1Pet;
 import l1j.server.server.templates.L1PetItem;
 import l1j.server.server.templates.L1PetType;
-import l1j.server.server.utils.NpcAiUtil;
 
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 public class L1PetInstance extends L1NpcInstance {
@@ -50,66 +50,22 @@ public class L1PetInstance extends L1NpcInstance {
 	@Override
 	public boolean noTarget() {
 		final L1PcInstance master = _petMaster;
-		final boolean hasMasterHere = master != null && master.getMapId() == getMapId();
-
 		if (_currentPetStatus == 3) {
-			return true;
+			return dPetDefault.onTick(this, master, 3);
 		}
-
-		if (!hasMasterHere) {
+		if (master == null || master.getMapId() != getMapId()) {
 			_currentPetStatus = 3;
-			return true;
+			return dPetDefault.onTick(this, master, 3);
 		}
-
-		final int dist = getLocation().getTileLineDistance(master.getLocation());
-
-		if (_currentPetStatus == 4) {
-			return handleExtendNoTarget(master, dist);
-		}
-
-		if (_currentPetStatus == 5) {
-			return handleAlertNoTarget();
-		}
-
 		if (_currentPetStatus == 7) {
-			return handleCallNoTarget(master, dist);
+			// L1 call command stays distinct from NC's default follow.
+			dFollow.clear(this);
+			final int distance = getLocation()
+					.getTileLineDistance(master.getLocation());
+			return handleCallNoTarget(master, distance);
 		}
-
-		return handleFollowNoTarget(master, dist);
-	}
-
-	private boolean handleExtendNoTarget(final L1PcInstance master, final int dist) {
-		if (dist < 4) {
-			int dir = targetReverseDirection(master.getX(), master.getY());
-			dir = NpcAiUtil.checkObject(getX(), getY(), getMapId(), dir);
-			if (dir != -1) {
-				setSleepTime(setDirectionMove(dir));
-			}
-			return false;
-		}
-
-		if (dist > 7) {
-			final int dir = moveDirection(master.getX(), master.getY());
-			if (dir != -1) {
-				setSleepTime(setDirectionMove(dir));
-			}
-			return false;
-		}
-
-		return false;
-	}
-
-	private boolean handleAlertNoTarget() {
-		if (Math.abs(getHomeX() - getX()) > 1 || Math.abs(getHomeY() - getY()) > 1) {
-			final int dir = moveDirection(getHomeX(), getHomeY());
-			if (dir == -1) {
-				setHomeX(getX());
-				setHomeY(getY());
-			} else {
-				setSleepTime(setDirectionMove(dir));
-			}
-		}
-		return false;
+		// NC DESIRE_PET_DEFAULT: owner execution, existing L1 command modes.
+		return dPetDefault.onTick(this, master, _currentPetStatus);
 	}
 
 	private boolean handleCallNoTarget(final L1PcInstance master, final int dist) {
@@ -122,13 +78,6 @@ public class L1PetInstance extends L1NpcInstance {
 			setSleepTime(setDirectionMove(dir));
 		}
 		return false;
-	}
-
-	private boolean handleFollowNoTarget(final L1PcInstance master, final int dist) {
-		// Run dFollow also at <=2 tiles so the completed follow clears
-		// its previous CIO-owned destination. All pet command modes above
-		// retain their original L1 behavior.
-		return dFollow.follow(this, master);
 	}
 
 	@Override
