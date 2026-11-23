@@ -87,10 +87,17 @@ public final class dMoveToTarget {
         // The original collision-radius sum maps to one L1 tile for
         // characters (whose tile is occupied), zero for ground objects.
         final int radius = target instanceof L1Character ? 1 : 0;
-        final int required = Math.max(0, stopDistanceTiles) + radius;
+        final long required = Math.max(0L, (long) stopDistanceTiles) + radius;
         if (reached(dx, dy, required)) {
             npc._pathFindFailCount = 0;
             return CCreatureController.RESULT_DONE;
+        }
+        if (!npc.isMovable()) {
+            return CCreatureController.RESULT_INVALID;
+        }
+        if (npc.발묶임상태()) {
+            ActionAccess.sleep(npc, NEXT_MS);
+            return CCreatureController.RESULT_RUNNING;
         }
         if (npc._pathFindFailCount > MAX_PATH_FAILURES) {
             return CCreatureController.RESULT_INVALID;
@@ -134,7 +141,7 @@ public final class dMoveToTarget {
     }
 
     /** L1 Chebyshev approach distance and the object's occupancy radius. */
-    static boolean reached(final long dx, final long dy, final int stop) {
+    static boolean reached(final long dx, final long dy, final long stop) {
         return Math.max(Math.abs(dx), Math.abs(dy)) <= stop;
     }
 
