@@ -416,10 +416,6 @@ public final class SkillHandlers {
 		return HandlerResult.HANDLED;
 	}
 
-	private static void register(int skillId, SkillHandler handler) {
-		CSkillInfo.registerCast(skillId, handler, false);
-	}
-
 	public static int dispatch(L1SkillUse su, L1Character cha, L1Magic magic, int undeadType, Iterator<?> iter) {
 		final int id = su.hdSkillId();
 		final CSkillInfo effect = CSkillInfo.get(id);
