@@ -1,6 +1,7 @@
 package l1j.server.server.model.npc.ai.action;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1Character;
 
 /**
  * NPC movement intent cache.
@@ -151,6 +152,80 @@ final class MoveIntentCache {
         s.noProgress[slot] = (byte) count;
         s.previousOrigin[slot] = pack(beforeX, beforeY);
         return count;
+    }
+
+    /**
+     * L1 NC-style chase continuity: report only physical reverse steps
+     * against an unchanged target. A normal curved detour does not count.
+     * Uses the existing owner-local primitive movement cache.
+     */
+    static boolean reportChaseStep(final L1NpcInstance npc,
+            final L1Character target, final int beforeX, final int beforeY,
+            final int afterX, final int afterY) {
+        if (npc == null || target == null || npc.getId() == 0
+                || (beforeX == afterX && beforeY == afterY)) {
+            return false;
+        }
+        final State s = LOCAL.get();
+        final int slot = slot(npc.getId());
+        initSlot(s, slot, npc);
+        final long targetPos = pack(target.getX(), target.getY());
+        if (s.kind[slot] != KIND_COMBAT
+                || s.anchorId[slot] != target.getId()
+                || s.anchorPos[slot] != targetPos) {
+            s.kind[slot] = KIND_COMBAT;
+            s.anchorId[slot] = target.getId();
+            s.anchorPos[slot] = targetPos;
+            s.goalPos[slot] = NO_POS;
+            s.waitUntil[slot] = 0L;
+            s.waitReason[slot] = 0;
+            s.previousOrigin[slot] = NO_POS;
+            s.noProgress[slot] = 0;
+        }
+        final boolean reversed = s.previousOrigin[slot] != NO_POS
+                && s.previousOrigin[slot] == pack(afterX, afterY);
+        final int reversals = reversed
+                ? Math.min(2, (s.noProgress[slot] & 0xff) + 1) : 0;
+        s.previousOrigin[slot] = pack(beforeX, beforeY);
+        s.noProgress[slot] = (byte) reversals;
+        if (reversals < 2) return false;
+        // The step is already committed; only the next timer may move again.
+        s.previousOrigin[slot] = NO_POS;
+        s.noProgress[slot] = 0;
+        return true;
+    }
+
+    /** Temporarily exclude an unreachable or oscillating melee position. */
+    static void rejectMeleeAttackPosition(final L1NpcInstance npc,
+            final L1Character target, final int x, final int y,
+            final long untilMs) {
+        if (npc == null || target == null || npc.getId() == 0) return;
+        final State s = LOCAL.get();
+        final int slot = slot(npc.getId());
+        initSlot(s, slot, npc);
+        s.kind[slot] = KIND_COMBAT;
+        s.anchorId[slot] = target.getId();
+        s.anchorPos[slot] = pack(target.getX(), target.getY());
+        s.goalPos[slot] = pack(x, y);
+        s.waitUntil[slot] = untilMs;
+        s.waitReason[slot] = 1;
+        s.previousOrigin[slot] = NO_POS;
+        s.noProgress[slot] = 0;
+    }
+
+    static boolean rejectedMeleeAttackPosition(final L1NpcInstance npc,
+            final L1Character target, final int x, final int y,
+            final long nowMs) {
+        if (npc == null || target == null || npc.getId() == 0) return false;
+        final State s = LOCAL.get();
+        final int slot = slot(npc.getId());
+        return s.key[slot] == key(npc)
+                && s.kind[slot] == KIND_COMBAT
+                && s.anchorId[slot] == target.getId()
+                && s.anchorPos[slot] == pack(target.getX(), target.getY())
+                && s.waitReason[slot] == 1
+                && nowMs < s.waitUntil[slot]
+                && s.goalPos[slot] == pack(x, y);
     }
 
     static void clearProgress(final L1NpcInstance npc) {

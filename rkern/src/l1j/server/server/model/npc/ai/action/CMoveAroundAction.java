@@ -550,7 +550,7 @@ public final class CMoveAroundAction {
         // attack slot. A narrow local-search miss must not suppress the larger
         // opposite-entrance search, nor fall back to a stale straight first step.
         if (ranged == 1) {
-            final boolean resumed = claimReachableMeleeSlot(monster, target);
+            final boolean resumed = GetMeleeAttackPosition(monster, target);
             if (SetMoving.debugTraceActor(monster)) {
                 System.out.println("[CHASE-RESUME-V3] actor=" + monster.getId()
                         + " pos=" + monster.getX() + "," + monster.getY()
@@ -571,7 +571,7 @@ public final class CMoveAroundAction {
         // a side route is open. Do not wait for it to die. The existing claimed
         // route is valid for ranged NPCs too; ATTACK takes over as soon as the
         // normal range/LOS condition is met, before reaching the melee slot.
-        return claimReachableMeleeSlot(monster, target);
+        return GetMeleeAttackPosition(monster, target);
     }
 
     /**
@@ -579,9 +579,9 @@ public final class CMoveAroundAction {
      * two sides of an obsolete blocked heading. Use a local static straight
      * test only; dynamic ownership is decided by one atomic reservation.
      */
-    // Blocked MOVE_AROUND recovery selects a reachable slot from the LIVE
-    // occupancy map, independently of a historical blocking tile.
-    static boolean claimReachableMeleeSlot(
+    // NC GetMeleeAttackPosition: select and claim one L1 8-direction
+    // melee tile using live occupancy before the SetMoving hand-off.
+    static boolean GetMeleeAttackPosition(
             final L1MonsterInstance monster,
             final L1Character target) {
 
@@ -603,10 +603,13 @@ public final class CMoveAroundAction {
         // Fully occupied melee rings are common during mass pulls. Avoid a
         // 25x25 occupancy scan until a physically usable attack slot exists.
         int openSlotMask = 0;
+        final long nowMs = System.currentTimeMillis();
         for (int h = 0; h < 8; h++) {
             final int x = tx + DX[h];
             final int y = ty + DY[h];
             if (isUsableMeleeSlot(target, x, y)
+                    && !MoveIntentCache.rejectedMeleeAttackPosition(
+                            monster, target, x, y, nowMs)
                     && COLLISION.canEnter(mapId, x, y, monster.getId())) {
                 openSlotMask |= 1 << h;
             }

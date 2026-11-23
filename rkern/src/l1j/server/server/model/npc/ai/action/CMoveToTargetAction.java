@@ -37,6 +37,7 @@ public final class CMoveToTargetAction {
     private static final int RESERVED_SLOT_BLOCK_RETRY_LIMIT = 3;
     // Covers one slow animation/tick without leaving a permanent reservation.
     private static final long RESERVED_SLOT_CLAIM_MS = 6_000L;
+    private static final long FAILED_MELEE_POSITION_COOLDOWN_MS = 2_000L;
 
     private static final int[] DX =
             { 0, 1, 1, 1, 0, -1, -1, -1 };
@@ -263,7 +264,7 @@ public final class CMoveToTargetAction {
             }
 
             final byte resumeResult =
-                    tickReservedAttackSlot(
+                    SetMoving(
                             monster,
                             target,
                             actionGeneration);
@@ -285,10 +286,40 @@ public final class CMoveToTargetAction {
         // Relative chase obtains its preferred destination from the native
         // action role. SetMoving remains the only physical movement owner;
         // reserved attack-slot routing above is deliberately unchanged.
+        final int stepBeforeX = creature.getX();
+        final int stepBeforeY = creature.getY();
         final byte move =
                 expectedAction == CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE
                         ? SetMoving.tickRelative(creature, target, desiredDistance)
                         : SetMoving.tick(creature, target, desiredDistance);
+
+        // Detect an actual A->B->A->B chase, not a valid one-way detour.
+        // Movement already committed on this tick; select the next goal only.
+        if (move == SetMoving.RUNNING
+                && (creature.getX() != stepBeforeX || creature.getY() != stepBeforeY)
+                && creature instanceof L1MonsterInstance
+                && creature.getTarget() == target
+                && creature.npcActionGeneration() == actionGeneration
+                && ActionAccess.currentAction(creature) == expectedAction) {
+            final L1MonsterInstance monster = (L1MonsterInstance) creature;
+            if (MoveIntentCache.reportChaseStep(monster, target,
+                    stepBeforeX, stepBeforeY, creature.getX(), creature.getY())) {
+                SetMoving.clear(monster);
+                if (CMoveAroundAction.GetMeleeAttackPosition(monster, target)) {
+                    monster._pathFindFailCount = 0;
+                    return CCreatureController.RESULT_RUNNING;
+                }
+                // If every valid melee approach is blocked, stop oscillating
+                // and let the existing DesirePQ blocked/retarget policy decide.
+                final int h = monster.targetDirection(target.getX(), target.getY());
+                final int bx = monster.getX() + (h >= 0 && h < 8 ? DX[h] : 0);
+                final int by = monster.getY() + (h >= 0 && h < 8 ? DY[h] : 0);
+                CDesirePQ.blockAttackForMoveAround(monster, target, bx, by);
+                monster._pathFindFailCount = 0;
+                CCreatureController.think(monster);
+                return CCreatureController.RESULT_RUNNING;
+            }
+        }
 
         if (move == SetMoving.DYNAMIC_BLOCKED) {
             creature._pathFindFailCount = 0;
@@ -653,10 +684,10 @@ public final class CMoveToTargetAction {
                 || ActionAccess.currentAction(monster) != expectedAction) {
             return CCreatureController.RESULT_INVALID;
         }
-        if (!CMoveAroundAction.claimReachableMeleeSlot(monster, target)) {
+        if (!CMoveAroundAction.GetMeleeAttackPosition(monster, target)) {
             return -1;
         }
-        final byte result = tickReservedAttackSlot(monster, target, generation);
+        final byte result = SetMoving(monster, target, generation);
         if (result >= 0) {
             if (SetMoving.debugTraceActor(monster)) {
                 System.out.println("[CHASE-ROUTE-V4] actor=" + monster.getId()
@@ -674,7 +705,7 @@ public final class CMoveToTargetAction {
         return -1;
     }
 
-    private static byte tickReservedAttackSlot(
+    private static byte SetMoving(
             final L1MonsterInstance monster,
             final L1Character target,
             final int actionGeneration) {
@@ -776,36 +807,43 @@ public final class CMoveToTargetAction {
                 && (oldX != monster.getX() || oldY != monster.getY())) {
             monster._desireResumeAttackBlockedRetries = 0;
             monster._pathFindFailCount = 0;
+            if (MoveIntentCache.reportChaseStep(monster, target,
+                    oldX, oldY, monster.getX(), monster.getY())) {
+                MoveIntentCache.rejectMeleeAttackPosition(
+                        monster, target, slotX, slotY,
+                        System.currentTimeMillis() + FAILED_MELEE_POSITION_COOLDOWN_MS);
+                clearReservedAttackSlot(monster);
+            }
             return CCreatureController.RESULT_RUNNING;
         }
 
-        // A complete occupancy scan found no route to this particular slot.
-        // No step was consumed: let the ordinary chase try another slot NOW,
-        // rather than waiting 300ms repeatedly for an obsolete route to reopen.
-        if (move == SetMoving.DYNAMIC_BLOCKED) {
-            clearReservedAttackSlot(monster);
-            return -1;
-        }
-
-        // A probe/commit race is still a short bounded retry of the same slot.
-        if (move == SetMoving.RUNNING) {
+        // Preserve the chosen melee position through transient body races.
+        // Repeated no-route or no-step results retire only this position.
+        if (move == SetMoving.DYNAMIC_BLOCKED || move == SetMoving.RUNNING) {
             if (++monster._desireResumeAttackBlockedRetries
                     < RESERVED_SLOT_BLOCK_RETRY_LIMIT) {
                 ActionAccess.sleep(monster, DYNAMIC_BLOCK_RETRY_MS);
                 monster._pathFindFailCount = 0;
                 return CCreatureController.RESULT_RUNNING;
             }
+            MoveIntentCache.rejectMeleeAttackPosition(
+                    monster, target, slotX, slotY,
+                    System.currentTimeMillis() + FAILED_MELEE_POSITION_COOLDOWN_MS);
+            clearReservedAttackSlot(monster);
+            return -1;
         }
 
         if (move == SetMoving.AT_DISTANCE) {
+            final boolean attackable = monster.isAttackPosition(
+                    target, monster.getNpcTemplate().get_ranged());
+            if (!attackable) {
+                MoveIntentCache.rejectMeleeAttackPosition(
+                        monster, target, slotX, slotY,
+                        System.currentTimeMillis() + FAILED_MELEE_POSITION_COOLDOWN_MS);
+            }
             clearReservedAttackSlot(monster);
             monster._pathFindFailCount = 0;
-
-            return monster.isAttackPosition(
-                    target,
-                    monster.getNpcTemplate().get_ranged())
-                    ? CCreatureController.RESULT_DONE
-                    : (byte) -1;
+            return attackable ? CCreatureController.RESULT_DONE : (byte) -1;
         }
 
         /*
