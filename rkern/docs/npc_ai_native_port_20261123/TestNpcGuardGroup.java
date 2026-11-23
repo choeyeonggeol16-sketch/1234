@@ -160,21 +160,47 @@ public final class TestNpcGuardGroup {
                 "late duplicate delete must not unregister a new group");
 
         first.setDead(true);
+        check(group.getActiveLeader() == second
+                && group.isLeader(second)
+                && first.getMobGroupId() == second.getId(),
+                "ordinary group elects living leader before corpse deletion");
         check(!CMoveAction.followGroup(second, first),
-                "dead group leader pauses follow without stopping NPC AI");
+                "new group leader must not follow its own group ID");
         first.setDead(false);
 
         group.setRemoveGroup(true);
-        group.removeMember(first);
+        group.removeMember(second);
         check(group.getNumOfMembers() == 0
                 && group.getLeader() == null
-                && second.getMobGroupInfo() == null
-                && second.getMobGroupId() == 0,
-                "remove-group on leader death releases all minion refs and IDs");
+                && first.getMobGroupInfo() == null
+                && first.getMobGroupId() == 0,
+                "remove-group on current leader deletion releases minion refs");
+
+        // For configured leader-death disband groups, a dead leader must
+        // NOT be auto-elected away (or the disband policy would be bypassed).
+        final L1MobGroupInfo disband = new L1MobGroupInfo();
+        final L1MonsterInstance leader2 = fixture(
+                unsafe, L1MonsterInstance.class,
+                loc, hp, 983003, 21, 20, map);
+        final L1MonsterInstance minion2 = fixture(
+                unsafe, L1MonsterInstance.class,
+                loc, hp, 983004, 21, 21, map);
+        disband.addMember(leader2);
+        disband.addMember(minion2);
+        disband.setRemoveGroup(true);
+        leader2.setDead(true);
+        check(disband.getActiveLeader() == leader2,
+                "remove-group policy must preserve dead leader until delete");
+        disband.removeMember(leader2);
+        check(disband.getNumOfMembers() == 0
+                && disband.getLeader() == null
+                && minion2.getMobGroupInfo() == null
+                && minion2.getMobGroupId() == 0,
+                "remove-group leader death releases entire group");
 
         System.out.println("PASS NC guard/group: dead and zero-HP sight "
                 + "rejected, 140-target bounded prune, castle no-teleport "
                 + "home, leader succession/assist IDs, duplicate deletion, "
-                + "dead-leader pause, group disband cleanup");
+                + "live-leader election, disband policy and cleanup");
     }
 }
