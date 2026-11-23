@@ -103,8 +103,9 @@ public final class CMoveToTargetAction {
         // Retargeting can re-enter this same action without transitionFrom().
         // Retire an obsolete melee hand-off before the next movement tick.
         if (creature instanceof L1MonsterInstance) {
-            discardObsoleteAttackSlot((L1MonsterInstance) creature,
-                    creature.getTarget());
+            final L1MonsterInstance monster = (L1MonsterInstance) creature;
+            AbandonObsoleteAttackLeader(monster, creature.getTarget());
+            discardObsoleteAttackSlot(monster, creature.getTarget());
         }
 
         MoveIntentCache.clearPassingDestination(creature);
@@ -240,6 +241,8 @@ public final class CMoveToTargetAction {
                 if (wx == monster.getX() && wy == monster.getY()) {
                     MoveIntentCache.clearPassingDestination(monster);
                 } else {
+                    final int beforeX = monster.getX();
+                    final int beforeY = monster.getY();
                     final byte code = SetMoving.tickToPoint(monster, wx, wy);
                     if (monster.isDead() || monster.getTarget() != target
                             || monster.npcActionGeneration() != actionGeneration
@@ -248,6 +251,9 @@ public final class CMoveToTargetAction {
                         return CCreatureController.RESULT_INVALID;
                     }
                     if (code == SetMoving.RUNNING) {
+                        if (beforeX != monster.getX() || beforeY != monster.getY()) {
+                            UpdateAttackLeaderRelated(monster, target);
+                        }
                         return CCreatureController.RESULT_RUNNING;
                     }
                     MoveIntentCache.clearPassingDestination(monster);
@@ -286,6 +292,7 @@ public final class CMoveToTargetAction {
                 && creature.npcActionGeneration() == actionGeneration
                 && ActionAccess.currentAction(creature) == expectedAction) {
             final L1MonsterInstance monster = (L1MonsterInstance) creature;
+            UpdateAttackLeaderRelated(monster, target);
             if (MoveIntentCache.reportChaseStep(monster, target,
                     stepBeforeX, stepBeforeY, creature.getX(), creature.getY())) {
                 SetMoving.clear(monster);
@@ -610,7 +617,11 @@ public final class CMoveToTargetAction {
             return;
         }
         if (creature instanceof L1MonsterInstance) {
-            clearReservedAttackSlot((L1MonsterInstance) creature);
+            final L1MonsterInstance monster = (L1MonsterInstance) creature;
+            // ACTION_ATTACK may remain eligible as an NC attack leader;
+            // retire this chase leader only on an actual target departure.
+            AbandonObsoleteAttackLeader(monster, creature.getTarget());
+            clearReservedAttackSlot(monster);
         }
         MoveIntentCache.clearPassingDestination(creature);
         if (!enteringWait) {
@@ -807,6 +818,7 @@ public final class CMoveToTargetAction {
 
         if (move == SetMoving.RUNNING
                 && (oldX != monster.getX() || oldY != monster.getY())) {
+            UpdateAttackLeaderRelated(monster, target);
             monster._desireResumeAttackBlockedRetries = 0;
             monster._pathFindFailCount = 0;
             if (MoveIntentCache.reportChaseStep(monster, target,
@@ -901,6 +913,63 @@ public final class CMoveToTargetAction {
         monster._desireResumeAttackPos = 0;
         monster._desireResumeAttackMapId = 0;
         monster._desireResumeAttackBlockedRetries = 0;
+    }
+
+    /**
+     * NC CCreature::AbandonAttackLeaderOf target-change handoff.
+     * The old target may be gone: compare-and-set only this NPC's ID so a
+     * successor leader in that direction is never cleared accidentally.
+     */
+    private static void AbandonObsoleteAttackLeader(
+            final L1MonsterInstance monster, final L1Character currentTarget) {
+        final int oldId = monster._ncAttackLeaderTargetId;
+        if (oldId == 0 || (currentTarget != null && oldId == currentTarget.getId())) {
+            return;
+        }
+        final L1Object object = l1j.server.server.model.L1World.getInstance()
+                .findObject(oldId);
+        if (object instanceof L1Character) {
+            ((L1Character) object).AbandonAttackLeaderOf(monster);
+        }
+        monster._ncAttackLeaderTargetId = 0;
+    }
+
+    /**
+     * NC CMoveToTargetAction::SetMoving leader election. Called only after an
+     * actual L1 tile movement commit; not on a probe, timer wake, or blocked
+     * retry. Directional CAS preserves leadership across CIO owners.
+     */
+    private static void UpdateAttackLeaderRelated(
+            final L1MonsterInstance monster, final L1Character target) {
+        if (target == null || monster.isDead() || monster.getCurrentHp() <= 0
+                || !monster.isMovable() || monster.getTarget() != target
+                || monster.getMapId() != target.getMapId()) {
+            return;
+        }
+        AbandonObsoleteAttackLeader(monster, target);
+        final int position = monster.GetMyPositionFrom(target);
+        final int existingId = target.GetAttackLeaderId(position);
+        if (existingId == monster.getId()) {
+            monster._ncAttackLeaderTargetId = target.getId();
+            return;
+        }
+        if (existingId != 0) {
+            final L1Object object = l1j.server.server.model.L1World.getInstance()
+                    .findObject(existingId);
+            if (object instanceof L1MonsterInstance) {
+                final L1MonsterInstance previous = (L1MonsterInstance) object;
+                if (previous != monster && !previous.isDead()
+                        && previous.getCurrentHp() > 0 && previous.isMovable()
+                        && previous.getTarget() == target
+                        && previous.getMapId() == target.getMapId()
+                        && !monster.IsCloserThan(previous, target)) {
+                    return;
+                }
+            }
+        }
+        if (target.SetAttackLeaderRelated(monster, existingId)) {
+            monster._ncAttackLeaderTargetId = target.getId();
+        }
     }
 
     private static boolean isMeleeAttackRingFull(
