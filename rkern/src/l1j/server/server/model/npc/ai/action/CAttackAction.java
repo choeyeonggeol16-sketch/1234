@@ -1,6 +1,8 @@
 package l1j.server.server.model.npc.ai.action;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.L1Character;
 
 /**
@@ -73,6 +75,12 @@ public final class CAttackAction {
                 || (target.isInvisble()
                         && !creature.getNpcTemplate().is_agrocoi())) {
             return CCreatureController.RESULT_INVALID;
+        }
+
+        // NC dPAttack finishes its desire execution by boosting that
+        // ATTACK key once. No BoostDown occurs merely on retarget.
+        if (creature instanceof L1MonsterInstance) {
+            CDesirePQ.boostExecutedAttack((L1MonsterInstance) creature, target);
         }
 
         // 기존 전투 우선순위: Effect -> Skill -> 기본 공격.
