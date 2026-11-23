@@ -201,6 +201,58 @@ public final class TestNpcFollow {
                     "GetFollowPosition must find a free slot for " + actor.getClass());
         }
 
+        // NC DESIRE_PET_DEFAULT must be reached by the real L1 noTarget()
+        // command hooks, not bypassed by generic FOLLOW_MASTER.
+        final Field petMode = L1PetInstance.class.getDeclaredField("_currentPetStatus");
+        final Field summonMode = L1SummonInstance.class.getDeclaredField("_currentPetStatus");
+        petMode.setAccessible(true);
+        summonMode.setAccessible(true);
+
+        for (L1NpcInstance actor : new L1NpcInstance[] { oldPet, summon }) {
+            final Field mode = actor == oldPet ? petMode : summonMode;
+            // STAY: stop the default command without following the owner.
+            mode.setInt(actor, 3);
+            MoveIntentCache.setGoal(actor, MoveIntentCache.KIND_FOLLOW,
+                    pcMaster.getId(), 16, 16, 12, 16);
+            check(actor.noTarget(), "pet-default stay must stop idle AI " + actor.getId());
+            check(MoveIntentCache.getGoal(actor, MoveIntentCache.KIND_FOLLOW,
+                    pcMaster.getId(), 16, 16, 2) == MoveIntentCache.NO_POS,
+                    "stay must retire the previous follow destination");
+
+            // EXTEND: existing L1 4..7 distance band; no movement at 6.
+            actor.getLocation().set(10, 16, map);
+            mode.setInt(actor, 4);
+            check(!actor.noTarget(), "L1 extend must remain active at six tiles");
+
+            // ALERT: existing L1 guard-home command retains its anchor.
+            actor.setHomeX(10);
+            actor.setHomeY(16);
+            mode.setInt(actor, 5);
+            check(!actor.noTarget(), "L1 alert must remain active at home");
+
+            mode.setInt(actor, 1);
+            actor.getLocation().set(15, 16, map);
+            check(!actor.noTarget(), "normal pet-default follows living owner");
+        }
+
+        // The retail native method returns a failed current pass when its
+        // master is inactive; CIO must retry, not unregister forever.
+        health.setInt(pcMaster, 0);
+        check(!dPetDefault.onTick(oldPet, pcMaster, 1),
+                "dead master must pause and retry instead of stopping pet AI");
+        check(!dPetDefault.follow(companion, pcMaster),
+                "dead master must pause companion AI without moving");
+        health.setInt(pcMaster, 100);
+        check(dPetDefault.onTick(oldPet, null, 1),
+                "missing master terminates the previous owner command");
+
+        // L1 pet CALL is deliberately kept outside native default modes.
+        petMode.setInt(oldPet, 7);
+        check(oldPet.noTarget(), "L1 call command completes when within one tile");
+        check(petMode.getInt(oldPet) == 3,
+                "completed L1 call transitions to stay, not follow");
+        petMode.setInt(oldPet, 1);
+
         MoveIntentCache.setGoal(follower, MoveIntentCache.KIND_FOLLOW,
                 leader.getId(), leader.getX(), leader.getY(), 12, 16);
         check(MoveIntentCache.clearGoalAndReport(follower),
@@ -215,6 +267,8 @@ public final class TestNpcFollow {
         check(dFollow.follow(null, leader),
                 "null follower must be rejected");
 
+        System.out.println("PASS NC dPetDefault: pet/summon stay, extend, alert, "
+                + "owner-dead retry, companion retry, L1 call preservation");
         System.out.println("PASS NC dFollow: nearest slot, cached goal, "
                 + "anchor drift, close-range release, pet/summon/doll/companion noTarget, group handoff, invalid master");
     }
