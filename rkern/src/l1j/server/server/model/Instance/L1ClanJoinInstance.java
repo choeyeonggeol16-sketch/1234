@@ -242,11 +242,13 @@ public class L1ClanJoinInstance extends L1Object{
 	
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		
-		if(_world_put == null || perceivedFrom == null)
-			return;
-		perceivedFrom.addKnownObject(this);
-		perceivedFrom.sendPackets(_world_put, false);
+		if (_world_put == null || perceivedFrom == null || perceivedFrom.knownsObject(this)) return;
+		final var client = perceivedFrom.getNetConnection();
+		if (client == null || !client.isConnected() || client.getActiveChar() != perceivedFrom) return;
+		if (client.tryWritePacket(client, _world_put)
+				&& perceivedFrom.getNetConnection() == client && client.isConnected()) {
+			perceivedFrom.addKnownObject(this);
+		}
 	}
 
 	@Override
