@@ -56,6 +56,42 @@ public class L1MobGroupInfo {
 		return _leader;
 	}
 
+	/**
+	 * On an ordinary L1 group, a dead leader is replaced as soon as a
+	 * follower needs to move, not minutes later when the corpse is deleted.
+	 * Existing remove-group-on-leader-death policy is not overridden.
+	 *
+	 * Live leader: one volatile read, no monitor or allocation on hot path.
+	 * Dead leader: one synchronized O(members) election per transition.
+	 */
+	public L1NpcInstance getActiveLeader() {
+		L1NpcInstance leader = _leader;
+		if (leader == null || _isRemoveGroup || active(leader)) {
+			return leader;
+		}
+		synchronized (this) {
+			leader = _leader;
+			if (leader == null || _isRemoveGroup || active(leader)) {
+				return leader;
+			}
+			for (int i = 0; i < _membersList.size(); i++) {
+				final L1NpcInstance candidate = _membersList.get(i);
+				if (candidate != leader && active(candidate)) {
+					setLeader(candidate);
+					return candidate;
+				}
+			}
+			return leader;
+		}
+	}
+
+	private static boolean active(final L1NpcInstance npc) {
+		return npc != null
+				&& !npc.isDead()
+				&& !npc.isDestroyed()
+				&& npc.getCurrentHp() > 0;
+	}
+
 	public boolean isLeader(final L1NpcInstance npc) {
 		return npc != null && npc == _leader;
 	}
