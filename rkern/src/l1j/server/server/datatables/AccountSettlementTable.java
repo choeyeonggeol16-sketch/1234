@@ -14,17 +14,6 @@ public final class AccountSettlementTable {
 
     private AccountSettlementTable() {}
 
-    public static void updateRoyalCount(int count) {
-        final String sql = "UPDATE royal SET count=?";
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setInt(1, count);
-            stmt.execute();
-        } catch (SQLException e) {
-            LOG.log(Level.SEVERE, "updateRoyalCount error", e);
-        }
-    }
-
     public static void deleteMeepByLogin(String login) {
         final String sql = "DELETE FROM meep WHERE login=?";
         try (Connection con = DatabaseFactory.getInstance().getConnection();
