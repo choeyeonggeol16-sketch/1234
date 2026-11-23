@@ -32,6 +32,11 @@ public final class dGetItem {
             return CCreatureController.RESULT_DONE;
         }
         if (creature.isDead() || creature.getCurrentHp() <= 0) {
+            // NC dGetItem drops pending desires when its actor becomes dead
+            // or inactive. Retire only the captured L1 item request.
+            if (ActionAccess.targetItem(creature) == capturedItem) {
+                ActionAccess.targetItem(creature, null);
+            }
             return CCreatureController.RESULT_INVALID;
         }
         if (!CGetItemAction.isValidTargetItem(creature, capturedItem)) {
