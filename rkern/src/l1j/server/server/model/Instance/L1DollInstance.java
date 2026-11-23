@@ -20,7 +20,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcPotionPolicy;
-import l1j.server.server.model.npc.ai.dFollow;
+import l1j.server.server.model.npc.ai.action.dFollow;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_DOLL_ON_OFF;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
@@ -172,13 +172,15 @@ public class L1DollInstance extends L1NpcInstance {
 			final int distance = getLocation().getTileLineDistance(_master.getLocation());
 
 			if(distance >= 40) {
+				// Teleport is an L1 doll rule. Retire the old follow
+				// destination before moving to the master's new position.
+				dFollow.clear(this);
 				teleport(_master.getX(), _master.getY(), getHeading());
 				return false;
 			}
-			else if (distance > 2 && distance < 40) {
-				return dFollow.follow(this, _master);
-			}
-			return false;
+			// Include arrival at <=2 tiles: NC dFollow clears its cached
+			// destination when the follower has reached the master.
+			return dFollow.follow(this, _master);
 		}
 		deleteDoll(true);
 		return true;
