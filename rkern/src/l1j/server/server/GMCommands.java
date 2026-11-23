@@ -1,5 +1,4 @@
 package l1j.server.server;
-import static l1j.server.server.model.character.skill.L1SkillId.HUNTER_BLESS;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -107,7 +106,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
-import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.core.sc.packet.SC_MarkSee;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
@@ -436,20 +434,6 @@ public class GMCommands {
 				}
 			
 			break;
-		case "접속보상"://From.Neige
-			try {
-				Integer n2 = Integer.valueOf(param);
-				Config.Neige_Reward = n2;
-					if(n2 == 2){
-						gm.sendPackets("[접속보상 : ON");
-					}else{
-						gm.sendPackets("[접속보상 : OFF");
-					}
-				} catch (Exception e) {
-					gm.sendPackets(".접속보상 (1 : 끄기, 2: 켜기 // 10분 단위로 경험치와 베리를 지급)");
-				}
-			
-			break;
 		case "기감변수"://From.Neige
 			try {
 				Integer peo3 = Integer.valueOf(param);
@@ -491,41 +475,6 @@ public class GMCommands {
 					gm.sendPackets("현재 방식 : (2)시간 채우기");
 				}
 			}
-			break;
-		case "흑단무빙": //From.Neige
-			try {
-				Integer wand = Integer.valueOf(param);
-				Config.흑단무빙 = wand;
-				if(wand == 1){
-					gm.sendPackets("[흑단 무빙 : 켜기]");
-				}else if(wand == 2){
-					gm.sendPackets("[흑단 무빙 : 끄기]");
-				}else{
-					Config.흑단무빙 = 1;
-					gm.sendPackets("[흑단 무빙 : 켜기]");
-				}
-			} catch (Exception e) {
-				gm.sendPackets(".흑단무빙 (1: 켜기 / 2: 끄기)");
-			}
-			break;
-		case "펑몹확률"://From.Neige
-		try {
-			Integer syaper = Integer.valueOf(param);
-			Config.운영자이벤트약한확률 = syaper;
-			Config.운영자이벤트강한확률 = syaper;
-			gm.sendPackets("[펑몹 등장 확률 : "+syaper+"]");
-		} catch (Exception e) {
-			gm.sendPackets(".펑몹확률 (1~100)");
-		}
-		break;
-			
-		case "펑몹시작" : //From.Neige
-			Config.펑몹이벤트 = 2;
-			gm.sendPackets("펑몹이 등장하도록 설정되었습니다.");
-			break;
-		case "펑몹종료" : //From.Neige
-			Config.펑몹이벤트 = 1;
-			gm.sendPackets("펑몹이 등장하지 않도록 설정되었습니다.");
 			break;
 		case "배1"://From.Neige
 			gm.start_teleport(32732, 32799, 5, 4, 169, true, false);
@@ -885,9 +834,6 @@ public class GMCommands {
 		case "혈맹포인트삭제": 
 			혈맹포인트삭제(gm, param);
 			break;
-		case "후원입금":
-			addaccount11(gm, param);
-			break;
 		case "혈맹포인트조회":
 			혈맹포인트조회(gm, param);
 			break;
@@ -918,38 +864,10 @@ public class GMCommands {
 		case "보스알림":
 			spawnNotifyOnOff(gm, param);
 			break;
-		case "비트코인":
-			SC_ShowCmd.sendMovie(gm, "https://www.bithumb.com/u5/US506", -1);
-			break;
-		case "맵테":
-			testcheck2(gm);
-			break;
-		case "몹테":
-			testcheck3(gm);
-			break;
-		case "몹테2":
-			testcheck4(gm);
-			break;
-		case "외테":
-			testcheck5(gm);
-			break;
-		case "외테2":
-			testcheck6(gm);
-			break;
-		case "외테3":
-			testcheck7(gm);
-			break;
 		case "타입":
 			int type = Integer.parseInt(param);
 			gm.sendPackets("\\aA요리타입 : " + type);
 			SC_PacketBox.send(gm, 53, type, 1800);
-			break;
-		case "헌터버프":
-			try {
-				SC_InventoryIcon.icoReset(gm, HUNTER_BLESS, 4992, 1800L, true);
-			} catch (Exception e) {
-				e.getStackTrace();
-			}
 			break;
 		case "제작체크":
 			if (!제작체크) {
@@ -1118,45 +1036,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 	}
 
 
-	private void testcheck2(L1PcInstance pc) {
-			
-			pc.sendPackets(pc.getMapId()+"입니다.");
-		
-	}
-	private void testcheck3(L1PcInstance pc) {
-		
-		L1SpawnUtil.spawn5(32801, 32795, (short)9101, 4, 91200, 0, false);
-		
-		pc.sendPackets("랜덤값 0으로 소환");
-	
-	}
-	private void testcheck4(L1PcInstance pc) {
-		
-		L1SpawnUtil.spawn5(32801, 32795, (short)9101, 4, 91200, 1, false);
-		
-		pc.sendPackets("랜덤값 1로 소환");
-	
-	}
-	private void testcheck5(L1PcInstance pc) {
-		
-		Config.seadunship = 1;
-		
-		pc.sendPackets(Config.seadunship + "입니다.");
-	
-	}
-	private void testcheck6(L1PcInstance pc) {
-		
-		Config.seadunship = 2;
-		
-		pc.sendPackets(Config.seadunship + "입니다.");
-	
-	}
-	private void testcheck7(L1PcInstance pc) {
-		
-		
-		pc.sendPackets(Config.seadunship + "입니다.");
-	
-	}
 	private void bug_race_rate(L1PcInstance pc, String s) {
 		try {
 			StringTokenizer tok = new StringTokenizer(s);
@@ -3590,51 +3469,6 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 		} catch (Exception e) {
 		}
 	}
-	private void AddAccount10(L1PcInstance gm, String account, int counter) {
-		try {
-			String login = null;
-
-			java.sql.Connection con = null;
-			con = DatabaseFactory.getInstance().getConnection();
-			PreparedStatement statement = null;
-			PreparedStatement pstm = null; 
-
-	
-
-			statement = con.prepareStatement("select * from royal where login Like '" + login + "'");
-			ResultSet rs = statement.executeQuery();
-
-			if (rs.next())
-				login = rs.getString(1);
-			if (account.equalsIgnoreCase(login) && rs.getInt("no") == Config.서버차수+1) {
-			int item = rs.getInt("count")+counter;
-				AccountSettlementTable.updateRoyalCount(item);
-				gm.sendPackets("인수받지 않은 후원금액 : "+ rs.getInt("count") + " 만 + 신규후원금 : "+counter+" 만");
-				gm.sendPackets("후원금 갱신 : "+item + " 만");
-				return;						
-			} else {
-				String sqlstr = "INSERT INTO royal SET login=?, count=?, no=?";
-				pstm = con.prepareStatement(sqlstr);
-				pstm.setString(1, account);
-				pstm.setInt(2, counter);
-				pstm.setInt(3, Config.서버차수+1);
-				pstm.execute();
-
-
-				gm.sendPackets("후원 입력이 완료되었습니다.");
-				gm.sendPackets("입금자 : "+account+"  금액(만) : "+counter);
-
-			}
-
-			rs.close();
-			pstm.close();
-			statement.close();
-			con.close();
-		} catch (Exception e) {
-		}
-	}
-
-
 	private static boolean isDisitAlpha(String str) {
 		boolean check = true;
 		for (int i = 0; i < str.length(); i++) {
@@ -3782,28 +3616,6 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 			AddAccount(gm, user, passwd, "127.0.0.1", "127.0.0.1");
 		} catch (Exception e) {
 			gm.sendPackets(".계정추가 [계정명] [암호] 를 입력 해주세요.");
-		}
-	}
-	private void addaccount11(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer tok = new StringTokenizer(param);
-			String user = tok.nextToken();
-			int count = Integer.parseInt(tok.nextToken());
-
-			if(GameUtils.isNullOrEmpty(user)){
-				gm.sendPackets("만원 이상 입력이 가능 합니다.");
-				return;
-			}
-			if(count <= 0){
-				gm.sendPackets("만원 이상 입력이 가능 합니다.");
-				throw new Exception();
-			} 
-
-
-			AddAccount10(gm, user, count);
-		} catch (Exception e) {
-			gm.sendPackets("\\f4.후원입금 [입금자명] [입금액](만원단위) 를 입력 해주세요.");
-			gm.sendPackets("\\f4.후원입금 [홍길동] [10] 를 입력 해주세요.");
 		}
 	}
 	private static void \u006D\u0065\u0065\u0070\u0035\u0035(L1PcInstance gm, String login) {

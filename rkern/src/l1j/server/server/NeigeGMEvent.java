@@ -33,10 +33,10 @@ public class NeigeGMEvent{
 	    if ((pc == null) || (pc.isDead())) {
 		      return;
 		}
-	    setting.add(Config.흑단무빙 == 1 ? "5208" : "5209");
+	    setting.add("5209");
 	    setting.add(Config.Neige_Count_Pass == 2 ? "5208" : "5209");
-	    setting.add(Config.펑몹이벤트 == 2 ? "5208" : "5209");
-	    setting.add(Config.Neige_Reward == 2 ? "5208" : "5209");
+	    setting.add("5209");
+	    setting.add("5209");
 	    setting.add(Config.Neige_Myth_Skill == 2 ? "5208" : "5209");
 	    setting.add(Config.myth_possible == 0 ? "5208" : "5209");
 	    setting.add(Config.sole_possible == 0 ? "5208" : "5209");

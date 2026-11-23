@@ -143,13 +143,11 @@ public final class Config {
 	public static int 운영자이벤트강한확률;
 	public static int 운영자이벤트약한확률;
 	public static int 운영자이벤트아이템;
-	public static int 펑몹이벤트;
 	
 	public static int qqq;
 	public static int 스턴최소;
 	public static int 네쥬스턴최소;
 	public static int 네쥬스턴최대;
-	public static int 흑단무빙;
 	public static int 맥스레벨;
 	public static int 데페최소;
 	public static int \uC9C0\uAE09\uC728;
@@ -544,7 +542,6 @@ public final class Config {
 	public static int 불멸가호아덴22;
 	public static String 마일리지엔피씨;
 	public static int Neige_Count_Pass;
-	public static int Neige_Reward;
 	public static int Neige_Myth_Skill;
 	
 	public static String DESPERADO_SKILL_RND_TIME;
@@ -1953,7 +1950,6 @@ public final class Config {
 			TEST_QA = Integer.parseInt(altSettings.getProperty("testQA", "1"));
 			TEST_QA2 = Integer.parseInt(altSettings.getProperty("testQA2", "1"));
 			
-			펑몹이벤트 = Integer.parseInt(altSettings.getProperty("nesmobev", "1"));
 			
 			보스아이템지급여부1 = Boolean.parseBoolean(altSettings.getProperty("BossItem1", "false"));
 			BossAreaDropBossIds1 = altSettings.getProperty("BossAreaDropBossIds1", "");
@@ -1991,7 +1987,6 @@ public final class Config {
 			QestLevel_End = Short.parseShort(altSettings.getProperty("QestLevelEnd", "1"));
 			Neige_Count_Pass = Short.parseShort(altSettings.getProperty("NegieCount", "1"));
 			Neige_Myth_Skill = Short.parseShort(altSettings.getProperty("NegieMyth", "1"));
-			Neige_Reward = Short.parseShort(altSettings.getProperty("NegieReward", "1"));
 			Start_Char_Level = Short.parseShort(altSettings.getProperty("StartCharLevel", "1"));
 			cantblack = Short.parseShort(altSettings.getProperty("cantblack", "1"));
 			Clan_leader = Boolean.parseBoolean(altSettings.getProperty("Clanleader", "true"));
@@ -2773,7 +2768,6 @@ public final class Config {
 			네쥬스턴최대 = Integer.parseInt(Magic.getProperty("nesmax", "60"));
 			아인하사드인챈트트 = Integer.parseInt(Magic.getProperty("Inenchantt", "2"));
 			아인하사드인챈트트1 = Integer.parseInt(Magic.getProperty("Inenchant11", "2"));
-			흑단무빙 = Integer.parseInt(Magic.getProperty("neswand", "1"));
 			
 			
 			에바인챈트 = Integer.parseInt(Magic.getProperty("EVenchant", "2"));

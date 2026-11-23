@@ -36,28 +36,10 @@ public class NeigeGM{
 		case "neigma00":
 			NeigeGMEvent.settingpage(pc);
 			return true;
-		case "neigma02":
-			if(Config.흑단무빙 != 1){
-				Config.흑단무빙 = 1;
-			}else{Config.흑단무빙 = 0;}
-			NeigeGMEvent.settingpage(pc);
-			return false;
 		case "neigma03":
 			if(Config.Neige_Count_Pass != 2){
 				Config.Neige_Count_Pass = 2;
 			}else{Config.Neige_Count_Pass = 0;}
-			NeigeGMEvent.settingpage(pc);
-			return false;
-		case "neigma04":
-			if(Config.펑몹이벤트 != 2){
-				Config.펑몹이벤트 = 2;
-			}else{Config.펑몹이벤트 = 1;}
-			NeigeGMEvent.settingpage(pc);
-			return false;
-		case "neigma05":
-			if(Config.Neige_Reward != 2){
-				Config.Neige_Reward = 2;
-			}else{Config.Neige_Reward = 1;}
 			NeigeGMEvent.settingpage(pc);
 			return false;
 		case "neigma06":
