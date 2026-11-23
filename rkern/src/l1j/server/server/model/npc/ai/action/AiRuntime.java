@@ -226,19 +226,34 @@ public final class AiRuntime {
         if (npc instanceof L1MonsterInstance
                 && acceptsCombatRetarget(runningAction)) {
 
-            final L1Character nextTarget = npc.npcChaseRetargetConsume();
-            if (nextTarget != null
-                    && nextTarget != npc._target
-                    && !nextTarget.isDead()
-                    && nextTarget.getCurrentHp() > 0
-                    && nextTarget.getMapId() == npc.getMapId()
-                    && (!nextTarget.isInvisble()
-                            || npc.getNpcTemplate().is_agrocoi())
-                    && ((L1MonsterInstance) npc)._desireBlockedAttackTargetId
-                            != nextTarget.getId()) {
-                npc._target = nextTarget;
-                CCreatureController.think(npc);
-                return PRE_RETHINK;
+            final L1Character requested = npc.npcChaseRetargetConsume();
+            if (requested != null) {
+                /*
+                 * NC picks the current CDesirePQ top when deciding an ATTACK.
+                 * A queued retarget is only a wake-up signal: its candidate
+                 * can lose priority, die, become invisible, or be removed
+                 * before this CIO owner tick consumes the request.
+                 *
+                 * Re-arbitrate at the commit point instead of blindly
+                 * installing the earlier snapshot. No additional queue
+                 * or target scan: topAttackTarget owns native desire order.
+                 */
+                final L1MonsterInstance monster = (L1MonsterInstance) npc;
+                final L1Character winner =
+                        CDesirePQ.topAttackTarget(monster, nowMs);
+                if (winner != null
+                        && winner != npc._target
+                        && !winner.isDead()
+                        && winner.getCurrentHp() > 0
+                        && winner.getMapId() == npc.getMapId()
+                        && (!winner.isInvisble()
+                                || npc.getNpcTemplate().is_agrocoi())
+                        && monster._desireBlockedAttackTargetId
+                                != winner.getId()) {
+                    npc._target = winner;
+                    CCreatureController.think(npc);
+                    return PRE_RETHINK;
+                }
             }
         }
 
