@@ -1132,9 +1132,8 @@ public class L1CompanionInstance extends L1NpcInstance{
 		if (perceivedFrom == null) return;
         
         
-        if (SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(perceivedFrom, this)) {
-			perceivedFrom.addKnownObject(this);
-		}
+        if (!SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(perceivedFrom, this)) return;
+		perceivedFrom.addKnownObject(this);
         if(perceivedFrom.getId() == get_master_id()){
             SC_COMPANION_STATUS_NOTI.send(perceivedFrom, this, CompanionUpdateFlag.UPDATE_ALL);
         }

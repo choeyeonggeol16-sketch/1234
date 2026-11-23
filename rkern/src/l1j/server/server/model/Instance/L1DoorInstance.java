@@ -52,9 +52,8 @@ public class L1DoorInstance extends L1NpcInstance {
 		if (perceivedFrom == null) return;
 		
 		
-		if (l1j.server.server.model.network.core.sc.packet.SC_DoorPack.send(perceivedFrom, this)) {
-			perceivedFrom.addKnownObject(this);
-		}
+		if (!l1j.server.server.model.network.core.sc.packet.SC_DoorPack.send(perceivedFrom, this)) return;
+		perceivedFrom.addKnownObject(this);
 		sendDoorPacket(perceivedFrom);
 
 		if( !isDead() )

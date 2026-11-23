@@ -474,9 +474,8 @@ public class L1PetInstance extends L1NpcInstance {
 		if (perceivedFrom == null) return;
 		
 		
-		if (SC_PetPack.send(perceivedFrom, this)) {
-			perceivedFrom.addKnownObject(this);
-		}
+		if (!SC_PetPack.send(perceivedFrom, this)) return;
+		perceivedFrom.addKnownObject(this);
 
 		/** 피바 갱신 **/
 		if (_petMaster != null && _petMaster == perceivedFrom) {

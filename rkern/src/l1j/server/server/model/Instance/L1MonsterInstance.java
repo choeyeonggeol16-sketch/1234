@@ -155,19 +155,18 @@ public class L1MonsterInstance extends L1NpcInstance {
 		if (perceivedFrom == null) return;
 	
 			
-		if (SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this)) {
-			perceivedFrom.addKnownObject(this);
-		}
-		if (getHiddenStatus() == HIDDEN_STATUS_SINK) {
+		final boolean appearanceAdmitted = SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this);
+		if (appearanceAdmitted) perceivedFrom.addKnownObject(this);
+		if (appearanceAdmitted && getHiddenStatus() == HIDDEN_STATUS_SINK) {
 			SC_DoActionGFX.send(perceivedFrom.getNetConnection(), getId(), ActionCodes.ACTION_Hide);
-		} else if (getHiddenStatus() == HIDDEN_STATUS_FLY) {
+		} else if (appearanceAdmitted && getHiddenStatus() == HIDDEN_STATUS_FLY) {
 			SC_DoActionGFX.send(perceivedFrom.getNetConnection(), getId(), ActionCodes.ACTION_Moveup);
 		}
 		onNpcAI();
 		
 	    NpcEventFactory.onSeePlayer(this, perceivedFrom);
 	    
-		if (getBraveSpeed() == 1) {
+		if (appearanceAdmitted && getBraveSpeed() == 1) {
 			SC_SkillBrave.send(perceivedFrom, getId(), 1, 600000);
 		}
 	}

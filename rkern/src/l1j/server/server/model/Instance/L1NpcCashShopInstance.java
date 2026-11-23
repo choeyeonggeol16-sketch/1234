@@ -25,9 +25,8 @@ public class L1NpcCashShopInstance extends L1NpcInstance {
 //		if(perceivedFrom.getAI() != null)
 //			return;
 //		
-		if (SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this)) {
-			perceivedFrom.addKnownObject(this);
-		}
+		if (!SC_WorldPutObject.get(perceivedFrom.getNetConnection(), this)) return;
+		perceivedFrom.addKnownObject(this);
 
 		if (_state == 1)
 			SC_DoActionShop.send(perceivedFrom, getId(), ActionCodes.ACTION_Shop, getShopName().getBytes());
