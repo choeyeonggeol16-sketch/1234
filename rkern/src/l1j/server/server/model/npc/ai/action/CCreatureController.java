@@ -424,11 +424,16 @@ public final class CCreatureController {
         case ACTION_MOVE_TO_POINT:
         case ACTION_MOVE_TO_OBJECT: {
             final byte current = ActionAccess.currentAction(creature);
+            final int generation = creature.npcActionGeneration();
             final byte result = CMoveAction.onTick(
                     creature,
                     current);
 
-            if (result != RESULT_RUNNING) {
+            if (result != RESULT_RUNNING
+                    && generation == creature.npcActionGeneration()
+                    && current == ActionAccess.currentAction(creature)) {
+                // Move/teleport callbacks may synchronously install B while
+                // A's old action tick is returning. A must not retire B.
                 CMoveAction.onEnd(
                         creature,
                         current,
