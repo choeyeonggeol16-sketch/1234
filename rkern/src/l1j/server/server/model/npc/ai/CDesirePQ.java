@@ -982,52 +982,40 @@ public final class CDesirePQ {
         return GetTopDesire(npc, excludedTargetId) != null;
     }
 
+    /**
+     * NC RemoveAttackDesire removes one captured key. A blocked gate for
+     * target A must NOT cancel an already published melee claim for B.
+     * Keep claim and temporary gate lifetime tied to their own target IDs.
+     */
+    private static void retireAttackHandoff(
+            final L1MonsterInstance npc,
+            final int targetId) {
+        if (npc._desireResumeAttackTargetId == targetId) {
+            clearResumeReservation(npc);
+        }
+        if (npc._desireBlockedAttackTargetId == targetId) {
+            npc._desireBlockedAttackTargetId = 0;
+            npc._desireBlockedLanePos = 0;
+            npc._desireBlockedAttackMode = BLOCKED_ATTACK_NONE;
+        }
+    }
+
     public static boolean removeAttack(
             final L1MonsterInstance npc,
             final L1Character target) {
-
-        if (npc == null || target == null || npc._desirePQ == null) {
-            return false;
-        }
-
-        final boolean removed =
-                npc._desirePQ.removeKey(
-                        PS_ATTACK,
-                        target.getId());
-
-        if (npc._desireResumeAttackTargetId == target.getId()) {
-            clearResumeReservation(npc);
-        }
-        if (npc._desireBlockedAttackTargetId == target.getId()) {
-            releaseBlockedAttack(npc, target);
-        }
-
-        return removed;
+        return target != null && removeAttack(npc, target.getId());
     }
 
     public static boolean removeAttack(
             final L1MonsterInstance npc,
             final int targetId) {
-
         if (npc == null || npc._desirePQ == null || targetId == 0) {
             return false;
         }
 
         final boolean removed =
-                npc._desirePQ.removeKey(
-                        PS_ATTACK,
-                        targetId);
-
-        if (npc._desireResumeAttackTargetId == targetId) {
-            clearResumeReservation(npc);
-        }
-        if (npc._desireBlockedAttackTargetId == targetId) {
-            clearResumeReservation(npc);
-            npc._desireBlockedAttackTargetId = 0;
-            npc._desireBlockedLanePos = 0;
-            npc._desireBlockedAttackMode = BLOCKED_ATTACK_NONE;
-        }
-
+                npc._desirePQ.removeKey(PS_ATTACK, targetId);
+        retireAttackHandoff(npc, targetId);
         return removed;
     }
 
@@ -1421,7 +1409,9 @@ public final class CDesirePQ {
         if (immediatePresent && immediateState == PS_ATTACK) {
             final L1Character target = resolveTarget(npc, immediateTargetId);
             if (!validActorTarget(npc, target)) {
+                final int invalidId = immediateTargetId;
                 removeImmediate();
+                retireAttackHandoff(npc, invalidId);
             }
         }
 
@@ -1440,12 +1430,13 @@ public final class CDesirePQ {
                             npc,
                             target)) {
 
-                if (target != null
-                        && target.isInvisble()
-                        && !npc.getNpcTemplate().is_agrocoi()) {
-                    releaseBlockedAttack(npc, target);
-                }
+                // Invalid ATTACK desires may be pruned before an explicit
+                // targetRemove() event reaches this CIO owner. Retire the
+                // exact target's reservation and blocked gate, including
+                // target-not-found/death (not only invisibility).
+                final int invalidId = targetIds[i];
                 removeAt(i);
+                retireAttackHandoff(npc, invalidId);
             }
         }
 
