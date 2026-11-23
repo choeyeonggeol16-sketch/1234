@@ -140,8 +140,10 @@ public class L1NpcInstance extends L1Character {
     private int _corpseTimerGeneration;
     private int _corpseQueuedGeneration;
     private volatile boolean _corpseDeleteStarted;
-    private L1MobGroupInfo _mobGroupInfo = null;
-    private int _mobGroupId = 0;
+    // Group leader succession/deletion can publish from a different owner.
+    // Existing packet/AI readers must observe both metadata updates.
+    private volatile L1MobGroupInfo _mobGroupInfo = null;
+    private volatile int _mobGroupId = 0;
     private int num; /* 버경 관련 */
 
 
