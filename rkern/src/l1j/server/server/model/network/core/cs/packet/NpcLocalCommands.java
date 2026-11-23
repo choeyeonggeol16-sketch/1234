@@ -4,7 +4,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.NeigeCard;
 import l1j.server.server.NeigeCard2;
 import l1j.server.server.NeigeCard3;
-import l1j.server.server.NeigeGM;
 import l1j.server.server.NeigeLow;
 import l1j.server.server.NeigeNormal;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -104,17 +103,6 @@ final class NpcLocalCommands {
 			NeigeCard3.NeigeMyth(pc, s);
 			return true;
 		}
-		if(s.contains("neigma")){
-			if(!pc.isGm()){
-				pc.sendPackets("관리자만 이용할 수 있습니다.");
-				return true;
-			}else{
-			SC_SkillSound.send(pc, pc.getId(), 21174);
-			NeigeGM.getInstance().gm(pc, s);
-			}
-			return true;
-		}
-		
 		// Retired legacy auto commands: do not pass them to NPC actions.
             if (s.startsWith("ps_potion_") || s.startsWith("ps_autobuff_")
                     || (s.startsWith("ps_") && NpcPlayerMenuHandler.isAsciiNumber(s, 3))) return true;
