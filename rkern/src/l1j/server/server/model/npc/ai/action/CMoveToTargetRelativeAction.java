@@ -234,18 +234,25 @@ public final class CMoveToTargetRelativeAction {
                 COLLISION.cancelNpcMove(mapId, bestX, bestY, monster.getId());
                 return false;
             }
-            // The blocked gate has no reservation of its own. Cancel any
-            // obsolete hand-off before publishing the freshly claimed slot.
-            if (monster._desireBlockedAttackTargetId == target.getId()) {
-                CDesirePQ.releaseBlockedAttack(monster);
+            // The new claim already belongs to this NPC. Retire only an
+            // obsolete DIFFERENT slot: canceling the same tile here would
+            // revoke the claim we just refreshed. An old different claim
+            // must also be released when no blocked ATTACK gate was set.
+            final int newPacked =
+                    ((bestX & 0xffff) << 16) | (bestY & 0xffff);
+            final int oldPacked = monster._desireResumeAttackPos;
+            if (oldPacked != 0
+                    && (oldPacked != newPacked
+                        || monster._desireResumeAttackMapId != mapId)) {
+                CMoveToTargetAction.clearReservedAttackSlot(monster);
             }
+            CDesirePQ.releaseBlockedAttackGateOnly(monster, target);
             monster._desireResumeAttackMapId = mapId;
             monster._desireResumeAttackBlockedRetries = 0;
             monster._desireResumeAttackTargetId = target.getId();
             monster._desireResumeAttackTargetPos =
                     ((tx & 0xffff) << 16) | (ty & 0xffff);
-            monster._desireResumeAttackPos =
-                    ((bestX & 0xffff) << 16) | (bestY & 0xffff);
+            monster._desireResumeAttackPos = newPacked;
             // Death/retarget can finish during publication. Cancel this exact
             // claim rather than calling releaseBlockedAttack(), which only
             // clears an active blocked gate and can leave a ghost reservation.
