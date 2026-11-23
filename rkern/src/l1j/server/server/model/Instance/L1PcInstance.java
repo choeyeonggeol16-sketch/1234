@@ -817,7 +817,6 @@ public class L1PcInstance extends L1Character {
     public boolean isTradeResolving() {
         return tradeResolutionBusy != 0;
     }
-	public boolean 퀘스트멘트 = false;
 	public boolean RootMent = true;// 루팅 멘트]
 	public boolean RootMent1 = true;// 루팅 멘트]
 	public boolean noPlayerck2 = false;

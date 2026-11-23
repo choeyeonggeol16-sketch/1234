@@ -27,19 +27,6 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightCommandExecutor;
 import l1j.server.SpecialEventHandler;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv1;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv10;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv11;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv2;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv3;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv4;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv5;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv6;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv7;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv8;
-import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceFloorLv9;
-import l1j.server.server.model.world.instance.dungeon.tower.DominanceBoss;
-import l1j.server.server.model.world.instance.dungeon.tower.DominanceDataLoader;
 import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
@@ -72,13 +59,9 @@ import l1j.server.server.model.L1ClanRanking;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1NeigeSaveChar;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Warehouse.ClanWarehouse;
-import l1j.server.server.model.Warehouse.PrivateWarehouse;
 import l1j.server.server.model.Warehouse.Warehouse;
-import l1j.server.server.model.Warehouse.WarehouseManager;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
@@ -106,7 +89,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.core.sc.packet.SC_MarkSee;
-import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Restart;
@@ -116,8 +98,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_ShowHelp;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_Unknown2;
-import l1j.server.server.model.network.core.sc.packet.SC_UserCommands17;
 import l1j.server.server.model.network.core.sc.packet.SC_Weather;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -150,7 +130,6 @@ import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.IntRange;
 import l1j.server.server.utils.L1QueryUtil;
 import l1j.server.server.utils.L1SpawnUtil;
-import l1j.server.server.utils.Message;
 import l1j.server.server.utils.SQLUtil;
 import l1j.server.server.utils.ServerMessage;
 public class GMCommands {
@@ -282,51 +261,12 @@ public class GMCommands {
 		LoggerInstance.getInstance().addCommand(gm.getName() + ": " + cmd + " " + param);
 
 		switch (cmd) {
-		case "psswindow":
-			l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.open(gm);
-			break;
-//		case "아이피딜레이체크":
-//			try {
-//				StringTokenizer st = new StringTokenizer(param);
-//				String status = st.nextToken();
-//				if (status.equalsIgnoreCase("켬")) {
-//					if (Config.IP_DELAY_CHECK_USE) {
-//						SC_SystemMessage.send(gm, "이미 딜레이 체크 상태입니다.");
-//						return;
-//					}
-//					Config.IP_DELAY_CHECK_USE = true;
-//					SC_SystemMessage.send(gm, "딜레이 체크 상태로 돌입합니다.");
-//				} else if (status.equalsIgnoreCase("끔")) {
-//					if (!Config.IP_DELAY_CHECK_USE) {
-//						SC_SystemMessage.send(gm, "딜레이 체크 상태가 아닙니다.");
-//						return;
-//					}
-//					Config.IP_DELAY_CHECK_USE = false;
-//					SC_SystemMessage.send(gm, "딜레이 체크 상태가 해지되고 정상적인 플레이가 가능합니다.");
-//				}
-//			} catch (Exception eee) {
-//				SC_SystemMessage.send(gm, ".딜레이체크 [켬/끔] 으로 입력하세요.");
-//				SC_SystemMessage.send(gm, "[ 중복 로그인 패킷 공격시에만 사용하세요 ]");
-//			}
-//			break;
 		case "투견":
 			DogFightCommandExecutor.do_execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
 		case "펫":
 			CompanionCommandExecutor.exec(new CommandArgs().setOwner(gm).setParam(param));
 			break;
-		/*case "무인낚시":
-			autofish(gm);
-			break;*/
-//		case "대항전":
-//			new MJShiftBattleCommandExecutor().execute(new CommandArgs().setOwner(gm).setParam(param));
-//			break;
-//		case "서버이동":
-//			if(Config.USE_SHIFT_SERVER)
-//				new MJShiftObjectCommandExecutor().execute(new CommandArgs().setOwner(gm).setParam(param));
-//			break;
-//		case "무인가입":						autoclanjoin(gm);break;
-	
 		case "결투":
 			test_lfc(gm, param);
 			break;
@@ -338,9 +278,6 @@ public class GMCommands {
 			break;
 		case "혈맹정보":
 			searchclaner(gm, param);
-			break;
-		case "지배보스":
-			DominanceBoss(gm, param);
 			break;
 		case "유저도움말":
 			SC_ShowHelp.send(gm, 1);
@@ -501,9 +438,6 @@ public class GMCommands {
 				gm.sendPackets("\\aA■ 부운영자의 권한으로 사용할 수 없습니다. ■");
 			}
 			break;
-	    case "전체공지":
-		    전체공지(gm);
-			break;
 		case "보호모드":
 			setProtectionMode(gm, param);
 			break;
@@ -600,9 +534,6 @@ public class GMCommands {
 		case "광역밴":
 			LargeAreaIPBan(gm, param);
 			break;
-		case "파티":
-			party(gm, param);
-			break;
 		case "아지트지급":
 			GiveHouse(gm, param);
 			break;
@@ -642,17 +573,11 @@ public class GMCommands {
 			ExpTable.expPenaltyReLoad();
 			gm.sendPackets("■ 페널티 리로드 완료 ■");
 			break;
-		case "퀘스트멘트":
-			퀘스트멘트(gm, param);
-			break;
 		case "잠재력":
 			잠재력활성화(gm, param);
 			break;
 		case "밸런스":
 			CharacterBalance(gm, param);
-			break;
-		case "무인상점":
-			privateShop(gm);
 			break;
 		case "라이트":
 			maphack(gm, param);
@@ -715,9 +640,6 @@ public class GMCommands {
 		case "마을":
 			unprison(gm, param);
 			break;
-		case "숨계":
-			unprison2(gm, param);
-			break;
 		case "채금해제":
 			chatx(gm, param);
 			break;
@@ -761,9 +683,6 @@ public class GMCommands {
 			break;
 		case "아지트리로드":
 			reloadHouse(gm, param);
-			break;
-		case "탐선물":
-			탐선물(gm, param);
 			break;
 		case "혈맹포인트선물":
 			혈맹포인트선물(gm, param);
@@ -1082,13 +1001,13 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "          .경험치복구.퀴즈변경.밴아이피.상점추방.유저인벤삭제", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "          .캐릭압류 .캐릭압류해제", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[검사]:.이동.추방.조회.감시.검색.채금.공개채금.채금해제", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "[서버]:.스폰.배치.몬스터.아이템.전체선물.파티a.랭킹갱신", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "[서버]:.스폰.배치.몬스터.아이템.전체선물.랭킹갱신", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[버프]:.버프.소생.속도.렙선물.전체버프.통합버프", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .개인버프.인벤이미지.공속체크.이속체크.마법체크", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .이미지.서먼.아이콘.이미지.이펙트.렙작", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[기타]:.피바.투명.서버저장.파티소환", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .악마왕 .영자상점(1~3)", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .기운축복 .지배보스", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .기운축복", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          룬스톤카배 .룬스톤디스 .룬스톤데페", 1);
 		//(new SC_ChatPacket(gm, "	          진데스데불 진데스론론 .진데스포효 .진데스섬체", 1)).send(gm);
 		//(new SC_ChatPacket(gm, "	          진데스커검 .진데스태풍 .진데스악몽 .진데스나발", 1)).send(gm);
@@ -1096,10 +1015,10 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "	          데몬작업 .데스작업 .타락작업", 1);
 		//(new SC_ChatPacket(gm, "	          .이벤트.노딜.계좌.버프아이콘 .케릭검사", 1)).send(gm);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹밴.주변밴.광역밴", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .아이템삭제 .아지트리로드 .탐선물", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .아이템삭제 .아지트리로드", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .데스크,데방,데무 .제작체크 .텔렉", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .레이드 .인스턴스 .랭킹시스템 .잠수모드 .잠수해제", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .킬차트 .넷세이프 .아이피딜레이체크", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .킬차트 .넷세이프", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .보호모드 .네트워크  .좌표", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .오브젝트리스트 .리로드몬스폰(사용법있음) ", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .배틀시스템 .캡챠(오토방지) .캐릭터상태", 1);
@@ -1650,34 +1569,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 	}
 
-	public static void autofish(L1PcInstance gm) {
-		try {
-			if (!gm.isFishing()) {
-				gm.sendPackets( "\\fY낚시를 실행 후 가능합니다.");
-				return;
-			}
-			for (L1PcInstance target : L1World.getInstance().getAllPlayers3()) {
-				if (target.getId() != gm.getId() && target.getAccountName().toLowerCase().equals(gm.getAccountName().toLowerCase()) && target.isAutoFish()) {
-					gm.sendPackets("\\f3귀하의 보조 캐릭터가 자동낚시 상태입니다.");
-					return;
-				}
-			}
-			
-			CUserSocket client = gm.getNetConnection();
-			gm.setNetConnection(null);
-			gm.setAutoFish(true);
-			try {
-				gm.save();
-				gm.saveInventory();
-			} catch (Exception e) {
-			}
-			client.setActiveChar(null);
-			SC_Unknown2.send(client, 1); // 리스버튼을 위한 구조변경 // Episode U
-
-		} catch (Exception e) {
-		}
-	}
-
 	private void LargeAreaIPBan(L1PcInstance pc, String param) {
 		try {
 			StringTokenizer st = new StringTokenizer(param);
@@ -1779,28 +1670,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		}
 	}
 
-	private void privateShop(L1PcInstance pc) {
-		try {
-			if (!pc.isPrivateShop()) {
-				pc.sendPackets("개인상점 상태에서 사용이 가능합니다.");
-				return;
-			}
-
-			CUserSocket client = pc.getNetConnection();
-			pc.setNetConnection(null);
-			pc.set무인상점(true);
-			try {
-				pc.save();
-				pc.saveInventory();
-			} catch (Exception e) {
-			}
-			client.setActiveChar(null);
-			SC_Unknown2.send(client, 1); // 리스버튼을 위한 구조변경 // Episode U
-
-		} catch (Exception e) {
-		}
-	}
-
 	private void GiveHouse(L1PcInstance gm, String poby) {
 		   try {
 			    StringTokenizer st = new StringTokenizer(poby);
@@ -1893,134 +1762,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 	
 	
-
-	private void party(L1PcInstance gm, String cmdName) {
-		try {
-			StringTokenizer tok = new StringTokenizer(cmdName);
-			String cmd = tok.nextToken();
-			if (cmd.equals("주변")) {
-				L1Party party = new L1Party();
-				if (gm.getParty() == null) {
-					party.addMember(gm);
-				} else {
-					party = gm.getParty();
-				}
-				int range = 3;// 현재주변3칸
-				for (L1PcInstance Targetpc : L1World.getInstance().getVisiblePlayer(gm, range)) {
-					if (gm.getName().equals(Targetpc.getName())) {
-						continue;
-					}
-					if (Targetpc.getParty() != null) {
-						continue;
-					} // 파티있는유저제외
-					if (Targetpc.isPrivateShop()) {
-						continue;
-					} // 무인제외
-					party.addMember(Targetpc);
-					gm.sendPackets(Targetpc.getName() + "님을 내파티에 참가시켰습니다.");
-				}
-				gm.sendPackets(range + "칸 안의 유저를 내파티에 참가시켰습니다.");
-			} else if (cmd.equals("화면")) {
-				L1Party party = new L1Party();
-				if (gm.getParty() == null) {
-					party.addMember(gm);
-				} else {
-					party = gm.getParty();
-				}
-				for (L1PcInstance Targetpc : L1World.getInstance().getVisiblePlayer(gm)) {
-					if (gm.getName().equals(Targetpc.getName())) {
-						continue;
-					}
-					if (Targetpc.getParty() != null) {
-						continue;
-					}
-					if (Targetpc.isPrivateShop()) {
-						continue;
-					}
-					party.addMember(Targetpc);
-					gm.sendPackets(Targetpc.getName() + "님을 내파티에 참가시켰습니다.");
-				}
-				gm.sendPackets("화면안의 유저를 내파티에 참가시켰습니다.");
-			} else if (cmd.equals("전체")) {
-				L1Party party = new L1Party();
-				if (gm.getParty() == null) {
-					party.addMember(gm);
-				} else {
-					party = gm.getParty();
-				}
-				int range = 3;// 현재주변3칸
-				for (L1PcInstance Targetpc : L1World.getInstance().getAllPlayers()) {
-					if (gm.getName().equals(Targetpc.getName())) {
-						continue;
-					}
-					if (Targetpc.getParty() != null) {
-						continue;
-					}
-					if (Targetpc.isPrivateShop()) {
-						continue;
-					}
-					party.addMember(Targetpc);
-					gm.sendPackets(Targetpc.getName() + "님을 내파티에 참가시켰습니다.");
-				}
-				gm.sendPackets(range + "칸 안의 유저를 내파티에 참가시켰습니다.");
-			} else if (cmd.equals("참가")) {
-				String TargetpcName = tok.nextToken();
-				L1PcInstance TargetPc = L1World.getInstance().getPlayer(TargetpcName);
-				if (TargetPc.getParty() != null) {
-					gm.sendPackets(TargetPc.getName() + "님은 파티가 없습니다.");
-				} else {
-					TargetPc.getParty().addMember(gm);
-					gm.sendPackets(TargetPc.getName() + "님의 파티에 참가했습니다.");
-				}
-			} else if (cmd.equals("초대")) {
-				String TargetpcName = tok.nextToken();
-				L1PcInstance TargetPc = L1World.getInstance().getPlayer(TargetpcName);
-				L1Party party = new L1Party();
-				if (gm.getParty() == null) {
-					party.addMember(gm);
-				} else {
-					party = gm.getParty();
-				}
-				if (TargetPc.getParty() != null) {
-					TargetPc.getParty().kickMember(TargetPc);
-				}
-				party.addMember(TargetPc);
-				gm.sendPackets(TargetPc.getName() + "님을 내파티에 강제참가시켰습니다.");
-			} else if (cmd.equals("강제초대")) {
-				L1Party party = new L1Party();
-				if (gm.getParty() == null) {
-					party.addMember(gm);
-				} else {
-					party = gm.getParty();
-				}
-				// int range = 3;// 현재주변3칸
-				for (L1PcInstance Targetpc : L1World.getInstance().getAllPlayers()) {
-					if (gm.getName().equals(Targetpc.getName())) {
-						continue;
-					}
-					if (Targetpc.isPrivateShop()) {
-						continue;
-					}
-					if (Targetpc.getParty() != null) {
-						Targetpc.getParty().kickMember(Targetpc);
-					}
-					party.addMember(Targetpc);
-					gm.sendPackets(Targetpc.getName() + "님을 내파티에 참가시켰습니다.");
-				}
-				gm.sendPackets("접속중인 유저를 내파티에 강제참가시켰습니다.");
-			} else if (cmd.equals("파장")) {
-				if (gm.getParty() == null) {
-					gm.sendPackets("참가중인파티가없습니다.");
-				} else {
-					gm.getParty().passLeader(gm);
-					gm.sendPackets("파장을 뺐었습니다.");
-				}
-			}
-		} catch (Exception e) {
-			gm.sendPackets(".파티 [주변,화면,전체,참가 (유저이름)]");
-			gm.sendPackets(".파티 [초대 (유저이름),강제초대,파장]");
-		}
-	}
 
 	private void effect(L1PcInstance pc, String param) {
 		try {
@@ -2353,19 +2094,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		}
 	}
 
-	private void unprison2(L1PcInstance pc, String param) {
-		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(param);
-			if (target != null) {
-				unprisonnow2(pc, target);
-			} else {
-				pc.sendPackets(".숨계 캐릭명");
-				pc.sendPackets("그런 이름의 캐릭터는 없습니다.");
-			}
-		} catch (Exception e) {
-			pc.sendPackets(".숨계 캐릭명");
-		}
-	}
 	private void autoAllPresent(L1PcInstance gm, String param) {
 		try {
 			
@@ -2431,49 +2159,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 		
 		
-	}
-	private void 전체공지(L1PcInstance gm) {
-		try {			
-			ThreadPool.getInstance().execute(new Runnable() {
-				@Override
-				public void run() {
-					try {
-							Collection<L1PcInstance> player = null;
-							player = L1World.getInstance().getAllPlayers();
-							for (L1PcInstance target : player) {
-								if (target == null)
-									continue;
-								if (!target.isGhost() && !target.isPrivateShop()) {
-									SC_UserCommands17.send(target, 1);
-								}
-							}
-
-				
-					} catch (Exception exception) {
-						gm.sendPackets("");
-
-					}
-				}
-			});
-			
-			
-		} catch (Exception exception) {
-			gm.sendPackets("");
-		}
-		
-		
-	}
-	private void unprisonnow2(L1PcInstance gm, L1PcInstance target) {
-		try {
-			int i = 32681;
-			int j = 32853;
-			short k = 2005;
-			// L1Teleport.teleport(target, i, j, k, 5, false);
-			target.start_teleport(i, j, k, target.getHeading(), 169, false, true);
-			gm.sendPackets((new StringBuilder()).append(target.getName()).append(" 님을 숨계로 이동.").toString());
-		} catch (Exception e) {
-			_log.log(Level.SEVERE, "", e);
-		}
 	}
 	public void 캐릭압류1(L1PcInstance gm, String name) {
 		setCharBlock(gm, name);
@@ -2614,28 +2299,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 	
-	private void 탐선물(L1PcInstance gm, String param) {
-		// TODO 자동 생성된 메소드 스텁
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String 이름 = st.nextToken();
-			int id = Integer.parseInt(st.nextToken());
-			L1PcInstance 유저 = L1World.getInstance().getPlayer(이름);
-			if (유저 != null) {
-				유저.getNetConnection().getAccount().addTamPoint(id);
-				유저.getNetConnection().getAccount().updateTam();
-				try {
-					SC_NewCreateItem.sendTamPoint(유저, 유저.getNetConnection());
-				} catch (Exception e) {
-				}
-				gm.sendPackets(유저.getName() + "에게 탐 " + id + "개를 지급 하였습니다.");
-				Message.getInstance().get_system_message(유저, "\\aA당신에게 메티스님께서 탐 '\\aG" + id + "\\aA' 을 지급 하였습니다.");
-			} else
-				gm.sendPackets("존재하지 않는 유저 입니다.");
-		} catch (Exception e) {
-		}
-	}
-
 	private void allrecall(L1PcInstance gm) {
 		try {
 			for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
@@ -2680,37 +2343,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			SC_Chainfo.send(gm, 1, s);
 		} catch (Exception exception21) {
 			SC_SystemMessage.send(gm, ".케릭검사 캐릭터명");
-		}
-	}
-private void 퀘스트멘트(L1PcInstance gm, String param) {
-		
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String status = st.nextToken();
-			if (status.equalsIgnoreCase("켬")) {
-				if (gm.퀘스트멘트 == true) {
-					SC_SystemMessage.send(gm, "이미 퀘스트멘트 활성화 상태입니다.");
-					return;
-				}
-				
-				gm.퀘스트멘트 = true;
-				
-				SC_SystemMessage.send(gm, "퀘스트몬스터를 잡을 때 마다 남은 마릿수가 채팅창에 출력됩니다");
-				
-			} else if (status.equalsIgnoreCase("끔")) {
-				if (gm.퀘스트멘트 == false) {
-					SC_SystemMessage.send(gm, "이미 퀘스트멘트는 비활성화상태입니다.");
-					return;
-				}
-				
-				gm.퀘스트멘트 = false;
-				
-				SC_SystemMessage.send(gm, "\\f:퀘스트멘트가 비활성화되었습니다.");
-			
-			}
-		} catch (Exception eee) {
-			SC_SystemMessage.send(gm, ".퀘스트멘트 [켬/끔] 으로 입력하세요.");
-			
 		}
 	}
 	private void 잠재력활성화(L1PcInstance gm, String param) {
@@ -3473,53 +3105,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 
-	// private void GiveAbyssPoint(L1PcInstance pc, String poby) {
-	// try {
-	// StringTokenizer st = new StringTokenizer(poby);
-	// String pobyname = st.nextToken();
-	// int point = Integer.parseInt(st.nextToken());
-	// L1PcInstance target = L1World.getInstance().getPlayer(pobyname);
-	// if (target != null) {
-	// target.addAbysspoint(point);
-	// pc.sendPackets(target.getName() + "님에게 [어비스포인트 " +
-	// point + "점] 지급."));
-	// }
-	// } catch (Exception e) {
-	// pc.sendPackets(".어포지급 [지급캐릭명] [지급할포인트]"));
-	// }
-	//
-	// }
-
-	// private void GiveClanPoint(L1PcInstance pc, String poby) { // 혈맹 경험치 부여
-	// try {
-	// StringTokenizer st = new StringTokenizer(poby);
-	// String pobyname = st.nextToken();
-	// int point = Integer.parseInt(st.nextToken());
-	// L1PcInstance target = L1World.getInstance().getPlayer(pobyname);
-	// if (target != null) {
-	// if (target.getClanid() != 0) {
-	// L1Clan TargetClan = L1World.getInstance().getClan(target.getClanname());
-	// TargetClan.addClanExp(point);
-	// ClanTable.getInstance().updateClan(TargetClan);
-	// pc.sendPackets(target.getClanname() + " 혈맹에게 [경험치 " +
-	// point + "] 지급."));
-	// for (L1PcInstance tc : TargetClan.getOnlineClanMember()) {
-	// tc.sendPackets("게임마스터로부터 혈맹경험치 [" + point + "] 를 지급
-	// 받았습니다."));
-	// }
-	// } else {
-	// pc.sendPackets(target.getName() + "님은 혈맹에 속해 있지
-	// 않습니다."));
-	// }
-	// } else {
-	// pc.sendPackets(new SC_ServerMessage(73, pobyname));
-	// }
-	// } catch (Exception e) {
-	// pc.sendPackets(".혈맹경험치 [지급할혈맹군주이름] [지급할 포인트]"));
-	// }
-	//
-	// }
-
 	private void changePassword(L1PcInstance gm, String param) {
 		try {
 			StringTokenizer tok = new StringTokenizer(param);
@@ -3684,122 +3269,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		return false;
 	}
 
-	private static int delItemlist[] = { 307, 308, 309, 310, 311, 312, 313, 314, 21095, 30146, 30147, 30150 };
-
-	public synchronized static void 아놀드이벤트삭제() {
-		try {
-			if (delItemlist.length <= 0)
-				return;
-
-			for (L1PcInstance tempPc : L1World.getInstance().getAllPlayers()) {
-				if (tempPc == null)
-					continue;
-				for (int i = 0; i < delItemlist.length; i++) {
-					L1ItemInstance[] item = tempPc.getInventory().findItemsId(delItemlist[i]);
-					if (item != null && item.length > 0) {
-						for (int o = 0; o < item.length; o++) {
-							tempPc.getInventory().removeItem(item[o]);
-						}
-					}
-					try {
-						PrivateWarehouse pw = WarehouseManager.getInstance()
-								.getPrivateWarehouse(tempPc.getAccountName());
-						L1ItemInstance[] item2 = pw.findItemsId(delItemlist[i]);
-						if (item2 != null && item2.length > 0) {
-							for (int o = 0; o < item2.length; o++) {
-								pw.removeItem(item2[o]);
-							}
-						}
-					} catch (Exception e) {
-					}
-					try {
-						if (tempPc.getClanid() > 0) {
-							ClanWarehouse cw = WarehouseManager.getInstance().getClanWarehouse(tempPc.getClanname());
-							L1ItemInstance[] item3 = cw.findItemsId(delItemlist[i]);
-							if (item3 != null && item3.length > 0) {
-								for (int o = 0; o < item3.length; o++) {
-									cw.removeItem(item3[o]);
-								}
-							}
-						}
-					} catch (Exception e) {
-					}
-					try {
-						if (tempPc.getPetList().size() > 0) {
-							for (L1NpcInstance npc : tempPc.getPetList().values()) {
-								L1ItemInstance[] pitem = npc.getInventory().findItemsId(delItemlist[i]);
-								if (pitem != null && pitem.length > 0) {
-									for (int o = 0; o < pitem.length; o++) {
-										npc.getInventory().removeItem(pitem[o]);
-									}
-								}
-							}
-						}
-					} catch (Exception e) {
-					}
-				}
-			}
-			try {
-				for (L1Object obj : L1World.getInstance().getAllItem()) {
-					if (!(obj instanceof L1ItemInstance))
-						continue;
-					L1ItemInstance temp_item = (L1ItemInstance) obj;
-					if (temp_item.getItemOwner() == null) {
-						if (temp_item.getX() == 0 && temp_item.getY() == 0)
-							continue;
-					}
-					for (int ii = 0; ii < delItemlist.length; ii++) {
-						if (delItemlist[ii] == temp_item.getItemId()) {
-							L1Inventory groundInventory = L1World.getInstance().getInventory(temp_item.getX(),
-									temp_item.getY(), temp_item.getMapId());
-							groundInventory.removeItem(temp_item);
-							break;
-						}
-					}
-
-				}
-			} catch (Exception e) {
-			}
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < delItemlist.length; i++) {
-				sb.append(+delItemlist[i]);
-				if (i < delItemlist.length - 1) {
-					sb.append(",");
-				}
-			}
-			Delete(sb.toString());
-
-			/*
-			 * for(int i = 0; i < delItemlist.length; i++){
-			 * Delete(delItemlist[i]); wareDelete(delItemlist[i]);
-			 * ClanwareDelete(delItemlist[i]); }
-			 */
-		} catch (Exception e) {
-		}
-	}
-
-	private static void Delete(String id_name) {
-		Connection con = null;
-		PreparedStatement pstm = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("delete FROM character_warehouse WHERE item_id in (" + id_name + ")");
-			pstm.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			SQLUtil.close(pstm);
-		}
-		try {
-			pstm = con.prepareStatement("delete FROM clan_warehouse WHERE item_id in (" + id_name + ")");
-			pstm.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			SQLUtil.close(pstm);
-			SQLUtil.close(con);
-		}
-	}
 
 	private void findMagicDodge(L1PcInstance gm, String param) {
 		L1PcInstance pc = L1World.getInstance().findpc(param);
@@ -4862,120 +4331,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 
-	private void DominanceBoss(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			int commandnum = Integer.parseInt(st.nextToken(), 10);
-			List<DominanceBoss> list = DominanceDataLoader.getList();
-			if (commandnum == 0) {
-				DominanceDataLoader.reload();
-				gm.sendPackets("지배의탑 보스 정보를 리로드 합니다.");
-			}
-			if (list.size() > 0) {
-				for (DominanceBoss b : list) {
-					try {
-						switch (commandnum) {
-						case 1:
-							if (b.getBossNum() == 1) {
-								DominanceFloorLv1 zenis = new DominanceFloorLv1(b.getNpcId(), b.getMapX(), b.getMapY(),
-										b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(), b.getEffectNum());
-								zenis.Start();
-								gm.sendPackets("지배의 탑 1층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 2:
-							if (b.getBossNum() == 2) {
-								DominanceFloorLv2 sier = new DominanceFloorLv2(b.getNpcId(), b.getMapX(), b.getMapY(),
-										b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(), b.getEffectNum());
-								sier.Start();
-								gm.sendPackets("지배의 탑 2층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 3:
-							if (b.getBossNum() == 3) {
-								DominanceFloorLv3 vampire = new DominanceFloorLv3(b.getNpcId(), b.getMapX(),
-										b.getMapY(), b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(),
-										b.getEffectNum());
-								vampire.Start();
-								gm.sendPackets("지배의 탑 3층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 4:
-							if (b.getBossNum() == 4) {
-								DominanceFloorLv4 zombie = new DominanceFloorLv4(b.getNpcId(), b.getMapX(), b.getMapY(),
-										b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(), b.getEffectNum());
-								zombie.Start();
-								gm.sendPackets("지배의 탑 4층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 5:
-							if (b.getBossNum() == 5) {
-								DominanceFloorLv5 kuger = new DominanceFloorLv5(b.getNpcId(), b.getMapX(), b.getMapY(),
-										b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(), b.getEffectNum());
-								kuger.Start();
-								gm.sendPackets("지배의 탑 5층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 6:
-							if (b.getBossNum() == 6) {
-								DominanceFloorLv6 mummy = new DominanceFloorLv6(b.getNpcId(), b.getMapX(), b.getMapY(),
-										b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(), b.getEffectNum());
-								mummy.Start();
-								gm.sendPackets("지배의 탑 6층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 7:
-							if (b.getBossNum() == 7) {
-								DominanceFloorLv7 iris = new DominanceFloorLv7(b.getNpcId(), b.getMapX(), b.getMapY(),
-										b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(), b.getEffectNum());
-								iris.Start();
-								gm.sendPackets("지배의 탑 7층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 8:
-							if (b.getBossNum() == 8) {
-								DominanceFloorLv8 bald = new DominanceFloorLv8(b.getNpcId(), b.getMapX(), b.getMapY(),
-										b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(), b.getEffectNum());
-								bald.Start();
-								gm.sendPackets("지배의 탑 8층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 9:
-							if (b.getBossNum() == 9) {
-								DominanceFloorLv9 rich = new DominanceFloorLv9(b.getNpcId(), b.getMapX(), b.getMapY(),
-										b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(), b.getEffectNum());
-								rich.Start();
-								gm.sendPackets("지배의 탑 9층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 10:
-							if (b.getBossNum() == 10) {
-								DominanceFloorLv10 ugnus = new DominanceFloorLv10(b.getNpcId(), b.getMapX(),
-										b.getMapY(), b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(),
-										b.getEffectNum());
-								ugnus.Start();
-								gm.sendPackets("지배의 탑 10층 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						case 11:
-							if (b.getBossNum() == 11) {
-								DominanceFloorLv11 riper = new DominanceFloorLv11(b.getNpcId(), b.getMapX(),
-										b.getMapY(), b.getMapId(), b.isMentuse(), b.getMent(), b.isAllEffect(),
-										b.getEffectNum());
-								riper.Start();
-								gm.sendPackets("지배의 탑 정상 보스 소환 이벤트를 진행합니다");
-							}
-							break;
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		} catch (Exception e) {
-			gm.sendPackets("보스스폰 : .지배보스 0~11(0=리로드, 1~11=층별 보스)");
-		}
-	}
 	
 	
 }

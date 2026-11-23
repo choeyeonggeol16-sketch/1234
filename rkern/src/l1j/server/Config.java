@@ -453,7 +453,6 @@ public final class Config {
 	public static int 버서크대기시간;
 	public static int 프라임대기시간;
 	public static boolean 낚시이펙트;
-	public static boolean IP_DELAY_CHECK_USE;
 	public static boolean 보라채팅1;
 	public static boolean 보라채팅2;
 	public static boolean 보라채팅3;
@@ -1036,7 +1035,6 @@ public final class Config {
 	public static int 수배번호1;
 	public static int 수배2단확률;
 	public static boolean 수배온오프;
-	public static boolean USE_SHIFT_SERVER;
 	public static int SCHEDULED_CORE_POOLSIZE;
 	public static String GAME_SERVER_MENT;
 	public static String GAME_SERVER_NAME;
@@ -1687,7 +1685,6 @@ public final class Config {
 					.parseInt(serverSettings.getProperty("AutosaveIntervalOfInventory", "300"), 10);
 			/** 캐릭정보 자동저장 시스템 **/
 
-			USE_SHIFT_SERVER = Boolean.parseBoolean(serverSettings.getProperty("UseShiftServer", "false"));
 			
 			SCHEDULED_CORE_POOLSIZE = Integer.parseInt(serverSettings.getProperty("SCHEDULEDCOREPOOLSIZE", "512"));
 			IS_SELLINGS_SHOP_LOCK = Boolean.parseBoolean(serverSettings.getProperty("IsSellingsShopLocked", "false"));
@@ -1754,7 +1751,6 @@ public final class Config {
 			LOGIN_ENCRYPTION = Boolean.parseBoolean(serverSettings.getProperty("LoginEncryption", "false"));
 			USE_ATTENDANCE_SYSTEM = Boolean.parseBoolean(serverSettings.getProperty("UseAttendanceSystem", "false"));
 			
-		//	IP_DELAY_CHECK_USE = Boolean.parseBoolean(serverSettings.getProperty("IpDelayCheckUse", "false"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();
