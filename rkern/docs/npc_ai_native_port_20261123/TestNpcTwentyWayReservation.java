@@ -80,10 +80,10 @@ public final class TestNpcTwentyWayReservation {
                                     break;
                                 }
                             }
-                        } catch (Exception e) {
-                            throw new AssertionError(e);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
+                            throw new AssertionError(e);
+                        } catch (Exception e) {
                             throw new AssertionError(e);
                         }
                     });
