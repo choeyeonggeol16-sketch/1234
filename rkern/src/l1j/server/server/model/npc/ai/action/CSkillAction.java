@@ -52,9 +52,15 @@ public final class CSkillAction {
                         || monster.getNpcTemplate().is_agrocoi())
                 && L1MobSkillUse.skillUseSelected(monster, target, skillId)) {
             ActionAccess.sleep(monster, L1MobSkillUse.getSleepTime(monster));
+            // L1MobSkillUse returns the final accepted result synchronously.
+            // This is NC UseSkillFinished(well=true): remove the exact skill
+            // key, never its ATTACK/other USE_SKILL siblings.
+            CDesirePQ.UseSkillFinished(monster, targetId, skillId, true);
+        } else {
+            // NC dUseSkill returning zero removes the rejected request
+            // immediately; it is not a delayed UseSkillFinished(false).
+            CDesirePQ.removeUseSkillDesire(monster, targetId, skillId);
         }
-        // dUseSkill finishes this desire; ATTACK / CHASE stays queued.
-        CDesirePQ.removeUseSkillDesire(monster, targetId, skillId);
         if (ActionAccess.currentAction(creature)
                 == CCreatureController.ACTION_USE_SKILL) {
             CCreatureController.think(creature);
