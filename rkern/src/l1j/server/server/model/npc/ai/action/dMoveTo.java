@@ -145,8 +145,19 @@ public final class dMoveTo {
                         != WorldCollisionHash.MOVE_CLEAR) {
             return false;
         }
-        // Native instant move is constrained to this existing L1 map,
-        // never between unrelated owners or onto a reserved occupant.
+        // Pre-claim the destination using the existing cross-PC/NPC
+        // occupancy gates BEFORE teleport() mutates world coordinates and
+        // broadcasts packets. Its internal teleportNpcOcc() is idempotent
+        // for our already-owned tile. A testStep-only preflight could lose
+        // the race and leave the NPC visibly on an unowned occupied tile.
+        final int fromMap = npc.getMapId();
+        final int fromX = npc.getX();
+        final int fromY = npc.getY();
+        if (npc.shouldUseNpcOccupancy()
+                && !npc.teleportNpcOcc(
+                        fromMap, fromX, fromY, fromMap, x, y)) {
+            return false;
+        }
         npc.teleport(x, y, npc.getHeading());
         CMoveAction.invalidatePath(npc);
         return npc.getX() == x && npc.getY() == y;
