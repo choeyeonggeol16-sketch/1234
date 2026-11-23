@@ -224,6 +224,19 @@ public final class TestNpcDesireBoost {
         check(owner._desireResumeAttackTargetId == winnerB,
                 "retiring A must preserve B's reserved attack claim");
 
+        owner._desireBlockedAttackTargetId = blockedA;
+        CDesirePQ.releaseBlockedAttack(owner);
+        check(owner._desireBlockedAttackTargetId == 0
+                && owner._desireResumeAttackTargetId == winnerB,
+                "general blocked-gate release must preserve B claim");
+
+        owner._desireBlockedAttackTargetId = blockedA;
+        target.setId(blockedA);
+        CDesirePQ.releaseBlockedAttack(owner, target);
+        check(owner._desireBlockedAttackTargetId == 0
+                && owner._desireResumeAttackTargetId == winnerB,
+                "exact blocked-gate release must preserve B claim");
+
         // The zero/no-target sentinel must never clear a newer reservation.
         final Method retire = CDesirePQ.class.getDeclaredMethod(
                 "retireAttackHandoff", L1MonsterInstance.class, int.class);
