@@ -5090,14 +5090,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		gm.sendPackets(String.format("[%d]", num));
 	}
 
-	private void showNameId(L1PcInstance gm, String param) {
-		try {
-			SC_ServerMessage.send(gm, 403, "$" + param);
-		} catch (Exception e) {
-
-		}
-	}
-
 	private void showEffectInit(L1PcInstance gm, String param) {
 		int effNum = 0;
 		try {
@@ -5192,19 +5184,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 	    } catch (Exception e) {
 	        gm.sendPackets(".유즈타입 [시작번호] [끝번호]");
 	    }
-	}
-
-	private void grangKinDB_Reset() {
-		PreparedStatement pstm = null;
-		Connection con = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("UPDATE accounts SET GrangKinAngerTime=?");
-			pstm.setInt(1, 0);
-			pstm.execute();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	private void showWarList(L1PcInstance gm) {
