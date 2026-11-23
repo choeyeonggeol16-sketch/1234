@@ -234,12 +234,6 @@ public class L1PcInstance extends L1Character {
 		this._isMonsterHpBar = flag;
 	}
 
-	public int getNcoin() {
-		if (getAccount() != null) {
-			return getNetConnection().getAccount().Ncoin_point;
-		}
-		return 0;
-	}
 
 	private boolean _isSM;
 
@@ -273,27 +267,7 @@ public class L1PcInstance extends L1Character {
 
 	public L1ReturnStatTemp rst = null;
 
-	public void addNcoin(int coin) {
-		if (getNetConnection() != null) {
-			if (getNetConnection().getAccount() != null) {
-				getNetConnection().getAccount().Ncoin_point += coin;
-				getNetConnection().getAccount().updateNcoin();
-				// System.out.println(getNetConnection().getAccount().Ncoin_point);
-			}
-		} else {
-			// System.out.println("무인에 걸린다.");
-		}
-	}
 
-	public void addNcoin1(int coin) {
-		if (getNetConnection() != null) {
-			if (getNetConnection().getAccount() != null) {
-				getNetConnection().getAccount().Ncoin_point -= coin;
-				getNetConnection().getAccount().updateNcoin();
-				// System.out.println(getNetConnection().getAccount().Ncoin_point);
-			}
-		}
-	}
 
 	private int boss_spawn_yn;
 
@@ -1113,7 +1087,6 @@ public class L1PcInstance extends L1Character {
 	private boolean _is파푸리온 = false;
 	private boolean _is린드비오르 = false;
 	private boolean _is안타라스 = false;
-	private boolean _isNCoinMon = false;
 
 	private boolean _magicitem = false;
 	private int _magicitemid;
@@ -1722,13 +1695,7 @@ public class L1PcInstance extends L1Character {
 	}
 
 
-	public boolean isNCoinMon() {
-		return _isNCoinMon;
-	}
 
-	public void setNCoinMon(boolean flag) {
-		_isNCoinMon = flag;
-	}
 
 	public void set기르타스(boolean flag) {
 		_is기르타스 = flag;

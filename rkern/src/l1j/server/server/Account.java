@@ -55,7 +55,6 @@ public class Account {
 	private String _CharPassword;
 	private byte[] _waitpacket = null;
 
-	public int Ncoin_point;
 	public int Shop_open_count;
 
 	/** Buff_PC방 */
@@ -295,7 +294,6 @@ public class Account {
 				account.tam_point = rs.getInt("Tam_Point");
 				account._Buff_PC방 = rs.getTimestamp("BUFF_PCROOM_Time");
 				account._CharPassword = rs.getString("CharPassword");
-				account.Ncoin_point = rs.getInt("Ncoin_Point");
 				account.Shop_open_count = rs.getInt("Shop_open_count");
 				account.setDragonRaid(rs.getTimestamp("raid_buff"));
 				account._blessOfAin = rs.getInt("bless_of_ain");
@@ -472,9 +470,6 @@ public class Account {
 		return result;
 	}
 
-	public void updateNcoin() {
-		executeUpdate("UPDATE accounts SET Ncoin_Point=? WHERE login = ?", Ncoin_point);
-	}
 
 	public static void resetShopOpenCount() {
 		String sql = "UPDATE accounts SET Shop_open_count=?";

@@ -479,11 +479,6 @@ public class GMCommands {
 		case "데페작업":
 			jakjak(gm);
 			break;
-		case "마일리지":
-			if (gm != null) {
-				gm.sendPackets("\\fH계정(\\f2" + gm.getAccountName() + "\\fH)에 적립된 마일리지:(\\aG" + gm.getNetConnection().getAccount().Ncoin_point + "\\fH)원");
-			}
-			break;
 		case "아머작업":
 			jakjak2(gm);
 			break;
@@ -1304,10 +1299,6 @@ public class GMCommands {
 				e.getStackTrace();
 			}
 			break;
-		case "엔코인":
-			gm.sendPackets("보유 N코인:[\\aG"
-					+ gm.getNetConnection().getAccount().Ncoin_point + "\\aA]");
-			break;
 		case "제작체크":
 			if (!제작체크) {
 				제작체크 = true;
@@ -1343,64 +1334,6 @@ public class GMCommands {
 			}
 
 			break;
-		case "엔코인충전":
-			try {
-				StringTokenizer tokenizer = new StringTokenizer(param);
-				String name = tokenizer.nextToken();
-				int coin = Integer.parseInt(tokenizer.nextToken());
-				L1PcInstance tg = L1World.getInstance().getPlayer(name);
-				if (tg != null) {
-					L1ItemInstance item = ItemTable.getInstance().createItem(800112);
-					item.setCount(coin);
-					if (tg.getInventory().checkAddItem(item, coin) == L1Inventory.OK) {
-						tg.getInventory().storeItem(item);
-						SC_PacketBox.send(tg, SC_PacketBox.GREEN_MESSAGE, "\\aAN코인 (\\aG" + coin + "\\aA) 원이 충전 되었습니다. 감사합니다.");
-						SC_SystemMessage.send(gm, "\\aA캐릭터명 : \\aG"+tg.getName()+", \\aAN코인 (\\aG" + coin + "\\aA) \\aA원 충전완료.");
-					}
-				} else {
-					gm.sendPackets("현재 접속하지 않은 캐릭터 입니다.");
-				}
-			} catch (Exception e) {
-				gm.sendPackets("[엔코인충전] [케릭명] [금액] 입력.");
-			}
-			break;
-//		case "엔코인회수":
-//			try {
-//				StringTokenizer tokenizer = new StringTokenizer(param);
-//				String name = tokenizer.nextToken();
-//				int coin = Integer.parseInt(tokenizer.nextToken());
-//				L1PcInstance tg = L1World.getInstance().getPlayer(name);
-//				if (tg != null) {
-//					tg.addNcoin1(coin);
-//					tg.sendPackets(new RPacketBox(RPacketBox.GREEN_MESSAGE,
-//							"\\aAN코인 (\\aG" + coin + "\\aA) 원이 회수 되었습니다. 감사합니다."));
-//					tg.sendPackets("\\aAN코인 (\\aG " + coin + " \\aA) 원이 회수 되었습니다. 감사합니다.");
-//					tg.sendPackets("\\aA잔여금액: [\\aG" + tg.getNetConnection().getAccount().Ncoin_point + "\\aA] 원");
-//
-//					gm.sendPackets("\\aA캐릭명:[\\aG" + name + "\\aA]" + "회수금액:[\\aG" + coin + "\\aA] 완료");
-//					gm.sendPackets("\\aA잔여금액: [\\aG" + tg.getNetConnection().getAccount().Ncoin_point + "\\aA] 확인됨");
-//				} else {
-//					gm.sendPackets("현재 접속하지 않은 캐릭터 입니다.");
-//				}
-//			} catch (Exception e) {
-//				gm.sendPackets("[엔코인회수] [케릭명] [금액] 입력.");
-//			}
-//			break;
-//		case "엔코인확인":
-//			try {
-//				StringTokenizer tokenizer = new StringTokenizer(param);
-//				String name = tokenizer.nextToken();
-//				L1PcInstance tg = L1World.getInstance().getPlayer(name);
-//				if (tg != null) {
-//					gm.sendPackets("\\aA잔여금액: 캐릭명:[\\aG" + name + "\\aA] N코인:[\\aG"
-//							+ tg.getNetConnection().getAccount().Ncoin_point + "\\aA] 확인됨");
-//				} else {
-//					gm.sendPackets("현재 접속하지 않은 캐릭터 입니다.");
-//				}
-//			} catch (Exception e) {
-//				gm.sendPackets("[엔코인확인] [케릭명] [금액] 입력.");
-//			}
-//			break;
 		case "챗":
 			try {
 				StringTokenizer st = new StringTokenizer(param);
@@ -1837,7 +1770,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "	          데몬작업 .데스작업 .타락작업", 1);
 		//(new SC_ChatPacket(gm, "	          .이벤트.노딜.계좌.버프아이콘 .케릭검사", 1)).send(gm);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹밴.주변밴.광역밴", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .엔코인충전.엔코인회수.엔코인확인", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .아이템삭제 .아지트리로드 .탐선물", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .데스크,데방,데무 .제작체크 .텔렉", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .레이드 .인스턴스 .랭킹시스템 .잠수모드 .잠수해제", 1);
