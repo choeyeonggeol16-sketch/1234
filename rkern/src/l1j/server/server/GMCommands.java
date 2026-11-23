@@ -84,7 +84,6 @@ import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
 import l1j.server.server.model.character.companion.CompanionCommandExecutor;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.survey.SurveyFactory;
 import l1j.server.server.model.character.survey.SurveySystemLoader;
 import l1j.server.server.model.gametime.L1GameTimeClock;
