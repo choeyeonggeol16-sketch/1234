@@ -105,11 +105,6 @@ public final class Config {
 	public static int 네쥬던전체킹;
 	public static int DungeonResetHour;   // [던전초기화 시각 외부화] altsettings: DungeonResetHour
 	public static int DungeonResetMinute; // [던전초기화 시각 외부화] altsettings: DungeonResetMinute
-	public static int 할파스변수 = 1;
-	public static int 카드변수 = 1;
-	public static int 인형변수 = 1;
-	public static int 오림변수 = 1;
-	public static int 수호성변수 = 1;
 	
 	public static int 랭킹아이템1등;
 	public static int 랭킹아이템2등;
@@ -136,17 +131,6 @@ public final class Config {
 	public static String 공지7번줄;
 	public static String 공지8번줄;
 	public static String 공지9번줄;
-	
-	public static String 허가ip1;
-	public static String 허가ip2;
-	public static String 허가ip3;
-	public static String 허가ip4;
-	public static String 허가ip5;
-	public static String 허가ip6;
-	public static String 허가ip7;
-	public static String 허가ip8;
-	
-	public static String 홈피주소;
 	
 	public static int 매직실드지속;
 	public static int 매직실드확률;
@@ -561,8 +545,6 @@ public final class Config {
 	public static String 마일리지엔피씨;
 	public static int Neige_Count_Pass;
 	public static int Neige_Reward;
-	public static int Neige_Reward_sec;
-	public static int Neige_Reward_exp;
 	public static int Neige_Myth_Skill;
 	
 	public static String DESPERADO_SKILL_RND_TIME;
@@ -1146,11 +1128,6 @@ public final class Config {
 	public static int 시간아이템;
 	public static int 시간아이템1;
 	public static int 시간아이템2;
-	public static int 인형갯수;
-	public static int 할파스갯수;
-	public static int 카드갯수;
-	public static int 수호성갯수;
-	public static int 오림갯수;
 
 	/** 이벤트양말 지급 **/
 	public static boolean 양말작동유무;
@@ -1939,26 +1916,6 @@ public final class Config {
 					"euc-kr");
 			공지9번줄 = new String(altSettings.getProperty("no9", "").getBytes("ISO-8859-1"),
 					"euc-kr");
-			홈피주소 = new String(altSettings.getProperty("homepage", "").getBytes("ISO-8859-1"),
-					"euc-kr");
-			
-			허가ip1 = new String(altSettings.getProperty("possip1", "").getBytes("ISO-8859-1"),
-					"euc-kr");
-			허가ip2 = new String(altSettings.getProperty("possip2", "").getBytes("ISO-8859-1"),
-					"euc-kr");
-			허가ip3 = new String(altSettings.getProperty("possip3", "").getBytes("ISO-8859-1"),
-					"euc-kr");
-			허가ip4 = new String(altSettings.getProperty("possip4", "").getBytes("ISO-8859-1"),
-					"euc-kr");
-			허가ip5 = new String(altSettings.getProperty("possip5", "").getBytes("ISO-8859-1"),
-					"euc-kr");
-			허가ip6 = new String(altSettings.getProperty("possip6", "").getBytes("ISO-8859-1"),
-					"euc-kr");
-			허가ip7 = new String(altSettings.getProperty("possip7", "").getBytes("ISO-8859-1"),
-					"euc-kr");
-			허가ip8 = new String(altSettings.getProperty("possip8", "").getBytes("ISO-8859-1"),
-					"euc-kr");
-			
 			스턴멘트 = Boolean.parseBoolean(altSettings.getProperty("Stunment", "true"));
 			자동사냥 = Boolean.parseBoolean(altSettings.getProperty("Autohunt", "true"));
 			자동물약버프 = Boolean.parseBoolean(altSettings.getProperty("Autohunt1", "true"));
@@ -1997,11 +1954,6 @@ public final class Config {
 			TEST_QA2 = Integer.parseInt(altSettings.getProperty("testQA2", "1"));
 			
 			펑몹이벤트 = Integer.parseInt(altSettings.getProperty("nesmobev", "1"));
-			카드갯수 = Integer.parseInt(altSettings.getProperty("nesmobev1", "1"));
-			인형갯수 = Integer.parseInt(altSettings.getProperty("nesmobev2", "1"));
-			수호성갯수 = Integer.parseInt(altSettings.getProperty("nesmobev3", "1"));
-			할파스갯수 = Integer.parseInt(altSettings.getProperty("nesmobev4", "1"));
-			오림갯수 = Integer.parseInt(altSettings.getProperty("nesmobev5", "1"));
 			
 			보스아이템지급여부1 = Boolean.parseBoolean(altSettings.getProperty("BossItem1", "false"));
 			BossAreaDropBossIds1 = altSettings.getProperty("BossAreaDropBossIds1", "");
@@ -2040,8 +1992,6 @@ public final class Config {
 			Neige_Count_Pass = Short.parseShort(altSettings.getProperty("NegieCount", "1"));
 			Neige_Myth_Skill = Short.parseShort(altSettings.getProperty("NegieMyth", "1"));
 			Neige_Reward = Short.parseShort(altSettings.getProperty("NegieReward", "1"));
-			Neige_Reward_sec = Short.parseShort(altSettings.getProperty("NegieRewardSec", "1"));
-			Neige_Reward_exp = Short.parseShort(altSettings.getProperty("NegieRewardExp", "1"));
 			Start_Char_Level = Short.parseShort(altSettings.getProperty("StartCharLevel", "1"));
 			cantblack = Short.parseShort(altSettings.getProperty("cantblack", "1"));
 			Clan_leader = Boolean.parseBoolean(altSettings.getProperty("Clanleader", "true"));

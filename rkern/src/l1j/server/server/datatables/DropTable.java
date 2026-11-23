@@ -205,27 +205,6 @@ public class DropTable {
 				min = (long) (min * adenarate);
 				max = (long) (max * adenarate);
 			}
-			if (itemId == 3000028){
-				min *= Config.할파스갯수;
-				max *= Config.할파스갯수;
-			}
-			if (itemId == 875640342){
-				min *= Config.카드갯수;
-				max *= Config.카드갯수;
-			}
-			if (itemId == 875640343){
-				min *= Config.수호성갯수;
-				max *= Config.수호성갯수;
-			}
-			if (itemId == 5549){
-				min *= Config.인형갯수;
-				max *= Config.인형갯수;
-			}
-			if (itemId == 810015){
-				min *= Config.오림갯수;
-				max *= Config.오림갯수;
-			}
-			
 			long cnt = min;
 			long add = (max - min + 1);
 			if (add > 1) cnt += rnd.nextInt((int) Math.min(Integer.MAX_VALUE, add));

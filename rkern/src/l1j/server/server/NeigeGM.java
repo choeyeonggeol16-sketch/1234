@@ -36,9 +36,6 @@ public class NeigeGM{
 		case "neigma00":
 			NeigeGMEvent.settingpage(pc);
 			return true;
-		case "neigma01":
-			NeigeGMEvent.eventpage(pc);
-			return false;
 		case "neigma02":
 			if(Config.흑단무빙 != 1){
 				Config.흑단무빙 = 1;
@@ -80,69 +77,6 @@ public class NeigeGM{
 				Config.sole_possible = 0;
 			}else{Config.sole_possible = 1;}
 			NeigeGMEvent.settingpage(pc);
-			return false;
-		case "neigma49":
-			NeigeGMEvent.total(pc);
-			return false;
-		case "neigma50":
-			if(Config.할파스변수 > 1){
-				Config.할파스변수 -= 1;
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
-		case "neigma51":
-			if(Config.할파스변수 < 10){
-				Config.할파스변수 += 1;
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
-		case "neigma52":
-			if(Config.카드변수 > 1){
-				Config.카드변수 -= 1;
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
-		case "neigma53":
-			if(Config.카드변수 < 10){
-				Config.카드변수 += 1;
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
-		case "neigma54":
-			if(Config.인형변수 > 1){
-				Config.인형변수 -= 1;
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
-		case "neigma55":
-			if(Config.인형변수 < 10){
-				Config.인형변수 += 1;
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
-		case "neigma56":
-			if(Config.오림변수 > 1){
-				Config.오림변수 -= 1;
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
-		case "neigma57":
-			if(Config.오림변수 < 10){
-				Config.오림변수 += 1;
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
-		case "neigma58":
-			if(Config.수호성변수 > 1){
-				Config.수호성변수 -= 1;
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
-		case "neigma59":
-			if(Config.수호성변수 < 10){
-				Config.수호성변수 += 1;
-			}
-			NeigeGMEvent.eventpage(pc);
 			return false;
 		default: {
 

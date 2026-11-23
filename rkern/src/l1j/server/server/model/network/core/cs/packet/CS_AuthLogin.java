@@ -55,19 +55,18 @@ public final class CS_AuthLogin {
         final String ip = client.getIp();
         final LoginController lc = LoginController.getInstance();
         final int count = lc.getIpCount(ip);
-        if (!isWhitelistedIp(ip)) {
-            if ((!Config.ALLOW_2PC && count > 0)
-                    || (Config.ALLOW_2PC && count > CConnectionConfig.NETWORK_CLIENT_PERMISSION
-                        && !ip.equals(CConnectionConfig.NETWORK_ADDRESS2ACCOUNT))) {
-                try { processDuplication(client, accountName, ip); }
-                catch (Exception e) { client.close(); }
-                return;
-            }
-            if (LoginAttemptGuard.isBlocked(ip)) {
-                SC_LoginResult.send(client, SC_LoginResult.REASON_USER_OR_PASS_WRONG);
-                return;
-            }
+                if ((!Config.ALLOW_2PC && count > 0)
+                || (Config.ALLOW_2PC && count > CConnectionConfig.NETWORK_CLIENT_PERMISSION
+                    && !ip.equals(CConnectionConfig.NETWORK_ADDRESS2ACCOUNT))) {
+            try { processDuplication(client, accountName, ip); }
+            catch (Exception e) { client.close(); }
+            return;
         }
+        if (LoginAttemptGuard.isBlocked(ip)) {
+            SC_LoginResult.send(client, SC_LoginResult.REASON_USER_OR_PASS_WRONG);
+            return;
+        }
+
         if (isRecentlyMissing(accountName)) {
             SC_LoginResult.send(client, SC_LoginResult.REASON_USER_OR_PASS_WRONG);
             return;
@@ -146,21 +145,20 @@ public final class CS_AuthLogin {
         final LoginController lc = LoginController.getInstance();
         final int count = lc.getIpCount(ip);
 
-        if (!isWhitelistedIp(ip)) {
-            if (!Config.ALLOW_2PC) {
-                if (count > 0) {
-                    processDuplication(client, accountName, ip);
-                    return false;
-                }
-            } else if (count > CConnectionConfig.NETWORK_CLIENT_PERMISSION &&
-                    !ip.equals(CConnectionConfig.NETWORK_ADDRESS2ACCOUNT)) {
-
+                if (!Config.ALLOW_2PC) {
+            if (count > 0) {
                 processDuplication(client, accountName, ip);
                 return false;
             }
+        } else if (count > CConnectionConfig.NETWORK_CLIENT_PERMISSION &&
+                !ip.equals(CConnectionConfig.NETWORK_ADDRESS2ACCOUNT)) {
+
+            processDuplication(client, accountName, ip);
+            return false;
         }
 
-        if (!isWhitelistedIp(ip) && LoginAttemptGuard.isBlocked(ip)) {
+
+        if (LoginAttemptGuard.isBlocked(ip)) {
             _log.warning(String.format(
                     "로그인 반복 실패 IP 차단. account=%s ip=%s",
                     accountName, ip));
@@ -272,25 +270,7 @@ public final class CS_AuthLogin {
         _missingAccounts.put(account, Boolean.TRUE);
     }
 
-    private static boolean isWhitelistedIp(String ip) {
-        if (ip == null) {
-            return false;
-        }
 
-        try {
-            return ip.equals(Config.허가ip1)
-                    || ip.equals(Config.허가ip2)
-                    || ip.equals(Config.허가ip3)
-                    || ip.equals(Config.허가ip4)
-                    || ip.equals(Config.허가ip5)
-                    || ip.equals(Config.허가ip6)
-                    || ip.equals(Config.허가ip7)
-                    || ip.equals(Config.허가ip8);
-
-        } catch (Exception e) {
-            return false;
-        }
-    }
 
     public static void sendNotice(CUserSocket client, String account) {
         if (client == null || !client.isConnected()) return;
