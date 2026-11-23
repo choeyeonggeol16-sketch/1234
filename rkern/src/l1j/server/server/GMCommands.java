@@ -10,11 +10,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,7 +67,6 @@ import l1j.server.server.model.character.companion.CompanionCommandExecutor;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.survey.SurveyFactory;
 import l1j.server.server.model.character.survey.SurveySystemLoader;
-import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
@@ -79,12 +76,10 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
 import l1j.server.server.model.network.core.sc.packet.SC_Ability;
-import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_Chainfo;
 import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
 import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
@@ -110,8 +105,6 @@ import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.monitor.LoggerInstance;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.shared.EPcStatus;
 import l1j.server.server.shared.command.CommandArgs;
@@ -140,7 +133,6 @@ public class GMCommands {
 	public List<L1MonsterInstance> fieldbosslist = new ArrayList<L1MonsterInstance>();
 	private static final ConcurrentHashMap<Integer, L1ClanJoinInstance> _clan_to_cj = new ConcurrentHashMap<Integer, L1ClanJoinInstance>(32);
 
-	public static boolean 제작체크; 
 
 	private GMCommands() {
 	}
@@ -246,9 +238,6 @@ public class GMCommands {
 
 		// 데이타베이스화 된 커멘드
 		if (executeDatabaseCommand(gm, cmd, param)) {
-			if (!cmd.equalsIgnoreCase(".")) {
-				_lastCommands.put(gm.getId(), cmdLine);
-			}
 			return;
 		}
 
@@ -341,84 +330,6 @@ public class GMCommands {
 		case "출석체크":
 			AttendanceLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
 			break;
-		case "유아이":
-			SC_ActionUI.send(gm, SC_ActionUI.START_PLAY_SUPPORT_ACK, 0);
-			break;
-		case "내정보1"://From.Neige
-			int a = gm.getResistance().getMr() - gm.getResistance().getBaseMr();
-			gm.sendPackets("mr : "+a);
-			break;
-		case "내정보2":
-			gm.sendPackets("데미지 레이트 : "+gm.getDmgRate());
-			gm.sendPackets("명중률 : "+gm.getHitup());
-			break;
-		case "인원보기"://From.Neige
-			try {
-				Integer peo2 = Integer.valueOf(param);
-				Config.Neige_Count_Pass = peo2;
-					if(peo2 == 2){
-						gm.sendPackets("[/누구 : ON");
-					}else{
-						gm.sendPackets("[/누구 : OFF");
-					}
-				} catch (Exception e) {
-					gm.sendPackets(".인원보기 (1 : /누구 OFF, 2: /누구 ON)");
-				}
-			
-			break;
-		case "기감변수"://From.Neige
-			try {
-				Integer peo3 = Integer.valueOf(param);
-				Config.네쥬던전초기화 = peo3;
-				String day = null;
-					if(peo3 == 1){day = "일요일";
-					}else if(peo3 == 2){
-						day = "월요일";
-					}else if(peo3 == 3){
-						day = "화요일";
-					}else if(peo3 == 4){
-						day = "수요일";
-					}else if(peo3 == 5){
-						day = "목요일";
-					}else if(peo3 == 6){
-						day = "금요일";
-					}else if(peo3 == 7){
-						day = "토요일";
-					}
-					gm.sendPackets("금일 던전 초기화 요일 :"+day);
-				} catch (Exception e) {
-					gm.sendPackets(".기감변수 (1:일/2:월/3:화/4:수/5:목/6:금/7:토)");
-				}
-			break;
-		case "기감체킹": //From.Neige
-			try {
-			Integer even5 = Integer.valueOf(param);
-			Config.네쥬던전체킹 = even5;
-			if(even5 == 1){
-				gm.sendPackets("[기란 감옥 초기화 방식을 '내역 삭제'로 변경합니다.]");
-			}else{
-				gm.sendPackets("[기란 감옥 초기화 방식을 '시간 채우기'로 변경합니다.]");
-			}
-			} catch (Exception e) {
-				gm.sendPackets(".기감체킹 (1: 기감 출입 내역 삭제 / 2: 내역 삭제는 하지 않고 시간만 채우기)");
-				if(Config.네쥬던전체킹 == 1){
-				gm.sendPackets("현재 방식 : (1)내역 삭제");
-				}else{
-					gm.sendPackets("현재 방식 : (2)시간 채우기");
-				}
-			}
-			break;
-		case "배1"://From.Neige
-			gm.start_teleport(32732, 32799, 5, 4, 169, true, false);
-			break;
-		case "배2"://From.Neige
-			gm.start_teleport(32735, 32797, 6, 4, 169, true, false);
-			break;
-		case "시간":
-			int servertime = L1GameTimeClock.getInstance().getGameTime().getSeconds();
-			int nowtime = servertime % 86400;
-			gm.sendPackets("현재 시각 : "+nowtime);
-			break;
 		case "강제리스":
 			강제리스(gm, param);
 			break;
@@ -453,17 +364,11 @@ public class GMCommands {
 		case "킬차트":
 			KdaLoadManager.commands(gm, param);
 			break;
-		case ",":
-			showNextProto(gm, param);
-			break;
 		case "커맨드":
 			SC_ShowCmd.sendText(gm, "cmd.");
 			break;
 		case "워리스트":
 			showWarList(gm);
-			break;
-		case "유즈타입":
-			showUseType(gm, param);
 			break;
 		case "캐릭압류":
 			setCharBlock(gm, param);
@@ -612,16 +517,6 @@ public class GMCommands {
 		case "맵인원":
 			mapwho(gm, param);
 			break;
-		case "운영자이벤트":
-			L1World.getInstance().broadcastServerMessage("\\aG"+Config.이벤트이름+"가 시작되었습니다.");
-			SC_PacketBox.broadcastGreen(Config.이벤트이름+"가 시작되었습니다.");
-			Config.운영자이벤트 =true;
-			break;
-		case "운영자이벤트종료":
-			L1World.getInstance().broadcastServerMessage("\\aG"+Config.이벤트이름+"가 종료었습니다.");
-			SC_PacketBox.broadcastGreen(Config.이벤트이름+"가 종료었습니다.");
-			Config.운영자이벤트 =false;
-			break;
 		case "코마지급":
 			SpecialEventHandler.getInstance().doGiveEventStaff();
 			break;
@@ -725,16 +620,6 @@ public class GMCommands {
 			gm.sendPackets("\\aA요리타입 : " + type);
 			SC_PacketBox.send(gm, 53, type, 1800);
 			break;
-		case "제작체크":
-			if (!제작체크) {
-				제작체크 = true;
-				gm.sendPackets("\\aA■ 제작체크 ON! ■");
-			} else {
-				제작체크 = false;
-				gm.sendPackets("\\aA■ 제작체크 OFF ■");
-			}
-			/** MJCTSystem **/
-			break;
 		case "전체버프":
 			try {
 				StringTokenizer st = new StringTokenizer(param);
@@ -759,17 +644,6 @@ public class GMCommands {
 				gm.sendPackets(".리로드몬스폰 (맵아이디)");
 			}
 
-			break;
-		case "챗":
-			try {
-				StringTokenizer st = new StringTokenizer(param);
-				String name = st.nextToken();
-				String msg = st.nextToken();
-				l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(
-                        SC_ChatPacket.nativeTargetWriter(name, 0x03, msg));
-			} catch (Exception e) {
-				gm.sendPackets(".챗 [캐릭명] [채팅말] 입력");
-			}
 			break;
 		case "성혈조작":
 			try {
@@ -871,18 +745,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			}
 			break;
 
-//		 case "붉은전쟁선포": UserCommands.getInstance().blooodWarStart(gm, param); break;
-//		 case "테스트2":
-//
-//			 break;
-//		case ".":
-//			if (!_lastCommands.containsKey(gm.getId())) {
-//				gm.sendPackets(new SC_ServerMessage(74, "커맨드 " + cmd));
-//				// \f1%0은사용할 수없습니다.
-//				return;
-//			}
-//			redo(gm, param);
-//			break;
 		default:
 			SC_SystemMessage.send(gm, "[Command] 커멘드 " + cmd + " 는 존재하지 않습니다. ");
 			break;
@@ -989,13 +851,13 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 	// TODO GM 커멘드 추가
 	private void showHelp(L1PcInstance gm) {
 		SC_ChatPacket.sendDirect(gm, gm, "\\aA---------------- [\\aGGM\\aA] \\aG[\\aGCOMMANDS\\aA] ---------------");
-		SC_ChatPacket.sendDirect(gm, gm, "[기본]:.귀환.출두.소환.위치.누구.마을.챗.감옥.가라.답장", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "[기본]:.귀환.출두.소환.위치.누구.마을.감옥.가라.답장", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[설정]:.무인.변신.레벨.피케이.리로드.혈탈퇴.오토루팅", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .드랍불가 .창고불가 .교환불가.오토루팅.전체정리", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .오픈대기.편지삭제.인벤삭제.공성시간.공성시작", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "			          .공성종료.성혈조작.압류해제.압류목록.아지트지급", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "			          .밸런스.상점리로드.혈맹경험치.데드락", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "			          .정리.포트변경.상점검사.유즈타입", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "			          .정리.포트변경.상점검사", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[계정]:.셋팅.정보.계정.암호변경.계정압류.영구추방", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "          .아이피추방.광역추방.계정정보.계정추가.페널티", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "          .경험치복구.퀴즈변경.밴아이피.상점추방.유저인벤삭제", 1);
@@ -1003,7 +865,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "[검사]:.이동.추방.조회.감시.검색.채금.공개채금.채금해제", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[서버]:.스폰.배치.몬스터.아이템.전체선물.랭킹갱신", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[버프]:.버프.소생.속도.렙선물.전체버프.통합버프", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .개인버프.인벤이미지.공속체크.이속체크.마법체크", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .개인버프.인벤이미지", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .이미지.서먼.아이콘.이미지.이펙트.렙작", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[기타]:.피바.투명.서버저장.파티소환", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .악마왕 .영자상점(1~3)", 1);
@@ -1016,7 +878,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		//(new SC_ChatPacket(gm, "	          .이벤트.노딜.계좌.버프아이콘 .케릭검사", 1)).send(gm);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹밴.주변밴.광역밴", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .아이템삭제 .아지트리로드", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .데스크,데방,데무 .제작체크 .텔렉", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .데스크,데방,데무 .텔렉", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .레이드 .인스턴스 .랭킹시스템 .잠수모드 .잠수해제", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .킬차트 .넷세이프", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .보호모드 .네트워크  .좌표", 1);
@@ -1034,7 +896,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "\\aA------------------ [\\aGGM\\aA] \\aG[\\aGEND\\aA] -------------------");
 	}
 
-	private static Map<Integer, String> _lastCommands = new HashMap<Integer, String>();
 
 	private void searchDatabase(L1PcInstance gm, String param) {
 		try {
@@ -3309,15 +3170,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 
 
 
-	private void deleteUseType(L1PcInstance gm) {
-		try {
-			for (L1ItemInstance item : m_use_type_items) {
-				SC_DeleteInventoryItem.send(gm, item);
-			}
-			m_use_type_items.clear();
-		} catch (Exception e) {
-		}
-	}
 	public static void removeInstance(L1PcInstance gm, String param){
 		StringTokenizer st = new StringTokenizer(param);
 		String code = st.nextToken();
@@ -3325,37 +3177,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		if(cjInstance != null){
 			cjInstance.dispose();		
 		}
-	}
-
-	private static ArrayList<L1ItemInstance> m_use_type_items = new ArrayList<L1ItemInstance>();
-	private void showUseType(L1PcInstance gm, String param) {
-	    try {
-	        if (param.equalsIgnoreCase("삭제")) {
-	            deleteUseType(gm);
-	            return;
-	        }
-
-	        StringTokenizer st = new StringTokenizer(param);
-	        int start = Integer.parseInt(st.nextToken());
-	        int end = Integer.parseInt(st.nextToken()) + start;
-	        long notiWire_present = 0L;
-	        java.util.List<l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo> notiWire_items = new java.util.LinkedList<>();
-	        java.util.List<byte[]> notiWire_rawItems = new java.util.LinkedList<>();
-
-	        L1Item temp = ItemTable.getInstance().getTemplate(410016);
-	        for (int i = start; i <= end; i++){
-	            L1ItemInstance item = new L1ItemInstance();
-	            item.setId(i);
-	            item.setItem(temp);
-	            item.setBless(temp.getBless());
-	            item.setIdentified(false);
-	            { notiWire_items.add((ItemInfo.newInstance(item, i, String.valueOf(i).getBytes(), item.getBless()))); }
-	            m_use_type_items.add(item);
-	        }
-	        SC_ADD_INVENTORY_NOTI.sendFields(gm, notiWire_present, notiWire_items, notiWire_rawItems, false, 0);
-	    } catch (Exception e) {
-	        gm.sendPackets(".유즈타입 [시작번호] [끝번호]");
-	    }
 	}
 
 	private void showWarList(L1PcInstance gm) {
@@ -3473,39 +3294,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		return true;
 	}
 
-	private int _currentNum = -1 + 825;
-
-	private void showNextProto(L1PcInstance gm, String param) {
-		SC_ShowCmd.sendText(gm, String.valueOf(_currentNum));
-		if (_currentNum != 13 && _currentNum != 14) {
-			SC_ShowCmd.sendProto8(gm, _currentNum);
-			SC_ShowCmd.sendProtoA(gm, _currentNum);
-			/*try{
-			SC_HUNTING_GUIDE_BOOKMARK_NOTI noti = SC_HUNTING_GUIDE_BOOKMARK_NOTI.newInstance();
-			HUNTING_GUIDE_BOOKMARK_DATA data = HUNTING_GUIDE_BOOKMARK_DATA.newInstance();
-			data.set_desc("hello");
-			data.set_icon(3030);
-			data.set_level(70);
-			data.set_mapNo(4);
-			data.set_seq(0);
-			data.set_strIndex("0");
-			data.set_x(32767);
-			data.set_y(32767);
-			noti.add_bookmarks(data);
-			l1j.server.server.shared.MJProto.IO.ProtoOutputStream stream =
-					l1j.server.server.shared.MJProto.IO.ProtoOutputStream.newInstance(noti.getSerializedSize() + WireFormat.WRITE_EXTENDED_SIZE, _currentNum);
-				try{
-					noti.writeTo(stream);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			gm.sendPackets(stream);
-			}catch(Exception e){
-				e.printStackTrace();
-			}*/
-		}
-		_currentNum++;
-	}
 	public static boolean 일반채팅 = true; 
 	public static boolean 유저명령어 = false;
 	private void 일반채팅(L1PcInstance gm, String param) {
