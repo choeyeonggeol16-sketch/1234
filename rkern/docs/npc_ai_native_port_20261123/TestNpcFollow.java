@@ -7,6 +7,9 @@ import sun.misc.Unsafe;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
@@ -178,6 +181,60 @@ public final class TestNpcFollow {
                     == MoveIntentCache.NO_POS,
                     "follower arrival must clear previous NC goal " + actor.getId());
         }
+
+        // Run each production noTarget() entrypoint, not just dFollow()
+        // directly: an import-only port can compile while still skipping the
+        // arrival cleanup for pets, summons or dolls.
+        final L1PetInstance pet =
+                (L1PetInstance) unsafe.allocateInstance(L1PetInstance.class);
+        pet.setId(900005);
+        location.set(pet, new L1Location(14, 16, map));
+        final Field petMaster = L1PetInstance.class.getDeclaredField("_petMaster");
+        petMaster.setAccessible(true);
+        petMaster.set(pet, pcMaster);
+        MoveIntentCache.setGoal(pet, MoveIntentCache.KIND_FOLLOW,
+                pcMaster.getId(), 16, 16, 12, 16);
+        check(!pet.noTarget(), "existing L1 pet continues normal follow mode");
+        check(MoveIntentCache.getGoal(pet, MoveIntentCache.KIND_FOLLOW,
+                pcMaster.getId(), 16, 16, 2) == MoveIntentCache.NO_POS,
+                "L1 pet arrival releases obsolete follow destination");
+        check(CMoveAction.GetFollowPosition(pet, pcMaster)
+                != MoveIntentCache.NO_POS,
+                "L1 pet can choose a fresh NC follow slot");
+
+        final L1SummonInstance summon =
+                (L1SummonInstance) unsafe.allocateInstance(L1SummonInstance.class);
+        summon.setId(900006);
+        location.set(summon, new L1Location(14, 16, map));
+        summon._master = pcMaster;
+        MoveIntentCache.setGoal(summon, MoveIntentCache.KIND_FOLLOW,
+                pcMaster.getId(), 16, 16, 12, 16);
+        check(!summon.noTarget(), "L1 summon continues normal follow mode");
+        check(MoveIntentCache.getGoal(summon, MoveIntentCache.KIND_FOLLOW,
+                pcMaster.getId(), 16, 16, 2) == MoveIntentCache.NO_POS,
+                "L1 summon arrival releases obsolete follow destination");
+        check(CMoveAction.GetFollowPosition(summon, pcMaster)
+                != MoveIntentCache.NO_POS,
+                "L1 summon can choose a fresh NC follow slot");
+
+        final L1DollInstance doll =
+                (L1DollInstance) unsafe.allocateInstance(L1DollInstance.class);
+        doll.setId(900007);
+        location.set(doll, new L1Location(14, 16, map));
+        doll._master = pcMaster;
+        MoveIntentCache.setGoal(doll, MoveIntentCache.KIND_FOLLOW,
+                pcMaster.getId(), 16, 16, 12, 16);
+        check(!doll.noTarget(), "L1 magic doll remains active near owner");
+        check(MoveIntentCache.getGoal(doll, MoveIntentCache.KIND_FOLLOW,
+                pcMaster.getId(), 16, 16, 2) == MoveIntentCache.NO_POS,
+                "L1 doll arrival releases obsolete follow destination");
+        check(CMoveAction.GetFollowPosition(doll, pcMaster)
+                != MoveIntentCache.NO_POS,
+                "L1 doll can choose a fresh NC follow slot");
+
+        check(CMoveAction.GetFollowPosition(companion, pcMaster)
+                != MoveIntentCache.NO_POS,
+                "current L1 companion can choose a fresh NC follow slot");
 
         check(!CMoveAction.followGroup(follower, leader),
                 "group leader uses the same dFollow action");
