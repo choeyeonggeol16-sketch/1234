@@ -116,7 +116,9 @@ jobs:
           sources.append(test)
           twenty = root / "docs/npc_ai_native_port_20261123/TestNpcTwentyWayReservation.java"
           sources.append(twenty)
-          print(f"Production Java sources: {len(sources) - 2}", flush=True)
+          follow = root / "docs/npc_ai_native_port_20261123/TestNpcFollow.java"
+          sources.append(follow)
+          print(f"Production Java sources: {len(sources) - 3}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
@@ -134,4 +136,9 @@ jobs:
                           "l1j.server.server.model.npc.ai.TestNpcTwentyWayReservation"],
                          check=True, timeout=90)
           print("PASS 20-NPC live reservation-core contention regression", flush=True)
+          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
+                          "-XX:ActiveProcessorCount=2", "-cp", cp,
+                          "l1j.server.server.model.npc.ai.action.TestNpcFollow"],
+                         check=True, timeout=90)
+          print("PASS NC dFollow position-selection regression", flush=True)
           PY
