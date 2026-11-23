@@ -6,6 +6,7 @@ import sun.misc.Unsafe;
 
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
@@ -161,6 +162,17 @@ public final class TestNpcFollow {
         legacyOwner.set(oldPet, pcMaster);
         summon.setMaster(pcMaster);
         doll.setMaster(pcMaster);
+
+        // Unsafe fixtures skip NPC/PC constructors and thus start with HP=0.
+        // NC dPetDefault correctly rejects dead/zero-HP actors and owners,
+        // so give the test-only fixtures the live health of a spawned actor.
+        final Field health = L1Character.class.getDeclaredField("_currentHp");
+        health.setAccessible(true);
+        health.setInt(pcMaster, 100);
+        for (L1NpcInstance actor :
+                new L1NpcInstance[] { oldPet, summon, doll, companion }) {
+            health.setInt(actor, 100);
+        }
 
         for (L1NpcInstance actor :
                 new L1NpcInstance[] { oldPet, summon, doll }) {
