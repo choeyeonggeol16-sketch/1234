@@ -66,6 +66,7 @@ public final class CDesirePQ {
     private static final float MOVE_AROUND_VALUE = 5.0f;
     private static final float ATTACK_DECAY = 6.6f;
     private static final float ATTACK_BOOST = 300.0f;
+    private static final int DEFAULT_ATTACK_BOOST_BITS = Float.floatToRawIntBits(ATTACK_BOOST);
     private static final float USE_SKILL_DECAY = 66000.0f;
 
     private static final long DECAY_INTERVAL_MS = 5_000L;
@@ -83,9 +84,9 @@ public final class CDesirePQ {
     private int[] targetIds = new int[INITIAL_SIZE];
     private float[] values = new float[INITIAL_SIZE];
 
-    // MakeAttack (+0x58, +0x80, +0x74, +0x1c). One lazily allocated,
-    // flat primitive array rather than four independent per-NPC arrays.
-    // Packed as moveType, flag, auxiliary float bits, auxiliary integer.
+    // NC MakeAttack: move type, force, per-desire boost (+0x7c), level difference.
+    // Flat optional payload: ordinary warrior ATTACK desires retain the
+    // default 300 boost without allocating this array. Four ints per slot.
     private int[] attackPayload;
     private int immediateAttackMoveType;
     private int immediateAttackFlag;
@@ -434,7 +435,7 @@ public final class CDesirePQ {
             final float desireValue,
             final long nowMs) {
         return addAttackDesire(npc, target, 0, false,
-                desireValue, 0.0f, 0, nowMs);
+                desireValue, ATTACK_BOOST, 0, nowMs);
     }
 
     public static boolean addAttackDesire(
@@ -443,14 +444,14 @@ public final class CDesirePQ {
             final int moveType,
             final boolean flag,
             final float desireValue,
-            final float auxiliaryFloat,
-            final int auxiliaryInt,
+            final float boost,
+            final int levelDifference,
             final long nowMs) {
 
         if (npc == null || npc.isDead() || npc.getCurrentHp() <= 0
                 || !validActorTarget(npc, target)
                 || !Float.isFinite(desireValue)
-                || !Float.isFinite(auxiliaryFloat)) {
+                || !Float.isFinite(boost)) {
             return false;
         }
 
@@ -464,20 +465,20 @@ public final class CDesirePQ {
         if (desireValue == IMMEDIATE_VALUE) {
             pq.immediateAttackMoveType = moveType;
             pq.immediateAttackFlag = flag ? 1 : 0;
-            pq.immediateAttackEffectPointBits = Float.floatToRawIntBits(auxiliaryFloat);
-            pq.immediateAttackOffset = auxiliaryInt;
+            pq.immediateAttackEffectPointBits = Float.floatToRawIntBits(boost);
+            pq.immediateAttackOffset = levelDifference;
             return true;
         }
         final int index = pq.findKey(PS_ATTACK, id);
         if (index >= 0) {
             if (previous < 0) {
-                pq.putAttackPayload(index, moveType, flag, auxiliaryFloat, auxiliaryInt);
+                pq.putAttackPayload(index, moveType, flag, boost, levelDifference);
             } else if (pq.attackPayload != null) {
                 pq.attackPayload[(index << 2) + 1] = flag ? 1 : 0;
             } else if (flag) {
                 // Duplicate CDesire updates +0x80 even if the initial
                 // MakeAttack had no nonzero payload to allocate.
-                pq.putAttackPayload(index, 0, true, 0.0f, 0);
+                pq.putAttackPayload(index, 0, true, ATTACK_BOOST, 0);
             }
         }
         return true;
@@ -519,19 +520,27 @@ public final class CDesirePQ {
     }
 
     private void putAttackPayload(
-            final int index, final int moveType, final boolean flag,
-            final float auxiliaryFloat, final int auxiliaryInt) {
+            final int index, final int moveType, final boolean force,
+            final float boost, final int levelDifference) {
         if (attackPayload == null) {
-            if (moveType == 0 && !flag && auxiliaryFloat == 0.0f && auxiliaryInt == 0) {
+            if (moveType == 0 && !force && boost == ATTACK_BOOST
+                    && levelDifference == 0) {
                 return;
             }
             attackPayload = new int[states.length << 2];
+            // Existing ordinary ATTACK keys were represented without a
+            // payload. Materialize their implicit default boost on demand.
+            for (int i = 0; i < size; i++) {
+                if (states[i] == PS_ATTACK) {
+                    attackPayload[(i << 2) + 2] = DEFAULT_ATTACK_BOOST_BITS;
+                }
+            }
         }
         final int pos = index << 2;
         attackPayload[pos] = moveType;
-        attackPayload[pos + 1] = flag ? 1 : 0;
-        attackPayload[pos + 2] = Float.floatToRawIntBits(auxiliaryFloat);
-        attackPayload[pos + 3] = auxiliaryInt;
+        attackPayload[pos + 1] = force ? 1 : 0;
+        attackPayload[pos + 2] = Float.floatToRawIntBits(boost);
+        attackPayload[pos + 3] = levelDifference;
     }
 
     /** Read fields from the active CDesireFactory::MakeAttack payload. */
@@ -560,8 +569,11 @@ public final class CDesirePQ {
         if (pq.activeImmediate) v = pq.immediateAttackEffectPointBits;
         else {
             final int i = pq.findKey(PS_ATTACK, pq.activeTargetId);
-            v = i >= 0 && pq.attackPayload != null
-                    ? pq.attackPayload[(i << 2) + 2] : 0;
+            v = i >= 0
+                    ? (pq.attackPayload != null
+                            ? pq.attackPayload[(i << 2) + 2]
+                            : DEFAULT_ATTACK_BOOST_BITS)
+                    : 0;
         }
         return Float.intBitsToFloat(v);
     }
@@ -1077,8 +1089,10 @@ public final class CDesirePQ {
         values[size] = value;
         if (attackPayload != null) {
             final int pos = size << 2;
-            attackPayload[pos] = attackPayload[pos + 1] =
-                    attackPayload[pos + 2] = attackPayload[pos + 3] = 0;
+            attackPayload[pos] = attackPayload[pos + 1] = 0;
+            attackPayload[pos + 2] = state == PS_ATTACK
+                    ? DEFAULT_ATTACK_BOOST_BITS : 0;
+            attackPayload[pos + 3] = 0;
         }
         size++;
         heapDirty = true;
@@ -1725,7 +1739,10 @@ public final class CDesirePQ {
     }
 
     private float boostFor(final int index) {
-        if (states[index] == PS_ATTACK) return ATTACK_BOOST;
+        if (states[index] == PS_ATTACK) {
+            return attackPayload == null ? ATTACK_BOOST
+                    : Float.intBitsToFloat(attackPayload[(index << 2) + 2]);
+        }
         // Native CDesirePQ::_BoostUp/_BoostDown use each CDesire::boost,
         // not the warrior script's global UseSkill_BoostValue default.
         if (states[index] == PS_USE_SKILL) {
