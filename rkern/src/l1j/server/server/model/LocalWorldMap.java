@@ -599,38 +599,6 @@ public final class LocalWorldMap {
         }
     }
 
-    private void canonicalMove(long oldKey, long newKey, L1Object obj) {
-        final int oldIndex = canonicalStripeIndex(oldKey);
-        final int newIndex = canonicalStripeIndex(newKey);
-
-        if (oldIndex == newIndex) {
-            final CanonicalStripe stripe = _canonical[oldIndex];
-            final long stamp = stripe.lock.writeLock();
-            try {
-                removeFromStripeUnsafe(stripe, oldKey, obj);
-                addToStripeUnsafe(stripe, newKey, obj);
-            } finally {
-                stripe.lock.unlockWrite(stamp);
-            }
-            return;
-        }
-
-        final int firstIndex = Math.min(oldIndex, newIndex);
-        final int secondIndex = Math.max(oldIndex, newIndex);
-        final CanonicalStripe first = _canonical[firstIndex];
-        final CanonicalStripe second = _canonical[secondIndex];
-        final long firstStamp = first.lock.writeLock();
-        final long secondStamp = second.lock.writeLock();
-
-        try {
-            removeFromStripeUnsafe(_canonical[oldIndex], oldKey, obj);
-            addToStripeUnsafe(_canonical[newIndex], newKey, obj);
-        } finally {
-            second.lock.unlockWrite(secondStamp);
-            first.lock.unlockWrite(firstStamp);
-        }
-    }
-
     private void applyCanonicalDelta(
             int op,
             long oldKey,
