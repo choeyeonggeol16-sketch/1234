@@ -120,7 +120,9 @@ jobs:
           sources.append(follow)
           flee = root / "docs/npc_ai_native_port_20261123/TestNpcFlee.java"
           sources.append(flee)
-          print(f"Production Java sources: {len(sources) - 4}", flush=True)
+          item = root / "docs/npc_ai_native_port_20261123/TestNpcGetItem.java"
+          sources.append(item)
+          print(f"Production Java sources: {len(sources) - 5}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
@@ -148,4 +150,9 @@ jobs:
                           "l1j.server.server.model.npc.ai.action.TestNpcFlee"],
                          check=True, timeout=90)
           print("PASS NC dFlee/dFleeEx action regression", flush=True)
+          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
+                          "-XX:ActiveProcessorCount=2", "-cp", cp,
+                          "l1j.server.server.model.npc.ai.action.TestNpcGetItem"],
+                         check=True, timeout=90)
+          print("PASS NC dGetItem/GetItemFinished and follower pickup policy regression", flush=True)
           PY
