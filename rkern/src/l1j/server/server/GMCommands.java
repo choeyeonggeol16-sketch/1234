@@ -1,5 +1,4 @@
 package l1j.server.server;
-import static l1j.server.server.model.character.skill.L1SkillId.BUYER_COOLTIME;
 import static l1j.server.server.model.character.skill.L1SkillId.HUNTER_BLESS;
 
 import java.sql.Connection;
@@ -48,7 +47,7 @@ import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.command.L1Commands;
 import l1j.server.server.command.executor.L1AllBuff;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
-import l1j.server.server.datatables.AuctionSystemTable;
+import l1j.server.server.datatables.AccountSettlementTable;
 import l1j.server.server.datatables.AutoLoot;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanTable;
@@ -56,7 +55,6 @@ import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.HouseTable;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.ShopTable;
@@ -111,7 +109,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-import l1j.server.server.model.network.core.sc.packet.SC_LetterList;
 import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.core.sc.packet.SC_MarkSee;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
@@ -3833,8 +3830,7 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 				login = rs.getString(1);
 			if (account.equalsIgnoreCase(login) && rs.getInt("no") == Config.서버차수+1) {
 			int item = rs.getInt("count")+counter;
-				AuctionSystemTable.getInstance().AuctionUpdate44(item);
-				//AuctionSystemTable.getInstance().AuctionUpdate41(item);
+				AccountSettlementTable.updateRoyalCount(item);
 				gm.sendPackets("인수받지 않은 후원금액 : "+ rs.getInt("count") + " 만 + 신규후원금 : "+counter+" 만");
 				gm.sendPackets("후원금 갱신 : "+item + " 만");
 				return;						
@@ -3844,7 +3840,6 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 				pstm.setString(1, account);
 				pstm.setInt(2, counter);
 				pstm.setInt(3, Config.서버차수+1);
-//				AuctionSystemTable.getInstance().writeTopic55(account, counter);
 				pstm.execute();
 
 
@@ -4061,7 +4056,7 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 
 			if (gm.getAccountName().equalsIgnoreCase(account)) {				
 				gm.getInventory().storeItem(400254, count*7);
-				AuctionSystemTable.getInstance().deleteTopic3(login);
+				AccountSettlementTable.deleteMeepByLogin(login);
 				gm.sendPackets("증표 1개당 7억->"+Config.지급율+" % = 총지급율" );
 				gm.sendPackets(\u0022\uC9C0\uAE09\uC728 \u003A \u0022 \u002B \u0043\u006F\u006E\u0066\u0069\u0067\u002E\uC9C0\uAE09\uC728 \u002B \u0022 \u0025\u0022);
 				gm.sendPackets(\u0022\uC815\uC0C1 \uC9C0\uAE09 \uB418\uC5C8\uC2B5\uB2C8\uB2E4\u002E\u0022+\u0022\uBCF4\uC720\uB7C9 \u003A \u0022\u002B\u0069\u0074\u0065\u006D\u0063\u006F\u0075\u006Et \u002B \u0022 \u002F \uC9C0\uAE09\uB7C9 \u003A \u0022+\u0063\u006F\u0075\u006E\u0074);
@@ -5503,96 +5498,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, ".혈마크 [켬 / 끔]");
 		}
-	}
-
-	// TODO 중개 거래 게시판
-	private static void LetterList(L1PcInstance pc, int type, int count) {
-		SC_LetterList.sendListAsync(pc, type, count);
-	}
-
-	public static void WriteCancle(String buyer, String seller) {
-		int nu1 = 949;
-		SimpleDateFormat formatter = new SimpleDateFormat("yy/MM/dd", Locale.KOREA);
-		Date currentTime = new Date();
-		String dTime = formatter.format(currentTime);
-		String subject = "구매취소내역";
-		String content = "구매자 :" + buyer + "" + "\n\n상대방이 구매를 취소하엿습니다." + "\n입금 대기상태로 바뀝니다.";
-		String name = "거래관리자";
-		L1PcInstance target = L1World.getInstance().getPlayer(seller);
-		LetterTable.getInstance().writeLetter(nu1, dTime, name, seller, 0, subject, content, target, () -> {
-            if (target != null && target.getOnlineStatus() != 0) {
-			SC_PacketBox.send(target, SC_PacketBox.GREEN_MESSAGE, "구매취소: " + buyer + "님이 구매를 취소 하였습니다.");
-			LetterList(target, 0, 20);
-			SC_SkillSound.send(target, target.getId(), 1091);
-			SC_ServerMessage.send(target, 428);
-		}
-        });
-	}
-
-	public static void WriteComplete(String buyer, int count, String seller) {
-		int nu1 = 949;
-		SimpleDateFormat formatter = new SimpleDateFormat("yy/MM/dd", Locale.KOREA);
-		Date currentTime = new Date();
-		String dTime = formatter.format(currentTime);
-		String subject = "판매완료내역";
-		String content = "아데나 :" + count + "개" + "\n판매자 :" + seller + "" + "\n물품 구매가 완료되었습니다. " + "\n\n반드시 리스타트 후에 "
-				+ "\n부가 아이템 창고에서" + "\n아데나를 수령하십시요.";
-		String name = "거래관리자";
-		L1PcInstance target = L1World.getInstance().getPlayer(buyer);
-		LetterTable.getInstance().writeLetter(nu1, dTime, name, buyer, 0, subject, content, target, () -> {
-            if (target != null && target.getOnlineStatus() != 0) {
-			SC_PacketBox.send(target, SC_PacketBox.GREEN_MESSAGE, "판매완료: 아데나가 '부가아이템창고'로 지급 되었습니다(리스타트후 수령가능)");
-			target.killSkillEffectTimer(BUYER_COOLTIME);
-			LetterList(target, 0, 20);
-			SC_SkillSound.send(target, target.getId(), 1091);
-			SC_ServerMessage.send(target, 428);
-		}
-        });
-	}
-
-	public static void WriteBuyLetter(String player, int count, int sellcount, String bankname, String name,
-			String number, String sellername, String buyername) {
-		int nu1 = 949;
-		SimpleDateFormat formatter = new SimpleDateFormat("yy/MM/dd", Locale.KOREA);
-		Date currentTime = new Date();
-		String dTime = formatter.format(currentTime);
-		String subject = "구매 신청 내역";
-		String content = "구매 아데나 : " + count + "개." + "\n구매 금액 : " + sellcount + "원. " + "\n은행 : " + bankname + ""
-				+ "\n예금주 : " + name + "" + "\n계좌번호 : " + number + "" + "\n판매자 캐릭터 : " + sellername + "" + "\n구매자 캐릭터 : "
-				+ buyername + "" + "\n\n판매자는 입금완료후 반드시" + "\n.판매완료 (게시번호) 를 하셔야" + "\n구매자에게 아데나가 지급됩니다."
-				+ "\n\n판매자가 악의적으로 판매완료를" + "\n거부할 경우 메티스로 문의." + "\n입금전 반드시 상대방이" + "\n접속중인지 확인후 거래를"
-				+ "\n진행해 주시기 바랍니다.";
-		String project = "거래관리자";
-		L1PcInstance target = L1World.getInstance().getPlayer(player);
-		LetterTable.getInstance().writeLetter(nu1, dTime, project, player, 0, subject, content, target, () -> {
-            if (target != null && target.getOnlineStatus() != 0) {
-			LetterList(target, 0, 20);
-			SC_SkillSound.send(target, target.getId(), 1091);
-			SC_ServerMessage.send(target, 428);
-		}
-        });
-	}
-
-	public static void WriteSellLetter(String player, int count, int sellcount, String bankname, String name,
-			String number, String charname) {
-		int nu1 = 949;
-		SimpleDateFormat formatter = new SimpleDateFormat("yy/MM/dd", Locale.KOREA);
-		Date currentTime = new Date();
-		String dTime = formatter.format(currentTime);
-		String subject = "판매 등록 내역";
-		String content = "판매 아데나 : " + count + "개." + "\n판매 금액 : " + sellcount + "원. " + "\n은행 : " + bankname + ""
-				+ "\n예금주 : " + name + "" + "\n계좌번호 : " + number + "" + "\n판매자 캐릭터 : " + charname + ""
-				+ "\n\n위 내용과 상이할 경우 " + "\n.판매취소 (게시글번호)" + "\n하신후 재등록 하시기 바랍니다." + "\n\n잘못된 정보 기재로 인한 피해사항은"
-				+ "\n어떤한 경우에도 책임지지 않습니다.";
-		String project = "거래관리자";
-		L1PcInstance target = L1World.getInstance().getPlayer(player);
-		LetterTable.getInstance().writeLetter(nu1, dTime, project, player, 0, subject, content, target, () -> {
-            if (target != null && target.getOnlineStatus() != 0) {
-			LetterList(target, 0, 20);
-			SC_SkillSound.send(target, target.getId(), 1091);
-			SC_ServerMessage.send(target, 428);
-		}
-        });
 	}
 
 	private String itemlevel(L1ItemInstance item) {

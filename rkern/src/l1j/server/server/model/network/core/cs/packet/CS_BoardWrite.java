@@ -127,20 +127,6 @@ public final class CS_BoardWrite {
             return;
 
         case 45000178:
-
-            if (pc.getAccessLevel() == 0
-                    || pc.getAccessLevel()
-                            == Config.GMCODE) {
-
-                SC_SystemMessage.send(pc, "\\fY명령어를 이용하여 주시기 바랍니다.");
-
-                return;
-            }
-
-            /*
-             * 원본은 여기서 break만 하고
-             * switch 이후 별도 로직이 없으므로 종료와 동일.
-             */
             return;
 
         /*

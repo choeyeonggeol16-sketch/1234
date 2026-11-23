@@ -22,14 +22,11 @@ import l1j.server.server.model.network.core.sc.packet.SC_EnchantRanking1;
 import l1j.server.server.model.network.core.sc.packet.SC_BoardRead;
 
 import l1j.server.server.Controller.BugRaceController;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.network.core.sc.packet.SC_AuctionSystemBoard;
 import l1j.server.server.model.network.core.sc.packet.SC_Board;
 
 import l1j.server.server.model.network.core.sc.packet.SC_EnchantRanking;
 
 import l1j.server.server.model.network.core.sc.packet.SC_KillRanking;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Npc;
@@ -60,11 +57,8 @@ public class L1BoardInstance extends L1NpcInstance {
 			player.sendPackets(S_ShowCmd.getPlayMovieNoti("http://kimsuin123.megaplug.kr/price/pricePreviewGM27.html", -1));
 		} else if(this.getNpcTemplate().get_npcId() == 4200022) {
 			player.sendPackets(S_ShowCmd.getPlayMovieNoti("http://kimsuin123.megaplug.kr/priceuse/pricePreviewuse7.html", -1));*/
-		 	//TODO 중개 거래 게시판
 		} else if (this.getNpcTemplate().get_npcId() == 45000178) {
-			SC_SkillSound.send(player, player.getId(), 21178);
-			SC_PacketBox.send(player, SC_PacketBox.GREEN_MESSAGE, "거래 전, 공지사항의 '거래 게시판 이용 수칙'을 반드시 정독해주시기 바랍니다.");
-			SC_AuctionSystemBoard.sendListAsync(player, this, 0);
+			return;
 		} else if (this.getNpcTemplate().get_npcId() == 4747470) {
 			return;
 		} else if (this.getNpcTemplate().get_npcId() == 42000133) {// 랭킹 게시판 2
@@ -78,9 +72,8 @@ public class L1BoardInstance extends L1NpcInstance {
 	public void onAction(L1PcInstance player, int number) {
 		/*if(this.getNpcTemplate().get_npcId() == 4200020) { 
 			player.sendPackets(S_ShowCmd.getPlayMovieNoti("http://kimsuin123.megaplug.kr/price/pricePreviewGM27.html", -1));*/
-			//TODO 중개 거래 게시판
 		if (this.getNpcTemplate().get_npcId() == 45000178) {
-			SC_AuctionSystemBoard.sendListAsync(player, this, number);
+			return;
 		} else if (this.getNpcTemplate().get_npcId() == 4747470) {
 			return;
 		} else if (this.getNpcTemplate().get_npcId() == 42000133) {// 랭킹 게시판 2
@@ -94,12 +87,10 @@ public class L1BoardInstance extends L1NpcInstance {
 	public void onActionRead(L1PcInstance player, int number) {
 		if (this.getNpcTemplate().get_npcId() == 4200013) {// 인챈 게시판
 			SC_EnchantRanking.sendReadAsync(player, number);
-			//TODO 중개 거래 게시판
 		} else 	if (this.getNpcTemplate().get_npcId() == 4200014) {// 인챈 게시판
 				SC_EnchantRanking1.send(player, player, number);
-				//TODO 중개 거래 게시판
 		} else if (this.getNpcTemplate().get_npcId() == 45000178) {
-			SC_AuctionSystemBoard.sendReadAsync(player, number);
+			return;
 		} else if (this.getNpcTemplate().get_npcId() == 4747470) {
 			return;
 		} else if (this.getNpcTemplate().get_npcId() == 42000133) {

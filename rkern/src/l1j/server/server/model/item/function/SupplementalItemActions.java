@@ -219,7 +219,6 @@ final class SupplementalItemActions {
 		case 145008:
 		case 145009:
 		case 145010:
-		case 474752:
 		case 4100203:
 		case 4100140:
 		case 4100141:
