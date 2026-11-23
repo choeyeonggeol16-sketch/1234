@@ -849,48 +849,53 @@ public final class CDesirePQ {
     }
 
     /**
-     * True when another valid ATTACK desire can take over after the current
-     * blocked target is gated. No world/known-object scan and no allocation.
+     * NC CDesirePQ::GetTopDesire, L1 blocked-target exclusion variant.
+     * Return the highest-valued EXISTING runnable attack desire without
+     * manufacturing hate for a bystander or changing a captured action target.
+     * The AI owner performs the actual target hand-off after blocking old A.
      */
-    public static boolean hasOtherAttack(
+    public static L1Character GetTopDesire(
             final L1MonsterInstance npc,
             final int excludedTargetId) {
 
-        final CDesirePQ pq =
-                npc != null ? npc._desirePQ : null;
-
+        final CDesirePQ pq = npc != null ? npc._desirePQ : null;
         if (pq == null) {
-            return false;
+            return null;
         }
 
         if (pq.immediatePresent
                 && pq.immediateState == PS_ATTACK
-                && pq.immediateTargetId != excludedTargetId
-                && isAttackRunnable(npc, resolveTarget(
-                        npc, pq.immediateTargetId))) {
-            return true;
+                && pq.immediateTargetId != excludedTargetId) {
+            final L1Character immediate =
+                    resolveTarget(npc, pq.immediateTargetId);
+            if (isAttackRunnable(npc, immediate)) {
+                return immediate;
+            }
         }
 
+        L1Character best = null;
+        float bestValue = -Float.MAX_VALUE;
         for (int i = 0; i < pq.size; i++) {
             if (pq.states[i] != PS_ATTACK
-                    || pq.targetIds[i] == excludedTargetId) {
+                    || pq.targetIds[i] == excludedTargetId
+                    || pq.values[i] < bestValue) {
                 continue;
             }
 
-            final L1Character target =
-                    resolveTarget(
-                            npc,
-                            pq.targetIds[i]);
-
-            // A stored ATTACK is not necessarily executable: the same
-            // body-block gate used by GetTopDesire may suppress this target.
-            // Yield only if another ATTACK is actually runnable.
-            if (isAttackRunnable(npc, target)) {
-                return true;
+            final L1Character candidate =
+                    resolveTarget(npc, pq.targetIds[i]);
+            if (isAttackRunnable(npc, candidate)) {
+                best = candidate;
+                bestValue = pq.values[i];
             }
         }
+        return best;
+    }
 
-        return false;
+    public static boolean hasOtherAttack(
+            final L1MonsterInstance npc,
+            final int excludedTargetId) {
+        return GetTopDesire(npc, excludedTargetId) != null;
     }
 
     public static boolean removeAttack(

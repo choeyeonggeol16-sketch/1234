@@ -177,6 +177,7 @@ final class MoveIntentCache {
             s.anchorId[slot] = target.getId();
             s.anchorPos[slot] = targetPos;
             s.goalPos[slot] = NO_POS;
+            s.rejectedMeleeMask[slot] = 0;
             s.waitUntil[slot] = 0L;
             s.waitReason[slot] = 0;
             s.previousOrigin[slot] = NO_POS;
@@ -195,20 +196,37 @@ final class MoveIntentCache {
         return true;
     }
 
-    /** Temporarily exclude an unreachable or oscillating melee position. */
+    /**
+     * Reject multiple failed melee tiles around one target for a bounded
+     * interval, using one primitive mask per owner-local NPC cache slot.
+     * A single last-rejected tile let dense groups alternate A and B forever.
+     */
     static void rejectMeleeAttackPosition(final L1NpcInstance npc,
             final L1Character target, final int x, final int y,
             final long untilMs) {
         if (npc == null || target == null || npc.getId() == 0) return;
+        final int bit = meleePositionBit(target.getX(), target.getY(), x, y);
+        if (bit == 0) return;
+
         final State s = LOCAL.get();
         final int slot = slot(npc.getId());
         initSlot(s, slot, npc);
+        final long targetPos = pack(target.getX(), target.getY());
+        final long nowMs = System.currentTimeMillis();
+        if (s.kind[slot] != KIND_COMBAT
+                || s.anchorId[slot] != target.getId()
+                || s.anchorPos[slot] != targetPos
+                || s.waitReason[slot] != 1
+                || nowMs >= s.waitUntil[slot]) {
+            s.rejectedMeleeMask[slot] = 0;
+            s.waitUntil[slot] = 0L;
+        }
         s.kind[slot] = KIND_COMBAT;
         s.anchorId[slot] = target.getId();
-        s.anchorPos[slot] = pack(target.getX(), target.getY());
-        s.goalPos[slot] = pack(x, y);
-        s.waitUntil[slot] = untilMs;
+        s.anchorPos[slot] = targetPos;
+        s.rejectedMeleeMask[slot] |= (byte) bit;
         s.waitReason[slot] = 1;
+        s.waitUntil[slot] = Math.max(s.waitUntil[slot], untilMs);
         s.previousOrigin[slot] = NO_POS;
         s.noProgress[slot] = 0;
     }
@@ -217,6 +235,8 @@ final class MoveIntentCache {
             final L1Character target, final int x, final int y,
             final long nowMs) {
         if (npc == null || target == null || npc.getId() == 0) return false;
+        final int bit = meleePositionBit(target.getX(), target.getY(), x, y);
+        if (bit == 0) return false;
         final State s = LOCAL.get();
         final int slot = slot(npc.getId());
         return s.key[slot] == key(npc)
@@ -225,7 +245,24 @@ final class MoveIntentCache {
                 && s.anchorPos[slot] == pack(target.getX(), target.getY())
                 && s.waitReason[slot] == 1
                 && nowMs < s.waitUntil[slot]
-                && s.goalPos[slot] == pack(x, y);
+                && ((s.rejectedMeleeMask[slot] & 0xff) & bit) != 0;
+    }
+
+    private static int meleePositionBit(final int tx, final int ty,
+            final int x, final int y) {
+        final int dx = x - tx;
+        final int dy = y - ty;
+        if (dx < -1 || dx > 1 || dy < -1 || dy > 1
+                || (dx | dy) == 0) return 0;
+        final int heading;
+        if (dy < 0) {
+            heading = dx < 0 ? 7 : (dx > 0 ? 1 : 0);
+        } else if (dy > 0) {
+            heading = dx < 0 ? 5 : (dx > 0 ? 3 : 4);
+        } else {
+            heading = dx > 0 ? 2 : 6;
+        }
+        return 1 << heading;
     }
 
     static void clearProgress(final L1NpcInstance npc) {
@@ -339,6 +376,7 @@ final class MoveIntentCache {
         s.goalPos[slot] = NO_POS;
         s.previousOrigin[slot] = NO_POS;
         s.noProgress[slot] = 0;
+        s.rejectedMeleeMask[slot] = 0;
         s.waitUntil[slot] = 0L;
         s.waitReason[slot] = 0;
     }
@@ -368,6 +406,7 @@ final class MoveIntentCache {
         final long[] goalPos = new long[CACHE_SIZE];
         final long[] previousOrigin = new long[CACHE_SIZE];
         final byte[] noProgress = new byte[CACHE_SIZE];
+        final byte[] rejectedMeleeMask = new byte[CACHE_SIZE];
         final long[] waitUntil = new long[CACHE_SIZE];
         final byte[] waitReason = new byte[CACHE_SIZE];
 

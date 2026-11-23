@@ -210,58 +210,10 @@ public final class CMoveToTargetAction {
             final L1MonsterInstance monster =
                     (L1MonsterInstance) creature;
 
-            /*
-             * A reserved melee-slot approach is still part of the blocked-A
-             * chase. Before spending another movement tick on A's slot, give
-             * surrounding alternate targets priority over slot-search.
-             *
-             * ATTACKED/SEE can update the PQ while this action owns _target,
-             * so explicitly yield here when B becomes available.
-             */
-            final int resumePacked =
-                    monster._desireResumeAttackPos;
-
-            if (resumePacked != 0
-                    && monster._desireResumeAttackTargetId
-                            == target.getId()) {
-
-                // ATTACKED / SEE_CREATURE already registered other desires.
-                // A temporary blocked lane may yield to those desires, but
-                // never turn an unrelated nearby player into a new enemy.
-                if (CDesirePQ.hasOtherAttack(
-                        monster,
-                        target.getId())) {
-
-                    final int slotX =
-                            (resumePacked >>> 16)
-                                    & 0xffff;
-
-                    final int slotY =
-                            resumePacked
-                                    & 0xffff;
-
-                    /*
-                     * Cancel the reservation BEFORE blockAttackForMoveAround()
-                     * clears the resume fields.
-                     */
-                    clearReservedAttackSlot(
-                            monster);
-
-                    CDesirePQ.blockAttackForMoveAround(
-                            monster,
-                            target,
-                            slotX,
-                            slotY);
-
-                    SetMoving.clear(monster);
-                    monster._pathFindFailCount = 0;
-
-                    // The alternative ATTACK is already admitted by DesirePQ.
-                    // Yield the old CIO generation before rescheduling it.
-                    CCreatureController.rethinkNow(monster);
-                    return CCreatureController.RESULT_RUNNING;
-                }
-            }
+            // A claimed and still usable melee slot belongs to target A.
+            // Another admitted ATTACK desire alone must not preempt it:
+            // AiRuntime queues a genuine higher-priority winner safely.
+            // Only blocked routing below may gate A and select another target.
 
             final byte resumeResult =
                     SetMoving(
@@ -352,7 +304,7 @@ public final class CMoveToTargetAction {
                 // the existing body-aware route BEFORE suppressing its desire
                 // in favor of a different player. Ranged chases can also use
                 // this fallback and stop as soon as their real range/LOS opens.
-                final byte passing = tryPassBlockedChase(
+                final byte passing = GetPassingPosOnSight(
                         monster, target, actionGeneration, expectedAction);
                 if (passing >= 0) return passing;
 
@@ -362,9 +314,9 @@ public final class CMoveToTargetAction {
                  * promote a bystander just because its body occupies a tile.
                  * Re-evaluate only ATTACK desires already admitted by NPC AI.
                  */
-                if (CDesirePQ.hasOtherAttack(
+                if (CDesirePQ.GetTopDesire(
                         monster,
-                        target.getId())) {
+                        target.getId()) != null) {
 
                     CDesirePQ.blockAttackForMoveAround(
                             monster,
@@ -442,7 +394,7 @@ public final class CMoveToTargetAction {
                 final L1MonsterInstance monster = (L1MonsterInstance) creature;
                 // Bound repeated occupancy scans on a genuinely missing path.
                 if (creature._pathFindFailCount % 3 == 0) {
-                    final byte passing = tryPassBlockedChase(
+                    final byte passing = GetPassingPosOnSight(
                             monster, target, actionGeneration, expectedAction);
                     if (passing >= 0) return passing;
                 }
@@ -669,12 +621,14 @@ public final class CMoveToTargetAction {
     }
 
     /**
-     * Reserved exact melee slot hand-off from MOVE_AROUND.
-     *
-     * Return -1 when there is no valid hand-off and normal chase should run.
-     * Otherwise return a CCreatureController result directly.
+     * L1 8-tile adaptation of NC CCreature::GetPassingPosOnSight.
+     * Normal SetMoving already tried its static corridor; on obstruction
+     * reuse the per-owner PathFinder's live-body route to an attack position.
+     * The selected position is reserved, then physical movement is committed
+     * once by SetMoving. Never switch the captured target mid-callback.
+     * -1 means no usable passing position currently exists.
      */
-    private static byte tryPassBlockedChase(
+    private static byte GetPassingPosOnSight(
             final L1MonsterInstance monster,
             final L1Character target,
             final int generation,
@@ -880,7 +834,7 @@ public final class CMoveToTargetAction {
         }
     }
 
-    private static void clearReservedAttackSlot(
+    static void clearReservedAttackSlot(
             final L1MonsterInstance monster) {
 
         final int packed =

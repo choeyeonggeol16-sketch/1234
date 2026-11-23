@@ -209,6 +209,7 @@ public final class CMoveToTargetRelativeAction {
             // The destination was computed for a snapshot of the target.
             // Never publish a claim after the target moved or the NPC died.
             if (monster.isDead() || monster.getCurrentHp() <= 0
+                    || monster.getTarget() != target
                     || target.isDead() || target.getCurrentHp() <= 0
                     || target.getMapId() != monster.getMapId()
                     || target.getX() != tx || target.getY() != ty) {
@@ -225,6 +226,7 @@ public final class CMoveToTargetRelativeAction {
             // The claim and route scan are separate operations. Revalidate
             // before handing this exact destination to the next action.
             if (monster.isDead() || monster.getCurrentHp() <= 0
+                    || monster.getTarget() != target
                     || target.isDead() || target.getCurrentHp() <= 0
                     || target.getMapId() != monster.getMapId()
                     || target.getX() != tx || target.getY() != ty
@@ -244,10 +246,21 @@ public final class CMoveToTargetRelativeAction {
                     ((tx & 0xffff) << 16) | (ty & 0xffff);
             monster._desireResumeAttackPos =
                     ((bestX & 0xffff) << 16) | (bestY & 0xffff);
-            // Death may run off-owner. If it completed while publishing the
-            // hand-off, do not leave a reservation for the old incarnation.
-            if (monster.isDead() || monster.getCurrentHp() <= 0) {
-                CDesirePQ.releaseBlockedAttack(monster);
+            // Death/retarget can finish during publication. Cancel this exact
+            // claim rather than calling releaseBlockedAttack(), which only
+            // clears an active blocked gate and can leave a ghost reservation.
+            if (monster.isDead() || monster.getCurrentHp() <= 0
+                    || monster.getTarget() != target
+                    || target.isDead() || target.getCurrentHp() <= 0
+                    || target.getMapId() != monster.getMapId()
+                    || target.getX() != tx || target.getY() != ty) {
+                if (monster._desireResumeAttackTargetId == target.getId()
+                        && monster._desireResumeAttackPos
+                                == (((bestX & 0xffff) << 16) | (bestY & 0xffff))) {
+                    CMoveToTargetAction.clearReservedAttackSlot(monster);
+                } else {
+                    COLLISION.cancelNpcMove(mapId, bestX, bestY, monster.getId());
+                }
                 return false;
             }
             return true;
