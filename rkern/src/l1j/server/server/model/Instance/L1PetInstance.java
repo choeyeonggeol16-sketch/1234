@@ -547,15 +547,15 @@ public class L1PetInstance extends L1NpcInstance {
 			status = 6;
 		} else if (action.equalsIgnoreCase("getitem")) {
 			status = 8;
-			//collect();
-			collection();
+			// Candidate selection now belongs to the next CIO owner tick.
 		}
 		return status;
 	}
 
-	private void collection() {
-		// NC GET_ITEM: select a live exact object without temporary ground
-		// collections. The shared picker preserves the L1 high-pet exclusion.
+	@Override
+	public void searchTargetItem() {
+		// L1 pet getitem: preserve its original ten-tile search radius and
+		// special high-pet item exclusion via CGetItemAction.
 		CGetItemAction.searchTarget(this, 10);
 	}
 
