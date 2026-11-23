@@ -19,7 +19,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.npc.ai.NpcPotionPolicy;
-import l1j.server.server.model.npc.ai.action.dFollow;
+import l1j.server.server.model.npc.ai.dFollow;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PetMenuPacket;
