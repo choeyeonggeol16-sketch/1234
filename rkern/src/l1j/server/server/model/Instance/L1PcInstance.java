@@ -224,7 +224,6 @@ public class L1PcInstance extends L1Character {
 	public int 상인찾기Objid = 0;
 	public boolean war_zone = false;
 
-	public boolean isTaitanM = false;
 	private boolean _isMonsterHpBar = false;
 
 	public boolean isMonsterHpBar() {
@@ -574,10 +573,6 @@ public class L1PcInstance extends L1Character {
 		_fishingitem = item;
 	}
 
-	public int dx = 0;
-	public int dy = 0;
-	public short dm = 0;
-	public int dh = 0;
 	public int 상점변신 = 0;
 
 	public static final String WANTED_TITLE = Config.수배멘트;
@@ -849,9 +844,6 @@ public class L1PcInstance extends L1Character {
     public boolean isTradeResolving() {
         return tradeResolutionBusy != 0;
     }
-	public int tt_clanid = -1;
-	public int tt_partyid = -1;
-	public int tt_level = 0;
 	public boolean 퀘스트멘트 = false;
 	public boolean RootMent = true;// 루팅 멘트]
 	public boolean RootMent1 = true;// 루팅 멘트]
@@ -1103,9 +1095,6 @@ public class L1PcInstance extends L1Character {
 		_getLive = Live;
 	}
 
-	// 조우의 불골렘
-	public int[] FireGolem = new int[18];
-	public int[] FireEnchant = new int[18];
 
 	// 피어스
 	public int[] PiersItemId = new int[19];
@@ -1129,15 +1118,10 @@ public class L1PcInstance extends L1Character {
 	private boolean _magicitem = false;
 	private int _magicitemid;
 
-	// 3.63아이템패킷추가
-	public boolean isDanteasBuff = false;
 
-	public boolean isGotobokBuff = false;
 
 	public boolean 서버다운중 = false;
 	public boolean 바포방 = false;
-	// 젠도르 제작 관련
-	public int _getCount;
 
 	private long _npcaction;
 
@@ -2185,7 +2169,6 @@ public class L1PcInstance extends L1Character {
 		_gmInvis = flag;
 	}
 
-	public int CubeMr;
 
 	public int getCurrentWeapon() {
 		return _currentWeapon;
@@ -2847,7 +2830,6 @@ public class L1PcInstance extends L1Character {
 		this.AinState = AinState;
 	}
 
-	public boolean SurvivalState; // 생존의 외침 상태
 	private int SurvivalGauge; // 생존의 외침 게이지
 
 	public int getSurvivalGauge() {
@@ -5647,7 +5629,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	private String _sealingPW; //
 
-	public String TempQuiz = "";
 
 	public String getSealingPW() {
 		return _sealingPW;
@@ -6669,7 +6650,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return attackRange;
 	}
 
-	public boolean isCastle;
 
 	private boolean _isPotyRingMaster = false;
 
@@ -7608,7 +7588,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_autoDropTime = l;
 	}
 	
-	public int _autoCurrentPath;
 	
 	/* 자동사냥 무시 타겟 관련 변수 */
 	private int _autoIgnoreTarget = 0; // 무시할 몹의 ObjectId
