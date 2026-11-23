@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
+import l1j.server.server.ThreadPool;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -63,8 +64,8 @@ public final class CIOThreadCallback {
 	
 	private static final int HP_BAR_MS = 300;
 
-	private static final long CREATURE_HEARTBEAT_MS = 666L;
-	private static final int CREATURE_HEARTBEAT_JITTER_MS = 666;
+	private static final long USER_TIMER_TICK_MS = 666L;
+	private static final int USER_TIMER_JITTER_MS = 666;
 	private static final long SKILL_EFFECT_HEARTBEAT_MS = 1000L;
 
 	private static final int WHEEL_TICK_MS = 50;
@@ -1002,27 +1003,30 @@ public final class CIOThreadCallback {
                 0, delayMs, mode, 0, 0, task, null, null);
     }
 
-	private static final class CreatureHeartbeatTask implements WheelTask {
-		private static final long AUTO_SAVE_RETRY_MIN_NS = TimeUnit.SECONDS.toNanos(2L);
-		private static final long AUTO_SAVE_RETRY_MAX_NS = TimeUnit.SECONDS.toNanos(60L);
+	private static final class UserTimerTask implements WheelTask {
+		private static final long SAVE_RETRY_MIN_NS = TimeUnit.SECONDS.toNanos(2L);
+		private static final long SAVE_RETRY_MAX_NS = TimeUnit.SECONDS.toNanos(60L);
 		final L1PcInstance actor;
 		final int pcId;
-        final int sessionStamp;
+		final int sessionStamp;
 		final TaskHandle h;
 		final CIOThread owner;
-		// NC User::TimerExpired-style per-character save deadlines.
-		// Reuse the existing CIO heartbeat; no per-PC save queue or worker.
+		// NC User::TimerExpired: the existing CIO timer decides when a save is due.
+		// Persistence snapshots run on the existing bounded ThreadPool, not under
+		// the CIO shard monitor. Only one save job is pending per user/session.
 		final long charSaveIntervalNs;
 		final long invSaveIntervalNs;
-		long nextCharSaveNs;
-		long nextInvSaveNs;
+		private final Runnable saveWork;
+		volatile long nextCharSaveNs;
+		volatile long nextInvSaveNs;
+		private volatile boolean savePending;
 		int charSaveFailures;
 		int invSaveFailures;
 
-		CreatureHeartbeatTask(L1PcInstance actor, TaskHandle h, CIOThread owner) {
+		UserTimerTask(L1PcInstance actor, TaskHandle h, CIOThread owner) {
 			this.actor = actor;
 			this.pcId = actor.getId();
-            this.sessionStamp = actor.getSessionStamp();
+			this.sessionStamp = actor.getSessionStamp();
 			this.h = h;
 			this.owner = owner;
 			final int charSeconds = Config.AUTOSAVE_INTERVAL;
@@ -1034,6 +1038,7 @@ public final class CIOThreadCallback {
 				nextCharSaveNs = now + charSaveIntervalNs + saveJitterNs(charSaveIntervalNs);
 			if (invSaveIntervalNs > 0L)
 				nextInvSaveNs = now + invSaveIntervalNs + saveJitterNs(invSaveIntervalNs);
+			saveWork = this::saveOnWorker;
 		}
 
 		private static long saveJitterNs(long intervalNs) {
@@ -1042,69 +1047,99 @@ public final class CIOThreadCallback {
 		}
 
 		private static long saveRetryNs(int failures) {
-			return Math.min(AUTO_SAVE_RETRY_MAX_NS,
-					AUTO_SAVE_RETRY_MIN_NS << Math.min(10, Math.max(0, failures - 1)));
+			return Math.min(SAVE_RETRY_MAX_NS,
+					SAVE_RETRY_MIN_NS << Math.min(10, Math.max(0, failures - 1)));
 		}
 
-		private void runAutoSave(L1PcInstance pc) {
-			if (h.isCancelled() || pc.isLogoutStarted()) return;
+		private boolean activeSession(L1PcInstance pc) {
+			return !h.isCancelled() && pc.getSessionStamp() == sessionStamp
+					&& !pc.isLogoutStarted();
+		}
+
+		/** Called only from this user's serialized controller FIFO. */
+		private void requestSaveIfDue(L1PcInstance pc) {
+			if (!activeSession(pc) || savePending) return;
 			final long now = System.nanoTime();
-			if (charSaveIntervalNs > 0L && now - nextCharSaveNs >= 0L) {
-				try {
-					pc.save();
-					charSaveFailures = 0;
-					nextCharSaveNs = System.nanoTime() + charSaveIntervalNs + saveJitterNs(charSaveIntervalNs);
-				} catch (Throwable failure) {
-					charSaveFailures = Math.min(31, charSaveFailures + 1);
-					nextCharSaveNs = System.nanoTime() + saveRetryNs(charSaveFailures);
-					LOGGER.log(Level.WARNING, "Char save failed: " + pc.getName(), failure);
-				}
+			final boolean charDue = charSaveIntervalNs > 0L && now - nextCharSaveNs >= 0L;
+			final boolean invDue = invSaveIntervalNs > 0L && now - nextInvSaveNs >= 0L;
+			if (!charDue && !invDue) return;
+			savePending = true;
+			try {
+				ThreadPool.getInstance().execute(saveWork);
+			} catch (RuntimeException failure) {
+				savePending = false;
+				// Admission rejection must not silently disable a periodic save.
+				if (charDue) nextCharSaveNs = now + SAVE_RETRY_MIN_NS;
+				if (invDue) nextInvSaveNs = now + SAVE_RETRY_MIN_NS;
+				LOGGER.log(Level.WARNING, "User timer save admission failed: " + pc.getId(), failure);
 			}
-			// A concurrent socket close may have started logout during character saving.
-			if (h.isCancelled() || pc.isLogoutStarted()) return;
-			if (invSaveIntervalNs > 0L && now - nextInvSaveNs >= 0L) {
-				try {
-					pc.saveInventory();
-					invSaveFailures = 0;
-					nextInvSaveNs = System.nanoTime() + invSaveIntervalNs + saveJitterNs(invSaveIntervalNs);
-				} catch (Throwable failure) {
-					invSaveFailures = Math.min(31, invSaveFailures + 1);
-					nextInvSaveNs = System.nanoTime() + saveRetryNs(invSaveFailures);
-					LOGGER.log(Level.WARNING, "Inv save failed: " + pc.getName(), failure);
+		}
+
+		/** Executed on the preexisting bounded instant pool, never on the CIO owner. */
+		private void saveOnWorker() {
+			try {
+				final L1PcInstance pc = actor;
+				if (!activeSession(pc)) return;
+				if (charSaveIntervalNs > 0L && System.nanoTime() - nextCharSaveNs >= 0L) {
+					try {
+						pc.save();
+						charSaveFailures = 0;
+						nextCharSaveNs = System.nanoTime() + charSaveIntervalNs
+								+ saveJitterNs(charSaveIntervalNs);
+					} catch (Throwable failure) {
+						charSaveFailures = Math.min(31, charSaveFailures + 1);
+						nextCharSaveNs = System.nanoTime() + saveRetryNs(charSaveFailures);
+						LOGGER.log(Level.WARNING, "Char save failed: " + pc.getName(), failure);
+					}
 				}
+				// The socket may have started logout while the character snapshot ran.
+				if (!activeSession(pc)) return;
+				if (invSaveIntervalNs > 0L && System.nanoTime() - nextInvSaveNs >= 0L) {
+					try {
+						pc.saveInventory();
+						invSaveFailures = 0;
+						nextInvSaveNs = System.nanoTime() + invSaveIntervalNs
+								+ saveJitterNs(invSaveIntervalNs);
+					} catch (Throwable failure) {
+						invSaveFailures = Math.min(31, invSaveFailures + 1);
+						nextInvSaveNs = System.nanoTime() + saveRetryNs(invSaveFailures);
+						LOGGER.log(Level.WARNING, "Inv save failed: " + pc.getName(), failure);
+					}
+				}
+			} finally {
+				savePending = false;
 			}
 		}
 
 		@Override
 		public void run() {
-            owner.dispatchPcWheelTask(this, actor, h, sessionStamp);
+			owner.dispatchPcWheelTask(this, actor, h, sessionStamp);
 		}
 
-        @Override public void runOnController(L1PcInstance pc) {
-            if (h.isCancelled() || pc != actor || pc.getSessionStamp() != sessionStamp) return;
-            try {
-                try {
-                    pc.getRegenController().TimerExpired();
-                } finally {
-                    // The existing creature tick also advances Einhasad.
-                    pc.einhasadHeartbeatFromController();
-                }
-            } finally {
-                try {
-                    runAutoSave(pc);
-                } finally {
-                    finishPcWheelTask(owner, this, 1, CREATURE_HEARTBEAT_MS);
-                }
-            }
-        }
+		@Override public void runOnController(L1PcInstance pc) {
+			if (h.isCancelled() || pc != actor || pc.getSessionStamp() != sessionStamp) return;
+			try {
+				try {
+					pc.getRegenController().TimerExpired();
+				} finally {
+					// Retain the existing regeneration/Einhasad tick order.
+					pc.einhasadHeartbeatFromController();
+				}
+			} finally {
+				try {
+					requestSaveIfDue(pc);
+				} finally {
+					finishPcWheelTask(owner, this, 1, USER_TIMER_TICK_MS);
+				}
+			}
+		}
 
-		@Override
-		public boolean isCancelled() {
+		@Override public boolean isCancelled() {
 			return h.isCancelled();
 		}
 	}
 
-		private static final class EndGhostTask implements WheelTask {
+	private static final class EndGhostTask implements WheelTask {
 		final int pcId; final long smartId; final int stamp; final TaskHandle h;
 		EndGhostTask(int pcId, long smartId, int stamp, TaskHandle h) { this.pcId = pcId; this.smartId = smartId; this.stamp = stamp; this.h = h; }
 		@Override public void run() {
@@ -1710,7 +1745,7 @@ public final class CIOThreadCallback {
 			// Preserve the old behavior when registration precedes world entry,
 			// but never arm a heartbeat on another object reusing the same ID.
 			if (liveActor == pc) {
-				ensureCreatureHeartbeat(pc, st);
+				ensureUserTimer(pc, st);
 				CIOThreadCallback.getInstance()
 						.ensureCharacterSkillHeartbeatFromOwner(pc);
 				if (pc.hasSkillEffect(L1SkillId.GMSTATUS_HPBAR)) {
@@ -1723,8 +1758,8 @@ public final class CIOThreadCallback {
 			final CIOState st = states.get(pcId);
 			if (st == null || st.sessionActor != pc
 					|| st.sessionStamp != expectedSession) return;
-            if (st.heartbeatTask != null) {
-                final L1PcInstance actor = st.heartbeatTask.actor;
+            if (st.userTimerTask != null) {
+                final L1PcInstance actor = st.userTimerTask.actor;
                 final CCreatureController controller = actor.getCreatureController();
                 if (controller != null && controller.actor() == actor) {
                     controller.AddExecutableRegenReset();
@@ -1735,8 +1770,8 @@ public final class CIOThreadCallback {
 			if (st.invisHandle != null) { st.invisHandle.cancel(); st.invisHandle = null; }
 			if (st.fishingHandle != null) { st.fishingHandle.cancel(); st.fishingHandle = null; }
 			if (st.hpBarHandle != null) { st.hpBarHandle.cancel(); st.hpBarHandle = null; }
-			if (st.heartbeatHandle != null) { st.heartbeatHandle.cancel(); st.heartbeatHandle = null; }
-			st.heartbeatTask = null;
+			if (st.userTimerHandle != null) { st.userTimerHandle.cancel(); st.userTimerHandle = null; }
+			st.userTimerTask = null;
 			st.cancelAllGeneric();
 			st.sessionActor = null;
 			states.remove(pcId);
@@ -1799,10 +1834,10 @@ public final class CIOThreadCallback {
             if (task == null) return;
             switch (mode) {
             case 1:
-                if (task instanceof CreatureHeartbeatTask) {
-                    final CreatureHeartbeatTask t = (CreatureHeartbeatTask) task;
-                    if (t.h.isCancelled()) clearCreatureHeartbeat(t.pcId, t.h, t);
-                    else rescheduleCreatureHeartbeat(t);
+                if (task instanceof UserTimerTask) {
+                    final UserTimerTask t = (UserTimerTask) task;
+                    if (t.h.isCancelled()) clearUserTimer(t.pcId, t.h, t);
+                    else rescheduleUserTimer(t);
                 }
                 break;
             case 5:
@@ -1835,50 +1870,50 @@ public final class CIOThreadCallback {
             }
         }
 
-		void ensureCreatureHeartbeat(L1PcInstance pc, CIOState st) {
+		void ensureUserTimer(L1PcInstance pc, CIOState st) {
 			if (st == null || pc == null || pc.getId() <= 0) {
 				return;
 			}
 
 			final int pcId = pc.getId();
 
-			final TaskHandle current = st.heartbeatHandle;
+			final TaskHandle current = st.userTimerHandle;
 			if (current != null
 					&& !current.isCancelled()
-					&& st.heartbeatTask != null) {
+					&& st.userTimerTask != null) {
 
 				return;
 			}
 
 			final TaskHandle h = new TaskHandle();
-			final CreatureHeartbeatTask task =
-					new CreatureHeartbeatTask(pc, h, this);
+			final UserTimerTask task =
+					new UserTimerTask(pc, h, this);
 
-			st.heartbeatHandle = h;
-			st.heartbeatTask = task;
+			st.userTimerHandle = h;
+			st.userTimerTask = task;
 
 			threadLocalTimer.schedule(
-					initialCreatureHeartbeatDelay(pcId),
+					initialUserTimerDelay(pcId),
 					task,
 					h);
 		}
 
-		void clearCreatureHeartbeat(
+		void clearUserTimer(
 				int pcId,
 				TaskHandle h,
-				CreatureHeartbeatTask task) {
+				UserTimerTask task) {
 
 			final CIOState st = states.get(pcId);
 			if (st != null
-					&& st.heartbeatHandle == h
-					&& st.heartbeatTask == task) {
+					&& st.userTimerHandle == h
+					&& st.userTimerTask == task) {
 
-				st.heartbeatHandle = null;
-				st.heartbeatTask = null;
+				st.userTimerHandle = null;
+				st.userTimerTask = null;
 			}
 		}
 
-		void rescheduleCreatureHeartbeat(CreatureHeartbeatTask task) {
+		void rescheduleUserTimer(UserTimerTask task) {
 			if (task == null
 					|| task.owner != this
 					|| task.h.isCancelled()) {
@@ -1889,20 +1924,20 @@ public final class CIOThreadCallback {
 			final CIOState st = states.get(task.pcId);
 			if (st == null
 					|| !st.alive
-					|| st.heartbeatHandle != task.h
-					|| st.heartbeatTask != task) {
+					|| st.userTimerHandle != task.h
+					|| st.userTimerTask != task) {
 
 				task.h.cancel();
 				return;
 			}
 
 			threadLocalTimer.schedule(
-					CREATURE_HEARTBEAT_MS,
+					USER_TIMER_TICK_MS,
 					task,
 					task.h);
 		}
 
-		private static long initialCreatureHeartbeatDelay(int pcId) {
+		private static long initialUserTimerDelay(int pcId) {
 			int x = pcId;
 			x ^= x >>> 16;
 			x *= 0x7feb352d;
@@ -1911,9 +1946,9 @@ public final class CIOThreadCallback {
 			x ^= x >>> 16;
 
 			final int phase =
-					(int) ((x & 0x7fffffffL) % CREATURE_HEARTBEAT_JITTER_MS);
+					(int) ((x & 0x7fffffffL) % USER_TIMER_JITTER_MS);
 
-			return CREATURE_HEARTBEAT_MS + 1L + phase;
+			return USER_TIMER_TICK_MS + 1L + phase;
 		}
 
 		void ensureHpBarTask(int pcId, CIOState st) {
@@ -2161,8 +2196,8 @@ public final class CIOThreadCallback {
 		L1PcInstance sessionActor;
 		int sessionStamp;
 		boolean alive;
-		TaskHandle ghostHandle, invisHandle, fishingHandle, hpBarHandle, heartbeatHandle, generic[];
-		CreatureHeartbeatTask heartbeatTask;
+		TaskHandle ghostHandle, invisHandle, fishingHandle, hpBarHandle, userTimerHandle, generic[];
+		UserTimerTask userTimerTask;
 		int genericSize;
 
 		void addGeneric(TaskHandle h) {
@@ -2232,10 +2267,10 @@ public final class CIOThreadCallback {
                 if (st.invisHandle != null) st.invisHandle.cancel();
                 if (st.fishingHandle != null) st.fishingHandle.cancel();
                 if (st.hpBarHandle != null) st.hpBarHandle.cancel();
-                if (st.heartbeatHandle != null) st.heartbeatHandle.cancel();
+                if (st.userTimerHandle != null) st.userTimerHandle.cancel();
                 st.cancelAllGeneric();
                 st.sessionActor = null;
-                st.heartbeatTask = null;
+                st.userTimerTask = null;
                 vals[i] = null;
                 keys[i] = EMPTY;
             }
