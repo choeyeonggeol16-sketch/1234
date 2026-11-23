@@ -52,6 +52,10 @@ public final class CDesirePQ {
     public static final byte PS_MOVE_FREEWAY      = 17;
     public static final byte PS_MOVE_FORMATION    = 18;
 
+    // NC Desire.h: CDesire::IsOneTimeAction / IsInterruptable.
+    public static final int DF_ONE_TIME_METHOD = 0x20000000;
+    public static final int DF_NOT_INTERRUPTABLE = 0x40000000;
+
     public static final byte BLOCKED_ATTACK_NONE = 0;
     public static final byte BLOCKED_ATTACK_LANE = 1;
     public static final byte BLOCKED_ATTACK_RING = 2;
@@ -656,6 +660,49 @@ public final class CDesirePQ {
         pq.removeAt(index);
         if (pq.size == 0) {
             pq.addMoveAround();
+        }
+        return true;
+    }
+
+    /**
+     * NC CNPC::UseSkillFinished(targetId, skillNameId, well).
+     *
+     * L1's selected skill executor currently reports acceptance immediately,
+     * so normal accepted casts still consume their exact key. This entry
+     * also preserves the native rule for a future delayed failure callback:
+     * one-time methods are removed; reusable methods keep their desire and
+     * lose only their own previously applied boost.
+     *
+     * Call only from the owning NPC Action executor; no new event thread.
+     */
+    public static boolean UseSkillFinished(
+            final L1MonsterInstance npc,
+            final int targetId,
+            final int skillId,
+            final boolean well) {
+
+        final CDesirePQ pq = npc != null ? npc._desirePQ : null;
+        if (pq == null || skillId <= 0) return false;
+
+        if (well) {
+            return removeUseSkillDesire(npc, targetId, skillId);
+        }
+
+        // The ordinary heap is where NC _BoostDown searches. An absolute
+        // desire is not a member of that heap.
+        final int index = pq.findSkillKey(targetId, skillId);
+        if (index < 0) return false;
+
+        if ((pq.skillFlags[index] & DF_ONE_TIME_METHOD) != 0) {
+            pq.removeAt(index);
+            if (pq.size == 0) pq.addMoveAround();
+            return true;
+        }
+
+        if (pq.boosted != null && pq.boosted[index]) {
+            pq.values[index] -= pq.boostFor(index);
+            pq.boosted[index] = false;
+            pq.heapDirty = true;
         }
         return true;
     }
