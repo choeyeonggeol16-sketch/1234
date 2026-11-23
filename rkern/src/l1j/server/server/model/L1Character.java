@@ -1,5 +1,7 @@
 package l1j.server.server.model;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +13,9 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.ai.core.PathNodeWorld;
+import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
@@ -130,6 +135,12 @@ public class L1Character extends L1Object {
 	}
 
 	public void dispose() {
+        synchronized (this) {
+            _ncPassingPos = null;
+            _ncPassingNext = 0;
+            _ncPassingCount = 0;
+        }
+        _ncAttackLeaderId = null;
 		clearSkillEffectTimer();
 		final CKnownObjectContainer known = KNOWN_CONTAINER.getAndSet(this, CKnownObjectContainer.CLOSED);
 		if (known != null && known != CKnownObjectContainer.CLOSED) known.close();
@@ -154,6 +165,267 @@ public class L1Character extends L1Object {
 		ac = new AC(this);
 		light = new Light(this);
 	}
+
+
+    // NC CCreature passing-position ring and four directional attack leaders.
+    // Allocate only when a creature actually moves or is chased. All movement
+    // history reads/writes are protected by this character's monitor; leader
+    // CAS uses an int-array VarHandle for cross-CIO owner safety.
+    private static final int NC_PASSING_CAPACITY = 15;
+    private static final VarHandle NC_LEADER_SLOT =
+            MethodHandles.arrayElementVarHandle(int[].class);
+    private transient long[] _ncPassingPos;
+    private transient int _ncPassingNext;
+    private transient int _ncPassingCount;
+    private transient int _ncPassingMap = -1;
+    private transient volatile int[] _ncAttackLeaderId;
+
+    public final synchronized void ResetPassingPos(
+            final int x, final int y, final int mapId) {
+        if (_ncPassingPos != null) {
+            _ncPassingNext = 0;
+            _ncPassingCount = 0;
+            _ncPassingMap = mapId;
+        }
+    }
+
+    /**
+     * Port of CCreature::AddPassingPos, with L1 two-dimensional tile
+     * projection and the NC new-add straight-segment compression.
+     * Invoked only after a PC/NPC movement has actually committed.
+     */
+    public final synchronized void AddPassingPos(final int fromX,
+            final int fromY, final int toX, final int toY, final int mapId) {
+        if (fromX == toX && fromY == toY) return;
+        long[] passing = _ncPassingPos;
+        if (passing == null) {
+            passing = new long[NC_PASSING_CAPACITY];
+            _ncPassingPos = passing;
+        }
+        final long from = PathNodeWorld.pack(fromX, fromY);
+        final long to = PathNodeWorld.pack(toX, toY);
+        final int previous = (_ncPassingNext + NC_PASSING_CAPACITY - 1)
+                % NC_PASSING_CAPACITY;
+        if (_ncPassingMap != mapId || _ncPassingCount == 0
+                || passing[previous] != from) {
+            // A teleport or an intervening relocation invalidates old paths.
+            _ncPassingMap = mapId;
+            _ncPassingNext = 1;
+            _ncPassingCount = 1;
+            passing[0] = from;
+        }
+
+        final int prev = (_ncPassingNext + NC_PASSING_CAPACITY - 1)
+                % NC_PASSING_CAPACITY;
+        final int older = (_ncPassingNext + NC_PASSING_CAPACITY - 2)
+                % NC_PASSING_CAPACITY;
+        if (_ncPassingCount >= 2) {
+            final int olderX = PathNodeWorld.unpackX(passing[older]);
+            final int olderY = PathNodeWorld.unpackY(passing[older]);
+            final long dx = (long) fromX - toX;
+            final long dy = (long) fromY - toY;
+            // The original threshold is 1024 world units, or 64 L1 tiles.
+            if (dx * dx + dy * dy < 64L * 64L) {
+                final L1Map map = getMap();
+                if (map != null && PathNodeWorld.moveStraight(
+                        map, olderX, olderY, toX, toY)) {
+                    passing[prev] = to;
+                    return;
+                }
+            }
+        }
+
+        passing[_ncPassingNext] = to;
+        _ncPassingNext = (_ncPassingNext + 1) % NC_PASSING_CAPACITY;
+        if (_ncPassingCount < NC_PASSING_CAPACITY) ++_ncPassingCount;
+    }
+
+    /** NC CCreature::GetPassingPosList, newest first, caller-owned scratch. */
+    public final synchronized int GetPassingPosList(final long[] output) {
+        if (output == null || output.length < NC_PASSING_CAPACITY
+                || _ncPassingPos == null || _ncPassingCount == 0
+                || _ncPassingMap != getMapId()) {
+            return 0;
+        }
+        final int last = (_ncPassingNext + NC_PASSING_CAPACITY - 1)
+                % NC_PASSING_CAPACITY;
+        final long current = _ncPassingPos[last];
+        // Do not surface pre-teleport history if relocation skipped Reset().
+        if (Math.max(Math.abs(PathNodeWorld.unpackX(current) - getX()),
+                     Math.abs(PathNodeWorld.unpackY(current) - getY())) > 1) {
+            return 0;
+        }
+        int index = last;
+        for (int i = 0; i < _ncPassingCount; i++) {
+            output[i] = _ncPassingPos[index];
+            index = (index + NC_PASSING_CAPACITY - 1) % NC_PASSING_CAPACITY;
+        }
+        return _ncPassingCount;
+    }
+
+    /** NC CCreature::GetMyPositionFrom, projected to L1 2D quadrants 1..4. */
+    public final int GetMyPositionFrom(final L1Character other) {
+        if (other == null) return 1;
+        final double angle = Math.atan2(
+                (double) getY() - other.getY(),
+                (double) getX() - other.getX());
+        final int pos = 2 - (int) (angle / Math.PI * -2.0d);
+        return Math.max(1, Math.min(4, pos));
+    }
+
+    public final int GetAttackLeaderId(final int position) {
+        final int[] leaders = _ncAttackLeaderId;
+        return leaders != null && position >= 1 && position <= 4
+                ? (int) NC_LEADER_SLOT.getVolatile(leaders, position) : 0;
+    }
+
+    /** NC CCreature::SetAttackLeaderRelated: one CAS per direction. */
+    public final boolean SetAttackLeaderRelated(final L1NpcInstance actor,
+            final int expectedId) {
+        if (actor == null || actor.getId() == 0) return false;
+        final int position = actor.GetMyPositionFrom(this);
+        int[] leaders = _ncAttackLeaderId;
+        if (leaders == null) {
+            synchronized (this) {
+                leaders = _ncAttackLeaderId;
+                if (leaders == null) {
+                    leaders = new int[5];
+                    _ncAttackLeaderId = leaders;
+                }
+            }
+        }
+        return NC_LEADER_SLOT.compareAndSet(
+                leaders, position, expectedId, actor.getId());
+    }
+
+    /** NC CCreature::AbandonAttackLeaderOf. */
+    public final void AbandonAttackLeaderOf(final L1NpcInstance actor) {
+        if (actor == null) return;
+        final int[] leaders = _ncAttackLeaderId;
+        if (leaders == null) return;
+        final int id = actor.getId();
+        for (int position = 1; position <= 4; position++) {
+            NC_LEADER_SLOT.compareAndSet(leaders, position, id, 0);
+        }
+    }
+
+    /** NC CCreature::IsCloserThan, L1 static sight and squared tile distance. */
+    public final boolean IsCloserThan(final L1Character leader,
+            final L1Character target) {
+        if (leader == null) return true;
+        if (target == null || getMapId() != target.getMapId()
+                || leader.getMapId() != target.getMapId()) return false;
+        final long dx = (long) getX() - target.getX();
+        final long dy = (long) getY() - target.getY();
+        final long bx = (long) leader.getX() - target.getX();
+        final long by = (long) leader.getY() - target.getY();
+        return dx * dx + dy * dy < bx * bx + by * by
+                && PathNodeWorld.moveStraight(
+                        getMap(), getX(), getY(), leader.getX(), leader.getY());
+    }
+
+    /**
+     * NC CCreature::GetPassingPosOnSight projected to L1:
+     * direct static sight, target's up-to-15 passing points, directional
+     * attack leader's passing points, baked CPathNodeWorld fallback, then a
+     * last visible target passing point. Physical motion still belongs to
+     * SetMoving and WorldCollisionHash, never this static waypoint selector.
+     */
+    public final long GetPassingPosOnSight(final L1NpcInstance actor,
+            final int destinationX, final int destinationY,
+            final long[] targetPassing, final long[] leaderPassing) {
+        if (actor == null || targetPassing == null || leaderPassing == null
+                || actor.isDead() || isDead()
+                || actor.getMapId() != getMapId()) {
+            return PathNodeWorld.NO_PATH;
+        }
+        final L1Map map = actor.getMap();
+        if (map == null || map.isNull()) return PathNodeWorld.NO_PATH;
+        final int mapId = actor.getMapId();
+        final int sx = actor.getX();
+        final int sy = actor.getY();
+        final int tx = getX();
+        final int ty = getY();
+        final int actorId = actor.getId();
+        final WorldCollisionHash collision = WorldCollisionHash.getInstance();
+
+        // NC's straight case does not need a graph search. A target's
+        // occupied current tile is not a usable L1 movement destination.
+        if (PathNodeWorld.moveStraight(
+                map, sx, sy, destinationX, destinationY)
+                && collision.canEnter(
+                        (short) mapId, destinationX, destinationY, actorId)
+                && (sx != destinationX || sy != destinationY)) {
+            return PathNodeWorld.pack(destinationX, destinationY);
+        }
+
+        final int count = GetPassingPosList(targetPassing);
+        for (int i = 0; i < count; i++) {
+            final long point = targetPassing[i];
+            final int x = PathNodeWorld.unpackX(point);
+            final int y = PathNodeWorld.unpackY(point);
+            if ((x != sx || y != sy) && map.isPassable(x, y)
+                    && collision.canEnter((short) mapId, x, y, actorId)
+                    && PathNodeWorld.moveStraight(map, sx, sy, x, y)
+                    && PathNodeWorld.moveStraight(map, x, y, tx, ty)) {
+                return point;
+            }
+        }
+
+        int goalX = tx;
+        int goalY = ty;
+        if (actor instanceof L1MonsterInstance) {
+            final int position = actor.GetMyPositionFrom(this);
+            final int leaderId = GetAttackLeaderId(position);
+            final L1Object leaderObject = leaderId == 0
+                    ? null : L1World.getInstance().findObject(leaderId);
+            if (leaderObject instanceof L1MonsterInstance
+                    && leaderObject != actor) {
+                final L1MonsterInstance leader = (L1MonsterInstance) leaderObject;
+                if (!leader.isDead() && leader.getCurrentHp() > 0
+                        && leader.isMovable()
+                        && leader.getMapId() == mapId
+                        && leader.getTarget() == this) {
+                    final int n = leader.GetPassingPosList(leaderPassing);
+                    for (int i = 0; i < n; i++) {
+                        final long point = leaderPassing[i];
+                        final int x = PathNodeWorld.unpackX(point);
+                        final int y = PathNodeWorld.unpackY(point);
+                        if ((x != sx || y != sy) && map.isPassable(x, y)
+                                && collision.canEnter((short) mapId,
+                                        x, y, actorId)
+                                && PathNodeWorld.moveStraight(
+                                        map, sx, sy, x, y)) {
+                            return point;
+                        }
+                    }
+                    if (n != 0) {
+                        goalX = PathNodeWorld.unpackX(leaderPassing[0]);
+                        goalY = PathNodeWorld.unpackY(leaderPassing[0]);
+                    }
+                }
+            }
+        }
+
+        final long graphPoint = PathNodeWorld.getInstance().pathFind(
+                mapId, sx, sy, goalX, goalY,
+                PathNodeWorld.SEARCH_LIMIT_LONG);
+        if (graphPoint != PathNodeWorld.NO_PATH) {
+            return graphPoint;
+        }
+        // NC fallback after PFR_ERROR: a visible target passing position.
+        for (int i = 0; i < count; i++) {
+            final long point = targetPassing[i];
+            final int x = PathNodeWorld.unpackX(point);
+            final int y = PathNodeWorld.unpackY(point);
+            if ((x != sx || y != sy) && map.isPassable(x, y)
+                    && collision.canEnter((short) mapId, x, y, actorId)
+                    && PathNodeWorld.moveStraight(map, sx, sy, x, y)) {
+                return point;
+            }
+        }
+        return PathNodeWorld.NO_PATH;
+    }
 
 	public double getCurrentHpPercent() {
 		return (100D / (double) getMaxHp()) * (double) getCurrentHp();

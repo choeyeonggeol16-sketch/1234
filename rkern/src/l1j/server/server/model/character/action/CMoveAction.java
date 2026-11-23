@@ -229,6 +229,7 @@ public final class CMoveAction extends CNewAction {
             committed = true;
             pc.setHeading(h);
             pc.getLocation().set(nextX, nextY);
+            pc.AddPassingPos(sx, sy, nextX, nextY, moveMap);
             L1World.getInstance().moveTo(pc, moveMap, sx, sy);
             pc.setLastMoveActionMillis(nowMs);
             SC_MoveChar.broadcast(pc);

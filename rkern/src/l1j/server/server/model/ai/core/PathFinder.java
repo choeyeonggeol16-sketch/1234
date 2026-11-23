@@ -6,6 +6,17 @@ import l1j.server.server.model.map.L1WorldMap;
 
 public final class PathFinder {
 
+    private final long[] targetPassingPositions = new long[15];
+    private final long[] leaderPassingPositions = new long[15];
+
+    public long[] targetPassingPositions() {
+        return targetPassingPositions;
+    }
+
+    public long[] leaderPassingPositions() {
+        return leaderPassingPositions;
+    }
+
     /* Static route trace only. Disable after validation. */
     private static final boolean DEBUG_FLOW = false;
 

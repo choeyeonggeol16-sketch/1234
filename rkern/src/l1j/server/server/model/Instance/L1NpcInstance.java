@@ -187,6 +187,8 @@ public class L1NpcInstance extends L1Character {
      * Shared path-fail flag true => ++; fail when count > 30.
      */
     public int _pathFindFailCount = 0;
+    /** NC directional attack leader ownership, cleared on retarget/stop. */
+    public int _ncAttackLeaderTargetId;
 
     private static final AtomicIntegerFieldUpdater<L1NpcInstance> AI_WAKE_QUEUED =
             AtomicIntegerFieldUpdater.newUpdater(L1NpcInstance.class, "_aiWakeQueued");
@@ -1450,6 +1452,7 @@ public class L1NpcInstance extends L1Character {
                     return walkInterval;
                 }
                 moved = true;
+                AddPassingPos(fromX, fromY, toX, toY, fromMap);
                 L1World.getInstance().moveTo(this, fromMap, fromX, fromY);
             }
             NpcEventFactory.onNpcWorldEvent(this);
@@ -1584,6 +1587,7 @@ public class L1NpcInstance extends L1Character {
         final int oldMapId = getMapId();
 
         L1World.getInstance().relocateVisibleObject(this, nx, ny, oldMapId);
+        ResetPassingPos(nx, ny, oldMapId);
         setHeading(dir);
         NpcEventFactory.onNpcWorldEvent(this);
         teleportNpcOcc(oldMapId, oldX, oldY, oldMapId, nx, ny);
