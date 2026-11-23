@@ -583,10 +583,10 @@ public class L1PetInstance extends L1NpcInstance {
 		_currentPetStatus = i;
 		// Status 8 is the L1 pickup command. Publish mode before the CIO
 		// owner reads the next GET_ITEM action; no separate pickup worker.
-		setPickupItem(i == 8);
 		if (i != 8) {
 			_targetItem = null;
 		}
+		setPickupItem(i == 8);
 		if (_currentPetStatus == 5) {
 			setHomeX(getX());
 			setHomeY(getY());
