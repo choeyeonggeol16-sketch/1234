@@ -910,7 +910,6 @@ public final class Config {
 	public static int BugBug1;
 	public static int Dr_weapon;
 	public static int Hero_weapon;
-	public static boolean HUNT_EVENT;
 	public static int ADEN_SHOP_NPC;
 	public static int Tam_Time;
 	public static int[] level1 = new int[2];
@@ -3189,7 +3188,6 @@ public final class Config {
 			Dr_weapon = Integer.parseInt(ServerCodes.getProperty("Drweapon", "1"));
 			Hero_weapon = Integer.parseInt(ServerCodes.getProperty("Heroweapon", "1"));
 			바포시스템 = Boolean.parseBoolean(ServerCodes.getProperty("Bapo1", "true"));
-			HUNT_EVENT = Boolean.parseBoolean(ServerCodes.getProperty("HuntEvent", "false"));
 			POLY_EVENT1 = Boolean.parseBoolean(ServerCodes.getProperty("PolyEvent1", "false"));
 			POLY_EVENT = Boolean.parseBoolean(ServerCodes.getProperty("PolyEvent", "false"));
 			MANAGER_CLEAR = Boolean.parseBoolean(ServerCodes.getProperty("ManagerClear", "true"));

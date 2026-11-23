@@ -592,12 +592,6 @@ public class GMCommands {
 //			gm.sendPackets(new RActionUI(RActionUI.EVENT_SYSTEM, 45752, true));
 //			break;
 
-		case "수렵":
-			huntEvent(gm, param);
-			break;
-		case "소환이벤트":
-			Event1(gm, param);
-			break;
 		case "잠재력조회":
 			아아(gm, param);
 			break;
@@ -623,25 +617,6 @@ public class GMCommands {
 //			vipsetting(gm, param);
 //			break;
 
-		case "화면템주기":
-			allitem(gm, param);
-			break;
-		case "화면어벤":
-			allBuff1(gm);
-			break;
-		case "화면축복":
-			allBuff2(gm);
-			break;
-		case "화면생마":
-			allBuff3(gm);
-			break;
-		case "화면흑사":
-			allBuff4(gm);
-			break;
-		case "화면코마":
-			allBuff5(gm);
-			break;
-			
 		case "공성종료":
 			castleWarExit(gm, param);
 			break;
@@ -781,9 +756,6 @@ public class GMCommands {
 			break;
 		case "감옥":
 			hold(gm, param);
-			break;
-		case "메모리반환":
-			메모리반환(gm);
 			break;
 		case "인벤삭제":
 			InventoryDelete(gm, param);
@@ -980,7 +952,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 				gm.sendPackets(".혈탈퇴 [캐릭명] 입력");
 			}
 			break;
-		 case "자동사냥": gm.sendPackets("구형 서버 자동사냥 제거됨: 플레이서포터 사용"); break;
 
 //		 case "붉은전쟁선포": UserCommands.getInstance().blooodWarStart(gm, param); break;
 //		 case "테스트2":
@@ -1106,7 +1077,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "	          .오픈대기.편지삭제.인벤삭제.공성시간.공성시작", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "			          .공성종료.성혈조작.압류해제.압류목록.아지트지급", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "			          .밸런스.상점리로드.혈맹경험치.데드락", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "			          .정리.메모리반환.포트변경.상점검사.유즈타입", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "			          .정리.포트변경.상점검사.유즈타입", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[계정]:.셋팅.정보.계정.암호변경.계정압류.영구추방", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "          .아이피추방.광역추방.계정정보.계정추가.페널티", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "          .경험치복구.퀴즈변경.밴아이피.상점추방.유저인벤삭제", 1);
@@ -1138,8 +1109,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹정보", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .푸쉬시스템 .혈마크 .계정확인 .보스", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .무기인챈성공 .방어인챈성공 .인형박스", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .화면어벤 .화면축복 .화면생마 .화면코마 .화면흑사", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .화면템주기 .엔피씨다운 .원격교환 .전체채팅", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .엔피씨다운 .전체채팅", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹포인트조회 .혈맹포인트삭제 .혈맹포인트선물", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .킬증가 .킬삭제 .데스증가 .데스삭제 .잠재력조회", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .맵인원 .서버초기화", 1);
@@ -1367,24 +1337,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		}
 	}
 
-	private void huntEvent(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String type = st.nextToken();
-			if (type.equalsIgnoreCase("시작")) {
-				Config.HUNT_EVENT = true;
-				SC_PacketBox.broadcastGreen("크리스마스 수렵 이벤트가 진행 됩니다. 사슴과 멧돼지를 모조리 잡아주세요!");
-				SC_ChatPacket.broadcastMessage("\\aA크리스마스 수렵 이벤트가 진행 됩니다. 사슴과 멧돼지를 모조리 잡아주세요!");
-
-			} else if (type.equalsIgnoreCase("종료")) {
-				Config.HUNT_EVENT = false;
-				SC_PacketBox.broadcastGreen("크리스마스 수렵 이벤트가 종료 되었습니다. 나오신 '루돌프의 종'를 기란마을 산타에게 가져다 주세요.");
-				SC_ChatPacket.broadcastMessage("\\aA크리스마스 수렵 이벤트가 종료 되었습니다. 나오신 '루돌프의 종'를 기란마을 산타에게 가져다 주세요.");
-			}
-		} catch (Exception e) {
-			gm.sendPackets(".수렵 [시작 and 종료]");
-		}
-	}
 
 	public static void 할파스의신의(L1PcInstance gm, String param) {
 		if (!(gm.getInventory().checkEquipped(123111) || gm.getInventory().checkEquipped(123112)
@@ -1726,104 +1678,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		} catch (Exception e) {
 		}
 	}
-	private void Event1(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String event = st.nextToken();
-
-			if (event.equalsIgnoreCase("부대1")) {
-				int rx = _random.nextInt(5);
-				int ry = _random.nextInt(5);
-
-				int rx1 = _random.nextInt(10);
-				int ry1 = _random.nextInt(10);
-
-				int rx2 = _random.nextInt(15);
-				int ry2 = _random.nextInt(15);
-
-				int ux = 32926 + rx;
-				int uy = 33250 + ry;
-				int um = 4;
-
-				int ux1 = 32926 + rx1;
-				int uy1 = 33250 + ry1;
-
-				int ux2 = 32926 + rx2;
-				int uy2 = 33250 + ry2;
-
-				L1SpawnUtil.spawnfieldboss(ux, uy, (short) um, 45545, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux1, uy1, (short) um, 7000091, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux2, uy2, (short) um, 7000092, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux2, uy2, (short) um, 7000089, 0, 0, 0);
-				System.out.println("▶소환이벤트 시작 : 첫번째 부대 출현◀");
-
-				L1World.getInstance().broadcastServerMessage("\\aA소환이벤트: 잠시후 메티스의 근위부대가 출현 합니다.");
-
-			} else if (event.equalsIgnoreCase("부대2")) {
-				int rx = _random.nextInt(5);
-				int ry = _random.nextInt(5);
-
-				int rx1 = _random.nextInt(10);
-				int ry1 = _random.nextInt(10);
-
-				int rx2 = _random.nextInt(15);
-				int ry2 = _random.nextInt(15);
-
-				int ux = 32926 + rx;
-				int uy = 33250 + ry;
-				int um = 4;
-
-				int ux1 = 32926 + rx1;
-				int uy1 = 33250 + ry1;
-
-				int ux2 = 32926 + rx2;
-				int uy2 = 33250 + ry2;
-
-				L1SpawnUtil.spawnfieldboss(ux, uy, (short) um, 45203, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux1, uy1, (short) um, 45206, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux2, uy2, (short) um, 45257, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux2, uy2, (short) um, 45263, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux1, uy1, (short) um, 45341, 0, 0, 0);
-				System.out.println("▶소환이벤트 시작 : 두번째 부대 출현◀");
-
-				L1World.getInstance().broadcastServerMessage("\\aA소환이벤트: 곧 이어 메티스의 근위부대가 출현 합니다.");
-
-			} else if (event.equalsIgnoreCase("부대3")) {
-				int rx = _random.nextInt(5);
-				int ry = _random.nextInt(5);
-
-				int rx1 = _random.nextInt(10);
-				int ry1 = _random.nextInt(10);
-
-				int rx2 = _random.nextInt(15);
-				int ry2 = _random.nextInt(15);
-
-				int ux = 32926 + rx;
-				int uy = 33250 + ry;
-				int um = 4;
-
-				int ux1 = 32926 + rx1;
-				int uy1 = 33250 + ry1;
-
-				int ux2 = 32926 + rx2;
-				int uy2 = 33250 + ry2;
-
-				L1SpawnUtil.spawnfieldboss(ux, uy, (short) um, 707001, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux1, uy1, (short) um, 707002, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux2, uy2, (short) um, 707007, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux2, uy2, (short) um, 707008, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux2, uy2, (short) um, 707013, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux2, uy2, (short) um, 707015, 0, 0, 0);
-				L1SpawnUtil.spawnfieldboss(ux2, uy2, (short) um, 707016, 0, 0, 0);
-				System.out.println("▶소환이벤트 시작 : 세번째 부대 출현◀");
-
-				L1World.getInstance().broadcastServerMessage("\\aA소환이벤트: 최종 메티스의 근위부대가 출현 합니다.");
-			}
-		} catch (Exception e) {
-			gm.sendPackets("[.소환이벤트] [이벤트명]");
-			gm.sendPackets("[소환이벤트명]: 부대1/부대2/ 부대3/부대4/부대5");
-		}
-	}
 
 	private void LargeAreaIPBan(L1PcInstance pc, String param) {
 		try {
@@ -2023,257 +1877,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			war.close();
 		} catch (Exception e) {
 			gm.sendPackets(".공성종료 [성이름두글자]");
-		}
-	}
-	
-	public void allitem(L1PcInstance gm, String arg) {
-		
-		
-		
-		boolean globalGiftNoticeSent = false;
-l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer memoGiftFrame = null;
-String memoGiftText = null;
-try {
-for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(gm, 22)) {
-			try {
-				
-				StringTokenizer st = new StringTokenizer(arg);
-				
-				String nameid = st.nextToken();
-				
-				int count = 1;
-				if (st.hasMoreTokens()) {
-					count = Integer.parseInt(st.nextToken());
-				}
-				int enchant = 0;
-				if (st.hasMoreTokens()) {
-					enchant = Integer.parseInt(st.nextToken());
-				}
-				int itemid = 0;
-				int Attrenchant = 0;
-				if (st.hasMoreTokens()) {
-					Attrenchant = Integer.parseInt(st.nextToken());
-				}
-				
-				try {
-					itemid = Integer.parseInt(nameid);
-				} catch (NumberFormatException e) {
-					itemid = ItemTable.getInstance().findItemIdByNameWithoutSpace(nameid);
-					if (itemid == 0) {
-						SC_SystemMessage.send(pc, "해당 아이템이 발견되지 않았습니다.");
-						return;
-					}
-				}
-				L1Item temp = ItemTable.getInstance().getTemplate(itemid);
-				if (temp != null) {
-					if (temp.isStackable()) {
-						L1ItemInstance item = ItemTable.getInstance().createItem(itemid);
-						item.setEnchantLevel(0);
-						item.setCount(count);
-						if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
-							pc.getInventory().storeItem(item);
-							//pc.sendPackets(new S_GMHtml("선물: "+pc.getName()+"" , ""+item.getLogName()+" 를(을) 획득함 인벤토리 확인."));
-							//pc.sendPackets("선물: " + item.getLogName() + " " + count + "개 획득 인벤토리 확인하세요");
-							
-							SC_SkillSound.send(pc, pc.getId(), 4856);
-							final String giftMessage = "\\aD[특별선물]  " + item.getLogName() + " (" + count + "개) 획득";
-if (memoGiftFrame == null || !giftMessage.equals(memoGiftText)) {
-  if (memoGiftFrame != null) {
-    memoGiftFrame.close();
-    memoGiftFrame = null;
-  }
-  memoGiftFrame = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.nativeWriter(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);
-  memoGiftText = giftMessage;
-}
-l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(memoGiftFrame,pc);
-							SC_SystemMessage.send(gm, "\\aD화면 내 유저들에게 +" + enchant + " "+ temp.getNameId()+"(ID:" + itemid + ") "+ count +"개 보냄", true);
-							if (!globalGiftNoticeSent) {
-  SC_PacketBox.broadcastGreen("\\f=운영자 주위 유저분들에게 선물을 드렸습니다 ▶▶ "+ temp.getNameId()+"("+count+")");
-  globalGiftNoticeSent = true;
- }
-						}
-					} else {
-						L1ItemInstance item = null;
-						int createCount;
-						for (createCount = 0; createCount < count; createCount++) {
-							item = ItemTable.getInstance().createItem(itemid);
-							item.setEnchantLevel(enchant);
-							item.setAttrEnchantLevel(Attrenchant);
-							
-							//if (target.getInventory().checkAddItem(item, 1) == L1Inventory.OK) {
-							pc.getInventory().storeItem(item);
-							
-							//	} else {
-							//		break;
-							//	}
-						}
-						if (createCount > 0) {
-							//pc.sendPackets(new S_GMHtml("선물:"+pc.getName()+"" , ""+item.getLogName()+"("+count+") 를(을) 획득함.　인벤토리 확인하세요"));
-							SC_SkillSound.send(pc, pc.getId(), 4856);
-							final String giftMessage = "\\aD[특별선물]  " + item.getLogName() + " (" + count + "개) 획득";
-if (memoGiftFrame == null || !giftMessage.equals(memoGiftText)) {
-  if (memoGiftFrame != null) {
-    memoGiftFrame.close();
-    memoGiftFrame = null;
-  }
-  memoGiftFrame = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.nativeWriter(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);
-  memoGiftText = giftMessage;
-}
-l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(memoGiftFrame,pc);
-							if (!globalGiftNoticeSent) {
-  SC_PacketBox.broadcastGreen("\\f=운영자 주위 유저분들에게 선물을 드렸습니다 ▶▶ "+ temp.getNameId()+"("+count+")");
-  globalGiftNoticeSent = true;
- }
-							SC_SystemMessage.send(gm, "\\aD화면 내 유저들에게 +" + enchant + " "+ temp.getNameId()+"(ID:" + itemid + ") "+ count +"개 보냄", true);
-						}
-					}
-				} else {
-					SC_SystemMessage.send(gm, "지정 ID의 아이템은 존재하지 않습니다.");
-				}
-			} catch (Exception e) {
-				SC_SystemMessage.send(gm, ".[화면템주기] [아이템ID] [갯수] [인챈]");
-			}
-		}
-} finally {
- if (memoGiftFrame != null) memoGiftFrame.close();
-}
-		
-	}
-
-	// =====================================================
-	// 운영자 주변 버프
-	// =====================================================
-
-	private static final int[] ALL_BUFF_1_SKILLS = {
-			79
-	};
-	private static final int[] ALL_BUFF_2_SKILLS = {
-			8135, 8136, 8137
-	};
-	private static final int[] ALL_BUFF_3_SKILLS = {
-			7678
-	};
-	private static final int[] ALL_BUFF_4_SKILLS = {
-			4914
-	};
-	private static final int[] ALL_BUFF_5_SKILLS = {
-			50007
-	};
-
-	public void allBuff1(L1PcInstance gm) {
-		applyGmAreaBuff(
-				gm,
-				ALL_BUFF_1_SKILLS,
-				0,
-				"\\aD운영자 주위에 '어드밴스 스피릿'이 시전되었습니다.");
-	}
-
-
-	private void allBuff2(L1PcInstance gm) {
-		applyGmAreaBuff(
-				gm,
-				ALL_BUFF_2_SKILLS,
-				0,
-				"\\aD운영자 주위에 '메티스의 축복'이 시전되었습니다.");
-	}
-
-
-	private void allBuff3(L1PcInstance gm) {
-		applyGmAreaBuff(
-				gm,
-				ALL_BUFF_3_SKILLS,
-				0,
-				"\\aD운영자 주위에 '생명의 마안'이 시전되었습니다.");
-	}
-
-
-	private void allBuff4(L1PcInstance gm) {
-		applyGmAreaBuff(
-				gm,
-				ALL_BUFF_4_SKILLS,
-				4914,
-				"\\aD운영자 주위에 '흑사 버프'가 시전되었습니다.");
-	}
-
-
-	private void allBuff5(L1PcInstance gm) {
-		applyGmAreaBuff(
-				gm,
-				ALL_BUFF_5_SKILLS,
-				0,
-				"\\aD운영자 주위에 '코마 버프'가 시전되었습니다.");
-	}
-
-
-	/**
-	 * 운영자 주변 공용 버프 처리.
-	 * @param gm            운영자
-	 * @param skillIds      적용할 스킬 목록
-	 * @param removeSkillId 먼저 제거할 스킬 ID, 없으면 0
-	 * @param message       대상/운영자 알림 메시지
-	 */
-	private void applyGmAreaBuff(
-			L1PcInstance gm,
-			int[] skillIds,
-			int removeSkillId,
-			String message) {
-
-		if (gm == null || skillIds == null || skillIds.length == 0) {
-			return;
-		}
-
-		int appliedCount = 0;
-
-		try {
-			try(var buffShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.nativeWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance pc :
-					L1World.getInstance().getVisiblePlayer(gm, 22)) {
-
-				if (pc == null
-						|| pc.isPrivateShop()
-						|| pc.isDead()
-						|| pc.isGhost()) {
-					continue;
-				}
-
-				if (removeSkillId > 0
-						&& pc.hasSkillEffect(removeSkillId)) {
-
-					pc.removeSkillEffect(removeSkillId);
-				}
-
-				final int targetId = pc.getId();
-				final int x = pc.getX();
-				final int y = pc.getY();
-
-				for (int i = 0; i < skillIds.length; i++) {
-					L1SkillUse.cast(
-							pc,
-							skillIds[i],
-							targetId,
-							x,
-							y,
-							null,
-							0,
-							L1SkillUse.TYPE_GMBUFF);
-				}
-
-				l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(buffShared,pc);
-
-				appliedCount++;
-			}
-}
-			if (appliedCount > 0) {
-				SC_SystemMessage.send(gm, message);
-			}
-
-		} catch (Throwable t) {
-			SC_SystemMessage.send(gm, ".버프 에러");
-
-			t.printStackTrace();
 		}
 	}
 	
@@ -2596,12 +2199,6 @@ for (L1PcInstance pc :
 		}
 	}
 
-	private void 메모리반환(L1PcInstance gm) {
-		gm.sendPackets("메모리가 반환되었습니다.");
-		System.out.println("강제로 가비지 처리를 진행 합니다.");
-		System.gc();
-		System.out.println("메모리 정리가 완료 되었습니다.");
-	}
 
 	private void hold(L1PcInstance gm, String pcName) {
 		try {
