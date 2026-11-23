@@ -56,6 +56,8 @@ public final class CMoveAction {
         case CCreatureController.ACTION_FOLLOW_MASTER:
         case CCreatureController.ACTION_FOLLOW_GROUP:
         case CCreatureController.ACTION_MOVE:
+        case CCreatureController.ACTION_MOVE_TO_POINT:
+        case CCreatureController.ACTION_MOVE_TO_OBJECT:
             CCreatureController.set(creature, action);
             onStart(creature, action);
             return;
@@ -101,6 +103,12 @@ public final class CMoveAction {
                     : CCreatureController.RESULT_DONE;
         }
 
+        case CCreatureController.ACTION_MOVE_TO_POINT:
+            return dMoveTo.onTick(creature);
+
+        case CCreatureController.ACTION_MOVE_TO_OBJECT:
+            return dMoveToTarget.onTick(creature);
+
         case CCreatureController.ACTION_MOVE:
             /*
              * PS_MOVE_AROUND has one owner only:
@@ -120,15 +128,28 @@ public final class CMoveAction {
             final byte action,
             final byte result) {
 
-        if (creature == null) {
+        if (creature == null
+                || ActionAccess.currentAction(creature) != action) {
             return;
         }
 
         switch (result) {
         case CCreatureController.RESULT_DONE:
+            // Scripted destination is owned only by this movement action.
+            // Do not erase the combat target/hate or a pending successor.
+            if (action == CCreatureController.ACTION_MOVE_TO_POINT
+                    || action == CCreatureController.ACTION_MOVE_TO_OBJECT) {
+                clearScriptMove(creature);
+            }
             CCreatureController.doPendingAction(creature);
             return;
         case CCreatureController.RESULT_INVALID:
+            if (action == CCreatureController.ACTION_MOVE_TO_POINT
+                    || action == CCreatureController.ACTION_MOVE_TO_OBJECT) {
+                clearScriptMove(creature);
+                CCreatureController.think(creature);
+                return;
+            }
             CCreatureController.set(
                     creature,
                     CCreatureController.ACTION_NOTHING);
@@ -139,6 +160,17 @@ public final class CMoveAction {
         default:
             return;
         }
+    }
+
+    /** Retire native scripted MoveTo payload, never the combat _target. */
+    static void clearScriptMove(final L1NpcInstance creature) {
+        if (creature == null) return;
+        creature._scriptMoveGoalXY = 0L;
+        creature._scriptMoveTargetId = 0;
+        creature._scriptMoveStopDistance = 0;
+        creature._scriptMoveMapId = -1;
+        creature._pathFindFailCount = 0;
+        invalidatePath(creature);
     }
 
     /**
