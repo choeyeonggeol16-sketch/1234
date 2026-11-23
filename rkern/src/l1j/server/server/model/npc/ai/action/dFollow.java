@@ -56,12 +56,14 @@ public final class dFollow {
      *  a new collection or adding a worker. The caller owns the NPC CIO tick. */
     public static void clear(final L1NpcInstance follower) {
         if (follower == null) return;
-        MoveIntentCache.clearGoal(follower);
+        final boolean hadFollowGoal =
+                MoveIntentCache.clearGoalAndReport(follower);
         MoveIntentCache.clearProgress(follower);
         // close-range noTarget() runs repeatedly on every follower.
         // Once the previous route is retired, do not invalidate A* state
         // again on every idle tick. Only live movement needs this cleanup.
-        if (follower._moveTargetId != 0
+        if (hadFollowGoal
+                || follower._moveTargetId != 0
                 || follower._moveSide != -1
                 || follower._moveCollision != 0
                 || follower._pathFindFailCount != 0) {
