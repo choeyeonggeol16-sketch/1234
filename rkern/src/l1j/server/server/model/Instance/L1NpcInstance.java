@@ -1368,6 +1368,12 @@ public class L1NpcInstance extends L1Character {
 
     public void receiveDamage(L1Character attacker, int damage) {
     }
+    /** NC MoveToFinished (event 0x41). Invoked on the existing NPC CIO
+     *  owner only after an exact scripted dMoveTo arrival. Subclasses may
+     *  handle the completion without a second event queue or worker. */
+    public void onMoveToFinished(final int x, final int y) {
+    }
+
     public void onGetItem(L1ItemInstance item) {
         refineItem();
         getInventory().shuffle();
