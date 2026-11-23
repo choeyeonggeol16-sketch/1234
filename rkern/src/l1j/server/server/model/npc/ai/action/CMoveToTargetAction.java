@@ -174,6 +174,13 @@ public final class CMoveToTargetAction {
             return CCreatureController.RESULT_INVALID;
         }
 
+        // L1 chase/attack is a split Action. NC dPAttack covers both
+        // attack initiation and movement-to-attack in one dispatch.
+        // Boost the captured ATTACK key once on this verified chase tick.
+        if (creature instanceof L1MonsterInstance) {
+            CDesirePQ.boostExecutedAttack((L1MonsterInstance) creature, target);
+        }
+
         if (tryCombatAbility
                 && CAttackAction.tryCombatAbility(
                         creature,
