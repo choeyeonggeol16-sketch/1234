@@ -713,34 +713,29 @@ public final class AiRuntime {
 
                     final L1MonsterInstance monster =
                             (L1MonsterInstance) npc;
-                    final L1Character alternate =
-                            NpcEventFactory.findInvisibilityRetarget(
-                                    monster, cha);
 
-                    if (alternate == null
-                            && monster.getNpcTemplate().is_agrocoi()) {
+                    // NC keeps the target when this NPC can detect hidden
+                    // creatures. A bystander must not trigger a target switch
+                    // merely because it was present when invisibility began.
+                    if (monster.getNpcTemplate().is_agrocoi()) {
                         continue;
                     }
 
-                    if (alternate != null
-                            && !CDesirePQ.prioritizeMoveAroundAttacker(
-                                    monster, alternate, nowMs)) {
-                        continue;
-                    }
-
+                    // NC desire arbitration removes an invalid ATTACK key
+                    // and selects the highest remaining admitted desire.
+                    // Do not manufacture +200 hate for the nearest visible
+                    // player or override the recorded desire priorities.
                     CDesirePQ.removeAttack(monster, cha);
-                    CDesirePQ.releaseBlockedAttack(monster);
                     npc._hateList.remove(cha);
 
-                    if (alternate != null) {
-                        if (!npc._hateList.containsKey(alternate)) {
-                            npc._hateList.add(alternate, 0);
-                        }
-                        npc._target = alternate;
-                    } else {
-                        npc._target = null;
-                        npc.checkTarget();
+                    final L1Character alternate =
+                            CDesirePQ.GetTopDesire(monster, cha.getId());
+
+                    if (alternate != null
+                            && !npc._hateList.containsKey(alternate)) {
+                        npc._hateList.add(alternate, 0);
                     }
+                    npc._target = alternate;
 
                     changed = true;
                     invisibilityRetarget = true;
