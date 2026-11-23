@@ -45,16 +45,9 @@ public final class CS_AdenShop {
              */
             case 1:
 
-                openShop(
-                        client,
-                        pc);
+                openShop(pc);
 
                 return;
-
-            /*
-             * OTP 입력 / 구매 요청.
-             */
-
 
             /*
              * 부가서비스 창고.
@@ -65,11 +58,6 @@ public final class CS_AdenShop {
                         pc);
 
                 return;
-
-            /*
-             * 동의 및 구매.
-             */
-
 
             default:
                 return;
@@ -84,9 +72,7 @@ public final class CS_AdenShop {
         }
     }
 
-    private static void openShop(
-            CUserSocket client,
-            L1PcInstance pc) {
+    private static void openShop(L1PcInstance pc) {
 
         if (Config.Arden) {
 
@@ -106,8 +92,6 @@ public final class CS_AdenShop {
 
         SC_AdenShop.send(pc, pc);
     }
-
-
 
     private static void openSupplementaryWarehouse(
             L1PcInstance pc) {
@@ -133,8 +117,4 @@ public final class CS_AdenShop {
             SC_ServerMessage.send(pc, 1625);
         }
     }
-
-
-
-
 }
