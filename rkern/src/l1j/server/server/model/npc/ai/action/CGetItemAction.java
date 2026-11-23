@@ -6,6 +6,9 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 
 /**
  * 바닥 아이템 획득 action.
@@ -47,26 +50,8 @@ public final class CGetItemAction {
     }
 
     public static byte onTick(final L1NpcInstance creature) {
-        if (creature == null) {
-            return CCreatureController.RESULT_INVALID;
-        }
-
-        final L1ItemInstance targetItem = ActionAccess.targetItem(creature);
-        if (targetItem == null) {
-            return CCreatureController.RESULT_DONE;
-        }
-
-        if (!isValidTargetItem(creature, targetItem)) {
-            ActionAccess.targetItem(creature, null);
-            ActionAccess.sleep(creature, INVALID_TARGET_SLEEP_MS);
-            return CCreatureController.RESULT_DONE;
-        }
-
-        creature.onTargetItem();
-
-        return ActionAccess.targetItem(creature) == null
-                ? CCreatureController.RESULT_DONE
-                : CCreatureController.RESULT_RUNNING;
+        return dGetItem.dGetItem(creature,
+                creature != null ? ActionAccess.targetItem(creature) : null);
     }
 
     public static void onEnd(
@@ -105,9 +90,13 @@ public final class CGetItemAction {
             return;
         }
 
-        if (!isValidTargetItem(creature, targetItem)) {
+        if (!isValidTargetItem(creature, targetItem)
+                && ActionAccess.targetItem(creature) == targetItem) {
             ActionAccess.targetItem(creature, null);
-            clearMoveState(creature);
+            if (ActionAccess.currentAction(creature)
+                    == CCreatureController.ACTION_GET_ITEM) {
+                clearMoveState(creature);
+            }
         }
     }
 
@@ -116,7 +105,17 @@ public final class CGetItemAction {
      * 화면 전체(-1) 첫 항목을 잡지 않으므로 멀리 있는 아이템 때문에 가까운 아이템을 놓치지 않는다.
      */
     public static void searchTarget(final L1NpcInstance creature) {
-        if (creature == null
+        searchTarget(creature, MAX_TARGET_DISTANCE);
+    }
+
+    /**
+     * Shared GET_ITEM candidate selection. Pet and companion command scans
+     * keep their original ten-tile radius and owner/item restrictions.
+     * Uses the existing reusable cluster-grid iteration (no temporary list).
+     */
+    public static void searchTarget(
+            final L1NpcInstance creature, final int maxDistance) {
+        if (creature == null || maxDistance <= 0
                 || ActionAccess.itemSearchCooldown(creature) > 0) {
             return;
         }
@@ -129,13 +128,13 @@ public final class CGetItemAction {
         }
 
         L1ItemInstance nearest = null;
-        int nearestDistance = MAX_TARGET_DISTANCE + 1;
+        int nearestDistance = maxDistance + 1;
 
         for (L1Object obj : L1World.getInstance()
                 .getClusterGrid()
                 .queryNearbyReusable(
                         creature,
-                        MAX_TARGET_DISTANCE)) {
+                        maxDistance)) {
 
             if (!(obj instanceof L1GroundInventory)) {
                 continue;
@@ -148,7 +147,8 @@ public final class CGetItemAction {
 
             for (L1ItemInstance item : ground.getItems()) {
                 if (item == null
-                        || item.getMapId() != creature.getMapId()) {
+                        || item.getMapId() != creature.getMapId()
+                        || !isAllowedItem(creature, item)) {
                     continue;
                 }
 
@@ -158,7 +158,7 @@ public final class CGetItemAction {
                         item.getX(),
                         item.getY());
 
-                if (distance > MAX_TARGET_DISTANCE
+                if (distance > maxDistance
                         || distance >= nearestDistance) {
                     continue;
                 }
@@ -191,7 +191,9 @@ public final class CGetItemAction {
         final L1ItemInstance targetItem =
                 ActionAccess.targetItem(creature);
 
-        if (targetItem == null) {
+        if (targetItem == null
+                || !creature.isPickupItem()
+                || !isAllowedItem(creature, targetItem)) {
             return;
         }
 
@@ -208,7 +210,9 @@ public final class CGetItemAction {
          * 따라서 같은 타일 또는 인접 1칸이면 획득한다.
          */
         if (dx <= 1 && dy <= 1) {
-            creature.pickupTargetItem(targetItem);
+            if (ActionAccess.targetItem(creature) == targetItem) {
+                creature.pickupTargetItem(targetItem);
+            }
             return;
         }
 
@@ -226,6 +230,9 @@ public final class CGetItemAction {
                         targetItem.getY());
 
         if (dir >= 0 && dir < 8) {
+            if (ActionAccess.targetItem(creature) != targetItem) {
+                return;
+            }
             if (ActionAccess.moveOneStep(
                     creature,
                     dir)) {
@@ -266,7 +273,15 @@ public final class CGetItemAction {
             final L1NpcInstance creature,
             final L1ItemInstance targetItem) {
 
-        if (creature == null || targetItem == null) {
+        if (creature == null || targetItem == null
+                || ActionAccess.targetItem(creature) != targetItem) {
+            return;
+        }
+
+        // The candidate can become forbidden (owner changed / pet item)
+        // between discovery and pickup. Never bypass the L1 restriction.
+        if (!isAllowedItem(creature, targetItem)) {
+            dGetItem.GetItemFinished(creature, targetItem, null);
             return;
         }
 
@@ -276,34 +291,51 @@ public final class CGetItemAction {
                         targetItem.getY(),
                         targetItem.getMapId());
 
-        if (groundInventory == null || groundInventory.getItem(targetItem.getId()) != targetItem) {
-            ActionAccess.targetItem(creature, null);
+        // NC dGetItem completes only its captured GET_ITEM key. A stale
+        // pointer must never consume a replacement object with the same ID.
+        if (groundInventory == null
+                || groundInventory.getItem(targetItem.getId()) != targetItem) {
+            dGetItem.GetItemFinished(creature, targetItem, null);
+            return;
+        }
+
+        final L1Inventory destination = creature.getInventory();
+        if (destination == null) {
+            dGetItem.GetItemFinished(creature, targetItem, null);
             return;
         }
 
         final boolean oldGiveItem = targetItem.isGiveItem();
-        targetItem.setGiveItem(true);
-
-        final L1ItemInstance item =
-                groundInventory.tradeItem(
-                        targetItem,
-                        targetItem.getCount(),
-                        creature.getInventory());
-
-        if (item == null) {
-            /* transfer 실패 시 아직 바닥에 남아 있는 exact object만 flag를 복구한다. */
+        final L1ItemInstance transferred;
+        try {
+            targetItem.setGiveItem(true);
+            // Existing locked L1Inventory transfer rechecks exact source
+            // identity, capacity and CacheD pending-transaction gates.
+            transferred = groundInventory.tradeItem(
+                    targetItem, targetItem.getCount(), destination);
+        } catch (IllegalStateException pendingTransfer) {
+            // CacheD can refuse a transfer while a receipt is unresolved.
+            // Item never committed; restore its flag and retry later.
             if (groundInventory.getItem(targetItem.getId()) == targetItem) {
                 targetItem.setGiveItem(oldGiveItem);
             }
-
-            ActionAccess.targetItem(creature, null);
             ActionAccess.sleep(creature, INVALID_TARGET_SLEEP_MS);
             return;
+        } catch (RuntimeException | Error failure) {
+            if (groundInventory.getItem(targetItem.getId()) == targetItem) {
+                targetItem.setGiveItem(oldGiveItem);
+            }
+            throw failure;
         }
 
-        creature.onGetItem(item);
-        ActionAccess.targetItem(creature, null);
-        ActionAccess.sleep(creature, PICKUP_SLEEP_MS);
+        if (transferred == null
+                && groundInventory.getItem(targetItem.getId()) == targetItem) {
+            targetItem.setGiveItem(oldGiveItem);
+        }
+
+        // Synchronous L1 commit now supplies NC GetItemFinished outcome.
+        // onGetItem only runs after successful inventory transfer.
+        dGetItem.GetItemFinished(creature, targetItem, transferred);
     }
 
     private static void softBlocked(final L1NpcInstance creature) {
@@ -335,12 +367,13 @@ public final class CGetItemAction {
         CMoveAction.invalidatePath(creature);
     }
 
-    private static boolean isValidTargetItem(
+    static boolean isValidTargetItem(
             final L1NpcInstance creature,
             final L1ItemInstance item) {
 
         if (creature == null
                 || item == null
+                || !isAllowedItem(creature, item)
                 || item.getMapId() != creature.getMapId()
                 || chebyshev(
                         creature.getX(),
@@ -358,6 +391,26 @@ public final class CGetItemAction {
 
         /* itemId가 아니라 exact objectId/object identity를 확인한다. */
         return groundInventory != null && groundInventory.getItem(item.getId()) == item;
+    }
+
+    /** L1 pet item restrictions and companion's owner-only ground loot. */
+    static boolean isAllowedItem(
+            final L1NpcInstance creature, final L1ItemInstance item) {
+        if (creature == null || item == null || item.getItem() == null) {
+            return false;
+        }
+        if (creature instanceof L1PetInstance
+                && item.getItem().isUseHighPet()) {
+            return false;
+        }
+        if (creature instanceof L1CompanionInstance) {
+            final L1PcInstance master =
+                    ((L1CompanionInstance) creature).get_master();
+            if (master == null) return false;
+            final L1PcInstance owner = item.getItemOwner();
+            return owner == null || owner.getId() == master.getId();
+        }
+        return true;
     }
 
     private static int chebyshev(
