@@ -45,6 +45,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.npc.ai.action.dFollow;
+import l1j.server.server.model.npc.ai.action.dPetDefault;
 import l1j.server.server.model.world.instance.shared.EffectTriggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_BUFF_NOTI;
@@ -1200,13 +1201,16 @@ public class L1CompanionInstance extends L1NpcInstance{
         }
         if (m_master.getMapId() != getMapId()) {
             // A map-changing owner must not leave an obsolete follow goal.
-            dFollow.follow(this, m_master);
+            dPetDefault.follow(this, m_master);
             return true;
         }
 
         if (m_command_state.equals(eCommand.TM_GetItem)) {
             find_items();
             if (_targetItem != null) {
+                // Item collection has its own CGetItemAction destination.
+                // Stop carrying a stale pet-default follow goal into it.
+                dFollow.clear(this);
                 return false;
             }
         }
@@ -1216,7 +1220,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         // The NC-style dFollow must also run on arrival: it clears the
         // owner-local cached destination at <=2 tiles, preventing a stale
         // goal from pulling this companion away on the next follow tick.
-        dFollow.follow(this, m_master);
+        dPetDefault.follow(this, m_master);
         if (awayFromMaster && m_command_state.equals(eCommand.TM_GetItem)) {
             do_drain_items();
         }
