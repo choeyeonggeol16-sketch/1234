@@ -79,6 +79,13 @@ public final class dMoveTo {
             npc._pathFindFailCount = 0;
             return CCreatureController.RESULT_DONE;
         }
+        if (!npc.isMovable()) {
+            return CCreatureController.RESULT_INVALID;
+        }
+        if (npc.발묶임상태()) {
+            ActionAccess.sleep(npc, NEXT_MS);
+            return CCreatureController.RESULT_RUNNING;
+        }
 
         if (distanceSq >= TELEPORT_DISTANCE_SQ) {
             if (teleportIfFree(npc, x, y)) {
