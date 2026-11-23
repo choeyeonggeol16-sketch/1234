@@ -22,10 +22,10 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcPotionPolicy;
 import l1j.server.server.model.npc.ai.action.dFollow;
+import l1j.server.server.model.npc.ai.action.dPetDefault;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
-import l1j.server.server.utils.NpcAiUtil;
 public class L1SummonInstance extends L1NpcInstance {
 	private static final long serialVersionUID = 1L;
 
@@ -40,79 +40,16 @@ public class L1SummonInstance extends L1NpcInstance {
 	@Override
 	public boolean noTarget() {
 		final L1Character master = _master;
-		final boolean hasMasterHere = master != null && master.getMapId() == getMapId();
-
-		// stay
 		if (_currentPetStatus == 3) {
-			return true;
+			return dPetDefault.onTick(this, master, 3);
 		}
-
-		// 주인을 완전히 잃었을 때만 stay 전환
-		if (!hasMasterHere) {
+		if (master == null || master.getMapId() != getMapId()) {
 			_currentPetStatus = 3;
-			return true;
+			return dPetDefault.onTick(this, master, 3);
 		}
-
-		final int dist = getLocation().getTileLineDistance(master.getLocation());
-
-		// extend
-		if (_currentPetStatus == 4) {
-			return handleExtendNoTarget(master, dist);
-		}
-
-		// alert
-		if (_currentPetStatus == 5) {
-			return handleAlertNoTarget();
-		}
-
-		// aggressive / defensive 등 일반 추종
-		return handleFollowNoTarget(master, dist);
-	}
-
-	private boolean handleExtendNoTarget(final L1Character master, final int dist) {
-		// 너무 가까우면 주인 반대 방향으로 벌어짐
-		if (dist < 4) {
-			int dir = targetReverseDirection(master.getX(), master.getY());
-			dir = NpcAiUtil.checkObject(getX(), getY(), getMapId(), dir);
-			if (dir != -1) {
-				setSleepTime(setDirectionMove(dir));
-			}
-			return false;
-		}
-
-		// 너무 멀어지면 다시 주인 쪽으로 붙음
-		if (dist > 7) {
-			final int dir = moveDirection(master.getX(), master.getY());
-			if (dir != -1) {
-				setSleepTime(setDirectionMove(dir));
-			}
-			return false;
-		}
-
-		// 적정 거리 유지
-		return false;
-	}
-
-	private boolean handleAlertNoTarget() {
-		// 경계 상태는 홈 주변 유지
-		if (Math.abs(getHomeX() - getX()) > 1 || Math.abs(getHomeY() - getY()) > 1) {
-			final int dir = moveDirection(getHomeX(), getHomeY());
-			if (dir == -1) {
-				// 길이 완전히 꼬였으면 현재 위치를 새 홈으로 잡음
-				setHomeX(getX());
-				setHomeY(getY());
-			} else {
-				setSleepTime(setDirectionMove(dir));
-			}
-		}
-		return false;
-	}
-
-	private boolean handleFollowNoTarget(final L1Character master, final int dist) {
-		// Run dFollow also at <=2 tiles so the completed follow clears
-		// its previous CIO-owned destination. All pet command modes above
-		// retain their original L1 behavior.
-		return dFollow.follow(this, master);
+		// NC DESIRE_PET_DEFAULT. 3=stay, 4=extend, 5=alert,
+		// remaining aggressive/defensive command states keep normal follow.
+		return dPetDefault.onTick(this, master, _currentPetStatus);
 	}
 
 	@Override
