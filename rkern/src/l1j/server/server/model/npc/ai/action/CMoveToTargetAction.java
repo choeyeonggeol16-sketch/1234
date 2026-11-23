@@ -14,6 +14,7 @@ import l1j.server.server.model.ai.core.PathNodeWorld;
 import l1j.server.server.model.npc.ai.AstarProvider;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.npc.ai.CDesirePQ;
+import l1j.server.server.model.npc.ai.NpcEventFactory;
 
 /**
  * Native-first target chase.
@@ -365,6 +366,27 @@ public final class CMoveToTargetAction {
 
                     // A newly runnable ATTACK must be selected by the AI
                     // owner now, not after A's 300ms collision retry.
+                    CCreatureController.rethinkNow(creature);
+                    return CCreatureController.RESULT_RUNNING;
+                }
+
+                /*
+                 * NC keeps target arbitration in CDesirePQ. The L1 2D choke
+                 * adapter admits a NEW candidate only when an actual
+                 * occupancy body blocks this step and no existing ATTACK
+                 * desire can take over. Never scan arbitrary nearby players
+                 * or create hate from an unrelated path-finding failure.
+                 *
+                 * In particular, a pet/summon/companion physically occupying
+                 * a one-tile doorway can become the next attack target.
+                 * The same event is committed on the current CIO owner.
+                 */
+                if (NpcEventFactory.addBlockedBodyAttackDesire(
+                        monster, target, blockedX, blockedY,
+                        System.currentTimeMillis()) != null) {
+
+                    CDesirePQ.blockAttackForMoveAround(
+                            monster, target, blockedX, blockedY);
                     CCreatureController.rethinkNow(creature);
                     return CCreatureController.RESULT_RUNNING;
                 }
