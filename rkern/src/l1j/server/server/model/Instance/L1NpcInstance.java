@@ -954,7 +954,8 @@ public class L1NpcInstance extends L1Character {
 
 
     public volatile L1ItemInstance _targetItem = null;
-    public  int _itemSearchCooldown = 0;
+    // Command-side reset can race with the existing CIO owner search tick.
+    public volatile int _itemSearchCooldown = 0;
 
     /** GetItemAction용 기존 public API/virtual hook 보존. */
     public void tickItemSearchCooldown() {
