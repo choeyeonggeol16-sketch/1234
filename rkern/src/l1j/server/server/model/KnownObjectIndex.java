@@ -1,7 +1,9 @@
 package l1j.server.server.model;
 import java.util.AbstractSet;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -23,6 +25,87 @@ public final class KnownObjectIndex {
     private boolean playersDirty;
     private Set<L1Object> objectsView;
     private Set<L1PcInstance> playersView;
+
+    // Shared by all characters: one scratch chain per thread, not per PC.
+    private static final int MAX_RETAINED_SCAN = 2048;
+    private static final class ScanScratch {
+        @SuppressWarnings("unchecked")
+        ArrayList<L1Object>[] objects = (ArrayList<L1Object>[]) new ArrayList<?>[4];
+        @SuppressWarnings("unchecked")
+        ArrayList<L1PcInstance>[] players = (ArrayList<L1PcInstance>[]) new ArrayList<?>[4];
+        int objectDepth;
+        int playerDepth;
+    }
+    private static final ThreadLocal<ScanScratch> SCAN = ThreadLocal.withInitial(ScanScratch::new);
+
+    /**
+     * Stable reentrant snapshot without per-movement array allocation.
+     * Release in finally, on the same thread, before returning from the scan.
+     * Callbacks are never executed while holding this index's monitor.
+     */
+    public List<L1Object> borrowObjects() {
+        final ScanScratch scratch = SCAN.get();
+        final int depth = scratch.objectDepth;
+        if (depth == scratch.objects.length)
+            scratch.objects = Arrays.copyOf(scratch.objects, depth << 1);
+        ArrayList<L1Object> result = scratch.objects[depth];
+        if (result == null) scratch.objects[depth] = result = new ArrayList<>(64);
+        scratch.objectDepth = depth + 1;
+        try {
+            synchronized (this) {
+                result.ensureCapacity(count);
+                if (table != null)
+                    for (L1Object obj : table) if (obj != null) result.add(obj);
+            }
+            return result;
+        } catch (RuntimeException | Error failure) {
+            result.clear();
+            scratch.objectDepth = depth;
+            throw failure;
+        }
+    }
+
+    public static void releaseObjects(List<L1Object> result) {
+        final ScanScratch scratch = SCAN.get();
+        final int depth = scratch.objectDepth - 1;
+        if (depth < 0 || scratch.objects[depth] != result)
+            throw new IllegalStateException("Known-object scan released out of order");
+        scratch.objectDepth = depth;
+        if (result.size() > MAX_RETAINED_SCAN) scratch.objects[depth] = null;
+        result.clear(); // No object references retained by a reused buffer.
+    }
+
+    public List<L1PcInstance> borrowPlayers() {
+        final ScanScratch scratch = SCAN.get();
+        final int depth = scratch.playerDepth;
+        if (depth == scratch.players.length)
+            scratch.players = Arrays.copyOf(scratch.players, depth << 1);
+        ArrayList<L1PcInstance> result = scratch.players[depth];
+        if (result == null) scratch.players[depth] = result = new ArrayList<>(16);
+        scratch.playerDepth = depth + 1;
+        try {
+            synchronized (this) {
+                result.ensureCapacity(playerCount);
+                if (players != null)
+                    for (int i = 0; i < playerCount; i++) result.add(players[i]);
+            }
+            return result;
+        } catch (RuntimeException | Error failure) {
+            result.clear();
+            scratch.playerDepth = depth;
+            throw failure;
+        }
+    }
+
+    public static void releasePlayers(List<L1PcInstance> result) {
+        final ScanScratch scratch = SCAN.get();
+        final int depth = scratch.playerDepth - 1;
+        if (depth < 0 || scratch.players[depth] != result)
+            throw new IllegalStateException("Known-player scan released out of order");
+        scratch.playerDepth = depth;
+        if (result.size() > MAX_RETAINED_SCAN) scratch.players[depth] = null;
+        result.clear();
+    }
     public KnownObjectIndex() {
         this(false);
     }
