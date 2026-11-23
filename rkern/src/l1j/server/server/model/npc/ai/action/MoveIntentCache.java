@@ -90,19 +90,33 @@ final class MoveIntentCache {
     }
 
     static void clearGoal(final L1NpcInstance npc) {
+        clearGoalAndReport(npc);
+    }
+
+    /**
+     * Release owner-local movement goal and report whether an actual intent
+     * existed. Used by NC dFollow to invalidate PathFinder only once on
+     * arrival, rather than on every idle companion/summon/doll/pet tick.
+     */
+    static boolean clearGoalAndReport(final L1NpcInstance npc) {
         if (npc == null || npc.getId() == 0) {
-            return;
+            return false;
         }
 
         final State s = LOCAL.get();
         final int slot = slot(npc.getId());
 
-        if (s.key[slot] == key(npc)) {
-            s.kind[slot] = KIND_NONE;
-            s.anchorId[slot] = 0;
-            s.anchorPos[slot] = NO_POS;
-            s.goalPos[slot] = NO_POS;
+        if (s.key[slot] != key(npc)) {
+            return false;
         }
+        final boolean hadGoal =
+                s.kind[slot] != KIND_NONE
+                || s.goalPos[slot] != NO_POS;
+        s.kind[slot] = KIND_NONE;
+        s.anchorId[slot] = 0;
+        s.anchorPos[slot] = NO_POS;
+        s.goalPos[slot] = NO_POS;
+        return hadGoal;
     }
 
     static int reportMove(
