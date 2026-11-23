@@ -110,6 +110,10 @@ public final class dFlee {
     private static byte moveAway(
             final L1NpcInstance creature,
             final L1Character target) {
+        if (!creature.isMovable()) {
+            ActionAccess.sleep(creature, RETRY_MS);
+            return CCreatureController.RESULT_RUNNING;
+        }
         final int heading = chooseEscapeHeading(creature, target);
         if (heading >= 0 && ActionAccess.moveOneStep(creature, heading)) {
             ActionAccess.sleep(creature,
@@ -130,7 +134,7 @@ public final class dFlee {
     static int chooseEscapeHeading(
             final L1NpcInstance creature,
             final L1Character target) {
-        if (creature == null || target == null || !creature.isMovable()) {
+        if (creature == null || target == null) {
             return -1;
         }
         final L1Map map = creature.getMap();
