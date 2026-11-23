@@ -453,8 +453,8 @@ public class L1CompanionInstance extends L1NpcInstance{
         // isPickupItem() and never entered ACTION_GET_ITEM.
         setPickupItem(collecting);
         if (collecting) {
+            // Search must run on the CIO NPC owner, not the command thread.
             _itemSearchCooldown = 0;
-            find_items();
         } else {
             _targetItem = null;
         }
@@ -974,12 +974,16 @@ public class L1CompanionInstance extends L1NpcInstance{
         m_master.sendPackets(String.format("펫 %s(을)를 훈련시켰습니다.", getName()));
     }
     
-    private void find_items(){
+    @Override
+    public void searchTargetItem() {
         if (m_master == null) return;
-        // NC GetItem desire scan: original ten-tile bound, only unowned
-        // items or items protected for this companion's master. Uses the
-        // shared reusable cluster query, not a new ArrayList each tick.
+        // NC GetItem desire scan: the original ten-tile bound, with
+        // unowned or master-owned item restriction in CGetItemAction.
         CGetItemAction.searchTarget(this, 10);
+    }
+
+    private void find_items() {
+        searchTargetItem();
     }
     
     private void do_drain_items(){
