@@ -531,10 +531,13 @@ public final class CMoveAroundAction {
         final L1Character target =
                 CDesirePQ.blockedAttackTarget(monster);
         if (!validDirectionTarget(monster, target)) {
-            // A dead/invisible/removed blocked enemy is NOT an opened attack
-            // lane. Retire its block, but preserve the live 3..6-step walk
-            // and any outstanding six-second rest deadline.
-            CDesirePQ.releaseBlockedAttack(monster);
+            // A dead/invisible/removed blocker cannot resume an ATTACK.
+            // Retire ONLY that obsolete desire and its own reserved tile.
+            // Unconditional releaseBlockedAttack() could cancel an already
+            // published melee claim for a different newer target B.
+            // Do not reset the L1 3..6-step walk or six-second rest.
+            CDesirePQ.removeAttack(monster,
+                    monster._desireBlockedAttackTargetId);
             return false;
         }
 
