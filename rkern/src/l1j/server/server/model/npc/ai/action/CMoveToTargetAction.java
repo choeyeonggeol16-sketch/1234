@@ -36,6 +36,7 @@ public final class CMoveToTargetAction {
     private static final int PATH_FAIL_LIMIT = 30;
     private static final int TARGET_CLEAR_DISTANCE = 40;
     private static final byte RESULT_PATH_FAILED = 5;
+    private static final byte RESULT_TARGET_TOO_FAR = 6;
     private static final long PATH_FAIL_DISPATCH_DELAY_MS = 1_000L;
     private static final long DYNAMIC_BLOCK_RETRY_MS = 300L;
     private static final int RESERVED_SLOT_BLOCK_RETRY_LIMIT = 3;
@@ -164,9 +165,12 @@ public final class CMoveToTargetAction {
                                     target.getLocation());
 
             if (targetDistance >= TARGET_CLEAR_DISTANCE) {
-                // Retire only the action's captured target, not a successor.
-                // onEnd() performs the guarded target removal.
-                return CCreatureController.RESULT_INVALID;
+                // NC dPAttack returns failure beyond its leash; the NPC
+                // timer then removes that exact ATTACK desire. Returning
+                // generic INVALID here kept a still-living remote target
+                // in the desire PQ and caused endless THINK -> CHASE retries.
+                // The onEnd guard protects a newer target's ownership.
+                return RESULT_TARGET_TOO_FAR;
             }
         }
 
@@ -567,6 +571,7 @@ public final class CMoveToTargetAction {
         }
 
         switch (result) {
+        case RESULT_TARGET_TOO_FAR:
         case RESULT_PATH_FAILED:
             SetMoving.clear(creature);
             CMoveToTargetWaitAction.clear(creature);
@@ -574,9 +579,10 @@ public final class CMoveToTargetAction {
 
             if (creature instanceof L1MonsterInstance && target != null) {
                 if (creature.getTarget() == target) {
-                    // The L1 hate list must retire the same failed enemy as
-                    // CDesirePQ. Otherwise checkTarget() immediately reacquires
-                    // it and repeats the 31 consecutive path failures.
+                    // Retire both the failed path and an out-of-range
+                    // ATTACK from its desire and L1 hate lists. Otherwise
+                    // checkTarget() reacquires the same unreachable enemy
+                    // indefinitely instead of selecting another target.
                     // targetRemove only clears this target; other enemies stay.
                     creature.targetRemove(target);
                 } else {
