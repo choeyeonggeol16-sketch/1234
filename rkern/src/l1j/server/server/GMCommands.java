@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,7 +44,6 @@ import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.datatables.SpawnTable;
 import l1j.server.server.model.Attendance.AttendanceLoadManager;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
-import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -131,7 +129,6 @@ public class GMCommands {
 	private static GMCommands _instance;
 	private static Random _random = new Random(System.nanoTime());
 	public List<L1MonsterInstance> fieldbosslist = new ArrayList<L1MonsterInstance>();
-	private static final ConcurrentHashMap<Integer, L1ClanJoinInstance> _clan_to_cj = new ConcurrentHashMap<Integer, L1ClanJoinInstance>(32);
 
 
 	private GMCommands() {
@@ -602,9 +599,6 @@ public class GMCommands {
 //			break;
 		case "이미지삭제":
 			this.get_delete_gfx(gm);
-			break;
-		case "무인삭제":
-			removeInstance(gm, param); 
 			break;
 		case "버경확인":
 			bug_race_check(gm);
@@ -3170,14 +3164,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 
 
 
-	public static void removeInstance(L1PcInstance gm, String param){
-		StringTokenizer st = new StringTokenizer(param);
-		String code = st.nextToken();
-		L1ClanJoinInstance cjInstance = _clan_to_cj.remove(code);
-		if(cjInstance != null){
-			cjInstance.dispose();		
-		}
-	}
 
 	private void showWarList(L1PcInstance gm) {
 		try {
