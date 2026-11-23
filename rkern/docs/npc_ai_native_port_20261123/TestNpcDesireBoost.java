@@ -156,5 +156,21 @@ public final class TestNpcDesireBoost {
                 + "custom boost, heap swap, removal, capacity growth");
         System.out.println("PASS NC skill completion: reusable BoostDown, one-time "
                 + "failure removal, success exact-key removal, sibling preservation");
+
+        // These are L1 LIVE-SERVER observations, deliberately not replaced
+        // by the L2NPC dMoveAround distances. Guard them across all ports.
+        final Class<?> wander = Class.forName(
+                "l1j.server.server.model.npc.ai.action.CMoveAroundAction");
+        Field minWalk = wander.getDeclaredField("MIN_MOVE_DISTANCE");
+        Field maxWalk = wander.getDeclaredField("MAX_MOVE_DISTANCE");
+        Field restDelay = wander.getDeclaredField("REST_DELAY_MS");
+        minWalk.setAccessible(true);
+        maxWalk.setAccessible(true);
+        restDelay.setAccessible(true);
+        check(minWalk.getInt(null) == 3, "L1 live-server walk minimum 3 tiles");
+        check(maxWalk.getInt(null) == 6, "L1 live-server walk maximum 6 tiles");
+        check(restDelay.getLong(null) == 6_000L,
+                "L1 live-server pause exactly 6 seconds");
+        System.out.println("PASS L1 live walk constants: 3..6 tiles, 6000ms rest");
     }
 }
