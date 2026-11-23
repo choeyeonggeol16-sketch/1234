@@ -2237,7 +2237,7 @@ public class L1Magic {
 		}
 		
 			
-/** 특정지역 PK금지 **/
+		/** 특정지역 PK금지 **/
 		if (_calcType == PC_PC) {
 			//if (_pc.getMapId() == 254 || _pc.getMapId() == 612 || _pc.getMapId() == 1930) {
 			
@@ -2417,7 +2417,7 @@ public class L1Magic {
 
 
 		}
-return dmg;
+		return dmg;
 	}
 
     private long effectiveMagicMr() {
