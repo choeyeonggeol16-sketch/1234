@@ -1080,6 +1080,9 @@ public final class CIOThreadCallback {
 			try {
 				final L1PcInstance pc = actor;
 				if (!activeSession(pc)) return;
+				synchronized (pc.autoSaveLifecycleLock()) {
+					// Logout may have started while this worker waited for the lock.
+					if (!activeSession(pc)) return;
 				if (charSaveIntervalNs > 0L && System.nanoTime() - nextCharSaveNs >= 0L) {
 					try {
 						pc.save();
@@ -1105,6 +1108,7 @@ public final class CIOThreadCallback {
 						nextInvSaveNs = System.nanoTime() + saveRetryNs(invSaveFailures);
 						LOGGER.log(Level.WARNING, "Inv save failed: " + pc.getName(), failure);
 					}
+				}
 				}
 			} finally {
 				savePending = false;

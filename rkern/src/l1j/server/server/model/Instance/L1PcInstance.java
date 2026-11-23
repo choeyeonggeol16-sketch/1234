@@ -2428,15 +2428,20 @@ public class L1PcInstance extends L1Character {
 		setOnlineStatus(0);
 
 
-        try { save(); }
-        catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout character save admission failed: " + getId(), e); }
-        try { saveInventory(); }
-        catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout item save admission failed: " + getId(), e); }
+        synchronized (_autoSaveLifecycleLock) {
+            try { save(); }
+            catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout character save admission failed: " + getId(), e); }
+            try { saveInventory(); }
+            catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout item save admission failed: " + getId(), e); }
+        }
         try { L1BookMark.WriteBookmark(this); }
         catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout bookmark save failed: " + getId(), e); }
 	}
 
 	private final AtomicBoolean _destroyed = new AtomicBoolean(false);
+	// Serializes in-flight periodic snapshots with logout's final persistence.
+	private final Object _autoSaveLifecycleLock = new Object();
+	public final Object autoSaveLifecycleLock() { return _autoSaveLifecycleLock; }
     private volatile boolean _logoutComplete;
 
 	public boolean isLogoutStarted() {
