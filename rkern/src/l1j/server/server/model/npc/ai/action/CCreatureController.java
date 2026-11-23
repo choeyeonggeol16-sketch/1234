@@ -37,6 +37,10 @@ public final class CCreatureController {
     public static final byte ACTION_MOVE_AROUND_NATIVE  = 12;
     public static final byte ACTION_USE_SKILL = 13;
     public static final byte ACTION_MOVE_TO_TARGET_RELATIVE = 14;
+    // NC DESIRE_MOVE_TO and DESIRE_MOVE_TO_TARGET are noncombat scripted
+    // movements. Keep them distinct from ACTION_MOVE_TO_TARGET (attack).
+    public static final byte ACTION_MOVE_TO_POINT = 15;
+    public static final byte ACTION_MOVE_TO_OBJECT = 16;
 
     public static final byte RESULT_RUNNING = 0;
     public static final byte RESULT_DONE    = 1;
@@ -346,6 +350,8 @@ public final class CCreatureController {
         case ACTION_FOLLOW_MASTER:
         case ACTION_FOLLOW_GROUP:
         case ACTION_MOVE:
+        case ACTION_MOVE_TO_POINT:
+        case ACTION_MOVE_TO_OBJECT:
             CMoveAction.set(creature, action);
             return;
 
@@ -414,7 +420,9 @@ public final class CCreatureController {
 
         case ACTION_FOLLOW_MASTER:
         case ACTION_FOLLOW_GROUP:
-        case ACTION_MOVE: {
+        case ACTION_MOVE:
+        case ACTION_MOVE_TO_POINT:
+        case ACTION_MOVE_TO_OBJECT: {
             final byte current = ActionAccess.currentAction(creature);
             final byte result = CMoveAction.onTick(
                     creature,
@@ -694,6 +702,14 @@ public final class CCreatureController {
             CMoveAroundAction.onInterrupted(creature);
         } else if (previous == ACTION_MOVE_TO_TARGET_WAIT) {
             CMoveToTargetWaitAction.clear(creature);
+        } else if ((previous == ACTION_MOVE_TO_POINT
+                    || previous == ACTION_MOVE_TO_OBJECT)
+                && nextAction != ACTION_MOVE_TO_POINT
+                && nextAction != ACTION_MOVE_TO_OBJECT
+                && creature._scriptMoveMapId != -1) {
+            // A combat event or cancelled script retires only this
+            // noncombat destination, never the new ATTACK target/desire.
+            CMoveAction.clearScriptMove(creature);
         }
     }
 
@@ -770,6 +786,10 @@ public final class CCreatureController {
         // NPC can be reactivated or have its object id reused.
         if (ActionAccess.currentAction(creature) == ACTION_MOVE_AROUND_NATIVE) {
             CMoveAroundAction.onInterrupted(creature);
+        } else if ((ActionAccess.currentAction(creature) == ACTION_MOVE_TO_POINT
+                        || ActionAccess.currentAction(creature) == ACTION_MOVE_TO_OBJECT)
+                && creature._scriptMoveMapId != -1) {
+            CMoveAction.clearScriptMove(creature);
         } else {
             SetMoving.clear(creature);
         }
