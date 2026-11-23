@@ -48,7 +48,6 @@ import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.command.L1Commands;
 import l1j.server.server.command.executor.L1AllBuff;
-import l1j.server.server.command.executor.L1CommandExecutor;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
 import l1j.server.server.datatables.AuctionSystemTable;
 import l1j.server.server.datatables.AutoLoot;
@@ -191,13 +190,6 @@ public class GMCommands {
 
 	public boolean Stop = true;
 
-	private String complementClassName(String className) {
-		if (className.contains(".")) {
-			return className;
-		}
-		return "l1j.server.server.command.executor." + className;
-	}
-
 	private boolean executeDatabaseCommandWithoutPermission(L1PcInstance pc, String name, String arg) {
 		try {
 			L1Command command = L1Commands.get(name);
@@ -205,9 +197,9 @@ public class GMCommands {
 				return false;
 			}
 			
-			Class<?> cls = Class.forName(complementClassName(command.getExecutorClassName()));
-			L1CommandExecutor exe = (L1CommandExecutor) cls.getMethod("getInstance").invoke(null);
-			exe.execute(pc, name, arg);
+			if (!L1Commands.execute(pc, command, name, arg)) {
+				return false;
+			}
 			return true;
 		} catch (Exception e) {
 			_log.log(Level.SEVERE, "error gm command", e);
@@ -228,9 +220,9 @@ public class GMCommands {
 				return true;
 			} 
 
-			Class<?> cls = Class.forName(complementClassName(command.getExecutorClassName()));
-			L1CommandExecutor exe = (L1CommandExecutor) cls.getMethod("getInstance").invoke(null);
-			exe.execute(pc, name, arg);
+		if (!L1Commands.execute(pc, command, name, arg)) {
+				return false;
+			}
 
 			/** 파일로그저장 **/
 			// ChatLogTable.getInstance().storeChat(pc, null, arg, 15);
