@@ -2654,8 +2654,15 @@ public class L1PcInstance extends L1Character {
 		final int epoch = groundSightEpoch;
 		if ((epoch & 1) == 0) {
 			// Old session/world entries must not suppress the new client's sprites.
-			for (L1Object known : knownObjectsSnapshot())
-				if (known instanceof L1ItemInstance) removeKnownObject(known);
+			final List<L1Object> groundScan = borrowKnownObjects();
+			try {
+				for (int i = 0, n = groundScan.size(); i < n; i++) {
+					final L1Object known = groundScan.get(i);
+					if (known instanceof L1ItemInstance) removeKnownObject(known);
+				}
+			} finally {
+				releaseKnownObjects(groundScan);
+			}
 			groundSightRetry = false;
 			groundSightEpoch = epoch + 1;
 		}
