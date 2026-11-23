@@ -106,7 +106,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_ChatMessageNoti;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
-import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
@@ -159,7 +158,6 @@ import l1j.server.server.utils.IntRange;
 import l1j.server.server.utils.L1QueryUtil;
 import l1j.server.server.utils.L1SpawnUtil;
 import l1j.server.server.utils.Message;
-import l1j.server.server.utils.MessageUtil;
 import l1j.server.server.utils.SQLUtil;
 import l1j.server.server.utils.ServerMessage;
 public class GMCommands {
