@@ -356,7 +356,7 @@ public final class CMoveAction {
                 FOLLOW_ANCHOR_DRIFT);
 
         if (!validFollowGoal(creature, anchor, packed)) {
-            packed = findFollowPosition(creature, anchor);
+            packed = GetFollowPosition(creature, anchor);
 
             if (packed != MoveIntentCache.NO_POS) {
                 MoveIntentCache.setGoal(
@@ -481,7 +481,7 @@ public final class CMoveAction {
                 creature.getId()) == WorldCollisionHash.MOVE_CLEAR;
     }
 
-    private static long findFollowPosition(
+    static long GetFollowPosition(
             final L1NpcInstance creature,
             final L1Character anchor) {
 
