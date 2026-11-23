@@ -28,7 +28,6 @@ public final class dGetItem {
             return CCreatureController.RESULT_INVALID;
         }
         if (capturedItem == null
-                || !creature.isPickupItem()
                 || ActionAccess.targetItem(creature) != capturedItem) {
             return CCreatureController.RESULT_DONE;
         }
