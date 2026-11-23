@@ -220,7 +220,7 @@ public class GMCommands {
 				return true;
 			} 
 
-		if (!L1Commands.execute(pc, command, name, arg)) {
+			if (!L1Commands.execute(pc, command, name, arg)) {
 				return false;
 			}
 
