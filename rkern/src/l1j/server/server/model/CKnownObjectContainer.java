@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import l1j.server.server.model.Instance.L1PcInstance;
-public final class KnownObjectIndex {
+public final class CKnownObjectContainer {
     private static final L1Object[] NO_OBJECTS = new L1Object[0];
     private static final L1PcInstance[] NO_PLAYERS = new L1PcInstance[0];
     private static final int INITIAL_CAPACITY = 16;
-    public static final KnownObjectIndex CLOSED = new KnownObjectIndex(true);
+    public static final CKnownObjectContainer CLOSED = new CKnownObjectContainer(true);
     private int[] hashes;
     private L1Object[] table;
     private int[] playerPositions;
@@ -106,10 +106,10 @@ public final class KnownObjectIndex {
         if (result.size() > MAX_RETAINED_SCAN) scratch.players[depth] = null;
         result.clear();
     }
-    public KnownObjectIndex() {
+    public CKnownObjectContainer() {
         this(false);
     }
-private KnownObjectIndex(boolean closed) {
+private CKnownObjectContainer(boolean closed) {
     this.closed = closed;
 }
 private static int spread(int hash) {
@@ -289,24 +289,24 @@ private final class View<T extends L1Object> extends AbstractSet<T> {
     View(boolean playersOnly) {
         this.playersOnly = playersOnly;
     }
-@Override public int size() { return playersOnly ? playerSize() : KnownObjectIndex.this.size(); }
+@Override public int size() { return playersOnly ? playerSize() : CKnownObjectContainer.this.size(); }
 @Override public boolean contains(Object obj) {
     if (!(obj instanceof L1Object)) return false;
     return (!playersOnly || obj instanceof L1PcInstance)
-    && KnownObjectIndex.this.contains((L1Object) obj);
+    && CKnownObjectContainer.this.contains((L1Object) obj);
 }
 @Override public boolean add(T obj) {
-    return (!playersOnly || obj instanceof L1PcInstance) && KnownObjectIndex.this.add(obj);
+    return (!playersOnly || obj instanceof L1PcInstance) && CKnownObjectContainer.this.add(obj);
 }
 @Override public boolean remove(Object obj) {
-    return contains(obj) && KnownObjectIndex.this.remove((L1Object) obj);
+    return contains(obj) && CKnownObjectContainer.this.remove((L1Object) obj);
 }
 @Override public void clear() {
     if (!playersOnly) {
-        KnownObjectIndex.this.clear();
+        CKnownObjectContainer.this.clear();
         return;
     }
-for (L1PcInstance pc : playersSnapshot()) KnownObjectIndex.this.remove(pc);
+for (L1PcInstance pc : playersSnapshot()) CKnownObjectContainer.this.remove(pc);
 }
 @Override public Iterator<T> iterator() {
     final L1Object[] snapshot = playersOnly ? playersSnapshot() : objectsSnapshot();
@@ -320,7 +320,7 @@ for (L1PcInstance pc : playersSnapshot()) KnownObjectIndex.this.remove(pc);
         }
     @Override public void remove() {
         if (previous == null) throw new IllegalStateException();
-        KnownObjectIndex.this.remove(previous);
+        CKnownObjectContainer.this.remove(previous);
         previous = null;
     }
 };

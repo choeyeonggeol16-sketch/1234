@@ -103,14 +103,14 @@ public class L1Character extends L1Object {
 	private volatile SkillEffectContainer _skillEffects;
 	private int retiredSkillHeartbeatGeneration;
 	
-	private transient volatile KnownObjectIndex _knownIndex;
-	private static final AtomicReferenceFieldUpdater<L1Character, KnownObjectIndex> KNOWN_INDEX =
-			AtomicReferenceFieldUpdater.newUpdater(L1Character.class, KnownObjectIndex.class, "_knownIndex");
-	private KnownObjectIndex knownIndex(boolean create) {
-		KnownObjectIndex index = _knownIndex;
+	private transient volatile CKnownObjectContainer _knownContainer;
+	private static final AtomicReferenceFieldUpdater<L1Character, CKnownObjectContainer> KNOWN_CONTAINER =
+			AtomicReferenceFieldUpdater.newUpdater(L1Character.class, CKnownObjectContainer.class, "_knownContainer");
+	private CKnownObjectContainer knownContainer(boolean create) {
+		CKnownObjectContainer index = _knownContainer;
 		if (index != null || !create) return index;
-		final KnownObjectIndex fresh = new KnownObjectIndex();
-		return KNOWN_INDEX.compareAndSet(this, null, fresh) ? fresh : _knownIndex;
+		final CKnownObjectContainer fresh = new CKnownObjectContainer();
+		return KNOWN_CONTAINER.compareAndSet(this, null, fresh) ? fresh : _knownContainer;
 	}
 
 	public boolean isPassive(int passiveId) {
@@ -131,8 +131,8 @@ public class L1Character extends L1Object {
 
 	public void dispose() {
 		clearSkillEffectTimer();
-		final KnownObjectIndex known = KNOWN_INDEX.getAndSet(this, KnownObjectIndex.CLOSED);
-		if (known != null && known != KnownObjectIndex.CLOSED) known.close();
+		final CKnownObjectContainer known = KNOWN_CONTAINER.getAndSet(this, CKnownObjectContainer.CLOSED);
+		if (known != null && known != CKnownObjectContainer.CLOSED) known.close();
 
 		if (resistance != null) {
 			resistance.dispose();
@@ -704,54 +704,54 @@ public class L1Character extends L1Object {
 	}
 
 	public boolean knownsObject(L1Object obj) {
-		final KnownObjectIndex known = knownIndex(false);
+		final CKnownObjectContainer known = knownContainer(false);
 		return known != null && known.contains(obj);
 	}
 	public Set<L1Object> getKnownObjects() {
-		final KnownObjectIndex known = knownIndex(false);
+		final CKnownObjectContainer known = knownContainer(false);
 		return known == null ? Collections.emptySet() : known.objectsView();
 	}
 	public Set<L1PcInstance> getKnownPlayers() {
-		final KnownObjectIndex known = knownIndex(false);
+		final CKnownObjectContainer known = knownContainer(false);
 		return known == null ? Collections.emptySet() : known.playersView();
 	}
 	/** Scoped recognition scan. Always release in finally on this thread. */
 	public List<L1Object> borrowKnownObjects() {
-		final KnownObjectIndex index = knownIndex(false);
-		return (index == null ? KnownObjectIndex.CLOSED : index).borrowObjects();
+		final CKnownObjectContainer index = knownContainer(false);
+		return (index == null ? CKnownObjectContainer.CLOSED : index).borrowObjects();
 	}
 
 	public void releaseKnownObjects(List<L1Object> items) {
-		KnownObjectIndex.releaseObjects(items);
+		CKnownObjectContainer.releaseObjects(items);
 	}
 
 	public List<L1PcInstance> borrowKnownPlayers() {
-		final KnownObjectIndex index = knownIndex(false);
-		return (index == null ? KnownObjectIndex.CLOSED : index).borrowPlayers();
+		final CKnownObjectContainer index = knownContainer(false);
+		return (index == null ? CKnownObjectContainer.CLOSED : index).borrowPlayers();
 	}
 
 	public void releaseKnownPlayers(List<L1PcInstance> players) {
-		KnownObjectIndex.releasePlayers(players);
+		CKnownObjectContainer.releasePlayers(players);
 	}
 
 	public L1Object[] knownObjectsSnapshot() {
-		final KnownObjectIndex known = knownIndex(false);
-		return known == null ? KnownObjectIndex.CLOSED.objectsSnapshot() : known.objectsSnapshot();
+		final CKnownObjectContainer known = knownContainer(false);
+		return known == null ? CKnownObjectContainer.CLOSED.objectsSnapshot() : known.objectsSnapshot();
 	}
 	public L1PcInstance[] knownPlayersSnapshot() {
-		final KnownObjectIndex known = knownIndex(false);
-		return known == null ? KnownObjectIndex.CLOSED.playersSnapshot() : known.playersSnapshot();
+		final CKnownObjectContainer known = knownContainer(false);
+		return known == null ? CKnownObjectContainer.CLOSED.playersSnapshot() : known.playersSnapshot();
 	}
 	public void addKnownObject(L1Object obj) {
 		if (obj == null) return;
-		knownIndex(true).add(obj);
+		knownContainer(true).add(obj);
 	}
 	public void removeKnownObject(L1Object obj) {
-		final KnownObjectIndex known = knownIndex(false);
+		final CKnownObjectContainer known = knownContainer(false);
 		if (known != null) known.remove(obj);
 	}
 	public void removeAllKnownObjects() {
-		final KnownObjectIndex known = knownIndex(false);
+		final CKnownObjectContainer known = knownContainer(false);
 		if (known != null) known.clear();
 	}
 
