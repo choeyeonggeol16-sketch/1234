@@ -7,6 +7,7 @@ import sun.misc.Unsafe;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
