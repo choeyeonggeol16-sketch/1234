@@ -25,15 +25,17 @@ public final class dFollow {
             final L1NpcInstance follower,
             final L1Character master) {
 
-        if (follower == null || master == null) {
+        if (follower == null) {
+            return true;
+        }
+        if (master == null) {
+            clear(follower);
             return true;
         }
 
         if (follower.getMapId() != master.getMapId()
                 || follower.getMap() == null) {
-            MoveIntentCache.clearGoal(follower);
-            MoveIntentCache.clearProgress(follower);
-            SetMoving.clear(follower);
+            clear(follower);
             return true;
         }
 
@@ -43,12 +45,19 @@ public final class dFollow {
         if (follower.getLocation()
                 .getTileLineDistance(master.getLocation())
                 <= CMoveAction.FOLLOW_RADIUS) {
-            MoveIntentCache.clearGoal(follower);
-            MoveIntentCache.clearProgress(follower);
-            SetMoving.clear(follower);
+            clear(follower);
             return false;
         }
 
         return CMoveAction.followPosition(follower, master);
+    }
+
+    /** Release the previous NC GetFollowPosition intention without allocating
+     *  a new collection or adding a worker. The caller owns the NPC CIO tick. */
+    public static void clear(final L1NpcInstance follower) {
+        if (follower == null) return;
+        MoveIntentCache.clearGoal(follower);
+        MoveIntentCache.clearProgress(follower);
+        SetMoving.clear(follower);
     }
 }
