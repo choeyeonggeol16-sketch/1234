@@ -47,15 +47,6 @@ public class ClanTable {
         return instance;
 	}
 
-	private static L1Clan createRedKnight(int castleId){
-		L1Clan clan = new L1Clan();
-		clan.setClanId(IdFactory.getInstance().nextId());
-		clan.setClanName("붉은 기사단");
-		clan.setCastleId(castleId);
-		clan.setRedKnight(true);
-		L1World.getInstance().storeClan(clan);
-		return clan;
-	}
 	
 	private ClanTable() {
 		this(true);
