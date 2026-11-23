@@ -11,6 +11,9 @@ on:
       - 'rkern/src/l1j/server/server/model/Instance/L1SummonInstance.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1DollInstance.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1CompanionInstance.java'
+      - 'rkern/src/l1j/server/server/model/Instance/L1GuardInstance.java'
+      - 'rkern/src/l1j/server/server/model/Instance/L1CastleGuardInstance.java'
+      - 'rkern/src/l1j/server/server/model/L1MobGroupInfo.java'
       - 'rkern/src/l1j/server/server/model/character/skill/L1SkillUse.java'
       - 'rkern/docs/npc_ai_native_port_20261123/**'
       - '.github/workflows/rkern-npc-ai-native-port.yml'
@@ -129,7 +132,9 @@ jobs:
           sources.append(item)
           move = root / "docs/npc_ai_native_port_20261123/TestNpcMoveTo.java"
           sources.append(move)
-          print(f"Production Java sources: {len(sources) - 6}", flush=True)
+          guards = root / "docs/npc_ai_native_port_20261123/TestNpcGuardGroup.java"
+          sources.append(guards)
+          print(f"Production Java sources: {len(sources) - 7}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
@@ -167,4 +172,9 @@ jobs:
                           "l1j.server.server.model.npc.ai.action.TestNpcMoveTo"],
                          check=True, timeout=90)
           print("PASS NC dMoveTo/dMoveToTarget scripted movement regression", flush=True)
+          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
+                          "-XX:ActiveProcessorCount=2", "-cp", cp,
+                          "l1j.server.server.model.npc.ai.action.TestNpcGuardGroup"],
+                         check=True, timeout=90)
+          print("PASS NC guard and NPC group lifecycle regression", flush=True)
           PY
