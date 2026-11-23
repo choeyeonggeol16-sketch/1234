@@ -44,7 +44,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.npc.ai.dFollow;
+import l1j.server.server.model.npc.ai.action.dFollow;
 import l1j.server.server.model.world.instance.shared.EffectTriggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.SC_COMPANION_BUFF_NOTI;
