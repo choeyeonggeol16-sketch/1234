@@ -83,6 +83,9 @@ public final class CDesirePQ {
     private byte[] states = new byte[INITIAL_SIZE];
     private int[] targetIds = new int[INITIAL_SIZE];
     private float[] values = new float[INITIAL_SIZE];
+    // NC CDesire::boosted belongs to each heap entry, not to the current
+    // action. Allocate only after an NPC actually executes a boosted desire.
+    private boolean[] boosted;
 
     // NC MakeAttack: move type, force, per-desire boost (+0x7c), level difference.
     // Flat optional payload: ordinary warrior ATTACK desires retain the
@@ -1087,6 +1090,7 @@ public final class CDesirePQ {
         states[size] = state;
         targetIds[size] = targetId;
         values[size] = value;
+        if (boosted != null) boosted[size] = false;
         if (attackPayload != null) {
             final int pos = size << 2;
             attackPayload[pos] = attackPayload[pos + 1] = 0;
@@ -1143,6 +1147,7 @@ public final class CDesirePQ {
             states[index] = PS_USE_SKILL;
             targetIds[index] = targetId;
             values[index] = value;
+            if (boosted != null) boosted[index] = false;
             skillIds[index] = skillId;
             // NC CDesirePQ::_AddValue updates only the accumulated value
             // and force on a duplicate key. Preserve the first skill's
@@ -1218,18 +1223,9 @@ public final class CDesirePQ {
             return topState;
         }
 
-        if (!activeImmediate) {
-            // Different skills may share the same target. An active skill's
-            // BoostDown must find the exact skill, not the first skill for
-            // that target (or another skill permanently loses its value).
-            final int active = activeState == PS_USE_SKILL
-                    ? findSkillKey(activeTargetId, activeSkillId)
-                    : findKey(activeState, activeTargetId);
-            if (active >= 0) {
-                values[active] -= boostFor(active);
-                heapDirty = true;
-            }
-        }
+        // NC _BoostUp persists on the individual desire. Merely selecting
+        // another target/action never calls _BoostDown; only explicit NC
+        // completion/failure paths do that. Keep the stored heap value.
 
         activeState = -1;
         activeTargetId = 0;
@@ -1253,12 +1249,6 @@ public final class CDesirePQ {
 
         if (top < 0) {
             return PS_IDLE;
-        }
-
-        final float boost = boostFor(top);
-        if (boost != 0.0f) {
-            values[top] += boost;
-            heapDirty = true;
         }
 
         activeState = states[top];
@@ -1348,6 +1338,11 @@ public final class CDesirePQ {
             final float value = values[parent];
             values[parent] = values[child];
             values[child] = value;
+            if (boosted != null) {
+                final boolean oldBoosted = boosted[parent];
+                boosted[parent] = boosted[child];
+                boosted[child] = oldBoosted;
+            }
             if (skillIds != null) {
                 swapSkillPayload(parent, child);
             }
@@ -1643,6 +1638,7 @@ public final class CDesirePQ {
             states[index] = states[last];
             targetIds[index] = targetIds[last];
             values[index] = values[last];
+            if (boosted != null) boosted[index] = boosted[last];
             if (skillIds != null) {
                 skillIds[index] = skillIds[last];
                 skillMoveTypes[index] = skillMoveTypes[last];
@@ -1673,6 +1669,7 @@ public final class CDesirePQ {
         states[last] = 0;
         targetIds[last] = 0;
         values[last] = 0.0f;
+        if (boosted != null) boosted[last] = false;
     }
 
     private int findKey(
@@ -1720,6 +1717,7 @@ public final class CDesirePQ {
         states = newStates;
         targetIds = newTargets;
         values = newValues;
+        if (boosted != null) boosted = java.util.Arrays.copyOf(boosted, next);
         if (skillIds != null) {
             skillIds = java.util.Arrays.copyOf(skillIds, next);
             skillMoveTypes = java.util.Arrays.copyOf(skillMoveTypes, next);
@@ -1730,6 +1728,30 @@ public final class CDesirePQ {
         if (attackPayload != null) {
             attackPayload = java.util.Arrays.copyOf(attackPayload, next << 2);
         }
+    }
+
+    /**
+     * NC AsyncTimerExpired1 -> dPAttack -> CDesirePQ::BoostUp.
+     * Execute on the NPC CIO owner, after validating the captured target.
+     * This changes only the exact ATTACK key; switching targets does not
+     * remove its boost. An immediate desire is not part of the heap.
+     */
+    public static void boostExecutedAttack(
+            final L1MonsterInstance npc,
+            final L1Character capturedTarget) {
+        final CDesirePQ pq = npc != null ? npc._desirePQ : null;
+        if (pq == null || capturedTarget == null || pq.activeImmediate
+                || pq.activeState != PS_ATTACK
+                || pq.activeTargetId != capturedTarget.getId()) {
+            return;
+        }
+        final int index = pq.findKey(PS_ATTACK, capturedTarget.getId());
+        if (index < 0) return;
+        if (pq.boosted != null && pq.boosted[index]) return;
+        if (pq.boosted == null) pq.boosted = new boolean[pq.states.length];
+        pq.boosted[index] = true;
+        pq.values[index] += pq.boostFor(index);
+        pq.heapDirty = true;
     }
 
     private static float decayFor(final byte state) {
