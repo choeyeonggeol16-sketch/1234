@@ -84,7 +84,9 @@ public final class CEscapeAction {
             // NC removes only the finished FLEE's target key. Never wipe a
             // newly chosen target B when stale flee A finishes on the CIO
             // owner. targetRemove() retires A's hate/desire exclusively.
-            creature.targetRemove(target);
+            if (target != null) {
+                creature.targetRemove(target);
+            }
             if (ActionAccess.currentAction(creature)
                     == CCreatureController.ACTION_ESCAPE) {
                 CCreatureController.think(creature);
