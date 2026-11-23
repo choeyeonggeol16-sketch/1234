@@ -693,12 +693,6 @@ public final class Config {
 	public static int Start_Char_Boho;
 	  public static boolean 연스턴;
 	  public static boolean 연데페;
-	//TODO 중개 거래 시스템
-	public static int ADENASHOP_LEVEL;
-	public static int MAX_SELL_ADENA;
-	public static int MIN_SELL_ADENA;
-	public static int MIN_SELL_CASH;
-	public static int MAX_SELL_CASH;
 	
 	public static int QestLevel_End;
 	
@@ -1659,7 +1653,6 @@ public final class Config {
 	/** 특수 인챈트 시스템 **/
 	public static final String MAGIC_ENCHANT_SETTINGS_CONFIG_FILE = "./config/magicenchant.properties";
 	public static final String LOTTO_SETTINGS_CONFIG_FILE = "./config/Lotto.properties";
-	public static final String AUCTION_SETTINGS_CONFIG_FILE = "./config/Auction.properties";
 	public static final String DOLL_SETTINGS_CONFIG_FILE = "./config/Dollenchant.properties";
 	public static final String GMteleport_CONFIG_FILE = "./config/GMteleport.properties";
 	
@@ -3642,25 +3635,6 @@ public final class Config {
 		/** 로또 시스템 **/
 		
 		
-		/** 중개 거래 시스템 **/
-		try {
-			Properties AuctionSettings = new Properties();
-			InputStream is = new FileInputStream(new File(AUCTION_SETTINGS_CONFIG_FILE));
-			AuctionSettings.load(is);
-			is.close();
-
-			// TODO Auction.properties 셋팅
-			ADENASHOP_LEVEL = Integer.parseInt(AuctionSettings.getProperty("ADENASHOPLEVEL", "80"));
-			MAX_SELL_ADENA = Integer.parseInt(AuctionSettings.getProperty("MAXSELLADENA", "1000000000"));
-			MIN_SELL_ADENA = Integer.parseInt(AuctionSettings.getProperty("MINSELLADENA", "10000000"));
-			MIN_SELL_CASH = Integer.parseInt(AuctionSettings.getProperty("MINSELLCASH", "5000"));
-			MAX_SELL_CASH = Integer.parseInt(AuctionSettings.getProperty("MAXSELLCASH", "500000"));
-
-		} catch (Exception e) {
-			_log.log(Level.SEVERE, "Config.에서 에러가 발생했습니다.", e);
-			throw new Error("Failed to Load " + AUCTION_SETTINGS_CONFIG_FILE + " File.");
-		}
-		/** 중개 거래 시스템 **/
 		
 		validate();
 	}

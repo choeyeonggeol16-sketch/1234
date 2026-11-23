@@ -1573,12 +1573,11 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "	          .이미지.서먼.아이콘.이미지.이펙트.렙작", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[기타]:.피바.투명.서버저장.파티소환", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .인형청소 .악마왕 .영자상점(1~3)", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          에르자베 .샌드웜 .기운축복 .지배보스", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          룬스톤카배 .룬스톤디스 .룬스톤데페 .룬스톤아머", 1);
-		//(new SC_ChatPacket(gm, "	          진데스진레 .진데스살키 .진데스진싸 .진데스제로스", 1)).send(gm);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .기운축복 .지배보스", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          룬스톤카배 .룬스톤디스 .룬스톤데페", 1);
 		//(new SC_ChatPacket(gm, "	          진데스데불 진데스론론 .진데스포효 .진데스섬체", 1)).send(gm);
 		//(new SC_ChatPacket(gm, "	          진데스커검 .진데스태풍 .진데스악몽 .진데스나발", 1)).send(gm);
-		SC_ChatPacket.sendDirect(gm, gm, "	          데페작업 .아머작업 .카배작업 .계정검사", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .아머작업 .카배작업 .계정검사", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          데몬작업 .데스작업 .타락작업", 1);
 		//(new SC_ChatPacket(gm, "	          .이벤트.노딜.계좌.버프아이콘 .케릭검사", 1)).send(gm);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹밴.주변밴.광역밴", 1);
@@ -1591,8 +1590,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "	          .배틀시스템 .캡챠(오토방지) .캐릭터상태", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .인챈트시스템(tb_enchanties..)", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .저주 .저주초기화 .던전타이머", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .판매등록 .판매취소 .판매완료 .구매신청", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .판매삭제 .구매취소 .혈맹정보", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹정보", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .푸쉬시스템 .혈마크 .계정확인 .보스", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .무기인챈성공 .방어인챈성공 .인형박스", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .화면어벤 .화면축복 .화면생마 .화면코마 .화면흑사", 1);
