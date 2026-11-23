@@ -100,6 +100,39 @@ public final class TestNpcFlee {
                     == CCreatureController.RESULT_INVALID,
                 "extended null target must not move");
 
+        // Exercise the actual L1V1Map passability and shared occupancy
+        // probe without committing a world movement or creating an AI thread.
+        // Enemy is east: fleeing must first try west (heading 6).
+        check(dFlee.chooseEscapeHeading(npc, targetB) == 6,
+                "open terrain: first flee heading must point west");
+
+        final byte[][] westClosed = new byte[48][48];
+        for (byte[] col : westClosed) Arrays.fill(col, (byte) 0x03);
+        westClosed[9][10] = (byte) 0x80;
+        final L1Map oneBlocked = new L1V1Map(993, westClosed, 0, 0,
+                false, true, true, true, true, true,
+                true, true, true, true, true, false);
+        location.set(npc, new L1Location(10, 10, oneBlocked));
+        location.set(targetB, new L1Location(12, 10, oneBlocked));
+        check(dFlee.chooseEscapeHeading(npc, targetB) == 5,
+                "blocked west: flee must select southwest, not the wall");
+
+        westClosed[9][9] = (byte) 0x80;
+        westClosed[9][11] = (byte) 0x80;
+        final L1Map allBlocked = new L1V1Map(994, westClosed, 0, 0,
+                false, true, true, true, true, true,
+                true, true, true, true, true, false);
+        location.set(npc, new L1Location(10, 10, allBlocked));
+        location.set(targetB, new L1Location(12, 10, allBlocked));
+        check(dFlee.chooseEscapeHeading(npc, targetB) == -1,
+                "three occupied/geodata-blocked escape cells: wait and retry");
+
+        location.set(npc, new L1Location(10, 10, map));
+        location.set(targetB, new L1Location(10, 10, map));
+        check(dFlee.chooseEscapeHeading(npc, targetB) == 3,
+                "overlapping actor/target: NC equal-component SE fallback");
+        location.set(targetB, new L1Location(12, 10, map));
+
         // The crucial stale-finish race: FLEE(A) exits after B became the
         // current target. A cleanup must not clear B's target or its hate.
         npc._target = targetB;
@@ -132,7 +165,8 @@ public final class TestNpcFlee {
                 "invalid flee returns to THINK");
 
         System.out.println("PASS NC dFlee/dFleeEx: threshold equality, "
-                + "dead/invalid target, action dispatch, exact-target cleanup, "
+                + "dead/invalid target, live L1 collision and wall fallback, "
+                + "action dispatch, exact-target cleanup, "
                 + "successor B preservation");
     }
 }
