@@ -12,14 +12,12 @@ public final class CAccount extends CPendingState {
     public static final int LAST_ACTIVE = 1;
     public static final int LAST_LOGOUT = 1 << 1;
     public static final int BLESS_OF_AIN = 1 << 2;
-    public static final int GRANG_KIN = 1 << 3;
 
     public final String login;
     public String ip;
     public long lastActive;
     public long lastLogout;
     public int blessOfAin;
-    public int grangKin;
     public int dirty;
     // Only CacheD-owned lightweight CUser records, never L1PcInstance copies.
     // Mutated under the existing CacheD lock.
@@ -61,7 +59,6 @@ public final class CAccount extends CPendingState {
         public final long lastActive;
         public final long lastLogout;
         public final int blessOfAin;
-        public final int grangKin;
 
         public Snapshot(CAccount owner) {
             this.owner = owner;
@@ -71,7 +68,6 @@ public final class CAccount extends CPendingState {
             this.lastActive = owner.lastActive;
             this.lastLogout = owner.lastLogout;
             this.blessOfAin = owner.blessOfAin;
-            this.grangKin = owner.grangKin;
         }
     }
 
@@ -90,9 +86,6 @@ public final class CAccount extends CPendingState {
         if ((mask & CAccount.BLESS_OF_AIN) != 0) {
             sql.append("bless_of_ain=?,");
         }
-        if ((mask & CAccount.GRANG_KIN) != 0) {
-            sql.append("GrangKinAngerTime=?,");
-        }
         sql.setLength(sql.length() - 1);
         sql.append(" WHERE login=?");
 
@@ -108,9 +101,6 @@ public final class CAccount extends CPendingState {
             }
             if ((mask & CAccount.BLESS_OF_AIN) != 0) {
                 ps.setInt(idx++, snapshot.blessOfAin);
-            }
-            if ((mask & CAccount.GRANG_KIN) != 0) {
-                ps.setInt(idx++, snapshot.grangKin);
             }
             ps.setString(idx, snapshot.owner.login);
             ps.executeUpdate();

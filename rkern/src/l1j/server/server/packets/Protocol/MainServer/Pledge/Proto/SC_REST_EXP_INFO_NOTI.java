@@ -106,8 +106,6 @@ public final class SC_REST_EXP_INFO_NOTI extends ProtoPacket {
     public static void send(L1PcInstance pc) {
         if (pc == null || pc.getAccount() == null || pc.noPlayerCK)
             return;
-        if (pc.getAccount().getGrangKinAngerTime() != 0)
-            return;
 
         int hasad = displayedGauge(pc.getAccount().getBlessOfAin());
 

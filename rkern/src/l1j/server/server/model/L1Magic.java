@@ -2237,14 +2237,7 @@ public class L1Magic {
 		}
 		
 			
-		if (_calcType == NPC_PC) {
-			if (_targetPc.getAccount() != null && _targetPc.getAccount().getGrangKinAngerStat() != 0 && dmg > 0) {
-				dmg *= _targetPc.getAccount().getGrangKinAngerReducCalc();
-			}
-			
-		}
-
-		/** 특정지역 PK금지 **/
+/** 특정지역 PK금지 **/
 		if (_calcType == PC_PC) {
 			//if (_pc.getMapId() == 254 || _pc.getMapId() == 612 || _pc.getMapId() == 1930) {
 			
@@ -2424,13 +2417,7 @@ public class L1Magic {
 
 
 		}
-		if (_calcType == PC_NPC) {
-			if (_pc.getAccount() != null && _pc.getAccount().getGrangKinAngerStat() != 0 && dmg > 0) {
-				dmg = _pc.getAccount().getGrangKinAngerDmgCalc(dmg);
-			}
-		}
-
-		return dmg;
+return dmg;
 	}
 
     private long effectiveMagicMr() {

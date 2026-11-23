@@ -66,7 +66,6 @@ public class Account {
 	private int _tamStep = 0;
 
     private volatile int _blessOfAin;
-	private int _grangKinAngerTime;
 	
 	/** 변카 */
 	public int info_kir_poly;
@@ -297,7 +296,6 @@ public class Account {
 				account.Shop_open_count = rs.getInt("Shop_open_count");
 				account.setDragonRaid(rs.getTimestamp("raid_buff"));
 				account._blessOfAin = rs.getInt("bless_of_ain");
-				account._grangKinAngerTime = rs.getInt("GrangKinAngerTime");
 				account._lastlogout = rs.getTimestamp("last_log_out");
 
 				account.info_kir_poly = rs.getInt("info_kir_poly");
@@ -962,13 +960,8 @@ public class Account {
 		CacheD.getInstance().saveBlessOfAin(_name, _blessOfAin);
 	}
 
-	public int getGrangKinAngerTime() { return _grangKinAngerTime; }
-	public void addGrangKinAngerTime(int i, L1PcInstance pc) {}
 
 
-	public void setGrangKinAngerTime(int i) {}
-	public void setGrangKinAngerTime(int i, L1PcInstance pc) {}
-	public int getGrangKinAngerStat() { return 0; }
 
 	public Timestamp getLastLogOut() { return _lastlogout; }
 	public void setLastLogOut(Timestamp ts) { _lastlogout = ts; }
@@ -979,53 +972,8 @@ public class Account {
 		_lastlogout = new Timestamp(now);
 	}
 
-	public double getGrangKinAngerExpCalc() {
-//		double exp_down = 0.0;
-//		if (getGrangKinAngerStat() == 1) {
-//			exp_down = 0.7;
-//		} else if (getGrangKinAngerStat() == 2) {
-//			exp_down = 0.4;
-//		} else if (getGrangKinAngerStat() >= 3) {
-//			exp_down = 0.1;
-//		}
-		return 0;
-	}
 
-	public double getGrangKinAngerReducCalc() {
-//		double dmgRate = 1.0;
-//		if (getGrangKinAngerStat() == 1) {
-//			dmgRate = 3.0;
-//		} else if (getGrangKinAngerStat() == 2) {
-//			dmgRate = 3.5;
-//		} else if (getGrangKinAngerStat() >= 3) {
-//			dmgRate = 4.0;
-//		} else if (getGrangKinAngerStat() >= 4) {
-//			dmgRate = 4.5;
-//		} else if (getGrangKinAngerStat() >= 5) {
-//			dmgRate = 5.0;
-//		} else if (getGrangKinAngerStat() >= 6) {
-//			dmgRate = 5.0;
-//		}
-		return 0;
-	}
 
-	public int getGrangKinAngerDmgCalc(double dmg) {
-//		int calcDmg = 0;
-//		if (getGrangKinAngerStat() == 1) {
-//			calcDmg = (int) (dmg * 0.5);
-//		} else if (getGrangKinAngerStat() == 2) {
-//			calcDmg = (int) (dmg * 0.6);
-//		} else if (getGrangKinAngerStat() >= 3) {
-//			calcDmg = (int) (dmg * 0.7);
-//		} else if (getGrangKinAngerStat() >= 4) {
-//			calcDmg = (int) (dmg * 0.8);
-//		} else if (getGrangKinAngerStat() >= 5) {
-//			calcDmg = (int) (dmg * 0.9);
-//		} else if (getGrangKinAngerStat() >= 6) {
-//			calcDmg = (int) (dmg * 0.9);
-//		}
-		return 0;
-	}
 	
 	public int getAccountId() { return _id; }
 	public void setAccountId(int i) { _id = i; }

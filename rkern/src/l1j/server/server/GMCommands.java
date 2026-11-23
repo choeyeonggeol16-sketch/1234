@@ -1266,9 +1266,6 @@ public class GMCommands {
 		case "비트코인":
 			SC_ShowCmd.sendMovie(gm, "https://www.bithumb.com/u5/US506", -1);
 			break;
-//		case "그랑카인":
-//			testcheck(gm);
-//			break;
 		case "맵테":
 			testcheck2(gm);
 			break;
@@ -1762,7 +1759,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "	          .인형청소 .악마왕 .영자상점(1~3)", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          에르자베 .샌드웜 .기운축복 .지배보스", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          룬스톤카배 .룬스톤디스 .룬스톤데페 .룬스톤아머", 1);
-		//(new SC_ChatPacket(gm, "	          그랑카인 .그랑카인초기화", 1)).send(gm);
 		//(new SC_ChatPacket(gm, "	          진데스진레 .진데스살키 .진데스진싸 .진데스제로스", 1)).send(gm);
 		//(new SC_ChatPacket(gm, "	          진데스데불 진데스론론 .진데스포효 .진데스섬체", 1)).send(gm);
 		//(new SC_ChatPacket(gm, "	          진데스커검 .진데스태풍 .진데스악몽 .진데스나발", 1)).send(gm);

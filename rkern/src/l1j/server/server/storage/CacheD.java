@@ -1457,13 +1457,6 @@ public final class CacheD {
         }
     }
 
-    public void saveGrangKinAngerTime(String login, int value) {
-        synchronized (lock) {
-            CAccount state = getOrCreate(login);
-            state.grangKin = value;
-            changed(state, CAccount.GRANG_KIN);
-        }
-    }
 
     /**
      * reference server CAccount::SetCharacter / CItem::CacheItem ownership equivalent.
