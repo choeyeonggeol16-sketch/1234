@@ -182,6 +182,16 @@ public class L1NpcInstance extends L1Character {
     public byte _waitPendingAction = CCreatureController.ACTION_NONE;
 
     /*
+     * NC scripted DESIRE_MOVE_TO / DESIRE_MOVE_TO_TARGET action payload.
+     * Written/read only by the fixed NpcServer owner. Flat primitives:
+     * no per-NPC movement command object, worker or extra queue.
+     */
+    public long _scriptMoveGoalXY;
+    public int _scriptMoveTargetId;
+    public int _scriptMoveStopDistance;
+    public int _scriptMoveMapId = -1;
+
+    /*
      * Native dPAttack() consecutive path-find failure counter.
      * Shared path-fail flag false => reset to 0.
      * Shared path-fail flag true => ++; fail when count > 30.
@@ -1080,6 +1090,11 @@ public class L1NpcInstance extends L1Character {
         _waitTargetId = 0;
         _waitDistance = 0;
         _waitPendingAction = CCreatureController.ACTION_NONE;
+
+        _scriptMoveGoalXY = 0L;
+        _scriptMoveTargetId = 0;
+        _scriptMoveStopDistance = 0;
+        _scriptMoveMapId = -1;
 
         _pathFindFailCount = 0;
 
