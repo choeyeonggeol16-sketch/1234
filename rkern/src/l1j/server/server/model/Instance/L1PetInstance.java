@@ -125,10 +125,10 @@ public class L1PetInstance extends L1NpcInstance {
 	}
 
 	private boolean handleFollowNoTarget(final L1PcInstance master, final int dist) {
-		if (dist > 2) {
-			return dFollow.follow(this, master);
-		}
-		return false;
+		// Run dFollow also at <=2 tiles so the completed follow clears
+		// its previous CIO-owned destination. All pet command modes above
+		// retain their original L1 behavior.
+		return dFollow.follow(this, master);
 	}
 
 	@Override
