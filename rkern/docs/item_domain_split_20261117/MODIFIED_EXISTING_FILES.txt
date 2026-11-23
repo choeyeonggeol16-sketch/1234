@@ -1,4 +1,0 @@
-docs/item_followup_20261117/tests/test_hotpath.py
-docs/item_function_refactor_20261117/tests/test_item_refactor.py
-src/l1j/server/server/model/item/function/ItemActionDispatcher.java
-src/l1j/server/server/model/item/function/ItemActionService.java

@@ -1,4 +1,0 @@
-Full-server compilation was attempted with Java 21 and --enable-preview.
-The compilation cannot finish because external dependencies are not bundled in the supplied ZIP.
-Among reported missing imports are javolution.util, gnu.trove.*, org.jctools.*, org.agrona.*, and it.unimi.dsi.fastutil.*.
-Therefore only Java syntax verification and production-method typed-stub compilation have passed; full game dependency compile is NOT verified.

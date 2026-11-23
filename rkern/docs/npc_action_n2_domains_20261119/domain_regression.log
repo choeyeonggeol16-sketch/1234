@@ -1,4 +1,0 @@
-All 68 legacy helper bodies equivalent; moved 46
-All four extracted blocks and full main dispatch reverse-token equivalence PASS
-Buy dispatch cases=4530 PASS
-Local command executed differential cases=2112 PASS

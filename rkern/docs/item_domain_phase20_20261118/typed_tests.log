@@ -1,3 +1,0 @@
-PASS rune rewards (class masks, inventory status, injected exceptions) cases=41472 sha256=82a91fde4b389be9f6d45beb656be2d05f43ee143bea1849cdfa9e2f97c98093
-PASS tower/oman travel paths cases=10112 sha256=63bc81fc5ceee230e7b0c9c69aa05254c8691878c23e15b3138e4610df3bb17f
-PASS nearby cases=2310 sha256=47a365fbe9bb753e3f4a538ca39d040048ff4ceac8ad5626075b5fc2a62363f4 distance_calls 158456 -> 91140

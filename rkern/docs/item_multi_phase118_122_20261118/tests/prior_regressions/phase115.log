@@ -1,4 +1,0 @@
-JAVA_COMPILE_OK files= 18
-PHASE115_PASS typed production classes; checks=154
-
-PHASE115_TEST_OK (typed doubles, no live DB)

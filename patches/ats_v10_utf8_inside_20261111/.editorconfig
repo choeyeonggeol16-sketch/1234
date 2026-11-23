@@ -1,4 +1,0 @@
-root = true
-
-[*.java]
-charset = utf-8

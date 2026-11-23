@@ -1,4 +1,0 @@
-PASS ice merged production class typed and 960 original-vs-new item use cases
-PASS movement potion Java21 production vs original: 17280 scenarios, exact effects/packets/skill mutation
-PASS recruit starter 8 loadouts Java21 typed differential: 1024 combinations, exact grant order/consumption/failure
-PASS formatted messages: 1232 exact Korean/US/Japan/ROOT string comparisons

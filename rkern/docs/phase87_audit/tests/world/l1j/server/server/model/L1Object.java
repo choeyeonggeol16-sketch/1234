@@ -1,2 +1,0 @@
-package l1j.server.server.model;
-public class L1Object {public int id,map; public L1Object(int id,int map){this.id=id;this.map=map;} public int getId(){return id;} public int getMapId(){return map;}public Location getLocation(){return new Location();}public static class Location {public boolean isInScreen(Location o){return true;}public boolean isSamePoint(Location o){return true;}public int getTileLineDistance(Location o){return 0;}}}

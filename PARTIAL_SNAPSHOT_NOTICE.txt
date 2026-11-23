@@ -1,0 +1,6 @@
+PARTIAL BACKUP - NOT THE FULL REPOSITORY
+Origin: https://github.com/luannbr/Open_LU4_L2OFF
+Original commit: abbb2e5f474d40cf12539a8e97fddc52474ed95e
+Preserved 2026-11-23.
+15 selected source/docs files only. Missing most sources, geodata, scripts and Git history.
+The original source states GPL-3.0; retain LICENSE.

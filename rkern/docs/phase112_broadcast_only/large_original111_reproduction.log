@@ -1,5 +1,0 @@
-Exception in thread "main" java.lang.IllegalStateException: injected large-frame SEND failure
-	at l1j.server.server.model.network.core.broadcast.LargeFrameFailure112$1.sendFrozenWire(LargeFrameFailure112.java:18)
-	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFrozenLargeTo(CSharedBroadcast.java:691)
-	at l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenLargeSelfAndVisible(CSharedBroadcast.java:667)
-	at l1j.server.server.model.network.core.broadcast.LargeFrameFailure112.main(LargeFrameFailure112.java:41)

@@ -1,2 +1,0 @@
-PASS: actual production Java 21 type compilation and 25371 checks
-PASS 108: 12 one-slot races, 3 four-slot races, 3 account-count mismatch guards; original receipt tests

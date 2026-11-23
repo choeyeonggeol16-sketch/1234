@@ -1,9 +1,0 @@
-src/l1j/server/server/model/L1PcInventory.java
-src/l1j/server/server/model/item/function/AttributeEnchantScrollEffects.java
-src/l1j/server/server/model/item/function/DollPotentialTransactions.java
-src/l1j/server/server/model/item/function/ElixirStatTransactions.java
-src/l1j/server/server/model/item/function/InventorySlotExpansionItems.java
-src/l1j/server/server/model/item/function/LawfulPotionTransactions.java
-src/l1j/server/server/model/item/function/PotentialScrollTransaction.java
-src/l1j/server/server/model/item/function/StatReset.java
-src/l1j/server/server/model/item/function/UncurseScrollReceipt.java

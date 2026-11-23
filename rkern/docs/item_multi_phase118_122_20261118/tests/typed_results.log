@@ -1,4 +1,0 @@
-PASS 419631 typed potion assertions (50 IDs, 2048 failure bitmasks)
-PASS 165 typed polymorph assertions
-PASS Java21 parsed 1923 source_files=1923 syntax_errors=0
-PASS ID map movement=35 mana=15 fixed-poly=18 level-poly=9 training=1

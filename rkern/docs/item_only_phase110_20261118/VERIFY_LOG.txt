@@ -1,2 +1,0 @@
-PASS: actual production Java 21 type compilation and 25335 checks
-PASS Phase110: typed production + fault injection on committed presentation; economy guard intact

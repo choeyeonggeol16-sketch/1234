@@ -1,4 +1,0 @@
-PASS 1000002 contiguous registry probes plus all registered IDs: only 32011 added
-PASS 32 actual supplemental/World/Revival handler outcomes (stub transaction)
-PASS 64 administrator package authorization/transaction outcomes
-PASS 2 point-teleport authorization outcomes

@@ -1,1 +1,0 @@
-package l1j.server.server.storage;public class CacheD{public static int accountOrderKey(String prefix,int id){return id;}}

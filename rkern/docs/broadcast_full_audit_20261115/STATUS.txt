@@ -1,7 +1,0 @@
-Review of all 1711 Java files; 322 non-SC candidate broadcast loops in 108 files.
-This patch eliminates two confirmed recipient-invariant central broadcaster loops.
-The generic ServerPacket.writeImpl(CIOClient,WriteBuffer) path is NOT rewritten:
-it may depend on recipient state and needs class-by-class analysis.
-Detected AST parse-error files: 4; static inventory is not proof of complete removal.
-Original no-legacy 55-class SC broadcast implementation preserved.
-Windows IOCP/game runtime remains untested.

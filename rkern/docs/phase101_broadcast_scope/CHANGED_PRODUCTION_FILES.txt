@@ -1,7 +1,0 @@
-src/l1j/server/IndunSystem/Orim/OrimController.java
-src/l1j/server/MJInstanceSystem/MJInstanceEnums.java
-src/l1j/server/MJServerMacroSystem/MJServerMacroLoader.java
-src/l1j/server/server/Controller/BossController.java
-src/l1j/server/server/Controller/FishingTimeController.java
-src/l1j/server/server/model/network/core/broadcast/CAsyncSendConstBufferExceptSelf.java
-src/l1j/server/server/model/network/core/broadcast/CSharedBroadcast.java

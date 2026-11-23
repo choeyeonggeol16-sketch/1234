@@ -1,2 +1,0 @@
-Before: 536; after: 536; removed: 0; added: 0
-Exact javac diagnostic multiset equivalence PASS; both full builds still fail (531 errors, 5 warnings).

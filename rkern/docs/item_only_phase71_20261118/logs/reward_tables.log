@@ -1,6 +1,0 @@
-PASS MALE_MYTH_CARDS entries 11 including duplicates
-PASS FEMALE_MYTH_CARDS entries 11 including duplicates
-PASS LEGEND_CARDS entries 23 including duplicates
-PASS LEGEND_CARDS entries 36 including duplicates
-PASS HERO_CARDS entries 36 including duplicates
-PASS myth->unique synthesis left byte-identical; total reward rows=117

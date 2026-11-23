@@ -1,1 +1,0 @@
-package l1j.server.server.model.Instance;import l1j.server.server.model.L1Object; public class L1ItemInstance extends L1Object { public L1ItemInstance(int id,int map){super(id,map);}}

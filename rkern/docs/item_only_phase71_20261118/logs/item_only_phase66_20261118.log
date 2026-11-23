@@ -1,2 +1,0 @@
-PASS Java21 extracted-method parity brave=5120 exp=1212 deterministic rolls=300000
-PASS item-only static lookup tables, unchanged RNG invocation and 5 no-per-use-array checks

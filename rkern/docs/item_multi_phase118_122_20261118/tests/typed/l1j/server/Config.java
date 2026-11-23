@@ -1,1 +1,0 @@
-package l1j.server;public class Config{public static boolean POLY_EVENT=true;}

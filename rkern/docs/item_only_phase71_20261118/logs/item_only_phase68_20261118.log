@@ -1,7 +1,0 @@
-Boss CSV baseline/candidate comparisons=150015 PASS
-Boss parse bytes/call: baseline=840 candidate=64 sample=1,2,3,4,5,6,7,8,9,10,11,12
-Boss parse bytes/call: baseline=1640 candidate=1032 sample= 1, 2,broken,-1, 42, , 8
-Registry baseline/candidate comparisons=216000 PASS
-Tooltip bytes/call baseline=96 candidate=80 checksum=1200000
-Consignment production classes type-compiled and outcomes=1200 PASS
-Phase68 typed/behavior comparisons: PASS

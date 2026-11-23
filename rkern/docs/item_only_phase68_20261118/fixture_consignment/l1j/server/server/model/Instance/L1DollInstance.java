@@ -1,1 +1,0 @@
-package l1j.server.server.model.Instance;public class L1DollInstance{public int getItemObjId(){return 0;}}

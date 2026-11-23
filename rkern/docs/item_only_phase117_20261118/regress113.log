@@ -1,2 +1,0 @@
-PHASE113 JAVA 21 PASS: 54150 assertions; mana 10 IDs; dessert 3 IDs; commit/rollback; independent packet faults; hard-state exceptions
-TYPED SOURCES: ManaConsumables.java, DessertBuffConsumables.java; Java 21 actual compilation PASS
