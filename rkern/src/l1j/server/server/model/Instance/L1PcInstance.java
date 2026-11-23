@@ -2075,14 +2075,21 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public void broadcastRemoveAllKnownObjects() {
-		for (L1Object known : knownObjectsSnapshot()) {
+		final List<L1Object> scannedObjects = borrowKnownObjects();
+        try {
+            for (int scanIndex = 0, scanSize = scannedObjects.size(); scanIndex < scanSize; scanIndex++) {
+                final L1Object known = scannedObjects.get(scanIndex);
 			if (known == null) {
 				continue;
 			}
 			SC_RemoveObject.send(
 					getNetConnection(),
 					known);
-		}
+		
+            }
+        } finally {
+            releaseKnownObjects(scannedObjects);
+        }
 	}
 	
 	private void sendVisualEffect() {
@@ -8518,20 +8525,34 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	public void onWorldMove(int oldMap, int oldX, int oldY) {
 		
-		for (L1PcInstance viewer : knownPlayersSnapshot()) {
+		final List<L1PcInstance> scannedPlayers = borrowKnownPlayers();
+        try {
+            for (int scanIndex = 0, scanSize = scannedPlayers.size(); scanIndex < scanSize; scanIndex++) {
+                final L1PcInstance viewer = scannedPlayers.get(scanIndex);
 			if (viewer == null || viewer == this) {
 				continue;
 			}
 			if (!viewer.canSeeObject(this)) {
 				viewer.outOfSight(this);
 			}
-		}
-		for (L1Object known : knownObjectsSnapshot()) {
+		
+            }
+        } finally {
+            releaseKnownPlayers(scannedPlayers);
+        }
+		final List<L1Object> scannedObjects = borrowKnownObjects();
+        try {
+            for (int scanIndex = 0, scanSize = scannedObjects.size(); scanIndex < scanSize; scanIndex++) {
+                final L1Object known = scannedObjects.get(scanIndex);
 			if (known == null || known == this) {
 				continue;
 			}
 			if (!canSeeObject(known)) outOfSight(known);
-		}
+		
+            }
+        } finally {
+            releaseKnownObjects(scannedObjects);
+        }
 
 		final LocalWorldMap grid = L1World.getInstance().getClusterGrid();
 		final List<L1Object> nearby = grid.borrowNearby(this, Config.PC_RECOGNIZE_RANGE);
@@ -8587,14 +8608,21 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			groundSightRetry = false;
 			resyncGround = true;
 		}
-		for (L1Object known : knownObjectsSnapshot()) {
+		final List<L1Object> scannedObjects = borrowKnownObjects();
+        try {
+            for (int scanIndex = 0, scanSize = scannedObjects.size(); scanIndex < scanSize; scanIndex++) {
+                final L1Object known = scannedObjects.get(scanIndex);
 			if (known instanceof L1ItemInstance item) {
 				if (!L1GroundInventory.isVisibleGroundItem(this, item))
 					L1GroundInventory.forgetItem(this, item);
 			} else if (known != null && !canSeeObject(known)) {
 				outOfSight(known);
 			}
-		}
+		
+            }
+        } finally {
+            releaseKnownObjects(scannedObjects);
+        }
 		final LocalWorldMap grid = L1World.getInstance().getClusterGrid();
 		final List<L1Object> nearby = grid.borrowNearby(this, Config.PC_RECOGNIZE_RANGE);
 		try {
