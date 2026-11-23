@@ -177,6 +177,7 @@ final class MoveIntentCache {
             s.anchorId[slot] = target.getId();
             s.anchorPos[slot] = targetPos;
             s.goalPos[slot] = NO_POS;
+            s.passingUntil[slot] = 0L;
             s.rejectedMeleeMask[slot] = 0;
             s.waitUntil[slot] = 0L;
             s.waitReason[slot] = 0;
@@ -263,6 +264,50 @@ final class MoveIntentCache {
             heading = dx > 0 ? 2 : 6;
         }
         return 1 << heading;
+    }
+
+    /** Bounded owner-local NC passing waypoint; never crosses a retarget. */
+    static void setPassingDestination(final L1NpcInstance npc,
+            final L1Character target, final int x, final int y,
+            final long untilMs) {
+        if (npc == null || target == null || npc.getId() == 0) return;
+        final State s = LOCAL.get();
+        final int slot = slot(npc.getId());
+        initSlot(s, slot, npc);
+        s.kind[slot] = KIND_COMBAT;
+        s.anchorId[slot] = target.getId();
+        s.anchorPos[slot] = pack(target.getX(), target.getY());
+        s.goalPos[slot] = pack(x, y);
+        s.passingUntil[slot] = untilMs;
+    }
+
+    static long getPassingDestination(final L1NpcInstance npc,
+            final L1Character target, final long nowMs) {
+        if (npc == null || target == null || npc.getId() == 0) return NO_POS;
+        final State s = LOCAL.get();
+        final int slot = slot(npc.getId());
+        if (s.key[slot] != key(npc)
+                || s.kind[slot] != KIND_COMBAT
+                || s.anchorId[slot] != target.getId()
+                || s.anchorPos[slot] != pack(target.getX(), target.getY())
+                || nowMs >= s.passingUntil[slot]) {
+            if (s.key[slot] == key(npc)) {
+                s.goalPos[slot] = NO_POS;
+                s.passingUntil[slot] = 0L;
+            }
+            return NO_POS;
+        }
+        return s.goalPos[slot];
+    }
+
+    static void clearPassingDestination(final L1NpcInstance npc) {
+        if (npc == null || npc.getId() == 0) return;
+        final State s = LOCAL.get();
+        final int slot = slot(npc.getId());
+        if (s.key[slot] == key(npc) && s.kind[slot] == KIND_COMBAT) {
+            s.goalPos[slot] = NO_POS;
+            s.passingUntil[slot] = 0L;
+        }
     }
 
     static void clearProgress(final L1NpcInstance npc) {
@@ -374,6 +419,7 @@ final class MoveIntentCache {
         s.anchorId[slot] = 0;
         s.anchorPos[slot] = NO_POS;
         s.goalPos[slot] = NO_POS;
+        s.passingUntil[slot] = 0L;
         s.previousOrigin[slot] = NO_POS;
         s.noProgress[slot] = 0;
         s.rejectedMeleeMask[slot] = 0;
@@ -404,6 +450,7 @@ final class MoveIntentCache {
         final int[] anchorId = new int[CACHE_SIZE];
         final long[] anchorPos = new long[CACHE_SIZE];
         final long[] goalPos = new long[CACHE_SIZE];
+        final long[] passingUntil = new long[CACHE_SIZE];
         final long[] previousOrigin = new long[CACHE_SIZE];
         final byte[] noProgress = new byte[CACHE_SIZE];
         final byte[] rejectedMeleeMask = new byte[CACHE_SIZE];

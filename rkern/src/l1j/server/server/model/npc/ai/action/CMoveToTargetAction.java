@@ -9,6 +9,9 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.ai.core.PathFinder;
+import l1j.server.server.model.ai.core.PathNodeWorld;
+import l1j.server.server.model.npc.ai.AstarProvider;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 
@@ -38,6 +41,7 @@ public final class CMoveToTargetAction {
     // Covers one slow animation/tick without leaving a permanent reservation.
     private static final long RESERVED_SLOT_CLAIM_MS = 6_000L;
     private static final long FAILED_MELEE_POSITION_COOLDOWN_MS = 2_000L;
+    private static final long PASSING_INTENT_MS = 6_000L;
 
     private static final int[] DX =
             { 0, 1, 1, 1, 0, -1, -1, -1 };
@@ -103,6 +107,7 @@ public final class CMoveToTargetAction {
                     creature.getTarget());
         }
 
+        MoveIntentCache.clearPassingDestination(creature);
         SetMoving.clear(creature);
         CMoveToTargetWaitAction.clear(creature);
         ActionAccess.resetMoveBlockedState(creature);
@@ -225,6 +230,33 @@ public final class CMoveToTargetAction {
                 return resumeResult;
             }
 
+            // Passing position was selected on an earlier blocked tick. Do not
+            // make a second physical step in the same CIO callback.
+            final long passing = MoveIntentCache.getPassingDestination(
+                    monster, target, System.currentTimeMillis());
+            if (passing != MoveIntentCache.NO_POS) {
+                final int wx = MoveIntentCache.unpackX(passing);
+                final int wy = MoveIntentCache.unpackY(passing);
+                if (wx == monster.getX() && wy == monster.getY()) {
+                    MoveIntentCache.clearPassingDestination(monster);
+                } else {
+                    final byte code = SetMoving.tickToPoint(monster, wx, wy);
+                    if (monster.isDead() || monster.getTarget() != target
+                            || monster.npcActionGeneration() != actionGeneration
+                            || ActionAccess.currentAction(monster) != expectedAction) {
+                        MoveIntentCache.clearPassingDestination(monster);
+                        return CCreatureController.RESULT_INVALID;
+                    }
+                    if (code == SetMoving.RUNNING) {
+                        return CCreatureController.RESULT_RUNNING;
+                    }
+                    MoveIntentCache.clearPassingDestination(monster);
+                    if (code != SetMoving.AT_DISTANCE) {
+                        ActionAccess.sleep(monster, DYNAMIC_BLOCK_RETRY_MS);
+                        return CCreatureController.RESULT_RUNNING;
+                    }
+                }
+            }
         }
 
         // The reserved-slot route may have yielded after its path scan.
@@ -304,7 +336,7 @@ public final class CMoveToTargetAction {
                 // the existing body-aware route BEFORE suppressing its desire
                 // in favor of a different player. Ranged chases can also use
                 // this fallback and stop as soon as their real range/LOS opens.
-                final byte passing = GetPassingPosOnSight(
+                final byte passing = tryPassBlockedChase(
                         monster, target, actionGeneration, expectedAction);
                 if (passing >= 0) return passing;
 
@@ -394,7 +426,7 @@ public final class CMoveToTargetAction {
                 final L1MonsterInstance monster = (L1MonsterInstance) creature;
                 // Bound repeated occupancy scans on a genuinely missing path.
                 if (creature._pathFindFailCount % 3 == 0) {
-                    final byte passing = GetPassingPosOnSight(
+                    final byte passing = tryPassBlockedChase(
                             monster, target, actionGeneration, expectedAction);
                     if (passing >= 0) return passing;
                 }
@@ -580,6 +612,7 @@ public final class CMoveToTargetAction {
         if (creature instanceof L1MonsterInstance) {
             clearReservedAttackSlot((L1MonsterInstance) creature);
         }
+        MoveIntentCache.clearPassingDestination(creature);
         if (!enteringWait) {
             SetMoving.clear(creature);
             CMoveToTargetWaitAction.clear(creature);
@@ -614,6 +647,7 @@ public final class CMoveToTargetAction {
             CDesirePQ.releaseBlockedAttack(monster);
         }
 
+        MoveIntentCache.clearPassingDestination(creature);
         SetMoving.clear(creature);
         CMoveToTargetWaitAction.clear(creature);
         ActionAccess.resetMoveBlockedState(creature);
@@ -621,14 +655,11 @@ public final class CMoveToTargetAction {
     }
 
     /**
-     * L1 8-tile adaptation of NC CCreature::GetPassingPosOnSight.
-     * Normal SetMoving already tried its static corridor; on obstruction
-     * reuse the per-owner PathFinder's live-body route to an attack position.
-     * The selected position is reserved, then physical movement is committed
-     * once by SetMoving. Never switch the captured target mid-callback.
-     * -1 means no usable passing position currently exists.
+     * NC CCreature::GetPassingPosOnSight lives on L1Character. The L1 action
+     * tries an exact occupied-body melee route first, then stages the target's
+     * recent or attack-leader passing point for the NEXT movement tick.
      */
-    private static byte GetPassingPosOnSight(
+    private static byte tryPassBlockedChase(
             final L1MonsterInstance monster,
             final L1Character target,
             final int generation,
@@ -638,25 +669,42 @@ public final class CMoveToTargetAction {
                 || ActionAccess.currentAction(monster) != expectedAction) {
             return CCreatureController.RESULT_INVALID;
         }
-        if (!CMoveToTargetRelativeAction.GetMeleeAttackPosition(monster, target)) {
-            return -1;
-        }
-        final byte result = SetMoving(monster, target, generation);
-        if (result >= 0) {
-            if (SetMoving.debugTraceActor(monster)) {
-                System.out.println("[CHASE-ROUTE-V4] actor=" + monster.getId()
-                        + " pos=" + monster.getX() + "," + monster.getY()
-                        + " slot=" + monster._desireResumeAttackPos
-                        + " result=" + result);
-            }
-            return result;
+        if (CMoveToTargetRelativeAction.GetMeleeAttackPosition(monster, target)) {
+            final byte result = SetMoving(monster, target, generation);
+            if (result >= 0) return result;
         }
         if (monster.isDead() || monster.getTarget() != target
                 || monster.npcActionGeneration() != generation
                 || ActionAccess.currentAction(monster) != expectedAction) {
             return CCreatureController.RESULT_INVALID;
         }
-        return -1;
+        final int tx = target.getX();
+        final int ty = target.getY();
+        final PathFinder pathFinder = AstarProvider.get();
+        final long preferred = target.GetPassingPosOnSight(
+                monster, tx, ty, pathFinder.targetPassingPositions(),
+                pathFinder.leaderPassingPositions());
+        if (preferred == PathNodeWorld.NO_PATH) return -1;
+        final int x = PathNodeWorld.unpackX(preferred);
+        final int y = PathNodeWorld.unpackY(preferred);
+        if ((x == tx && y == ty)
+                || (x == monster.getX() && y == monster.getY())
+                || !COLLISION.canEnter(
+                        (short) monster.getMapId(), x, y, monster.getId())) {
+            return -1;
+        }
+        if (monster.isDead() || monster.getTarget() != target
+                || target.isDead() || target.getCurrentHp() <= 0
+                || target.getMapId() != monster.getMapId()
+                || target.getX() != tx || target.getY() != ty
+                || monster.npcActionGeneration() != generation
+                || ActionAccess.currentAction(monster) != expectedAction) {
+            return CCreatureController.RESULT_INVALID;
+        }
+        MoveIntentCache.setPassingDestination(monster, target,
+                x, y, System.currentTimeMillis() + PASSING_INTENT_MS);
+        ActionAccess.sleep(monster, 100L);
+        return CCreatureController.RESULT_RUNNING;
     }
 
     private static byte SetMoving(
