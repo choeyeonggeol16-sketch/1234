@@ -335,10 +335,6 @@ public class CalcStat {
     private static int nextInt(int bound) {
         return tlr().nextInt(bound);
     }
-    private static int next100() {
-        return tlr().nextInt(100);
-    }
-
     // =========================================================
     // Tables
     // =========================================================
