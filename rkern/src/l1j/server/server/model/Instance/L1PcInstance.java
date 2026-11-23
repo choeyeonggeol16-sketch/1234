@@ -82,7 +82,6 @@ import l1j.server.server.model.character.effect.PcPassiveEffects;
 import l1j.server.server.model.character.effect.PcPotentialEffects;
 import l1j.server.server.model.character.effect.PcWantedEffects;
 import l1j.server.server.model.character.experience.amplifier.ExpAmplifier;
-import l1j.server.server.model.character.scheduler.AutoSaveChaQuitCheckScheduler;
 import l1j.server.server.model.character.scheduler.CRegenController;
 import l1j.server.server.model.character.scheduler.CharTamScheduler;
 import l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler;
@@ -1846,7 +1845,6 @@ public class L1PcInstance extends L1Character {
 		PremiumTimeController.getInstance().register(this);
 		CharTamScheduler.getInstance().onEnterWorld(this);
 		PcInventoryExpiryScheduler.getInstance().register(this);
-		AutoSaveChaQuitCheckScheduler.getInstance().register(this);
 		nextSessionStamp();
 		CIOThreadCallback.getInstance().clearPcState(this);
 		CIOThreadCallback.getInstance().registerPc(this);
@@ -2557,7 +2555,6 @@ public class L1PcInstance extends L1Character {
 	 * 중복 코드를 줄이기 위해 Regen 정지 함수들을 묶어주는 예시
 	 */
 	public void stopAllRegenerations() {
-		try { AutoSaveChaQuitCheckScheduler.getInstance().unregister(this);  } catch (Throwable ignore) {}
 		try { PremiumTimeController.getInstance().unregister(this);  } catch (Throwable ignore) {}
 		try { CharTamScheduler.getInstance().onLeaveWorld(this); } catch (Throwable ignore) {}
 		try { CIOThreadCallback.getInstance().unregisterPc(this);  } catch (Throwable ignore) {}

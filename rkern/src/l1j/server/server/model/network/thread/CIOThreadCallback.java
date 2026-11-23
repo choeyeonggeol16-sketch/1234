@@ -5,6 +5,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,6 +13,7 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import l1j.server.Config;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -1001,11 +1003,21 @@ public final class CIOThreadCallback {
     }
 
 	private static final class CreatureHeartbeatTask implements WheelTask {
+		private static final long AUTO_SAVE_RETRY_MIN_NS = TimeUnit.SECONDS.toNanos(2L);
+		private static final long AUTO_SAVE_RETRY_MAX_NS = TimeUnit.SECONDS.toNanos(60L);
 		final L1PcInstance actor;
 		final int pcId;
         final int sessionStamp;
 		final TaskHandle h;
 		final CIOThread owner;
+		// NC User::TimerExpired-style per-character save deadlines.
+		// Reuse the existing CIO heartbeat; no per-PC save queue or worker.
+		final long charSaveIntervalNs;
+		final long invSaveIntervalNs;
+		long nextCharSaveNs;
+		long nextInvSaveNs;
+		int charSaveFailures;
+		int invSaveFailures;
 
 		CreatureHeartbeatTask(L1PcInstance actor, TaskHandle h, CIOThread owner) {
 			this.actor = actor;
@@ -1013,12 +1025,60 @@ public final class CIOThreadCallback {
             this.sessionStamp = actor.getSessionStamp();
 			this.h = h;
 			this.owner = owner;
+			final int charSeconds = Config.AUTOSAVE_INTERVAL;
+			final int invSeconds = Config.AUTOSAVE_INTERVAL_INVENTORY;
+			charSaveIntervalNs = charSeconds > 0 ? TimeUnit.SECONDS.toNanos(charSeconds) : 0L;
+			invSaveIntervalNs = invSeconds > 0 ? TimeUnit.SECONDS.toNanos(invSeconds) : 0L;
+			final long now = System.nanoTime();
+			if (charSaveIntervalNs > 0L)
+				nextCharSaveNs = now + charSaveIntervalNs + saveJitterNs(charSaveIntervalNs);
+			if (invSaveIntervalNs > 0L)
+				nextInvSaveNs = now + invSaveIntervalNs + saveJitterNs(invSaveIntervalNs);
+		}
+
+		private static long saveJitterNs(long intervalNs) {
+			return ThreadLocalRandom.current().nextLong(
+					Math.max(TimeUnit.SECONDS.toNanos(1L), intervalNs / 10L));
+		}
+
+		private static long saveRetryNs(int failures) {
+			return Math.min(AUTO_SAVE_RETRY_MAX_NS,
+					AUTO_SAVE_RETRY_MIN_NS << Math.min(10, Math.max(0, failures - 1)));
+		}
+
+		private void runAutoSave(L1PcInstance pc) {
+			if (h.isCancelled() || pc.isLogoutStarted()) return;
+			final long now = System.nanoTime();
+			if (charSaveIntervalNs > 0L && now - nextCharSaveNs >= 0L) {
+				try {
+					pc.save();
+					charSaveFailures = 0;
+					nextCharSaveNs = System.nanoTime() + charSaveIntervalNs + saveJitterNs(charSaveIntervalNs);
+				} catch (Throwable failure) {
+					charSaveFailures = Math.min(31, charSaveFailures + 1);
+					nextCharSaveNs = System.nanoTime() + saveRetryNs(charSaveFailures);
+					LOGGER.log(Level.WARNING, "Char save failed: " + pc.getName(), failure);
+				}
+			}
+			// A concurrent socket close may have started logout during character saving.
+			if (h.isCancelled() || pc.isLogoutStarted()) return;
+			if (invSaveIntervalNs > 0L && now - nextInvSaveNs >= 0L) {
+				try {
+					pc.saveInventory();
+					invSaveFailures = 0;
+					nextInvSaveNs = System.nanoTime() + invSaveIntervalNs + saveJitterNs(invSaveIntervalNs);
+				} catch (Throwable failure) {
+					invSaveFailures = Math.min(31, invSaveFailures + 1);
+					nextInvSaveNs = System.nanoTime() + saveRetryNs(invSaveFailures);
+					LOGGER.log(Level.WARNING, "Inv save failed: " + pc.getName(), failure);
+				}
+			}
 		}
 
 		@Override
 		public void run() {
             owner.dispatchPcWheelTask(this, actor, h, sessionStamp);
-        }
+		}
 
         @Override public void runOnController(L1PcInstance pc) {
             if (h.isCancelled() || pc != actor || pc.getSessionStamp() != sessionStamp) return;
@@ -1030,7 +1090,11 @@ public final class CIOThreadCallback {
                     pc.einhasadHeartbeatFromController();
                 }
             } finally {
-                finishPcWheelTask(owner, this, 1, CREATURE_HEARTBEAT_MS);
+                try {
+                    runAutoSave(pc);
+                } finally {
+                    finishPcWheelTask(owner, this, 1, CREATURE_HEARTBEAT_MS);
+                }
             }
         }
 
@@ -1040,7 +1104,7 @@ public final class CIOThreadCallback {
 		}
 	}
 
-	private static final class EndGhostTask implements WheelTask {
+		private static final class EndGhostTask implements WheelTask {
 		final int pcId; final long smartId; final int stamp; final TaskHandle h;
 		EndGhostTask(int pcId, long smartId, int stamp, TaskHandle h) { this.pcId = pcId; this.smartId = smartId; this.stamp = stamp; this.h = h; }
 		@Override public void run() {

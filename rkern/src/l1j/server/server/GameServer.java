@@ -93,7 +93,6 @@ import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.companion.CompanionLoader;
 import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
 import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
-import l1j.server.server.model.character.scheduler.AutoSaveChaQuitCheckScheduler;
 import l1j.server.server.model.character.scheduler.CharTamScheduler;
 import l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler;
 import l1j.server.server.model.gametime.L1GameTimeClock;
@@ -355,8 +354,6 @@ public class GameServer {
 
 		// 캐릭터 시간제 아이템 삭제 쓰레드 로직 처리 (/
 		PcInventoryExpiryScheduler.getInstance().start();
-		/** 서버관리 스레드 로직 처리 **/
-		AutoSaveChaQuitCheckScheduler.getInstance().start();
 		
 		// CIOThreadCallback 각종 모니터 스레드 처리
 		CIOThreadCallback.getInstance();
@@ -558,7 +555,6 @@ public class GameServer {
 
 	        PcInventoryExpiryScheduler.getInstance().stop();
 
-	        AutoSaveChaQuitCheckScheduler.getInstance().stop();
 
 	        PremiumTimeController.getInstance().stop();
 	        BugRaceController.getInstance().stop();
