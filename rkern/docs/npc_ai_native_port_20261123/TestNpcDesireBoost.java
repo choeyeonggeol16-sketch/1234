@@ -103,7 +103,58 @@ public final class TestNpcDesireBoost {
         boosted = (boolean[]) field("boosted").get(queue);
         check(boosted.length >= 10 && boosted[0], "capacity growth preserves marker");
 
+        // Actual production NC UseSkillFinished: ordinary failure BoostDown,
+        // one-time failure removal, success exact-key removal.
+        final long nowMs = System.currentTimeMillis();
+        check(CDesirePQ.addUseSkillDesire(
+                owner, 0, 123, 0, 0, 55.0f, 40.0f, 0, nowMs),
+                "add reusable skill desire");
+
+        Method findSkillKey = CDesirePQ.class.getDeclaredMethod(
+                "findSkillKey", int.class, int.class);
+        findSkillKey.setAccessible(true);
+        int skillIndex = (int) findSkillKey.invoke(queue, 0, 123);
+        check(skillIndex >= 0, "reusable skill key exists");
+        values = (float[]) field("values").get(queue);
+        boosted[skillIndex] = true;
+        values[skillIndex] += 40.0f;
+
+        check(CDesirePQ.UseSkillFinished(owner, 0, 123, false),
+                "reusable skill failure callback");
+        check(values[skillIndex] == 55.0f && !boosted[skillIndex],
+                "reusable skill only loses its own boost");
+        check(CDesirePQ.UseSkillFinished(owner, 0, 123, false),
+                "duplicate reusable callback remains valid");
+        check(values[skillIndex] == 55.0f,
+                "repeat callback must not subtract boost twice");
+
+        check(CDesirePQ.addUseSkillDesire(
+                owner, 0, 456, 0, CDesirePQ.DF_ONE_TIME_METHOD,
+                75.0f, 50.0f, 0, nowMs), "add one-time skill desire");
+        int once = (int) findSkillKey.invoke(queue, 0, 456);
+        check(once >= 0, "one-time key exists");
+        boosted = (boolean[]) field("boosted").get(queue);
+        boosted[once] = true;
+        check(CDesirePQ.UseSkillFinished(owner, 0, 456, false),
+                "one-time skill failure callback");
+        check((int) findSkillKey.invoke(queue, 0, 456) == -1,
+                "one-time skill removed on failure");
+        check((int) findSkillKey.invoke(queue, 0, 123) >= 0,
+                "unrelated reusable skill retained");
+
+        check(CDesirePQ.addUseSkillDesire(
+                owner, 0, 789, 0, 0, 90.0f, 20.0f, 0, nowMs),
+                "add successful skill desire");
+        check(CDesirePQ.UseSkillFinished(owner, 0, 789, true),
+                "successful skill callback");
+        check((int) findSkillKey.invoke(queue, 0, 789) == -1,
+                "successful skill key removed");
+        check((int) findSkillKey.invoke(queue, 0, 123) >= 0,
+                "success does not erase other skill requests");
+
         System.out.println("PASS NC desire boost: single-apply, exact key, immediate, "
                 + "custom boost, heap swap, removal, capacity growth");
+        System.out.println("PASS NC skill completion: reusable BoostDown, one-time "
+                + "failure removal, success exact-key removal, sibling preservation");
     }
 }
