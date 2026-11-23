@@ -43,6 +43,14 @@ public final class dPetDefault {
         }
         if (!canFollow(creature, master)) {
             dFollow.clear(creature);
+            // Native dPetDefault returns 0 for this pass, not a permanent
+            // AI uninstall. L1's CIO owner needs to retry after the master
+            // recovers (the subclass already handles lost-map/stay policy).
+            if (master != null
+                    && master.getMapId() == creature.getMapId()) {
+                ActionAccess.sleep(creature, 500L);
+                return false;
+            }
             return true;
         }
 
@@ -67,6 +75,9 @@ public final class dPetDefault {
                 if (dir != -1) {
                     creature.setSleepTime(creature.setDirectionMove(dir));
                 }
+            } else {
+                // NC's default idle cadence is 500 ms when no move is due.
+                ActionAccess.sleep(creature, 500L);
             }
             return false;
         }
@@ -83,11 +94,13 @@ public final class dPetDefault {
                 } else {
                     creature.setSleepTime(creature.setDirectionMove(dir));
                 }
+            } else {
+                ActionAccess.sleep(creature, 500L);
             }
             return false;
         }
 
-        return dFollow.follow(creature, master);
+        return follow(creature, master);
     }
 
     /**
@@ -96,11 +109,23 @@ public final class dPetDefault {
      */
     public static boolean follow(
             final L1NpcInstance creature, final L1Character master) {
+        if (creature == null) return true;
         if (!canFollow(creature, master)) {
             dFollow.clear(creature);
+            if (master != null && master.getMapId() == creature.getMapId()) {
+                ActionAccess.sleep(creature, 500L);
+                return false;
+            }
             return true;
         }
-        return dFollow.follow(creature, master);
+
+        final boolean close = creature.getLocation()
+                .getTileLineDistance(master.getLocation()) <= CMoveAction.FOLLOW_RADIUS;
+        final boolean stopped = dFollow.follow(creature, master);
+        if (close && !stopped) {
+            ActionAccess.sleep(creature, 500L);
+        }
+        return stopped;
     }
 
     /**
