@@ -55,7 +55,7 @@ public final class CS_AuthLogin {
         final String ip = client.getIp();
         final LoginController lc = LoginController.getInstance();
         final int count = lc.getIpCount(ip);
-                if ((!Config.ALLOW_2PC && count > 0)
+        if ((!Config.ALLOW_2PC && count > 0)
                 || (Config.ALLOW_2PC && count > CConnectionConfig.NETWORK_CLIENT_PERMISSION
                     && !ip.equals(CConnectionConfig.NETWORK_ADDRESS2ACCOUNT))) {
             try { processDuplication(client, accountName, ip); }
@@ -145,7 +145,7 @@ public final class CS_AuthLogin {
         final LoginController lc = LoginController.getInstance();
         final int count = lc.getIpCount(ip);
 
-                if (!Config.ALLOW_2PC) {
+        if (!Config.ALLOW_2PC) {
             if (count > 0) {
                 processDuplication(client, accountName, ip);
                 return false;
