@@ -172,5 +172,27 @@ public final class TestNpcDesireBoost {
         check(restDelay.getLong(null) == 6_000L,
                 "L1 live-server pause exactly 6 seconds");
         System.out.println("PASS L1 live walk constants: 3..6 tiles, 6000ms rest");
+
+        // The NPC-only cast entry rejects invalid actors / skill IDs before
+        // entering the pooled L1SkillUse executor. The private normal-cast
+        // gate must reject an uninitialized skill instead of silent success.
+        check(!l1j.server.server.model.character.skill.L1SkillUse.castNpc(
+                null, 1, 0, 0, 0, null, 0,
+                l1j.server.server.model.character.skill.L1SkillUse.TYPE_NORMAL, 10),
+                "NPC null attacker rejected");
+        check(!l1j.server.server.model.character.skill.L1SkillUse.castNpc(
+                owner, 0, 0, 0, 0, null, 0,
+                l1j.server.server.model.character.skill.L1SkillUse.TYPE_NORMAL, 10),
+                "NPC zero skill ID rejected");
+        final Class<?> executorClass =
+                l1j.server.server.model.character.skill.L1SkillUse.class;
+        final Object emptyCast = unsafe.allocateInstance(executorClass);
+        final Method canRunNormal =
+                executorClass.getDeclaredMethod("canRunNormal");
+        canRunNormal.setAccessible(true);
+        check(!(boolean) canRunNormal.invoke(emptyCast),
+                "no initialized skill must not be executed as NPC cast");
+        System.out.println("PASS NPC cast prerequisites: attacker, skill ID, "
+                + "normal-cast execution gate");
     }
 }
