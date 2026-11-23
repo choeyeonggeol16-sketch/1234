@@ -6,6 +6,7 @@ on:
       - rkern/pc-unused-autohunt-20261123
     paths:
       - 'rkern/src/l1j/server/server/model/npc/ai/**'
+      - 'rkern/src/l1j/server/server/model/character/skill/L1SkillUse.java'
       - 'rkern/docs/npc_ai_native_port_20261123/**'
       - '.github/workflows/rkern-npc-ai-native-port.yml'
   workflow_dispatch:
