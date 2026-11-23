@@ -224,6 +224,14 @@ public final class TestNpcDesireBoost {
         check(owner._desireResumeAttackTargetId == winnerB,
                 "retiring A must preserve B's reserved attack claim");
 
+        // The zero/no-target sentinel must never clear a newer reservation.
+        final Method retire = CDesirePQ.class.getDeclaredMethod(
+                "retireAttackHandoff", L1MonsterInstance.class, int.class);
+        retire.setAccessible(true);
+        retire.invoke(null, owner, 0);
+        check(owner._desireResumeAttackTargetId == winnerB,
+                "zero target sentinel must not clear successor's claim");
+
         // A dead/invalid ATTACK key can be pruned without targetRemove().
         // This must clear the exact blocked gate and reservation ownership.
         target.setId(888200);
