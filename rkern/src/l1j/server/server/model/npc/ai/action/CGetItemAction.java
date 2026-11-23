@@ -192,7 +192,6 @@ public final class CGetItemAction {
                 ActionAccess.targetItem(creature);
 
         if (targetItem == null
-                || !creature.isPickupItem()
                 || !isAllowedItem(creature, targetItem)) {
             return;
         }
@@ -314,10 +313,15 @@ public final class CGetItemAction {
             transferred = groundInventory.tradeItem(
                     targetItem, targetItem.getCount(), destination);
         } catch (IllegalStateException pendingTransfer) {
-            // CacheD can refuse a transfer while a receipt is unresolved.
-            // Item never committed; restore its flag and retry later.
             if (groundInventory.getItem(targetItem.getId()) == targetItem) {
                 targetItem.setGiveItem(oldGiveItem);
+            }
+            // Only the known pre-COMMIT CacheD admission rejection is
+            // retriable. Propagate unexpected transaction-state failures;
+            // swallowing them could conceal a partial item mutation.
+            if (!"Item mutation refused while CacheD transfer pending"
+                    .equals(pendingTransfer.getMessage())) {
+                throw pendingTransfer;
             }
             ActionAccess.sleep(creature, INVALID_TARGET_SLEEP_MS);
             return;
