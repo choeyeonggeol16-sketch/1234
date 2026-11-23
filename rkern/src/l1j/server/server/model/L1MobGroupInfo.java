@@ -31,26 +31,52 @@ public class L1MobGroupInfo {
 	private final List<L1NpcInstance> _membersList =
 			new ArrayList<L1NpcInstance>();
 
-	private L1NpcInstance _leader;
+	// The NPC owner observes leader changes from respawn/delete threads.
+	private volatile L1NpcInstance _leader;
 
 	public L1MobGroupInfo() {
 	}
 
-	public void setLeader(L1NpcInstance npc) {	_leader = npc;	}
+	/**
+	 * The group identity is the CURRENT leader's object ID. When the
+	 * leader changes, all members must see the same identity; otherwise
+	 * the existing group-help event compares stale IDs and ignores allies.
+	 *
+	 * Membership mutation is rare (spawn/death), never on the NPC hot path.
+	 */
+	public synchronized void setLeader(final L1NpcInstance npc) {
+		_leader = npc;
+		final int groupId = npc != null ? npc.getId() : 0;
+		for (int i = 0; i < _membersList.size(); i++) {
+			_membersList.get(i).setMobGroupId(groupId);
+		}
+	}
 
-	public L1NpcInstance getLeader() {	return _leader;	}
+	public L1NpcInstance getLeader() {
+		return _leader;
+	}
 
-	public boolean isLeader(L1NpcInstance npc) {	return npc.getId() == _leader.getId();	}
+	public boolean isLeader(final L1NpcInstance npc) {
+		return npc != null && npc == _leader;
+	}
 
 	private L1Spawn _spawn;
 
-	public void setSpawn(L1Spawn spawn) {	_spawn = spawn;	}
+	public synchronized void setSpawn(L1Spawn spawn) {
+		_spawn = spawn;
+	}
 
-	public L1Spawn getSpawn() {	return _spawn;	}
+	public synchronized L1Spawn getSpawn() {
+		return _spawn;
+	}
 
-	public void addMember(L1NpcInstance npc) {
+	public synchronized void addMember(final L1NpcInstance npc) {
 		if (npc == null) {
 			throw new NullPointerException();
+		}
+
+		if (_membersList.contains(npc)) {
+			return;
 		}
 
 		if (_membersList.isEmpty()) {
@@ -60,43 +86,57 @@ public class L1MobGroupInfo {
 			}
 		}
 
-		if (!_membersList.contains(npc)) {
-			_membersList.add(npc);
-		}
+		_membersList.add(npc);
 		npc.setMobGroupInfo(this);
-		npc.setMobGroupId(_leader.getId());
+		npc.setMobGroupId(_leader != null ? _leader.getId() : 0);
 	}
 
-	public synchronized int removeMember(L1NpcInstance npc) {
+	public synchronized int removeMember(final L1NpcInstance npc) {
 		if (npc == null) {
 			throw new NullPointerException();
 		}
 
-		if (_membersList.contains(npc)) {
-			_membersList.remove(npc);
+		// A late duplicate delete must not detach a newly rejoined NPC or
+		// disturb a different leader's group.
+		if (!_membersList.remove(npc)) {
+			return _membersList.size();
 		}
+
 		npc.setMobGroupInfo(null);
+		npc.setMobGroupId(0);
 
-		if (isLeader(npc)) {
-			if (isRemoveGroup() && _membersList.size() != 0) {
-				for (L1NpcInstance minion : _membersList) {
-					minion.setMobGroupInfo(null);
-					minion.setSpawn(null);
-					minion.setRespawn(false);
-				}
-				return 0;
-			}
-			if (_membersList.size() != 0) {
-				setLeader(_membersList.get(0));
-			}
+		if (npc != _leader) {
+			return _membersList.size();
 		}
 
+		if (_isRemoveGroup && !_membersList.isEmpty()) {
+			// The original L1 remove-group policy disables minion respawn.
+			// Release member IDs and the retained list as well, otherwise a
+			// group object can retain removed NPCs until its own GC.
+			for (int i = 0; i < _membersList.size(); i++) {
+				final L1NpcInstance minion = _membersList.get(i);
+				minion.setMobGroupInfo(null);
+				minion.setMobGroupId(0);
+				minion.setSpawn(null);
+				minion.setRespawn(false);
+			}
+			_membersList.clear();
+			_leader = null;
+			return 0;
+		}
+
+		// L1 leader succession is the counterpart of NC private-group
+		// identity updates. The rest of the group follows this new leader.
+		setLeader(_membersList.isEmpty() ? null : _membersList.get(0));
 		return _membersList.size();
 	}
 
-	public int getNumOfMembers() {	return _membersList.size();	}
-	
-	private boolean _isRemoveGroup;
+	public synchronized int getNumOfMembers() {
+		return _membersList.size();
+	}
+
+
+	private volatile boolean _isRemoveGroup;
 
 	public boolean isRemoveGroup() {	return _isRemoveGroup;	}
 
