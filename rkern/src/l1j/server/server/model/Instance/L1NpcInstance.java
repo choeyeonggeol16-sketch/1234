@@ -1187,7 +1187,8 @@ public class L1NpcInstance extends L1Character {
         return _paralysisTime;
     }
 
-    private boolean _pickupItem;
+    // Packet command publishers and the CIO NPC owner may differ.
+    private volatile boolean _pickupItem;
 
     public boolean isPickupItem() {
         return _pickupItem;
