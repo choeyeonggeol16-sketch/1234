@@ -189,6 +189,13 @@ public final class TestNpcFollow {
                     "GetFollowPosition must find a free slot for " + actor.getClass());
         }
 
+        MoveIntentCache.setGoal(follower, MoveIntentCache.KIND_FOLLOW,
+                leader.getId(), leader.getX(), leader.getY(), 12, 16);
+        check(MoveIntentCache.clearGoalAndReport(follower),
+                "the first completed follow releases a live cached goal");
+        check(!MoveIntentCache.clearGoalAndReport(follower),
+                "a repeated idle follow tick has no stale goal to retire");
+
         check(!CMoveAction.followGroup(follower, leader),
                 "group leader uses the same dFollow action");
         check(dFollow.follow(follower, null),
