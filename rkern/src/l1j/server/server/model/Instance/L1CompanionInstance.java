@@ -451,12 +451,16 @@ public class L1CompanionInstance extends L1NpcInstance{
         // Publish the pickup command to the existing CIO owner. Before,
         // find_items() only assigned _targetItem; AiRuntime required
         // isPickupItem() and never entered ACTION_GET_ITEM.
+        if (!collecting) {
+            // Publish canceled item A before the pickup-mode flag changes,
+            // so a concurrent CIO owner cannot observe the new command
+            // while still finding the old pickup target.
+            _targetItem = null;
+        }
         setPickupItem(collecting);
         if (collecting) {
             // Search must run on the CIO NPC owner, not the command thread.
             _itemSearchCooldown = 0;
-        } else {
-            _targetItem = null;
         }
         if (!isAiRunning()) {
             startAI();
