@@ -110,11 +110,31 @@ public final class dFlee {
     private static byte moveAway(
             final L1NpcInstance creature,
             final L1Character target) {
-        final L1Map map = creature.getMap();
-        if (map == null || !creature.isMovable()) {
+        final int heading = chooseEscapeHeading(creature, target);
+        if (heading >= 0 && ActionAccess.moveOneStep(creature, heading)) {
+            ActionAccess.sleep(creature,
+                    Math.max(RETRY_MS, creature.getSleepTime()));
+        } else {
+            // A reservation can be taken after the side-effect-free probe.
+            // One direction commit attempt per owner tick, as in native
+            // SendMovePacket(); no repeated commit attempts after a collision.
             ActionAccess.sleep(creature, RETRY_MS);
-            return CCreatureController.RESULT_RUNNING;
         }
+        return CCreatureController.RESULT_RUNNING;
+    }
+
+    /**
+     * Pure heading probe using L1 map geodata and the actual shared tile
+     * occupancy/reservation map. There is no move or allocation here.
+     */
+    static int chooseEscapeHeading(
+            final L1NpcInstance creature,
+            final L1Character target) {
+        if (creature == null || target == null || !creature.isMovable()) {
+            return -1;
+        }
+        final L1Map map = creature.getMap();
+        if (map == null) return -1;
 
         // NC uses an equal-component vector when actor and target overlap.
         final int away = creature.getX() == target.getX()
@@ -123,7 +143,7 @@ public final class dFlee {
                 : creature.targetReverseDirection(target.getX(), target.getY());
 
         // Native shortens its ray on geometry failure. In 2D a ray shorter
-        // than one tile has no destination; prefer its adjacent headings.
+        // than one tile has no destination; try adjacent outward headings.
         final int x = creature.getX();
         final int y = creature.getY();
         final int mapId = creature.getMapId();
@@ -140,16 +160,8 @@ public final class dFlee {
                             != WorldCollisionHash.MOVE_CLEAR) {
                 continue;
             }
-            if (ActionAccess.moveOneStep(creature, heading)) {
-                ActionAccess.sleep(creature,
-                        Math.max(RETRY_MS, creature.getSleepTime()));
-                return CCreatureController.RESULT_RUNNING;
-            }
+            return heading;
         }
-
-        // No accepted tile. Do not send invalid directions or create a
-        // persistent path-failure loop; revisit on the existing CIO wheel.
-        ActionAccess.sleep(creature, RETRY_MS);
-        return CCreatureController.RESULT_RUNNING;
+        return -1;
     }
 }
