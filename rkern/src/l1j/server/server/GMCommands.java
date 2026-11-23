@@ -101,18 +101,15 @@ import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_Chainfo;
 import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
 import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
-import l1j.server.server.model.network.core.sc.packet.SC_ChatMessageNoti;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.core.sc.packet.SC_MarkSee;
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_Ping;
 import l1j.server.server.model.network.core.sc.packet.SC_Restart;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_ShowCmd;
@@ -138,7 +135,6 @@ import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.shared.EPcStatus;
-import l1j.server.server.shared.SimpleRgb;
 import l1j.server.server.shared.command.CommandArgs;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.executors.Updator;
@@ -521,17 +517,8 @@ public class GMCommands {
 		case "넷세이프":
 			CPacketFilter.commands(gm, param);
 			break;
-		case "핑":
-			ping(gm, param);
-			break;
 		case "킬차트":
 			KdaLoadManager.commands(gm, param);
-			break;
-		case "채팅테스트":
-			showChat(gm, param);
-			break;
-		case "좌표":
-			좌표(gm);
 			break;
 		case ",":
 			showNextProto(gm, param);
@@ -550,15 +537,6 @@ public class GMCommands {
 			break;
 		case "캐릭압류해제":
 			setCharBlockDelete(gm, param);
-			break;
-		case "원격교환":
-			원격거래(gm, param);
-			break;
-		case "잠수모드":
-			setSleepingMode(gm, param);
-			break;
-		case "잠수해제":
-			unSetSleepingMode(gm, param);
 			break;
 		case "/":
 			showNextEffect(gm);
@@ -623,9 +601,6 @@ public class GMCommands {
 		case "잠재력조회":
 			아아(gm, param);
 			break;
-		case "계좌":
-			doolyHelp1(gm);
-			break;
 		case "주변밴":
 			LargeAreaBan(gm, param);
 			break;
@@ -674,9 +649,6 @@ public class GMCommands {
 //			gm.sendPackets(new S_TestPacket(S_TestPacket.a));
 //			gm.sendPackets(new S_UserCommands20(1, gm));
 //			break;
-		case "봇소환":
-			봇소환(gm, param);
-			break;
 		case "서버저장":
 			serversave(gm);
 			break;
@@ -692,15 +664,9 @@ public class GMCommands {
 		case "오토루팅":
 			autoloot(gm, param);
 			break;
-		case "메티스버프":
-			Event2(gm, param);
-			break;
 		case "페널티":
 			ExpTable.expPenaltyReLoad();
 			gm.sendPackets("■ 페널티 리로드 완료 ■");
-			break;
-		case "인형청소":
-			인형청소(gm);
 			break;
 		case "퀘스트멘트":
 			퀘스트멘트(gm, param);
@@ -1065,86 +1031,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 				list.add(npc);
 		}
 	}
-	private void Event2(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String event = st.nextToken();
-			String time1 = st.nextToken();
-			int time = Integer.parseInt(time1);
-			if (event.equalsIgnoreCase("메티스버프")) {
-				L1SpawnUtil.Gmspawn(7320260, 33430, 32807, (short) 4, 6, time * 60 * 60 * 1000);
-
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-
-			} else if (event.equalsIgnoreCase("메티스버프1")) {
-				L1SpawnUtil.Gmspawn(526, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-
-			} else if (event.equalsIgnoreCase("메티스버프2")) {
-				L1SpawnUtil.Gmspawn(529, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-
-			} else if (event.equalsIgnoreCase("메티스버프3")) {
-				L1SpawnUtil.Gmspawn(530, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-
-			} else if (event.equalsIgnoreCase("메티스버프4")) {
-				L1SpawnUtil.Gmspawn(531, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-				
-			} else if (event.equalsIgnoreCase("메티스버프5")) {
-				L1SpawnUtil.Gmspawn(532, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-				
-			} else if (event.equalsIgnoreCase("메티스버프6")) {
-				L1SpawnUtil.Gmspawn(533, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-				
-			} else if (event.equalsIgnoreCase("메티스버프7")) {
-				L1SpawnUtil.Gmspawn(534, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-				
-			} else if (event.equalsIgnoreCase("메티스버프8")) {
-				L1SpawnUtil.Gmspawn(535, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-				
-			} else if (event.equalsIgnoreCase("메티스버프9")) {
-				L1SpawnUtil.Gmspawn(536, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-				
-			} else if (event.equalsIgnoreCase("메티스버프10")) {
-				L1SpawnUtil.Gmspawn(537, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-				
-			} else if (event.equalsIgnoreCase("메티스버프11")) {
-				L1SpawnUtil.Gmspawn(538, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-				
-			} else if (event.equalsIgnoreCase("메티스버프12")) {
-				L1SpawnUtil.Gmspawn(539, 33430, 32807, (short) 4, 5, time * 60 * 60 * 1000);// 기란
-				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "\\aD곧이어 메티스의 축복 버프가 " + time + "\\aD시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("\\aD곧이어 메티스의 축복 버프가 " + time + "시간 동안 기란 마을에 출현 합니다.");
-			}
-		} catch (Exception e) {
-			gm.sendPackets("[.메티스버프] [메티스버프] [시간]");
-			gm.sendPackets("예).메티스버프 메티스버프 1~12");
-		}
-	}
 
 	private void get_delete_gfx(L1PcInstance pc) {
 		try {
@@ -1231,7 +1117,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_ChatPacket.sendDirect(gm, gm, "	          .개인버프.인벤이미지.공속체크.이속체크.마법체크", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .이미지.서먼.아이콘.이미지.이펙트.렙작", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "[기타]:.피바.투명.서버저장.파티소환", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .인형청소 .악마왕 .영자상점(1~3)", 1);
+		SC_ChatPacket.sendDirect(gm, gm, "	          .악마왕 .영자상점(1~3)", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          .기운축복 .지배보스", 1);
 		SC_ChatPacket.sendDirect(gm, gm, "	          룬스톤카배 .룬스톤디스 .룬스톤데페", 1);
 		//(new SC_ChatPacket(gm, "	          진데스데불 진데스론론 .진데스포효 .진데스섬체", 1)).send(gm);
@@ -1275,12 +1161,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 	}
 
     
-	private void doolyHelp1(L1PcInstance gm) {
-		gm.sendPackets("----------------------------------------------------");
-		gm.sendPackets("입금 계좌 : SC제일은행 / 없음");
-		gm.sendPackets("계좌번호 : 없음");
-		gm.sendPackets("----------------------------------------------------");
-	}
 
 	private void autoloot(L1PcInstance gm, String param) {
 		try {
@@ -2678,27 +2558,6 @@ for (L1PcInstance pc :
 		}
 	}
 
-	private void 좌표(L1PcInstance pc) {
-		try {
-			long curtime = System.currentTimeMillis() / 1000;
-			if (pc.getQuizTime2() + 5 > curtime) {
-				long time = (pc.getQuizTime2() + 5) - curtime;
-				SC_SystemMessage.send(pc, time + "초 후 사용할 수 있습니다.");
-				return;
-			}
-			Updator.exec(
-					"UPDATE characters SET LocX=33432,LocY=32807,MapID=4 WHERE account_name=? and MapID not in (38,5001,99,997,5166,39,34,701,2000)",
-					new Handler() {
-						@Override
-						public void handle(PreparedStatement pstm) throws Exception {
-							pstm.setString(1, pc.getAccountName());
-						}
-					});
-			SC_SystemMessage.send(pc, "해당 계정 모든 케릭터가 기란으로 좌표가 변경 되었습니다");
-			pc.setQuizTime(curtime);
-		} catch (Exception e) {
-		}
-	}
 
 	private void standBy(L1PcInstance gm, String param) {
 		try {
@@ -3193,20 +3052,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 
-	private void 봇소환(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String 이름 = st.nextToken();
-
-			L1PcInstance target = L1World.getInstance().getPlayer(이름);
-			// L1Teleport.teleport(target, gm.getX(), gm.getY(), gm.getMapId(),
-			// target.getHeading();
-			target.start_teleport(gm.getX(), gm.getY(), gm.getMapId(), target.getHeading(), 169, true, true);
-			gm.sendPackets("게임 마스터에게 소환되었습니다.");
-		} catch (Exception e) {
-			gm.sendPackets(".봇소환 캐릭명");
-		}
-	}
 
 	private void recallnow(L1PcInstance gm, L1PcInstance target) {
 		try {
@@ -3323,23 +3168,6 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 			SC_SystemMessage.send(gm, ".잠재력 [켬/끔] 으로 입력하세요.");
 			
 		}
-	}
-	private void 인형청소(L1PcInstance gm) {
-		int count = 0;
-		int ccount = 0;
-		for (Object obj : L1World.getInstance().getObject()) {
-			if (obj instanceof L1DollInstance) {
-				L1DollInstance 인형 = (L1DollInstance) obj;
-				if (인형.getMaster() == null) {
-					count++;
-					인형.deleteMe();
-				} else if (((L1PcInstance) 인형.getMaster()).getNetConnection() == null) {
-					ccount++;
-					인형.deleteMe();
-				}
-			}
-		}
-		gm.sendPackets("인형청소 갯수 - 주인X: " + count + "  주인접종: " + ccount);
 	}
 
 	private void CharacterBalance(L1PcInstance pc, String param) {
@@ -4413,39 +4241,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 
-	public static String _sleepingMessage;
-	public static String _sleepingTitle;
 
-	private void setSleepingMode(L1PcInstance gm, String param) {
-		int num = 0;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		Connection con = null;
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			num = Integer.parseInt(st.nextToken(), 10);
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("select * from tb_sleeping_messages where id=?");
-			pstm.setInt(1, num);
-			rs = pstm.executeQuery();
-			if (rs.next()) {
-				_sleepingTitle = rs.getString("title");
-				_sleepingMessage = rs.getString("content");
-				gm.sendPackets(String.format("잠수 메시지가 [%s]로 설정되었습니다.", _sleepingMessage));
-			} else
-				gm.sendPackets(String.format("[%d]번의 잠수 메시지는 없습니다.", num));
-		} catch (Exception e) {
-			gm.sendPackets(".잠수모드 [잠수메시지 번호] 를 입력해주세요.");
-		} finally {
-			SQLUtil.close(rs, pstm, con);
-		}
-	}
 
-	private void unSetSleepingMode(L1PcInstance gm, String param) {
-		_sleepingTitle = null;
-		_sleepingMessage = null;
-		gm.sendPackets("잠수모드가 해제 되었습니다.");
-	}
 
 	private void deleteUseType(L1PcInstance gm) {
 		try {
@@ -4662,41 +4459,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			gm.sendPackets("귓말을 제외한 모든 채팅이 금지됩니다.");
 		}
 	}
-	private void showChat(L1PcInstance gm, String param) {
-		SC_ChatMessageNoti.sendNotice(gm, param, "하하");
-		// SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_WHISPER,
-		// param, null, "메티스", null, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_ARENA_OBSERVER, "아레나옵저버", SimpleRgb.red(),
-				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_ARENA_TEAM, "아레나팀", SimpleRgb.red(), gm.getName(),
-				gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_CLASS, "클래스", SimpleRgb.red(), gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_PLEDGE_ALLIANCE, "혈맹알리언스", SimpleRgb.red(),
-				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_PLEDGE_NOTICE, "혈맹공지", SimpleRgb.red(),
-				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_PLEDGE_PRINCE, "혈맹왕자", SimpleRgb.red(),
-				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_ROOM_ARENA_ALL, "룸아레나올", SimpleRgb.red(),
-				gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_TEAM, "팀", SimpleRgb.red(), gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_TRADE, "트레이드", SimpleRgb.red(), gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_CHAT_PARTY, "채팅파티", SimpleRgb.red(), gm.getName(),
-				gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_SHOUT, "샤우트", SimpleRgb.red(), gm.getName(), gm, -1);
-		SC_ChatMessageNoti.send(gm, SC_ChatMessageNoti.CHAT_HUNT_PARTY, "헌트파티", SimpleRgb.red(), gm.getName(),
-				gm, -1);
-	}
 
-	private void ping(L1PcInstance gm, String param) {
-		if (param.equalsIgnoreCase("켬")) {
-			SC_Ping._isRun = true;
-			SC_Ping.sendForGM(gm);
-		} else if (param.equalsIgnoreCase("끔")) {
-			SC_Ping._isRun = false;
-			SC_Ping._lastMs = 0L;
-		}
-	}
 
 	public static boolean 전체채팅 = true;
 
@@ -4755,44 +4518,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			CharacterTable.getInstance().CharacterAccountCheck1(pc, name);
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, ".계정확인 [캐릭터명]");
-		}
-	}
-	public void 원격거래(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String Trade_name = st.nextToken();
-			L1PcInstance target = null;
-			target = L1World.getInstance().getPlayer(Trade_name);
-			CUserSocket clientthread = target.getNetConnection();
-			clientthread.getActiveChar();
-			if (target != null) {
-				
-				if (target.isPrivateShop() || target.isFishing() 
-						 || target.isParalyzed() ) {
-					SC_SystemMessage.send(gm, "\\f:상대방이 원격교환을 받을수 없는 상태입니다.");
-					return;
-				}
-				if (target.getTradeID() > 0) {
-					SC_SystemMessage.send(gm, "\\f:상대방은 현재 교환 중인 상태 입니다.");
-					return;
-				}
-				if (Trade_name.equals(gm.getName())) {
-					SC_SystemMessage.send(gm, "\\f:자신에게는 원격교환을 신청할 수 없습니다.");
-					return;
-				}
-			
-				if (!target.isParalyzed()) {
-					gm.setTradeID(target.getId());
-					target.setTradeID(gm.getId());
-					SC_MessageYN.send(target, 252, gm.getName());
-					SC_SystemMessage.send(gm, "\\f:" + target.getName() + "님에게 거래를 신청했습니다.");
-					SC_PacketBox.send(target, SC_PacketBox.GREEN_MESSAGE, "\\f=메티스로부터 당신에게 원격교환을 신청하였습니다.");
-				} else {
-					SC_SystemMessage.send(gm, "\\f:상대방이 거래를 취소 하였습니다.");
-				}
-			}
-		} catch (Exception e) {
-			SC_SystemMessage.send(gm, "\\f:.원격교환 [캐릭터명]");
 		}
 	}
 	private void addEventBoss(L1PcInstance gm, String param) {

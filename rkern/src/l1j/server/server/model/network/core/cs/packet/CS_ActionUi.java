@@ -37,7 +37,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import l1j.server.server.model.network.core.sc.packet.SC_Ping;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
@@ -53,7 +52,6 @@ import l1j.server.server.utils.TYUtil;
 
 public final class CS_ActionUi {
 
-    private static final int CS_PING_ACK = 0x03E9;
 
     private static final int ACCOUNT_TAM = 0x01CC;
     private static final int ACCOUNT_TAM_CANCEL = 0x01E0;
@@ -148,14 +146,6 @@ public final class CS_ActionUi {
 
             case ENVIRONMENT_SETTING:
                 handleEnvironmentSetting(pc);
-                return;
-
-            case CS_PING_ACK:
-
-                if (pc.isGm()) {
-                    SC_Ping.reqForGM(pc);
-                }
-
                 return;
 
             case NEWSHOP:
