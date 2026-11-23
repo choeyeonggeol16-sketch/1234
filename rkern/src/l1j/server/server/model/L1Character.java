@@ -2,6 +2,7 @@ package l1j.server.server.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -714,6 +715,25 @@ public class L1Character extends L1Object {
 		final KnownObjectIndex known = knownIndex(false);
 		return known == null ? Collections.emptySet() : known.playersView();
 	}
+	/** Scoped recognition scan. Always release in finally on this thread. */
+	public List<L1Object> borrowKnownObjects() {
+		final KnownObjectIndex index = knownIndex(false);
+		return (index == null ? KnownObjectIndex.CLOSED : index).borrowObjects();
+	}
+
+	public void releaseKnownObjects(List<L1Object> items) {
+		KnownObjectIndex.releaseObjects(items);
+	}
+
+	public List<L1PcInstance> borrowKnownPlayers() {
+		final KnownObjectIndex index = knownIndex(false);
+		return (index == null ? KnownObjectIndex.CLOSED : index).borrowPlayers();
+	}
+
+	public void releaseKnownPlayers(List<L1PcInstance> players) {
+		KnownObjectIndex.releasePlayers(players);
+	}
+
 	public L1Object[] knownObjectsSnapshot() {
 		final KnownObjectIndex known = knownIndex(false);
 		return known == null ? KnownObjectIndex.CLOSED.objectsSnapshot() : known.objectsSnapshot();
