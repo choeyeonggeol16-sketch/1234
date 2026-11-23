@@ -1,0 +1,73 @@
+name: RKern NC NPC AI Java 21 regression
+
+on:
+  push:
+    branches:
+      - rkern/pc-unused-autohunt-20261123
+    paths:
+      - 'rkern/src/l1j/server/server/model/npc/ai/**'
+      - 'rkern/docs/npc_ai_native_port_20261123/**'
+      - '.github/workflows/rkern-npc-ai-native-port.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile-npc-ai:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            rkern/src
+            rkern/docs/jproring_cio_integration_20261120
+            rkern/docs/npc_ai_native_port_20261123
+      - name: Compile full production Java 21 and NC desire regression
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          java -version
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+          import subprocess
+          import time
+          import urllib.error
+
+          root = Path("rkern").resolve()
+          work = Path(os.environ["RUNNER_TEMP"]) / "rkern-npc-ai"
+          classes = work / "classes"
+          classes.mkdir(parents=True, exist_ok=True)
+          helper_path = root / "docs/jproring_cio_integration_20261120/run_game_ab.py"
+          spec = importlib.util.spec_from_file_location("rkern_build_helper", helper_path)
+          helper = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(helper)
+          deps = Path.home() / ".cache/rkern-skill-deps"
+          for attempt in range(6):
+              try:
+                  cp = helper.classpath(classes, deps)
+                  break
+              except urllib.error.HTTPError as failure:
+                  if failure.code not in (429, 500, 502, 503, 504) or attempt == 5:
+                      raise
+                  time.sleep(min(4 * (attempt + 1), 20))
+          sources = sorted((root / "src").rglob("*.java"))
+          test = root / "docs/npc_ai_native_port_20261123/TestNpcDesireBoost.java"
+          sources.append(test)
+          print(f"Production Java sources: {len(sources) - 1}", flush=True)
+          args = work / "sources.txt"
+          args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
+          subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
+                          "-source", "21", "-target", "21", "--enable-preview",
+                          "-cp", cp, "-d", str(classes), "@" + str(args)],
+                         check=True, timeout=420)
+          print("PASS full Java 21 compilation", flush=True)
+          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
+                          "-XX:ActiveProcessorCount=2", "-cp", cp,
+                          "l1j.server.server.model.npc.ai.TestNpcDesireBoost"],
+                         check=True, timeout=90)
+          print("PASS NC NPC desire boost regression", flush=True)
+          PY
