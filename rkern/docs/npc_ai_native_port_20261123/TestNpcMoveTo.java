@@ -98,6 +98,9 @@ public final class TestNpcMoveTo {
         check(dMoveToTarget.dMoveToTarget(npc, target, 2)
                 == CCreatureController.RESULT_DONE,
                 "larger scripted stopDistance completes without moving");
+        check(dMoveToTarget.dMoveToTarget(npc, target, Integer.MAX_VALUE)
+                == CCreatureController.RESULT_DONE,
+                "extended script stopDistance cannot overflow radius addition");
 
         target.getLocation().set(51, 10, map);
         check(dMoveToTarget.dMoveToTarget(npc, target, 1)
