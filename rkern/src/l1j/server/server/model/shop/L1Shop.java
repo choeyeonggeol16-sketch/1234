@@ -562,6 +562,7 @@ public class L1Shop {
 
 	/** [ 구매할때 깃털상점 추가 [2] **/
 	private void prepareSellItems(L1PcInstance pc, L1ShopBuyOrderList orderList) {
+		if (_npcId == 7320055) return;
 		
 		   if ((pc == null) ) {
 			      return;
@@ -656,14 +657,6 @@ public class L1Shop {
 				return;
 			}
 			this.sell_cert1(pc.getInventory(), orderList);
-			return;
-		}
-		//TODO N코인
-		if (this.getNpcId() == 7320055) {
-			if (!this.ensure_certNcoin(pc, orderList)) {
-				return;
-			}
-			this.sell_certNcoin(pc, orderList);
 			return;
 		}
 		if (this.getNpcId() >= 66110 && this.getNpcId() <= 66120) {
@@ -772,6 +765,7 @@ public class L1Shop {
 	}
 
 	private void prepareBuyItems(L1ShopSellOrderList orderList) {
+		if (_npcId == 7320055) return;
 		L1PcInventory inv = orderList.getPc().getInventory();
         
         // Validate the complete order before removing any item. In particular,
@@ -851,10 +845,6 @@ public class L1Shop {
 				
 				
 				
-			} else if (_npcId == 7320055) {
-				if (0 < totalPrice) {
-					grantPrepared(inv, 4100056, totalPrice, true);
-				}
 			} else {
 				grantPrepared(inv, L1ItemId.ADENA, totalPrice);
 			}
@@ -914,26 +904,28 @@ public class L1Shop {
         item.setBless(template.getBless());item.setRemainingTime(template.getMaxUseTime());
         return item;
     }
-    private void stageAccountPoint(L1PcInstance pc,String column,int price) {
-        if(!column.equals("Tam_Point") && !column.equals("Ncoin_Point"))throw new IllegalArgumentException("Account currency");
-        final l1j.server.server.Account account=pc.getAccount();
-        final int before=column.equals("Tam_Point")?account.getTamPoint():pc.getNcoin();
-        if(price<=0 || before<price)throw new IllegalStateException("Account currency insufficient");
+    private void stageTamPoint(L1PcInstance pc, int price) {
+        final l1j.server.server.Account account = pc.getAccount();
+        final int before = account.getTamPoint();
+        if (price <= 0 || before < price) throw new IllegalStateException("Account currency insufficient");
         prepared().tx.requireTables("accounts");
         prepared().tx.sql(con -> {
-            try(java.sql.PreparedStatement ps=con.prepareStatement("UPDATE accounts SET "+column+"=? WHERE login=? AND "+column+"=?")) {
-                ps.setInt(1,before-price);ps.setString(2,account.getName());ps.setInt(3,before);
-                if(ps.executeUpdate()!=1)throw new java.sql.SQLException("Account currency changed");
+            try (java.sql.PreparedStatement ps = con.prepareStatement(
+                    "UPDATE accounts SET Tam_Point=? WHERE login=? AND Tam_Point=?")) {
+                ps.setInt(1, before - price);
+                ps.setString(2, account.getName());
+                ps.setInt(3, before);
+                if (ps.executeUpdate() != 1) throw new java.sql.SQLException("Account currency changed");
             }
         });
-        afterShopState(() -> {if(column.equals("Tam_Point"))account.addTamPoint(-price);else account.Ncoin_point=before-price;});
+        afterShopState(() -> account.addTamPoint(-price));
     }
     public void sellItems(L1PcInstance pc,L1ShopBuyOrderList orderList) {
         sellItems(pc,orderList,null);
     }
     /** Optional caller audit/notification, only after a nonempty purchase commits. */
     public void sellItems(L1PcInstance pc,L1ShopBuyOrderList orderList,Runnable afterCommitted) {
-        if(pc==null || orderList==null || orderList.getList().isEmpty() || orderList.BugOk()!=0)return;
+        if(_npcId == 7320055 || pc==null || orderList==null || orderList.getList().isEmpty() || orderList.BugOk()!=0)return;
         try {
             final List<L1ShopBuyOrder> orders = orderList.getList();
             if (orders.size() == 1) {
@@ -947,7 +939,7 @@ public class L1Shop {
             }
 
             int key=CacheD.accountOrderKey("$castle-treasury-global");
-            if(_npcId==7200002 || _npcId==7320055)key=CacheD.accountOrderKey(pc.getAccountName());
+            if(_npcId==7200002)key=CacheD.accountOrderKey(pc.getAccountName());
             if(_npcId>=66110 && _npcId<=66120) {if(pc.getClan()==null)return;key=pc.getClanid();}
             try(L1InventoryTransaction tx=L1InventoryTransaction.begin(pc,key)) {
                 ShopPreparation batch=new ShopPreparation(tx);SHOP_PREPARATION.set(batch);
@@ -964,7 +956,7 @@ public class L1Shop {
         } catch(RuntimeException failure) {SC_SystemMessage.send(pc,"상점 거래를 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.");}
     }
     public void buyItems(L1ShopSellOrderList orderList) {
-        if(orderList==null || orderList.getPc()==null || orderList.getList().isEmpty())return;
+        if(_npcId == 7320055 || orderList==null || orderList.getPc()==null || orderList.getList().isEmpty())return;
         L1PcInstance pc=orderList.getPc();
         try(L1InventoryTransaction tx=L1InventoryTransaction.begin(pc,CacheD.accountOrderKey("npc-sale:"+_npcId))) {
             ShopPreparation batch=new ShopPreparation(tx);SHOP_PREPARATION.set(batch);
@@ -1478,48 +1470,7 @@ public class L1Shop {
 	}
 	
 	
-	private void sell_certNcoin(L1PcInstance pc, L1ShopBuyOrderList orderList) {
-		int ncoin = pc.getNcoin() - orderList.getTotalPrice();
-		if(ncoin < 0 || pc.getAccount() == null)
-			throw new IllegalStateException("구입에 필요한 N코인을 소비할 수 없습니다.");
-		stageAccountPoint(pc, "Ncoin_Point", orderList.getTotalPrice());
-        afterShop(() -> SC_SurvivalCry.send(pc, 2));
-		L1Inventory inv = pc.getInventory();
-		L1ItemInstance item = null;
-		for (L1ShopBuyOrder order : orderList.getList()) {
-			int itemId = order.getItem().getItemId();
-			int amount = order.getCount();
-			ThreadLocalRandom random = ThreadLocalRandom.current();
-			item = detachedShopItem(itemId);
-			if (getSellingItems().contains(item)) {
-				return;
-			}
-			item.setCount(amount);
-			if (_npcId == 010) {// 행운의 랜덤 상점
-				item.setIdentified(false);
-				int chance2 = random.nextInt(150) + 1;
-				if (chance2 <= 15) {
-					item.setEnchantLevel(-2);
-				} else if (chance2 >= 20 && chance2 <= 30) {
-					item.setEnchantLevel(-1);
-				} else if (chance2 >= 31 && chance2 <= 40) {
-					item.setEnchantLevel(0);
-				} else if (chance2 >= 51 && chance2 <= 60) {
-					item.setEnchantLevel(random.nextInt(1) + 2);
-				} else if (chance2 >= 70 && chance2 <= 80) {
-					item.setEnchantLevel(random.nextInt(2) + 3);
-				} else if (chance2 >= 90 && chance2 <= 110) {
-					item.setEnchantLevel(5);
-				} else if (chance2 == 148) {
-					item.setEnchantLevel(6);
-				}
 
-				/** 여의주 인챈상점 추가 [1] **/
-			}
-			item.setIdentified(true);
-			item = grantPrepared(inv, item);
-		}
-	}
 	
 	private boolean ensure_cert1(L1PcInstance pc, L1ShopBuyOrderList orderList) {
 		// 썸타는 상점
@@ -1735,45 +1686,7 @@ public class L1Shop {
 		}
 		return true;
 	}	
-	private boolean ensure_certNcoin(L1PcInstance pc, L1ShopBuyOrderList orderList) {
-		int price = orderList.getTotalPrice();
-		if (!IntRange.includes(price, 0, 10000000)) {
-			SC_SystemMessage.send(pc, "구입: 한번에 10000000개 이상 사용할 수 없습니다.");
-			return false;
-		}
 
-		if(pc.getNcoin() < price){
-			SC_SystemMessage.send(pc, "구입: N코인이 부족 합니다.");
-			return false;
-		}
-		
-		int currentWeight = pc.getInventory().getWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
-			SC_ServerMessage.send(pc, 82);
-			return false;
-		}
-		int totalCount = pc.getInventory().getSize();
-		L1Item temp = null;
-		for (L1ShopBuyOrder order : orderList.getList()) {
-			temp = order.getItem().getItem();
-			if (temp.isStackable()) {
-				if (!pc.getInventory().checkItem(temp.getItemId())) {
-					totalCount += 1;
-				}
-			} else {
-				totalCount += 1;
-			}
-		}
-		if (totalCount > 180) {
-			SC_ServerMessage.send(pc, 263);
-			return false;
-		}
-		if (price <= 0 || price > 2000000000) {
-			SC_Disconnect.send(pc);
-			return false;
-		}
-		return true;
-	}
 	
 	private boolean ensure_cert5(L1PcInstance pc, L1ShopBuyOrderList orderList) {
 		int price = orderList.getTotalPrice();
@@ -2142,7 +2055,7 @@ public class L1Shop {
 		if (orderList.getTotalPrice() > pc.getAccount().getTamPoint()) {
 			throw new IllegalStateException("구입에 필요한 TAM을 소비할 수 없습니다.");
 		}
-		stageAccountPoint(pc, "Tam_Point", orderList.getTotalPrice());
+		stageTamPoint(pc, orderList.getTotalPrice());
         afterShop(() -> SC_ActionUI.send(pc, SC_ActionUI.TAM, pc.getAccount().getTamPoint()));
 
 		for (L1ShopBuyOrder order : orderList.getList()) {
