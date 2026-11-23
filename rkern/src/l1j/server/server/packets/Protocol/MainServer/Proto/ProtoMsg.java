@@ -70,7 +70,6 @@ public final class ProtoMsg {
     public static final int SC_NOTIFICATION_INFO_NOTI       = 0x008D;
     public static final int SC_NOTIFICATION_CHANGE_NOTI     = 0x008E;
     public static final int SC_EVENT_COUNTDOWN_NOTI_PACKET         = 0x021C;
-    public static final int SC_FATIGUE_NOTI                 = 0x014E; // 그랑카인
 
     // 탐
     public static final int SC_ACCOUNT_TAM     = 0x01CD;
