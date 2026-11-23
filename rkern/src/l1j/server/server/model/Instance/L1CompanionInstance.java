@@ -1198,21 +1198,27 @@ public class L1CompanionInstance extends L1NpcInstance{
             deleteMe();
             return true;
         }
-        if(m_master.getMapId() != getMapId())
-            return true;
-        
-        if(m_command_state.equals(eCommand.TM_GetItem)){
-            find_items();
-            if(_targetItem != null)
-                return false;
-        }
-        
-        if(getLocation().getTileLineDistance(m_master.getLocation()) > 2){
+        if (m_master.getMapId() != getMapId()) {
+            // A map-changing owner must not leave an obsolete follow goal.
             dFollow.follow(this, m_master);
+            return true;
+        }
 
-            if(m_command_state.equals(eCommand.TM_GetItem)){
-                do_drain_items();
+        if (m_command_state.equals(eCommand.TM_GetItem)) {
+            find_items();
+            if (_targetItem != null) {
+                return false;
             }
+        }
+
+        final boolean awayFromMaster =
+                getLocation().getTileLineDistance(m_master.getLocation()) > 2;
+        // The NC-style dFollow must also run on arrival: it clears the
+        // owner-local cached destination at <=2 tiles, preventing a stale
+        // goal from pulling this companion away on the next follow tick.
+        dFollow.follow(this, m_master);
+        if (awayFromMaster && m_command_state.equals(eCommand.TM_GetItem)) {
+            do_drain_items();
         }
         return false;
     }
