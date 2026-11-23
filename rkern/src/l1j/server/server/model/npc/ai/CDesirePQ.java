@@ -372,7 +372,14 @@ public final class CDesirePQ {
             final L1MonsterInstance npc) {
 
         if (npc != null) {
-            clearResumeReservation(npc);
+            // The blocked ATTACK gate and a newly selected melee claim may
+            // belong to different target IDs. Clearing gate A must not
+            // release a live reservation already acquired for target B.
+            final int blockedId = npc._desireBlockedAttackTargetId;
+            if (blockedId != 0
+                    && npc._desireResumeAttackTargetId == blockedId) {
+                clearResumeReservation(npc);
+            }
             npc._desireBlockedAttackTargetId = 0;
             npc._desireBlockedLanePos = 0;
             npc._desireBlockedAttackMode = BLOCKED_ATTACK_NONE;
@@ -389,7 +396,9 @@ public final class CDesirePQ {
 
         if (npc._desireBlockedAttackTargetId
                 == target.getId()) {
-            clearResumeReservation(npc);
+            if (npc._desireResumeAttackTargetId == target.getId()) {
+                clearResumeReservation(npc);
+            }
             npc._desireBlockedAttackTargetId = 0;
             npc._desireBlockedLanePos = 0;
             npc._desireBlockedAttackMode = BLOCKED_ATTACK_NONE;
