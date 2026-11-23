@@ -414,18 +414,28 @@ public class L1SkillUse {
 				return false;
 			}
 
-			su.handleCommands(
-					null,
-					skillId,
-					targetId,
-					x,
-					y,
-					message,
-					timeSecs,
-					type,
-					attacker);
-
-			return true;
+			// NPC-specific synchronous path: handleCommands() swallows
+			// Throwable and returns void, so reporting true after calling it
+			// incorrectly marks a failed cast as UseSkillFinished(well=true).
+			// Execute the same checked path, but preserve the actual outcome.
+			try {
+				if (!su.ensureChecked(null, skillId, targetId, x, y,
+						message, timeSecs, type, attacker)) {
+					return false;
+				}
+				// executeNormal() silently returns when LOS/target rules
+				// disallow the cast. That is not a successful NPC action.
+				if (type == TYPE_NORMAL && !su.canRunNormal()) {
+					return false;
+				}
+				su.executeByType(type, skillId);
+				return true;
+			} catch (Throwable t) {
+				t.printStackTrace();
+				return false;
+			} finally {
+				su.resetChecked();
+			}
 
 		} finally {
 			pool.release(su);
