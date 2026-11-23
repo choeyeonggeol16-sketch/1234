@@ -990,6 +990,7 @@ public final class CDesirePQ {
     private static void retireAttackHandoff(
             final L1MonsterInstance npc,
             final int targetId) {
+        if (npc == null || targetId == 0) return;
         if (npc._desireResumeAttackTargetId == targetId) {
             clearResumeReservation(npc);
         }
