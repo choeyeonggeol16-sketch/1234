@@ -305,7 +305,7 @@ public final class CMoveToTargetAction {
             if (MoveIntentCache.reportChaseStep(monster, target,
                     stepBeforeX, stepBeforeY, creature.getX(), creature.getY())) {
                 SetMoving.clear(monster);
-                if (CMoveAroundAction.GetMeleeAttackPosition(monster, target)) {
+                if (CMoveToTargetRelativeAction.GetMeleeAttackPosition(monster, target)) {
                     monster._pathFindFailCount = 0;
                     return CCreatureController.RESULT_RUNNING;
                 }
@@ -684,7 +684,7 @@ public final class CMoveToTargetAction {
                 || ActionAccess.currentAction(monster) != expectedAction) {
             return CCreatureController.RESULT_INVALID;
         }
-        if (!CMoveAroundAction.GetMeleeAttackPosition(monster, target)) {
+        if (!CMoveToTargetRelativeAction.GetMeleeAttackPosition(monster, target)) {
             return -1;
         }
         final byte result = SetMoving(monster, target, generation);

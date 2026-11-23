@@ -1,6 +1,11 @@
 package l1j.server.server.model.npc.ai.action;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.ai.core.PathFinder;
+import l1j.server.server.model.ai.core.WorldCollisionHash;
+import l1j.server.server.model.npc.ai.AstarProvider;
+import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.L1Character;
 
 /**
@@ -16,6 +21,12 @@ import l1j.server.server.model.L1Character;
  * would fabricate non-existent tile coordinates and bypass collision rules.
  */
 public final class CMoveToTargetRelativeAction {
+    private static final long OPEN_LANE_CLAIM_MAX_MS = 6_000L;
+    private static final int[] DX = { 0, 1, 1, 1, 0, -1, -1, -1 };
+    private static final int[] DY = { -1, -1, 0, 1, 1, 1, 0, -1 };
+    private static final WorldCollisionHash COLLISION =
+            WorldCollisionHash.getInstance();
+
     private CMoveToTargetRelativeAction() {
     }
 
@@ -107,6 +118,187 @@ public final class CMoveToTargetRelativeAction {
         final int x = targetX + (int) Math.round(dx * scale);
         final int y = targetY + (int) Math.round(dy * scale);
         return ((long) x << 32) | (y & 0xffffffffL);
+    }
+
+    /**
+     * Check all eight melee positions from the current NPC position, not the
+     * two sides of an obsolete blocked heading. Use a local static straight
+     * test only; dynamic ownership is decided by one atomic reservation.
+     */
+    // NC GetMeleeAttackPosition: select and claim one L1 8-direction
+    // melee tile using live occupancy before the SetMoving hand-off.
+    static boolean GetMeleeAttackPosition(
+            final L1MonsterInstance monster,
+            final L1Character target) {
+
+        if (monster.getMap() == null) {
+            return false;
+        }
+        final int mx = monster.getX();
+        final int my = monster.getY();
+        final int tx = target.getX();
+        final int ty = target.getY();
+        // The router tries its local window first, then a larger reusable
+        // window covering both actor and target. Do not reject by old 12-tile
+        // distance before asking whether another entrance can be reached.
+        final short mapId = (short) monster.getMapId();
+        final int baseHeading = target.targetDirection(mx, my);
+        final boolean clockwiseFirst =
+                ((monster.getId() ^ target.getId()) & 1) == 0;
+
+        // Fully occupied melee rings are common during mass pulls. Avoid a
+        // 25x25 occupancy scan until a physically usable attack slot exists.
+        int openSlotMask = 0;
+        final long nowMs = System.currentTimeMillis();
+        for (int h = 0; h < 8; h++) {
+            final int x = tx + DX[h];
+            final int y = ty + DY[h];
+            if (isUsableMeleeSlot(target, x, y)
+                    && !MoveIntentCache.rejectedMeleeAttackPosition(
+                            monster, target, x, y, nowMs)
+                    && COLLISION.canEnter(mapId, x, y, monster.getId())) {
+                openSlotMask |= 1 << h;
+            }
+        }
+        if (openSlotMask == 0) {
+            return false;
+        }
+
+        // Scan all currently usable ring candidates with the existing bounded
+        // workspace. Expand only if the local window cannot reach any of them.
+        final PathFinder pathFinder = AstarProvider.get();
+        pathFinder.scanBodyRouteToMeleeRing(monster, tx, ty, openSlotMask);
+
+        int attempted = 0;
+        // Admission is atomic per destination tile. If another monster claims
+        // our preferred slot between canEnter() and reserveNpcMove(), try the
+        // next eligible slot instead of stalling despite free neighboring tiles.
+        for (int attempt = 0; attempt < 8; attempt++) {
+            int bestHeading = -1;
+            int bestDistance = Integer.MAX_VALUE;
+            int bestTurn = Integer.MAX_VALUE;
+            int bestX = 0;
+            int bestY = 0;
+            for (int heading = 0; heading < 8; heading++) {
+                if ((openSlotMask & (1 << heading)) == 0
+                        || (attempted & (1 << heading)) != 0) {
+                    continue;
+                }
+                final int x = tx + DX[heading];
+                final int y = ty + DY[heading];
+                final int distance = pathFinder.bodyRouteDistanceTo(x, y);
+                final int turn = ringTurnRank(
+                        baseHeading, heading, clockwiseFirst);
+                if (distance <= 0
+                        || distance > bestDistance
+                        || (distance == bestDistance && turn >= bestTurn)
+                        || !isUsableMeleeSlot(target, x, y)
+                        || !COLLISION.canEnter(mapId, x, y, monster.getId())) {
+                    continue;
+                }
+                bestHeading = heading;
+                bestDistance = distance;
+                bestTurn = turn;
+                bestX = x;
+                bestY = y;
+            }
+            if (bestHeading < 0) {
+                return false;
+            }
+            attempted |= 1 << bestHeading;
+            // The destination was computed for a snapshot of the target.
+            // Never publish a claim after the target moved or the NPC died.
+            if (monster.isDead() || monster.getCurrentHp() <= 0
+                    || target.isDead() || target.getCurrentHp() <= 0
+                    || target.getMapId() != monster.getMapId()
+                    || target.getX() != tx || target.getY() != ty) {
+                return false;
+            }
+            // The destination hand-off can cross a slow NPC animation or
+            // owner wake. Use the same bounded claim lifetime as subsequent
+            // chase ticks, never a shorter distance-based first lease.
+            if (!COLLISION.reserveNpcMove(
+                    mapId, bestX, bestY, monster.getId(),
+                    OPEN_LANE_CLAIM_MAX_MS)) {
+                continue;
+            }
+            // The claim and route scan are separate operations. Revalidate
+            // before handing this exact destination to the next action.
+            if (monster.isDead() || monster.getCurrentHp() <= 0
+                    || target.isDead() || target.getCurrentHp() <= 0
+                    || target.getMapId() != monster.getMapId()
+                    || target.getX() != tx || target.getY() != ty
+                    || !isUsableMeleeSlot(target, bestX, bestY)) {
+                COLLISION.cancelNpcMove(mapId, bestX, bestY, monster.getId());
+                return false;
+            }
+            // The blocked gate has no reservation of its own. Cancel any
+            // obsolete hand-off before publishing the freshly claimed slot.
+            if (monster._desireBlockedAttackTargetId == target.getId()) {
+                CDesirePQ.releaseBlockedAttack(monster);
+            }
+            monster._desireResumeAttackMapId = mapId;
+            monster._desireResumeAttackBlockedRetries = 0;
+            monster._desireResumeAttackTargetId = target.getId();
+            monster._desireResumeAttackTargetPos =
+                    ((tx & 0xffff) << 16) | (ty & 0xffff);
+            monster._desireResumeAttackPos =
+                    ((bestX & 0xffff) << 16) | (bestY & 0xffff);
+            // Death may run off-owner. If it completed while publishing the
+            // hand-off, do not leave a reservation for the old incarnation.
+            if (monster.isDead() || monster.getCurrentHp() <= 0) {
+                CDesirePQ.releaseBlockedAttack(monster);
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private static int ringTurnRank(
+            final int baseHeading,
+            final int heading,
+            final boolean clockwiseFirst) {
+
+        if (baseHeading < 0
+                || baseHeading >= 8) {
+
+            return heading;
+        }
+
+        final int clockwise =
+                (heading - baseHeading) & 7;
+
+        final int counterClockwise =
+                (baseHeading - heading) & 7;
+
+        final int turn =
+                Math.min(
+                        clockwise,
+                        counterClockwise);
+
+        if (clockwise == counterClockwise) {
+            return turn << 1;
+        }
+
+        final boolean isClockwise =
+                clockwise < counterClockwise;
+
+        return (turn << 1)
+                + (isClockwise == clockwiseFirst
+                        ? 0
+                        : 1);
+    }
+
+    private static boolean isUsableMeleeSlot(
+            final L1Character target,
+            final int x,
+            final int y) {
+
+        return target != null
+                && target.getMap() != null
+                && target.getMap().isPassable(x, y)
+                && target.glanceCheck(x, y);
     }
 
     public static void clear(final L1NpcInstance creature) {
