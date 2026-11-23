@@ -435,7 +435,11 @@ public final class CCreatureController {
                         result);
             }
 
-            return result == RESULT_INVALID;
+            // Scripted movement failure retires that one NC desire and
+            // returns to THINK. It must not unregister the entire NPC AI.
+            return result == RESULT_INVALID
+                    && current != ACTION_MOVE_TO_POINT
+                    && current != ACTION_MOVE_TO_OBJECT;
         }
 
         case ACTION_STAND: {
