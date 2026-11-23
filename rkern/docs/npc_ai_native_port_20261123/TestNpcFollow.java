@@ -83,6 +83,16 @@ public final class TestNpcFollow {
                 leader.getId(), 20, 16, 2) == MoveIntentCache.NO_POS,
                 "master moving beyond allowed drift invalidates goal");
 
+        // A previous leader's cached slot must not be reused when a summon
+        // is transferred to another owner with the same world position.
+        MoveIntentCache.setGoal(
+                follower, MoveIntentCache.KIND_FOLLOW,
+                leader.getId(), 16, 16, 14, 16);
+        check(MoveIntentCache.getGoal(
+                follower, MoveIntentCache.KIND_FOLLOW,
+                leader.getId() + 1, 16, 16, 2) == MoveIntentCache.NO_POS,
+                "new master ID cannot inherit old master's follow slot");
+
         leader.getLocation().set(16, 16, map);
         follower.getLocation().set(15, 16, map);
         MoveIntentCache.setGoal(
