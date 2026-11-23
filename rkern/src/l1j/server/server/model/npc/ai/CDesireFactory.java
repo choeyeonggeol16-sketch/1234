@@ -6,7 +6,7 @@ import l1j.server.server.model.L1Character;
 /**
  * reference server CDesireFactory::MakeUseSkill, adapted to primitive slots in CDesirePQ.
  * reference server MakeUseSkill initializes state 10, target ID, skill ID, move type,
- * effect point, flag and desire value. L1 retains its 2-D skill executor.
+ * boost, flag and desire value. L1 retains its 2-D skill executor.
  */
 public final class CDesireFactory {
     private CDesireFactory() { }
@@ -51,7 +51,7 @@ public final class CDesireFactory {
             final int moveType,
             final int flags,
             final float desireValue,
-            final float effectPoint,
+            final float boost,
             final int extra) {
 
         if (npc == null || skillId <= 0 || targetId < 0
@@ -72,7 +72,7 @@ public final class CDesireFactory {
         }
         final boolean added = CDesirePQ.addUseSkillDesire(
                 npc, targetId, skillId, moveType, flags,
-                desireValue, effectPoint, extra,
+                desireValue, boost, extra,
                 System.currentTimeMillis());
         if (added) {
             NpcServer.getInstance().wake(npc);
