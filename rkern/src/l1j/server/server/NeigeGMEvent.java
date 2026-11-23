@@ -67,7 +67,7 @@ public class NeigeGMEvent{
 	    event.add(Config.인형변수+"");
 	    event.add(Config.오림변수+"");
 	    event.add(Config.수호성변수+"");
-	    event.add(Config.포세이돈 != 0 ? "5208" : "5209");
+	    event.add("5209");
 	    event.add(Config.할파스갯수+"");
 	    event.add(Config.카드갯수+"");
 	    event.add(Config.인형갯수+"");
@@ -136,7 +136,7 @@ public class NeigeGMEvent{
 	    event.add(Config.인형변수+"");
 	    event.add(Config.오림변수+"");
 	    event.add(Config.수호성변수+"");
-	    event.add(Config.포세이돈 != 0 ? "5208" : "5209");
+	    event.add("5209");
 	    event.add(Config.할파스갯수+"");
 	    event.add(Config.카드갯수+"");
 	    event.add(Config.인형갯수+"");

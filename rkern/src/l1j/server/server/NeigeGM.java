@@ -144,22 +144,6 @@ public class NeigeGM{
 			}
 			NeigeGMEvent.eventpage(pc);
 			return false;
-		case "neigma60":
-			if(Config.포세이돈 == 0){
-				Config.포세이돈 = 1;
-				Config.시그널1 = 0;
-				Config.시그널2 = 0;
-				Config.시그널3 = 0;
-				pc.sendPackets("포세이돈 이벤트를 시작합니다.");
-			}else{
-				Config.포세이돈 = 0;
-				Config.시그널1 = 1;
-				Config.시그널2 = 1;
-				Config.시그널3 = 4;
-				pc.sendPackets("포세이돈 이벤트를 종료합니다.");
-			}
-			NeigeGMEvent.eventpage(pc);
-			return false;
 		default: {
 
 			return false;

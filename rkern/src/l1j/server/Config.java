@@ -100,10 +100,6 @@ public final class Config {
 	public static int 용계오픈;
 	public static int 테베오픈;
 	public static int 배알림;
-	public static int 포세이돈;
-	public static int 시그널1;
-	public static int 시그널2;
-	public static int 시그널3;
 	public static int 하이네낚시;
 	public static int 네쥬던전초기화;
 	public static int 네쥬던전체킹;
@@ -114,7 +110,6 @@ public final class Config {
 	public static int 인형변수 = 1;
 	public static int 오림변수 = 1;
 	public static int 수호성변수 = 1;
-	public static int 포세이돈변수 = 0;
 	
 	public static int 랭킹아이템1등;
 	public static int 랭킹아이템2등;
@@ -2342,10 +2337,6 @@ public final class Config {
 			용계오픈 = Integer.parseInt(altSettings.getProperty("rodun08", "0"));
 			테베오픈 = Integer.parseInt(altSettings.getProperty("rodun09", "0"));
 			배알림 = Integer.parseInt(altSettings.getProperty("neigeship", "0"));
-			포세이돈 = Integer.parseInt(altSettings.getProperty("shipevent", "0"));
-			시그널1 = Integer.parseInt(altSettings.getProperty("nesignal1", "0"));
-			시그널2 = Integer.parseInt(altSettings.getProperty("nesignal2", "0"));
-			시그널3 = Integer.parseInt(altSettings.getProperty("nesignal3", "0"));
 			하이네낚시 = Integer.parseInt(altSettings.getProperty("neshenie", "0"));
 			네쥬던전초기화 = Integer.parseInt(altSettings.getProperty("nedungeon", "0"));
 			네쥬던전체킹 = Integer.parseInt(altSettings.getProperty("neduncheck", "0"));

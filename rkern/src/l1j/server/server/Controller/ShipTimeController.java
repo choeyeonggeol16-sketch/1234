@@ -18,7 +18,6 @@
  */
 package l1j.server.server.Controller;
 
-import java.util.Random;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,15 +29,9 @@ import l1j.server.Config;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.L1GameTimeClock;
-import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.utils.L1SpawnUtil;
 
 public class ShipTimeController implements Runnable {
 	private static ShipTimeController _instance;
@@ -47,7 +40,6 @@ public class ShipTimeController implements Runnable {
     private final AtomicBoolean pending = new AtomicBoolean();
     private volatile ScheduledFuture<?> ticker;
     private volatile int generation;
-    private Random _random = new Random(System.nanoTime());
 	public static ShipTimeController getInstance() {
 		if (_instance == null) {
 			_instance = new ShipTimeController();
@@ -163,113 +155,13 @@ public class ShipTimeController implements Runnable {
 				|| (nowtime >= -70270 && nowtime < -69600)
 				|| (nowtime >= -65770 && nowtime < -65100)
 				) {
-			if(Config.포세이돈 == 0){
-				for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
-					if (pc.getMapId() == 447) {
-						//					L1Teleport.teleport(pc, 32631, 32983, (short) 0, 0, false);
-						pc.start_teleport(32297, 33086, 440, pc.getHeading(), 169, false, false);
-						pc.getInventory().consumeItem(40303, 1); // 숨겨진 섬 선착장행 배표
-					}
-				}
-				}else{
-					if(Config.시그널1 == 0) {
-						final int eff1 = 2;
-						String box = "갑자기 파도가 거세게 휘몰아칩니다.";
-						try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                SC_PacketBox.nativeGreenWriter(box),Integer.MIN_VALUE,Integer.MAX_VALUE)){
-            try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    SC_DisplayEffect.nativeWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
-							if (pc.getMapId() == 447){
-									l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
-									l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(effectShared,pc);
-									SC_SkillSound.send(pc, pc.getId(), 20394);
-									pc.getInventory().consumeItem(40303, 1); // 숨겨진 섬 선착장행 배표
-								}
-							}
-}
-        }
-						Config.시그널1 = 1;
-					}else{
-						if(Config.시그널2 == 0){
-							final int eff1 = 2;
-							try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    SC_DisplayEffect.nativeWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
-								if (pc.getMapId() == 447){
-									l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(effectShared,pc);
-									SC_SkillSound.send(pc, pc.getId(), 20394);
-								}
-							}
-}
-							Config.시그널2 = 1;
-						}else{
-							if(Config.시그널3 == 0){
-								String box = "선박이 심하게 흔들리고 있습니다.";
-								final int eff1 = 2;
-								try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                SC_PacketBox.nativeGreenWriter(box),Integer.MIN_VALUE,Integer.MAX_VALUE)){
-            try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    SC_DisplayEffect.nativeWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
-									if (pc.getMapId() == 447){
-									l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
-									l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(effectShared,pc);
-									SC_SkillSound.send(pc, pc.getId(), 20394);
-									}
-								}
-}
-        }
-							Config.시그널3 = 1;
-							}else{
-								if(Config.시그널3 == 1){
-									final int eff1 = 2;
-									try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    SC_DisplayEffect.nativeWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
-										if (pc.getMapId() == 447){
-										l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(effectShared,pc);
-										SC_SkillSound.send(pc, pc.getId(), 20394);
-										}
-									}
-}
-									Config.시그널3 = 2;
-								}else{
-									if(Config.시그널3 == 2){
-										final int eff1 = 23;
-										try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    SC_DisplayEffect.nativeWriter(eff1),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
-											if (pc.getMapId() == 447){
-											SC_SkillSound.send(pc, pc.getId(), 20394);
-											l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(effectShared,pc);
-											pc.start_teleport(32749, 32690, 63, pc.getHeading(), 169, false, false);
-											}
-										}
-}
-										SC_SystemMessage.broadcast("동쪽 해역에서 항해중이던 선박이 침몰하였습니다.");
-										SC_PacketBox.broadcastGreen("동쪽 해역에서 항해중이던 선박이 침몰하였습니다.");
-										Config.시그널3 = 3;
-										Config.포세이돈 = 0;
-									}
-								}
-							}
-						}
-					}
+			for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+				if (pc.getMapId() == 447) {
+					pc.start_teleport(32297, 33086, 440, pc.getHeading(), 169, false, false);
+					pc.getInventory().consumeItem(40303, 1); // 숨겨진 섬 선착장행 배표
 				}
 			}
-		if(Config.시그널3 == 3){
-            // The bounded scheduler can refuse this delayed spawn. Keep the
-            // pending state and retry on the next recurring ship tick.
-            final ScheduledFuture<?> spawn = ThreadPool.getInstance().schedule(new Runnable() {
-				@Override
-				public void run() {
-					L1SpawnUtil.spawn2(32746, 32697, (short) 63, 460000365, 0, 3600 * 1000, 0);
-					//L1SpawnUtil.spawnfieldboss(32744, 32698, (short) 63, 460000365, 0, 0, 0);
-				}
-			}, 5000L);
-            if (spawn != null) Config.시그널3 = 4;
 		}
-	
+
 	}
 }
