@@ -96,6 +96,8 @@ public final class TestNpcGetItem {
         npc._targetItem = itemA;
         check(dGetItem.dGetItem(npc, itemA) == CCreatureController.RESULT_INVALID,
                 "dead NPC must never attempt ground transfer");
+        check(npc._targetItem == null,
+                "dead NPC must retire the stale GET_ITEM request");
         npc.setDead(false);
 
         // Normal pet item permissions are the original L1 restriction.
