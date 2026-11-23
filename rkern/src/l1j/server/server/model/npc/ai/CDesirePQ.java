@@ -67,7 +67,6 @@ public final class CDesirePQ {
     private static final float ATTACK_DECAY = 6.6f;
     private static final float ATTACK_BOOST = 300.0f;
     private static final float USE_SKILL_DECAY = 66000.0f;
-    private static final float USE_SKILL_BOOST = 100000.0f;
 
     private static final long DECAY_INTERVAL_MS = 5_000L;
 
@@ -99,7 +98,7 @@ public final class CDesirePQ {
     private int[] skillMoveTypes;
     private int[] skillFlags;
     private int[] skillExtras;
-    private float[] skillEffectPoints;
+    private float[] skillBoosts;
 
     private int size;
 
@@ -119,7 +118,7 @@ public final class CDesirePQ {
     private int immediateSkillMoveType;
     private int immediateSkillFlags;
     private int immediateSkillExtra;
-    private float immediateSkillEffectPoint;
+    private float immediateSkillBoost;
     private boolean activeImmediate;
 
     /** Current desire identity includes skill id for PS_USE_SKILL. */
@@ -566,17 +565,17 @@ public final class CDesirePQ {
             final int moveType,
             final int flags,
             final float value,
-            final float effectPoint,
+            final float boost,
             final int extra,
             final long nowMs) {
 
         if (npc == null || skillId <= 0 || targetId < 0
-                || Float.isNaN(value) || Float.isInfinite(value)) {
+                || !Float.isFinite(value) || !Float.isFinite(boost)) {
             return false;
         }
         ensure(npc, nowMs).addSkillValue(
                 targetId, skillId, moveType, flags, value,
-                effectPoint, extra, nowMs);
+                boost, extra, nowMs);
         return true;
     }
 
@@ -1073,7 +1072,7 @@ public final class CDesirePQ {
             final int moveType,
             final int flags,
             final float value,
-            final float effectPoint,
+            final float boost,
             final int extra,
             final long nowMs) {
 
@@ -1087,7 +1086,7 @@ public final class CDesirePQ {
             immediateSkillId = skillId;
             immediateSkillMoveType = moveType;
             immediateSkillFlags = flags;
-            immediateSkillEffectPoint = effectPoint;
+            immediateSkillBoost = boost;
             immediateSkillExtra = extra;
             // Keep an active *ordinary* desire's identity until the next
             // selection. activateTop() must BoostDown that exact ATTACK or
@@ -1118,7 +1117,7 @@ public final class CDesirePQ {
             // move type, flags, boost, and action payload.
             skillMoveTypes[index] = moveType;
             skillFlags[index] = flags;
-            skillEffectPoints[index] = effectPoint;
+            skillBoosts[index] = boost;
             skillExtras[index] = extra;
             if (attackPayload != null) {
                 final int pos = index << 2;
@@ -1152,7 +1151,7 @@ public final class CDesirePQ {
         skillMoveTypes = new int[n];
         skillFlags = new int[n];
         skillExtras = new int[n];
-        skillEffectPoints = new float[n];
+        skillBoosts = new float[n];
     }
 
     private byte activateTop(
@@ -1195,7 +1194,7 @@ public final class CDesirePQ {
                     ? findSkillKey(activeTargetId, activeSkillId)
                     : findKey(activeState, activeTargetId);
             if (active >= 0) {
-                values[active] -= boostFor(states[active]);
+                values[active] -= boostFor(active);
                 heapDirty = true;
             }
         }
@@ -1224,7 +1223,7 @@ public final class CDesirePQ {
             return PS_IDLE;
         }
 
-        final float boost = boostFor(states[top]);
+        final float boost = boostFor(top);
         if (boost != 0.0f) {
             values[top] += boost;
             heapDirty = true;
@@ -1337,9 +1336,9 @@ public final class CDesirePQ {
         v = skillMoveTypes[a]; skillMoveTypes[a] = skillMoveTypes[b]; skillMoveTypes[b] = v;
         v = skillFlags[a]; skillFlags[a] = skillFlags[b]; skillFlags[b] = v;
         v = skillExtras[a]; skillExtras[a] = skillExtras[b]; skillExtras[b] = v;
-        final float f = skillEffectPoints[a];
-        skillEffectPoints[a] = skillEffectPoints[b];
-        skillEffectPoints[b] = f;
+        final float f = skillBoosts[a];
+        skillBoosts[a] = skillBoosts[b];
+        skillBoosts[b] = f;
     }
 
     private void pruneHardInvalidAttackTargets(
@@ -1581,7 +1580,7 @@ public final class CDesirePQ {
         immediateSkillMoveType = 0;
         immediateSkillFlags = 0;
         immediateSkillExtra = 0;
-        immediateSkillEffectPoint = 0;
+        immediateSkillBoost = 0;
         immediateAttackMoveType = immediateAttackFlag =
                 immediateAttackEffectPointBits = immediateAttackOffset = 0;
         if (activeImmediate) {
@@ -1617,7 +1616,7 @@ public final class CDesirePQ {
                 skillMoveTypes[index] = skillMoveTypes[last];
                 skillFlags[index] = skillFlags[last];
                 skillExtras[index] = skillExtras[last];
-                skillEffectPoints[index] = skillEffectPoints[last];
+                skillBoosts[index] = skillBoosts[last];
             }
             if (attackPayload != null) {
                 final int a = index << 2, b = last << 2;
@@ -1636,7 +1635,7 @@ public final class CDesirePQ {
             skillMoveTypes[last] = 0;
             skillFlags[last] = 0;
             skillExtras[last] = 0;
-            skillEffectPoints[last] = 0.0f;
+            skillBoosts[last] = 0.0f;
         }
 
         states[last] = 0;
@@ -1694,7 +1693,7 @@ public final class CDesirePQ {
             skillMoveTypes = java.util.Arrays.copyOf(skillMoveTypes, next);
             skillFlags = java.util.Arrays.copyOf(skillFlags, next);
             skillExtras = java.util.Arrays.copyOf(skillExtras, next);
-            skillEffectPoints = java.util.Arrays.copyOf(skillEffectPoints, next);
+            skillBoosts = java.util.Arrays.copyOf(skillBoosts, next);
         }
         if (attackPayload != null) {
             attackPayload = java.util.Arrays.copyOf(attackPayload, next << 2);
@@ -1707,9 +1706,13 @@ public final class CDesirePQ {
         return 0.0f;
     }
 
-    private static float boostFor(final byte state) {
-        if (state == PS_ATTACK) return ATTACK_BOOST;
-        if (state == PS_USE_SKILL) return USE_SKILL_BOOST;
+    private float boostFor(final int index) {
+        if (states[index] == PS_ATTACK) return ATTACK_BOOST;
+        // Native CDesirePQ::_BoostUp/_BoostDown use each CDesire::boost,
+        // not the warrior script's global UseSkill_BoostValue default.
+        if (states[index] == PS_USE_SKILL) {
+            return skillBoosts != null ? skillBoosts[index] : 0.0f;
+        }
         return 0.0f;
     }
 
