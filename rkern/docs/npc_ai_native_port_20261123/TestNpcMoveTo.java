@@ -8,6 +8,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
 
@@ -17,6 +18,25 @@ import l1j.server.server.model.map.L1V1Map;
  */
 public final class TestNpcMoveTo {
     private TestNpcMoveTo() {
+    }
+
+    private static final class MoveProbe extends L1NpcInstance {
+        int completions;
+        int completedX;
+        int completedY;
+        byte actionAtCallback;
+
+        private MoveProbe() {
+            super(null);
+        }
+
+        @Override
+        public void onMoveToFinished(final int x, final int y) {
+            completions++;
+            completedX = x;
+            completedY = y;
+            actionAtCallback = _aiAction;
+        }
     }
 
     private static void check(final boolean condition, final String message) {
@@ -145,9 +165,42 @@ public final class TestNpcMoveTo {
         check(npc._target == target,
                 "failed scripted movement must not erase combat target");
 
+        // NC's MoveToFinished event 0x41 is emitted after completion
+        // cleanup on the CIO owner. No completion event is sent for the
+        // distinct dMoveToTarget (native desire removal only).
+        final MoveProbe probe = (MoveProbe)
+                unsafe.allocateInstance(MoveProbe.class);
+        probe.setId(975103);
+        loc.set(probe, new L1Location(10, 10, map));
+        hp.setInt(probe, 100);
+        probe._scriptMoveMapId = probe.getMapId();
+        probe._scriptMoveGoalXY = MoveIntentCache.pack(21, 22);
+        probe._aiAction = CCreatureController.ACTION_MOVE_TO_POINT;
+        CMoveAction.onEnd(probe, CCreatureController.ACTION_MOVE_TO_POINT,
+                CCreatureController.RESULT_DONE);
+        check(probe.completions == 1
+                && probe.completedX == 21 && probe.completedY == 22,
+                "native MoveToFinished must expose the exact completed XY");
+        check(probe.actionAtCallback == CCreatureController.ACTION_THINK,
+                "finished callback executes after the previous action retired");
+        probe._aiAction = CCreatureController.ACTION_MOVE_TO_OBJECT;
+        probe._scriptMoveMapId = probe.getMapId();
+        probe._scriptMoveTargetId = target.getId();
+        CMoveAction.onEnd(probe, CCreatureController.ACTION_MOVE_TO_OBJECT,
+                CCreatureController.RESULT_DONE);
+        check(probe.completions == 1,
+                "native MoveToTarget completion must not emit MoveToFinished");
+        probe._aiAction = CCreatureController.ACTION_MOVE_TO_POINT;
+        probe._scriptMoveMapId = probe.getMapId();
+        probe._scriptMoveGoalXY = MoveIntentCache.pack(30, 30);
+        CMoveAction.onEnd(probe, CCreatureController.ACTION_MOVE_TO_POINT,
+                CCreatureController.RESULT_INVALID);
+        check(probe.completions == 1,
+                "failed MoveTo must not emit a success completion event");
+
         System.out.println("PASS NC dMoveTo/dMoveToTarget: exact arrival, "
                 + "82-tile long move, 40-tile leash, 2D stop radius, "
                 + "dead/map-invalid target, CIO action dispatch, "
-                + "completion/failure preserving combat owner");
+                + "MoveToFinished event, completion/failure preserving combat owner");
     }
 }
