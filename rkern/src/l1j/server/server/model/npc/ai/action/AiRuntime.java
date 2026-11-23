@@ -457,9 +457,9 @@ public final class AiRuntime {
                 target = CDesirePQ.topAttackTarget(monster, nowMs);
 
                 if (target == null) {
-                    // The old code could fall back to a stale _target here,
-                    // even though the PQ no longer had a runnable ATTACK.
-                    // Only take MOVE_AROUND if this NPC is allowed to roam.
+                    // NC cannot execute an ATTACK whose desire target has
+                    // already disappeared. Never fall through to a stale
+                    // L1 _target captured by the previous action.
                     if (moveAroundRunnable
                             && CDesirePQ.isMoveAroundTop(monster, nowMs)) {
                         CCreatureController.submit(
@@ -467,10 +467,13 @@ public final class AiRuntime {
                                 CCreatureController.ACTION_MOVE_AROUND_NATIVE);
                         return;
                     }
-                } else {
-                    creature._target = target;
-                    CDesirePQ.leaveMoveAround(monster);
+                    CCreatureController.submit(
+                            creature,
+                            CCreatureController.ACTION_THINK);
+                    return;
                 }
+                creature._target = target;
+                CDesirePQ.leaveMoveAround(monster);
             }
         }
 
