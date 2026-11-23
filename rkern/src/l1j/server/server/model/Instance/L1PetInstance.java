@@ -2,7 +2,6 @@ package l1j.server.server.model.Instance;
 
 import l1j.server.server.model.character.action.CAttackAction;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,7 +12,6 @@ import l1j.server.server.datatables.PetItemTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.PetTypeTable;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -21,6 +19,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.npc.ai.NpcPotionPolicy;
 import l1j.server.server.model.npc.ai.action.dFollow;
 import l1j.server.server.model.npc.ai.action.dPetDefault;
+import l1j.server.server.model.npc.ai.action.CGetItemAction;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PetMenuPacket;
@@ -555,28 +554,11 @@ public class L1PetInstance extends L1NpcInstance {
 	}
 
 	private void collection() {
-		ArrayList<L1GroundInventory> gInventorys = new ArrayList<L1GroundInventory>();
-
-		// ── 클러스터 기반: 반경 10 조회 (맵 전체 순회 → 주변 버킷) ──
-		for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(this, 10)) {
-			if (obj != null && obj instanceof L1GroundInventory) {
-				gInventorys.add((L1GroundInventory) obj);
-			}
-		}
-
-		int groundinv = gInventorys.size();
-		for(int i=0; i < groundinv; i++) {
-			L1GroundInventory inventory = gInventorys.get(i);
-			for (L1ItemInstance item : inventory.getItems()) { 
-				if (getInventory().checkAddItem(item, item.getCount()) == L1Inventory.OK
-						&& !item.getItem().isUseHighPet()) {
-					_targetItem = item;
-					return;
-				}
-			}
-		}
+		// NC GET_ITEM: select a live exact object without temporary ground
+		// collections. The shared picker preserves the L1 high-pet exclusion.
+		CGetItemAction.searchTarget(this, 10);
 	}
-	
+
 	@Override
 	public void setCurrentHp(int i) {
 		super.setCurrentHp(i);
@@ -599,6 +581,12 @@ public class L1PetInstance extends L1NpcInstance {
 
 	public void setCurrentPetStatus(int i) {
 		_currentPetStatus = i;
+		// Status 8 is the L1 pickup command. Publish mode before the CIO
+		// owner reads the next GET_ITEM action; no separate pickup worker.
+		setPickupItem(i == 8);
+		if (i != 8) {
+			_targetItem = null;
+		}
 		if (_currentPetStatus == 5) {
 			setHomeX(getX());
 			setHomeY(getY());
@@ -783,7 +771,7 @@ public class L1PetInstance extends L1NpcInstance {
 		return _damageByWeapon;
 	}
 
-	private int _currentPetStatus;
+	private volatile int _currentPetStatus;
 	private L1PcInstance _petMaster;
 	private int _petMasterId;
 	private int _itemObjId;
