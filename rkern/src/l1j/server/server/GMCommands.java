@@ -1494,65 +1494,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		pc.sendPackets(Config.seadunship + "입니다.");
 	
 	}
-	private void autoclanjoin(L1PcInstance gm) {
-		try {
-			//실패조건
-			
-//			if (!(gm.getClanRank() == 9 || gm.getClanRank() == 10))  { 
-//				gm.sendPackets(new SC_SystemMessage("수호기사 또는 군주계급으로 무인가입배치가 가능합니다."));
-//			      return;
-//			}
-//			if (gm.isFishing()) {
-//				gm.sendPackets(new SC_SystemMessage("낚시중 일때는 행동이 제한됩니다."));
-//				return;	
-//			}
-//			if (gm.getClanid()==0 || gm.getClanid()== 1) {//신규혈 아이디
-//				gm.sendPackets(new SC_SystemMessage("혈맹창설 상태가 아닙니다."));
-//				return;	
-//			}
-//			if (gm.isPrivateShop()) {
-//				gm.sendPackets(new SC_SystemMessage("개인상점중엔 사용할수 없습니다."));
-//				return;	
-//			}
-//			if (gm.isPinkName()  || gm.isParalyzed() || gm.isSleeped()) {
-//				gm.sendPackets(new SC_SystemMessage("보라중 마비중 잠수중에는 사용할 수 없습니다."));
-//				return;
-//			}
-			if (gm.isDead()) {
-				SC_SystemMessage.send(gm, "죽은 상태에선 실행 할수없습니다.");
-				return;
-			}
-				
-			//실패조건
-			//기란 여관 앞
-	//		if(gm.getX()>=33426 && gm.getX()<=33435 && gm.getY()>=32795 && gm.getY()<=32802 && gm.getMapId()==4){
-//				for(L1PcInstance target : L1World.getInstance().getAllPlayers3()){
-//					if(target.getId() != gm.getId() && target.getAccountName().toLowerCase().equals(gm.getAccountName().toLowerCase()) && target.isAutoClanjoin() ){
-//						(new SC_ChatPacket(gm,"이미 당신의 보조 캐릭터가 무인가입 상태입니다.")).send(gm);
-//						return;
-//					}
-//				}
-				gm.setAutoClanjoin(true);			
-				L1PolyMorph.undoPolyAutoClanjoin(gm);	
-				CUserSocket client = gm.getNetConnection();
-				gm.setNetConnection(null);
-				try { 
-					gm.save();
-					gm.saveInventory();
-				} catch(Exception e) {                    		
-				}
-				
-				client.setActiveChar(null);
-				SC_Unknown2.send(client, 1); // 리스버튼을 위한 구조변경 // Episode U
-//			}else{
-//				(new SC_ChatPacket(gm,"기란마을 여관 앞 공간에서만 사용할 수 있습니다.")).send(gm);
-//			}
-		} catch (Exception e) {
-			System.out.println(gm.getName()+"무인가입 처리 에러");
-		}		
-	}
-
-
 	private void bug_race_rate(L1PcInstance pc, String s) {
 		try {
 			StringTokenizer tok = new StringTokenizer(s);
@@ -2538,52 +2479,6 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 //	
 	
 
-	private void hunt(L1PcInstance pc, String cmd) {
-		int price = Config.수배금액;
-		try{
-			StringTokenizer tok = new StringTokenizer(cmd);
-			String name = tok.nextToken();
-			if(name == null || name.equals("")) 
-				throw new Exception();
-			
-			L1PcInstance target = L1World.getInstance().getPlayer(name);
-			if(target == null){
-				pc.sendPackets(String.format("%s 님을 찾을 수 없습니다.", name));
-				return;
-			}
-			if(target.hasSkillEffect(L1SkillId.USER_WANTED) || target.hasSkillEffect(L1SkillId.USER_WANTED1)){
-				pc.sendPackets(String.format("%s 님은 이미 수배중입니다.", name));
-				return;
-			}
-			/*if(target.isGm()){
-				pc.sendPackets("운영자에게 수배를 걸수없습니다.");
-				return;
-			}*/
-			if (!(pc.getInventory().checkItem(40308, price))) {
-				pc.sendPackets("아데나가 부족합니다");
-				return;
-			}
-			
-			String message = String.format("\\fY%s 님께서 %s님에게 수배를 걸었습니다.", pc.getName(), target.getName());
-			String message1 = String.format("\\fY수배범을 잡을 시 확률적으로 수배범 2단으로 승급됩니다.");
-			pc.sendPackets(message);
-			target.sendPackets(message);
-			target.sendPackets(message1);
-			
-			//target.sendPackets("\\fY수배효과: 추타+3,명중+3,AC-3,SP+3");
-			//L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\fY["+target.getName()+"]님이 수배범이 되었습니다."));
-			//L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\fY[수배자]: "+pc.getName()));
-			
-			
-			target.setSkillEffect(L1SkillId.USER_WANTED, -1);
-			target.doWanted(true);
-			pc.getInventory().consumeItem(40308, price);
-		}catch(Exception e){
-			pc.sendPackets("\\fY.수배 [캐릭터명] ("+Config.수배금액 / 10000 +"만)");
-			pc.sendPackets("\\fY수배효과: 추타+3,명중+3,AC-3,SP+3");
-		}
-	}
-
 	private void serversave(L1PcInstance pc) {
 		Saveserver();// 서버세이브 메소드 선언
 		pc.sendPackets("서버저장이 완료되었습니다.");
@@ -3436,24 +3331,6 @@ for (L1PcInstance pc :
 		}
 		
 	}
-	private void redo(L1PcInstance pc, String arg) {
-		try {
-			String lastCmd = _lastCommands.get(pc.getId());
-			if (arg.isEmpty()) {
-				pc.sendPackets("커맨드 " + lastCmd + " 을(를) 재실행합니다.");
-				handleCommands(pc, lastCmd);
-			} else {
-				StringTokenizer token = new StringTokenizer(lastCmd);
-				String cmd = token.nextToken() + " " + arg;
-				pc.sendPackets("커맨드 " + cmd + " 을(를) 재실행합니다.");
-				handleCommands(pc, cmd);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			pc.sendPackets(".재실행 커맨드에러");
-		}
-	}
-
 	private void unprison(L1PcInstance pc, String param) {
 		try {
 			L1PcInstance target = L1World.getInstance().getPlayer(param);
@@ -4268,32 +4145,6 @@ private void 퀘스트멘트(L1PcInstance gm, String param) {
 		} catch (Exception e) {
 			gm.sendPackets("\\f4.후원입금 [입금자명] [입금액](만원단위) 를 입력 해주세요.");
 			gm.sendPackets("\\f4.후원입금 [홍길동] [10] 를 입력 해주세요.");
-		}
-	}
-	private void addaccount1(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer tok = new StringTokenizer(param);
-			String user = tok.nextToken();
-
-
-			if (user.length() < 4) {
-				gm.sendPackets("입력하신 계정명의 자릿수가 너무 짧습니다.");
-				gm.sendPackets("최소 4자 이상 입력해 주십시오.");
-				return;
-			}
-			if (gm.getAccountName().equalsIgnoreCase(user)) {
-				AddAccount1(gm, user);
-				return;
-			} else {
-				gm.sendPackets("본인 계정명과 입력한 계정이 다릅니다.");
-				gm.sendPackets("본인 계정명으로 입력해주세요.");
-			}
-
-
-		} catch (Exception e) {
-			gm.sendPackets(".매입저장 [계정명] [암호] 를 입력 해주세요.");
-			gm.sendPackets("단 한번만 저장 가능하니 신중히 저장해주세요.");
-			gm.sendPackets("저장 후 복구는 불가능합니다.");
 		}
 	}
 	private static void \u006D\u0065\u0065\u0070\u0035\u0035(L1PcInstance gm, String login) {
