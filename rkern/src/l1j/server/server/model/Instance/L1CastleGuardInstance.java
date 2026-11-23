@@ -12,6 +12,8 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.npc.ai.action.dMoveTo;
+import l1j.server.server.model.npc.ai.action.CCreatureController;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.templates.L1Npc;
 
@@ -73,23 +75,20 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 		final int homeX = getHomeX();
 		final int homeY = getHomeY();
 
-		// 노타겟 경비는 랜덤워크하지 않고 원래 자리로 복귀한다.
+		// NC dMoveTo owns the return trip. Never teleport onto a reserved
+		// PC/NPC tile when a path is briefly blocked by another character.
+		// Existing CIO action timer retries without a new worker or queue.
 		if (getX() != homeX || getY() != homeY) {
-			final int dir = moveDirection(homeX, homeY);
-
-			if (dir >= 0 && dir < 8) {
-				setSleepTime(setDirectionMove(dir));
-			} else {
-				teleport(homeX, homeY, 1);
+			if (dMoveTo.dMoveTo(this, homeX, homeY)
+					== CCreatureController.RESULT_INVALID) {
+				setSleepTime(1_000L);
 			}
-
 			return false;
 		}
 
-		// 원래 자리에 있고 주변 유저도 없으면 AI 종료.
 		return !L1World.getInstance().hasRecognizePlayerFast(this);
 	}
-	
+
 	@Override
 	public boolean noTargetMaster() {
 		return noTarget();
@@ -354,31 +353,37 @@ public class L1CastleGuardInstance extends L1NpcInstance {
         }
 	}
 	@Override
-	public void checkTarget(){
-		//System.out.println("오버라이드 했는데 여기 진입할까?");
-		if (_target == null
-				|| 	(Math.abs(this.getX() - this.getHomeX())) > 20 
-				||  (Math.abs(this.getY() - this.getHomeY())) > 20
-				|| _target.getMapId() != getMapId()
-				|| _target.getCurrentHp() <= 0
-				|| _target.isDead()
-				|| (_target.isInvisble() && !getNpcTemplate().is_agrocoi() && !_hateList.containsKey(_target))
-				|| (_target instanceof L1SummonInstance && ((L1SummonInstance)_target).isDestroyed())
-				|| (_target instanceof L1PetInstance && ((L1PetInstance)_target).isDestroyed())
-				|| (_target instanceof L1CompanionInstance && ((L1CompanionInstance)_target).isDestroyed())
-				) {
-			if (_target != null) {
+	public void checkTarget() {
+		// Avoid recursive hate traversal when multiple dead/invisible
+		// attackers disappear together. NC's event owner retires one
+		// target at a time and then checks the next available desire.
+		for (int inspected = 0; inspected < 128; inspected++) {
+			final L1Character candidate = _target;
+			if (candidate != null
+					&& Math.abs((long) getX() - getHomeX()) <= 20
+					&& Math.abs((long) getY() - getHomeY()) <= 20
+					&& candidate.getMapId() == getMapId()
+					&& candidate.getCurrentHp() > 0
+					&& !candidate.isDead()
+					&& (!candidate.isInvisble()
+							|| getNpcTemplate().is_agrocoi()
+							|| _hateList.containsKey(candidate))
+					&& (!(candidate instanceof L1NpcInstance)
+							|| !((L1NpcInstance) candidate).isDestroyed())) {
+				return;
+			}
+			if (candidate != null) {
 				tagertClear();
-				teleport(getHomeX(), getHomeY(),getSpawn().getHeading());
-				
 			}
-			if (!_hateList.isEmpty()) {
-				_target = _hateList.getMaxHateCharacter();
-				checkTarget();
+			_target = _hateList.getMaxHateCharacter();
+			if (_target == null) {
+				return;
 			}
-			
 		}
+		// Bound pathological concurrent hate insertion; the next owner
+		// tick will continue pruning without recursive stack growth.
 	}
+
 	@Override
 	public void setCurrentHp(int i) {
 		super.setCurrentHp(i);
