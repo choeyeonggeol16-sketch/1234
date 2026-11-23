@@ -45,7 +45,12 @@ public final class CDesirePQ {
     public static final byte PS_USE_SKILL         = 10;
     public static final byte PS_MOVE_TO           = 11;
     public static final byte PS_EFFECT_ACTION     = 12;
-    public static final byte PS_PET_DEFAULT       = 13;
+    public static final byte PS_EFFECT_ACTION2    = 13;
+    public static final byte PS_PET_DEFAULT       = 14;
+    public static final byte PS_MOVE_TO_TARGET    = 15;
+    public static final byte PS_MOVE_SUPER_PT     = 16;
+    public static final byte PS_MOVE_FREEWAY      = 17;
+    public static final byte PS_MOVE_FORMATION    = 18;
 
     public static final byte BLOCKED_ATTACK_NONE = 0;
     public static final byte BLOCKED_ATTACK_LANE = 1;
@@ -1108,16 +1113,19 @@ public final class CDesirePQ {
             targetIds[index] = targetId;
             values[index] = value;
             skillIds[index] = skillId;
+            // NC CDesirePQ::_AddValue updates only the accumulated value
+            // and force on a duplicate key. Preserve the first skill's
+            // move type, flags, boost, and action payload.
+            skillMoveTypes[index] = moveType;
+            skillFlags[index] = flags;
+            skillEffectPoints[index] = effectPoint;
+            skillExtras[index] = extra;
             if (attackPayload != null) {
                 final int pos = index << 2;
                 attackPayload[pos] = attackPayload[pos + 1] =
                         attackPayload[pos + 2] = attackPayload[pos + 3] = 0;
             }
         }
-        skillMoveTypes[index] = moveType;
-        skillFlags[index] = flags;
-        skillEffectPoints[index] = effectPoint;
-        skillExtras[index] = extra;
         heapDirty = true;
     }
 
