@@ -9,6 +9,8 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1MobGroupInfo;
@@ -536,10 +538,19 @@ public final class AiRuntime {
         }
 
         /*
-         * Preserve subclass-specific noTarget() policy.
-         * Guards must not fall through to generic ACTION_MOVE while idle.
+         * NC DESIRE_PET_DEFAULT selects the owner's default action after
+         * ATTACK / USE_SKILL have been considered. In L1 this is the
+         * existing noTarget() virtual command hook on the CIO owner.
+         *
+         * Pet/Summon stay, extend and alert must not be preempted by the
+         * generic FOLLOW_MASTER shortcut below. Dolls retain their 40-tile
+         * teleport and owner-visibility policy; companions retain item mode.
+         * Guard subclasses keep their original ACTION_COMPANION reaction.
          */
         if (creature instanceof L1CompanionInstance
+                || creature instanceof L1PetInstance
+                || creature instanceof L1SummonInstance
+                || creature instanceof L1DollInstance
                 || creature instanceof L1GuardInstance
                 || creature instanceof L1CastleGuardInstance) {
             CCreatureController.submit(
