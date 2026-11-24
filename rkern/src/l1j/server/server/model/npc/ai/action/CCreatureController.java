@@ -818,6 +818,8 @@ public final class CCreatureController {
         SetMoving.clearActionMoveState(creature);
         if (CCreatureController.currentAction(creature) == ACTION_MOVE_AROUND_NATIVE) {
             CMoveAroundAction.onInterrupted(creature);
+        } else if (CCreatureController.currentAction(creature) == ACTION_GET_ITEM) {
+            CGetItemAction.onInterrupted(creature);
         } else if ((CCreatureController.currentAction(creature) == ACTION_MOVE_TO_POINT
                         || CCreatureController.currentAction(creature) == ACTION_MOVE_TO_OBJECT)
                 && creature._scriptMoveMapId != -1) {

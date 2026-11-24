@@ -64,10 +64,14 @@ public final class CGetItemAction {
     }
 
     public static byte onTick(final L1NpcInstance creature) {
-        final L1ItemInstance captured = creature instanceof L1MonsterInstance monster
-                ? CDesirePQ.getItemAction(monster)
-                : creature != null ? targetItem(creature) : null;
-        return dGetItem.dGetItem(creature, captured);
+        if (creature instanceof L1MonsterInstance monster) {
+            final L1ItemInstance captured = CDesirePQ.getItemAction(monster);
+            if (captured == null) return CCreatureController.RESULT_DONE;
+            if (CDesirePQ.topState(monster, System.currentTimeMillis())
+                    != CDesirePQ.PS_GET_ITEM) return CCreatureController.RESULT_DONE;
+            return dGetItem.dGetItem(monster, captured);
+        }
+        return dGetItem.dGetItem(creature, creature != null ? targetItem(creature) : null);
     }
 
     public static void onEnd(
@@ -81,7 +85,6 @@ public final class CGetItemAction {
         switch (result) {
         case CCreatureController.RESULT_DONE:
         case CCreatureController.RESULT_INVALID:
-            onInterrupted(creature);
             CCreatureController.doPendingAction(creature);
             return;
 

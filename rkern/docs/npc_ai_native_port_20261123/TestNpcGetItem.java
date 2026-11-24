@@ -12,6 +12,10 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1Location;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.npc.ai.CDesireFactory;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.templates.L1EtcItem;
@@ -176,11 +180,28 @@ public final class TestNpcGetItem {
         final Field hp = L1Character.class.getDeclaredField("_currentHp");
         hp.setAccessible(true);
         hp.setInt(npc, 100);
+        final byte[][] tiles = new byte[64][64];
+        for (byte[] column : tiles) java.util.Arrays.fill(column, (byte) 0x03);
+        final L1Map map = new L1V1Map(996, tiles, 0, 0,
+                false, true, true, true, true, true,
+                true, true, true, true, true, false);
+        final Field loc = L1Object.class.getDeclaredField("_loc");
+        loc.setAccessible(true);
+        loc.set(npc, new L1Location(20, 20, map));
+        loc.set(itemA, new L1Location(22, 20, map));
+        loc.set(itemB, new L1Location(23, 20, map));
+        itemA.setCount(1); itemB.setCount(1);
         final long now = System.currentTimeMillis();
         check(CDesireFactory.MakeGetItem(npc, itemA, 6.0f, now), "register item A");
         check(CDesirePQ.topState(npc, now) == CDesirePQ.PS_GET_ITEM,
                 "GET_ITEM wins over idle MOVE_AROUND(5)");
         CDesirePQ.SetAsGetItem(npc, itemA);
+        npc._target = master;
+        check(CDesirePQ.topState(npc, now) == CDesirePQ.PS_MOVE_AROUND,
+                "active combat target suppresses GET_ITEM");
+        npc._target = null;
+        check(CDesirePQ.topState(npc, now) == CDesirePQ.PS_GET_ITEM,
+                "item remains selectable after combat target clears");
         check(CDesireFactory.MakeGetItem(npc, itemB, 6.0f, now), "same-ID successor B");
         check(CDesirePQ.getItemAction(npc) == itemA
                 && CDesirePQ.getItemDesire(npc) == itemB, "action captures exact original item");

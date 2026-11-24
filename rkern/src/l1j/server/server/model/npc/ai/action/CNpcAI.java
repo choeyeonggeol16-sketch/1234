@@ -487,14 +487,17 @@ public final class CNpcAI {
                 return;
             }
 
-            if (desire == CDesirePQ.PS_IDLE || desire == CDesirePQ.PS_MOVE_AROUND
-                    || desire == CDesirePQ.PS_GET_ITEM) {
+            if ((desire == CDesirePQ.PS_IDLE || desire == CDesirePQ.PS_MOVE_AROUND
+                    || desire == CDesirePQ.PS_GET_ITEM)
+                    && (monster.isPickupItem() || CGetItemAction.targetItem(monster) != null
+                            || desire == CDesirePQ.PS_GET_ITEM)) {
                 if (CGetItemAction.prepareMonsterItem(monster, nowMs)) {
                     CCreatureController.submit(monster, CCreatureController.ACTION_GET_ITEM);
                     return;
                 }
-                desire = CDesirePQ.isActive(monster)
-                        ? CDesirePQ.topState(monster, nowMs) : CDesirePQ.PS_IDLE;
+                if (desire == CDesirePQ.PS_GET_ITEM) {
+                    desire = CDesirePQ.topState(monster, nowMs);
+                }
             }
 
             if (desire == CDesirePQ.PS_MOVE_AROUND) {
