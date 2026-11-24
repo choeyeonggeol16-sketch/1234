@@ -8,7 +8,7 @@ import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 /** L1 digest policy, dispatched by the existing NPC object timer. */
-public final class NpcDigestItems {
+public final class CItemDigest {
     public static final int TIMER_DIGEST = 0x44494753;
     private static final long RETRY_MS = 500L;
     private final L1NpcInstance npc;
@@ -20,7 +20,7 @@ public final class NpcDigestItems {
     private int generation;
     private long armedDeadline;
 
-    public NpcDigestItems(final L1NpcInstance npc) {
+    public CItemDigest(final L1NpcInstance npc) {
         this.npc = npc;
     }
 
@@ -30,16 +30,16 @@ public final class NpcDigestItems {
     }
 
     /** Legacy callers keep one renewed deadline per item object. */
-    public synchronized void add(final L1ItemInstance item, final int digestSeconds) {
+    public synchronized void Add(final L1ItemInstance item, final int digestSeconds) {
         if (item == null || digestSeconds <= 0 || !live()) return;
         for (int i = size - 1; i >= 0; --i) {
             if (items[i] == item) remove(i);
         }
-        add(item, item.getCount(), digestSeconds);
+        Add(item, item.getCount(), digestSeconds);
     }
 
     /** Record only the committed pickup quantity, not the merged stack. */
-    public synchronized void add(final L1ItemInstance item, final int acquiredCount,
+    public synchronized void Add(final L1ItemInstance item, final int acquiredCount,
             final int digestSeconds) {
         if (item == null || acquiredCount <= 0 || digestSeconds <= 0 || !live()) return;
         final L1Inventory inventory = npc.getInventory();
@@ -112,7 +112,7 @@ public final class NpcDigestItems {
 
     private void armNext() {
         if (size == 0) {
-            clear();
+            Clear();
             return;
         }
         long next = Long.MAX_VALUE;
@@ -121,7 +121,7 @@ public final class NpcDigestItems {
     }
 
     /** Compatibility hook: no inventory mutation or expiry scan from callers. */
-    public synchronized void checkExpired() {
+    public synchronized void CheckExpired() {
         if (size != 0 && armedDeadline == 0L && live()) armNext();
     }
 
@@ -131,7 +131,7 @@ public final class NpcDigestItems {
         armedDeadline = 0L;
         final L1Inventory inventory = npc.getInventory();
         if (!live() || inventory == null) {
-            clear();
+            Clear();
             return;
         }
         final long now = System.currentTimeMillis();
@@ -168,11 +168,11 @@ public final class NpcDigestItems {
             }
         } finally {
             if (live() && npc.getInventory() == inventory) armNext();
-            else clear();
+            else Clear();
         }
     }
 
-    public synchronized void clear() {
+    public synchronized void Clear() {
         nextGeneration();
         armedDeadline = 0L;
         size = 0;
@@ -182,7 +182,7 @@ public final class NpcDigestItems {
         floors = null;
     }
 
-    public synchronized boolean isEmpty() {
+    public synchronized boolean IsEmpty() {
         return size == 0;
     }
 }

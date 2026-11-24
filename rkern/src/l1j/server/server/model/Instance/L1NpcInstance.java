@@ -37,7 +37,7 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.ActionSpriteMapper;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.npc.ai.CNPCEvent;
-import l1j.server.server.model.npc.ai.NpcDigestItems;
+import l1j.server.server.model.npc.ai.CItemDigest;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.npc.ai.NpcPotionPolicy;
 import l1j.server.server.model.npc.ai.NpcRefineRecipes;
@@ -1210,7 +1210,7 @@ public class L1NpcInstance extends L1Character {
     @Override
     public void dispose() {
         cancelDigestItems();
-        _digestItems = null;
+        _itemDigest = null;
         CloseNpcEvents();
         l1j.server.server.model.character.effect.action.realize.OnEffectThread.cancelNpc(this);
         _mobGroupInfo = null;
@@ -2014,18 +2014,18 @@ public class L1NpcInstance extends L1Character {
         CIOThreadCallback.getInstance().scheduleNpcTimer(this, TIMER_CORPSE_DELETE, generation, delayMs);
     }
 
-    private volatile NpcDigestItems _digestItems;
+    private volatile CItemDigest _itemDigest;
 
-    private NpcDigestItems digestItemsForAdd() {
+    private CItemDigest GetItemDigest() {
         if (_destroyed || isDead() || isDeathProcessing() || getCurrentHp() <= 0
                 || getInventory() == null) return null;
-        NpcDigestItems d = _digestItems;
+        CItemDigest d = _itemDigest;
         if (d == null) {
             synchronized (this) {
                 if (_destroyed || isDead() || isDeathProcessing() || getCurrentHp() <= 0
                         || getInventory() == null) return null;
-                d = _digestItems;
-                if (d == null) _digestItems = d = new NpcDigestItems(this);
+                d = _itemDigest;
+                if (d == null) _itemDigest = d = new CItemDigest(this);
             }
         }
         return d;
@@ -2035,34 +2035,34 @@ public class L1NpcInstance extends L1Character {
         if (item == null) return;
         final int seconds = getNpcTemplate().get_digestitem();
         if (seconds <= 0) return;
-        final NpcDigestItems d = digestItemsForAdd();
-        if (d != null) d.add(item, seconds);
+        final CItemDigest d = GetItemDigest();
+        if (d != null) d.Add(item, seconds);
     }
 
     public void setDigestItem(L1ItemInstance item, int acquiredCount) {
         if (item == null || acquiredCount <= 0) return;
         final int seconds = getNpcTemplate().get_digestitem();
         if (seconds <= 0) return;
-        final NpcDigestItems d = digestItemsForAdd();
-        if (d != null) d.add(item, acquiredCount, seconds);
+        final CItemDigest d = GetItemDigest();
+        if (d != null) d.Add(item, acquiredCount, seconds);
     }
 
     /** NPC owner dispatch also covers subclasses with their own TimerExpired. */
     public final boolean handleDigestTimer(int timerId, int generation) {
-        if (timerId != NpcDigestItems.TIMER_DIGEST) return false;
-        final NpcDigestItems d = _digestItems;
+        if (timerId != CItemDigest.TIMER_DIGEST) return false;
+        final CItemDigest d = _itemDigest;
         if (d != null) d.TimerExpired(generation);
         return true;
     }
 
     public final void cancelDigestItems() {
-        final NpcDigestItems d = _digestItems;
-        if (d != null) d.clear();
+        final CItemDigest d = _itemDigest;
+        if (d != null) d.Clear();
     }
 
     public void checkDigestExpiry() {
-        final NpcDigestItems d = _digestItems;
-        if (d != null) d.checkExpired();
+        final CItemDigest d = _itemDigest;
+        if (d != null) d.CheckExpired();
     }
 
     public boolean isInMobGroup() {
