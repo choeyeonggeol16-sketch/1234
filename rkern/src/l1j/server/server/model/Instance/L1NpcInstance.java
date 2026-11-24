@@ -48,10 +48,10 @@ import l1j.server.server.model.npc.ai.action.CCreatureController;
 import l1j.server.server.model.npc.ai.action.CGetItemAction;
 import l1j.server.server.model.npc.ai.action.CMoveAction;
 import l1j.server.server.model.npc.ai.action.SetMoving;
+import l1j.server.server.model.npc.ai.action.dMoveTo;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1NpcChat;
-import l1j.server.server.types.Point;
 import l1j.server.server.utils.CommonUtil;
 
 public class L1NpcInstance extends L1Character { 
@@ -207,7 +207,7 @@ public class L1NpcInstance extends L1Character {
      * no per-NPC movement command object, worker or extra queue.
      */
     public long _scriptMoveGoalXY;
-    public int _scriptMoveTargetId;
+    public volatile int _scriptMoveTargetId;
     public int _scriptMoveStopDistance;
     public int _scriptMoveMapId = -1;
 
@@ -466,12 +466,8 @@ public class L1NpcInstance extends L1Character {
         CNPCServer.getInstance().register(this);
     }
 
-    public void mobTeleport() {
-        if (!(this instanceof L1MonsterInstance)) return;
-        final int threshold = (getMaxHp() >= 100000) ? Config.Boss_Location : Config.Npc_Location;
-        if (getLocation().getTileLineDistance(new Point(getHomeX(), getHomeY())) > threshold) {
-            teleport(getHomeX(), getHomeY(), getHeading());
-        }
+    public boolean mobTeleport() {
+        return dMoveTo.ReturnStartPoint(this);
     }
 
     public void TimerExpired(int timerId, int generation) {
@@ -737,7 +733,7 @@ public class L1NpcInstance extends L1Character {
         for (;;) {
             final CNPCEvent head = _npcEventInbox;
             if (head == CNPCEvent.CLOSED || _destroyed || isDead()
-                    || event.epoch != _npcEventEpoch) {
+                    || event.epoch != _npcEventEpoch || dMoveTo.isReturningHome(this)) {
                 CNPCEvent.Release(event);
                 return false;
             }
@@ -1393,11 +1389,10 @@ public class L1NpcInstance extends L1Character {
         }
         if (!(this instanceof L1GuardInstance)
                 && !(this instanceof L1CastleGuardInstance)
-                && !(this instanceof L1MerchantInstance)
-                && !(this instanceof L1MonsterInstance)) {
+                && !(this instanceof L1MerchantInstance)) {
             return;
         }
-        if (getLocation().getLineDistance(new Point(getHomeX(), getHomeY())) > getMovementDistance()) {
+        if (getLocation().getLineDistance(getHomeX(), getHomeY()) > getMovementDistance()) {
             teleport(getHomeX(), getHomeY(), getHeading());
         }
     }
@@ -1869,7 +1864,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public final int applyNpcHpDelta(long delta) {
-        if (_destroyed || isDead()) return -1;
+        if (_destroyed || isDead() || (delta < 0 && dMoveTo.isReturningHome(this))) return -1;
         final int hp = changeHpAtomic(delta);
         if (hp >= 0) onNpcAtomicHpChanged(hp);
         return hp;
@@ -1887,6 +1882,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public int drainMana(int drain) {
+        if (dMoveTo.isReturningHome(this)) return 0;
         if (_drainedMana >= Config.MANA_DRAIN_LIMIT_PER_NPC) {
             return 0;
         }
