@@ -1528,43 +1528,47 @@ public class L1NpcInstance extends L1Character {
      * same checked commit; the legacy public teleport entry retains its
      * behavior for other callers.
      */
-    public final synchronized boolean TeleportToLocation(int nx, int ny, int dir, int mpCost) {
-        if (!CNPCServer.getInstance().isOwnerThread(this) || _destroyed
-                || isDead() || getCurrentHp() <= 0
-                || getHiddenStatus() != HIDDEN_STATUS_NONE
-                || mpCost < 0 || getCurrentMp() < mpCost
-                || !getMap().isInMap(nx, ny) || !getMap().isPassable(nx, ny)) {
-            return false;
-        }
-        final int oldX = getX(), oldY = getY(), mapId = getMapId();
-        if (oldX == nx && oldY == ny) return false;
-        if (WorldCollisionHash.getInstance().testStep((short) mapId, nx, ny, getId())
-                != WorldCollisionHash.MOVE_CLEAR) return false;
+    public final boolean TeleportToLocation(int nx, int ny, int dir, int mpCost) {
+        if (!CNPCServer.getInstance().isOwnerThread(this)) return false;
+        final List<L1PcInstance> previousViewers;
+        synchronized (this) {
+            if (_destroyed
+                    || isDead() || getCurrentHp() <= 0
+                    || getHiddenStatus() != HIDDEN_STATUS_NONE
+                    || mpCost < 0 || getCurrentMp() < mpCost
+                    || getMap() == null || !getMap().isInMap(nx, ny) || !getMap().isPassable(nx, ny)) {
+                return false;
+            }
+            final int oldX = getX(), oldY = getY(), mapId = getMapId();
+            if (oldX == nx && oldY == ny) return false;
+            if (WorldCollisionHash.getInstance().testStep((short) mapId, nx, ny, getId())
+                    != WorldCollisionHash.MOVE_CLEAR) return false;
 
-        final L1World world = L1World.getInstance();
-        final long smartId = world.smartIdOf(this);
-        if (smartId == 0L) return false;
-        final List<L1PcInstance> previousViewers = world.getVisiblePlayerFast(this);
+            final L1World world = L1World.getInstance();
+            final long smartId = world.smartIdOf(this);
+            if (smartId == 0L) return false;
+            previousViewers = world.getVisiblePlayerFast(this);
 
-        // Atomic PC/NPC reservation and occupancy check, before changing XY.
-        final boolean tracksOccupancy = shouldUseNpcOccupancy();
-        if (tracksOccupancy && !teleportNpcOcc(mapId, oldX, oldY, mapId, nx, ny)) {
-            return false;
-        }
-        boolean moved = false;
-        try {
-            world.relocateVisibleObject(this, nx, ny, mapId);
-            moved = getX() == nx && getY() == ny && getMapId() == mapId;
-            if (!moved) return false;
-            ResetPassingPos(nx, ny, mapId);
-            setHeading(dir);
-            if (mpCost != 0) setCurrentMp(getCurrentMp() - mpCost);
-        } finally {
-            // A removed/replaced world identity cannot retain a destination.
-            if (!moved && tracksOccupancy) {
-                if (world.findObjectBySmartId(smartId) != this
-                        || !teleportNpcOcc(mapId, nx, ny, mapId, oldX, oldY)) {
-                    TileOccupancyNpc.getInstance().releaseNow((short) mapId, nx, ny, getId());
+            // Atomic PC/NPC reservation and occupancy check, before changing XY.
+            final boolean tracksOccupancy = shouldUseNpcOccupancy();
+            if (tracksOccupancy && !teleportNpcOcc(mapId, oldX, oldY, mapId, nx, ny)) {
+                return false;
+            }
+            boolean moved = false;
+            try {
+                world.relocateVisibleObject(this, nx, ny, mapId);
+                moved = getX() == nx && getY() == ny && getMapId() == mapId;
+                if (!moved) return false;
+                ResetPassingPos(nx, ny, mapId);
+                setHeading(dir);
+                if (mpCost != 0) setCurrentMp(getCurrentMp() - mpCost);
+            } finally {
+                // A removed/replaced world identity cannot retain a destination.
+                if (!moved && tracksOccupancy) {
+                    if (world.findObjectBySmartId(smartId) != this
+                            || !teleportNpcOcc(mapId, nx, ny, mapId, oldX, oldY)) {
+                        TileOccupancyNpc.getInstance().releaseNow((short) mapId, nx, ny, getId());
+                    }
                 }
             }
         }
