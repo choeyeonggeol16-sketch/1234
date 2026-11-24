@@ -20,7 +20,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.instance.inn.InnHelper;
 import l1j.server.server.model.world.instance.inn.InnRoom;
-import l1j.server.server.templates.L1ItemBookMark;
+import l1j.server.server.templates.CItemBookmark;
 
 /** Dedicated item-use handler extracted from a mixed domain. */
 final class ClanInnReturnScrollUse {
@@ -108,7 +108,7 @@ final class ClanInnReturnScrollUse {
 			break;
 
 		case 700023:
-			L1ItemBookMark.useBookmarkItem(pc, l1iteminstance);
+			CItemBookmark.UseBookmarkItem(pc, l1iteminstance);
 			break;
         
         }

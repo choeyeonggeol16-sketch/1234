@@ -13,14 +13,14 @@ import l1j.server.server.DungeonTimeCommand;
 import l1j.server.server.GMCommands;
 import l1j.server.server.UserCommands;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
-import l1j.server.server.datatables.BuddyTable;
+import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanBuffTable;
 import l1j.server.server.datatables.ClanBuffTable.ClanBuff;
 import l1j.server.server.datatables.SpamTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Buddy;
+import l1j.server.server.model.CFriends;
 import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanRanking;
@@ -543,11 +543,11 @@ final L1ExcludingList spamList = SpamTable.getInstance().getExcludeTable(pc.getI
 				}
 
 				if (!listener.isOutsideChat() && !pc.isGm()) {
-					final L1Buddy buddyList = BuddyTable.getInstance().getBuddyTable(listener.getId());
+					final CFriends buddyList = CFriendsDb.getInstance().GetFriends(listener.getId());
 					final L1Party party = listener.getParty();
 					final L1ChatParty cParty = listener.getChatParty();
 
-					if (!(buddyList.containsId(pc.getId()) || (listener.getClanid() > 0 && listener.getClanid() == pc.getClanid()) || (party != null && party.isMember(pc)) || (cParty != null && cParty.isMember(pc)))) {
+					if (!(buddyList.HasFriend(pc.getId()) || (listener.getClanid() > 0 && listener.getClanid() == pc.getClanid()) || (party != null && party.isMember(pc)) || (cParty != null && cParty.isMember(pc)))) {
 						continue;
 					}
 				}

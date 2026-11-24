@@ -21,7 +21,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.utill.CConnectionConfig;
-import l1j.server.server.templates.L1BookMark;
+import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.utils.SQLUtil;
 
 /**
@@ -355,13 +355,13 @@ public static void broadcastGreen(String message) {
                 25, subCode, 0, 0, 0, 0, show, null, null, null, null, null, null, null);
     }
 
-    public static boolean send(L1PcInstance receiver, int subCode, int itemid, String name, List<L1BookMark> list) {
+    public static boolean send(L1PcInstance receiver, int subCode, int itemid, String name, List<BookmarkSlot> list) {
         return sendEncoded(receiver,
                 26, subCode, itemid, 0, 0, 0, false, name, null, null, null, null, null, list);
     }
 
 
-    private static boolean sendEncoded(L1PcInstance receiver, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
+    private static boolean sendEncoded(L1PcInstance receiver, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<BookmarkSlot> _bookmarks) {
         if (receiver == null) return false;
         final CUserSocket socket = receiver.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
@@ -383,7 +383,7 @@ public static void broadcastGreen(String message) {
         }
     }
 
-    private static int estimateFrameCapacity(int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
+    private static int estimateFrameCapacity(int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<BookmarkSlot> _bookmarks) {
         if ((_constructorType == 22 && _subCode == CLAN_WAREHOUSE_LIST)
                 || (_constructorType == 1 && _subCode == CALL_SOMETHING)) {
             return CConnectionConfig.MAX_WIRE_PACKET_SIZE;
@@ -405,7 +405,7 @@ public static void broadcastGreen(String message) {
             }
         }
         if (_bookmarks != null) {
-            for (L1BookMark book : _bookmarks) {
+            for (BookmarkSlot book : _bookmarks) {
                 if (book == null) continue;
                 final String name = book.getName();
                 size += 16L + (name == null ? 0L : ((long) name.length() << 1));
@@ -414,7 +414,7 @@ public static void broadcastGreen(String message) {
         return size > Integer.MAX_VALUE ? -1 : (int) size;
     }
 
-	private static void writePayload(CPacketWriteBuffer buffer, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<L1BookMark> _bookmarks) {
+	private static void writePayload(CPacketWriteBuffer buffer, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<BookmarkSlot> _bookmarks) {
 		buffer.writeC(Opcodes.S_EVENT);
 		buffer.writeC(_subCode);
 
@@ -1065,7 +1065,7 @@ public static void broadcastGreen(String message) {
 				buffer.writeS(_strVal1);
 				if (_bookmarks != null) {
 					buffer.writeC(_bookmarks.size());
-					for (L1BookMark book : _bookmarks) {
+					for (BookmarkSlot book : _bookmarks) {
 						buffer.writeS(book.getName());
 						buffer.writeD(book.getMapId());
 						buffer.writeH(book.getLocX());
