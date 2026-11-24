@@ -1,5 +1,6 @@
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import java.util.Arrays;
@@ -11,7 +12,6 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Warehouse.Warehouse;
@@ -272,7 +272,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
     public L1ItemInstance grant(int template,int count) { return grant(primary,template,count); }
     public L1ItemInstance grant(L1PcInstance pc,int template,int count) {
-        L1Item definition=ItemTable.getInstance().getTemplate(template);
+        L1Item definition=CObjectDB.GetItem(template);
         if (definition==null || count<=0) return null;
         L1ItemInstance image=new L1ItemInstance(definition,count);
         image.setId(IdFactory.getInstance().nextId());

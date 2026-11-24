@@ -1,7 +1,7 @@
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1Npc;
 
@@ -25,7 +25,7 @@ public class L1WarSpawn {
 		if (castleId == L1CastleLocation.ADEN_CASTLE_ID) {
 			npcId = 81189;
 		}
-		L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId); 
+		L1Npc l1npc = CObjectDB.GetNPC(npcId); 
 
 		int[] loc = new int[3];
 		loc = L1CastleLocation.getTowerLoc(castleId);
@@ -39,21 +39,21 @@ public class L1WarSpawn {
 		L1Npc l1npc;
 		int[] loc = new int[3];
 		for (int i = 1; i <= 4; i++) {
-			l1npc = NpcTable.getInstance().getTemplate(81189 + i);
+			l1npc = CObjectDB.GetNPC(81189 + i);
 			loc = L1CastleLocation.getSubTowerLoc(i);
 			SpawnWarObject(l1npc, loc[0], loc[1], (short) (loc[2]));
 		}
 	}
 
 	public void SpawnCrown(int castleId) {
-		L1Npc l1npc = NpcTable.getInstance().getTemplate(81125);
+		L1Npc l1npc = CObjectDB.GetNPC(81125);
 		int[] loc = new int[3];
 		loc = L1CastleLocation.getTowerLoc(castleId);
 		SpawnWarObject(l1npc, loc[0], loc[1], (short) (loc[2]));
 	}
 
 	public void SpawnFlag(int castleId) {
-		L1Npc l1npc = NpcTable.getInstance().getTemplate(81122);
+		L1Npc l1npc = CObjectDB.GetNPC(81122);
 		int[] loc = new int[5];
 		loc = L1CastleLocation.getWarArea(castleId);
 		int x = 0;
@@ -102,7 +102,7 @@ public class L1WarSpawn {
 	private L1NpcInstance SpawnWarObject(L1Npc l1npc, int locx, int locy, short mapid, int gfxId) {
 		try {
 			if (l1npc != null) {
-				L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(l1npc);
+				L1NpcInstance npc = CObjectDB.CreateNPC(l1npc);
 				npc.setId(IdFactory.getInstance().nextId());
 				npc.setX(locx);
 				npc.setY(locy);

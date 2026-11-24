@@ -18,6 +18,7 @@
  */
 package l1j.server.server.model.npc.action;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_HowManyMake;
 
 import java.util.ArrayList;
@@ -32,7 +33,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Inventory;
@@ -100,7 +100,7 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
         if (amount <= 0 || amount >= 1000 || (!_isAmountInputable && amount != 1)) return false;
         final L1PcInventory inv = pc.getInventory();
         final String npcName = npc.getNpcTemplate().get_name();
-        final ItemTable templates = ItemTable.getInstance();
+        final CObjectDB.ItemData templates = CObjectDB.LoadItem();
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcTemplate().get_npcId())) {
             for (Material material : _materials) {
                 final int id = material.itemId(), enchant = material.enchant();
@@ -206,7 +206,7 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
             int enchant = material.enchant();
             long required = material.amount();
             if (required <= 0 || required > L1Inventory.MAX_AMOUNT
-                    || ItemTable.getInstance().getTemplate(id) == null) return 0;
+                    || CObjectDB.GetItem(id) == null) return 0;
             long available = 0;
             for (L1ItemInstance item : inv.getItems()) {
                 if (!item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant)
@@ -215,7 +215,7 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
             count = (int) Math.min(count, Math.min(available, L1Inventory.MAX_AMOUNT) / required);
         }
         for (L1ObjectAmount<Integer> reward : _items) {
-            if (reward.getAmount() <= 0 || ItemTable.getInstance().getTemplate(reward.getObject()) == null) return 0;
+            if (reward.getAmount() <= 0 || CObjectDB.GetItem(reward.getObject()) == null) return 0;
             count = Math.min(count, L1Inventory.MAX_AMOUNT / reward.getAmount());
         }
         return count;

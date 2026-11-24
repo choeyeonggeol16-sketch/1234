@@ -1,5 +1,6 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.HashMap;
 
 import gnu.trove.map.TIntObjectMap;
@@ -36,7 +37,6 @@ import l1j.server.server.datatables.AdenShopTable;
 import l1j.server.server.datatables.AlchemyProbability;
 import l1j.server.server.datatables.ArmorEnchantInformationTable;
 import l1j.server.server.datatables.ArmorEnchantList;
-import l1j.server.server.datatables.ArmorSetTable;
 import l1j.server.server.datatables.AutoLoot;
 import l1j.server.server.datatables.CharactersGiftItemTable;
 import l1j.server.server.datatables.ClanTable;
@@ -47,7 +47,6 @@ import l1j.server.server.datatables.DropTable;
 import l1j.server.server.datatables.GetBackRestartTable;
 import l1j.server.server.datatables.IncreaseEinhasadMap;
 import l1j.server.server.datatables.IpTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.datatables.MobSkillTable;
 import l1j.server.server.datatables.MonsterParalyzeDelay;
@@ -56,7 +55,6 @@ import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.datatables.NoShopAndWare;
 import l1j.server.server.datatables.NpcCashShopSpawnTable;
 import l1j.server.server.datatables.NpcChatTable;
-import l1j.server.server.datatables.NpcTable;
 
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.ResolventTable;
@@ -240,7 +238,7 @@ public class L1Reload implements L1CommandExecutor {
 			NPCTalkDataTable.reload();
 			gm.sendPackets("NpcAction 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("엔피씨")) {
-			NpcTable.reload();
+			CObjectDB.ReloadNPC();
 			gm.sendPackets("NpcTable/npc_born 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("템드랍아이템")) {
 			DropItemTable.reload();
@@ -291,9 +289,9 @@ public class L1Reload implements L1CommandExecutor {
 			IpTable.reload();
 			gm.sendPackets("banIp 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("아이템")){
-			ItemTable.reload();
+			CObjectDB.ReloadItem();
 			gm.sendPackets("아이템 정보가 리로드 되었습니다.");
-			TIntObjectMap<L1Item> items = ItemTable.getInstance().getAllTemplates();
+			TIntObjectMap<L1Item> items = CObjectDB.LoadItem().getAllTemplates();
 			HashMap<Integer, L1RaceTicket> map = BugRaceController.getInstance().getAllTemplates();
 			for(L1RaceTicket t : map.values()){
 				if(t != null)
@@ -372,7 +370,7 @@ public class L1Reload implements L1CommandExecutor {
 			AccessoryEnchantInformationTable.reload();
 			gm.sendPackets("리로드: accessory_enchant_list 테이블이 리로드 되었습니다");
 		} else if(arg.equalsIgnoreCase("세트아이템")) {
-			ArmorSetTable.reload();
+			CObjectDB.ReloadSetItem();
 			gm.sendPackets("리로드: armor_set 테이블이 리로드 되었습니다");
 //		} else if (arg.equalsIgnoreCase("이벤트알람")) {
 //			try {

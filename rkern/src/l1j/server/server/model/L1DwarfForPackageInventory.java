@@ -1,5 +1,6 @@
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,7 +12,6 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Warehouse.Warehouse;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1Item;
@@ -62,7 +62,7 @@ public class L1DwarfForPackageInventory extends Warehouse {
         while (rows.next()) {
             int id = rows.getInt("id");
             int count = rows.getInt("count");
-            L1Item template = ItemTable.getInstance().getTemplate(rows.getInt("item_id"));
+            L1Item template = CObjectDB.GetItem(rows.getInt("item_id"));
             if (template == null || count <= 0) throw new SQLException("Invalid package item: " + id);
             L1ItemInstance item = new L1ItemInstance(template, count);
             item.setId(id);
@@ -107,7 +107,7 @@ public class L1DwarfForPackageInventory extends Warehouse {
 	public static void present(String account, int itemid, int enchant,
 			int count) throws Exception {
 
-		L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+		L1Item temp = CObjectDB.GetItem(itemid);
 		if (temp == null) {
 			return;
 		}
@@ -148,7 +148,7 @@ public class L1DwarfForPackageInventory extends Warehouse {
 	public static void present(int minlvl, int maxlvl, int itemid, int enchant,
 			int count) throws Exception {
 
-		L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+		L1Item temp = CObjectDB.GetItem(itemid);
 		if (temp == null) {
 			return;
 		}
@@ -184,7 +184,7 @@ public class L1DwarfForPackageInventory extends Warehouse {
 	}
 
     private static void present(ArrayList<String> accounts, int itemId, int enchant, int count) throws SQLException {
-        L1Item template = ItemTable.getInstance().getTemplate(itemId);
+        L1Item template = CObjectDB.GetItem(itemId);
         if (template == null || count <= 0 || count > L1Inventory.MAX_AMOUNT)
             throw new IllegalArgumentException("Invalid package item or count");
         final String sql = "INSERT INTO character_package_warehouse "

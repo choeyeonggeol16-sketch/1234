@@ -1,6 +1,7 @@
 
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +12,6 @@ import l1j.server.server.model.Instance.CItemList;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
@@ -246,7 +246,7 @@ public class L1Inventory extends L1Object {
 		if (count <= 0) {
 			return null;
 		}
-		L1Item temp = ItemTable.getInstance().getTemplate(id);
+		L1Item temp = CObjectDB.GetItem(id);
 		if (temp == null) {
 			return null;
 		}
@@ -284,7 +284,7 @@ public class L1Inventory extends L1Object {
 		if (count <= 0) {
 			return null;
 		}
-		L1Item temp = ItemTable.getInstance().getTemplate(id);
+		L1Item temp = CObjectDB.GetItem(id);
 		if (temp == null) {
 			return null;
 		}
@@ -896,7 +896,7 @@ public class L1Inventory extends L1Object {
 
 	public synchronized boolean 제작리스트1(int itemid, int count, int en) {
         if (count <= 0) return false;
-        final L1Item template = ItemTable.getInstance().getTemplate(itemid);
+        final L1Item template = CObjectDB.GetItem(itemid);
         if (template == null) return false;
         if (template.isStackable()) {
             final L1ItemInstance item = findItemId(itemid);
@@ -971,7 +971,7 @@ public class L1Inventory extends L1Object {
 	}
 	public synchronized boolean consumeItem(int itemid, int count) {
         if (count <= 0) return false;
-        final L1Item template = ItemTable.getInstance().getTemplate(itemid);
+        final L1Item template = CObjectDB.GetItem(itemid);
         if (template == null) return false;
         if (template.isStackable()) {
             final L1ItemInstance item = findItemId(itemid);
@@ -997,7 +997,7 @@ public class L1Inventory extends L1Object {
 	
 	public synchronized boolean consumeItem(int itemid, int count, int descid) {
         if (count <= 0) return false;
-        final L1Item template = ItemTable.getInstance().getTemplate(itemid);
+        final L1Item template = CObjectDB.GetItem(itemid);
         if (template == null) return false;
         if (template.isStackable()) {
             final L1ItemInstance item = findItemId(itemid);
@@ -1902,7 +1902,7 @@ public class L1Inventory extends L1Object {
 			deleteItem(item);
 			carryItem = item;
 		} else {
-			carryItem = ItemTable.getInstance().createItem(item.getItem().getItemId());
+			carryItem = CObjectDB.CreateItem(item.getItem().getItemId());
 			if (carryItem == null) {
 				return null;
 			}
@@ -2129,7 +2129,7 @@ public class L1Inventory extends L1Object {
 		if (count == 0) {
 			return true;
 		}
-		L1Item l1item = ItemTable.getInstance().getTemplate(id);
+		L1Item l1item = CObjectDB.GetItem(id);
 		if (l1item.isStackable()) {
 			L1ItemInstance item = findItemId(id);
 			if (item != null && item.getCount() >= count) {
@@ -2243,7 +2243,7 @@ public class L1Inventory extends L1Object {
 	}
 
 	public int countItems(int id) {
-		if (ItemTable.getInstance().getTemplate(id).isStackable()) {
+		if (CObjectDB.GetItem(id).isStackable()) {
 			L1ItemInstance item = findItemId(id);
 			if (item != null) {
 				return item.getCount();
@@ -2314,7 +2314,7 @@ public class L1Inventory extends L1Object {
 	}
 
 	public int checkAddItem(int itemId, int count){
-		L1Item item = ItemTable.getInstance().getTemplate(itemId);		
+		L1Item item = CObjectDB.GetItem(itemId);		
 		return checkAddItem(item, count);
 	}
 	

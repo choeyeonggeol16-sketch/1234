@@ -1,12 +1,12 @@
 package l1j.server.server.utils;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.world.instance.dungeon.orim.OrimController;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1FieldObjectInstance;
@@ -23,7 +23,7 @@ public class L1SpawnUtil {
 	public static L1NpcInstance spawnAndGet(L1PcInstance pc, int npcId, int randomRange, int timeMillisToDelete) {
 		L1NpcInstance npc = null;
 		try {
-			npc = NpcTable.getInstance().newNpcInstance(npcId);
+			npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(pc.getMapId());
 			if (randomRange == 0) {
@@ -77,7 +77,7 @@ public class L1SpawnUtil {
 	
 	public static L1NpcInstance spawn(L1PcInstance pc, int npcId, int randomRange, int timeMillisToDelete, int d) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(pc.getMapId());
 			if (randomRange == 0) {
@@ -132,7 +132,7 @@ public class L1SpawnUtil {
 
 	public static void spawn(L1PcInstance pc, int npcId, int randomRange, int timeMillisToDelete) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance(). newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(pc.getMapId());
 			if (randomRange == 0) {
@@ -185,7 +185,7 @@ public class L1SpawnUtil {
 	
 	public static void spawngmcmd(L1PcInstance pc, int npcId) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance(). newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(pc.getMapId());
 			npc.getLocation(). set(pc.getLocation());
@@ -212,7 +212,7 @@ public class L1SpawnUtil {
 	 * @param timeMillisToDelete @param movemap (이동시킬 맵을 설정한다 - 안타레이드) */
 	public static void spawn2(int x, int y, short map, int npcId, int randomRange, int timeMillisToDelete, int movemap) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(map);
 			if (randomRange == 0) {
@@ -283,7 +283,7 @@ public class L1SpawnUtil {
 	public static void spawn3(int x, int y, short MapId, int Heading, int npcId, int randomRange, boolean isUsePainwand,
 			int timeMillisToDelete) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(MapId);
 			if (randomRange == 0) {
@@ -323,7 +323,7 @@ public class L1SpawnUtil {
 	public static L1MonsterInstance spawnfieldboss(int x, int y, short map, int npcId, int randomRange, int timeMillisToDelete, int movemap) {
 		L1NpcInstance npc = null;
 		try {
-			npc = NpcTable.getInstance().newNpcInstance(npcId);
+			npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(map);
 			if (randomRange == 0) {
@@ -398,7 +398,7 @@ public class L1SpawnUtil {
 			int heading, int timeMinToDelete) {
 		L1NpcInstance npc = null;
 		try {
-			npc = NpcTable.getInstance().newNpcInstance(npcId);
+			npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(mapid);
 			npc.setX(x);
@@ -421,7 +421,7 @@ public class L1SpawnUtil {
 	public static void spawn10(int x, int y, short map, int heading,
 			int npcId, int timeMillisToDelete, L1Clan clan) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());					
 			npc.setMap(map);
 			npc.getLocation().set(x, y, map);
@@ -452,7 +452,7 @@ public class L1SpawnUtil {
 	
 	public static void spawn5(int x, int y, short MapId, int Heading, int npcId, int randomRange, boolean isUsePainwand) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(MapId);
 			if (randomRange == 0) {
@@ -500,7 +500,7 @@ public class L1SpawnUtil {
 	
 	public static void spawn(L1NpcInstance pc, int npcId, int randomRange) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(pc.getMapId());
 
@@ -539,7 +539,7 @@ public class L1SpawnUtil {
 	//타임밀리
 	public static void spawn6(int x, int y, short map, int npcId, int randomRange, int timeMillisToDelete, int movemap) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(map);
 			if (randomRange == 0) {
@@ -584,7 +584,7 @@ public class L1SpawnUtil {
 		L1NpcInstance npc = null;
 		try {
 			for (int i = 0; i < count; i++) {
-				npc = NpcTable.getInstance().newNpcInstance(npcId);
+				npc = CObjectDB.CreateNPC(npcId);
 				npc.setId(IdFactory.getInstance().nextId());
 				npc.setMap(map);
 				if (randomRange == 0) {
@@ -634,7 +634,7 @@ public class L1SpawnUtil {
 	
 	public static void spawn(L1NpcInstance pc, int npcId, int randomRange, int timeMillisToDelete) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(pc.getMapId());
 

@@ -67,7 +67,7 @@ public class NpcSpawnTable {
 				}
 
 				int npcTemplateid = rs.getInt("npc_templateid");
-				L1Npc l1npc = NpcTable.getInstance().getTemplate(npcTemplateid);
+				L1Npc l1npc = CObjectDB.GetNPC(npcTemplateid);
 				
 				if (!type.equalsIgnoreCase("all")) {
 					if (l1npc != null) {

@@ -1,5 +1,6 @@
 package l1j.server.server;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,9 +38,7 @@ import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.HouseTable;
 import l1j.server.server.datatables.IpTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.MapsTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.datatables.SpawnTable;
 import l1j.server.server.model.Attendance.AttendanceLoadManager;
@@ -662,7 +661,7 @@ public class GMCommands {
 		case "상점리로드":
 			try {
 				int npcid = Integer.parseInt(param);
-				L1Npc npc = NpcTable.getInstance().getTemplate(npcid);
+				L1Npc npc = CObjectDB.GetNPC(npcid);
 				ShopTable.getInstance().Reload(npcid);
 				gm.sendPackets("엔피씨 : " + npc.get_name() + " 리로드 되었습니다.");
 			} catch (Exception e) {
@@ -948,14 +947,14 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 				try {
 					itemid = Integer.parseInt(nameid);
 				} catch (NumberFormatException e) {
-					itemid = ItemTable.getInstance().findItemIdByNameWithoutSpace(nameid);
+					itemid = CObjectDB.LoadItem().findItemIdByNameWithoutSpace(nameid);
 					if (itemid == 0) {
 						gm.sendPackets("해당 아이템이 발견되지 않습니다. ");
 						return;
 					}
 				}
 
-				L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+				L1Item temp = CObjectDB.GetItem(itemid);
 				if (temp == null) {
 					gm.sendPackets("해당 아이템이 발견되지 않습니다. ");
 					return;
@@ -1063,16 +1062,16 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			try {
 				itemid = Integer.parseInt(nameid);
 			} catch (NumberFormatException e) {
-				itemid = ItemTable.getInstance().findItemIdByNameWithoutSpace(nameid);
+				itemid = CObjectDB.LoadItem().findItemIdByNameWithoutSpace(nameid);
 				if (itemid == 0) {
 					pc.sendPackets("해당 아이템이 발견되지 않습니다. ");
 					return;
 				}
 			}
-			L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+			L1Item temp = CObjectDB.GetItem(itemid);
 			if (temp != null) {
 				if (temp.isStackable()) {
-					L1ItemInstance item = ItemTable.getInstance().createItem(itemid);
+					L1ItemInstance item = CObjectDB.CreateItem(itemid);
 					item.setEnchantLevel(0);
 					item.setCount(count);
 					item.setIdentified(true);
@@ -1086,7 +1085,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 					L1ItemInstance item = null;
 					int createCount;
 					for (createCount = 0; createCount < count; createCount++) {
-						item = ItemTable.getInstance().createItem(itemid);
+						item = CObjectDB.CreateItem(itemid);
 						item.setEnchantLevel(enchant);
 						item.setAttrEnchantLevel(attrenchant);
 						item.setIdentified(true);
@@ -1973,7 +1972,7 @@ for (L1PcInstance target : player) {
 								if (target == null)
 									continue;
 								if (!target.isGhost() && !target.isPrivateShop()) {
-									L1ItemInstance item = ItemTable.getInstance().createItem(itemid);
+									L1ItemInstance item = CObjectDB.CreateItem(itemid);
 									item.setCount(count);
 									item.setEnchantLevel(enchant);
 									if (item != null) {
@@ -2589,7 +2588,7 @@ for (L1PcInstance target : player) {
 				if (target == null)
 					continue;
 				if (!target.isGhost() && !target.isPrivateShop()) {
-					L1ItemInstance item = ItemTable.getInstance().createItem(itemid);
+					L1ItemInstance item = CObjectDB.CreateItem(itemid);
 					item.setCount(count);
 					item.setEnchantLevel(enchant);
 					if (item != null) {

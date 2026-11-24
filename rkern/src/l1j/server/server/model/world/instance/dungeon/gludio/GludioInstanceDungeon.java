@@ -1,5 +1,6 @@
 package l1j.server.server.model.world.instance.dungeon.gludio;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +14,6 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -110,7 +110,7 @@ public final class GludioInstanceDungeon {
             ResultSet rs=ps.executeQuery()) {
             while(rs.next()) {
                 int id=rs.getInt("npc_id"), type=rs.getInt("type"), cnt=rs.getInt("count");
-                if(id<=0 || cnt<=0 || cnt>100 || NpcTable.getInstance().getTemplate(id)==null) {
+                if(id<=0 || cnt<=0 || cnt>100 || CObjectDB.GetNPC(id)==null) {
                     LOG.warning("[Gludio-Indun] Invalid spawn NPC="+id+" count="+cnt);
                     initialized=false;return;
                 }
@@ -269,9 +269,9 @@ public final class GludioInstanceDungeon {
                 || m.pc.getMapId()==r.mapId && r.mapId!=0
                 || !m.pc.getInventory().checkItem(KEY_ITEM,r.keyCount())) return false;
         final int mapId=reserveMapId(terrain);
-        if(mapId<0 || NpcTable.getInstance().getTemplate(50000220)==null
-                || NpcTable.getInstance().getTemplate(50000221)==null
-                || NpcTable.getInstance().getTemplate(r.boost?(r.kind==NORMAL?460000302:460000301)
+        if(mapId<0 || CObjectDB.GetNPC(50000220)==null
+                || CObjectDB.GetNPC(50000221)==null
+                || CObjectDB.GetNPC(r.boost?(r.kind==NORMAL?460000302:460000301)
                         :(r.kind==NORMAL?50000256:50000255))==null) return false;
         try {
             // Original GludioInDungeon: use the native 730/731 terrain for the first
@@ -427,9 +427,9 @@ public final class GludioInstanceDungeon {
         for(int i=20;i<27;i++) r.guards[i]=spawn(r,50000221,32787,32860+i-20,0,null,null);
     }
     private L1NpcInstance spawn(Room r,int id,int x,int y,int heading,String location,L1NpcInstance target) {
-        L1Npc tpl=NpcTable.getInstance().getTemplate(id);
+        L1Npc tpl=CObjectDB.GetNPC(id);
         if(tpl==null) return null;
-        L1NpcInstance npc=NpcTable.getInstance().newNpcInstance(id);
+        L1NpcInstance npc=CObjectDB.CreateNPC(id);
         if(npc==null) return null;
         npc.setId(IdFactory.getInstance().nextId());
         npc.setMap((short)r.mapId);

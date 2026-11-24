@@ -1,8 +1,8 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.StringTokenizer;
 
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -26,7 +26,7 @@ public class L1Summon implements L1CommandExecutor {
 			try {
 				npcid = Integer.parseInt(nameid);
 			} catch (NumberFormatException e) {
-				npcid = NpcTable.getInstance(). findNpcIdByNameWithoutSpace(
+				npcid = CObjectDB.LoadNPC(). findNpcIdByNameWithoutSpace(
 						nameid);
 				if (npcid == 0) {
 					SC_SystemMessage.send(pc, "해당 NPC가 발견되지 않습니다. ");
@@ -37,13 +37,13 @@ public class L1Summon implements L1CommandExecutor {
 			if (tok.hasMoreTokens()) {
 				count = Integer.parseInt(tok.nextToken());
 			}
-			L1Npc npc = NpcTable.getInstance(). getTemplate(npcid);
+			L1Npc npc = CObjectDB.GetNPC(npcid);
 			L1SummonInstance summonInst = null;
 			for (int i = 0; i < count; i++) {
 				summonInst = new L1SummonInstance(npc, pc);
 				summonInst.setPetcost(0);
 			}
-			nameid = NpcTable.getInstance(). getTemplate(npcid). get_name();
+			nameid = CObjectDB.GetNPC(npcid). get_name();
 			SC_SystemMessage.send(pc, nameid + "(ID:" + npcid + ") ("
 					+ count + ")를 소환했습니다. ");
 		} catch (Exception e) {

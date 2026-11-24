@@ -37,10 +37,10 @@ public class FurnitureSpawnTable {
 			
 			while (rs.next()) {
 				int npcId = rs.getInt(2);
-				L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
+				L1Npc l1npc = CObjectDB.GetNPC(npcId);
 				if (l1npc != null) {
 					try {
-						L1FurnitureInstance furniture = (L1FurnitureInstance) NpcTable.getInstance().newNpcInstance(l1npc);
+						L1FurnitureInstance furniture = (L1FurnitureInstance) CObjectDB.CreateNPC(l1npc);
 						furniture.setId(IdFactory.getInstance().nextId());
 
 						furniture.setItemObjId(rs.getInt(1));

@@ -50,7 +50,7 @@ public class DoorSpawnTable {
 			 PreparedStatement pstm = con.prepareStatement(sql);
 			 ResultSet rs = pstm.executeQuery()) {
 
-			L1Npc l1npc = NpcTable.getInstance().getTemplate(81158);
+			L1Npc l1npc = CObjectDB.GetNPC(81158);
 			if (l1npc == null) {
 				_log.warning("Door base NPC template (81158) not found.");
 				return;

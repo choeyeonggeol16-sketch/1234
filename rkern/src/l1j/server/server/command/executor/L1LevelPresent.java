@@ -18,6 +18,7 @@
  */
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,7 +28,6 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -56,7 +56,7 @@ public class L1LevelPresent implements L1CommandExecutor {
 			int enchant = Integer.parseInt(st.nextToken(), 10);
 			int count = Integer.parseInt(st.nextToken(), 10);
 
-			L1Item temp = ItemTable.getInstance(). getTemplate(itemid);
+			L1Item temp = CObjectDB.GetItem(itemid);
 			if (temp == null) {
 				SC_SystemMessage.send(pc, "존재하지 않는 아이템 ID입니다. ");
 				return;
@@ -71,7 +71,7 @@ public class L1LevelPresent implements L1CommandExecutor {
 	}
 
 	public static void present(String account, int itemid, int enchant, int count) throws Exception {
-		L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+		L1Item temp = CObjectDB.GetItem(itemid);
 		if (temp == null) {
 			return;
 		}
@@ -109,7 +109,7 @@ public class L1LevelPresent implements L1CommandExecutor {
 	}
 
 	public static void present(int minlvl, int maxlvl, int itemid, int enchant, int count) throws Exception {
-		L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+		L1Item temp = CObjectDB.GetItem(itemid);
 		if (temp == null) {
 			return;
 		}
@@ -144,7 +144,7 @@ public class L1LevelPresent implements L1CommandExecutor {
 	}
 
 	private static void present(ArrayList<String> accountList, int itemid, int enchant, int count) throws Exception {
-		L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+		L1Item temp = CObjectDB.GetItem(itemid);
 		if (temp == null) {
 			throw new Exception("존재하지 않는 아이템 ID");
 		}
@@ -156,7 +156,7 @@ public class L1LevelPresent implements L1CommandExecutor {
 			L1ItemInstance item = null;
 			for (String account : accountList) {
 				if (temp.isStackable()) {
-					item = ItemTable.getInstance().createItem(itemid);
+					item = CObjectDB.CreateItem(itemid);
 					item.setEnchantLevel(enchant);
 					item.setCount(count);
 
@@ -176,7 +176,7 @@ public class L1LevelPresent implements L1CommandExecutor {
 					item = null;
 					int createCount;
 					for (createCount = 0; createCount < count; createCount++) {
-						item = ItemTable.getInstance().createItem(itemid);
+						item = CObjectDB.CreateItem(itemid);
 						item.setEnchantLevel(enchant);
 						pstm = con.prepareStatement("INSERT INTO character_warehouse SET id = ?, account_name = ?, item_id = ?, item_name = ?, count = ?, is_equipped=0, enchantlvl = ?, is_id = ?, durability = ?, charge_count = ?, remaining_time = ?");
 						pstm.setInt(1, item.getId());

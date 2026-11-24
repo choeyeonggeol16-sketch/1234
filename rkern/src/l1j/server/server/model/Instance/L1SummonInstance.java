@@ -1,5 +1,6 @@
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.RejectedExecutionException;
@@ -10,7 +11,6 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.DropTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1World;
@@ -134,7 +134,7 @@ public class L1SummonInstance extends L1NpcInstance {
 					npcId = 81183;
 				}
 			}
-			L1Npc template = NpcTable.getInstance().getTemplate(npcId);
+			L1Npc template = CObjectDB.GetNPC(npcId);
 			setting_template(template);
 		} else { 
 

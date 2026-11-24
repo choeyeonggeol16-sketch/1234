@@ -18,12 +18,12 @@
  */
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.character.action.CAttackAction;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.quest.CQuestSystem;
 
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -166,7 +166,7 @@ public class L1QuestInstance extends L1NpcInstance {
                 return;
             }
         }
-        final L1Npc template = NpcTable.getInstance().getTemplate(followerId);
+        final L1Npc template = CObjectDB.GetNPC(followerId);
         if (template == null || !claimFollower()) return;
         try {
             new L1FollowerInstance(template, this, pc);

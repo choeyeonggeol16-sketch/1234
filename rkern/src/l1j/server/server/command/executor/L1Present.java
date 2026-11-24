@@ -1,11 +1,11 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.StringTokenizer;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.logging.Logger;
 
 import l1j.server.server.datatables.CharacterTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1World;
@@ -64,16 +64,16 @@ public class L1Present implements L1CommandExecutor {
 			try {
 				itemid = Integer.parseInt(nameid);
 			} catch (NumberFormatException e) {
-				itemid = ItemTable.getInstance().findItemIdByNameWithoutSpace(nameid);
+				itemid = CObjectDB.LoadItem().findItemIdByNameWithoutSpace(nameid);
 				if (itemid == 0) {
 					SC_SystemMessage.send(pc, "해당 아이템이 발견되지 않았습니다.");
 					return;
 				}
 			}
-			L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+			L1Item temp = CObjectDB.GetItem(itemid);
 			if (temp != null) {
 				if (temp.isStackable()) {
-					L1ItemInstance item = ItemTable.getInstance().createItem(itemid);
+					L1ItemInstance item = CObjectDB.CreateItem(itemid);
 					item.setEnchantLevel(0);
 					item.setCount(count);
 					if (target.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
@@ -88,7 +88,7 @@ public class L1Present implements L1CommandExecutor {
 					L1ItemInstance item = null;
 					int createCount;
 					for (createCount = 0; createCount < count; createCount++) {
-						item = ItemTable.getInstance().createItem(itemid);
+						item = CObjectDB.CreateItem(itemid);
 						item.setEnchantLevel(enchant);
 						item.setAttrEnchantLevel(Attrenchant);
 						if (bless == 129) {

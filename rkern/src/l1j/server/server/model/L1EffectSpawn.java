@@ -1,10 +1,10 @@
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.Controller.GameEffectActionController;
 import l1j.server.server.Controller.GameSoundController;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1EffectInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -28,7 +28,7 @@ public class L1EffectSpawn {
     }
 
     public L1EffectInstance spawnEffect(int npcid, int time, int locX, int locY, short mapId) {
-        L1Npc template = NpcTable.getInstance().getTemplate(npcid);
+        L1Npc template = CObjectDB.GetNPC(npcid);
         if (template == null) {
             return null;
         }
@@ -70,7 +70,7 @@ public class L1EffectSpawn {
     }
 
     public void doSpawnFireWall(L1Character cha, int targetX, int targetY) {
-        L1Npc firewall = NpcTable.getInstance().getTemplate(81157);
+        L1Npc firewall = CObjectDB.GetNPC(81157);
         int duration = SkillsTable.getInstance().getTemplate(
                 L1SkillId.FIRE_WALL).getBuffDuration();
 

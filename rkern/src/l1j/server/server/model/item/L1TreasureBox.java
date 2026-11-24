@@ -1,5 +1,6 @@
 package l1j.server.server.model.item;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.io.File;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.sql.Timestamp;
@@ -18,7 +19,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import l1j.server.Config;
-import l1j.server.server.datatables.ItemTable;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.model.L1InventoryTransaction;
@@ -161,7 +161,7 @@ public class L1TreasureBox {
 	private void init() {
 		for (Item each : getItems()) {
 			_totalChance += each.getChance();
-			if (ItemTable.getInstance().getTemplate(each.getItemId()) == null) {
+			if (CObjectDB.GetItem(each.getItemId()) == null) {
 				getItems().remove(each);
 				_log.warning("아이템 ID " + each.getItemId() + " 의 템플릿이 발견되지 않았습니다.");
 				System.out.println("아이템 ID " + each.getItemId() + " 의 템플릿이 발견되지 않았습니다.");
@@ -348,7 +348,7 @@ public class L1TreasureBox {
         if(count<=0) throw new IllegalStateException("Nonpositive treasure reward: "+itemId);
         // Never register a speculative reward in L1World before its DB receipt.
         // ItemTable.createItem() publishes immediately and leaves a ghost on rollback.
-        final l1j.server.server.templates.L1Item template=ItemTable.getInstance().getTemplate(itemId);
+        final l1j.server.server.templates.L1Item template=CObjectDB.GetItem(itemId);
         if(template==null) throw new IllegalStateException("Missing treasure reward: "+itemId);
         L1ItemInstance reward=new L1ItemInstance(template,count);
         reward.setId(l1j.server.server.IdFactory.getInstance().nextId());

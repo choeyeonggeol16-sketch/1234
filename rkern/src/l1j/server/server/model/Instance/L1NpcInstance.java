@@ -1,5 +1,6 @@
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.RejectedExecutionException;
@@ -18,7 +19,6 @@ import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.character.Item.Drop.CContributeData;
 import l1j.server.server.datatables.NpcChatTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1Inventory;
@@ -2189,7 +2189,7 @@ public class L1NpcInstance extends L1Character {
         if (transformGfxId != 0) {
             SC_SkillSound.broadcast(this, getId(), transformGfxId);
         }
-        L1Npc npcTemplate = NpcTable.getInstance().getTemplate(transformId);
+        L1Npc npcTemplate = CObjectDB.GetNPC(transformId);
         StopRegeneration();
         setting_template(npcTemplate);
         StartRegeneration();

@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,8 +13,6 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.Opcodes;
-import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
@@ -37,7 +36,7 @@ public final class SC_Serchdrop2 {
         final List<String> items = new ArrayList<>(30);
 
         try {
-            final L1Npc npc = NpcTable.getInstance().getTemplate(npcid);
+            final L1Npc npc = CObjectDB.GetNPC(npcid);
             if (npc != null && npc.get_name() != null) npcName = npc.get_name();
         } catch (Exception ignored) {}
 
@@ -47,7 +46,7 @@ public final class SC_Serchdrop2 {
             ps.setInt(1, npcid);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    final L1Item item = ItemTable.getInstance().getTemplate(rs.getInt(1));
+                    final L1Item item = CObjectDB.GetItem(rs.getInt(1));
                     items.add(item != null && item.getName() != null ? item.getName() : "알수없는아이템");
                 }
             }

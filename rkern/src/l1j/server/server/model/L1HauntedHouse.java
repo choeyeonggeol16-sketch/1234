@@ -1,13 +1,12 @@
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import java.util.ArrayList;
 import java.util.Random;
 
 import l1j.server.server.ThreadPool;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1FieldObjectInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -378,10 +377,10 @@ for (L1PcInstance player : getMembersArray()) {
 
 	public void spawnFire() {
 		try {
-			L1Npc l1npc = NpcTable.getInstance().getTemplate(81171);
+			L1Npc l1npc = CObjectDB.GetNPC(81171);
 			if (l1npc != null) {
 				try {
-					L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(l1npc);
+					L1NpcInstance npc = CObjectDB.CreateNPC(l1npc);
 
 					npc.setId(IdFactory.getInstance().nextId());
 					npc.setMap((short) 5140);
@@ -435,7 +434,7 @@ for (L1PcInstance player : getMembersArray()) {
 		setHauntedHouseStatus(STATUS_CLEANUP);
 		SC_SystemMessage.send(pc, "영혼의 불꽃을 파괴했습니다.");
 
-		final L1ItemInstance item = ItemTable.getInstance().createItem(41308);
+		final L1ItemInstance item = CObjectDB.CreateItem(41308);
 
 		if (item != null) {
 			try {

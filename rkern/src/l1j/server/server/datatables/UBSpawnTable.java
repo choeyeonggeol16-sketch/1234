@@ -61,8 +61,7 @@ public class UBSpawnTable {
 			L1Npc npcTemp = null;
 			L1UbSpawn spawnDat = null;
 			while (rs.next()) {
-				npcTemp = NpcTable.getInstance()
-						.getTemplate(rs.getInt(6));
+				npcTemp = CObjectDB.GetNPC(rs.getInt(6));
 				if (npcTemp == null) {
 					continue;
 				}

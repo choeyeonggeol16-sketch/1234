@@ -16,10 +16,10 @@
  */
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.MobGroupTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1MobGroup;
@@ -66,11 +66,11 @@ public class L1MobGroupSpawn {
 			final boolean isInitSpawn) {
 		L1NpcInstance mob = null;
 		try {
-			L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
+			L1Npc l1npc = CObjectDB.GetNPC(npcId);
 			if (l1npc == null) {
 				return;
 			}
-			mob = NpcTable.getInstance().newNpcInstance(l1npc);		
+			mob = CObjectDB.CreateNPC(l1npc);		
 			mob.setId(IdFactory.getInstance().nextId());
 			mob.setHeading(leader.getHeading());
 			mob.setMap(leader.getMapId());

@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +14,6 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.BossMonsterSpawnList;
 import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -426,8 +426,8 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
             break;
 		case 252:
 			L1PcInstance trading_partner = (L1PcInstance) L1World.getInstance().findObject(pc.getTradeID());
-			L1Npc npc = NpcTable.getInstance().getTemplate(400064);
-			L1Npc npc3 = NpcTable.getInstance().getTemplate(300027);
+			L1Npc npc = CObjectDB.GetNPC(400064);
+			L1Npc npc3 = CObjectDB.GetNPC(300027);
 			if (trading_partner != null) {
 				if (c == 0) {
 					SC_ServerMessage.send(trading_partner, 253, pc.getName());
@@ -689,7 +689,7 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 			SC_ServerMessage.send(pc, 327);
 			return;
 		}
-		L1Npc l1npc = NpcTable.getInstance().getTemplate(pet.getNpcId());
+		L1Npc l1npc = CObjectDB.GetNPC(pet.getNpcId());
 		if (!(pet.getName().equalsIgnoreCase(l1npc.get_name()))) {
 			L1ItemInstance removedItem = pc.getInventory().findItemId(410016);
 			if(removedItem == null){

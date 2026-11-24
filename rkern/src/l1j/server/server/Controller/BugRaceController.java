@@ -1,5 +1,6 @@
 package l1j.server.server.Controller;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,7 +26,6 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.RaceTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1DoorInstance;
@@ -840,7 +840,7 @@ public class BugRaceController implements Runnable, TimeListener {
 		 * 임시 티켓 정리 후에도 절대 같은 런타임에서 ID가 재사용되지 않는다.
 		 */
 		while (_race.containsKey(_nextTicketId)
-				|| ItemTable.getInstance().getAllTemplates().containsKey(_nextTicketId)) {
+				|| CObjectDB.LoadItem().getAllTemplates().containsKey(_nextTicketId)) {
 			++_nextTicketId;
 		}
 
@@ -900,7 +900,7 @@ public class BugRaceController implements Runnable, TimeListener {
 
 			m_tickets.remove(itemId);
 			_race.remove(itemId);
-			ItemTable.getInstance().getAllTemplates().remove(itemId);
+			CObjectDB.LoadItem().getAllTemplates().remove(itemId);
 		}
 
 		_temporaryTicketIds.clear();
@@ -998,7 +998,7 @@ public class BugRaceController implements Runnable, TimeListener {
 		etcItem.setDmgSmall(0);
 		etcItem.setDmgLarge(0);
 		etcItem.set_stackable(true);
-		// ItemTable.getInstance().AddTicket(etcItem);
+		// CObjectDB.LoadItem().AddTicket(etcItem);
 		AddTicket(etcItem);
 	}
 
@@ -1279,7 +1279,7 @@ for (L1PcInstance player : L1World.getInstance().getAllPlayers()) {
 	/* 버경 추가 */
 	public synchronized void AddTicket(L1RaceTicket race) {
 		_race.put(race.getItemId(), race);
-		ItemTable.getInstance().getAllTemplates().put(race.getItemId(), race);
+		CObjectDB.LoadItem().getAllTemplates().put(race.getItemId(), race);
 	}
 
 	public int GetIssuedTicket() {

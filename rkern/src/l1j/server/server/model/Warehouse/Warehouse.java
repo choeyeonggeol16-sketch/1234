@@ -1,5 +1,6 @@
 package l1j.server.server.model.Warehouse;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,7 +19,6 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.monitor.Logger.WarehouseType;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.storage.cached.CTransaction;
@@ -829,7 +829,7 @@ public abstract class Warehouse extends L1Object {
 	
 	public static void present(String account, int itemid, int enchant,
 			int count) throws Exception {
-		L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+		L1Item temp = CObjectDB.GetItem(itemid);
 		if (temp == null)
 			return;
 
@@ -868,7 +868,7 @@ public abstract class Warehouse extends L1Object {
 	
 	public static void present(int minlvl, int maxlvl, int itemid, int enchant,
 			int count) throws Exception {
-		L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+		L1Item temp = CObjectDB.GetItem(itemid);
 		if (temp == null)
 			return;
 
@@ -905,7 +905,7 @@ public abstract class Warehouse extends L1Object {
 	private static void present(ArrayList<String> accountList, int itemid,
 			int enchant, int count) throws Exception {
 
-		L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+		L1Item temp = CObjectDB.GetItem(itemid);
 		if (temp == null) {
 			throw new Exception("존재하지 않는 아이템 ID");
 		}
@@ -917,7 +917,7 @@ public abstract class Warehouse extends L1Object {
 			L1ItemInstance item = null;
 			for (String account : accountList) {
 				if (temp.isStackable()) {
-					item = ItemTable.getInstance().createItem(itemid);
+					item = CObjectDB.CreateItem(itemid);
 					item.setEnchantLevel(enchant);
 					item.setCount(count);
 
@@ -938,7 +938,7 @@ public abstract class Warehouse extends L1Object {
 					item = null;
 					int createCount;
 					for (createCount = 0; createCount < count; createCount++) {
-						item = ItemTable.getInstance().createItem(itemid);
+						item = CObjectDB.CreateItem(itemid);
 						item.setEnchantLevel(enchant);
 
 						pstm = con
@@ -1020,7 +1020,7 @@ public abstract class Warehouse extends L1Object {
 
 	public boolean checkItem(int id, int count) {
 		if (count == 0) return true;
-		if (ItemTable.getInstance().getTemplate(id).isStackable()) {
+		if (CObjectDB.GetItem(id).isStackable()) {
 			L1ItemInstance item = findItemId(id);
 			if (item != null && item.getCount() >= count) {
 				return true;

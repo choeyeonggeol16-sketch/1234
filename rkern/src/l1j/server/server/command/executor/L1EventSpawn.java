@@ -1,9 +1,9 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.StringTokenizer;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -28,7 +28,7 @@ public class L1EventSpawn implements L1CommandExecutor {
 			try {
 				npcId = Integer.parseInt(nameid);
 			} catch (NumberFormatException e) {
-				npcId = NpcTable.getInstance().findNpcIdByNameWithoutSpace(nameid);
+				npcId = CObjectDB.LoadNPC().findNpcIdByNameWithoutSpace(nameid);
 				if (npcId == 0) {
 					SC_SystemMessage.send(pc, "해당 NPC가 발견되지 않습니다. ");
 					return;
@@ -36,7 +36,7 @@ public class L1EventSpawn implements L1CommandExecutor {
 			}
 			int time = Integer.parseInt(time1);
 
-			nameid = NpcTable.getInstance().getTemplate(npcId).get_name();
+			nameid = CObjectDB.GetNPC(npcId).get_name();
 			Eventspawn(pc, npcId, 60000 * time);
 
 			SC_SystemMessage.send(pc, "(" + nameid + ") (ID:" + npcId + ") (" + time + ")분 소환 ");
@@ -51,7 +51,7 @@ public class L1EventSpawn implements L1CommandExecutor {
 
 	private void Eventspawn(L1PcInstance pc, int npcId, int timeMinToDelete) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(pc.getMapId());
 

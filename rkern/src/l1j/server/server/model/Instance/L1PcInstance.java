@@ -1,4 +1,5 @@
 package l1j.server.server.model.Instance;
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -38,7 +39,6 @@ import l1j.server.server.datatables.CharactersGiftItemTable;
 import l1j.server.server.datatables.ClanBuffTable;
 import l1j.server.server.datatables.ClanBuffTable.ClanBuff;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.Ability;
 import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
@@ -4649,7 +4649,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
                     if (gift == null || gift.getType() != getType()) continue;
                     eligible = true;
                     final l1j.server.server.templates.L1Item template =
-                            ItemTable.getInstance().getTemplate(gift.getItemId());
+                            CObjectDB.GetItem(gift.getItemId());
                     if (template == null || gift.getCount() <= 0)
                         throw new IllegalStateException("Invalid level gift: " + lv);
                     L1ItemInstance reward = new L1ItemInstance(template, gift.getCount());
@@ -6154,7 +6154,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	private void drop1() {
 		if ((getMapId() >= 1708 && getMapId() <= 1709) && getInventory().checkEquipped(900022)) { // 착용한
 																									// 아이템
-			L1ItemInstance drop = ItemTable.getInstance().createItem(3000122); // 드랍
+			L1ItemInstance drop = CObjectDB.CreateItem(3000122); // 드랍
 																				// 시킬아이템
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item.getItemId() == 900022 & item.isEquipped()) {
@@ -6171,7 +6171,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	// 불멸의 가호
 	private void gahodrop(L1Character lastAttacker) {
 		if (getInventory().checkItem(4100122)) {
-			L1ItemInstance drop = ItemTable.getInstance().createItem(4100120);
+			L1ItemInstance drop = CObjectDB.CreateItem(4100120);
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item.getItemId() == 4100122) {
 					SC_ServerMessage.send(this, 3802);
@@ -6191,7 +6191,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	private void specialgahodrop(L1Character lastAttacker) {
 
 		if (getInventory().checkItem(4100121)) {
-			L1ItemInstance drop = ItemTable.getInstance().createItem(4100119);
+			L1ItemInstance drop = CObjectDB.CreateItem(4100119);
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item.getItemId() == 4100121) {
 					SC_ServerMessage.send(this, 3802);
@@ -6211,7 +6211,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		} 
 		if (getInventory().checkItem(592247)) { 
 
-			L1ItemInstance drop2 = ItemTable.getInstance().createItem(592248);
+			L1ItemInstance drop2 = CObjectDB.CreateItem(592248);
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item.getItemId() == 592247) {
 					SC_SystemMessage.send(this, "수호자의 가호를 드랍하였습니다.");
@@ -6232,7 +6232,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	private void drop2() {
 		if (getInventory().checkEquipped(10000)) { // 착용한 아이템
-			L1ItemInstance drop = ItemTable.getInstance().createItem(738); // 드랍
+			L1ItemInstance drop = CObjectDB.CreateItem(738); // 드랍
 																			// 시킬아이템
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item.getItemId() == 10000 & item.isEquipped()) {
@@ -6248,7 +6248,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	private void drop3() {
 		if (getInventory().checkEquipped(10001)) { // 착용한 아이템
-			L1ItemInstance drop = ItemTable.getInstance().createItem(739); // 드랍
+			L1ItemInstance drop = CObjectDB.CreateItem(739); // 드랍
 																			// 시킬아이템
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item.getItemId() == 10001 & item.isEquipped()) {
@@ -6361,7 +6361,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	private boolean createNewItem(L1PcInstance pc, int item_id, int count, int EnchantLevel, int AttEnchantLevel,
 			int Bless) {
-		L1ItemInstance item = ItemTable.getInstance().createItem(item_id);
+		L1ItemInstance item = CObjectDB.CreateItem(item_id);
 		if (item != null) {
 			item.setCount(count);
 			item.setEnchantLevel(EnchantLevel);

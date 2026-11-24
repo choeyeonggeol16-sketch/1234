@@ -1,9 +1,9 @@
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.character.action.CAttackAction;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.quest.CQuestSystem;
@@ -301,10 +301,10 @@ public class L1FollowerInstance extends L1NpcInstance {
     }
 
 	public void spawn(int npcId, int X, int Y, int H, short Map) {
-		L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
+		L1Npc l1npc = CObjectDB.GetNPC(npcId);
 		if (l1npc != null) {
 			try {
-				L1NpcInstance mob = NpcTable.getInstance().newNpcInstance(l1npc);
+				L1NpcInstance mob = CObjectDB.CreateNPC(l1npc);
 				if (mob == null) return;
 
 				mob.setId(IdFactory.getInstance().nextId());

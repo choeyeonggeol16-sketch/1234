@@ -1,11 +1,11 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.Random;
 import java.util.StringTokenizer;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.CharacterTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -156,11 +156,11 @@ public class L1FakeCharacter implements L1CommandExecutor {
 			newPc.setGmInvis(false);
 			newPc.noPlayerck2 = true;
 
-			L1ItemInstance  item = ItemTable.getInstance().createItem(35);//수련자의 한손검
-			L1ItemInstance item1 = ItemTable.getInstance().createItem(175);//수련자의 활
-			L1ItemInstance item2 = ItemTable.getInstance().createItem(120);//수련자의 지팡이
-			L1ItemInstance item3 = ItemTable.getInstance().createItem(73);// 수련자의 이도류
-			L1ItemInstance item4 = ItemTable.getInstance().createItem(203012);// 수련자의 도끼
+			L1ItemInstance  item = CObjectDB.CreateItem(35);//수련자의 한손검
+			L1ItemInstance item1 = CObjectDB.CreateItem(175);//수련자의 활
+			L1ItemInstance item2 = CObjectDB.CreateItem(120);//수련자의 지팡이
+			L1ItemInstance item3 = CObjectDB.CreateItem(73);// 수련자의 이도류
+			L1ItemInstance item4 = CObjectDB.CreateItem(203012);// 수련자의 도끼
 
 			if (newPc.isKnight() || newPc.isCrown() || newPc.isDragonknight()) {// 기사.군주.용기사
 				newPc.getInventory().storeItem(item);

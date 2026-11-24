@@ -42,7 +42,7 @@ public class LightSpawnTable {
 			
 			while (rs.next()) {
 				int npcId = rs.getInt(2);
-				L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
+				L1Npc l1npc = CObjectDB.GetNPC(npcId);
 				if (l1npc != null) {
 					try {
 						String s = l1npc.getImpl();

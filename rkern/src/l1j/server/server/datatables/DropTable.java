@@ -152,7 +152,7 @@ public class DropTable {
 		if (cnt <= 0) return;
 		if (cnt > MAX_STACKABLE) cnt = MAX_STACKABLE;
 
-		L1ItemInstance item = ItemTable.getInstance().createItem(L1ItemId.ADENA, false);
+		L1ItemInstance item = CObjectDB.CreateItem(L1ItemId.ADENA, false);
 		if (item == null) return;
 		item.setCount((int) cnt);
 
@@ -209,12 +209,12 @@ public class DropTable {
 			if (cnt <= 0) continue;
 			if (cnt > MAX_STACKABLE) cnt = MAX_STACKABLE;
 
-			if (ItemTable.getInstance().getTemplate(itemId) == null) {
+			if (CObjectDB.GetItem(itemId) == null) {
 				_log.info("[DropTable] unknown itemId=" + itemId);
 				continue;
 			}
 
-			L1ItemInstance item = ItemTable.getInstance().createItem(itemId, false);
+			L1ItemInstance item = CObjectDB.CreateItem(itemId, false);
 			if (item == null) continue;
 
 			item.setCount((int) cnt);

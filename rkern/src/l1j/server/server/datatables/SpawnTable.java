@@ -52,7 +52,7 @@ public class SpawnTable {
 					}
 
 					int npcTemplateId = rs.getInt("npc_templateid");
-					L1Npc template1 = NpcTable.getInstance().getTemplate(npcTemplateId);
+					L1Npc template1 = CObjectDB.GetNPC(npcTemplateId);
 
 					if (template1 == null) {
 						_log.warning("mob data for id:" + npcTemplateId + " missing in npc table");
@@ -121,7 +121,7 @@ public class SpawnTable {
 
 			while (rs.next()) {
 				int npcTemplateId = rs.getInt("npc_templateid");
-				L1Npc template1 = NpcTable.getInstance().getTemplate(npcTemplateId);
+				L1Npc template1 = CObjectDB.GetNPC(npcTemplateId);
 
 				if (template1 == null) {
 					_log.warning("mob data for id:" + npcTemplateId + " missing in npc table");

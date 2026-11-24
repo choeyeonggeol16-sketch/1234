@@ -66,7 +66,7 @@ public final class BossMonsterSpawnList {
 						// 요일 파싱 예외 무시
 					}
 
-					L1Npc npc = NpcTable.getInstance().getTemplate(npcid);
+					L1Npc npc = CObjectDB.GetNPC(npcid);
 
 					if (npc != null) {
 						L1Boss b = new L1Boss();

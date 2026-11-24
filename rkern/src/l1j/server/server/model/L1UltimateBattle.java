@@ -18,6 +18,7 @@
  */
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,7 +33,6 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.UBSpawnTable;
 import l1j.server.server.datatables.UBTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -295,7 +295,7 @@ for (L1PcInstance pc : getMembersArray()) {
 	}
 
 	private void spawnGroundItem(int itemId, int stackCount, int count) {
-		L1Item temp = ItemTable.getInstance().getTemplate(itemId);
+		L1Item temp = CObjectDB.GetItem(itemId);
 		if (temp == null) {
 			return;
 		}
@@ -306,7 +306,7 @@ for (L1PcInstance pc : getMembersArray()) {
 			loc = _location
 					.randomLocation((getLocX2() - getLocX1()) / 2, false);
 			if (temp.isStackable()) {
-				item = ItemTable.getInstance().createItem(itemId);
+				item = CObjectDB.CreateItem(itemId);
 				item.setEnchantLevel(0);
 				item.setCount(stackCount);
 				ground = L1World.getInstance().getInventory(loc.getX(),
@@ -325,7 +325,7 @@ for (L1PcInstance pc : getMembersArray()) {
 			} else {
 				item = null;
 				for (int createCount = 0; createCount < stackCount; createCount++) {
-					item = ItemTable.getInstance().createItem(itemId);
+					item = CObjectDB.CreateItem(itemId);
 					item.setEnchantLevel(0);
 					ground = L1World.getInstance().getInventory(loc.getX(),
 							loc.getY(), _mapId);

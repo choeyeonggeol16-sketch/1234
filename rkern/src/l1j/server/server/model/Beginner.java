@@ -1,5 +1,6 @@
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,7 +10,6 @@ import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -61,12 +61,12 @@ public class Beginner {
 
 					if (count <= 0) continue;
 
-					L1Item temp = ItemTable.getInstance().getTemplate(itemId);
+					L1Item temp = CObjectDB.GetItem(itemId);
 					if (temp == null) continue;
 
 					if (temp.isStackable()) {
 						// 겹쳐지는 아이템 (물약, 아데나 등) 처리
-						L1ItemInstance item = ItemTable.getInstance().createItem(itemId);
+						L1ItemInstance item = CObjectDB.CreateItem(itemId);
 						if (item != null) {
 							try {
 								item.setCount(count);
@@ -87,7 +87,7 @@ public class Beginner {
 					} else {
 						// 안 겹쳐지는 장비 아이템 처리
 						for (int i = 0; i < count; i++) {
-							L1ItemInstance item = ItemTable.getInstance().createItem(itemId);
+							L1ItemInstance item = CObjectDB.CreateItem(itemId);
 							if (item != null) {
 								try {
 									item.setEnchantLevel(enchant);

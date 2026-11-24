@@ -1,5 +1,6 @@
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.ThreadLocalRandom;
@@ -9,7 +10,6 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -409,7 +409,7 @@ public class L1Spawn {
                 }
             }
 
-            mob = NpcTable.getInstance().newNpcInstance(_template);
+            mob = CObjectDB.CreateNPC(_template);
             if (mob == null) {
                 return false;
             }

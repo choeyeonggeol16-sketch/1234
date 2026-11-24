@@ -80,7 +80,7 @@ public class NpcCashShopSpawnTable {
 			for (int i = 0; i < list.size(); i++) {
 				L1NpcShop shop = list.get(i);
 
-				L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(shop.getNpcId());
+				L1NpcInstance npc = CObjectDB.CreateNPC(shop.getNpcId());
 				if (npc == null) {
 					_log.warning("캐시 샵 NPC 템플릿을 찾을 수 없음 [ID: " + shop.getNpcId() + ", 이름: " + shop.getName() + "]");
 					continue;

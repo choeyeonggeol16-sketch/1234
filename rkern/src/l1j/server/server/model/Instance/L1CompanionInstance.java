@@ -1,5 +1,6 @@
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,7 +17,6 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Ability;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1GroundInventory;
@@ -435,7 +435,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     public void set_class_info(CompanionClassInfo cInfo){
         m_class_info = cInfo;
-        L1Npc npc = NpcTable.getInstance().getTemplate(cInfo.get_npc_id());
+        L1Npc npc = CObjectDB.GetNPC(cInfo.get_npc_id());
         if(npc == null)
             throw new IllegalArgumentException(String.format("MJCompanionInstance::set_class_info()... found companion npc template...class name %s, npc id : %d ", cInfo.get_class_name(), cInfo.get_npc_id()));
         setting_template(npc);
