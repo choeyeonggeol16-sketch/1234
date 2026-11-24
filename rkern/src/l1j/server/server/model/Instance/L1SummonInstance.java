@@ -226,28 +226,35 @@ public class L1SummonInstance extends L1NpcInstance {
 	@Override
 	protected synchronized void onDeath(L1Character lastAttacker) {
 		if (!isDead()) {
-			setDead(true);
-			setCurrentHp(0);
-			setStatus(ActionCodes.ACTION_Die);
-			releaseNpcTileNow();
-			L1Inventory targetInventory = _master.getInventory();
-			List<L1ItemInstance> items = _inventory.getItems();
-			for (L1ItemInstance item : items) {
-				if(item == null) continue;
-				if (_master.getInventory().checkAddItem(item, item.getCount()) == L1Inventory.OK) {
-					_inventory.tradeItem(item, item.getCount(), targetInventory);
-					SC_ServerMessage.send(((L1PcInstance) _master), 143, getName(), item.getLogName());
-				} else {
-					targetInventory = L1World.getInstance().getInventory(getX(), getY(), getMapId());
-					_inventory.tradeItem(item, item.getCount(), targetInventory);
+            // The owner stops movement immediately, but inventory settlement
+            // retains this death until the existing synchronous work finishes.
+            setDeathProcessing(true);
+            try {
+				setDead(true);
+				setCurrentHp(0);
+				setStatus(ActionCodes.ACTION_Die);
+				releaseNpcTileNow();
+				L1Inventory targetInventory = _master.getInventory();
+				List<L1ItemInstance> items = _inventory.getItems();
+				for (L1ItemInstance item : items) {
+					if(item == null) continue;
+					if (_master.getInventory().checkAddItem(item, item.getCount()) == L1Inventory.OK) {
+						_inventory.tradeItem(item, item.getCount(), targetInventory);
+						SC_ServerMessage.send(((L1PcInstance) _master), 143, getName(), item.getLogName());
+					} else {
+						targetInventory = L1World.getInstance().getInventory(getX(), getY(), getMapId());
+						_inventory.tradeItem(item, item.getCount(), targetInventory);
+					}
 				}
-			}
-			if (_tamed) {
-				SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
-				startDeleteTimer();
-			} else {
-				deleteMe();
-			}
+				if (_tamed) {
+					SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+					startDeleteTimer();
+				} else {
+					deleteMe();
+				}
+            } finally {
+                setDeathProcessing(false);
+            }
 		}
 	}
 
