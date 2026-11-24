@@ -1,6 +1,5 @@
 package l1j.server.server.datatables;
 
-import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,62 +25,39 @@ public class NpcTable {
 
 	private final TIntObjectMap<L1Npc> _npcs = new TIntObjectHashMap<L1Npc>(4096);
 
-	private static final Map<String, Constructor<?>> _constructorCache = new ConcurrentHashMap<String, Constructor<?>>();
+	private final Map<String, CObjectDB.NpcConstructor> _constructorCache = new ConcurrentHashMap<>();
 	private static final Map<String, Integer> _familyTypes = NpcTable.buildFamily();
 
-	private static class SingletonHolder {
-		private static NpcTable INSTANCE = new NpcTable();
-	}
-
 	public static NpcTable getInstance() {
-		return SingletonHolder.INSTANCE;
+		return CObjectDB.LoadNPC();
 	}
 
 	public static void reload() {
-		SingletonHolder.INSTANCE = new NpcTable();
-		_constructorCache.clear();
+		CObjectDB.ReloadNPC();
 	}
 
 	public boolean isInitialized() {
 		return _initialized;
 	}
 
-	private NpcTable() {
+	NpcTable() {
 		loadNpcData();
 		_initialized = true;
 	}
 
-	private Constructor<?> getConstructor(String implName) {
-		try {
-			if (implName == null || implName.isEmpty()) {
-				implName = "Monster";
-			}
-
-			String implFullName;
-			if (implName.endsWith("Instance")) {
-				implFullName = "l1j.server.server.model.Instance." + implName;
-			} else {
-				implFullName = "l1j.server.server.model.Instance." + implName + "Instance";
-			}
-			return Class.forName(implFullName).getConstructors()[0];
-
-		} catch (final ClassNotFoundException e) {
-			try {
-				return Class.forName("l1j.server.server.model.Instance.L1MonsterInstance").getConstructors()[0];
-			} catch (Exception ex) {
-				_log.log(Level.SEVERE, "L1MonsterInstance default constructor not found", ex);
-			}
-		}
-		return null;
+	CObjectDB.NpcConstructor resolveConstructor(String implName) {
+		if (implName == null) return null;
+		CObjectDB.NpcConstructor constructor = _constructorCache.get(implName);
+		if (constructor != null) return constructor;
+		constructor = CObjectDB.ResolveNPCConstructor(implName);
+		if (constructor == null) return null;
+		CObjectDB.NpcConstructor previous = _constructorCache.putIfAbsent(implName, constructor);
+		return previous != null ? previous : constructor;
 	}
 
-	private void registerConstructorCache(final String implName) {
-		if (implName == null || implName.isEmpty() || _constructorCache.containsKey(implName)) {
-			return;
-		}
-		Constructor<?> con = getConstructor(implName);
-		if (con != null) {
-			_constructorCache.put(implName, con);
+	private void registerConstructorCache(String implName) {
+		if (implName != null && !implName.isEmpty()) {
+			resolveConstructor(implName);
 		}
 	}
 
@@ -227,24 +203,7 @@ public class NpcTable {
 	}
 
 	public L1NpcInstance newNpcInstance(L1Npc npcTemp) {
-		if (npcTemp == null) {
-			return null;
-		}
-		try {
-			Constructor<?> con = _constructorCache.get(npcTemp.getImpl());
-			if (con == null) {
-				con = getConstructor(npcTemp.getImpl());
-				if (con != null) {
-					_constructorCache.put(npcTemp.getImpl(), con);
-				} else {
-					return null;
-				}
-			}
-			return (L1NpcInstance) con.newInstance(new Object[] { npcTemp });
-		} catch (Exception e) {
-			_log.log(Level.SEVERE, "newNpcInstance create instance error - npcId: " + npcTemp.get_npcId(), e);
-		}
-		return null;
+		return CObjectDB.CreateNPC(this, npcTemp);
 	}
 
 	public static Map<String, Integer> buildFamily() {

@@ -26,7 +26,7 @@ import l1j.server.server.datatables.AlchemyProbability;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
 import l1j.server.server.datatables.ArmorEnchantInformationTable;
 import l1j.server.server.datatables.ArmorEnchantList;
-import l1j.server.server.datatables.ArmorSetTable;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.datatables.AuctionBoardTable;
 import l1j.server.server.datatables.BossMonsterSpawnList;
 import l1j.server.server.datatables.CharacterTable;
@@ -41,7 +41,6 @@ import l1j.server.server.datatables.GetBackRestartTable;
 import l1j.server.server.datatables.HouseTable;
 import l1j.server.server.datatables.IncreaseEinhasadMap;
 import l1j.server.server.datatables.IpTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.KeyTable;
 import l1j.server.server.datatables.LightSpawnTable;
 import l1j.server.server.datatables.MapUserTeleportTable;
@@ -55,7 +54,6 @@ import l1j.server.server.datatables.NpcCashShopSpawnTable;
 import l1j.server.server.datatables.NpcChatTable;
 import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.datatables.NpcSpawnTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.PetTypeTable;
 import l1j.server.server.datatables.PolyTable;
@@ -210,10 +208,10 @@ public class GameServer {
 //		L1Racing race = L1Racing.getInstance();
 //		ThreadPool.getInstance().execute(race);
 
-		NpcTable.getInstance();
+		CObjectDB.LoadNPC();
 		NpcSpeedData.do_load();
 
-		if (!NpcTable.getInstance().isInitialized()) {
+		if (!CObjectDB.LoadNPC().isInitialized()) {
 			throw new Exception("Could not initialize the npc table");
 		}
         MobSkillTable.getInstance();
@@ -227,8 +225,7 @@ public class GameServer {
 		MobGroupTable.getInstance();
 		SkillsTable.getInstance();
 		PolyTable.getInstance();
-		ItemTable.getInstance();
-		ItemTable.getInstance().initRace();
+		CObjectDB.LoadItem().initRace();
 		DropTable.getInstance();
 		DropItemTable.getInstance();
 		ShopTable.getInstance();
@@ -263,7 +260,7 @@ public class GameServer {
 		LightSpawnTable.getInstance();
 		Announcements.getInstance();
 		WeaponAddDamage.getInstance();
-		ArmorSetTable.getInstance();
+		CObjectDB.LoadSetItem();
 		MapUserTeleportTable.getInstance();
 
 		ArmorEnchantInformationTable.getInstance();

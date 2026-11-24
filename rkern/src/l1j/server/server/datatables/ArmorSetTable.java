@@ -15,27 +15,19 @@ import l1j.server.server.templates.L1ArmorSets;
 public class ArmorSetTable {
 	
 	private static final Logger _log = Logger.getLogger(ArmorSetTable.class.getName());
-	private static ArmorSetTable _instance;
 
 	private final List<L1ArmorSets> _armorSetList = new ArrayList<L1ArmorSets>();
 	
 	public static ArmorSetTable getInstance() {
-		if (_instance == null) {
-			_instance = new ArmorSetTable();
-		}
-		return _instance;
+		return CObjectDB.LoadSetItem();
 	}
 
-	private ArmorSetTable() {
+	ArmorSetTable() {
 		load();
 	}
-	
+
 	public static void reload() {
-		ArmorSetTable oldInstance = _instance;
-		_instance = new ArmorSetTable();
-		if (oldInstance != null) {
-			oldInstance._armorSetList.clear();
-		}
+		CObjectDB.ReloadSetItem();
 	}
 
 	private void load() {

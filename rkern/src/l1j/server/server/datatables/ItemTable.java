@@ -18,9 +18,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.search.template.TableFindItemFilter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftOutputItem;
 import l1j.server.server.templates.L1Armor;
@@ -47,19 +45,15 @@ public class ItemTable {
 		return _allTemplates;
 	}
 
-	private static class SingletonHolder {
-		private static ItemTable INSTANCE = new ItemTable();
-	}
-
 	public static ItemTable getInstance() {
-		return SingletonHolder.INSTANCE;
+		return CObjectDB.LoadItem();
 	}
 
 	public static void reload() {
-		SingletonHolder.INSTANCE = new ItemTable();
+		CObjectDB.ReloadItem();
 	}
 
-	private ItemTable() {
+	ItemTable() {
 		_etcitems = allEtcItem();
 		_weapons = allWeapon();
 		_armors = allArmor();
@@ -348,28 +342,11 @@ public class ItemTable {
 	}
 
 	public L1ItemInstance createItem(int itemId, boolean identified) {
-		L1Item temp = getTemplate(itemId);
-		if (temp == null) {
-			return null;
-		}
-		L1ItemInstance item = new L1ItemInstance();
-		item.setId(IdFactory.getInstance().nextId());
-		item.setItem(temp);
-		item.setBless(temp.getBless());
-		item.setIdentified(identified);
-
-		L1World.getInstance().storeObject(item);
-		return item;
+		return CObjectDB.CreateItem(getTemplate(itemId), identified);
 	}
 
 	public L1ItemInstance createItem(L1Item temp) {
-		if (temp == null) return null;
-		L1ItemInstance item = new L1ItemInstance();
-		item.setId(IdFactory.getInstance().nextId());
-		item.setItem(temp);
-		item.setBless(temp.getBless());
-		L1World.getInstance().storeObject(item);
-		return item;
+		return CObjectDB.CreateItem(temp);
 	}
 
 	public ArrayList<L1Item> findItemByName(String name) {
@@ -380,17 +357,7 @@ public class ItemTable {
 	}
 
 	public L1ItemInstance createItem(String itemName) {
-		int itemId = findItemIdByName(itemName);
-		L1Item temp = getTemplate(itemId);
-		if (temp == null) {
-			return null;
-		}
-		L1ItemInstance item = new L1ItemInstance();
-		item.setId(IdFactory.getInstance().nextId());
-		item.setItem(temp);
-		item.setBless(temp.getBless());
-		L1World.getInstance().storeObject(item);
-		return item;
+		return createItem(getTemplate(findItemIdByName(itemName)));
 	}
 
 	public void AddTicket(L1RaceTicket race) {
