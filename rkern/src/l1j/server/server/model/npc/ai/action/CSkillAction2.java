@@ -1,5 +1,6 @@
 package l1j.server.server.model.npc.ai.action;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
@@ -13,7 +14,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.MobSkillTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -1096,7 +1096,7 @@ public final class CSkillAction2 {
 
         try {
             final L1Npc spawnmonster =
-                    NpcTable.getInstance()
+                    CObjectDB.LoadNPC()
                             .getTemplate(summonId);
 
             if (spawnmonster == null) {
@@ -1104,7 +1104,7 @@ public final class CSkillAction2 {
             }
 
             final L1NpcInstance mob =
-                    NpcTable.getInstance()
+                    CObjectDB.LoadNPC()
                             .newNpcInstance(spawnmonster);
 
             mob.setId(

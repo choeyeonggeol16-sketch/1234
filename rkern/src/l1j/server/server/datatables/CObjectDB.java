@@ -74,26 +74,26 @@ public final class CObjectDB {
 
     // Independent lazy holders preserve the existing startup dependencies.
     private static final class Items {
-        private static volatile ItemTable current = new ItemTable();
+        private static volatile ItemData current = new ItemData();
     }
 
     private static final class Npcs {
-        private static volatile NpcTable current = new NpcTable();
+        private static volatile NpcData current = new NpcData();
     }
 
     private static final class Sets {
-        private static volatile ArmorSetTable current = new ArmorSetTable();
+        private static volatile SetData current = new SetData();
     }
 
-    public static ItemTable LoadItem() {
+    public static ItemData LoadItem() {
         return Items.current;
     }
 
-    public static NpcTable LoadNPC() {
+    public static NpcData LoadNPC() {
         return Npcs.current;
     }
 
-    public static ArmorSetTable LoadSetItem() {
+    public static SetData LoadSetItem() {
         return Sets.current;
     }
 
@@ -104,15 +104,15 @@ public final class CObjectDB {
     // Publish one completed loader generation; do not mutate an older reader's
     // set list. SQL failure policy stays in the loaders.
     public static synchronized void ReloadItem() {
-        Items.current = new ItemTable();
+        Items.current = new ItemData();
     }
 
     public static synchronized void ReloadNPC() {
-        Npcs.current = new NpcTable();
+        Npcs.current = new NpcData();
     }
 
     public static synchronized void ReloadSetItem() {
-        Sets.current = new ArmorSetTable();
+        Sets.current = new SetData();
     }
 
     public static L1Item GetItem(int classId) {
@@ -280,8 +280,8 @@ public final class CObjectDB {
         }
     }
 
-    public static class ItemData {
-    	private static final Logger _log = Logger.getLogger(ItemTable.class.getName());
+    public static final class ItemData {
+        private static final Logger _log = Logger.getLogger(ItemData.class.getName());
 
     	private TIntObjectMap<L1Item> _allTemplates;
     	public final TIntObjectMap<L1EtcItem> _etcitems;
@@ -354,7 +354,7 @@ public final class CObjectDB {
     				result.put(item.getItemId(), item);
     			}
     		} catch (SQLException e) {
-    			_log.log(Level.SEVERE, "ItemTable allEtcItem error", e);
+                _log.log(Level.SEVERE, "ItemData allEtcItem error", e);
     		}
     		return result;
     	}
@@ -431,7 +431,7 @@ public final class CObjectDB {
     				result.put(weapon.getItemId(), weapon);
     			}
     		} catch (SQLException e) {
-    			_log.log(Level.SEVERE, "ItemTable allWeapon error", e);
+                _log.log(Level.SEVERE, "ItemData allWeapon error", e);
     		}
     		return result;
     	}
@@ -529,7 +529,7 @@ public final class CObjectDB {
     				result.put(armor.getItemId(), armor);
     			}
     		} catch (SQLException e) {
-    			_log.log(Level.SEVERE, "ItemTable allArmor error", e);
+                _log.log(Level.SEVERE, "ItemData allArmor error", e);
     		}
     		return result;
     	}
@@ -550,7 +550,7 @@ public final class CObjectDB {
     				}
     			}
     		} catch (Exception e) {
-    			_log.log(Level.SEVERE, "ItemTable initRace error", e);
+                _log.log(Level.SEVERE, "ItemData initRace error", e);
     		}
     	}
 
@@ -904,8 +904,8 @@ public final class CObjectDB {
     	}
     }
 
-    public static class NpcData {
-    	private static final Logger _log = Logger.getLogger(NpcTable.class.getName());
+    public static final class NpcData {
+        private static final Logger _log = Logger.getLogger(NpcData.class.getName());
 
     	private final boolean _initialized;
 
@@ -939,7 +939,7 @@ public final class CObjectDB {
     				npc.createBorn(rs);
     			}
     		} catch (Exception e) {
-    			_log.log(Level.SEVERE, "NpcTable loadNpcBorn error", e);
+                _log.log(Level.SEVERE, "NpcData loadNpcBorn error", e);
     		}
     	}
 
@@ -1044,7 +1044,7 @@ public final class CObjectDB {
     				_npcs.put(npcId, npc);
     			}
     		} catch (SQLException e) {
-    			_log.log(Level.SEVERE, "NpcTable loadNpcData error", e);
+                _log.log(Level.SEVERE, "NpcData loadNpcData error", e);
     		} finally {
     			loadNpcBorn();
     		}
@@ -1080,7 +1080,7 @@ public final class CObjectDB {
     				result.put(family, id++);
     			}
     		} catch (SQLException e) {
-    			_log.log(Level.SEVERE, "NpcTable buildFamily error", e);
+                _log.log(Level.SEVERE, "NpcData buildFamily error", e);
     		}
     		return result;
     	}
@@ -1108,9 +1108,9 @@ public final class CObjectDB {
     	}
     }
 
-    public static class SetData {
+    public static final class SetData {
     	
-    	private static final Logger _log = Logger.getLogger(ArmorSetTable.class.getName());
+        private static final Logger _log = Logger.getLogger(SetData.class.getName());
 
     	private final List<L1ArmorSets> _armorSetList = new ArrayList<L1ArmorSets>();
     	

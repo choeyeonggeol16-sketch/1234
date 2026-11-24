@@ -1,9 +1,9 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -156,7 +156,7 @@ final class NpcQuestTransactions {
         try (l1j.server.server.model.L1InventoryTransaction tx =
                 l1j.server.server.model.L1InventoryTransaction.begin(pc, mainQuest)) {
             if (!tx.debit(40701, 1)) {
-                SC_ServerMessage.send(pc, 337, ItemTable.getInstance().getTemplate(40701).getName());
+                SC_ServerMessage.send(pc, 337, CObjectDB.LoadItem().getTemplate(40701).getName());
                 SC_NPCTalkReturn.send(pc, npcObjectId, successPage);
                 return;
             }
@@ -554,7 +554,7 @@ final class NpcQuestTransactions {
         }
         if (action.equalsIgnoreCase("C")) {
             if (!pc.getInventory().checkItemNotEquipped(40634, 1)) {
-                final L1Item required = ItemTable.getInstance().getTemplate(40634);
+                final L1Item required = CObjectDB.LoadItem().getTemplate(40634);
                 if (required != null) SC_ServerMessage.send(pc, 337, required.getName());
                 SC_NPCTalkReturn.send(pc, npc.getId(), "lelder13");
                 return true;

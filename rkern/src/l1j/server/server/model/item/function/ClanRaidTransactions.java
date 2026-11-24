@@ -1,11 +1,11 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Timestamp;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1ItemDelay;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -45,8 +45,8 @@ final class ClanRaidTransactions {
         // Preserve the original boss selection and the entrance position.
         // The latter must not be read after a possibly deferred teleport.
         final int bossId = bossIds[ThreadLocalRandom.current().nextInt(100) % bossIds.length];
-        if (NpcTable.getInstance().getTemplate(portalNpcId) == null
-                || NpcTable.getInstance().getTemplate(bossId) == null) {
+        if (CObjectDB.LoadNPC().getTemplate(portalNpcId) == null
+                || CObjectDB.LoadNPC().getTemplate(bossId) == null) {
             SC_SystemMessage.send(pc, "혈맹 레이드 NPC 설정을 확인해 주세요.");
             return Result.RETURN;
         }

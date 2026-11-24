@@ -1,10 +1,10 @@
 package l1j.server.server.shared.builder;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayDeque;
 import java.util.Random;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.shared.listener.MonsterDeathHandler;
@@ -22,14 +22,14 @@ public class MonsterSpawnBuilder {
 		_templates = new L1Npc[npcIds.size()];
 		int idx = 0;
 		while(!npcIds.isEmpty())
-			_templates[idx++] = NpcTable.getInstance().getTemplate(npcIds.poll());
+            _templates[idx++] = CObjectDB.LoadNPC().getTemplate(npcIds.poll());
 		return this;
 	}
 	
 	public MonsterSpawnBuilder setNpc(int[] npc_ids){
 		_templates = new L1Npc[npc_ids.length];
 		for(int i=npc_ids.length - 1; i>=0; --i)
-			_templates[i] = NpcTable.getInstance().getTemplate(npc_ids[i]);
+            _templates[i] = CObjectDB.LoadNPC().getTemplate(npc_ids[i]);
 		return this;
 	}
 	

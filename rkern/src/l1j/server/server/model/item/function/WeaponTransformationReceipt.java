@@ -1,9 +1,9 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Item;
@@ -50,7 +50,7 @@ final class WeaponTransformationReceipt {
                 return;
             }
             final int resultId = rewards[ThreadLocalRandom.current().nextInt(rewards.length)];
-            final L1Item template = ItemTable.getInstance().getTemplate(resultId);
+            final L1Item template = CObjectDB.LoadItem().getTemplate(resultId);
             if (template == null) {
                 SC_SystemMessage.send(pc, "무기 변환 결과 아이템 설정을 확인해 주세요.");
                 return;

@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.CParty;
@@ -34,7 +35,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import java.util.Random;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
@@ -299,7 +299,7 @@ final class NpcGameEventActions {
             }
             if (bosses.length == 0) return "bosskey10";
             // Validate every possible random destination before consuming the key.
-            for (int id : bosses) if (NpcTable.getInstance().getTemplate(id) == null) return "bosskey10";
+            for (int id : bosses) if (CObjectDB.LoadNPC().getTemplate(id) == null) return "bosskey10";
             if (!pc.getInventory().consumeItem(80479, 1)) return "bosskey10";
             // Keep the existing 0..99 modulo selection and shared RNG order.
             spawn(32878, 32816, (short) pc.getMapId(), 0, bosses[random.nextInt(100) % bosses.length], 0);
@@ -308,7 +308,7 @@ final class NpcGameEventActions {
         }
         for (int i = 0; i < BOSS_COMMANDS.length; i++) {
             if (!BOSS_COMMANDS[i].equalsIgnoreCase(command)) continue;
-            if (NpcTable.getInstance().getTemplate(BOSS_IDS[i]) == null
+            if (CObjectDB.LoadNPC().getTemplate(BOSS_IDS[i]) == null
                     || !pc.getInventory().consumeItem(BOSS_KEYS[i], 1)) {
                 tail = "bosskey10";
                 continue;
@@ -321,7 +321,7 @@ final class NpcGameEventActions {
 
 	private static void spawn(int x, int y, short MapId, int Heading, int npcId, int randomRange) {
 		try {// 타입이란부분에 월래2였는데 얼음여왕은 1을 죠 타입을따라가보면
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+            L1NpcInstance npc = CObjectDB.LoadNPC().newNpcInstance(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(MapId);
 			if (randomRange == 0) {

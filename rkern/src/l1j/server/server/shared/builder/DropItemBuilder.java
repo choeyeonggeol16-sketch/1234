@@ -1,8 +1,8 @@
 package l1j.server.server.shared.builder;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.Random;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
@@ -62,7 +62,7 @@ public class DropItemBuilder {
 		L1ItemInstance item = null;
 		
 		try{
-			item = ItemTable.getInstance().createItem(_itemId);
+            item = CObjectDB.LoadItem().createItem(_itemId);
 			if(item == null || _min == 0 || _max == 0)
 				return null;
 			

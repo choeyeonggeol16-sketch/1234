@@ -1,5 +1,6 @@
 package l1j.server.server.model.character.combat.arena.dogfight.history;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
@@ -7,7 +8,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightSettings;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
@@ -75,7 +75,7 @@ public class DogFightTicketIdManager {
      * 역대 누적과 무관하게 "현재 유통 중인 티켓 수"에만 비례.
      */
     private void create_live_templates() {
-        final L1Item base = ItemTable.getInstance().getTemplate(DogFightSettings.TICKET_ITEM_ID);
+        final L1Item base = CObjectDB.LoadItem().getTemplate(DogFightSettings.TICKET_ITEM_ID);
         if (base == null) {
             _log.warning("[DogFight] 티켓 베이스 템플릿 없음. id=" + DogFightSettings.TICKET_ITEM_ID);
             return;
@@ -83,13 +83,13 @@ public class DogFightTicketIdManager {
         final Set<Integer> liveIds = new HashSet<>();
         collect_live_ids(liveIds);
         for (int id : liveIds) {
-            ItemTable.getInstance().create_dogfight_ticket(base, id, create_ticket_name(id));
+            CObjectDB.LoadItem().create_dogfight_ticket(base, id, create_ticket_name(id));
         }
     }
     
     public synchronized L1Item ensure_template(int item_id){
         // 1. 이미 템플릿이 있으면 그대로 반환
-        L1Item existing = ItemTable.getInstance().getTemplate(item_id);
+        L1Item existing = CObjectDB.LoadItem().getTemplate(item_id);
         if(existing != null){
             return existing;
         }
@@ -132,16 +132,16 @@ public class DogFightTicketIdManager {
         }
 
         // 베이스 템플릿 확인
-        L1Item base = ItemTable.getInstance().getTemplate(DogFightSettings.TICKET_ITEM_ID);
+        L1Item base = CObjectDB.LoadItem().getTemplate(DogFightSettings.TICKET_ITEM_ID);
         if (base == null) {
             _log.warning("[DogFight] 베이스 템플릿 없음 — 즉석 복구 불가. id=" + item_id);
             return null;
         }
 
         // 즉석 생성 + 등록
-        ItemTable.getInstance().create_dogfight_ticket(base, item_id, create_ticket_name(item_id));
+        CObjectDB.LoadItem().create_dogfight_ticket(base, item_id, create_ticket_name(item_id));
         _log.info("[DogFight] 티켓 템플릿 즉석 복구: id=" + item_id);
-        return ItemTable.getInstance().getTemplate(item_id);
+        return CObjectDB.LoadItem().getTemplate(item_id);
     }
 
     /** 유통 중인 티켓 id를 찾아 set에 수집 */
@@ -177,7 +177,7 @@ public class DogFightTicketIdManager {
      * → 전체 히스토리 재생성이 아니라 두 횟수의 합만큼만 생성.
      */
     public void update_item_template() {
-        final L1Item base = ItemTable.getInstance().getTemplate(DogFightSettings.TICKET_ITEM_ID);
+        final L1Item base = CObjectDB.LoadItem().getTemplate(DogFightSettings.TICKET_ITEM_ID);
         if (base == null) {
             _log.warning("[DogFight] 티켓 베이스 템플릿 없음. id=" + DogFightSettings.TICKET_ITEM_ID);
             return;
@@ -192,7 +192,7 @@ public class DogFightTicketIdManager {
         collect_live_ids(toRestore);
 
         for (int id : toRestore) {
-            ItemTable.getInstance().create_dogfight_ticket(base, id, create_ticket_name(id));
+            CObjectDB.LoadItem().create_dogfight_ticket(base, id, create_ticket_name(id));
         }
         _log.info("[DogFight] 티켓 템플릿 복구: 세션 생성분 " + Math.max(0, m_item_id - m_boot_item_id)
                 + "개 + 유통분, 총 " + toRestore.size() + "개");

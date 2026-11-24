@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.L1Object;
@@ -7,7 +8,6 @@ import l1j.server.server.model.L1Inventory;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -331,7 +331,7 @@ final class NpcExchangeCommands {
         final int outputEnchant = staff ? (index == 10 ? 0 : index == 11 ? 8 : 9)
                 : axe ? FIRE_AXE_OUTPUT_ENCHANT[axeIndex] : 7 + (index & 1);
         // Gear is nonstackable. Never change enchant on a grant which could merge into an existing stack.
-        L1Item definition = ItemTable.getInstance().getTemplate(output);
+        L1Item definition = CObjectDB.LoadItem().getTemplate(output);
         if (definition == null || definition.isStackable()) {
             SC_SystemMessage.send(pc, missing);
             return tail;
@@ -398,7 +398,7 @@ final class NpcExchangeCommands {
     /** Legacy first-stack and stable lowest-enchant order. Multi-unit nonstackable
      * templates use a temporary snapshot only on that uncommon path; no shared scratch state. */
     static boolean debitRecipe(L1InventoryTransaction tx, L1PcInstance pc, int template, int count) {
-        L1Item def = ItemTable.getInstance().getTemplate(template);
+        L1Item def = CObjectDB.LoadItem().getTemplate(template);
         if (def == null || count <= 0) return false;
         if (def.isStackable() || count == 1) return debitLegacy(tx, pc, template, count);
         L1ItemInstance[] items = pc.getInventory().findItemsId(template);
@@ -415,7 +415,7 @@ final class NpcExchangeCommands {
     }
 
     private static boolean has(L1PcInstance pc, int itemId, int count) {
-        return ItemTable.getInstance().getTemplate(itemId) != null && pc.getInventory().checkItem(itemId, count);
+        return CObjectDB.LoadItem().getTemplate(itemId) != null && pc.getInventory().checkItem(itemId, count);
     }
 
     /** Original consumeEnchantItem removes the whole first matching object. */
@@ -429,7 +429,7 @@ final class NpcExchangeCommands {
 
     /** Preserve legacy first stack / lowest-enchant single-item selection without temporary arrays. */
     static boolean debitLegacy(L1InventoryTransaction tx, L1PcInstance pc, int template, int count) {
-        L1Item def = ItemTable.getInstance().getTemplate(template);
+        L1Item def = CObjectDB.LoadItem().getTemplate(template);
         if (def == null) return false;
         if (def.isStackable()) {
             L1ItemInstance item = pc.getInventory().findItemId(template);
@@ -455,7 +455,7 @@ final class NpcExchangeCommands {
         final int rewardId = 222300 + index;
         final int objectId = npc.getId();
         final String npcName = npc.getNpcTemplate().get_name();
-        final L1Item definition = ItemTable.getInstance().getTemplate(rewardId);
+        final L1Item definition = CObjectDB.LoadItem().getTemplate(rewardId);
         // Never apply an enchant to a grant that could have merged with a live stack.
         if (definition == null || definition.isStackable()) return fireArmorFailure(pc, tail);
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 5066)) {
@@ -487,7 +487,7 @@ final class NpcExchangeCommands {
 
     static boolean createNewItem(L1PcInstance pc, String npcName, int item_id, int count, int enchant) {
         if (count <= 0 || count > L1Inventory.MAX_AMOUNT) return false;
-        final L1ItemInstance item = ItemTable.getInstance().createItem(item_id);
+        final L1ItemInstance item = CObjectDB.LoadItem().createItem(item_id);
         if (item == null) return false;
         final L1World world = L1World.getInstance();
         L1Inventory destination = null;
@@ -522,7 +522,7 @@ final class NpcExchangeCommands {
         final L1NpcInstance npc = (L1NpcInstance) obj;
         final int objectId = npc.getId();
         final String npcName = npc.getNpcTemplate().get_name();
-        final L1Item definition = ItemTable.getInstance().getTemplate(rewardId);
+        final L1Item definition = CObjectDB.LoadItem().getTemplate(rewardId);
         if (definition == null || definition.isStackable()) return "vjaya04";
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 5161)) {
             if (!debitEnchant(tx, pc, input, enchant) || !debitLegacy(tx, pc, 40308, price)) return "vjaya04";
@@ -550,7 +550,7 @@ final class NpcExchangeCommands {
         }
         final int rewardId = pc.PiersItemId[16];
         final int rewardEnchant = pc.PiersItemId[17];
-        final L1Item definition = ItemTable.getInstance().getTemplate(rewardId);
+        final L1Item definition = CObjectDB.LoadItem().getTemplate(rewardId);
         if (definition == null || definition.isStackable()) {
             SC_NPCTalkReturn.send(pc, objid, "piers04");
             return;
@@ -870,7 +870,7 @@ final class NpcExchangeCommands {
         final int rewardId = 222300 + index;
         final int objectId = npc.getId();
         final String npcName = npc.getNpcTemplate().get_name();
-        final L1Item definition = ItemTable.getInstance().getTemplate(rewardId);
+        final L1Item definition = CObjectDB.LoadItem().getTemplate(rewardId);
         // Never apply an enchant to a grant that could have merged with a live stack.
         if (definition == null || definition.isStackable()) return antonFailure(pc, tail);
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 70614)) {

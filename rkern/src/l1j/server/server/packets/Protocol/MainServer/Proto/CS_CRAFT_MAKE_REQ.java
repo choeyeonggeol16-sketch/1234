@@ -1,12 +1,12 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1InventoryTransaction;
@@ -175,7 +175,7 @@ public final class CS_CRAFT_MAKE_REQ {
                 L1ItemInstance result = null;
                 if (output.outputItem != null) {
                     CraftOutputItem outputItem = output.outputItem;
-                    L1Item template = ItemTable.getInstance().findCraftCachedItem(outputItem);
+                    L1Item template = CObjectDB.LoadItem().findCraftCachedItem(outputItem);
                     if (template == null || outputItem.get_count() <= 0)
                         throw new IllegalStateException("Craft result template/count is invalid");
                     result = new L1ItemInstance();

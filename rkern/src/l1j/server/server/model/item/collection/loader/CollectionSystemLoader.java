@@ -1,5 +1,6 @@
 package l1j.server.server.model.item.collection.loader;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,7 +11,6 @@ import java.util.HashMap;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.item.collection.CollectionCharInfo;
 import l1j.server.server.model.item.collection.CollectionItem;
 import l1j.server.server.model.item.collection.CollectionObject;
@@ -192,7 +192,7 @@ public class CollectionSystemLoader {
 			while(rs.next()){
 				item			= new CollectionItem();
 				int itemId 		= rs.getInt("item_id");
-				L1Item itm 		= ItemTable.getInstance().getTemplate(itemId);
+                L1Item itm 		= CObjectDB.LoadItem().getTemplate(itemId);
 				item.id 		= rs.getInt("id");
 				item.bless		= rs.getInt("bless");
 				item.count		= rs.getInt("count");

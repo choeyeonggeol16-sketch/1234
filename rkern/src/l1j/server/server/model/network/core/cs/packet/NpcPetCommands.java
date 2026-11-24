@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_PetList;
 
@@ -7,7 +8,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.PetTypeTable;
 import l1j.server.server.model.L1InventoryTransaction;
@@ -50,7 +50,7 @@ final class NpcPetCommands {
                 SC_ServerMessage.send(pc, 82);
                 return;
             }
-            L1NpcInstance target = NpcTable.getInstance().newNpcInstance(npcId);
+            L1NpcInstance target = CObjectDB.LoadNPC().newNpcInstance(npcId);
             if (!(target instanceof L1MonsterInstance) || target.isDead()) return;
             final L1ItemInstance amulet = tx.grant(40314, 1);
             if (amulet == null || amulet.isStackable()) return;

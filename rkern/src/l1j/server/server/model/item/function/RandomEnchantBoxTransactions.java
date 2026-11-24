@@ -1,4 +1,5 @@
 package l1j.server.server.model.item.function;
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import l1j.server.server.datatables.ExpTable;
@@ -11,7 +12,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.templates.L1Item;
@@ -51,7 +51,7 @@ final class RandomEnchantBoxTransactions {
             final ThreadLocalRandom random = ThreadLocalRandom.current();
             final int itemId = rewards[random.nextInt(rewards.length)];
             final int enchant = enchants[random.nextInt(enchants.length)];
-            final L1Item template = ItemTable.getInstance().getTemplate(itemId);
+            final L1Item template = CObjectDB.LoadItem().getTemplate(itemId);
             if (template == null) {
                 SC_SystemMessage.send(pc, "상자 보상 아이템 설정을 확인해 주세요.");
                 return;

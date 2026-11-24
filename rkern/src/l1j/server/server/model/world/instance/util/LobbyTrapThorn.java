@@ -1,7 +1,7 @@
 package l1j.server.server.model.world.instance.util;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.world.instance.loader.InstanceLoadManager;
@@ -30,7 +30,7 @@ public class LobbyTrapThorn {
 	private L1NpcInstance spawn(int npcId, int mapId, int x, int y){
 		L1NpcInstance npc = null;
 		try {
-			npc = NpcTable.getInstance().newNpcInstance(npcId);
+            npc = CObjectDB.LoadNPC().newNpcInstance(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap((short)mapId);
 			npc.getLocation().forward(0);

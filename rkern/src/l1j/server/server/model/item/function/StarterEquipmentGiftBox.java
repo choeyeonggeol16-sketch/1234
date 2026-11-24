@@ -1,12 +1,12 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -80,7 +80,7 @@ final class StarterEquipmentGiftBox {
 
     private static boolean grant(L1InventoryTransaction tx, ArrayList<L1ItemInstance> announcements,
             int itemId, int count, int enchant, int bless, int attr, boolean identified) {
-        final L1Item template = ItemTable.getInstance().getTemplate(itemId);
+        final L1Item template = CObjectDB.LoadItem().getTemplate(itemId);
         if (template == null || count <= 0) return false;
         // createItem() publishes the item to L1World before COMMIT. Build a detached image.
         final L1ItemInstance item = new L1ItemInstance(template, count);

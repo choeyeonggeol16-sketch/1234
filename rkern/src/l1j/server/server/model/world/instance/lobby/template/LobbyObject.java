@@ -1,11 +1,11 @@
 package l1j.server.server.model.world.instance.lobby.template;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1TowerFromLfcInstance;
@@ -293,7 +293,7 @@ public class LobbyObject extends InstanceObject{
 		try{
 			for(int i=0; i<num; i++){
 				rNum = getRandomNum();
-				buff = NpcTable.getInstance().newNpcInstance(arr.get(rNum % arr.size()));
+                buff = CObjectDB.LoadNPC().newNpcInstance(arr.get(rNum % arr.size()));
 				buff.setId(IdFactory.getInstance().nextId());
 				buff.setMap((short)getCopyMapId());
 				buff.getLocation().forward(0);
@@ -333,7 +333,7 @@ public class LobbyObject extends InstanceObject{
 	protected L1NpcInstance spawnNpc(int npcId, int x, int y, int heading){
 		L1NpcInstance npc = null;
 		try {
-			npc = NpcTable.getInstance().newNpcInstance(npcId);
+            npc = CObjectDB.LoadNPC().newNpcInstance(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap((short)getCopyMapId());
 			npc.getLocation().forward(0);
@@ -353,7 +353,7 @@ public class LobbyObject extends InstanceObject{
 	protected L1TowerFromLfcInstance spawnTower(int x, int y){
 		L1NpcInstance tower 		= null;
 		try {
-			tower = NpcTable.getInstance().newNpcInstance(InstanceLoadManager.MIS_SP_TOWER_ID);
+            tower = CObjectDB.LoadNPC().newNpcInstance(InstanceLoadManager.MIS_SP_TOWER_ID);
 			tower.setId(IdFactory.getInstance().nextId());
 			tower.setMap((short)getCopyMapId());
 			tower.getLocation().forward(0);
