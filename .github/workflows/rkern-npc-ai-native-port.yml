@@ -26,6 +26,10 @@ on:
       - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_Bookmark.java'
       - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_DeleteBookmark.java'
       - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java'
+      - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_Craft.java'
+      - 'rkern/src/l1j/server/server/model/network/core/sc/packet/SC_PacketBox.java'
+      - 'rkern/src/l1j/server/server/model/item/function/ClanInnReturnScrollUse.java'
+      - 'rkern/src/l1j/server/server/model/item/function/TeleportRandomTravel.java'
       - 'rkern/docs/bookmark_native_port_20261124/**'
       - '.github/workflows/rkern-npc-ai-native-port.yml'
   workflow_dispatch:
