@@ -5,7 +5,9 @@ import java.util.HashSet;
 import l1j.server.Config;
 import l1j.server.server.datatables.AutoLoot;
 import l1j.server.server.datatables.BossMonsterSpawnList;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -21,6 +23,13 @@ public final class DropShareEngine {
     }
 
     public static boolean handleOneItem_AllModes(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc) {
+        return handleOneItem(npc, mobInv, item, snap, lastAttackerPc, null, null,
+                npc == null ? null : npc.getLocation());
+    }
+
+    public static boolean handleOneItem(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item,
+            DropAcqSnapshot snap, L1PcInstance lastAttackerPc, CParty admittedParty,
+            L1PcInstance[] admittedMembers, L1Location origin) {
         if (Config.STANDBY_SERVER) return true;
         if (npc == null || mobInv == null || item == null) return true;
 
@@ -31,21 +40,21 @@ public final class DropShareEngine {
     	// 보스라면 오토루팅 무시하고 무조건 바닥 드랍!
         if (Config.BOSS_DROP_GROUND_ENABLE && 
         		BossMonsterSpawnList.find(npc.getNpcId()) != null) {
-        	return handleNonAuto(npc, mobInv, item, snap, lastAttackerPc);
+        	return handleNonAuto(npc, mobInv, item, snap, lastAttackerPc, origin);
         }
  
         final int itemId = item.getItemId();
 
         // 특정 아이템 강제 오토루팅
-        if (itemId == 810008) return handleAutoLoot(npc, mobInv, item, snap, lastAttackerPc);
+        if (itemId == 810008) return handleAutoLoot(npc, mobInv, item, snap, lastAttackerPc, admittedParty, admittedMembers, origin);
 
         // 오토루팅 여부 판별 (snap이 없어도 Config가 1이면 무조건 오토루팅 시도)
         if (isAutoLootItem(itemId, snap, lastAttackerPc)) {
-            return handleAutoLoot(npc, mobInv, item, snap, lastAttackerPc);
+            return handleAutoLoot(npc, mobInv, item, snap, lastAttackerPc, admittedParty, admittedMembers, origin);
         }
 
         // 위 조건 아니면 바닥 드랍
-        return handleNonAuto(npc, mobInv, item, snap, lastAttackerPc);
+        return handleNonAuto(npc, mobInv, item, snap, lastAttackerPc, origin);
     }
 
     private static boolean isAutoLootItem(int itemId, DropAcqSnapshot snap, L1PcInstance lastAttacker) {
@@ -65,7 +74,8 @@ public final class DropShareEngine {
         return false;
     }
 
-    private static boolean handleAutoLoot(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc) {
+    private static boolean handleAutoLoot(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc,
+            CParty admittedParty, L1PcInstance[] admittedMembers, L1Location origin) {
     	 if (snap == null || snap.size <= 0) {
              tradeSafely(mobInv, item, item.getCount(), L1World.getInstance().getInventory(npc.getX(), npc.getY(), npc.getMapId()));
              return true;
@@ -79,6 +89,11 @@ public final class DropShareEngine {
 
          // 대미지 리스트가 꼬였을 때만 막타자를 보험으로 씀
          L1PcInstance primaryOwner = (topHater != null) ? topHater : lastAttackerPc;
+         if (admittedParty != null) {
+             // Never route to a different party joined after the death was admitted.
+             if (admittedParty.Route(origin, mobInv, item, snap, primaryOwner, admittedMembers)) return true;
+             return L1World.getInstance().PickNpcDrop(origin, mobInv, item, primaryOwner);
+         }
          if (Config.PARTY_LOOT_ENABLE && primaryOwner != null) {
              final l1j.server.server.model.CParty party = primaryOwner.getParty();
              if (party != null && party.Route(npc, mobInv, item, snap, primaryOwner)) return true;
@@ -90,16 +105,16 @@ public final class DropShareEngine {
          return true;
     }
 
-    private static boolean handleNonAuto(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc) {
+    private static boolean handleNonAuto(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc, L1Location origin) {
         item.setDropMobId(npc.getNpcTemplate().get_npcId());
-        L1PcInstance owner = (snap != null && snap.maxIdx >= 0) ? (L1PcInstance) snap.acqs[snap.maxIdx] : lastAttackerPc;
+        L1PcInstance owner = (snap != null && snap.maxIdx >= 0 && snap.acqs[snap.maxIdx] instanceof L1PcInstance pc) ? pc : lastAttackerPc;
         if (owner != null) item.startItemOwnerTimer(owner);
-        tradeSafely(mobInv, item, item.getCount(), pickGroundInventorySmart(npc));
+        tradeSafely(mobInv, item, item.getCount(), pickGroundInventorySmart(origin));
         return true;
     }
 
-    private static L1Inventory pickGroundInventorySmart(L1NpcInstance npc) {
-        final int baseX = npc.getX(), baseY = npc.getY(), mapId = npc.getMapId();
+    private static L1Inventory pickGroundInventorySmart(L1Location origin) {
+        final int baseX = origin.getX(), baseY = origin.getY(), mapId = origin.getMapId();
         ArrayDeque<int[]> q = new ArrayDeque<>();
         q.add(new int[]{baseX, baseY});
         HashSet<Long> vis = new HashSet<>();
@@ -108,7 +123,7 @@ public final class DropShareEngine {
         while (!q.isEmpty()) {
             int[] cur = q.poll();
             if (Math.max(Math.abs(baseX - cur[0]), Math.abs(baseY - cur[1])) > 3) continue;
-            if (npc.getMap().isPassable(cur[0], cur[1])) return L1World.getInstance().getInventory(cur[0], cur[1], (short) mapId);
+            if (origin.getMap().isPassable(cur[0], cur[1])) return L1World.getInstance().getInventory(cur[0], cur[1], (short) mapId);
             for (int i = 0; i < 8; i++) {
                 int nx = cur[0] + (i==1||i==2||i==3?1:i==5||i==6||i==7?-1:0);
                 int ny = cur[1] + (i==0||i==1||i==7?-1:i==3||i==4||i==5?1:0);

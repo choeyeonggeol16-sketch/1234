@@ -8,6 +8,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.TimeMapController;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ClanTable;
+import l1j.server.server.datatables.BossMonsterSpawnList;
 import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.datatables.DropTable;
 import l1j.server.server.datatables.ItemTable;
@@ -16,6 +17,8 @@ import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
+import l1j.server.server.model.CParty;
+import l1j.server.server.model.character.Item.Drop.DropAcqSnapshot;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1EffectSpawn;
 import l1j.server.server.model.L1Inventory;
@@ -58,6 +61,12 @@ public class L1MonsterInstance extends L1NpcInstance {
 	private static final long serialVersionUID = 1L;
 	private static Random _random = new Random(System.nanoTime());
     private volatile int _deathEpoch;
+    private static final java.util.logging.Logger DEATH_DROP_LOG =
+            java.util.logging.Logger.getLogger(L1MonsterInstance.class.getName());
+    private static final byte DROP_DELETE = 1, DROP_DELETE_RE = 2, DROP_RE = 3,
+            DROP_NPC_DIE = 4, DROP_DISPOSE = 5;
+    private DeathSettlement _pendingPartyDrop; // guarded by this
+    private volatile byte _dropRemovalRequest;
 
 	private boolean _storeDroped;
 
@@ -655,11 +664,60 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 		super.setCurrentMp(i);
 	}
 
-	@Override
-	public void deleteMe(){
-		_PapPearlMonster = null;
-		super.deleteMe();
-	}
+    private synchronized boolean DeferDropRemoval(byte mode) {
+        if (_dropRemovalRequest == 0) _dropRemovalRequest = mode;
+        return _pendingPartyDrop != null;
+    }
+
+    @Override
+    public void deleteMe() {
+        if (DeferDropRemoval(DROP_DELETE)) return;
+        _PapPearlMonster = null;
+        super.deleteMe();
+    }
+
+    @Override
+    public void deleteRe() {
+        if (DeferDropRemoval(DROP_DELETE_RE)) return;
+        super.deleteRe();
+    }
+
+    @Override
+    public void NpcDie() {
+        if (DeferDropRemoval(DROP_NPC_DIE)) return;
+        super.NpcDie();
+    }
+
+    @Override
+    public void dispose() {
+        if (DeferDropRemoval(DROP_DISPOSE)) return;
+        super.dispose();
+    }
+
+    @Override
+    public synchronized void setInventory(L1Inventory inventory) {
+        if (_pendingPartyDrop != null && inventory != getInventory()) {
+            throw new IllegalStateException("Party drop owns the NPC inventory");
+        }
+        super.setInventory(inventory);
+    }
+
+    @Override
+    public synchronized void setDead(boolean dead) {
+        if (!dead && _pendingPartyDrop != null) return;
+        super.setDead(dead);
+    }
+
+    private void ApplyDeferredDropRemoval(byte mode) {
+        switch (mode) {
+            case DROP_DELETE: deleteMe(); break;
+            case DROP_DELETE_RE: deleteRe(); break;
+            case DROP_RE: re(); break;
+            case DROP_NPC_DIE: NpcDie(); break;
+            case DROP_DISPOSE: dispose(); break;
+            default: throw new IllegalArgumentException("Unknown drop removal " + mode);
+        }
+    }
 
     private void Sahel(L1NpcInstance Sahel) { // 사엘
         L1NpcInstance Pearl = null;
@@ -754,28 +812,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
             deathEpoch = ++_deathEpoch;
         }
 
-        final Runnable mandatoryDeath = () -> {
-            try {
-                if (!isCurrentDeath(deathEpoch)) return;
-                processDeathLogic(lastAttacker, deathEpoch);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                synchronized (this) {
-                    if (isCurrentDeath(deathEpoch)) {
-                        setExp(0);
-                        setLawful(0);
-                        setKarma(0);
-                        // Even a failed script must not strand a corpse.
-                        try {
-                            allTargetClear();
-                        } finally {
-                            DeathFinished(true);
-                        }
-                    }
-                }
-            }
-        };
+        final DeathSettlement mandatoryDeath = new DeathSettlement(lastAttacker, deathEpoch);
 
         try {
             setStatus(ActionCodes.ACTION_Die);
@@ -790,18 +827,154 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     }
 
     private boolean isCurrentDeath(int deathEpoch) {
-        return _deathEpoch == deathEpoch && isDead() && !_destroyed && isDeathProcessing();
+        return _deathEpoch == deathEpoch && isDead() && !_destroyed
+                && isDeathProcessing() && _dropRemovalRequest == 0;
     }
 
-    private void processDeathLogic(L1Character lastAttacker, int deathEpoch) {
-        // The work may block in scripts/DB while a different thread resurrects
-        // or reuses this NPC. Do not run later rewards for its new incarnation.
-        if (!isCurrentDeath(deathEpoch)) return;
-        handleExplosionDamage();
-        if (!isCurrentDeath(deathEpoch)) return;
-        if (lastAttacker != null) {
-            distributeExpDropKarma(lastAttacker);
+    /** Reuse the existing per-death Runnable as the post-pickup continuation. */
+    private final class DeathSettlement implements Runnable {
+        final L1Character lastAttacker;
+        final int epoch;
+        L1PcInstance rewardPc;
+        DropAcqSnapshot snapshot;
+        CParty party;
+        L1PcInstance[] members;
+        L1Location origin;
+        L1Inventory source;
+        boolean claimed; // guarded by NPC monitor
+        boolean handedOff; // initial worker only
+        volatile boolean afterPickup;
+        byte removalMode;
+
+        DeathSettlement(L1Character lastAttacker, int epoch) {
+            this.lastAttacker = lastAttacker;
+            this.epoch = epoch;
         }
+
+        @Override
+        public void run() {
+            if (afterPickup) {
+                try {
+                    if (removalMode != 0) {
+                        ApplyDeferredDropRemoval(removalMode);
+                        return;
+                    }
+                    if (!isCurrentDeath(epoch)) return;
+                    giveKarma(rewardPc);
+                    processDeathAfterDrop(lastAttacker, epoch);
+                } catch (Exception e) {
+                    DEATH_DROP_LOG.log(java.util.logging.Level.WARNING, "Party death continuation failed", e);
+                } finally {
+                    FinishMonsterDeath(epoch);
+                }
+                return;
+            }
+
+            try {
+                if (!isCurrentDeath(epoch)) return;
+                handleExplosionDamage();
+                if (!isCurrentDeath(epoch)) return;
+                if (lastAttacker != null) rewardPc = distributeExp(lastAttacker);
+                if (!isCurrentDeath(epoch)) return;
+                if (rewardPc != null) {
+                    if (distributeDrop(this, rewardPc)) return;
+                    if (!isCurrentDeath(epoch)) return;
+                    giveKarma(rewardPc);
+                }
+                processDeathAfterDrop(lastAttacker, epoch);
+            } catch (Exception e) {
+                DEATH_DROP_LOG.log(java.util.logging.Level.WARNING, "Monster death settlement failed", e);
+            } finally {
+                if (!handedOff) FinishMonsterDeath(epoch);
+            }
+        }
+    }
+
+    private void FinishMonsterDeath(int epoch) {
+        synchronized (this) {
+            if (isCurrentDeath(epoch)) {
+                setExp(0);
+                setLawful(0);
+                setKarma(0);
+                try {
+                    allTargetClear();
+                } finally {
+                    DeathFinished(true);
+                }
+            }
+        }
+    }
+
+    private boolean TryQueuePartyDrop(DeathSettlement job, L1PcInstance pc, DropAcqSnapshot snap) {
+        if (!Config.PARTY_LOOT_ENABLE || Config.STANDBY_SERVER || snap.size <= 0
+                || (Config.BOSS_DROP_GROUND_ENABLE && BossMonsterSpawnList.find(getNpcId()) != null)) return false;
+        final L1PcInstance owner = snap.maxIdx >= 0 && snap.acqs[snap.maxIdx] instanceof L1PcInstance top
+                ? top : pc;
+        final CParty party = owner.getParty();
+        if (party == null) return false;
+        final L1PcInstance[] members = party.getMembers();
+        synchronized (this) {
+            if (!isCurrentDeath(job.epoch) || _pendingPartyDrop != null || getInventory() == null
+                    || owner.getParty() != party) return false;
+            job.snapshot = snap;
+            job.party = party;
+            job.members = members;
+            job.origin = new L1Location(getLocation());
+            job.source = getInventory();
+            job.handedOff = true;
+            _pendingPartyDrop = job;
+        }
+        // Never publish while holding the NPC monitor: the existing serializer
+        // may execute immediately on this producer or drain on another thread.
+        try {
+            if (!L1World.getInstance().AsyncPickItem(this, job.epoch)) DispatchPartyDrop(job.epoch);
+        } catch (RuntimeException failure) {
+            DEATH_DROP_LOG.log(java.util.logging.Level.WARNING, "Party pickup admission failed", failure);
+            DispatchPartyDrop(job.epoch);
+        }
+        return true;
+    }
+
+    /** Called by the existing CWorld serializer, or the same job on admission rejection. */
+    public final void DispatchPartyDrop(int epoch) {
+        final DeathSettlement job;
+        synchronized (this) {
+            job = _pendingPartyDrop;
+            if (job == null || job.epoch != epoch || job.claimed) return;
+            job.claimed = true;
+        }
+        try {
+            // Accepted pickup owns this inventory until completion. Deferred
+            // deletion does not invalidate the accepted reward.
+            if (getInventory() != job.source || _destroyed || !isDead()) {
+                throw new IllegalStateException("Admitted NPC drop source changed");
+            }
+            DropTable.getInstance().dropShareSnapshot(this, job.snapshot, job.rewardPc,
+                    job.party, job.members, job.origin);
+        } catch (RuntimeException failure) {
+            DEATH_DROP_LOG.log(java.util.logging.Level.SEVERE, "Party pickup failed", failure);
+        } finally {
+            synchronized (this) {
+                job.removalMode = _dropRemovalRequest;
+                _pendingPartyDrop = null;
+            }
+            job.snapshot = null;
+            job.party = null;
+            job.members = null;
+            job.origin = null;
+            job.source = null;
+            job.afterPickup = true;
+            // Keep scripts and death completion out of the normal CWorld drain.
+            // The existing mandatory-work rejection fallback is retained.
+            try {
+                ThreadPool.getInstance().execute(job);
+            } catch (RuntimeException rejected) {
+                job.run();
+            }
+        }
+    }
+
+    private void processDeathAfterDrop(L1Character lastAttacker, int deathEpoch) {
         if (!isCurrentDeath(deathEpoch)) return;
         startChat(CHAT_TIMING_DEAD);
         if (!isCurrentDeath(deathEpoch)) return;
@@ -865,9 +1038,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	    }
 	}
 
-	private void distributeExpDropKarma(L1Character lastAttacker) {
+	private L1PcInstance distributeExp(L1Character lastAttacker) {
 		if (lastAttacker == null) {
-			return;
+			return null;
 		}
 		L1PcInstance pc = null;
 		if (lastAttacker instanceof L1PcInstance) {
@@ -887,10 +1060,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 			int exp = getExp();
 			CalcExp.calcExp(pc, getId(), targetList, hateList, exp);
 					
-			if (isDead()) {
-				distributeDrop(pc);
-				giveKarma(pc);
-			}
+			if (isDead()) return pc;
 
 		} else if (lastAttacker instanceof L1EffectInstance)
 
@@ -917,26 +1087,28 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 				}
 				int exp = getExp();
 				CalcExp.calcExp(pc, getId(), targetList, hateList, exp);
-				if (isDead()) {
-					distributeDrop(pc);
-					giveKarma(pc);
-				}
+				if (isDead()) return pc;
 			}
 		}
+		return null;
 	}
 
-	private void distributeDrop(L1PcInstance pc) {
-		ArrayList<L1Character> dropTargetList = new ArrayList<>();
-		ArrayList<Integer> dropHateList = new ArrayList<>();
-		_dropHateList.copySnapshotTo(dropTargetList, dropHateList);
-		try {
-			int npcId = getNpcTemplate().get_npcId();
-			if (npcId != 45640 || (npcId == 45640 && getCurrentSpriteId() == 2332)) {
-				DropTable.getInstance().dropShare(this, dropTargetList, dropHateList, pc);
-			}
-		} catch (Exception e) {
-		}
-	}
+    /** Returns true only when the mandatory continuation belongs to the world job. */
+    private boolean distributeDrop(DeathSettlement job, L1PcInstance pc) {
+        try {
+            int npcId = getNpcTemplate().get_npcId();
+            if (npcId == 45640 && getCurrentSpriteId() != 2332) return false;
+            ArrayList<L1Character> dropTargetList = new ArrayList<>();
+            ArrayList<Integer> dropHateList = new ArrayList<>();
+            _dropHateList.copySnapshotTo(dropTargetList, dropHateList);
+            final DropAcqSnapshot snap = DropAcqSnapshot.build(this, dropTargetList, dropHateList);
+            if (TryQueuePartyDrop(job, pc, snap)) return true;
+            if (isCurrentDeath(job.epoch)) DropTable.getInstance().dropShareSnapshot(this, snap, pc);
+        } catch (Exception failure) {
+            DEATH_DROP_LOG.log(java.util.logging.Level.WARNING, "Monster drop preparation failed", failure);
+        }
+        return job.handedOff;
+    }
 
 	private void giveKarma(L1PcInstance pc) {
 		int karma = getKarma();
@@ -1070,7 +1242,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	}
 
 	@Override
-	protected void transform(int transformId) {
+	protected synchronized void transform(int transformId) {
+        if (_destroyed || isDead() || isDeathProcessing() || _dropRemovalRequest != 0) return;
         cancelDigestItems();
 		if(_transformHandler != null)
 			_transformHandler.onTransFormNotify(this);
@@ -1177,7 +1350,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 
     public synchronized void re() {
         // Explicit script removal invalidates the old reward generation.
-        if (_destroyed) return;
+        if (_destroyed || DeferDropRemoval(DROP_RE)) return;
         if (!isDead() && !Die()) return;
         ++_deathEpoch;
         setExp(0);

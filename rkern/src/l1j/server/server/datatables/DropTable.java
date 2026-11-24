@@ -17,6 +17,8 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.CParty;
+import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.Item.Drop.DropAcqSnapshot;
@@ -237,8 +239,13 @@ public class DropTable {
 	}
 
 	public void dropShareSnapshot(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance pc) {
+        dropShareSnapshot(npc, snap, pc, null, null, npc == null ? null : npc.getLocation());
+    }
+
+    public void dropShareSnapshot(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance pc,
+            CParty admittedParty, L1PcInstance[] admittedMembers, L1Location origin) {
 		if (Config.STANDBY_SERVER) return;
-		if (npc == null || pc == null) return;
+		if (npc == null || pc == null || origin == null) return;
 		
 		append_drop_adena(pc, npc);
 
@@ -263,12 +270,20 @@ public class DropTable {
 			L1ItemInstance item = items.get(i);
 			if (item == null) continue;
 			
-			try {
-				DropShareEngine.handleOneItem(npc, mobInv, item, snap, pc);
-			} catch (Throwable ignored) {
-				L1Inventory ground = L1World.getInstance().getInventory(npc.getX(), npc.getY(), npc.getMapId());
-				mobInv.tradeItem(item, item.getCount(), ground);
-			}
+            try {
+                DropShareEngine.handleOneItem(npc, mobInv, item, snap, pc, admittedParty, admittedMembers, origin);
+            } catch (RuntimeException failure) {
+                _log.log(Level.WARNING, "NPC drop routing failed: " + item.getId(), failure);
+            }
+            if (mobInv.getItem(item.getId()) == item && item.getCount() > 0) {
+                try {
+                    if (!L1World.getInstance().RecoverNpcDrop(origin, mobInv, item)) {
+                        _log.warning("NPC drop remains in source: " + item.getId() + ", count=" + item.getCount());
+                    }
+                } catch (RuntimeException recovery) {
+                    _log.log(Level.SEVERE, "NPC drop recovery failed: " + item.getId(), recovery);
+                }
+            }
 		}
 
 		try { npc.getLight().turnOnOffLight(); } catch (Throwable ignored) {}

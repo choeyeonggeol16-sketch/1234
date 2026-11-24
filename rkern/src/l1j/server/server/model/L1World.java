@@ -181,6 +181,21 @@ public class L1World {
 
     CWorld getWorldExecutor() { return _worldExecutor; }
 
+    public boolean AsyncPickItem(l1j.server.server.model.Instance.L1MonsterInstance npc, int deathEpoch) {
+        return _worldExecutor.AsyncPickItem(npc, deathEpoch);
+    }
+
+    public boolean PickNpcDrop(L1Location origin, L1Inventory source, L1ItemInstance item,
+            L1PcInstance recipient) {
+        if (_worldExecutor.PickItem(origin, source, item, item.getCount(), recipient)
+                != CWorld.PICK_REJECTED) return true;
+        return _worldExecutor.RecoverDropRemainder(origin, source, item);
+    }
+
+    public boolean RecoverNpcDrop(L1Location origin, L1Inventory source, L1ItemInstance item) {
+        return _worldExecutor.RecoverDropRemainder(origin, source, item);
+    }
+
     public L1GroundInventory findGroundInventory(int x, int y, short map) {
         return _worldExecutor.findGroundInventory(x, y, map);
     }

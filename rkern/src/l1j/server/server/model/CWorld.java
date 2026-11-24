@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -64,6 +65,7 @@ public final class CWorld {
     private static final int EXEC_MOVE = 6;
     private static final int EXEC_ITEM_TIMER = 7;
     private static final int EXEC_CANCEL = 8;
+    private static final int EXEC_PICK_ITEM = 9;
 
     private static final VarHandle EXEC_TAIL;
     private static final VarHandle EXEC_PENDING;
@@ -126,6 +128,15 @@ public final class CWorld {
     /** Ground item expiry shares the same world identity serializer as removal. */
     public boolean AsyncItemTimer(L1ItemInstance item, int timerId, int generation) {
         return publishWorld(EXEC_ITEM_TIMER, item, timerId, generation, 0);
+    }
+
+    /** One existing serializer ticket per party death, not per recipient or item. */
+    public boolean AsyncPickItem(L1MonsterInstance npc, int deathEpoch) {
+        return publishWorld(EXEC_PICK_ITEM, npc, deathEpoch, 0, 0);
+    }
+
+    private void DoAsyncPickItem(L1Object object, int deathEpoch) {
+        if (object instanceof L1MonsterInstance npc) npc.DispatchPartyDrop(deathEpoch);
     }
 
     public int ExecutableBacklog() {
@@ -301,6 +312,13 @@ public final class CWorld {
         }
         try {
         	
+            // The NPC owns an admitted settlement until this callback releases it.
+            // Do not discard this ticket at the ordinary world-identity gate:
+            // an explicit removal must still complete/release the admitted drop.
+            if (operation == EXEC_PICK_ITEM) {
+                DoAsyncPickItem(object, x);
+                return;
+            }
             if (operation != EXEC_STORE && operation != EXEC_STORE_ENTER) {
                 if (identity != 0L) {
                     if (objectFactory.findByWorldIdentity(identity) != object) return;
@@ -562,31 +580,65 @@ public final class CWorld {
                 && source.getItem(item.getId()) == item && count <= item.getCount();
     }
 
-    /**
-     * Synchronous NPC drop settlement. Do not enqueue a corpse-owned item on the
-     * world serializer: NPC deletion/transform may clear the source before drain.
-     * Only a definite null rejection can fall back; exceptions propagate to the
-     * existing death-settlement handler.
-     */
-    int PickItem(L1NpcInstance npc, L1Inventory source, L1ItemInstance item, int count,
+    /** Existing ordered inventory monitors remain authoritative for each transfer. */
+    int PickItem(L1Location origin, L1Inventory source, L1ItemInstance item, int count,
             L1PcInstance recipient) {
-        if (npc == null || !PickItemCond(source, item, count)) return PICK_REJECTED;
-        if (recipient != null && !recipient.isLogoutStarted()) {
-            final var session = recipient.getNetConnection();
-            if (session != null && session.isConnected() && session.getActiveChar() == recipient) {
-                final L1Inventory dest = recipient.getInventory();
-                final L1ItemInstance adena = item.getItemId() == l1j.server.server.model.item.L1ItemId.ADENA
-                        ? dest.findItemId(item.getItemId()) : null;
-                if ((adena == null || (long) adena.getCount() + count <= 2_000_000_000L)
-                        && source.tradeItem(item, count, dest) != null) return PICK_INVENTORY;
-                if (!PickItemCond(source, item, count)) return PICK_REJECTED;
-                if (source.tradeItem(item, count, getGroundInventory(
-                        recipient.getX(), recipient.getY(), recipient.getMapId())) != null) return PICK_GROUND;
-                return PICK_REJECTED;
+        if (origin == null || !PickItemCond(source, item, count)) return PICK_REJECTED;
+        if (recipient != null) {
+            int x = 0, y = 0;
+            short map = 0;
+            boolean live = false;
+            // Logout sets its admission flag before taking this same lock for its
+            // final inventory save. A successful transfer must precede that save.
+            synchronized (recipient.autoSaveLifecycleLock()) {
+                final var session = recipient.getNetConnection();
+                if (!recipient.isLogoutStarted() && session != null && session.isConnected()
+                        && session.getActiveChar() == recipient) {
+                    final L1Inventory dest = recipient.getInventory();
+                    final L1ItemInstance adena = item.getItemId() == l1j.server.server.model.item.L1ItemId.ADENA
+                            ? dest.findItemId(item.getItemId()) : null;
+                    if ((adena == null || (long) adena.getCount() + count <= 2_000_000_000L)
+                            && source.tradeItem(item, count, dest) != null) return PICK_INVENTORY;
+                    x = recipient.getX();
+                    y = recipient.getY();
+                    map = recipient.getMapId();
+                    live = true;
+                }
+            }
+            if (live && DropAtTile(source, item, count, x, y, map)) return PICK_GROUND;
+        }
+        return DropAtTile(source, item, count, origin.getX(), origin.getY(), (short) origin.getMapId())
+                ? PICK_GROUND : PICK_REJECTED;
+    }
+
+    private boolean DropAtTile(L1Inventory source, L1ItemInstance item, int count,
+            int x, int y, short map) {
+        if (!PickItemCond(source, item, count)) return false;
+        final L1GroundInventory ground = getGroundInventory(x, y, map);
+        // Pickup may have removed an empty bucket between lookup and transfer.
+        // Preserve the existing ground -> source monitor order.
+        synchronized (ground) {
+            if (findGroundInventory(x, y, map) != ground) return false;
+            return source.tradeItem(item, count, ground) != null;
+        }
+    }
+
+    /** Try the corpse tile and nearby passable tiles, without changing stack caps. */
+    boolean RecoverDropRemainder(L1Location origin, L1Inventory source, L1ItemInstance item) {
+        if (source.getItem(item.getId()) != item || item.getCount() <= 0) return true;
+        final int x = origin.getX(), y = origin.getY();
+        final short map = (short) origin.getMapId();
+        if (DropAtTile(source, item, item.getCount(), x, y, map)) return true;
+        for (int radius = 1; radius <= 3; radius++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dx = -radius; dx <= radius; dx++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) != radius
+                            || !origin.getMap().isPassable(x + dx, y + dy)) continue;
+                    if (DropAtTile(source, item, item.getCount(), x + dx, y + dy, map)) return true;
+                }
             }
         }
-        return source.tradeItem(item, count, getGroundInventory(npc.getX(), npc.getY(), npc.getMapId()))
-                != null ? PICK_GROUND : PICK_REJECTED;
+        return source.getItem(item.getId()) != item;
     }
 
     /** Non-creating ground lookup: pickup and validation must never publish empty tiles. */

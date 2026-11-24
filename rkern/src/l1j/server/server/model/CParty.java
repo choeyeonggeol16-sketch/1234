@@ -405,10 +405,10 @@ for (L1PcInstance member : getMembers()) {
     
 
     /** Same map/range/hate policy for both currency and item routing. */
-    private boolean CheckRouteCond(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance member) {
+    private boolean CheckRouteCond(L1Location origin, DropAcqSnapshot snap, L1PcInstance member) {
         if (member == null || member.getParty() != this || member.isDead()
-                || member.getMapId() != npc.getMapId()
-                || member.getLocation().getTileLineDistance(npc.getLocation()) > Config.PARTY_LOOT_RANGE) return false;
+                || member.getMapId() != origin.getMapId()
+                || member.getLocation().getTileLineDistance(origin) > Config.PARTY_LOOT_RANGE) return false;
         if (Config.PARTY_LOOT_ELIGIBILITY != 0) return true;
         if (snap == null) return false;
         for (int i = 0; i < snap.size; i++) {
@@ -417,23 +417,28 @@ for (L1PcInstance member : getMembers()) {
         return false;
     }
 
-    private boolean CheckRouteAdenaCond(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance member) {
-        return CheckRouteCond(npc, snap, member);
+    private boolean CheckRouteAdenaCond(L1Location origin, DropAcqSnapshot snap, L1PcInstance member) {
+        return CheckRouteCond(origin, snap, member);
     }
 
-    /** Route is synchronous until corpse inventory lifetime is extended across queued world jobs. */
     public boolean Route(L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
             DropAcqSnapshot snap, L1PcInstance primaryOwner) {
+        return npc != null && Route(npc.getLocation(), source, item, snap, primaryOwner, null);
+    }
+
+    /** Queued drops retain the original party, roster and death position. */
+    public boolean Route(L1Location origin, L1Inventory source, L1ItemInstance item,
+            DropAcqSnapshot snap, L1PcInstance primaryOwner, L1PcInstance[] admittedMembers) {
         if (!Config.PARTY_LOOT_ENABLE || primaryOwner == null || primaryOwner.getParty() != this
-                || npc == null || source == null || item == null) return false;
+                || origin == null || source == null || item == null) return false;
         final CWorld world = L1World.getInstance().getWorldExecutor();
         if (!world.PickItemCond(source, item, item.getCount())) return false;
 
         final boolean adena = item.getItemId() == L1ItemId.ADENA;
-        final L1PcInstance[] members = getMembers();
+        final L1PcInstance[] members = admittedMembers == null ? getMembers() : admittedMembers.clone();
         int size = 0;
         for (L1PcInstance member : members) {
-            if (adena ? CheckRouteAdenaCond(npc, snap, member) : CheckRouteCond(npc, snap, member)) {
+            if (adena ? CheckRouteAdenaCond(origin, snap, member) : CheckRouteCond(origin, snap, member)) {
                 members[size++] = member;
             }
         }
@@ -441,12 +446,12 @@ for (L1PcInstance member : getMembers()) {
 
         final L1PcInstance leader = getLeader();
         final String tag = leader != null && leader.getPartyType() == 1 ? "자동 분배" : "일반 분배";
-        if (adena) RouteAdena(world, npc, source, item, snap, members, size, tag);
-        else RouteItem(world, npc, source, item, snap, members, size, tag);
+        if (adena) RouteAdena(world, origin, source, item, snap, members, size, tag);
+        else RouteItem(world, origin, source, item, snap, members, size, tag);
         return true;
     }
 
-    private void RouteAdena(CWorld world, L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
+    private void RouteAdena(CWorld world, L1Location origin, L1Inventory source, L1ItemInstance item,
             DropAcqSnapshot snap, L1PcInstance[] members, int size, String tag) {
         final int winnerIndex = java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
         final long total = item.getCount();
@@ -457,8 +462,8 @@ for (L1PcInstance member : getMembers()) {
             final int amount = (int) (each + (i == winnerIndex ? remainder : 0L));
             if (amount <= 0) continue;
             final L1PcInstance member = members[i];
-            final L1PcInstance recipient = CheckRouteAdenaCond(npc, snap, member) ? member : null;
-            final int result = world.PickItem(npc, source, item, amount, recipient);
+            final L1PcInstance recipient = CheckRouteAdenaCond(origin, snap, member) ? member : null;
+            final int result = world.PickItem(origin, source, item, amount, recipient);
             if (result == CWorld.PICK_INVENTORY && member.RootMent1) {
                 try {
                     SC_SystemMessage.send(member, item.getNumberedName(amount)
@@ -468,10 +473,10 @@ for (L1PcInstance member : getMembers()) {
                 }
             }
         }
-        RecoverRemainder(world, npc, source, item);
+        RecoverRemainder(world, origin, source, item);
     }
 
-    private void RouteItem(CWorld world, L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
+    private void RouteItem(CWorld world, L1Location origin, L1Inventory source, L1ItemInstance item,
             DropAcqSnapshot snap, L1PcInstance[] members, int size, String tag) {
         final int mode = Config.PARTY_LOOT_MODE;
         // The previous general mode already chose a random eligible winner.
@@ -480,8 +485,8 @@ for (L1PcInstance member : getMembers()) {
                 : java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
         final L1PcInstance target = members[index];
         final int amount = item.getCount();
-        final L1PcInstance recipient = CheckRouteCond(npc, snap, target) ? target : null;
-        final int result = world.PickItem(npc, source, item, amount, recipient);
+        final L1PcInstance recipient = CheckRouteCond(origin, snap, target) ? target : null;
+        final int result = world.PickItem(origin, source, item, amount, recipient);
         if (result == CWorld.PICK_INVENTORY) {
             try {
                 final String msg = item.getNumberedName(amount) + " 획득 : "
@@ -498,12 +503,12 @@ for (L1PcInstance member : getMembers()) {
                 _log.log(java.util.logging.Level.WARNING, "Party item notification failed", e);
             }
         }
-        RecoverRemainder(world, npc, source, item);
+        RecoverRemainder(world, origin, source, item);
     }
 
-    private void RecoverRemainder(CWorld world, L1NpcInstance npc, L1Inventory source, L1ItemInstance item) {
+    private void RecoverRemainder(CWorld world, L1Location origin, L1Inventory source, L1ItemInstance item) {
         if (source.getItem(item.getId()) != item || item.getCount() <= 0) return;
-        if (world.PickItem(npc, source, item, item.getCount(), null) == CWorld.PICK_REJECTED) {
+        if (!world.RecoverDropRemainder(origin, source, item)) {
             _log.warning("Party drop ground recovery rejected: item=" + item.getId()
                     + ", count=" + item.getCount());
         }
