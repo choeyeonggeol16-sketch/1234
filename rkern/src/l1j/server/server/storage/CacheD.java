@@ -644,6 +644,20 @@ public final class CacheD {
         return scope;
     }
 
+    /** An offline pledge mutation must never overtake a retiring PC snapshot.
+     * Check session absence and reserve the existing receipt lanes atomically. */
+    public static WarehouseMove beginOfflinePledgeMove(int characterId, int pledgeLane, String name) {
+        Objects.requireNonNull(name, "name");
+        final CacheD cache = getInstance();
+        synchronized (cache.lock) {
+            final CUser pending = cache.characters.get(name);
+            if (cache.activeUsers.containsKey(characterId)
+                    || (pending != null && pending.savedVersion < pending.version))
+                throw new RejectedExecutionException("Character session or save still retiring");
+            return beginEconomyMove(characterId, pledgeLane);
+        }
+    }
+
     /** Reserve the existing two FIFO lanes for an immutable economic batch. */
     public static WarehouseMove beginEconomyMove(int ownerId, int secondaryKey) {
         return beginEconomyMove(ownerId, secondaryKey, NO_EXTRA_OWNERS);

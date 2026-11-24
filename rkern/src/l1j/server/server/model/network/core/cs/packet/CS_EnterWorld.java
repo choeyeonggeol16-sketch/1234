@@ -302,7 +302,25 @@ public final class CS_EnterWorld {
             pc.applyLevelGiftSnapshot(data.levelGiftLevels);
             applyEnterLocation(pc);
             l1j.server.server.model.network.core.session.DominationHybrid.applyLoginDestination(client, pc);
-            registerToWorld(pc, client);
+            // A detached login SELECT may predate a committed offline oust.
+            // Validate before world publication, under the same short pledge
+            // monitor as offline receipt admission. A stale image must reload.
+            final L1Clan loginClan = L1World.getInstance().getClan(pc.getClanid());
+            if (pc.getClanid() != 0) {
+                if (loginClan == null)
+                    throw new IllegalStateException("Stale pledge login image");
+                synchronized (loginClan) {
+                    if (L1World.getInstance().getClan(pc.getClanid()) != loginClan
+                            || loginClan.GetDbMember(pc.getId()) == null
+                            || CacheD.getInstance().hasPendingOwnerApply(pc.getId()))
+                        throw new IllegalStateException("Pledge membership changed during login");
+                    registerToWorld(pc, client);
+                }
+            } else {
+                if (CacheD.getInstance().hasPendingOwnerApply(pc.getId()))
+                    throw new IllegalStateException("Character receipt pending during login");
+                registerToWorld(pc, client);
+            }
             sendEnterData(pc, client, data);
             postEnterProcess(pc, client, data);
             finalizeEnter(pc, client);
