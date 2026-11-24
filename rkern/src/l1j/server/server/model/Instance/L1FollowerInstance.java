@@ -41,7 +41,7 @@ public class L1FollowerInstance extends L1NpcInstance {
 		L1NpcInstance npc = null;
 		L1PcInstance pc = null;
 		for (L1Object object : L1World.getInstance().getVisibleObjects(this)) {
-			if (object == null)
+			if (object == null || object == this)
 				continue;
 			if (object instanceof L1NpcInstance) {
 				npc = (L1NpcInstance) object;
@@ -134,8 +134,8 @@ public class L1FollowerInstance extends L1NpcInstance {
 			onPerceive(pc);
 		}
 
-		startAI();
 		master.addFollower(this);
+		startAI();
 	}
 
 	@Override
@@ -220,7 +220,8 @@ public class L1FollowerInstance extends L1NpcInstance {
         questHandoff = HANDOFF_PENDING;
         setSleepTime(1000L);
         CIOThreadCallback.getInstance().completeSession(client, () -> {
-            if (isDestroyed() || isDead() || getMaster() != pc || pc.isDead()) {
+            if (isDestroyed() || isDead() || getMaster() != pc || pc.isDead()
+                    || !handoffPositionStillValid(pc, questId)) {
                 questHandoff = HANDOFF_IDLE;
                 return;
             }
@@ -262,6 +263,20 @@ public class L1FollowerInstance extends L1NpcInstance {
             if (failure != null && questHandoff == HANDOFF_PENDING)
                 questHandoff = HANDOFF_IDLE;
         });
+    }
+
+    /** Recheck the existing arrival coordinates on the receiving PC owner. */
+    private boolean handoffPositionStillValid(L1PcInstance pc, int questId) {
+        if (questId == 0) return true;
+        if (getMapId() != pc.getMapId()
+                || getLocation().getTileLineDistance(pc.getLocation()) >= 3) return false;
+        final int x = pc.getX(), y = pc.getY(), map = pc.getMapId();
+        return switch (questId) {
+            case CQuestSystem.QUEST_CADMUS -> map == 440 && x >= 32448 && x <= 32452 && y >= 33048 && y <= 33052;
+            case CQuestSystem.QUEST_LIZARD -> map == 480 && x >= 32731 && x <= 32735 && y >= 32854 && y <= 32858;
+            case CQuestSystem.QUEST_ROI -> map == 410 && x >= 32917 && x <= 32921 && y >= 32974 && y <= 32978;
+            default -> false;
+        };
     }
 
     /** Preserve logout respawn except for a confirmed handoff. */

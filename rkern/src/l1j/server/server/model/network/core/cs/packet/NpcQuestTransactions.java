@@ -3,9 +3,6 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -170,35 +167,7 @@ final class NpcQuestTransactions {
             }
             // Same nextInt range as the old nextbox/nextbox2 arrays.
             final int nextStep = nextFirst + (nextCount == 1 ? 0 : HtmlCmdHandler._random.nextInt(nextCount));
-            tx.requireTables("character_quests");
-            tx.sql(con -> {
-                // Lock the quest rows in stable order (main=23, box=24..26).
-                try (PreparedStatement check = con.prepareStatement(
-                        "SELECT quest_step FROM character_quests WHERE char_id=? AND quest_id=? FOR UPDATE")) {
-                    check.setInt(1, pc.getId());
-                    check.setInt(2, mainQuest);
-                    try (ResultSet rs = check.executeQuery()) {
-                        if ((rs.next() ? rs.getInt(1) : 0) != expectedStep)
-                            throw new SQLException("Lukein quest step changed before item commit");
-                    }
-                    check.setInt(2, boxQuestId);
-                    try (ResultSet rs = check.executeQuery()) {
-                        if ((rs.next() ? rs.getInt(1) : 0) != 0)
-                            throw new SQLException("Lukein box already claimed");
-                    }
-                }
-                try (PreparedStatement update = con.prepareStatement(
-                        "INSERT INTO character_quests (char_id,quest_id,quest_step) VALUES (?,?,?) "
-                        + "ON DUPLICATE KEY UPDATE quest_step=VALUES(quest_step)")) {
-                    update.setInt(1, pc.getId());
-                    update.setInt(2, mainQuest);
-                    update.setInt(3, nextStep);
-                    update.executeUpdate();
-                    update.setInt(2, boxQuestId);
-                    update.setInt(3, CQuestSystem.QUEST_END);
-                    update.executeUpdate();
-                }
-            });
+            CQuestSystem.StageLukeinChest(tx, pc.getId(), expectedStep, nextStep, boxQuestId);
             tx.onFailure(() -> {
                 SC_SystemMessage.send(pc, "보물지도 교환이 확정되지 않았습니다.");
                 SC_NPCTalkReturn.send(pc, npcObjectId, "maptbox0");

@@ -172,34 +172,66 @@ public class CQuestSystem {
     /** Shared SQL staging for quest-only and quest/item receipts. No I/O on the CIO owner. */
     public static void StageQuestStep(L1InventoryTransaction tx, int characterId,
             int questId, int expectedStep, int nextStep, int resetQuestId) {
+        if (questId <= 0 || resetQuestId < 0 || resetQuestId == questId)
+            throw new IllegalArgumentException("Invalid quest transition");
         tx.requireTables("character_quests");
         tx.sql(con -> {
-            int durableStep = 0;
-            try (PreparedStatement query = con.prepareStatement(
-                    "SELECT quest_step FROM character_quests WHERE char_id=? AND quest_id=? FOR UPDATE")) {
-                query.setInt(1, characterId);
-                query.setInt(2, questId);
-                try (ResultSet rows = query.executeQuery()) {
-                    if (rows.next()) {
-                        durableStep = rows.getInt(1);
-                        if (rows.wasNull()) throw new SQLException("NULL quest step: " + questId);
-                    }
-                }
+            try (PreparedStatement query = con.prepareStatement(LOCK_QUEST_STEP)) {
+                RequireLockedStep(query, characterId, questId, expectedStep);
             }
-            if (durableStep != expectedStep)
-                throw new SQLException("Quest step changed while preparing receipt: " + questId);
-            try (PreparedStatement update = con.prepareStatement(
-                    "INSERT INTO character_quests (char_id,quest_id,quest_step) VALUES (?,?,?) "
-                    + "ON DUPLICATE KEY UPDATE quest_step=VALUES(quest_step)")) {
-                update.setInt(1, characterId);
-                update.setInt(2, questId);
-                update.setInt(3, nextStep);
-                update.executeUpdate();
-                if (resetQuestId != 0) {
-                    update.setInt(2, resetQuestId);
-                    update.setInt(3, 0);
-                    update.executeUpdate();
-                }
+            try (PreparedStatement update = con.prepareStatement(WRITE_QUEST_STEP)) {
+                WriteQuestStep(update, characterId, questId, nextStep);
+                if (resetQuestId != 0) WriteQuestStep(update, characterId, resetQuestId, 0);
+            }
+        });
+    }
+
+    private static final String LOCK_QUEST_STEP =
+            "SELECT quest_step FROM character_quests WHERE char_id=? AND quest_id=? FOR UPDATE";
+    private static final String WRITE_QUEST_STEP =
+            "INSERT INTO character_quests (char_id,quest_id,quest_step) VALUES (?,?,?) "
+            + "ON DUPLICATE KEY UPDATE quest_step=VALUES(quest_step)";
+
+    private static void RequireLockedStep(PreparedStatement query, int characterId,
+            int questId, int expectedStep) throws SQLException {
+        query.setInt(1, characterId);
+        query.setInt(2, questId);
+        int durableStep = 0;
+        try (ResultSet rows = query.executeQuery()) {
+            if (rows.next()) {
+                durableStep = rows.getInt(1);
+                if (rows.wasNull()) throw new SQLException("NULL quest step: " + questId);
+            }
+        }
+        if (durableStep != expectedStep)
+            throw new SQLException("Quest step changed while preparing receipt: " + questId);
+    }
+
+    private static void WriteQuestStep(PreparedStatement update, int characterId,
+            int questId, int step) throws SQLException {
+        update.setInt(1, characterId);
+        update.setInt(2, questId);
+        update.setInt(3, step);
+        update.executeUpdate();
+    }
+
+    /** Lock the main quest, prerequisite chest and current chest in ascending
+     * order; reuse the same two statements and write only after every check. */
+    public static void StageLukeinChest(L1InventoryTransaction tx, int characterId,
+            int expectedStep, int nextStep, int boxQuestId) {
+        if (boxQuestId < QUEST_TBOX1 || boxQuestId > QUEST_TBOX3)
+            throw new IllegalArgumentException("Invalid Lukein chest quest");
+        tx.requireTables("character_quests");
+        tx.sql(con -> {
+            try (PreparedStatement query = con.prepareStatement(LOCK_QUEST_STEP)) {
+                RequireLockedStep(query, characterId, QUEST_LUKEIN1, expectedStep);
+                if (boxQuestId != QUEST_TBOX1)
+                    RequireLockedStep(query, characterId, boxQuestId - 1, QUEST_END);
+                RequireLockedStep(query, characterId, boxQuestId, 0);
+            }
+            try (PreparedStatement update = con.prepareStatement(WRITE_QUEST_STEP)) {
+                WriteQuestStep(update, characterId, QUEST_LUKEIN1, nextStep);
+                WriteQuestStep(update, characterId, boxQuestId, QUEST_END);
             }
         });
     }

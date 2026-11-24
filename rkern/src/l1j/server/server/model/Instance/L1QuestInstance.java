@@ -33,6 +33,17 @@ import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
 public class L1QuestInstance extends L1NpcInstance {
 
 	private static final long serialVersionUID = 1L;
+    private boolean followerClaimed;
+
+    private synchronized boolean claimFollower() {
+        if (followerClaimed || isDestroyed() || isDead()) return false;
+        followerClaimed = true;
+        return true;
+    }
+
+    private synchronized void releaseFollowerClaim() {
+        if (!isDestroyed()) followerClaimed = false;
+    }
 
 	public L1QuestInstance(L1Npc template) {
 		super(template);
@@ -126,38 +137,36 @@ public class L1QuestInstance extends L1NpcInstance {
 		ThreadPool.getInstance().scheduleRequired(new RestMonitor(), REST_MILLISEC);
 	}
 
-	@Override
-	public void onFinalAction(L1PcInstance pc, String action) {
-		if (action.equalsIgnoreCase("start")) {
-			int npcId = getNpcTemplate().get_npcId();
-			L1FollowerInstance follow = null;
-			if ((npcId == 71092 || npcId == 71093) && pc.isKnight() && pc.getQuest().get_step(3) == 4) {
-				L1Npc l1npc = NpcTable.getInstance().getTemplate(71093);
-				follow = new L1FollowerInstance(l1npc, this, pc);
-				SC_NPCTalkReturn.send(pc, getId(), "");
-			} else if (npcId == 71094 && pc.isDarkelf() && pc.getQuest().get_step(4) == 1) {
-				L1Npc l1npc = NpcTable.getInstance().getTemplate(71094);
-				follow = new L1FollowerInstance(l1npc, this, pc);
-				SC_NPCTalkReturn.send(pc, getId(), "");
-			} else if (npcId == 71062 && pc.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 2) {
-				L1Npc l1npc = NpcTable.getInstance().getTemplate(71062);
+    @Override
+    public void onFinalAction(L1PcInstance pc, String action) {
+        if (!"start".equalsIgnoreCase(action) || pc == null || isDestroyed() || isDead()) return;
+        final int npcId = getNpcTemplate().get_npcId();
+        final int followerId;
+        if ((npcId == 71092 || npcId == 71093) && pc.isKnight() && pc.getQuest().get_step(3) == 4) {
+            followerId = 71093;
+        } else if (npcId == 71094 && pc.isDarkelf() && pc.getQuest().get_step(4) == 1) {
+            followerId = 71094;
+        } else if (npcId == 71062 && pc.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 2) {
+            if (!pc.getFollowerList().isEmpty()) {
+                SC_NPCTalkReturn.send(pc, getId(), "");
+                return;
+            }
+            followerId = 71062;
+        } else if (npcId == 71075 && pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 1) {
+            followerId = 71075;
+        } else if (npcId == 70957 || npcId == 81209) {
+            followerId = 70957;
+        } else return;
 
-				if (pc.getFollowerList().size() < 1) {
-					follow = new L1FollowerInstance(l1npc, this, pc);
-				}
-
-				SC_NPCTalkReturn.send(pc, getId(), "");
-			} else if (npcId == 71075 && pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 1) {
-				L1Npc l1npc = NpcTable.getInstance().getTemplate(71075);
-				follow = new L1FollowerInstance(l1npc, this, pc);
-				SC_NPCTalkReturn.send(pc, getId(), "");
-			} else if (npcId == 70957 || npcId == 81209) {
-				L1Npc l1npc = NpcTable.getInstance().getTemplate(70957);
-				follow = new L1FollowerInstance(l1npc, this, pc);
-				SC_NPCTalkReturn.send(pc, getId(), "");
-			}
-		}
-	}
+        final L1Npc template = NpcTable.getInstance().getTemplate(followerId);
+        if (template == null || !claimFollower()) return;
+        try {
+            new L1FollowerInstance(template, this, pc);
+            SC_NPCTalkReturn.send(pc, getId(), "");
+        } finally {
+            releaseFollowerClaim();
+        }
+    }
 
 	private static final long REST_MILLISEC = 10000;
 
