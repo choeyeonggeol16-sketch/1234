@@ -1,4 +1,10 @@
-package l1j.server.server.model;
+package l1j.server.server.model.npc.ai.action;
+
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Location;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.L1World;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,21 +40,10 @@ import l1j.server.server.templates.L1Skills;
  * NC식 소유 구조:
  * - MobSkillTable/L1MobSkill : 서버 공용 스킬/조건 정의
  * - L1NpcInstance           : 개체별 최소 runtime state(count/sleep)
- * - L1MobSkillUse           : 상태 없는 실행 함수
+ * - CSkillAction2           : 상태 없는 실행 함수
  *
  */
-public final class L1MobSkillUse {
-
-    /**
-     * 테스트 로그.
-     * 0  = mobskill 정의가 있는 모든 NPC
-     * >0 = 해당 npcId만
-     *
-     * 테스트 끝나면 DEBUG=false 권장.
-     */
-    private static final boolean DEBUG = false;
-    private static final int DEBUG_NPC_ID = 0;
-    private static final boolean DEBUG_TRIGGER_FAIL = false;
+public final class CSkillAction2 {
 
     /**
      * 물리 AoE 임시 버퍼는 NPC별 소유가 아니라 실행 스레드별 재사용.
@@ -62,7 +57,7 @@ public final class L1MobSkillUse {
                 }
             };
 
-    private L1MobSkillUse() {
+    private CSkillAction2() {
     }
 
     // =========================================================
@@ -114,12 +109,7 @@ public final class L1MobSkillUse {
      * NPC dispose 시 개체별 스킬 runtime 참조만 제거.
      */
     public static void dispose(final L1NpcInstance npc) {
-        if (npc == null) {
-            return;
-        }
-
-        npc._mobSkillUseCount = null;
-        npc._mobSkillSleepTime = 0L;
+        resetRuntime(npc);
     }
 
     // =========================================================
@@ -149,9 +139,8 @@ public final class L1MobSkillUse {
             return false;
         }
 
-        final L1MobSkill template =
-                MobSkillTable.getInstance().getTemplate(
-                        attacker.getNpcTemplate().get_npcId());
+        final int npcId = attacker.getNpcTemplate().get_npcId();
+        final L1MobSkill template = MobSkillTable.getInstance().getTemplate(npcId);
 
         if (template == null) {
             return false;
@@ -160,19 +149,6 @@ public final class L1MobSkillUse {
         final SkillEntry[] entries = template.getSkills();
         if (entries == null || entries.length == 0) {
             return false;
-        }
-
-        final int npcId = attacker.getNpcTemplate().get_npcId();
-
-        if (debug(attacker)) {
-            log(attacker,
-                    "SCAN targetObj=" + tg.getId()
-                    + " targetType=" + tg.getClass().getSimpleName()
-                    + " entries=" + entries.length
-                    + " hp=" + attacker.getCurrentHp()
-                    + "/" + attacker.getMaxHp()
-                    + " mp=" + attacker.getCurrentMp()
-                    + "/" + attacker.getMaxMp());
         }
 
         for (int i = 0; i < entries.length; i++) {
@@ -191,12 +167,6 @@ public final class L1MobSkillUse {
                     : tg;
 
             if (baseTarget == null) {
-                if (debug(attacker)) {
-                    log(attacker,
-                            "SKIP idx=" + i
-                            + " skill=" + e.skillId
-                            + " reason=CHANGE_TARGET_NULL");
-                }
                 continue;
             }
 
@@ -204,22 +174,11 @@ public final class L1MobSkillUse {
                     resolveTargetByTriggers(
                             attacker,
                             i,
-                            entries.length,
                             e,
                             baseTarget);
 
             if (realTarget == null) {
                 continue;
-            }
-
-            if (debug(attacker)) {
-                log(attacker,
-                        "TRY idx=" + i
-                        + " type=" + e.type
-                        + " skill=" + e.skillId
-                        + " targetObj=" + realTarget.getId()
-                        + " dist=" + attacker.getLocation()
-                                .getTileLineDistance(realTarget.getLocation()));
             }
 
             final boolean ok;
@@ -242,22 +201,10 @@ public final class L1MobSkillUse {
                 break;
 
             default:
-                if (debug(attacker)) {
-                    log(attacker,
-                            "SKIP idx=" + i
-                            + " skill=" + e.skillId
-                            + " reason=UNKNOWN_TYPE type=" + e.type);
-                }
                 continue;
             }
 
             if (!ok) {
-                if (debug(attacker)) {
-                    log(attacker,
-                            "EXEC_FAIL idx=" + i
-                            + " type=" + e.type
-                            + " skill=" + e.skillId);
-                }
                 continue;
             }
 
@@ -265,20 +212,7 @@ public final class L1MobSkillUse {
                 skillUseCountUp(attacker, i, entries.length);
             }
 
-            if (debug(attacker)) {
-                log(attacker,
-                        "USED idx=" + i
-                        + " type=" + e.type
-                        + " skill=" + e.skillId
-                        + " sleep=" + attacker._mobSkillSleepTime
-                        + " count=" + getSkillUseCount(attacker, i));
-            }
-
             return true;
-        }
-
-        if (debug(attacker)) {
-            log(attacker, "NONE no usable skill this tick");
         }
 
         return false;
@@ -412,18 +346,10 @@ public final class L1MobSkillUse {
         final int skillid = e.skillId;
 
         if (skillid <= 0) {
-            if (debug(attacker)) {
-                log(attacker, "MAGIC_FAIL reason=INVALID_SKILL_ID");
-            }
             return false;
         }
 
         if (attacker.hasSkillEffect(L1SkillId.SILENCE)) {
-            if (debug(attacker)) {
-                log(attacker,
-                        "MAGIC_FAIL skill=" + skillid
-                        + " reason=SILENCE");
-            }
             return false;
         }
 
@@ -434,11 +360,6 @@ public final class L1MobSkillUse {
 
         if (predicateSkill) {
             if (attacker.hasSkillEffect(L1SkillId.PREDICATEDELAY)) {
-                if (debug(attacker)) {
-                    log(attacker,
-                            "MAGIC_FAIL skill=" + skillid
-                            + " reason=PREDICATE_DELAY");
-                }
                 return false;
             }
             attacker.setSkillEffect(
@@ -452,12 +373,6 @@ public final class L1MobSkillUse {
                     npcId,
                     skillid,
                     target)) {
-
-                if (debug(attacker)) {
-                    log(attacker,
-                            "MAGIC_SPECIAL skill=" + skillid
-                            + " targetObj=" + target.getId());
-                }
 
                 return true;
             }
@@ -475,15 +390,6 @@ public final class L1MobSkillUse {
                             e.leverage);
 
             if (!cast) {
-                if (debug(attacker)) {
-                    log(attacker,
-                            "CAST_FAIL skill=" + skillid
-                            + " targetObj=" + target.getId()
-                            + " pos=" + target.getX() + "," + target.getY()
-                            + " dist=" + attacker.getLocation()
-                                    .getTileLineDistance(target.getLocation())
-                            + " leverage=" + e.leverage);
-                }
                 return false;
             }
 
@@ -504,22 +410,9 @@ public final class L1MobSkillUse {
                                 EActionCodes.spell_nodir);
             }
 
-            if (debug(attacker)) {
-                log(attacker,
-                        "CAST_OK skill=" + skillid
-                        + " targetObj=" + target.getId()
-                        + " sleep=" + attacker._mobSkillSleepTime);
-            }
-
             return true;
 
         } catch (Throwable t) {
-            if (debug(attacker)) {
-                log(attacker,
-                        "CAST_EXCEPTION skill=" + skillid
-                        + " ex=" + t.getClass().getName()
-                        + " msg=" + String.valueOf(t.getMessage()));
-            }
             return false;
         }
     }
@@ -836,12 +729,6 @@ public final class L1MobSkillUse {
                         .getTileLineDistance(mainTarget.getLocation());
 
         if (dist > e.range) {
-            if (debug(attacker)) {
-                log(attacker,
-                        "PHYS_FAIL skill=" + e.skillId
-                        + " reason=RANGE dist=" + dist
-                        + " max=" + e.range);
-            }
             return false;
         }
 
@@ -849,11 +736,6 @@ public final class L1MobSkillUse {
                 mainTarget.getX(),
                 mainTarget.getY())) {
 
-            if (debug(attacker)) {
-                log(attacker,
-                        "PHYS_FAIL skill=" + e.skillId
-                        + " reason=GLANCE");
-            }
             return false;
         }
 
@@ -1041,7 +923,6 @@ public final class L1MobSkillUse {
     private static L1Character resolveTargetByTriggers(
             final L1NpcInstance attacker,
             final int skillIdx,
-            final int skillCount,
             final SkillEntry e,
             L1Character target) {
 
@@ -1051,12 +932,6 @@ public final class L1MobSkillUse {
                             .nextInt(100) + 1;
 
             if (chance > e.triRnd) {
-                triggerFail(
-                        attacker,
-                        skillIdx,
-                        e,
-                        "RND roll=" + chance
-                        + " need<=" + e.triRnd);
 
                 return null;
             }
@@ -1068,12 +943,6 @@ public final class L1MobSkillUse {
                     / Math.max(1, attacker.getMaxHp());
 
             if (hpRatio > e.triHp) {
-                triggerFail(
-                        attacker,
-                        skillIdx,
-                        e,
-                        "HP ratio=" + hpRatio
-                        + " need<=" + e.triHp);
 
                 return null;
             }
@@ -1084,11 +953,6 @@ public final class L1MobSkillUse {
                     searchMinCompanionHp(attacker);
 
             if (companionNpc == null) {
-                triggerFail(
-                        attacker,
-                        skillIdx,
-                        e,
-                        "COMPANION none");
 
                 return null;
             }
@@ -1101,12 +965,6 @@ public final class L1MobSkillUse {
                 target = companionNpc;
 
             } else {
-                triggerFail(
-                        attacker,
-                        skillIdx,
-                        e,
-                        "COMPANION_HP ratio=" + hpRatio
-                        + " need<=" + e.triCompanionHp);
 
                 return null;
             }
@@ -1126,12 +984,6 @@ public final class L1MobSkillUse {
                     : (distance >= tr);
 
             if (!ok) {
-                triggerFail(
-                        attacker,
-                        skillIdx,
-                        e,
-                        "TRI_RANGE dist=" + distance
-                        + " rule=" + tr);
 
                 return null;
             }
@@ -1144,12 +996,6 @@ public final class L1MobSkillUse {
                             skillIdx);
 
             if (used >= e.triCount) {
-                triggerFail(
-                        attacker,
-                        skillIdx,
-                        e,
-                        "COUNT used=" + used
-                        + " max=" + e.triCount);
 
                 return null;
             }
@@ -1167,9 +1013,9 @@ public final class L1MobSkillUse {
         final int family =
                 attacker.getNpcTemplate().get_family();
 
-        for (L1Object object :
-                L1World.getInstance()
-                        .getVisibleObjects(attacker)) {
+        final ArrayList<L1Object> objects = L1World.getInstance().getVisibleObjects(attacker);
+        for (int i = 0, size = objects.size(); i < size; i++) {
+            final L1Object object = objects.get(i);
 
             if (!(object instanceof L1NpcInstance)) {
                 continue;
@@ -1328,12 +1174,6 @@ public final class L1MobSkillUse {
             }
 
         } catch (Throwable t) {
-            if (debug(attacker)) {
-                log(attacker,
-                        "SUMMON_EXCEPTION summonId=" + summonId
-                        + " ex=" + t.getClass().getName()
-                        + " msg=" + String.valueOf(t.getMessage()));
-            }
         }
     }
 
@@ -1354,9 +1194,9 @@ public final class L1MobSkillUse {
             L1Character picked = null;
             int seen = 0;
 
-            for (L1Object obj :
-                    L1World.getInstance()
-                            .getVisibleObjects(attacker)) {
+            final ArrayList<L1Object> objects = L1World.getInstance().getVisibleObjects(attacker);
+            for (int i = 0, size = objects.size(); i < size; i++) {
+                final L1Object obj = objects.get(i);
 
                 if (!(obj instanceof L1Character)) {
                     continue;
@@ -1430,7 +1270,7 @@ public final class L1MobSkillUse {
 
         case L1MobSkill.CHANGE_TARGET_COMPANION:
             /*
-             * 기존 L1MobSkillUse도 이 타입 자체에서 직접 companion을 고르지 않고
+             * 기존 CSkillAction2도 이 타입 자체에서 직접 companion을 고르지 않고
              * triCompanionHp trigger에서 실제 companion target을 결정했다.
              * 따라서 기존 semantics 그대로 originalTarget 유지.
              */
@@ -1440,49 +1280,5 @@ public final class L1MobSkillUse {
         default:
             return originalTarget;
         }
-    }
-
-    // =========================================================
-    // DEBUG
-    // =========================================================
-
-    private static boolean debug(
-            final L1NpcInstance npc) {
-
-        if (!DEBUG || npc == null) {
-            return false;
-        }
-
-        return DEBUG_NPC_ID == 0
-                || npc.getNpcId() == DEBUG_NPC_ID;
-    }
-
-    private static void triggerFail(
-            final L1NpcInstance npc,
-            final int idx,
-            final SkillEntry e,
-            final String reason) {
-
-        if (!DEBUG_TRIGGER_FAIL || !debug(npc)) {
-            return;
-        }
-
-        log(npc,
-                "TRIGGER_FAIL idx=" + idx
-                + " type=" + e.type
-                + " skill=" + e.skillId
-                + " reason=" + reason);
-    }
-
-    private static void log(
-            final L1NpcInstance npc,
-            final String message) {
-
-        System.out.println(
-                "[MOB-SKILL]"
-                + "[npc=" + npc.getNpcId()
-                + ",obj=" + npc.getId()
-                + "] "
-                + message);
     }
 }

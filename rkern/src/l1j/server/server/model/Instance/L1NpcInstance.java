@@ -16,7 +16,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1MobGroupInfo;
-import l1j.server.server.model.L1MobSkillUse;
+import l1j.server.server.model.npc.ai.action.CSkillAction2;
 import l1j.server.server.model.npc.ai.TimerData;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Spawn;
@@ -442,7 +442,7 @@ public class L1NpcInstance extends L1Character {
         setKarma(template.getKarma());
         setLightSize(template.getLightSize());
 
-        L1MobSkillUse.resetRuntime(this);
+        CSkillAction2.resetRuntime(this);
     }
 
     private static byte cap127(int v) {
@@ -1183,7 +1183,7 @@ public class L1NpcInstance extends L1Character {
         _inventory = null;
 
         if (getNpcTemplate().get_npcId() != 8500138) {
-            L1MobSkillUse.dispose(this);
+            CSkillAction2.dispose(this);
         }
 
         _spawn = null;

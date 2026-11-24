@@ -16,7 +16,6 @@ import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1MobGroupInfo;
-import l1j.server.server.model.L1MobSkillUse;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -691,7 +690,7 @@ public final class CNpcAI {
     }
 
     private static void stop(final L1NpcInstance npc) {
-        L1MobSkillUse.resetAllSkillUseCount(npc);
+        CSkillAction2.resetAllSkillUseCount(npc);
 
         // Clear CIO-owner movement/action state before objectId can be reused.
         CIOThreadCallback.getInstance().cancelNpcAction(npc);

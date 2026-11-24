@@ -3,7 +3,6 @@ package l1j.server.server.model.npc.ai.action;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1MobSkillUse;
 import l1j.server.server.model.character.effect.action.EffectModel;
 import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
 import l1j.server.server.model.npc.ai.CDesirePQ;
@@ -16,12 +15,12 @@ import l1j.server.server.model.npc.ai.CDesirePQ;
  * while preserving the existing probability/order/sleep semantics.
  *
  * It intentionally does not introduce a new persistent current-action state;
- * L1MobSkillUse already owns the existing cast-complete contract and wakes AI
+ * CSkillAction2 already owns the existing cast-complete contract and wakes AI
  * through L1NpcInstance.endCast().
  */
-public final class CSkillAction {
+public final class dUseSkill {
 
-    private CSkillAction() {
+    private dUseSkill() {
     }
 
     /** Execute exactly the skill selected by the reference design desire queue. */
@@ -50,9 +49,9 @@ public final class CSkillAction {
                 // Enemy visibility filtering must not suppress a self skill.
                 && (targetId == 0 || !target.isInvisble()
                         || monster.getNpcTemplate().is_agrocoi())
-                && L1MobSkillUse.skillUseSelected(monster, target, skillId)) {
-            CCreatureController.sleep(monster, L1MobSkillUse.getSleepTime(monster));
-            // L1MobSkillUse returns the final accepted result synchronously.
+                && CSkillAction2.skillUseSelected(monster, target, skillId)) {
+            CCreatureController.sleep(monster, CSkillAction2.getSleepTime(monster));
+            // CSkillAction2 returns the final accepted result synchronously.
             // This is NC UseSkillFinished(well=true): remove the exact skill
             // key, never its ATTACK/other USE_SKILL siblings.
             CDesirePQ.UseSkillFinished(monster, targetId, skillId, true);
@@ -88,14 +87,14 @@ public final class CSkillAction {
 
         if (model != null && model.isEffectSet()) {
             if (!model.runEffect(creature)) return false;
-            CCreatureController.sleep(creature, L1MobSkillUse.getSleepTime(creature) + 500L);
+            CCreatureController.sleep(creature, CSkillAction2.getSleepTime(creature) + 500L);
             return true;
         }
 
-        if (L1MobSkillUse.skillUse(creature, target)) {
+        if (CSkillAction2.skillUse(creature, target)) {
             CCreatureController.sleep(
                     creature,
-                    L1MobSkillUse.getSleepTime(creature));
+                    CSkillAction2.getSleepTime(creature));
 
             return true;
         }

@@ -104,14 +104,14 @@ public final class CAttackAction {
      *
      * MoveToTargetAction도 같은 로직을 사용한다.
      *
-     * L1MobSkillUse 객체를 NPC가 소유하지 않는다.
+     * CSkillAction2 객체를 NPC가 소유하지 않는다.
      * 이미 MobSkillTable에 로드된 L1MobSkill 정의를 static executor가 사용한다.
      */
     public static boolean tryCombatAbility(
             final L1NpcInstance creature,
             final L1Character target) {
 
-        return CSkillAction.tryUse(creature, target);
+        return dUseSkill.tryUse(creature, target);
     }
 
     public static void basicAttack(
