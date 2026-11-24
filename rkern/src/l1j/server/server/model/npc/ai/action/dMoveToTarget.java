@@ -4,7 +4,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.CNPCServer;
 
 /**
  * NC CNPC::dMoveToTarget (0x004972ac), general-purpose scripted target
@@ -31,7 +31,7 @@ public final class dMoveToTarget {
             final int targetObjectId,
             final int stopDistanceTiles) {
         if (npc == null || targetObjectId <= 0
-                || !NpcServer.getInstance().isOwnerThread(npc)
+                || !CNPCServer.getInstance().isOwnerThread(npc)
                 || !npc.aiEngineIsRunning()
                 || stopDistanceTiles < 0) {
             return false;

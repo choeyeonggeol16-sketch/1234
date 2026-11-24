@@ -542,6 +542,10 @@ public class L1NpcInstance extends L1Character {
         }
     }
 
+    public final boolean HasSpecialAction() {
+        return _specialAction != CNpcSpecialAction.NONE;
+    }
+
     public final void ExecuteSpecialAction() {
         if (_specialAction != CNpcSpecialAction.NONE) {
             CNpcSpecialAction.Execute(this, _specialAction);

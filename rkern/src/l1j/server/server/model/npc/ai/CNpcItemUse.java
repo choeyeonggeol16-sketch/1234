@@ -116,13 +116,16 @@ public final class CNpcItemUse {
             if (npc.getCurrentHp() != npc.getMaxHp()) {
                 npc.useItem(USEITEM_HEAL, 100);
             }
-        } else if (itemId == L1ItemId.B_POTION_OF_GREATER_HASTE_SELF
+        } else if (IsHastePotion(itemId)) {
+            npc.useItem(USEITEM_HASTE, 100);
+        }
+    }
+    public static boolean IsHastePotion(final int itemId) {
+        return itemId == L1ItemId.B_POTION_OF_GREATER_HASTE_SELF
                 || itemId == L1ItemId.POTION_OF_GREATER_HASTE_SELF
                 || itemId == L1ItemId.POTION_OF_GREATER_HASTE_SELF1
                 || itemId == L1ItemId.B_POTION_OF_HASTE_SELF
                 || itemId == L1ItemId.POTION_OF_HASTE_SELF
-                || itemId == 7006) {
-            npc.useItem(USEITEM_HASTE, 100);
-        }
+                || itemId == 7006;
     }
 }

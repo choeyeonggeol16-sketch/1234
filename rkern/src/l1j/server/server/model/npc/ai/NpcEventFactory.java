@@ -65,7 +65,7 @@ public final class NpcEventFactory {
             final int event) {
         CNPCServer.getInstance().HandleEvent(npc,
                 CNPCEvent.Create(source, event, npc.npcEventEpoch()));
-        if (!npc.isAiRunning()) npc.onNpcAI();
+        if (!npc.aiEngineIsRunning()) npc.onNpcAI();
     }
 
     /*

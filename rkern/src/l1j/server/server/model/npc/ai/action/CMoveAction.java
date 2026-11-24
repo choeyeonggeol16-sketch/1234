@@ -86,7 +86,7 @@ public final class CMoveAction {
 
         switch (action) {
         case CCreatureController.ACTION_FOLLOW_MASTER:
-            return creature.noTargetMaster(2769)
+            return creature.noTargetMaster()
                     ? CCreatureController.RESULT_INVALID
                     : CCreatureController.RESULT_DONE;
 
@@ -133,7 +133,7 @@ public final class CMoveAction {
              * ACTION_MOVE_AROUND_NATIVE -> CMoveAroundAction.
              * ACTION_MOVE remains the legacy/generic no-target move hook.
              */
-            creature.noTargetNormal(4920);
+            creature.noTargetNormal();
             return CCreatureController.RESULT_DONE;
 
         default:

@@ -3,7 +3,7 @@ package l1j.server.server.model.npc.ai.action;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.CNPCServer;
 
 /**
  * NC CNPC::dMoveTo (0x004934a4), adapted to L1's 2D eight-direction tiles.
@@ -33,7 +33,7 @@ public final class dMoveTo {
             final int x,
             final int y) {
         if (npc == null
-                || !NpcServer.getInstance().isOwnerThread(npc)
+                || !CNPCServer.getInstance().isOwnerThread(npc)
                 || !npc.aiEngineIsRunning()
                 || !validDestination(npc, x, y)) {
             return false;

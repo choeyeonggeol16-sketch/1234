@@ -75,7 +75,7 @@ public final class CDesireFactory {
                 desireValue, boost, extra,
                 System.currentTimeMillis());
         if (added) {
-            NpcServer.getInstance().wake(npc);
+            CNPCServer.getInstance().wake(npc);
         }
         return added;
     }

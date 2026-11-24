@@ -1,5 +1,4 @@
 package l1j.server.server.model.Instance;
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,7 +18,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.model.npc.ai.CNpcItemUse;
 import l1j.server.server.model.npc.ai.action.dFollow;
 import l1j.server.server.model.npc.ai.action.dPetDefault;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
@@ -468,7 +467,7 @@ public class L1DollInstance extends L1NpcInstance {
 	public void onItemUse() {
 		if (!isActived()) {
 			// 100%의 확률로 헤이 파업 일부 사용
-			useItem(NpcPotionPolicy.USEITEM_HASTE, 100);
+			useItem(CNpcItemUse.USEITEM_HASTE, 100);
 		}
 	}
 
@@ -477,8 +476,8 @@ public class L1DollInstance extends L1NpcInstance {
 		if (getNpcTemplate().get_digestitem() > 0) {
 			setDigestItem(item);
 		}
-		if (Arrays.binarySearch(NpcPotionPolicy.haestPotions, item.getItem().getItemId()) >= 0) {
-			useItem(NpcPotionPolicy.USEITEM_HASTE, 100);
+		if (CNpcItemUse.IsHastePotion(item.getItem().getItemId())) {
+			useItem(CNpcItemUse.USEITEM_HASTE, 100);
 		}
 	}
 

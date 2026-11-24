@@ -23,7 +23,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import l1j.server.server.model.network.core.sc.packet.SC_OnlyEffect;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.CNPCServer;
 import l1j.server.server.utils.GameUtils;
 
 /**
@@ -78,7 +78,7 @@ public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
     /** Called by the NPC action owner, before any delayed work is submitted. */
     public final boolean start() {
         if (model == null || !model.isSafe() || owner == null
-                || owner.isDead() || owner.isDestroyed() || !NpcServer.getInstance().isRunning()) {
+                || owner.isDead() || owner.isDestroyed() || !CNPCServer.getInstance().isRunning()) {
             return false;
         }
         if (!owner.tryBeginCast()) return false;
@@ -99,8 +99,8 @@ public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
             finish();
             return;
         }
-        if (!NpcServer.getInstance().postNpcWheelTask(owner, this)) {
-            if (!NpcServer.getInstance().isRunning() || isExpired()) {
+        if (!CNPCServer.getInstance().postNpcWheelTask(owner, this)) {
+            if (!CNPCServer.getInstance().isRunning() || isExpired()) {
                 finish();
                 return;
             }
