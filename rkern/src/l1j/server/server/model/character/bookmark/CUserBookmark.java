@@ -38,9 +38,11 @@ public final class CUserBookmark {
     private final ArrayList<L1BookMark> slots = new ArrayList<>();
     private final ArrayList<L1BookMark> shortcuts = new ArrayList<>();
 
-    // Compatibility views are the actual owner lists, not copied state.
-    public ArrayList<L1BookMark> slots() { return slots; }
-    public ArrayList<L1BookMark> shortcuts() { return shortcuts; }
+    public L1BookMark[] snapshotSlots() { return slots.toArray(new L1BookMark[slots.size()]); }
+    public L1BookMark[] snapshotShortcuts() { return shortcuts.toArray(new L1BookMark[shortcuts.size()]); }
+    // Package-local views for regression checks; no external mutable list aliases.
+    ArrayList<L1BookMark> slots() { return slots; }
+    ArrayList<L1BookMark> shortcuts() { return shortcuts; }
 
     public L1BookMark FindSlot(String name) {
         if (name == null) return null;
@@ -126,7 +128,7 @@ public final class CUserBookmark {
     }
 
     public static boolean validTitle(String s) {
-        return s != null && !s.isEmpty() && s.length() <= 255 && s.indexOf('\0') < 0;
+        return s != null && !s.isEmpty() && s.length() <= 45 && s.indexOf('\0') < 0;
     }
 
     public static boolean CanSaveBookmark(L1PcInstance pc) {

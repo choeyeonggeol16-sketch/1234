@@ -957,14 +957,13 @@ public class L1PcInstance extends L1Character {
 	boolean isExpDrop;
 	boolean isItemDrop;
 
-	public final ArrayList<L1BookMark> _speedbookmarks;
 
 	public L1BookMark[] getBookMarkArray() {
-		return _bookmarks.toArray(new L1BookMark[_bookmarks.size()]);
+		return userBookmark.snapshotSlots();
 	}
 
 	public L1BookMark[] getSpeedBookMarkArray() {
-		return _speedbookmarks.toArray(new L1BookMark[_speedbookmarks.size()]);
+		return userBookmark.snapshotShortcuts();
 	}
 
 	private int _markcount;
@@ -1098,8 +1097,6 @@ public class L1PcInstance extends L1Character {
 
 	private final CUserBookmark userBookmark;
 	public final CUserBookmark getUserBookmark() { return userBookmark; }
-	// Legacy readers share the actual CUserBookmark lists; no duplicate storage.
-	public final ArrayList<L1BookMark> _bookmarks;
 	private byte[] _shopChat;
 	private AtomicInteger _pinkNameTime;
 	private CUserSocket _netConnection;
@@ -1117,8 +1114,6 @@ public class L1PcInstance extends L1Character {
 		_dwarfForPackage = new L1DwarfForPackageInventory(this);
 		_tradewindow = new L1Inventory();
 		userBookmark = new CUserBookmark();
-		_bookmarks = userBookmark.slots();
-		_speedbookmarks = userBookmark.shortcuts();
 		_quest = new L1Quest(this);
 		_equipSlot = new L1EquipmentSlot(this);
 		_pinkNameTime = new AtomicInteger(0);

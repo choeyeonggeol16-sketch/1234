@@ -460,7 +460,7 @@ for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
         final L1ItemInstance useItem = pc.getInventory().getItem(itemId);
 
         if (useItem != null) {
-            기억저장구슬(pc, useItem);
+            L1ItemBookMark.saveBookmarkItem(pc, useItem);
         }
     }
 
@@ -618,20 +618,4 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         }
     }
 
-    private static void 기억저장구슬(
-            L1PcInstance pc,
-            L1ItemInstance useItem) {
-
-        final ArrayList<L1BookMark> books = pc._bookmarks;
-        final L1ItemInstance item = ItemTable.getInstance().createItem(700023);
-
-        if (item != null) {
-            for (int i = 0; i < books.size(); i++) {
-                L1ItemBookMark.addBookmark(pc, item, books.get(i));
-            }
-
-            pc.getInventory().storeItem(item);
-            pc.getInventory().removeItem(useItem, 1);
-        }
-    }
 }

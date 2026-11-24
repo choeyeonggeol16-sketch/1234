@@ -5,6 +5,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import l1j.server.server.IdFactory;
+import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.character.bookmark.CUserBookmark;
+import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.cached.CTransaction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -152,11 +159,11 @@ public class L1ItemBookMark {
             ps.setInt(1, charId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) throw new SQLException("Stored bookmark owner no longer exists");
-                capacity = Math.min(markLimit, rs.getInt(1));
+                capacity = Math.min(CUserBookmark.MAX_SLOT, Math.min(markLimit, rs.getInt(1)));
             }
         }
         ArrayList<L1BookMark> result = new ArrayList<>();
-        try (PreparedStatement ps = con.prepareStatement("SELECT name,locx,locy,mapid,randomX,randomY "
+        try (PreparedStatement ps = con.prepareStatement("SELECT name,locx,locy,mapid,randomX,randomY,speed_id "
                 + "FROM character_teleport_item WHERE item_id=? ORDER BY num_id,id FOR UPDATE")) {
             ps.setInt(1, objectId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -165,7 +172,7 @@ public class L1ItemBookMark {
                     L1BookMark book = new L1BookMark();
                     book.setId(l1j.server.server.IdFactory.getInstance().nextId());
                     book.setCharId(charId); book.setNumId(result.size());
-                    book.setTemp_id(book.getNumId()); book.setSpeed_id(-1);
+                    book.setTemp_id(book.getNumId()); book.setSpeed_id(rs.getInt("speed_id"));
                     book.setName(rs.getString("name")); book.setLocX(rs.getInt("locx"));
                     book.setLocY(rs.getInt("locy")); book.setMapId(rs.getShort("mapid"));
                     book.setRandomX(rs.getInt("randomX")); book.setRandomY(rs.getInt("randomY"));
@@ -174,13 +181,20 @@ public class L1ItemBookMark {
             }
         }
         if (result.isEmpty()) throw new SQLException("Stored bookmark orb has no persistent destinations");
+        int speedMask = 0;
+        for (L1BookMark b : result) {
+            int speed = b.getSpeed_id();
+            if (speed < 0 || speed >= CUserBookmark.SHORTCUTS || (speedMask & (1 << speed)) != 0)
+                b.setSpeed_id(-1);
+            else speedMask |= 1 << speed;
+        }
         try (PreparedStatement ps = con.prepareStatement("DELETE FROM character_teleport WHERE char_id=?")) {
             ps.setInt(1, charId); ps.executeUpdate();
         }
         try (PreparedStatement ps = con.prepareStatement("INSERT INTO character_teleport "
                 + "(id,num_id,speed_id,char_id,name,locx,locy,mapid,randomX,randomY) VALUES(?,?,?,?,?,?,?,?,?,?)")) {
             for (L1BookMark book : result) {
-                ps.setInt(1, book.getId()); ps.setInt(2, book.getNumId()); ps.setInt(3, -1);
+                ps.setInt(1, book.getId()); ps.setInt(2, book.getNumId()); ps.setInt(3, book.getSpeed_id());
                 ps.setInt(4, charId); ps.setString(5, book.getName());
                 ps.setInt(6, book.getLocX()); ps.setInt(7, book.getLocY()); ps.setInt(8, book.getMapId());
                 ps.setInt(9, book.getRandomX()); ps.setInt(10, book.getRandomY());
@@ -195,13 +209,14 @@ public class L1ItemBookMark {
     }
 
     public static void bookmarItemkDB(L1PcInstance pc, L1ItemInstance item) {
-        final String sql = "SELECT * FROM character_teleport_item WHERE item_id=? ORDER BY num_id ASC";
+        final String sql = "SELECT * FROM character_teleport_item WHERE item_id=? ORDER BY num_id ASC,id ASC";
 
         try (Connection con = DatabaseFactory.getInstance().getConnection();
              PreparedStatement pstm = con.prepareStatement(sql)) {
 
             pstm.setInt(1, item.getId());
 
+            final ArrayList<L1ItemBookMark> loaded = new ArrayList<>();
             try (ResultSet rs = pstm.executeQuery()) {
                 int i = 0;
                 while (rs.next()) {
@@ -215,51 +230,80 @@ public class L1ItemBookMark {
                     bookmark.setLocX(rs.getInt("locx"));
                     bookmark.setLocY(rs.getInt("locy"));
                     bookmark.setMapId(rs.getShort("mapid"));
-                    bookmark.setRandomX(rs.getShort("randomX"));
-                    bookmark.setRandomY(rs.getShort("randomY"));
-                    item.addBookMark(bookmark);
+                    bookmark.setRandomX(rs.getInt("randomX"));
+                    bookmark.setRandomY(rs.getInt("randomY"));
+                    loaded.add(bookmark);
                     i++;
                 }
             }
+            item.getBookMark().clear();
+            item.getBookMark().addAll(loaded);
         } catch (SQLException e) {
             _log.log(Level.WARNING, "bookmarks 예외 발생.", e);
         }
     }
 
 
-	public static synchronized void addBookmark(L1PcInstance pc, L1ItemInstance item, L1BookMark book) {
-	    try (Connection con = DatabaseFactory.getInstance().getConnection()) {
-            int id;
-            try (PreparedStatement ps = con.prepareStatement("SELECT max(id)+1 as newid FROM character_teleport_item");
-                 ResultSet rs = ps.executeQuery()) {
-                rs.next();
-                id = rs.getInt("newid");
+    /** L1-specific bookmark export: the physical token, new orb and every
+     * destination row belong to the same durable inventory receipt. */
+    public static void saveBookmarkItem(L1PcInstance pc, L1ItemInstance source) {
+        if (pc == null || source == null || source.getItemId() != 3000208
+                || pc.isLogoutStarted() || pc.isDead() || pc.isGhost()
+                || pc.isItemTransferBusy() || pc.getTradeID() != 0 || pc.isTradeResolving()
+                || pc.getInventory().getItem(source.getId()) != source) return;
+        final L1BookMark[] slots = pc.getBookMarkArray();
+        if (slots.length == 0 || slots.length > CUserBookmark.MAX_SLOT) return;
+        Arrays.sort(slots, Comparator.comparingInt(L1BookMark::getTemp_id)
+                .thenComparingInt(L1BookMark::getId));
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc,
+                CacheD.accountOrderKey("bookmark:" + pc.getId()))) {
+            if (!tx.debit(source, 1)) return;
+            final L1ItemInstance grant = tx.grant(700023, 1);
+            if (grant == null || grant.isStackable() || grant.getCount() != 1)
+                throw new IllegalStateException("Saved bookmark orb must be a unique item");
+            final int objectId = grant.getId();
+            final ArrayList<L1ItemBookMark> rows = new ArrayList<>(slots.length);
+            for (int n = 0; n < slots.length; n++) {
+                final L1BookMark b = slots[n];
+                final L1ItemBookMark row = new L1ItemBookMark();
+                row.setId(IdFactory.getInstance().nextId());
+                row.setCharId(objectId); row.setNumId(n); row.setTemp_id(n);
+                row.setName(b.getName()); row.setSpeed_id(b.getSpeed_id());
+                row.setLocX(b.getLocX()); row.setLocY(b.getLocY()); row.setMapId(b.getMapId());
+                row.setRandomX(b.getRandomX()); row.setRandomY(b.getRandomY());
+                rows.add(row);
             }
-            int numId;
-            try (PreparedStatement ps = con.prepareStatement("SELECT max(num_id)+1 as newid FROM character_teleport_item WHERE item_id=?")) {
-                ps.setInt(1, pc.getId());
-                try (ResultSet rs = ps.executeQuery()) {
-                    rs.next();
-                    numId = rs.getInt("newid");
+            tx.sql(con -> {
+                CTransaction.requireTransactionalTables(con, "character_teleport_item");
+                writeSavedOrb(con, objectId, rows);
+            });
+            tx.onFailure(() -> pc.sendPackets("기억 저장에 실패했습니다. 구슬은 소비되지 않았습니다."));
+            tx.commit(() -> {
+                L1ItemInstance item = pc.getInventory().getItem(objectId);
+                if (item != null && item.getItemId() == 700023) {
+                    item.getBookMark().clear();
+                    item.getBookMark().addAll(rows);
                 }
-            }
-            try (PreparedStatement ps = con.prepareStatement(
-                    "INSERT INTO character_teleport_item SET id=?,num_id=?,speed_id=?,item_id=?,name=?,locx=?,locy=?,mapid=?")) {
-                ps.setInt(1, id);
-                ps.setInt(2, numId);
-                ps.setInt(3, -1);
-                ps.setInt(4, item.getId());
-                ps.setString(5, book.getName());
-                ps.setInt(6, book.getLocX());
-                ps.setInt(7, book.getLocY());
-                ps.setInt(8, book.getMapId());
-                ps.executeUpdate();
-            }
-            item._bookmarks.add(new L1ItemBookMark()); 
-        } catch (SQLException e) {
-            _log.log(Level.SEVERE, "북마크 추가 에러", e);
+            });
+        } catch (RuntimeException e) {
+            _log.log(Level.WARNING, "Bookmark export not admitted: " + pc.getId(), e);
+            pc.sendPackets("기억 저장을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.");
         }
-	}
+    }
+
+    static void writeSavedOrb(Connection con, int objectId, ArrayList<L1ItemBookMark> rows)
+            throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(
+                "INSERT INTO character_teleport_item(id,num_id,speed_id,item_id,name,locx,locy,mapid,randomX,randomY) VALUES(?,?,?,?,?,?,?,?,?,?)")) {
+            for (L1ItemBookMark b : rows) {
+                ps.setInt(1, b.getId()); ps.setInt(2, b.getNumId()); ps.setInt(3, b.getSpeed_id());
+                ps.setInt(4, objectId); ps.setString(5, b.getName());
+                ps.setInt(6, b.getLocX()); ps.setInt(7, b.getLocY()); ps.setInt(8, b.getMapId());
+                ps.setInt(9, b.getRandomX()); ps.setInt(10, b.getRandomY());
+                if (ps.executeUpdate() != 1) throw new SQLException("Saved bookmark insert failed");
+            }
+        }
+    }
 
 	public static void deleteBookmarkItem(int itemid) {
 		Connection con = null;

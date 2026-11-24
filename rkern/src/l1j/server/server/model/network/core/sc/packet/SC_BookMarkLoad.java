@@ -18,10 +18,11 @@ public final class SC_BookMarkLoad {
     private SC_BookMarkLoad() {}
 
     private static final class Entry {
-        final int id, map, x, y;
+        final int id, order, map, x, y;
         final byte[] name;
         Entry(L1BookMark mark) {
             id = mark.getNumId();
+            order = mark.getTemp_id();
             String s = mark.getName();
             name = (s == null ? "" : s).getBytes(MS949);
             map = mark.getMapId();
@@ -38,30 +39,24 @@ public final class SC_BookMarkLoad {
         try {
             markCount = Math.clamp(pc.getMark_count(), 0, 100);
             booksize = markCount + 6;
-            if (pc._bookmarks != null) {
-                synchronized (pc._bookmarks) {
-                    for (L1BookMark mark : pc._bookmarks)
-                        if (mark != null) marks.add(new Entry(mark));
-                }
-            }
-            if (pc._speedbookmarks != null) {
-                int last = -1;
-                for (L1BookMark mark : pc._speedbookmarks)
-                    if (mark != null && mark.getSpeed_id() >= 0 && mark.getSpeed_id() < 5)
-                        last = Math.max(last, mark.getSpeed_id());
-                speed = new int[last + 1];
-                java.util.Arrays.fill(speed, 0xFF);
-                for (L1BookMark mark : pc._speedbookmarks)
-                    if (mark != null && mark.getSpeed_id() >= 0 && mark.getSpeed_id() < speed.length)
-                        speed[mark.getSpeed_id()] = mark.getNumId();
-            }
+            for (L1BookMark mark : pc.getBookMarkArray()) marks.add(new Entry(mark));
+            final L1BookMark[] shortcuts = pc.getSpeedBookMarkArray();
+            int last = -1;
+            for (L1BookMark mark : shortcuts)
+                if (mark.getSpeed_id() >= 0 && mark.getSpeed_id() < 5)
+                    last = Math.max(last, mark.getSpeed_id());
+            speed = new int[last + 1];
+            java.util.Arrays.fill(speed, 0xFF);
+            for (L1BookMark mark : shortcuts)
+                if (mark.getSpeed_id() >= 0 && mark.getSpeed_id() < speed.length)
+                    speed[mark.getSpeed_id()] = mark.getNumId();
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "SC_BookMarkLoad snapshot failed", ex);
-            booksize = 0;
-            markCount = 0;
-            speed = new int[0];
-            marks = new ArrayList<>();
+            return false;
         }
+        if (marks.size() > markCount) return false;
+        // Display order is independent of the stable session wire IDs.
+        marks.sort(java.util.Comparator.comparingInt((Entry e) -> e.order).thenComparingInt(e -> e.id));
         final int tempSize = Math.max(0, booksize - 1 - marks.size() - speed.length);
         int wireSize = 2 + 5 + marks.size() + speed.length + tempSize + 2 + 2;
         for (Entry mark : marks) {
@@ -83,7 +78,7 @@ public final class SC_BookMarkLoad {
             b.writeC(booksize);
             b.writeC(0);
             b.writeC(2);
-            for (int i = 0, n = marks.size(); i < n; i++) b.writeC(i);
+            for (Entry mark : marks) b.writeC(mark.id);
             for (int num : speed) b.writeC(num);
             for (int i = 0; i < tempSize; i++) b.writeC(0xFF);
             b.writeH(markCount);
