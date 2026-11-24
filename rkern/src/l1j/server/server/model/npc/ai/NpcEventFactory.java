@@ -21,6 +21,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.templates.L1Npc;
+import l1j.server.server.model.npc.ai.action.CGetItemAction;
 
 public final class NpcEventFactory {
 
@@ -44,6 +45,27 @@ public final class NpcEventFactory {
 
     public static CNPCEvent CreateInvisibilityEvent(L1NpcInstance npc, L1Character creature) {
         return CNPCEvent.Create(creature, L1NpcInstance.HATE_EVENT_INVISIBILITY, npc.npcEventEpoch());
+    }
+
+    /** L1 flying-monster requests reuse the existing pooled NPC inbox. */
+    public static void requestAirFood(final L1NpcInstance npc) {
+        if (!CGetItemAction.canSearchFromAir(npc)) return;
+        postAirEvent(npc, npc, L1NpcInstance.HATE_EVENT_AIR_FOOD);
+    }
+
+    public static void requestAirLanding(final L1NpcInstance npc, final L1PcInstance pc) {
+        if (npc == null || pc == null || npc.isDead() || npc.isDestroyed()
+                || npc.getCurrentHp() <= 0
+                || npc.getHiddenStatus() != L1NpcInstance.HIDDEN_STATUS_FLY
+                || npc.getMapId() != pc.getMapId()) return;
+        postAirEvent(npc, pc, L1NpcInstance.HATE_EVENT_AIR_LAND);
+    }
+
+    private static void postAirEvent(final L1NpcInstance npc, final L1Character source,
+            final int event) {
+        NpcServer.getInstance().HandleEvent(npc,
+                CNPCEvent.Create(source, event, npc.npcEventEpoch()));
+        if (!npc.isAiRunning()) npc.onNpcAI();
     }
 
     /*

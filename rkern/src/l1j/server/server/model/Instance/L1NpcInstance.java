@@ -13,7 +13,6 @@ import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.NpcChatTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1MobGroupInfo;
@@ -71,6 +70,8 @@ public class L1NpcInstance extends L1Character {
     public static final int HATE_EVENT_SIGHT = Integer.MIN_VALUE;
     public static final int HATE_EVENT_INVISIBILITY = Integer.MIN_VALUE + 1;
     public static final int HATE_EVENT_GROUP_LINK = Integer.MIN_VALUE + 2;
+    public static final int HATE_EVENT_AIR_FOOD = Integer.MIN_VALUE + 3;
+    public static final int HATE_EVENT_AIR_LAND = Integer.MIN_VALUE + 4;
 
     /*
      * ATTACKED / CLAN_ATTACKED도 pooled CNPCEvent를 그대로 사용한다.
@@ -937,34 +938,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void searchItemFromAir() {
-        L1ItemInstance found = null;
-        for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(this, 4)) {
-            if (obj instanceof L1GroundInventory) {
-                final L1GroundInventory gi = (L1GroundInventory) obj;
-                if (gi.getSize() <= 0) continue;
-                for (L1ItemInstance item : gi.getItems()) {
-                    if (item == null) continue;
-                    final int type = item.getItem().getType();
-                    if (type == 6 || type == 7) { 
-                        found = item;
-                        break;
-                    }
-                }
-            }
-            if (found != null) break;
-        }
-        if (found == null) {
-            return; 
-        }
-        if (getHiddenStatus() == HIDDEN_STATUS_FLY) {
-            setHiddenStatus(HIDDEN_STATUS_NONE);
-            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Movedown);
-            setStatus(0);
-            SC_WorldPutObject.broadcastNpc(this);
-            onNpcAI();
-            startChat(CHAT_TIMING_HIDE);
-        }
-        _targetItem = found;
+        NpcEventFactory.requestAirFood(this);
     }
 
     /**
@@ -1348,16 +1322,7 @@ public class L1NpcInstance extends L1Character {
             }
             onNpcAI();
         } else if (getHiddenStatus() == HIDDEN_STATUS_FLY) {
-            setHiddenStatus(HIDDEN_STATUS_NONE);
-            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Movedown);
-            setStatus(0);
-            SC_WorldPutObject.broadcastNpc(this);
-            if (!pc.hasSkillEffect(60) && !pc.hasSkillEffect(97) && !pc.isGm()) {
-                _hateList.add(pc, 0);
-                _target = pc;
-            }
-            onNpcAI();
-            startChat(CHAT_TIMING_HIDE);
+            NpcEventFactory.requestAirLanding(this, pc);
         }
     }
 
@@ -1555,7 +1520,9 @@ public class L1NpcInstance extends L1Character {
     private boolean _reSpawn;
     private int _lightSize;
     private boolean _weaponBreaked;
-    private int _hiddenStatus;
+    private volatile int _hiddenStatus;
+    private static final AtomicIntegerFieldUpdater<L1NpcInstance> HIDDEN_STATUS =
+            AtomicIntegerFieldUpdater.newUpdater(L1NpcInstance.class, "_hiddenStatus");
     private int _movementDistance = 0;
     private int _tempLawful = 0;
 
@@ -1637,6 +1604,12 @@ public class L1NpcInstance extends L1Character {
 
     public void setHiddenStatus(int i) {
         _hiddenStatus = i;
+    }
+
+    /** One flight-to-ground transition, even if another producer races. */
+    public final boolean tryLandFromAir() {
+        return !isDestroyed() && !isDead() && getCurrentHp() > 0
+                && HIDDEN_STATUS.compareAndSet(this, HIDDEN_STATUS_FLY, HIDDEN_STATUS_NONE);
     }
 
     public int getMovementDistance() {

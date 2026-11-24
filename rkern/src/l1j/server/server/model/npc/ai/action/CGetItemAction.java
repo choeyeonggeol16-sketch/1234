@@ -20,6 +20,7 @@ public final class CGetItemAction {
 
     private static final int SEARCH_COOLDOWN_TICKS = 20;
     private static final int MAX_TARGET_DISTANCE = 15;
+    private static final int AIR_FOOD_RADIUS = 4;
     private static final int SOFT_BLOCK_GIVEUP = 6;
 
     private static final long RETRY_SLEEP_MS = 120L;
@@ -75,6 +76,58 @@ public final class CGetItemAction {
         default:
             return;
         }
+    }
+
+    public static boolean canSearchFromAir(final L1NpcInstance npc) {
+        return npc != null && !npc.isDestroyed() && !npc.isDead()
+                && npc.getHiddenStatus() == L1NpcInstance.HIDDEN_STATUS_FLY
+                && npc.getCurrentHp() > 0 && npc.getCurrentHp() < npc.getMaxHp();
+    }
+
+    private static boolean isAirFood(final L1ItemInstance item) {
+        if (item == null || item.getItem() == null) return false;
+        final int type = item.getItem().getType();
+        return type == 6 || type == 7;
+    }
+
+    /** L1 feeding condition; owner-side selection of an explicit GET_ITEM target.
+     * NC MakeGetItem/SetAsGetItem provides the action split, not this L1 food rule.
+     */
+    static void searchItemFromAir(final L1NpcInstance npc) {
+        if (!canSearchFromAir(npc)) return;
+        final L1Inventory inventory = npc.getInventory();
+        if (inventory == null) return;
+        L1ItemInstance found = null;
+        int nearest = AIR_FOOD_RADIUS + 1;
+        for (L1Object obj : L1World.getInstance().getClusterGrid()
+                .queryNearbyReusable(npc, AIR_FOOD_RADIUS)) {
+            if (!(obj instanceof L1GroundInventory)) continue;
+            final L1GroundInventory ground = (L1GroundInventory) obj;
+            for (L1ItemInstance item : ground.getItems()) {
+                if (!isAirFood(item) || !isAllowedItem(npc, item)
+                        || item.getMapId() != npc.getMapId() || item.getCount() <= 0) continue;
+                final int distance = chebyshev(npc.getX(), npc.getY(), item.getX(), item.getY());
+                if (distance >= nearest || distance > AIR_FOOD_RADIUS
+                        || inventory.checkAddItem(item, item.getCount()) != L1Inventory.OK
+                        || ground.getItem(item.getId()) != item) continue;
+                found = item;
+                nearest = distance;
+            }
+            if (nearest == 0) break;
+        }
+        if (found == null || !canSearchFromAir(npc) || !isValidTargetItem(npc, found)
+                || !npc.tryLandFromAir()) return;
+        ActionAccess.targetItem(npc, found);
+        CNpcAI.broadcastAirLanding(npc);
+    }
+
+    /** Explicit feeding target must be considered before autonomous roaming. */
+    static boolean hasSelectedFood(final L1NpcInstance npc) {
+        final L1ItemInstance item = ActionAccess.targetItem(npc);
+        if (!isAirFood(item)) return false;
+        if (isValidTargetItem(npc, item)) return true;
+        if (ActionAccess.targetItem(npc) == item) ActionAccess.targetItem(npc, null);
+        return false;
     }
 
     public static void tickSearchCooldown(final L1NpcInstance creature) {

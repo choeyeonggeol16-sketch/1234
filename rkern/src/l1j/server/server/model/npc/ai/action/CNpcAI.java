@@ -4,11 +4,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.ThreadPool;
+import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
@@ -18,6 +20,8 @@ import l1j.server.server.model.L1MobSkillUse;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.npc.ai.CNPCEvent;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
@@ -488,6 +492,13 @@ public final class CNpcAI {
                 return;
             }
 
+            if ((desire == CDesirePQ.PS_IDLE || desire == CDesirePQ.PS_MOVE_AROUND)
+                    && target == null && monster._desireBlockedAttackTargetId == 0
+                    && CGetItemAction.hasSelectedFood(monster)) {
+                CCreatureController.submit(monster, CCreatureController.ACTION_GET_ITEM);
+                return;
+            }
+
             if (desire == CDesirePQ.PS_MOVE_AROUND) {
                 if (moveAroundRunnable) {
                     CCreatureController.submit(
@@ -692,6 +703,20 @@ public final class CNpcAI {
 
         // Clear CIO-owner movement/action state before objectId can be reused.
         CIOThreadCallback.getInstance().cancelNpcAction(npc);
+        // A living flying NPC only suspends its AI. Clear on this owner before
+        // making restart visible; a delayed death cleanup could erase a new
+        // food/landing request after it has already resumed.
+        if (npc.getHiddenStatus() == L1NpcInstance.HIDDEN_STATUS_FLY
+                && !npc.isDead() && !npc.isDestroyed() && npc.getCurrentHp() > 0
+                && !npc.isDeathProcessing()) {
+            npc.allTargetClear();
+            npc.setAiRunning(false);
+            NpcServer.getInstance().unregister(npc);
+            if (npc.hasPendingHate() && !npc.isDead() && !npc.isDestroyed()) {
+                npc.onNpcAI();
+            }
+            return;
+        }
         npc.setAiRunning(false);
 
         ThreadPool.getInstance().scheduleRequired(
@@ -699,6 +724,13 @@ public final class CNpcAI {
                 0);
 
         NpcServer.getInstance().unregister(npc);
+    }
+
+    static void broadcastAirLanding(final L1NpcInstance npc) {
+        SC_DoActionGFX.broadcast(npc, ActionCodes.ACTION_Movedown);
+        npc.setStatus(0);
+        SC_WorldPutObject.broadcastNpc(npc);
+        npc.startChat(L1NpcInstance.CHAT_TIMING_HIDE);
     }
 
     private static boolean HandleEvent(
@@ -711,6 +743,7 @@ public final class CNpcAI {
         boolean sightDesireChanged = false;
         boolean interruptMoveAround = false;
         boolean invisibilityRetarget = false;
+        boolean airFoodScanned = false;
 
         /*
          * Native CNewAction owns its target for the lifetime of the action.
@@ -739,6 +772,32 @@ public final class CNpcAI {
                 }
 
                 final int eventValue = event.value;
+
+                if (eventValue == L1NpcInstance.HATE_EVENT_AIR_FOOD) {
+                    // Coalesce repeated approaches within the existing owner drain.
+                    if (!airFoodScanned) {
+                        airFoodScanned = true;
+                        CGetItemAction.searchItemFromAir(npc);
+                    }
+                    continue;
+                }
+
+                if (eventValue == L1NpcInstance.HATE_EVENT_AIR_LAND) {
+                    if (cha instanceof L1PcInstance pc && !pc.isDead()
+                            && pc.getMapId() == npc.getMapId() && npc.tryLandFromAir()) {
+                        if (!pc.hasSkillEffect(60) && !pc.hasSkillEffect(97) && !pc.isGm()) {
+                            npc._hateList.add(pc, 0);
+                            npc._target = pc;
+                            if (npc instanceof L1MonsterInstance) {
+                                CDesirePQ.ensureAttackCandidate((L1MonsterInstance) npc, pc, nowMs);
+                                attackDesireChanged = true;
+                            }
+                            changed = true;
+                        }
+                        broadcastAirLanding(npc);
+                    }
+                    continue;
+                }
 
                 if (eventValue
                         == L1NpcInstance.HATE_EVENT_SIGHT) {
