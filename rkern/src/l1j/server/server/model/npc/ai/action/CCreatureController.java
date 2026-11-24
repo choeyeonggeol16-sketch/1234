@@ -73,6 +73,11 @@ public final class CCreatureController {
             return;
         }
 
+        // Hidden NPCs resume only through their existing appearance event.
+        if (creature.getHiddenStatus() != L1NpcInstance.HIDDEN_STATUS_NONE) {
+            return;
+        }
+
         /*
          * Claim the current action deadline before crossing threads. This keeps
          * a second external AI wake from submitting another immediate action
@@ -99,7 +104,8 @@ public final class CCreatureController {
         if (creature == null) {
             return;
         }
-        if (!creature.aiEngineIsRunning()) {
+        if (!creature.aiEngineIsRunning()
+                || creature.getHiddenStatus() != L1NpcInstance.HIDDEN_STATUS_NONE) {
             creature.npcActionReleaseCadence();
             return;
         }
