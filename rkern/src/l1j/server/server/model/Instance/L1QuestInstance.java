@@ -158,6 +158,14 @@ public class L1QuestInstance extends L1NpcInstance {
             followerId = 70957;
         } else return;
 
+        // The PC owner serializes start commands. Do not replace a live
+        // escort with another copy of the same quest NPC.
+        for (L1FollowerInstance existing : pc.getFollowerList().values()) {
+            if (existing != null && !existing.isDestroyed() && existing.getNpcId() == followerId) {
+                SC_NPCTalkReturn.send(pc, getId(), "");
+                return;
+            }
+        }
         final L1Npc template = NpcTable.getInstance().getTemplate(followerId);
         if (template == null || !claimFollower()) return;
         try {

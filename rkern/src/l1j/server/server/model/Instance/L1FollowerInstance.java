@@ -38,71 +38,46 @@ public class L1FollowerInstance extends L1NpcInstance {
             setSleepTime(1000L);
             return false;
         }
-		L1NpcInstance npc = null;
-		L1PcInstance pc = null;
-		for (L1Object object : L1World.getInstance().getVisibleObjects(this)) {
-			if (object == null || object == this)
-				continue;
-			if (object instanceof L1NpcInstance) {
-				npc = (L1NpcInstance) object;
-				switch(npc.getNpcTemplate(). get_npcId()){
-				case 70740: //디가르뎅의 병사
-				case 71093: //조사원
-					requestHandoff(owner, 40593, 0, 0, 0, true);
-					return false;
-				case 71094: //엔디아
-					requestHandoff(owner, 40582, 0, 0, 0, true);
-					return false;
-				case 71061:
-				case 71062:
-					if (getLocation().getTileLineDistance(_master.getLocation()) < 3) {
-						pc = (L1PcInstance) _master;
-						if ((pc.getX() >= 32448 && pc.getX() <= 32452) // 모퉁이 모스 주변 좌표
-								&& (pc.getY() >= 33048 && pc.getY() <= 33052) && (pc.getMapId() == 440)) {
-							requestHandoff(owner, 40711, CQuestSystem.QUEST_CADMUS, 2, 3, true);
-							return false;
-						}
-					}
-					break;
-				case 71074:
-				case 71075:
-					// 완전히 지쳐 버린 리자드만파이타
-					if (getLocation().getTileLineDistance(_master.getLocation()) < 3) {
-						pc = (L1PcInstance) _master;
-						if ((pc.getX() >= 32731 && pc.getX() <= 32735) // 리자드만장로 주변
-			
-								&& (pc.getY() >= 32854 && pc.getY() <= 32858) && (pc.getMapId() == 480)) {
-							requestHandoff(owner, 40633, CQuestSystem.QUEST_LIZARD, 1, 2, true);
-							return false;
-						}
-					}
-					break;
-				case 70964:
-				case 70957:
-					if (getLocation().getTileLineDistance(_master.getLocation()) < 3) {
-						pc = (L1PcInstance) _master;
-						if ((pc.getX() >= 32917 && pc.getX() <= 32921) // 밧슈 주변
-																		// 좌표
-								&& (pc.getY() >= 32974 && pc.getY() <= 32978) && (pc.getMapId() == 410)) {
-							requestHandoff(owner, 41003, CQuestSystem.QUEST_ROI, -1, 0, false);
-							return false;
-						}
-					}
-					break;
-				}
-			}
-		}
+        if (!ownerStillNear(owner)) {
+            onOwnerLogout();
+            return true;
+        }
 
-		if (_master.isDead() || getLocation().getTileLineDistance(_master.getLocation()) > 10) {
-			setParalyzed(true);
-			spawn(getNpcTemplate().get_npcId(), getX(), getY(), getHeading(), getMapId());
-			deleteMe();
-			return true;
-		} else if (_master != null && _master.getMapId() == getMapId()) {
-			if (getLocation().getTileLineDistance(_master.getLocation()) > 2) {
-				setSleepTime(setDirectionMove(moveDirection(_master.getX(), _master.getY())));
-			}
-		}
+        final int followerId = getNpcId();
+        for (L1Object object : L1World.getInstance().getVisibleObjects(this)) {
+            if (!(object instanceof L1NpcInstance recipient) || !validRecipient(recipient)) continue;
+            switch (followerId) {
+                case 71093:
+                    requestHandoff(owner, recipient, 40593, 0, 0, 0, true);
+                    return false;
+                case 71094:
+                    requestHandoff(owner, recipient, 40582, 0, 0, 0, true);
+                    return false;
+                case 71062:
+                    if (handoffPositionStillValid(owner, CQuestSystem.QUEST_CADMUS)) {
+                        requestHandoff(owner, recipient, 40711, CQuestSystem.QUEST_CADMUS, 2, 3, true);
+                        return false;
+                    }
+                    break;
+                case 71075:
+                    if (handoffPositionStillValid(owner, CQuestSystem.QUEST_LIZARD)) {
+                        requestHandoff(owner, recipient, 40633, CQuestSystem.QUEST_LIZARD, 1, 2, true);
+                        return false;
+                    }
+                    break;
+                case 70957:
+                    if (handoffPositionStillValid(owner, CQuestSystem.QUEST_ROI)) {
+                        requestHandoff(owner, recipient, 41003, CQuestSystem.QUEST_ROI, -1, 0, false);
+                        return false;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (getLocation().getTileLineDistance(owner.getLocation()) > 2)
+            setSleepTime(setDirectionMove(moveDirection(owner.getX(), owner.getY())));
 		return false;
 	}
 	
@@ -204,7 +179,7 @@ public class L1FollowerInstance extends L1NpcInstance {
 
     /** Arrival is detected on the NPC owner. Submit on the player's CIO
      * owner; only the NPC owner consumes success and deletes this actor. */
-    private void requestHandoff(L1PcInstance pc, int itemId, int questId,
+    private void requestHandoff(L1PcInstance pc, L1NpcInstance recipient, int itemId, int questId,
             int requiredStep, int nextStep, boolean once) {
         final long now = System.currentTimeMillis();
         if (now < nextHandoffAt || questHandoff != HANDOFF_IDLE) {
@@ -216,16 +191,27 @@ public class L1FollowerInstance extends L1NpcInstance {
             setSleepTime(1000L);
             return;
         }
+        final long recipientId = L1World.getInstance().smartIdOf(recipient);
+        if (recipientId == 0L) return;
         nextHandoffAt = now + 1000L;
         questHandoff = HANDOFF_PENDING;
         setSleepTime(1000L);
         CIOThreadCallback.getInstance().completeSession(client, () -> {
-            if (isDestroyed() || isDead() || getMaster() != pc || pc.isDead()
-                    || !handoffPositionStillValid(pc, questId)) {
+            if (isDestroyed() || isDead() || getMaster() != pc || !ownerStillNear(pc)
+                    || L1World.getInstance().findObjectBySmartId(recipientId) != recipient
+                    || !validRecipient(recipient) || !handoffPositionStillValid(pc, questId)) {
                 questHandoff = HANDOFF_IDLE;
                 return;
             }
             try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, getNpcId())) {
+                final int followerId = getNpcId();
+                if ((followerId == 71093 && (!pc.isKnight()
+                        || pc.getQuest().get_step(CQuestSystem.QUEST_LEVEL45) != 4))
+                        || (followerId == 71094 && (!pc.isDarkelf()
+                        || pc.getQuest().get_step(CQuestSystem.QUEST_LEVEL50) != 1))) {
+                    questHandoff = HANDOFF_COMMITTED;
+                    return;
+                }
                 if (once && pc.getInventory().checkItem(itemId)) {
                     questHandoff = HANDOFF_COMMITTED;
                     return;
@@ -263,6 +249,32 @@ public class L1FollowerInstance extends L1NpcInstance {
             if (failure != null && questHandoff == HANDOFF_PENDING)
                 questHandoff = HANDOFF_IDLE;
         });
+    }
+
+    private boolean ownerStillNear(L1PcInstance pc) {
+        return !pc.isDead() && getMapId() == pc.getMapId() && getMap() == pc.getMap()
+                && getLocation().getTileLineDistance(pc.getLocation()) <= 10;
+    }
+
+    /** Keep the original recipient IDs, but bind them to the correct escort.
+     * A different player's follower is never a valid delivery NPC. */
+    private static boolean matchesHandoffNpc(int followerId, int recipientId) {
+        return switch (followerId) {
+            case 71093 -> recipientId == 70740 || recipientId == 71093;
+            case 71094 -> recipientId == 71094;
+            case 71062 -> recipientId == 71061 || recipientId == 71062;
+            case 71075 -> recipientId == 71074 || recipientId == 71075;
+            case 70957 -> recipientId == 70964 || recipientId == 70957;
+            default -> false;
+        };
+    }
+
+    private boolean validRecipient(L1NpcInstance recipient) {
+        return recipient != this && !(recipient instanceof L1FollowerInstance)
+                && !recipient.isDestroyed() && !recipient.isDead()
+                && recipient.getMapId() == getMapId() && recipient.getMap() == getMap()
+                && matchesHandoffNpc(getNpcId(), recipient.getNpcId())
+                && getLocation().isInScreen(recipient.getLocation());
     }
 
     /** Recheck the existing arrival coordinates on the receiving PC owner. */
