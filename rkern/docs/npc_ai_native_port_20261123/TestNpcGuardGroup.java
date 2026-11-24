@@ -403,12 +403,13 @@ public final class TestNpcGuardGroup {
             check(!(boolean) eligible.invoke(null, mob, template, helper, 20, 20, mob.getMapId(), 0),
                     "dead helper excluded");
             helper.setDead(false);
-            helper._desireCreatedAtMs = now - 7000L;
+            final Field createdAt = accessibleField(L1MonsterInstance.class, "_desireCreatedAtMs");
+            createdAt.setLong(helper, now - 7000L);
             check(helper.PostNpcEvent(NpcEventFactory.CreateClanAttackedEvent(helper, a, 80)),
                     "young helper receives clan event");
             drain.invoke(null, helper, now);
             check(helper._hateList.isEmpty() && helper._target == null, "seven-second clan gate");
-            helper._desireCreatedAtMs = now - 7001L;
+            createdAt.setLong(helper, now - 7001L);
             check(helper.PostNpcEvent(NpcEventFactory.CreateClanAttackedEvent(helper, a, 80)),
                     "mature helper receives clan event");
             drain.invoke(null, helper, now);
