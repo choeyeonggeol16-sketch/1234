@@ -1,5 +1,7 @@
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.model.quest.CQuestSystem;
+
 import l1j.server.server.model.character.action.CAttackAction;
 
 import java.util.HashMap;
@@ -9,7 +11,6 @@ import java.util.logging.Logger;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.L1NpcTalkData;
-import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.npc.L1NpcHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -36,14 +37,14 @@ public class L1TeleporterInstance extends L1NpcInstance {
 		L1NpcTalkData talking = NPCTalkDataTable.getInstance().getTemplate(
 				getNpcTemplate().get_npcId());
 		int npcid = getNpcTemplate().get_npcId();
-		L1Quest quest = player.getQuest();
+		CQuestSystem quest = player.getQuest();
 		String htmlid = null;
 
 		if (talking != null) {
 			switch(npcid){
 			case 50014: // 디론
 				if (player.isWizard()) { // 위저드
-					if (quest.get_step(L1Quest.QUEST_LEVEL30) == 1
+					if (quest.get_step(CQuestSystem.QUEST_LEVEL30) == 1
 							&& !player.getInventory().checkItem(40579)) { // 안 데드의 뼈
 						htmlid = "dilong1";
 					} else {
@@ -56,7 +57,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 					htmlid = "ants3";
 				} else if (player.getCurrentSpriteId() == 1039) {// 쟈이안트안트소르쟈 변신
 					if (player.isCrown()) { // 군주
-						if (quest.get_step(L1Quest.QUEST_LEVEL30) == 1) {
+						if (quest.get_step(CQuestSystem.QUEST_LEVEL30) == 1) {
 							if (player.getInventory().checkItem(40547)) { // 주민들의 유품
 								htmlid = "antsn";
 							} else {
@@ -72,7 +73,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 				break;
 			case 70853: // 페어리 프린세스
 				if (player.isElf()) { // 에르프
-					if (quest.get_step(L1Quest.QUEST_LEVEL30) == 1) {
+					if (quest.get_step(CQuestSystem.QUEST_LEVEL30) == 1) {
 						if (!player.getInventory().checkItem(40592)) { // 저주해진 정령서
 							Random random = new Random(System.nanoTime());
 							if (random.nextInt(100) < 50) { // 50%로 다크마르단젼
@@ -86,7 +87,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 				break;
 			case 50031: // 세피아
 				if (player.isElf()) { // 에르프
-					if (quest.get_step(L1Quest.QUEST_LEVEL45) == 2) {
+					if (quest.get_step(CQuestSystem.QUEST_LEVEL45) == 2) {
 						if (!player.getInventory().checkItem(40602)) { // 블루 플룻
 							htmlid = "sepia1";
 						}
@@ -94,9 +95,9 @@ public class L1TeleporterInstance extends L1NpcInstance {
 				}
 				break;
 			case 50043:
-				if (quest.get_step(L1Quest.QUEST_LEVEL50) == L1Quest.QUEST_END) {
+				if (quest.get_step(CQuestSystem.QUEST_LEVEL50) == CQuestSystem.QUEST_END) {
 					htmlid = "ramuda2";
-				} else if (quest.get_step(L1Quest.QUEST_LEVEL50) == 1) { // 디가르딘 동의가 끝난 상태
+				} else if (quest.get_step(CQuestSystem.QUEST_LEVEL50) == 1) { // 디가르딘 동의가 끝난 상태
 					if (player.isCrown()) { // 군주
 						if (_isNowDely) { // 텔레포트 지연중
 							htmlid = "ramuda4";
@@ -446,22 +447,22 @@ public class L1TeleporterInstance extends L1NpcInstance {
 					L1PcInstance elf = null;
 					L1PcInstance wiz = null;
 					// 3 매스 이내의 Pc
-					L1Quest quest = null;
+					CQuestSystem quest = null;
 					for (L1PcInstance otherPc : L1World.getInstance()
 							.getVisiblePlayer(player, 3)) {
 						quest = otherPc.getQuest();
 						if (otherPc.isKnight() // 나이트
-								&& quest.get_step(L1Quest.QUEST_LEVEL50) == 1) { // 디가르딘 동의가 끝난 상태
+								&& quest.get_step(CQuestSystem.QUEST_LEVEL50) == 1) { // 디가르딘 동의가 끝난 상태
 							if (kni == null) {
 								kni = otherPc;
 							}
 						} else if (otherPc.isElf() // 요정
-								&& quest.get_step(L1Quest.QUEST_LEVEL50) == 1) { // 디가르딘 동의가 끝난 상태
+								&& quest.get_step(CQuestSystem.QUEST_LEVEL50) == 1) { // 디가르딘 동의가 끝난 상태
 							if (elf == null) {
 								elf = otherPc;
 							}
 						} else if (otherPc.isWizard() // 마법사
-								&& quest.get_step(L1Quest.QUEST_LEVEL50) == 1) { // 디가르딘 동의가 끝난 상태
+								&& quest.get_step(CQuestSystem.QUEST_LEVEL50) == 1) { // 디가르딘 동의가 끝난 상태
 							if (wiz == null) {
 								wiz = otherPc;
 							}

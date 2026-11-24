@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.function;
+
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
@@ -6,7 +8,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.Config;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.model.L1Quest;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -100,8 +101,8 @@ public class StarterSupportHandler {
                     "INSERT INTO character_quests (char_id,quest_id,quest_step) VALUES (?,?,?) "
                     + "ON DUPLICATE KEY UPDATE quest_step=VALUES(quest_step)")) {
                 update.setInt(1, characterId);
-                update.setInt(2, L1Quest.QUEST_FIRSTQUEST);
-                update.setInt(3, L1Quest.QUEST_END);
+                update.setInt(2, CQuestSystem.QUEST_FIRSTQUEST);
+                update.setInt(3, CQuestSystem.QUEST_END);
                 // MySQL may report zero affected rows for an already-ended quest.
                 // The idempotent UPSERT is still successful in that case.
                 update.executeUpdate();
@@ -114,7 +115,7 @@ public class StarterSupportHandler {
         // writes still belong to the existing character levelUp path. If the
         // process dies here, loadCharacter().refresh() detects the old DB level
         // and applies the missing growth from the committed EXP on next login.
-        pc.getQuest().applyCommittedStepIfLoaded(L1Quest.QUEST_FIRSTQUEST, L1Quest.QUEST_END);
+        pc.getQuest().applyCommittedStepIfLoaded(CQuestSystem.QUEST_FIRSTQUEST, CQuestSystem.QUEST_END);
         if (pc.getExp() < exp) {
             pc.setExp(exp);
             pc.onChangeExp();

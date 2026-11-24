@@ -1,5 +1,7 @@
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.model.quest.CQuestSystem;
+
 import l1j.server.server.model.character.action.CAttackAction;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -10,7 +12,6 @@ import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1NpcTalkData;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -53,7 +54,7 @@ public class L1PeopleInstance extends L1NpcInstance {
 		int objid = getId();
 		L1NpcTalkData talking = NPCTalkDataTable.getInstance().getTemplate(getNpcTemplate().get_npcId());
 		int npcid = getNpcTemplate().get_npcId();
-		L1Quest quest = player.getQuest();
+		CQuestSystem quest = player.getQuest();
 		String htmlid = null;
 		String[] htmldata = null;
 

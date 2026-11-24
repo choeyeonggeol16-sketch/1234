@@ -1,5 +1,7 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.model.quest.CQuestSystem;
+
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import java.util.logging.Logger;
@@ -11,7 +13,6 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import l1j.server.server.Account;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -26,8 +27,8 @@ import l1j.server.server.templates.L1Item;
 final class EquipmentSlotUnlockReceipt {
     private static final Logger _log = Logger.getLogger(SpecialConsumableRouter.class.getName());
     private static final int[] SLOT_UNLOCK_QUESTS = {
-        L1Quest.QUEST_SLOT59, L1Quest.QUEST_SLOT76, L1Quest.QUEST_SLOT81,
-        L1Quest.QUEST_SLOT_SHOULD, L1Quest.QUEST_SLOT_BADGE
+        CQuestSystem.QUEST_SLOT59, CQuestSystem.QUEST_SLOT76, CQuestSystem.QUEST_SLOT81,
+        CQuestSystem.QUEST_SLOT_SHOULD, CQuestSystem.QUEST_SLOT_BADGE
     };
 
     private EquipmentSlotUnlockReceipt() {}
@@ -74,13 +75,13 @@ final class EquipmentSlotUnlockReceipt {
                         try (ResultSet rows = lock.executeQuery()) {
                             if (rows.next()) {
                                 final int step = rows.getInt(1);
-                                if (rows.wasNull() || step == L1Quest.QUEST_END)
+                                if (rows.wasNull() || step == CQuestSystem.QUEST_END)
                                     throw new SQLException("Slot quest changed before debit: " + charId + "/" + questId);
                             }
                         }
                         write.setInt(1, charId);
                         write.setInt(2, questId);
-                        write.setInt(3, L1Quest.QUEST_END);
+                        write.setInt(3, CQuestSystem.QUEST_END);
                         write.executeUpdate();
                     }
                 }
@@ -89,7 +90,7 @@ final class EquipmentSlotUnlockReceipt {
             CDB.RequestUseItem(pc, tx, () -> {
                 for (int i = 0; i < SLOT_UNLOCK_QUESTS.length; i++) {
                     if ((missingMask & (1 << i)) != 0)
-                        pc.getQuest().applyCommittedStepIfLoaded(SLOT_UNLOCK_QUESTS[i], L1Quest.QUEST_END);
+                        pc.getQuest().applyCommittedStepIfLoaded(SLOT_UNLOCK_QUESTS[i], CQuestSystem.QUEST_END);
                 }
                 // Client display follows the same five slot packet formats.
                 if ((selected & 1) != 0) {

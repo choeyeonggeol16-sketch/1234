@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import l1j.server.server.Account;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;

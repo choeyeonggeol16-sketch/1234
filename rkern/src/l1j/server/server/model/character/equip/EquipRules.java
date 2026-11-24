@@ -1,5 +1,7 @@
 package l1j.server.server.model.character.equip;
 
+import l1j.server.server.model.quest.CQuestSystem;
+
 import java.util.List;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -7,7 +9,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1EquipmentSlot;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1PolyMorph;
-import l1j.server.server.model.L1Quest;
 import l1j.server.server.templates.L1Item;
 
 public final class EquipRules {
@@ -129,24 +130,24 @@ public final class EquipRules {
 
         if (type == 9) {
             if (sameType >= 4) return EquipResult.fail(EquipFail.MSG_SLOT_OCCUPIED_144);
-            if (!pc.getQuest().isEnd(L1Quest.QUEST_SLOT76) && sameType >= 2)
+            if (!pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT76) && sameType >= 2)
                 return EquipResult.fail(EquipFail.system("스냅퍼에게 76레벨 슬롯 개방 후 착용 가능"));
-            if (!pc.getQuest().isEnd(L1Quest.QUEST_SLOT81) && sameType >= 3)
+            if (!pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT81) && sameType >= 3)
                 return EquipResult.fail(EquipFail.system("스냅퍼에게 81레벨 슬롯 개방 후 착용 가능"));
             if (sameId >= 2) return EquipResult.fail(EquipFail.MSG_DUP_ITEM_3278);
             if (sameGrade >= 2) return EquipResult.fail(EquipFail.MSG_DUP_GRADE_3279);
         } else if (type == 12) {
             if (sameType >= 2) return EquipResult.fail(EquipFail.MSG_SLOT_OCCUPIED_144);
-            if (!pc.getQuest().isEnd(L1Quest.QUEST_SLOT59) && sameType >= 1)
+            if (!pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT59) && sameType >= 1)
                 return EquipResult.fail(EquipFail.system("스냅퍼에게 59레벨 슬롯 개방 후 착용 가능"));
             if (sameId != 0 || sameEarringName)
                 return EquipResult.fail(EquipFail.MSG_DUP_ITEM_3278);
         } else if (sameType != 0) {
             return EquipResult.fail(EquipFail.MSG_ALREADY_EQUIPPED_124);
         }
-        if (type == 29 && !pc.getQuest().isEnd(L1Quest.QUEST_SLOT_SHOULD))
+        if (type == 29 && !pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT_SHOULD))
             return EquipResult.fail(EquipFail.MSG_SHOULDER_5077);
-        if (type == 30 && !pc.getQuest().isEnd(L1Quest.QUEST_SLOT_BADGE))
+        if (type == 30 && !pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT_BADGE))
             return EquipResult.fail(EquipFail.MSG_BADGE_5078);
         if ((type == 7 && guarder) || (type == 13 && shield))
             return EquipResult.fail(EquipFail.MSG_ALREADY_EQUIPPED_124);

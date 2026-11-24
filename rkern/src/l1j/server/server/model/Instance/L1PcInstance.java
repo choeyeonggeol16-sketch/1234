@@ -60,7 +60,6 @@ import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1PolyMorph;
-import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.L1ReturnStatTemp;
@@ -943,7 +942,7 @@ public class L1PcInstance extends L1Character {
 	private volatile int _tradeID;
 	private int _tempID;
 
-	private L1Quest _quest;
+	private CQuestSystem _quest;
 
 
 	private volatile boolean _isPrivateShop;
@@ -1115,7 +1114,7 @@ public class L1PcInstance extends L1Character {
 		_dwarfForPackage = new L1DwarfForPackageInventory(this);
 		_tradewindow = new L1Inventory();
 		userBookmark = new CUserBookmark();
-		_quest = new L1Quest(this);
+		_quest = new CQuestSystem(this);
 		_equipSlot = new L1EquipmentSlot(this);
 		_pinkNameTime = new AtomicInteger(0);
 		changeNpcId5 = 88001;
@@ -4041,7 +4040,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_secondweapon = weapon;
 	}
 
-	public L1Quest getQuest() {
+	public CQuestSystem getQuest() {
 		return _quest;
 	}
 

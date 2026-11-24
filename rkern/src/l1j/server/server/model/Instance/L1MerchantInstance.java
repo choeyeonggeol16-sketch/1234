@@ -1,5 +1,7 @@
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.model.quest.CQuestSystem;
+
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.network.core.sc.packet.SC_Ability;
 
@@ -19,7 +21,6 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1NpcTalkData;
 import l1j.server.server.model.L1PolyMorph;
-import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -106,7 +107,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 		final int objid = getId();
 		final int npcid = getNpcTemplate().get_npcId();
 		final L1NpcTalkData talking = NPCTalkDataTable.getInstance().getTemplate(npcid);
-		final L1Quest quest = player.getQuest();
+		final CQuestSystem quest = player.getQuest();
 
 		String htmlid = null;
 		String[] htmldata = null;
@@ -270,8 +271,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70522: // 군터
 				if (player.isCrown()) {
 					if (player.getLevel() >= 15) {
-						int lv15_step = quest.get_step(L1Quest.QUEST_LEVEL15);
-						if (lv15_step == 2 || lv15_step == L1Quest.QUEST_END) {
+						int lv15_step = quest.get_step(CQuestSystem.QUEST_LEVEL15);
+						if (lv15_step == 2 || lv15_step == CQuestSystem.QUEST_END) {
 							htmlid = "gunterp11";
 						} else {
 							htmlid = "gunterp9";
@@ -280,7 +281,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 						htmlid = "gunterp12";
 					}
 				} else if (player.isKnight()) {
-					int lv30_step = quest.get_step(L1Quest.QUEST_LEVEL30);
+					int lv30_step = quest.get_step(CQuestSystem.QUEST_LEVEL30);
 					if (lv30_step == 0) {
 						htmlid = "gunterk9";
 					} else if (lv30_step == 1) {
@@ -301,9 +302,9 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70653: // 마샤
 				if (player.isCrown()) {
 					if (player.getLevel() >= 45) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL30)) {
-							int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
-							if (lv45_step == L1Quest.QUEST_END) {
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL30)) {
+							int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
+							if (lv45_step == CQuestSystem.QUEST_END) {
 								htmlid = "masha4";
 							} else if (lv45_step >= 1) {
 								htmlid = "masha3";
@@ -314,9 +315,9 @@ public class L1MerchantInstance extends L1NpcInstance {
 					}
 				} else if (player.isKnight()) {
 					if (player.getLevel() >= 45) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL30)) {
-							int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
-							if (lv45_step == L1Quest.QUEST_END) {
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL30)) {
+							int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
+							if (lv45_step == CQuestSystem.QUEST_END) {
 								htmlid = "mashak3";
 							} else if (lv45_step == 0) {
 								htmlid = "mashak1";
@@ -327,9 +328,9 @@ public class L1MerchantInstance extends L1NpcInstance {
 					}
 				} else if (player.isElf()) {
 					if (player.getLevel() >= 45) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL30)) {
-							int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
-							if (lv45_step == L1Quest.QUEST_END) {
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL30)) {
+							int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
+							if (lv45_step == CQuestSystem.QUEST_END) {
 								htmlid = "mashae3";
 							} else if (lv45_step >= 1) {
 								htmlid = "mashae2";
@@ -368,10 +369,10 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70554: // 제로
 				if (player.isCrown()) {
 					if (player.getLevel() >= 15) {
-						int lv15_step = quest.get_step(L1Quest.QUEST_LEVEL15);
+						int lv15_step = quest.get_step(CQuestSystem.QUEST_LEVEL15);
 						if (lv15_step == 1) {
 							htmlid = "zero5";
-						} else if (lv15_step == L1Quest.QUEST_END) {
+						} else if (lv15_step == CQuestSystem.QUEST_END) {
 							htmlid = "zero1";
 						} else {
 							htmlid = "zero1";
@@ -406,9 +407,9 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70783: // 아리아
 				if (player.isCrown()) {
 					if (player.getLevel() >= 30) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL15)) {
-							int lv30_step = quest.get_step(L1Quest.QUEST_LEVEL30);
-							if (lv30_step == L1Quest.QUEST_END) {
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL15)) {
+							int lv30_step = quest.get_step(CQuestSystem.QUEST_LEVEL30);
+							if (lv30_step == CQuestSystem.QUEST_END) {
 								htmlid = "aria3";
 							} else if (lv30_step == 1) {
 								htmlid = "aria2";
@@ -433,7 +434,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70782: // 수색개미
 				if (player.getCurrentSpriteId() == 1037) {
 					if (player.isCrown()) {
-						if (quest.get_step(L1Quest.QUEST_LEVEL30) == 1) {
+						if (quest.get_step(CQuestSystem.QUEST_LEVEL30) == 1) {
 							htmlid = "ant1";
 						} else {
 							htmlid = "ant3";
@@ -445,8 +446,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 70545: // 리차드
 				if (player.isCrown()) {
-					int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
-					if (lv45_step >= 1 && lv45_step != L1Quest.QUEST_END) {
+					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
+					if (lv45_step >= 1 && lv45_step != CQuestSystem.QUEST_END) {
 						if (player.getInventory().checkItem(40586)) {
 							htmlid = "richard4";
 						} else {
@@ -457,7 +458,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 70776: // 맥
 				if (player.isCrown()) {
-					int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
+					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step == 1) {
 						htmlid = "meg1";
 					} else if (lv45_step == 2 && lv45_step <= 3) {
@@ -469,7 +470,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 71200: // 백마법사피에타
 				if (player.isCrown()) {
-					int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
+					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step == 2 && player.getInventory().checkItem(41422)) {
 						player.getInventory().consumeItem(41422, 1);
 						player.getInventory().storeItem(40568, 1);
@@ -479,8 +480,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70802:// 아논
 				if (player.isKnight()) {
 					if (player.getLevel() >= 15) {
-						int lv15_step = quest.get_step(L1Quest.QUEST_LEVEL15);
-						if (lv15_step == L1Quest.QUEST_END) {
+						int lv15_step = quest.get_step(CQuestSystem.QUEST_LEVEL15);
+						if (lv15_step == CQuestSystem.QUEST_END) {
 							htmlid = "aanon7";
 						} else if (lv15_step == 1) {
 							htmlid = "aanon4";
@@ -491,8 +492,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70775:// 마크
 				if (player.isKnight()) {
 					if (player.getLevel() >= 30) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL15)) {
-							int lv30_step = quest.get_step(L1Quest.QUEST_LEVEL30);
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL15)) {
+							int lv30_step = quest.get_step(CQuestSystem.QUEST_LEVEL30);
 							if (lv30_step == 0) {
 								htmlid = "mark1";
 							} else {
@@ -506,8 +507,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.isCrown()) {
 					htmlid = "gerardp1";
 				} else if (player.isKnight()) {
-					int lv30_step = quest.get_step(L1Quest.QUEST_LEVEL30);
-					if (lv30_step == L1Quest.QUEST_END) {
+					int lv30_step = quest.get_step(CQuestSystem.QUEST_LEVEL30);
+					if (lv30_step == CQuestSystem.QUEST_END) {
 						htmlid = "gerardkEcg";
 					} else if (lv30_step < 3) {
 						htmlid = "gerardk7";
@@ -547,7 +548,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70555:
 				if (player.getCurrentSpriteId() == 2374) {
 					if (player.isKnight()) {
-						if (quest.get_step(L1Quest.QUEST_LEVEL30) == 6) {
+						if (quest.get_step(CQuestSystem.QUEST_LEVEL30) == 6) {
 							htmlid = "jim2";
 						} else {
 							htmlid = "jim4";
@@ -559,7 +560,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 70715:
 				if (player.isKnight()) {
-					int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
+					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step == 1) {
 						htmlid = "jimuk1";
 					} else if (lv45_step >= 2) {
@@ -581,7 +582,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 70711:
 				if (player.isKnight()) {
-					int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
+					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step == 2) {
 						if (player.getInventory().checkItem(20026)) {
 							htmlid = "giantk1";
@@ -596,7 +597,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70826:
 				if (player.isElf()) {
 					if (player.getLevel() >= 15) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL15)) {
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL15)) {
 							htmlid = "oth5";
 						} else {
 							htmlid = "oth1";
@@ -609,9 +610,9 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70844:
 				if (player.isElf()) {
 					if (player.getLevel() >= 30) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL15)) {
-							int lv30_step = quest.get_step(L1Quest.QUEST_LEVEL30);
-							if (lv30_step == L1Quest.QUEST_END) {
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL15)) {
+							int lv30_step = quest.get_step(CQuestSystem.QUEST_LEVEL30);
+							if (lv30_step == CQuestSystem.QUEST_END) {
 								htmlid = "motherEE3";
 							} else if (lv30_step >= 1) {
 								htmlid = "motherEE2";
@@ -628,7 +629,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 70724:
 				if (player.isElf()) {
-					int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
+					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step >= 4) {
 						htmlid = "heit5";
 					} else if (lv45_step >= 3) {
@@ -643,7 +644,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70531:
 				if (player.isWizard()) {
 					if (player.getLevel() >= 15) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL15)) {
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL15)) {
 							htmlid = "jem6";
 						} else {
 							htmlid = "jem1";
@@ -656,7 +657,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 81105:
 				if (player.isWizard()) {
-					int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
+					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step >= 3) {
 						htmlid = "stoenm3";
 					} else if (lv45_step >= 2) {
@@ -668,8 +669,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 70739: // 디가르뎅
 				if (player.getLevel() >= 50) {
-					int lv50_step = quest.get_step(L1Quest.QUEST_LEVEL50);
-					if (lv50_step == L1Quest.QUEST_END) {
+					int lv50_step = quest.get_step(CQuestSystem.QUEST_LEVEL50);
+					if (lv50_step == CQuestSystem.QUEST_END) {
 						if (player.isCrown()) {
 							htmlid = "dicardingp3";
 						} else if (player.isKnight()) {
@@ -715,8 +716,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70885:
 				if (player.isDarkelf()) {
 					if (player.getLevel() >= 15) {
-						int lv15_step = quest.get_step(L1Quest.QUEST_LEVEL15);
-						if (lv15_step == L1Quest.QUEST_END) {
+						int lv15_step = quest.get_step(CQuestSystem.QUEST_LEVEL15);
+						if (lv15_step == CQuestSystem.QUEST_END) {
 							htmlid = "kanguard3";
 						} else if (lv15_step >= 1) {
 							htmlid = "kanguard2";
@@ -731,9 +732,9 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70892:
 				if (player.isDarkelf()) {
 					if (player.getLevel() >= 30) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL15)) {
-							int lv30_step = quest.get_step(L1Quest.QUEST_LEVEL30);
-							if (lv30_step == L1Quest.QUEST_END) {
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL15)) {
+							int lv30_step = quest.get_step(CQuestSystem.QUEST_LEVEL30);
+							if (lv30_step == CQuestSystem.QUEST_END) {
 								htmlid = "ronde5";
 							} else if (lv30_step >= 2) {
 								htmlid = "ronde3";
@@ -755,14 +756,14 @@ public class L1MerchantInstance extends L1NpcInstance {
 				SC_NpcChatPacket.sendNpc(player, npc, "완성된 라스타바드의 역사서를 더블클릭 하면 되는데 굳이 저에게 온 이유는 무엇인가...?", 0);
 				if (player.isDarkelf()) {
 					if (player.getLevel() >= 45) {
-						if (quest.isEnd(L1Quest.QUEST_LEVEL30)) {
-							int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
-							if (lv45_step == L1Quest.QUEST_END) {
+						if (quest.isEnd(CQuestSystem.QUEST_LEVEL30)) {
+							int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
+							if (lv45_step == CQuestSystem.QUEST_END) {
 								if (player.getLevel() < 50) {
 									htmlid = "bluedikaq3";
 								} else {
-									int lv50_step = quest.get_step(L1Quest.QUEST_LEVEL50);
-									if (lv50_step == L1Quest.QUEST_END) {
+									int lv50_step = quest.get_step(CQuestSystem.QUEST_LEVEL50);
+									if (lv50_step == CQuestSystem.QUEST_END) {
 										htmlid = "bluedikaq8";
 									} else {
 										htmlid = "bluedikaq6";
@@ -783,7 +784,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 70904:
 				if (player.isDarkelf()) {
-					if (quest.get_step(L1Quest.QUEST_LEVEL45) == 1) {
+					if (quest.get_step(CQuestSystem.QUEST_LEVEL45) == 1) {
 						htmlid = "koup12";
 					}
 				}
@@ -791,7 +792,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 70824:
 				if (player.isDarkelf()) {
 					if (player.getCurrentSpriteId() == 3634) {
-						int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
+						int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 						if (lv45_step == 1) {
 							htmlid = "assassin1";
 						} else if (lv45_step == 2) {
@@ -806,7 +807,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 70744:
 				if (player.isDarkelf()) {
-					int lv45_step = quest.get_step(L1Quest.QUEST_LEVEL45);
+					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step >= 5) {
 						htmlid = "roje14";
 					} else if (lv45_step >= 4) {
@@ -823,10 +824,10 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 3000003: // 장로 프로켈
 				if (player.isDragonknight()) {
 					if (player.getLevel() >= 15) {
-						int lv15_step = quest.get_step(L1Quest.QUEST_LEVEL15);
+						int lv15_step = quest.get_step(CQuestSystem.QUEST_LEVEL15);
 						if (lv15_step == 1) {
 							htmlid = "prokel4";
-						} else if (lv15_step == 2 || lv15_step == L1Quest.QUEST_END) {
+						} else if (lv15_step == 2 || lv15_step == CQuestSystem.QUEST_END) {
 							htmlid = "prokel7";
 						} else {
 							htmlid = "prokel2";
@@ -839,10 +840,10 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 3100004: // 장로 실레인
 				if (player.isBlackwizard()) {
 					if (player.getLevel() >= 15) {
-						int lv15_step = quest.get_step(L1Quest.QUEST_LEVEL15);
+						int lv15_step = quest.get_step(CQuestSystem.QUEST_LEVEL15);
 						if (lv15_step == 1) {
 							htmlid = "silrein4";
-						} else if (lv15_step == 2 || lv15_step == L1Quest.QUEST_END) {
+						} else if (lv15_step == 2 || lv15_step == CQuestSystem.QUEST_END) {
 							htmlid = "silrein5";
 						} else {
 							htmlid = "silrein2";
@@ -858,14 +859,14 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 70099:
-				if (!quest.isEnd(L1Quest.QUEST_OILSKINMANT)) {
+				if (!quest.isEnd(CQuestSystem.QUEST_OILSKINMANT)) {
 					if (player.getLevel() > 13) {
 						htmlid = "kuper1";
 					}
 				}
 				break;
 			case 70796:
-				if (!quest.isEnd(L1Quest.QUEST_OILSKINMANT)) {
+				if (!quest.isEnd(CQuestSystem.QUEST_OILSKINMANT)) {
 					if (player.getLevel() > 13) {
 						htmlid = "dunham1";
 					}
@@ -1585,230 +1586,230 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 71055:
-				if (player.getQuest().get_step(L1Quest.QUEST_RESTA) == 3) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_RESTA) == 3) {
 					htmlid = "lukein13";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == L1Quest.QUEST_END
-						&& player.getQuest().get_step(L1Quest.QUEST_RESTA) == 2
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == CQuestSystem.QUEST_END
+						&& player.getQuest().get_step(CQuestSystem.QUEST_RESTA) == 2
 						&& player.getInventory().checkItem(40631)) {
 					htmlid = "lukein10";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == L1Quest.QUEST_END) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == CQuestSystem.QUEST_END) {
 					htmlid = "lukein0";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 11) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 11) {
 					if (player.getInventory().checkItem(40716)) {
 						htmlid = "lukein9";
 					}
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) >= 1
-						&& player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) <= 10) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) >= 1
+						&& player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) <= 10) {
 					htmlid = "lukein8";
 				}
 				break;
 			case 71063:
-				if (player.getQuest().get_step(L1Quest.QUEST_TBOX1) == L1Quest.QUEST_END) {
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 1) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_TBOX1) == CQuestSystem.QUEST_END) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 1) {
 					htmlid = "maptbox";
 				}
 				break;
 			case 71064:
-				if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 2) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 2) {
 					htmlid = talkToSecondtbox(player);
 				}
 				break;
 			case 71065:
-				if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 3) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 3) {
 					htmlid = talkToSecondtbox(player);
 				}
 				break;
 			case 71066:
-				if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 4) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 4) {
 					htmlid = talkToSecondtbox(player);
 				}
 				break;
 			case 71067:
-				if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 5) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 5) {
 					htmlid = talkToThirdtbox(player);
 				}
 				break;
 			case 71068:
-				if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 6) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 6) {
 					htmlid = talkToThirdtbox(player);
 				}
 				break;
 			case 71069:
-				if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 7) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 7) {
 					htmlid = talkToThirdtbox(player);
 				}
 				break;
 			case 71070:
-				if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 8) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 8) {
 					htmlid = talkToThirdtbox(player);
 				}
 				break;
 			case 71071:
-				if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 9) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 9) {
 					htmlid = talkToThirdtbox(player);
 				}
 				break;
 			case 71072:
-				if (player.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 10) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 10) {
 					htmlid = talkToThirdtbox(player);
 				}
 				break;
 			case 71056:
-				if (player.getQuest().get_step(L1Quest.QUEST_RESTA) == 4) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_RESTA) == 4) {
 					if (player.getInventory().checkItem(40631)) {
 						htmlid = "SIMIZZ11";
 					} else {
 						htmlid = "SIMIZZ0";
 					}
-				} else if (player.getQuest().get_step(L1Quest.QUEST_SIMIZZ) == 2) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ) == 2) {
 					htmlid = "SIMIZZ0";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_SIMIZZ) == L1Quest.QUEST_END) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ) == CQuestSystem.QUEST_END) {
 					htmlid = "SIMIZZ15";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_SIMIZZ) == 1) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ) == 1) {
 					htmlid = "SIMIZZ6";
 				}
 				break;
 			case 71057:
-				if (player.getQuest().get_step(L1Quest.QUEST_DOIL) == L1Quest.QUEST_END) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_DOIL) == CQuestSystem.QUEST_END) {
 					htmlid = "doil4b";
 				}
 				break;
 			case 71059:
-				if (player.getQuest().get_step(L1Quest.QUEST_RUDIAN) == L1Quest.QUEST_END) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_RUDIAN) == CQuestSystem.QUEST_END) {
 					htmlid = "rudian1c";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_RUDIAN) == 1) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_RUDIAN) == 1) {
 					htmlid = "rudian7";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_DOIL) == L1Quest.QUEST_END) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_DOIL) == CQuestSystem.QUEST_END) {
 					htmlid = "rudian1b";
 				} else {
 					htmlid = "rudian1a";
 				}
 				break;
 			case 71060:
-				if (player.getQuest().get_step(L1Quest.QUEST_RESTA) == L1Quest.QUEST_END) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_RESTA) == CQuestSystem.QUEST_END) {
 					htmlid = "resta1e";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_SIMIZZ) == L1Quest.QUEST_END) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ) == CQuestSystem.QUEST_END) {
 					htmlid = "resta14";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_RESTA) == 4) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_RESTA) == 4) {
 					htmlid = "resta13";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_RESTA) == 3) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_RESTA) == 3) {
 					htmlid = "resta11";
-					player.getQuest().set_step(L1Quest.QUEST_RESTA, 4);
-				} else if (player.getQuest().get_step(L1Quest.QUEST_RESTA) == 2) {
+					player.getQuest().set_step(CQuestSystem.QUEST_RESTA, 4);
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_RESTA) == 2) {
 					htmlid = "resta16";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_SIMIZZ) == 2
-						&& player.getQuest().get_step(L1Quest.QUEST_CADMUS) == 1
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ) == 2
+						&& player.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 1
 						|| player.getInventory().checkItem(40647)) {
 					htmlid = "resta1a";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_CADMUS) == 1
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 1
 						|| player.getInventory().checkItem(40647)) {
 					htmlid = "resta1c";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_SIMIZZ) == 2) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ) == 2) {
 					htmlid = "resta1b";
 				}
 				break;
 			case 71061:
-				if (player.getQuest().get_step(L1Quest.QUEST_CADMUS) == L1Quest.QUEST_END) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == CQuestSystem.QUEST_END) {
 					htmlid = "cadmus1c";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_CADMUS) == 3) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 3) {
 					htmlid = "cadmus8";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_CADMUS) == 2) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 2) {
 					htmlid = "cadmus1a";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_DOIL) == L1Quest.QUEST_END) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_DOIL) == CQuestSystem.QUEST_END) {
 					htmlid = "cadmus1b";
 				}
 				break;
 			case 71036:
-				if (player.getQuest().get_step(L1Quest.QUEST_KAMYLA) == L1Quest.QUEST_END) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == CQuestSystem.QUEST_END) {
 					htmlid = "kamyla26";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 4
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 4
 						&& player.getInventory().checkItem(40717)) {
 					htmlid = "kamyla15";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 4) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 4) {
 					htmlid = "kamyla14";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 3
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 3
 						&& player.getInventory().checkItem(40630)) {
 					htmlid = "kamyla12";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 3) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 3) {
 					htmlid = "kamyla11";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 2
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 2
 						&& player.getInventory().checkItem(40644)) {
 					htmlid = "kamyla9";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 1) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 1) {
 					htmlid = "kamyla8";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_CADMUS) == L1Quest.QUEST_END
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == CQuestSystem.QUEST_END
 						&& player.getInventory().checkItem(40621)) {
 					htmlid = "kamyla1";
 				}
 				break;
 			case 71089:
-				if (player.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 2) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 2) {
 					htmlid = "francu12";
 				}
 				break;
 			case 71090:
-				if (player.getQuest().get_step(L1Quest.QUEST_CRYSTAL) == 1 && player.getInventory().checkItem(40620)) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_CRYSTAL) == 1 && player.getInventory().checkItem(40620)) {
 					htmlid = "jcrystal2";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_CRYSTAL) == 1) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_CRYSTAL) == 1) {
 					htmlid = "jcrystal3";
 				}
 				break;
 			case 71091:
-				if (player.getQuest().get_step(L1Quest.QUEST_CRYSTAL) == 2 && player.getInventory().checkItem(40654)) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_CRYSTAL) == 2 && player.getInventory().checkItem(40654)) {
 					htmlid = "jcrystall2";
 				}
 				break;
 			case 71074:
-				if (player.getQuest().get_step(L1Quest.QUEST_LIZARD) == L1Quest.QUEST_END) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == CQuestSystem.QUEST_END) {
 					// htmlid = "lelder0";
 					htmlid = "lelder1"; // 퀘스트 무한 재생
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LIZARD) == 3
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 3
 						&& player.getInventory().checkItem(40634)) {
 					htmlid = "lelder12";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LIZARD) == 3) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 3) {
 					htmlid = "lelder11";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LIZARD) == 2
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 2
 						&& player.getInventory().checkItem(40633)) {
 					htmlid = "lelder7";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LIZARD) == 2) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 2) {
 					htmlid = "lelder7b";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_LIZARD) == 1) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 1) {
 					htmlid = "lelder7b";
 				} else if (player.getLevel() >= 40) {
 					htmlid = "lelder1";
 				}
 				break;
 			case 71076:
-				if (player.getQuest().get_step(L1Quest.QUEST_LIZARD) == L1Quest.QUEST_END) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == CQuestSystem.QUEST_END) {
 					htmlid = "ylizardb";
 				} else {
 				}
 				break;
 			case 70840: // 달의장궁 로빈후드
 				if (player.isCrown() && player.isWizard() && player.isKnight()) {
-					// int MOONBOW_step = quest.get_step(L1Quest.QUEST_MOONBOW);
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 0) {
+					// int MOONBOW_step = quest.get_step(CQuestSystem.QUEST_MOONBOW);
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 0) {
 					htmlid = "robinhood1";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 1) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 1) {
 					htmlid = "robinhood8";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 2) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 2) {
 					htmlid = "robinhood13";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 6) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 6) {
 					htmlid = "robinhood9";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 7) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 7) {
 					htmlid = "robinhood11";
 				} else {
 					htmlid = "robinhood3";
 				}
 				break;
 			case 600005: // 달의장궁 지브릴
-				if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 2) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 2) {
 					htmlid = "zybril1";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 3) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 3) {
 					htmlid = "zybril7";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 4) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 4) {
 					htmlid = "zybril8";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 5) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 5) {
 					htmlid = "zybril18";
 				} else {
 					htmlid = "zybril16";
@@ -1827,7 +1828,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 80079:
-				/*if (player.getQuest().get_step(L1Quest.QUEST_KEPLISHA) == L1Quest.QUEST_END
+				/*if (player.getQuest().get_step(CQuestSystem.QUEST_KEPLISHA) == CQuestSystem.QUEST_END
 						&& !player.getInventory().checkItem(41312)) {
 					htmlid = "keplisha6";
 				} else {*/
@@ -1991,7 +1992,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 50112: // 세리안
 				if (player.isCrown() || player.isWizard() || player.isDragonknight()) {
-					int talk_step = quest.get_step(L1Quest.QUEST_FIRSTQUEST);
+					int talk_step = quest.get_step(CQuestSystem.QUEST_FIRSTQUEST);
 					if (talk_step == 1) {
 						if (player.getLevel() >= 5) {
 							htmlid = "orenb4";
@@ -2007,7 +2008,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 50113: // 레크만
 				if (player.isKnight() || player.isElf() || player.isDarkelf() || player.isBlackwizard()) {
-					int talk_step = quest.get_step(L1Quest.QUEST_FIRSTQUEST);
+					int talk_step = quest.get_step(CQuestSystem.QUEST_FIRSTQUEST);
 					if (talk_step == 1) {
 						if (player.getLevel() >= 5) {
 							htmlid = "orena4";
@@ -2022,16 +2023,16 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 80067: // 첩보원(욕망의 동굴)
-				if (player.getQuest().get_step(L1Quest.QUEST_DESIRE) == L1Quest.QUEST_END) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_DESIRE) == CQuestSystem.QUEST_END) {
 					htmlid = "minicod10";
 				} else if (player.getKarmaLevel() >= 1) {
 					htmlid = "minicod07";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_DESIRE) == 1 && player.getCurrentSpriteId() == 6034) { // 코라프프리스트
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_DESIRE) == 1 && player.getCurrentSpriteId() == 6034) { // 코라프프리스트
 																														// 변신
 					htmlid = "minicod03";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_DESIRE) == 1 && player.getCurrentSpriteId() != 6034) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_DESIRE) == 1 && player.getCurrentSpriteId() != 6034) {
 					htmlid = "minicod05";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_SHADOWS) == L1Quest.QUEST_END // 그림자의
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SHADOWS) == CQuestSystem.QUEST_END // 그림자의
 																									// 신전측
 																									// 퀘스트
 																									// 종료
@@ -2059,16 +2060,16 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 3200021:
 				if (!player.isElf()) {
-					// int MOONBOW_step = quest.get_step(L1Quest.QUEST_MOONBOW);
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 0) {
+					// int MOONBOW_step = quest.get_step(CQuestSystem.QUEST_MOONBOW);
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 0) {
 					htmlid = "robinhood1";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 1) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 1) {
 					htmlid = "robinhood8";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 2) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 2) {
 					htmlid = "robinhood13";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 6) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 6) {
 					htmlid = "robinhood9";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 7) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 7) {
 					htmlid = "robinhood11";
 				} else {
 					htmlid = "robinhood3";
@@ -2076,29 +2077,29 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 3200022:
 				if (!player.isElf()) {
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 2) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 2) {
 					htmlid = "zybril1";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 3) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 3) {
 					htmlid = "zybril7";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 4) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 4) {
 					htmlid = "zybril8";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_MOONBOW) == 5) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_MOONBOW) == 5) {
 					htmlid = "zybril18";
 				} else {
 					htmlid = "zybril16";
 				}
 				break;
 			case 81202: // 첩보원(그림자의 신전)
-				if (player.getQuest().get_step(L1Quest.QUEST_SHADOWS) == L1Quest.QUEST_END) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_SHADOWS) == CQuestSystem.QUEST_END) {
 					htmlid = "minitos10";
 				} else if (player.getKarmaLevel() <= -1) {
 					htmlid = "minitos07";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_SHADOWS) == 1 && player.getCurrentSpriteId() == 6035) { // 렛서데이몬
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SHADOWS) == 1 && player.getCurrentSpriteId() == 6035) { // 렛서데이몬
 																														// 변신
 					htmlid = "minitos03";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_SHADOWS) == 1 && player.getCurrentSpriteId() != 6035) {
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SHADOWS) == 1 && player.getCurrentSpriteId() != 6035) {
 					htmlid = "minitos05";
-				} else if (player.getQuest().get_step(L1Quest.QUEST_DESIRE) == L1Quest.QUEST_END // 욕망의
+				} else if (player.getQuest().get_step(CQuestSystem.QUEST_DESIRE) == CQuestSystem.QUEST_END // 욕망의
 																									// 동굴측
 																									// 퀘스트
 																									// 종료
@@ -2231,19 +2232,19 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getInventory().checkItem(49031)) {
 					if (player.getInventory().checkItem(21081)) {
 						htmlid = "gemout1";
-					} else if (player.getQuest().get_step(L1Quest.QUEST_ICEQUEENRING) == 1) {
+					} else if (player.getQuest().get_step(CQuestSystem.QUEST_ICEQUEENRING) == 1) {
 						htmlid = "gemout2";
-					} else if (player.getQuest().get_step(L1Quest.QUEST_ICEQUEENRING) == 2) {
+					} else if (player.getQuest().get_step(CQuestSystem.QUEST_ICEQUEENRING) == 2) {
 						htmlid = "gemout3";
-					} else if (player.getQuest().get_step(L1Quest.QUEST_ICEQUEENRING) == 3) {
+					} else if (player.getQuest().get_step(CQuestSystem.QUEST_ICEQUEENRING) == 3) {
 						htmlid = "gemout4";
-					} else if (player.getQuest().get_step(L1Quest.QUEST_ICEQUEENRING) == 4) {
+					} else if (player.getQuest().get_step(CQuestSystem.QUEST_ICEQUEENRING) == 4) {
 						htmlid = "gemout5";
-					} else if (player.getQuest().get_step(L1Quest.QUEST_ICEQUEENRING) == 5) {
+					} else if (player.getQuest().get_step(CQuestSystem.QUEST_ICEQUEENRING) == 5) {
 						htmlid = "gemout6";
-					} else if (player.getQuest().get_step(L1Quest.QUEST_ICEQUEENRING) == 6) {
+					} else if (player.getQuest().get_step(CQuestSystem.QUEST_ICEQUEENRING) == 6) {
 						htmlid = "gemout7";
-					} else if (player.getQuest().get_step(L1Quest.QUEST_ICEQUEENRING) == 7) {
+					} else if (player.getQuest().get_step(CQuestSystem.QUEST_ICEQUEENRING) == 7) {
 						htmlid = "gemout8";
 					} else { // 보석만 가지고있다.
 						htmlid = "gemout17";
@@ -2603,7 +2604,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 
 	private String talkToSecondtbox(L1PcInstance pc) {
 		String htmlid = "";
-		if (pc.getQuest().get_step(L1Quest.QUEST_TBOX1) == L1Quest.QUEST_END) {
+		if (pc.getQuest().get_step(CQuestSystem.QUEST_TBOX1) == CQuestSystem.QUEST_END) {
 			if (pc.getInventory().checkItem(40701)) {
 				htmlid = "maptboxa";
 			} else {
@@ -2617,7 +2618,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 
 	private String talkToThirdtbox(L1PcInstance pc) {
 		String htmlid = "";
-		if (pc.getQuest().get_step(L1Quest.QUEST_TBOX2) == L1Quest.QUEST_END) {
+		if (pc.getQuest().get_step(CQuestSystem.QUEST_TBOX2) == CQuestSystem.QUEST_END) {
 			if (pc.getInventory().checkItem(40701)) {
 				htmlid = "maptboxd";
 			} else {

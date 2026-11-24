@@ -1,4 +1,6 @@
 package l1j.server.server.model;
+
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanName;
 
 
@@ -81,7 +83,7 @@ public class L1ClanJoin {
         try (PreparedStatement ps = con.prepareStatement(
                 "SELECT quest_step FROM character_quests WHERE char_id=? AND quest_id=? FOR UPDATE")) {
             ps.setInt(1, leaderId);
-            ps.setInt(2, L1Quest.QUEST_LEVEL45);
+            ps.setInt(2, CQuestSystem.QUEST_LEVEL45);
             try (ResultSet rs = ps.executeQuery()) {
                 quest45 = rs.next() && rs.getInt(1) == 0xff;
             }
@@ -510,7 +512,7 @@ public class L1ClanJoin {
 			else
 				charisma = pc.getAbility().getCha();
 
-			boolean lv45quest = pc.getQuest().isEnd(L1Quest.QUEST_LEVEL45);
+			boolean lv45quest = pc.getQuest().isEnd(CQuestSystem.QUEST_LEVEL45);
 			if (pc.getLevel() >= 50) {
 				maxMember = lv45quest ? charisma * 9 : charisma * 3;
 			} else {
@@ -581,7 +583,7 @@ public class L1ClanJoin {
 			
 			try (PreparedStatement pstm = con.prepareStatement("SELECT * FROM character_quests WHERE char_id=? AND quest_id=?")) {
 				pstm.setInt(1, objid);
-				pstm.setInt(2, L1Quest.QUEST_LEVEL45);
+				pstm.setInt(2, CQuestSystem.QUEST_LEVEL45);
 				try (ResultSet rs = pstm.executeQuery()) {
 					info.is45Quest = rs.next() && (rs.getInt("quest_step") == 0xff);
 				}
