@@ -41,6 +41,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.npc.ai.CDesirePQ;
+import l1j.server.server.model.npc.ai.action.dMoveTo;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.npc.ai.CNpcItemUse;
 import l1j.server.server.shared.GameRandom;
@@ -261,7 +262,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 
 	@Override
 	public void ReceiveManaDamage(L1Character attacker, int mpDamage) {
-		if (attacker == null)
+		if (attacker == null || dMoveTo.isReturningHome(this))
 			return;
 		if (mpDamage > 0 && !isDead()) {
 			setHate(attacker, mpDamage); //나를때린놈들.
@@ -283,7 +284,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 	@Override
 	public void receiveDamage(L1Character attacker, int damage) {
 		int _npcId = getNpcTemplate().get_npcId();
-		if (attacker == null)
+		if (attacker == null || dMoveTo.isReturningHome(this))
 			return;
 		if (getCurrentHp() > 0 && !isDead()) {
 			if (getHiddenStatus() != HIDDEN_STATUS_NONE) {
