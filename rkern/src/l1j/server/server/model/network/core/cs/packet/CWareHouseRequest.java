@@ -94,7 +94,11 @@ final class CWareHouseRequest {
             }
             return;
         }
-        RequestItems(pc, kind, size, first, rest, warehouse);
+        synchronized (client) {
+            // Recheck at admission, not only before loading the warehouse reference.
+            if (!client.CanUseWarehouse(pc, objectId, kind)) return;
+            RequestItems(pc, kind, size, first, rest, warehouse);
+        }
     }
 
     private static void RequestItems(L1PcInstance pc, int kind, int size, long first,

@@ -4315,14 +4315,24 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
 
     public synchronized void trackNpcDialogue(long smartId, boolean newTalk) {
         if (newTalk || smartId != npcDialogueTarget) {
+            warehouseNpcTarget = 0L;
             ClearWarehouseView();
             npcDialogueTarget = smartId;
             npcDialogueVersion++;
         }
+        if (smartId != 0L && warehouseNpcTarget != smartId
+                && IsWarehouseActor(_activeChar)
+                && L1World.getInstance().findObjectBySmartId(smartId) instanceof L1NpcInstance npc
+                && IsWarehouseNpc(npc) && IsInWarehouseRange(_activeChar, npc)) {
+            warehouseNpcTarget = smartId;
+        }
     }
 
-    // Owner-CIO only. The dialogue smart ID already carries the NPC generation.
-    // No view object, item snapshot, worker, or timer is allocated for authorization.
+    // Warehouse-specific dialogue identity; invalidating it does not cancel unrelated NPC replies.
+    // The volatile fast path avoids a monitor or world lookup for ordinary movement.
+    private volatile long warehouseNpcTarget;
+    private int warehouseViewGeneration;
+    private int warehouseViewObjectId;
     private int warehouseViewKind;
     private int warehouseViewClanId;
     private int warehouseViewPassword;
@@ -4335,6 +4345,8 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         final long lease = pledgeWarehouseLease;
         pledgeWarehouseView = null;
         pledgeWarehouseLease = 0L;
+        if (++warehouseViewGeneration == 0) ++warehouseViewGeneration;
+        warehouseViewObjectId = 0;
         warehouseViewKind = 0;
         warehouseViewClanId = 0;
         warehouseViewPassword = 0;
@@ -4343,7 +4355,24 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     }
 
     public synchronized void ClearWarehouseViewFor(L1PcInstance pc) {
-        if (_activeChar == pc) ClearWarehouseView();
+        if (pc != null && _activeChar == pc) {
+            warehouseNpcTarget = 0L;
+            ClearWarehouseView();
+        }
+    }
+
+    public void CheckWarehouseRange(L1PcInstance pc) {
+        if (warehouseNpcTarget == 0L) return;
+        synchronized (this) {
+            if (_activeChar != pc || warehouseNpcTarget == 0L) return;
+            if (!IsWarehouseActor(pc)
+                    || !(L1World.getInstance().findObjectBySmartId(warehouseNpcTarget) instanceof L1NpcInstance npc)
+                    || !IsWarehouseNpc(npc) || !IsInWarehouseRange(pc, npc)) {
+                warehouseNpcTarget = 0L;
+                // A supplementary service uses the character, not this NPC.
+                if (warehouseViewKind != 20 && warehouseViewKind != -20) ClearWarehouseView();
+            }
+        }
     }
 
     private boolean IsWarehouseActor(L1PcInstance pc) {
@@ -4354,14 +4383,21 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
                 && !pc.isAutoClanjoin() && getAccount() != null;
     }
 
-    public boolean IsWarehouseNpcInRange(L1PcInstance pc, int objectId) {
-        if (!IsWarehouseActor(pc) || npcDialogueTarget == 0L) return false;
-        return L1World.getInstance().findObjectBySmartId(npcDialogueTarget) instanceof L1NpcInstance npc
-                && npc.getId() == objectId && !npc.isDead()
-                && "L1Dwarf".equalsIgnoreCase(npc.getNpcTemplate().getImpl())
-                && pc.getMapId() == npc.getMapId()
+    private static boolean IsWarehouseNpc(L1NpcInstance npc) {
+        return !npc.isDead() && "L1Dwarf".equalsIgnoreCase(npc.getNpcTemplate().getImpl());
+    }
+
+    private static boolean IsInWarehouseRange(L1PcInstance pc, L1NpcInstance npc) {
+        return pc.getMapId() == npc.getMapId()
                 && Math.abs((long) pc.getX() - npc.getX()) <= 12
                 && Math.abs((long) pc.getY() - npc.getY()) <= 12;
+    }
+
+    public boolean IsWarehouseNpcInRange(L1PcInstance pc, int objectId) {
+        final long target = warehouseNpcTarget;
+        if (!IsWarehouseActor(pc) || target == 0L) return false;
+        return L1World.getInstance().findObjectBySmartId(target) instanceof L1NpcInstance npc
+                && npc.getId() == objectId && IsWarehouseNpc(npc) && IsInWarehouseRange(pc, npc);
     }
 
     private boolean IsWarehouseViewTarget(L1PcInstance pc, int objectId, int kind) {
@@ -4384,16 +4420,30 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         };
     }
 
-    public synchronized boolean BeginWarehouseView(L1PcInstance pc, int objectId, int kind,
+    public synchronized int BeginWarehouseView(L1PcInstance pc, int objectId, int kind,
             int suppliedPassword, int expectedClanId) {
+        if (!IsWarehouseActor(pc)) return 0;
         ClearWarehouseView();
-        return CanOpenWarehouseView(pc, objectId, kind, suppliedPassword, expectedClanId);
+        if (!CanOpenWarehouseView(pc, objectId, kind, suppliedPassword, expectedClanId)) return 0;
+        warehouseViewObjectId = objectId;
+        warehouseViewKind = -kind; // pending list; never grants item access
+        if (kind == 20) warehouseNpcTarget = 0L;
+        return warehouseViewGeneration;
+    }
+
+    public synchronized boolean IsPendingWarehouseView(L1PcInstance pc, int objectId, int kind, int generation) {
+        return generation != 0 && generation == warehouseViewGeneration
+                && warehouseViewObjectId == objectId && warehouseViewKind == -kind
+                && IsWarehouseViewTarget(pc, objectId, kind)
+                && (kind != 5 || OwnsPledgeWarehouse(pc, pledgeWarehouseView));
     }
 
     // Call only after the complete list was admitted by the existing SEND path.
     public synchronized boolean BindWarehouseView(L1PcInstance pc, int objectId, int kind,
-            int suppliedPassword, int expectedClanId) {
-        if (!CanOpenWarehouseView(pc, objectId, kind, suppliedPassword, expectedClanId)) return false;
+            int suppliedPassword, int expectedClanId, int generation) {
+        if (generation == 0 || generation != warehouseViewGeneration
+                || objectId != warehouseViewObjectId || warehouseViewKind != -kind
+                || !CanOpenWarehouseView(pc, objectId, kind, suppliedPassword, expectedClanId)) return false;
         if (kind == 5 && !OwnsPledgeWarehouse(pc, pledgeWarehouseView)) return false;
         warehouseViewSession = pc.getSessionStamp();
         warehouseViewClanId = kind == 5 ? expectedClanId : 0;
@@ -4405,8 +4455,15 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     public synchronized boolean CanUseWarehouse(L1PcInstance pc, int objectId, int kind) {
         // L1 deposit is selected locally from inventory after NPC dialogue.
         if (kind == 2 || kind == 4 || kind == 8) return IsWarehouseNpcInRange(pc, objectId);
-        if (warehouseViewKind != kind || !IsWarehouseViewTarget(pc, objectId, kind)
-                || warehouseViewSession != pc.getSessionStamp()) return false;
+        if (warehouseViewKind != kind || warehouseViewObjectId != objectId) return false;
+        if (!IsWarehouseViewTarget(pc, objectId, kind)
+                || warehouseViewSession != pc.getSessionStamp()) {
+            if (_activeChar == pc) {
+                warehouseNpcTarget = 0L;
+                ClearWarehouseView();
+            }
+            return false;
+        }
         return switch (kind) {
             case 3 -> warehouseViewPassword == getAccount().getGamePassword();
             case 5 -> warehouseViewClanId > 0 && pc.getClanid() == warehouseViewClanId
@@ -4417,17 +4474,17 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         };
     }
 
-    public synchronized void CloseWarehouseView(L1PcInstance pc, int objectId, int kind) {
-        if (_activeChar != pc || warehouseViewKind != kind) return;
-        // A cancel may arrive after leaving range; never let it close a different NPC's view.
-        if (kind == 20 ? objectId == pc.getId()
-                : L1World.getInstance().findObjectBySmartId(npcDialogueTarget) instanceof L1NpcInstance npc
-                    && npc.getId() == objectId) ClearWarehouseView();
+    public synchronized boolean CloseWarehouseView(L1PcInstance pc, int objectId, int kind) {
+        if (pc == null || _activeChar != pc || kind <= 0 || warehouseViewObjectId != objectId
+                || (warehouseViewKind != kind && warehouseViewKind != -kind)) return false;
+        ClearWarehouseView();
+        return true;
     }
 
     public synchronized long AcquirePledgeWarehouseView(L1PcInstance pc, ClanWarehouse vault,
-            int objectId, int clanId) {
-        if (vault == null || pledgeWarehouseView != null
+            int objectId, int clanId, int generation) {
+        if (generation == 0 || generation != warehouseViewGeneration || objectId != warehouseViewObjectId
+                || warehouseViewKind != -5 || vault == null || pledgeWarehouseView != null
                 || !CanOpenWarehouseView(pc, objectId, 5, 0, clanId)) return 0L;
         final long lease = WarehouseManager.nextSessionLease();
         if (!vault.AcquireWarehouseUser(pc, this, lease)) return 0L;
@@ -4442,9 +4499,9 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     }
 
     public synchronized boolean BindPledgeWarehouseView(L1PcInstance pc, int objectId,
-            int clanId, ClanWarehouse vault, long lease) {
+            int clanId, ClanWarehouse vault, long lease, int generation) {
         return pledgeWarehouseView == vault && pledgeWarehouseLease == lease
-                && BindWarehouseView(pc, objectId, 5, 0, clanId);
+                && BindWarehouseView(pc, objectId, 5, 0, clanId, generation);
     }
 
     public synchronized void ReleasePledgeWarehouseView(ClanWarehouse vault, long lease) {
@@ -4473,10 +4530,12 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
             PlaySupport2019.onClientDetached(this);
             automationSession = null;
             clearPssWindowSession();
-            trackNpcDialogue(0L, true);
             playerShopView = null;
         }
-		_activeChar = pc;
+        synchronized (this) {
+            if (_activeChar != pc || pc == null) trackNpcDialogue(0L, true);
+            _activeChar = pc;
+        }
 	}
 
     private volatile ClientAutomationSession automationSession;

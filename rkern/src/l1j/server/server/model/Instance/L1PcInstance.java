@@ -2584,9 +2584,21 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public void setNetConnection(CUserSocket clientthread) {
-		if (_netConnection != clientthread) suspendGroundSight();
+        final CUserSocket previous = _netConnection;
+		if (previous != clientthread) suspendGroundSight();
 		_netConnection = clientthread;
+        if (previous != null && previous != clientthread) previous.ClearWarehouseViewFor(this);
 	}
+
+    public void InvalidateWarehouseAccess() {
+        final CUserSocket session = getNetConnection();
+        if (session != null) session.ClearWarehouseViewFor(this);
+    }
+
+    public void CheckWarehouseRange() {
+        final CUserSocket session = getNetConnection();
+        if (session != null) session.CheckWarehouseRange(this);
+    }
 
 	public int groundSightEpoch() { return groundSightEpoch; }
 
@@ -3554,11 +3566,8 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 	        deathSession = getSessionStamp();
 	    }
 
-	    // 3. 혈맹 및 동반자/봇 정리
-	    L1Clan clan = getClan();
-	    if (clan != null) {
-	        clan.deleteClanRetrieveUser(this);
-	    }
+	    // 3. 창고 및 동반자/봇 정리
+        InvalidateWarehouseAccess();
 	    
 	    remove_companion();
 	    // 스킬 효과 제거
@@ -7369,6 +7378,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 			// 텔레포트 상태 및 좌표 설정
             set_teleport(true);
+            InvalidateWarehouseAccess();
             set_teleport_x(x);
             set_teleport_y(y);
             set_teleport_map(mapId);
@@ -7499,7 +7509,11 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public void set_lastTargetId(int i) { _lastTargetId = i; }
 	
 	private transient volatile int _sessionStamp = 0;
-	public int nextSessionStamp() { return ++_sessionStamp; }
+	public int nextSessionStamp() {
+        final int stamp = ++_sessionStamp;
+        InvalidateWarehouseAccess();
+        return stamp;
+    }
 	public int getSessionStamp() { return _sessionStamp; }
 	
 	////////////// 아이템 착용 체크 ///////////////

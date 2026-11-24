@@ -695,6 +695,8 @@ public final class CWorld {
                 clusterGrid.relocate(object);
             }
         }
+        // Warehouse lifecycle is outside the world identity/object monitors.
+        if (object instanceof L1PcInstance pc) pc.InvalidateWarehouseAccess();
     }
 
     /** Caller has updated position and supplies the prior coordinates. */
@@ -722,6 +724,7 @@ public final class CWorld {
                 newY = object.getY();
             }
         }
+        if (object instanceof L1PcInstance pc) pc.CheckWarehouseRange();
         clusterGrid.reconcileMove(object, oldMap, oldX, oldY,
                 newMap, newX, newY);
     }

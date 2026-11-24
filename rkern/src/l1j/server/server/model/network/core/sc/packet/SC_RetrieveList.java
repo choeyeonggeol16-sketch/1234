@@ -25,26 +25,29 @@ public final class SC_RetrieveList {
 
     public static void sendPrivate(L1PcInstance pc, int objId, int suppliedPassword) {
         final CUserSocket client = pc == null ? null : pc.getNetConnection();
-        if (client == null || !client.BeginWarehouseView(pc, objId, 3, suppliedPassword, 0)
-                || !canView(pc)) return;
+        if (client == null) return;
+        final int generation = client.BeginWarehouseView(pc, objId, 3, suppliedPassword, 0);
+        if (generation == 0 || !canView(pc)) return;
         PrivateWarehouse wh = WarehouseManager.getInstance().getPrivateWarehouse(pc.getAccountName());
-        if (wh != null) sendItems(pc, objId, wh.getItems(), 3, suppliedPassword);
+        if (wh != null) sendItems(client, pc, objId, wh.getItems(), 3, suppliedPassword, generation);
     }
 
     public static boolean sendElf(L1PcInstance pc, int objId) {
         final CUserSocket client = pc == null ? null : pc.getNetConnection();
-        if (client == null || !client.BeginWarehouseView(pc, objId, 9, 0, 0)
-                || !canView(pc)) return false;
+        if (client == null) return false;
+        final int generation = client.BeginWarehouseView(pc, objId, 9, 0, 0);
+        if (generation == 0 || !canView(pc)) return false;
         ElfWarehouse wh = WarehouseManager.getInstance().getElfWarehouse(pc.getAccountName());
-        return sendItems(pc, objId, wh == null ? null : wh.getItems(), 9, 0);
+        return sendItems(client, pc, objId, wh == null ? null : wh.getItems(), 9, 0, generation);
     }
 
     public static boolean sendPackage(L1PcInstance pc, int objId) {
         final CUserSocket client = pc == null ? null : pc.getNetConnection();
-        if (client == null || !client.BeginWarehouseView(pc, objId, 10, 0, 0)
-                || !canView(pc)) return false;
+        if (client == null) return false;
+        final int generation = client.BeginWarehouseView(pc, objId, 10, 0, 0);
+        if (generation == 0 || !canView(pc)) return false;
         L1DwarfForPackageInventory wh = pc.getDwarfForPackageInventory();
-        return sendItems(pc, objId, wh == null ? null : wh.getItems(), 15, 0);
+        return sendItems(client, pc, objId, wh == null ? null : wh.getItems(), 15, 0, generation);
     }
 
     private static boolean canView(L1PcInstance pc) {
@@ -54,7 +57,7 @@ public final class SC_RetrieveList {
         return false;
     }
 
-    private static boolean sendItems(L1PcInstance pc, int objId, List<?> raw, int type, int suppliedPassword) {
+    private static boolean sendItems(CUserSocket client, L1PcInstance pc, int objId, List<?> raw, int type, int suppliedPassword, int generation) {
         if (raw == null || raw.isEmpty()) return true;
         final int initial = Math.max(1, raw.size());
         int[] items = new int[initial * 6];
@@ -84,8 +87,7 @@ public final class SC_RetrieveList {
         }
         if (count == 0) return true;
         if (wireSize > Integer.MAX_VALUE) return false;
-        final CUserSocket client = pc.getNetConnection();
-        if (client == null || !client.isConnected()) return false;
+        if (!client.IsPendingWarehouseView(pc, objId, type == 15 ? 10 : type, generation)) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final CIOFrame frame = connection.beginDirectFrame((int) wireSize);
@@ -116,8 +118,9 @@ public final class SC_RetrieveList {
                 b.writeD(0);
                 b.writeH(0);
             }
+            if (!connection.IsPendingWarehouseView(pc, objId, type == 15 ? 10 : type, generation)) return false;
             committed = connection.commitDirectFrame(frame);
-            if (committed) connection.BindWarehouseView(pc, objId, type == 15 ? 10 : type, suppliedPassword, 0);
+            if (committed) connection.BindWarehouseView(pc, objId, type == 15 ? 10 : type, suppliedPassword, 0, generation);
             return false;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);

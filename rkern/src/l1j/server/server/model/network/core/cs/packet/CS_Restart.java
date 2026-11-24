@@ -100,6 +100,7 @@ public final class CS_Restart {
             return;
         }
 
+        pc.InvalidateWarehouseAccess();
         final boolean restoreGroundSight = pc.suspendGroundSight();
         try {
             int[] loc = Getback.GetBack_Restart(pc);

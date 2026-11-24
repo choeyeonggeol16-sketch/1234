@@ -56,6 +56,10 @@ public final class CS_Result {
         }
 
 		L1Object findObject = L1World.getInstance().findObject(npcObjectId);
+        // Also handle cancel after the NPC disappeared; only the matching view is affected.
+        if (size == 0 && (resultType == 3 || resultType == 5 || resultType == 9
+                || resultType == 10 || resultType == 20)
+                && client.CloseWarehouseView(pc, npcObjectId, resultType)) return;
 		String npcName = "";
 
 		if (findObject != null) {

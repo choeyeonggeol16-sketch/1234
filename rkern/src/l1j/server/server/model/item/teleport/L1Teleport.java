@@ -14,7 +14,6 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Party;
@@ -87,10 +86,7 @@ public class L1Teleport {
 			mapid = oldMapId;
 		}
 		
-		L1Clan clan = pc.getClan();
-		if (clan != null) {
-			clan.deleteClanRetrieveUser(pc);
-		}
+        pc.InvalidateWarehouseAccess();
 
 		final ArrayList<L1PcInstance> subjects = TL_SUBJECTS.get();
 		subjects.clear();
