@@ -1,4 +1,4 @@
-package l1j.server.server.model.network.core.cs.packet;
+package l1j.server.server.model.Warehouse;
 
 import java.sql.Timestamp;
 
@@ -7,29 +7,27 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.Warehouse.Warehouse;
-import l1j.server.server.model.Warehouse.ClanWarehouse;
-import l1j.server.server.model.Warehouse.WarehouseManager;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.cs.packet.CS_Result;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 /** Common packet selection decoding and existing owner/CacheD admission. */
-final class CWareHouseRequest {
+public final class CWareHouseRequest {
     private static final int MAX_SELECTION = 100;
 
     private CWareHouseRequest() {}
 
-    static boolean IsDwarfAction(int kind) {
+    public static boolean IsDwarfAction(int kind) {
         return switch (kind) {
             case 2, 3, 4, 5, 8, 9, 10 -> true;
             default -> false;
         };
     }
 
-    static void Request(CUserSocket client, L1PcInstance pc, int objectId, int kind, int size, long first, byte[] rest) {
+    public static void Request(CUserSocket client, L1PcInstance pc, int objectId, int kind, int size, long first, byte[] rest) {
         if (size == 0) {
             client.CloseWarehouseView(pc, objectId, kind);
             return;

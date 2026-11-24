@@ -343,7 +343,7 @@ public final class CS_PersonalShop {
         return false;
     }
 
-    static boolean isPetItem(L1PcInstance pc, int itemObjectId) {
+    public static boolean isPetItem(L1PcInstance pc, int itemObjectId) {
 
         for (Object value : pc.getPetList().values()) {
             if (value instanceof L1PetInstance) {
@@ -358,7 +358,7 @@ public final class CS_PersonalShop {
         return false;
     }
 
-    static boolean isDollItem(L1PcInstance pc, int itemObjectId) {
+    public static boolean isDollItem(L1PcInstance pc, int itemObjectId) {
 
         for (Object value : pc.getDollList().values()) {
             if (value instanceof L1DollInstance) {

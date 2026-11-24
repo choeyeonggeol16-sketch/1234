@@ -1,11 +1,11 @@
-package l1j.server.server.model.network.core.cs.packet;
+package l1j.server.server.model.Warehouse;
 
 import l1j.server.server.datatables.NoShopAndWare;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.Warehouse.Warehouse;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
+import l1j.server.server.model.network.core.cs.packet.CS_PersonalShop;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;

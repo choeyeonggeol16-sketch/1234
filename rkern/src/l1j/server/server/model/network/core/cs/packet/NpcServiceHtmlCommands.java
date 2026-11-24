@@ -21,6 +21,7 @@ import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.Warehouse.CWareHouseWithdraw;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.item.L1ItemId;

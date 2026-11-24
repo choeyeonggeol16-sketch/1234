@@ -1,4 +1,4 @@
-package l1j.server.server.model.network.core.cs.packet;
+package l1j.server.server.model.Warehouse;
 
 import java.sql.Timestamp;
 
@@ -6,8 +6,6 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.Warehouse.ClanWarehouse;
-import l1j.server.server.model.Warehouse.Warehouse;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanWareHouseHistory;
@@ -19,7 +17,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
 
 /** Game-server withdrawal and list policy; no new per-request state or queue. */
-final class CWareHouseWithdraw {
+public final class CWareHouseWithdraw {
     private CWareHouseWithdraw() {}
 
     static boolean CheckPledgeUser(L1PcInstance pc, Warehouse warehouse) {
@@ -76,12 +74,12 @@ final class CWareHouseWithdraw {
         return minutes == 0 ? null : new Timestamp(now + 60_000L * minutes);
     }
 
-    static boolean IsListCommand(String s) {
+    public static boolean IsListCommand(String s) {
         return s.equalsIgnoreCase("history") || s.equalsIgnoreCase("retrieve")
                 || s.equalsIgnoreCase("retrieve-elven") || s.equalsIgnoreCase("retrieve-aib")
                 || s.equalsIgnoreCase("retrieve-char") || s.equalsIgnoreCase("retrieve-pledge");
     }
-    static void SendList(L1PcInstance pc, int objid, String s) {
+    public static void SendList(L1PcInstance pc, int objid, String s) {
         String htmlid = null;
         if (s.equalsIgnoreCase("history")) {
 				if (pc.getClanid() > 0)

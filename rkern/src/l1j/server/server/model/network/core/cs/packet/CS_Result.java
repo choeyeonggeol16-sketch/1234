@@ -8,6 +8,7 @@ import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.Warehouse.CWareHouseRequest;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -296,14 +297,14 @@ public final class CS_Result {
 		pc.setDefaultItem(null);
 	}
 
-	static int param1(long packed0, byte[] rest, int index) {
+	public static int param1(long packed0, byte[] rest, int index) {
 		if (index == 0) {
 			return (int) packed0;
 		}
 		return readD(rest, (index - 1) << 3);
 	}
 
-	static long param2D(long packed0, byte[] rest, int index) {
+	public static long param2D(long packed0, byte[] rest, int index) {
 		if (index == 0) {
 			/*
 			 * legacy:
