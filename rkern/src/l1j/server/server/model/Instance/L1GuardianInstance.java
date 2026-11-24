@@ -97,15 +97,6 @@ public class L1GuardianInstance extends L1NpcInstance {
 		return true;
 	}
 
-	// 링크의 설정
-	@Override
-	public void setLink(L1Character cha) {
-		if (cha != null && _hateList.isEmpty()) { // 타겟이 없는 경우만 추가
-			_hateList.add(cha, 0);
-			checkTarget();
-		}
-	}
-
 	@Override
 	public void onNpcAI() {
 		if (isAiRunning()) {
@@ -233,7 +224,7 @@ public class L1GuardianInstance extends L1NpcInstance {
 						}
 					}
 					onNpcAI();
-					serchLink(pc, getNpcTemplate().get_family());
+					NpcEventFactory.OnClanAwareness(this, pc);
 					if (damage > 0) {
 						pc.set_pet_target(this);
 					}

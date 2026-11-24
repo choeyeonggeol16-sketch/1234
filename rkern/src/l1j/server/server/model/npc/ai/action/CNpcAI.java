@@ -8,6 +8,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
+import l1j.server.server.model.Instance.L1GuardianInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -837,10 +838,14 @@ public final class CNpcAI {
                 }
 
                 if (eventValue == L1NpcInstance.HATE_EVENT_GROUP_LINK) {
-                    // L1 awareness is not another damage-scaled attack.
-                    // Admit once on owner and reuse the non-damage desire floor.
+                    // Awareness is owner-only and never accumulates damage hate.
+                    if (!npc._hateList.isEmpty() || cha == npc || cha.isDead()
+                            || cha.getCurrentHp() <= 0 || cha.getMapId() != npc.getMapId()
+                            || (cha instanceof L1NpcInstance helper && helper.isDestroyed())
+                            || (cha.isInvisble() && !npc.getNpcTemplate().is_agrocoi())) {
+                        continue;
+                    }
                     if (npc instanceof L1MonsterInstance
-                            && npc._hateList.isEmpty()
                             && CDesirePQ.ensureAttackCandidate(
                                     (L1MonsterInstance) npc, cha, nowMs)) {
                         npc._hateList.add(cha, 0);
@@ -848,6 +853,11 @@ public final class CNpcAI {
                         changed = true;
                         attackDesireChanged = true;
                         sightDesireChanged = true;
+                    } else if (npc instanceof L1GuardianInstance) {
+                        // Former Guardian.setLink wrote hate/checkTarget off-owner.
+                        // Preserve its idle-only, non-drop-hate behavior.
+                        npc._hateList.add(cha, 0);
+                        changed = true;
                     }
                     continue;
                 }

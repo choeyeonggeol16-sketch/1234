@@ -853,39 +853,6 @@ public class L1NpcInstance extends L1Character {
         return head != null && head != CNPCEvent.CLOSED;
     }
 
-    public void setLink(L1Character cha) {
-    }
-
-    /**
-     * damage-aware clan/group link entry.
-     * Base NPC keeps the legacy no-op contract; monsters override it.
-     */
-    public void setLink(
-            L1Character cha,
-            int damage) {
-        setLink(cha);
-    }
-
-    public void serchLink(
-            L1PcInstance targetPlayer,
-            int family) {
-        NpcEventFactory.searchLink(this, targetPlayer, family);
-    }
-
-    /**
-     * Compatibility overload kept for external callers.
-     * Generic link no longer transports CLAN_ATTACKED damage.
-     */
-    public void serchLink(
-            L1PcInstance targetPlayer,
-            int family,
-            int damage) {
-
-        serchLink(
-                targetPlayer,
-                family);
-    }
-
     public void attackTarget(L1Character target) {
         if (target == null) return;
 

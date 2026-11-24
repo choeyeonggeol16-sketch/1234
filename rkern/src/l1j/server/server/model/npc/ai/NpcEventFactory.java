@@ -986,147 +986,96 @@ public final class NpcEventFactory {
 	}
 
 
-    /** Pooled awareness event; admission and hate/PQ writes are owner-only. */
-    public static void onGroupLink(final L1MonsterInstance helper,
+    /** L1 awareness notification, not the damage-scaled NC CLAN_ATTACKED event. */
+    public static CNPCEvent CreateHelpEvent(final L1NpcInstance helper,
+            final L1Character attacker) {
+        return CNPCEvent.Create(attacker, L1NpcInstance.HATE_EVENT_GROUP_LINK,
+                helper.npcEventEpoch());
+    }
+
+    private static void NotifyHelp(final L1NpcInstance helper,
             final L1Character attacker) {
         if (helper == null || attacker == null || helper == attacker
                 || helper.isDead() || helper.isDestroyed()
-                || helper.getCurrentHp() <= 0
+                || helper.getCurrentHp() <= 0 || attacker.isDead()
+                || attacker.getCurrentHp() <= 0
                 || helper.getMapId() != attacker.getMapId()) return;
-        CNPCServer.getInstance().HandleEvent(helper, CNPCEvent.Create(attacker,
-                L1NpcInstance.HATE_EVENT_GROUP_LINK, helper.npcEventEpoch()));
+        CNPCServer.getInstance().HandleEvent(helper, CreateHelpEvent(helper, attacker));
         helper.onNpcAI();
     }
 
-    /** L1 mana-damage awareness, distinct from damage-scaled CLAN_ATTACKED. */
-    public static void searchLink(final L1NpcInstance source,
-            final L1PcInstance attacker, final int family) {
-        if (source == null || attacker == null || source.isDestroyed()) return;
-        if (family > 0) {
-            final ArrayList<L1Object> nearby = OBJECT_BUFFER.get();
-            try {
-                L1World.getInstance().getClusterGrid().queryNearby(
-                        source, CLAN_HELP_RANGE_TILES, nearby);
-                for (int i = 0, n = nearby.size(); i < n; i++) {
-                    final L1Object obj = nearby.get(i);
-                    if (!(obj instanceof L1NpcInstance)) continue;
-                    final L1NpcInstance helper = (L1NpcInstance) obj;
-                    if (helper == source || helper.isDestroyed() || helper.isDead()
-                            || helper.getCurrentHp() <= 0
-                            || helper.getMapId() != source.getMapId()
-                            || source.getLocation().getTileLineDistance(helper.getLocation())
-                                    > CLAN_HELP_RANGE_TILES) continue;
-                    final L1Npc t = helper.getNpcTemplate();
-                    if (t != null && t.get_family() == family && t.get_agrofamily() > 0) {
-                        helper.setLink(attacker);
-                    }
-                }
-            } finally {
-                nearby.clear();
-            }
-        }
+    /** L1 MP damage and guardian awareness keep their non-damage assist contract. */
+    public static void OnClanAwareness(final L1NpcInstance source,
+            final L1Character attacker) {
+        if (!CanRequestHelp(source, attacker)) return;
+        DispatchClanHelp(source, attacker, 0);
         onPartyAttacked(source, attacker);
     }
 
     /**
-     * Retail L2Server clan-help dispatch adapted to L1 template data.
-     *
-     * Native path:
-     *   attacked NPC
-     *     -> local spatial candidates
-     *     -> clan_help_range
-     *     -> precomputed clan-help relation table
-     *     -> per-helper CLAN_ATTACKED event
-     *
-     * Important: this is NOT a broadcast over attacker's known objects.
+     * NC clan-help topology: source-centered spatial candidates -> range ->
+     * family relation -> per-helper CLAN_ATTACKED. Preserve the L1 distinction
+     * between damage-scaled events and zero-hate awareness.
      */
-    public static void onClanAttacked(
-            final L1MonsterInstance source,
-            final L1Character attacker,
-            final int damage) {
+    public static void onClanAttacked(final L1MonsterInstance source,
+            final L1Character attacker, final int damage) {
+        if (damage <= 0 || !CanRequestHelp(source, attacker)) return;
+        DispatchClanHelp(source, attacker, damage);
+    }
 
-        if (source == null
-                || attacker == null
-                || damage <= 0
-                || source.isDead()
-                || source.getCurrentHp() <= 0) {
-            return;
-        }
+    private static boolean CanRequestHelp(final L1NpcInstance source,
+            final L1Character attacker) {
+        return source != null && attacker != null && source != attacker
+                && !source.isDestroyed() && !source.isDead()
+                && source.getCurrentHp() > 0 && !attacker.isDead()
+                && attacker.getCurrentHp() > 0
+                && source.getMapId() == attacker.getMapId();
+    }
 
-        final L1Npc sourceTemplate =
-                source.getNpcTemplate();
-
-        if (sourceTemplate == null
-                || sourceTemplate.get_family() <= 0) {
-            return;
-        }
-
-        final ArrayList<L1Object> nearby =
-                OBJECT_BUFFER.get();
-
-        L1World.getInstance()
-                .getClusterGrid()
-                .queryNearby(
-                        source,
-                        CLAN_HELP_RANGE_TILES,
-                        nearby);
+    private static void DispatchClanHelp(final L1NpcInstance source,
+            final L1Character attacker, final int damage) {
+        final L1Npc sourceTemplate = source.getNpcTemplate();
+        if (sourceTemplate == null || sourceTemplate.get_family() <= 0) return;
 
         final int sx = source.getX();
         final int sy = source.getY();
         final int mapId = source.getMapId();
-
+        final ArrayList<L1Object> nearby = OBJECT_BUFFER.get();
         try {
-            for (int i = 0, size = nearby.size();
-                    i < size;
-                    i++) {
+            L1World.getInstance().getClusterGrid().queryNearby(
+                    source, CLAN_HELP_RANGE_TILES, nearby);
+            for (int i = 0, n = nearby.size(); i < n; i++) {
+                final L1Object object = nearby.get(i);
+                if (!(object instanceof L1NpcInstance helper)
+                        || !IsClanHelpCandidate(source, sourceTemplate, helper,
+                                sx, sy, mapId, damage)) continue;
 
-                final L1Object obj =
-                        nearby.get(i);
-
-                if (!(obj instanceof L1MonsterInstance)) {
-                    continue;
+                if (damage > 0) {
+                    helper.setClanHate(attacker, damage);
+                    helper.onNpcAI();
+                } else {
+                    NotifyHelp(helper, attacker);
                 }
-
-                final L1MonsterInstance helper =
-                        (L1MonsterInstance) obj;
-
-                if (helper == source
-                        || helper.isDead()
-                        || helper.getCurrentHp() <= 0
-                        || helper.getMapId() != mapId) {
-                    continue;
-                }
-
-                final int dx =
-                        helper.getX() - sx;
-                final int dy =
-                        helper.getY() - sy;
-
-                if ((long) dx * dx + (long) dy * dy
-                        > CLAN_HELP_RANGE_SQ) {
-                    continue;
-                }
-
-                if (!isClanHelpRelation(
-                        sourceTemplate,
-                        helper.getNpcTemplate())) {
-                    continue;
-                }
-
-                /*
-                 * Per-helper event.  CNpcAI owner drains this and applies
-                 * warrior::CLAN_ATTACKED desire math.
-                 */
-                helper.setClanHate(
-                        attacker,
-                        damage);
-
-                helper.onNpcAI();
             }
-
         } finally {
             nearby.clear();
         }
+    }
+
+    private static boolean IsClanHelpCandidate(final L1NpcInstance source,
+            final L1Npc sourceTemplate, final L1NpcInstance helper,
+            final int sx, final int sy, final int mapId, final int damage) {
+        if (helper == source || helper.isDestroyed() || helper.isDead()
+                || helper.getCurrentHp() <= 0 || helper.getMapId() != mapId
+                || !(helper instanceof L1MonsterInstance
+                        || (damage == 0 && helper instanceof L1GuardianInstance))) return false;
+        final long dx = (long) helper.getX() - sx;
+        final long dy = (long) helper.getY() - sy;
+        // Existing L1 zero-hate awareness uses tile-line distance. The NC
+        // damage-scaled path uses a circular range. Do not change either.
+        if (damage > 0 ? dx * dx + dy * dy > CLAN_HELP_RANGE_SQ
+                : Math.max(Math.abs(dx), Math.abs(dy)) > CLAN_HELP_RANGE_TILES) return false;
+        return isClanHelpRelation(sourceTemplate, helper.getNpcTemplate());
     }
 
     /**
@@ -1138,9 +1087,7 @@ public final class NpcEventFactory {
             final L1NpcInstance source,
             final L1Character attacker) {
 
-        if (source == null || attacker == null) {
-            return;
-        }
+        if (!CanRequestHelp(source, attacker)) return;
 
         final L1MobGroupInfo group = source.getMobGroupInfo();
         final int groupId = source.getMobGroupId();
@@ -1190,7 +1137,7 @@ public final class NpcEventFactory {
                  * Preserve existing L1 group-link contract as a separate
                  * zero-hate awareness event.  No CLAN_ATTACKED multiplier.
                  */
-                helper.setLink(attacker);
+                NotifyHelp(helper, attacker);
             }
 
         } finally {

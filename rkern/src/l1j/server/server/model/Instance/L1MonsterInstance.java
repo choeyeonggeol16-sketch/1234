@@ -171,19 +171,6 @@ public class L1MonsterInstance extends L1NpcInstance {
 		}
 	}
 
-	@Override
-	public void setLink(L1Character cha) {
-        NpcEventFactory.onGroupLink(this, cha);
-	}
-
-    @Override
-    public void setLink(
-            L1Character cha,
-            int damage) {
-
-        setLink(cha);
-    }
-
 	public L1MonsterInstance(L1Npc template) {
 		super(template);
 		_storeDroped = false;
@@ -282,7 +269,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 			onNpcAI();
 
 			if (attacker instanceof L1PcInstance) {
-				serchLink((L1PcInstance) attacker, getNpcTemplate().get_family());
+				NpcEventFactory.OnClanAwareness(this, attacker);
 			}
 
 			int newMp = getCurrentMp() - mpDamage;

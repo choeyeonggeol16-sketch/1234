@@ -22,6 +22,7 @@ import l1j.server.server.model.L1MobGroupInfo;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
+import l1j.server.server.model.Instance.L1GuardianInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.map.L1Map;
@@ -360,6 +361,88 @@ public final class TestNpcGuardGroup {
                 check(follower._target == null, type.getSimpleName() + " map-change clear");
                 loc.set(a, new L1Location(21, 20, map));
             }
+            // Exercise the shared family/range gate and the actual owner inbox.
+            template.set_family(7);
+            template.set_agrofamily(1);
+            final Method eligible = NpcEventFactory.class.getDeclaredMethod(
+                    "IsClanHelpCandidate", L1NpcInstance.class, L1Npc.class,
+                    L1NpcInstance.class, int.class, int.class, int.class, int.class);
+            eligible.setAccessible(true);
+            final L1MonsterInstance helper = fixture(unsafe, L1MonsterInstance.class,
+                    loc, hp, 984040, 32, 32, map);
+            templateField.set(helper, template);
+            maxHp.setInt(helper, 100);
+            helper._dropHateList = new L1HateList();
+            install.invoke(factory, helper);
+            CCreatureController.currentAction(helper, CCreatureController.ACTION_THINK);
+            check((boolean) eligible.invoke(null, mob, template, helper, 20, 20, mob.getMapId(), 0),
+                    "awareness keeps diagonal 12-tile limit");
+            check(!(boolean) eligible.invoke(null, mob, template, helper, 20, 20, mob.getMapId(), 10),
+                    "damage event preserves circular radius");
+            loc.set(helper, new L1Location(32, 20, map));
+            check((boolean) eligible.invoke(null, mob, template, helper, 20, 20, mob.getMapId(), 10),
+                    "damage event includes 12-tile axial boundary");
+            loc.set(helper, new L1Location(33, 20, map));
+            check(!(boolean) eligible.invoke(null, mob, template, helper, 20, 20, mob.getMapId(), 0),
+                    "outside awareness radius rejected");
+            loc.set(helper, new L1Location(22, 21, map));
+            final L1Npc foreignTemplate = new L1Npc();
+            foreignTemplate.set_family(8);
+            foreignTemplate.set_agrofamily(1);
+            templateField.set(helper, foreignTemplate);
+            check(!(boolean) eligible.invoke(null, mob, template, helper, 20, 20, mob.getMapId(), 10),
+                    "different family rejected");
+            templateField.set(helper, template);
+            template.set_agrofamily(0);
+            check(!(boolean) eligible.invoke(null, mob, template, helper, 20, 20, mob.getMapId(), 0),
+                    "helper without family aggro rejected");
+            template.set_agrofamily(1);
+            check(!(boolean) eligible.invoke(null, mob, template, mob, 20, 20, mob.getMapId(), 10),
+                    "self excluded");
+            helper.setDead(true);
+            check(!(boolean) eligible.invoke(null, mob, template, helper, 20, 20, mob.getMapId(), 0),
+                    "dead helper excluded");
+            helper.setDead(false);
+            helper._desireCreatedAtMs = now - 7000L;
+            check(helper.PostNpcEvent(NpcEventFactory.CreateClanAttackedEvent(helper, a, 80)),
+                    "young helper receives clan event");
+            drain.invoke(null, helper, now);
+            check(helper._hateList.isEmpty() && helper._target == null, "seven-second clan gate");
+            helper._desireCreatedAtMs = now - 7001L;
+            check(helper.PostNpcEvent(NpcEventFactory.CreateClanAttackedEvent(helper, a, 80)),
+                    "mature helper receives clan event");
+            drain.invoke(null, helper, now);
+            check(helper._target == a && helper._hateList.getHate(a) == 0,
+                    "damage-scaled clan desire selects attacker without direct hate");
+            check(helper.PostNpcEvent(NpcEventFactory.CreateHelpEvent(helper, b)), "busy helper event queued");
+            drain.invoke(null, helper, now);
+            check(helper._target == a && !helper._hateList.containsKey(b),
+                    "awareness cannot override occupied helper");
+
+            final L1GuardianInstance guardian = fixture(unsafe, L1GuardianInstance.class,
+                    loc, hp, 984041, 21, 21, map);
+            templateField.set(guardian, template);
+            guardian._dropHateList = new L1HateList();
+            CCreatureController.currentAction(guardian, CCreatureController.ACTION_THINK);
+            check((boolean) eligible.invoke(null, mob, template, guardian, 20, 20, mob.getMapId(), 0),
+                    "guardian eligible for zero-hate awareness");
+            check(!(boolean) eligible.invoke(null, mob, template, guardian, 20, 20, mob.getMapId(), 10),
+                    "guardian not converted to warrior damage-scaled clan event");
+            a.invisible = true;
+            check(guardian.PostNpcEvent(NpcEventFactory.CreateHelpEvent(guardian, a)), "hidden help queued");
+            drain.invoke(null, guardian, now);
+            check(guardian._target == null && guardian._hateList.isEmpty(), "hidden help rejected");
+            a.invisible = false;
+            check(guardian.PostNpcEvent(NpcEventFactory.CreateHelpEvent(guardian, a)), "guardian help queued");
+            check(guardian._target == null && guardian._hateList.isEmpty(), "producer does not write hate");
+            drain.invoke(null, guardian, now);
+            check(guardian._target == a && guardian._hateList.containsKey(a)
+                    && guardian._dropHateList.isEmpty(), "guardian acquires target only on owner");
+            check(guardian.PostNpcEvent(NpcEventFactory.CreateHelpEvent(guardian, b)), "repeat help queued");
+            drain.invoke(null, guardian, now);
+            check(guardian._target == a && !guardian._hateList.containsKey(b), "busy guardian unchanged");
+            System.out.println("PASS clan-help: range/family/type/death gates, 7s lifetime, "
+                    + "damage vs awareness, busy-helper preservation, guardian owner-only acquisition");
             System.out.println("PASS live NPC target events: initial SEE, passive/ghost/shop/map/HP gates, "
                     + "invisibility detection, ATTACKED retarget, invisible/dead fallback, "
                     + "guard acquisition and pet/summon/companion hate handoff");
