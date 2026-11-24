@@ -429,7 +429,18 @@ public class L1Clan {
         final ClanMember[] members = clanMemberList.snapshot();
         int online = 0;
         for (ClanMember member : members) {
-            if (FindOnlineMember(member) != null) online++;
+            synchronized (member) {
+                final L1PcInstance current = member.player;
+                if (current != null && current.getOnlineStatus() == 1
+                        && !current.isLogoutStarted() && current.getClanid() == getClanId()
+                        && FindOnlineMember(member) == current) {
+                    member.online = true;
+                    online++;
+                } else {
+                    member.player = null;
+                    member.online = false;
+                }
+            }
         }
         return ((long)members.length << 32) | (online & 0xffffffffL);
     }
