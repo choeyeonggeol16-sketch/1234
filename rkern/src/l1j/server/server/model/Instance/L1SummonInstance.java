@@ -225,31 +225,38 @@ public class L1SummonInstance extends L1NpcInstance {
 
 	@Override
 	protected synchronized void onDeath(L1Character lastAttacker) {
-        if (Die()) {
-            try {
-				setStatus(ActionCodes.ACTION_Die);
-				releaseNpcTileNow();
-				L1Inventory targetInventory = _master.getInventory();
-				List<L1ItemInstance> items = _inventory.getItems();
-				for (L1ItemInstance item : items) {
-					if(item == null) continue;
-					if (_master.getInventory().checkAddItem(item, item.getCount()) == L1Inventory.OK) {
-						_inventory.tradeItem(item, item.getCount(), targetInventory);
-						SC_ServerMessage.send(((L1PcInstance) _master), 143, getName(), item.getLogName());
-					} else {
-						targetInventory = L1World.getInstance().getInventory(getX(), getY(), getMapId());
-						_inventory.tradeItem(item, item.getCount(), targetInventory);
-					}
-				}
-				if (_tamed) {
-					SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
-				} else {
-					deleteMe();
-				}
-            } finally {
-                DeathFinished(_tamed);
+        if (!Die()) return;
+        boolean corpseReady = false;
+        try {
+            setStatus(ActionCodes.ACTION_Die);
+            releaseNpcTileNow();
+            final L1Inventory masterInventory = _master == null ? null : _master.getInventory();
+            for (L1ItemInstance item : _inventory.getItems()) {
+                if (item == null) continue;
+                final int count = item.getCount();
+                if (masterInventory != null
+                        && masterInventory.checkAddItem(item, count) == L1Inventory.OK
+                        && _inventory.tradeItem(item, count, masterInventory) != null) {
+                    SC_ServerMessage.send((L1PcInstance) _master, 143, getName(), item.getLogName());
+                } else {
+                    final L1Inventory ground = L1World.getInstance().getInventory(getX(), getY(), getMapId());
+                    if (_inventory.tradeItem(item, count, ground) == null) {
+                        // Keep the remaining inventory instead of deleting an
+                        // unsettled servant after a CacheD/inventory refusal.
+                        return;
+                    }
+                }
             }
-		}
+            if (!_inventory.getItems().isEmpty()) return;
+            if (_tamed) {
+                SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+                corpseReady = true;
+            } else if (_master != null) {
+                deleteMe();
+            }
+        } finally {
+            DeathFinished(corpseReady);
+        }
 	}
 
 	public synchronized void returnToNature() {

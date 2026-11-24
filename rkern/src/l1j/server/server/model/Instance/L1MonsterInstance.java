@@ -1171,8 +1171,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     }
 
     public synchronized void re() {
-        // Administrative/script removal is not a second reward-bearing death.
-        if (_destroyed || isDeathProcessing()) return;
+        // Explicit script removal invalidates the old reward generation.
+        if (_destroyed) return;
         if (!isDead() && !Die()) return;
         ++_deathEpoch;
         setExp(0);

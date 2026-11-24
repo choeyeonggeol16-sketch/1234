@@ -778,7 +778,11 @@ public final class CNPCServer {
                     npc.npcControllerDisarm();
                 }
                 npc.npcActionApplyDeferredArm();
-                npc.DispatchDeathSettlement();
+                try {
+                    npc.DispatchDeathSettlement();
+                } catch (Throwable failure) {
+                    _log.log(Level.SEVERE, "[NPC-DEATH] settlement dispatch failed", failure);
+                }
                 if (npc.aiEngineIsRunning()) {
                     schedule(npc, System.currentTimeMillis());
                 } else {
@@ -1070,7 +1074,11 @@ public final class CNPCServer {
                 queued.npcSkillHeartbeatClearDeferredArm();
                 queued.npcSkillHeartbeatClearDeferredTick();
                 queued.npcActionClearDeferredCommands();
-                queued.DispatchDeathSettlement();
+                try {
+                    queued.DispatchDeathSettlement();
+                } catch (Throwable failure) {
+                    _log.log(Level.SEVERE, "[NPC-DEATH] shutdown settlement dispatch failed", failure);
+                }
             }
             CorpseEvent event;
             while ((event = _corpse.poll()) != null) {

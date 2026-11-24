@@ -780,18 +780,22 @@ public final class CNpcAI {
             final CNPCEvent event = pending;
             pending = event.next;
             try {
-                final int value = event.value;
-                if (event.epoch != npc.npcEventEpoch() || event.cha == null
-                        || value <= L1NpcInstance.HATE_EVENT_HIDE_DRAGON_FLY
-                        || L1NpcInstance.isClanHateEvent(value)) continue;
-                AddContribution(npc, event.cha, L1NpcInstance.isAttackHateEvent(value)
-                        ? L1NpcInstance.eventDamage(value) : value);
+                if (event.epoch == npc.npcEventEpoch() && event.cha != null) {
+                    ApplyDeathContribution(npc, event.cha, event.value);
+                }
             } catch (Throwable failure) {
                 LOG.log(Level.WARNING, "[NPC-DEATH] contribution failed", failure);
             } finally {
                 CNPCEvent.Release(event);
             }
         }
+    }
+
+    private static void ApplyDeathContribution(L1NpcInstance npc, L1Character cha, int value) {
+        if (value <= L1NpcInstance.HATE_EVENT_HIDE_DRAGON_FLY
+                || L1NpcInstance.isClanHateEvent(value)) return;
+        AddContribution(npc, cha, L1NpcInstance.isAttackHateEvent(value)
+                ? L1NpcInstance.eventDamage(value) : value);
     }
 
     private static void AddContribution(L1NpcInstance npc, L1Character cha, int hate) {
@@ -843,6 +847,12 @@ public final class CNpcAI {
                 }
 
                 final int eventValue = event.value;
+                // A batch detached just before death still owns its damage
+                // records, but must not start a new action or change targets.
+                if (npc.isDead()) {
+                    if (npc.isDeathProcessing()) ApplyDeathContribution(npc, cha, eventValue);
+                    continue;
+                }
 
                 if (eventValue >= L1NpcInstance.HATE_EVENT_HIDE_SINK
                         && eventValue <= L1NpcInstance.HATE_EVENT_HIDE_DRAGON_FLY) {
@@ -1095,6 +1105,8 @@ public final class CNpcAI {
                 CNPCEvent.Release(event);
             }
         }
+
+        if (npc.isDead() || npc.isDestroyed()) return changed;
 
         // A successful SEE is a new desire. If MOVE_AROUND owns the CIO
         // deadline (including its six-second rest), ask that owner to arbitrate

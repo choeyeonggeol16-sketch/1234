@@ -1073,29 +1073,22 @@ public class L1CompanionInstance extends L1NpcInstance{
         final int lifeEpoch = npcEventEpoch();
         final long smartId = L1World.getInstance().smartIdOf(this);
         try {
-        setStatus(ActionCodes.ACTION_Die);
-        send_action(ActionCodes.ACTION_Die);
-        releaseNpcTileNow();
+            setStatus(ActionCodes.ACTION_Die);
+            send_action(ActionCodes.ACTION_Die);
+            releaseNpcTileNow();
 
-        if (getZoneType() != 1 && getZoneType() != -1){
-            if(last_attacker instanceof L1PcInstance && get_pink_name_remain_seconds() <= 0){
-                L1PcInstance pc = (L1PcInstance)last_attacker;
-                int lawful = Kda.calculate_lawful(pc);
-                pc.setLawful(lawful);
-                pc.send_lawful();
+            if (getZoneType() != 1 && getZoneType() != -1) {
+                if (last_attacker instanceof L1PcInstance pc && get_pink_name_remain_seconds() <= 0) {
+                    int lawful = Kda.calculate_lawful(pc);
+                    pc.setLawful(lawful);
+                    pc.send_lawful();
+                }
+                if (getMap().isEnabledDeathPenalty()) do_death_penalty();
             }
-
-            if(getMap().isEnabledDeathPenalty())
-                do_death_penalty();
-        }
-
-        if(get_is_combo_time())
-            set_is_combo_time(false);
-
-        CompanionInstanceCache.update_cache(this, true);
-        if(m_master != null)
-            SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_ALL);
-
+            if (get_is_combo_time()) set_is_combo_time(false);
+            CompanionInstanceCache.update_cache(this, true);
+            if (m_master != null)
+                SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_ALL);
         } finally {
             DeathFinished(false);
             // Keep the existing 60-second one-shot worker: removal persists
@@ -1121,7 +1114,8 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
 
     @Override
-    public void deleteMe(){
+    public synchronized void deleteMe(){
+        if (isDestroyed()) return;
         if(get_is_combo_time()){
             set_is_combo_time(false);
         }

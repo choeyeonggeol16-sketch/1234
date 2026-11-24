@@ -145,7 +145,7 @@ public class L1NpcInstance extends L1Character {
     private volatile boolean _deathProcessing = false;
     // Only reward-bearing deaths publish their existing worker task here.
     // The existing coalesced NPC wake delivers it after the final hate batch.
-    private Runnable _deathSettlement;
+    private volatile Runnable _deathSettlement;
     // Null without active dialogue; the volatile head publishes the earliest
     // deadline. The existing NPC monitor protects list updates.
     private volatile TimerData _npcChatTimers;
@@ -758,6 +758,8 @@ public class L1NpcInstance extends L1Character {
 
     /** Called only by the existing NPC shard (including its final drain). */
     public final void DispatchDeathSettlement() {
+        // Normal wake path: no monitor acquisition or task allocation.
+        if (_deathSettlement == null) return;
         final Runnable task;
         synchronized (this) {
             task = _deathSettlement;
@@ -1308,7 +1310,8 @@ public class L1NpcInstance extends L1Character {
     public void NpcDie() {
         try {
             synchronized (this) {
-                if (_destroyed || _deathProcessing) return;
+                if (_destroyed) return;
+                // Explicit scripted removal retains its original force semantics.
                 if (!isDead() && !Die()) return;
                 setExp(0);
                 setKarma(0);
