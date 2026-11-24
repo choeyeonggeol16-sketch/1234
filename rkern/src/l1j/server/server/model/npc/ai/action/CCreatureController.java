@@ -8,7 +8,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.CDesirePQ;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.CNPCServer;
 
 /**
  * NPC creature action controller.
@@ -124,7 +124,7 @@ public final class CCreatureController {
             CMoveAroundAction.onEnd(creature, RESULT_DONE);
             creature.npcActionReleaseCadence();
             creature._nextAllowedTickMs = System.currentTimeMillis();
-            NpcServer.getInstance().wake(creature);
+            CNPCServer.getInstance().wake(creature);
             return;
         }
 
@@ -158,7 +158,7 @@ public final class CCreatureController {
         if (CCreatureController.currentAction(creature) == ACTION_THINK) {
             creature.npcActionReleaseCadence();
             creature._nextAllowedTickMs = System.currentTimeMillis();
-            NpcServer.getInstance().wake(creature);
+            CNPCServer.getInstance().wake(creature);
             return;
         }
 
@@ -220,7 +220,7 @@ public final class CCreatureController {
             if (pre == CNpcAI.PRE_RETHINK) {
                 creature.npcActionReleaseCadence();
                 creature._nextAllowedTickMs = nowMs;
-                NpcServer.getInstance().wake(creature);
+                CNPCServer.getInstance().wake(creature);
                 return;
             }
         } else {
@@ -792,7 +792,7 @@ public final class CCreatureController {
         creature.npcActionInvalidateGeneration();
         creature.npcActionReleaseCadence();
         creature._nextAllowedTickMs = System.currentTimeMillis();
-        NpcServer.getInstance().wake(creature);
+        CNPCServer.getInstance().wake(creature);
     }
 
     /**

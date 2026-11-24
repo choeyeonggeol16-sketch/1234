@@ -63,7 +63,7 @@ public final class NpcEventFactory {
 
     private static void postAirEvent(final L1NpcInstance npc, final L1Character source,
             final int event) {
-        NpcServer.getInstance().HandleEvent(npc,
+        CNPCServer.getInstance().HandleEvent(npc,
                 CNPCEvent.Create(source, event, npc.npcEventEpoch()));
         if (!npc.isAiRunning()) npc.onNpcAI();
     }
@@ -993,7 +993,7 @@ public final class NpcEventFactory {
                 || helper.isDead() || helper.isDestroyed()
                 || helper.getCurrentHp() <= 0
                 || helper.getMapId() != attacker.getMapId()) return;
-        NpcServer.getInstance().HandleEvent(helper, CNPCEvent.Create(attacker,
+        CNPCServer.getInstance().HandleEvent(helper, CNPCEvent.Create(attacker,
                 L1NpcInstance.HATE_EVENT_GROUP_LINK, helper.npcEventEpoch()));
         helper.onNpcAI();
     }
@@ -1246,7 +1246,7 @@ public final class NpcEventFactory {
 				continue;
 			}
 
-			NpcServer.getInstance().HandleEvent(monster,
+			CNPCServer.getInstance().HandleEvent(monster,
 					CreateInvisibilityEvent(monster, pc));
 		}
 	}

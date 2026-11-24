@@ -107,7 +107,7 @@ import l1j.server.server.model.item.teleport.designated.DesignatedTeleportLoader
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.CNPCServer;
 import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.rank.loader.RankUserLoader;
@@ -377,7 +377,7 @@ public class GameServer {
 		
 		System.gc();
 		Runtime.getRuntime().addShutdownHook(Shutdown.getInstance());
-		NpcServer.getInstance();
+		CNPCServer.getInstance();
 		System.out.println("엔피시 서버 연결이 완료되었습니다.");
 		AppCenterService.start();
 	}
@@ -569,7 +569,7 @@ public class GameServer {
 
 	        // Release any delayed MJEffect cast before NPC owner/shard shutdown.
         EffectModelLoader.release();
-        NpcServer.getInstance().shutdown();
+        CNPCServer.getInstance().shutdown();
 	        l1j.server.Server.printShutdownStatus("엔피시 서버가 종료되었습니다.");
 
 	        CIOThreadCallback.getInstance().shutdown();

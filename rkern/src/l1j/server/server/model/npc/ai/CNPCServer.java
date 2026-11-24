@@ -18,9 +18,9 @@ import l1j.server.server.model.npc.ai.action.CCreatureController;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 
-public final class NpcServer {
+public final class CNPCServer {
 
-    private static final Logger _log = Logger.getLogger(NpcServer.class.getName());
+    private static final Logger _log = Logger.getLogger(CNPCServer.class.getName());
 
     public static final int WORKERS = 4;
 
@@ -60,9 +60,9 @@ public final class NpcServer {
         }
     }
 
-    private static final NpcServer INSTANCE = new NpcServer();
+    private static final CNPCServer INSTANCE = new CNPCServer();
 
-    public static NpcServer getInstance() {
+    public static CNPCServer getInstance() {
         return INSTANCE;
     }
 
@@ -116,7 +116,7 @@ public final class NpcServer {
     }
 
 
-    private NpcServer() {
+    private CNPCServer() {
         for (int i = 0; i < CORPSE_POOL_CAPACITY + SKILL_RESERVE_CAPACITY; i++) {
             final CorpseEvent event = new CorpseEvent();
             if (i < CORPSE_POOL_CAPACITY) {
@@ -1012,7 +1012,7 @@ public final class NpcServer {
         }
 
         private void clearOwnerState() {
-            // NpcServer is a static singleton. Stop paths must not retain NPCs
+            // CNPCServer is a static singleton. Stop paths must not retain NPCs
             // and timer payloads in its queues after the owner exits.
             L1NpcInstance queued;
             while ((queued = _unregister.poll()) != null) {

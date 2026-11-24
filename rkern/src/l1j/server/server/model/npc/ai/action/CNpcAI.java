@@ -25,7 +25,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.npc.ai.CNPCEvent;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.CNPCServer;
 
 /**
  * NPC AI decision/event runtime.
@@ -705,7 +705,7 @@ public final class CNpcAI {
                 && !npc.isDeathProcessing()) {
             npc.allTargetClear();
             npc.setAiRunning(false);
-            NpcServer.getInstance().unregister(npc);
+            CNPCServer.getInstance().unregister(npc);
             if (npc.hasPendingHate() && !npc.isDead() && !npc.isDestroyed()) {
                 npc.onNpcAI();
             }
@@ -717,7 +717,7 @@ public final class CNpcAI {
                 new DeathSyncTimer(npc),
                 0);
 
-        NpcServer.getInstance().unregister(npc);
+        CNPCServer.getInstance().unregister(npc);
     }
 
     static void broadcastAirLanding(final L1NpcInstance npc) {

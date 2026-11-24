@@ -41,7 +41,7 @@ import l1j.server.server.model.npc.ai.CItemDigest;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.npc.ai.CNpcItemUse;
 import l1j.server.server.model.npc.ai.CItemRefine;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.CNPCServer;
 import l1j.server.server.model.npc.ai.CNpcSpecialAction;
 import l1j.server.server.model.npc.ai.action.CNpcAI;
 import l1j.server.server.model.npc.ai.action.CCreatureController;
@@ -203,7 +203,7 @@ public class L1NpcInstance extends L1Character {
 
     /*
      * NC scripted DESIRE_MOVE_TO / DESIRE_MOVE_TO_TARGET action payload.
-     * Written/read only by the fixed NpcServer owner. Flat primitives:
+     * Written/read only by the fixed CNPCServer owner. Flat primitives:
      * no per-NPC movement command object, worker or extra queue.
      */
     public long _scriptMoveGoalXY;
@@ -286,7 +286,7 @@ public class L1NpcInstance extends L1Character {
             AtomicIntegerFieldUpdater.newUpdater(L1NpcInstance.class, "_npcActionDeferredCancel");
     private long _npcActionDeferredDue;
     private int _npcActionDeferredGeneration;
-    // Action cadence belongs to NpcServer's existing per-NPC owner wheel.
+    // Action cadence belongs to CNPCServer's existing per-NPC owner wheel.
     // Only the NPC owner thread writes these two primitive fields.
     private long _npcControllerDueMs;
     private int _npcControllerDueGeneration;
@@ -460,7 +460,7 @@ public class L1NpcInstance extends L1Character {
     }
     public void endCast() {
         _castingSkill.set(false);
-        NpcServer.getInstance().wake(this);
+        CNPCServer.getInstance().wake(this);
     }
 
     protected void startAI() {
@@ -474,7 +474,7 @@ public class L1NpcInstance extends L1Character {
         _aiBlockedType = 0;
         _nextAllowedTickMs = now + 1000L;
         _aiEngineDeadlineMs = _nextAllowedTickMs;
-        NpcServer.getInstance().register(this);
+        CNPCServer.getInstance().register(this);
     }
 
     public void mobTeleport() {
@@ -520,7 +520,7 @@ public class L1NpcInstance extends L1Character {
             }
 
             _corpseQueuedGeneration = generation;
-            if (NpcServer.getInstance().enqueueCorpse(this, generation, smartId)) {
+            if (CNPCServer.getInstance().enqueueCorpse(this, generation, smartId)) {
                 return true;
             }
             _corpseQueuedGeneration = 0;
@@ -793,7 +793,7 @@ public class L1NpcInstance extends L1Character {
             onNpcAI();
         }
 
-        NpcServer.getInstance().HandleEvent(this,
+        CNPCServer.getInstance().HandleEvent(this,
                 NpcEventFactory.CreateSeeCreatureEvent(this, cha));
     }
 
@@ -801,7 +801,7 @@ public class L1NpcInstance extends L1Character {
         if (cha == null || cha.getId() == getId()) {
             return;
         }
-        NpcServer.getInstance().HandleEvent(this,
+        CNPCServer.getInstance().HandleEvent(this,
                 NpcEventFactory.CreateHateEvent(this, cha, hate));
     }
 
@@ -819,7 +819,7 @@ public class L1NpcInstance extends L1Character {
             return;
         }
 
-        NpcServer.getInstance().HandleEvent(this,
+        CNPCServer.getInstance().HandleEvent(this,
                 NpcEventFactory.CreateAttackedEvent(this, cha, damage));
     }
 
@@ -837,7 +837,7 @@ public class L1NpcInstance extends L1Character {
             return;
         }
 
-        NpcServer.getInstance().HandleEvent(this,
+        CNPCServer.getInstance().HandleEvent(this,
                 NpcEventFactory.CreateClanAttackedEvent(this, cha, damage));
     }
 
@@ -1104,7 +1104,7 @@ public class L1NpcInstance extends L1Character {
     public void setMaster(L1PcInstance cha) {
         _master = cha;
         if (_aiRunning) {
-            NpcServer.getInstance().wake(this);
+            CNPCServer.getInstance().wake(this);
         }
     }
 
@@ -1201,7 +1201,7 @@ public class L1NpcInstance extends L1Character {
             perceivedFrom.addKnownObject(this);
         }
         onNpcAI();
-        NpcServer.getInstance().wake(this);
+        CNPCServer.getInstance().wake(this);
     }
 
     @Override
@@ -1721,7 +1721,7 @@ public class L1NpcInstance extends L1Character {
 
     public final void startTimedDelete(int delayMs) {
         if (delayMs > 0) {
-            NpcServer.getInstance().scheduleDelete(this, delayMs);
+            CNPCServer.getInstance().scheduleDelete(this, delayMs);
         }
     }
 

@@ -37,7 +37,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 import l1j.server.server.model.network.utill.CConnectionConfig;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.CNPCServer;
 import l1j.server.server.utils.GameUtils;
 
 /**
@@ -427,7 +427,7 @@ public final class CIOThreadCallback {
         }
         if (target instanceof L1NpcInstance npc) {
             if (npc.isDestroyed()) return false;
-            final NpcServer server = NpcServer.getInstance();
+            final CNPCServer server = CNPCServer.getInstance();
             if (server.isOwnerThread(npc)) {
                 poison.runOnNpc(npc);
                 return true;
@@ -463,7 +463,7 @@ public final class CIOThreadCallback {
         }
         if (target instanceof L1NpcInstance npc) {
             if (npc.isDestroyed()) return false;
-            final NpcServer server = NpcServer.getInstance();
+            final CNPCServer server = CNPCServer.getInstance();
             if (server.isOwnerThread(npc)) {
                 task.runOnNpc(npc);
                 return true;
@@ -2494,11 +2494,11 @@ public final class CIOThreadCallback {
 	}
 
     public boolean submitNpcBerserkers(L1NpcInstance npc, int durationMs) {
-        return NpcServer.getInstance().postNpcSkill(npc, SKILL_OP_NPC_BERSERKERS, L1SkillId.MOB_BERSERKERS, durationMs);
+        return CNPCServer.getInstance().postNpcSkill(npc, SKILL_OP_NPC_BERSERKERS, L1SkillId.MOB_BERSERKERS, durationMs);
     }
 
     public boolean submitNpcElementalFallDown(L1NpcInstance npc, int durationMs, int attribute) {
-        return NpcServer.getInstance().postNpcSkill(npc, SKILL_OP_ELEMENTAL_FALL_DOWN, attribute, durationMs);
+        return CNPCServer.getInstance().postNpcSkill(npc, SKILL_OP_ELEMENTAL_FALL_DOWN, attribute, durationMs);
     }
 
 	private boolean submitPcSkillEffect(L1PcInstance pc, byte op, int skillId, int duration) {
@@ -2548,17 +2548,17 @@ public final class CIOThreadCallback {
      * No worker, queue, or per-command object is allocated by this API.
      */
     public boolean trySubmitNpcSkillSet(L1NpcInstance npc, int skillId, int duration) {
-        return npc != null && NpcServer.getInstance().postNpcSkill(
+        return npc != null && CNPCServer.getInstance().postNpcSkill(
                 npc, SKILL_OP_SET, skillId, duration);
     }
 
     public boolean trySubmitNpcSkillRemove(L1NpcInstance npc, int skillId, boolean stop) {
-        return npc != null && NpcServer.getInstance().postNpcSkill(
+        return npc != null && CNPCServer.getInstance().postNpcSkill(
                 npc, stop ? SKILL_OP_REMOVE_STOP : SKILL_OP_REMOVE_KILL, skillId, 0);
     }
 
     public boolean trySubmitNpcSkillClear(L1NpcInstance npc) {
-        return npc != null && NpcServer.getInstance().postNpcSkill(
+        return npc != null && CNPCServer.getInstance().postNpcSkill(
                 npc, SKILL_OP_CLEAR, 0, 0);
     }
 
@@ -2567,7 +2567,7 @@ public final class CIOThreadCallback {
      * the target with its previous effect already removed.
      */
     public boolean trySubmitNpcSkillReplace(L1NpcInstance npc, int skillId, int duration) {
-        return npc != null && NpcServer.getInstance().postNpcSkill(
+        return npc != null && CNPCServer.getInstance().postNpcSkill(
                 npc, SKILL_OP_REPLACE, skillId, duration);
     }
 
@@ -2593,12 +2593,12 @@ public final class CIOThreadCallback {
                 // Teardown must not compete for a bounded skill-event lease.
                 // The existing NPC-owner wake clears the retired NPC's effects.
                 if (op == SKILL_OP_CLEAR) {
-                    NpcServer.getInstance().clearDestroyedNpcSkills(npc);
+                    CNPCServer.getInstance().clearDestroyedNpcSkills(npc);
                 }
                 return;
             }
-            if (!NpcServer.getInstance().postNpcSkill(npc, op,
-                    skillId, timeMillis) && NpcServer.getInstance().isRunning()
+            if (!CNPCServer.getInstance().postNpcSkill(npc, op,
+                    skillId, timeMillis) && CNPCServer.getInstance().isRunning()
                     && !npc.isDestroyed()) {
                 // Public skill mutators are void; do not silently lose an
                 // accepted-looking mutation when the bounded NPC pool is full.
@@ -2614,7 +2614,7 @@ public final class CIOThreadCallback {
         runCharacterSkillDirect(cha, op, skillId, timeMillis);
 	}
 
-    /** Called on the NPC's existing NpcServer owner, not the CIO wheel thread. */
+    /** Called on the NPC's existing CNPCServer owner, not the CIO wheel thread. */
     public void applyNpcCharacterSkill(L1NpcInstance npc, byte op,
             int skillId, int timeMillis) {
         if (npc != null && !npc.isDestroyed()) {
@@ -2700,8 +2700,8 @@ public final class CIOThreadCallback {
             return;
         }
         if (cha instanceof L1NpcInstance) {
-            if (!NpcServer.getInstance().postNpcSkill((L1NpcInstance) cha, SKILL_OP_ARM, 0, 0)
-                    && NpcServer.getInstance().isRunning()) {
+            if (!CNPCServer.getInstance().postNpcSkill((L1NpcInstance) cha, SKILL_OP_ARM, 0, 0)
+                    && CNPCServer.getInstance().isRunning()) {
                 throw new java.util.concurrent.RejectedExecutionException(
                         "NPC skill heartbeat admission exhausted");
             }
@@ -2757,15 +2757,15 @@ public final class CIOThreadCallback {
             npc.npcActionReleaseCadence();
             return;
         }
-        NpcServer.getInstance().submitAction(npc, action, pendingAction);
+        CNPCServer.getInstance().submitAction(npc, action, pendingAction);
     }
 
     public void cancelNpcAction(L1NpcInstance npc) {
-        if (npc != null && npc.getId() > 0) NpcServer.getInstance().cancelAction(npc);
+        if (npc != null && npc.getId() > 0) CNPCServer.getInstance().cancelAction(npc);
     }
 
     public void scheduleNpcActionTimer(L1NpcInstance npc, int generation, long delayMs) {
-        NpcServer.getInstance().armActionTimer(npc, generation, delayMs);
+        CNPCServer.getInstance().armActionTimer(npc, generation, delayMs);
     }
 
 
@@ -3130,10 +3130,10 @@ public final class CIOThreadCallback {
                     owner.threadLocalTimer.schedule(WHEEL_TICK_MS, this, handle);
                 }
             } else if (target instanceof L1NpcInstance) {
-                if (!NpcServer.getInstance().postNpcWheelTask((L1NpcInstance) target, this)) {
+                if (!CNPCServer.getInstance().postNpcWheelTask((L1NpcInstance) target, this)) {
                     // The bounded NPC event pool is full: retain the same
                     // owner timer/handle and retry without dropping the effect.
-                    if (NpcServer.getInstance().isRunning()) {
+                    if (CNPCServer.getInstance().isRunning()) {
                         owner.threadLocalTimer.schedule(WHEEL_TICK_MS, this, handle);
                     } else {
                         handle.cancel();
