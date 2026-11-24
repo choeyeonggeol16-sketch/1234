@@ -2,6 +2,10 @@ package l1j.server.server.model.Instance;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import l1j.server.server.ThreadPool;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
@@ -31,6 +35,10 @@ public class L1SummonInstance extends L1NpcInstance {
 	private static final long SUMMON_TIME = 3600000L;
 	private static final int TIMER_LIFETIME = 1;
 	private static final int TIMER_LIFETIME_GENERATION = 1;
+    private static final int TIMER_DEATH_RETURN = 0x53554D52;
+    private static final long DEATH_RETURN_RETRY_MS = 1000L;
+    private int deathReturnGeneration;
+    private static final Logger LOG = Logger.getLogger(L1SummonInstance.class.getName());
 	private int _currentPetStatus;
 	private boolean _tamed;
 	private boolean _isReturnToNature = false;
@@ -182,11 +190,26 @@ public class L1SummonInstance extends L1NpcInstance {
 
 	@Override
 	public void TimerExpired(int timerId, int generation) {
+        if (timerId == TIMER_DEATH_RETURN) {
+            synchronized (this) {
+                if (generation != deathReturnGeneration || !isDeathProcessing()
+                        || !isDead() || _destroyed) return;
+                if (++deathReturnGeneration == 0) ++deathReturnGeneration;
+            }
+            try {
+                ThreadPool.getInstance().execute(this::finishSummonDeath);
+            } catch (RejectedExecutionException rejected) {
+                synchronized (this) {
+                    if (isDeathProcessing() && isDead() && !_destroyed) retryDeathReturn();
+                }
+            }
+            return;
+        }
 		if (timerId != TIMER_LIFETIME) {
 			super.TimerExpired(timerId, generation);
 			return;
 		}
-		if (generation != TIMER_LIFETIME_GENERATION || _destroyed) {
+		if (generation != TIMER_LIFETIME_GENERATION || _destroyed || isDead() || isDeathProcessing()) {
 			return;
 		}
 
@@ -223,43 +246,70 @@ public class L1SummonInstance extends L1NpcInstance {
         }
 	}
 
-	@Override
-	protected synchronized void onDeath(L1Character lastAttacker) {
+    @Override
+    protected synchronized void onDeath(L1Character lastAttacker) {
         if (!Die()) return;
-        boolean corpseReady = false;
+        setStatus(ActionCodes.ACTION_Die);
+        releaseNpcTileNow();
+        finishSummonDeath();
+    }
+
+    // Keep death processing open until every confirmed transfer settles.
+    private synchronized void finishSummonDeath() {
+        if (_destroyed || !isDead() || !isDeathProcessing()) return;
+        boolean settled = false;
         try {
-            setStatus(ActionCodes.ACTION_Die);
-            releaseNpcTileNow();
-            final L1Inventory masterInventory = _master == null ? null : _master.getInventory();
+            final L1Character master = _master;
+            final L1Inventory masterInventory = master == null ? null : master.getInventory();
             for (L1ItemInstance item : _inventory.getItems()) {
                 if (item == null) continue;
                 final int count = item.getCount();
                 if (masterInventory != null
                         && masterInventory.checkAddItem(item, count) == L1Inventory.OK
                         && _inventory.tradeItem(item, count, masterInventory) != null) {
-                    SC_ServerMessage.send((L1PcInstance) _master, 143, getName(), item.getLogName());
+                    if (master instanceof L1PcInstance pc) {
+                        try {
+                            SC_ServerMessage.send(pc, 143, getName(), item.getLogName());
+                        } catch (RuntimeException failure) {
+                            LOG.log(Level.WARNING, "Summon return notification failed", failure);
+                        }
+                    }
                 } else {
                     final L1Inventory ground = L1World.getInstance().getInventory(getX(), getY(), getMapId());
-                    if (_inventory.tradeItem(item, count, ground) == null) {
-                        // Keep the remaining inventory instead of deleting an
-                        // unsettled servant after a CacheD/inventory refusal.
-                        return;
-                    }
+                    if (_inventory.tradeItem(item, count, ground) == null) return;
                 }
             }
-            if (!_inventory.getItems().isEmpty()) return;
-            if (_tamed) {
-                SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
-                corpseReady = true;
-            } else if (_master != null) {
-                deleteMe();
-            }
+            settled = _inventory.getItems().isEmpty();
+        } catch (RuntimeException failure) {
+            LOG.log(Level.WARNING, "Summon death settlement failed id=" + getId(), failure);
         } finally {
-            DeathFinished(corpseReady);
+            if (!settled && !_destroyed) retryDeathReturn();
         }
-	}
+        if (!settled) return;
+        if (++deathReturnGeneration == 0) ++deathReturnGeneration;
+        if (_tamed) {
+            try {
+                SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+            } finally {
+                DeathFinished(true);
+            }
+        } else {
+            try {
+                deleteMe();
+            } finally {
+                DeathFinished(false);
+            }
+        }
+    }
+
+    private void retryDeathReturn() {
+        if (++deathReturnGeneration == 0) ++deathReturnGeneration;
+        CIOThreadCallback.getInstance().scheduleNpcTimer(
+                this, TIMER_DEATH_RETURN, deathReturnGeneration, DEATH_RETURN_RETRY_MS);
+    }
 
 	public synchronized void returnToNature() {
+        if (_destroyed || isDead() || isDeathProcessing()) return;
 		_isReturnToNature = true;
 		if (!_tamed) {
 			L1Inventory targetInventory = _master.getInventory();
@@ -280,33 +330,47 @@ public class L1SummonInstance extends L1NpcInstance {
 		}
 	}
 
-	@Override
-	public synchronized void deleteMe() {
-		if (_destroyed) {
-			return;
-		}
-		if(((L1PcInstance)_master).isSM() && this.getNpcId() >= 7320137 && this.getNpcId() <= 7320147)
-			((L1PcInstance)_master).setSM(false);
-		if (!_tamed && !_isReturnToNature) {
-			SC_SkillSound.broadcast(this, getId(), 169);		
-		}
-		
-		Object aobj[] = _master.getPetList().values().toArray();
-		if ( aobj == null) return;
-		for (int i = 0; i < aobj.length; i++){
-			if (aobj[i] == this){
-				SC_ReturnedStat.sendPetParty((L1PcInstance) _master, i * 3, getId(), false);
-			}
-		}
-			
-		this._master.getPetList().remove(Integer.valueOf(getId()));
-		super.deleteMe();
-	
-		_master = null;
+    @Override
+    public synchronized void deleteMe() {
+        if (_destroyed) return;
+        if (isDead() && _inventory != null && !_inventory.getItems().isEmpty()) {
+            // External deletion must not discard an unsettled dead servant.
+            return;
+        }
+        final L1Character master = _master;
+        if (master instanceof L1PcInstance pc) {
+            if (pc.isSM() && getNpcId() >= 7320137 && getNpcId() <= 7320147) {
+                pc.setSM(false);
+            }
+            if (!_tamed && !_isReturnToNature) {
+                try {
+                    SC_SkillSound.broadcast(this, getId(), 169);
+                } catch (RuntimeException failure) {
+                    LOG.log(Level.WARNING, "Summon removal notification failed", failure);
+                }
+            }
+            final Object[] pets = pc.getPetList().values().toArray();
+            try {
+                for (int i = 0; i < pets.length; i++) {
+                    if (pets[i] == this) {
+                        SC_ReturnedStat.sendPetParty(pc, i * 3, getId(), false);
+                        break;
+                    }
+                }
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Summon party notification failed", failure);
+            }
+            pc.getPetList().remove(Integer.valueOf(getId()), this);
+        }
+        try {
+            super.deleteMe();
+        } finally {
+            _master = null;
+        }
+    }
 
-	}
-
-	public void liberate() {
+	public synchronized void liberate() {
+        if (_destroyed || isDead() || isDeathProcessing()) return;
 		L1MonsterInstance monster = new L1MonsterInstance(getNpcTemplate());
 		monster.setId(IdFactory.getInstance().nextId());
 

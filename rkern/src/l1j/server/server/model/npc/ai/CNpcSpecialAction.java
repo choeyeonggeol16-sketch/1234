@@ -52,12 +52,13 @@ public final class CNpcSpecialAction {
     }
 
     public static void OnHpChanged(final L1NpcInstance npc, final int hp) {
-        if (npc.getNpcId() == ANCIENT_GUARDIAN && hp > 0) {
-            final int percent = HpPercent(npc);
-            if (npc.getStatus() == 6 && percent <= 90) {
-                SC_DoActionGFX.broadcast(npc, 4);
-                npc.setStatus(0);
-            }
+        if (npc.getNpcId() != ANCIENT_GUARDIAN || hp <= 0) return;
+        synchronized (npc) {
+            if (npc.isDestroyed() || npc.isDead() || npc.getCurrentHp() <= 0
+                    || npc.getStatus() != 6 || HpPercent(npc) > 90) return;
+            // Claim the awakening before emitting the one-shot animation.
+            npc.setStatus(0);
+            SC_DoActionGFX.broadcast(npc, 4);
         }
     }
 

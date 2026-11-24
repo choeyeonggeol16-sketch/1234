@@ -110,17 +110,29 @@ public final class dMoveTo {
                 && PathNodeWorld.moveStraight(map, npc.getX(), npc.getY(), x, y)
                 && PathNodeWorld.moveStraight(map, x, y, npc.getX(), npc.getY());
 
-        CCreatureController.think(npc);
-        npc.allTargetClear();
-        npc.npcChaseRetargetConsume();
-        npc.setFirstAttack(false);
-        // The HP CAS will not revive an NPC that has already reached zero.
-        if (npc.applyNpcHpDelta(npc.getMaxHp()) <= 0
-                || npc.isDead() || npc.isDestroyed()) return true;
-        npc.setCurrentMp(npc.getMaxMp());
-        CNPCEvent.ReleaseChain(npc.TakeNpcEvents());
+        synchronized (npc) {
+            // The damage CAS and the return admission use the same monitor.
+            if (!CNPCServer.getInstance().isRunning() || !npc.aiEngineIsRunning()
+                    || npc.isDestroyed() || npc.isDead() || npc.getCurrentHp() <= 0
+                    || npc.getHiddenStatus() != L1NpcInstance.HIDDEN_STATUS_NONE
+                    || npc.getMap() != map || isReturningHome(npc)
+                    || !validDestination(npc, x, y)) return false;
+            CCreatureController.think(npc);
+            npc.allTargetClear();
+            npc.npcChaseRetargetConsume();
+            npc.setFirstAttack(false);
+            CNPCEvent.ReleaseChain(npc.TakeNpcEvents());
 
-        return request(npc, x, y, reachable ? RETURN_WALK : RETURN_TELEPORT);
+            if (!request(npc, x, y, reachable ? RETURN_WALK : RETURN_TELEPORT)) {
+                return false;
+            }
+            // The inline action may finish instantly. No external hit can
+            // commit until both HP and MP recovery have completed.
+            if (npc.applyNpcHpDelta(npc.getMaxHp()) <= 0
+                    || npc.isDead() || npc.isDestroyed()) return true;
+            npc.setCurrentMp(npc.getMaxMp());
+            return true;
+        }
     }
 
     /** Execute the stored DESIRE_MOVE_TO through the existing timer wheel. */

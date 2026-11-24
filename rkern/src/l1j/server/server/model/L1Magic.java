@@ -2951,12 +2951,18 @@ public void Start1() {
 		}
 
 		if (_calcType == PC_NPC) {
-			if (drainMana > 0) {
-				int drainValue = _targetNpc.drainMana(drainMana);
-				int newMp = _pc.getCurrentMp() + drainValue;
-				_pc.setCurrentMp(newMp);
-			}
-			_targetNpc.ReceiveManaDamage(_pc, drainMana);
+            if (_targetNpc instanceof L1MonsterInstance monster) {
+                if (drainMana > 0) {
+                    final int drainValue = monster.ReceiveManaDrain(_pc, drainMana);
+                    _pc.setCurrentMp(_pc.getCurrentMp() + drainValue);
+                }
+            } else {
+                if (drainMana > 0) {
+                    int drainValue = _targetNpc.drainMana(drainMana);
+                    _pc.setCurrentMp(_pc.getCurrentMp() + drainValue);
+                }
+                _targetNpc.ReceiveManaDamage(_pc, drainMana);
+            }
 			_targetNpc.receiveDamage(_pc, damage);
 		} else if (_calcType == NPC_NPC) {
 			_targetNpc.receiveDamage(_npc, damage);

@@ -318,8 +318,10 @@ public final class CNPCServer {
         try {
             if (npc == null) return;
             if (isOwnerThread(npc)) {
-                CCreatureController.cancelFromAi(npc);
-                npc.npcControllerDisarm();
+                synchronized (npc) {
+                    CCreatureController.cancelFromAi(npc);
+                    npc.npcControllerDisarm();
+                }
                 // Disarming from outside the expiry bucket must remove the
                 // old wheel deadline, not leave a canceled timer linked.
                 _shards[shardIndex(npc)].scheduleNext(npc);
@@ -334,9 +336,11 @@ public final class CNPCServer {
             // even if thousands of pooled commands are ahead of it. Use the
             // existing per-NPC coalesced wake as the owner handoff: no pool
             // lease is needed, and the owner processes cancel before timers.
-            npc.npcActionRequestDeferredCancel();
-            npc.npcActionInvalidateGeneration();
-            npc.npcActionReleaseCadence();
+            synchronized (npc) {
+                npc.npcActionRequestDeferredCancel();
+                npc.npcActionInvalidateGeneration();
+                npc.npcActionReleaseCadence();
+            }
             signalDeferred(npc);
         } finally {
             endPost();
@@ -773,9 +777,14 @@ public final class CNPCServer {
                                 failure);
                     }
                 }
-                if (npc.npcActionConsumeDeferredCancel()) {
-                    CCreatureController.cancelFromAi(npc);
-                    npc.npcControllerDisarm();
+                if (npc.npcActionHasDeferredCancel()) {
+                    synchronized (npc) {
+                        // Resurrection may have retired the pending request.
+                        if (npc.npcActionConsumeDeferredCancel()) {
+                            CCreatureController.cancelFromAi(npc);
+                            npc.npcControllerDisarm();
+                        }
+                    }
                 }
                 npc.npcActionApplyDeferredArm();
                 try {

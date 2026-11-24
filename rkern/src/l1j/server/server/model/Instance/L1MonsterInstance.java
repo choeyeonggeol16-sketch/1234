@@ -253,26 +253,31 @@ public class L1MonsterInstance extends L1NpcInstance {
 		}
 	}
 
-	@Override
-	public void ReceiveManaDamage(L1Character attacker, int mpDamage) {
-		if (attacker == null || dMoveTo.isReturningHome(this))
-			return;
-		if (mpDamage > 0 && !isDead()) {
-			setHate(attacker, mpDamage); //나를때린놈들.
+    @Override
+    public void ReceiveManaDamage(L1Character attacker, int mpDamage) {
+        applyManaDamage(attacker, mpDamage, false);
+    }
 
-			onNpcAI();
+    /** Credit only MP actually available at the same commit as the debit. */
+    public int ReceiveManaDrain(L1Character attacker, int mpDamage) {
+        return applyManaDamage(attacker, mpDamage, true);
+    }
 
-			if (attacker instanceof L1PcInstance) {
-				NpcEventFactory.OnClanAwareness(this, attacker);
-			}
-
-			int newMp = getCurrentMp() - mpDamage;
-			if (newMp < 0) {
-				newMp = 0;
-			}
-			setCurrentMp(newMp);
-		}
-	}
+    private int applyManaDamage(L1Character attacker, int mpDamage, boolean creditDrain) {
+        if (attacker == null || mpDamage <= 0) return 0;
+        final int credit;
+        synchronized (this) {
+            if (isDead() || isDestroyed() || dMoveTo.isReturningHome(this)) return 0;
+            credit = creditDrain ? drainMana(mpDamage) : 0;
+            changeNpcMp(-(long) mpDamage);
+        }
+        setHate(attacker, mpDamage);
+        onNpcAI();
+        if (attacker instanceof L1PcInstance) {
+            NpcEventFactory.OnClanAwareness(this, attacker);
+        }
+        return credit;
+    }
 
 	@Override
 	public void receiveDamage(L1Character attacker, int damage) {

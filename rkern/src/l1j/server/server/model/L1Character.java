@@ -54,7 +54,7 @@ public class L1Character extends L1Object {
 	private volatile int _currentHp;
     private static final AtomicIntegerFieldUpdater<L1Character> CURRENT_HP =
             AtomicIntegerFieldUpdater.newUpdater(L1Character.class, "_currentHp");
-	private int _currentMp;
+	private volatile int _currentMp;
 	private int _maxHp = 0;
 	private int _trueMaxHp = 0;
 	private int _maxMp = 0;
@@ -1052,7 +1052,15 @@ public class L1Character extends L1Object {
 		if (previous != updated) {
 			pumpedHpMp = updated;
 			if ((int) previous != hp) clampCurrentHp();
-			if ((int) (previous >>> 32) != mp) _currentMp = Math.min(_currentMp, getMaxMp());
+			if ((int) (previous >>> 32) != mp) {
+                if (this instanceof l1j.server.server.model.Instance.L1NpcInstance) {
+                    synchronized (this) {
+                        _currentMp = Math.min(_currentMp, getMaxMp());
+                    }
+                } else {
+                    _currentMp = Math.min(_currentMp, getMaxMp());
+                }
+            }
 		}
 		getAC().setSkillAc(ac, notify);
 		getResistance().setSkillMr(mr);

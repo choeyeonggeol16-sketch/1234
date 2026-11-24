@@ -1903,6 +1903,10 @@ public class L1NpcInstance extends L1Character {
         _npcActionDeferredCancel = 1;
     }
 
+    public final boolean npcActionHasDeferredCancel() {
+        return _npcActionDeferredCancel != 0;
+    }
+
     public final boolean npcActionConsumeDeferredCancel() {
         return NPC_ACTION_DEFERRED_CANCEL.getAndSet(this, 0) != 0;
     }
@@ -2002,10 +2006,35 @@ public class L1NpcInstance extends L1Character {
     }
 
     public final int applyNpcHpDelta(long delta) {
-        if (_destroyed || isDead() || (delta < 0 && dMoveTo.isReturningHome(this))) return -1;
-        final int hp = changeHpAtomic(delta);
+        final int hp;
+        // Only monsters have forced-home immunity. Other NPCs retain CAS.
+        if (this instanceof L1MonsterInstance) {
+            synchronized (this) {
+                if (_destroyed || isDead() || (delta < 0 && dMoveTo.isReturningHome(this))) return -1;
+                hp = changeHpAtomic(delta);
+            }
+        } else {
+            if (_destroyed || isDead()) return -1;
+            hp = changeHpAtomic(delta);
+        }
         if (hp >= 0) onNpcAtomicHpChanged(hp);
         return hp;
+    }
+
+    @Override
+    public synchronized void setCurrentMp(int mp) {
+        super.setCurrentMp(mp);
+    }
+
+    @Override
+    public synchronized void setMaxMp(int mp) {
+        super.setMaxMp(mp);
+    }
+
+    public final synchronized void changeNpcMp(long delta) {
+        if (_destroyed || isDead() || (delta < 0 && dMoveTo.isReturningHome(this))) return;
+        final long next = (long) getCurrentMp() + delta;
+        setCurrentMp((int) Math.max(0L, Math.min((long) getMaxMp(), next)));
     }
 
     protected void onNpcAtomicHpChanged(int hp) {
@@ -2025,7 +2054,7 @@ public class L1NpcInstance extends L1Character {
         return _deathProcessing;
     }
 
-    public int drainMana(int drain) {
+    public synchronized int drainMana(int drain) {
         if (dMoveTo.isReturningHome(this)) return 0;
         if (_drainedMana >= Config.MANA_DRAIN_LIMIT_PER_NPC) {
             return 0;
@@ -2059,6 +2088,10 @@ public class L1NpcInstance extends L1Character {
                 CNPCServer.getInstance().unregister(this);
             }
         } else if (wasDead) {
+            // Retire old death commands before the next life starts.
+            NPC_ACTION_ADMISSION_EPOCH.incrementAndGet(this);
+            npcActionClearDeferredCommands();
+            npcActionInvalidateGeneration();
             firstFound = true;
             ReopenNpcEvents();
             _npcChatTimers = null;
@@ -2115,7 +2148,6 @@ public class L1NpcInstance extends L1Character {
             allTargetClear();
             _deathProcessing = false;
             _npcChatTimers = null;
-            NPC_ACTION_ADMISSION_EPOCH.incrementAndGet(this);
         }
         super.resurrect(hp);        
         L1SkillUse.cast(
@@ -2709,7 +2741,7 @@ public class L1NpcInstance extends L1Character {
             _nextMprAt = interval > 0 && amount > 0 ? nowMs + interval : 0L;
             if (_nextMprAt != 0L && !isDeathProcessing() && getCurrentHp() > 0
                     && getCurrentMp() < getMaxMp()) {
-                setCurrentMp((int) Math.min((long) getMaxMp(), (long) getCurrentMp() + amount));
+                changeNpcMp(amount);
             }
         }
         if (_nextHprAt == 0L && _nextMprAt == 0L) StopRegeneration();
