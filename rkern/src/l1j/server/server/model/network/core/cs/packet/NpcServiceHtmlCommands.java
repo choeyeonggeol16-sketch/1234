@@ -667,14 +667,7 @@ final class NpcServiceHtmlCommands {
                     pc.getQuest().get_step(CQuestSystem.QUEST_LYRA), 1, "lyraev2");
             return;
         } else if (s.equalsIgnoreCase("contract1yes") || s.equalsIgnoreCase("contract1no")) {
-
-            if (s.equalsIgnoreCase("contract1yes")) {
-                htmlid = "lyraev5";
-            } else if (s.equalsIgnoreCase("contract1no")) {
-                pc.getQuest().set_step(CQuestSystem.QUEST_LYRA, 0);
-                htmlid = "lyraev4";
-            }
-            NpcCraftCommands.exchangeTotems(pc, obj, objid, htmlid);
+            NpcCraftCommands.exchangeTotems(pc, obj, objid, s.equalsIgnoreCase("contract1no"));
             return;
         } else if (s.equalsIgnoreCase("pandora6") || s.equalsIgnoreCase("cold6") || s.equalsIgnoreCase("balsim3")
                 || s.equalsIgnoreCase("mellin3") || s.equalsIgnoreCase("glen3")) {
