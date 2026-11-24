@@ -73,6 +73,10 @@ public class L1NpcInstance extends L1Character {
     public static final int HATE_EVENT_GROUP_LINK = Integer.MIN_VALUE + 2;
     public static final int HATE_EVENT_AIR_FOOD = Integer.MIN_VALUE + 3;
     public static final int HATE_EVENT_AIR_LAND = Integer.MIN_VALUE + 4;
+    public static final int HATE_EVENT_HIDE_SINK = Integer.MIN_VALUE + 5;
+    public static final int HATE_EVENT_HIDE_ANTHARAS = Integer.MIN_VALUE + 6;
+    public static final int HATE_EVENT_HIDE_FLY = Integer.MIN_VALUE + 7;
+    public static final int HATE_EVENT_HIDE_DRAGON_FLY = Integer.MIN_VALUE + 8;
 
     /*
      * ATTACKED / CLAN_ATTACKED도 pooled CNPCEvent를 그대로 사용한다.
@@ -733,7 +737,10 @@ public class L1NpcInstance extends L1Character {
         for (;;) {
             final CNPCEvent head = _npcEventInbox;
             if (head == CNPCEvent.CLOSED || _destroyed || isDead()
-                    || event.epoch != _npcEventEpoch || dMoveTo.isReturningHome(this)) {
+                    || event.epoch != _npcEventEpoch || dMoveTo.isReturningHome(this)
+                    || (getHiddenStatus() != HIDDEN_STATUS_NONE
+                            && event.value != HATE_EVENT_AIR_FOOD
+                            && event.value != HATE_EVENT_AIR_LAND)) {
                 CNPCEvent.Release(event);
                 return false;
             }
@@ -1290,21 +1297,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void appearOnGround(L1PcInstance pc) {
-        if (pc == null)
-            return;
-        if (getHiddenStatus() == HIDDEN_STATUS_SINK) {
-            setHiddenStatus(HIDDEN_STATUS_NONE);
-            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Appear);
-            setStatus(0);
-            SC_WorldPutObject.broadcastNpc(this);
-            if (!pc.hasSkillEffect(60) && !pc.hasSkillEffect(97) && !pc.isGm()) {
-                _hateList.add(pc, 0);
-                _target = pc;
-            }
-            onNpcAI();
-        } else if (getHiddenStatus() == HIDDEN_STATUS_FLY) {
-            NpcEventFactory.requestAirLanding(this, pc);
-        }
+        NpcEventFactory.requestAirLanding(this, pc);
     }
 
     protected void on_moved(){}
@@ -1586,10 +1579,16 @@ public class L1NpcInstance extends L1Character {
         _hiddenStatus = i;
     }
 
-    /** One flight-to-ground transition, even if another producer races. */
+    /** A live NPC changes runtime hide state only on its existing AI owner. */
+    public final boolean tryChangeHiddenStatus(int expected, int next) {
+        return CNPCServer.getInstance().isOwnerThread(this)
+                && !isDestroyed() && !isDead() && !isDeathProcessing()
+                && getCurrentHp() > 0
+                && HIDDEN_STATUS.compareAndSet(this, expected, next);
+    }
+
     public final boolean tryLandFromAir() {
-        return !isDestroyed() && !isDead() && getCurrentHp() > 0
-                && HIDDEN_STATUS.compareAndSet(this, HIDDEN_STATUS_FLY, HIDDEN_STATUS_NONE);
+        return tryChangeHiddenStatus(HIDDEN_STATUS_FLY, HIDDEN_STATUS_NONE);
     }
 
     public int getMovementDistance() {
