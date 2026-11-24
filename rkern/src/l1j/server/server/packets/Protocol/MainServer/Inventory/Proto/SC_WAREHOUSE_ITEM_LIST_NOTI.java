@@ -2,7 +2,6 @@ package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -112,8 +111,9 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         }
         boolean opened = false;
         try {
-            opened = sendWarehouseItemsChunked(client, pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
-                    whouse.getSize(), 500, eWarehouseType.TRADE_RETRIEVE_PLEDGE, 5, generation)
+            final List<L1ItemInstance> items = whouse.GetItemsSnapshot();
+            opened = sendWarehouseItemsChunked(client, pc, npc_object_id, items,
+                    500, eWarehouseType.TRADE_RETRIEVE_PLEDGE, 5, generation)
                     && pc.getClan() == clan
                     && client.BindPledgeWarehouseView(pc, npc_object_id, clanId, whouse, lease, generation);
         } finally {
@@ -138,8 +138,8 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
             SC_ServerMessage.send(pc, 263);
             return;
         }
-        if (sendWarehouseItemsChunked(client, pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
-                whouse.getSize(), 0x00, eWarehouseType.TRADE_RETRIEVE_CONTRACT, 20, generation))
+        if (sendWarehouseItemsChunked(client, pc, npc_object_id, whouse.GetItemsSnapshot(),
+                0x00, eWarehouseType.TRADE_RETRIEVE_CONTRACT, 20, generation))
             client.BindWarehouseView(pc, npc_object_id, 20, 0, 0, generation);
     }
 
@@ -165,34 +165,22 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
             SC_NPCTalkReturn.send(pc, npc_object_id, "noitemret", null);
             return;
         }
-        if (sendWarehouseItemsChunked(client, pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
-                whouse.getSize(), 300, eWarehouseType.TRADE_RETRIEVE, 3, generation))
+        if (sendWarehouseItemsChunked(client, pc, npc_object_id, whouse.GetItemsSnapshot(),
+                300, eWarehouseType.TRADE_RETRIEVE, 3, generation))
             client.BindWarehouseView(pc, npc_object_id, 3, 0, 0, generation);
     }
 
     // ============================================================
     // 청크 전송 
     // ============================================================
-    private static List<L1ItemInstance> castItemsSnapshot(Iterable<?> src){
-        ArrayList<L1ItemInstance> out = new ArrayList<>(256);
-        try{
-            if (src != null){
-                for (Object o : src){
-                    if (o instanceof L1ItemInstance){
-                        out.add((L1ItemInstance)o);
-                    }
-                }
-            }
-        }catch(Throwable t){ }
-        return out;
-    }
-
     private static boolean sendWarehouseItemsChunked(CUserSocket client, L1PcInstance pc, int npc_object_id,
-            List<L1ItemInstance> items, int totalSize, int price, eWarehouseType type, int kind, int generation){
-        if (pc == null || items == null || items.isEmpty()) return false;
+            List<L1ItemInstance> items, int price, eWarehouseType type, int kind, int generation){
+        if (pc == null || items == null || items.isEmpty()
+                || !client.IsPendingWarehouseView(pc, npc_object_id, kind, generation)) return false;
 
         int idx = 0, sent = 0;
         final int n = items.size();
+        final int totalSize = n;
         int cntInChunk = 0, bytesInChunk = 0;
 
         byte[][] encodedChunk = new byte[WH_CHUNK_MAX_ITEMS][];
@@ -216,20 +204,20 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
 
             if (addBytes >= WH_CHUNK_MAX_BYTES){
                 if (cntInChunk > 0){
-                    if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, false)) return false;
+                    if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, false)) return false;
                     sent += cntInChunk;
 
                     cntInChunk = 0; bytesInChunk = 0;
                 }
                 encodedChunk[0] = encoded;
-                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, 1, false)) return false;
+                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, 1, addBytes, false)) return false;
                 sent += 1;
                 continue;
             }
 
             if (cntInChunk > 0 && (cntInChunk >= WH_CHUNK_MAX_ITEMS
                     || (bytesInChunk + addBytes) >= WH_CHUNK_MAX_BYTES)){
-                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, false)) return false;
+                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, false)) return false;
                 sent += cntInChunk;
 
                 cntInChunk = 0; bytesInChunk = 0;
@@ -241,22 +229,16 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         }
 
         if (cntInChunk > 0) {
-            return sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, true);
+            return sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, true);
         }
-        return sent > 0 && sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, null, 0, true);
+        return sent > 0 && sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, null, 0, 0, true);
     }
 
     private static boolean sendWarehouseViewChunk(CUserSocket client, L1PcInstance pc, int checker,
             int price, int totalSize, eWarehouseType type, int kind, int generation,
-            byte[][] bodies, int count, boolean last) {
+            byte[][] bodies, int count, int bodyBytes, boolean last) {
         return client.IsPendingWarehouseView(pc, checker, kind, generation)
-                && sendEncodedChunk(client, checker, price, totalSize, type, bodies, count, last);
-    }
-
-    private static boolean sendEncodedChunk(L1PcInstance pc, int checker, int price, int totalSize,
-            eWarehouseType type, byte[][] bodies, int count, boolean last) {
-        return sendEncodedChunk(pc == null ? null : pc.getNetConnection(), checker, price,
-                totalSize, type, bodies, count, last);
+                && sendMeasuredChunk(client, checker, price, totalSize, type, bodies, count, 128L + bodyBytes, last);
     }
 
     public static boolean sendEncodedChunk(CUserSocket client, int checker, int price, int totalSize,
@@ -265,6 +247,11 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
             throw new IllegalArgumentException("Invalid warehouse chunk range");
         long capacity = 128L;
         for (int i = 0; i < count; i++) capacity += 1L + ProtoWriter.varintLenOf(bodies[i].length) + bodies[i].length;
+        return sendMeasuredChunk(client, checker, price, totalSize, type, bodies, count, capacity, last);
+    }
+
+    private static boolean sendMeasuredChunk(CUserSocket client, int checker, int price, int totalSize,
+            eWarehouseType type, byte[][] bodies, int count, long capacity, boolean last) {
         ProtoWriter writer = Proto.begin(client, ProtoMsg.SC_WAREHOUSE_ITEM_LIST_NOTI, Proto.capacityBound(capacity));
         if (writer == null) return false;
         try {

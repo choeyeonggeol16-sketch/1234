@@ -991,6 +991,12 @@ public abstract class Warehouse extends L1Object {
 		return readOnlyItems;
 	}
 
+    /** Reuse CItemList's immutable membership snapshot for warehouse list packets. */
+    public final List<L1ItemInstance> GetItemsSnapshot() {
+        assertWarehouseActive();
+        return _items.snapshot();
+    }
+
     public synchronized void clearItems() {
         assertWarehouseActive();
         clearItemsLocked();

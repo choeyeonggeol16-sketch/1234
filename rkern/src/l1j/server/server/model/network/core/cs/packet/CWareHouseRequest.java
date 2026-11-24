@@ -104,12 +104,12 @@ final class CWareHouseRequest {
     private static void RequestItems(L1PcInstance pc, int kind, int size, long first,
             byte[] rest, Warehouse warehouse) {
         final boolean deposit = CWareHouseDeposit.IsDeposit(kind);
-        final int feeItem = CWareHouseWithdraw.FeeItem(kind);
-        final int feeEach = CWareHouseWithdraw.FeeEach(kind);
+        final int feeItem = deposit ? 0 : CWareHouseWithdraw.FeeItem(kind);
+        final int feeEach = deposit ? 0 : CWareHouseWithdraw.FeeEach(kind);
         final var inventory = pc.getInventory();
-        if (!CWareHouseWithdraw.CheckFee(pc, kind, size, feeItem, feeEach)) return;
+        if (!deposit && !CWareHouseWithdraw.CheckFee(pc, kind, size, feeItem, feeEach)) return;
 
-        final long now = System.currentTimeMillis();
+        final long now = (deposit && kind != 8) || kind == 20 ? System.currentTimeMillis() : 0L;
         if (size == 1) {
             final int id = CS_Result.param1(first, rest, 0);
             final L1ItemInstance item = deposit ? inventory.getItem(id) : warehouse.getItem(id);
@@ -153,12 +153,13 @@ final class CWareHouseRequest {
 
     private static int selectedCount(L1PcInstance pc, L1ItemInstance item, int requested) {
         if (item == null) return 0;
-        if (requested <= 0 || requested > L1Inventory.MAX_AMOUNT || item.getCount() <= 0
-                || item.getCount() > L1Inventory.MAX_AMOUNT || (!item.isStackable() && requested != 1)) {
+        final int available = item.getCount();
+        if (requested <= 0 || requested > L1Inventory.MAX_AMOUNT || available <= 0
+                || available > L1Inventory.MAX_AMOUNT || (!item.isStackable() && requested != 1)) {
             SC_Disconnect.send(pc);
             return 0;
         }
-        return Math.min(requested, item.getCount());
+        return Math.min(requested, available);
     }
 
 }

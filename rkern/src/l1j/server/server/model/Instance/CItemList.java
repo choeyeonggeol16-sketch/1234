@@ -285,7 +285,8 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         return snapshot;
     }
 
-    private List<L1ItemInstance> snapshot() {
+    /** Immutable membership view; item state itself is not frozen. */
+    public List<L1ItemInstance> snapshot() {
         // Immutable membership snapshot: a volatile load safely publishes
         // the cached rows. A racing writer invalidates under its lock.
         final List<L1ItemInstance> rows = snapshot;
