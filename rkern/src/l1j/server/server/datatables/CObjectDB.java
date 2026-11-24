@@ -102,17 +102,26 @@ public final class CObjectDB {
     }
 
     // Publish one completed loader generation; do not mutate an older reader's
-    // set list. SQL failure policy stays in the loaders.
-    public static synchronized void ReloadItem() {
-        Items.current = new ItemData();
+    // set list. Never publish a partially loaded generation after a SQL failure.
+    public static synchronized boolean ReloadItem() {
+        final ItemData next = new ItemData();
+        if (!next.isInitialized()) return false;
+        Items.current = next;
+        return true;
     }
 
-    public static synchronized void ReloadNPC() {
-        Npcs.current = new NpcData();
+    public static synchronized boolean ReloadNPC() {
+        final NpcData next = new NpcData();
+        if (!next.isInitialized()) return false;
+        Npcs.current = next;
+        return true;
     }
 
-    public static synchronized void ReloadSetItem() {
-        Sets.current = new SetData();
+    public static synchronized boolean ReloadSetItem() {
+        final SetData next = new SetData();
+        if (!next.isInitialized()) return false;
+        Sets.current = next;
+        return true;
     }
 
     public static L1Item GetItem(int classId) {
@@ -283,7 +292,10 @@ public final class CObjectDB {
     public static final class ItemData {
         private static final Logger _log = Logger.getLogger(ItemData.class.getName());
 
-    	private TIntObjectMap<L1Item> _allTemplates;
+    	private boolean _initialized = true;
+        public boolean isInitialized() { return _initialized; }
+
+        private TIntObjectMap<L1Item> _allTemplates;
     	public final TIntObjectMap<L1EtcItem> _etcitems;
     	public final TIntObjectMap<L1Weapon> _weapons;
     	public final TIntObjectMap<L1Armor> _armors;
@@ -354,6 +366,7 @@ public final class CObjectDB {
     				result.put(item.getItemId(), item);
     			}
     		} catch (SQLException e) {
+                _initialized = false;
                 _log.log(Level.SEVERE, "ItemData allEtcItem error", e);
     		}
     		return result;
@@ -431,6 +444,7 @@ public final class CObjectDB {
     				result.put(weapon.getItemId(), weapon);
     			}
     		} catch (SQLException e) {
+                _initialized = false;
                 _log.log(Level.SEVERE, "ItemData allWeapon error", e);
     		}
     		return result;
@@ -529,6 +543,7 @@ public final class CObjectDB {
     				result.put(armor.getItemId(), armor);
     			}
     		} catch (SQLException e) {
+                _initialized = false;
                 _log.log(Level.SEVERE, "ItemData allArmor error", e);
     		}
     		return result;
@@ -907,7 +922,7 @@ public final class CObjectDB {
     public static final class NpcData {
         private static final Logger _log = Logger.getLogger(NpcData.class.getName());
 
-    	private final boolean _initialized;
+    	private boolean _initialized = true;
 
     	private final TIntObjectMap<L1Npc> _npcs = new TIntObjectHashMap<L1Npc>(4096);
 
@@ -919,7 +934,6 @@ public final class CObjectDB {
 
     	NpcData() {
     		loadNpcData();
-    		_initialized = true;
     	}
 
     	private void loadNpcBorn() {
@@ -939,6 +953,7 @@ public final class CObjectDB {
     				npc.createBorn(rs);
     			}
     		} catch (Exception e) {
+                _initialized = false;
                 _log.log(Level.SEVERE, "NpcData loadNpcBorn error", e);
     		}
     	}
@@ -1044,6 +1059,7 @@ public final class CObjectDB {
     				_npcs.put(npcId, npc);
     			}
     		} catch (SQLException e) {
+                _initialized = false;
                 _log.log(Level.SEVERE, "NpcData loadNpcData error", e);
     		} finally {
     			loadNpcBorn();
@@ -1112,7 +1128,10 @@ public final class CObjectDB {
     	
         private static final Logger _log = Logger.getLogger(SetData.class.getName());
 
-    	private final List<L1ArmorSets> _armorSetList = new ArrayList<L1ArmorSets>();
+    	private boolean _initialized = true;
+        public boolean isInitialized() { return _initialized; }
+
+        private final List<L1ArmorSets> _armorSetList = new ArrayList<L1ArmorSets>();
     	
     	SetData() {
     		load();
@@ -1130,6 +1149,7 @@ public final class CObjectDB {
     			_log.config("갑옷 세트(ArmorSet) 정보 " + _armorSetList.size() + "건 로드 완료");
 
     		} catch (SQLException e) {
+    			_initialized = false;
     			_log.log(Level.SEVERE, "error while creating armor_set table", e);
     		}
     	}

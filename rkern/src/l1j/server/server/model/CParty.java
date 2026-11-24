@@ -1,7 +1,6 @@
 package l1j.server.server.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -31,7 +30,7 @@ public class CParty {
     private static final Logger _log = Logger.getLogger(CParty.class.getName());
 
     protected final List<L1PcInstance> _membersList = new java.util.concurrent.CopyOnWriteArrayList<>();
-    protected final HashMap<Integer, Integer> _membersMark = new HashMap<Integer, Integer>();
+    protected final ConcurrentHashMap<Integer, Integer> _membersMark = new ConcurrentHashMap<>();
 
     /** 전체 LIST 재전송 쿨다운 — 멘트/도배 방지 */
     private static final long FULL_LIST_COOLDOWN_MS = 1500L;
@@ -80,11 +79,12 @@ public class CParty {
 
     /** exclude 제외한 멤버 배열 */
     private L1PcInstance[] getMembersExcept(L1PcInstance exclude) {
-        ArrayList<L1PcInstance> out = new ArrayList<>();
-        for (L1PcInstance m : _membersList) {
-            if (m.getId() != exclude.getId()) out.add(m);
+        final L1PcInstance[] snapshot = getMembers();
+        int size = 0;
+        for (L1PcInstance member : snapshot) {
+            if (member.getId() != exclude.getId()) snapshot[size++] = member;
         }
-        return out.toArray(new L1PcInstance[0]);
+        return size == snapshot.length ? snapshot : java.util.Arrays.copyOf(snapshot, size);
     }
 
     /**
@@ -98,8 +98,9 @@ public class CParty {
             members.add(SC_PARTY_MEMBER_LIST.Member.from(m,
                     _membersMark.getOrDefault(m.getId(),0)));
         }
+        final L1PcInstance leader = _leader;
         byte[] data=new SC_PARTY_MEMBER_LIST(
-                _leader!=null?_leader.getName():"",members).encode();
+                leader!=null?leader.getName():"",members).encode();
         try(var shared=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(data)){
             for(L1PcInstance t:targets){
                 if(!ok(t))continue;
@@ -189,6 +190,7 @@ public class CParty {
         boolean wasLeader = isLeader(pc);
         _membersList.remove(pc);
         _membersMark.remove(pc.getId());
+        _lastFullListSentAt.remove(pc.getId());
         pc.setParty(null);
 
         // 리더가 나갔으면 승계 + 알림
@@ -240,7 +242,8 @@ public class CParty {
     }
 
     public boolean isLeader(L1PcInstance pc) {
-        return _leader != null && pc.getId() == _leader.getId();
+        final L1PcInstance leader = _leader;
+        return pc != null && leader != null && pc.getId() == leader.getId();
     }
 
     public boolean isAutoDivision(L1PcInstance pc) {
@@ -248,11 +251,11 @@ public class CParty {
     }
 
     public String getMembersNameList() {
-        String _result = new String("");
+        final StringBuilder result = new StringBuilder(64);
         for (L1PcInstance pc : _membersList) {
-            _result = _result + pc.getName() + " ";
+            result.append(pc.getName()).append(' ');
         }
-        return _result;
+        return result.toString();
     }
 
     public void refresh(L1PcInstance pc) {// 파티추가
@@ -518,7 +521,7 @@ for (L1PcInstance member : getMembers()) {
     // 표식 — 0x0153 전용 NOTI + 상태 갱신
     // ─────────────────────────────────────────────
     public void setPartyMark(L1PcInstance target, int markId) {
-        if (target == null) return;
+        if (target == null || target.getParty() != this || !isMember(target)) return;
         _membersMark.put(target.getId(), markId);
         broadcastRaw(new SC_PARTY_MEMBER_MARK_CHANGE_NOTI(target.getId(), markId).encode());
         refreshPartyMemberStatus(target);

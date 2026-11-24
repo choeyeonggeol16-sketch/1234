@@ -1198,9 +1198,15 @@ public class L1NpcInstance extends L1Character {
     /** CNPC::DropItemOnDying: prepare loot, select its route, then use existing world/party delivery. */
     public final void DropItemOnDying(CContributeData contribute, L1PcInstance lastAttacker,
             CParty admittedParty, L1PcInstance[] admittedMembers, L1Location origin) {
-        if (Config.STANDBY_SERVER || lastAttacker == null || origin == null) return;
+        if (Config.STANDBY_SERVER || lastAttacker == null || origin == null) {
+            if (contribute != null) contribute.FinishRouting();
+            return;
+        }
         final L1Inventory source = getInventory();
-        if (source == null) return;
+        if (source == null) {
+            if (contribute != null) contribute.FinishRouting();
+            return;
+        }
         final L1World world = L1World.getInstance();
         final var log = java.util.logging.Logger.getLogger(L1NpcInstance.class.getName());
         try {

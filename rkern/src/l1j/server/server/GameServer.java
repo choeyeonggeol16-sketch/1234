@@ -225,7 +225,10 @@ public class GameServer {
 		MobGroupTable.getInstance();
 		SkillsTable.getInstance();
 		PolyTable.getInstance();
-		CObjectDB.LoadItem().initRace();
+		if (!CObjectDB.LoadItem().isInitialized()) {
+            throw new Exception("Could not initialize the item tables");
+        }
+        CObjectDB.LoadItem().initRace();
 		DropTable.getInstance();
 		DropItemTable.getInstance();
 		ShopTable.getInstance();
@@ -260,7 +263,9 @@ public class GameServer {
 		LightSpawnTable.getInstance();
 		Announcements.getInstance();
 		WeaponAddDamage.getInstance();
-		CObjectDB.LoadSetItem();
+		if (!CObjectDB.LoadSetItem().isInitialized()) {
+            throw new Exception("Could not initialize the armor_set table");
+        }
 		CObjectDB.PostLoad();
 		MapUserTeleportTable.getInstance();
 

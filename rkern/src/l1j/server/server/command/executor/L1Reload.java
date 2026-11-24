@@ -238,8 +238,11 @@ public class L1Reload implements L1CommandExecutor {
 			NPCTalkDataTable.reload();
 			gm.sendPackets("NpcAction 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("엔피씨")) {
-			CObjectDB.ReloadNPC();
-			gm.sendPackets("NpcTable/npc_born 테이블이 리로드 되었습니다.");
+			if (!CObjectDB.ReloadNPC()) {
+                gm.sendPackets("NPC 리로드 실패: 기존 데이터를 유지합니다.");
+                return;
+            }
+			gm.sendPackets("npc/npc_born 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("템드랍아이템")) {
 			DropItemTable.reload();
 			gm.sendPackets("drop_item 테이블이 리로드 되었습니다.");
@@ -289,8 +292,10 @@ public class L1Reload implements L1CommandExecutor {
 			IpTable.reload();
 			gm.sendPackets("banIp 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("아이템")){
-			CObjectDB.ReloadItem();
-			gm.sendPackets("아이템 정보가 리로드 되었습니다.");
+			if (!CObjectDB.ReloadItem()) {
+                gm.sendPackets("아이템 리로드 실패: 기존 데이터를 유지합니다.");
+                return;
+            }
 			TIntObjectMap<L1Item> items = CObjectDB.LoadItem().getAllTemplates();
 			HashMap<Integer, L1RaceTicket> map = BugRaceController.getInstance().getAllTemplates();
 			for(L1RaceTicket t : map.values()){
@@ -298,6 +303,7 @@ public class L1Reload implements L1CommandExecutor {
 					items.put(t.getItemId(), t);
 			}
 			DogFightTicketIdManager.getInstance().update_item_template();
+			gm.sendPackets("아이템 정보가 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("상점")){
 			ShopTable.reload();
 			gm.sendPackets("shop 테이블이 리로드 되었습니다.");	
@@ -370,8 +376,11 @@ public class L1Reload implements L1CommandExecutor {
 			AccessoryEnchantInformationTable.reload();
 			gm.sendPackets("리로드: accessory_enchant_list 테이블이 리로드 되었습니다");
 		} else if(arg.equalsIgnoreCase("세트아이템")) {
-			CObjectDB.ReloadSetItem();
-			gm.sendPackets("리로드: armor_set 테이블이 리로드 되었습니다");
+			if (!CObjectDB.ReloadSetItem()) {
+                gm.sendPackets("세트아이템 리로드 실패: 기존 데이터를 유지합니다.");
+                return;
+            }
+            gm.sendPackets("armor_set 데이터 로드 완료. 장착 세트 효과는 서버 재시작 후 적용됩니다.");
 //		} else if (arg.equalsIgnoreCase("이벤트알람")) {
 //			try {
 //				L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f:보스알람시간이 재정비되었습니다." ));
