@@ -4313,9 +4313,102 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
 
     public void trackNpcDialogue(long smartId, boolean newTalk) {
         if (newTalk || smartId != npcDialogueTarget) {
+            ClearWarehouseView();
             npcDialogueTarget = smartId;
             npcDialogueVersion++;
         }
+    }
+
+    // Owner-CIO only. The dialogue smart ID already carries the NPC generation.
+    // No view object, item snapshot, worker, or timer is allocated for authorization.
+    private int warehouseViewKind;
+    private int warehouseViewClanId;
+    private int warehouseViewPassword;
+    private int warehouseViewSession;
+
+    public void ClearWarehouseView() {
+        warehouseViewKind = 0;
+        warehouseViewClanId = 0;
+        warehouseViewPassword = 0;
+        warehouseViewSession = 0;
+    }
+
+    private boolean IsWarehouseActor(L1PcInstance pc) {
+        return pc != null && _activeChar == pc && pc.getNetConnection() == this
+                && isConnected() && getConnectionState() == CConnectionState.IN_GAME
+                && !pc.isLogoutStarted() && !pc.isDead() && !pc.isGhost()
+                && !pc.get_teleport() && !pc.isPrivateShop() && !pc.is무인상점()
+                && !pc.isAutoClanjoin() && getAccount() != null;
+    }
+
+    public boolean IsWarehouseNpcInRange(L1PcInstance pc, int objectId) {
+        if (!IsWarehouseActor(pc) || npcDialogueTarget == 0L) return false;
+        return L1World.getInstance().findObjectBySmartId(npcDialogueTarget) instanceof L1NpcInstance npc
+                && npc.getId() == objectId && !npc.isDead()
+                && "L1Dwarf".equalsIgnoreCase(npc.getNpcTemplate().getImpl())
+                && pc.getMapId() == npc.getMapId()
+                && Math.abs((long) pc.getX() - npc.getX()) <= 12
+                && Math.abs((long) pc.getY() - npc.getY()) <= 12;
+    }
+
+    private boolean IsWarehouseViewTarget(L1PcInstance pc, int objectId, int kind) {
+        if (kind == 20) return IsWarehouseActor(pc) && objectId == pc.getId();
+        return IsWarehouseNpcInRange(pc, objectId);
+    }
+
+    private boolean CanOpenWarehouseView(L1PcInstance pc, int objectId, int kind,
+            int suppliedPassword, int expectedClanId) {
+        if (!IsWarehouseViewTarget(pc, objectId, kind)) return false;
+        return switch (kind) {
+            case 3 -> pc.getLevel() >= 5
+                    && (getAccount().getGamePassword() == 0
+                        || getAccount().getGamePassword() == suppliedPassword);
+            case 5 -> pc.getLevel() >= 5 && expectedClanId > 0
+                    && pc.getClanid() == expectedClanId && pc.getClan() != null;
+            case 9 -> pc.getLevel() >= 5 && pc.isElf();
+            case 10, 20 -> true;
+            default -> false;
+        };
+    }
+
+    public boolean BeginWarehouseView(L1PcInstance pc, int objectId, int kind,
+            int suppliedPassword, int expectedClanId) {
+        ClearWarehouseView();
+        return CanOpenWarehouseView(pc, objectId, kind, suppliedPassword, expectedClanId);
+    }
+
+    // Call only after the complete list was admitted by the existing SEND path.
+    public boolean BindWarehouseView(L1PcInstance pc, int objectId, int kind,
+            int suppliedPassword, int expectedClanId) {
+        if (!CanOpenWarehouseView(pc, objectId, kind, suppliedPassword, expectedClanId)) return false;
+        warehouseViewSession = pc.getSessionStamp();
+        warehouseViewClanId = kind == 5 ? expectedClanId : 0;
+        warehouseViewPassword = kind == 3 ? getAccount().getGamePassword() : 0;
+        warehouseViewKind = kind;
+        return true;
+    }
+
+    public boolean CanUseWarehouse(L1PcInstance pc, int objectId, int kind) {
+        // L1 deposit is selected locally from inventory after NPC dialogue.
+        if (kind == 2 || kind == 4 || kind == 8) return IsWarehouseNpcInRange(pc, objectId);
+        if (warehouseViewKind != kind || !IsWarehouseViewTarget(pc, objectId, kind)
+                || warehouseViewSession != pc.getSessionStamp()) return false;
+        return switch (kind) {
+            case 3 -> warehouseViewPassword == getAccount().getGamePassword();
+            case 5 -> warehouseViewClanId > 0 && pc.getClanid() == warehouseViewClanId
+                    && pc.getClan() != null;
+            case 9 -> pc.isElf() && pc.getLevel() >= 5;
+            case 10, 20 -> true;
+            default -> false;
+        };
+    }
+
+    public void CloseWarehouseView(L1PcInstance pc, int objectId, int kind) {
+        if (_activeChar != pc || warehouseViewKind != kind) return;
+        // A cancel may arrive after leaving range; never let it close a different NPC's view.
+        if (kind == 20 ? objectId == pc.getId()
+                : L1World.getInstance().findObjectBySmartId(npcDialogueTarget) instanceof L1NpcInstance npc
+                    && npc.getId() == objectId) ClearWarehouseView();
     }
 
     public int npcDialogueVersion() { return npcDialogueVersion; }

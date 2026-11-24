@@ -49,6 +49,7 @@ public final class CS_WarehouseControl {
             if (gamePassword == 0
                     || gamePassword == value1) {
 
+                client.ClearWarehouseView();
                 Account.setGamePassword(
                         client,
                         value2);
@@ -73,11 +74,12 @@ public final class CS_WarehouseControl {
 
                 if (pc.getLevel() >= 5) {
 
-                    SC_RetrieveList.sendPrivate(pc, value2);
+                    SC_RetrieveList.sendPrivate(pc, value2, value1);
                 }
 
             } else {
 
+                client.ClearWarehouseView();
                 SC_ServerMessage.send(pc, 835);
             }
 

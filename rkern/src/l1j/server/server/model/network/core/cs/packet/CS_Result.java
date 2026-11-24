@@ -161,7 +161,7 @@ public final class CS_Result {
         // Warehouse result kinds are disjoint from ordinary shop/exchange kinds.
         // Route every selection count, including one, before legacy exchange flags.
         if (warehouse) {
-            CWareHouseRequest.Request(pc, resultType, size, packed0, params);
+            CWareHouseRequest.Request(client, pc, npcObjectId, resultType, size, packed0, params);
             return;
         }
 

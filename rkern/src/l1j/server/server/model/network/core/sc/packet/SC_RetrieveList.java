@@ -20,21 +20,31 @@ public final class SC_RetrieveList {
     private SC_RetrieveList() {}
 
     public static void sendPrivate(L1PcInstance pc, int objId) {
-        if (!canView(pc)) return;
+        sendPrivate(pc, objId, 0);
+    }
+
+    public static void sendPrivate(L1PcInstance pc, int objId, int suppliedPassword) {
+        final CUserSocket client = pc == null ? null : pc.getNetConnection();
+        if (client == null || !client.BeginWarehouseView(pc, objId, 3, suppliedPassword, 0)
+                || !canView(pc)) return;
         PrivateWarehouse wh = WarehouseManager.getInstance().getPrivateWarehouse(pc.getAccountName());
-        if (wh != null) sendItems(pc, objId, wh.getItems(), 3);
+        if (wh != null) sendItems(pc, objId, wh.getItems(), 3, suppliedPassword);
     }
 
     public static boolean sendElf(L1PcInstance pc, int objId) {
-        if (!canView(pc)) return false;
+        final CUserSocket client = pc == null ? null : pc.getNetConnection();
+        if (client == null || !client.BeginWarehouseView(pc, objId, 9, 0, 0)
+                || !canView(pc)) return false;
         ElfWarehouse wh = WarehouseManager.getInstance().getElfWarehouse(pc.getAccountName());
-        return sendItems(pc, objId, wh == null ? null : wh.getItems(), 9);
+        return sendItems(pc, objId, wh == null ? null : wh.getItems(), 9, 0);
     }
 
     public static boolean sendPackage(L1PcInstance pc, int objId) {
-        if (!canView(pc)) return false;
+        final CUserSocket client = pc == null ? null : pc.getNetConnection();
+        if (client == null || !client.BeginWarehouseView(pc, objId, 10, 0, 0)
+                || !canView(pc)) return false;
         L1DwarfForPackageInventory wh = pc.getDwarfForPackageInventory();
-        return sendItems(pc, objId, wh == null ? null : wh.getItems(), 15);
+        return sendItems(pc, objId, wh == null ? null : wh.getItems(), 15, 0);
     }
 
     private static boolean canView(L1PcInstance pc) {
@@ -44,7 +54,7 @@ public final class SC_RetrieveList {
         return false;
     }
 
-    private static boolean sendItems(L1PcInstance pc, int objId, List<?> raw, int type) {
+    private static boolean sendItems(L1PcInstance pc, int objId, List<?> raw, int type, int suppliedPassword) {
         if (raw == null || raw.isEmpty()) return true;
         final int initial = Math.max(1, raw.size());
         int[] items = new int[initial * 6];
@@ -107,6 +117,7 @@ public final class SC_RetrieveList {
                 b.writeH(0);
             }
             committed = connection.commitDirectFrame(frame);
+            if (committed) connection.BindWarehouseView(pc, objId, type == 15 ? 10 : type, suppliedPassword, 0);
             return false;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);

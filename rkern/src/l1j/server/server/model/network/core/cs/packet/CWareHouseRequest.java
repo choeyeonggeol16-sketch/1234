@@ -9,6 +9,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.Warehouse.Warehouse;
 import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -27,13 +28,18 @@ final class CWareHouseRequest {
         };
     }
 
-    static void Request(L1PcInstance pc, int kind, int size, long first, byte[] rest) {
+    static void Request(CUserSocket client, L1PcInstance pc, int objectId, int kind, int size, long first, byte[] rest) {
         if (size == 0) {
+            client.CloseWarehouseView(pc, objectId, kind);
             if (kind == 5 && pc.getClan() != null) pc.getClan().deleteClanRetrieveUser(pc.getId());
             return;
         }
         if (size < 0 || size > MAX_SELECTION) {
             SC_SystemMessage.send(pc, "창고 선택 항목이 너무 많거나 올바르지 않습니다.");
+            return;
+        }
+        if (!client.CanUseWarehouse(pc, objectId, kind)) {
+            SC_SystemMessage.send(pc, "창고를 다시 열어 주세요.");
             return;
         }
         if (pc.isItemTransferBusy()) {

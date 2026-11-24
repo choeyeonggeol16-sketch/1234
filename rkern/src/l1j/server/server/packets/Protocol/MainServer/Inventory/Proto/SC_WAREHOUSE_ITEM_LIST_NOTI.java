@@ -82,6 +82,9 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
     // 1) 혈맹 창고
     // ============================================================
     public static void send_user_pledge_warehouse_items(L1PcInstance pc, int npc_object_id){
+        final CUserSocket client = pc == null ? null : pc.getNetConnection();
+        final int clanId = pc == null ? 0 : pc.getClanid();
+        if (client == null || !client.BeginWarehouseView(pc, npc_object_id, 5, 0, clanId)) return;
         if (pc.getInventory().getSize() >= 180){
             SC_ServerMessage.send(pc, 263);
             return;
@@ -115,14 +118,23 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
                 return;
             }
         }
-        sendWarehouseItemsChunked(pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
-                whouse.getSize(), 500, eWarehouseType.TRADE_RETRIEVE_PLEDGE);
+        boolean opened = false;
+        try {
+            opened = sendWarehouseItemsChunked(pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
+                    whouse.getSize(), 500, eWarehouseType.TRADE_RETRIEVE_PLEDGE)
+                    && pc.getClan() == clan
+                    && client.BindWarehouseView(pc, npc_object_id, 5, 0, clanId);
+        } finally {
+            if (!opened) whouse.releaseWarehouseUser(pc.getId());
+        }
     }
 
     // ============================================================
     // 2) 부가 창고
     // ============================================================
     public static void send_user_supplementary_service(L1PcInstance pc, int npc_object_id){
+        final CUserSocket client = pc == null ? null : pc.getNetConnection();
+        if (client == null || !client.BeginWarehouseView(pc, npc_object_id, 20, 0, 0)) return;
         if (pc.getInventory().getSize() >= 180){
             SC_ServerMessage.send(pc, 263);
             return;
@@ -132,14 +144,23 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
             SC_ServerMessage.send(pc, 263);
             return;
         }
-        sendWarehouseItemsChunked(pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
-                whouse.getSize(), 0x00, eWarehouseType.TRADE_RETRIEVE_CONTRACT);
+        if (sendWarehouseItemsChunked(pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
+                whouse.getSize(), 0x00, eWarehouseType.TRADE_RETRIEVE_CONTRACT))
+            client.BindWarehouseView(pc, npc_object_id, 20, 0, 0);
     }
 
     // ============================================================
     // 3) 개인 창고
     // ============================================================
     public static void send_user_warehouse_items(L1PcInstance pc, int npc_object_id){
+        final CUserSocket client = pc == null ? null : pc.getNetConnection();
+        if (client == null) return;
+        if (!client.BeginWarehouseView(pc, npc_object_id, 3, 0, 0)) {
+            // Password-protected accounts must use the existing CS_WarehouseControl authentication.
+            if (client.IsWarehouseNpcInRange(pc, npc_object_id)
+                    && client.getAccount().getGamePassword() != 0) SC_ServerMessage.send(pc, 835);
+            return;
+        }
         if (pc.getInventory().getSize() >= 180){
             SC_ServerMessage.send(pc, 263);
             return;
@@ -149,8 +170,9 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
             SC_NPCTalkReturn.send(pc, npc_object_id, "noitemret", null);
             return;
         }
-        sendWarehouseItemsChunked(pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
-                whouse.getSize(), 300, eWarehouseType.TRADE_RETRIEVE);
+        if (sendWarehouseItemsChunked(pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
+                whouse.getSize(), 300, eWarehouseType.TRADE_RETRIEVE))
+            client.BindWarehouseView(pc, npc_object_id, 3, 0, 0);
     }
 
     // ============================================================
@@ -170,13 +192,9 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         return out;
     }
 
-    private static void sendWarehouseItemsChunked(L1PcInstance pc, int npc_object_id,
+    private static boolean sendWarehouseItemsChunked(L1PcInstance pc, int npc_object_id,
             List<L1ItemInstance> items, int totalSize, int price, eWarehouseType type){
-        if (pc == null) return;
-        if (items == null || items.isEmpty()) {
-            sendEncodedChunk(pc, npc_object_id, price, 0, type, null, 0, true);
-            return;
-        }
+        if (pc == null || items == null || items.isEmpty()) return false;
 
         int idx = 0, sent = 0;
         final int n = items.size();
@@ -203,20 +221,20 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
 
             if (addBytes >= WH_CHUNK_MAX_BYTES){
                 if (cntInChunk > 0){
-                    sendEncodedChunk(pc, npc_object_id, price, totalSize, type, encodedChunk, cntInChunk, false);
+                    if (!sendEncodedChunk(pc, npc_object_id, price, totalSize, type, encodedChunk, cntInChunk, false)) return false;
                     sent += cntInChunk;
 
                     cntInChunk = 0; bytesInChunk = 0;
                 }
                 encodedChunk[0] = encoded;
-                sendEncodedChunk(pc, npc_object_id, price, totalSize, type, encodedChunk, 1, false);
+                if (!sendEncodedChunk(pc, npc_object_id, price, totalSize, type, encodedChunk, 1, false)) return false;
                 sent += 1;
                 continue;
             }
 
             if (cntInChunk > 0 && (cntInChunk >= WH_CHUNK_MAX_ITEMS
                     || (bytesInChunk + addBytes) >= WH_CHUNK_MAX_BYTES)){
-                sendEncodedChunk(pc, npc_object_id, price, totalSize, type, encodedChunk, cntInChunk, false);
+                if (!sendEncodedChunk(pc, npc_object_id, price, totalSize, type, encodedChunk, cntInChunk, false)) return false;
                 sent += cntInChunk;
 
                 cntInChunk = 0; bytesInChunk = 0;
@@ -228,10 +246,9 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         }
 
         if (cntInChunk > 0) {
-            sendEncodedChunk(pc, npc_object_id, price, totalSize, type, encodedChunk, cntInChunk, true);
-        } else {
-            sendEncodedChunk(pc, npc_object_id, price, totalSize, type, null, 0, true);
+            return sendEncodedChunk(pc, npc_object_id, price, totalSize, type, encodedChunk, cntInChunk, true);
         }
+        return sent > 0 && sendEncodedChunk(pc, npc_object_id, price, totalSize, type, null, 0, true);
     }
 
     private static boolean sendEncodedChunk(L1PcInstance pc, int checker, int price, int totalSize,
