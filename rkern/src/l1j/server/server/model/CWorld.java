@@ -552,6 +552,43 @@ public final class CWorld {
         }
     }
 
+    static final int PICK_REJECTED = 0;
+    static final int PICK_INVENTORY = 1;
+    static final int PICK_GROUND = 2;
+
+    /** Validate ownership before a party route; tradeItem revalidates under both inventory monitors. */
+    boolean PickItemCond(L1Inventory source, L1ItemInstance item, int count) {
+        return source != null && item != null && count > 0
+                && source.getItem(item.getId()) == item && count <= item.getCount();
+    }
+
+    /**
+     * Synchronous NPC drop settlement. Do not enqueue a corpse-owned item on the
+     * world serializer: NPC deletion/transform may clear the source before drain.
+     * Only a definite null rejection can fall back; exceptions propagate to the
+     * existing death-settlement handler.
+     */
+    int PickItem(L1NpcInstance npc, L1Inventory source, L1ItemInstance item, int count,
+            L1PcInstance recipient) {
+        if (npc == null || !PickItemCond(source, item, count)) return PICK_REJECTED;
+        if (recipient != null && !recipient.isLogoutStarted()) {
+            final var session = recipient.getNetConnection();
+            if (session != null && session.isConnected() && session.getActiveChar() == recipient) {
+                final L1Inventory dest = recipient.getInventory();
+                final L1ItemInstance adena = item.getItemId() == l1j.server.server.model.item.L1ItemId.ADENA
+                        ? dest.findItemId(item.getItemId()) : null;
+                if ((adena == null || (long) adena.getCount() + count <= 2_000_000_000L)
+                        && source.tradeItem(item, count, dest) != null) return PICK_INVENTORY;
+                if (!PickItemCond(source, item, count)) return PICK_REJECTED;
+                if (source.tradeItem(item, count, getGroundInventory(
+                        recipient.getX(), recipient.getY(), recipient.getMapId())) != null) return PICK_GROUND;
+                return PICK_REJECTED;
+            }
+        }
+        return source.tradeItem(item, count, getGroundInventory(npc.getX(), npc.getY(), npc.getMapId()))
+                != null ? PICK_GROUND : PICK_REJECTED;
+    }
+
     /** Non-creating ground lookup: pickup and validation must never publish empty tiles. */
     public L1GroundInventory findGroundInventory(int x, int y, short mapId) {
         final L1IntRegistry<L1Object> registry = world.visibleMap(mapId, false);

@@ -38,6 +38,14 @@ public class CParty {
     private final ConcurrentHashMap<Integer, Long> _lastFullListSentAt = new ConcurrentHashMap<>();
 
     private volatile L1PcInstance _leader;
+    private long lootCursor;
+
+    private synchronized int NextLootIndex(int size) {
+        if (size <= 1) return 0;
+        return (int) Math.floorMod(lootCursor++, (long) size);
+    }
+
+    private synchronized void ResetLootIndex() { lootCursor = 0L; }
 
     // ─────────────────────────────────────────────
     // helpers
@@ -303,7 +311,7 @@ for (L1PcInstance member : getMembers()) {
     }
 
     protected void breakup() {
-        l1j.server.server.model.character.Item.Drop.PartyLootCursor.clearParty(this);
+        ResetLootIndex();
         L1PcInstance[] members=getMembers();
         _membersList.clear();
         _membersMark.clear();
@@ -396,13 +404,11 @@ for (L1PcInstance member : getMembers()) {
 
     
 
-    /** NC-style route condition; retain RKern map, distance and hate eligibility. */
-    private boolean CheckRouteAdenaCond(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance member) {
+    /** Same map/range/hate policy for both currency and item routing. */
+    private boolean CheckRouteCond(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance member) {
         if (member == null || member.getParty() != this || member.isDead()
                 || member.getMapId() != npc.getMapId()
-                || member.getLocation().getTileLineDistance(npc.getLocation()) > Config.PARTY_LOOT_RANGE) {
-            return false;
-        }
+                || member.getLocation().getTileLineDistance(npc.getLocation()) > Config.PARTY_LOOT_RANGE) return false;
         if (Config.PARTY_LOOT_ELIGIBILITY != 0) return true;
         if (snap == null) return false;
         for (int i = 0; i < snap.size; i++) {
@@ -411,62 +417,49 @@ for (L1PcInstance member : getMembers()) {
         return false;
     }
 
-    /**
-     * Select recipients once, then route each share using the existing inventory transfer.
-     * RKern rule: the randomly selected winner receives the entire remainder.
-     * A false result means no routing took place; never retry the whole drop after partial routing.
-     */
+    private boolean CheckRouteAdenaCond(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance member) {
+        return CheckRouteCond(npc, snap, member);
+    }
+
+    /** Route is synchronous until corpse inventory lifetime is extended across queued world jobs. */
     public boolean Route(L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
             DropAcqSnapshot snap, L1PcInstance primaryOwner) {
         if (!Config.PARTY_LOOT_ENABLE || primaryOwner == null || primaryOwner.getParty() != this
-                || npc == null || source == null || item == null
-                || item.getItemId() != L1ItemId.ADENA || item.getCount() <= 0) return false;
-        return RouteAdena(npc, source, item, snap);
-    }
+                || npc == null || source == null || item == null) return false;
+        final CWorld world = L1World.getInstance().getWorldExecutor();
+        if (!world.PickItemCond(source, item, item.getCount())) return false;
 
-    private boolean RouteAdena(L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
-            DropAcqSnapshot snap) {
-
+        final boolean adena = item.getItemId() == L1ItemId.ADENA;
         final L1PcInstance[] members = getMembers();
         int size = 0;
         for (L1PcInstance member : members) {
-            if (CheckRouteAdenaCond(npc, snap, member)) members[size++] = member;
+            if (adena ? CheckRouteAdenaCond(npc, snap, member) : CheckRouteCond(npc, snap, member)) {
+                members[size++] = member;
+            }
         }
         if (size == 0) return false;
 
+        final L1PcInstance leader = getLeader();
+        final String tag = leader != null && leader.getPartyType() == 1 ? "자동 분배" : "일반 분배";
+        if (adena) RouteAdena(world, npc, source, item, snap, members, size, tag);
+        else RouteItem(world, npc, source, item, snap, members, size, tag);
+        return true;
+    }
+
+    private void RouteAdena(CWorld world, L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
+            DropAcqSnapshot snap, L1PcInstance[] members, int size, String tag) {
         final int winnerIndex = java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
         final long total = item.getCount();
         final long each = total / size;
         final long remainder = total % size;
-        final L1PcInstance leader = getLeader();
-        final String tag = leader != null && leader.getPartyType() == 1 ? "자동 분배" : "일반 분배";
 
         for (int i = 0; i < size; i++) {
             final int amount = (int) (each + (i == winnerIndex ? remainder : 0L));
-            if (amount == 0) continue;
+            if (amount <= 0) continue;
             final L1PcInstance member = members[i];
-            final boolean eligible = CheckRouteAdenaCond(npc, snap, member)
-                    && member.getNetConnection() != null;
-            L1ItemInstance stored = null;
-            if (eligible) {
-                final L1Inventory dest = member.getInventory();
-                final L1ItemInstance adena = dest.findItemId(L1ItemId.ADENA);
-                if (adena == null || (long) adena.getCount() + amount <= 2_000_000_000L) {
-                    stored = source.tradeItem(item, amount, dest);
-                }
-                if (stored == null) {
-                    stored = source.tradeItem(item, amount, L1World.getInstance().getInventory(
-                            member.getX(), member.getY(), member.getMapId()));
-                }
-            } else {
-                stored = source.tradeItem(item, amount, L1World.getInstance().getInventory(
-                        npc.getX(), npc.getY(), npc.getMapId()));
-            }
-            if (stored == null) {
-                // Keep rejected amounts in the source and recover the remainder below.
-                continue;
-            }
-            if (eligible && member.RootMent1) {
+            final L1PcInstance recipient = CheckRouteAdenaCond(npc, snap, member) ? member : null;
+            final int result = world.PickItem(npc, source, item, amount, recipient);
+            if (result == CWorld.PICK_INVENTORY && member.RootMent1) {
                 try {
                     SC_SystemMessage.send(member, item.getNumberedName(amount)
                             + " 획득 : " + member.getName() + "(" + tag + ")");
@@ -475,18 +468,45 @@ for (L1PcInstance member : getMembers()) {
                 }
             }
         }
+        RecoverRemainder(world, npc, source, item);
+    }
 
-        // Only move what is still owned by the NPC; a completed last transfer can leave
-        // a nonzero count in the detached item object.
-        if (source.getItem(item.getId()) == item && item.getCount() > 0) {
-            final int remaining = item.getCount();
-            if (source.tradeItem(item, remaining, L1World.getInstance().getInventory(
-                    npc.getX(), npc.getY(), npc.getMapId())) == null) {
-                _log.warning("Party adena ground recovery rejected: item=" + item.getId()
-                        + ", count=" + remaining);
+    private void RouteItem(CWorld world, L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
+            DropAcqSnapshot snap, L1PcInstance[] members, int size, String tag) {
+        final int mode = Config.PARTY_LOOT_MODE;
+        // The previous general mode already chose a random eligible winner.
+        // Random mode also had a uniform final selection; keep that distribution.
+        final int index = mode == 2 ? NextLootIndex(size)
+                : java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
+        final L1PcInstance target = members[index];
+        final int amount = item.getCount();
+        final L1PcInstance recipient = CheckRouteCond(npc, snap, target) ? target : null;
+        final int result = world.PickItem(npc, source, item, amount, recipient);
+        if (result == CWorld.PICK_INVENTORY) {
+            try {
+                final String msg = item.getNumberedName(amount) + " 획득 : "
+                        + target.getName() + "(" + tag + ")";
+                try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                        SC_SystemMessage.nativeWriter(msg), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                    for (int i = 0; i < size; i++) {
+                        final L1PcInstance member = members[i];
+                        if (member.getParty() == this && member.RootMent1)
+                            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared, member);
+                    }
+                }
+            } catch (RuntimeException e) {
+                _log.log(java.util.logging.Level.WARNING, "Party item notification failed", e);
             }
         }
-        return true;
+        RecoverRemainder(world, npc, source, item);
+    }
+
+    private void RecoverRemainder(CWorld world, L1NpcInstance npc, L1Inventory source, L1ItemInstance item) {
+        if (source.getItem(item.getId()) != item || item.getCount() <= 0) return;
+        if (world.PickItem(npc, source, item, item.getCount(), null) == CWorld.PICK_REJECTED) {
+            _log.warning("Party drop ground recovery rejected: item=" + item.getId()
+                    + ", count=" + item.getCount());
+        }
     }
 
     // ─────────────────────────────────────────────

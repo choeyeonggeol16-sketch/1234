@@ -179,6 +179,8 @@ public class L1World {
         }
     }
 
+    CWorld getWorldExecutor() { return _worldExecutor; }
+
     public L1GroundInventory findGroundInventory(int x, int y, short map) {
         return _worldExecutor.findGroundInventory(x, y, map);
     }

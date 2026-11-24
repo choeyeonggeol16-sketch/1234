@@ -1,10 +1,7 @@
 package l1j.server.server.model.character.Item.Drop;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
 import l1j.server.Config;
 import l1j.server.server.datatables.AutoLoot;
 import l1j.server.server.datatables.BossMonsterSpawnList;
@@ -14,25 +11,10 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 public final class DropShareEngine {
 
-    private static final Random RND = new Random();
-
     private DropShareEngine() {}
-
-    private static boolean isPartyAuto(L1PcInstance pc) {
-        try {
-            if (pc == null || pc.getParty() == null || pc.getParty().getLeader() == null) return false;
-            return pc.getParty().getLeader().getPartyType() == 1;
-        } catch (Throwable t) { return false; }
-    }
-
-    private static String distTagByPartySetting(L1PcInstance pc) {
-        return isPartyAuto(pc) ? "자동 분배" : "일반 분배";
-    }
 
     public static void handleOneItem(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc) {
         handleOneItem_AllModes(npc, mobInv, item, snap, lastAttackerPc);
@@ -97,83 +79,15 @@ public final class DropShareEngine {
 
          // 대미지 리스트가 꼬였을 때만 막타자를 보험으로 씀
          L1PcInstance primaryOwner = (topHater != null) ? topHater : lastAttackerPc;
-         // Currency distribution is a party-owned operation. Select the eligible
-         // recipient snapshot only once, before any inventory mutation.
-         if (Config.PARTY_LOOT_ENABLE && item.getItemId() == L1ItemId.ADENA && primaryOwner != null) {
+         if (Config.PARTY_LOOT_ENABLE && primaryOwner != null) {
              final l1j.server.server.model.CParty party = primaryOwner.getParty();
              if (party != null && party.Route(npc, mobInv, item, snap, primaryOwner)) return true;
          }
-         L1Character winner = null;
 
-         // 대미지 1위의 파티원들 중 자격 있는 놈 선출
-         if (item.getItemId() != L1ItemId.ADENA && Config.PARTY_LOOT_ENABLE && primaryOwner != null && primaryOwner.getParty() != null) {
-             List<L1PcInstance> candidates = collectEligiblePartyMembers(npc, snap, primaryOwner);
-             if (!candidates.isEmpty()) {
-                 winner = candidates.get(RND.nextInt(candidates.size()));
-             }
-         }
-
-         // 파티가 없으면 그냥 대미지 1위가 독식
-         if (winner == null) {
-             winner = primaryOwner;
-         }
-         
-         // 만약 여기까지 winner가 null이면 진짜 바닥행
-         if (winner == null) {
-             tradeSafely(mobInv, item, item.getCount(), L1World.getInstance().getInventory(npc.getX(), npc.getY(), npc.getMapId()));
-             return true;
-         }
-
-         // 파티 분배 처리
-         if (Config.PARTY_LOOT_ENABLE && winner instanceof L1PcInstance) {
-             L1PcInstance wpc = (L1PcInstance) winner;
-             if (wpc.getParty() != null) {
-                 if (item.getItemId() != L1ItemId.ADENA
-                         && tryDistributePartyItem_AutoLoot(npc, mobInv, item, snap, wpc)) return true;
-             }
-         }
-
-        // 분배 대상 없으면 그냥 승자 인벤토리로
-        L1Inventory dest = decideAutoLootTargetInventory(npc, item, winner);
-        tradeSafely(mobInv, item, item.getCount(), dest);
-        return true;
-    }
-
-    private static boolean tryDistributePartyItem_AutoLoot(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance winnerPc) {
-        final List<L1PcInstance> elig = collectEligiblePartyMembers(npc, snap, winnerPc);
-        if (elig.isEmpty()) return false;
-
-        L1PcInstance target;
-        if (Config.PARTY_LOOT_MODE == 2) target = elig.get(PartyLootCursor.nextIndex(winnerPc, elig.size()));
-        else if (Config.PARTY_LOOT_MODE == 1) target = elig.get(RND.nextInt(elig.size()));
-        else target = winnerPc;
-
-        tradeSafely(mobInv, item, item.getCount(), decideAutoLootTargetInventory(npc, item, target));
-        
-        String msg = String.format("%s 획득 : %s(%s)", item.getLogName(), target.getName(), distTagByPartySetting(winnerPc));
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-       SC_SystemMessage.nativeWriter(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance member : elig) {
-            if (member.RootMent1) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-        }
-}
-        return true;
-    }
-
-    private static ArrayList<L1PcInstance> collectEligiblePartyMembers(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance center) {
-        final ArrayList<L1PcInstance> out = new ArrayList<>();
-        if (center == null || center.getParty() == null) return out;
-
-        for (L1PcInstance m : center.getParty().getMembers()) {
-            if (m == null || m.isDead() || m.getMapId() != npc.getMapId()) continue;
-            if (m.getLocation().getTileLineDistance(npc.getLocation()) > Config.PARTY_LOOT_RANGE) continue;
-            
-            // Eligibility = 0일 때만 때린 사람인지 체크, 1이면 무시하고 통과
-            if (Config.PARTY_LOOT_ELIGIBILITY == 0 && !isInSnapshot(snap, m)) continue;
-            
-            out.add(m);
-        }
-        return out;
+         // No eligible party: keep the existing solo/ground route.
+         L1Inventory dest = decideAutoLootTargetInventory(npc, item, primaryOwner);
+         tradeSafely(mobInv, item, item.getCount(), dest);
+         return true;
     }
 
     private static boolean handleNonAuto(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc) {
@@ -203,14 +117,6 @@ for (L1PcInstance member : elig) {
             }
         }
         return L1World.getInstance().getInventory(baseX, baseY, (short) mapId);
-    }
-
-    private static boolean isInSnapshot(DropAcqSnapshot snap, L1PcInstance pc) {
-        if (snap == null) return false;
-        for (int i = 0; i < snap.size; i++) {
-            if (snap.acqs[i] instanceof L1PcInstance && ((L1PcInstance) snap.acqs[i]).getId() == pc.getId()) return true;
-        }
-        return false;
     }
 
     private static L1Inventory decideAutoLootTargetInventory(L1NpcInstance npc, L1ItemInstance item, L1Character winner) {

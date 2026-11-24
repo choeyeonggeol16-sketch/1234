@@ -2458,8 +2458,6 @@ public class L1PcInstance extends L1Character {
             } catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout warehouse view release failed: " + getId(), e); }
             try { PcInventoryExpiryScheduler.getInstance().unregister(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout expiry unregister failed: " + getId(), e); }
-            try { l1j.server.server.model.character.Item.Drop.PartyLootCursor.clearSolo(this); }
-            catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout party loot release failed: " + getId(), e); }
             // Optional teardown/persistence steps must not suppress each other.
             try { remove_companion(); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout companion release failed: " + getId(), e); }
