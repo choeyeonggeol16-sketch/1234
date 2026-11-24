@@ -459,7 +459,19 @@ public final class CCreatureController {
         }
 
         case ACTION_NOTHING: {
+            // Guards now use their own return/stand path rather than the
+            // companion stop branch. Preserve its pending-hate wake checks.
+            if (CStandAction.isGuard(creature)
+                    && (creature.hasPendingHate() || creature.getTarget() != null)) {
+                rethinkNow(creature);
+                return false;
+            }
             final byte result = CNothingAction.onTick(creature);
+            if (CStandAction.isGuard(creature)
+                    && (creature.hasPendingHate() || creature.getTarget() != null)) {
+                rethinkNow(creature);
+                return false;
+            }
 
             if (result != RESULT_RUNNING) {
                 CNothingAction.onEnd(
