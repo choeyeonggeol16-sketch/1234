@@ -14,6 +14,13 @@ import l1j.server.server.templates.L1Item;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Location;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.L1GroundInventory;
+import l1j.server.server.model.L1IntRegistry;
+import l1j.server.server.model.LocalWorldMap;
+import l1j.server.server.model.Instance.CItemList;
+import l1j.server.Config;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.npc.ai.CDesireFactory;
@@ -213,9 +220,88 @@ public final class TestNpcGetItem {
                 && CDesirePQ.topState(npc, now) == CDesirePQ.PS_MOVE_AROUND,
                 "retire exact item key and resume wandering");
         System.out.println("PASS NC MakeGetItem heap selection and exact captured action identity");
+        testGroundDiscovery(unsafe, npc, loc, map, template, now);
         System.out.println("PASS NC dGetItem/GetItemFinished: same-ID replacement, "
                 + "stale pickup rejection, exact-key failure and success, "
                 + "pet high-item gate, companion owner restriction, "
                 + "callback successor handoff, CIO search overrides, 500/1000 ms cadence");
     }
+    private static Field field(final Class<?> type, final String name) throws Exception {
+        final Field f = type.getDeclaredField(name);
+        f.setAccessible(true);
+        return f;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void testGroundDiscovery(final Unsafe unsafe, final L1MonsterInstance npc,
+            final Field loc, final L1Map map, final L1Item template, final long now) throws Exception {
+        // Real CWorld ground registry + LocalWorldMap query, without DB bootstrap.
+        final Field singleton = field(L1World.class, "_instance");
+        final Object oldWorld = singleton.get(null);
+        final L1World world = instance(unsafe, L1World.class);
+        final Class<?> worldType = Class.forName("l1j.server.server.model.CWorld");
+        final java.lang.reflect.Constructor<?> constructor =
+                worldType.getDeclaredConstructor(L1World.class);
+        constructor.setAccessible(true);
+        field(L1World.class, "_worldExecutor").set(world, constructor.newInstance(world));
+        final L1IntRegistry<L1Object>[] visible = (L1IntRegistry<L1Object>[]) new L1IntRegistry<?>[32769];
+        final L1IntRegistry<L1Object> registry = new L1IntRegistry<>();
+        visible[map.getId()] = registry;
+        field(L1World.class, "_visibleObjects").set(world, visible);
+        final int oldMax = Config.MAX_NPC_ITEM;
+        final double oldWeight = Config.RATE_WEIGHT_LIMIT, oldPetWeight = Config.RATE_WEIGHT_LIMIT_PET;
+        Config.MAX_NPC_ITEM = 180;
+        Config.RATE_WEIGHT_LIMIT = Config.RATE_WEIGHT_LIMIT_PET = 1.0;
+        singleton.set(null, world);
+        try {
+            field(L1NpcInstance.class, "_inventory").set(npc, new L1Inventory());
+            npc._targetItem = null;
+            npc._itemSearchCooldown = 0;
+            npc.setPickupItem(true);
+            final LocalWorldMap grid = world.getClusterGrid();
+            final Method enter = LocalWorldMap.class.getDeclaredMethod("enterSilently", L1Object.class);
+            enter.setAccessible(true);
+            L1ItemInstance nearest = null;
+            for (int dx : new int[] { 9, 3, 16 }) {
+                final int x = 20 + dx, y = 20;
+                final L1GroundInventory ground = instance(unsafe, L1GroundInventory.class);
+                ground.setId(-((x - 30000) * 10000 + (y - 30000)));
+                loc.set(ground, new L1Location(x, y, map));
+                ground.setClusterMapId(-1); ground.setClusterPos(-1, -1);
+                final CItemList items = new CItemList();
+                field(L1Inventory.class, "_items").set(ground, items);
+                final L1ItemInstance item = instance(unsafe, L1ItemInstance.class);
+                item.setId(971100 + dx);
+                item.setItem(template); item.setCount(1);
+                loc.set(item, new L1Location(x, y, map));
+                items.add(item);
+                registry.put(ground.getId(), ground);
+                enter.invoke(grid, ground);
+                if (dx == 3) nearest = item;
+            }
+            check(CGetItemAction.prepareMonsterItem(npc, now), "real ground discovery admits GET_ITEM");
+            check(npc._targetItem == nearest && CDesirePQ.getItemDesire(npc) == nearest,
+                    "nearest valid ground object wins over farther and out-of-range objects");
+            check(CMoveAroundAction.onTick(npc) == CCreatureController.RESULT_DONE,
+                    "roaming yields to the item desire instead of bypassing discovery");
+            registry.remove(-((23 - 30000) * 10000 + (20 - 30000)));
+            check(!CGetItemAction.prepareMonsterItem(npc, now),
+                    "disappeared ground object is rejected");
+            check(npc._targetItem == null && CDesirePQ.getItemDesire(npc) == null,
+                    "disappeared exact item key is retired");
+            npc._itemSearchCooldown = 0;
+            npc.setPickupItem(false);
+            check(!CGetItemAction.prepareMonsterItem(npc, now)
+                    && npc._itemSearchCooldown == 0 && npc._targetItem == null,
+                    "non-pickup monster does not enter the ground scan");
+            System.out.println("PASS live ground discovery: nearest in range, roam handoff, "
+                    + "disappeared item retirement, non-pickup scan bypass");
+        } finally {
+            singleton.set(null, oldWorld);
+            Config.MAX_NPC_ITEM = oldMax;
+            Config.RATE_WEIGHT_LIMIT = oldWeight;
+            Config.RATE_WEIGHT_LIMIT_PET = oldPetWeight;
+        }
+    }
+
 }
