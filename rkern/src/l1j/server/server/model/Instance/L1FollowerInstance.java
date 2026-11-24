@@ -17,7 +17,7 @@ public class L1FollowerInstance extends L1NpcInstance {
 	private static final long serialVersionUID = 1L;
 
     private static final int HANDOFF_IDLE = 0, HANDOFF_PENDING = 1,
-            HANDOFF_COMMITTED = 2, HANDOFF_UNCERTAIN = 3;
+            HANDOFF_COMMITTED = 2, HANDOFF_UNCERTAIN = 3, HANDOFF_DURABLE = 4;
     // NPC owner admits; CIO owner/receipt publishes only the terminal state.
     private volatile int questHandoff;
     private long nextHandoffAt;
@@ -242,7 +242,11 @@ public class L1FollowerInstance extends L1NpcInstance {
                     CQuestSystem.StageQuestStep(tx, pc.getId(), questId, expected, nextStep, 0);
                 // Unknown or committed-but-not-replayed outcomes must not retry.
                 // A confirmed rollback invokes onFailure and may retry next tick.
-                tx.onTerminalFailure(() -> questHandoff = HANDOFF_UNCERTAIN);
+                tx.onDurableCommit(() -> questHandoff = HANDOFF_DURABLE);
+                tx.onTerminalFailure(() -> {
+                    if (questHandoff == HANDOFF_PENDING)
+                        questHandoff = HANDOFF_UNCERTAIN;
+                });
                 tx.onFailure(() -> questHandoff = HANDOFF_IDLE);
                 tx.commitAfterInventoryRelease(() -> {
                     if (questId != 0) pc.getQuest().applyCommittedStepIfLoaded(questId, nextStep);
@@ -263,7 +267,7 @@ public class L1FollowerInstance extends L1NpcInstance {
     public synchronized void onOwnerLogout() {
         if (isDestroyed()) return;
         setParalyzed(true);
-        if (questHandoff != HANDOFF_COMMITTED)
+        if (questHandoff != HANDOFF_COMMITTED && questHandoff != HANDOFF_DURABLE)
             spawn(getNpcTemplate().get_npcId(), getX(), getY(), getHeading(), getMapId());
         deleteMe();
     }
