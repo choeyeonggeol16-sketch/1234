@@ -203,6 +203,9 @@ public final class CNpcAI {
             return PRE_WAIT;
         }
 
+        // Absolute return owns the current positional action until completion.
+        if (dMoveTo.isReturningHome(npc)) return PRE_EXECUTE;
+
         if (npc.checkCondition()) {
             /*
              * Legacy process() returned without executing the controller and
@@ -232,27 +235,13 @@ public final class CNpcAI {
         npc.setSleepTime(300L);
         npc.checkTarget();
 
-        // L1's home-return teleport happens in preflight, before MOVE_AROUND
-        // takes its movement tick. A saved wander goal from the old location
-        // must not survive this relocation or it will pull the NPC back out.
         final byte runningAction = CCreatureController.currentAction(npc);
-        final boolean wasWandering = npc instanceof L1MonsterInstance
-                && runningAction == CCreatureController.ACTION_MOVE_AROUND_NATIVE;
-        final int beforeTeleportX = wasWandering ? npc.getX() : 0;
-        final int beforeTeleportY = wasWandering ? npc.getY() : 0;
-        final int beforeTeleportMap = wasWandering ? npc.getMapId() : 0;
-        npc.mobTeleport();
-        npc.onItemUse();
-
-        if (wasWandering
-                && (npc.getX() != beforeTeleportX
-                        || npc.getY() != beforeTeleportY
-                        || npc.getMapId() != beforeTeleportMap)) {
-            // THINK -> transitionFrom() -> onInterrupted() clears the stale
-            // MOVE_AROUND destination exactly once, on the same CIO owner.
-            CCreatureController.think(npc);
-            return PRE_RETHINK;
+        if (npc.mobTeleport()) {
+            // ReturnStartPoint submits on this owner and advances generation.
+            // PRE_WAIT cannot execute or rearm the retired action.
+            return PRE_WAIT;
         }
+        npc.onItemUse();
 
         if (npc instanceof L1MonsterInstance
                 && acceptsCombatRetarget(runningAction)) {
@@ -392,7 +381,7 @@ public final class CNpcAI {
             npc.checkTarget();
         }
 
-        npc.mobTeleport();
+        if (npc.mobTeleport()) return PRE_WAIT;
         npc.onItemUse();
 
         if (npc._target != null
@@ -768,7 +757,8 @@ public final class CNpcAI {
             final CNPCEvent event = pending;
             pending = event.next;
             try {
-                if (event.epoch != npc.npcEventEpoch() || npc.isDestroyed()) continue;
+                if (event.epoch != npc.npcEventEpoch() || npc.isDestroyed()
+                        || dMoveTo.isReturningHome(npc)) continue;
                 final L1Character cha = event.cha;
 
                 if (cha == null) {
