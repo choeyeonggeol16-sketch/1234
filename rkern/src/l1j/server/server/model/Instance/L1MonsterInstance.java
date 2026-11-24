@@ -18,7 +18,7 @@ import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.character.Item.Drop.DropAcqSnapshot;
+import l1j.server.server.model.character.Item.Drop.CContributeData;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1EffectSpawn;
 import l1j.server.server.model.L1Inventory;
@@ -836,7 +836,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         final L1Character lastAttacker;
         final int epoch;
         L1PcInstance rewardPc;
-        DropAcqSnapshot snapshot;
+        CContributeData snapshot;
         CParty party;
         L1PcInstance[] members;
         L1Location origin;
@@ -908,12 +908,11 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         }
     }
 
-    private boolean TryQueuePartyDrop(DeathSettlement job, L1PcInstance pc, DropAcqSnapshot snap) {
-        if (!Config.PARTY_LOOT_ENABLE || Config.STANDBY_SERVER || snap.size <= 0
+    private boolean TryQueuePartyDrop(DeathSettlement job, L1PcInstance pc, CContributeData snap) {
+        if (!Config.PARTY_LOOT_ENABLE || Config.STANDBY_SERVER || (snap == null || !snap.HasRouteCandidates())
                 || (Config.BOSS_DROP_GROUND_ENABLE && BossMonsterSpawnList.find(getNpcId()) != null)) return false;
-        final L1PcInstance owner = snap.maxIdx >= 0 && snap.acqs[snap.maxIdx] instanceof L1PcInstance top
-                ? top : pc;
-        final CParty party = owner.getParty();
+        final L1PcInstance owner = snap.GetPrimaryOwner(pc);
+        final CParty party = owner == null ? null : owner.getParty();
         if (party == null) return false;
         final L1PcInstance[] members = party.getMembers();
         synchronized (this) {
@@ -957,8 +956,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
                 // adena, select recipients again or repeat a successful share.
                 job.routed = true;
                 try {
-                    DropTable.getInstance().dropShareSnapshot(this, job.snapshot, job.rewardPc,
-                            job.party, job.members, job.origin);
+                    DropItemOnDying(job.snapshot, job.rewardPc, job.party, job.members, job.origin);
                 } finally {
                     // Recovery needs only the remaining inventory and origin.
                     job.snapshot = null;
@@ -1190,9 +1188,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
             ArrayList<Integer> dropHateList = new ArrayList<>();
             ArrayList<Integer> damage = new ArrayList<>();
             _dropHateList.copySnapshotTo(dropTargetList, dropHateList, damage);
-            final DropAcqSnapshot snap = DropAcqSnapshot.build(this, dropTargetList, dropHateList, damage);
+            final CContributeData snap = CContributeData.Distribute(this, dropTargetList, dropHateList, damage);
             if (TryQueuePartyDrop(job, pc, snap)) return true;
-            if (isCurrentDeath(job.epoch)) DropTable.getInstance().dropShareSnapshot(this, snap, pc);
+            if (isCurrentDeath(job.epoch)) DropItemOnDying(snap, pc, null, null, getLocation());
         } catch (Exception failure) {
             DEATH_DROP_LOG.log(java.util.logging.Level.WARNING, "Monster drop preparation failed", failure);
         }

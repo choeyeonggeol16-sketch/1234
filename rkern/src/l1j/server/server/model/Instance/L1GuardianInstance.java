@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.DropTable;
+import l1j.server.server.model.character.Item.Drop.CContributeData;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1NpcTalkData;
@@ -305,10 +305,13 @@ public class L1GuardianInstance extends L1NpcInstance {
 		ArrayList<Integer> hateList = _hateList.toHateArrayList();
 		CalcExp.calcExp(player, getId(), targetList, hateList, getExp());
 
-		ArrayList<L1Character> dropTargetList = _dropHateList.toTargetArrayList();
-		ArrayList<Integer> dropHateList = _dropHateList.toHateArrayList();
+		ArrayList<L1Character> dropTargetList = new ArrayList<>();
+		ArrayList<Integer> dropHateList = new ArrayList<>();
+		_dropHateList.copySnapshotTo(dropTargetList, dropHateList);
 		try {
-			DropTable.getInstance().dropShare(_npc, dropTargetList, dropHateList, player);
+			// Guardian still uses the legacy untagged hate input; do not reinterpret it as HP damage.
+			DropItemOnDying(CContributeData.Distribute(this, dropTargetList, dropHateList, null),
+					player, null, null, getLocation());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

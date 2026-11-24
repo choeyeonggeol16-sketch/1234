@@ -13,7 +13,7 @@ import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.character.Item.Drop.DropAcqSnapshot;
+import l1j.server.server.model.character.Item.Drop.CContributeData;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
@@ -408,30 +408,27 @@ for (L1PcInstance member : getMembers()) {
     
 
     /** Same map/range/hate policy for both currency and item routing. */
-    private boolean CheckRouteCond(L1Location origin, DropAcqSnapshot snap, L1PcInstance member) {
+    private boolean CheckRouteCond(L1Location origin, CContributeData snap, L1PcInstance member) {
         if (member == null || member.getParty() != this || member.isDead()
                 || member.getMapId() != origin.getMapId()
                 || member.getLocation().getTileLineDistance(origin) > Config.PARTY_LOOT_RANGE) return false;
         if (Config.PARTY_LOOT_ELIGIBILITY != 0) return true;
         if (snap == null) return false;
-        for (int i = 0; i < snap.size; i++) {
-            if (snap.acqs[i] instanceof L1PcInstance pc && pc.getId() == member.getId()) return true;
-        }
-        return false;
+        return snap.IsRouteContributor(member.getId());
     }
 
-    private boolean CheckRouteAdenaCond(L1Location origin, DropAcqSnapshot snap, L1PcInstance member) {
+    private boolean CheckRouteAdenaCond(L1Location origin, CContributeData snap, L1PcInstance member) {
         return CheckRouteCond(origin, snap, member);
     }
 
     public boolean Route(L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
-            DropAcqSnapshot snap, L1PcInstance primaryOwner) {
+            CContributeData snap, L1PcInstance primaryOwner) {
         return npc != null && Route(npc.getLocation(), source, item, snap, primaryOwner, null);
     }
 
     /** Queued drops retain the original party, roster and death position. */
     public boolean Route(L1Location origin, L1Inventory source, L1ItemInstance item,
-            DropAcqSnapshot snap, L1PcInstance primaryOwner, L1PcInstance[] admittedMembers) {
+            CContributeData snap, L1PcInstance primaryOwner, L1PcInstance[] admittedMembers) {
         if (!Config.PARTY_LOOT_ENABLE || primaryOwner == null || primaryOwner.getParty() != this
                 || origin == null || source == null || item == null) return false;
         final CWorld world = L1World.getInstance().getWorldExecutor();
@@ -455,7 +452,7 @@ for (L1PcInstance member : getMembers()) {
     }
 
     private void RouteAdena(CWorld world, L1Location origin, L1Inventory source, L1ItemInstance item,
-            DropAcqSnapshot snap, L1PcInstance[] members, int size, String tag) {
+            CContributeData snap, L1PcInstance[] members, int size, String tag) {
         final int winnerIndex = java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
         final long total = item.getCount();
         final long each = total / size;
@@ -480,7 +477,7 @@ for (L1PcInstance member : getMembers()) {
     }
 
     private void RouteItem(CWorld world, L1Location origin, L1Inventory source, L1ItemInstance item,
-            DropAcqSnapshot snap, L1PcInstance[] members, int size, String tag) {
+            CContributeData snap, L1PcInstance[] members, int size, String tag) {
         final int mode = Config.PARTY_LOOT_MODE;
         // The previous general mode already chose a random eligible winner.
         // Random mode also had a uniform final selection; keep that distribution.

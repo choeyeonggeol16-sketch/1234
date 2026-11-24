@@ -634,6 +634,21 @@ public final class CWorld {
         }
     }
 
+    // Legacy nearest-passable order, precomputed instead of allocating a BFS per item.
+    private static final byte[] DROP_OFFSETS = { 0, 0, 0, -1, 1, -1, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1, -1, 0, -2, 1, -2, -1, -2, 2, -2, 2, -1, 2, 0, 2, 1, 2, 2, 1, 2, 0, 2, -1, 2, -2, 2, -2, 1, -2, 0, -2, -1, -2, -2, 0, -3, 1, -3, -1, -3, 2, -3, -2, -3, 3, -3, 3, -2, 3, -1, 3, 0, 3, 1, 3, 2, 3, 3, 2, 3, 1, 3, 0, 3, -1, 3, -2, 3, -3, 3, -3, 2, -3, 1, -3, 0, -3, -1, -3, -2, -3, -3 };
+
+    boolean PutItem(L1Location origin, L1Inventory source, L1ItemInstance item) {
+        if (origin == null || !PickItemCond(source, item, item.getCount())) return false;
+        final int x = origin.getX(), y = origin.getY();
+        final short map = (short) origin.getMapId();
+        for (int i = 0; i < DROP_OFFSETS.length; i += 2) {
+            final int tx = x + DROP_OFFSETS[i], ty = y + DROP_OFFSETS[i + 1];
+            if (origin.getMap().isPassable(tx, ty))
+                return DropAtTile(source, item, item.getCount(), tx, ty, map);
+        }
+        return DropAtTile(source, item, item.getCount(), x, y, map);
+    }
+
     /** Try the corpse tile and nearby passable tiles, without changing stack caps. */
     boolean RecoverDropRemainder(L1Location origin, L1Inventory source, L1ItemInstance item) {
         if (source.getItem(item.getId()) != item || item.getCount() <= 0) return true;

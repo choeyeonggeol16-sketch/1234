@@ -192,6 +192,10 @@ public class L1World {
         return _worldExecutor.RecoverDropRemainder(origin, source, item);
     }
 
+    public boolean PutNpcDrop(L1Location origin, L1Inventory source, L1ItemInstance item) {
+        return _worldExecutor.PutItem(origin, source, item);
+    }
+
     public boolean RecoverNpcDrop(L1Location origin, L1Inventory source, L1ItemInstance item) {
         return _worldExecutor.RecoverDropRemainder(origin, source, item);
     }

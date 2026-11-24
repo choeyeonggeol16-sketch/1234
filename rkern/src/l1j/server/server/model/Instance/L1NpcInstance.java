@@ -11,6 +11,12 @@ import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.MapsTable;
+import l1j.server.server.datatables.DropTable;
+import l1j.server.server.datatables.AutoLoot;
+import l1j.server.server.datatables.BossMonsterSpawnList;
+import l1j.server.server.model.CParty;
+import l1j.server.server.model.L1Location;
+import l1j.server.server.model.character.Item.Drop.CContributeData;
 import l1j.server.server.datatables.NpcChatTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Character;
@@ -1187,6 +1193,81 @@ public class L1NpcInstance extends L1Character {
 	public L1Inventory getInventory() {
 		return _inventory;
 	}
+
+
+    /** CNPC::DropItemOnDying: prepare loot, select its route, then use existing world/party delivery. */
+    public final void DropItemOnDying(CContributeData contribute, L1PcInstance lastAttacker,
+            CParty admittedParty, L1PcInstance[] admittedMembers, L1Location origin) {
+        if (Config.STANDBY_SERVER || lastAttacker == null || origin == null) return;
+        final L1Inventory source = getInventory();
+        if (source == null) return;
+        final L1World world = L1World.getInstance();
+        final var log = java.util.logging.Logger.getLogger(L1NpcInstance.class.getName());
+        try {
+            DropTable.getInstance().append_drop_adena(lastAttacker, this);
+            if (source.getItems().isEmpty()) return;
+            final L1ItemInstance[] items = source.getItems().toArray(new L1ItemInstance[0]);
+            final boolean protectedDrop = contribute != null && contribute.HasGroundPriority();
+            if (protectedDrop) {
+                contribute.StartDropPeriod();
+                for (L1ItemInstance item : items) {
+                    if (item != null) item.SetContributeData(contribute);
+                }
+            }
+            final boolean forceGround = Config.BOSS_DROP_GROUND_ENABLE
+                    && BossMonsterSpawnList.find(getNpcId()) != null;
+            final L1PcInstance primary = contribute == null ? lastAttacker : contribute.GetPrimaryOwner(lastAttacker);
+            final boolean hasRoute = contribute != null && contribute.HasRouteCandidates();
+            for (L1ItemInstance item : items) {
+                if (item == null) continue;
+                try {
+                    if (item.getItem().getType2() == 0 && item.getItem().getType() == 2)
+                        item.setNowLighting(false);
+                    if (forceGround || !IsAutoLootItem(item.getItemId())) {
+                        item.setDropMobId(getNpcId());
+                        if (primary != null && !protectedDrop) item.startItemOwnerTimer(primary);
+                        world.PutNpcDrop(origin, source, item);
+                    } else if (!hasRoute) {
+                        world.PickNpcDrop(origin, source, item, null);
+                    } else {
+                        DropItemToUser(world, origin, source, item, contribute, primary,
+                                admittedParty, admittedMembers);
+                    }
+                } catch (RuntimeException failure) {
+                    log.log(java.util.logging.Level.WARNING, "NPC drop routing failed: " + item.getId(), failure);
+                }
+                if (source.getItem(item.getId()) == item && item.getCount() > 0) {
+                    try {
+                        if (!world.RecoverNpcDrop(origin, source, item))
+                            log.warning("NPC drop remains in source: " + item.getId() + ", count=" + item.getCount());
+                    } catch (RuntimeException failure) {
+                        log.log(java.util.logging.Level.SEVERE, "NPC drop recovery failed: " + item.getId(), failure);
+                    }
+                }
+            }
+            getLight().turnOnOffLight();
+        } finally {
+            if (contribute != null) contribute.FinishRouting();
+        }
+    }
+
+    private static boolean IsAutoLootItem(int itemId) {
+        if (itemId == 810008 || Config.AUTO_LOOT != 0) return true;
+        try { return AutoLoot.getInstance().isAutoLoot(itemId); }
+        catch (RuntimeException failure) { return false; }
+    }
+
+    private static void DropItemToUser(L1World world, L1Location origin, L1Inventory source,
+            L1ItemInstance item, CContributeData contribute, L1PcInstance primary,
+            CParty admittedParty, L1PcInstance[] admittedMembers) {
+        if (admittedParty != null) {
+            if (admittedParty.Route(origin, source, item, contribute, primary, admittedMembers)) return;
+        } else if (Config.PARTY_LOOT_ENABLE && primary != null) {
+            final CParty party = primary.getParty();
+            if (party != null && party.Route(origin, source, item, contribute, primary, null)) return;
+        }
+        world.PickNpcDrop(origin, source, item, primary);
+    }
 
     public void setInventory(L1Inventory inventory) {
 		_inventory = inventory;

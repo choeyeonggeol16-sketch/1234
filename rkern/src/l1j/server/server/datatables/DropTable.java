@@ -17,12 +17,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.character.Item.Drop.DropAcqSnapshot;
-import l1j.server.server.model.character.Item.Drop.DropShareEngine;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
@@ -134,7 +129,7 @@ public class DropTable {
 		return droplistMap;
 	}
 
-	private void append_drop_adena(L1PcInstance last_attacker, L1NpcInstance monster) {
+	public void append_drop_adena(L1PcInstance last_attacker, L1NpcInstance monster) {
 		if (monster == null) return;
 
 		L1Drop drop = _adenalists.get(monster.getNpcId());
@@ -228,70 +223,5 @@ public class DropTable {
 				inventory.storeItem(item);
 			} catch (Throwable ignored) {}
 		}
-	}
-	
-	public void dropShare(L1NpcInstance npc, ArrayList<?> acquisitorList, ArrayList<?> hateList, L1PcInstance pc) {
-		if (Config.STANDBY_SERVER) return;
-		if (npc == null || pc == null) return;
-
-		final DropAcqSnapshot snap = DropAcqSnapshot.build(npc, (ArrayList<?>) acquisitorList, (ArrayList<?>) hateList);
-		dropShareSnapshot(npc, snap, pc);
-	}
-
-	public void dropShareSnapshot(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance pc) {
-        dropShareSnapshot(npc, snap, pc, null, null, npc == null ? null : npc.getLocation());
-    }
-
-    public void dropShareSnapshot(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance pc,
-            CParty admittedParty, L1PcInstance[] admittedMembers, L1Location origin) {
-		if (Config.STANDBY_SERVER) return;
-		if (npc == null || pc == null || origin == null) return;
-		
-		append_drop_adena(pc, npc);
-
-		final L1Inventory mobInv = npc.getInventory();
-		if (mobInv == null) return;
-
-		try {
-			if (mobInv.getItems() == null || mobInv.getItems().isEmpty()) return;
-		} catch (Throwable t) {
-			return;
-		}
-		final ArrayList<L1ItemInstance> items = new ArrayList<L1ItemInstance>();
-		try {
-			items.addAll(mobInv.getItems());
-		} catch (Throwable t) {
-			return;
-		}
-		
-		if (items.isEmpty()) return;
-        if (snap != null && snap.contribution != null) {
-            snap.contribution.StartDropPeriod();
-            for (L1ItemInstance item : items) {
-                if (item != null) item.SetContributeData(snap.contribution);
-            }
-        }
-
-		for (int i = 0; i < items.size(); i++) {
-			L1ItemInstance item = items.get(i);
-			if (item == null) continue;
-			
-            try {
-                DropShareEngine.handleOneItem(npc, mobInv, item, snap, pc, admittedParty, admittedMembers, origin);
-            } catch (RuntimeException failure) {
-                _log.log(Level.WARNING, "NPC drop routing failed: " + item.getId(), failure);
-            }
-            if (mobInv.getItem(item.getId()) == item && item.getCount() > 0) {
-                try {
-                    if (!L1World.getInstance().RecoverNpcDrop(origin, mobInv, item)) {
-                        _log.warning("NPC drop remains in source: " + item.getId() + ", count=" + item.getCount());
-                    }
-                } catch (RuntimeException recovery) {
-                    _log.log(Level.SEVERE, "NPC drop recovery failed: " + item.getId(), recovery);
-                }
-            }
-		}
-
-		try { npc.getLight().turnOnOffLight(); } catch (Throwable ignored) {}
 	}
 }
