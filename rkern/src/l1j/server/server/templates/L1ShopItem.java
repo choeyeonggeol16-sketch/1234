@@ -1,5 +1,7 @@
 package l1j.server.server.templates;
 
+import l1j.server.server.datatables.CObjectDB;
+
 
 public class L1ShopItem {
 	private final int _itemId;

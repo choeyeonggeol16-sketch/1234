@@ -4,7 +4,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Getback;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.combat.arena.CombatObserver;
@@ -154,7 +154,7 @@ public final class CS_Restart {
             SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
             SC_Weather.send(pc, L1World.getInstance().getWeather());
 
-            final L1Party party = pc.getParty();
+            final CParty party = pc.getParty();
 
             if (party != null) {
                 party.refreshPartyMemberStatus(pc);

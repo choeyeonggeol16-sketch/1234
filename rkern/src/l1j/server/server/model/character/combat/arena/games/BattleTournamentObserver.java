@@ -8,7 +8,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.combat.arena.CombatInformation;
 import l1j.server.server.model.character.combat.arena.CombatObserver;
@@ -365,7 +365,7 @@ public class BattleTournamentObserver extends CombatObserver{
 	public void leave(L1PcInstance pc){
 		if(pc == null || !pc.is_combat_field())
 			return;
-		L1Party party = pc.getParty(); 
+		CParty party = pc.getParty(); 
 		if(party != null){
 			party.leaveMember(pc);
 			pc.setParty(null);
@@ -406,7 +406,7 @@ public class BattleTournamentObserver extends CombatObserver{
 			return;
 		
 		_user_kda_dictionary.remove(pc.getId());
-		L1Party party = _parties[team_id];
+		CParty party = _parties[team_id];
 		if(party != null)
 			party.leaveMember(pc);		
 	}

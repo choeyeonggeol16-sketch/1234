@@ -11,7 +11,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -142,9 +142,9 @@ public final class CCreatureController {
 
     private static final class BuffOverflow extends OverflowEvent {
         final int skillId, duration, option, gfx;
-        final L1Party party;
+        final CParty party;
 
-        BuffOverflow(int skillId, int duration, int option, int gfx, L1Party party,
+        BuffOverflow(int skillId, int duration, int option, int gfx, CParty party,
                      int session, int epoch, long afterTicket) {
             super(session, epoch, afterTicket);
             this.skillId = skillId;
@@ -226,14 +226,14 @@ public final class CCreatureController {
                 0L, 0L, 0, null, null, pc.getSessionStamp(), epoch);
     }
 
-    public boolean addExecutableCastBuff(L1PcInstance recipient, int skillId, int duration, int option, int gfx, L1Party party) {
+    public boolean addExecutableCastBuff(L1PcInstance recipient, int skillId, int duration, int option, int gfx, CParty party) {
         final int epoch = actorEpoch;
         if (actor != recipient || (epoch & 1) != 0 || actorEpoch != epoch) return false;
         return executeOrPublish(EXEC_CAST_BUFF, 0, skillId, duration, option, gfx,
                 0L, 0L, 0, party, null, recipient.getSessionStamp(), epoch);
     }
 
-    private static void applyCastBuff(L1PcInstance pc, int id, int duration, int option, int gfx, L1Party party) {
+    private static void applyCastBuff(L1PcInstance pc, int id, int duration, int option, int gfx, CParty party) {
         if (party != null && pc.getParty() != party) return;
         CSkillInfo.contextStartFromOwner(pc, id, duration, option, gfx, party != null);
     }
@@ -385,7 +385,7 @@ public final class CCreatureController {
                     if (actorEpoch != expectedEpoch || current == null
                             || current.getSessionStamp() != expectedSession) return false;
                     final OverflowEvent overflow = kind == EXEC_CAST_BUFF
-                            ? new BuffOverflow(a0, a1, a2, a3, (L1Party) o0, expectedSession, expectedEpoch, tail)
+                            ? new BuffOverflow(a0, a1, a2, a3, (CParty) o0, expectedSession, expectedEpoch, tail)
                             : new DamageOverflow((L1Character) o0, a0, kind, expectedSession, expectedEpoch, tail);
                     executionOverflow.offer(overflow);
                     signalAndDrain();
@@ -592,7 +592,7 @@ public final class CCreatureController {
         }
         case EXEC_CAST_BUFF: {
             final L1PcInstance pc = actor;
-            if (pc != null) applyCastBuff(pc, a0, a1, a2, a3, (L1Party) o0);
+            if (pc != null) applyCastBuff(pc, a0, a1, a2, a3, (CParty) o0);
             break;
         }
         case EXEC_SKILL_HEARTBEAT: {
