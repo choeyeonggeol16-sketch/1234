@@ -85,6 +85,14 @@ public class L1MerchantInstance extends L1NpcInstance {
 		if (isAiRunning()) {
 			return;
 		}
+		// Static service NPCs have no idle movement desire. Dialog and shop
+		// requests are dispatched independently of the NPC action timer.
+		// Do not suppress special, explicitly targeted or item/owner AI.
+		if (!isMovable() && _special == null && !isPickupItem()
+				&& getMaster() == null && getTarget() == null
+				&& !hasPendingHate()) {
+			return;
+		}
 		setActived(false);
 		startAI();
 	}
