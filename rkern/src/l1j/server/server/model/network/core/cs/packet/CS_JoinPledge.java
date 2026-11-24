@@ -1,11 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import java.util.ArrayList;
-
-import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.CReplyChecker;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -130,69 +126,8 @@ public final class CS_JoinPledge {
             }
         }
 
-        /*
-         * 동일 계정 캐릭터의 혈맹 가입 제한.
-         *
-         * 기존 CharacterClanCheck() 반환 구조와
-         * DB/게임 semantics는 그대로 유지한다.
-         */
-        final ArrayList<String> clanIdList =
-                CharacterTable
-                        .getInstance()
-                        .CharacterClanCheck(
-                                player.getName());
-
-        if (clanIdList != null) {
-
-            for (String clanIdStr :
-                    clanIdList) {
-
-                if (clanIdStr == null
-                        || clanIdStr.isEmpty()) {
-
-                    continue;
-                }
-
-                try {
-
-                    final int otherClanId =
-                            Integer.parseInt(
-                                    clanIdStr);
-
-                    if (otherClanId != 0
-                            && targetClanId
-                                    != otherClanId) {
-
-                        SC_SystemMessage.send(player, "\\fY한 계정 내 캐릭들은 같은 혈맹에만 가입이 가능합니다.");
-
-                        return;
-                    }
-
-                } catch (NumberFormatException e) {
-                    /*
-                     * 원본 semantics 그대로 무시.
-                     */
-                }
-            }
-        }
-
-        /*
-         * 자동 혈맹 가입.
-         */
-        if (target.isAutoClanjoin()) {
-
-            L1ClanJoin
-                    .getInstance()
-                    .ClanJoin(
-                            target,
-                            player);
-
-            return;
-        }
-
-        /*
-         * 수동 가입 승인 요청.
-         */
+        // Reserve the request before the ordered DB read; the owner callback
+        // decides automatic/manual admission only after revalidating both PCs.
         if (!CReplyChecker.AttachReplyChecker(player, target, clan)) {
             SC_SystemMessage.send(player, "혈맹 가입 승인 대기 중이거나 요청할 수 없는 상태입니다.");
         }

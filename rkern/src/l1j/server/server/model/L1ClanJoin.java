@@ -90,15 +90,57 @@ public class L1ClanJoin {
         return charisma * (quest45 ? 3 : 1) * (level >= 50 ? 3 : 2);
     }
 
+    /** CacheD worker preflight: read primitive IDs only, fail closed on SQL
+     * error or missing character. Never allocate a list of boxed/string IDs. */
+    public static boolean CheckAccountPledge(String account, int characterId,
+            int sourceClanId, int targetClanId) throws SQLException {
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            return CheckAccountPledge(con, account, characterId, sourceClanId, targetClanId, false);
+        }
+    }
+
+    static boolean CheckAccountPledge(Connection con, String account, int characterId,
+            int sourceClanId, int targetClanId, boolean lock) throws SQLException {
+        if (account == null || account.isEmpty() || characterId <= 0 || targetClanId <= 0)
+            return false;
+        final String sql = lock
+                ? "SELECT objid,ClanID FROM characters WHERE account_name=? ORDER BY objid FOR UPDATE"
+                : "SELECT objid,ClanID FROM characters WHERE account_name=?";
+        boolean found = false;
+        boolean compatible = true;
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, account);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    final int id = rs.getInt(1), clanId = rs.getInt(2);
+                    if (id == characterId) {
+                        if (found || clanId != sourceClanId) compatible = false;
+                        found = true;
+                    }
+                    if (clanId != 0 && clanId != targetClanId) compatible = false;
+                }
+            }
+        }
+        return found && compatible;
+    }
+
     private boolean joinClanAtomic(L1Clan clan, L1PcInstance joinPc, int capacity,
                                    boolean tutorial, Consumer<Boolean> result) {
+        return joinClanAtomic(clan, joinPc, capacity, tutorial, result, null);
+    }
+
+    private boolean joinClanAtomic(L1Clan clan, L1PcInstance joinPc, int capacity,
+                                   boolean tutorial, Consumer<Boolean> result, String account) {
         if (clan == null || joinPc == null || joinPc.getClanid() != 0) return false;
         final int clanId = clan.getClanId(), characterId = joinPc.getId();
         final String clanName = clan.getClanName();
         final int rank = L1Clan.수련;
         if (capacity > 0 && capacity <= clan.getClanMemberList().size()) return false;
-        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(joinPc,
-                CacheD.accountOrderKey("clan-join:" + clanId))) {
+        final int clanLane = CacheD.accountOrderKey("clan-join:", clanId);
+        try (L1InventoryTransaction tx = account == null
+                ? L1InventoryTransaction.begin(joinPc, clanLane)
+                : L1InventoryTransaction.begin(joinPc, clanLane,
+                        new int[]{CacheD.accountOrderKey(account)})) {
             tx.requireTables("clan_data", "characters", "character_quests");
             tx.sql(con -> {
                 try (PreparedStatement ps = con.prepareStatement(
@@ -109,6 +151,8 @@ public class L1ClanJoin {
                             throw new SQLException("Clan no longer exists");
                     }
                 }
+                if (account != null && !CheckAccountPledge(con, account, characterId, 0, clanId, true))
+                    throw new SQLException("Account pledge restriction changed before COMMIT");
                 // The world roster is a fast preliminary bound; the DB row
                 // count under the same receipt owns the final capacity test.
                 final int allowed = capacity > 0 ? capacity : dbClanCapacity(con, clan.getLeaderId());
@@ -184,6 +228,11 @@ public class L1ClanJoin {
      */
     private boolean mergeClanAtomic(L1Clan target, L1Clan source, L1PcInstance sourceLeader,
                                     int capacity, Consumer<Boolean> result) {
+        return mergeClanAtomic(target, source, sourceLeader, capacity, result, null);
+    }
+
+    private boolean mergeClanAtomic(L1Clan target, L1Clan source, L1PcInstance sourceLeader,
+                                    int capacity, Consumer<Boolean> result, String account) {
         if (target == null || source == null || target == source || sourceLeader == null
                 || sourceLeader.getClanid() != source.getClanId()
                 || source.getLeaderId() != sourceLeader.getId() || !sourceLeader.isCrown()
@@ -230,7 +279,10 @@ public class L1ClanJoin {
                 SC_SystemMessage.send(sourceLeader, "혈맹 창고를 비우고 이용을 종료한 후 다시 시도해 주세요.");
                 return false;
             }
-            try (L1InventoryTransaction tx = L1InventoryTransaction.begin(sourceLeader, warehouseLane)) {
+            try (L1InventoryTransaction tx = account == null
+                    ? L1InventoryTransaction.begin(sourceLeader, warehouseLane)
+                    : L1InventoryTransaction.begin(sourceLeader, warehouseLane,
+                            new int[]{CacheD.accountOrderKey(account)})) {
                 tx.requireTables("characters", "clan_data", "clan_warehouse", "character_quests");
                 tx.sql(con -> {
                     // Lock both rows in a stable order. DB, not a stale roster,
@@ -259,6 +311,9 @@ public class L1ClanJoin {
                         }
                         if (!sourceFound || !targetFound) throw new SQLException("Pledge row missing");
                     }
+                    if (account != null && !CheckAccountPledge(con, account,
+                            sourceLeader.getId(), sourceId, targetId, true))
+                        throw new SQLException("Account pledge restriction changed before merge COMMIT");
                     // Do not drop the former pledge's items. Lock a matching row
                     // (when present) and require an empty warehouse at COMMIT.
                     try (PreparedStatement ps = con.prepareStatement(
@@ -369,15 +424,26 @@ public class L1ClanJoin {
     }
 
     public boolean ClanJoin(L1Clan clan, L1PcInstance joinPc, Consumer<Boolean> result) throws Exception {
+        return ClanJoin(clan, joinPc, result, null);
+    }
+
+    public boolean ClanJoinChecked(L1Clan clan, L1PcInstance joinPc, String account) throws Exception {
+        if (account == null || account.isEmpty() || joinPc == null
+                || !account.equals(joinPc.getAccountName())) return false;
+        return ClanJoin(clan, joinPc, null, account);
+    }
+
+    private boolean ClanJoin(L1Clan clan, L1PcInstance joinPc, Consumer<Boolean> result,
+            String account) throws Exception {
         if (clan == null || joinPc == null) return false;
         // Leader level and completed quest are resolved with the member SQL
         // under one CacheD receipt, never with two JDBC round trips on CIO.
         final L1Clan prior = joinPc.getClan();
         if (prior != null) {
             if (prior == clan) return false;
-            return mergeClanAtomic(clan, prior, joinPc, -1, result);
+            return mergeClanAtomic(clan, prior, joinPc, -1, result, account);
         }
-        return joinClanAtomic(clan, joinPc, -1, false, result);
+        return joinClanAtomic(clan, joinPc, -1, false, result, account);
     }
 
 	private void giveClanBless(L1Clan clan, L1PcInstance joinPc) {
@@ -407,6 +473,17 @@ public class L1ClanJoin {
     }
 
     public boolean ClanJoin(L1PcInstance pc, L1PcInstance joinPc, Consumer<Boolean> result) {
+        return ClanJoin(pc, joinPc, result, null);
+    }
+
+    public boolean ClanJoinChecked(L1PcInstance pc, L1PcInstance joinPc, String account) {
+        if (account == null || account.isEmpty() || joinPc == null
+                || !account.equals(joinPc.getAccountName())) return false;
+        return ClanJoin(pc, joinPc, null, account);
+    }
+
+    private boolean ClanJoin(L1PcInstance pc, L1PcInstance joinPc, Consumer<Boolean> result,
+            String account) {
         if (pc == null || joinPc == null) return false;
         int clan_id = pc.getClanid();
 		String clanName = pc.getClanname();
@@ -434,10 +511,10 @@ public class L1ClanJoin {
                     SC_ServerMessage.send(joinPc, 188, pc.getName());
                     return false;
                 }
-                return joinClanAtomic(clan, joinPc, maxMember, false, result);
+                return joinClanAtomic(clan, joinPc, maxMember, false, result, account);
 			} else {
 				if (Config.CLAN_ALLIANCE) {
-					return changeClan(pc, joinPc, maxMember, result);
+					return changeClan(pc, joinPc, maxMember, result, account);
 				} else {
 					SC_ServerMessage.send(joinPc, 89);
 					return false;
@@ -448,14 +525,14 @@ public class L1ClanJoin {
 		}
 	}
 
-    private boolean changeClan(L1PcInstance pc, L1PcInstance joinPc, int maxMember, Consumer<Boolean> result) {
+    private boolean changeClan(L1PcInstance pc, L1PcInstance joinPc, int maxMember, Consumer<Boolean> result, String account) {
         int clanId = pc.getClanid();
         L1Clan clan = L1World.getInstance().getClan(clanId);
         int oldClanId = joinPc.getClanid();
         L1Clan oldClan = L1World.getInstance().getClan(oldClanId);
         if (clan == null || oldClan == null || clan == oldClan || oldClanId == clanId) return false;
         if (joinPc.isCrown() && joinPc.getId() == oldClan.getLeaderId()) {
-            return mergeClanAtomic(clan, oldClan, joinPc, maxMember, result);
+            return mergeClanAtomic(clan, oldClan, joinPc, maxMember, result, account);
         }
         return false;
     }
