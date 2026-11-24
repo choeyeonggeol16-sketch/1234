@@ -2372,10 +2372,7 @@ public class L1PcInstance extends L1Character {
 				if (followerObject == null)
 					continue;
 				follower = (L1FollowerInstance) followerObject;
-				follower.setParalyzed(true);
-				follower.spawn(follower.getNpcTemplate().get_npcId(), follower.getX(), follower.getY(),
-						follower.getHeading(), follower.getMapId());
-				follower.deleteMe();
+				follower.onOwnerLogout();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -4880,7 +4877,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		settleOutstandingLevelGifts();
 		CQuestSystem quest = getQuest();
 		// TODO 스냅퍼 개방
-		int lv59_step = quest.get_step(CQuestSystem.QUEST_SLOT76);
+		int lv59_step = quest.get_step(CQuestSystem.QUEST_SLOT59);
 		if (getLevel() == 59 && lv59_step != CQuestSystem.QUEST_END) {
 			SC_PacketBox.send(this, SC_PacketBox.GREEN_MESSAGE, "Lv.59 귀걸이개방이 가능해졌습니다.");
 			SC_NewCreateItem.sendSubtype(this, SC_NewCreateItem.신규패킷10, 0);

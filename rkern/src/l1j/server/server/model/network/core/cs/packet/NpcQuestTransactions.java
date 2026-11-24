@@ -110,6 +110,7 @@ final class NpcQuestTransactions {
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(questId, nextStep);
                 if (resetQuestId != 0) pc.getQuest().applyCommittedStepIfLoaded(resetQuestId, 0);
+            }, () -> {
                 if (reward != null) SC_ServerMessage.send(pc, 143, npcName, reward.getItem().getName());
                 if (afterCommitted != null) afterCommitted.run();
                 SC_NPCTalkReturn.send(pc, npcObjectId, successPage);
@@ -206,6 +207,7 @@ final class NpcQuestTransactions {
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(mainQuest, nextStep);
                 pc.getQuest().applyCommittedStepIfLoaded(boxQuestId, CQuestSystem.QUEST_END);
+            }, () -> {
                 SC_ServerMessage.send(pc, 143, npcName, reward.getItem().getName());
                 SC_NPCTalkReturn.send(pc, npcObjectId, successPage);
             });
@@ -388,6 +390,7 @@ final class NpcQuestTransactions {
             final String npcName = npc.getNpcTemplate().get_name();
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(questId, nextStep);
+            }, () -> {
                 SC_ServerMessage.send(pc, 143, npcName, reward.getItem().getName());
                 SC_NPCTalkReturn.send(pc, npc.getId(), page);
             });
@@ -415,6 +418,7 @@ final class NpcQuestTransactions {
             final String npcName = npc.getNpcTemplate().get_name();
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(questId, 2);
+            }, () -> {
                 SC_ServerMessage.send(pc, 143, npcName, reward.getItem().getName());
                 SC_NPCTalkReturn.send(pc, npc.getId(), "SIMIZZ8");
             });
@@ -507,6 +511,7 @@ final class NpcQuestTransactions {
             tx.onFailure(() -> SC_SystemMessage.send(pc, "퀘스트 이동 아이템 거래가 취소되었습니다."));
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(questId, step);
+            }, () -> {
                 if (leave) pc.start_teleport(32736, 32800, 483, 5, 169, true, false);
                 else pc.start_teleport(32801, 32895, 483, 5, 169, true, false);
                 SC_NPCTalkReturn.send(pc, npc.getId(), "");
@@ -541,6 +546,7 @@ final class NpcQuestTransactions {
             final String npcName = npc.getNpcTemplate().get_name();
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(questId, 1);
+            }, () -> {
                 SC_ServerMessage.send(pc, 143, npcName, first.getItem().getName());
                 SC_ServerMessage.send(pc, 143, npcName, second.getItem().getName());
                 SC_ServerMessage.send(pc, 143, npcName, third.getItem().getName());
@@ -676,6 +682,7 @@ final class NpcQuestTransactions {
             tx.onFailure(() -> SC_NPCTalkReturn.send(pc, npc.getId(), failurePage));
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(questId, nextStep);
+            }, () -> {
                 SC_NPCTalkReturn.send(pc, npc.getId(), successPage);
             });
         } catch (RuntimeException failure) {
@@ -726,6 +733,7 @@ final class NpcQuestTransactions {
             tx.onFailure(() -> SC_NPCTalkReturn.send(pc, npc.getId(), failurePage));
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(questId, nextStep);
+            }, () -> {
                 SC_NPCTalkReturn.send(pc, npc.getId(), successPage);
             });
         } catch (RuntimeException failure) {
@@ -769,6 +777,7 @@ final class NpcQuestTransactions {
             tx.onFailure(() -> SC_SystemMessage.send(pc, "퀘스트 아이템 지급이 확정되지 않았습니다."));
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(questId, CQuestSystem.QUEST_END);
+            }, () -> {
                 SC_NPCTalkReturn.send(pc, npcObjectId, "");
             });
             return null;
@@ -862,6 +871,7 @@ final class NpcQuestTransactions {
             });
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(quest, next);
+            }, () -> {
                 if (MOONBOW_NOTICE[step] != null) SC_SystemMessage.send(pc, MOONBOW_NOTICE[step]);
                 SC_NPCTalkReturn.send(pc, objectId, MOONBOW_SUCCESS[step]);
             });
@@ -1065,6 +1075,7 @@ final class NpcQuestTransactions {
             tx.onFailure(() -> SC_SystemMessage.send(pc,"퀘스트 시작이 확정되지 않았습니다."));
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(quest,1);
+            }, () -> {
                 if (client.getActiveChar()==pc) NpcLocalCommands.poly(client,morph);
                 SC_ServerMessage.send(pc,143,name,a.getItem().getName());
                 SC_ServerMessage.send(pc,143,name,b.getItem().getName());
@@ -1145,6 +1156,7 @@ final class NpcQuestTransactions {
             tx.onFailure(() -> SC_SystemMessage.send(pc,"퀘스트 초기화가 확정되지 않았습니다."));
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(quest,0);
+            }, () -> {
                 SC_NPCTalkReturn.send(pc,objectId,"");
             });
         } catch (RuntimeException failure) {
@@ -1195,6 +1207,7 @@ final class NpcQuestTransactions {
             tx.onFailure(() -> SC_NPCTalkReturn.send(pc, pc.getId(), failurePage));
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(quest, CQuestSystem.QUEST_END);
+            }, () -> {
                 if (earring) SC_ReturnedStat.sendSlot(pc, 67, 1, value);
                 SC_NPCTalkReturn.send(pc, pc.getId(), "slot9");
                 if (!earring) SC_ReturnedStat.sendSlot(pc, SC_ReturnedStat.RING_RUNE_SLOT, SC_ReturnedStat.SUBTYPE_RING, value);

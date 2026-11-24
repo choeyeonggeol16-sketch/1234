@@ -3,11 +3,11 @@ package l1j.server.server.model.Instance;
 import l1j.server.server.model.character.action.CAttackAction;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.NpcTable;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -16,8 +16,27 @@ import l1j.server.server.templates.L1Npc;
 public class L1FollowerInstance extends L1NpcInstance {
 	private static final long serialVersionUID = 1L;
 
+    private static final int HANDOFF_IDLE = 0, HANDOFF_PENDING = 1,
+            HANDOFF_COMMITTED = 2, HANDOFF_UNCERTAIN = 3;
+    // NPC owner admits; CIO owner/receipt publishes only the terminal state.
+    private volatile int questHandoff;
+    private long nextHandoffAt;
+
 	@Override
 	public boolean noTarget() {
+        if (isDestroyed()) return true;
+        if (questHandoff == HANDOFF_COMMITTED) {
+            deleteMe();
+            return true;
+        }
+        if (!(_master instanceof L1PcInstance owner)) {
+            deleteMe();
+            return true;
+        }
+        if (questHandoff != HANDOFF_IDLE) {
+            setSleepTime(1000L);
+            return false;
+        }
 		L1NpcInstance npc = null;
 		L1PcInstance pc = null;
 		for (L1Object object : L1World.getInstance().getVisibleObjects(this)) {
@@ -28,34 +47,19 @@ public class L1FollowerInstance extends L1NpcInstance {
 				switch(npc.getNpcTemplate(). get_npcId()){
 				case 70740: //디가르뎅의 병사
 				case 71093: //조사원
-					setParalyzed(true);
-					pc = (L1PcInstance) _master;
-					if (!pc.getInventory().checkItem(40593)) {
-						createNewItem(pc, 40593, 1);
-					}
-					deleteMe();
-					return true;
+					requestHandoff(owner, 40593, 0, 0, 0, true);
+					return false;
 				case 71094: //엔디아
-					setParalyzed(true);
-					pc = (L1PcInstance) _master;
-					if (!pc.getInventory().checkItem(40582)) {
-						createNewItem(pc, 40582, 1);
-					}
-					deleteMe();
-					return true;
+					requestHandoff(owner, 40582, 0, 0, 0, true);
+					return false;
 				case 71061:
 				case 71062:
 					if (getLocation().getTileLineDistance(_master.getLocation()) < 3) {
 						pc = (L1PcInstance) _master;
 						if ((pc.getX() >= 32448 && pc.getX() <= 32452) // 모퉁이 모스 주변 좌표
 								&& (pc.getY() >= 33048 && pc.getY() <= 33052) && (pc.getMapId() == 440)) {
-							setParalyzed(true);
-							if (!pc.getInventory().checkItem(40711)) {
-								createNewItem(pc, 40711, 1);
-								pc.getQuest().set_step(L1Quest.QUEST_CADMUS, 3);
-							}
-							deleteMe();
-							return true;
+							requestHandoff(owner, 40711, CQuestSystem.QUEST_CADMUS, 2, 3, true);
+							return false;
 						}
 					}
 					break;
@@ -67,13 +71,8 @@ public class L1FollowerInstance extends L1NpcInstance {
 						if ((pc.getX() >= 32731 && pc.getX() <= 32735) // 리자드만장로 주변
 			
 								&& (pc.getY() >= 32854 && pc.getY() <= 32858) && (pc.getMapId() == 480)) {
-							setParalyzed(true);
-							if (!pc.getInventory().checkItem(40633)) {
-								createNewItem(pc, 40633, 1);
-								pc.getQuest().set_step(L1Quest.QUEST_LIZARD, 2);
-							}
-							deleteMe();
-							return true;
+							requestHandoff(owner, 40633, CQuestSystem.QUEST_LIZARD, 1, 2, true);
+							return false;
 						}
 					}
 					break;
@@ -84,11 +83,8 @@ public class L1FollowerInstance extends L1NpcInstance {
 						if ((pc.getX() >= 32917 && pc.getX() <= 32921) // 밧슈 주변
 																		// 좌표
 								&& (pc.getY() >= 32974 && pc.getY() <= 32978) && (pc.getMapId() == 410)) {
-							setParalyzed(true);
-							createNewItem(pc, 41003, 1);
-							pc.getQuest().set_step(L1Quest.QUEST_ROI, 0);
-							deleteMe();
-							return true;
+							requestHandoff(owner, 41003, CQuestSystem.QUEST_ROI, -1, 0, false);
+							return false;
 						}
 					}
 					break;
@@ -143,7 +139,7 @@ public class L1FollowerInstance extends L1NpcInstance {
 
 	@Override
 	public synchronized void deleteMe() {
-		_master.removeFollower(this);
+		if (_master != null) _master.removeFollower(this);
 		super.deleteMe();
 	}
 
@@ -205,18 +201,72 @@ public class L1FollowerInstance extends L1NpcInstance {
 		}
 	}
 
-	private void createNewItem(L1PcInstance pc, int item_id, int count) {
-		L1ItemInstance item = ItemTable.getInstance().createItem(item_id);
-		item.setCount(count);
-		if (item != null) {
-			if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
-				pc.getInventory().storeItem(item);
-			} else {
-				L1World.getInstance().getInventory(pc.getX(), pc.getY(), pc.getMapId()).storeItem(item);
-			}
-			SC_ServerMessage.send(pc, 403, item.getLogName());
-		}
-	}
+    /** Arrival is detected on the NPC owner. Submit on the player's CIO
+     * owner; only the NPC owner consumes success and deletes this actor. */
+    private void requestHandoff(L1PcInstance pc, int itemId, int questId,
+            int requiredStep, int nextStep, boolean once) {
+        final long now = System.currentTimeMillis();
+        if (now < nextHandoffAt || questHandoff != HANDOFF_IDLE) {
+            setSleepTime(1000L);
+            return;
+        }
+        final var client = pc.getNetConnection();
+        if (client == null || !client.isConnected() || client.getActiveChar() != pc) {
+            setSleepTime(1000L);
+            return;
+        }
+        nextHandoffAt = now + 1000L;
+        questHandoff = HANDOFF_PENDING;
+        setSleepTime(1000L);
+        CIOThreadCallback.getInstance().completeSession(client, () -> {
+            if (isDestroyed() || isDead() || getMaster() != pc || pc.isDead()) {
+                questHandoff = HANDOFF_IDLE;
+                return;
+            }
+            try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, getNpcId())) {
+                if (once && pc.getInventory().checkItem(itemId)) {
+                    questHandoff = HANDOFF_COMMITTED;
+                    return;
+                }
+                final int expected = questId == 0 ? 0 : pc.getQuest().get_step(questId);
+                if (requiredStep >= 0 && questId != 0 && expected != requiredStep) {
+                    questHandoff = HANDOFF_COMMITTED;
+                    return;
+                }
+                final L1ItemInstance reward = tx.grant(itemId, 1);
+                if (reward == null) {
+                    questHandoff = HANDOFF_IDLE;
+                    return;
+                }
+                if (questId != 0)
+                    CQuestSystem.StageQuestStep(tx, pc.getId(), questId, expected, nextStep, 0);
+                // Unknown or committed-but-not-replayed outcomes must not retry.
+                // A confirmed rollback invokes onFailure and may retry next tick.
+                tx.onTerminalFailure(() -> questHandoff = HANDOFF_UNCERTAIN);
+                tx.onFailure(() -> questHandoff = HANDOFF_IDLE);
+                tx.commitAfterInventoryRelease(() -> {
+                    if (questId != 0) pc.getQuest().applyCommittedStepIfLoaded(questId, nextStep);
+                }, () -> {
+                    questHandoff = HANDOFF_COMMITTED;
+                    SC_ServerMessage.send(pc, 403, reward.getLogName());
+                });
+            } catch (RuntimeException rejected) {
+                questHandoff = HANDOFF_IDLE;
+            }
+        }, failure -> {
+            if (failure != null && questHandoff == HANDOFF_PENDING)
+                questHandoff = HANDOFF_IDLE;
+        });
+    }
+
+    /** Preserve logout respawn except for a confirmed handoff. */
+    public synchronized void onOwnerLogout() {
+        if (isDestroyed()) return;
+        setParalyzed(true);
+        if (questHandoff != HANDOFF_COMMITTED)
+            spawn(getNpcTemplate().get_npcId(), getX(), getY(), getHeading(), getMapId());
+        deleteMe();
+    }
 
 	public void spawn(int npcId, int X, int Y, int H, short Map) {
 		L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
