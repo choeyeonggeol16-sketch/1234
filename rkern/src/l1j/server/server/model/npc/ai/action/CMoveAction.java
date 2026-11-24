@@ -159,8 +159,10 @@ public final class CMoveAction {
             // must not be overwritten by A's subsequent doPendingAction().
             if (action == CCreatureController.ACTION_MOVE_TO_POINT) {
                 final long completedXY = creature._scriptMoveGoalXY;
+                final boolean returning = dMoveTo.isReturningHome(creature);
                 clearScriptMove(creature);
                 CCreatureController.doPendingAction(creature);
+                if (returning) return;
                 creature.onMoveToFinished(
                         SetMoving.unpackX(completedXY),
                         SetMoving.unpackY(completedXY));
