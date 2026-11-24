@@ -34,9 +34,7 @@ public final class dGetItem {
         if (creature.isDead() || creature.getCurrentHp() <= 0) {
             // NC dGetItem drops pending desires when its actor becomes dead
             // or inactive. Retire only the captured L1 item request.
-            if (CGetItemAction.targetItem(creature) == capturedItem) {
-                CGetItemAction.targetItem(creature, null);
-            }
+            CGetItemAction.retireItem(creature, capturedItem);
             return CCreatureController.RESULT_INVALID;
         }
         if (!CGetItemAction.isValidTargetItem(creature, capturedItem)) {
@@ -80,10 +78,7 @@ public final class dGetItem {
                 creature.onGetItem(transferred, acquiredCount);
             }
         } finally {
-            if (requested != null
-                    && CGetItemAction.targetItem(creature) == requested) {
-                CGetItemAction.targetItem(creature, null);
-            }
+            if (requested != null) CGetItemAction.retireItem(creature, requested);
             CCreatureController.sleep(creature,
                     transferred == null ? FAILED_MS : FINISHED_MS);
         }

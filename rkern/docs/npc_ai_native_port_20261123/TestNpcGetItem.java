@@ -11,6 +11,9 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1Item;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.npc.ai.CDesireFactory;
+import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.templates.L1EtcItem;
 
 /**
@@ -169,6 +172,26 @@ public final class TestNpcGetItem {
                 && companionSearch.getDeclaringClass() == L1CompanionInstance.class,
                 "pet and companion must select GET_ITEM on their own CIO action");
 
+        // Real primitive desire arbitration with exact identity (no world scan).
+        final Field hp = L1Character.class.getDeclaredField("_currentHp");
+        hp.setAccessible(true);
+        hp.setInt(npc, 100);
+        final long now = System.currentTimeMillis();
+        check(CDesireFactory.MakeGetItem(npc, itemA, 6.0f, now), "register item A");
+        check(CDesirePQ.topState(npc, now) == CDesirePQ.PS_GET_ITEM,
+                "GET_ITEM wins over idle MOVE_AROUND(5)");
+        CDesirePQ.SetAsGetItem(npc, itemA);
+        check(CDesireFactory.MakeGetItem(npc, itemB, 6.0f, now), "same-ID successor B");
+        check(CDesirePQ.getItemAction(npc) == itemA
+                && CDesirePQ.getItemDesire(npc) == itemB, "action captures exact original item");
+        dGetItem.GetItemFinished(npc, itemA, null);
+        check(npc._targetItem == itemB && CDesirePQ.getItemDesire(npc) == itemB,
+                "old completion does not erase replacement desire");
+        dGetItem.GetItemFinished(npc, itemB, null);
+        check(npc._targetItem == null && CDesirePQ.getItemDesire(npc) == null
+                && CDesirePQ.topState(npc, now) == CDesirePQ.PS_MOVE_AROUND,
+                "retire exact item key and resume wandering");
+        System.out.println("PASS NC MakeGetItem heap selection and exact captured action identity");
         System.out.println("PASS NC dGetItem/GetItemFinished: same-ID replacement, "
                 + "stale pickup rejection, exact-key failure and success, "
                 + "pet high-item gate, companion owner restriction, "

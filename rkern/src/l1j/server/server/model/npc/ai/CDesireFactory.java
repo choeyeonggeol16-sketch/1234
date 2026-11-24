@@ -1,6 +1,7 @@
 package l1j.server.server.model.npc.ai;
 
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Character;
 
 /**
@@ -42,6 +43,12 @@ public final class CDesireFactory {
             final long nowMs) {
         return CDesirePQ.addAttackDesire(npc, target, moveType,
                 flag, desireValue, boost, levelDifference, nowMs);
+    }
+
+    /** NC MakeGetItem: exact item identity and a desire value. */
+    public static boolean MakeGetItem(final L1MonsterInstance npc,
+            final L1ItemInstance item, final float value, final long nowMs) {
+        return CDesirePQ.addGetItem(npc, item, value, nowMs);
     }
 
     public static boolean MakeUseSkill(

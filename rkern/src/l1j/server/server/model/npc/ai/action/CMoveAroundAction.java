@@ -108,6 +108,13 @@ public final class CMoveAroundAction {
         final long now =
                 System.currentTimeMillis();
 
+        // No extra timer: pickup-capable monsters discover ground items on
+        // the existing wander action cadence, even after a segment/rest.
+        if (CGetItemAction.prepareMonsterItem(monster, now)) {
+            clearRuntime(monster);
+            return CCreatureController.RESULT_DONE;
+        }
+
         // The normal desire arbiter already switches to an ATTACKED/SEE
         // candidate when its value wins. Do not short-circuit MOVE_AROUND
         // merely because some lower-priority attack desire exists; that

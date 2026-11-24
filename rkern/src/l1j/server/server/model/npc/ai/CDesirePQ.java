@@ -4,6 +4,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
@@ -133,6 +134,11 @@ public final class CDesirePQ {
     private byte activeState = -1;
     private int activeTargetId;
     private int activeSkillId;
+
+    // L1 admits one nearest ground-item desire at a time. Identity is kept
+    // separately from its primitive heap key so reused IDs never alias.
+    private L1ItemInstance getItemDesire;
+    private L1ItemInstance getItemAction;
 
     private long lastDecayAt;
 
@@ -716,6 +722,48 @@ public final class CDesirePQ {
         return true;
     }
 
+    public static boolean addGetItem(final L1MonsterInstance npc,
+            final L1ItemInstance item, final float value, final long nowMs) {
+        if (npc == null || item == null || npc.isDead() || npc.isDestroyed()
+                || npc.getCurrentHp() <= 0 || item.getId() <= 0
+                || item.getMapId() != npc.getMapId()
+                || !Float.isFinite(value) || value <= 0.0f) return false;
+        final CDesirePQ pq = ensure(npc, nowMs);
+        if (pq.getItemDesire == item && pq.findKey(PS_GET_ITEM, item.getId()) >= 0) {
+            npc._targetItem = item;
+            return true;
+        }
+        if (pq.getItemDesire != null) {
+            pq.removeKey(PS_GET_ITEM, pq.getItemDesire.getId());
+        }
+        pq.getItemDesire = item;
+        npc._targetItem = item;
+        pq.addValue(PS_GET_ITEM, item.getId(), value, nowMs);
+        return true;
+    }
+
+    public static L1ItemInstance getItemDesire(final L1MonsterInstance npc) {
+        return npc._desirePQ == null ? null : npc._desirePQ.getItemDesire;
+    }
+
+    public static void SetAsGetItem(final L1MonsterInstance npc,
+            final L1ItemInstance item) {
+        if (npc._desirePQ != null) npc._desirePQ.getItemAction = item;
+    }
+
+    public static L1ItemInstance getItemAction(final L1MonsterInstance npc) {
+        return npc._desirePQ == null ? null : npc._desirePQ.getItemAction;
+    }
+
+    public static void RemoveGetItem(final L1MonsterInstance npc,
+            final L1ItemInstance item) {
+        final CDesirePQ pq = npc._desirePQ;
+        if (pq != null && item != null && pq.getItemDesire == item) {
+            pq.getItemDesire = null;
+            pq.removeKey(PS_GET_ITEM, item.getId());
+        }
+    }
+
     public static byte topState(
             final L1MonsterInstance npc,
             final long nowMs) {
@@ -1242,6 +1290,13 @@ public final class CDesirePQ {
 
         decay(nowMs);
         pruneHardInvalidAttackTargets(npc);
+        if (getItemDesire != null && (npc._targetItem != getItemDesire
+                || getItemDesire.getMapId() != npc.getMapId())) {
+            final L1ItemInstance retired = getItemDesire;
+            getItemDesire = null;
+            removeKey(PS_GET_ITEM, retired.getId());
+            if (npc._targetItem == retired) npc._targetItem = null;
+        }
 
         int top = findTopRunnableIndex(npc);
 
@@ -1321,12 +1376,7 @@ public final class CDesirePQ {
             return -1;
         }
 
-        if (states[0] != PS_ATTACK
-                || isAttackRunnable(
-                        npc,
-                        resolveTarget(npc, targetIds[0]))) {
-            return 0;
-        }
+        if (isRunnable(npc, 0)) return 0;
 
         // L1-specific body-block adapter: a temporarily unrunnable ATTACK
         // remains in the reference design heap. Search the rest only in this case;
@@ -1334,17 +1384,25 @@ public final class CDesirePQ {
         int top = -1;
         float topValue = -Float.MAX_VALUE;
         for (int i = 1; i < size; i++) {
-            if (states[i] == PS_ATTACK
-                    && !isAttackRunnable(
-                            npc, resolveTarget(npc, targetIds[i]))) {
-                continue;
-            }
+            if (!isRunnable(npc, i)) continue;
             if (top < 0 || values[i] > topValue) {
                 top = i;
                 topValue = values[i];
             }
         }
         return top;
+    }
+
+    private boolean isRunnable(final L1MonsterInstance npc, final int index) {
+        if (states[index] == PS_ATTACK) {
+            return isAttackRunnable(npc, resolveTarget(npc, targetIds[index]));
+        }
+        if (states[index] == PS_GET_ITEM) {
+            return getItemDesire != null && npc._targetItem == getItemDesire
+                    && targetIds[index] == getItemDesire.getId()
+                    && npc.getTarget() == null && npc._desireBlockedAttackTargetId == 0;
+        }
+        return true;
     }
 
     /**

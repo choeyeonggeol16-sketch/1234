@@ -6,6 +6,9 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.npc.ai.CDesireFactory;
+import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -19,6 +22,8 @@ import l1j.server.server.model.Instance.L1PcInstance;
 public final class CGetItemAction {
 
     private static final int SEARCH_COOLDOWN_TICKS = 20;
+    // L1 policy: outrank ordinary wandering (5), never an active combat target.
+    private static final float GET_ITEM_VALUE = 6.0f;
     private static final int MAX_TARGET_DISTANCE = 15;
     private static final int AIR_FOOD_RADIUS = 4;
     private static final int SOFT_BLOCK_GIVEUP = 6;
@@ -40,6 +45,14 @@ public final class CGetItemAction {
                 CCreatureController.ACTION_GET_ITEM);
 
         onStart(creature);
+        if (creature instanceof L1MonsterInstance monster) {
+            final L1ItemInstance item = targetItem(monster);
+            if (item != null) {
+                CDesireFactory.MakeGetItem(monster, item, GET_ITEM_VALUE,
+                        System.currentTimeMillis());
+            }
+            CDesirePQ.SetAsGetItem(monster, CDesirePQ.getItemDesire(monster));
+        }
     }
 
     public static void onStart(final L1NpcInstance creature) {
@@ -51,8 +64,10 @@ public final class CGetItemAction {
     }
 
     public static byte onTick(final L1NpcInstance creature) {
-        return dGetItem.dGetItem(creature,
-                creature != null ? CGetItemAction.targetItem(creature) : null);
+        final L1ItemInstance captured = creature instanceof L1MonsterInstance monster
+                ? CDesirePQ.getItemAction(monster)
+                : creature != null ? targetItem(creature) : null;
+        return dGetItem.dGetItem(creature, captured);
     }
 
     public static void onEnd(
@@ -66,7 +81,7 @@ public final class CGetItemAction {
         switch (result) {
         case CCreatureController.RESULT_DONE:
         case CCreatureController.RESULT_INVALID:
-            clearMoveState(creature);
+            onInterrupted(creature);
             CCreatureController.doPendingAction(creature);
             return;
 
@@ -117,17 +132,46 @@ public final class CGetItemAction {
         }
         if (found == null || !canSearchFromAir(npc) || !isValidTargetItem(npc, found)
                 || !npc.tryLandFromAir()) return;
-        CGetItemAction.targetItem(npc, found);
+        selectItem(npc, found, System.currentTimeMillis());
         CNpcAI.broadcastAirLanding(npc);
     }
 
-    /** Explicit feeding target must be considered before autonomous roaming. */
-    static boolean hasSelectedFood(final L1NpcInstance npc) {
-        final L1ItemInstance item = CGetItemAction.targetItem(npc);
-        if (!isAirFood(item)) return false;
-        if (isValidTargetItem(npc, item)) return true;
-        if (CGetItemAction.targetItem(npc) == item) CGetItemAction.targetItem(npc, null);
-        return false;
+    /** Existing owner cadence, including MOVE_AROUND, admits one GET_ITEM key. */
+    static boolean prepareMonsterItem(final L1MonsterInstance npc, final long nowMs) {
+        if (npc.isDead() || npc.isDestroyed() || npc.getCurrentHp() <= 0
+                || npc.getTarget() != null || npc._desireBlockedAttackTargetId != 0) return false;
+        L1ItemInstance item = targetItem(npc);
+        if (!npc.isPickupItem() && !isAirFood(item)) {
+            if (item != null) retireItem(npc, item);
+            return false;
+        }
+        tickSearchCooldown(npc);
+        checkTarget(npc);
+        if (targetItem(npc) == null && npc.isPickupItem()) {
+            npc.searchTargetItem();
+        }
+        item = targetItem(npc);
+        return item != null && CDesireFactory.MakeGetItem(npc, item, GET_ITEM_VALUE, nowMs)
+                && CDesirePQ.topState(npc, nowMs) == CDesirePQ.PS_GET_ITEM;
+    }
+
+    private static void selectItem(final L1NpcInstance npc,
+            final L1ItemInstance item, final long nowMs) {
+        if (npc instanceof L1MonsterInstance monster) {
+            CDesireFactory.MakeGetItem(monster, item, GET_ITEM_VALUE, nowMs);
+        } else {
+            targetItem(npc, item);
+        }
+    }
+
+    static void retireItem(final L1NpcInstance npc, final L1ItemInstance item) {
+        if (npc instanceof L1MonsterInstance monster) CDesirePQ.RemoveGetItem(monster, item);
+        if (targetItem(npc) == item) targetItem(npc, null);
+    }
+
+    static void onInterrupted(final L1NpcInstance npc) {
+        if (npc instanceof L1MonsterInstance monster) CDesirePQ.SetAsGetItem(monster, null);
+        clearMoveState(npc);
     }
 
     public static void tickSearchCooldown(final L1NpcInstance creature) {
@@ -145,7 +189,7 @@ public final class CGetItemAction {
 
         if (!isValidTargetItem(creature, targetItem)
                 && CGetItemAction.targetItem(creature) == targetItem) {
-            CGetItemAction.targetItem(creature, null);
+            retireItem(creature, targetItem);
             if (CCreatureController.currentAction(creature)
                     == CCreatureController.ACTION_GET_ITEM) {
                 clearMoveState(creature);
@@ -201,6 +245,8 @@ public final class CGetItemAction {
             for (L1ItemInstance item : ground.getItems()) {
                 if (item == null
                         || item.getMapId() != creature.getMapId()
+                        || item.getCount() <= 0
+                        || ground.getItem(item.getId()) != item
                         || !isAllowedItem(creature, item)) {
                     continue;
                 }
@@ -226,14 +272,14 @@ public final class CGetItemAction {
                 nearestDistance = distance;
 
                 if (distance == 0) {
-                    CGetItemAction.targetItem(creature, nearest);
+                    selectItem(creature, nearest, System.currentTimeMillis());
                     return;
                 }
             }
         }
 
         if (nearest != null) {
-            CGetItemAction.targetItem(creature, nearest);
+            selectItem(creature, nearest, System.currentTimeMillis());
         }
     }
 
@@ -273,6 +319,31 @@ public final class CGetItemAction {
                     creature,
                     INVALID_TARGET_SLEEP_MS);
             return;
+        }
+
+        // Monster GET_ITEM uses the same NC-style point/segment mover as
+        // scripted movement. Pickup adjacency is checked before every step.
+        // Keep pet/companion's established command movement unchanged.
+        if (creature instanceof L1MonsterInstance) {
+            final int oldX = creature.getX(), oldY = creature.getY();
+            final byte move = SetMoving.tickToPoint(creature,
+                    targetItem.getX(), targetItem.getY());
+            if (targetItem(creature) != targetItem) return;
+            switch (move) {
+            case SetMoving.RUNNING:
+                if (creature.getX() != oldX || creature.getY() != oldY)
+                    CMoveAction.moveStuck(creature, 0);
+                return;
+            case SetMoving.AT_DISTANCE:
+                creature.pickupTargetItem(targetItem);
+                return;
+            case SetMoving.DYNAMIC_BLOCKED:
+                softBlocked(creature);
+                return;
+            default:
+                abandonTarget(creature, INVALID_TARGET_SLEEP_MS);
+                return;
+            }
         }
 
         final int dir =
@@ -415,12 +486,13 @@ public final class CGetItemAction {
             final L1NpcInstance creature,
             final long sleepMs) {
 
-        CGetItemAction.targetItem(creature, null);
+        retireItem(creature, targetItem(creature));
         clearMoveState(creature);
         CCreatureController.sleep(creature, sleepMs);
     }
 
     private static void clearMoveState(final L1NpcInstance creature) {
+        if (creature instanceof L1MonsterInstance) SetMoving.clear(creature);
         CMoveAction.resetMoveBlockedState(creature);
         CMoveAction.invalidatePath(creature);
     }
@@ -430,7 +502,7 @@ public final class CGetItemAction {
             final L1ItemInstance item) {
 
         if (creature == null
-                || item == null
+                || item == null || item.getCount() <= 0
                 || !isAllowedItem(creature, item)
                 || item.getMapId() != creature.getMapId()
                 || chebyshev(

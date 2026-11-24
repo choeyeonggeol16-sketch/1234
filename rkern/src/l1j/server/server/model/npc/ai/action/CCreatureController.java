@@ -727,6 +727,8 @@ public final class CCreatureController {
         } else if (previous == ACTION_MOVE_AROUND_NATIVE) {
             // Preserve the reserved ring hand-off to the new chase action.
             CMoveAroundAction.onInterrupted(creature);
+        } else if (previous == ACTION_GET_ITEM) {
+            CGetItemAction.onInterrupted(creature);
         } else if (previous == ACTION_FOLLOW_GROUP && nextAction != ACTION_THINK) {
             dMoveFormation.clearIfActive(creature);
         } else if (previous == ACTION_MOVE_TO_TARGET_WAIT) {

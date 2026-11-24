@@ -487,11 +487,14 @@ public final class CNpcAI {
                 return;
             }
 
-            if ((desire == CDesirePQ.PS_IDLE || desire == CDesirePQ.PS_MOVE_AROUND)
-                    && target == null && monster._desireBlockedAttackTargetId == 0
-                    && CGetItemAction.hasSelectedFood(monster)) {
-                CCreatureController.submit(monster, CCreatureController.ACTION_GET_ITEM);
-                return;
+            if (desire == CDesirePQ.PS_IDLE || desire == CDesirePQ.PS_MOVE_AROUND
+                    || desire == CDesirePQ.PS_GET_ITEM) {
+                if (CGetItemAction.prepareMonsterItem(monster, nowMs)) {
+                    CCreatureController.submit(monster, CCreatureController.ACTION_GET_ITEM);
+                    return;
+                }
+                desire = CDesirePQ.isActive(monster)
+                        ? CDesirePQ.topState(monster, nowMs) : CDesirePQ.PS_IDLE;
             }
 
             if (desire == CDesirePQ.PS_MOVE_AROUND) {
@@ -566,10 +569,13 @@ public final class CNpcAI {
             return;
         }
 
-        creature.tickItemSearchCooldown();
-        creature.checkTargetItem();
+        // Monster candidates were already arbitrated against MOVE_AROUND.
+        if (!(creature instanceof L1MonsterInstance)) {
+            creature.tickItemSearchCooldown();
+            creature.checkTargetItem();
+        }
 
-        if (creature.isPickupItem()) {
+        if (!(creature instanceof L1MonsterInstance) && creature.isPickupItem()) {
             if (CGetItemAction.targetItem(creature) == null) {
                 creature.searchTargetItem();
             }
