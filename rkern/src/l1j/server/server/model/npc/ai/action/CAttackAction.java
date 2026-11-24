@@ -144,7 +144,7 @@ public final class CAttackAction {
             final byte result) {
 
         if (creature == null
-                || ActionAccess.currentAction(creature)
+                || CCreatureController.currentAction(creature)
                         != CCreatureController.ACTION_ATTACK) {
             return;
         }

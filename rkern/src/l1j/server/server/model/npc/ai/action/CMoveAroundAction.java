@@ -56,7 +56,7 @@ public final class CMoveAroundAction {
             final L1NpcInstance creature) {
 
         if (creature == null
-                || ActionAccess.currentAction(creature)
+                || CCreatureController.currentAction(creature)
                         == CCreatureController.ACTION_MOVE_AROUND_NATIVE) {
             // Re-selecting an already owned random walk must not erase its
             // destination, remaining steps or 6-second rest deadline.
@@ -158,7 +158,7 @@ public final class CMoveAroundAction {
                 sleep = BLOCKED_RETRY_MS;
             }
 
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     monster,
                     sleep);
 
@@ -490,7 +490,7 @@ public final class CMoveAroundAction {
                         ? Math.min(delay, BLOCKED_RETRY_MS)
                         : delay;
 
-        ActionAccess.sleep(
+        CCreatureController.sleep(
                 monster,
                 firstSleep);
     }
@@ -710,7 +710,7 @@ public final class CMoveAroundAction {
             final byte result) {
 
         if (creature == null
-                || ActionAccess.currentAction(creature)
+                || CCreatureController.currentAction(creature)
                         != CCreatureController.ACTION_MOVE_AROUND_NATIVE) {
             // An old MOVE_AROUND completion cannot clear successor Action
             // movement state after an attack/skill takeover.

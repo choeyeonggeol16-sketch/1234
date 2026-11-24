@@ -86,7 +86,7 @@ public final class CMoveAction {
 
         switch (action) {
         case CCreatureController.ACTION_FOLLOW_MASTER:
-            return ActionAccess.followMaster(creature)
+            return creature.noTargetMaster(2769)
                     ? CCreatureController.RESULT_INVALID
                     : CCreatureController.RESULT_DONE;
 
@@ -112,11 +112,11 @@ public final class CMoveAction {
             // never stop the whole NPC owner because its leader vanished.
             if (!validGroupLeader(creature, group, leader)) {
                 dMoveFormation.clear(creature);
-                ActionAccess.sleep(creature, 500L);
+                CCreatureController.sleep(creature, 500L);
                 return CCreatureController.RESULT_RUNNING;
             }
 
-            return ActionAccess.followGroup(creature, leader)
+            return creature.noTargetGroup(leader)
                     ? CCreatureController.RESULT_INVALID
                     : CCreatureController.RESULT_DONE;
         }
@@ -133,7 +133,7 @@ public final class CMoveAction {
              * ACTION_MOVE_AROUND_NATIVE -> CMoveAroundAction.
              * ACTION_MOVE remains the legacy/generic no-target move hook.
              */
-            ActionAccess.moveRandom(creature);
+            creature.noTargetNormal(4920);
             return CCreatureController.RESULT_DONE;
 
         default:
@@ -147,7 +147,7 @@ public final class CMoveAction {
             final byte result) {
 
         if (creature == null
-                || ActionAccess.currentAction(creature) != action) {
+                || CCreatureController.currentAction(creature) != action) {
             return;
         }
 
@@ -168,7 +168,7 @@ public final class CMoveAction {
                 // its timed idle action without a companion tick. Do not
                 // overwrite a new action submitted by the completion callback.
                 if (CStandAction.isGuard(creature)
-                        && ActionAccess.currentAction(creature) == CCreatureController.ACTION_THINK
+                        && CCreatureController.currentAction(creature) == CCreatureController.ACTION_THINK
                         && creature.getTarget() == null && CStandAction.atHome(creature)
                         && !creature.isDead() && !creature.isDestroyed()
                         && creature.getCurrentHp() > 0) {
@@ -266,7 +266,7 @@ public final class CMoveAction {
          * 단 checkObject 실패를 INVALID로 뭉개지 않고 dynamic/static으로 분류한다.
          */
         if (distance > 40D) {
-            ActionAccess.clearPathFailureState(creature);
+            CMoveAction.clearPathFailureState(creature);
 
             final int wanted = creature.targetDirection(x, y);
             final int dir = NpcAiUtil.checkObject(
@@ -305,7 +305,7 @@ public final class CMoveAction {
         try {
             final long now = System.currentTimeMillis();
 
-            if (now < ActionAccess.pathRetryAfter(creature)) {
+            if (now < CMoveAction.pathRetryAfter(creature)) {
                 return DIR_RETRY;
             }
 
@@ -322,7 +322,7 @@ public final class CMoveAction {
                     && (next.x != creature.getX()
                             || next.y != creature.getY())) {
 
-                ActionAccess.clearPathFailureState(creature);
+                CMoveAction.clearPathFailureState(creature);
 
                 return pathFinder.calcheading(
                         creature.getX(),
@@ -333,16 +333,16 @@ public final class CMoveAction {
 
             switch (pathFinder.getLastResult()) {
             case PathFinder.RESULT_NONE:
-                ActionAccess.clearPathFailureState(creature);
+                CMoveAction.clearPathFailureState(creature);
                 return DIR_RETRY;
 
             case PathFinder.RESULT_SOFT_BLOCK:
-                ActionAccess.clearPathFailureState(creature);
+                CMoveAction.clearPathFailureState(creature);
                 return DIR_SOFT_BLOCK;
 
             case PathFinder.RESULT_NO_ROUTE:
             default:
-                ActionAccess.markPathFailed(
+                CMoveAction.markPathFailed(
                         creature,
                         now + hardRetryDelayMs(
                                 creature,
@@ -353,7 +353,7 @@ public final class CMoveAction {
             }
 
         } catch (Throwable e) {
-            ActionAccess.markPathFailed(
+            CMoveAction.markPathFailed(
                     creature,
                     System.currentTimeMillis()
                             + hardRetryDelayMs(
@@ -385,7 +385,7 @@ public final class CMoveAction {
         } catch (Throwable ignore) {
         }
 
-        ActionAccess.clearPathFailureState(creature);
+        CMoveAction.clearPathFailureState(creature);
     }
 
     static long hardRetryDelayMs(
@@ -430,7 +430,7 @@ public final class CMoveAction {
         if (!validGroupLeader(creature, group, activeLeader)) {
             dMoveFormation.clear(creature);
             if (creature != null) {
-                ActionAccess.sleep(creature, 500L);
+                CCreatureController.sleep(creature, 500L);
             }
             // Preserve CMoveAction's noTargetGroup contract (true means
             // invalid AI). Lack of a leader only postpones this movement.
@@ -476,7 +476,7 @@ public final class CMoveAction {
     /** Shared path/occupancy step; formation may replan after BLOCKED. */
     static byte stepFollowGoal(final L1NpcInstance creature, final long packed) {
         if (packed == MoveIntentCache.NO_POS) {
-            ActionAccess.sleep(creature, 140L + (creature.getId() & 0x1f));
+            CCreatureController.sleep(creature, 140L + (creature.getId() & 0x1f));
             return CCreatureController.RESULT_RUNNING;
         }
 
@@ -493,7 +493,7 @@ public final class CMoveAction {
 
         if (dir == DIR_SOFT_BLOCK) {
             MoveIntentCache.clearGoal(creature);
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     softDelayMs(creature, lastBlockType(), 1));
             return CCreatureController.RESULT_BLOCKED;
@@ -506,7 +506,7 @@ public final class CMoveAction {
         if (dir == DIR_HARD_BLOCK) {
             MoveIntentCache.clearGoal(creature);
             invalidatePath(creature);
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     hardRetryDelayMs(
                             creature,
@@ -522,11 +522,11 @@ public final class CMoveAction {
 
         final int beforeX = creature.getX();
         final int beforeY = creature.getY();
-        final boolean moved = ActionAccess.moveOneStep(creature, dir);
+        final boolean moved = CMoveAction.moveOneStep(creature, dir);
 
         if (!moved) {
             MoveIntentCache.clearGoal(creature);
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     softDelayMs(
                             creature,
@@ -548,7 +548,7 @@ public final class CMoveAction {
             MoveIntentCache.clearGoal(creature);
             MoveIntentCache.clearProgress(creature);
             invalidatePath(creature);
-            ActionAccess.sleep(creature, 180L + (creature.getId() & 0x1f));
+            CCreatureController.sleep(creature, 180L + (creature.getId() & 0x1f));
             return CCreatureController.RESULT_BLOCKED;
         }
 
@@ -655,8 +655,8 @@ public final class CMoveAction {
             return;
         }
 
-        int distance = ActionAccess.randomMoveDistance(creature);
-        int direction = ActionAccess.randomMoveDirection(creature);
+        int distance = CMoveAction.randomMoveDistance(creature);
+        int direction = CMoveAction.randomMoveDirection(creature);
 
         if (distance == 0) {
             distance = ThreadLocalRandom.current().nextInt(5) + 1;
@@ -679,7 +679,7 @@ public final class CMoveAction {
             distance--;
         }
 
-        ActionAccess.randomMoveState(creature, distance, direction);
+        CMoveAction.randomMoveState(creature, distance, direction);
 
         if (direction < 0 || direction >= 8) {
             return;
@@ -692,7 +692,7 @@ public final class CMoveAction {
                 direction);
 
         if (dir >= 0 && dir < 8) {
-            ActionAccess.directionMove(creature, dir);
+            CMoveAction.directionMove(creature, dir);
         }
     }
 
@@ -749,5 +749,77 @@ public final class CMoveAction {
             final int x1,
             final int y1) {
         return Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    }
+
+    public static boolean moveOneStep(
+            final L1NpcInstance npc,
+            final int dir) {
+
+        if (dir < 0 || dir > 7) {
+            return false;
+        }
+
+        final int beforeX = npc.getX();
+        final int beforeY = npc.getY();
+
+        npc.setSleepTime(npc.setDirectionMove(dir));
+
+        return beforeX != npc.getX()
+                || beforeY != npc.getY();
+    }
+
+    public static int incrementMoveStuck(final L1NpcInstance npc) {
+        return ++npc._stuckCount;
+    }
+
+    public static int moveStuck(final L1NpcInstance npc) {
+        return npc._stuckCount;
+    }
+
+    public static void moveStuck(
+            final L1NpcInstance npc,
+            final int value) {
+        npc._stuckCount = value;
+    }
+
+    public static void resetMoveBlockedState(final L1NpcInstance npc) {
+        npc._stuckCount = 0;
+        npc._pathRetryAfter = 0L;
+    }
+
+    public static long pathRetryAfter(final L1NpcInstance npc) {
+        return npc._pathRetryAfter;
+    }
+
+    public static void clearPathFailureState(final L1NpcInstance npc) {
+        npc._pathRetryAfter = 0L;
+    }
+
+    public static void markPathFailed(
+            final L1NpcInstance npc,
+            final long retryAt) {
+        npc._pathRetryAfter = retryAt;
+    }
+
+    public static int randomMoveDistance(final L1NpcInstance npc) {
+        return npc._randomMoveDistance;
+    }
+
+    public static int randomMoveDirection(final L1NpcInstance npc) {
+        return npc._randomMoveDirection;
+    }
+
+    public static void randomMoveState(
+            final L1NpcInstance npc,
+            final int distance,
+            final int direction) {
+        npc._randomMoveDistance = distance;
+        npc._randomMoveDirection = direction;
+    }
+
+    public static void directionMove(
+            final L1NpcInstance npc,
+            final int dir) {
+        npc.setSleepTime(npc.setDirectionMove(dir));
     }
 }

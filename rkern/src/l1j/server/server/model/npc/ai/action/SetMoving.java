@@ -151,7 +151,7 @@ public final class SetMoving {
                         && !creature.getNpcTemplate().is_agrocoi())
                 || target.getMapId() != creature.getMapId()
                 || target.getX() != tx || target.getY() != ty
-                || ActionAccess.currentAction(creature)
+                || CCreatureController.currentAction(creature)
                         != CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE) {
             return INVALID;
         }
@@ -234,7 +234,7 @@ public final class SetMoving {
                 (short) creature.getMapId(), sx, sy, heading,
                 DX[heading], DY[heading], creature.getId());
         if (!WorldCollisionHash.moveProbeCanMove(probe)) {
-            ActionAccess.sleep(creature, CALC_MID_MIN_MS);
+            CCreatureController.sleep(creature, CALC_MID_MIN_MS);
             return RUNNING;
         }
         // A route scan and occupancy probe are not an atomic chase tick.
@@ -245,9 +245,9 @@ public final class SetMoving {
                 || creature.getX() != sx || creature.getY() != sy) {
             return INVALID;
         }
-        if (!ActionAccess.moveOneStep(creature, heading)) {
+        if (!CMoveAction.moveOneStep(creature, heading)) {
             // Reservation raced between the route scan, probe and commit.
-            ActionAccess.sleep(creature, CALC_MID_MIN_MS);
+            CCreatureController.sleep(creature, CALC_MID_MIN_MS);
             return RUNNING;
         }
         // setDirectionMove() can finish a death/retarget/owner transition
@@ -280,9 +280,9 @@ public final class SetMoving {
                 || creature.getMapId() != target.getMapId()
                 || target.getX() != targetX || target.getY() != targetY
                 || creature.npcActionGeneration() != generation
-                || (ActionAccess.currentAction(creature)
+                || (CCreatureController.currentAction(creature)
                     != CCreatureController.ACTION_MOVE_TO_TARGET
-                    && ActionAccess.currentAction(creature)
+                    && CCreatureController.currentAction(creature)
                     != CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE)) {
             return false;
         }
@@ -454,7 +454,7 @@ public final class SetMoving {
                             segmentHeading)) {
 
                 expireSegmentKeepHeading(creature);
-                ActionAccess.sleep(
+                CCreatureController.sleep(
                         creature,
                         CALC_MID_MIN_MS);
                 return RUNNING;
@@ -580,7 +580,7 @@ public final class SetMoving {
             final byte pathResult =
                     pathFinder.getLastResult();
 
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     calcMidRetryDelay(creature));
 
@@ -600,7 +600,7 @@ public final class SetMoving {
         final int dy = destination.y - sy;
 
         if ((dx | dy) == 0) {
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     CALC_MID_MIN_MS);
             return SEGMENT_WAIT;
@@ -627,7 +627,7 @@ public final class SetMoving {
                         maxDistance);
 
         if (calcDistance <= 0.0d) {
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     CALC_MID_MIN_MS);
             return SEGMENT_WAIT;
@@ -653,7 +653,7 @@ public final class SetMoving {
              * L1 tile.  Replan instead of sleeping on the same stale waypoint. */
             invalidateStaticDestination(creature);
             clearSegment(creature);
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     CALC_MID_MIN_MS);
             return SEGMENT_WAIT;
@@ -706,7 +706,7 @@ public final class SetMoving {
 
             invalidateStaticDestination(creature);
             clearSegment(creature);
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     CALC_MID_MIN_MS);
             return SEGMENT_WAIT;
@@ -948,7 +948,7 @@ public final class SetMoving {
          * returned by this very MoveCreature result.
          */
         if (WorldCollisionHash.moveProbeCanMove(probe)) {
-            if (ActionAccess.moveOneStep(
+            if (CMoveAction.moveOneStep(
                     creature,
                     movementHeading)) {
 
@@ -994,14 +994,14 @@ public final class SetMoving {
 
             if (WorldCollisionHash.moveProbeCanMove(probe)) {
                 /* Probe was clear but the actual tile reservation lost a race. */
-                ActionAccess.sleep(
+                CCreatureController.sleep(
                         creature,
                         CALC_MID_MIN_MS);
                 return RUNNING;
             }
         }
 
-        final byte action = ActionAccess.currentAction(creature);
+        final byte action = CCreatureController.currentAction(creature);
         final boolean monsterChase = creature instanceof L1MonsterInstance
                 && (action == CCreatureController.ACTION_MOVE_TO_TARGET
                     || action == CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE);
@@ -1028,7 +1028,7 @@ public final class SetMoving {
             clearCollisionResponse(creature);
             // A reservation-only race without a bypass is still a short retry,
             // not proof of a body-blocked attack lane.
-            ActionAccess.sleep(creature, CALC_MID_MIN_MS);
+            CCreatureController.sleep(creature, CALC_MID_MIN_MS);
             return RUNNING;
         }
 
@@ -1122,7 +1122,7 @@ public final class SetMoving {
             clearCollisionResponse(creature);
         }
 
-        ActionAccess.sleep(
+        CCreatureController.sleep(
                 creature,
                 repeatedCollisionDelay(creature));
         return DYNAMIC_BLOCKED;
@@ -1172,7 +1172,7 @@ public final class SetMoving {
                     || target.getX() != tx || target.getY() != ty) {
                 return false;
             }
-            if (!ActionAccess.moveOneStep(creature, heading)) {
+            if (!CMoveAction.moveOneStep(creature, heading)) {
                 continue;
             }
             if (!creature.isDead() && creature.getTarget() == target
@@ -1445,7 +1445,7 @@ public final class SetMoving {
             return false;
         }
 
-        if (!ActionAccess.moveOneStep(
+        if (!CMoveAction.moveOneStep(
                 creature,
                 heading)) {
             return false;
@@ -1653,7 +1653,7 @@ public final class SetMoving {
             final L1NpcInstance creature,
             final int dx,
             final int dy) {
-        final byte action = ActionAccess.currentAction(creature);
+        final byte action = CCreatureController.currentAction(creature);
         if (!(creature instanceof L1MonsterInstance)
                 || (action != CCreatureController.ACTION_MOVE_TO_TARGET
                     && action != CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE)) {

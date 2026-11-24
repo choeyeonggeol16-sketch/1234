@@ -52,7 +52,7 @@ public final class CGetItemAction {
 
     public static byte onTick(final L1NpcInstance creature) {
         return dGetItem.dGetItem(creature,
-                creature != null ? ActionAccess.targetItem(creature) : null);
+                creature != null ? CGetItemAction.targetItem(creature) : null);
     }
 
     public static void onEnd(
@@ -117,36 +117,36 @@ public final class CGetItemAction {
         }
         if (found == null || !canSearchFromAir(npc) || !isValidTargetItem(npc, found)
                 || !npc.tryLandFromAir()) return;
-        ActionAccess.targetItem(npc, found);
+        CGetItemAction.targetItem(npc, found);
         CNpcAI.broadcastAirLanding(npc);
     }
 
     /** Explicit feeding target must be considered before autonomous roaming. */
     static boolean hasSelectedFood(final L1NpcInstance npc) {
-        final L1ItemInstance item = ActionAccess.targetItem(npc);
+        final L1ItemInstance item = CGetItemAction.targetItem(npc);
         if (!isAirFood(item)) return false;
         if (isValidTargetItem(npc, item)) return true;
-        if (ActionAccess.targetItem(npc) == item) ActionAccess.targetItem(npc, null);
+        if (CGetItemAction.targetItem(npc) == item) CGetItemAction.targetItem(npc, null);
         return false;
     }
 
     public static void tickSearchCooldown(final L1NpcInstance creature) {
-        final int cooldown = ActionAccess.itemSearchCooldown(creature);
+        final int cooldown = CGetItemAction.itemSearchCooldown(creature);
         if (cooldown > 0) {
-            ActionAccess.itemSearchCooldown(creature, cooldown - 1);
+            CGetItemAction.itemSearchCooldown(creature, cooldown - 1);
         }
     }
 
     public static void checkTarget(final L1NpcInstance creature) {
-        final L1ItemInstance targetItem = ActionAccess.targetItem(creature);
+        final L1ItemInstance targetItem = CGetItemAction.targetItem(creature);
         if (targetItem == null) {
             return;
         }
 
         if (!isValidTargetItem(creature, targetItem)
-                && ActionAccess.targetItem(creature) == targetItem) {
-            ActionAccess.targetItem(creature, null);
-            if (ActionAccess.currentAction(creature)
+                && CGetItemAction.targetItem(creature) == targetItem) {
+            CGetItemAction.targetItem(creature, null);
+            if (CCreatureController.currentAction(creature)
                     == CCreatureController.ACTION_GET_ITEM) {
                 clearMoveState(creature);
             }
@@ -169,11 +169,11 @@ public final class CGetItemAction {
     public static void searchTarget(
             final L1NpcInstance creature, final int maxDistance) {
         if (creature == null || maxDistance <= 0
-                || ActionAccess.itemSearchCooldown(creature) > 0) {
+                || CGetItemAction.itemSearchCooldown(creature) > 0) {
             return;
         }
 
-        ActionAccess.itemSearchCooldown(creature, SEARCH_COOLDOWN_TICKS);
+        CGetItemAction.itemSearchCooldown(creature, SEARCH_COOLDOWN_TICKS);
 
         final L1Inventory inventory = creature.getInventory();
         if (inventory == null) {
@@ -226,14 +226,14 @@ public final class CGetItemAction {
                 nearestDistance = distance;
 
                 if (distance == 0) {
-                    ActionAccess.targetItem(creature, nearest);
+                    CGetItemAction.targetItem(creature, nearest);
                     return;
                 }
             }
         }
 
         if (nearest != null) {
-            ActionAccess.targetItem(creature, nearest);
+            CGetItemAction.targetItem(creature, nearest);
         }
     }
 
@@ -242,7 +242,7 @@ public final class CGetItemAction {
      */
     public static void onTargetItem(final L1NpcInstance creature) {
         final L1ItemInstance targetItem =
-                ActionAccess.targetItem(creature);
+                CGetItemAction.targetItem(creature);
 
         if (targetItem == null
                 || !isAllowedItem(creature, targetItem)) {
@@ -262,7 +262,7 @@ public final class CGetItemAction {
          * 따라서 같은 타일 또는 인접 1칸이면 획득한다.
          */
         if (dx <= 1 && dy <= 1) {
-            if (ActionAccess.targetItem(creature) == targetItem) {
+            if (CGetItemAction.targetItem(creature) == targetItem) {
                 creature.pickupTargetItem(targetItem);
             }
             return;
@@ -282,14 +282,14 @@ public final class CGetItemAction {
                         targetItem.getY());
 
         if (dir >= 0 && dir < 8) {
-            if (ActionAccess.targetItem(creature) != targetItem) {
+            if (CGetItemAction.targetItem(creature) != targetItem) {
                 return;
             }
-            if (ActionAccess.moveOneStep(
+            if (CMoveAction.moveOneStep(
                     creature,
                     dir)) {
 
-                ActionAccess.moveStuck(
+                CMoveAction.moveStuck(
                         creature,
                         0);
 
@@ -302,7 +302,7 @@ public final class CGetItemAction {
 
         switch (dir) {
         case CMoveAction.DIR_RETRY:
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     RETRY_SLEEP_MS);
             return;
@@ -326,7 +326,7 @@ public final class CGetItemAction {
             final L1ItemInstance targetItem) {
 
         if (creature == null || targetItem == null
-                || ActionAccess.targetItem(creature) != targetItem) {
+                || CGetItemAction.targetItem(creature) != targetItem) {
             return;
         }
 
@@ -376,7 +376,7 @@ public final class CGetItemAction {
                     .equals(pendingTransfer.getMessage())) {
                 throw pendingTransfer;
             }
-            ActionAccess.sleep(creature, INVALID_TARGET_SLEEP_MS);
+            CCreatureController.sleep(creature, INVALID_TARGET_SLEEP_MS);
             return;
         } catch (RuntimeException | Error failure) {
             if (groundInventory.getItem(targetItem.getId()) == targetItem) {
@@ -396,14 +396,14 @@ public final class CGetItemAction {
     }
 
     private static void softBlocked(final L1NpcInstance creature) {
-        final int stuck = ActionAccess.incrementMoveStuck(creature);
+        final int stuck = CMoveAction.incrementMoveStuck(creature);
 
         if (stuck >= SOFT_BLOCK_GIVEUP) {
             abandonTarget(creature, INVALID_TARGET_SLEEP_MS);
             return;
         }
 
-        ActionAccess.sleep(
+        CCreatureController.sleep(
                 creature,
                 RETRY_SLEEP_MS
                         + (stuck * 20L)
@@ -414,13 +414,13 @@ public final class CGetItemAction {
             final L1NpcInstance creature,
             final long sleepMs) {
 
-        ActionAccess.targetItem(creature, null);
+        CGetItemAction.targetItem(creature, null);
         clearMoveState(creature);
-        ActionAccess.sleep(creature, sleepMs);
+        CCreatureController.sleep(creature, sleepMs);
     }
 
     private static void clearMoveState(final L1NpcInstance creature) {
-        ActionAccess.resetMoveBlockedState(creature);
+        CMoveAction.resetMoveBlockedState(creature);
         CMoveAction.invalidatePath(creature);
     }
 
@@ -476,5 +476,25 @@ public final class CGetItemAction {
             final int x1,
             final int y1) {
         return Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    }
+
+    public static L1ItemInstance targetItem(final L1NpcInstance npc) {
+        return npc._targetItem;
+    }
+
+    public static void targetItem(
+            final L1NpcInstance npc,
+            final L1ItemInstance item) {
+        npc._targetItem = item;
+    }
+
+    public static int itemSearchCooldown(final L1NpcInstance npc) {
+        return npc._itemSearchCooldown;
+    }
+
+    public static void itemSearchCooldown(
+            final L1NpcInstance npc,
+            final int cooldown) {
+        npc._itemSearchCooldown = cooldown;
     }
 }

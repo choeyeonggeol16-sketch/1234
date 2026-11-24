@@ -28,14 +28,14 @@ public final class dGetItem {
             return CCreatureController.RESULT_INVALID;
         }
         if (capturedItem == null
-                || ActionAccess.targetItem(creature) != capturedItem) {
+                || CGetItemAction.targetItem(creature) != capturedItem) {
             return CCreatureController.RESULT_DONE;
         }
         if (creature.isDead() || creature.getCurrentHp() <= 0) {
             // NC dGetItem drops pending desires when its actor becomes dead
             // or inactive. Retire only the captured L1 item request.
-            if (ActionAccess.targetItem(creature) == capturedItem) {
-                ActionAccess.targetItem(creature, null);
+            if (CGetItemAction.targetItem(creature) == capturedItem) {
+                CGetItemAction.targetItem(creature, null);
             }
             return CCreatureController.RESULT_INVALID;
         }
@@ -49,7 +49,7 @@ public final class dGetItem {
         creature.onTargetItem();
 
         // A replaced target is a different desire; do not keep running A.
-        return ActionAccess.targetItem(creature) == capturedItem
+        return CGetItemAction.targetItem(creature) == capturedItem
                 ? CCreatureController.RESULT_RUNNING
                 : CCreatureController.RESULT_DONE;
     }
@@ -72,10 +72,10 @@ public final class dGetItem {
             }
         } finally {
             if (requested != null
-                    && ActionAccess.targetItem(creature) == requested) {
-                ActionAccess.targetItem(creature, null);
+                    && CGetItemAction.targetItem(creature) == requested) {
+                CGetItemAction.targetItem(creature, null);
             }
-            ActionAccess.sleep(creature,
+            CCreatureController.sleep(creature,
                     transferred == null ? FAILED_MS : FINISHED_MS);
         }
     }

@@ -83,29 +83,29 @@ public final class dMoveTo {
             return CCreatureController.RESULT_INVALID;
         }
         if (npc.발묶임상태()) {
-            ActionAccess.sleep(npc, NEXT_MS);
+            CCreatureController.sleep(npc, NEXT_MS);
             return CCreatureController.RESULT_RUNNING;
         }
 
         if (distanceSq >= TELEPORT_DISTANCE_SQ) {
             if (teleportIfFree(npc, x, y)) {
-                ActionAccess.sleep(npc, TELEPORT_MS);
+                CCreatureController.sleep(npc, TELEPORT_MS);
                 npc._pathFindFailCount = 0;
                 return CCreatureController.RESULT_RUNNING;
             }
-            ActionAccess.sleep(npc, NEXT_MS);
+            CCreatureController.sleep(npc, NEXT_MS);
             return CCreatureController.RESULT_RUNNING;
         }
 
         final int dir = CMoveAction.direction(npc, x, y);
         if (dir >= 0 && dir < 8) {
-            if (ActionAccess.moveOneStep(npc, dir)) {
+            if (CMoveAction.moveOneStep(npc, dir)) {
                 npc._pathFindFailCount = 0;
-                ActionAccess.sleep(npc, Math.max(NEXT_MS, npc.getSleepTime()));
+                CCreatureController.sleep(npc, Math.max(NEXT_MS, npc.getSleepTime()));
                 return CCreatureController.RESULT_RUNNING;
             }
             // Reservation lost between path probe and physical commit.
-            ActionAccess.sleep(npc, NEXT_MS);
+            CCreatureController.sleep(npc, NEXT_MS);
             return CCreatureController.RESULT_RUNNING;
         }
 
@@ -115,7 +115,7 @@ public final class dMoveTo {
                 // L1 may teleport only into a genuinely free map cell.
                 if (teleportIfFree(npc, x, y)) {
                     npc._pathFindFailCount = 0;
-                    ActionAccess.sleep(npc, TELEPORT_MS);
+                    CCreatureController.sleep(npc, TELEPORT_MS);
                     return CCreatureController.RESULT_RUNNING;
                 }
                 // Never teleport onto a PC, NPC, door or occupied cell.
@@ -127,7 +127,7 @@ public final class dMoveTo {
         }
 
         // NC uses 1000ms both for a move request and a blocked route pass.
-        ActionAccess.sleep(npc, NEXT_MS);
+        CCreatureController.sleep(npc, NEXT_MS);
         return CCreatureController.RESULT_RUNNING;
     }
 

@@ -87,7 +87,7 @@ public final class CEscapeAction {
             if (target != null) {
                 creature.targetRemove(target);
             }
-            if (ActionAccess.currentAction(creature)
+            if (CCreatureController.currentAction(creature)
                     == CCreatureController.ACTION_ESCAPE) {
                 CCreatureController.think(creature);
             }

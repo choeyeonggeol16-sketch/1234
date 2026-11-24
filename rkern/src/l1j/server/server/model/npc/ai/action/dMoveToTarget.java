@@ -96,7 +96,7 @@ public final class dMoveToTarget {
             return CCreatureController.RESULT_INVALID;
         }
         if (npc.발묶임상태()) {
-            ActionAccess.sleep(npc, NEXT_MS);
+            CCreatureController.sleep(npc, NEXT_MS);
             return CCreatureController.RESULT_RUNNING;
         }
         if (npc._pathFindFailCount > MAX_PATH_FAILURES) {
@@ -114,13 +114,13 @@ public final class dMoveToTarget {
 
         final int dir = CMoveAction.direction(npc, goalX, goalY);
         if (dir >= 0 && dir < 8) {
-            if (ActionAccess.moveOneStep(npc, dir)) {
+            if (CMoveAction.moveOneStep(npc, dir)) {
                 npc._pathFindFailCount = 0;
-                ActionAccess.sleep(npc, Math.max(NEXT_MS, npc.getSleepTime()));
+                CCreatureController.sleep(npc, Math.max(NEXT_MS, npc.getSleepTime()));
                 return CCreatureController.RESULT_RUNNING;
             }
             // Occupancy can change after direction resolution.
-            ActionAccess.sleep(npc, NEXT_MS);
+            CCreatureController.sleep(npc, NEXT_MS);
             return CCreatureController.RESULT_RUNNING;
         }
 
@@ -131,7 +131,7 @@ public final class dMoveToTarget {
         if (dir == CMoveAction.DIR_INVALID) {
             return CCreatureController.RESULT_INVALID;
         }
-        ActionAccess.sleep(npc, NEXT_MS);
+        CCreatureController.sleep(npc, NEXT_MS);
         return CCreatureController.RESULT_RUNNING;
     }
 

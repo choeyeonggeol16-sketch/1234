@@ -237,7 +237,7 @@ public final class CNpcAI {
         // L1's home-return teleport happens in preflight, before MOVE_AROUND
         // takes its movement tick. A saved wander goal from the old location
         // must not survive this relocation or it will pull the NPC back out.
-        final byte runningAction = ActionAccess.currentAction(npc);
+        final byte runningAction = CCreatureController.currentAction(npc);
         final boolean wasWandering = npc instanceof L1MonsterInstance
                 && runningAction == CCreatureController.ACTION_MOVE_AROUND_NATIVE;
         final int beforeTeleportX = wasWandering ? npc.getX() : 0;
@@ -300,7 +300,7 @@ public final class CNpcAI {
          */
         if (npc instanceof L1MonsterInstance) {
             final byte currentAction =
-                    ActionAccess.currentAction(npc);
+                    CCreatureController.currentAction(npc);
 
             if (currentAction
                     == CCreatureController.ACTION_MOVE_AROUND_NATIVE
@@ -329,7 +329,7 @@ public final class CNpcAI {
             }
 
             final byte currentAction =
-                    ActionAccess.currentAction(npc);
+                    CCreatureController.currentAction(npc);
 
             final boolean retailMoveAround =
                     npc instanceof L1MonsterInstance
@@ -351,7 +351,7 @@ public final class CNpcAI {
             }
 
         } else if (CCreatureController.isCombatAction(
-                ActionAccess.currentAction(npc))) {
+                CCreatureController.currentAction(npc))) {
 
             CCreatureController.think(npc);
             return PRE_RETHINK;
@@ -575,11 +575,11 @@ public final class CNpcAI {
         creature.checkTargetItem();
 
         if (creature.isPickupItem()) {
-            if (ActionAccess.targetItem(creature) == null) {
+            if (CGetItemAction.targetItem(creature) == null) {
                 creature.searchTargetItem();
             }
 
-            if (ActionAccess.targetItem(creature) != null) {
+            if (CGetItemAction.targetItem(creature) != null) {
                 CCreatureController.submit(
                         creature,
                         CCreatureController.ACTION_GET_ITEM);
@@ -751,11 +751,11 @@ public final class CNpcAI {
          * but they do not silently replace that action's target mid-tick.
          */
         final boolean guardStanding = CStandAction.isGuard(npc)
-                && ActionAccess.currentAction(npc) == CCreatureController.ACTION_STAND;
+                && CCreatureController.currentAction(npc) == CCreatureController.ACTION_STAND;
         final boolean actionOwnsTarget =
                 npc.npcActionOwnsCadence()
                 && CCreatureController.isCombatAction(
-                        ActionAccess.currentAction(npc));
+                        CCreatureController.currentAction(npc));
 
         // The retail seven-second lifetime gate belongs to CLAN_ATTACKED,
         // not to SEE_CREATURE. Never retain a one-shot sight event for 7s.
@@ -1009,7 +1009,7 @@ public final class CNpcAI {
         // desire is still top, so lower-priority sight never resets a rest.
         if (interruptMoveAround || invisibilityRetarget
                 || (sightDesireChanged
-                        && ActionAccess.currentAction(npc)
+                        && CCreatureController.currentAction(npc)
                                 == CCreatureController.ACTION_MOVE_AROUND_NATIVE)) {
             CCreatureController.submit(
                     npc,
@@ -1018,7 +1018,7 @@ public final class CNpcAI {
 
         if (attackDesireChanged && actionOwnsTarget
                 && npc instanceof L1MonsterInstance) {
-            final byte action = ActionAccess.currentAction(npc);
+            final byte action = CCreatureController.currentAction(npc);
             if (acceptsCombatRetarget(action)) {
                 final L1Character winner =
                         CDesirePQ.topAttackTarget(
@@ -1061,7 +1061,7 @@ public final class CNpcAI {
         // timer. Reuse the owner generation/wake path, leaving active combat
         // and movement cadence unchanged.
         if (changed && guardStanding
-                && (ActionAccess.currentAction(npc) != CCreatureController.ACTION_STAND
+                && (CCreatureController.currentAction(npc) != CCreatureController.ACTION_STAND
                     || CStandAction.canInterruptGuardStand(npc))) {
             CCreatureController.rethinkNow(npc);
         }
@@ -1087,7 +1087,7 @@ public final class CNpcAI {
             final long nowMs) {
 
         if (!(npc instanceof L1MonsterInstance)
-                || ActionAccess.currentAction(npc)
+                || CCreatureController.currentAction(npc)
                         != CCreatureController.ACTION_MOVE_AROUND_NATIVE) {
             return false;
         }

@@ -111,18 +111,18 @@ public final class dFlee {
             final L1NpcInstance creature,
             final L1Character target) {
         if (!creature.isMovable()) {
-            ActionAccess.sleep(creature, RETRY_MS);
+            CCreatureController.sleep(creature, RETRY_MS);
             return CCreatureController.RESULT_RUNNING;
         }
         final int heading = chooseEscapeHeading(creature, target);
-        if (heading >= 0 && ActionAccess.moveOneStep(creature, heading)) {
-            ActionAccess.sleep(creature,
+        if (heading >= 0 && CMoveAction.moveOneStep(creature, heading)) {
+            CCreatureController.sleep(creature,
                     Math.max(RETRY_MS, creature.getSleepTime()));
         } else {
             // A reservation can be taken after the side-effect-free probe.
             // One direction commit attempt per owner tick, as in native
             // SendMovePacket(); no repeated commit attempts after a collision.
-            ActionAccess.sleep(creature, RETRY_MS);
+            CCreatureController.sleep(creature, RETRY_MS);
         }
         return CCreatureController.RESULT_RUNNING;
     }

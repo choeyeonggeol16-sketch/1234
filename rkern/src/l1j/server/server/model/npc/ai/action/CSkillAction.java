@@ -27,7 +27,7 @@ public final class CSkillAction {
     /** Execute exactly the skill selected by the reference design desire queue. */
     public static void onDesireTick(final L1NpcInstance creature) {
         if (creature == null
-                || ActionAccess.currentAction(creature)
+                || CCreatureController.currentAction(creature)
                         != CCreatureController.ACTION_USE_SKILL) {
             return;
         }
@@ -51,7 +51,7 @@ public final class CSkillAction {
                 && (targetId == 0 || !target.isInvisble()
                         || monster.getNpcTemplate().is_agrocoi())
                 && L1MobSkillUse.skillUseSelected(monster, target, skillId)) {
-            ActionAccess.sleep(monster, L1MobSkillUse.getSleepTime(monster));
+            CCreatureController.sleep(monster, L1MobSkillUse.getSleepTime(monster));
             // L1MobSkillUse returns the final accepted result synchronously.
             // This is NC UseSkillFinished(well=true): remove the exact skill
             // key, never its ATTACK/other USE_SKILL siblings.
@@ -61,7 +61,7 @@ public final class CSkillAction {
             // immediately; it is not a delayed UseSkillFinished(false).
             CDesirePQ.removeUseSkillDesire(monster, targetId, skillId);
         }
-        if (ActionAccess.currentAction(creature)
+        if (CCreatureController.currentAction(creature)
                 == CCreatureController.ACTION_USE_SKILL) {
             CCreatureController.think(creature);
         }
@@ -88,12 +88,12 @@ public final class CSkillAction {
 
         if (model != null && model.isEffectSet()) {
             if (!model.runEffect(creature)) return false;
-            ActionAccess.sleep(creature, L1MobSkillUse.getSleepTime(creature) + 500L);
+            CCreatureController.sleep(creature, L1MobSkillUse.getSleepTime(creature) + 500L);
             return true;
         }
 
         if (L1MobSkillUse.skillUse(creature, target)) {
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     L1MobSkillUse.getSleepTime(creature));
 

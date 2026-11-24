@@ -73,12 +73,12 @@ public final class CStandAction {
                 if (canInterruptGuardStand(creature)) {
                     return CCreatureController.RESULT_DONE;
                 }
-                ActionAccess.sleep(creature, GUARD_RETRY_MS);
+                CCreatureController.sleep(creature, GUARD_RETRY_MS);
                 return CCreatureController.RESULT_RUNNING;
             }
             if (creature.isMovable() && !atHome(creature)) {
                 // A failed home request or external relocation must be retried.
-                ActionAccess.sleep(creature, GUARD_RETRY_MS);
+                CCreatureController.sleep(creature, GUARD_RETRY_MS);
                 return CCreatureController.RESULT_DONE;
             }
             if (!L1World.getInstance().hasRecognizePlayerFast(creature)) {
@@ -87,7 +87,7 @@ public final class CStandAction {
             // guard_stand MOVE_TO_FINISHED -> AddDoNothingDesire(40, 30).
             // Existing owner wheel provides the timed hold. An admitted combat
             // event interrupts it through CNpcAI; no extra timer is needed.
-            ActionAccess.sleep(creature, GUARD_IDLE_MS);
+            CCreatureController.sleep(creature, GUARD_IDLE_MS);
             return CCreatureController.RESULT_RUNNING;
         }
         return CCreatureController.RESULT_DONE;

@@ -1,5 +1,7 @@
 package l1j.server.server.model.npc.ai.action;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
@@ -69,13 +71,13 @@ public final class CMoveToTargetAction {
         // target under _moveTargetId. Re-entering onStart() here invalidates
         // the path and can restart an expensive A* search every wake.
         final L1Character currentTarget = creature.getTarget();
-        if (ActionAccess.currentAction(creature)
+        if (CCreatureController.currentAction(creature)
                     == CCreatureController.ACTION_MOVE_TO_TARGET
                 && currentTarget != null
                 && currentTarget.getId() != 0
                 && creature._moveTargetId == currentTarget.getId()) {
             // The next Action may change without resetting this target's path.
-            ActionAccess.pendingAction(creature, pendingAction);
+            CCreatureController.pendingAction(creature, pendingAction);
             return;
         }
 
@@ -113,7 +115,7 @@ public final class CMoveToTargetAction {
         MoveIntentCache.clearPassingDestination(creature);
         SetMoving.clear(creature);
         CMoveToTargetWaitAction.clear(creature);
-        ActionAccess.resetMoveBlockedState(creature);
+        CMoveAction.resetMoveBlockedState(creature);
 
         creature._pathFindFailCount =
                 pathFindFailCount;
@@ -210,7 +212,7 @@ public final class CMoveToTargetAction {
             return CCreatureController.RESULT_RUNNING;
         }
 
-        if (ActionAccess.tryMoveToTargetTeleport(
+        if (CMoveToTargetAction.tryMoveToTargetTeleport(
                 creature,
                 target)) {
 
@@ -258,7 +260,7 @@ public final class CMoveToTargetAction {
                     final byte code = SetMoving.tickToPoint(monster, wx, wy);
                     if (monster.isDead() || monster.getTarget() != target
                             || monster.npcActionGeneration() != actionGeneration
-                            || ActionAccess.currentAction(monster) != expectedAction) {
+                            || CCreatureController.currentAction(monster) != expectedAction) {
                         MoveIntentCache.clearPassingDestination(monster);
                         return CCreatureController.RESULT_INVALID;
                     }
@@ -270,7 +272,7 @@ public final class CMoveToTargetAction {
                     }
                     MoveIntentCache.clearPassingDestination(monster);
                     if (code != SetMoving.AT_DISTANCE) {
-                        ActionAccess.sleep(monster, DYNAMIC_BLOCK_RETRY_MS);
+                        CCreatureController.sleep(monster, DYNAMIC_BLOCK_RETRY_MS);
                         return CCreatureController.RESULT_RUNNING;
                     }
                 }
@@ -281,7 +283,7 @@ public final class CMoveToTargetAction {
         // Never continue the generic chase using an obsolete target snapshot.
         if (creature.isDead() || creature.getTarget() != target
                 || creature.npcActionGeneration() != actionGeneration
-                || ActionAccess.currentAction(creature) != expectedAction) {
+                || CCreatureController.currentAction(creature) != expectedAction) {
             return CCreatureController.RESULT_INVALID;
         }
 
@@ -302,7 +304,7 @@ public final class CMoveToTargetAction {
                 && creature instanceof L1MonsterInstance
                 && creature.getTarget() == target
                 && creature.npcActionGeneration() == actionGeneration
-                && ActionAccess.currentAction(creature) == expectedAction) {
+                && CCreatureController.currentAction(creature) == expectedAction) {
             final L1MonsterInstance monster = (L1MonsterInstance) creature;
             UpdateAttackLeaderRelated(monster, target);
             if (MoveIntentCache.reportChaseStep(monster, target,
@@ -414,7 +416,7 @@ public final class CMoveToTargetAction {
                     CDesirePQ.blockAttackForMoveAroundRing(
                             monster, target);
                     SetMoving.clear(monster);
-                    ActionAccess.sleep(creature, DYNAMIC_BLOCK_RETRY_MS);
+                    CCreatureController.sleep(creature, DYNAMIC_BLOCK_RETRY_MS);
                     CCreatureController.think(creature);
                     return CCreatureController.RESULT_RUNNING;
                 }
@@ -429,7 +431,7 @@ public final class CMoveToTargetAction {
                         blockedX,
                         blockedY);
 
-                ActionAccess.sleep(
+                CCreatureController.sleep(
                         creature,
                         DYNAMIC_BLOCK_RETRY_MS);
 
@@ -447,7 +449,7 @@ public final class CMoveToTargetAction {
                 return CCreatureController.RESULT_RUNNING;
             }
 
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     DYNAMIC_BLOCK_RETRY_MS);
             return CCreatureController.RESULT_RUNNING;
@@ -483,7 +485,7 @@ public final class CMoveToTargetAction {
                         // after which this still-known player disappears.
                         creature._pathFindFailCount = 0;
                         CDesirePQ.blockAttackForMoveAround(monster, target, x, y);
-                        ActionAccess.sleep(creature, DYNAMIC_BLOCK_RETRY_MS);
+                        CCreatureController.sleep(creature, DYNAMIC_BLOCK_RETRY_MS);
                         CCreatureController.think(creature);
                         return CCreatureController.RESULT_RUNNING;
                     }
@@ -527,7 +529,7 @@ public final class CMoveToTargetAction {
                     creature,
                     target,
                     desiredDistance,
-                    ActionAccess.pendingAction(
+                    CCreatureController.pendingAction(
                             creature));
 
             return CCreatureController.RESULT_RUNNING;
@@ -551,7 +553,7 @@ public final class CMoveToTargetAction {
             final byte expectedAction) {
 
         if (creature == null
-                || ActionAccess.currentAction(creature) != expectedAction) {
+                || CCreatureController.currentAction(creature) != expectedAction) {
             return;
         }
 
@@ -575,7 +577,7 @@ public final class CMoveToTargetAction {
         case RESULT_PATH_FAILED:
             SetMoving.clear(creature);
             CMoveToTargetWaitAction.clear(creature);
-            ActionAccess.resetMoveBlockedState(creature);
+            CMoveAction.resetMoveBlockedState(creature);
 
             if (creature instanceof L1MonsterInstance && target != null) {
                 if (creature.getTarget() == target) {
@@ -598,11 +600,11 @@ public final class CMoveToTargetAction {
                 creature.tagertClear();
             }
 
-            ActionAccess.pendingAction(
+            CCreatureController.pendingAction(
                     creature,
                     CCreatureController.ACTION_NONE);
 
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     PATH_FAIL_DISPATCH_DELAY_MS);
 
@@ -614,7 +616,7 @@ public final class CMoveToTargetAction {
             CCreatureController.doPendingAction(
                     creature);
 
-            if (ActionAccess.currentAction(creature)
+            if (CCreatureController.currentAction(creature)
                     == CCreatureController.ACTION_ATTACK
                     && creature.getTarget() == target
                     && validTarget(creature, target)
@@ -662,7 +664,7 @@ public final class CMoveToTargetAction {
         if (!enteringWait) {
             SetMoving.clear(creature);
             CMoveToTargetWaitAction.clear(creature);
-            ActionAccess.resetMoveBlockedState(creature);
+            CMoveAction.resetMoveBlockedState(creature);
         }
     }
 
@@ -696,7 +698,7 @@ public final class CMoveToTargetAction {
         MoveIntentCache.clearPassingDestination(creature);
         SetMoving.clear(creature);
         CMoveToTargetWaitAction.clear(creature);
-        ActionAccess.resetMoveBlockedState(creature);
+        CMoveAction.resetMoveBlockedState(creature);
         creature._pathFindFailCount = 0;
     }
 
@@ -712,7 +714,7 @@ public final class CMoveToTargetAction {
             final byte expectedAction) {
         if (monster.isDead() || monster.getTarget() != target
                 || monster.npcActionGeneration() != generation
-                || ActionAccess.currentAction(monster) != expectedAction) {
+                || CCreatureController.currentAction(monster) != expectedAction) {
             return CCreatureController.RESULT_INVALID;
         }
         if (CMoveToTargetRelativeAction.GetMeleeAttackPosition(monster, target)) {
@@ -721,7 +723,7 @@ public final class CMoveToTargetAction {
         }
         if (monster.isDead() || monster.getTarget() != target
                 || monster.npcActionGeneration() != generation
-                || ActionAccess.currentAction(monster) != expectedAction) {
+                || CCreatureController.currentAction(monster) != expectedAction) {
             return CCreatureController.RESULT_INVALID;
         }
         final int tx = target.getX();
@@ -744,12 +746,12 @@ public final class CMoveToTargetAction {
                 || target.getMapId() != monster.getMapId()
                 || target.getX() != tx || target.getY() != ty
                 || monster.npcActionGeneration() != generation
-                || ActionAccess.currentAction(monster) != expectedAction) {
+                || CCreatureController.currentAction(monster) != expectedAction) {
             return CCreatureController.RESULT_INVALID;
         }
         MoveIntentCache.setPassingDestination(monster, target,
                 x, y, System.currentTimeMillis() + PASSING_INTENT_MS);
-        ActionAccess.sleep(monster, 100L);
+        CCreatureController.sleep(monster, 100L);
         return CCreatureController.RESULT_RUNNING;
     }
 
@@ -871,7 +873,7 @@ public final class CMoveToTargetAction {
         if (move == SetMoving.DYNAMIC_BLOCKED || move == SetMoving.RUNNING) {
             if (++monster._desireResumeAttackBlockedRetries
                     < RESERVED_SLOT_BLOCK_RETRY_LIMIT) {
-                ActionAccess.sleep(monster, DYNAMIC_BLOCK_RETRY_MS);
+                CCreatureController.sleep(monster, DYNAMIC_BLOCK_RETRY_MS);
                 monster._pathFindFailCount = 0;
                 return CCreatureController.RESULT_RUNNING;
             }
@@ -1095,7 +1097,7 @@ public final class CMoveToTargetAction {
 
         SetMoving.clear(creature);
         CMoveToTargetWaitAction.clear(creature);
-        ActionAccess.resetMoveBlockedState(creature);
+        CMoveAction.resetMoveBlockedState(creature);
         creature._pathFindFailCount = 0;
 
         return true;
@@ -1172,5 +1174,39 @@ public final class CMoveToTargetAction {
                 && target.getMapId() == creature.getMapId()
                 && (!target.isInvisble()
                         || creature.getNpcTemplate().is_agrocoi());
+    }
+
+    public static boolean tryMoveToTargetTeleport(
+            final L1NpcInstance npc,
+            final L1Character target) {
+
+        if (target == null) {
+            return false;
+        }
+
+        final int distance =
+                npc.getLocation().getTileDistance(target.getLocation());
+
+        if (npc.firstFound
+                && npc.getNpcTemplate().is_teleport()
+                && distance > 3
+                && distance < 15) {
+
+            if (npc.nearTeleport(target.getX(), target.getY())) {
+                npc.firstFound = false;
+                return true;
+            }
+        }
+
+        if (npc.getNpcTemplate().is_teleport()
+                && 20 > ThreadLocalRandom.current().nextInt(100)
+                && npc.getCurrentMp() >= 10
+                && distance > 6
+                && distance < 15) {
+
+            return npc.nearTeleport(target.getX(), target.getY());
+        }
+
+        return false;
     }
 }

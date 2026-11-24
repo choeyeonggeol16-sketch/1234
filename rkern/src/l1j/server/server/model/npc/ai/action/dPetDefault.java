@@ -48,7 +48,7 @@ public final class dPetDefault {
             // recovers (the subclass already handles lost-map/stay policy).
             if (master != null
                     && master.getMapId() == creature.getMapId()) {
-                ActionAccess.sleep(creature, 500L);
+                CCreatureController.sleep(creature, 500L);
                 return false;
             }
             return true;
@@ -77,7 +77,7 @@ public final class dPetDefault {
                 }
             } else {
                 // NC's default idle cadence is 500 ms when no move is due.
-                ActionAccess.sleep(creature, 500L);
+                CCreatureController.sleep(creature, 500L);
             }
             return false;
         }
@@ -95,7 +95,7 @@ public final class dPetDefault {
                     creature.setSleepTime(creature.setDirectionMove(dir));
                 }
             } else {
-                ActionAccess.sleep(creature, 500L);
+                CCreatureController.sleep(creature, 500L);
             }
             return false;
         }
@@ -113,7 +113,7 @@ public final class dPetDefault {
         if (!canFollow(creature, master)) {
             dFollow.clear(creature);
             if (master != null && master.getMapId() == creature.getMapId()) {
-                ActionAccess.sleep(creature, 500L);
+                CCreatureController.sleep(creature, 500L);
                 return false;
             }
             return true;
@@ -123,7 +123,7 @@ public final class dPetDefault {
                 .getTileLineDistance(master.getLocation()) <= CMoveAction.FOLLOW_RADIUS;
         final boolean stopped = dFollow.follow(creature, master);
         if (close && !stopped) {
-            ActionAccess.sleep(creature, 500L);
+            CCreatureController.sleep(creature, 500L);
         }
         return stopped;
     }

@@ -44,11 +44,11 @@ public final class CMoveToTargetRelativeAction {
             return;
         }
 
-        if (ActionAccess.currentAction(creature)
+        if (CCreatureController.currentAction(creature)
                     == CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE
                 && creature._relativeTargetId == target.getId()
                 && creature._relativeMapId == creature.getMapId()) {
-            ActionAccess.pendingAction(creature, pendingAction);
+            CCreatureController.pendingAction(creature, pendingAction);
             return;
         }
 
@@ -64,7 +64,7 @@ public final class CMoveToTargetRelativeAction {
     public static void tick(
             final L1NpcInstance creature,
             final L1Character target) {
-        if (creature == null || ActionAccess.currentAction(creature)
+        if (creature == null || CCreatureController.currentAction(creature)
                 != CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE) {
             return;
         }
@@ -83,7 +83,7 @@ public final class CMoveToTargetRelativeAction {
                 CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE);
         if (result != CCreatureController.RESULT_RUNNING
                 && creature.npcActionGeneration() == generation
-                && ActionAccess.currentAction(creature)
+                && CCreatureController.currentAction(creature)
                     == CCreatureController.ACTION_MOVE_TO_TARGET_RELATIVE
                 && creature.getTarget() == target
                 && creature._relativeTargetId == target.getId()

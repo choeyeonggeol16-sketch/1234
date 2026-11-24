@@ -35,7 +35,7 @@ public final class CMoveToTargetWaitAction {
         // Preserve the original wait deadline when the same waiting action
         // is selected again; a genuine target/range/pending change starts a
         // fresh wait. Repeated SEE/ATTACKED events must not postpone chase.
-        if (ActionAccess.currentAction(creature)
+        if (CCreatureController.currentAction(creature)
                     == CCreatureController.ACTION_MOVE_TO_TARGET_WAIT
                 && creature.getTarget() == target
                 && creature._waitTargetId == target.getId()
@@ -64,7 +64,7 @@ public final class CMoveToTargetWaitAction {
         }
 
         /* Native OnStart only arms the initial wait timer. */
-        ActionAccess.sleep(
+        CCreatureController.sleep(
                 creature,
                 START_WAIT_MS);
     }
@@ -79,7 +79,7 @@ public final class CMoveToTargetWaitAction {
 
         // A queued tick must never resume a successor action. The owner may
         // have switched targets or retired this WAIT during a target read.
-        if (ActionAccess.currentAction(creature)
+        if (CCreatureController.currentAction(creature)
                 != CCreatureController.ACTION_MOVE_TO_TARGET_WAIT) {
             return CCreatureController.RESULT_RUNNING;
         }
@@ -101,7 +101,7 @@ public final class CMoveToTargetWaitAction {
         // Never arm a stale WAIT timer or promote its old target into a new
         // MOVE_TO_TARGET if another action took ownership in between.
         if (creature.npcActionGeneration() != generation
-                || ActionAccess.currentAction(creature)
+                || CCreatureController.currentAction(creature)
                     != CCreatureController.ACTION_MOVE_TO_TARGET_WAIT
                 || creature.getTarget() != target
                 || creature._waitTargetId != target.getId()
@@ -110,7 +110,7 @@ public final class CMoveToTargetWaitAction {
         }
 
         if (distance2 <= saved * saved) {
-            ActionAccess.sleep(
+            CCreatureController.sleep(
                     creature,
                     HOLD_WAIT_MS);
             return CCreatureController.RESULT_RUNNING;
@@ -137,7 +137,7 @@ public final class CMoveToTargetWaitAction {
 
         if (creature == null
                 || result != CCreatureController.RESULT_INVALID
-                || ActionAccess.currentAction(creature)
+                || CCreatureController.currentAction(creature)
                         != CCreatureController.ACTION_MOVE_TO_TARGET_WAIT) {
             return;
         }

@@ -96,11 +96,11 @@ public final class dMoveFormation {
             final L1NpcInstance leader) {
         if (!sameGroup(npc, group, leader) || !npc.isMovable() || npc.isRest()) {
             clear(npc);
-            if (npc != null) ActionAccess.sleep(npc, 500L);
+            if (npc != null) CCreatureController.sleep(npc, 500L);
             return false;
         }
         if (npc.발묶임상태()) {
-            ActionAccess.sleep(npc, 500L);
+            CCreatureController.sleep(npc, 500L);
             return false;
         }
         final int index = relativeIndex(npc.getFormationIndex(), leader.getFormationIndex());
@@ -108,7 +108,7 @@ public final class dMoveFormation {
                 leader.getHeading(), index);
         if (primary == MoveIntentCache.NO_POS) {
             clear(npc);
-            ActionAccess.sleep(npc, 500L);
+            CCreatureController.sleep(npc, 500L);
             return false;
         }
 
@@ -122,7 +122,7 @@ public final class dMoveFormation {
                     : fallback(npc, leader, primary, MoveIntentCache.NO_POS);
             if (goal == MoveIntentCache.NO_POS) {
                 clear(npc);
-                ActionAccess.sleep(npc, 500L);
+                CCreatureController.sleep(npc, 500L);
                 return false;
             }
             remember(npc, leader, primary, goal, now);
@@ -131,7 +131,7 @@ public final class dMoveFormation {
         if (!sameGroup(npc, group, leader) || !npc.isMovable() || npc.isRest()
                 || npc.발묶임상태()) {
             clear(npc);
-            ActionAccess.sleep(npc, 500L);
+            CCreatureController.sleep(npc, 500L);
             return false;
         }
         final byte result = CMoveAction.stepFollowGoal(npc, goal);
@@ -146,7 +146,7 @@ public final class dMoveFormation {
                 MoveIntentCache.clearAll(npc);
                 SetMoving.clear(npc);
             }
-            ActionAccess.sleep(npc, Math.max(npc.getSleepTime(), 300L));
+            CCreatureController.sleep(npc, Math.max(npc.getSleepTime(), 300L));
         }
         return false;
     }

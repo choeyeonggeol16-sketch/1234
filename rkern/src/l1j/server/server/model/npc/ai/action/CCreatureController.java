@@ -105,7 +105,7 @@ public final class CCreatureController {
         }
 
         if (action == ACTION_THINK
-                && ActionAccess.currentAction(creature)
+                && CCreatureController.currentAction(creature)
                         == ACTION_MOVE_AROUND_NATIVE) {
             // A THINK wake does not necessarily mean a higher desire won.
             // Retain the in-flight random segment/rest when MOVE_AROUND is
@@ -155,7 +155,7 @@ public final class CCreatureController {
             return;
         }
 
-        if (ActionAccess.currentAction(creature) == ACTION_THINK) {
+        if (CCreatureController.currentAction(creature) == ACTION_THINK) {
             creature.npcActionReleaseCadence();
             creature._nextAllowedTickMs = System.currentTimeMillis();
             NpcServer.getInstance().wake(creature);
@@ -197,7 +197,7 @@ public final class CCreatureController {
             System.out.println(
                     "[CHASE-OWNER] t=" + nowMs
                     + " actor=" + creature.getId()
-                    + " action=" + ActionAccess.currentAction(creature)
+                    + " action=" + CCreatureController.currentAction(creature)
                     + " preflight=" + runLegacyPreflight
                     + " sleepBefore=" + creature.getSleepTime()
                     + " pos=" + creature.getX() + "," + creature.getY());
@@ -250,7 +250,7 @@ public final class CCreatureController {
             }
         }
 
-        if (ActionAccess.currentAction(creature) == ACTION_THINK) {
+        if (CCreatureController.currentAction(creature) == ACTION_THINK) {
             armNext(creature, generation, nowMs);
             return;
         }
@@ -287,7 +287,7 @@ public final class CCreatureController {
             System.out.println(
                     "[CHASE-SCHED] t=" + nowMs
                     + " actor=" + creature.getId()
-                    + " action=" + ActionAccess.currentAction(creature)
+                    + " action=" + CCreatureController.currentAction(creature)
                     + " sleep=" + creature.getSleepTime()
                     + " delay=" + delay
                     + " pos=" + creature.getX() + "," + creature.getY());
@@ -388,7 +388,7 @@ public final class CCreatureController {
             final L1NpcInstance creature,
             final long nowMs) {
 
-        switch (ActionAccess.currentAction(creature)) {
+        switch (CCreatureController.currentAction(creature)) {
         case ACTION_ATTACK:
         case ACTION_MOVE_TO_TARGET:
         case ACTION_MOVE_TO_TARGET_RELATIVE:
@@ -429,7 +429,7 @@ public final class CCreatureController {
         case ACTION_MOVE:
         case ACTION_MOVE_TO_POINT:
         case ACTION_MOVE_TO_OBJECT: {
-            final byte current = ActionAccess.currentAction(creature);
+            final byte current = CCreatureController.currentAction(creature);
             final int generation = creature.npcActionGeneration();
             final byte result = CMoveAction.onTick(
                     creature,
@@ -437,7 +437,7 @@ public final class CCreatureController {
 
             if (result != RESULT_RUNNING
                     && generation == creature.npcActionGeneration()
-                    && current == ActionAccess.currentAction(creature)) {
+                    && current == CCreatureController.currentAction(creature)) {
                 // Move/teleport callbacks may synchronously install B while
                 // A's old action tick is returning. A must not retire B.
                 CMoveAction.onEnd(
@@ -580,7 +580,7 @@ public final class CCreatureController {
             return;
         }
 
-        final byte action = ActionAccess.currentAction(creature);
+        final byte action = CCreatureController.currentAction(creature);
 
         if (action == ACTION_ESCAPE) {
             executeEscapeAction(creature, target);
@@ -689,8 +689,8 @@ public final class CCreatureController {
         }
 
         transitionFrom(creature, action);
-        ActionAccess.currentAction(creature, action);
-        ActionAccess.pendingAction(creature, ACTION_NONE);
+        CCreatureController.currentAction(creature, action);
+        CCreatureController.pendingAction(creature, ACTION_NONE);
     }
 
     public static void set(
@@ -703,15 +703,15 @@ public final class CCreatureController {
         }
 
         transitionFrom(creature, action);
-        ActionAccess.currentAction(creature, action);
-        ActionAccess.pendingAction(creature, pendingAction);
+        CCreatureController.currentAction(creature, action);
+        CCreatureController.pendingAction(creature, pendingAction);
     }
 
     private static void transitionFrom(
             final L1NpcInstance creature,
             final byte nextAction) {
 
-        final byte previous = ActionAccess.currentAction(creature);
+        final byte previous = CCreatureController.currentAction(creature);
         if (previous == nextAction) {
             return;
         }
@@ -749,10 +749,10 @@ public final class CCreatureController {
             return;
         }
 
-        final byte pending = ActionAccess.pendingAction(creature);
+        final byte pending = CCreatureController.pendingAction(creature);
 
         if (pending != ACTION_NONE) {
-            ActionAccess.pendingAction(creature, ACTION_NONE);
+            CCreatureController.pendingAction(creature, ACTION_NONE);
 
             if (pending == ACTION_ATTACK) {
                 CAttackAction.set(creature);
@@ -773,8 +773,8 @@ public final class CCreatureController {
         }
 
         transitionFrom(creature, ACTION_THINK);
-        ActionAccess.pendingAction(creature, ACTION_NONE);
-        ActionAccess.currentAction(creature, ACTION_THINK);
+        CCreatureController.pendingAction(creature, ACTION_NONE);
+        CCreatureController.currentAction(creature, ACTION_THINK);
     }
 
 
@@ -814,17 +814,17 @@ public final class CCreatureController {
         // from a random walk does, so mirror its cleanup here before this
         // NPC can be reactivated or have its object id reused.
         dMoveFormation.clearIfActive(creature);
-        if (ActionAccess.currentAction(creature) == ACTION_MOVE_AROUND_NATIVE) {
+        if (CCreatureController.currentAction(creature) == ACTION_MOVE_AROUND_NATIVE) {
             CMoveAroundAction.onInterrupted(creature);
-        } else if ((ActionAccess.currentAction(creature) == ACTION_MOVE_TO_POINT
-                        || ActionAccess.currentAction(creature) == ACTION_MOVE_TO_OBJECT)
+        } else if ((CCreatureController.currentAction(creature) == ACTION_MOVE_TO_POINT
+                        || CCreatureController.currentAction(creature) == ACTION_MOVE_TO_OBJECT)
                 && creature._scriptMoveMapId != -1) {
             CMoveAction.clearScriptMove(creature);
         } else {
             SetMoving.clear(creature);
         }
-        ActionAccess.pendingAction(creature, ACTION_NONE);
-        ActionAccess.currentAction(creature, ACTION_THINK);
+        CCreatureController.pendingAction(creature, ACTION_NONE);
+        CCreatureController.currentAction(creature, ACTION_THINK);
     }
 
     public static boolean isCombatAction(final byte action) {
@@ -834,5 +834,31 @@ public final class CCreatureController {
                 || action == ACTION_ATTACK
                 || action == ACTION_USE_SKILL
                 || action == ACTION_ESCAPE;
+    }
+
+    public static byte currentAction(final L1NpcInstance npc) {
+        return npc._aiAction;
+    }
+
+    public static void currentAction(
+            final L1NpcInstance npc,
+            final byte action) {
+        npc._aiAction = action;
+    }
+
+    public static byte pendingAction(final L1NpcInstance npc) {
+        return npc._pendingAiAction;
+    }
+
+    public static void pendingAction(
+            final L1NpcInstance npc,
+            final byte action) {
+        npc._pendingAiAction = action;
+    }
+
+    public static void sleep(
+            final L1NpcInstance npc,
+            final long sleepTime) {
+        npc.setSleepTime(sleepTime);
     }
 }
