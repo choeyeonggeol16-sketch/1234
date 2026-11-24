@@ -3997,7 +3997,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	public L1BookMark getBookMark(String name) { return userBookmark.FindSlot(name); }
 	public L1BookMark getBookMark(int id) { return userBookmark.FindById(id); }
-	public int getBookMarkSize() { return userBookmark.slots().size(); }
+	public int getBookMarkSize() { return userBookmark.size(); }
 	public void addBookMark(L1BookMark book) { userBookmark.AppendCommittedSlot(book); }
 	public void removeBookMark(L1BookMark book) { userBookmark.RemoveCommittedSlot(book); }
 

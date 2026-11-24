@@ -114,5 +114,39 @@ public final class TestUserBookmark {
                 Arrays.equals(state.get(200),new int[]{0,0}) &&
                 Arrays.equals(state.get(300),new int[]{1,-1}),"SQL swap and shortcut order");
         System.out.println("PASS actual layout SQL with unique-order and shortcut collision probe");
+        check(!CUserBookmark.validTitle("x".repeat(46)) && CUserBookmark.validTitle("x".repeat(45)), "DB title limit");
+        check(book.snapshotSlots().length==book.size(), "slot snapshot size");
+        Method export = l1j.server.server.templates.L1ItemBookMark.class.getDeclaredMethod(
+                "writeSavedOrb",Connection.class,int.class,ArrayList.class);
+        export.setAccessible(true);
+        var row = new l1j.server.server.templates.L1ItemBookMark();
+        row.setId(123); row.setNumId(0); row.setSpeed_id(4); row.setName("test");
+        row.setLocX(33333); row.setLocY(33334); row.setMapId((short)4);
+        row.setRandomX(7); row.setRandomY(8);
+        ArrayList<l1j.server.server.templates.L1ItemBookMark> orbRows=new ArrayList<>();
+        orbRows.add(row);
+        Object[] bound=new Object[10];
+        int[] writes={0};
+        PreparedStatement insert=(PreparedStatement)Proxy.newProxyInstance(TestUserBookmark.class.getClassLoader(),
+                new Class<?>[]{PreparedStatement.class},(proxy,method,arguments)->{
+            switch(method.getName()) {
+                case "setInt": case "setString": bound[(int)arguments[0]-1]=arguments[1];return null;
+                case "executeUpdate": writes[0]++;return 1;
+                case "close": return null;
+                default: throw new UnsupportedOperationException(method.getName());
+            }
+        });
+        Connection orbCon=(Connection)Proxy.newProxyInstance(TestUserBookmark.class.getClassLoader(),
+                new Class<?>[]{Connection.class},(proxy,method,arguments)->{
+            if(method.getName().equals("prepareStatement")) {
+                check(((String)arguments[0]).contains("character_teleport_item"),"orb destination table");
+                return insert;
+            }
+            throw new UnsupportedOperationException(method.getName());
+        });
+        export.invoke(null,orbCon,999,orbRows);
+        check(writes[0]==1 && Arrays.equals(bound,new Object[]{123,0,4,999,"test",33333,33334,4,7,8}),
+                "orb identity, display order, shortcut and random offset preserved");
+        System.out.println("PASS orb SQL binding and schema title limit");
     }
 }

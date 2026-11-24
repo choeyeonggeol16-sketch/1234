@@ -38,6 +38,7 @@ public final class CUserBookmark {
     private final ArrayList<L1BookMark> slots = new ArrayList<>();
     private final ArrayList<L1BookMark> shortcuts = new ArrayList<>();
 
+    public int size() { return slots.size(); }
     public L1BookMark[] snapshotSlots() { return slots.toArray(new L1BookMark[slots.size()]); }
     public L1BookMark[] snapshotShortcuts() { return shortcuts.toArray(new L1BookMark[shortcuts.size()]); }
     // Package-local views for regression checks; no external mutable list aliases.
