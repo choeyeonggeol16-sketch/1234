@@ -1,10 +1,21 @@
 package l1j.server.server.model.npc.ai.action;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import sun.misc.Unsafe;
 
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.npc.ai.CNPCEvent;
+import l1j.server.server.model.npc.ai.CDesirePQ;
+import l1j.server.server.templates.L1Npc;
 import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1MobGroupInfo;
@@ -202,5 +213,158 @@ public final class TestNpcGuardGroup {
                 + "rejected, 140-target bounded prune, castle no-teleport "
                 + "home, leader succession/assist IDs, duplicate deletion, "
                 + "live-leader election, disband policy and cleanup");
+        testTargetEvents(unsafe, loc, hp, map, differentMap);
+    }
+
+    private static final class SightPc extends L1PcInstance {
+        boolean invisible;
+        @Override public boolean isInvisble() { return invisible; }
+    }
+
+    private static Field accessibleField(Class<?> type, String name) throws Exception {
+        final Field f = type.getDeclaredField(name);
+        f.setAccessible(true);
+        return f;
+    }
+
+    // Run real production inbox + desire/target code synchronously on a
+    // test-only owner. Only object identity and map/health are seeded;
+    // there is no socket, DB or running game server.
+    private static void testTargetEvents(Unsafe unsafe, Field loc, Field hp,
+            L1Map map, L1Map otherMap) throws Exception {
+        final L1World world = (L1World) unsafe.allocateInstance(L1World.class);
+        final Class<?> worldType = Class.forName("l1j.server.server.model.CWorld");
+        final Constructor<?> ctor = worldType.getDeclaredConstructor(L1World.class);
+        ctor.setAccessible(true);
+        final Object executor = ctor.newInstance(world);
+        accessibleField(L1World.class, "_worldExecutor").set(world, executor);
+        final Field singleton = accessibleField(L1World.class, "_instance");
+        final Object previous = singleton.get(null);
+        singleton.set(null, world);
+        final Object factory = accessibleField(worldType, "objectFactory").get(executor);
+        final Method install = factory.getClass().getDeclaredMethod("install", L1Object.class);
+        install.setAccessible(true);
+        final Method drain = CNpcAI.class.getDeclaredMethod("HandleEvent",
+                L1NpcInstance.class, long.class);
+        drain.setAccessible(true);
+        final Field templateField = accessibleField(L1NpcInstance.class, "_npcTemplate");
+        final Field maxHp = accessibleField(L1Character.class, "_maxHp");
+        final long now = System.currentTimeMillis();
+
+        try {
+            final L1Npc template = new L1Npc();
+            template.set_npcId(45001);
+            template.set_agro(true);
+            template.set_agrogfxid1(-1);
+            template.set_agrogfxid2(-1);
+            final L1MonsterInstance mob = fixture(unsafe, L1MonsterInstance.class,
+                    loc, hp, 984000, 20, 20, map);
+            templateField.set(mob, template);
+            maxHp.setInt(mob, 100);
+            mob._dropHateList = new L1HateList();
+            CCreatureController.currentAction(mob, CCreatureController.ACTION_THINK);
+            install.invoke(factory, mob);
+            final SightPc a = (SightPc) unsafe.allocateInstance(SightPc.class);
+            final SightPc b = (SightPc) unsafe.allocateInstance(SightPc.class);
+            a.setId(984001); b.setId(984002);
+            loc.set(a, new L1Location(21, 20, map));
+            loc.set(b, new L1Location(22, 20, map));
+            hp.setInt(a, 100); hp.setInt(b, 100);
+            install.invoke(factory, a); install.invoke(factory, b);
+
+            check(NpcEventFactory.isSightTargetCandidate(mob, a, now),
+                    "ordinary aggressive monster sees living PC");
+            template.set_agro(false);
+            check(!NpcEventFactory.isSightTargetCandidate(mob, a, now),
+                    "passive monster does not initiate normal attack");
+            template.set_agro(true);
+            a.invisible = true;
+            check(!NpcEventFactory.isSightTargetCandidate(mob, a, now),
+                    "normal monster does not see invisible PC");
+            template.set_agrocoi(true);
+            check(NpcEventFactory.isSightTargetCandidate(mob, a, now),
+                    "invisibility-detecting monster sees invisible PC");
+            template.set_agrocoi(false);
+            a.invisible = false;
+            a.setGhost(true);
+            check(!NpcEventFactory.isSightTargetCandidate(mob, a, now),
+                    "ghost excluded");
+            a.setGhost(false);
+            a.setPrivateShop(true);
+            check(!NpcEventFactory.isSightTargetCandidate(mob, a, now),
+                    "private shop excluded");
+            a.setPrivateShop(false);
+            hp.setInt(a, 0);
+            check(!NpcEventFactory.isSightTargetCandidate(mob, a, now), "zero HP excluded");
+            hp.setInt(a, 100);
+            loc.set(a, new L1Location(21, 20, otherMap));
+            check(!NpcEventFactory.isSightTargetCandidate(mob, a, now), "other map excluded");
+            loc.set(a, new L1Location(21, 20, map));
+
+            check(mob.PostNpcEvent(NpcEventFactory.CreateSeeCreatureEvent(mob, a)),
+                    "SEE event admitted");
+            check((boolean) drain.invoke(null, mob, now), "SEE consumed by production owner logic");
+            check(mob._target == a && mob._hateList.containsKey(a),
+                    "first SEE selects PC A without a hit");
+            check(mob.PostNpcEvent(NpcEventFactory.CreateAttackedEvent(mob, b, 95)),
+                    "ATTACKED event admitted");
+            check((boolean) drain.invoke(null, mob, now), "ATTACKED consumed");
+            check(mob._target == b, "higher damage PC B wins desire");
+            b.invisible = true;
+            check(CDesirePQ.topAttackTarget(mob, now) == a,
+                    "lost invisible target falls back to remaining admitted PC");
+            b.invisible = false;
+            check(mob.PostNpcEvent(NpcEventFactory.CreateAttackedEvent(mob, b, 95)),
+                    "returning attacker may be admitted again");
+            drain.invoke(null, mob, now);
+            check(mob._target == b, "visible attacker can win again");
+            b.setDead(true);
+            check(CDesirePQ.topAttackTarget(mob, now) == a,
+                    "dead current attacker retires, PC A remains");
+            b.setDead(false);
+
+            final L1GuardInstance guard = fixture(unsafe, L1GuardInstance.class,
+                    loc, hp, 984003, 20, 21, map);
+            templateField.set(guard, template);
+            guard.setHomeX(20); guard.setHomeY(21);
+            guard._dropHateList = new L1HateList();
+            CCreatureController.currentAction(guard, CCreatureController.ACTION_THINK);
+            check(guard.PostNpcEvent(NpcEventFactory.CreateSeeCreatureEvent(guard, mob)),
+                    "guard SEE admitted");
+            drain.invoke(null, guard, now);
+            check(guard._target == mob, "guard acquires living nearby monster");
+            check(!guard.isSightTargetCandidate(a), "ordinary guard does not auto-target PC");
+
+            for (Class<? extends L1NpcInstance> type : java.util.List.of(
+                    L1PetInstance.class, L1SummonInstance.class, L1CompanionInstance.class)) {
+                final L1NpcInstance follower = fixture(unsafe, type, loc, hp,
+                        984010 + type.getName().length(), 20, 22, map);
+                templateField.set(follower, template);
+                follower._dropHateList = new L1HateList();
+                follower.setFirstAttack(true);
+                CCreatureController.currentAction(follower, CCreatureController.ACTION_THINK);
+                check(follower.PostNpcEvent(NpcEventFactory.CreateHateEvent(follower, a, 10)),
+                        type.getSimpleName() + " first hate admitted");
+                drain.invoke(null, follower, now);
+                check(follower._target == a, type.getSimpleName() + " first target");
+                check(follower.PostNpcEvent(NpcEventFactory.CreateHateEvent(follower, b, 90)),
+                        type.getSimpleName() + " second hate admitted");
+                drain.invoke(null, follower, now);
+                check(follower._target == b, type.getSimpleName() + " higher hate target");
+                b.setDead(true);
+                follower.checkTarget();
+                check(follower._target == a, type.getSimpleName() + " dead-target fallback");
+                b.setDead(false);
+                loc.set(a, new L1Location(21, 20, otherMap));
+                follower.checkTarget();
+                check(follower._target == null, type.getSimpleName() + " map-change clear");
+                loc.set(a, new L1Location(21, 20, map));
+            }
+            System.out.println("PASS live NPC target events: initial SEE, passive/ghost/shop/map/HP gates, "
+                    + "invisibility detection, ATTACKED retarget, invisible/dead fallback, "
+                    + "guard acquisition and pet/summon/companion hate handoff");
+        } finally {
+            singleton.set(null, previous);
+        }
     }
 }
