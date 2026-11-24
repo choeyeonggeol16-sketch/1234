@@ -757,8 +757,9 @@ public final class CNpcAI {
             return false;
         }
 
-        // Retire the previous action before allTargetClear resets its action ID.
-        CCreatureController.cancelFromAi(npc);
+        // Retire the previous action and disarm its wheel deadline before
+        // allTargetClear resets its action ID.
+        CIOThreadCallback.getInstance().cancelNpcAction(npc);
         npc.allTargetClear();
         npc.npcChaseRetargetConsume();
         SC_DoActionGFX.broadcast(npc, animation);
@@ -848,9 +849,7 @@ public final class CNpcAI {
                             && npc.getLocation().getTileLineDistance(pc.getX(), pc.getY())
                                     <= (hidden == L1NpcInstance.HIDDEN_STATUS_SINK ? 2 : 1)
                             && npc.tryChangeHiddenStatus(hidden, L1NpcInstance.HIDDEN_STATUS_NONE)) {
-                        if (hidden == L1NpcInstance.HIDDEN_STATUS_FLY) {
-                            broadcastAirLanding(npc);
-                        } else {
+                        if (hidden == L1NpcInstance.HIDDEN_STATUS_SINK) {
                             SC_DoActionGFX.broadcast(npc, ActionCodes.ACTION_Appear);
                             npc.setStatus(0);
                             SC_WorldPutObject.broadcastNpc(npc);
@@ -863,6 +862,9 @@ public final class CNpcAI {
                                 attackDesireChanged = true;
                             }
                             changed = true;
+                        }
+                        if (hidden == L1NpcInstance.HIDDEN_STATUS_FLY) {
+                            broadcastAirLanding(npc);
                         }
                     }
                     continue;
