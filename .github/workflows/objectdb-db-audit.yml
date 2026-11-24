@@ -1,0 +1,115 @@
+name: Isolated ObjectDB and schema reference audit
+on:
+  push:
+    branches: ['rkern/objectdb-db-audit-20261124']
+    paths: ['.github/workflows/objectdb-db-audit.yml']
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify isolated branch and base
+        run: |
+          test "$GITHUB_REF" = "refs/heads/rkern/objectdb-db-audit-20261124"
+          test "$(git rev-parse HEAD^)" = "54850167ed81f367a4a44fb0677c9b95c1f5348f"
+      - name: Audit exact source and remove old table classes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json, collections
+          
+          root=Path("rkern/src")
+          base=root/"l1j/server/server/datatables"
+          owner=base/"CObjectDB.java"
+          mapping={"ItemTable":("ItemData","LoadItem","ReloadItem"),"NpcTable":("NpcData","LoadNPC","ReloadNPC"),"ArmorSetTable":("SetData","LoadSetItem","ReloadSetItem")}
+          tables=set("_cha_inv_items accessory_enchant_list accounts adshop area armor armor_enchant_list armor_set attendance attendance_item attendance_item_pc attendance_startup attendance_userinfo auction autoloot ban_ip beginner beginner_addteleport beginner_teleport board board_auction board_free board_item board_mjlfc board_mjnotice board_notice board_notice1 board_notice2 board_notice3 board_posts_fix bonus_item bug_history buyeritem cached_transaction_receipts castle character_auto_resol character_auto_root character_auto_set character_blocks character_buddys character_buff character_config character_elf_warehouse character_exclude character_exp_cache character_fairly_config character_items character_level_gifts character_new_quest character_package_warehouse character_pending_credits character_quest_monster character_quests character_shop character_shop_store character_skills character_slot_items character_soldier character_special_warehouse character_supplementary_service character_tams character_teleport character_teleport_item character_warehouse characters clan_bless_buff clan_data clan_matching_apclist clan_matching_list clan_warehouse clan_warehouse_list clan_warehouse_log clan_warehousehistory commands companion_buff companion_category companion_class companion_class_skills companion_elemental companion_friend_ship_bonus companion_hunting_ground companion_instance companion_instance_buff companion_instance_skills companion_joke_effect companion_penalty companion_potion_info companion_settings companion_skills companion_skills_enchant companion_skills_open companion_stat_effects craft_probability craftlist dogfight_fighter_info dogfight_fighter_trigger dogfight_game_info dogfight_history dogfight_item_id dogfight_log_buying dogfight_log_selling dogfight_settings dogfight_skills drop_item droplist droplist_adena dungeon dungeon_random etcitem fishing_exp_info getback getback_restart house inn item_key_boss letter letter_command letter_spam levelup_quests_item map_user_teleport mapids meep mobgroup mobskill monster_paralyze nodropitem noshopandware notice notradable npc npc_born npc_speed_data npcaction npcchat passive_book_mapped passive_user_info payment_cipher payment_info petitem pets pettypes polymorphs pride_items pss_daily_usage quest_monster quest_view report resolvent resolvent1 robot_name royal royal2 shop shop_aden shop_npc shop_npc2 shop_npc3 skills spawnlist spawnlist_boss_hot spawnlist_door spawnlist_fantasyisland spawnlist_furniture spawnlist_hadin spawnlist_light spawnlist_npc spawnlist_npc_cash_shop spawnlist_npc_shop spawnlist_npc_shop2 spawnlist_npc_shop3 spawnlist_trap spawnlist_ub spawnlist_valakas_room spr_action spr_boundary spr_info tam tb_act_listener_linkage_item tb_act_listener_npc tb_act_listener_npc_combat tb_act_listener_npc_dungeon_telepeorter tb_act_listener_npc_teleporter tb_act_listener_npc_time_combat tb_act_listener_npc_time_teleporter tb_alchemy_probability tb_captcha tb_character_block tb_character_bonus tb_combat_bt_area_information tb_combat_bt_bosses tb_combat_bt_chest_information tb_combat_bt_chest_items tb_combat_bt_drop_items tb_combat_bt_monsters tb_combat_informations tb_combat_rewards tb_combat_team_informations tb_combat_towers tb_combat_traps tb_designate_teleport_scroll tb_dungeon_time_account_information tb_dungeon_time_char_information tb_dungeon_time_information tb_dungeon_time_potion tb_enchanters tb_enchanties tb_increase_einhasad_map tb_index_stamp tb_inn_helper tb_inn_mapinfo tb_itemskill_model tb_kda tb_lateral_status tb_lfccompensate tb_lfctypes tb_magicdelay tb_mbook_characterinfo tb_mbook_information tb_mbook_reward_info tb_mbook_reward_items tb_mbook_wq_decks tb_mbook_wq_information tb_mbook_wq_reward_info tb_mbook_wq_reward_items tb_mbook_wq_startup tb_mjct_mapping tb_mjct_spellicon tb_mjeffects tb_mjexpampsystem tb_mjraid_combo tb_mjraid_compensators tb_mjraid_creator_items tb_mjraid_skills tb_mjraid_spawns tb_mjraid_types tb_mjspell_def tb_npc_mark tb_servermacro tb_sleeping_messages tower_of_dominance town trap ub_managers ub_rank ub_settings ub_times userprotectmonster util_racer weapon weapon_balance weapon_damege weapon_enchant_list weapon_skill".split())
+          assert len(tables)==253
+          lex=re.compile(r'//[^\r\n]*|/\*[\s\S]*?\*/|"""[\s\S]*?"""|"(?:\\[\s\S]|[^"\\])*"|\'(?:\\[\s\S]|[^\'\\])*\'')
+          def mask(s, strings=True):
+              return lex.sub(lambda m:re.sub(r"[^\r\n]"," ",m.group()) if strings or m.group().startswith(("//","/*")) else m.group(),s)
+          def replace(s,pat,repl):
+              for m in reversed(list(re.finditer(pat,mask(s),re.M))):
+                  s=s[:m.start()]+(repl(m) if callable(repl) else repl)+s[m.end():]
+              return s
+          names=r"\b(?:ItemTable|NpcTable|ArmorSetTable)\b"
+          paths=sorted(root.rglob("*.java"))
+          assert len(paths)==1833, len(paths)
+          oldfiles=[base/(n+".java") for n in mapping]
+          assert all(p.is_file() for p in oldfiles)
+          changed=[]
+          for p in paths:
+              if p in oldfiles: continue
+              orig=p.read_bytes().decode("utf-8")
+              if not re.search(names,mask(orig)): continue
+              s=orig
+              if p==owner:
+                  for old,(new,_,__) in mapping.items():
+                      s=re.sub(r"\b"+old+r"\b",new,s)
+                      s=s.replace("public static class "+new+" {","public static final class "+new+" {")
+              else:
+                  s=replace(s,r"^[ \t]*import[ \t]+l1j\.server\.server\.datatables\.(?:ItemTable|NpcTable|ArmorSetTable)[ \t]*;[ \t]*(?:\r?\n|$)","")
+                  prefix=r"(?:(l1j\.server\.server\.datatables\.)\s*)?"
+                  for old,(new,load,reload) in mapping.items():
+                      for meth,target in (("getInstance",load),("reload",reload)):
+                          s=replace(s,prefix+r"\b"+old+r"\s*\.\s*"+meth+r"\s*\(\s*\)",lambda m:(m.group(1) or "")+"CObjectDB."+target+"()")
+                      s=replace(s,prefix+r"\b"+old+r"\b",lambda m:(m.group(1) or "")+"CObjectDB."+new)
+                  if re.search(r"(?<![\w.])CObjectDB\b",mask(s)) and not re.search(r"(?m)^\s*package\s+l1j\.server\.server\.datatables\s*;",mask(s)) and not re.search(r"(?m)^\s*import\s+l1j\.server\.server\.datatables\.CObjectDB\s*;",mask(s)):
+                      m=re.search(r"(?m)^[ \t]*import\s+",mask(s))
+                      if m:
+                          s=s[:m.start()]+"import l1j.server.server.datatables.CObjectDB;\n"+s[m.start():]
+                      else:
+                          m=re.search(r"\bpackage\s+[\w.]+\s*;",mask(s))
+                          assert m,p
+                          s=s[:m.end()]+"\n\nimport l1j.server.server.datatables.CObjectDB;\n"+s[m.end():]
+                  for m in lex.finditer(s):
+                      if m.group().startswith('"') and re.search(r"l1j\.server\.server\.datatables\.(?:ItemTable|NpcTable|ArmorSetTable)\b",m.group()):
+                          raise AssertionError(("reflective string",str(p),m.group()))
+              assert not re.search(names,mask(s)),str(p)
+              if s!=orig:
+                  p.write_bytes(s.encode("utf-8"))
+                  changed.append(str(p))
+          for p in oldfiles:
+              p.unlink()
+          remaining=[]
+          all_name=collections.defaultdict(set)
+          string_name=collections.defaultdict(set)
+          dynamic=[]
+          for p in sorted(root.rglob("*")):
+              if not p.is_file(): continue
+              try:s=p.read_bytes().decode("utf-8")
+              except UnicodeDecodeError: continue
+              if p.suffix==".java":
+                  if re.search(names,mask(s)): remaining.append(str(p))
+                  words=set(re.findall(r"\b\w+\b",mask(s,False).lower()))
+                  string_words=set()
+                  for m in lex.finditer(s):
+                      a=m.group()
+                      if not a.startswith('"'): continue
+                      string_words.update(re.findall(r"\b\w+\b",a.lower()))
+                      if re.search(r"\b(?:from|join|into|update|table|truncate)\s*(?:\x60?|\s*)$",a[1:-1],re.I) or re.search(r"\b(?:from|join|into|update|table)\s+[%{?]",a,re.I):
+                          line=s.count("\n",0,m.start())+1
+                          context=" ".join(s.splitlines()[max(0,line-2):line+2]).strip()
+                          dynamic.append({"file":str(p),"line":line,"context":context[:360]})
+              else:
+                  words=set(re.findall(r"\b\w+\b",s.lower()))
+                  string_words=words
+              for t in words & tables: all_name[t].add(str(p))
+              for t in string_words & tables: string_name[t].add(str(p))
+          assert not remaining, remaining
+          report={"baseline":"54850167ed81f367a4a44fb0677c9b95c1f5348f","java_before":len(paths),"java_after":len(list(root.rglob("*.java"))),"deleted":[str(p) for p in oldfiles],"modified":changed,"remaining_executable_legacy_refs":remaining,"tables":len(tables),"absent_executable_name":sorted(tables-set(all_name)),"absent_string_name":sorted(tables-set(string_name)),"table_source_paths":{t:sorted(all_name[t]) for t in sorted(tables)},"table_string_paths":{t:sorted(string_name[t]) for t in sorted(tables)},"dynamic_sql_fragments":dynamic}
+          Path("rkern/db-object-audit.json").write_text(json.dumps(report,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+          print(json.dumps({k:v for k,v in report.items() if k not in ("table_source_paths","table_string_paths","dynamic_sql_fragments")},ensure_ascii=False),flush=True)
+          print("DYNAMIC FRAGMENTS",len(dynamic),flush=True)
+          PY
+          git diff --check
+          git diff --stat
+      - name: Store isolated result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- rkern/src rkern/db-object-audit.json
+          git commit -m "Remove ObjectDB table compatibility classes after full-source reference audit"
+          git push origin HEAD:refs/heads/rkern/objectdb-db-audit-20261124
