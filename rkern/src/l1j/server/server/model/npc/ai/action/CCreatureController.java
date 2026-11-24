@@ -4,6 +4,7 @@ import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.L1MobSkillUse;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -842,6 +843,20 @@ public final class CCreatureController {
         }
         CCreatureController.pendingAction(creature, ACTION_NONE);
         CCreatureController.currentAction(creature, ACTION_THINK);
+
+        // Death confirmation and reward completion both reuse this owner
+        // cancellation. Do not clear contribution while rewards are pending.
+        if (creature.isDead() && !creature.isDestroyed()) {
+            L1MobSkillUse.resetAllSkillUseCount(creature);
+            if (!creature.isDeathProcessing()) {
+                synchronized (creature) {
+                    if (creature.isDead() && !creature.isDestroyed()
+                            && !creature.isDeathProcessing()) {
+                        creature.allTargetClear();
+                    }
+                }
+            }
+        }
     }
 
     public static boolean isCombatAction(final byte action) {
