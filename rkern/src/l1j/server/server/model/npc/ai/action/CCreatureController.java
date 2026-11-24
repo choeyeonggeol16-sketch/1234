@@ -796,8 +796,8 @@ public final class CCreatureController {
     }
 
     /**
-     * AI stop/delete bridge. Must run on the fixed CIO owner so ThreadLocal
-     * movement intent/path state is cleared on the same thread that created it.
+     * AI stop/delete bridge. The fixed CIO owner retires movement action
+     * payload and its owner-local PathFinder state together.
      */
     public static void cancelFromAi(final L1NpcInstance creature) {
         if (creature == null) {
@@ -813,7 +813,7 @@ public final class CCreatureController {
         // Cancellation does not invoke transitionFrom(). The normal exit
         // from a random walk does, so mirror its cleanup here before this
         // NPC can be reactivated or have its object id reused.
-        dMoveFormation.clearIfActive(creature);
+        SetMoving.clearActionMoveState(creature);
         if (CCreatureController.currentAction(creature) == ACTION_MOVE_AROUND_NATIVE) {
             CMoveAroundAction.onInterrupted(creature);
         } else if ((CCreatureController.currentAction(creature) == ACTION_MOVE_TO_POINT

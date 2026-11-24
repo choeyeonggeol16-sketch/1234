@@ -112,7 +112,7 @@ public final class CMoveToTargetAction {
             discardObsoleteAttackSlot(monster, creature.getTarget());
         }
 
-        MoveIntentCache.clearPassingDestination(creature);
+        SetMoving.clearPassingDestination(creature);
         SetMoving.clear(creature);
         CMoveToTargetWaitAction.clear(creature);
         CMoveAction.resetMoveBlockedState(creature);
@@ -247,13 +247,13 @@ public final class CMoveToTargetAction {
 
             // Passing position was selected on an earlier blocked tick. Do not
             // make a second physical step in the same CIO callback.
-            final long passing = MoveIntentCache.getPassingDestination(
+            final long passing = SetMoving.getPassingDestination(
                     monster, target, System.currentTimeMillis());
-            if (passing != MoveIntentCache.NO_POS) {
-                final int wx = MoveIntentCache.unpackX(passing);
-                final int wy = MoveIntentCache.unpackY(passing);
+            if (passing != SetMoving.NO_POS) {
+                final int wx = SetMoving.unpackX(passing);
+                final int wy = SetMoving.unpackY(passing);
                 if (wx == monster.getX() && wy == monster.getY()) {
-                    MoveIntentCache.clearPassingDestination(monster);
+                    SetMoving.clearPassingDestination(monster);
                 } else {
                     final int beforeX = monster.getX();
                     final int beforeY = monster.getY();
@@ -261,7 +261,7 @@ public final class CMoveToTargetAction {
                     if (monster.isDead() || monster.getTarget() != target
                             || monster.npcActionGeneration() != actionGeneration
                             || CCreatureController.currentAction(monster) != expectedAction) {
-                        MoveIntentCache.clearPassingDestination(monster);
+                        SetMoving.clearPassingDestination(monster);
                         return CCreatureController.RESULT_INVALID;
                     }
                     if (code == SetMoving.RUNNING) {
@@ -270,7 +270,7 @@ public final class CMoveToTargetAction {
                         }
                         return CCreatureController.RESULT_RUNNING;
                     }
-                    MoveIntentCache.clearPassingDestination(monster);
+                    SetMoving.clearPassingDestination(monster);
                     if (code != SetMoving.AT_DISTANCE) {
                         CCreatureController.sleep(monster, DYNAMIC_BLOCK_RETRY_MS);
                         return CCreatureController.RESULT_RUNNING;
@@ -307,7 +307,7 @@ public final class CMoveToTargetAction {
                 && CCreatureController.currentAction(creature) == expectedAction) {
             final L1MonsterInstance monster = (L1MonsterInstance) creature;
             UpdateAttackLeaderRelated(monster, target);
-            if (MoveIntentCache.reportChaseStep(monster, target,
+            if (SetMoving.reportChaseStep(monster, target,
                     stepBeforeX, stepBeforeY, creature.getX(), creature.getY())) {
                 SetMoving.clear(monster);
                 if (CMoveToTargetRelativeAction.GetMeleeAttackPosition(monster, target)) {
@@ -660,7 +660,7 @@ public final class CMoveToTargetAction {
             AbandonObsoleteAttackLeader(monster, creature.getTarget());
             clearReservedAttackSlot(monster);
         }
-        MoveIntentCache.clearPassingDestination(creature);
+        SetMoving.clearPassingDestination(creature);
         if (!enteringWait) {
             SetMoving.clear(creature);
             CMoveToTargetWaitAction.clear(creature);
@@ -695,7 +695,7 @@ public final class CMoveToTargetAction {
             CDesirePQ.releaseBlockedAttack(monster);
         }
 
-        MoveIntentCache.clearPassingDestination(creature);
+        SetMoving.clearPassingDestination(creature);
         SetMoving.clear(creature);
         CMoveToTargetWaitAction.clear(creature);
         CMoveAction.resetMoveBlockedState(creature);
@@ -749,7 +749,7 @@ public final class CMoveToTargetAction {
                 || CCreatureController.currentAction(monster) != expectedAction) {
             return CCreatureController.RESULT_INVALID;
         }
-        MoveIntentCache.setPassingDestination(monster, target,
+        SetMoving.setPassingDestination(monster, target,
                 x, y, System.currentTimeMillis() + PASSING_INTENT_MS);
         CCreatureController.sleep(monster, 100L);
         return CCreatureController.RESULT_RUNNING;
@@ -858,9 +858,9 @@ public final class CMoveToTargetAction {
             UpdateAttackLeaderRelated(monster, target);
             monster._desireResumeAttackBlockedRetries = 0;
             monster._pathFindFailCount = 0;
-            if (MoveIntentCache.reportChaseStep(monster, target,
+            if (SetMoving.reportChaseStep(monster, target,
                     oldX, oldY, monster.getX(), monster.getY())) {
-                MoveIntentCache.rejectMeleeAttackPosition(
+                CMoveToTargetRelativeAction.rejectMeleeAttackPosition(
                         monster, target, slotX, slotY,
                         System.currentTimeMillis() + FAILED_MELEE_POSITION_COOLDOWN_MS);
                 clearReservedAttackSlot(monster);
@@ -877,7 +877,7 @@ public final class CMoveToTargetAction {
                 monster._pathFindFailCount = 0;
                 return CCreatureController.RESULT_RUNNING;
             }
-            MoveIntentCache.rejectMeleeAttackPosition(
+            CMoveToTargetRelativeAction.rejectMeleeAttackPosition(
                     monster, target, slotX, slotY,
                     System.currentTimeMillis() + FAILED_MELEE_POSITION_COOLDOWN_MS);
             clearReservedAttackSlot(monster);
@@ -888,7 +888,7 @@ public final class CMoveToTargetAction {
             final boolean attackable = monster.isAttackPosition(
                     target, monster.getNpcTemplate().get_ranged());
             if (!attackable) {
-                MoveIntentCache.rejectMeleeAttackPosition(
+                CMoveToTargetRelativeAction.rejectMeleeAttackPosition(
                         monster, target, slotX, slotY,
                         System.currentTimeMillis() + FAILED_MELEE_POSITION_COOLDOWN_MS);
             }

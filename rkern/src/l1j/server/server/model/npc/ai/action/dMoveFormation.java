@@ -30,15 +30,15 @@ public final class dMoveFormation {
 
     static long formationPosition(final int x, final int y, final int heading,
             final int index) {
-        if (index < 0) return MoveIntentCache.NO_POS;
+        if (index < 0) return SetMoving.NO_POS;
         final int radius = ((index >>> 3) + 1) * 2;
         final int dir = (heading + ORDER[index & 7]) & 7;
-        return MoveIntentCache.pack(x + DX[dir] * radius, y + DY[dir] * radius);
+        return SetMoving.pack(x + DX[dir] * radius, y + DY[dir] * radius);
     }
 
     private static boolean valid(final L1NpcInstance npc, final long pos) {
-        if (pos == MoveIntentCache.NO_POS) return false;
-        final int x = MoveIntentCache.unpackX(pos), y = MoveIntentCache.unpackY(pos);
+        if (pos == SetMoving.NO_POS) return false;
+        final int x = SetMoving.unpackX(pos), y = SetMoving.unpackY(pos);
         final L1Map map = npc.getMap();
         return map != null && map.isInMap(x, y) && map.isPassable(x, y)
                 && ((x == npc.getX() && y == npc.getY())
@@ -48,37 +48,37 @@ public final class dMoveFormation {
 
     private static long fallback(final L1NpcInstance npc, final L1NpcInstance leader,
             final long primary, final long rejected) {
-        final int x = MoveIntentCache.unpackX(primary), y = MoveIntentCache.unpackY(primary);
-        long best = MoveIntentCache.NO_POS, distance = Long.MAX_VALUE;
+        final int x = SetMoving.unpackX(primary), y = SetMoving.unpackY(primary);
+        long best = SetMoving.NO_POS, distance = Long.MAX_VALUE;
         // A one-tile sidestep normally avoids taking another assigned slot.
         for (int i = 0; i < 8; i++) {
             final int dir = (i + npc.getFormationIndex()) & 7;
-            final long pos = MoveIntentCache.pack(x + DX[dir], y + DY[dir]);
+            final long pos = SetMoving.pack(x + DX[dir], y + DY[dir]);
             if (pos == rejected || !valid(npc, pos)) continue;
-            if (MoveIntentCache.unpackX(pos) == leader.getX()
-                    && MoveIntentCache.unpackY(pos) == leader.getY()) continue;
-            final long dx = (long) MoveIntentCache.unpackX(pos) - npc.getX();
-            final long dy = (long) MoveIntentCache.unpackY(pos) - npc.getY();
+            if (SetMoving.unpackX(pos) == leader.getX()
+                    && SetMoving.unpackY(pos) == leader.getY()) continue;
+            final long dx = (long) SetMoving.unpackX(pos) - npc.getX();
+            final long dy = (long) SetMoving.unpackY(pos) - npc.getY();
             final long d = dx * dx + dy * dy;
             if (d < distance) {
                 best = pos;
                 distance = d;
             }
         }
-        if (best != MoveIntentCache.NO_POS) return best;
+        if (best != SetMoving.NO_POS) return best;
         final long nearby = CMoveAction.GetFollowPosition(npc, leader);
-        return nearby != rejected && valid(npc, nearby) ? nearby : MoveIntentCache.NO_POS;
+        return nearby != rejected && valid(npc, nearby) ? nearby : SetMoving.NO_POS;
     }
 
     private static void remember(final L1NpcInstance npc, final L1NpcInstance leader,
             final long primary, final long goal, final long now) {
-        MoveIntentCache.clearProgress(npc);
-        MoveIntentCache.clearWait(npc);
-        MoveIntentCache.setGoal(npc, MoveIntentCache.KIND_FORMATION, leader.getId(),
-                MoveIntentCache.unpackX(primary), MoveIntentCache.unpackY(primary),
-                MoveIntentCache.unpackX(goal), MoveIntentCache.unpackY(goal));
+        SetMoving.clearProgress(npc);
+        dMoveFormation.clearWait(npc);
+        CMoveAction.setGoal(npc, SetMoving.KIND_FORMATION, leader.getId(),
+                SetMoving.unpackX(primary), SetMoving.unpackY(primary),
+                SetMoving.unpackX(goal), SetMoving.unpackY(goal));
         if (goal != primary) {
-            MoveIntentCache.beginWait(npc, now + RETRY_PRIMARY_MS, WAIT_FALLBACK);
+            dMoveFormation.beginWait(npc, now + RETRY_PRIMARY_MS, WAIT_FALLBACK);
         }
     }
 
@@ -106,21 +106,21 @@ public final class dMoveFormation {
         final int index = relativeIndex(npc.getFormationIndex(), leader.getFormationIndex());
         final long primary = formationPosition(leader.getX(), leader.getY(),
                 leader.getHeading(), index);
-        if (primary == MoveIntentCache.NO_POS) {
+        if (primary == SetMoving.NO_POS) {
             clear(npc);
             CCreatureController.sleep(npc, 500L);
             return false;
         }
 
         final long now = System.currentTimeMillis();
-        long goal = MoveIntentCache.getGoal(npc, MoveIntentCache.KIND_FORMATION,
-                leader.getId(), MoveIntentCache.unpackX(primary),
-                MoveIntentCache.unpackY(primary), 0);
+        long goal = CMoveAction.getGoal(npc, SetMoving.KIND_FORMATION,
+                leader.getId(), SetMoving.unpackX(primary),
+                SetMoving.unpackY(primary), 0);
         if (!valid(npc, goal) || (goal != primary
-                && MoveIntentCache.waitUntil(npc) <= now)) {
+                && dMoveFormation.waitUntil(npc) <= now)) {
             goal = valid(npc, primary) ? primary
-                    : fallback(npc, leader, primary, MoveIntentCache.NO_POS);
-            if (goal == MoveIntentCache.NO_POS) {
+                    : fallback(npc, leader, primary, SetMoving.NO_POS);
+            if (goal == SetMoving.NO_POS) {
                 clear(npc);
                 CCreatureController.sleep(npc, 500L);
                 return false;
@@ -138,12 +138,12 @@ public final class dMoveFormation {
         if (result == CCreatureController.RESULT_BLOCKED
                 || result == CCreatureController.RESULT_INVALID) {
             final long alternate = fallback(npc, leader, primary, goal);
-            if (alternate != MoveIntentCache.NO_POS) {
+            if (alternate != SetMoving.NO_POS) {
                 remember(npc, leader, primary, alternate, now);
             } else {
                 // stepFollowGoal may already have cleared KIND_FORMATION.
                 // Retire its remaining wait/progress and path on this owner.
-                MoveIntentCache.clearAll(npc);
+                SetMoving.clearActionMoveState(npc);
                 SetMoving.clear(npc);
             }
             CCreatureController.sleep(npc, Math.max(npc.getSleepTime(), 300L));
@@ -152,10 +152,51 @@ public final class dMoveFormation {
     }
 
     static void clearIfActive(final L1NpcInstance npc) {
-        if (MoveIntentCache.clearFormation(npc)) SetMoving.clear(npc);
+        if (dMoveFormation.clearFormation(npc)) SetMoving.clear(npc);
     }
 
     static void clear(final L1NpcInstance npc) {
         clearIfActive(npc);
+    }
+
+    static void beginWait(
+            final L1NpcInstance npc,
+            final long untilMs,
+            final byte reason) {
+
+        if (npc == null || npc.getId() == 0) {
+            return;
+        }
+
+        SetMoving.initActionMoveState(npc);
+
+        npc._actionMoveWaitUntil = untilMs;
+        npc._actionMoveWaitReason = reason;
+    }
+
+    static long waitUntil(final L1NpcInstance npc) {
+        if (npc == null || npc.getId() == 0) {
+            return 0L;
+        }
+
+        return SetMoving.hasActionMoveState(npc) ? npc._actionMoveWaitUntil : 0L;
+    }
+
+    static void clearWait(final L1NpcInstance npc) {
+        if (npc == null || npc.getId() == 0) {
+            return;
+        }
+
+        if (SetMoving.hasActionMoveState(npc)) {
+            npc._actionMoveWaitUntil = 0L;
+            npc._actionMoveWaitReason = 0;
+        }
+    }
+
+    static boolean clearFormation(final L1NpcInstance npc) {
+        if (npc == null || npc.getId() == 0) return false;
+        if (!SetMoving.hasActionMoveState(npc) || npc._actionMoveKind != SetMoving.KIND_FORMATION) return false;
+        SetMoving.clearActionMoveState(npc);
+        return true;
     }
 }

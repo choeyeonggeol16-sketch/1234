@@ -88,7 +88,7 @@ public final class TestNpcMoveTo {
                 "out-of-bounds L1 static MoveTo destination rejected");
 
         npc._scriptMoveMapId = npc.getMapId();
-        npc._scriptMoveGoalXY = MoveIntentCache.pack(10, 10);
+        npc._scriptMoveGoalXY = SetMoving.pack(10, 10);
         npc._aiAction = CCreatureController.ACTION_MOVE_TO_POINT;
         check(CMoveAction.onTick(npc, CCreatureController.ACTION_MOVE_TO_POINT)
                 == CCreatureController.RESULT_DONE,
@@ -142,7 +142,7 @@ public final class TestNpcMoveTo {
         npc._target = target;
         npc._aiAction = CCreatureController.ACTION_MOVE_TO_POINT;
         npc._scriptMoveMapId = npc.getMapId();
-        npc._scriptMoveGoalXY = MoveIntentCache.pack(10, 10);
+        npc._scriptMoveGoalXY = SetMoving.pack(10, 10);
         CMoveAction.onEnd(npc, CCreatureController.ACTION_MOVE_TO_POINT,
                 CCreatureController.RESULT_DONE);
         check(npc._scriptMoveMapId == -1 && npc._scriptMoveGoalXY == 0L,
@@ -174,7 +174,7 @@ public final class TestNpcMoveTo {
         loc.set(probe, new L1Location(10, 10, map));
         hp.setInt(probe, 100);
         probe._scriptMoveMapId = probe.getMapId();
-        probe._scriptMoveGoalXY = MoveIntentCache.pack(21, 22);
+        probe._scriptMoveGoalXY = SetMoving.pack(21, 22);
         probe._aiAction = CCreatureController.ACTION_MOVE_TO_POINT;
         CMoveAction.onEnd(probe, CCreatureController.ACTION_MOVE_TO_POINT,
                 CCreatureController.RESULT_DONE);
@@ -192,7 +192,7 @@ public final class TestNpcMoveTo {
                 "native MoveToTarget completion must not emit MoveToFinished");
         probe._aiAction = CCreatureController.ACTION_MOVE_TO_POINT;
         probe._scriptMoveMapId = probe.getMapId();
-        probe._scriptMoveGoalXY = MoveIntentCache.pack(30, 30);
+        probe._scriptMoveGoalXY = SetMoving.pack(30, 30);
         CMoveAction.onEnd(probe, CCreatureController.ACTION_MOVE_TO_POINT,
                 CCreatureController.RESULT_INVALID);
         check(probe.completions == 1,

@@ -2126,4 +2126,139 @@ public final class SetMoving {
         return dx * dx + dy * dy
                 <= d * d;
     }
+
+    // Shared primitive representation of the current move Action's payload.
+    static final long NO_POS = Long.MIN_VALUE;
+    static final byte KIND_NONE = 0;
+    static final byte KIND_COMBAT = 1;
+    static final byte KIND_FOLLOW = 2;
+    static final byte KIND_FORMATION = 3;
+
+    private static long actionMoveKey(final L1NpcInstance npc) {
+        return ((long) npc.getId() << 32) ^ (npc.getMapId() & 0xffffffffL);
+    }
+
+    static boolean hasActionMoveState(final L1NpcInstance npc) {
+        return npc != null && npc.getId() != 0
+                && npc._actionMoveKey == actionMoveKey(npc);
+    }
+
+    static void initActionMoveState(final L1NpcInstance npc) {
+        if (hasActionMoveState(npc)) return;
+        clearActionMoveState(npc);
+        npc._actionMoveKey = actionMoveKey(npc);
+    }
+
+    /** Full actor/life/map retirement, not an ordinary path-segment reset. */
+    public static void clearActionMoveState(final L1NpcInstance npc) {
+        if (npc == null) return;
+        npc._actionMoveKey = 0L;
+        npc._actionMoveKind = KIND_NONE;
+        npc._actionMoveAnchorId = 0;
+        npc._actionMoveAnchorPos = NO_POS;
+        npc._actionMoveGoalPos = NO_POS;
+        npc._actionMovePassingUntil = 0L;
+        npc._actionMovePreviousOrigin = NO_POS;
+        npc._actionMoveNoProgress = 0;
+        npc._actionMoveRejectedMeleeMask = 0;
+        npc._actionMoveWaitUntil = 0L;
+        npc._actionMoveWaitReason = 0;
+    }
+
+    static long pack(final int x, final int y) {
+        return ((long) x << 32) ^ (y & 0xffffffffL);
+    }
+
+    static int unpackX(final long packed) {
+        return (int) (packed >> 32);
+    }
+
+    static int unpackY(final long packed) {
+        return (int) packed;
+    }
+
+    static boolean reportChaseStep(final L1NpcInstance npc,
+            final L1Character target, final int beforeX, final int beforeY,
+            final int afterX, final int afterY) {
+        if (npc == null || target == null || npc.getId() == 0
+                || (beforeX == afterX && beforeY == afterY)) {
+            return false;
+        }
+        SetMoving.initActionMoveState(npc);
+        final long targetPos = SetMoving.pack(target.getX(), target.getY());
+        if (npc._actionMoveKind != SetMoving.KIND_COMBAT
+                || npc._actionMoveAnchorId != target.getId()
+                || npc._actionMoveAnchorPos != targetPos) {
+            npc._actionMoveKind = SetMoving.KIND_COMBAT;
+            npc._actionMoveAnchorId = target.getId();
+            npc._actionMoveAnchorPos = targetPos;
+            npc._actionMoveGoalPos = SetMoving.NO_POS;
+            npc._actionMovePassingUntil = 0L;
+            npc._actionMoveRejectedMeleeMask = 0;
+            npc._actionMoveWaitUntil = 0L;
+            npc._actionMoveWaitReason = 0;
+            npc._actionMovePreviousOrigin = SetMoving.NO_POS;
+            npc._actionMoveNoProgress = 0;
+        }
+        final boolean reversed = npc._actionMovePreviousOrigin != SetMoving.NO_POS
+                && npc._actionMovePreviousOrigin == SetMoving.pack(afterX, afterY);
+        final int reversals = reversed
+                ? Math.min(2, (npc._actionMoveNoProgress & 0xff) + 1) : 0;
+        npc._actionMovePreviousOrigin = SetMoving.pack(beforeX, beforeY);
+        npc._actionMoveNoProgress = (byte) reversals;
+        if (reversals < 2) return false;
+        // The step is already committed; only the next timer may move again.
+        npc._actionMovePreviousOrigin = SetMoving.NO_POS;
+        npc._actionMoveNoProgress = 0;
+        return true;
+    }
+
+    static void setPassingDestination(final L1NpcInstance npc,
+            final L1Character target, final int x, final int y,
+            final long untilMs) {
+        if (npc == null || target == null || npc.getId() == 0) return;
+        SetMoving.initActionMoveState(npc);
+        npc._actionMoveKind = SetMoving.KIND_COMBAT;
+        npc._actionMoveAnchorId = target.getId();
+        npc._actionMoveAnchorPos = SetMoving.pack(target.getX(), target.getY());
+        npc._actionMoveGoalPos = SetMoving.pack(x, y);
+        npc._actionMovePassingUntil = untilMs;
+    }
+
+    static long getPassingDestination(final L1NpcInstance npc,
+            final L1Character target, final long nowMs) {
+        if (npc == null || target == null || npc.getId() == 0) return SetMoving.NO_POS;
+        if (!SetMoving.hasActionMoveState(npc)
+                || npc._actionMoveKind != SetMoving.KIND_COMBAT
+                || npc._actionMoveAnchorId != target.getId()
+                || npc._actionMoveAnchorPos != SetMoving.pack(target.getX(), target.getY())
+                || nowMs >= npc._actionMovePassingUntil) {
+            if (SetMoving.hasActionMoveState(npc)
+                    && npc._actionMoveKind == KIND_COMBAT) {
+                npc._actionMoveGoalPos = NO_POS;
+                npc._actionMovePassingUntil = 0L;
+            }
+            return SetMoving.NO_POS;
+        }
+        return npc._actionMoveGoalPos;
+    }
+
+    static void clearPassingDestination(final L1NpcInstance npc) {
+        if (npc == null || npc.getId() == 0) return;
+        if (SetMoving.hasActionMoveState(npc) && npc._actionMoveKind == SetMoving.KIND_COMBAT) {
+            npc._actionMoveGoalPos = SetMoving.NO_POS;
+            npc._actionMovePassingUntil = 0L;
+        }
+    }
+
+    static void clearProgress(final L1NpcInstance npc) {
+        if (npc == null || npc.getId() == 0) {
+            return;
+        }
+
+        if (SetMoving.hasActionMoveState(npc)) {
+            npc._actionMoveNoProgress = 0;
+            npc._actionMovePreviousOrigin = SetMoving.NO_POS;
+        }
+    }
 }

@@ -162,8 +162,8 @@ public final class CMoveAction {
                 clearScriptMove(creature);
                 CCreatureController.doPendingAction(creature);
                 creature.onMoveToFinished(
-                        MoveIntentCache.unpackX(completedXY),
-                        MoveIntentCache.unpackY(completedXY));
+                        SetMoving.unpackX(completedXY),
+                        SetMoving.unpackY(completedXY));
                 // guard_stand: after the exact return action completes, enter
                 // its timed idle action without a companion tick. Do not
                 // overwrite a new action submitted by the completion callback.
@@ -447,9 +447,9 @@ public final class CMoveAction {
             final L1NpcInstance creature,
             final L1Character anchor) {
 
-        long packed = MoveIntentCache.getGoal(
+        long packed = CMoveAction.getGoal(
                 creature,
-                MoveIntentCache.KIND_FOLLOW,
+                SetMoving.KIND_FOLLOW,
                 anchor.getId(),
                 anchor.getX(),
                 anchor.getY(),
@@ -458,15 +458,15 @@ public final class CMoveAction {
         if (!validFollowGoal(creature, anchor, packed)) {
             packed = GetFollowPosition(creature, anchor);
 
-            if (packed != MoveIntentCache.NO_POS) {
-                MoveIntentCache.setGoal(
+            if (packed != SetMoving.NO_POS) {
+                CMoveAction.setGoal(
                         creature,
-                        MoveIntentCache.KIND_FOLLOW,
+                        SetMoving.KIND_FOLLOW,
                         anchor.getId(),
                         anchor.getX(),
                         anchor.getY(),
-                        MoveIntentCache.unpackX(packed),
-                        MoveIntentCache.unpackY(packed));
+                        SetMoving.unpackX(packed),
+                        SetMoving.unpackY(packed));
             }
         }
 
@@ -475,24 +475,24 @@ public final class CMoveAction {
 
     /** Shared path/occupancy step; formation may replan after BLOCKED. */
     static byte stepFollowGoal(final L1NpcInstance creature, final long packed) {
-        if (packed == MoveIntentCache.NO_POS) {
+        if (packed == SetMoving.NO_POS) {
             CCreatureController.sleep(creature, 140L + (creature.getId() & 0x1f));
             return CCreatureController.RESULT_RUNNING;
         }
 
-        final int goalX = MoveIntentCache.unpackX(packed);
-        final int goalY = MoveIntentCache.unpackY(packed);
+        final int goalX = SetMoving.unpackX(packed);
+        final int goalY = SetMoving.unpackY(packed);
 
         if (creature.getX() == goalX
                 && creature.getY() == goalY) {
-            MoveIntentCache.clearProgress(creature);
+            SetMoving.clearProgress(creature);
             return CCreatureController.RESULT_DONE;
         }
 
         final int dir = direction(creature, goalX, goalY);
 
         if (dir == DIR_SOFT_BLOCK) {
-            MoveIntentCache.clearGoal(creature);
+            CMoveAction.clearGoal(creature);
             CCreatureController.sleep(
                     creature,
                     softDelayMs(creature, lastBlockType(), 1));
@@ -504,7 +504,7 @@ public final class CMoveAction {
         }
 
         if (dir == DIR_HARD_BLOCK) {
-            MoveIntentCache.clearGoal(creature);
+            CMoveAction.clearGoal(creature);
             invalidatePath(creature);
             CCreatureController.sleep(
                     creature,
@@ -525,7 +525,7 @@ public final class CMoveAction {
         final boolean moved = CMoveAction.moveOneStep(creature, dir);
 
         if (!moved) {
-            MoveIntentCache.clearGoal(creature);
+            CMoveAction.clearGoal(creature);
             CCreatureController.sleep(
                     creature,
                     softDelayMs(
@@ -535,7 +535,7 @@ public final class CMoveAction {
             return CCreatureController.RESULT_BLOCKED;
         }
 
-        final int noProgress = MoveIntentCache.reportMove(
+        final int noProgress = CMoveAction.reportMove(
                 creature,
                 beforeX,
                 beforeY,
@@ -545,8 +545,8 @@ public final class CMoveAction {
                 goalY);
 
         if (noProgress >= FOLLOW_NO_PROGRESS_REPLAN) {
-            MoveIntentCache.clearGoal(creature);
-            MoveIntentCache.clearProgress(creature);
+            CMoveAction.clearGoal(creature);
+            SetMoving.clearProgress(creature);
             invalidatePath(creature);
             CCreatureController.sleep(creature, 180L + (creature.getId() & 0x1f));
             return CCreatureController.RESULT_BLOCKED;
@@ -560,12 +560,12 @@ public final class CMoveAction {
             final L1Character anchor,
             final long packed) {
 
-        if (packed == MoveIntentCache.NO_POS) {
+        if (packed == SetMoving.NO_POS) {
             return false;
         }
 
-        final int x = MoveIntentCache.unpackX(packed);
-        final int y = MoveIntentCache.unpackY(packed);
+        final int x = SetMoving.unpackX(packed);
+        final int y = SetMoving.unpackY(packed);
         final L1Map map = creature.getMap();
 
         if (map == null || !map.isPassable(x, y)) {
@@ -593,7 +593,7 @@ public final class CMoveAction {
 
         final L1Map map = creature.getMap();
         if (map == null) {
-            return MoveIntentCache.NO_POS;
+            return SetMoving.NO_POS;
         }
 
         final int base = anchor.targetDirection(
@@ -608,13 +608,13 @@ public final class CMoveAction {
          * NC GetFollowPosition scans all eight slots and chooses the valid
          * one nearest to the follower. L1's 2D projection keeps the existing
          * radius-2 ring (radius 1 only when the outer ring is unavailable),
-         * actual TileOccupancy collision, and stable MoveIntentCache goal.
+         * actual TileOccupancy collision, and stable movement action state goal.
          *
          * Tie order is deterministic per NPC, so 20 followers cannot start
          * oscillating because of per-tick random slot selection.
          */
         for (int radius = FOLLOW_RADIUS; radius >= 1; radius--) {
-            long bestGoal = MoveIntentCache.NO_POS;
+            long bestGoal = SetMoving.NO_POS;
             long bestDistanceSq = Long.MAX_VALUE;
             for (int i = 0; i < order.length; i++) {
                 final int heading = (base + order[i]) & 7;
@@ -636,15 +636,15 @@ public final class CMoveAction {
                 final long distanceSq = dx * dx + dy * dy;
                 if (distanceSq < bestDistanceSq) {
                     bestDistanceSq = distanceSq;
-                    bestGoal = MoveIntentCache.pack(x, y);
+                    bestGoal = SetMoving.pack(x, y);
                 }
             }
-            if (bestGoal != MoveIntentCache.NO_POS) {
+            if (bestGoal != SetMoving.NO_POS) {
                 return bestGoal;
             }
         }
 
-        return MoveIntentCache.NO_POS;
+        return SetMoving.NO_POS;
     }
 
     /** target이 없을 때의 기본 wander 구현. */
@@ -821,5 +821,126 @@ public final class CMoveAction {
             final L1NpcInstance npc,
             final int dir) {
         npc.setSleepTime(npc.setDirectionMove(dir));
+    }
+
+    static long getGoal(
+            final L1NpcInstance npc,
+            final byte kind,
+            final int anchorId,
+            final int anchorX,
+            final int anchorY,
+            final int maxAnchorDrift) {
+
+        if (npc == null || npc.getId() == 0) {
+            return SetMoving.NO_POS;
+        }
+
+        if (!SetMoving.hasActionMoveState(npc)
+                || npc._actionMoveKind != kind
+                || npc._actionMoveAnchorId != anchorId) {
+            return SetMoving.NO_POS;
+        }
+
+        final long anchor = npc._actionMoveAnchorPos;
+        if (anchor == SetMoving.NO_POS
+                || chebyshev(
+                        anchorX,
+                        anchorY,
+                        SetMoving.unpackX(anchor),
+                        SetMoving.unpackY(anchor)) > maxAnchorDrift) {
+            SetMoving.clearActionMoveState(npc);
+            return SetMoving.NO_POS;
+        }
+
+        return npc._actionMoveGoalPos;
+    }
+
+    static void setGoal(
+            final L1NpcInstance npc,
+            final byte kind,
+            final int anchorId,
+            final int anchorX,
+            final int anchorY,
+            final int goalX,
+            final int goalY) {
+
+        if (npc == null || npc.getId() == 0) {
+            return;
+        }
+
+        SetMoving.initActionMoveState(npc);
+        npc._actionMoveKind = kind;
+        npc._actionMoveAnchorId = anchorId;
+        npc._actionMoveAnchorPos = SetMoving.pack(anchorX, anchorY);
+        npc._actionMoveGoalPos = SetMoving.pack(goalX, goalY);
+    }
+
+    static void clearGoal(final L1NpcInstance npc) {
+        clearGoalAndReport(npc);
+    }
+
+    static boolean clearGoalAndReport(final L1NpcInstance npc) {
+        if (npc == null || npc.getId() == 0) {
+            return false;
+        }
+
+        if (!SetMoving.hasActionMoveState(npc)) {
+            return false;
+        }
+        final boolean hadGoal =
+                npc._actionMoveKind != SetMoving.KIND_NONE
+                || npc._actionMoveGoalPos != SetMoving.NO_POS;
+        npc._actionMoveKind = SetMoving.KIND_NONE;
+        npc._actionMoveAnchorId = 0;
+        npc._actionMoveAnchorPos = SetMoving.NO_POS;
+        npc._actionMoveGoalPos = SetMoving.NO_POS;
+        return hadGoal;
+    }
+
+    static int reportMove(
+            final L1NpcInstance npc,
+            final int beforeX,
+            final int beforeY,
+            final int afterX,
+            final int afterY,
+            final int goalX,
+            final int goalY) {
+
+        if (npc == null || npc.getId() == 0) {
+            return 0;
+        }
+
+        SetMoving.initActionMoveState(npc);
+
+        final int beforeH = chebyshev(beforeX, beforeY, goalX, goalY);
+        final int afterH = chebyshev(afterX, afterY, goalX, goalY);
+        final long previousOrigin = npc._actionMovePreviousOrigin;
+        final long after = SetMoving.pack(afterX, afterY);
+
+        int count = npc._actionMoveNoProgress & 0xff;
+        final int beforeCount = count;
+
+        if (afterH < beforeH) {
+            count = 0;
+        } else if (previousOrigin != SetMoving.NO_POS && after == previousOrigin) {
+            count += 2;
+        } else {
+            count++;
+        }
+
+        /* threshold를 +2 cycle increment가 건너뛰지 않게 crossing을 정규화한다. */
+        if (beforeCount < 4 && count > 4) {
+            count = 4;
+        } else if (beforeCount < 8 && count > 8) {
+            count = 8;
+        }
+
+        if (count > 127) {
+            count = 127;
+        }
+
+        npc._actionMoveNoProgress = (byte) count;
+        npc._actionMovePreviousOrigin = SetMoving.pack(beforeX, beforeY);
+        return count;
     }
 }

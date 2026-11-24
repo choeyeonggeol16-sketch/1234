@@ -39,7 +39,7 @@ public final class dMoveTo {
             return false;
         }
         npc._scriptMoveMapId = npc.getMapId();
-        npc._scriptMoveGoalXY = MoveIntentCache.pack(x, y);
+        npc._scriptMoveGoalXY = SetMoving.pack(x, y);
         npc._scriptMoveTargetId = 0;
         npc._scriptMoveStopDistance = 0;
         npc._pathFindFailCount = 0;
@@ -54,8 +54,8 @@ public final class dMoveTo {
             return CCreatureController.RESULT_INVALID;
         }
         return dMoveTo(npc,
-                MoveIntentCache.unpackX(npc._scriptMoveGoalXY),
-                MoveIntentCache.unpackY(npc._scriptMoveGoalXY));
+                SetMoving.unpackX(npc._scriptMoveGoalXY),
+                SetMoving.unpackY(npc._scriptMoveGoalXY));
     }
 
     /** One owner tick, without allocating a Point/path object. */

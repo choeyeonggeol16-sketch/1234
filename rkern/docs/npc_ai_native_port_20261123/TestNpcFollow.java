@@ -64,50 +64,50 @@ public final class TestNpcFollow {
 
         final long selected = CMoveAction.GetFollowPosition(
                 follower, leader);
-        check(selected == MoveIntentCache.pack(14, 16),
+        check(selected == SetMoving.pack(14, 16),
                 "NC GetFollowPosition must choose nearest free radius-2 slot");
 
-        MoveIntentCache.setGoal(
-                follower, MoveIntentCache.KIND_FOLLOW,
+        CMoveAction.setGoal(
+                follower, SetMoving.KIND_FOLLOW,
                 leader.getId(), leader.getX(), leader.getY(),
                 14, 16);
-        check(MoveIntentCache.getGoal(
-                follower, MoveIntentCache.KIND_FOLLOW,
+        check(CMoveAction.getGoal(
+                follower, SetMoving.KIND_FOLLOW,
                 leader.getId(), 16, 16, 2) == selected,
                 "same anchor must reuse the existing destination");
 
         leader.getLocation().set(17, 16, map);
-        check(MoveIntentCache.getGoal(
-                follower, MoveIntentCache.KIND_FOLLOW,
+        check(CMoveAction.getGoal(
+                follower, SetMoving.KIND_FOLLOW,
                 leader.getId(), 17, 16, 2) == selected,
                 "one-tile master drift retains current follow goal");
 
         leader.getLocation().set(20, 16, map);
-        check(MoveIntentCache.getGoal(
-                follower, MoveIntentCache.KIND_FOLLOW,
-                leader.getId(), 20, 16, 2) == MoveIntentCache.NO_POS,
+        check(CMoveAction.getGoal(
+                follower, SetMoving.KIND_FOLLOW,
+                leader.getId(), 20, 16, 2) == SetMoving.NO_POS,
                 "master moving beyond allowed drift invalidates goal");
 
         // A previous leader's cached slot must not be reused when a summon
         // is transferred to another owner with the same world position.
-        MoveIntentCache.setGoal(
-                follower, MoveIntentCache.KIND_FOLLOW,
+        CMoveAction.setGoal(
+                follower, SetMoving.KIND_FOLLOW,
                 leader.getId(), 16, 16, 14, 16);
-        check(MoveIntentCache.getGoal(
-                follower, MoveIntentCache.KIND_FOLLOW,
-                leader.getId() + 1, 16, 16, 2) == MoveIntentCache.NO_POS,
+        check(CMoveAction.getGoal(
+                follower, SetMoving.KIND_FOLLOW,
+                leader.getId() + 1, 16, 16, 2) == SetMoving.NO_POS,
                 "new master ID cannot inherit old master's follow slot");
 
         leader.getLocation().set(16, 16, map);
         follower.getLocation().set(15, 16, map);
-        MoveIntentCache.setGoal(
-                follower, MoveIntentCache.KIND_FOLLOW,
+        CMoveAction.setGoal(
+                follower, SetMoving.KIND_FOLLOW,
                 leader.getId(), 16, 16, 14, 16);
         check(!dFollow.follow(follower, leader),
                 "L1 distance <=2 must stop normal follow without stopping AI");
-        check(MoveIntentCache.getGoal(
-                follower, MoveIntentCache.KIND_FOLLOW,
-                leader.getId(), 16, 16, 2) == MoveIntentCache.NO_POS,
+        check(CMoveAction.getGoal(
+                follower, SetMoving.KIND_FOLLOW,
+                leader.getId(), 16, 16, 2) == SetMoving.NO_POS,
                 "following complete: stale slot must be released");
 
         // The actual modern L1 pet is L1CompanionInstance (NOT L1Pet).
@@ -127,18 +127,18 @@ public final class TestNpcFollow {
         command.setAccessible(true);
         command.set(companion,
                 l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand.TM_Aggressive);
-        MoveIntentCache.setGoal(
-                companion, MoveIntentCache.KIND_FOLLOW,
+        CMoveAction.setGoal(
+                companion, SetMoving.KIND_FOLLOW,
                 pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 12, 16);
-        check(MoveIntentCache.getGoal(
-                companion, MoveIntentCache.KIND_FOLLOW,
+        check(CMoveAction.getGoal(
+                companion, SetMoving.KIND_FOLLOW,
                 pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 2)
-                != MoveIntentCache.NO_POS, "companion follow goal was set");
+                != SetMoving.NO_POS, "companion follow goal was set");
         check(!companion.noTarget(), "current companion noTarget keeps AI alive near master");
-        check(MoveIntentCache.getGoal(
-                companion, MoveIntentCache.KIND_FOLLOW,
+        check(CMoveAction.getGoal(
+                companion, SetMoving.KIND_FOLLOW,
                 pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 2)
-                == MoveIntentCache.NO_POS,
+                == SetMoving.NO_POS,
                 "current companion noTarget clears old follow goal at two tiles");
 
         // Legacy pet, summon and magic doll must all call the same
@@ -176,19 +176,19 @@ public final class TestNpcFollow {
 
         for (L1NpcInstance actor :
                 new L1NpcInstance[] { oldPet, summon, doll }) {
-            MoveIntentCache.setGoal(
-                    actor, MoveIntentCache.KIND_FOLLOW,
+            CMoveAction.setGoal(
+                    actor, SetMoving.KIND_FOLLOW,
                     pcMaster.getId(), pcMaster.getX(), pcMaster.getY(),
                     12, 16);
-            check(MoveIntentCache.getGoal(
-                    actor, MoveIntentCache.KIND_FOLLOW,
+            check(CMoveAction.getGoal(
+                    actor, SetMoving.KIND_FOLLOW,
                     pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 2)
-                    != MoveIntentCache.NO_POS, "follower initial goal " + actor.getId());
+                    != SetMoving.NO_POS, "follower initial goal " + actor.getId());
             check(!actor.noTarget(), "follower near-owner AI remains alive " + actor.getId());
-            check(MoveIntentCache.getGoal(
-                    actor, MoveIntentCache.KIND_FOLLOW,
+            check(CMoveAction.getGoal(
+                    actor, SetMoving.KIND_FOLLOW,
                     pcMaster.getId(), pcMaster.getX(), pcMaster.getY(), 2)
-                    == MoveIntentCache.NO_POS,
+                    == SetMoving.NO_POS,
                     "follower arrival must clear previous NC goal " + actor.getId());
         }
 
@@ -197,7 +197,7 @@ public final class TestNpcFollow {
         for (L1NpcInstance actor :
                 new L1NpcInstance[] { oldPet, summon, doll, companion }) {
             check(CMoveAction.GetFollowPosition(actor, pcMaster)
-                    != MoveIntentCache.NO_POS,
+                    != SetMoving.NO_POS,
                     "GetFollowPosition must find a free slot for " + actor.getClass());
         }
 
@@ -212,11 +212,11 @@ public final class TestNpcFollow {
             final Field mode = actor == oldPet ? petMode : summonMode;
             // STAY: stop the default command without following the owner.
             mode.setInt(actor, 3);
-            MoveIntentCache.setGoal(actor, MoveIntentCache.KIND_FOLLOW,
+            CMoveAction.setGoal(actor, SetMoving.KIND_FOLLOW,
                     pcMaster.getId(), 16, 16, 12, 16);
             check(actor.noTarget(), "pet-default stay must stop idle AI " + actor.getId());
-            check(MoveIntentCache.getGoal(actor, MoveIntentCache.KIND_FOLLOW,
-                    pcMaster.getId(), 16, 16, 2) == MoveIntentCache.NO_POS,
+            check(CMoveAction.getGoal(actor, SetMoving.KIND_FOLLOW,
+                    pcMaster.getId(), 16, 16, 2) == SetMoving.NO_POS,
                     "stay must retire the previous follow destination");
 
             // EXTEND: existing L1 4..7 distance band; no movement at 6.
@@ -253,11 +253,11 @@ public final class TestNpcFollow {
                 "completed L1 call transitions to stay, not follow");
         petMode.setInt(oldPet, 1);
 
-        MoveIntentCache.setGoal(follower, MoveIntentCache.KIND_FOLLOW,
+        CMoveAction.setGoal(follower, SetMoving.KIND_FOLLOW,
                 leader.getId(), leader.getX(), leader.getY(), 12, 16);
-        check(MoveIntentCache.clearGoalAndReport(follower),
+        check(CMoveAction.clearGoalAndReport(follower),
                 "the first completed follow releases a live cached goal");
-        check(!MoveIntentCache.clearGoalAndReport(follower),
+        check(!CMoveAction.clearGoalAndReport(follower),
                 "a repeated idle follow tick has no stale goal to retire");
 
         check(!CMoveAction.followGroup(follower, leader),

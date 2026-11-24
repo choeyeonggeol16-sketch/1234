@@ -7,7 +7,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
  * NC CNPC::dFollow + GetFollowPosition, adapted to the L1 2D tile world.
  *
  * All follower types use the existing CIO-owned CMoveAction path and
- * MoveIntentCache instead of choosing a new random destination each tick.
+ * movement action state instead of choosing a new random destination each tick.
  * Real occupancy remains owned by WorldCollisionHash/TileOccupancyNpc.
  *
  * L1 pet/summon/companion command modes are handled by their existing
@@ -57,8 +57,8 @@ public final class dFollow {
     public static void clear(final L1NpcInstance follower) {
         if (follower == null) return;
         final boolean hadFollowGoal =
-                MoveIntentCache.clearGoalAndReport(follower);
-        MoveIntentCache.clearProgress(follower);
+                CMoveAction.clearGoalAndReport(follower);
+        SetMoving.clearProgress(follower);
         // close-range noTarget() runs repeatedly on every follower.
         // Once the previous route is retired, do not invalidate A* state
         // again on every idle tick. Only live movement needs this cleanup.

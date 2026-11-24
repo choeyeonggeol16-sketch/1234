@@ -154,7 +154,7 @@ public final class CMoveToTargetRelativeAction {
             final int x = tx + DX[h];
             final int y = ty + DY[h];
             if (isUsableMeleeSlot(target, x, y)
-                    && !MoveIntentCache.rejectedMeleeAttackPosition(
+                    && !CMoveToTargetRelativeAction.rejectedMeleeAttackPosition(
                             monster, target, x, y, nowMs)
                     && COLLISION.canEnter(mapId, x, y, monster.getId())) {
                 openSlotMask |= 1 << h;
@@ -327,5 +327,65 @@ public final class CMoveToTargetRelativeAction {
         }
         creature._relativeTargetId = 0;
         creature._relativeMapId = -1;
+    }
+
+    static void rejectMeleeAttackPosition(final L1NpcInstance npc,
+            final L1Character target, final int x, final int y,
+            final long untilMs) {
+        if (npc == null || target == null || npc.getId() == 0) return;
+        final int bit = meleePositionBit(target.getX(), target.getY(), x, y);
+        if (bit == 0) return;
+
+        SetMoving.initActionMoveState(npc);
+        final long targetPos = SetMoving.pack(target.getX(), target.getY());
+        final long nowMs = System.currentTimeMillis();
+        if (npc._actionMoveKind != SetMoving.KIND_COMBAT
+                || npc._actionMoveAnchorId != target.getId()
+                || npc._actionMoveAnchorPos != targetPos
+                || npc._actionMoveWaitReason != 1
+                || nowMs >= npc._actionMoveWaitUntil) {
+            npc._actionMoveRejectedMeleeMask = 0;
+            npc._actionMoveWaitUntil = 0L;
+        }
+        npc._actionMoveKind = SetMoving.KIND_COMBAT;
+        npc._actionMoveAnchorId = target.getId();
+        npc._actionMoveAnchorPos = targetPos;
+        npc._actionMoveRejectedMeleeMask |= (byte) bit;
+        npc._actionMoveWaitReason = 1;
+        npc._actionMoveWaitUntil = Math.max(npc._actionMoveWaitUntil, untilMs);
+        npc._actionMovePreviousOrigin = SetMoving.NO_POS;
+        npc._actionMoveNoProgress = 0;
+    }
+
+    static boolean rejectedMeleeAttackPosition(final L1NpcInstance npc,
+            final L1Character target, final int x, final int y,
+            final long nowMs) {
+        if (npc == null || target == null || npc.getId() == 0) return false;
+        final int bit = meleePositionBit(target.getX(), target.getY(), x, y);
+        if (bit == 0) return false;
+        return SetMoving.hasActionMoveState(npc)
+                && npc._actionMoveKind == SetMoving.KIND_COMBAT
+                && npc._actionMoveAnchorId == target.getId()
+                && npc._actionMoveAnchorPos == SetMoving.pack(target.getX(), target.getY())
+                && npc._actionMoveWaitReason == 1
+                && nowMs < npc._actionMoveWaitUntil
+                && ((npc._actionMoveRejectedMeleeMask & 0xff) & bit) != 0;
+    }
+
+    private static int meleePositionBit(final int tx, final int ty,
+            final int x, final int y) {
+        final int dx = x - tx;
+        final int dy = y - ty;
+        if (dx < -1 || dx > 1 || dy < -1 || dy > 1
+                || (dx | dy) == 0) return 0;
+        final int heading;
+        if (dy < 0) {
+            heading = dx < 0 ? 7 : (dx > 0 ? 1 : 0);
+        } else if (dy > 0) {
+            heading = dx < 0 ? 5 : (dx > 0 ? 3 : 4);
+        } else {
+            heading = dx > 0 ? 2 : 6;
+        }
+        return 1 << heading;
     }
 }

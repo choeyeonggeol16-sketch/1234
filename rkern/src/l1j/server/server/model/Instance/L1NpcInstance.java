@@ -47,6 +47,7 @@ import l1j.server.server.model.npc.ai.action.CNpcAI;
 import l1j.server.server.model.npc.ai.action.CCreatureController;
 import l1j.server.server.model.npc.ai.action.CGetItemAction;
 import l1j.server.server.model.npc.ai.action.CMoveAction;
+import l1j.server.server.model.npc.ai.action.SetMoving;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1NpcChat;
@@ -177,6 +178,20 @@ public class L1NpcInstance extends L1Character {
      */
     public int _moveSegmentX = 0;
     public int _moveSegmentY = 0;
+
+    // Flat movement Action payload. One actor owns its current movement
+    // intent; no shared direct-map slot or per-actor helper allocation.
+    public long _actionMoveKey;
+    public long _actionMoveAnchorPos;
+    public long _actionMoveGoalPos;
+    public long _actionMovePassingUntil;
+    public long _actionMovePreviousOrigin;
+    public long _actionMoveWaitUntil;
+    public int _actionMoveAnchorId;
+    public byte _actionMoveKind;
+    public byte _actionMoveNoProgress;
+    public byte _actionMoveRejectedMeleeMask;
+    public byte _actionMoveWaitReason;
 
     // L1 2-D container identity and target identity for native relative chase.
     public int _relativeTargetId = 0;
@@ -989,6 +1004,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public final void clearNativeMoveState() {
+        SetMoving.clearActionMoveState(this);
         _moveCollision = 0;
         _moveSide = -1;
         _moveHeading = -1;
