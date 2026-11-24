@@ -33,6 +33,7 @@ public final class dMoveToTarget {
         if (npc == null || targetObjectId <= 0
                 || !CNPCServer.getInstance().isOwnerThread(npc)
                 || !npc.aiEngineIsRunning()
+                || dMoveTo.isReturningHome(npc)
                 || stopDistanceTiles < 0) {
             return false;
         }
