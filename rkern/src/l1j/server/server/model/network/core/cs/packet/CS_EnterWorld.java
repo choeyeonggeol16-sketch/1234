@@ -311,6 +311,7 @@ public final class CS_EnterWorld {
                     throw new IllegalStateException("Stale pledge login image");
                 synchronized (loginClan) {
                     if (L1World.getInstance().getClan(pc.getClanid()) != loginClan
+                            || loginClan.IsDismissed()
                             || loginClan.GetDbMember(pc.getId()) == null
                             || CacheD.getInstance().hasPendingOwnerApply(pc.getId()))
                         throw new IllegalStateException("Pledge membership changed during login");

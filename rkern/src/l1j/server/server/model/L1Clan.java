@@ -330,6 +330,16 @@ public class L1Clan {
         }
     }
 
+    // NC-style dismissal reservation: 0 active, 1 pending/uncertain, 2 committed.
+    private volatile int m_Dismissed;
+    private static final java.util.concurrent.atomic.AtomicIntegerFieldUpdater<L1Clan> DISMISSED =
+            java.util.concurrent.atomic.AtomicIntegerFieldUpdater.newUpdater(L1Clan.class, "m_Dismissed");
+
+    public boolean IsDismissed() { return m_Dismissed != 0; }
+    boolean TryBeginDismiss() { return DISMISSED.compareAndSet(this, 0, 1); }
+    void CancelDismiss() { DISMISSED.compareAndSet(this, 1, 0); }
+    void CommitDismiss() { DISMISSED.set(this, 2); }
+
     private final CPledgeMemberList clanMemberList = new CPledgeMemberList();
 
     public List<ClanMember> getClanMemberList() { return clanMemberList.view; }

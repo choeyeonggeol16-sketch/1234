@@ -649,42 +649,7 @@ public class ClanTable {
             boolean committed = false;
             boolean rolledBack = false;
             try {
-                // MyISAM or a missing table cannot provide the advertised
-                // all-or-nothing disband semantics. Refuse before any mutation.
-                CTransaction.requireTransactionalTables(con,
-                        "characters", "clan_data", "clan_warehouse");
-                try (PreparedStatement current = con.prepareStatement(
-                        "SELECT clan_name,leader_id,hashouse,hascastle,alliance "
-                        + "FROM clan_data WHERE clan_id=? FOR UPDATE")) {
-                    current.setInt(1, clan.getClanId());
-                    try (ResultSet rs = current.executeQuery()) {
-                        if (!rs.next() || !clan.getClanName().equals(rs.getString(1))
-                                || clan.getLeaderId() != rs.getInt(2)
-                                || rs.getInt(3) != 0 || rs.getInt(4) != 0 || rs.getInt(5) != 0)
-                            throw new SQLException("Clan disband DB ownership/precondition changed");
-                    }
-                }
-                try (PreparedStatement stored = con.prepareStatement(
-                        "SELECT id FROM clan_warehouse WHERE clan_name=? LIMIT 1 FOR UPDATE")) {
-                    stored.setString(1, clan.getClanName());
-                    try (ResultSet rs = stored.executeQuery()) {
-                        if (rs.next()) throw new SQLException("Clan disband vault not empty");
-                    }
-                }
-                try (PreparedStatement members = con.prepareStatement(
-                        "UPDATE characters SET ClanID=0, Clanname='', ClanRank=0, Title='', notes='' WHERE ClanID=?")) {
-                    members.setInt(1, clan.getClanId());
-                    members.executeUpdate();
-                }
-                try (PreparedStatement delete = con.prepareStatement(
-                        "DELETE FROM clan_data WHERE clan_id=? AND clan_name=? AND leader_id=? "
-                        + "AND hashouse=0 AND hascastle=0 AND alliance=0")) {
-                    delete.setInt(1, clan.getClanId());
-                    delete.setString(2, clan.getClanName());
-                    delete.setInt(3, clan.getLeaderId());
-                    if (delete.executeUpdate() != 1)
-                        throw new SQLException("Clan DELETE did not affect exactly one row: " + clan.getClanName());
-                }
+                applyDeletePledgeSql(con, clan, null);
                 con.commit();
                 committed = true;
             } catch (SQLException | RuntimeException failure) {
@@ -709,6 +674,77 @@ public class ClanTable {
             throw new IllegalStateException("Clan disband not committed: " + clan.getClanName(), e);
         }
         forgetCommittedClanMerge(clan);
+    }
+
+    /** Stage the membership and pledge deletion inside one existing CacheD receipt. */
+    public static void stageDeletePledge(CacheD.WarehouseMove tx, L1Clan clan, int[] expectedIds) {
+        tx.stageWarehouseSql(con -> applyDeletePledgeSql(con, clan, expectedIds));
+    }
+
+    private static void applyDeletePledgeSql(Connection con, L1Clan clan, int[] expectedIds)
+            throws SQLException {
+        // MyISAM or a missing table cannot provide the advertised
+        // all-or-nothing disband semantics. Refuse before any mutation.
+        CTransaction.requireTransactionalTables(con,
+                "characters", "clan_data", "clan_warehouse");
+        try (PreparedStatement current = con.prepareStatement(
+                "SELECT clan_name,leader_id,hashouse,hascastle,alliance "
+                + "FROM clan_data WHERE clan_id=? FOR UPDATE")) {
+            current.setInt(1, clan.getClanId());
+            try (ResultSet rs = current.executeQuery()) {
+                if (!rs.next() || !clan.getClanName().equals(rs.getString(1))
+                        || clan.getLeaderId() != rs.getInt(2)
+                        || rs.getInt(3) != 0 || rs.getInt(4) != 0 || rs.getInt(5) != 0)
+                    throw new SQLException("Clan disband DB ownership/precondition changed");
+            }
+        }
+        try (PreparedStatement stored = con.prepareStatement(
+                "SELECT id FROM clan_warehouse WHERE clan_name=? LIMIT 1 FOR UPDATE")) {
+            stored.setString(1, clan.getClanName());
+            try (ResultSet rs = stored.executeQuery()) {
+                if (rs.next()) throw new SQLException("Clan disband vault not empty");
+            }
+        }
+        // A concurrent admission/merge must not introduce a member whose
+        // CacheD save lane was not reserved by the dismissal.
+        if (expectedIds != null) {
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT objid FROM characters WHERE ClanID=? ORDER BY objid FOR UPDATE")) {
+                ps.setInt(1, clan.getClanId());
+                try (ResultSet rs = ps.executeQuery()) {
+                    int index = 0;
+                    while (rs.next()) {
+                        if (index >= expectedIds.length || rs.getInt(1) != expectedIds[index++])
+                            throw new SQLException("Pledge dismissal roster changed");
+                    }
+                    if (index != expectedIds.length)
+                        throw new SQLException("Pledge dismissal roster changed");
+                }
+            }
+        }
+        try (PreparedStatement members = con.prepareStatement(
+                "UPDATE characters SET ClanID=0, Clanname='', ClanRank=0, Title='', notes='' WHERE ClanID=?")) {
+            members.setInt(1, clan.getClanId());
+            members.executeUpdate();
+        }
+        try (PreparedStatement delete = con.prepareStatement(
+                "DELETE FROM clan_data WHERE clan_id=? AND clan_name=? AND leader_id=? "
+                + "AND hashouse=0 AND hascastle=0 AND alliance=0")) {
+            delete.setInt(1, clan.getClanId());
+            delete.setString(2, clan.getClanName());
+            delete.setInt(3, clan.getLeaderId());
+            if (delete.executeUpdate() != 1)
+                throw new SQLException("Clan DELETE did not affect exactly one row: " + clan.getClanName());
+        }
+    }
+
+    /** All member owner replays succeeded; the DB row is already gone. */
+    public void forgetCommittedClanDisband(L1Clan clan, ClanWarehouse vault) {
+        if (_clans.get(clan.getClanId()) != clan)
+            throw new IllegalStateException("Stale committed pledge dismissal");
+        L1World.getInstance().removeClan(clan);
+        _clans.remove(clan.getClanId());
+        WarehouseManager.getInstance().retireDisbandedClanWarehouse(clan.getClanName(), vault);
     }
 
     public void deleteClan(L1Clan clan){

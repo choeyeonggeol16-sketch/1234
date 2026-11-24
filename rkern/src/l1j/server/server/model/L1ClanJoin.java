@@ -131,7 +131,7 @@ public class L1ClanJoin {
 
     private boolean joinClanAtomic(L1Clan clan, L1PcInstance joinPc, int capacity,
                                    boolean tutorial, Consumer<Boolean> result, String account) {
-        if (clan == null || joinPc == null || joinPc.getClanid() != 0) return false;
+        if (clan == null || clan.IsDismissed() || joinPc == null || joinPc.getClanid() != 0) return false;
         final int clanId = clan.getClanId(), characterId = joinPc.getId();
         final String clanName = clan.getClanName();
         final int rank = L1Clan.수련;
@@ -243,6 +243,7 @@ public class L1ClanJoin {
     private boolean mergeClanAtomic(L1Clan target, L1Clan source, L1PcInstance sourceLeader,
                                     int capacity, Consumer<Boolean> result, String account) {
         if (target == null || source == null || target == source || sourceLeader == null
+                || target.IsDismissed() || source.IsDismissed()
                 || sourceLeader.getClanid() != source.getClanId()
                 || source.getLeaderId() != sourceLeader.getId() || !sourceLeader.isCrown()
                 || source.getHouseId() != 0 || source.getCastleId() != 0
@@ -732,69 +733,168 @@ public class L1ClanJoin {
             return;
         }
 
-        /*
-         * 오프라인 혈맹원 DB 데이터 일괄 초기화.
-         */
-        ClanTable.getInstance().deleteClanWithMembers(clan);
+        DeletePledge(clan, player, playerName, clanName);
+    }
 
-        /*
-         * 접속 중 혈맹원들의 실시간 상태 초기화.
-         *
-         * 기존 getClanMemberList() 순회 semantics 그대로.
-         */
-        // COMMIT already succeeded. Notice allocation/encoding must never
-        // prevent the authoritative member cleanup.
-        l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer notice = null;
-        try {
-            notice = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                    SC_ServerMessage.nativeWriter(269, playerName, clanName, null),
-                    Integer.MIN_VALUE, Integer.MAX_VALUE);
-        } catch (RuntimeException failure) {
-            _log.log(Level.WARNING, "Committed pledge disband notice preparation failed: " + clanName, failure);
-        }
-        try {
-            for (L1Clan.ClanMember member : clan.getClanMemberList()) {
-                if (member == null) continue;
-                final L1PcInstance pc = L1World.getInstance().getPlayer(member.name);
-                if (pc == null || pc.getId() != member.memberId
-                        || pc.getClanid() != clan.getClanId()) continue;
-                try {
-                    if (notice != null && !pc.getName().equalsIgnoreCase(playerName)) {
-                        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(notice, pc);
-                    }
-                } catch (RuntimeException failure) {
-                    _log.log(Level.WARNING, "Clan disband notice failed: " + member.name, failure);
-                }
-                try {
-                    pc.ClearPlayerClanData(clan);
-                } catch (Exception failure) {
-                    _log.log(Level.SEVERE, "Clan disband online cleanup failed: " + member.name, failure);
-                }
-            }
-        } finally {
+    /** Reserve one dismissal and all roster/vault lanes. No game-owner JDBC. */
+    private static void DeletePledge(L1Clan clan, L1PcInstance player,
+            String playerName, String clanName) {
+        final int clanId = clan.getClanId(), leaderId = player.getId();
+        final L1World world = L1World.getInstance();
+        final ClanTable table = ClanTable.getInstance();
+        final CUserSocket leaderSocket = player.getNetConnection();
+        final int leaderStamp = player.getSessionStamp();
+        synchronized (clan) {
+            if (world.getClan(clanId) != clan || player.getClanid() != clanId
+                    || player.isLogoutStarted() || !player.isCrown()
+                    || leaderId != clan.getLeaderId() || clan.getHouseId() != 0
+                    || clan.getCastleId() != 0 || clan.getAlliance() != 0
+                    || clan.getCurrentWar() != null || !clan.TryBeginDismiss()) return;
+            boolean submitted = false;
             try {
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(notice);
+                final ClanWarehouse vault = WarehouseManager.getInstance().getClanWarehouse(clanName);
+                if (vault == null) throw new IllegalStateException("Pledge vault unavailable");
+                synchronized (vault) {
+                    if (vault.getWarehouseUsingChar() != 0 || vault.getSize() != 0)
+                        throw new RejectedExecutionException("Pledge vault occupied");
+                    final L1Clan.ClanMember[] roster =
+                            clan.getClanMemberList().toArray(new L1Clan.ClanMember[0]);
+                    final int n = roster.length;
+                    if (n == 0) throw new IllegalStateException("Empty pledge roster");
+                    final int[] ids = new int[n], shards = new int[n], stamps = new int[n];
+                    final String[] names = new String[n];
+                    final boolean[] online = new boolean[n];
+                    final L1PcInstance[] live = new L1PcInstance[n];
+                    final int[] owners = new int[n]; // n-1 member IDs + pledge lane
+                    int ownerCount = 0;
+                    boolean foundLeader = false;
+                    final CIOThreadCallback cio = CIOThreadCallback.getInstance();
+                    for (int i = 0; i < n; i++) {
+                        final L1Clan.ClanMember member = roster[i];
+                        final int id = member.memberId;
+                        if (id <= 0) throw new IllegalStateException("Invalid pledge member ID");
+                        ids[i] = id;
+                        names[i] = member.name;
+                        if (id == leaderId) foundLeader = true;
+                        else owners[ownerCount++] = id;
+                        if (world.findObject(id) instanceof L1PcInstance pc) {
+                            final CUserSocket socket = pc.getNetConnection();
+                            if (pc.getClanid() != clanId || pc.isLogoutStarted()
+                                    || socket == null || !socket.isGameSessionReady()
+                                    || world.getPlayer(pc.getName()) != pc)
+                                throw new RejectedExecutionException("Pledge member session changing");
+                            live[i] = pc;
+                            online[i] = true;
+                            stamps[i] = pc.getSessionStamp();
+                            shards[i] = cio.ownerShardIndex(pc);
+                            if (shards[i] < 0)
+                                throw new RejectedExecutionException("Pledge member owner unavailable");
+                        }
+                    }
+                    if (!foundLeader || ownerCount != n - 1)
+                        throw new IllegalStateException("Pledge leader missing from roster");
+                    owners[ownerCount] = CacheD.accountOrderKey("clan-join:", clanId);
+                    final int[] sqlIds = ids.clone();
+                    java.util.Arrays.sort(sqlIds);
+                    for (int i = 1; i < n; i++)
+                        if (sqlIds[i] == sqlIds[i - 1])
+                            throw new IllegalStateException("Duplicate pledge member ID");
+                    try (CacheD.WarehouseMove tx = CacheD.beginPledgeDismissMove(
+                            leaderId, vault.transferOrderKey(), owners, ids, names, online)) {
+                        ClanTable.stageDeletePledge(tx, clan, sqlIds);
+                        tx.onError(failure -> {
+                            // A confirmed SQL rejection can reopen the pledge.
+                            // Unknown COMMIT or replay failures must stay fenced.
+                            if (failure instanceof SQLException
+                                    && !(failure instanceof l1j.server.server.storage.cached.CTransaction.OutcomeUnknownException))
+                                clan.CancelDismiss();
+                            _log.log(Level.SEVERE, "Pledge dismissal persistence failed: " + clanId, failure);
+                            cio.completeSession(leaderSocket, () -> {
+                                if (player.getSessionStamp() == leaderStamp && !player.isLogoutStarted())
+                                    SC_SystemMessage.send(player, "혈맹 해산을 완료하지 못했습니다.");
+                            });
+                        });
+                        tx.commit(() -> ReplyDeletePledge(tx, world, table, clan, vault,
+                                roster, live, shards, stamps, playerName, clanName));
+                        submitted = true;
+                    }
+                }
             } catch (RuntimeException failure) {
-                _log.log(Level.WARNING, "Clan disband notice release failed: " + clanName, failure);
+                if (!submitted) clan.CancelDismiss();
+                _log.log(Level.WARNING, "Pledge dismissal not admitted: " + clanId, failure);
+                SC_SystemMessage.send(player, "혈맹원 저장 작업과 혈맹 창고 상태를 확인한 후 다시 시도해 주세요.");
             }
         }
+    }
 
-        /*
-         * 혈맹 엠블럼 파일 삭제.
-         */
-        final String emblemFile =
-                String.valueOf(
-                        clan.getClanId());
-
-        final File file =
-                new File(
-                        "emblem/"
-                                + emblemFile);
-
-        if (file.exists()) {
-            file.delete();
+    /** DB COMMIT is confirmed; clear each live PC on its existing owner.
+     * Keep all reserved lanes until every owner and the world reply finish. */
+    private static void ReplyDeletePledge(CacheD.WarehouseMove tx, L1World world,
+            ClanTable table, L1Clan clan, ClanWarehouse vault,
+            L1Clan.ClanMember[] roster, L1PcInstance[] live, int[] shards, int[] stamps,
+            String playerName, String clanName) {
+        final CIOThreadCallback cio = CIOThreadCallback.getInstance();
+        final int clanId = clan.getClanId();
+        int count = 1; // dispatch sentinel prevents early finalization
+        for (L1PcInstance pc : live) if (pc != null) count++;
+        final java.util.concurrent.atomic.AtomicInteger remaining =
+                new java.util.concurrent.atomic.AtomicInteger(count);
+        final java.util.concurrent.atomic.AtomicReference<Throwable> error =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        final Consumer<Throwable> done = failure -> {
+            if (failure != null) error.compareAndSet(null, failure);
+            if (remaining.decrementAndGet() != 0) return;
+            final Throwable first = error.get();
+            if (first != null) {
+                _log.log(Level.SEVERE, "Committed pledge dismissal replay failed: " + clanId, first);
+                tx.finishOwnerApply(first);
+                return;
+            }
+            cio.completeWorldMutation(world, () -> {
+                if (ClanTable.getInstance() != table || world.getClan(clanId) != clan)
+                    throw new IllegalStateException("Stale pledge dismissal world reply");
+                for (L1Clan.ClanMember member : roster) clan.RemoveDbMember(member.memberId);
+                table.forgetCommittedClanDisband(clan, vault);
+                clan.CommitDismiss();
+                try {
+                    if (!new File("emblem/" + clanId).delete())
+                        _log.fine("Pledge emblem absent or not removable: " + clanId);
+                } catch (RuntimeException notification) {
+                    _log.log(Level.WARNING, "Pledge emblem cleanup failed: " + clanId, notification);
+                }
+            }, tx::finishOwnerApply);
+        };
+        for (int i = 0; i < live.length; i++) {
+            final L1PcInstance pc = live[i];
+            if (pc == null) continue;
+            final int stamp = stamps[i];
+            cio.completeOnShard(shards[i], () -> {
+                if (world != L1World.getInstance() || pc.getSessionStamp() != stamp)
+                    throw new IllegalStateException("Stale pledge member dismissal reply");
+                pc.lockUserState();
+                try {
+                    if (pc.getClanid() == clanId) pc.ClearCommittedClanData();
+                    else if (pc.getClanid() != 0)
+                        throw new IllegalStateException("Pledge member changed after COMMIT");
+                } finally { pc.unlockUserState(); }
+                if (pc.isLogoutStarted() || world.findObject(pc.getId()) != pc) return;
+                try {
+                    if (!pc.getName().equalsIgnoreCase(playerName))
+                        SC_ServerMessage.send(pc, 269, playerName, clanName, null);
+                    pc.NotifyClanDataCleared();
+                } catch (RuntimeException notification) {
+                    _log.log(Level.WARNING, "Pledge dismissal notification failed: " + pc.getId(), notification);
+                }
+            }, failure -> {
+                try {
+                    if (failure != null && pc.getSessionStamp() == stamp) {
+                        final CUserSocket socket = pc.getNetConnection();
+                        if (socket != null) socket.close();
+                    }
+                } finally { done.accept(failure); }
+            });
         }
-
+        done.accept(null);
     }
 
     /** No packet, buff or membership change is published before SQL COMMIT. */
@@ -803,7 +903,7 @@ public class L1ClanJoin {
     }
 
     public static void LeaveMember(L1Clan clan, L1PcInstance player, Runnable afterCommitted) {
-        if (clan == null || player == null || player.getClanid() != clan.getClanId()
+        if (clan == null || clan.IsDismissed() || player == null || player.getClanid() != clan.getClanId()
                 || player.getId() == clan.getLeaderId()) return;
         final int oldClanId = clan.getClanId();
         final String playerName = player.getName();
@@ -964,7 +1064,7 @@ public class L1ClanJoin {
 
     private static boolean CanBanMember(L1PcInstance leader, L1Clan clan,
             L1PcInstance target, int leaderStamp, int targetStamp) {
-        if (leader == null || target == null || leader.isLogoutStarted() || target.isLogoutStarted()
+        if (clan.IsDismissed() || leader == null || target == null || leader.isLogoutStarted() || target.isLogoutStarted()
                 || leader.getSessionStamp() != leaderStamp || target.getSessionStamp() != targetStamp
                 || leader.isGhost() || !leader.isCrown()
                 || leader.getClanid() != clan.getClanId() || leader.getId() != clan.getLeaderId()
@@ -1066,7 +1166,7 @@ public class L1ClanJoin {
             // Login publication uses the same short pledge monitor. No JDBC or
             // waiting for owner work while holding it.
             synchronized (clan) {
-                if (client.getActiveChar() != pc || pc.isLogoutStarted() || pc.isGhost()
+                if (clan.IsDismissed() || client.getActiveChar() != pc || pc.isLogoutStarted() || pc.isGhost()
                         || !pc.isCrown() || pc.getClanid() != clanId
                         || leaderId != clan.getLeaderId()
                         || L1World.getInstance().getClan(clanId) != clan) return;

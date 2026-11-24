@@ -135,6 +135,8 @@ public class ClanWarehouse extends Warehouse {
 
 	public boolean setWarehouseUsingChar(int objid, int prevOwner) {
 		synchronized (this) {
+            if (objid != 0 && l1j.server.server.storage.CacheD.getInstance()
+                    .hasPendingOwnerApply(transferOrderKey())) return false;
 			if (objid == _warehouse) {
 				return true;
 			}

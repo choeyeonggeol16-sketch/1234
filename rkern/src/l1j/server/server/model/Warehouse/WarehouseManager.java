@@ -103,6 +103,10 @@ public class WarehouseManager {
 		elist.delWarehouse(name);
 	}
 	
+    public void retireDisbandedClanWarehouse(String name, ClanWarehouse expected) {
+        clist.retireEmptyClanWarehouseWhenIdle(name, expected);
+    }
+
 	public void delClanWarehouse(String name) {
 		clist.delWarehouse(name);
 	}

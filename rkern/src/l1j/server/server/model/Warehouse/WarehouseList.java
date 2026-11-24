@@ -65,6 +65,20 @@ public abstract class WarehouseList {
         warehouses.remove(name, expected);
     }
 
+    /** Identity-bound retirement after the dismissal receipt releases its lane.
+     * A newly created pledge or a replacement warehouse must not be evicted. */
+    void retireEmptyClanWarehouseWhenIdle(String name, ClanWarehouse expected) {
+        synchronized (expected) {
+            if (warehouses.get(name) != expected || expected.isRetired()
+                    || expected.getWarehouseUsingChar() != 0 || expected.getSize() != 0
+                    || l1j.server.server.model.L1World.getInstance().findClan(name) != null) return;
+            if (CacheD.getInstance().deferWarehouseRetirement(expected.transferOrderKey(), expected,
+                    () -> retireEmptyClanWarehouseWhenIdle(name, expected))) return;
+            expected.retireWarehouse();
+            warehouses.remove(name, expected);
+        }
+    }
+
     public void delWarehouse(String name) {
         final Warehouse old = warehouses.get(name);
         if (old == null) return;

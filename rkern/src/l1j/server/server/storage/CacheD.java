@@ -658,6 +658,24 @@ public final class CacheD {
         }
     }
 
+    /** Check every member's save/session preimage and reserve all lanes in
+     * the same admission boundary; no older character save may follow SQL. */
+    public static WarehouseMove beginPledgeDismissMove(int leaderId, int vaultLane,
+            int[] otherOwners, int[] memberIds, String[] names, boolean[] online) {
+        final CacheD cache = getInstance();
+        synchronized (cache.lock) {
+            if (memberIds.length != names.length || names.length != online.length)
+                throw new IllegalArgumentException("Pledge dismissal roster");
+            for (int i = 0; i < memberIds.length; i++) {
+                if (cache.activeUsers.containsKey(memberIds[i]) != online[i])
+                    throw new RejectedExecutionException("Pledge member session changing: " + memberIds[i]);
+                if (!cache.flushCharacter(names[i], 0L))
+                    throw new RejectedExecutionException("Pledge member save still pending: " + memberIds[i]);
+            }
+            return beginEconomyMove(leaderId, vaultLane, otherOwners);
+        }
+    }
+
     /** Reserve the existing two FIFO lanes for an immutable economic batch. */
     public static WarehouseMove beginEconomyMove(int ownerId, int secondaryKey) {
         return beginEconomyMove(ownerId, secondaryKey, NO_EXTRA_OWNERS);
