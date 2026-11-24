@@ -456,7 +456,8 @@ public class L1NpcInstance extends L1Character {
         CNPCServer.getInstance().wake(this);
     }
 
-    protected void startAI() {
+    protected synchronized void startAI() {
+        if (_destroyed || isDead() || getCurrentHp() <= 0 || _aiRunning) return;
         final long now = System.currentTimeMillis();
 
         setAiRunning(true);
@@ -1877,8 +1878,14 @@ public class L1NpcInstance extends L1Character {
     protected void onNpcAtomicHpChanged(int hp) {
     }
 
-    public void setDeathProcessing(boolean deathProcessing) {
+    public synchronized void setDeathProcessing(boolean deathProcessing) {
+        final boolean wasProcessing = _deathProcessing;
         _deathProcessing = deathProcessing;
+        if (wasProcessing && !deathProcessing && isDead() && !_destroyed) {
+            // Explicit completion, not a repeated wait for the reward worker.
+            // The existing owner cancellation path also works with AI stopped.
+            CIOThreadCallback.getInstance().cancelNpcAction(this);
+        }
     }
 
     public boolean isDeathProcessing() {
@@ -1908,8 +1915,18 @@ public class L1NpcInstance extends L1Character {
     public synchronized void setDead(boolean dead) {
         final boolean wasDead = isDead();
         super.setDead(dead);
-        if (dead) StopRegeneration();
-        else if (wasDead) StartRegeneration();
+        if (dead) {
+            StopRegeneration();
+            if (!wasDead) {
+                // A dead NPC is excluded from ordinary wheel ticks. Stop its
+                // action explicitly at the death transition, not on a later tick.
+                setAiRunning(false);
+                CIOThreadCallback.getInstance().cancelNpcAction(this);
+                CNPCServer.getInstance().unregister(this);
+            }
+        } else if (wasDead) {
+            StartRegeneration();
+        }
     }
 
     protected void transform(int transformId) {
@@ -1955,8 +1972,12 @@ public class L1NpcInstance extends L1Character {
         }
         _corpseQueuedGeneration = 0;
         if (isDead()) {
-            cancelDigestItems();
+            // Retire the previous life's targets before reopening its inbox.
+            // A delayed owner cancellation must not clear a resurrected NPC.
+            allTargetClear();
+            _deathProcessing = false;
             ReopenNpcEvents();
+            NPC_ACTION_ADMISSION_EPOCH.incrementAndGet(this);
         }
         super.resurrect(hp);        
         L1SkillUse.cast(
