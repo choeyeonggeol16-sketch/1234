@@ -57,6 +57,18 @@ public class L1NpcListedAction extends L1NpcXmlAction {
         return run(name, pc, obj, null, amount, 0, null, completion);
     }
 
+    /** Do not reorder past any action or fold a conditional/nested child. */
+    final L1NpcSetQuestAction leadingPlainQuest(L1PcInstance pc) {
+        if (!_actions.isEmpty() && _actions.get(0) instanceof L1NpcSetQuestAction quest
+                && quest.isPlainQuestAction(pc)) return quest;
+        return null;
+    }
+
+    final L1NpcHtml resumeAfterCraftQuest(String name, L1PcInstance pc, L1Object obj,
+            byte[] args, Consumer<L1NpcHtml> completion) {
+        return run(name, pc, obj, args, 0, 1, null, completion);
+    }
+
     /** Keep original order, acceptance checks and last non-null HTML. Only
      * suspend at a receipt; no new worker, queue or blocking wait. */
     private L1NpcHtml run(String name, L1PcInstance pc, L1Object obj, byte[] args,

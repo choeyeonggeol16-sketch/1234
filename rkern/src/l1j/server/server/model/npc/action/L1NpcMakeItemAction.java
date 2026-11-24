@@ -53,7 +53,7 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
 	private final Material[] _materials;
 	private final List<L1ObjectAmount<Integer>> _items = new ArrayList<L1ObjectAmount<Integer>>();
 	private final boolean _isAmountInputable;
-	private final L1NpcAction _actionOnSucceed;
+	private final L1NpcListedAction _actionOnSucceed;
 	private final L1NpcAction _actionOnFail;
 
 	public L1NpcMakeItemAction(Element element) {
@@ -96,7 +96,7 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
 
     /** Prepare exact unequipped material rows and detached reward images. */
     private boolean submit(L1PcInstance pc, L1NpcInstance npc, int amount,
-            Runnable success, Runnable failure) {
+            String name, Consumer<L1NpcHtml> completion, Runnable failure) {
         if (amount <= 0 || amount >= 1000 || (!_isAmountInputable && amount != 1)) return false;
         final L1PcInventory inv = pc.getInventory();
         final String npcName = npc.getNpcTemplate().get_name();
@@ -160,13 +160,25 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
                 if (tx.grant(image) == null) return false;
                 rewardNames[i] = rewardName(definition, row.getEnchant(), count);
             }
+            final L1NpcSetQuestAction quest = _actionOnSucceed == null
+                    ? null : _actionOnSucceed.leadingPlainQuest(pc);
+            if (quest != null) quest.stageInCraft(tx, pc);
             tx.onFailure(failure);
-            tx.commitAfterInventoryRelease(() -> {
+            Runnable effects = () -> {
                 for (String rewardName : rewardNames) {
                     SC_ServerMessage.send(pc, 143, npcName, rewardName);
                 }
-                success.run();
-            });
+                if (quest == null) {
+                    completeOutcome(_actionOnSucceed, name, pc, npc, completion);
+                } else {
+                    L1NpcHtml result = _actionOnSucceed.resumeAfterCraftQuest(name, pc, npc,
+                            EMPTY_ARGS, html -> completion.accept(html == null ? L1NpcHtml.HTML_CLOSE : html));
+                    if (result != DEFERRED)
+                        completion.accept(result == null ? L1NpcHtml.HTML_CLOSE : result);
+                }
+            };
+            if (quest == null) tx.commitAfterInventoryRelease(effects);
+            else tx.commitAfterInventoryRelease(() -> quest.publishCraftStep(pc), effects);
             return true;
         } catch (RuntimeException rejected) {
             LOG.log(Level.FINE, "XML NPC craft rejected", rejected);
@@ -235,8 +247,7 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
     public L1NpcHtml executeAmountDeferred(String name, L1PcInstance pc, L1Object obj,
             int amount, Consumer<L1NpcHtml> completion) {
         if (!(obj instanceof L1NpcInstance npc)) return L1NpcHtml.HTML_CLOSE;
-        if (submit(pc, npc, amount,
-                () -> completeOutcome(_actionOnSucceed, name, pc, obj, completion),
+        if (submit(pc, npc, amount, name, completion,
                 () -> completeOutcome(_actionOnFail, name, pc, obj, completion))) return DEFERRED;
         return outcome(_actionOnFail, name, pc, obj, completion);
     }

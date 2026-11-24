@@ -27,7 +27,7 @@ import java.util.Map;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.utils.IterableElementList;
 
 public class L1NpcXmlParser {
@@ -73,26 +73,26 @@ public class L1NpcXmlParser {
 
 	private final static Map<String, Integer> _questIds = new HashMap<String, Integer>();
 	static {
-		_questIds.put("firstquest", L1Quest.QUEST_FIRSTQUEST);
-		_questIds.put("level15", L1Quest.QUEST_LEVEL15);
-		_questIds.put("level30", L1Quest.QUEST_LEVEL30);
-		_questIds.put("level45", L1Quest.QUEST_LEVEL45);
-		_questIds.put("level50", L1Quest.QUEST_LEVEL50);
-		_questIds.put("lyra", L1Quest.QUEST_LYRA);
-		_questIds.put("oilskinmant", L1Quest.QUEST_OILSKINMANT);
-		_questIds.put("doromond", L1Quest.QUEST_DOROMOND);
-		_questIds.put("ruba", L1Quest.QUEST_RUBA);
-		_questIds.put("lukein", L1Quest.QUEST_LUKEIN1);
-		_questIds.put("tbox1", L1Quest.QUEST_TBOX1);
-		_questIds.put("tbox2", L1Quest.QUEST_TBOX2);
-		_questIds.put("tbox3", L1Quest.QUEST_TBOX3);
-		_questIds.put("cadmus", L1Quest.QUEST_CADMUS);
-		_questIds.put("resta", L1Quest.QUEST_RESTA);
-		_questIds.put("kamyla", L1Quest.QUEST_KAMYLA);
-		_questIds.put("lizard", L1Quest.QUEST_LIZARD);
-		_questIds.put("desire", L1Quest.QUEST_DESIRE);
-		_questIds.put("shadows", L1Quest.QUEST_SHADOWS);
-		_questIds.put("icequeenring", L1Quest.QUEST_ICEQUEENRING);
+		_questIds.put("firstquest", CQuestSystem.QUEST_FIRSTQUEST);
+		_questIds.put("level15", CQuestSystem.QUEST_LEVEL15);
+		_questIds.put("level30", CQuestSystem.QUEST_LEVEL30);
+		_questIds.put("level45", CQuestSystem.QUEST_LEVEL45);
+		_questIds.put("level50", CQuestSystem.QUEST_LEVEL50);
+		_questIds.put("lyra", CQuestSystem.QUEST_LYRA);
+		_questIds.put("oilskinmant", CQuestSystem.QUEST_OILSKINMANT);
+		_questIds.put("doromond", CQuestSystem.QUEST_DOROMOND);
+		_questIds.put("ruba", CQuestSystem.QUEST_RUBA);
+		_questIds.put("lukein", CQuestSystem.QUEST_LUKEIN1);
+		_questIds.put("tbox1", CQuestSystem.QUEST_TBOX1);
+		_questIds.put("tbox2", CQuestSystem.QUEST_TBOX2);
+		_questIds.put("tbox3", CQuestSystem.QUEST_TBOX3);
+		_questIds.put("cadmus", CQuestSystem.QUEST_CADMUS);
+		_questIds.put("resta", CQuestSystem.QUEST_RESTA);
+		_questIds.put("kamyla", CQuestSystem.QUEST_KAMYLA);
+		_questIds.put("lizard", CQuestSystem.QUEST_LIZARD);
+		_questIds.put("desire", CQuestSystem.QUEST_DESIRE);
+		_questIds.put("shadows", CQuestSystem.QUEST_SHADOWS);
+		_questIds.put("icequeenring", CQuestSystem.QUEST_ICEQUEENRING);
 	}
 
 	public static int parseQuestId(String questId) {
@@ -111,7 +111,7 @@ public class L1NpcXmlParser {
 			return -1;
 		}
 		if (questStep.equalsIgnoreCase("End")) {
-			return L1Quest.QUEST_END;
+			return CQuestSystem.QUEST_END;
 		}
 		return Integer.parseInt(questStep);
 	}

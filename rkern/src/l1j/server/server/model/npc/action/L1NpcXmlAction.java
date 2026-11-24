@@ -101,6 +101,16 @@ public abstract class L1NpcXmlAction implements L1NpcAction {
 		return _name.equals(name);
 	}
 
+    /** Only plain SetQuest children may join the enclosing craft receipt.
+     * Explicit name/NPC/class/quest/level restrictions stay in the normal
+     * post-commit XML evaluator. Default level bounds still apply at admission. */
+    final boolean isPlainQuestAction(L1PcInstance pc) {
+        return _name == null && _npcIds.length == 0 && _classMask == 0
+                && _questId == -1 && _questStep == -1
+                && _minLevel == 1 && _maxLevel == 99
+                && pc.getLevel() >= 1 && pc.getLevel() <= 99;
+    }
+
 	private boolean acceptsQuest(L1PcInstance pc) {
 		if (_questId == -1) {
 			return true;
