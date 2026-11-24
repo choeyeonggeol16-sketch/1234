@@ -1,4 +1,4 @@
-name: RKern NC NPC AI Java 21 regression
+name: RKern NC NPC AI and Bookmark Java 21 regression
 
 on:
   push:
@@ -16,6 +16,13 @@ on:
       - 'rkern/src/l1j/server/server/model/L1MobGroupInfo.java'
       - 'rkern/src/l1j/server/server/model/character/skill/L1SkillUse.java'
       - 'rkern/docs/npc_ai_native_port_20261123/**'
+      - 'rkern/src/l1j/server/server/model/character/bookmark/**'
+      - 'rkern/src/l1j/server/server/templates/L1BookMark.java'
+      - 'rkern/src/l1j/server/server/templates/L1ItemBookMark.java'
+      - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_Bookmark.java'
+      - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_DeleteBookmark.java'
+      - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java'
+      - 'rkern/docs/bookmark_native_port_20261124/**'
       - '.github/workflows/rkern-npc-ai-native-port.yml'
   workflow_dispatch:
 
@@ -34,6 +41,7 @@ jobs:
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
             rkern/docs/npc_ai_native_port_20261123
+            rkern/docs/bookmark_native_port_20261124
       # These symbols were removed on the current 11/23 branch, while their
       # obsolete callers still exist. Never change production files for an
       # NPC-only validation: patch the ephemeral Actions checkout instead.
@@ -136,8 +144,9 @@ jobs:
           sources.append(guards)
           regression = root / "docs/npc_ai_native_port_20261123/TestNpcLifecycleRaces.java"
           launcher = root / "docs/npc_ai_native_port_20261123/TestNpcSuiteMain.java"
-          sources += [regression, launcher]
-          print(f"Production Java sources: {len(sources) - 9}", flush=True)
+          bookmark = root / "docs/bookmark_native_port_20261124/TestUserBookmark.java"
+          sources += [regression, launcher, bookmark]
+          print(f"Production Java sources: {len(sources) - 10}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
@@ -154,6 +163,7 @@ jobs:
               "l1j.server.server.model.npc.ai.action.TestNpcMoveTo",
               "l1j.server.server.model.npc.ai.action.TestNpcGuardGroup",
               "l1j.server.server.model.npc.ai.action.TestNpcLifecycleRaces",
+              "l1j.server.server.model.character.bookmark.TestUserBookmark",
           ]
           failures = []
           for name in tests:
@@ -178,5 +188,7 @@ jobs:
                   failures.append(name)
           if failures:
               raise SystemExit("Failed NPC suites: " + ", ".join(failures))
-          print("PASS all 8 independent NPC suites", flush=True)
+          print("PASS all 9 independent NPC and bookmark suites", flush=True)
+          print("Remaining bookmark call sites:", flush=True)
+          subprocess.run(["git", "grep", "-nE", "L1BookMark\\.(insertBookmark|bookmarkDB|addBookmarkItem|deleteBookmarkItem|WriteBookmark)|L1ItemBookMark\\.addBookmark|\\._bookmarks|\\._speedbookmarks|handleSkillTeleport\\(", "--", "rkern/src"], check=False)
           PY

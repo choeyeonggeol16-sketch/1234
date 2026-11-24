@@ -36,7 +36,7 @@ public final class CUserBookmark {
     private static final Logger LOG = Logger.getLogger(CUserBookmark.class.getName());
     public static final int MAX_SLOT = 100, SHORTCUTS = 5;
     private final ArrayList<L1BookMark> slots = new ArrayList<>();
-    private final ArrayList<L1BookMark> shortcuts = new ArrayList<>(SHORTCUTS);
+    private final ArrayList<L1BookMark> shortcuts = new ArrayList<>();
 
     // Compatibility views are the actual owner lists, not copied state.
     public ArrayList<L1BookMark> slots() { return slots; }
@@ -94,6 +94,10 @@ public final class CUserBookmark {
     private void rebuildShortcuts() {
         shortcuts.clear();
         int used = 0;
+        for (int i = 0, n = slots.size(); i < n; i++) {
+            L1BookMark b = slots.get(i);
+            if (b.getSpeed_id() < -1 || b.getSpeed_id() >= SHORTCUTS) b.setSpeed_id(-1);
+        }
         for (int s = 0; s < SHORTCUTS; s++) {
             for (int i = 0, n = slots.size(); i < n; i++) {
                 L1BookMark b = slots.get(i);
@@ -197,7 +201,7 @@ public final class CUserBookmark {
         b.setCharId(owner); b.setNumId(count); b.setTemp_id(position);
         b.setSpeed_id(-1); b.setName(name); b.setLocX(x); b.setLocY(y);
         b.setMapId(mapId); b.setRandomX(rx); b.setRandomY(ry);
-        mutate(pc, con -> {
+        mutate(pc, true, con -> {
             try (PreparedStatement ps = con.prepareStatement(
                     "INSERT INTO character_teleport(id,char_id,num_id,speed_id,name,locx,locy,mapid,randomX,randomY) VALUES(?,?,?,?,?,?,?,?,?,?)")) {
                 ps.setInt(1, b.getId()); ps.setInt(2, owner);
@@ -358,20 +362,20 @@ public final class CUserBookmark {
     private static void checkBatch(int[] counts, int n) throws SQLException {
         if (counts.length != n) throw new SQLException("Incomplete bookmark batch");
         for (int count : counts) {
-            // MySQL can report zero for an unchanged value; accept that only
-            // after the owner/ID preimage is checked below by the transaction.
+            // MySQL can report zero for an unchanged value; row identities
+            // were locked and verified before this batch.
             if (count < 0 && count != java.sql.Statement.SUCCESS_NO_INFO || count > 1)
                 throw new SQLException("Invalid bookmark update count");
         }
     }
 
-    private static void requireOwner(Connection con, int owner, int expected, int limit, boolean adding)
+    private static void requireOwner(Connection con, int owner, int[] expected, int limit, boolean adding)
             throws SQLException {
         try (PreparedStatement ps = con.prepareStatement(
                 "SELECT Mark_Count FROM characters WHERE objid=? FOR UPDATE")) {
             ps.setInt(1, owner);
             try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next() || adding && expected >= Math.min(limit, rs.getInt(1)))
+                if (!rs.next() || adding && expected.length >= Math.min(limit, rs.getInt(1)))
                     throw new SQLException("Bookmark capacity/owner changed");
             }
         }
@@ -380,19 +384,30 @@ public final class CUserBookmark {
                 "SELECT id FROM character_teleport WHERE char_id=? FOR UPDATE")) {
             ps.setInt(1, owner);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) actual++;
+                while (rs.next()) {
+                    if (java.util.Arrays.binarySearch(expected, rs.getInt(1)) < 0)
+                        throw new SQLException("Bookmark row identity changed");
+                    actual++;
+                }
             }
         }
-        if (actual != expected) throw new SQLException("Bookmark preimage changed");
+        if (actual != expected.length) throw new SQLException("Bookmark preimage changed");
     }
 
     private void mutate(L1PcInstance pc, CTransaction.Mutation work, Runnable apply) {
+        mutate(pc, false, work, apply);
+    }
+
+    private void mutate(L1PcInstance pc, boolean adding, CTransaction.Mutation work, Runnable apply) {
         final int owner = pc.getId(), count = slots.size(), limit = pc.getMark_count();
+        final int[] expected = new int[count];
+        for (int i = 0; i < count; i++) expected[i] = slots.get(i).getId();
+        java.util.Arrays.sort(expected);
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc,
                 CacheD.accountOrderKey("bookmark:" + owner))) {
             tx.sql(con -> {
                 CTransaction.requireTransactionalTables(con, "characters", "character_teleport");
-                requireOwner(con, owner, count, limit, false);
+                requireOwner(con, owner, expected, limit, adding);
                 work.apply(con);
             });
             tx.onFailure(() -> {
