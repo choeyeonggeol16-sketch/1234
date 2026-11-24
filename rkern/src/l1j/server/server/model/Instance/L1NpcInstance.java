@@ -1075,7 +1075,10 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void allTargetClear() {
-        if (_destroyed || isDead()) CloseNpcEvents();
+        if (_destroyed || isDead()) {
+            cancelDigestItems();
+            CloseNpcEvents();
+        }
         if (this instanceof L1MonsterInstance) {
             CDesirePQ.clear(
                     (L1MonsterInstance) this);
@@ -1206,6 +1209,8 @@ public class L1NpcInstance extends L1Character {
 
     @Override
     public void dispose() {
+        cancelDigestItems();
+        _digestItems = null;
         CloseNpcEvents();
         l1j.server.server.model.character.effect.action.realize.OnEffectThread.cancelNpc(this);
         _mobGroupInfo = null;
@@ -1232,6 +1237,7 @@ public class L1NpcInstance extends L1Character {
                 ++_corpseTimerGeneration;
             }
         }
+        cancelDigestItems();
         L1Inventory inv = _inventory;
         if (inv != null) {
             inv.clearItems();
@@ -1298,6 +1304,11 @@ public class L1NpcInstance extends L1Character {
         if (getNpcTemplate().get_digestitem() > 0) {
             setDigestItem(item);
         }
+    }
+
+    /** Preserve the existing virtual callback for pet/summon/companion. */
+    public void onGetItem(L1ItemInstance item, int acquiredCount) {
+        onGetItem(item);
     }
     
     public void approachPlayer(L1PcInstance pc) {
@@ -1975,7 +1986,10 @@ public class L1NpcInstance extends L1Character {
             ++_corpseTimerGeneration;
         }
         _corpseQueuedGeneration = 0;
-        if (isDead()) ReopenNpcEvents();
+        if (isDead()) {
+            cancelDigestItems();
+            ReopenNpcEvents();
+        }
         super.resurrect(hp);        
         L1SkillUse.cast(
                 null,
@@ -2002,22 +2016,53 @@ public class L1NpcInstance extends L1Character {
 
     private volatile NpcDigestItems _digestItems;
 
-    public void setDigestItem(L1ItemInstance item) {
-        if (item == null || getNpcTemplate().get_digestitem() <= 0) return;
-
+    private NpcDigestItems digestItemsForAdd() {
+        if (_destroyed || isDead() || isDeathProcessing() || getCurrentHp() <= 0
+                || getInventory() == null) return null;
         NpcDigestItems d = _digestItems;
         if (d == null) {
-            d = new NpcDigestItems(this);
-            _digestItems = d;
+            synchronized (this) {
+                if (_destroyed || isDead() || isDeathProcessing() || getCurrentHp() <= 0
+                        || getInventory() == null) return null;
+                d = _digestItems;
+                if (d == null) _digestItems = d = new NpcDigestItems(this);
+            }
         }
-        d.add(item, getNpcTemplate().get_digestitem());
+        return d;
+    }
+
+    public void setDigestItem(L1ItemInstance item) {
+        if (item == null) return;
+        final int seconds = getNpcTemplate().get_digestitem();
+        if (seconds <= 0) return;
+        final NpcDigestItems d = digestItemsForAdd();
+        if (d != null) d.add(item, seconds);
+    }
+
+    public void setDigestItem(L1ItemInstance item, int acquiredCount) {
+        if (item == null || acquiredCount <= 0) return;
+        final int seconds = getNpcTemplate().get_digestitem();
+        if (seconds <= 0) return;
+        final NpcDigestItems d = digestItemsForAdd();
+        if (d != null) d.add(item, acquiredCount, seconds);
+    }
+
+    /** NPC owner dispatch also covers subclasses with their own TimerExpired. */
+    public final boolean handleDigestTimer(int timerId, int generation) {
+        if (timerId != NpcDigestItems.TIMER_DIGEST) return false;
+        final NpcDigestItems d = _digestItems;
+        if (d != null) d.TimerExpired(generation);
+        return true;
+    }
+
+    public final void cancelDigestItems() {
+        final NpcDigestItems d = _digestItems;
+        if (d != null) d.clear();
     }
 
     public void checkDigestExpiry() {
         final NpcDigestItems d = _digestItems;
-        if (d != null) {
-            d.checkExpired();
-        }
+        if (d != null) d.checkExpired();
     }
 
     public boolean isInMobGroup() {
@@ -2221,6 +2266,7 @@ public class L1NpcInstance extends L1Character {
             }
         }
 
+        cancelDigestItems();
         L1Inventory inv = _inventory;
         if (inv != null) {
             inv.clearItems();

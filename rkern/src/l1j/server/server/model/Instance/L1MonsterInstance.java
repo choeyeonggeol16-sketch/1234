@@ -215,6 +215,22 @@ public class L1MonsterInstance extends L1NpcInstance {
 		startAI();
 	}
 
+    /** The committed pickup amount excludes pre-existing merged loot. */
+    @Override
+    public void onGetItem(L1ItemInstance item, int acquiredCount) {
+        if (item == null || isDestroyed() || isDead()) return;
+        final int before = item.getCount();
+        refineItem();
+        final L1Inventory inventory = getInventory();
+        if (inventory == null) return;
+        inventory.shuffle();
+        if (inventory.getItem(item.getId()) == item) {
+            final int remaining = Math.max(0,
+                    acquiredCount - Math.max(0, before - item.getCount()));
+            setDigestItem(item, remaining);
+        }
+    }
+
 	@SuppressWarnings("unused")
 	@Override
 	public void onTalkAction(L1PcInstance pc) {
@@ -767,6 +783,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	    // 즉시 처리해야 할 시각적/물리적 상태 
 	    setCurrentHp(0);
 	    setDead(true);
+        // Retire food expiry before asynchronous reward/drop distribution.
+        cancelDigestItems();
 	    setStatus(ActionCodes.ACTION_Die);
         // The body is released here, not after the asynchronous reward/DB work.
         // Release its claimed melee destination at the same death boundary.
@@ -1109,6 +1127,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 
 	@Override
 	protected void transform(int transformId) {
+        cancelDigestItems();
 		if(_transformHandler != null)
 			_transformHandler.onTransFormNotify(this);
 		super.transform(transformId);

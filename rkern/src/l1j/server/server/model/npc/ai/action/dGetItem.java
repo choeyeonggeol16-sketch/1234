@@ -65,10 +65,19 @@ public final class dGetItem {
             final L1NpcInstance creature,
             final L1ItemInstance requested,
             final L1ItemInstance transferred) {
+        GetItemFinished(creature, requested, transferred,
+                transferred != null ? transferred.getCount() : 0);
+    }
+
+    public static void GetItemFinished(
+            final L1NpcInstance creature,
+            final L1ItemInstance requested,
+            final L1ItemInstance transferred,
+            final int acquiredCount) {
         if (creature == null) return;
         try {
             if (transferred != null) {
-                creature.onGetItem(transferred);
+                creature.onGetItem(transferred, acquiredCount);
             }
         } finally {
             if (requested != null

@@ -357,6 +357,7 @@ public final class CGetItemAction {
             return;
         }
 
+        final int acquiredCount = targetItem.getCount();
         final boolean oldGiveItem = targetItem.isGiveItem();
         final L1ItemInstance transferred;
         try {
@@ -364,7 +365,7 @@ public final class CGetItemAction {
             // Existing locked L1Inventory transfer rechecks exact source
             // identity, capacity and CacheD pending-transaction gates.
             transferred = groundInventory.tradeItem(
-                    targetItem, targetItem.getCount(), destination);
+                    targetItem, acquiredCount, destination);
         } catch (IllegalStateException pendingTransfer) {
             if (groundInventory.getItem(targetItem.getId()) == targetItem) {
                 targetItem.setGiveItem(oldGiveItem);
@@ -392,7 +393,7 @@ public final class CGetItemAction {
 
         // Synchronous L1 commit now supplies NC GetItemFinished outcome.
         // onGetItem only runs after successful inventory transfer.
-        dGetItem.GetItemFinished(creature, targetItem, transferred);
+        dGetItem.GetItemFinished(creature, targetItem, transferred, acquiredCount);
     }
 
     private static void softBlocked(final L1NpcInstance creature) {

@@ -783,7 +783,8 @@ public final class NpcServer {
                         break;
                     case EVENT_TIMER:
                         if (L1World.getInstance().findObjectBySmartId(event.smartId) == event.npc
-                                && !event.npc.handleCorpseDeleteTimer(event.timerId, event.generation)) {
+                                && !event.npc.handleCorpseDeleteTimer(event.timerId, event.generation)
+                                && !event.npc.handleDigestTimer(event.timerId, event.generation)) {
                             event.npc.TimerExpired(event.timerId, event.generation);
                         }
                         break;
