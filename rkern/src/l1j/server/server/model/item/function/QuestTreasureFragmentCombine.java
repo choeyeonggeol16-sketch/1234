@@ -3,7 +3,6 @@ package l1j.server.server.model.item.function;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;

@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.NpcTable;
-import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
 
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.templates.L1Npc;
@@ -98,19 +98,19 @@ public class L1QuestInstance extends L1NpcInstance {
 				SC_NPCTalkReturn.send(pc, getId(), "endiaq4");
 			}
 		} else if (npcId == 71062) {
-			if (pc.getQuest().get_step(L1Quest.QUEST_CADMUS) == 2) {
+			if (pc.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 2) {
 				SC_NPCTalkReturn.send(pc, getId(), "kamit1b");
 			} else {
 				SC_NPCTalkReturn.send(pc, getId(), "kamit1");
 			}
 		} else if (npcId == 71075) {
-			if (pc.getQuest().get_step(L1Quest.QUEST_LIZARD) == 1) {
+			if (pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 1) {
 				SC_NPCTalkReturn.send(pc, getId(), "llizard1b");
 			} else {
 				SC_NPCTalkReturn.send(pc, getId(), "llizard1a");
 			}
 		} else if (npcId == 70957 || npcId == 81209) {
-			if (pc.getQuest().get_step(L1Quest.QUEST_ROI) != 1) {
+			if (pc.getQuest().get_step(CQuestSystem.QUEST_ROI) != 1) {
 				SC_NPCTalkReturn.send(pc, getId(), "roi1");
 			} else {
 				SC_NPCTalkReturn.send(pc, getId(), "roi2");
@@ -139,7 +139,7 @@ public class L1QuestInstance extends L1NpcInstance {
 				L1Npc l1npc = NpcTable.getInstance().getTemplate(71094);
 				follow = new L1FollowerInstance(l1npc, this, pc);
 				SC_NPCTalkReturn.send(pc, getId(), "");
-			} else if (npcId == 71062 && pc.getQuest().get_step(L1Quest.QUEST_CADMUS) == 2) {
+			} else if (npcId == 71062 && pc.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 2) {
 				L1Npc l1npc = NpcTable.getInstance().getTemplate(71062);
 
 				if (pc.getFollowerList().size() < 1) {
@@ -147,7 +147,7 @@ public class L1QuestInstance extends L1NpcInstance {
 				}
 
 				SC_NPCTalkReturn.send(pc, getId(), "");
-			} else if (npcId == 71075 && pc.getQuest().get_step(L1Quest.QUEST_LIZARD) == 1) {
+			} else if (npcId == 71075 && pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 1) {
 				L1Npc l1npc = NpcTable.getInstance().getTemplate(71075);
 				follow = new L1FollowerInstance(l1npc, this, pc);
 				SC_NPCTalkReturn.send(pc, getId(), "");

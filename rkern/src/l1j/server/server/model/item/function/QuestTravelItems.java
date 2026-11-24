@@ -3,7 +3,7 @@ package l1j.server.server.model.item.function;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -56,25 +56,25 @@ final class QuestTravelItems {
 
     static ItemActionResult handleLukeinRecord(ItemActionContext use) {
         L1PcInstance pc = use.player();
-        if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 1) {
+        if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 1) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "firsttmap");
-        } else if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 2) {
+        } else if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 2) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "secondtmapa");
-        } else if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 3) {
+        } else if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 3) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "secondtmapb");
-        } else if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 4) {
+        } else if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 4) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "secondtmapc");
-        } else if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 5) {
+        } else if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 5) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "thirdtmapd");
-        } else if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 6) {
+        } else if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 6) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "thirdtmape");
-        } else if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 7) {
+        } else if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 7) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "thirdtmapf");
-        } else if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 8) {
+        } else if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 8) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "thirdtmapg");
-        } else if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 9) {
+        } else if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 9) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "thirdtmaph");
-        } else if (pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) == 10) {
+        } else if (pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 10) {
             SC_NPCTalkReturn.send(pc, pc.getId(), "thirdtmapi");
         }
         return ItemActionResult.COMPLETE;

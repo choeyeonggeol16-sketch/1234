@@ -4,7 +4,7 @@ import static l1j.server.server.model.network.core.cs.packet.HtmlCmdHandler._ran
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -115,28 +115,29 @@ final class NpcRegionalHtmlCommands {
 
         } else if (templateId == 71055) {
             if (s.equalsIgnoreCase("0")) {
-                NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, L1Quest.QUEST_LUKEIN1,
+                NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_LUKEIN1,
                         0, 1, 40701, 1, "lukein8");
                 return;
             }
             if (s.equalsIgnoreCase("1")) {
-                if (pc.getQuest().get_step(L1Quest.QUEST_TBOX3) != L1Quest.QUEST_END
-                        || pc.getQuest().get_step(L1Quest.QUEST_LUKEIN1) != 11) {
+                if (pc.getQuest().get_step(CQuestSystem.QUEST_TBOX3) != CQuestSystem.QUEST_END
+                        || pc.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) != 11) {
                     SC_NPCTalkReturn.send(pc, objid, "lukein0");
                     return;
                 }
                 NpcQuestTransactions.questItemExchange(pc, (L1NpcInstance) obj,
-                        L1Quest.QUEST_LUKEIN1, 11, L1Quest.QUEST_END,
+                        CQuestSystem.QUEST_LUKEIN1, 11, CQuestSystem.QUEST_END,
                         40716, 1, 0, 20269, 0, "lukein0", "lukein0");
                 return;
             } else if (s.equalsIgnoreCase("2")) {
-                htmlid = "lukein12";
-                pc.getQuest().set_step(L1Quest.QUEST_RESTA, 3);
+                NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_RESTA,
+                        pc.getQuest().get_step(CQuestSystem.QUEST_RESTA), 3, "lukein12");
+                return;
             }
         } else if (templateId == 71063) {
             if (s.equalsIgnoreCase("0")) {
                 NpcQuestTransactions.lukeinChestReceipt(pc, (L1NpcInstance) obj,
-                        1, 2, 3, L1Quest.QUEST_TBOX1, 40702, "maptbox1");
+                        1, 2, 3, CQuestSystem.QUEST_TBOX1, 40702, "maptbox1");
                 return;
             }
         } else if (templateId >= 71064
@@ -144,7 +145,7 @@ final class NpcRegionalHtmlCommands {
             if (s.equalsIgnoreCase("0")) {
                 final int npcId = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
                 NpcQuestTransactions.lukeinChestReceipt(pc, (L1NpcInstance) obj,
-                        npcId - 71062, 5, 6, L1Quest.QUEST_TBOX2, 40702, "maptbox1");
+                        npcId - 71062, 5, 6, CQuestSystem.QUEST_TBOX2, 40702, "maptbox1");
                 return;
             }
         } else if (templateId >= 71067
@@ -152,7 +153,7 @@ final class NpcRegionalHtmlCommands {
             if (s.equalsIgnoreCase("0")) {
                 final int npcId = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
                 NpcQuestTransactions.lukeinChestReceipt(pc, (L1NpcInstance) obj,
-                        npcId - 71062, 11, 1, L1Quest.QUEST_TBOX3, 40716, "maptboxi");
+                        npcId - 71062, 11, 1, CQuestSystem.QUEST_TBOX3, 40716, "maptboxi");
                 return;
             }
 
@@ -160,8 +161,9 @@ final class NpcRegionalHtmlCommands {
         } else if (templateId == 71056) {
             // 아들을 찾는다
             if (s.equalsIgnoreCase("a")) {
-                pc.getQuest().set_step(L1Quest.QUEST_SIMIZZ, 1);
-                htmlid = "SIMIZZ7";
+                NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_SIMIZZ,
+                        pc.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ), 1, "SIMIZZ7");
+                return;
             } else if (s.equalsIgnoreCase("b")) {
                 if (pc.getInventory().checkItem(40661) && pc.getInventory().checkItem(40662)
                         && pc.getInventory().checkItem(40663)) {
@@ -170,8 +172,9 @@ final class NpcRegionalHtmlCommands {
                 }
                 htmlid = "SIMIZZ9";
             } else if (s.equalsIgnoreCase("d")) {
-                htmlid = "SIMIZZ12";
-                pc.getQuest().set_step(L1Quest.QUEST_SIMIZZ, L1Quest.QUEST_END);
+                NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_SIMIZZ,
+                        pc.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ), CQuestSystem.QUEST_END, "SIMIZZ12");
+                return;
             }
 
             // 도일(해적섬)
@@ -183,8 +186,8 @@ final class NpcRegionalHtmlCommands {
                 htmlid = "doil6";
             } else if (s.equalsIgnoreCase("1")) {
                 if (pc.getInventory().checkItem(40714)) {
-                    NpcQuestTransactions.questItemExchange(pc, (L1NpcInstance) obj, L1Quest.QUEST_DOIL,
-                            pc.getQuest().get_step(L1Quest.QUEST_DOIL), L1Quest.QUEST_END,
+                    NpcQuestTransactions.questItemExchange(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_DOIL,
+                            pc.getQuest().get_step(CQuestSystem.QUEST_DOIL), CQuestSystem.QUEST_END,
                             40714, 1, 0, 40647, 0, "doil8", "doil7");
                     return;
                 }
@@ -197,13 +200,13 @@ final class NpcRegionalHtmlCommands {
         } else if (templateId == 71059) {
             // 루디 안의 부탁을 받아들인다
             if (s.equalsIgnoreCase("A")) {
-                NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, L1Quest.QUEST_RUDIAN,
+                NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_RUDIAN,
                         0, 1, 40700, 1, "rudian6");
                 return;
             } else if (s.equalsIgnoreCase("B")) {
                 if (pc.getInventory().checkItem(40710)) {
-                    NpcQuestTransactions.questItemExchange(pc, (L1NpcInstance) obj, L1Quest.QUEST_RUDIAN,
-                            pc.getQuest().get_step(L1Quest.QUEST_RUDIAN), L1Quest.QUEST_END,
+                    NpcQuestTransactions.questItemExchange(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_RUDIAN,
+                            pc.getQuest().get_step(CQuestSystem.QUEST_RUDIAN), CQuestSystem.QUEST_END,
                             40700, 1, 40710, 40647, 0, "rudian8", "rudian9");
                     return;
                 }
@@ -214,59 +217,63 @@ final class NpcRegionalHtmlCommands {
         } else if (templateId == 71060) {
             // 동료들에 대해
             if (s.equalsIgnoreCase("A")) {
-                if (pc.getQuest().get_step(L1Quest.QUEST_RUDIAN) == L1Quest.QUEST_END) {
+                if (pc.getQuest().get_step(CQuestSystem.QUEST_RUDIAN) == CQuestSystem.QUEST_END) {
                     htmlid = "resta6";
                 } else {
                     htmlid = "resta4";
                 }
             } else if (s.equalsIgnoreCase("B")) {
-                htmlid = "resta10";
-                pc.getQuest().set_step(L1Quest.QUEST_RESTA, 2);
+                NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_RESTA,
+                        pc.getQuest().get_step(CQuestSystem.QUEST_RESTA), 2, "resta10");
+                return;
             }
 
             // 카좀스(해적섬)
         } else if (templateId == 71061) {
             if (s.equalsIgnoreCase("A")) {
-                final int step = pc.getQuest().get_step(L1Quest.QUEST_CADMUS);
+                final int step = pc.getQuest().get_step(CQuestSystem.QUEST_CADMUS);
                 if (step >= 2) {
                     SC_NPCTalkReturn.send(pc, objid, "cadmus6");
                 } else if (pc.getInventory().checkItem(40647, 3)) {
-                    NpcQuestTransactions.npcQuestDebit(pc, (L1NpcInstance) obj, L1Quest.QUEST_CADMUS,
+                    NpcQuestTransactions.npcQuestDebit(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_CADMUS,
                             step, 2, 40647, 3, "cadmus6", "cadmus5");
                 } else {
-                    if (step == 0) pc.getQuest().set_step(L1Quest.QUEST_CADMUS, 1);
-                    SC_NPCTalkReturn.send(pc, objid, "cadmus5");
+                    if (step == 0) {
+                        NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_CADMUS,
+                                0, 1, "cadmus5");
+                    } else SC_NPCTalkReturn.send(pc, objid, "cadmus5");
                 }
                 return;
             }
         } else if (templateId == 71036) {
             if (s.equalsIgnoreCase("a")) {
-                htmlid = "kamyla7";
-                pc.getQuest().set_step(L1Quest.QUEST_KAMYLA, 1);
+                NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_KAMYLA,
+                        pc.getQuest().get_step(CQuestSystem.QUEST_KAMYLA), 1, "kamyla7");
+                return;
             } else if (s.equalsIgnoreCase("c")) {
-                NpcQuestTransactions.npcQuestDebit(pc, (L1NpcInstance) obj, L1Quest.QUEST_KAMYLA,
+                NpcQuestTransactions.npcQuestDebit(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_KAMYLA,
                         2, 3, 40644, 1, "kamyla10", "kamyla10");
                 return;
             } else if (s.equalsIgnoreCase("e")) {
-                NpcQuestTransactions.npcQuestDebit(pc, (L1NpcInstance) obj, L1Quest.QUEST_KAMYLA,
+                NpcQuestTransactions.npcQuestDebit(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_KAMYLA,
                         3, 4, 40630, 1, "kamyla13", "kamyla13");
                 return;
             } else if (s.equalsIgnoreCase("i")) {
                 htmlid = "kamyla25";
             } else if (s.equalsIgnoreCase("b")) { // 카 미라(흐랑코의 미궁)
-                if (pc.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 1) {
+                if (pc.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 1) {
                     // L1Teleport.teleport(pc, 32679, 32742, (short) 482, 5,
                     // true);
                     pc.start_teleport(32679, 32742, 482, 5, 169, true, false);
                 }
             } else if (s.equalsIgnoreCase("d")) { // 카 미라(디에고가 닫힌 뇌)
-                if (pc.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 3) {
+                if (pc.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 3) {
                     // L1Teleport.teleport(pc, 32736, 32800, (short) 483, 5,
                     // true);
                     pc.start_teleport(32736, 32800, 483, 5, 169, true, false);
                 }
             } else if (s.equalsIgnoreCase("f")) { // 카 미라(호세 지하소굴)
-                if (pc.getQuest().get_step(L1Quest.QUEST_KAMYLA) == 4) {
+                if (pc.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 4) {
                     // L1Teleport.teleport(pc, 32746, 32807, (short) 484, 5,
                     // true);
                     pc.start_teleport(32746, 32807, 484, 5, 169, true, false);
@@ -274,7 +281,7 @@ final class NpcRegionalHtmlCommands {
             }
         } else if (templateId == 71089) {
             if (s.equalsIgnoreCase("a")) {
-                NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, L1Quest.QUEST_KAMYLA,
+                NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_KAMYLA,
                         1, 2, 40644, 1, "francu10");
                 return;
             }
@@ -293,9 +300,9 @@ final class NpcRegionalHtmlCommands {
                 if (!pc.getInventory().checkItem(41312)) {
                     // The first clue is a one-time quest award; after it was
                     // consumed, another click must not mint a second clue.
-                    if (pc.getQuest().get_step(L1Quest.QUEST_KEPLISHA) == 0)
-                        NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, L1Quest.QUEST_KEPLISHA,
-                                0, L1Quest.QUEST_END, 41312, 1, "keplisha7");
+                    if (pc.getQuest().get_step(CQuestSystem.QUEST_KEPLISHA) == 0)
+                        NpcQuestTransactions.questGrantOnce(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_KEPLISHA,
+                                0, CQuestSystem.QUEST_END, 41312, 1, "keplisha7");
                     else
                         SC_NPCTalkReturn.send(pc, objid, "keplisha7");
                     return;

@@ -1076,6 +1076,55 @@ final class NpcQuestTransactions {
         }
     }
 
+    /** Required essence, optional legacy documents, karma and quest completion
+     * are committed together. Keep the existing signed karma rule and pages. */
+    static void spyComplete(L1PcInstance pc, L1NpcInstance npc, boolean shadow) {
+        final int quest = shadow ? CQuestSystem.QUEST_SHADOWS : CQuestSystem.QUEST_DESIRE;
+        final int essence = shadow ? 41129 : 41138;
+        final int firstDocument = shadow ? 41121 : 41130;
+        final int objid = npc.getId();
+        final String failurePage = shadow ? "minitos04" : "minicod04";
+        final int step = pc.getQuest().get_step(quest);
+        if (step == CQuestSystem.QUEST_END || pc.getKarmaLevel() >= 1) {
+            SC_NPCTalkReturn.send(pc, objid, "");
+            return;
+        }
+        final int delta = (int) ((shadow ? -1600 : 1600) * Config.RATE_KARMA);
+        final CUserSocket client = pc.getNetConnection();
+        if (client == null) return;
+        final int version = client.npcDialogueVersion();
+        final long target = L1World.getInstance().smartIdOf(npc);
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, quest)) {
+            if (pc.getQuest().get_step(quest) != step || pc.getKarmaLevel() >= 1) return;
+            if (!NpcExchangeCommands.debitLegacy(tx, pc, essence, 1)) {
+                SC_NPCTalkReturn.send(pc, objid, failurePage);
+                return;
+            }
+            for (int id = firstDocument; id <= firstDocument + 1; id++) {
+                if (pc.getInventory().checkItem(id, 1)
+                        && !NpcExchangeCommands.debitLegacy(tx, pc, id, 1)) {
+                    SC_NPCTalkReturn.send(pc, objid, failurePage);
+                    return;
+                }
+            }
+            CQuestSystem.StageQuestStep(tx, pc.getId(), quest, step, CQuestSystem.QUEST_END, 0);
+            stageKarmaExchange(tx, pc, delta);
+            tx.onFailure(() -> {
+                if (pc.getNetConnection() == client && client.canReplyToNpcDialogue(pc, target, version))
+                    SC_NPCTalkReturn.send(pc, objid, failurePage);
+            });
+            tx.commitAfterInventoryRelease(
+                    () -> pc.getQuest().applyCommittedStepIfLoaded(quest, CQuestSystem.QUEST_END),
+                    () -> {
+                        SC_Karma.send(pc);
+                        if (pc.getNetConnection() == client && client.canReplyToNpcDialogue(pc, target, version))
+                            SC_NPCTalkReturn.send(pc, objid, "");
+                    });
+        } catch (RuntimeException failure) {
+            SC_SystemMessage.send(pc, "퀘스트 완료를 진행할 수 없습니다.");
+        }
+    }
+
     static void spyReset(L1PcInstance pc, L1NpcInstance npc, boolean shadow) {
         final int quest=shadow ? CQuestSystem.QUEST_SHADOWS : CQuestSystem.QUEST_DESIRE;
         final int step=pc.getQuest().get_step(quest);

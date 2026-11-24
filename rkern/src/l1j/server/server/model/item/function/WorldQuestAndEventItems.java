@@ -2,7 +2,7 @@ package l1j.server.server.model.item.function;
 import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.L1NeigeItemBox;
-import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -87,7 +87,7 @@ case 40700: { // 실버 플룻
 		}
 		
 case 41121:// 카헬의 계약서
-			if (pc.getQuest().get_step(L1Quest.QUEST_SHADOWS) == L1Quest.QUEST_END
+			if (pc.getQuest().get_step(CQuestSystem.QUEST_SHADOWS) == CQuestSystem.QUEST_END
 			|| pc.getInventory().checkItem(41122, 1)) {
 				SC_ServerMessage.send(pc, 79);
 			} else {
@@ -96,7 +96,7 @@ case 41121:// 카헬의 계약서
 			break;
 		
 case 41130:// 혈흔의 계약서
-			if (pc.getQuest().get_step(L1Quest.QUEST_DESIRE) == L1Quest.QUEST_END
+			if (pc.getQuest().get_step(CQuestSystem.QUEST_DESIRE) == CQuestSystem.QUEST_END
 			|| pc.getInventory().checkItem(41131, 1)) {
 				SC_ServerMessage.send(pc, 79);
 			} else {

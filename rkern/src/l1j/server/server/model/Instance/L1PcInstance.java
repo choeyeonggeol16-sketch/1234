@@ -61,6 +61,7 @@ import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.L1ReturnStatTemp;
 import l1j.server.server.model.L1SmallIntMap;
@@ -4638,7 +4639,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
             if (!eligible) continue;
             hasEligible = true;
             if (_settledLevelGifts.get(lv)) continue;
-            if (migrate && getQuest().get_step(lv) == L1Quest.QUEST_END)
+            if (migrate && getQuest().get_step(lv) == CQuestSystem.QUEST_END)
                 legacy.add(lv);
             else due.add(lv);
         }
@@ -4689,7 +4690,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
                                 if (!rows.next())
                                     throw new java.sql.SQLException("Legacy level gift step missing: " + lv);
                                 final int step = rows.getInt(1);
-                                if (rows.wasNull() || step != L1Quest.QUEST_END)
+                                if (rows.wasNull() || step != CQuestSystem.QUEST_END)
                                     throw new java.sql.SQLException("Legacy level gift step changed: " + lv);
                             }
                         }
@@ -4706,7 +4707,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
                                     final int step = rows.getInt(1);
                                     if (rows.wasNull())
                                         throw new java.sql.SQLException("NULL legacy gift quest step: " + lv);
-                                    if (step == L1Quest.QUEST_END)
+                                    if (step == CQuestSystem.QUEST_END)
                                         throw new java.sql.SQLException("Legacy gift completed during settlement: " + lv);
                                 }
                             }
@@ -4877,19 +4878,19 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		// Also retried after inventory restoration on login, even if DB level
 		// was saved just before a previous crash interrupted this settlement.
 		settleOutstandingLevelGifts();
-		L1Quest quest = getQuest();
+		CQuestSystem quest = getQuest();
 		// TODO 스냅퍼 개방
-		int lv59_step = quest.get_step(L1Quest.QUEST_SLOT76);
-		if (getLevel() == 59 && lv59_step != L1Quest.QUEST_END) {
+		int lv59_step = quest.get_step(CQuestSystem.QUEST_SLOT76);
+		if (getLevel() == 59 && lv59_step != CQuestSystem.QUEST_END) {
 			SC_PacketBox.send(this, SC_PacketBox.GREEN_MESSAGE, "Lv.59 귀걸이개방이 가능해졌습니다.");
 			SC_NewCreateItem.sendSubtype(this, SC_NewCreateItem.신규패킷10, 0);
 		}
-		int lv76_step = quest.get_step(L1Quest.QUEST_SLOT76);
-		if (getLevel() == 76 && lv76_step != L1Quest.QUEST_END) {
+		int lv76_step = quest.get_step(CQuestSystem.QUEST_SLOT76);
+		if (getLevel() == 76 && lv76_step != CQuestSystem.QUEST_END) {
 			SC_PacketBox.send(this, SC_PacketBox.GREEN_MESSAGE, "Lv.76 반지개방이 가능해졌습니다.");
 		}
-		int lv81_step = quest.get_step(L1Quest.QUEST_SLOT81);
-		if (getLevel() == 81 && lv81_step != L1Quest.QUEST_END) {
+		int lv81_step = quest.get_step(CQuestSystem.QUEST_SLOT81);
+		if (getLevel() == 81 && lv81_step != CQuestSystem.QUEST_END) {
 			SC_PacketBox.send(this, SC_PacketBox.GREEN_MESSAGE, "Lv.81 반지개방이 가능해졌습니다.");
 		}
 

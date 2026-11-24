@@ -13,7 +13,6 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.listener.ActionListener;
@@ -22,7 +21,6 @@ import l1j.server.server.model.character.classinfo.EClassesType;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_Karma;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -93,21 +91,8 @@ final class NpcEventHtmlCommands {
                 NpcQuestTransactions.spyReset(pc, (L1NpcInstance) obj, false);
                 return;
             } else if (s.equalsIgnoreCase("e")) {
-                if (pc.getQuest().get_step(L1Quest.QUEST_DESIRE) == L1Quest.QUEST_END || pc.getKarmaLevel() >= 1) {
-                    htmlid = "";
-                } else {
-                    if (pc.getInventory().checkItem(41138)) {
-                        htmlid = "";
-                        pc.addKarma((int) (1600 * Config.RATE_KARMA));
-                        SC_Karma.send(pc);
-                        pc.getInventory().consumeItem(41130, 1); // 핏자국의 계약서
-                        pc.getInventory().consumeItem(41131, 1); // 핏자국의 지령서
-                        pc.getInventory().consumeItem(41138, 1); // 카헬의 정수
-                        pc.getQuest().set_step(L1Quest.QUEST_DESIRE, L1Quest.QUEST_END);
-                    } else {
-                        htmlid = "minicod04";
-                    }
-                }
+                NpcQuestTransactions.spyComplete(pc, (L1NpcInstance) obj, false);
+                return;
                 // 선물을 받는다
             } else if (s.equalsIgnoreCase("g")) {
                 NpcQuestTransactions.spyGift(pc, (L1NpcInstance) obj, false);
@@ -286,21 +271,8 @@ final class NpcEventHtmlCommands {
                 NpcQuestTransactions.spyReset(pc, (L1NpcInstance) obj, true);
                 return;
             } else if (s.equalsIgnoreCase("e")) {
-                if (pc.getQuest().get_step(L1Quest.QUEST_SHADOWS) == L1Quest.QUEST_END || pc.getKarmaLevel() >= 1) {
-                    htmlid = "";
-                } else {
-                    if (pc.getInventory().checkItem(41129)) {
-                        htmlid = "";
-                        pc.addKarma((int) (-1600 * Config.RATE_KARMA));
-                        SC_Karma.send(pc);
-                        pc.getInventory().consumeItem(41121, 1); // 카헬의 계약서
-                        pc.getInventory().consumeItem(41122, 1); // 카헬의 지령서
-                        pc.getInventory().consumeItem(41129, 1); // 핏자국의 정수
-                        pc.getQuest().set_step(L1Quest.QUEST_SHADOWS, L1Quest.QUEST_END);
-                    } else {
-                        htmlid = "minitos04";
-                    }
-                }
+                NpcQuestTransactions.spyComplete(pc, (L1NpcInstance) obj, true);
+                return;
                 // 재빠르게 받는다
             } else if (s.equalsIgnoreCase("g")) {
                 NpcQuestTransactions.spyGift(pc, (L1NpcInstance) obj, true);
