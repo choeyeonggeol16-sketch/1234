@@ -307,7 +307,10 @@ public final class AiRuntime {
                             (L1MonsterInstance) npc,
                             nowMs);
 
-            if (!retailMoveAround
+            final boolean fixedGuardHolding = CStandAction.isGuard(npc)
+                    && currentAction == CCreatureController.ACTION_STAND
+                    && !CStandAction.canInterruptGuardStand(npc);
+            if (!retailMoveAround && !fixedGuardHolding
                     && !CCreatureController.isCombatAction(
                             currentAction)) {
 
@@ -495,6 +498,13 @@ public final class AiRuntime {
         }
 
         if (target != null) {
+            // AMT_STAND for a physically fixed guard. Preserve the existing
+            // L1 target and attack rules; do not submit an impossible chase.
+            if (CStandAction.isGuard(creature) && !creature.isMovable()
+                    && !creature.isAttackPosition(target, creature.getNpcTemplate().get_ranged())) {
+                CCreatureController.submit(creature, CCreatureController.ACTION_STAND);
+                return;
+            }
             if (!creature.isActionable()
                     && creature.isMovable()) {
 
@@ -537,6 +547,22 @@ public final class AiRuntime {
             }
         }
 
+        // guard_stand NO_DESIRE -> MOVE_TO -> MOVE_TO_FINISHED -> DO_NOTHING.
+        // Existing L1 guards are post guards; mobility is the existing template
+        // flag, not a new DB setting or an invented patrol assignment.
+        if (CStandAction.isGuard(creature)) {
+            if (creature.isMovable() && !CStandAction.atHome(creature)) {
+                if (dMoveTo.request(creature, creature.getHomeX(), creature.getHomeY())) {
+                    return;
+                }
+            } else if (!L1World.getInstance().hasRecognizePlayerFast(creature)) {
+                CCreatureController.submit(creature, CCreatureController.ACTION_NOTHING);
+                return;
+            }
+            CCreatureController.submit(creature, CCreatureController.ACTION_STAND);
+            return;
+        }
+
         /*
          * NC DESIRE_PET_DEFAULT selects the owner's default action after
          * ATTACK / USE_SKILL have been considered. In L1 this is the
@@ -545,14 +571,11 @@ public final class AiRuntime {
          * Pet/Summon stay, extend and alert must not be preempted by the
          * generic FOLLOW_MASTER shortcut below. Dolls retain their 40-tile
          * teleport and owner-visibility policy; companions retain item mode.
-         * Guard subclasses keep their original ACTION_COMPANION reaction.
          */
         if (creature instanceof L1CompanionInstance
                 || creature instanceof L1PetInstance
                 || creature instanceof L1SummonInstance
-                || creature instanceof L1DollInstance
-                || creature instanceof L1GuardInstance
-                || creature instanceof L1CastleGuardInstance) {
+                || creature instanceof L1DollInstance) {
             CCreatureController.submit(
                     creature,
                     CCreatureController.ACTION_COMPANION);
@@ -669,6 +692,8 @@ public final class AiRuntime {
          * New desire/hate events may change the PQ while an action is running,
          * but they do not silently replace that action's target mid-tick.
          */
+        final boolean guardStanding = CStandAction.isGuard(npc)
+                && ActionAccess.currentAction(npc) == CCreatureController.ACTION_STAND;
         final boolean actionOwnsTarget =
                 npc.npcActionOwnsCadence()
                 && CCreatureController.isCombatAction(
@@ -931,6 +956,14 @@ public final class AiRuntime {
             npc.checkTarget();
         }
 
+        // A new admitted enemy must not wait for the guard's 40-second idle
+        // timer. Reuse the owner generation/wake path, leaving active combat
+        // and movement cadence unchanged.
+        if (changed && guardStanding
+                && (ActionAccess.currentAction(npc) != CCreatureController.ACTION_STAND
+                    || CStandAction.canInterruptGuardStand(npc))) {
+            CCreatureController.rethinkNow(npc);
+        }
         return changed;
     }
 
