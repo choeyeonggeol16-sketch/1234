@@ -113,6 +113,10 @@ jobs:
               kda.write_text(code, encoding="utf-8")
           print("Test-only compatibility shims applied; git sources stay unchanged")
           PY
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/rkern-skill-deps
+          key: rkern-skill-deps-v1-${{ hashFiles('rkern/docs/jproring_cio_integration_20261120/run_game_ab.py') }}
       - name: Compile full production Java 21 and NC desire regression
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
@@ -124,6 +128,7 @@ jobs:
           import subprocess
           import time
           import urllib.error
+          import urllib.request
 
           root = Path("rkern").resolve()
           work = Path(os.environ["RUNNER_TEMP"]) / "rkern-npc-ai"
@@ -134,6 +139,20 @@ jobs:
           helper = importlib.util.module_from_spec(spec)
           spec.loader.exec_module(helper)
           deps = Path.home() / ".cache/rkern-skill-deps"
+          # Both endpoints serve the same Maven Central artifacts. Retry the
+          # alternate endpoint on transient failures without changing versions.
+          original_urlopen = urllib.request.urlopen
+          def central_urlopen(url, *args, **kwargs):
+              try:
+                  return original_urlopen(url, *args, **kwargs)
+              except urllib.error.HTTPError as failure:
+                  if failure.code not in (429, 500, 502, 503, 504):
+                      raise
+                  if not isinstance(url, str) or not url.startswith("https://repo.maven.apache.org/maven2/"):
+                      raise
+                  return original_urlopen(url.replace("https://repo.maven.apache.org/maven2/",
+                                                      "https://repo1.maven.org/maven2/", 1), *args, **kwargs)
+          urllib.request.urlopen = central_urlopen
           for attempt in range(6):
               try:
                   cp = helper.classpath(classes, deps)

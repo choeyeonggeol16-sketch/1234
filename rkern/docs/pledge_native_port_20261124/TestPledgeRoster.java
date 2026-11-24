@@ -47,6 +47,31 @@ public final class TestPledgeRoster {
         clan.addLoadedClanMember("Alpha", 7, 20, "", 10, 1);
         check(clan.GetDbMember(10) != alpha && clan.getClanMemberList().get(1) == clan.GetDbMember(10),
                 "rejoin creates new identity at end");
-        System.out.println("PASS pledge roster identity, memo, rank, ordered ID removal, rejoin and concurrent registration");
+        check(clan.getClanMemberList() == clan.getClanMemberList(), "one stable roster view");
+        java.util.Iterator<L1Clan.ClanMember> snapshot = clan.getClanMemberList().iterator();
+        check(clan.RemoveDbMember(11) != null, "remove beta");
+        check(snapshot.next().memberId == 11 && snapshot.next().memberId == 10 && !snapshot.hasNext(),
+                "existing packet iteration remains snapshot ordered");
+        check(clan.GetDbMemberCount() == 1 && clan.getClanMemberList().get(0).memberId == 10,
+                "fresh view and ID index after removal");
+        java.util.concurrent.atomic.AtomicReference<Throwable> workerFailure = new java.util.concurrent.atomic.AtomicReference<>();
+        Thread[] churn = new Thread[8];
+        for (int t = 0; t < churn.length; t++) {
+            final int id = 100 + t;
+            churn[t] = new Thread(() -> {
+                for (int i = 0; i < 1000; i++) {
+                    clan.addLoadedClanMember("Member" + id, 7, 20, "", id, 1);
+                    if (clan.RemoveDbMember(id) == null)
+                        throw new AssertionError("unique add/remove lost");
+                }
+            });
+            churn[t].setUncaughtExceptionHandler((thread, failure) -> workerFailure.compareAndSet(null, failure));
+            churn[t].start();
+        }
+        for (Thread t : churn) t.join();
+        if (workerFailure.get() != null) throw new AssertionError("concurrent roster mutation failed", workerFailure.get());
+        check(clan.GetDbMemberCount() == 1 && clan.getClanMemberList().size() == 1,
+                "concurrent unique add/remove leaves index and roster aligned");
+        System.out.println("PASS pledge roster identity, memo, rank, ordered snapshots, rejoin and concurrent add/remove");
     }
 }

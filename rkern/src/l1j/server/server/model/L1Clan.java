@@ -155,28 +155,23 @@ public class L1Clan {
 	private int _bot_style;
 	private int _bot_level;
 	/** 혈맹자동가입 */
-	private final CopyOnWriteArrayList<ClanMember> clanMemberList = new CopyOnWriteArrayList<ClanMember>();
+    // One owner for the ordered L1 packet view and NC DB-ID lookup.
+    // Reuse the existing COW list allocation as the owner/monitor.
+    private static final class CPledgeMemberList extends CopyOnWriteArrayList<ClanMember> {
+        private static final long serialVersionUID = 1L;
+        private final Int2ObjectOpenHashMap<ClanMember> memberById = new Int2ObjectOpenHashMap<>(4);
+        private final List<ClanMember> view = Collections.unmodifiableList(this);
 
-    // CPledgeMemberList: one member object per ID. The list preserves existing
-    // L1 packet order; it is a read-only view of the same objects, not a second roster.
-    private final Int2ObjectOpenHashMap<ClanMember> memberById = new Int2ObjectOpenHashMap<>(4);
-    private final List<ClanMember> memberView = Collections.unmodifiableList(clanMemberList);
+        synchronized ClanMember GetDbMember(int memberId) {
+            return memberById.get(memberId);
+        }
 
-    public List<ClanMember> getClanMemberList() { return memberView; }
+        synchronized int GetDbMemberCount() {
+            return memberById.size();
+        }
 
-    public ClanMember GetDbMember(int memberId) {
-        synchronized (clanMemberList) { return memberById.get(memberId); }
-    }
-
-    public int GetDbMemberCount() {
-        synchronized (clanMemberList) { return memberById.size(); }
-    }
-
-    /** CPledge AddDbMember: one persistent roster entry per character ID.
-     *  CopyOnWrite storage remains compatible with existing packet readers. */
-    private void AddDbMember(String name, int rank, int level, String notes, int memberId,
-                             int type, boolean online, L1PcInstance player) {
-        synchronized (clanMemberList) {
+        synchronized void AddDbMember(String name, int rank, int level, String notes, int memberId,
+                                      int type, boolean online, L1PcInstance player) {
             ClanMember member = memberById.get(memberId);
             if (member != null) {
                 synchronized (member) {
@@ -195,36 +190,13 @@ public class L1Clan {
             member = new ClanMember(name, rank, level, notes, memberId, type,
                     online && player != null, online ? player : null);
             memberById.put(memberId, member);
-            clanMemberList.add(member);
+            add(member);
         }
-    }
 
-    public void addClanMember(String name, int rank, int level, String notes, int memberId,
-                              int type, int online, L1PcInstance pc) {
-        AddDbMember(name, rank, level, notes, memberId, type, online == 1, pc);
-        ClanTable.updateOnlineUser(this);
-    }
-
-    /** DB load never enqueues a roster-count write. */
-    public void addLoadedClanMember(String name, int rank, int level, String notes,
-                                    int memberId, int type) {
-        AddDbMember(name, rank, level, notes, memberId, type, false, null);
-    }
-
-    public void addClanMember(ClanMember member) {
-        if (member == null) return;
-        AddDbMember(member.name, member.rank, member.level, member.notes, member.memberId,
-                member.type, member.online, member.player);
-        ClanTable.updateOnlineUser(this);
-    }
-
-    /** CPledgeMemberList: detach exactly the indexed member identity.
-     * Memory-only primitive, used by the committed lifecycle path. */
-    ClanMember RemoveDbMember(int memberId) {
-        synchronized (clanMemberList) {
+        synchronized ClanMember RemoveDbMember(int memberId) {
             ClanMember member = memberById.get(memberId);
             if (member == null) return null;
-            if (!clanMemberList.remove(member))
+            if (!remove(member))
                 throw new IllegalStateException("Pledge roster index mismatch: " + memberId);
             memberById.remove(memberId);
             synchronized (member) {
@@ -233,6 +205,83 @@ public class L1Clan {
             }
             return member;
         }
+
+        synchronized ClanMember RemoveDbMember(String name) {
+            for (ClanMember member : this) {
+                if (member.name.equals(name)) return RemoveDbMember(member.memberId);
+            }
+            return null;
+        }
+
+        synchronized boolean UpdateMemberMemo(int memberId, String notes) {
+            ClanMember member = memberById.get(memberId);
+            if (member == null) return false;
+            member.notes = notes;
+            return true;
+        }
+
+        synchronized void SetMemberRank(String name, int rank) {
+            for (ClanMember member : this) {
+                if (member.name.equals(name)) {
+                    member.rank = rank;
+                    return;
+                }
+            }
+        }
+
+        synchronized void UpdateMemberSession(int clanId, L1PcInstance pc, boolean online) {
+            if (pc == null) return;
+            ClanMember member = memberById.get(pc.getId());
+            if (member == null) return;
+            synchronized (member) {
+                if (online) {
+                    if (pc.getClanid() != clanId
+                            || L1World.getInstance().findObject(pc.getId()) != pc
+                            || L1World.getInstance().getPlayer(pc.getName()) != pc) return;
+                    member.player = pc;
+                    member.online = true;
+                } else if (member.player == pc) {
+                    member.player = null;
+                    member.online = false;
+                }
+            }
+        }
+    }
+
+    private final CPledgeMemberList clanMemberList = new CPledgeMemberList();
+
+    public List<ClanMember> getClanMemberList() { return clanMemberList.view; }
+
+    public ClanMember GetDbMember(int memberId) {
+        return clanMemberList.GetDbMember(memberId);
+    }
+
+    public int GetDbMemberCount() {
+        return clanMemberList.GetDbMemberCount();
+    }
+
+    public void addClanMember(String name, int rank, int level, String notes, int memberId,
+                              int type, int online, L1PcInstance pc) {
+        clanMemberList.AddDbMember(name, rank, level, notes, memberId, type, online == 1, pc);
+        ClanTable.updateOnlineUser(this);
+    }
+
+    /** DB load never enqueues a roster-count write. */
+    public void addLoadedClanMember(String name, int rank, int level, String notes,
+                                    int memberId, int type) {
+        clanMemberList.AddDbMember(name, rank, level, notes, memberId, type, false, null);
+    }
+
+    public void addClanMember(ClanMember member) {
+        if (member == null) return;
+        clanMemberList.AddDbMember(member.name, member.rank, member.level, member.notes, member.memberId,
+                member.type, member.online, member.player);
+        ClanTable.updateOnlineUser(this);
+    }
+
+    /** Memory-only detach, shared with the committed lifecycle. */
+    ClanMember RemoveDbMember(int memberId) {
+        return clanMemberList.RemoveDbMember(memberId);
     }
 
     private void FinishMemberRemoval(ClanMember removed) {
@@ -245,38 +294,19 @@ public class L1Clan {
         FinishMemberRemoval(RemoveDbMember(memberId));
     }
 
-    /** Compatibility for legacy name-only callers; resolve under the same lock. */
+    /** Compatibility for legacy name-only callers. */
     public void removeClanMember(String name) {
-        ClanMember removed = null;
-        synchronized (clanMemberList) {
-            for (ClanMember member : clanMemberList) {
-                if (member.name.equals(name)) {
-                    removed = RemoveDbMember(member.memberId);
-                    break;
-                }
-            }
-        }
-        FinishMemberRemoval(removed);
+        FinishMemberRemoval(clanMemberList.RemoveDbMember(name));
     }
 
     /** Updating a memo is not a membership removal or warehouse release. */
     public boolean UpdateMemberMemo(int memberId, String notes) {
-        synchronized (clanMemberList) {
-            ClanMember member = memberById.get(memberId);
-            if (member == null) return false;
-            member.notes = notes;
-            return true;
-        }
+        return clanMemberList.UpdateMemberMemo(memberId, notes);
     }
 
 	/////////// 혈맹리뉴얼//////////////
     public void setClanRank(String name, int data) {
-        for (ClanMember member : clanMemberList) {
-            if (member.name.equals(name)) {
-                member.rank = data;
-                return;
-            }
-        }
+        clanMemberList.SetMemberRank(name, data);
     }
 
 	/////////// 혈맹리뉴얼//////////////
@@ -301,38 +331,15 @@ public class L1Clan {
         setClanRank(name, rank);
     }
 
-    /** CPledge Online/Offline: update the stored member by character ID.
-     *  Only the current session may replace a live reference. A late logout
-     *  may clear its own reference but must not clear a newer login. */
-    private void UpdateMemberSession(L1PcInstance pc, boolean online) {
-        if (pc == null) return;
-        synchronized (clanMemberList) {
-            ClanMember member = memberById.get(pc.getId());
-            if (member == null) return;
-            synchronized (member) {
-                if (online) {
-                    if (pc.getClanid() != getClanId()
-                            || L1World.getInstance().findObject(pc.getId()) != pc
-                            || L1World.getInstance().getPlayer(pc.getName()) != pc) return;
-                    member.player = pc;
-                    member.online = true;
-                } else if (member.player == pc) {
-                    member.player = null;
-                    member.online = false;
-                }
-            }
-        }
-    }
-
     public void updateClanMemberOnline(L1PcInstance pc) {
         if (pc == null) return;
-        UpdateMemberSession(pc, pc.getOnlineStatus() == 1);
+        clanMemberList.UpdateMemberSession(getClanId(), pc, pc.getOnlineStatus() == 1);
         ClanTable.updateOnlineUser(this);
     }
 
     /** Logout fallback must not retain a retired session or perform extra SQL. */
     public void releaseClanMemberReference(L1PcInstance pc) {
-        UpdateMemberSession(pc, false);
+        clanMemberList.UpdateMemberSession(getClanId(), pc, false);
     }
 
 	public int getCurrentOnlineMemebers() {
