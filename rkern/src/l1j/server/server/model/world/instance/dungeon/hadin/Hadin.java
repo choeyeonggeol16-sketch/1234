@@ -60,7 +60,6 @@ public class Hadin implements Runnable {
 	private int SubStep = 0;
 	private L1NpcInstance Npc_Hadin;
 	private L1NpcInstance Hadin_Effect;
-	private List<L1PcInstance> list2;
 	private HadinTrap HT = null;
 
 	private boolean Running = true;
@@ -73,7 +72,6 @@ public class Hadin implements Runnable {
 
 	public Hadin(int id){
 		_map = (short)id;
-		list2 = new ArrayList<L1PcInstance>();
 	}
 
 	public boolean StartCK = false;
@@ -85,13 +83,12 @@ public class Hadin implements Runnable {
 		//System.out.println("Hadin Thread Create Compleate");
 		Hadin_Setting();
 		BossRoomDoor = HadinSpawn.getInstance().fillSpawnTable2(_map, 22);
-		list2 = getParty().getList();
 		int firtCkCount = 0;
 		while(Running){
 			try {
 				if(UserCountCK){
 					int i = 0;
-					for(L1PcInstance pc : list2){
+					for(L1PcInstance pc : getParty().getMembers()){
 						if(pc.getMapId() != _map){
 							firtCkCount++;
 							break;
@@ -114,19 +111,15 @@ public class Hadin implements Runnable {
 						}
 					}
 				}
-				for(L1PcInstance pc : list2){
+				for(L1PcInstance pc : getParty().getMembers()){
 					if(pc == null) continue;
 					if(getParty().getNumOfMembers() < 5 || !pc.isInParty() || pc.getMapId() != _map){//7명
 //						L1Teleport.teleport(pc, 32574, 32942, (short) 0, 5, true);
 						pc.start_teleport(32574, 32942, 0, 5, 169, true, false);
-						if(list2.contains(pc)){
-							list2.remove(pc);
-						}
+						if (pc.getParty() == getParty()) getParty().leaveMember(pc);
 					}
 					if(pc.getMapId() != _map){
-						if (pc.isInParty()){ 
-							getParty().leaveMember(pc);
-						}
+						if (pc.getParty() == getParty()) getParty().leaveMember(pc);
 					}
 					if(getParty().getNumOfMembers() < 5){//7명
 						listck = true;

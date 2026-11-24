@@ -190,8 +190,9 @@ jobs:
           bookmark = root / "docs/bookmark_native_port_20261124/TestUserBookmark.java"
           pledge = root / "docs/pledge_native_port_20261124/TestPledgeRoster.java"
           pledge_reply = root / "docs/pledge_native_port_20261124/TestPledgeReplyChecker.java"
-          sources += [regression, launcher, bookmark, pledge, pledge_reply]
-          print(f"Production Java sources: {len(sources) - 12}", flush=True)
+          party_roster = root / "docs/pledge_native_port_20261124/TestPartyRoster.java"
+          sources += [regression, launcher, bookmark, pledge, pledge_reply, party_roster]
+          print(f"Production Java sources: {len(sources) - 13}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
@@ -211,6 +212,7 @@ jobs:
               "l1j.server.server.model.character.bookmark.TestUserBookmark",
               "l1j.server.server.model.TestPledgeRoster",
               "l1j.server.server.model.TestPledgeReplyChecker",
+              "l1j.server.server.model.TestPartyRoster",
           ]
           failures = []
           for name in tests:
@@ -235,7 +237,7 @@ jobs:
                   failures.append(name)
           if failures:
               raise SystemExit("Failed NPC suites: " + ", ".join(failures))
-          print("PASS all 11 independent NPC, bookmark and pledge suites", flush=True)
+          print("PASS all 12 independent NPC, bookmark, pledge and party suites", flush=True)
           print("Remaining bookmark call sites:", flush=True)
           subprocess.run(["git", "grep", "-nE", "BookmarkSlot\\.(InsertSlot|Load|SaveItemSlot|DeleteItemSlots|WriteSlots)|CItemBookmark\\.SaveSlot|\\._bookmarks|\\._speedbookmarks|handleSkillTeleport\\(", "--", "rkern/src"], check=False)
           PY

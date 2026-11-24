@@ -428,13 +428,21 @@ public final class CReplyChecker {
                             current.leaveMember(replier);
                     } else {
                         CParty current = requester.getParty();
-                        if (current == null) {
+                        final boolean created = current == null;
+                        if (created) {
                             requester.setPartyType(kind == RANDOM_PARTY ? 1 : 0);
                             current = new CParty();
-                            current.addMember(requester);
+                            if (!current.addMember(requester)) return;
                         }
-                        if (current.isVacancy() || requester.isGm()) current.addMember(replier);
-                        else SC_ServerMessage.send(requester, 417);
+                        if (!current.isVacancy() && !requester.isGm()) {
+                            SC_ServerMessage.send(requester, 417);
+                            if (created && requester.getParty() == current) current.leaveMember(requester);
+                            return;
+                        }
+                        if (!current.addMember(replier)) {
+                            if (created && requester.getParty() == current) current.leaveMember(requester);
+                            return;
+                        }
                         if (!live(requester, p.requesterStamp) && requester.getParty() == current)
                             current.leaveMember(requester);
                         else if (!live(replier, p.replierStamp) && replier.getParty() == current)

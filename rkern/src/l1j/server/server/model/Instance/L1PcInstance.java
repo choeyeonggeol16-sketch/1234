@@ -934,6 +934,8 @@ public class L1PcInstance extends L1Character {
 	private L1ItemInstance _secondweapon;
 	private L1ItemInstance _armor;
 	private volatile CParty _party;
+    private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater<L1PcInstance, CParty> PARTY_OWNER =
+            java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater(L1PcInstance.class, CParty.class, "_party");
 	private volatile L1ChatParty _chatParty;
 
 	private int _cookingId = 0;
@@ -2303,9 +2305,8 @@ public class L1PcInstance extends L1Character {
 		}
 		// 파티를 빠진다
 		try {
-			if (isInParty() || getParty() != null) { // 파티중
-				getParty().leaveMember(this);
-			}
+			final CParty party = getParty();
+			if (party != null) party.leaveMember(this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2638,9 +2639,9 @@ public class L1PcInstance extends L1Character {
 		return _party;
 	}
 
-	public void setParty(CParty p) {
-		_party = p;
-	}
+    public final boolean compareAndSetParty(CParty expected, CParty next) {
+        return PARTY_OWNER.compareAndSet(this, expected, next);
+    }
 
 	public boolean isInChatParty() {
 		return getChatParty() != null;

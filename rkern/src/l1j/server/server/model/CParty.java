@@ -1,8 +1,8 @@
 package l1j.server.server.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -29,14 +29,16 @@ public class CParty {
 
     private static final Logger _log = Logger.getLogger(CParty.class.getName());
 
-    protected final List<L1PcInstance> _membersList = new java.util.concurrent.CopyOnWriteArrayList<>();
-    protected final ConcurrentHashMap<Integer, Integer> _membersMark = new ConcurrentHashMap<>();
+    // NC-style ordered SID roster. The existing world identity includes the
+    // allocation generation, so neither PC objects nor reused IDs are retained.
+    private long[] m_aOrderedMember = new long[Math.max(2, Config.MAX_PT)];
+    private int[] m_aTacticalSign = new int[m_aOrderedMember.length];
+    private long[] m_aLastFullListSentAt = new long[m_aOrderedMember.length];
+    private int m_nMemberCount;
+    private long m_MasterSid;
+    private boolean m_Dismissed;
 
-    /** 전체 LIST 재전송 쿨다운 — 멘트/도배 방지 */
     private static final long FULL_LIST_COOLDOWN_MS = 1500L;
-    private final ConcurrentHashMap<Integer, Long> _lastFullListSentAt = new ConcurrentHashMap<>();
-
-    private volatile L1PcInstance _leader;
     private long lootCursor;
     private static final java.util.concurrent.atomic.AtomicLong LOOT_IDENTITIES = new java.util.concurrent.atomic.AtomicLong();
     private final long lootIdentity = LOOT_IDENTITIES.incrementAndGet();
@@ -56,13 +58,60 @@ public class CParty {
         return pc != null && pc.getNetConnection() != null;
     }
 
-    private boolean canSendFullListNow(int objectId) {
-        long now = System.currentTimeMillis();
-        Long last = _lastFullListSentAt.get(objectId);
-        if (last != null && (now - last.longValue()) < FULL_LIST_COOLDOWN_MS) {
-            return false;
+    private L1PcInstance ResolveUser(long sid) {
+        if (sid == 0L) return null;
+        final L1Object object = L1World.getInstance().findObjectBySmartId(sid);
+        return object instanceof L1PcInstance pc && pc.getParty() == this ? pc : null;
+    }
+
+    private int FindMemberIndex(int objectId) {
+        for (int i = 0; i < m_nMemberCount; i++)
+            if ((int) m_aOrderedMember[i] == objectId) return i;
+        return -1;
+    }
+
+    private int FindMemberIndex(L1PcInstance pc) {
+        return pc == null || pc.getParty() != this ? -1 : FindMemberIndex(pc.getId());
+    }
+
+    private void EnsureCapacity() {
+        if (m_nMemberCount < m_aOrderedMember.length) return;
+        // Preserve the existing GM capacity exception and configuration reload.
+        final int capacity = Math.max(m_nMemberCount + 1,
+                Math.max(Config.MAX_PT, m_aOrderedMember.length * 2));
+        m_aOrderedMember = Arrays.copyOf(m_aOrderedMember, capacity);
+        m_aTacticalSign = Arrays.copyOf(m_aTacticalSign, capacity);
+        m_aLastFullListSentAt = Arrays.copyOf(m_aLastFullListSentAt, capacity);
+    }
+
+    private void InsertMemberSid(long sid) {
+        m_aOrderedMember[m_nMemberCount++] = sid;
+    }
+
+    private void DeleteMemberSid(int index) {
+        final int move = --m_nMemberCount - index;
+        if (move > 0) {
+            System.arraycopy(m_aOrderedMember, index + 1, m_aOrderedMember, index, move);
+            System.arraycopy(m_aTacticalSign, index + 1, m_aTacticalSign, index, move);
+            System.arraycopy(m_aLastFullListSentAt, index + 1, m_aLastFullListSentAt, index, move);
         }
-        _lastFullListSentAt.put(objectId, now);
+        m_aOrderedMember[m_nMemberCount] = 0L;
+        m_aTacticalSign[m_nMemberCount] = 0;
+        m_aLastFullListSentAt[m_nMemberCount] = 0L;
+    }
+
+    private synchronized int GetTacticalSignId(int objectId) {
+        final int index = FindMemberIndex(objectId);
+        return index < 0 ? 0 : m_aTacticalSign[index];
+    }
+
+    private synchronized boolean canSendFullListNow(int objectId) {
+        final int index = FindMemberIndex(objectId);
+        if (index < 0) return false;
+        final long now = System.currentTimeMillis();
+        final long last = m_aLastFullListSentAt[index];
+        if (last != 0L && now - last < FULL_LIST_COOLDOWN_MS) return false;
+        m_aLastFullListSentAt[index] = now;
         return true;
     }
 
@@ -96,9 +145,9 @@ public class CParty {
         for(L1PcInstance m:snapshot){
             if(!ok(m))continue;
             members.add(SC_PARTY_MEMBER_LIST.Member.from(m,
-                    _membersMark.getOrDefault(m.getId(),0)));
+                    GetTacticalSignId(m.getId())));
         }
-        final L1PcInstance leader = _leader;
+        final L1PcInstance leader = getLeader();
         byte[] data=new SC_PARTY_MEMBER_LIST(
                 leader!=null?leader.getName():"",members).encode();
         try(var shared=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(data)){
@@ -120,130 +169,115 @@ public class CParty {
     // ─────────────────────────────────────────────
     // party ops
     // ─────────────────────────────────────────────
-    public void addMember(L1PcInstance pc) {
-        if (pc == null) {
-            throw new NullPointerException();
-        }
+    public boolean addMember(L1PcInstance pc) {
+        if (pc == null) throw new NullPointerException();
         if (pc.getAutoHunt()) {
             pc.sendPackets("자동사냥 중에는 파티에 참가할 수 없습니다.");
-            return;
+            return false;
         }
-        if (_membersList.size() == Config.MAX_PT && !_leader.isGm() || _membersList.contains(pc)) {
-            SC_ServerMessage.send(pc, 417);
-            return;
-        }
+        if (pc.isLogoutStarted() || pc.getParty() != null) return false;
+        final long sid = L1World.getInstance().smartIdOf(pc);
+        if (sid == 0L) return false;
+        // DB/skill lookup must not run while holding the roster monitor.
+        final boolean crownAura = pc.isCrown()
+                && SkillsTable.getInstance().spellCheck(pc.getId(), 121);
 
-        if (_membersList.isEmpty()) {
-            setLeader(pc);
-        }
-
-        if (pc.isCrown()) {
-            if (SkillsTable.getInstance().spellCheck(pc.getId(), 121)) {
-                AuraController.getInstance().addMember(pc);
+        synchronized (this) {
+            final L1PcInstance leader = getLeader();
+            if (m_Dismissed || FindMemberIndex(pc.getId()) >= 0
+                    || (m_nMemberCount > 0 && leader == null)
+                    || (m_nMemberCount >= Config.MAX_PT && (leader == null || !leader.isGm()))) {
+                SC_ServerMessage.send(pc, 417);
+                return false;
             }
-        }
-
-        _membersMark.put(pc.getId(), 0);
-        _membersList.add(pc);
-        pc.setParty(this);
-
-        int beforeSize = _membersList.size() - 1;
-        L1PcInstance[] after = getMembers();
-
-        ArrayList<SC_PARTY_MEMBER_LIST.Member> list = new ArrayList<>();
-        for (L1PcInstance m : after) {
-            list.add(SC_PARTY_MEMBER_LIST.Member.from(m, _membersMark.getOrDefault(m.getId(), 0)));
-        }
-
-        if (beforeSize > 0) {
-            // 신규 멤버: 전체 LIST (여기서 멘트 1번)
-            SC_PARTY_MEMBER_LIST.sendFields(pc, _leader.getName(), list);
-        }
-        if (beforeSize == 1 && after.length == 2) {
-            // 2인 파티 성립: 기존 멤버에게도 LIST (CHANGE 아님)
-            L1PcInstance existing = (after[0].getId() == pc.getId()) ? after[1] : after[0];
-            sendPartyListTo(new L1PcInstance[]{ existing }, after, true);
-            return;
-        }
-        if (after.length > 1) {
-            // 3인 이상 확장: 기존 멤버들에게만 new_user 알림
-            sendRawTo(getMembersExcept(pc),
-                    SC_PARTY_MEMBER_LIST_CHANGE
+            if (pc.isLogoutStarted() || L1World.getInstance().smartIdOf(pc) != sid)
+                return false;
+            EnsureCapacity();
+            if (!pc.compareAndSetParty(null, this)) return false;
+            // Logout can win the admission race before seeing the new party.
+            if (pc.isLogoutStarted() || L1World.getInstance().smartIdOf(pc) != sid) {
+                pc.compareAndSetParty(this, null);
+                return false;
+            }
+            final int beforeSize = m_nMemberCount;
+            InsertMemberSid(sid);
+            if (beforeSize == 0) m_MasterSid = sid;
+            if (crownAura) AuraController.getInstance().addMember(pc);
+            // State is committed before packet emission. Packet failure cannot
+            // roll back ownership or leave a half-inserted member.
+            try {
+                final L1PcInstance[] after = getMembers();
+                final L1PcInstance master = getLeader();
+                if (beforeSize > 0 && ok(pc) && master != null) {
+                    final ArrayList<SC_PARTY_MEMBER_LIST.Member> list = new ArrayList<>(after.length);
+                    for (L1PcInstance member : after)
+                        list.add(SC_PARTY_MEMBER_LIST.Member.from(member, GetTacticalSignId(member.getId())));
+                    SC_PARTY_MEMBER_LIST.sendFields(pc, master.getName(), list);
+                }
+                if (beforeSize == 1 && after.length == 2) {
+                    final L1PcInstance existing = after[0] == pc ? after[1] : after[0];
+                    sendPartyListTo(new L1PcInstance[]{ existing }, after, true);
+                } else if (after.length > 1) {
+                    sendRawTo(getMembersExcept(pc), SC_PARTY_MEMBER_LIST_CHANGE
                             .ofNewMember(SC_PARTY_MEMBER_LIST.Member.from(pc, 0)).encode());
+                }
+            } catch (RuntimeException failure) {
+                _log.log(java.util.logging.Level.WARNING, "Party join notification failed", failure);
+            }
+            return true;
         }
     }
 
-    protected void removeMember(L1PcInstance pc) {
-        if (pc == null || !_membersList.contains(pc)) {
-            return;
-        }
+    /** All roster fields have already been retired when the notification runs. */
+    private void NotifyRemoved(L1PcInstance pc, boolean wasLeader) {
+        final L1PcInstance[] rest = getMembers();
+        sendRawTo(rest, SC_PARTY_MEMBER_LIST_CHANGE.ofOutUser(pc.getName()).encode());
+        if (pc.getParty() == null) clearPartyUIForLeaver(pc);
+        final L1PcInstance master = getLeader();
+        if (wasLeader && master != null)
+            sendRawTo(rest, SC_PARTY_MEMBER_LIST_CHANGE.ofLeaderChange(master.getName()).encode());
+    }
 
-        // 잔여 멤버 스냅샷 (본인 제외)
-        L1PcInstance[] rest = getMembersExcept(pc);
-
-        // 잔여 멤버: out_user 알림
-        sendRawTo(rest,
-                SC_PARTY_MEMBER_LIST_CHANGE.ofOutUser(pc.getName()).encode());
-        // 탈퇴자 본인: out_user + 빈 LIST → UI/HP바 완전 제거
-        clearPartyUIForLeaver(pc);
-
-        boolean wasLeader = isLeader(pc);
-        _membersList.remove(pc);
-        _membersMark.remove(pc.getId());
-        _lastFullListSentAt.remove(pc.getId());
-        pc.setParty(null);
-
-        // 리더가 나갔으면 승계 + 알림
-        if (wasLeader && !_membersList.isEmpty()) {
-            L1PcInstance newLeader = _membersList.get(0);
-            setLeader(newLeader);
-            sendRawTo(rest,
-                    SC_PARTY_MEMBER_LIST_CHANGE.ofLeaderChange(newLeader.getName()).encode());
-        }
-
-        if (wasLeader && pc.isCrown()) {
-            AuraController.getInstance().removeMember(pc);
-        }
-        if (pc.getPbavatar()) {
-            AuraController.getInstance().brave_end(pc);
-        }
-
-        if (pc._CubeEffect) {
-            if (pc.hasSkillEffect(L1SkillId.CUBE_AVATAR))
-                pc.removeSkillEffect(L1SkillId.CUBE_AVATAR);
-            if (pc.hasSkillEffect(L1SkillId.CUBE_RICH))
-                pc.removeSkillEffect(L1SkillId.CUBE_RICH);
-            if (pc.hasSkillEffect(L1SkillId.CUBE_GOLEM))
-                pc.removeSkillEffect(L1SkillId.CUBE_GOLEM);
-            if (pc.hasSkillEffect(L1SkillId.CUBE_OGRE))
-                pc.removeSkillEffect(L1SkillId.CUBE_OGRE);
-            pc._CubeEffect = false;
+    private void CleanupDeparted(L1PcInstance pc) {
+        // Do not hold the party monitor while touching a creature's skills.
+        if (pc.getParty() != null) return;
+        try {
+            if (pc.isCrown()) AuraController.getInstance().removeMember(pc);
+            if (pc.getPbavatar()) AuraController.getInstance().brave_end(pc);
+            if (pc._CubeEffect) {
+                if (pc.hasSkillEffect(L1SkillId.CUBE_AVATAR)) pc.removeSkillEffect(L1SkillId.CUBE_AVATAR);
+                if (pc.hasSkillEffect(L1SkillId.CUBE_RICH)) pc.removeSkillEffect(L1SkillId.CUBE_RICH);
+                if (pc.hasSkillEffect(L1SkillId.CUBE_GOLEM)) pc.removeSkillEffect(L1SkillId.CUBE_GOLEM);
+                if (pc.hasSkillEffect(L1SkillId.CUBE_OGRE)) pc.removeSkillEffect(L1SkillId.CUBE_OGRE);
+                pc._CubeEffect = false;
+            }
+        } catch (RuntimeException failure) {
+            _log.log(java.util.logging.Level.WARNING, "Party departure effect cleanup failed", failure);
         }
     }
 
-    public boolean isVacancy() {
-        return _membersList.size() < Config.MAX_PT;
+    public synchronized boolean isVacancy() {
+        return !m_Dismissed && m_nMemberCount < Config.MAX_PT;
     }
 
-    public int getVacancy() {
-        return Config.MAX_PT - _membersList.size();
+    public synchronized int getVacancy() {
+        return m_Dismissed ? 0 : Config.MAX_PT - m_nMemberCount;
     }
 
-    public boolean isMember(L1PcInstance pc) {
-        return _membersList.contains(pc);
+    public synchronized boolean isMember(L1PcInstance pc) {
+        return FindMemberIndex(pc) >= 0;
     }
 
-    protected void setLeader(L1PcInstance pc) {
-        _leader = pc;
+    public synchronized boolean isDismissed() {
+        return m_Dismissed;
     }
 
-    public L1PcInstance getLeader() {
-        return _leader;
+    public synchronized L1PcInstance getLeader() {
+        return ResolveUser(m_MasterSid);
     }
 
-    public boolean isLeader(L1PcInstance pc) {
-        final L1PcInstance leader = _leader;
-        return pc != null && leader != null && pc.getId() == leader.getId();
+    public synchronized boolean isLeader(L1PcInstance pc) {
+        return pc != null && pc.getParty() == this && (int) m_MasterSid == pc.getId();
     }
 
     public boolean isAutoDivision(L1PcInstance pc) {
@@ -252,7 +286,7 @@ public class CParty {
 
     public String getMembersNameList() {
         final StringBuilder result = new StringBuilder(64);
-        for (L1PcInstance pc : _membersList) {
+        for (L1PcInstance pc : getMembers()) {
             result.append(pc.getName()).append(' ');
         }
         return result.toString();
@@ -297,87 +331,137 @@ for (L1PcInstance member : getMembers()) {
                     member.isDead() ? 0 : 1,
                     member.getMapId(),
                     member.getLongLocation(),
-                    _membersMark.getOrDefault(member.getId(), 0)));
+                    GetTacticalSignId(member.getId())));
         }
         broadcastRaw(new SC_PARTY_SYNC_PERIODIC_INFO(list).encode());
     }
 
     public void handshakePartyMemberStatus(L1PcInstance pc1, L1PcInstance pc2) {
         if (!ok(pc1) || !ok(pc2)) return;
-        SC_PARTY_MEMBER_STATUS.sendFrom(pc2, pc1, _membersMark.getOrDefault(pc1.getId(), 0), true);
-        SC_PARTY_MEMBER_STATUS.sendFrom(pc1, pc2, _membersMark.getOrDefault(pc2.getId(), 0), true);
+        SC_PARTY_MEMBER_STATUS.sendFrom(pc2, pc1, GetTacticalSignId(pc1.getId()), true);
+        SC_PARTY_MEMBER_STATUS.sendFrom(pc1, pc2, GetTacticalSignId(pc2.getId()), true);
     }
 
     public void refreshPartyMemberStatus(L1PcInstance pc) {
-        if (!ok(pc)) return;
+        if (!ok(pc) || !isMember(pc)) return;
         byte[] data = SC_PARTY_MEMBER_STATUS
-                .from(pc, _membersMark.getOrDefault(pc.getId(), 0), true)
+                .from(pc, GetTacticalSignId(pc.getId()), true)
                 .encode();
         broadcastRaw(data);
     }
 
-    protected void breakup() {
+    /** The ordinary L1 party disbands on leader departure; arena teams elect
+     * a replacement. Keep the two existing gameplay policies distinct. */
+    protected boolean dismissOnMasterLeave() { return true; }
+
+    private L1PcInstance[] Dismiss(L1PcInstance departing) {
+        // Only called with the party monitor held; exactly one transition.
+        final L1PcInstance[] members = getMembers();
+        m_Dismissed = true;
         ResetLootIndex();
-        L1PcInstance[] members=getMembers();
-        _membersList.clear();
-        _membersMark.clear();
-        _lastFullListSentAt.clear();
-        _leader=null;
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                SC_ServerMessage.nativeWriter(418),Integer.MIN_VALUE,Integer.MAX_VALUE)){
-            for(L1PcInstance m:members){
-                if(m==null)continue;
-                m.setParty(null);
-                clearPartyUIForLeaver(m);
-                if(ok(m))l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,m);
+        Arrays.fill(m_aOrderedMember, 0, m_nMemberCount, 0L);
+        Arrays.fill(m_aTacticalSign, 0, m_nMemberCount, 0);
+        Arrays.fill(m_aLastFullListSentAt, 0, m_nMemberCount, 0L);
+        m_nMemberCount = 0;
+        m_MasterSid = 0L;
+        for (L1PcInstance member : members) member.compareAndSetParty(this, null);
+        // Logout may already have unpublished the calling character.
+        departing.compareAndSetParty(this, null);
+        try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                SC_ServerMessage.nativeWriter(418), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+            for (L1PcInstance member : members) {
+                if (member.getParty() != null) continue;
+                try {
+                    clearPartyUIForLeaver(member);
+                    if (ok(member)) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared, member);
+                } catch (RuntimeException failure) {
+                    _log.log(java.util.logging.Level.WARNING, "Party dismissal notification failed", failure);
+                }
             }
+        } catch (RuntimeException failure) {
+            _log.log(java.util.logging.Level.WARNING, "Party dismissal packet failed", failure);
         }
+        return members;
     }
 
-    public void passLeader(L1PcInstance pc) { // 리더위임
-        if (pc == null || !_membersList.contains(pc)) return;
-        setLeader(pc);
+    public synchronized void passLeader(L1PcInstance pc) {
+        final int index = FindMemberIndex(pc);
+        if (m_Dismissed || index < 0 || ResolveUser(m_aOrderedMember[index]) != pc) return;
+        m_MasterSid = m_aOrderedMember[index];
         broadcastRaw(SC_PARTY_MEMBER_LIST_CHANGE.ofLeaderChange(pc.getName()).encode());
         refreshPartyList();
     }
 
-    public void leaveMember(L1PcInstance pc) {
-        if(isLeader(pc) || getNumOfMembers()==2){
-            breakup();
-        } else {
-            removeMember(pc);
-            try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                    SC_ServerMessage.nativeWriter(420,pc.getName()),
-                    Integer.MIN_VALUE,Integer.MAX_VALUE)){
-                for(L1PcInstance member:getMembers())
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
+    private void Withdraw(L1PcInstance pc, boolean kick) {
+        L1PcInstance[] dismissed = null;
+        synchronized (this) {
+            final int index = FindMemberIndex(pc);
+            if (m_Dismissed || index < 0) return;
+            final boolean wasLeader = m_MasterSid == m_aOrderedMember[index];
+            if (m_nMemberCount <= 2 || (!kick && wasLeader && dismissOnMasterLeave())) {
+                dismissed = Dismiss(pc);
+            } else {
+                DeleteMemberSid(index);
+                pc.compareAndSetParty(this, null);
+                if (wasLeader) {
+                    m_MasterSid = 0L;
+                    for (int i = 0; i < m_nMemberCount; i++) {
+                        if (ResolveUser(m_aOrderedMember[i]) != null) {
+                            m_MasterSid = m_aOrderedMember[i];
+                            break;
+                        }
+                    }
+                }
+                try {
+                    NotifyRemoved(pc, wasLeader);
+                    try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                            SC_ServerMessage.nativeWriter(420, pc.getName()),
+                            Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                        for (L1PcInstance member : getMembers())
+                            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared, member);
+                        if (!kick && pc.getParty() == null)
+                            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared, pc);
+                    }
+                    if (kick) sendKickMessage(pc);
+                } catch (RuntimeException failure) {
+                    _log.log(java.util.logging.Level.WARNING, "Party departure notification failed", failure);
+                }
             }
+            if (kick) {
+                try { SC_ServerMessage.send(pc, 419); }
+                catch (RuntimeException failure) {
+                    _log.log(java.util.logging.Level.WARNING, "Party kick notification failed", failure);
+                }
+            }
+        }
+        if (dismissed == null) {
+            CleanupDeparted(pc);
+        } else {
+            boolean found = false;
+            for (L1PcInstance member : dismissed) {
+                CleanupDeparted(member);
+                if (member == pc) found = true;
+            }
+            if (!found) CleanupDeparted(pc);
         }
     }
 
-    public void kickMember(L1PcInstance pc) {
-        if(getNumOfMembers()==2){
-            breakup();
-        } else {
-            removeMember(pc);
-            try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                    SC_ServerMessage.nativeWriter(420,pc.getName()),
-                    Integer.MIN_VALUE,Integer.MAX_VALUE)){
-                for(L1PcInstance member:getMembers())
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-            }
-            sendKickMessage(pc);
+    public void leaveMember(L1PcInstance pc) { Withdraw(pc, false); }
+
+    public void kickMember(L1PcInstance pc) { Withdraw(pc, true); }
+
+    public synchronized L1PcInstance[] getMembers() {
+        final L1PcInstance[] result = new L1PcInstance[m_nMemberCount];
+        int size = 0;
+        for (int i = 0; i < m_nMemberCount; i++) {
+            final L1PcInstance member = ResolveUser(m_aOrderedMember[i]);
+            if (member != null) result[size++] = member;
         }
-        SC_ServerMessage.send(pc,419); // original duplicate kick notification retained
+        return size == result.length ? result : Arrays.copyOf(result, size);
     }
 
-    public L1PcInstance[] getMembers() {
-        return _membersList.toArray(L1PcInstance[]::new);
-    }
-
-    public int getNumOfMembers() {
-        return _membersList.size();
+    public synchronized int getNumOfMembers() {
+        return m_nMemberCount;
     }
 
     private void sendKickMessage(L1PcInstance kickpc) {
@@ -389,11 +473,11 @@ for (L1PcInstance member : getMembers()) {
     }
 
     public List<L1PcInstance> getList() {// 하딘 파티 멤버 리스트
-        return _membersList;
+        return List.of(getMembers());
     }
 
     public Stream<L1PcInstance> createMembersStream(){
-        return _membersList.stream();
+        return Arrays.stream(getMembers());
     }
 
     public void broadcastRootMent(String message) {
@@ -401,7 +485,7 @@ for (L1PcInstance member : getMembers()) {
         try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                 SC_SystemMessage.nativeWriter(message),
                 Integer.MIN_VALUE,Integer.MAX_VALUE)){
-            for(L1PcInstance pc:_membersList){
+            for(L1PcInstance pc:getMembers()){
                 if(pc!=null && pc.RootMent1)
                     l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
             }
@@ -520,9 +604,10 @@ for (L1PcInstance member : getMembers()) {
     // ─────────────────────────────────────────────
     // 표식 — 0x0153 전용 NOTI + 상태 갱신
     // ─────────────────────────────────────────────
-    public void setPartyMark(L1PcInstance target, int markId) {
-        if (target == null || target.getParty() != this || !isMember(target)) return;
-        _membersMark.put(target.getId(), markId);
+    public synchronized void setPartyMark(L1PcInstance target, int markId) {
+        final int index = FindMemberIndex(target);
+        if (m_Dismissed || index < 0) return;
+        m_aTacticalSign[index] = markId;
         broadcastRaw(new SC_PARTY_MEMBER_MARK_CHANGE_NOTI(target.getId(), markId).encode());
         refreshPartyMemberStatus(target);
     }
