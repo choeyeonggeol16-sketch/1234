@@ -215,9 +215,6 @@ public final class CMoveToTargetAction {
         if (CMoveToTargetAction.tryMoveToTargetTeleport(
                 creature,
                 target)) {
-
-            SetMoving.clear(creature);
-            creature._pathFindFailCount = 0;
             return CCreatureController.RESULT_RUNNING;
         }
 
@@ -1179,34 +1176,38 @@ public final class CMoveToTargetAction {
     public static boolean tryMoveToTargetTeleport(
             final L1NpcInstance npc,
             final L1Character target) {
-
-        if (target == null) {
+        if (!validTarget(npc, target) || npc.getTarget() != target
+                || !npc.getNpcTemplate().is_teleport()
+                || npc.getCurrentMp() < 10) {
             return false;
         }
 
-        final int distance =
-                npc.getLocation().getTileDistance(target.getLocation());
-
-        if (npc.firstFound
-                && npc.getNpcTemplate().is_teleport()
-                && distance > 3
-                && distance < 15) {
-
-            if (npc.nearTeleport(target.getX(), target.getY())) {
+        final int distance = npc.getLocation().getTileDistance(target.getLocation());
+        if (npc.firstFound && distance > 3 && distance < 15) {
+            if (TeleportToUser(npc, target)) {
                 npc.firstFound = false;
                 return true;
             }
         }
 
-        if (npc.getNpcTemplate().is_teleport()
-                && 20 > ThreadLocalRandom.current().nextInt(100)
-                && npc.getCurrentMp() >= 10
-                && distance > 6
-                && distance < 15) {
-
-            return npc.nearTeleport(target.getX(), target.getY());
-        }
-
-        return false;
+        return 20 > ThreadLocalRandom.current().nextInt(100)
+                && distance > 6 && distance < 15
+                && TeleportToUser(npc, target);
     }
+
+    private static boolean TeleportToUser(L1NpcInstance npc, L1Character target) {
+        if (!validTarget(npc, target) || npc.getTarget() != target) return false;
+        if (!npc.nearTeleport(target.getX(), target.getY())) return false;
+        OnTeleport(npc);
+        return true;
+    }
+
+    /** NC OnTeleport role: retire the pre-jump movement, but preserve the
+     * current attack desire and L1 cadence. The next existing tick rebases.
+     */
+    private static void OnTeleport(L1NpcInstance npc) {
+        clearBlocked(npc);
+        SetMoving.clearActionMoveState(npc);
+    }
+
 }

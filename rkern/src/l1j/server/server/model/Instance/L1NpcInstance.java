@@ -22,7 +22,7 @@ import l1j.server.server.model.npc.ai.TimerData;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Spawn;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
+import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
 import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.skill.ControlSkillEffects;
@@ -1508,53 +1508,103 @@ public class L1NpcInstance extends L1Character {
     }
 
     public boolean nearTeleport(int nx, int ny) {
-        final int ox = nx;        
-        final int oy = ny;
-
+        if (getCurrentMp() < 10 || isDestroyed() || isDead()
+                || getCurrentHp() <= 0 || getHiddenStatus() != HIDDEN_STATUS_NONE) {
+            return false;
+        }
         final int rdir = ThreadLocalRandom.current().nextInt(8);
-        final TileOccupancyNpc occNpc = TileOccupancyNpc.getInstance();
-        final TileOccupancy occPc = TileOccupancy.getInstance();
-
         for (int i = 0; i < 8; i++) {
             final int dir = (rdir + i) & 7;
-            final int tx = ox + DIR_DX[dir];
-            final int ty = oy + DIR_DY[dir];
-
-            if (!getMap().isPassable(tx, ty)) continue;
-            if (occNpc.getOccupier(getMapId(), tx, ty) != 0) continue;
-            if (occPc.getOccupier(getMapId(), tx, ty) != 0) continue;
-
-            int face = dir + 4;
-            if (face > 7) face -= 8;
-
-            teleport(tx, ty, face);
-            setCurrentMp(getCurrentMp() - 10);
-            return true;
+            if (TeleportToLocation(nx + DIR_DX[dir], ny + DIR_DY[dir], (dir + 4) & 7, 10)) {
+                return true;
+            }
         }
         return false;
     }
 
-    public void teleport(int nx, int ny, int dir) {
-    	try(var effectShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_SkillSound.nativeWriter(getId(),169),Integer.MIN_VALUE,Integer.MAX_VALUE);
-            var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.nativeWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-            for(L1PcInstance pc:L1World.getInstance().getVisiblePlayerFast(this)) {
-                if(pc==null)continue;
-                
-                final var client=pc.getNetConnection();
-                    if(client!=null && client.isConnected()) {
-                        final var socket=client;
-                        if(socket!=null && socket.isClientConnected())
-                            effectShared.send(socket,pc.getId());
-                            shared.send(socket,pc.getId());
-                    }
+    /**
+     * NC TeleportToLocation execution role, adapted to the existing L1
+     * occupancy and world relocation. Combat and scripted recovery use the
+     * same checked commit; the legacy public teleport entry retains its
+     * behavior for other callers.
+     */
+    public final synchronized boolean TeleportToLocation(int nx, int ny, int dir, int mpCost) {
+        if (!CNPCServer.getInstance().isOwnerThread(this) || _destroyed
+                || isDead() || getCurrentHp() <= 0
+                || getHiddenStatus() != HIDDEN_STATUS_NONE
+                || mpCost < 0 || getCurrentMp() < mpCost
+                || !getMap().isInMap(nx, ny) || !getMap().isPassable(nx, ny)) {
+            return false;
+        }
+        final int oldX = getX(), oldY = getY(), mapId = getMapId();
+        if (oldX == nx && oldY == ny) return false;
+        if (WorldCollisionHash.getInstance().testStep((short) mapId, nx, ny, getId())
+                != WorldCollisionHash.MOVE_CLEAR) return false;
+
+        final L1World world = L1World.getInstance();
+        final long smartId = world.smartIdOf(this);
+        if (smartId == 0L) return false;
+        final List<L1PcInstance> previousViewers = world.getVisiblePlayerFast(this);
+
+        // Atomic PC/NPC reservation and occupancy check, before changing XY.
+        final boolean tracksOccupancy = shouldUseNpcOccupancy();
+        if (tracksOccupancy && !teleportNpcOcc(mapId, oldX, oldY, mapId, nx, ny)) {
+            return false;
+        }
+        boolean moved = false;
+        try {
+            world.relocateVisibleObject(this, nx, ny, mapId);
+            moved = getX() == nx && getY() == ny && getMapId() == mapId;
+            if (!moved) return false;
+            ResetPassingPos(nx, ny, mapId);
+            setHeading(dir);
+            if (mpCost != 0) setCurrentMp(getCurrentMp() - mpCost);
+        } finally {
+            // A removed/replaced world identity cannot retain a destination.
+            if (!moved && tracksOccupancy) {
+                if (world.findObjectBySmartId(smartId) != this
+                        || !teleportNpcOcc(mapId, nx, ny, mapId, oldX, oldY)) {
+                    TileOccupancyNpc.getInstance().releaseNow((short) mapId, nx, ny, getId());
+                }
+            }
+        }
+        // Notify the old audience only after a successful move. A packet
+        // failure must not repeat the teleport or charge MP a second time.
+        try {
+            broadcastTeleportDeparture(previousViewers);
+        } catch (RuntimeException failure) {
+            java.util.logging.Logger.getLogger(L1NpcInstance.class.getName())
+                    .log(java.util.logging.Level.WARNING, "NPC teleport broadcast failed", failure);
+        }
+        try {
+            NpcEventFactory.onNpcWorldEvent(this);
+        } catch (RuntimeException failure) {
+            java.util.logging.Logger.getLogger(L1NpcInstance.class.getName())
+                    .log(java.util.logging.Level.WARNING, "NPC teleport visibility event failed", failure);
+        }
+        return true;
+    }
+
+    private void broadcastTeleportDeparture(List<L1PcInstance> previousViewers) {
+        try (var effectShared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                    SC_SkillSound.nativeWriter(getId(), 169), Integer.MIN_VALUE, Integer.MAX_VALUE);
+             var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                    SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+            for (L1PcInstance pc : previousViewers) {
+                if (pc == null) continue;
+                final var socket = pc.getNetConnection();
+                if (socket != null && socket.isConnected() && socket.isClientConnected()) {
+                    effectShared.send(socket, pc.getId());
+                    shared.send(socket, pc.getId());
+                }
                 pc.removeKnownObject(this);
             }
         }
+    }
 
-        final int oldX = getX();
-        final int oldY = getY();
-        final int oldMapId = getMapId();
-
+    public void teleport(int nx, int ny, int dir) {
+        broadcastTeleportDeparture(L1World.getInstance().getVisiblePlayerFast(this));
+        final int oldX = getX(), oldY = getY(), oldMapId = getMapId();
         L1World.getInstance().relocateVisibleObject(this, nx, ny, oldMapId);
         ResetPassingPos(nx, ny, oldMapId);
         setHeading(dir);
@@ -2005,6 +2055,7 @@ public class L1NpcInstance extends L1Character {
                 CNPCServer.getInstance().unregister(this);
             }
         } else if (wasDead) {
+            firstFound = true;
             ReopenNpcEvents();
             _npcChatTimers = null;
             StartRegeneration();

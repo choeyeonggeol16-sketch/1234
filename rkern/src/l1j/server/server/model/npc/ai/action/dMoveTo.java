@@ -5,7 +5,6 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.ai.core.PathNodeWorld;
 import l1j.server.server.model.npc.ai.CNPCEvent;
-import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.npc.ai.CNPCServer;
 
@@ -28,8 +27,6 @@ public final class dMoveTo {
     private static final int RETURN_WALK = -1;
     private static final int RETURN_TELEPORT = -2;
     private static final int RETURN_RETRY_LIMIT = 10;
-    private static final WorldCollisionHash COLLISION =
-            WorldCollisionHash.getInstance();
 
     private dMoveTo() {
     }
@@ -266,26 +263,11 @@ public final class dMoveTo {
     private static boolean teleportIfFree(
             final L1NpcInstance npc, final int x, final int y) {
         if (!validDestination(npc, x, y)
-                || COLLISION.testStep(
-                        (short) npc.getMapId(), x, y, npc.getId())
-                        != WorldCollisionHash.MOVE_CLEAR) {
+                || !npc.TeleportToLocation(x, y, npc.getHeading(), 0)) {
             return false;
         }
-        // Pre-claim the destination using the existing cross-PC/NPC
-        // occupancy gates BEFORE teleport() mutates world coordinates and
-        // broadcasts packets. Its internal teleportNpcOcc() is idempotent
-        // for our already-owned tile. A testStep-only preflight could lose
-        // the race and leave the NPC visibly on an unowned occupied tile.
-        final int fromMap = npc.getMapId();
-        final int fromX = npc.getX();
-        final int fromY = npc.getY();
-        if (npc.shouldUseNpcOccupancy()
-                && !npc.teleportNpcOcc(
-                        fromMap, fromX, fromY, fromMap, x, y)) {
-            return false;
-        }
-        npc.teleport(x, y, npc.getHeading());
         CMoveAction.invalidatePath(npc);
-        return npc.getX() == x && npc.getY() == y;
+        return true;
     }
+
 }
