@@ -56,9 +56,19 @@ public final class NpcEventFactory {
     public static void requestAirLanding(final L1NpcInstance npc, final L1PcInstance pc) {
         if (npc == null || pc == null || npc.isDead() || npc.isDestroyed()
                 || npc.getCurrentHp() <= 0
-                || npc.getHiddenStatus() != L1NpcInstance.HIDDEN_STATUS_FLY
+                || npc.getHiddenStatus() == L1NpcInstance.HIDDEN_STATUS_NONE
                 || npc.getMapId() != pc.getMapId()) return;
+        // Existing pooled landing event now also covers the underground state.
         postAirEvent(npc, pc, L1NpcInstance.HATE_EVENT_AIR_LAND);
+    }
+
+    public static void requestHide(final L1MonsterInstance npc, final int event) {
+        if (npc == null || npc.isDead() || npc.isDestroyed()
+                || npc.getCurrentHp() <= 0
+                || npc.getHiddenStatus() != L1NpcInstance.HIDDEN_STATUS_NONE
+                || event < L1NpcInstance.HATE_EVENT_HIDE_SINK
+                || event > L1NpcInstance.HATE_EVENT_HIDE_DRAGON_FLY) return;
+        postAirEvent(npc, npc, event);
     }
 
     private static void postAirEvent(final L1NpcInstance npc, final L1Character source,
