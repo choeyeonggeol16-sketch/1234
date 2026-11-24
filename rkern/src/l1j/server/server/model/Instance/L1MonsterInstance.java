@@ -1012,54 +1012,41 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	}
 
 	private void hide() {
-		int npcid = getNpcTemplate().get_npcId();
-		if (npcid == 45061 || npcid == 45161 || npcid == 45181 || npcid == 45455) {
-			if (getMaxHp() / 3 > getCurrentHp()) {
-				int rnd = _random.nextInt(10);
-				if (1 > rnd) {
-					allTargetClear();
-					setHiddenStatus(HIDDEN_STATUS_SINK);
-					SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Hide);
-					setStatus(13);
-					SC_WorldPutObject.broadcastNpc(this);
-				}
-			}
-		} else if (npcid == 45682) {
-			if (getMaxHp() / 3 > getCurrentHp()) {
-				int rnd = _random.nextInt(50);
-				if (1 > rnd) {
-					allTargetClear();
-					setHiddenStatus(HIDDEN_STATUS_SINK);
-					SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_AntharasHide);
-					setStatus(20);
-					SC_WorldPutObject.broadcastNpc(this);
-				}
-			}
-		} else if (npcid == 45067 || npcid == 45264 || npcid == 45452 || npcid == 45090 || npcid == 45321
-				|| npcid == 45445 || npcid == 75000) {
-			if (getMaxHp() / 3 > getCurrentHp()) {
-				int rnd = _random.nextInt(10);
-				if (1 > rnd) {
-					allTargetClear();
-					setHiddenStatus(HIDDEN_STATUS_FLY);
-					SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Moveup);
-					setStatus(4);
-					SC_WorldPutObject.broadcastNpc(this);
-				}
-			}
-		} else if (npcid == 45681) {
-			if (getMaxHp() / 3 > getCurrentHp()) {
-				int rnd = _random.nextInt(50);
-				if (1 > rnd) {
-					allTargetClear();
-					setHiddenStatus(HIDDEN_STATUS_FLY);
-					SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Moveup);
-					setStatus(11);
-					SC_WorldPutObject.broadcastNpc(this);
-				}
-			}
-		}
-	}
+        if (getHiddenStatus() != HIDDEN_STATUS_NONE
+                || isDead() || isDestroyed() || getCurrentHp() <= 0
+                || getMaxHp() / 3 <= getCurrentHp()) {
+            return;
+        }
+
+        // The existing L1 monster-specific HP/probability policy stays here.
+        // Only the state/action mutation is handed to the NPC owner.
+        final int event;
+        final int odds;
+        switch (getNpcTemplate().get_npcId()) {
+        case 45061: case 45161: case 45181: case 45455:
+            event = HATE_EVENT_HIDE_SINK;
+            odds = 10;
+            break;
+        case 45682:
+            event = HATE_EVENT_HIDE_ANTHARAS;
+            odds = 50;
+            break;
+        case 45067: case 45264: case 45452: case 45090:
+        case 45321: case 45445: case 75000:
+            event = HATE_EVENT_HIDE_FLY;
+            odds = 10;
+            break;
+        case 45681:
+            event = HATE_EVENT_HIDE_DRAGON_FLY;
+            odds = 50;
+            break;
+        default:
+            return;
+        }
+        if (_random.nextInt(odds) == 0) {
+            NpcEventFactory.requestHide(this, event);
+        }
+    }
 
 
 	public void initHide() {
