@@ -1,6 +1,6 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.datatables.ItemTable;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1World;
@@ -14,7 +14,7 @@ public final class SealedEquipmentRewards {
 
     static boolean UseSealedItem(L1PcInstance pc, int itemId, int count, int enchantLevel,
             int bless, int attr, boolean identified) {
-        final L1ItemInstance item = ItemTable.getInstance().createItem(itemId);
+        final L1ItemInstance item = CObjectDB.LoadItem().createItem(itemId);
         if (item == null) return false;
         try {
             item.setCount(count);

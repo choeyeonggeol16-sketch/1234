@@ -1,12 +1,12 @@
 package l1j.server.server.model.item.function;
 
 
+import l1j.server.server.datatables.CObjectDB;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
 import java.util.logging.Logger;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.cs.packet.CDB;
@@ -27,7 +27,7 @@ public final class EnchantedBagTransactions {
                 || (input.getItemId() != 3000126 && input.getItemId() != 3000127)
                 || (input.getItemId() == 3000126 ? rewardId != 900021 : rewardId != 900020)
                 || enchantLevel != 3) return;
-        l1j.server.server.templates.L1Item definition = ItemTable.getInstance().getTemplate(rewardId);
+        l1j.server.server.templates.L1Item definition = CObjectDB.LoadItem().getTemplate(rewardId);
         if (definition == null) return;
         // A detached image is required: createItem() publishes to L1World and
         // is invalid for a receipt-backed NEW grant.

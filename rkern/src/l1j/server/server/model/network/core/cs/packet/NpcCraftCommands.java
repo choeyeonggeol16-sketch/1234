@@ -1,8 +1,8 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -47,7 +47,7 @@ final class NpcCraftCommands {
         }
         boolean enough = true;
         for (int i = 0; i < materials.length; i++) {
-            L1Item def = ItemTable.getInstance().getTemplate(materials[i]);
+            L1Item def = CObjectDB.LoadItem().getTemplate(materials[i]);
             if (def == null) { fail(pc, objid, failure, data); return; }
             if (!pc.getInventory().checkItemNotEquipped(materials[i], counts[i])) {
                 SC_ServerMessage.send(pc, 337, def.getName());
@@ -61,7 +61,7 @@ final class NpcCraftCommands {
         // Preserve the original conservative pre-consumption slot/weight limits.
         long slots = 0, weight = 0;
         for (int i = 0; i < rewards.length; i++) {
-            L1Item def = ItemTable.getInstance().getTemplate(rewards[i]);
+            L1Item def = CObjectDB.LoadItem().getTemplate(rewards[i]);
             if (def == null) { fail(pc, objid, failure, data); return; }
             if (def.isStackable()) {
                 if (!pc.getInventory().checkItem(rewards[i])) slots++;
@@ -184,7 +184,7 @@ final class NpcCraftCommands {
     private static void complete(L1PcInstance pc, int objid, String npcName, int[] rewards,
             int[] counts, String success, String tail, String[] data, long dialogueTarget, int dialogueVersion) {
         for (int i = 0; i < rewards.length; i++) {
-            L1Item def = ItemTable.getInstance().getTemplate(rewards[i]);
+            L1Item def = CObjectDB.LoadItem().getTemplate(rewards[i]);
             if (def == null) continue;
             String name = def.getName();
             if (counts[i] > 1) name += " (" + counts[i] + ")";

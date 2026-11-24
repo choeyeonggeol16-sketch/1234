@@ -1,11 +1,11 @@
 package l1j.server.server.model.world.instance.inn;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -85,7 +85,7 @@ public class InnHelper {
             return;
         }
         final int objectId = npc.getId();
-        final L1Item definition = ItemTable.getInstance().getTemplate(INN_KEYID);
+        final L1Item definition = CObjectDB.LoadItem().getTemplate(INN_KEYID);
         if (definition == null || definition.isStackable()) return;
         InnRoom reserved = null;
         boolean submitted = false;

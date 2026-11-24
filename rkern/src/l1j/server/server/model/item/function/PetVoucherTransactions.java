@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.PetTypeTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -34,7 +33,7 @@ public final class PetVoucherTransactions {
         if (pc == null || input == null
                 || pc.getInventory().getItem(input.getId()) != input) return;
         final l1j.server.server.templates.L1Npc template =
-                l1j.server.server.datatables.NpcTable.getInstance().getTemplate(npcId);
+                l1j.server.server.datatables.CObjectDB.LoadNPC().getTemplate(npcId);
         if (template == null || PetTypeTable.getInstance().get(npcId) == null) return;
 
         int charisma = pc.getAbility().getTotalCha();

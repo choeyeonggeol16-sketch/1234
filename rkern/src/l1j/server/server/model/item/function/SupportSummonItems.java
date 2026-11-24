@@ -2,6 +2,7 @@ package l1j.server.server.model.item.function;
 
 
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
 import java.lang.reflect.Constructor;
@@ -10,7 +11,6 @@ import java.util.Collection;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;
@@ -180,7 +180,7 @@ public final class SupportSummonItems {
 				supportType = L1SupportInstance.SUPPORTTYPE_DWARF;
 			}
 
-			L1Npc template = NpcTable.getInstance().getTemplate(npcId);
+            L1Npc template = CObjectDB.LoadNPC().getTemplate(npcId);
 			support = new L1SupportInstance(template, pc, supportType, itemObjectId);
 			SC_SkillSound.broadcast(support, support.getId(), 5935);
 			SC_OwnCharStatus.send(pc);

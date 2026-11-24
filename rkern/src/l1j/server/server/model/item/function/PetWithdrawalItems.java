@@ -2,6 +2,7 @@ package l1j.server.server.model.item.function;
 
 
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
 import java.lang.reflect.Constructor;
@@ -10,7 +11,6 @@ import java.util.Collection;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;
@@ -125,7 +125,7 @@ public final class PetWithdrawalItems {
         L1ItemInstance amulet = pc.getInventory().getItem(itemObjectId);
         if (l1pet == null || amulet == null
                 || (amulet.getItemId() != 40314 && amulet.getItemId() != 40316)) return false;
-        return NpcTable.getInstance().getTemplate(l1pet.get_npcid()) != null;
+        return CObjectDB.LoadNPC().getTemplate(l1pet.get_npcid()) != null;
 	}
 
 	public static boolean withdrawPet(L1PcInstance pc, int itemObjectId) {
@@ -133,7 +133,7 @@ public final class PetWithdrawalItems {
         // ownership and the NPC template may have changed while awaiting CacheD.
         if (!canWithdrawPet(pc, itemObjectId)) return false;
         L1Pet l1pet = PetTable.getInstance().getTemplate(itemObjectId);
-        L1Npc npcTemp = NpcTable.getInstance().getTemplate(l1pet.get_npcid());
+        L1Npc npcTemp = CObjectDB.LoadNPC().getTemplate(l1pet.get_npcid());
         if (npcTemp == null) return false;
         L1PetInstance pet = new L1PetInstance(npcTemp, pc, l1pet);
         pet.setPetcost(6);

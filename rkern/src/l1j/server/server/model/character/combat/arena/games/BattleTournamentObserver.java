@@ -1,11 +1,11 @@
 package l1j.server.server.model.character.combat.arena.games;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Party;
@@ -187,7 +187,7 @@ public class BattleTournamentObserver extends CombatObserver{
 	
 	protected void spawn_shop(int npc_id, int x, int y, int h){
 		try{
-			L1NpcInstance npc = NpcTable.getInstance(). newNpcInstance(npc_id);
+            L1NpcInstance npc = CObjectDB.LoadNPC(). newNpcInstance(npc_id);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(_copyMapId);
 			npc.setX(x);

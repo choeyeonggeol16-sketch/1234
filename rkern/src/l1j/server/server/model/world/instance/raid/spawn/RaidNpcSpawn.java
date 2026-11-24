@@ -1,11 +1,11 @@
 package l1j.server.server.model.world.instance.raid.spawn;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Location;
@@ -229,7 +229,7 @@ public class RaidNpcSpawn {
 	public L1NpcInstance spawnBoss(int mapId, int x, int y){
 		L1NpcInstance npc = null;
 		try{
-			npc = NpcTable.getInstance().newNpcInstance(_npcid);
+            npc = CObjectDB.LoadNPC().newNpcInstance(_npcid);
 			if(npc == null)
 				return npc;
 			
@@ -254,7 +254,7 @@ public class RaidNpcSpawn {
 	protected L1NpcInstance spawnNpcNonPass(int mapId, int x, int y){
 		L1NpcInstance npc = null;
 		try{
-			npc = NpcTable.getInstance().newNpcInstance(_npcid);
+            npc = CObjectDB.LoadNPC().newNpcInstance(_npcid);
 			if(npc == null)
 				return npc;
 			
@@ -279,7 +279,7 @@ public class RaidNpcSpawn {
 	protected L1NpcInstance spawnNpcNonPass(int npcid, int mapId, int x, int y){
 		L1NpcInstance npc = null;
 		try{
-			npc = NpcTable.getInstance().newNpcInstance(npcid);
+            npc = CObjectDB.LoadNPC().newNpcInstance(npcid);
 			if(npc == null)
 				return npc;
 					
@@ -304,7 +304,7 @@ public class RaidNpcSpawn {
 	protected L1NpcInstance spawnNpc(int mapId, int x, int y){
 		L1NpcInstance npc = null;
 		try{
-			npc = NpcTable.getInstance().newNpcInstance(_npcid);
+            npc = CObjectDB.LoadNPC().newNpcInstance(_npcid);
 			if(npc == null)
 				return npc;
 			
@@ -332,7 +332,7 @@ public class RaidNpcSpawn {
 	public L1NpcInstance spawnNpcForDummy(int mapId, int x, int y){
 		L1NpcInstance npc = null;
 		try{
-			npc = NpcTable.getInstance().newNpcInstance(_npcid);
+            npc = CObjectDB.LoadNPC().newNpcInstance(_npcid);
 			if(npc == null)
 				return npc;
 			
@@ -360,7 +360,7 @@ public class RaidNpcSpawn {
 		ArrayList<L1NpcInstance> npcs 	= new ArrayList<L1NpcInstance>(posArray.length / 2);
 		L1NpcInstance npc 				= null;
 		try{
-			L1Npc npcTemp = NpcTable.getInstance().getTemplate(npcid);
+            L1Npc npcTemp = CObjectDB.LoadNPC().getTemplate(npcid);
 			if(npcTemp == null)
 				return null;
 			

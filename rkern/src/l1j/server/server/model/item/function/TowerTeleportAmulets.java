@@ -10,7 +10,6 @@ import java.util.Collection;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;

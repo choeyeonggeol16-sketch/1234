@@ -1,11 +1,11 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.LinkedList;
 import java.util.List;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
@@ -274,7 +274,7 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         noti.set_checker(1);
         int real_size = 0;
 
-        L1ItemInstance item = ItemTable.getInstance().createItem(40005);
+        L1ItemInstance item = CObjectDB.LoadItem().createItem(40005);
         if(spQ != null){
             while(!spQ.isEmpty()){
                 CollectionSpell ct_spell = spQ.poll();
@@ -340,7 +340,7 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         noti.set_checker(object_id);
         int real_size = 0;
         for(int i=0; i<count; ++i){
-            L1Item temp = ItemTable.getInstance().getTemplate(40005);
+            L1Item temp = CObjectDB.LoadItem().getTemplate(40005);
             L1ItemInstance item = new L1ItemInstance();
             int real_number = start + i;
             int real_index = index + i;

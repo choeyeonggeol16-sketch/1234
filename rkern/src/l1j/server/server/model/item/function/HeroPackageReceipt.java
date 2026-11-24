@@ -1,5 +1,6 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import java.util.logging.Logger;
@@ -10,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import l1j.server.server.Account;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -47,7 +47,7 @@ final class HeroPackageReceipt {
                 : pc.isElf() ? 835
                 : pc.isDarkelf() ? 837 : 0;
         if (gift == 0) return;
-        final L1Item definition = ItemTable.getInstance().getTemplate(gift);
+        final L1Item definition = CObjectDB.LoadItem().getTemplate(gift);
         if (definition == null) {
             SC_SystemMessage.send(pc, "영웅 패키지 보상을 찾을 수 없습니다.");
             return;

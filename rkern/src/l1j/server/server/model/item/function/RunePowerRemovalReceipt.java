@@ -3,7 +3,6 @@ package l1j.server.server.model.item.function;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Item;

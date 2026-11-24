@@ -18,7 +18,6 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.Account;
 import l1j.server.server.datatables.ClanTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.ReportTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;

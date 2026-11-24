@@ -1,9 +1,9 @@
 package l1j.server.server.model.item.enchant;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.templates.L1Item;
 
 public class ItemEnchantee {
@@ -118,10 +118,10 @@ public class ItemEnchantee {
 	}
 	
 	public L1Item to_item_temaplte(){
-		return ItemTable.getInstance().getTemplate(get_item_id());
+        return CObjectDB.LoadItem().getTemplate(get_item_id());
 	}
 	
 	public L1Item to_reward_item_template(){
-		return ItemTable.getInstance().getTemplate(get_reward_item_id());
+        return CObjectDB.LoadItem().getTemplate(get_reward_item_id());
 	}
 }

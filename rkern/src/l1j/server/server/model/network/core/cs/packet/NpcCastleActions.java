@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
@@ -9,7 +10,6 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.datatables.HouseTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1CataInstance;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1EffectInstance;
@@ -704,7 +704,7 @@ final class NpcCastleActions {
             SC_SystemMessage.send(pc, "해당성의 공성전이 진행중에는 이용 불가능합니다.");
             return false;
         }
-        final L1Npc template = NpcTable.getInstance().getTemplate(kent ? 7320031 : 7320000);
+        final L1Npc template = CObjectDB.LoadNPC().getTemplate(kent ? 7320031 : 7320000);
         if (template == null) {
             SC_SystemMessage.send(pc, "용병을 고용할 수 없습니다.");
             return false;

@@ -6,7 +6,6 @@ import java.util.Random;
 import java.util.logging.Logger;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.BugRaceController;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.NpcSpawnTable;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;

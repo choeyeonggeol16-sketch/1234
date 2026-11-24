@@ -1,8 +1,8 @@
 package l1j.server.server.model.shop.dynamic;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.templates.L1Item;
@@ -27,7 +27,7 @@ public class DynamicShopItem {
 	public boolean 	isPurchase;	// 판매(false), 매입(true)
 	
 	public static DynamicShopItem create(NpcShopManager.ShopEntry e, int objId){
-	    L1Item item = ItemTable.getInstance().getTemplate(e.itemId);
+        L1Item item = CObjectDB.LoadItem().getTemplate(e.itemId);
 	    if(item == null){
 	        // ★ 가격표에 등록된 아이템이 실제 템플릿에 없음 — NPE 대신 null 반환으로 안전하게
 	        return null;
@@ -47,7 +47,7 @@ public class DynamicShopItem {
 	}
 	
 	public static DynamicShopItem create(L1ShopItem sitem, int i, boolean isPurchase){
-		L1Item item			= ItemTable.getInstance().getTemplate(sitem.getItemId());
+        L1Item item			= CObjectDB.LoadItem().getTemplate(sitem.getItemId());
 		DynamicShopItem ditem	= new DynamicShopItem();
 		ditem.objId			= i;
 		ditem.itemId		= sitem.getItemId();

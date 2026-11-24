@@ -1,5 +1,6 @@
 package l1j.server.server.model.character.combat.arena.dogfight.history;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightSettings;
@@ -7,7 +8,6 @@ import l1j.server.server.model.character.combat.arena.dogfight.game.DogFightGame
 import l1j.server.server.model.character.combat.arena.dogfight.game.DogFightGameInfo;
 import l1j.server.server.model.character.combat.arena.dogfight.history.log.DogFightTicketLogInfo;
 import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightInstance;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
@@ -178,12 +178,12 @@ public class DogFightHistoryInfo {
 		m_tickets_info = new ArrayList<DogFightTicketInfo>(m_ticket_width);
 		int[] tick_ids = DogFightTicketIdManager.getInstance().next_ids(m_ticket_width);
 		
-		L1Item template = ItemTable.getInstance().getTemplate(DogFightSettings.TICKET_ITEM_ID);
+        L1Item template = CObjectDB.LoadItem().getTemplate(DogFightSettings.TICKET_ITEM_ID);
 		int idx = 0;
 		double win_rate = create_win_rate();
 		for(Integer corner_id : keys){
 			String corner_name = gInfo.get_corner_name(corner_id);
-			L1Item ticket_template = ItemTable.getInstance().create_dogfight_ticket(template, tick_ids[idx], String.format(DogFightSettings.TICKET_NAME, 
+            L1Item ticket_template = CObjectDB.LoadItem().create_dogfight_ticket(template, tick_ids[idx], String.format(DogFightSettings.TICKET_NAME,
 					DogFightHistory.getInstance().get_current_game_number(), corner_id + 1, corner_name));
 			int count = DogFightSettings.DEFAULT_TICKET_COUNT;
 			int price = count * get_ticket_price();
@@ -268,7 +268,7 @@ public class DogFightHistoryInfo {
 	        ArrayList<L1ItemInstance> tickets = new ArrayList<L1ItemInstance>(pairs.size());
 	        for(KeyValuePair<Integer, Integer> pair : pairs){
 	            DogFightTicketInfo tInfo = m_tickets_info.get(pair.key);
-	            L1ItemInstance ticket = ItemTable.getInstance().createItem(tInfo.get_template());
+                L1ItemInstance ticket = CObjectDB.LoadItem().createItem(tInfo.get_template());
 	            ticket.setIdentified(true);
 	            ticket.setCount(pair.value);
 	            tickets.add(ticket);

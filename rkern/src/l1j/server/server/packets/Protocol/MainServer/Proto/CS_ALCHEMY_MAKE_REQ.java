@@ -1,10 +1,10 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.LinkedList;
 
 import l1j.server.Config;
 import l1j.server.server.datatables.AlchemyProbability;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Inventory;
@@ -207,7 +207,7 @@ public final class CS_ALCHEMY_MAKE_REQ {
                 resultCode = SC_ALCHEMY_MAKE_ACK.ResultCode.RC_HYPER_SUCCESS;
             }
         }
-        L1Item selectItem = ItemTable.getInstance().getTemplate(
+        L1Item selectItem = CObjectDB.LoadItem().getTemplate(
                 AlchemyProbability.getInstance().select_id(output.get_output_list_id()));
         if (selectItem == null)
             return fail;

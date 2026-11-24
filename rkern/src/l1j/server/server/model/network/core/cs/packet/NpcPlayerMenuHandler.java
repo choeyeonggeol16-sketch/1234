@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_CloseList;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -114,7 +114,7 @@ final class NpcPlayerMenuHandler {
 			summoncount = 2;
 		}
 
-		L1Npc npcTemp = NpcTable.getInstance().getTemplate(summonid);
+        L1Npc npcTemp = CObjectDB.LoadNPC().getTemplate(summonid);
 		if (npcTemp == null) return;
 		L1SummonInstance summon = null;
 		for (int cnt = 0; cnt < summoncount; cnt++) {

@@ -1,5 +1,6 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import java.util.logging.Logger;
@@ -10,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import l1j.server.server.Account;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -36,7 +36,7 @@ final class UncurseScrollReceipt {
             for (L1ItemInstance item : pc.getInventory().getItems()) {
                 if (item == scroll || item.getItem().getBless() != 2) continue;
                 if (!item.isEquipped() && (scrollId == 40119 || scrollId == 40097)) continue;
-                L1Item normal = ItemTable.getInstance().getTemplate(item.getItemId() - 200000);
+                L1Item normal = CObjectDB.LoadItem().getTemplate(item.getItemId() - 200000);
                 if (normal == null) continue;
                 if (normal.getType2() != item.getItem().getType2()
                         || normal.getType() != item.getItem().getType()

@@ -1,7 +1,7 @@
 package l1j.server.server.shared.builder;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.world.instance.shared.GameL1TowerInstance;
 
@@ -31,7 +31,7 @@ public class TowerBuilder {
 	}
 	
 	public GameL1TowerInstance build(){
-		GameL1TowerInstance tower = new GameL1TowerInstance(NpcTable.getInstance().getTemplate(_npcid));
+        GameL1TowerInstance tower = new GameL1TowerInstance(CObjectDB.LoadNPC().getTemplate(_npcid));
 		tower.setId(IdFactory.getInstance().nextId());
 		tower.setMap(_map_id);
 		tower.getLocation().forward(0);

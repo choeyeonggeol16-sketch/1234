@@ -1,11 +1,11 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1PcInventory;
@@ -94,7 +94,7 @@ final class NpcExperienceCommands {
 	private static boolean 봉인템(L1PcInstance pc, int item_id, int count, int EnchantLevel, int Bless, int attr,
 			boolean identi) {
 		// 봉인템(pc, 5000045, 1, 5, 128);
-		L1ItemInstance item = ItemTable.getInstance().createItem(item_id);
+        L1ItemInstance item = CObjectDB.LoadItem().createItem(item_id);
 		if (item != null) {
 			try {
 				item.setCount(count);
