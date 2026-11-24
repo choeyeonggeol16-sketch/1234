@@ -19,7 +19,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re, json, collections
+          import re, json, difflib
           
           root=Path("rkern/src")
           base=root/"l1j/server/server/datatables"
@@ -67,6 +67,16 @@ jobs:
                           raise AssertionError(("reflective string",str(p),m.group()))
               assert not re.search(names,mask(s)),str(p)
               if s!=orig:
+                  before=orig.splitlines(keepends=True)
+                  after=s.splitlines(keepends=True)
+                  for tag,_,__,lo,hi in difflib.SequenceMatcher(None,before,after,autojunk=False).get_opcodes():
+                      if tag=="equal": continue
+                      for k in range(lo,hi):
+                          line=after[k]
+                          lead=re.match(r"[ \t]*",line).group()
+                          ending="\r\n" if line.endswith("\r\n") else "\n" if line.endswith("\n") else ""
+                          after[k]=lead.expandtabs(4)+line[len(lead):].rstrip()+ending
+                  s="".join(after)
                   p.write_bytes(s.encode("utf-8"))
                   changed.append(str(p))
           for p in oldfiles:
