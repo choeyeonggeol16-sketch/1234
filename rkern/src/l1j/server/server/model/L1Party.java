@@ -11,6 +11,10 @@ import l1j.server.Config;
 import l1j.server.server.Controller.AuraController;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.character.Item.Drop.DropAcqSnapshot;
+import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_LIST;
@@ -392,6 +396,93 @@ for (L1PcInstance member : getMembers()) {
     }
 
     
+
+    /** NC-style route condition; retain RKern map, distance and hate eligibility. */
+    private boolean CheckRouteAdenaCond(L1NpcInstance npc, DropAcqSnapshot snap, L1PcInstance member) {
+        if (member == null || member.getParty() != this || member.isDead()
+                || member.getMapId() != npc.getMapId()
+                || member.getLocation().getTileLineDistance(npc.getLocation()) > Config.PARTY_LOOT_RANGE) {
+            return false;
+        }
+        if (Config.PARTY_LOOT_ELIGIBILITY != 0) return true;
+        if (snap == null) return false;
+        for (int i = 0; i < snap.size; i++) {
+            if (snap.acqs[i] instanceof L1PcInstance pc && pc.getId() == member.getId()) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Select recipients once, then route each share using the existing inventory transfer.
+     * RKern rule: the randomly selected winner receives the entire remainder.
+     * A false result means no routing took place; never retry the whole drop after partial routing.
+     */
+    public boolean RouteAdena(L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
+            DropAcqSnapshot snap, L1PcInstance primaryOwner) {
+        if (!Config.PARTY_LOOT_ENABLE || primaryOwner == null || primaryOwner.getParty() != this
+                || item == null || item.getItemId() != L1ItemId.ADENA || item.getCount() <= 0) return false;
+
+        final L1PcInstance[] members = getMembers();
+        int size = 0;
+        for (L1PcInstance member : members) {
+            if (CheckRouteAdenaCond(npc, snap, member)) members[size++] = member;
+        }
+        if (size == 0) return false;
+
+        final int winnerIndex = java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
+        final long total = item.getCount();
+        final long each = total / size;
+        final long remainder = total % size;
+        final L1PcInstance leader = getLeader();
+        final String tag = leader != null && leader.getPartyType() == 1 ? "자동 분배" : "일반 분배";
+
+        for (int i = 0; i < size; i++) {
+            final int amount = (int) (each + (i == winnerIndex ? remainder : 0L));
+            if (amount == 0) continue;
+            final L1PcInstance member = members[i];
+            final boolean eligible = CheckRouteAdenaCond(npc, snap, member)
+                    && member.getNetConnection() != null;
+            L1ItemInstance stored = null;
+            if (eligible) {
+                final L1Inventory dest = member.getInventory();
+                final L1ItemInstance adena = dest.findItemId(L1ItemId.ADENA);
+                if (adena == null || (long) adena.getCount() + amount <= 2_000_000_000L) {
+                    stored = source.tradeItem(item, amount, dest);
+                }
+                if (stored == null) {
+                    stored = source.tradeItem(item, amount, L1World.getInstance().getInventory(
+                            member.getX(), member.getY(), member.getMapId()));
+                }
+            } else {
+                stored = source.tradeItem(item, amount, L1World.getInstance().getInventory(
+                        npc.getX(), npc.getY(), npc.getMapId()));
+            }
+            if (stored == null) {
+                // Keep rejected amounts in the source and recover the remainder below.
+                continue;
+            }
+            if (eligible && member.RootMent1) {
+                try {
+                    SC_SystemMessage.send(member, item.getNumberedName(amount)
+                            + " 획득 : " + member.getName() + "(" + tag + ")");
+                } catch (RuntimeException e) {
+                    _log.log(java.util.logging.Level.WARNING, "Party adena notification failed", e);
+                }
+            }
+        }
+
+        // Only move what is still owned by the NPC; a completed last transfer can leave
+        // a nonzero count in the detached item object.
+        if (source.getItem(item.getId()) == item && item.getCount() > 0) {
+            final int remaining = item.getCount();
+            if (source.tradeItem(item, remaining, L1World.getInstance().getInventory(
+                    npc.getX(), npc.getY(), npc.getMapId())) == null) {
+                _log.warning("Party adena ground recovery rejected: item=" + item.getId()
+                        + ", count=" + remaining);
+            }
+        }
+        return true;
+    }
 
     // ─────────────────────────────────────────────
     // 표식 — 0x0153 전용 NOTI + 상태 갱신

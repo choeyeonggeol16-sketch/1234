@@ -97,10 +97,16 @@ public final class DropShareEngine {
 
          // 대미지 리스트가 꼬였을 때만 막타자를 보험으로 씀
          L1PcInstance primaryOwner = (topHater != null) ? topHater : lastAttackerPc;
+         // Currency distribution is a party-owned operation. Select the eligible
+         // recipient snapshot only once, before any inventory mutation.
+         if (Config.PARTY_LOOT_ENABLE && item.getItemId() == L1ItemId.ADENA && primaryOwner != null) {
+             final l1j.server.server.model.L1Party party = primaryOwner.getParty();
+             if (party != null && party.RouteAdena(npc, mobInv, item, snap, primaryOwner)) return true;
+         }
          L1Character winner = null;
 
          // 대미지 1위의 파티원들 중 자격 있는 놈 선출
-         if (Config.PARTY_LOOT_ENABLE && primaryOwner != null && primaryOwner.getParty() != null) {
+         if (item.getItemId() != L1ItemId.ADENA && Config.PARTY_LOOT_ENABLE && primaryOwner != null && primaryOwner.getParty() != null) {
              List<L1PcInstance> candidates = collectEligiblePartyMembers(npc, snap, primaryOwner);
              if (!candidates.isEmpty()) {
                  winner = candidates.get(RND.nextInt(candidates.size()));
@@ -122,46 +128,14 @@ public final class DropShareEngine {
          if (Config.PARTY_LOOT_ENABLE && winner instanceof L1PcInstance) {
              L1PcInstance wpc = (L1PcInstance) winner;
              if (wpc.getParty() != null) {
-                 if (item.getItemId() == L1ItemId.ADENA) {
-                     if (tryDistributePartyAdena_AutoLoot(npc, mobInv, item, snap, wpc)) return true;
-                 } else {
-                     if (tryDistributePartyItem_AutoLoot(npc, mobInv, item, snap, wpc)) return true;
-                 }
+                 if (item.getItemId() != L1ItemId.ADENA
+                         && tryDistributePartyItem_AutoLoot(npc, mobInv, item, snap, wpc)) return true;
              }
          }
 
         // 분배 대상 없으면 그냥 승자 인벤토리로
         L1Inventory dest = decideAutoLootTargetInventory(npc, item, winner);
         tradeSafely(mobInv, item, item.getCount(), dest);
-        return true;
-    }
-
-    private static boolean tryDistributePartyAdena_AutoLoot(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance winnerPc) {
-        final ArrayList<L1PcInstance> visible = collectEligiblePartyMembers(npc, snap, winnerPc);
-        if (visible.isEmpty()) return false;
-
-        int total = item.getCount();
-        int n = visible.size();
-        int each = total / n;
-        int rem = total % n;
-
-        for (L1PcInstance p : visible) {
-            int amt = each + (p.getId() == winnerPc.getId() ? rem : 0);
-            if (amt <= 0) continue;
-            
-            L1Inventory targetInv = p.getInventory();
-            // 20억 체크
-            L1ItemInstance adena = targetInv.findItemId(L1ItemId.ADENA);
-            if (adena != null && adena.getCount() + amt > 2000000000) {
-                targetInv = L1World.getInstance().getInventory(p.getX(), p.getY(), p.getMapId());
-            }
-            
-            tradeSafely(mobInv, item, amt, targetInv);
-            if (p.RootMent1) {
-            	String msg = String.format("%s 획득 : %s(%s)", item.getLogName(), p.getName(), distTagByPartySetting(winnerPc));
-            	 SC_SystemMessage.send(p, msg); 
-            }
-        }
         return true;
     }
 
