@@ -9,6 +9,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -32,6 +33,14 @@ final class NpcCraftCommands {
     static void execute(L1PcInstance pc, L1Object target, int objid,
             int[] materials, int[] counts, int[] rewards, int[] rewardCounts,
             String success, String failure, String tail, String[] data) {
+        execute(pc, target, objid, materials, counts, rewards, rewardCounts,
+                success, failure, tail, data, false, 0);
+    }
+
+    private static void execute(L1PcInstance pc, L1Object target, int objid,
+            int[] materials, int[] counts, int[] rewards, int[] rewardCounts,
+            String success, String failure, String tail, String[] data,
+            boolean resetLyra, int expectedStep) {
         if (!validRecipe(materials, counts) || !validRecipe(rewards, rewardCounts)) {
             fail(pc, objid, failure, data);
             return;
@@ -84,8 +93,19 @@ final class NpcCraftCommands {
                 if (failure == null || HtmlCmdHandler.canReplyToDialogue(pc, dialogueTarget, dialogueVersion))
                     fail(pc, objid, failure, data);
             });
-            tx.commitAfterInventoryRelease(() -> complete(pc, objid, npcName, rewards,
-                    rewardCounts, success, tail, data, dialogueTarget, dialogueVersion));
+            if (resetLyra) {
+                CQuestSystem.StageQuestStep(tx, pc.getId(), CQuestSystem.QUEST_LYRA,
+                        expectedStep, 0, 0);
+                // Publish the committed quest state before releasing the existing owner gate.
+                tx.commit(() -> {
+                    pc.getQuest().applyCommittedStepIfLoaded(CQuestSystem.QUEST_LYRA, 0);
+                    complete(pc, objid, npcName, rewards, rewardCounts,
+                            success, tail, data, dialogueTarget, dialogueVersion);
+                });
+            } else {
+                tx.commitAfterInventoryRelease(() -> complete(pc, objid, npcName, rewards,
+                        rewardCounts, success, tail, data, dialogueTarget, dialogueVersion));
+            }
             prepared = true;
         } catch (RuntimeException error) {
             LOG.log(Level.WARNING, "NPC recipe preparation failed", error);
@@ -116,13 +136,20 @@ final class NpcCraftCommands {
         }
     }
 
-    static void exchangeTotems(L1PcInstance pc, L1Object npc, int objid, String page) {
+    static void exchangeTotems(L1PcInstance pc, L1Object npc, int objid, boolean cancelContract) {
+        final String page = cancelContract ? "lyraev4" : "lyraev5";
+        final int expectedStep = cancelContract ? pc.getQuest().get_step(CQuestSystem.QUEST_LYRA) : 0;
         final var inventory = pc.getInventory();
         int mask = 0;
         for (int slot = 0; slot < TOTEM_PRICE.length; slot++)
             if (inventory.checkItem(40131 + slot)) mask |= 1 << slot;
         if (mask == 0) {
-            SC_NPCTalkReturn.send(pc, objid, page);
+            if (cancelContract) {
+                NpcQuestTransactions.requestQuestPage(pc, npc, objid, CQuestSystem.QUEST_LYRA,
+                        expectedStep, 0, page);
+            } else {
+                SC_NPCTalkReturn.send(pc, objid, page);
+            }
             return;
         }
         final int[] materials = TotemRecipes.MATERIALS[mask];
@@ -135,10 +162,15 @@ final class NpcCraftCommands {
                 return;
             }
             counts[index] = item.getCount();
-            rewardCounts[index] = Math.multiplyExact(counts[index], TOTEM_PRICE[materials[index] - 40131]);
+            final long reward = (long) counts[index] * TOTEM_PRICE[materials[index] - 40131];
+            if (counts[index] <= 0 || reward > L1Inventory.MAX_AMOUNT) {
+                fail(pc, objid, null, null);
+                return;
+            }
+            rewardCounts[index] = (int) reward;
         }
         execute(pc, npc, objid, materials, counts, TotemRecipes.REWARDS[materials.length],
-                rewardCounts, null, null, page, null);
+                rewardCounts, null, null, page, null, cancelContract, expectedStep);
     }
 
     private static boolean validRecipe(int[] ids, int[] counts) {
