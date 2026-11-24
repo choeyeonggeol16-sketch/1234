@@ -112,7 +112,8 @@ public final class TeleportUseService {
             final boolean hasBookmark = (bookmarkX != 0);
 
             if (hasBookmark) {
-                if (!(pc.getMap().isEscapable() || TeleportUseService.canBypassMapRestrictions(pc))) {
+                if (!TeleportItemRules.isValidBookmark(pc, bookmarkX, bookmarkY, bookmarkMapId)
+                        || !(pc.getMap().isEscapable() || TeleportUseService.canBypassMapRestrictions(pc))) {
                     SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
                     SC_ServerMessage.send(pc, 79);
                     pc.tpEndFinish();

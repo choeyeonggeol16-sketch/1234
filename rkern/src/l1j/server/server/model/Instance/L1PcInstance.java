@@ -168,6 +168,7 @@ import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.Handler;
 import l1j.server.server.storage.sql.handler.SelectorHandler;
+import l1j.server.server.model.character.bookmark.CUserBookmark;
 import l1j.server.server.templates.L1BookMark;
 import l1j.server.server.utils.CalcStat;
 import l1j.server.server.utils.GameUtils;
@@ -1095,6 +1096,9 @@ public class L1PcInstance extends L1Character {
 
 	private long _npcaction;
 
+	private final CUserBookmark userBookmark;
+	public final CUserBookmark getUserBookmark() { return userBookmark; }
+	// Legacy readers share the actual CUserBookmark lists; no duplicate storage.
 	public final ArrayList<L1BookMark> _bookmarks;
 	private byte[] _shopChat;
 	private AtomicInteger _pinkNameTime;
@@ -1112,8 +1116,9 @@ public class L1PcInstance extends L1Character {
 		_inventory = new L1PcInventory(this);
 		_dwarfForPackage = new L1DwarfForPackageInventory(this);
 		_tradewindow = new L1Inventory();
-		_bookmarks = new ArrayList<L1BookMark>();
-		_speedbookmarks = new ArrayList<L1BookMark>();
+		userBookmark = new CUserBookmark();
+		_bookmarks = userBookmark.slots();
+		_speedbookmarks = userBookmark.shortcuts();
 		_quest = new L1Quest(this);
 		_equipSlot = new L1EquipmentSlot(this);
 		_pinkNameTime = new AtomicInteger(0);
@@ -2434,8 +2439,7 @@ public class L1PcInstance extends L1Character {
             try { saveInventory(); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout item save admission failed: " + getId(), e); }
         }
-        try { L1BookMark.WriteBookmark(this); }
-        catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout bookmark save failed: " + getId(), e); }
+        // Bookmark mutations are durable receipts at request time; never overwrite them on logout.
 	}
 
 	private final AtomicBoolean _destroyed = new AtomicBoolean(false);
@@ -3996,45 +4000,11 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 
-	public L1BookMark getBookMark(String name) {
-		L1BookMark element = null;
-		int size = _bookmarks.size();
-		for (int i = 0; i < size; i++) {
-			element = _bookmarks.get(i);
-			if (element == null)
-				continue;
-			if (element.getName().equalsIgnoreCase(name)) {
-				return element;
-			}
-		}
-		return null;
-	}
-
-	public L1BookMark getBookMark(int id) {
-		L1BookMark element = null;
-		int size = _bookmarks.size();
-		for (int i = 0; i < size; i++) {
-			element = _bookmarks.get(i);
-			if (element == null)
-				continue;
-			if (element.getId() == id) {
-				return element;
-			}
-		}
-		return null;
-	}
-
-	public int getBookMarkSize() {
-		return _bookmarks.size();
-	}
-
-	public void addBookMark(L1BookMark book) {
-		_bookmarks.add(book);
-	}
-
-	public void removeBookMark(L1BookMark book) {
-		_bookmarks.remove(book);
-	}
+	public L1BookMark getBookMark(String name) { return userBookmark.FindSlot(name); }
+	public L1BookMark getBookMark(int id) { return userBookmark.FindById(id); }
+	public int getBookMarkSize() { return userBookmark.slots().size(); }
+	public void addBookMark(L1BookMark book) { userBookmark.AppendCommittedSlot(book); }
+	public void removeBookMark(L1BookMark book) { userBookmark.RemoveCommittedSlot(book); }
 
 	public L1ItemInstance getWeapon() {
 		return _weapon;

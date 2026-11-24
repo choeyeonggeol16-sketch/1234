@@ -53,12 +53,7 @@ private static final int[] TOWER_KEYS = {
     }
 
     static boolean isValidBookmark(L1PcInstance pc, int x, int y, short mapId) {
-        try {
-            for (L1BookMark b : pc.getBookMarkArray()) {
-                if (b.getLocX() == x && b.getLocY() == y && b.getMapId() == mapId) return true;
-            }
-        } catch (Throwable ignore) {}
-        return false;
+        return pc.getUserBookmark().CanUseBookmark(pc, x, y, mapId);
     }
 
     static boolean canRandomTeleportHere(L1PcInstance pc) {

@@ -131,9 +131,7 @@ public class L1ItemBookMark {
             tx.sql(con -> prepared.addAll(replaceItemBookmarks(con, charId, limit, objectId)));
             tx.onFailure(() -> pc.sendPackets("기억 장소를 교체하지 못했습니다. 구슬은 소비되지 않았습니다."));
             tx.commit(() -> {
-                pc._bookmarks.clear();
-                pc._speedbookmarks.clear();
-                for (L1BookMark book : prepared) pc.addBookMark(book);
+                pc.getUserBookmark().OnLoadList(prepared);
                 l1j.server.server.model.network.core.sc.packet.SC_BookMarkLoad.send(pc);
             });
         } catch (RuntimeException failure) {

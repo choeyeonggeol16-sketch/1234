@@ -36,7 +36,7 @@ public final class SC_BookMarkLoad {
         int[] speed = new int[0];
         List<Entry> marks = new ArrayList<>();
         try {
-            markCount = pc.getMark_count();
+            markCount = Math.clamp(pc.getMark_count(), 0, 100);
             booksize = markCount + 6;
             if (pc._bookmarks != null) {
                 synchronized (pc._bookmarks) {
@@ -45,13 +45,15 @@ public final class SC_BookMarkLoad {
                 }
             }
             if (pc._speedbookmarks != null) {
-                synchronized (pc._speedbookmarks) {
-                    speed = new int[pc._speedbookmarks.size()];
-                    for (int i = 0; i < speed.length; i++) {
-                        L1BookMark mark = pc._speedbookmarks.get(i);
-                        speed[i] = mark == null ? 0 : mark.getNumId();
-                    }
-                }
+                int last = -1;
+                for (L1BookMark mark : pc._speedbookmarks)
+                    if (mark != null && mark.getSpeed_id() >= 0 && mark.getSpeed_id() < 5)
+                        last = Math.max(last, mark.getSpeed_id());
+                speed = new int[last + 1];
+                java.util.Arrays.fill(speed, 0xFF);
+                for (L1BookMark mark : pc._speedbookmarks)
+                    if (mark != null && mark.getSpeed_id() >= 0 && mark.getSpeed_id() < speed.length)
+                        speed[mark.getSpeed_id()] = mark.getNumId();
             }
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "SC_BookMarkLoad snapshot failed", ex);

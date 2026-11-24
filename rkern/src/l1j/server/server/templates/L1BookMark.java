@@ -1,5 +1,6 @@
 package l1j.server.server.templates;
-import l1j.server.server.model.network.core.sc.packet.SC_Bookmarks;
+import l1j.server.server.model.character.bookmark.CUserBookmark;
+import l1j.server.server.model.network.core.sc.packet.SC_BookMarkLoad;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -67,115 +68,42 @@ public class L1BookMark {
 	public L1BookMark() {}
 
 	public static void bookmarkDB(L1PcInstance pc) {
-		if (pc == null) return;
-		
-		String sql1 = "SELECT * FROM character_teleport WHERE char_id = ? ORDER BY num_id ASC";
-		String sql2 = "SELECT * FROM character_teleport WHERE char_id = ? AND speed_id > -1 ORDER BY speed_id ASC";
-
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement pstm = con.prepareStatement(sql1)) {
-			
-			pstm.setInt(1, pc.getId());
-			try (ResultSet rs = pstm.executeQuery()) {
-				int i = 0;
-				while (rs.next()) {
-					L1BookMark bookmark = new L1BookMark();
-					bookmark.setCharId(rs.getInt("char_id"));
-					bookmark.setId(rs.getInt("id"));
-					bookmark.setNumId(i);
-					bookmark.setTemp_id(i);
-					bookmark.setSpeed_id(rs.getInt("speed_id"));
-					bookmark.setName(rs.getString("name"));
-					bookmark.setLocX(rs.getInt("locx"));
-					bookmark.setLocY(rs.getInt("locy"));
-					bookmark.setMapId(rs.getShort("mapid"));
-					bookmark.setRandomX(rs.getInt("randomX"));
-					bookmark.setRandomY(rs.getInt("randomY"));
-					pc._bookmarks.add(bookmark);
-					i++;
-				}
-			}
-
-			try (PreparedStatement pstm1 = con.prepareStatement(sql2)) {
-				pstm1.setInt(1, pc.getId());
-				try (ResultSet rs1 = pstm1.executeQuery()) {
-					while (rs1.next()) {
-						int numId = rs1.getInt("num_id");
-						if (numId >= 0 && numId < pc._bookmarks.size()) {
-							L1BookMark bm = pc._bookmarks.get(numId);
-							if (bm != null) {
-								pc._speedbookmarks.add(bm);
-							}
-						}
-					}
-				}
-			}
-		} catch (SQLException e) {
-			_log.log(Level.WARNING, "bookmarks 예외 발생.", e);
-		}
-	}
+        if (pc != null) applySnapshot(pc, readSnapshot(pc.getId()));
+    }
 
     public static ArrayList<L1BookMark> readSnapshot(int characterId) {
-        ArrayList<L1BookMark> bookmarks = new ArrayList<>();
-        ArrayList<Integer> speedIndices = new ArrayList<>();
-        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
-            try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT * FROM character_teleport WHERE char_id = ? ORDER BY num_id ASC")) {
-                ps.setInt(1, characterId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    int i = 0;
-                    while (rs.next()) {
-                        L1BookMark bookmark = new L1BookMark();
-                        bookmark.setCharId(rs.getInt("char_id"));
-                        bookmark.setId(rs.getInt("id"));
-                        bookmark.setNumId(i);
-                        bookmark.setTemp_id(i);
-                        bookmark.setSpeed_id(rs.getInt("speed_id"));
-                        bookmark.setName(rs.getString("name"));
-                        bookmark.setLocX(rs.getInt("locx"));
-                        bookmark.setLocY(rs.getInt("locy"));
-                        bookmark.setMapId(rs.getShort("mapid"));
-                        bookmark.setRandomX(rs.getInt("randomX"));
-                        bookmark.setRandomY(rs.getInt("randomY"));
-                        bookmarks.add(bookmark);
-                        i++;
-                    }
-                }
-            }
-            try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT num_id FROM character_teleport WHERE char_id = ? AND speed_id > -1 ORDER BY speed_id ASC")) {
-                ps.setInt(1, characterId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) speedIndices.add(rs.getInt(1));
+        final ArrayList<L1BookMark> bookmarks = new ArrayList<>();
+        // One consistent read, ordered by persistent display position and ID.
+        try (Connection con = DatabaseFactory.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                     "SELECT id,char_id,num_id,speed_id,name,locx,locy,mapid,randomX,randomY "
+                     + "FROM character_teleport WHERE char_id=? ORDER BY num_id,id")) {
+            ps.setInt(1, characterId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    L1BookMark book = new L1BookMark();
+                    book.setId(rs.getInt("id"));
+                    book.setCharId(rs.getInt("char_id"));
+                    book.setNumId(bookmarks.size());
+                    book.setTemp_id(rs.getInt("num_id"));
+                    book.setSpeed_id(rs.getInt("speed_id"));
+                    book.setName(rs.getString("name"));
+                    book.setLocX(rs.getInt("locx"));
+                    book.setLocY(rs.getInt("locy"));
+                    book.setMapId(rs.getShort("mapid"));
+                    book.setRandomX(rs.getInt("randomX"));
+                    book.setRandomY(rs.getInt("randomY"));
+                    bookmarks.add(book);
                 }
             }
         } catch (SQLException e) {
             throw new IllegalStateException("Bookmark DB read failed: " + characterId, e);
         }
-        // Preserve original speed-bookmark ORDER BY speed_id and num_id indexing.
-        // Second list is encoded as negative-index markers after the bookmarks.
-        final int originalCount = bookmarks.size();
-        for (int i = 0; i < speedIndices.size(); i++) {
-            int index = speedIndices.get(i);
-            if (index >= 0 && index < originalCount) {
-                L1BookMark bookmark = bookmarks.get(index);
-                if (bookmark != null) bookmarks.add(bookmark);
-            }
-        }
         return bookmarks;
     }
 
     public static void applySnapshot(L1PcInstance pc, ArrayList<L1BookMark> bookmarks) {
-        if (pc == null || bookmarks == null) return;
-        // The same bookmark may appear in speed entries; avoid inserting duplicates.
-        int originalCount = 0;
-        for (int i = 0, n = bookmarks.size(); i < n; i++) {
-            L1BookMark bookmark = bookmarks.get(i);
-            if (bookmark.getNumId() == originalCount) originalCount++;
-            else break;
-        }
-        for (int i = 0; i < originalCount; i++) pc._bookmarks.add(bookmarks.get(i));
-        for (int i = originalCount, n = bookmarks.size(); i < n; i++) pc._speedbookmarks.add(bookmarks.get(i));
+        if (pc != null && bookmarks != null) pc.getUserBookmark().OnLoadList(bookmarks);
     }
 
 	public static void insertBookmark(L1BookMark bookmark) {
@@ -204,149 +132,16 @@ public class L1BookMark {
 	}
 
 	public static void deleteBookmark(L1PcInstance pc, String s) {
-        if (pc != null && pc.isItemTransferBusy()) return;
-		if (pc == null || s == null) return;
-		L1BookMark book = pc.getBookMark(s);
-		if (book == null) return;
-
-		String sql = "DELETE FROM character_teleport WHERE id = ? AND char_id = ?";
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement pstm = con.prepareStatement(sql)) {
-			
-			pstm.setInt(1, book.getId());
-			pstm.setInt(2, pc.getId());
-			pstm.execute();
-
-			int del_id = book.getNumId();
-			for (L1BookMark books : pc.getBookMarkArray()) {
-				if (book == books) {
-					pc._bookmarks.remove(book);
-				}
-				if (books.getNumId() > del_id) {
-					books.setNumId(books.getNumId() - 1);
-					books.setTemp_id(books.getTemp_id() - 1);
-				}
-			}
-			if (pc._speedbookmarks.contains(book)) {
-				int speedDelId = book.getSpeed_id();
-				for (L1BookMark books : pc.getSpeedBookMarkArray()) {
-					if (book == books) {
-						pc._speedbookmarks.remove(book);
-					}
-					if (books.getSpeed_id() > speedDelId) {
-						books.setSpeed_id(books.getSpeed_id() - 1);
-					}
-				}
-			}
-
-			WriteBookmark(pc);
-			pc._bookmarks.clear();
-			pc._speedbookmarks.clear();
-			bookmarkDB(pc);
-		} catch (SQLException e) {
-			_log.log(Level.SEVERE, "북마크의 삭제로 에러가 발생했습니다.", e);
-		}
-	}
-
-	public static void addBookmark(L1PcInstance pc, String s) {
-        if (pc != null && pc.isItemTransferBusy()) return;
-		if (pc == null) return;
-		if (!pc.getMap().isMarkable() && !pc.isGm()) {
-			SC_ServerMessage.send(pc, 214);
-			return;
-		}
-		if (pc._bookmarks.size() >= pc.getMark_count()) {
-			if (pc.getMark_count() == 100) {
-				SC_ServerMessage.send(pc, 2930);
-				return;
-			} else {
-				SC_ServerMessage.send(pc, 676);
-				return;
-			}
-		}
-		if (pc.getBookMark(s) != null) {
-			SC_ServerMessage.send(pc, 1655); // 같은 기억명으로 저장할 수 없습니다.
-			return;
-		}
-
-		String numSql = "SELECT COALESCE(MAX(num_id), -1) + 1 AS new_num FROM character_teleport WHERE char_id = ?";
-		String insertSql = "INSERT INTO character_teleport (id, num_id, speed_id, char_id, name, locx, locy, mapid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-		try (Connection con = DatabaseFactory.getInstance().getConnection()) {
-			int numId = 0;
-			try (PreparedStatement pstm = con.prepareStatement(numSql)) {
-				pstm.setInt(1, pc.getId());
-				try (ResultSet rs = pstm.executeQuery()) {
-					if (rs.next()) numId = rs.getInt("new_num");
-				}
-			}
-
-			final int nextId = l1j.server.server.IdFactory.getInstance().nextId();
-
-			try (PreparedStatement pstm = con.prepareStatement(insertSql)) {
-				pstm.setInt(1, nextId);
-				pstm.setInt(2, numId);
-				pstm.setInt(3, -1);
-				pstm.setInt(4, pc.getId());
-				pstm.setString(5, s);
-				pstm.setInt(6, pc.getX());
-				pstm.setInt(7, pc.getY());
-				pstm.setInt(8, pc.getMapId());
-				pstm.execute();
-			}
-
-			L1BookMark bookmark = new L1BookMark();
-			bookmark.setId(nextId);
-			bookmark.setNumId(numId);
-			bookmark.setTemp_id(numId);
-			bookmark.setSpeed_id(-1);
-			bookmark.setCharId(pc.getId());
-			bookmark.setName(s);
-			bookmark.setLocX(pc.getX());
-			bookmark.setLocY(pc.getY());
-			bookmark.setMapId(pc.getMapId());
-
-			pc._bookmarks.add(bookmark);
-			SC_Bookmarks.send(pc, s, bookmark.getMapId(), bookmark.getLocX(), bookmark.getLocY(), bookmark.getNumId());
-		} catch (SQLException e) {
-			_log.log(Level.SEVERE, "북마크의 추가로 에러가 발생했습니다.", e);
-		}
-	}
-
-    public static void WriteBookmark(L1PcInstance pc) {
-        if (pc != null && pc.isItemTransferBusy()) return;
-        if (pc == null || pc.getBookMarkSize() <= 0) return;
-        final int charId = pc.getId();
-        final int[] values = new int[pc._bookmarks.size() * 3];
-        int count = 0;
-        for (int i = 0, n = pc._bookmarks.size(); i < n; i++) {
-            L1BookMark bm = pc._bookmarks.get(i);
-            if (bm != null && bm.getTemp_id() > 0) {
-                values[count++] = bm.getTemp_id();
-                values[count++] = pc._speedbookmarks.contains(bm) ? bm.getSpeed_id() : -1;
-                values[count++] = bm.getId();
-            }
-        }
-        if (count == 0) return;
-        final int length = count;
-        CacheD.getInstance().submitDbJobOrdered(charId, () -> {
-            final String sql = "UPDATE character_teleport SET num_id = ?, speed_id = ? WHERE id = ? AND char_id = ?";
-            try (Connection con = DatabaseFactory.getInstance().getConnection();
-                    PreparedStatement ps = con.prepareStatement(sql)) {
-                for (int i = 0; i < length; i += 3) {
-                    ps.setInt(1, values[i]);
-                    ps.setInt(2, values[i + 1]);
-                    ps.setInt(3, values[i + 2]);
-                    ps.setInt(4, charId);
-                    ps.addBatch();
-                }
-                ps.executeBatch();
-            } catch (SQLException e) {
-                _log.log(Level.WARNING, "WriteBookmark error: " + charId, e);
-                throw new IllegalStateException("Bookmark DB save failed: " + charId, e);
-            }
-        });
+        if (pc != null) pc.getUserBookmark().DeleteSlot(pc, s);
     }
+
+    public static void addBookmark(L1PcInstance pc, String s) {
+        if (pc != null) pc.getUserBookmark().SaveSlot(pc, s);
+    }
+
+    /** Compatibility for old callers: each layout is now committed at request time. */
+    @Deprecated
+    public static void WriteBookmark(L1PcInstance pc) { }
 
     public static void Bookmarkitem(L1PcInstance pc, L1ItemInstance useItem, int obj_id, boolean isChange) {
         if (pc == null || useItem == null || obj_id != useItem.getItemId()
@@ -360,10 +155,8 @@ public class L1BookMark {
             tx.sql(con -> prepared.addAll(insertItemBookmarks(con, charId, markLimit, obj_id)));
             tx.onFailure(() -> pc.sendPackets("기억 장소를 저장하지 못했습니다. 구슬은 소비되지 않았습니다."));
             tx.commit(() -> {
-                for (L1BookMark book : prepared) {
-                    pc.addBookMark(book);
-                    SC_Bookmarks.send(pc, book.getName(), book.getMapId(), book.getLocX(), book.getLocY(), book.getId());
-                }
+                for (L1BookMark book : prepared) pc.addBookMark(book);
+                SC_BookMarkLoad.send(pc);
             });
         } catch (RuntimeException failure) {
             _log.log(Level.WARNING, "Bookmark item was not admitted: " + charId, failure);
@@ -485,63 +278,12 @@ public class L1BookMark {
 	}
 
 	public static void deleteBookmarkItem(L1PcInstance pc) {
-        if (pc != null && pc.isItemTransferBusy()) return;
-		if (pc == null) return;
-		String sql = "DELETE FROM character_teleport WHERE char_id = ?";
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement pstm = con.prepareStatement(sql)) {
-			
-			pstm.setInt(1, pc.getId());
-			pstm.execute();
-		} catch (SQLException e) {
-			_log.log(Level.SEVERE, "북마크 삭제 에러", e);
-		}
-	}
+        if (pc != null) pc.getUserBookmark().DeleteAllSlots(pc);
+    }
 
 
 	public static void addBookmarkItem(L1PcInstance pc, L1ItemBookMark item) {
-        if (pc != null && pc.isItemTransferBusy()) return;
-		if (pc == null || item == null) return;
-		
-		String numSql = "SELECT COALESCE(MAX(num_id), -1) + 1 AS new_num FROM character_teleport WHERE char_id = ?";
-		String insertSql = "INSERT INTO character_teleport (id, num_id, speed_id, char_id, name, locx, locy, mapid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        if (pc != null && item != null) pc.getUserBookmark().SaveItemSlot(pc, item);
+    }
 
-		try (Connection con = DatabaseFactory.getInstance().getConnection()) {
-			int numId = 0;
-			try (PreparedStatement pstm = con.prepareStatement(numSql)) {
-				pstm.setInt(1, pc.getId());
-				try (ResultSet rs = pstm.executeQuery()) {
-					if (rs.next()) numId = rs.getInt("new_num");
-				}
-			}
-
-			final int nextId = l1j.server.server.IdFactory.getInstance().nextId();
-
-			try (PreparedStatement pstm = con.prepareStatement(insertSql)) {
-				pstm.setInt(1, nextId);
-				pstm.setInt(2, numId);
-				pstm.setInt(3, -1);
-				pstm.setInt(4, pc.getId());
-				pstm.setString(5, item.getName());
-				pstm.setInt(6, item.getLocX());
-				pstm.setInt(7, item.getLocY());
-				pstm.setInt(8, item.getMapId());
-				pstm.execute();
-			}
-
-			L1BookMark bookmark = new L1BookMark();
-			bookmark.setId(nextId);
-			bookmark.setNumId(numId);
-			bookmark.setTemp_id(numId);
-			bookmark.setSpeed_id(-1);
-			bookmark.setCharId(pc.getId());
-			bookmark.setName(item.getName());
-			bookmark.setLocX(item.getLocX());
-			bookmark.setLocY(item.getLocY());
-			bookmark.setMapId(item.getMapId());
-			pc._bookmarks.add(bookmark);
-		} catch (SQLException e) {
-			_log.log(Level.SEVERE, "북마크 아이템 추가 에러", e);
-		}
-	}
 }
