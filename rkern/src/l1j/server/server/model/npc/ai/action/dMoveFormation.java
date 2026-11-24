@@ -86,7 +86,8 @@ public final class dMoveFormation {
             final L1NpcInstance leader) {
         return npc != null && group != null && leader != null && npc != leader
                 && npc.getMobGroupInfo() == group && leader.getMobGroupInfo() == group
-                && group.getLeader() == leader && !leader.isDead() && !leader.isDestroyed()
+                && group.getLeader() == leader && !npc.isDead() && !npc.isDestroyed()
+                && npc.getCurrentHp() > 0 && !leader.isDead() && !leader.isDestroyed()
                 && leader.getCurrentHp() > 0 && npc.getMapId() == leader.getMapId();
     }
 
@@ -96,6 +97,10 @@ public final class dMoveFormation {
         if (!sameGroup(npc, group, leader) || !npc.isMovable() || npc.isRest()) {
             clear(npc);
             if (npc != null) ActionAccess.sleep(npc, 500L);
+            return false;
+        }
+        if (npc.발묶임상태()) {
+            ActionAccess.sleep(npc, 500L);
             return false;
         }
         final int index = relativeIndex(npc.getFormationIndex(), leader.getFormationIndex());
@@ -123,7 +128,8 @@ public final class dMoveFormation {
             remember(npc, leader, primary, goal, now);
         }
         // Validate the membership/leader again before committing a movement step.
-        if (!sameGroup(npc, group, leader)) {
+        if (!sameGroup(npc, group, leader) || !npc.isMovable() || npc.isRest()
+                || npc.발묶임상태()) {
             clear(npc);
             ActionAccess.sleep(npc, 500L);
             return false;
@@ -135,7 +141,10 @@ public final class dMoveFormation {
             if (alternate != MoveIntentCache.NO_POS) {
                 remember(npc, leader, primary, alternate, now);
             } else {
-                clear(npc);
+                // stepFollowGoal may already have cleared KIND_FORMATION.
+                // Retire its remaining wait/progress and path on this owner.
+                MoveIntentCache.clearAll(npc);
+                SetMoving.clear(npc);
             }
             ActionAccess.sleep(npc, Math.max(npc.getSleepTime(), 300L));
         }
