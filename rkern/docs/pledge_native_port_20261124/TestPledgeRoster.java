@@ -29,6 +29,14 @@ public final class TestPledgeRoster {
         }
         for (Thread t : threads) t.join();
         check(clan.getClanMemberList().size() == 2, "concurrent duplicate registration");
+        check(clan.GetDbMemberCount() == 2, "index count");
+        check(clan.GetDbMember(10) == alpha, "ID index shares roster identity");
+        check(clan.GetDbMember(999) == null, "unknown ID");
+        try {
+            clan.getClanMemberList().clear();
+            throw new AssertionError("mutable roster escaped");
+        } catch (UnsupportedOperationException expected) { }
+        check(clan.GetDbMemberCount() == 2, "read-only roster");
         System.out.println("PASS pledge roster identity, memo, rank, legacy order and concurrent duplicate registration");
     }
 }

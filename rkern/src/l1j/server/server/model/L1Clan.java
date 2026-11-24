@@ -4,6 +4,9 @@ import java.io.File;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Collections;
+import java.util.List;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -154,17 +157,28 @@ public class L1Clan {
 	/** 혈맹자동가입 */
 	private final CopyOnWriteArrayList<ClanMember> clanMemberList = new CopyOnWriteArrayList<ClanMember>();
 
-	public CopyOnWriteArrayList<ClanMember> getClanMemberList() {
-		return clanMemberList;
-	}
+    // CPledgeMemberList: one member object per ID. The list preserves existing
+    // L1 packet order; it is a read-only view of the same objects, not a second roster.
+    private final Int2ObjectOpenHashMap<ClanMember> memberById = new Int2ObjectOpenHashMap<>(4);
+    private final List<ClanMember> memberView = Collections.unmodifiableList(clanMemberList);
+
+    public List<ClanMember> getClanMemberList() { return memberView; }
+
+    public ClanMember GetDbMember(int memberId) {
+        synchronized (clanMemberList) { return memberById.get(memberId); }
+    }
+
+    public int GetDbMemberCount() {
+        synchronized (clanMemberList) { return memberById.size(); }
+    }
 
     /** CPledge AddDbMember: one persistent roster entry per character ID.
      *  CopyOnWrite storage remains compatible with existing packet readers. */
     private void AddDbMember(String name, int rank, int level, String notes, int memberId,
                              int type, boolean online, L1PcInstance player) {
         synchronized (clanMemberList) {
-            for (ClanMember member : clanMemberList) {
-                if (member.memberId != memberId) continue;
+            ClanMember member = memberById.get(memberId);
+            if (member != null) {
                 synchronized (member) {
                     member.name = name;
                     member.rank = rank;
@@ -178,8 +192,10 @@ public class L1Clan {
                 }
                 return;
             }
-            clanMemberList.add(new ClanMember(name, rank, level, notes, memberId, type,
-                    online && player != null, online ? player : null));
+            member = new ClanMember(name, rank, level, notes, memberId, type,
+                    online && player != null, online ? player : null);
+            memberById.put(memberId, member);
+            clanMemberList.add(member);
         }
     }
 
@@ -207,6 +223,11 @@ public class L1Clan {
         synchronized (clanMemberList) {
             for (ClanMember member : clanMemberList) {
                 if (member.name.equals(name) && clanMemberList.remove(member)) {
+                    memberById.remove(member.memberId);
+                    synchronized (member) {
+                        member.player = null;
+                        member.online = false;
+                    }
                     removed = member;
                     break;
                 }
@@ -219,14 +240,11 @@ public class L1Clan {
     /** Updating a memo is not a membership removal or warehouse release. */
     public boolean UpdateMemberMemo(int memberId, String notes) {
         synchronized (clanMemberList) {
-            for (ClanMember member : clanMemberList) {
-                if (member.memberId == memberId) {
-                    member.notes = notes;
-                    return true;
-                }
-            }
+            ClanMember member = memberById.get(memberId);
+            if (member == null) return false;
+            member.notes = notes;
+            return true;
         }
-        return false;
     }
 
 	/////////// 혈맹리뉴얼//////////////
@@ -261,39 +279,39 @@ public class L1Clan {
         setClanRank(name, rank);
     }
 
-	public void updateClanMemberOnline(L1PcInstance pc) {
-		if (pc == null) return;
-		final boolean online = pc.getOnlineStatus() == 1;
-		for (ClanMember member : clanMemberList) {
-			if (member.memberId != pc.getId()) continue;
-			synchronized (member) {
-				if (online) {
-					member.player = pc;
-					member.online = true;
-				} else if (member.player == pc) {
-					member.player = null;
-					member.online = false;
-				}
-			}
-			break;
-		}
-		ClanTable.updateOnlineUser(this);
-	}
+    /** CPledge Online/Offline: update the stored member by character ID.
+     *  Only the current session may replace a live reference. A late logout
+     *  may clear its own reference but must not clear a newer login. */
+    private void UpdateMemberSession(L1PcInstance pc, boolean online) {
+        if (pc == null) return;
+        synchronized (clanMemberList) {
+            ClanMember member = memberById.get(pc.getId());
+            if (member == null) return;
+            synchronized (member) {
+                if (online) {
+                    if (pc.getClanid() != getClanId()
+                            || L1World.getInstance().findObject(pc.getId()) != pc
+                            || L1World.getInstance().getPlayer(pc.getName()) != pc) return;
+                    member.player = pc;
+                    member.online = true;
+                } else if (member.player == pc) {
+                    member.player = null;
+                    member.online = false;
+                }
+            }
+        }
+    }
 
-	/** Drop references held by long-lived clans without an extra DB write. */
-	public void releaseClanMemberReference(L1PcInstance pc) {
-		if (pc == null) return;
-		for (ClanMember member : clanMemberList) {
-			if (member.memberId != pc.getId()) continue;
-			synchronized (member) {
-				if (member.player == pc) {
-					member.player = null;
-					member.online = false;
-				}
-			}
-			break;
-		}
-	}
+    public void updateClanMemberOnline(L1PcInstance pc) {
+        if (pc == null) return;
+        UpdateMemberSession(pc, pc.getOnlineStatus() == 1);
+        ClanTable.updateOnlineUser(this);
+    }
+
+    /** Logout fallback must not retain a retired session or perform extra SQL. */
+    public void releaseClanMemberReference(L1PcInstance pc) {
+        UpdateMemberSession(pc, false);
+    }
 
 	public int getCurrentOnlineMemebers() {
 		int cnt = 0;
@@ -396,6 +414,7 @@ public class L1Clan {
         L1World world = L1World.getInstance();
         if (world.findObject(member.memberId) instanceof L1PcInstance pc
                 && pc.getClanid() == getClanId()
+                && pc.getOnlineStatus() == 1
                 && world.getPlayer(pc.getName()) == pc) return pc;
         return null;
     }
@@ -412,7 +431,7 @@ public class L1Clan {
         ArrayList<L1PcInstance> online = new ArrayList<>(clanMemberList.size());
         for (ClanMember member : clanMemberList) {
             L1PcInstance pc = FindOnlineMember(member);
-            if (pc != null && !online.contains(pc)) online.add(pc);
+            if (pc != null) online.add(pc);
         }
         return online.toArray(new L1PcInstance[0]);
     }
@@ -644,7 +663,7 @@ public class L1Clan {
 	}
 
 	public Stream<ClanMember> createMembersStream() {
-		return clanMemberList.size() > 100 ? clanMemberList.parallelStream() : clanMemberList.stream();
+		return clanMemberList.stream();
 	}
 
 	public Stream<ClanMember> createOnlineMembers() {
@@ -681,11 +700,12 @@ public class L1Clan {
 
 	public void outOfWarArea(int castleId) {
 		final int[] loc = L1CastleLocation.getGetBackLoc(castleId);
-		createMembersStream().filter((ClanMember member) -> {
-			return member.player != null && L1CastleLocation.checkInWarArea(castleId, member.player);
-		}).forEach((ClanMember member) -> {
-			member.player.start_teleport(loc[0], loc[1], (short) loc[2], 5, 169, true, false);
-		});
+        for (ClanMember member : clanMemberList) {
+            L1PcInstance pc = FindOnlineMember(member);
+            if (pc != null && L1CastleLocation.checkInWarArea(castleId, pc)) {
+                pc.start_teleport(loc[0], loc[1], (short) loc[2], 5, 169, true, false);
+            }
+        }
 	}
 
 	//TODO 혈맹 버프 리뉴얼 2017-11-12
