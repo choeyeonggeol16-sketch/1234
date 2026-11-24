@@ -899,6 +899,17 @@ public final class CNPCServer {
                     }
                 }
 
+                // Dialogue is independent of combat AI, including corpses.
+                final long chatDue = npc.npcChatDeadlineMs();
+                if (chatDue > 0L && chatDue <= nowMs) {
+                    try {
+                        npc.tickNpcChat(nowMs);
+                    } catch (Throwable t) {
+                        _log.log(Level.WARNING, "[NPC-CHAT] failed shard=" + _id
+                                + " npc=" + safeNpcId(npc), t);
+                    }
+                }
+
                 if (!npc.aiEngineIsRunning()) {
                     scheduleNext(npc);
                     continue;
@@ -960,6 +971,10 @@ public final class CNPCServer {
             final long regenDue = npc.npcRegenerationDeadlineMs();
             if (regenDue > 0L && (deadlineMs <= 0L || regenDue < deadlineMs)) {
                 deadlineMs = regenDue;
+            }
+            final long chatDue = npc.npcChatDeadlineMs();
+            if (chatDue > 0L && (deadlineMs <= 0L || chatDue < deadlineMs)) {
+                deadlineMs = chatDue;
             }
             final long deleteAt = npc.npcDeleteDeadlineMs();
             if (deleteAt > 0L && (deadlineMs <= 0L || deleteAt < deadlineMs)) {
