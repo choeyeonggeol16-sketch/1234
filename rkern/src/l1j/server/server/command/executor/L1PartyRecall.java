@@ -21,7 +21,7 @@ package l1j.server.server.command.executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -42,7 +42,7 @@ public class L1PartyRecall implements L1CommandExecutor {
 		L1PcInstance target = L1World.getInstance(). getPlayer(arg);
 
 		if (target != null) {
-			L1Party party = target.getParty();
+			CParty party = target.getParty();
 			if (party != null) {
 				int x = pc.getX();
 				int y = pc.getY() + 2;

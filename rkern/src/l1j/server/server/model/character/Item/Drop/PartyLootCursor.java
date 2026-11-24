@@ -11,7 +11,7 @@ public final class PartyLootCursor {
 
     private PartyLootCursor() {}
 
-    public static void clearParty(l1j.server.server.model.L1Party party) {
+    public static void clearParty(l1j.server.server.model.CParty party) {
         if (party != null) CUR.remove(party.hashCode());
     }
 

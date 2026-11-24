@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.datatables.KeyTable;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -530,7 +530,7 @@ final class NpcGameEventActions {
 
     private static String enterOrim(L1PcInstance leader, L1NpcInstance npc, String htmlid) {
         if (OrimController.getInstance().getInDunOpen()) return orimBusy(leader, npc);
-        final L1Party party = leader.getParty();
+        final CParty party = leader.getParty();
         if (party == null || !party.isLeader(leader)) return "id0_2";
         final L1PcInstance[] members = party.getMembers();
         for (L1PcInstance member : members) {
@@ -584,7 +584,7 @@ final class NpcGameEventActions {
         return htmlid;
     }
 
-    private static boolean orimPartyCurrent(L1PcInstance leader, L1Party party, L1PcInstance[] members) {
+    private static boolean orimPartyCurrent(L1PcInstance leader, CParty party, L1PcInstance[] members) {
         if (members.length < 2 || leader.getParty() != party || !party.isLeader(leader)
                 || party.getNumOfMembers() != members.length) return false;
         for (L1PcInstance member : members) {

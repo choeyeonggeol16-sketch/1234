@@ -16,7 +16,7 @@ import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1Location;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.companion.instance.CompanionTeleportHandler;
@@ -265,7 +265,7 @@ public class L1Teleport {
 		}
 		
 		// 주변 핑크네임 유저 확인
-		L1Party party = pc.getParty();
+		CParty party = pc.getParty();
 		for (L1PcInstance visible : L1World.getInstance().getVisiblePlayerFast(pc)) {
 			if (visible.isPinkName()) {
 				SC_PinkName.send(pc, visible.getId(), visible.getPinkNameTime());

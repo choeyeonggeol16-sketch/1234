@@ -5,7 +5,7 @@ import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
@@ -22,7 +22,7 @@ final class MassImmuneSkillConsumable {
 
     static void use(L1PcInstance pc) {
             L1Clan clan11 = pc.getClan();
-            L1Party party = pc.getParty();
+            CParty party = pc.getParty();
             if (pc.getType() == 3 && pc.getLevel() >= 1) {
                 if (!pc.getInventory().checkItem(40318, Config.매스이뮨마돌)) {
                     pc.sendPackets("마력의 돌이 부족합니다.");

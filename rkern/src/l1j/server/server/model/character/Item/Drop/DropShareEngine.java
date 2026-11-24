@@ -100,8 +100,8 @@ public final class DropShareEngine {
          // Currency distribution is a party-owned operation. Select the eligible
          // recipient snapshot only once, before any inventory mutation.
          if (Config.PARTY_LOOT_ENABLE && item.getItemId() == L1ItemId.ADENA && primaryOwner != null) {
-             final l1j.server.server.model.L1Party party = primaryOwner.getParty();
-             if (party != null && party.RouteAdena(npc, mobInv, item, snap, primaryOwner)) return true;
+             final l1j.server.server.model.CParty party = primaryOwner.getParty();
+             if (party != null && party.Route(npc, mobInv, item, snap, primaryOwner)) return true;
          }
          L1Character winner = null;
 

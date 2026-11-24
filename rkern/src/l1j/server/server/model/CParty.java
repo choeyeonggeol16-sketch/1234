@@ -26,10 +26,9 @@ import l1j.server.server.model.network.core.sc.packet.SC_Party;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
-public class L1Party {
+public class CParty {
 
-    @SuppressWarnings("unused")
-    private static final Logger _log = Logger.getLogger(L1Party.class.getName());
+    private static final Logger _log = Logger.getLogger(CParty.class.getName());
 
     protected final List<L1PcInstance> _membersList = new java.util.concurrent.CopyOnWriteArrayList<>();
     protected final HashMap<Integer, Integer> _membersMark = new HashMap<Integer, Integer>();
@@ -417,10 +416,16 @@ for (L1PcInstance member : getMembers()) {
      * RKern rule: the randomly selected winner receives the entire remainder.
      * A false result means no routing took place; never retry the whole drop after partial routing.
      */
-    public boolean RouteAdena(L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
+    public boolean Route(L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
             DropAcqSnapshot snap, L1PcInstance primaryOwner) {
         if (!Config.PARTY_LOOT_ENABLE || primaryOwner == null || primaryOwner.getParty() != this
-                || item == null || item.getItemId() != L1ItemId.ADENA || item.getCount() <= 0) return false;
+                || npc == null || source == null || item == null
+                || item.getItemId() != L1ItemId.ADENA || item.getCount() <= 0) return false;
+        return RouteAdena(npc, source, item, snap);
+    }
+
+    private boolean RouteAdena(L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
+            DropAcqSnapshot snap) {
 
         final L1PcInstance[] members = getMembers();
         int size = 0;

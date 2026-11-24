@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -133,7 +133,7 @@ public final class AuraController implements Runnable {
                 continue;
             }
 
-            final L1Party party = crown.getParty();
+            final CParty party = crown.getParty();
             if (party == null || party.getNumOfMembers() < 2) {
                 if (crown.getPbavatar()) safeEnd(crown);
                 continue;
@@ -171,7 +171,7 @@ public final class AuraController implements Runnable {
         }
     }
 
-    private static boolean shouldHaveAura(L1PcInstance crown, L1Party party, L1PcInstance m, int cx, int cy, int cmap) {
+    private static boolean shouldHaveAura(L1PcInstance crown, CParty party, L1PcInstance m, int cx, int cy, int cmap) {
         if (m == null) return false;
         if (m.isDead()) return false;
         if (m.getParty() != party) return false;
@@ -223,7 +223,7 @@ public final class AuraController implements Runnable {
 
     public void allbrave_end(L1PcInstance pc) {
         if (pc == null) return;
-        final L1Party party = pc.getParty();
+        final CParty party = pc.getParty();
         if (party == null) return;
         for (L1PcInstance m : party.getMembers()) {
             safeEnd(m);

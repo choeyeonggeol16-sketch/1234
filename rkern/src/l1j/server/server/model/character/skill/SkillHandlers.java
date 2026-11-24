@@ -24,7 +24,7 @@ import l1j.server.server.model.L1EffectSpawn;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Magic;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1World;
@@ -1240,14 +1240,14 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return template != null && template.getBuffDuration() > 0 ? template.getBuffDuration() : fallbackSec;
 	}
 
-	private static boolean submitContextBuff(L1PcInstance pc, int id, int duration, int option, int gfx, L1Party party) {
+	private static boolean submitContextBuff(L1PcInstance pc, int id, int duration, int option, int gfx, CParty party) {
 		final var controller = pc.getCreatureController();
 		return controller != null && controller.addExecutableCastBuff(pc, id, duration, option, gfx, party);
 	}
 
 	private static boolean submitPartyBuff(L1PcInstance caster, int id, int duration, int option, int gfx) {
 		if (!submitContextBuff(caster, id, duration, option, gfx, null)) return false;
-		final L1Party party = caster.getParty();
+		final CParty party = caster.getParty();
 		if (party == null) return true;
 		for (L1PcInstance member : party.getMembers()) {
 			if (member != null && member != caster && member.getMapId() == caster.getMapId()

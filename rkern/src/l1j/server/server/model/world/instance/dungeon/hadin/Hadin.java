@@ -12,7 +12,7 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -25,7 +25,7 @@ public class Hadin implements Runnable {
 
 	private short _map;
 	private int stage = 1;
-	private L1Party _pARTy;
+	private CParty _pARTy;
 	private static final int SECRET_HADIN = 1;
 	private static final int TALK_ISLAND_DUNGEON_1 = 2;
 	private static final int TALK_ISLAND_DUNGEON_2 = 3;
@@ -669,11 +669,11 @@ public class Hadin implements Runnable {
 		}
 	}
 
-	private L1Party getParty(){
+	private CParty getParty(){
 		return _pARTy;
 	}
 
-	public void setParty(L1Party p){
+	public void setParty(CParty p){
 		_pARTy = p;
 	}
 

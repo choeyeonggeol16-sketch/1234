@@ -32,7 +32,7 @@ public final class CReplyChecker {
         final int requesterId, replierId, requesterStamp, replierStamp;
         final int sourceClanId, targetClanId, mapId;
         final int token, kind, replierMapId;
-        L1Party party;
+        CParty party;
         L1ChatParty chatParty;
         private boolean claimed;
         final long expiresAt;
@@ -356,7 +356,7 @@ public final class CReplyChecker {
             return replier.getChatParty() == null && current == p.chatParty
                     && (current == null || current.isLeader(requester));
         }
-        final L1Party current = requester.getParty();
+        final CParty current = requester.getParty();
         return !replier.getAutoHunt() && replier.getParty() == null
                 && current == p.party && (current == null || current.isLeader(requester))
                 && partyMapAllowed(requester.getMapId()) && partyMapAllowed(replier.getMapId());
@@ -427,10 +427,10 @@ public final class CReplyChecker {
                         else if (!live(replier, p.replierStamp) && replier.getChatParty() == current)
                             current.leaveMember(replier);
                     } else {
-                        L1Party current = requester.getParty();
+                        CParty current = requester.getParty();
                         if (current == null) {
                             requester.setPartyType(kind == RANDOM_PARTY ? 1 : 0);
-                            current = new L1Party();
+                            current = new CParty();
                             current.addMember(requester);
                         }
                         if (current.isVacancy() || requester.isGm()) current.addMember(replier);

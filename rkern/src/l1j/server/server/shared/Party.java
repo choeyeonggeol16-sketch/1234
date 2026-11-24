@@ -1,9 +1,9 @@
 package l1j.server.server.shared;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 
-public class Party extends L1Party{
+public class Party extends CParty{
 	@Override
 	public void leaveMember(L1PcInstance pc) {
 		try{

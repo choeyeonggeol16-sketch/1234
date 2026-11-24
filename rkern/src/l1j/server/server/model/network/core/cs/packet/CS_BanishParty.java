@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -25,7 +25,7 @@ public final class CS_BanishParty {
             return;
         }
 
-        final L1Party party =
+        final CParty party =
                 player.getParty();
 
         if (party == null) {

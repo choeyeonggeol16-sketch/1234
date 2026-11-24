@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -110,7 +110,7 @@ public final class CS_PARTY_CONTROL_REQ {
                     pc.sendPackets(415);
                     return;
                 }
-                L1Party party = pc.getParty();
+                CParty party = pc.getParty();
                 if (party != null) {
                     if (!party.isLeader(pc)) {
                         pc.sendPackets(416);	// 파티의 리더만을 초대할 수 있습니다.
@@ -150,7 +150,7 @@ public final class CS_PARTY_CONTROL_REQ {
                 break;
             }
             case Command_TransforLeader: {
-                L1Party party = pc.getParty();
+                CParty party = pc.getParty();
                 if (party == null) {
                     System.out.println(String.format("파티 없는 사용자가 파티장 위임 : %s", pc.getName()));
                     return;
@@ -167,7 +167,7 @@ public final class CS_PARTY_CONTROL_REQ {
                 break;
             }
             case Command_TransforMark: {
-                L1Party party = pc.getParty();
+                CParty party = pc.getParty();
                 if (party == null) {
                     System.out.println(String.format("파티 없는 사용자가 표식 설정 : %s", pc.getName()));
                     return;
@@ -184,7 +184,7 @@ public final class CS_PARTY_CONTROL_REQ {
                 break;
             }
             case Command_KickUser: {
-                L1Party party = pc.getParty();
+                CParty party = pc.getParty();
                 if (party == null) {
                     System.out.println(String.format("파티 없는 사용자가 파티원 추방 : %s", pc.getName()));
                     return;

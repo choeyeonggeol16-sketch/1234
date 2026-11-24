@@ -56,7 +56,7 @@ import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Karma;
 import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1PolyMorph;
@@ -933,7 +933,7 @@ public class L1PcInstance extends L1Character {
 	private L1ItemInstance _weapon;
 	private L1ItemInstance _secondweapon;
 	private L1ItemInstance _armor;
-	private volatile L1Party _party;
+	private volatile CParty _party;
 	private volatile L1ChatParty _chatParty;
 
 	private int _cookingId = 0;
@@ -2010,7 +2010,7 @@ public class L1PcInstance extends L1Character {
 	        }
 	    }
 
-	    L1Party party = getParty();
+	    CParty party = getParty();
 
 	    if (party != null
 	            && party.isMember(pc)) {
@@ -2636,11 +2636,11 @@ public class L1PcInstance extends L1Character {
 		return getParty() != null;
 	}
 
-	public L1Party getParty() {
+	public CParty getParty() {
 		return _party;
 	}
 
-	public void setParty(L1Party p) {
+	public void setParty(CParty p) {
 		_party = p;
 	}
 
@@ -7918,7 +7918,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	        }
 	    }
 
-	    final L1Party party = isInParty() ? getParty() : null;
+	    final CParty party = isInParty() ? getParty() : null;
 
 	    final int clanId = getClanid();
 
@@ -8005,7 +8005,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	        return;
 	    }
 
-	    final L1Party party =
+	    final CParty party =
 	            isInParty() ? getParty() : null;
 
 	    final int clanId =
@@ -8047,7 +8047,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	        return;
 	    }
 
-	    final L1Party party =
+	    final CParty party =
 	            isInParty() ? getParty() : null;
 
 	    final int clanId =
