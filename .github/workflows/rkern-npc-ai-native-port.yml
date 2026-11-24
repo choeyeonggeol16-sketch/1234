@@ -31,6 +31,9 @@ on:
       - 'rkern/src/l1j/server/server/model/item/function/ClanInnReturnScrollUse.java'
       - 'rkern/src/l1j/server/server/model/item/function/TeleportRandomTravel.java'
       - 'rkern/docs/bookmark_native_port_20261124/**'
+      - 'rkern/src/l1j/server/server/model/L1Clan.java'
+      - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_PledgeContent.java'
+      - 'rkern/docs/pledge_native_port_20261124/**'
       - '.github/workflows/rkern-npc-ai-native-port.yml'
   workflow_dispatch:
 
@@ -50,6 +53,7 @@ jobs:
             rkern/docs/jproring_cio_integration_20261120
             rkern/docs/npc_ai_native_port_20261123
             rkern/docs/bookmark_native_port_20261124
+            rkern/docs/pledge_native_port_20261124
       # These symbols were removed on the current 11/23 branch, while their
       # obsolete callers still exist. Never change production files for an
       # NPC-only validation: patch the ephemeral Actions checkout instead.
@@ -158,8 +162,9 @@ jobs:
           regression = root / "docs/npc_ai_native_port_20261123/TestNpcLifecycleRaces.java"
           launcher = root / "docs/npc_ai_native_port_20261123/TestNpcSuiteMain.java"
           bookmark = root / "docs/bookmark_native_port_20261124/TestUserBookmark.java"
-          sources += [regression, launcher, bookmark]
-          print(f"Production Java sources: {len(sources) - 10}", flush=True)
+          pledge = root / "docs/pledge_native_port_20261124/TestPledgeRoster.java"
+          sources += [regression, launcher, bookmark, pledge]
+          print(f"Production Java sources: {len(sources) - 11}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
@@ -177,6 +182,7 @@ jobs:
               "l1j.server.server.model.npc.ai.action.TestNpcGuardGroup",
               "l1j.server.server.model.npc.ai.action.TestNpcLifecycleRaces",
               "l1j.server.server.model.character.bookmark.TestUserBookmark",
+              "l1j.server.server.model.TestPledgeRoster",
           ]
           failures = []
           for name in tests:
@@ -201,7 +207,7 @@ jobs:
                   failures.append(name)
           if failures:
               raise SystemExit("Failed NPC suites: " + ", ".join(failures))
-          print("PASS all 9 independent NPC and bookmark suites", flush=True)
+          print("PASS all 10 independent NPC, bookmark and pledge suites", flush=True)
           print("Remaining bookmark call sites:", flush=True)
           subprocess.run(["git", "grep", "-nE", "BookmarkSlot\\.(InsertSlot|Load|SaveItemSlot|DeleteItemSlots|WriteSlots)|CItemBookmark\\.SaveSlot|\\._bookmarks|\\._speedbookmarks|handleSkillTeleport\\(", "--", "rkern/src"], check=False)
           PY

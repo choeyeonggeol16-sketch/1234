@@ -101,18 +101,7 @@ public final class CS_PledgeContent {
                 final String name =
                         pc.getName();
 
-                clan.removeClanMember(
-                        name);
-
-                clan.addClanMember(
-                        name,
-                        pc.getClanRank(),
-                        pc.getLevel(),
-                        content,
-                        pc.getId(),
-                        pc.getType(),
-                        pc.getOnlineStatus(),
-                        pc);
+                if (!clan.UpdateMemberMemo(pc.getId(), content)) return;
 
                 pc.setClanMemberNotes(
                         content);
