@@ -4794,34 +4794,21 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		SC_REST_EXP_INFO_NOTI.send(this);
 		RankUserLoader.getInstance().onUser(this);
 
-		/** 특정렙 이상 초보혈맹 자동탈퇴 **/
-		String BloodName = getClanname();
-		if (getLevel() >= Config.신규혈맹보호레벨 && BloodName.equalsIgnoreCase(Config.신규혈맹이름)
-				|| BloodName.equalsIgnoreCase("초보")) {
-			try {
-				// L1Clan clan = L1World.getInstance().findClan(Config.신규혈맹이름);
-				L1Clan clan = L1World.getInstance().findClan("중립");
-				L1PcInstance clanMember[] = clan.getOnlineClanMember();
-				String player_name = getName();
-				String clan_name = getClanname();
-				// Every online member receives the exact same two-parameter leave notice.
-				try {
-					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArrayBestEffort(
-							clanMember, SC_ServerMessage.nativeWriter(
-									ServerMessage.LEAVE_CLAN, player_name, clan_name, null));
-				} catch (RuntimeException noticeFailure) {
-					java.util.logging.Logger.getLogger(L1PcInstance.class.getName()).log(
-							java.util.logging.Level.WARNING, "Clan leave notice failed", noticeFailure);
-				}
-				ClearPlayerClanData(clan);
-				clan.removeClanMember(player_name);
-				this.start_teleport(this.getX(), this.getY(), this.getMapId(), this.getHeading(), 169, false, false);
-				save();
-				saveInventory();
-			} catch (Exception e) {
-			}
-		}
-		
+        // Tutorial exit uses the same committed membership lifecycle as /leave.
+        String BloodName = getClanname();
+        if (BloodName != null && ((getLevel() >= Config.신규혈맹보호레벨
+                && BloodName.equalsIgnoreCase(Config.신규혈맹이름))
+                || BloodName.equalsIgnoreCase("초보"))) {
+            final L1Clan clan = L1World.getInstance().getClan(getClanid());
+            if (clan != null) {
+                l1j.server.server.model.L1ClanJoin.LeaveMember(clan, this, () -> {
+                    start_teleport(getX(), getY(), getMapId(), getHeading(), 169, false, false);
+                    save();
+                    saveInventory();
+                });
+            }
+        }
+
 		if (hasSkillEffect(L1SkillId.어드밴스)) {
 		if (hasSkillEffect(L1SkillId.ADVANCE_SPIRIT)) {
 			removeSkillEffect(L1SkillId.ADVANCE_SPIRIT);
@@ -6277,12 +6264,17 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		move_clan.addClanMember(getName(), getClanRank(), getLevel(), "", getId(), getType(), getOnlineStatus(), null);
 	}
 
-	public void ClearPlayerClanData(L1Clan clan) throws Exception {
+    /** Apply only the already-committed membership state. No JDBC or packets. */
+    public void ClearCommittedClanData() {
 		setClanid(0);
 		setClanname("");
 		setTitle("");
 		setClanMemberId(0);
 		setClanMemberNotes("");
+        setClanRank(0);
+    }
+
+    public void NotifyClanDataCleared() {
 		String broadcastTitle = null;
 		if (Config.수배온오프) {
 		if (hasSkillEffect(L1SkillId.USER_WANTED)  ) {
@@ -6298,9 +6290,17 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		SC_ReturnedStat.sendEmblem(this, getId(), 0);
 		SC_ReturnedStat.broadcastEmblem(this, getId(), 0);
 		SC_ClanName.send(this, this, 0, 0);
-		setClanRank(0);
-		save();
-	}
+    }
+
+    public void ClearPlayerClanData(L1Clan clan) throws Exception {
+        ClearCommittedClanData();
+        save();
+        try {
+            NotifyClanDataCleared();
+        } catch (RuntimeException failure) {
+            _log.log(Level.WARNING, "Clan clear notification failed: " + getId(), failure);
+        }
+    }
 
 
     // Fifteen minutes in the safety zone. One primitive deadline per PC,

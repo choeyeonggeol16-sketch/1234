@@ -93,6 +93,8 @@ public final class TestPledgeRoster {
         L1Clan.ClanMember[] fresh = view.toArray(new L1Clan.ClanMember[0]);
         for (int i = 0; i < fresh.length; i++) check(fresh[i].memberId == i + 129, "new snapshot order");
         check(bulk.createMembersStream().count() == 256, "stream count");
+        long counts = bulk.GetMemberCounts();
+        check((counts >>> 32) == 256 && (int)counts == 0, "packed total and online count");
         try {
             view.listIterator().set(fresh[0]);
             throw new AssertionError("mutable list iterator");

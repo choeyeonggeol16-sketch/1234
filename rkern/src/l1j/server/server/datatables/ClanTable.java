@@ -529,24 +529,32 @@ public class ClanTable {
 		}
 	}
 	
-	public static void updateOnlineUser(L1Clan clan) {
-		final int clanId = clan.getClanId();
-		final int total = clan.getClanMemberList().size();
-		final int online = clan.getCurrentOnlineMemebers();
-		final String name = clan.getClanName();
-		CacheD.getInstance().submitDbJobOrdered(clanId, () -> {
-			final String sql = "UPDATE clan_data SET total_m = ?, current_m = ? WHERE clan_name = ?";
-			try (Connection con = DatabaseFactory.getInstance().getConnection();
-				 PreparedStatement pstm = con.prepareStatement(sql)) {
-				pstm.setInt(1, total);
-				pstm.setInt(2, online);
-				pstm.setString(3, name);
-				pstm.executeUpdate();
-			} catch (Exception e) {
-				_log.log(Level.SEVERE, "ClanTable updateOnlineUser Error", e);
-			}
-		});
-	}
+    public static void updateOnlineUser(L1Clan clan) {
+        final int clanId = clan.getClanId();
+        final String name = clan.getClanName();
+        try {
+            CacheD.getInstance().submitDbJobOrdered(clanId, () -> {
+                if (L1World.getInstance().getClan(clanId) != clan) return;
+                final long counts = clan.GetMemberCounts();
+                final String sql = "UPDATE clan_data SET total_m=?,current_m=? WHERE clan_id=? AND clan_name=?";
+                try (Connection con = DatabaseFactory.getInstance().getConnection();
+                     PreparedStatement ps = con.prepareStatement(sql)) {
+                    ps.setInt(1, (int)(counts >>> 32));
+                    ps.setInt(2, (int)counts);
+                    ps.setInt(3, clanId);
+                    ps.setString(4, name);
+                    ps.executeUpdate();
+                } catch (Exception failure) {
+                    _log.log(Level.SEVERE, "Clan member count update failed: " + clanId, failure);
+                }
+            });
+        } catch (RuntimeException failure) {
+            // A count is derived metadata; it must never abort a committed
+            // roster publication. A later membership/session update refreshes it.
+            _log.log(Level.WARNING, "Clan member count admission failed: " + clanId, failure);
+        }
+    }
+
 
 	public void updateClan(L1Clan clan) {
         updateClan(clan,null);
@@ -664,7 +672,7 @@ public class ClanTable {
                     }
                 }
                 try (PreparedStatement members = con.prepareStatement(
-                        "UPDATE characters SET ClanID=0, Clanname='', ClanRank=0 WHERE ClanID=?")) {
+                        "UPDATE characters SET ClanID=0, Clanname='', ClanRank=0, Title='', notes='' WHERE ClanID=?")) {
                     members.setInt(1, clan.getClanId());
                     members.executeUpdate();
                 }
@@ -700,7 +708,7 @@ public class ClanTable {
             _log.log(Level.SEVERE, "ClanTable deleteClanWithMembers Error", e);
             throw new IllegalStateException("Clan disband not committed: " + clan.getClanName(), e);
         }
-        finishClanDeletion(clan);
+        forgetCommittedClanMerge(clan);
     }
 
     public void deleteClan(L1Clan clan){

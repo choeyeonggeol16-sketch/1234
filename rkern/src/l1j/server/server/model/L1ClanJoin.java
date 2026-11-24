@@ -186,17 +186,25 @@ public class L1ClanJoin {
             tx.commitAfterInventoryRelease(() -> {
                 if (L1World.getInstance().getClan(clanId) != clan || joinPc.getClanid() != 0)
                     throw new IllegalStateException("Stale clan admission after COMMIT");
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArrayBestEffort(clan.getOnlineClanMember(),
-                        SC_ServerMessage.nativeWriter(94,joinPc.getName()));
+                // Commit the live state before encoding or sending any packet.
                 joinPc.setClanid(clanId);
                 joinPc.setClanname(clanName);
                 joinPc.setClanRank(rank);
                 joinPc.setClanMemberNotes("");
                 joinPc.setTitle(tutorial ? Config.GAME_SERVER_NAME : "");
-                SC_CharTitle.send(joinPc, joinPc.getId(), joinPc.getTitle());
-                SC_CharTitle.broadcast(joinPc, joinPc.getId(), joinPc.getTitle());
                 clan.addClanMember(joinPc.getName(), rank, joinPc.getLevel(), "",
                         characterId, joinPc.getType(), joinPc.getOnlineStatus(), joinPc);
+                try {
+                    // Preserve the old notice recipients (exclude the new member).
+                    try (var notice = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                            SC_ServerMessage.nativeWriter(94, joinPc.getName()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                        for (L1PcInstance other : clan.getOnlineClanMember()) {
+                            if (other != joinPc)
+                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(notice, other);
+                        }
+                    }
+                    SC_CharTitle.send(joinPc, joinPc.getId(), joinPc.getTitle());
+                    SC_CharTitle.broadcast(joinPc, joinPc.getId(), joinPc.getTitle());
                 if (tutorial) SC_SystemMessage.send(joinPc, "중립혈맹은 PK에 대미지 제한을 받습니다.");
                 SC_PacketBox.send(joinPc, SC_PacketBox.MSG_RANK_CHANGED, rank, joinPc.getName());
                 SC_ServerMessage.send(joinPc, 95, clanName);
@@ -208,9 +216,10 @@ public class L1ClanJoin {
                     SC_ReturnedStat.sendEmblem(other, characterId, clan.getEmblemId());
                     SC_ReturnedStat.broadcastEmblem(other, other.getId(), clan.getEmblemId());
                 }
-                if (!tutorial) {
-                    giveClanBless(clan, joinPc);
+                } catch (RuntimeException failure) {
+                    _log.log(Level.WARNING, "Committed pledge join notification failed: " + characterId, failure);
                 }
+                if (!tutorial) giveClanBless(clan, joinPc);
                 if (result != null) result.accept(true);
             });
             return true;
@@ -392,6 +401,7 @@ public class L1ClanJoin {
                                 member.memberId, member.type,
                                 online == null ? 0 : online.getOnlineStatus(), online);
                         if (online != null) {
+                            try {
                             SC_PacketBox.send(online, SC_PacketBox.MSG_RANK_CHANGED,
                                     L1Clan.수련, online.getName());
                             SC_ServerMessage.send(online, 95, targetName);
@@ -400,6 +410,9 @@ public class L1ClanJoin {
                             SC_PacketBox.send(online, SC_PacketBox.PLEDGE_EMBLEM_STATUS,
                                     target.getEmblemStatus());
                             SC_ActionUI.send(online, targetName, L1Clan.수련);
+                            } catch (RuntimeException failure) {
+                                _log.log(Level.WARNING, "Committed pledge merge notification failed: " + member.memberId, failure);
+                            }
                             giveClanBless(target, online);
                         }
                     }
@@ -786,6 +799,10 @@ public class L1ClanJoin {
 
     /** No packet, buff or membership change is published before SQL COMMIT. */
     public static void LeaveMember(L1Clan clan, L1PcInstance player) {
+        LeaveMember(clan, player, null);
+    }
+
+    public static void LeaveMember(L1Clan clan, L1PcInstance player, Runnable afterCommitted) {
         if (clan == null || player == null || player.getClanid() != clan.getClanId()
                 || player.getId() == clan.getLeaderId()) return;
         final int oldClanId = clan.getClanId();
@@ -813,26 +830,25 @@ public class L1ClanJoin {
                         || L1World.getInstance().getClan(oldClanId) != clan)
                     throw new IllegalStateException("Clan leave memory preimage changed after COMMIT");
                 // Make the membership state authoritative before any observable effect.
-                try {
-                    player.ClearPlayerClanData(clan);
-                } catch (Exception failure) {
-                    throw new IllegalStateException("Committed clan leave memory cleanup failed", failure);
-                }
+                player.ClearCommittedClanData();
                 clan.removeClanMember(player.getId());
                 if (player.isClanBuff()) {
-                    player.killSkillEffectTimer(L1SkillId.CLANBUFF_YES);
-                    SC_PacketBox.send(player, SC_PacketBox.UNLIMITED_ICON1, 450, false);
                     player.setClanBuff(false);
+                    try {
+                        player.killSkillEffectTimer(L1SkillId.CLANBUFF_YES);
+                        SC_PacketBox.send(player, SC_PacketBox.UNLIMITED_ICON1, 450, false);
+                    } catch (RuntimeException failure) {
+                        _log.log(Level.WARNING, "Committed pledge leave buff cleanup failed: " + player.getId(), failure);
+                    }
                 }
-                var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-       SC_ServerMessage.nativeWriter(178,playerName,clanName,null),Integer.MIN_VALUE,Integer.MAX_VALUE);
-try {
-for (L1PcInstance member : clan.getOnlineClanMember()) {
-                    if (member != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared,member);
+                try {
+                    player.NotifyClanDataCleared();
+                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArrayBestEffort(
+                            clan.getOnlineClanMember(), SC_ServerMessage.nativeWriter(178, playerName, clanName, null));
+                } catch (RuntimeException failure) {
+                    _log.log(Level.WARNING, "Committed pledge leave notification failed: " + player.getId(), failure);
                 }
-} finally {
-    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(shared);
-}
+                if (afterCommitted != null) afterCommitted.run();
             });
         } catch (RuntimeException error) {
             _log.log(Level.WARNING, "Clan leave receipt not admitted: " + playerName, error);

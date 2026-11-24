@@ -424,22 +424,19 @@ public class L1Clan {
         clanMemberList.UpdateMemberSession(getClanId(), pc, false);
     }
 
-	public int getCurrentOnlineMemebers() {
-		int cnt = 0;
-		for (ClanMember member : clanMemberList.snapshot()) {
-			synchronized (member) {
-				final L1PcInstance current = member.player;
-				if (current == null || current.getOnlineStatus() != 1) {
-					member.player = null;
-					member.online = false;
-				} else {
-					member.online = true;
-					cnt++;
-				}
-			}
-		}
-		return cnt;
-	}
+    /** Total and online count from one ordered structural snapshot. */
+    public long GetMemberCounts() {
+        final ClanMember[] members = clanMemberList.snapshot();
+        int online = 0;
+        for (ClanMember member : members) {
+            if (FindOnlineMember(member) != null) online++;
+        }
+        return ((long)members.length << 32) | (online & 0xffffffffL);
+    }
+
+    public int getCurrentOnlineMemebers() {
+        return (int)GetMemberCounts();
+    }
 
     public String[] getAllMembersName() {
         java.util.LinkedHashSet<String> names = new java.util.LinkedHashSet<>();
@@ -526,6 +523,7 @@ public class L1Clan {
         if (world.findObject(member.memberId) instanceof L1PcInstance pc
                 && pc.getClanid() == getClanId()
                 && pc.getOnlineStatus() == 1
+                && !pc.isLogoutStarted()
                 && world.getPlayer(pc.getName()) == pc) return pc;
         return null;
     }
@@ -663,8 +661,8 @@ public class L1Clan {
         L1PcInstance selected = null;
         int oldrank = 0;
         for (ClanMember member : clanMemberList.snapshot()) {
-            L1PcInstance pc = member.player;
-            if (!member.online || pc == null) continue;
+            L1PcInstance pc = FindOnlineMember(member);
+            if (pc == null) continue;
             int rank = pc.getClanRank();
             if (rank >= L1Clan.수호 && oldrank < rank) {
                 oldrank = rank;
