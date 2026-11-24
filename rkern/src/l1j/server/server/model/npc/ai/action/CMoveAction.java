@@ -158,6 +158,20 @@ public final class CMoveAction {
                 creature.onMoveToFinished(
                         MoveIntentCache.unpackX(completedXY),
                         MoveIntentCache.unpackY(completedXY));
+                // guard_stand: after the exact return action completes, enter
+                // its timed idle action without a companion tick. Do not
+                // overwrite a new action submitted by the completion callback.
+                if (CStandAction.isGuard(creature)
+                        && ActionAccess.currentAction(creature) == CCreatureController.ACTION_THINK
+                        && creature.getTarget() == null && CStandAction.atHome(creature)
+                        && !creature.isDead() && !creature.isDestroyed()
+                        && creature.getCurrentHp() > 0) {
+                    CStandAction.set(creature);
+                    final byte idle = CStandAction.onTick(creature);
+                    if (idle != CCreatureController.RESULT_RUNNING) {
+                        CStandAction.onEnd(creature, idle);
+                    }
+                }
                 return;
             }
             if (action == CCreatureController.ACTION_MOVE_TO_OBJECT) {
