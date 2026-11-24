@@ -148,10 +148,7 @@ public class ClanWarehouse extends Warehouse {
                     && warehouseUserPc == pc) return true;
             // Reclaim only a proven obsolete session. No caller-supplied previous ID.
             if (warehouseUserSession == null || warehouseUserPc == null) return false;
-            if (warehouseUserSession.isConnected()
-                    && warehouseUserSession.getActiveChar() == warehouseUserPc
-                    && warehouseUserPc.getNetConnection() == warehouseUserSession
-                    && !warehouseUserPc.isLogoutStarted() && !warehouseUserPc.isDead()
+            if (warehouseUserSession.IsWarehouseLeaseTargetLive(warehouseUserPc)
                     && IsPledgeMember(warehouseUserPc)) return false;
             ClearWarehouseUser();
         }

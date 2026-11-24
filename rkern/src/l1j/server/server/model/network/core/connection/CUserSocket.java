@@ -4393,6 +4393,15 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
                 && Math.abs((long) pc.getY() - npc.getY()) <= 12;
     }
 
+    // Called under the vault monitor by another session. Never take this
+    // socket's monitor here (session -> inventory -> warehouse lock order).
+    public boolean IsWarehouseLeaseTargetLive(L1PcInstance pc) {
+        final long target = warehouseNpcTarget;
+        return target != 0L && IsWarehouseActor(pc)
+                && L1World.getInstance().findObjectBySmartId(target) instanceof L1NpcInstance npc
+                && IsWarehouseNpc(npc) && IsInWarehouseRange(pc, npc);
+    }
+
     public boolean IsWarehouseNpcInRange(L1PcInstance pc, int objectId) {
         final long target = warehouseNpcTarget;
         if (!IsWarehouseActor(pc) || target == 0L) return false;
