@@ -6,7 +6,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import sun.misc.Unsafe;
-import l1j.server.Config;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -95,9 +94,7 @@ public final class TestNpcLifecycleRaces {
         hp.setInt(npc, 100);
         System.out.println("PASS 100 return-immunity/HP-CAS contention rounds");
 
-        int saved = Config.MANA_DRAIN_LIMIT_PER_NPC;
-        Config.MANA_DRAIN_LIMIT_PER_NPC = 100;
-        try {
+        {
             Field drained = field(L1NpcInstance.class, "_drainedMana");
             for (int i = 0; i < 100; i++) {
                 drained.setInt(npc, 0);
@@ -115,8 +112,6 @@ public final class TestNpcLifecycleRaces {
                 check(cost.get() + credit.get() + npc.getCurrentMp() == 15,
                         "mana cost/credit mismatch");
             }
-        } finally {
-            Config.MANA_DRAIN_LIMIT_PER_NPC = saved;
         }
         System.out.println("PASS 100 MP debit / mana-credit contention rounds");
 
