@@ -2,8 +2,12 @@ package l1j.server.server.model;
 
 import java.io.File;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.AbstractList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.RandomAccess;
+import java.util.Spliterator;
 import java.util.Collections;
 import java.util.List;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -155,12 +159,78 @@ public class L1Clan {
 	private int _bot_style;
 	private int _bot_level;
 	/** 혈맹자동가입 */
-    // One owner for the ordered L1 packet view and NC DB-ID lookup.
-    // Reuse the existing COW list allocation as the owner/monitor.
-    private static final class CPledgeMemberList extends CopyOnWriteArrayList<ClanMember> {
-        private static final long serialVersionUID = 1L;
+    // NC CPledgeMemberList owns its ID index. L1 additionally preserves
+    // insertion-ordered packet iteration. Publish a stable array lazily,
+    // rather than copying the whole roster for each DB-load/add/remove.
+    private static final ClanMember[] EMPTY_MEMBERS = new ClanMember[0];
+    private static final L1PcInstance[] EMPTY_ONLINE = new L1PcInstance[0];
+
+    private static final class CPledgeMemberList extends AbstractList<ClanMember> implements RandomAccess {
         private final Int2ObjectOpenHashMap<ClanMember> memberById = new Int2ObjectOpenHashMap<>(4);
         private final List<ClanMember> view = Collections.unmodifiableList(this);
+        private ClanMember[] entries = EMPTY_MEMBERS;
+        private int count;
+        private volatile ClanMember[] published = EMPTY_MEMBERS;
+
+        // Only structural writers use the monitor. A published array is never
+        // mutated, including while another shard holds an old iterator.
+        private void ensureWritable(int required) {
+            final int capacity = entries.length;
+            if (required > capacity) {
+                final int grown = Math.max(required, Math.max(4, capacity + (capacity >>> 1)));
+                entries = Arrays.copyOf(entries, grown);
+            } else if (published == entries) {
+                entries = Arrays.copyOf(entries, capacity);
+            }
+        }
+
+        ClanMember[] snapshot() {
+            ClanMember[] result = published;
+            if (result != null) return result;
+            synchronized (this) {
+                result = published;
+                if (result == null) {
+                    if (count == 0) entries = EMPTY_MEMBERS;
+                    else if (entries.length != count) entries = Arrays.copyOf(entries, count);
+                    result = entries;
+                    published = result;
+                }
+                return result;
+            }
+        }
+
+        @Override public synchronized int size() { return count; }
+        @Override public ClanMember get(int index) {
+            final ClanMember[] members = snapshot();
+            if (index < 0 || index >= members.length) throw new IndexOutOfBoundsException(index);
+            return members[index];
+        }
+
+        @Override public Iterator<ClanMember> iterator() {
+            return listIterator(0);
+        }
+
+        @Override public ListIterator<ClanMember> listIterator(int index) {
+            return Collections.unmodifiableList(Arrays.asList(snapshot())).listIterator(index);
+        }
+
+        @Override public Spliterator<ClanMember> spliterator() {
+            return java.util.Spliterators.spliterator(snapshot(),
+                    Spliterator.ORDERED | Spliterator.IMMUTABLE);
+        }
+
+        @Override public Object[] toArray() {
+            final ClanMember[] members = snapshot();
+            return Arrays.copyOf(members, members.length, Object[].class);
+        }
+
+        @Override public <T> T[] toArray(T[] array) {
+            return Arrays.asList(snapshot()).toArray(array);
+        }
+
+        @Override public List<ClanMember> subList(int from, int to) {
+            return Collections.unmodifiableList(Arrays.asList(snapshot()).subList(from, to));
+        }
 
         synchronized ClanMember GetDbMember(int memberId) {
             return memberById.get(memberId);
@@ -189,16 +259,26 @@ public class L1Clan {
             }
             member = new ClanMember(name, rank, level, notes, memberId, type,
                     online && player != null, online ? player : null);
+            ensureWritable(count + 1);
             memberById.put(memberId, member);
-            add(member);
+            entries[count++] = member;
+            published = null;
         }
 
         synchronized ClanMember RemoveDbMember(int memberId) {
             ClanMember member = memberById.get(memberId);
             if (member == null) return null;
-            if (!remove(member))
+            int index = 0;
+            while (index < count && entries[index] != member) index++;
+            if (index == count)
                 throw new IllegalStateException("Pledge roster index mismatch: " + memberId);
+            ensureWritable(count);
+            final int moved = count - index - 1;
+            if (moved != 0) System.arraycopy(entries, index + 1, entries, index, moved);
+            entries[--count] = null;
+            if (count == 0) entries = EMPTY_MEMBERS;
             memberById.remove(memberId);
+            published = null;
             synchronized (member) {
                 member.player = null;
                 member.online = false;
@@ -207,7 +287,8 @@ public class L1Clan {
         }
 
         synchronized ClanMember RemoveDbMember(String name) {
-            for (ClanMember member : this) {
+            for (int i = 0; i < count; i++) {
+                final ClanMember member = entries[i];
                 if (member.name.equals(name)) return RemoveDbMember(member.memberId);
             }
             return null;
@@ -221,7 +302,8 @@ public class L1Clan {
         }
 
         synchronized void SetMemberRank(String name, int rank) {
-            for (ClanMember member : this) {
+            for (int i = 0; i < count; i++) {
+                final ClanMember member = entries[i];
                 if (member.name.equals(name)) {
                     member.rank = rank;
                     return;
@@ -344,7 +426,7 @@ public class L1Clan {
 
 	public int getCurrentOnlineMemebers() {
 		int cnt = 0;
-		for (ClanMember member : clanMemberList) {
+		for (ClanMember member : clanMemberList.snapshot()) {
 			synchronized (member) {
 				final L1PcInstance current = member.player;
 				if (current == null || current.getOnlineStatus() != 1) {
@@ -361,7 +443,7 @@ public class L1Clan {
 
     public String[] getAllMembersName() {
         java.util.LinkedHashSet<String> names = new java.util.LinkedHashSet<>();
-        for (ClanMember member : clanMemberList) names.add(member.name);
+        for (ClanMember member : clanMemberList.snapshot()) names.add(member.name);
         return names.toArray(new String[0]);
     }
 
@@ -450,30 +532,36 @@ public class L1Clan {
 
     public int getOnlineMemberCount() {
         int count = 0;
-        for (ClanMember member : clanMemberList) {
+        for (ClanMember member : clanMemberList.snapshot()) {
             if (FindOnlineMember(member) != null) count++;
         }
         return count;
     }
 
     public L1PcInstance[] getOnlineClanMember() {
-        ArrayList<L1PcInstance> online = new ArrayList<>(clanMemberList.size());
-        for (ClanMember member : clanMemberList) {
-            L1PcInstance pc = FindOnlineMember(member);
-            if (pc != null) online.add(pc);
+        final ClanMember[] members = clanMemberList.snapshot();
+        if (members.length == 0) return EMPTY_ONLINE;
+        L1PcInstance[] online = null;
+        int count = 0;
+        for (ClanMember member : members) {
+            final L1PcInstance pc = FindOnlineMember(member);
+            if (pc == null) continue;
+            if (online == null) online = new L1PcInstance[members.length];
+            online[count++] = pc;
         }
-        return online.toArray(new L1PcInstance[0]);
+        if (count == 0) return EMPTY_ONLINE;
+        return count == online.length ? online : Arrays.copyOf(online, count);
     }
 
     public String getAllMembersFP() {
         StringBuilder result = new StringBuilder();
-        for (ClanMember member : clanMemberList) result.append(member.name).append(' ');
+        for (ClanMember member : clanMemberList.snapshot()) result.append(member.name).append(' ');
         return result.toString();
     }
 
     public String getOnlineMembersFP() {
         StringBuilder result = new StringBuilder();
-        for (ClanMember member : clanMemberList) {
+        for (ClanMember member : clanMemberList.snapshot()) {
             if (FindOnlineMember(member) != null) result.append(member.name).append(' ');
         }
         return result.toString();
@@ -574,7 +662,7 @@ public class L1Clan {
     public L1PcInstance getonline간부() {
         L1PcInstance selected = null;
         int oldrank = 0;
-        for (ClanMember member : clanMemberList) {
+        for (ClanMember member : clanMemberList.snapshot()) {
             L1PcInstance pc = member.player;
             if (!member.online || pc == null) continue;
             int rank = pc.getClanRank();
@@ -729,7 +817,7 @@ public class L1Clan {
 
 	public void outOfWarArea(int castleId) {
 		final int[] loc = L1CastleLocation.getGetBackLoc(castleId);
-        for (ClanMember member : clanMemberList) {
+        for (ClanMember member : clanMemberList.snapshot()) {
             L1PcInstance pc = FindOnlineMember(member);
             if (pc != null && L1CastleLocation.checkInWarArea(castleId, pc)) {
                 pc.start_teleport(loc[0], loc[1], (short) loc[2], 5, 169, true, false);

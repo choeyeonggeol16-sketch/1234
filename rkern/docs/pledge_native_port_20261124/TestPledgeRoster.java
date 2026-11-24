@@ -72,6 +72,34 @@ public final class TestPledgeRoster {
         if (workerFailure.get() != null) throw new AssertionError("concurrent roster mutation failed", workerFailure.get());
         check(clan.GetDbMemberCount() == 1 && clan.getClanMemberList().size() == 1,
                 "concurrent unique add/remove leaves index and roster aligned");
+        // Old snapshots must not change while writes are batched and while
+        // a new snapshot is published. Verify legacy array/stream/list order.
+        L1Clan bulk = new L1Clan();
+        for (int i = 1; i <= 256; i++)
+            bulk.addLoadedClanMember("Bulk" + i, 7, 20, "", i, 1);
+        java.util.List<L1Clan.ClanMember> view = bulk.getClanMemberList();
+        java.util.Iterator<L1Clan.ClanMember> old = view.iterator();
+        java.util.Spliterator<L1Clan.ClanMember> split = view.spliterator();
+        java.util.List<L1Clan.ClanMember> sub = view.subList(0, 2);
+        for (int i = 1; i <= 128; i++) check(bulk.RemoveDbMember(i) != null, "bulk removal");
+        for (int i = 257; i <= 384; i++)
+            bulk.addLoadedClanMember("Bulk" + i, 7, 20, "", i, 1);
+        check(view.size() == 256 && bulk.GetDbMemberCount() == 256, "bulk count");
+        for (int i = 1; i <= 256; i++) check(old.next().memberId == i, "old snapshot stable");
+        check(!old.hasNext(), "old snapshot length");
+        final int[] expected = {1};
+        split.forEachRemaining(m -> check(m.memberId == expected[0]++, "old spliterator stable"));
+        check(expected[0] == 257 && sub.get(0).memberId == 1, "old sublist stable");
+        L1Clan.ClanMember[] fresh = view.toArray(new L1Clan.ClanMember[0]);
+        for (int i = 0; i < fresh.length; i++) check(fresh[i].memberId == i + 129, "new snapshot order");
+        check(bulk.createMembersStream().count() == 256, "stream count");
+        try {
+            view.listIterator().set(fresh[0]);
+            throw new AssertionError("mutable list iterator");
+        } catch (UnsupportedOperationException expectedFailure) { }
+        for (int i = 129; i <= 384; i++) check(bulk.RemoveDbMember(i) != null, "clear roster");
+        check(view.isEmpty() && bulk.GetDbMemberCount() == 0 && !view.iterator().hasNext(), "empty snapshot");
+        check(bulk.getOnlineClanMember() == bulk.getOnlineClanMember(), "shared empty online result");
         System.out.println("PASS pledge roster identity, memo, rank, ordered snapshots, rejoin and concurrent add/remove");
     }
 }
