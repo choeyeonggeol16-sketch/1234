@@ -3,7 +3,6 @@ package l1j.server.server.model.npc.ai.action;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.ThreadPool;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -709,12 +708,10 @@ public final class CNpcAI {
             }
             return;
         }
+        // HP may reach zero before onDeath claims settlement. Leave the
+        // contribution lists intact: setDead and the explicit settlement
+        // completion own their retirement, even if no AI tick runs again.
         npc.setAiRunning(false);
-
-        ThreadPool.getInstance().scheduleRequired(
-                new DeathSyncTimer(npc),
-                0);
-
         CNPCServer.getInstance().unregister(npc);
     }
 
@@ -1192,29 +1189,5 @@ public final class CNpcAI {
                 || npc.getCurrentHp() <= 0
                 || npc.getHiddenStatus()
                         != L1NpcInstance.HIDDEN_STATUS_NONE;
-    }
-
-    private static final class DeathSyncTimer implements Runnable {
-
-        private final L1NpcInstance npc;
-
-        private DeathSyncTimer(final L1NpcInstance npc) {
-            this.npc = npc;
-        }
-
-        private void schedule(final long delay) {
-            ThreadPool.getInstance().scheduleRequired(this, delay);
-        }
-
-        @Override
-        public void run() {
-            if (npc.isDeathProcessing()) {
-                schedule(npc.getSleepTime());
-                return;
-            }
-
-            npc.allTargetClear();
-            npc.setAiRunning(false);
-        }
     }
 }
