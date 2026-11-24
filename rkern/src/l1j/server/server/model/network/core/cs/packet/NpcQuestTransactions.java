@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import l1j.server.server.datatables.ItemTable;
-import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -120,38 +120,22 @@ final class NpcQuestTransactions {
         }
     }
 
-    /** The quest preimage is checked under the same InnoDB receipt as inventory rows. */
-    static void stageQuestStep(l1j.server.server.model.L1InventoryTransaction tx,
+    /** Compatibility for existing quest/item callers; SQL staging is owned by CQuestSystem. */
+    static void stageQuestStep(L1InventoryTransaction tx,
             L1PcInstance pc, int questId, int expectedStep, int nextStep, int resetQuestId) {
-            // Quest and character_items must be transactional in the SAME database.
-            // A stale quest step aborts the entire receipt instead of consuming items.
-            tx.requireTables("character_quests");
-            tx.sql(con -> {
-                final int durableStep;
-                try (PreparedStatement query = con.prepareStatement(
-                        "SELECT quest_step FROM character_quests WHERE char_id=? AND quest_id=? FOR UPDATE")) {
-                    query.setInt(1, pc.getId());
-                    query.setInt(2, questId);
-                    try (ResultSet rows = query.executeQuery()) {
-                        durableStep = rows.next() ? rows.getInt(1) : 0;
-                    }
-                }
-                if (durableStep != expectedStep)
-                    throw new SQLException("Quest step changed while preparing item receipt: " + questId);
-                try (PreparedStatement update = con.prepareStatement(
-                        "INSERT INTO character_quests (char_id,quest_id,quest_step) VALUES (?,?,?) "
-                        + "ON DUPLICATE KEY UPDATE quest_step=VALUES(quest_step)")) {
-                    update.setInt(1, pc.getId());
-                    update.setInt(2, questId);
-                    update.setInt(3, nextStep);
-                    update.executeUpdate();
-                    if (resetQuestId != 0) {
-                        update.setInt(2, resetQuestId);
-                        update.setInt(3, 0);
-                        update.executeUpdate();
-                    }
-                }
-            });
+        CQuestSystem.StageQuestStep(tx, pc.getId(), questId, expectedStep, nextStep, resetQuestId);
+    }
+
+    static void requestQuestPage(L1PcInstance pc, L1Object npc, int objid,
+            int questId, int expectedStep, int nextStep, String page) {
+        final CUserSocket client = pc.getNetConnection();
+        if (client == null) return;
+        final int version = client.npcDialogueVersion();
+        final long target = L1World.getInstance().smartIdOf(npc);
+        if (!pc.getQuest().RequestSetSelectedQuest(questId, expectedStep, nextStep, () -> {
+            if (pc.getNetConnection() == client && client.canReplyToNpcDialogue(pc, target, version))
+                SC_NPCTalkReturn.send(pc, objid, page);
+        })) SC_SystemMessage.send(pc, "퀘스트 진행 상태를 변경할 수 없습니다.");
     }
 
     /** Lukein treasure chests: map debit, reward grant and BOTH quest rows in one receipt.
@@ -161,13 +145,13 @@ final class NpcQuestTransactions {
             int expectedStep, int nextFirst, int nextCount, int boxQuestId,
             int rewardId, String successPage) {
         final int npcObjectId = npc.getId();
-        final int mainQuest = L1Quest.QUEST_LUKEIN1;
+        final int mainQuest = CQuestSystem.QUEST_LUKEIN1;
         if (pc.getQuest().get_step(mainQuest) != expectedStep
                 || pc.getQuest().get_step(boxQuestId) != 0
-                || (boxQuestId == L1Quest.QUEST_TBOX2
-                        && pc.getQuest().get_step(L1Quest.QUEST_TBOX1) != L1Quest.QUEST_END)
-                || (boxQuestId == L1Quest.QUEST_TBOX3
-                        && pc.getQuest().get_step(L1Quest.QUEST_TBOX2) != L1Quest.QUEST_END)) {
+                || (boxQuestId == CQuestSystem.QUEST_TBOX2
+                        && pc.getQuest().get_step(CQuestSystem.QUEST_TBOX1) != CQuestSystem.QUEST_END)
+                || (boxQuestId == CQuestSystem.QUEST_TBOX3
+                        && pc.getQuest().get_step(CQuestSystem.QUEST_TBOX2) != CQuestSystem.QUEST_END)) {
             SC_NPCTalkReturn.send(pc, npcObjectId, "maptbox0");
             return;
         }
@@ -210,7 +194,7 @@ final class NpcQuestTransactions {
                     update.setInt(3, nextStep);
                     update.executeUpdate();
                     update.setInt(2, boxQuestId);
-                    update.setInt(3, L1Quest.QUEST_END);
+                    update.setInt(3, CQuestSystem.QUEST_END);
                     update.executeUpdate();
                 }
             });
@@ -221,7 +205,7 @@ final class NpcQuestTransactions {
             final String npcName = npc.getNpcTemplate().get_name();
             tx.commitAfterInventoryRelease(() -> {
                 pc.getQuest().applyCommittedStepIfLoaded(mainQuest, nextStep);
-                pc.getQuest().applyCommittedStepIfLoaded(boxQuestId, L1Quest.QUEST_END);
+                pc.getQuest().applyCommittedStepIfLoaded(boxQuestId, CQuestSystem.QUEST_END);
                 SC_ServerMessage.send(pc, 143, npcName, reward.getItem().getName());
                 SC_NPCTalkReturn.send(pc, npcObjectId, successPage);
             });
@@ -414,7 +398,7 @@ final class NpcQuestTransactions {
 
     /** NPC 71056: all three Simizz clues and the reward share one receipt. */
     static void simizzReceipt(L1PcInstance pc, L1NpcInstance npc) {
-        final int questId = L1Quest.QUEST_SIMIZZ;
+        final int questId = CQuestSystem.QUEST_SIMIZZ;
         try (l1j.server.server.model.L1InventoryTransaction tx =
                 l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
             if (!tx.debit(40661, 1) || !tx.debit(40662, 1) || !tx.debit(40663, 1)) {
@@ -506,7 +490,7 @@ final class NpcQuestTransactions {
     }
 
     static void crystalKeeperPortal(L1PcInstance pc, L1NpcInstance npc, boolean leave) {
-        final int questId = L1Quest.QUEST_CRYSTAL;
+        final int questId = CQuestSystem.QUEST_CRYSTAL;
         try (l1j.server.server.model.L1InventoryTransaction tx =
                 l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
             // Reclaim existing crystal stones only on the return route.
@@ -535,7 +519,7 @@ final class NpcQuestTransactions {
 
     /** Original five reward IDs and counts preserved, now granted atomically once. */
     static void crystalKeeperGrant(L1PcInstance pc, L1NpcInstance npc) {
-        final int questId = L1Quest.QUEST_CRYSTAL;
+        final int questId = CQuestSystem.QUEST_CRYSTAL;
         if (pc.getQuest().get_step(questId) != 0) {
             SC_NPCTalkReturn.send(pc, npc.getId(), "");
             return;
@@ -573,8 +557,8 @@ final class NpcQuestTransactions {
     /** The crystal quest exit must not teleport or advance after a failed debit. */
     static boolean handleCrystalExit(L1PcInstance pc, L1NpcInstance npc, String action) {
         if (!action.equalsIgnoreCase("a")) return false;
-        questItemExchange(pc, npc, L1Quest.QUEST_CRYSTAL,
-                pc.getQuest().get_step(L1Quest.QUEST_CRYSTAL), L1Quest.QUEST_END,
+        questItemExchange(pc, npc, CQuestSystem.QUEST_CRYSTAL,
+                pc.getQuest().get_step(CQuestSystem.QUEST_CRYSTAL), CQuestSystem.QUEST_END,
                 40654, 1, 0, 0, 0, "", "",
                 () -> pc.start_teleport(32744, 32927, 483, 5, 169, true, false));
         return true;
@@ -583,13 +567,13 @@ final class NpcQuestTransactions {
     /** Lizard rewards are earned only if material debit, quest step and item grant commit. */
     static boolean handleLizardQuest(L1PcInstance pc, L1NpcInstance npc, String action) {
         if (action.equalsIgnoreCase("A")) {
-            pc.getQuest().set_step(L1Quest.QUEST_LIZARD, 1);
-            SC_NPCTalkReturn.send(pc, npc.getId(), "lelder5");
+            requestQuestPage(pc, npc, npc.getId(), CQuestSystem.QUEST_LIZARD,
+                    pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD), 1, "lelder5");
             return true;
         }
         if (action.equalsIgnoreCase("B")) {
-            questItemExchange(pc, npc, L1Quest.QUEST_LIZARD,
-                    pc.getQuest().get_step(L1Quest.QUEST_LIZARD), 3,
+            questItemExchange(pc, npc, CQuestSystem.QUEST_LIZARD,
+                    pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD), 3,
                     40633, 1, 0, 0, 0, "lelder10", "lelder10");
             return true;
         }
@@ -600,8 +584,8 @@ final class NpcQuestTransactions {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "lelder13");
                 return true;
             }
-            questItemExchange(pc, npc, L1Quest.QUEST_LIZARD,
-                    pc.getQuest().get_step(L1Quest.QUEST_LIZARD), L1Quest.QUEST_END,
+            questItemExchange(pc, npc, CQuestSystem.QUEST_LIZARD,
+                    pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD), CQuestSystem.QUEST_END,
                     40634, 1, 0, 20167, 0, "lelder13", "lelder13");
             return true;
         }
@@ -638,8 +622,7 @@ final class NpcQuestTransactions {
         if (action.equalsIgnoreCase("A")) {
             if (pc.getQuest().get_step(71199) != 0 || pc.getInventory().checkItem(21059, 1)) return true;
             if (pc.getInventory().checkItem(41340, 1)) {
-                pc.getQuest().set_step(71199, 1);
-                SC_NPCTalkReturn.send(pc, npc.getId(), "jeron2");
+                requestQuestPage(pc, npc, npc.getId(), 71199, 0, 1, "jeron2");
             } else {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "jeron10");
             }
@@ -704,9 +687,9 @@ final class NpcQuestTransactions {
      *  receipt per click; no per-request reward/material arrays are allocated. */
     static void level15ItemReceipt(L1PcInstance pc, L1NpcInstance npc,
             boolean silrein, boolean start) {
-        final int questId = L1Quest.QUEST_LEVEL15;
+        final int questId = CQuestSystem.QUEST_LEVEL15;
         final int expectedStep = start ? 0 : 1;
-        final int nextStep = start ? 1 : L1Quest.QUEST_END;
+        final int nextStep = start ? 1 : CQuestSystem.QUEST_END;
         final String successPage = silrein ? (start ? "silrein4" : "silrein7")
                 : (start ? "prokel3" : "prokel5");
         final String failurePage = silrein ? (start ? "silrein4" : "silrein8")
@@ -774,18 +757,18 @@ final class NpcQuestTransactions {
             SC_SystemMessage.send(pc, "60이상의 캐릭터만 받을 수 있습니다.");
             return "hamo3";
         }
-        final int questId = L1Quest.QUEST_HAMO;
+        final int questId = CQuestSystem.QUEST_HAMO;
         final int expected = pc.getQuest().get_step(questId);
-        if (pc.getInventory().checkItem(820000) || expected == L1Quest.QUEST_END) return "hamo1";
+        if (pc.getInventory().checkItem(820000) || expected == CQuestSystem.QUEST_END) return "hamo1";
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, questId)) {
             if (tx.grant(820000, 1) == null) {
                 SC_SystemMessage.send(pc, "퀘스트 아이템을 수령할 수 없습니다.");
                 return htmlid;
             }
-            stageQuestStep(tx, pc, questId, expected, L1Quest.QUEST_END, 0);
+            stageQuestStep(tx, pc, questId, expected, CQuestSystem.QUEST_END, 0);
             tx.onFailure(() -> SC_SystemMessage.send(pc, "퀘스트 아이템 지급이 확정되지 않았습니다."));
             tx.commitAfterInventoryRelease(() -> {
-                pc.getQuest().applyCommittedStepIfLoaded(questId, L1Quest.QUEST_END);
+                pc.getQuest().applyCommittedStepIfLoaded(questId, CQuestSystem.QUEST_END);
                 SC_NPCTalkReturn.send(pc, npcObjectId, "");
             });
             return null;
@@ -850,7 +833,7 @@ final class NpcQuestTransactions {
                 default -> -1;
             };
         }
-        final int quest = L1Quest.QUEST_MOONBOW;
+        final int quest = CQuestSystem.QUEST_MOONBOW;
         if (step < 0 || pc.getQuest().get_step(quest) != step) {
             SC_NPCTalkReturn.send(pc, objectId, "");
             return;
@@ -1061,7 +1044,7 @@ final class NpcQuestTransactions {
     /** Initial spy supplies and quest step are one receipt. Step 1 may re-morph,
      * but never grants the supplies again. Explicit reset permits a fresh start. */
     static void spyStart(L1PcInstance pc, CUserSocket client, L1NpcInstance npc, boolean shadow) {
-        final int quest=shadow ? L1Quest.QUEST_SHADOWS : L1Quest.QUEST_DESIRE;
+        final int quest=shadow ? CQuestSystem.QUEST_SHADOWS : CQuestSystem.QUEST_DESIRE;
         final int step=pc.getQuest().get_step(quest);
         final int morph=shadow ? 6035 : 6034;
         final int objectId=npc.getId();
@@ -1094,11 +1077,11 @@ final class NpcQuestTransactions {
     }
 
     static void spyReset(L1PcInstance pc, L1NpcInstance npc, boolean shadow) {
-        final int quest=shadow ? L1Quest.QUEST_SHADOWS : L1Quest.QUEST_DESIRE;
+        final int quest=shadow ? CQuestSystem.QUEST_SHADOWS : CQuestSystem.QUEST_DESIRE;
         final int step=pc.getQuest().get_step(quest);
         final int first=shadow ? 41123 : 41132;
         final int objectId=npc.getId();
-        if (step == L1Quest.QUEST_END) {
+        if (step == CQuestSystem.QUEST_END) {
             SC_NPCTalkReturn.send(pc,objectId,"");
             return;
         }
@@ -1126,23 +1109,23 @@ final class NpcQuestTransactions {
         final String failurePage;
         final boolean earring;
         if (command.equals("A")) {
-            quest = L1Quest.QUEST_SLOT76; level = 76; coupon = 3000400;
+            quest = CQuestSystem.QUEST_SLOT76; level = 76; coupon = 3000400;
             discounted = 5000000; value = 1; sound = 12003; failurePage = "slot6"; earring = false;
         } else if (command.equals("B")) {
-            quest = L1Quest.QUEST_SLOT81; level = 81; coupon = 3000401;
+            quest = CQuestSystem.QUEST_SLOT81; level = 81; coupon = 3000401;
             discounted = 15000000; value = 2; sound = 12003; failurePage = "slot6"; earring = false;
         } else if (command.equals("C") || command.equals("D")) {
-            quest = L1Quest.QUEST_SLOT59; level = 59; coupon = 3000399;
+            quest = CQuestSystem.QUEST_SLOT59; level = 59; coupon = 3000399;
             discounted = 1000000; value = 16; sound = 12004; failurePage = "slot11"; earring = true;
         } else if (command.equalsIgnoreCase("E")) {
-            quest = L1Quest.QUEST_SLOT_SHOULD; level = 83; coupon = 3000402;
+            quest = CQuestSystem.QUEST_SLOT_SHOULD; level = 83; coupon = 3000402;
             discounted = 15000000; value = SC_ReturnedStat.OPEN_SLOT_SHOULD; sound = 12004; failurePage = "slot11"; earring = false;
         } else if (command.equalsIgnoreCase("F")) {
-            quest = L1Quest.QUEST_SLOT_BADGE; level = 70; coupon = 3000403;
+            quest = CQuestSystem.QUEST_SLOT_BADGE; level = 70; coupon = 3000403;
             discounted = 1000000; value = SC_ReturnedStat.OPEN_SLOT_BADGE; sound = 12004; failurePage = "slot11"; earring = false;
         } else return false;
         final int step = pc.getQuest().get_step(quest);
-        if (step == L1Quest.QUEST_END) {
+        if (step == CQuestSystem.QUEST_END) {
             SC_ServerMessage.send(pc, 3255);
             return true;
         }
@@ -1159,10 +1142,10 @@ final class NpcQuestTransactions {
                 SC_NPCTalkReturn.send(pc, pc.getId(), failurePage);
                 return true;
             }
-            stageQuestStep(tx, pc, quest, step, L1Quest.QUEST_END, 0);
+            stageQuestStep(tx, pc, quest, step, CQuestSystem.QUEST_END, 0);
             tx.onFailure(() -> SC_NPCTalkReturn.send(pc, pc.getId(), failurePage));
             tx.commitAfterInventoryRelease(() -> {
-                pc.getQuest().applyCommittedStepIfLoaded(quest, L1Quest.QUEST_END);
+                pc.getQuest().applyCommittedStepIfLoaded(quest, CQuestSystem.QUEST_END);
                 if (earring) SC_ReturnedStat.sendSlot(pc, 67, 1, value);
                 SC_NPCTalkReturn.send(pc, pc.getId(), "slot9");
                 if (!earring) SC_ReturnedStat.sendSlot(pc, SC_ReturnedStat.RING_RUNE_SLOT, SC_ReturnedStat.SUBTYPE_RING, value);

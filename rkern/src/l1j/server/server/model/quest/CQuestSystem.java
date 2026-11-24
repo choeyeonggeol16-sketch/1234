@@ -8,6 +8,9 @@ import java.util.Arrays;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.storage.CacheD;
 
 public class CQuestSystem {
 
@@ -166,7 +169,75 @@ public class CQuestSystem {
         return index < 0 ? 0 : (int) questRows[index];
     }
 
+    /** Shared SQL staging for quest-only and quest/item receipts. No I/O on the CIO owner. */
+    public static void StageQuestStep(L1InventoryTransaction tx, int characterId,
+            int questId, int expectedStep, int nextStep, int resetQuestId) {
+        tx.requireTables("character_quests");
+        tx.sql(con -> {
+            int durableStep = 0;
+            try (PreparedStatement query = con.prepareStatement(
+                    "SELECT quest_step FROM character_quests WHERE char_id=? AND quest_id=? FOR UPDATE")) {
+                query.setInt(1, characterId);
+                query.setInt(2, questId);
+                try (ResultSet rows = query.executeQuery()) {
+                    if (rows.next()) {
+                        durableStep = rows.getInt(1);
+                        if (rows.wasNull()) throw new SQLException("NULL quest step: " + questId);
+                    }
+                }
+            }
+            if (durableStep != expectedStep)
+                throw new SQLException("Quest step changed while preparing receipt: " + questId);
+            try (PreparedStatement update = con.prepareStatement(
+                    "INSERT INTO character_quests (char_id,quest_id,quest_step) VALUES (?,?,?) "
+                    + "ON DUPLICATE KEY UPDATE quest_step=VALUES(quest_step)")) {
+                update.setInt(1, characterId);
+                update.setInt(2, questId);
+                update.setInt(3, nextStep);
+                update.executeUpdate();
+                if (resetQuestId != 0) {
+                    update.setInt(2, resetQuestId);
+                    update.setInt(3, 0);
+                    update.executeUpdate();
+                }
+            }
+        });
+    }
+
+    private synchronized boolean MatchesLoadedStep(int questId, int expectedStep) {
+        if (questRows == null) return false;
+        final int index = FindQuest(questId);
+        return (index < 0 ? 0 : (int) questRows[index]) == expectedStep;
+    }
+
+    /** Standalone quest transition; the callback may send a reply, not start another receipt.
+     * The existing inventory transaction gate protects admission and cache publication.
+     * Never wait for the DB worker while holding this quest monitor. */
+    public final boolean RequestSetSelectedQuest(int questId, int expectedStep, int nextStep,
+            Runnable afterCommitted) {
+        if (questId <= 0 || !MatchesLoadedStep(questId, expectedStep)) return false;
+        final int characterId = _owner.getId();
+        final int resourceKey = CacheD.accountOrderKey("quest:", characterId);
+        try (L1InventoryTransaction tx = L1InventoryTransaction.begin(_owner, resourceKey)) {
+            if (!MatchesLoadedStep(questId, expectedStep)) return false;
+            StageQuestStep(tx, characterId, questId, expectedStep, nextStep, 0);
+            tx.onFailure(() -> SC_SystemMessage.send(_owner, "퀘스트 진행 상태를 저장하지 못했습니다."));
+            // Publish under the receipt owner gate BEFORE releasing it.
+            tx.commit(() -> {
+                applyCommittedStepIfLoaded(questId, nextStep);
+                if (afterCommitted != null) afterCommitted.run();
+            });
+            return true;
+        } catch (RuntimeException failure) {
+            return false;
+        }
+    }
+
     public final synchronized void set_step(int quest_id, int step) {
+        // Remaining synchronous XML/legacy callers must not overtake a
+        // submitted quest receipt between SQL COMMIT and owner replay.
+        if (_owner.isItemTransferBusy())
+            throw new IllegalStateException("Quest write while an owner receipt is pending");
         // Preserve the existing synchronous durability contract. Call sites
         // which need an item + quest receipt keep their CacheD transaction.
         try (Connection con = DatabaseFactory.getInstance().getConnection();

@@ -18,7 +18,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1PolyMorph;
-import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Warehouse.CWareHouseWithdraw;
@@ -125,10 +125,10 @@ final class NpcServiceHtmlCommands {
             L1NpcInstance npc = (L1NpcInstance) obj;
             if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70099
                     || ((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70796) {
-                final int step = pc.getQuest().get_step(L1Quest.QUEST_OILSKINMANT);
-                if (step != L1Quest.QUEST_END && pc.getLevel() > 13)
-                    NpcQuestTransactions.questGrantOnce(pc, npc, L1Quest.QUEST_OILSKINMANT,
-                            step, L1Quest.QUEST_END, 20081, 1, "");
+                final int step = pc.getQuest().get_step(CQuestSystem.QUEST_OILSKINMANT);
+                if (step != CQuestSystem.QUEST_END && pc.getLevel() > 13)
+                    NpcQuestTransactions.questGrantOnce(pc, npc, CQuestSystem.QUEST_OILSKINMANT,
+                            step, CQuestSystem.QUEST_END, 20081, 1, "");
                 else SC_NPCTalkReturn.send(pc, objid, "");
                 return;
             } else if (((L1NpcInstance) obj).getNpcTemplate().get_npcId() == 70528
@@ -663,14 +663,15 @@ final class NpcServiceHtmlCommands {
             if (!NpcLocalCommands.beginnerMorph(pc, beginnerMorphId)) return;
             htmlid = "";
         } else if (s.equalsIgnoreCase("contract1")) {
-            pc.getQuest().set_step(L1Quest.QUEST_LYRA, 1);
-            htmlid = "lyraev2";
+            NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_LYRA,
+                    pc.getQuest().get_step(CQuestSystem.QUEST_LYRA), 1, "lyraev2");
+            return;
         } else if (s.equalsIgnoreCase("contract1yes") || s.equalsIgnoreCase("contract1no")) {
 
             if (s.equalsIgnoreCase("contract1yes")) {
                 htmlid = "lyraev5";
             } else if (s.equalsIgnoreCase("contract1no")) {
-                pc.getQuest().set_step(L1Quest.QUEST_LYRA, 0);
+                pc.getQuest().set_step(CQuestSystem.QUEST_LYRA, 0);
                 htmlid = "lyraev4";
             }
             NpcCraftCommands.exchangeTotems(pc, obj, objid, htmlid);

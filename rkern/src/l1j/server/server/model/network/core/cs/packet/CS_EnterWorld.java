@@ -35,7 +35,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Quest;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Warehouse.SupplementaryService;
 import l1j.server.server.model.Warehouse.WarehouseManager;
@@ -268,7 +268,7 @@ public final class CS_EnterWorld {
         data.dungeonProgress = DungeonTimeProgressLoader.readSnapshot(data.pc.getId(), data.pc.getAccountName());
         data.nBuffRows = readNBuffSnapshot(data.pc.getId(), sessionAccount.getAccountId());
         data.tamSnapshot = TamFruitUseService.readLoginSnapshot(data.pc.getAccountName());
-        data.questSteps = L1Quest.readSnapshot(data.pc.getId());
+        data.questSteps = CQuestSystem.readSnapshot(data.pc.getId());
         data.levelGiftLevels = L1PcInstance.readLevelGiftSnapshot(data.pc.getId());
         data.lateralValues = readLateralSnapshot(data.pc.getId());
         data.bqs = BQSCharacterDataLoader.readSnapshot(data.pc.getId());
@@ -872,11 +872,11 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 
     private static int computeSlotOpenStatus(L1PcInstance pc) {
         int slotStatus = 0;
-        if (pc.getQuest().isEnd(L1Quest.QUEST_SLOT76))   slotStatus |= SC_ReturnedStat.OPEN_SLOT_LRING;
-        if (pc.getQuest().isEnd(L1Quest.QUEST_SLOT81))   slotStatus |= SC_ReturnedStat.OPEN_SLOT_RRING;
-        if (pc.getQuest().isEnd(L1Quest.QUEST_SLOT59))   slotStatus |= SC_ReturnedStat.OPEN_SLOT_EARRING;
-        if (pc.getQuest().isEnd(L1Quest.QUEST_SLOT_SHOULD)) slotStatus |= SC_ReturnedStat.OPEN_SLOT_SHOULD;
-        if (pc.getQuest().isEnd(L1Quest.QUEST_SLOT_BADGE))  slotStatus |= SC_ReturnedStat.OPEN_SLOT_BADGE;
+        if (pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT76))   slotStatus |= SC_ReturnedStat.OPEN_SLOT_LRING;
+        if (pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT81))   slotStatus |= SC_ReturnedStat.OPEN_SLOT_RRING;
+        if (pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT59))   slotStatus |= SC_ReturnedStat.OPEN_SLOT_EARRING;
+        if (pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT_SHOULD)) slotStatus |= SC_ReturnedStat.OPEN_SLOT_SHOULD;
+        if (pc.getQuest().isEnd(CQuestSystem.QUEST_SLOT_BADGE))  slotStatus |= SC_ReturnedStat.OPEN_SLOT_BADGE;
         return slotStatus;
     }
 
