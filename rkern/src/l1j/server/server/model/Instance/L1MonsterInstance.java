@@ -42,7 +42,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.model.npc.ai.CNpcItemUse;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.shared.listener.MonsterDeathHandler;
@@ -119,7 +119,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 	public void onItemUse() {
 	    if (!isActived() && _target != null) {
 	        if (getLevel() <= 45) {
-	            useItem(NpcPotionPolicy.USEITEM_HASTE, 40);
+	            useItem(CNpcItemUse.USEITEM_HASTE, 40);
 	        }
 
 	        if (getNpcTemplate().is_doppel() && _target instanceof L1PcInstance) {
@@ -146,7 +146,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 	    }
 
 	    if (getCurrentHp() * 100 / getMaxHp() < 40) {
-	        useItem(NpcPotionPolicy.USEITEM_HEAL, 50);
+	        useItem(CNpcItemUse.USEITEM_HEAL, 50);
 	    }
 	}
 

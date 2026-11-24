@@ -211,10 +211,7 @@ public final class CNpcAI {
             return PRE_WAIT;
         }
 
-        if (npc._special != null
-                && npc._special.tick(npc)) {
-            return PRE_WAIT;
-        }
+        npc.ExecuteSpecialAction();
 
         if (npc instanceof L1SummonInstance) {
             final L1Character master = npc.getMaster();
@@ -375,10 +372,7 @@ public final class CNpcAI {
             return PRE_WAIT;
         }
 
-        if (npc._special != null
-                && npc._special.tick(npc)) {
-            return PRE_WAIT;
-        }
+        npc.ExecuteSpecialAction();
 
         if (npc instanceof L1SummonInstance) {
             final L1Character master = npc.getMaster();

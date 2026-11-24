@@ -39,10 +39,10 @@ import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.npc.ai.CNPCEvent;
 import l1j.server.server.model.npc.ai.CItemDigest;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.model.npc.ai.CNpcItemUse;
 import l1j.server.server.model.npc.ai.CItemRefine;
 import l1j.server.server.model.npc.ai.NpcServer;
-import l1j.server.server.model.npc.ai.NpcSpecials;
+import l1j.server.server.model.npc.ai.CNpcSpecialAction;
 import l1j.server.server.model.npc.ai.action.CNpcAI;
 import l1j.server.server.model.npc.ai.action.CCreatureController;
 import l1j.server.server.model.npc.ai.action.CGetItemAction;
@@ -325,7 +325,7 @@ public class L1NpcInstance extends L1Character {
     private int _aiEngineWheelBucket = -1;
     private L1NpcInstance _aiEngineWheelPrev;
     private L1NpcInstance _aiEngineWheelNext;
-    public final NpcSpecials.Special _special;
+    private final byte _specialAction;
 
     private final int _hprInterval;  
     private final int _hprPoint;
@@ -342,14 +342,14 @@ public class L1NpcInstance extends L1Character {
         setRespawn(false);
 
         if (template != null) {
-            _special = NpcSpecials.get(template.get_npcId());
+            _specialAction = CNpcSpecialAction.GetActionId(template.get_npcId());
             _hprInterval = template.get_hprinterval() != 0 ? template.get_hprinterval() : 0;
             _hprPoint    = Math.max(0, template.get_hpr());
             _mprInterval = template.get_mprinterval() != 0 ? template.get_mprinterval() : 0;
             _mprPoint    = Math.max(0, template.get_mpr());
             setting_template(template);
         } else {
-            _special = null;
+            _specialAction = CNpcSpecialAction.NONE;
             _hprInterval = 0;
             _hprPoint = 0;
             _mprInterval = 0;
@@ -550,6 +550,12 @@ public class L1NpcInstance extends L1Character {
             deleteMe();
         } catch (Throwable t) {
             t.printStackTrace();
+        }
+    }
+
+    public final void ExecuteSpecialAction() {
+        if (_specialAction != CNpcSpecialAction.NONE) {
+            CNpcSpecialAction.Execute(this, _specialAction);
         }
     }
 
@@ -1469,7 +1475,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void useItem(int type, int chance) {
-        NpcPotionPolicy.tryUseItem(this, type, chance);
+        CNpcItemUse.UseItem(this, type, chance);
     }
 
     public boolean nearTeleport(int nx, int ny) {

@@ -1,6 +1,5 @@
 package l1j.server.server.model.Instance;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -20,7 +19,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.model.npc.ai.CNpcItemUse;
 import l1j.server.server.model.npc.ai.action.dFollow;
 import l1j.server.server.model.npc.ai.action.dPetDefault;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
@@ -413,10 +412,10 @@ public class L1SummonInstance extends L1NpcInstance {
 	@Override
 	public void onItemUse() {
 		if (!isActived()) {
-			useItem(NpcPotionPolicy.USEITEM_HASTE, 100);
+			useItem(CNpcItemUse.USEITEM_HASTE, 100);
 		}
 		if (getCurrentHp() * 100 / getMaxHp() < 40) {
-			useItem(NpcPotionPolicy.USEITEM_HEAL, 100);
+			useItem(CNpcItemUse.USEITEM_HEAL, 100);
 		}
 	}
 
@@ -425,16 +424,7 @@ public class L1SummonInstance extends L1NpcInstance {
 		if (getNpcTemplate().get_digestitem() > 0) {
 			setDigestItem(item);
 		}
-		Arrays.sort(NpcPotionPolicy.healPotions);
-		Arrays.sort(NpcPotionPolicy.haestPotions);
-		if (Arrays.binarySearch(NpcPotionPolicy.healPotions, item.getItem().getItemId()) >= 0) {
-			if (getCurrentHp() != getMaxHp()) {
-				useItem(NpcPotionPolicy.USEITEM_HEAL, 100);
-			}
-		} else if (Arrays
-				.binarySearch(NpcPotionPolicy.haestPotions, item.getItem().getItemId()) >= 0) {
-			useItem(NpcPotionPolicy.USEITEM_HASTE, 100);
-		}
+		CNpcItemUse.OnGetItem(this, item.getItem().getItemId());
 	}
 
 	private int ActionType(String action) {

@@ -1,6 +1,5 @@
 package l1j.server.server.model.Instance;
 
-import java.util.Arrays;
 import java.util.Random;
 
 import l1j.server.server.ThreadPool;
@@ -8,7 +7,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.npc.ai.NpcPotionPolicy;
+import l1j.server.server.model.npc.ai.CNpcItemUse;
 import l1j.server.server.templates.L1Npc;
 
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
@@ -345,10 +344,10 @@ public class L1SupportInstance extends L1NpcInstance {
 	public void onItemUse() {
 		if (!isActived()) {
 			// 100%의 확률로 헤이 파업 일부 사용
-			useItem(NpcPotionPolicy.USEITEM_HASTE, 100);
+			useItem(CNpcItemUse.USEITEM_HASTE, 100);
 		}
 		if (getCurrentHp() * 100 / getMaxHp() < 40) {
-			useItem(NpcPotionPolicy.USEITEM_HEAL, 100);
+			useItem(CNpcItemUse.USEITEM_HEAL, 100);
 		}
 	}
 
@@ -357,15 +356,7 @@ public class L1SupportInstance extends L1NpcInstance {
 		if (getNpcTemplate().get_digestitem() > 0) {
 			setDigestItem(item);
 		}
-		Arrays.sort(NpcPotionPolicy.healPotions);
-		Arrays.sort(NpcPotionPolicy.haestPotions);
-		if (Arrays.binarySearch(NpcPotionPolicy.healPotions, item.getItem().getItemId()) >= 0) {
-			if (getCurrentHp() != getMaxHp()) {
-				useItem(NpcPotionPolicy.USEITEM_HEAL, 100);
-			}
-		} else if (Arrays.binarySearch(NpcPotionPolicy.haestPotions, item.getItem().getItemId()) >= 0) {
-			useItem(NpcPotionPolicy.USEITEM_HASTE, 100);
-		}
+		CNpcItemUse.OnGetItem(this, item.getItem().getItemId());
 	}
 
 	public boolean isFastMovable() {
