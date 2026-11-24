@@ -696,10 +696,9 @@ public final class CNpcAI {
 
         // Clear CIO-owner movement/action state before objectId can be reused.
         CIOThreadCallback.getInstance().cancelNpcAction(npc);
-        // A living flying NPC only suspends its AI. Clear on this owner before
-        // making restart visible; a delayed death cleanup could erase a new
-        // food/landing request after it has already resumed.
-        if (npc.getHiddenStatus() == L1NpcInstance.HIDDEN_STATUS_FLY
+        // A living hidden NPC suspends its AI, never enters death polling.
+        // Clear on its owner before publishing the stopped state.
+        if (npc.getHiddenStatus() != L1NpcInstance.HIDDEN_STATUS_NONE
                 && !npc.isDead() && !npc.isDestroyed() && npc.getCurrentHp() > 0
                 && !npc.isDeathProcessing()) {
             npc.allTargetClear();
@@ -717,6 +716,55 @@ public final class CNpcAI {
                 0);
 
         CNPCServer.getInstance().unregister(npc);
+    }
+
+    /** NC ChangeNPCState split: L1 policy is selected by the caller;
+     * the owner alone retires the current action and publishes the state.
+     */
+    private static boolean ChangeNPCState(final L1NpcInstance npc, final int event) {
+        if (!(npc instanceof L1MonsterInstance)
+                || npc.getMaxHp() / 3 <= npc.getCurrentHp()) {
+            return false;
+        }
+        final int state;
+        final int animation;
+        final int status;
+        switch (event) {
+        case L1NpcInstance.HATE_EVENT_HIDE_SINK:
+            state = L1NpcInstance.HIDDEN_STATUS_SINK;
+            animation = ActionCodes.ACTION_Hide;
+            status = 13;
+            break;
+        case L1NpcInstance.HATE_EVENT_HIDE_ANTHARAS:
+            state = L1NpcInstance.HIDDEN_STATUS_SINK;
+            animation = ActionCodes.ACTION_AntharasHide;
+            status = 20;
+            break;
+        case L1NpcInstance.HATE_EVENT_HIDE_FLY:
+            state = L1NpcInstance.HIDDEN_STATUS_FLY;
+            animation = ActionCodes.ACTION_Moveup;
+            status = 4;
+            break;
+        case L1NpcInstance.HATE_EVENT_HIDE_DRAGON_FLY:
+            state = L1NpcInstance.HIDDEN_STATUS_FLY;
+            animation = ActionCodes.ACTION_Moveup;
+            status = 11;
+            break;
+        default:
+            return false;
+        }
+        if (!npc.tryChangeHiddenStatus(L1NpcInstance.HIDDEN_STATUS_NONE, state)) {
+            return false;
+        }
+
+        // Retire the previous action before allTargetClear resets its action ID.
+        CCreatureController.cancelFromAi(npc);
+        npc.allTargetClear();
+        npc.npcChaseRetargetConsume();
+        SC_DoActionGFX.broadcast(npc, animation);
+        npc.setStatus(status);
+        SC_WorldPutObject.broadcastNpc(npc);
+        return true;
     }
 
     static void broadcastAirLanding(final L1NpcInstance npc) {
@@ -767,6 +815,19 @@ public final class CNpcAI {
 
                 final int eventValue = event.value;
 
+                if (eventValue >= L1NpcInstance.HATE_EVENT_HIDE_SINK
+                        && eventValue <= L1NpcInstance.HATE_EVENT_HIDE_DRAGON_FLY) {
+                    if (ChangeNPCState(npc, eventValue)) {
+                        changed = false;
+                        realHateChanged = false;
+                        attackDesireChanged = false;
+                        sightDesireChanged = false;
+                        interruptMoveAround = false;
+                        invisibilityRetarget = false;
+                    }
+                    continue;
+                }
+
                 if (eventValue == L1NpcInstance.HATE_EVENT_AIR_FOOD) {
                     // Coalesce repeated approaches within the existing owner drain.
                     if (!airFoodScanned) {
@@ -777,9 +838,24 @@ public final class CNpcAI {
                 }
 
                 if (eventValue == L1NpcInstance.HATE_EVENT_AIR_LAND) {
+                    final int hidden = npc.getHiddenStatus();
                     if (cha instanceof L1PcInstance pc && !pc.isDead()
-                            && pc.getMapId() == npc.getMapId() && npc.tryLandFromAir()) {
-                        if (!pc.hasSkillEffect(60) && !pc.hasSkillEffect(97) && !pc.isGm()) {
+                            && pc.getCurrentHp() > 0 && pc.getMapId() == npc.getMapId()
+                            && !pc.hasSkillEffect(60) && !pc.hasSkillEffect(97)
+                            && npc.getCurrentHp() == npc.getMaxHp()
+                            && (hidden == L1NpcInstance.HIDDEN_STATUS_SINK
+                                    || hidden == L1NpcInstance.HIDDEN_STATUS_FLY)
+                            && npc.getLocation().getTileLineDistance(pc.getX(), pc.getY())
+                                    <= (hidden == L1NpcInstance.HIDDEN_STATUS_SINK ? 2 : 1)
+                            && npc.tryChangeHiddenStatus(hidden, L1NpcInstance.HIDDEN_STATUS_NONE)) {
+                        if (hidden == L1NpcInstance.HIDDEN_STATUS_FLY) {
+                            broadcastAirLanding(npc);
+                        } else {
+                            SC_DoActionGFX.broadcast(npc, ActionCodes.ACTION_Appear);
+                            npc.setStatus(0);
+                            SC_WorldPutObject.broadcastNpc(npc);
+                        }
+                        if (!pc.isGm()) {
                             npc._hateList.add(pc, 0);
                             npc._target = pc;
                             if (npc instanceof L1MonsterInstance) {
@@ -788,10 +864,12 @@ public final class CNpcAI {
                             }
                             changed = true;
                         }
-                        broadcastAirLanding(npc);
                     }
                     continue;
                 }
+
+                // Discard combat/sight events queued before a hide transition.
+                if (npc.getHiddenStatus() != L1NpcInstance.HIDDEN_STATUS_NONE) continue;
 
                 if (eventValue
                         == L1NpcInstance.HATE_EVENT_SIGHT) {
