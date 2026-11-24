@@ -8,6 +8,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.Warehouse.Warehouse;
+import l1j.server.server.model.Warehouse.ClanWarehouse;
 import l1j.server.server.model.Warehouse.WarehouseManager;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
@@ -31,7 +32,6 @@ final class CWareHouseRequest {
     static void Request(CUserSocket client, L1PcInstance pc, int objectId, int kind, int size, long first, byte[] rest) {
         if (size == 0) {
             client.CloseWarehouseView(pc, objectId, kind);
-            if (kind == 5 && pc.getClan() != null) pc.getClan().deleteClanRetrieveUser(pc.getId());
             return;
         }
         if (size < 0 || size > MAX_SELECTION) {
@@ -71,8 +71,34 @@ final class CWareHouseRequest {
             default -> null;
         };
         if (warehouse == null) return;
-        if (kind == 5 && !CWareHouseWithdraw.CheckPledgeUser(pc, warehouse)) return;
+        if (kind == 5) {
+            final ClanWarehouse vault = (ClanWarehouse) warehouse;
+            // Same lock order as CacheD owner replay: session -> inventory -> vault.
+            // Keep the view lease until the existing receipt has reserved BOTH lanes.
+            synchronized (client) {
+                synchronized (pc.getInventory()) {
+                    synchronized (vault) {
+                        if (!client.CanUseWarehouse(pc, objectId, kind)
+                                || !client.OwnsPledgeWarehouse(pc, vault)) return;
+                        try {
+                            if (pc.getClan() != membership
+                                    || !CWareHouseWithdraw.CheckPledgeUser(pc, vault)) return;
+                            RequestItems(pc, kind, size, first, rest, vault);
+                        } finally {
+                            // Submission establishes the CacheD pending-apply fence before
+                            // returning. A failed admission also closes the consumed view.
+                            client.ClearWarehouseView();
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        RequestItems(pc, kind, size, first, rest, warehouse);
+    }
 
+    private static void RequestItems(L1PcInstance pc, int kind, int size, long first,
+            byte[] rest, Warehouse warehouse) {
         final boolean deposit = CWareHouseDeposit.IsDeposit(kind);
         final int feeItem = CWareHouseWithdraw.FeeItem(kind);
         final int feeEach = CWareHouseWithdraw.FeeEach(kind);

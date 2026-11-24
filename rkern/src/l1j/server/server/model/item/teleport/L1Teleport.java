@@ -89,7 +89,7 @@ public class L1Teleport {
 		
 		L1Clan clan = pc.getClan();
 		if (clan != null) {
-			clan.deleteClanRetrieveUser(pc.getId());
+			clan.deleteClanRetrieveUser(pc);
 		}
 
 		final ArrayList<L1PcInstance> subjects = TL_SUBJECTS.get();

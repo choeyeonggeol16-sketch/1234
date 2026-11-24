@@ -36,6 +36,8 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.Controller.LoginController;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Warehouse.ClanWarehouse;
+import l1j.server.server.model.Warehouse.WarehouseManager;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.shop.PlayerShopView;
 import l1j.server.server.model.network.packet.CBytesPacket;
@@ -4311,7 +4313,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     private long npcDialogueTarget;
     private int npcDialogueVersion;
 
-    public void trackNpcDialogue(long smartId, boolean newTalk) {
+    public synchronized void trackNpcDialogue(long smartId, boolean newTalk) {
         if (newTalk || smartId != npcDialogueTarget) {
             ClearWarehouseView();
             npcDialogueTarget = smartId;
@@ -4325,12 +4327,23 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     private int warehouseViewClanId;
     private int warehouseViewPassword;
     private int warehouseViewSession;
+    private ClanWarehouse pledgeWarehouseView;
+    private long pledgeWarehouseLease;
 
-    public void ClearWarehouseView() {
+    public synchronized void ClearWarehouseView() {
+        final ClanWarehouse vault = pledgeWarehouseView;
+        final long lease = pledgeWarehouseLease;
+        pledgeWarehouseView = null;
+        pledgeWarehouseLease = 0L;
         warehouseViewKind = 0;
         warehouseViewClanId = 0;
         warehouseViewPassword = 0;
         warehouseViewSession = 0;
+        if (vault != null) vault.ReleaseWarehouseUser(this, lease);
+    }
+
+    public synchronized void ClearWarehouseViewFor(L1PcInstance pc) {
+        if (_activeChar == pc) ClearWarehouseView();
     }
 
     private boolean IsWarehouseActor(L1PcInstance pc) {
@@ -4371,16 +4384,17 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         };
     }
 
-    public boolean BeginWarehouseView(L1PcInstance pc, int objectId, int kind,
+    public synchronized boolean BeginWarehouseView(L1PcInstance pc, int objectId, int kind,
             int suppliedPassword, int expectedClanId) {
         ClearWarehouseView();
         return CanOpenWarehouseView(pc, objectId, kind, suppliedPassword, expectedClanId);
     }
 
     // Call only after the complete list was admitted by the existing SEND path.
-    public boolean BindWarehouseView(L1PcInstance pc, int objectId, int kind,
+    public synchronized boolean BindWarehouseView(L1PcInstance pc, int objectId, int kind,
             int suppliedPassword, int expectedClanId) {
         if (!CanOpenWarehouseView(pc, objectId, kind, suppliedPassword, expectedClanId)) return false;
+        if (kind == 5 && !OwnsPledgeWarehouse(pc, pledgeWarehouseView)) return false;
         warehouseViewSession = pc.getSessionStamp();
         warehouseViewClanId = kind == 5 ? expectedClanId : 0;
         warehouseViewPassword = kind == 3 ? getAccount().getGamePassword() : 0;
@@ -4388,7 +4402,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         return true;
     }
 
-    public boolean CanUseWarehouse(L1PcInstance pc, int objectId, int kind) {
+    public synchronized boolean CanUseWarehouse(L1PcInstance pc, int objectId, int kind) {
         // L1 deposit is selected locally from inventory after NPC dialogue.
         if (kind == 2 || kind == 4 || kind == 8) return IsWarehouseNpcInRange(pc, objectId);
         if (warehouseViewKind != kind || !IsWarehouseViewTarget(pc, objectId, kind)
@@ -4396,19 +4410,47 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         return switch (kind) {
             case 3 -> warehouseViewPassword == getAccount().getGamePassword();
             case 5 -> warehouseViewClanId > 0 && pc.getClanid() == warehouseViewClanId
-                    && pc.getClan() != null;
+                    && pc.getClan() != null && OwnsPledgeWarehouse(pc, pledgeWarehouseView);
             case 9 -> pc.isElf() && pc.getLevel() >= 5;
             case 10, 20 -> true;
             default -> false;
         };
     }
 
-    public void CloseWarehouseView(L1PcInstance pc, int objectId, int kind) {
+    public synchronized void CloseWarehouseView(L1PcInstance pc, int objectId, int kind) {
         if (_activeChar != pc || warehouseViewKind != kind) return;
         // A cancel may arrive after leaving range; never let it close a different NPC's view.
         if (kind == 20 ? objectId == pc.getId()
                 : L1World.getInstance().findObjectBySmartId(npcDialogueTarget) instanceof L1NpcInstance npc
                     && npc.getId() == objectId) ClearWarehouseView();
+    }
+
+    public synchronized long AcquirePledgeWarehouseView(L1PcInstance pc, ClanWarehouse vault,
+            int objectId, int clanId) {
+        if (vault == null || pledgeWarehouseView != null
+                || !CanOpenWarehouseView(pc, objectId, 5, 0, clanId)) return 0L;
+        final long lease = WarehouseManager.nextSessionLease();
+        if (!vault.AcquireWarehouseUser(pc, this, lease)) return 0L;
+        pledgeWarehouseView = vault;
+        pledgeWarehouseLease = lease;
+        return lease;
+    }
+
+    public synchronized boolean OwnsPledgeWarehouse(L1PcInstance pc, ClanWarehouse vault) {
+        return vault != null && pledgeWarehouseView == vault
+                && vault.OwnsWarehouseUser(pc, this, pledgeWarehouseLease);
+    }
+
+    public synchronized boolean BindPledgeWarehouseView(L1PcInstance pc, int objectId,
+            int clanId, ClanWarehouse vault, long lease) {
+        return pledgeWarehouseView == vault && pledgeWarehouseLease == lease
+                && BindWarehouseView(pc, objectId, 5, 0, clanId);
+    }
+
+    public synchronized void ReleasePledgeWarehouseView(ClanWarehouse vault, long lease) {
+        if (vault == null || lease <= 0L) return;
+        if (pledgeWarehouseView == vault && pledgeWarehouseLease == lease) ClearWarehouseView();
+        else vault.ReleaseWarehouseUser(this, lease);
     }
 
     public int npcDialogueVersion() { return npcDialogueVersion; }

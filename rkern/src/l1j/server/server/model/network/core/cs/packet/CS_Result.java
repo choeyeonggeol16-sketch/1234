@@ -64,8 +64,7 @@ public final class CS_Result {
                     || Math.abs((long) pc.getY() - findObject.getY()) > 12) {
                 if (resultType == 5 && size == 0 && findObject instanceof L1NpcInstance dwarf
                         && dwarf.getNpcTemplate().getImpl().equalsIgnoreCase("L1Dwarf")) {
-                    L1Clan clan = pc.getClan();
-                    if (clan != null) clan.deleteClanRetrieveUser(pc.getId());
+                    client.CloseWarehouseView(pc, npcObjectId, resultType);
                     pc.sendPackets("창고와 거리가 멀어 아이템을 찾을 수 없습니다.");
                 } else {
                     pc.sendPackets("판매/구매 NPC와 거리가 멀어 판매가 취소 되었습니다.");

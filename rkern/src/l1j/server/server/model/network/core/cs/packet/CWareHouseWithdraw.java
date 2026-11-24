@@ -23,9 +23,8 @@ final class CWareHouseWithdraw {
     private CWareHouseWithdraw() {}
 
     static boolean CheckPledgeUser(L1PcInstance pc, Warehouse warehouse) {
-        final ClanWarehouse vault = (ClanWarehouse) warehouse;
-        return pc.getClanRank() != L1Clan.수련 && !pc.hasSkillEffect(L1SkillId.SetBuff)
-                && vault.releaseWarehouseUser(pc.getId());
+        return warehouse instanceof ClanWarehouse
+                && pc.getClanRank() != L1Clan.수련 && !pc.hasSkillEffect(L1SkillId.SetBuff);
     }
 
     static int FeeItem(int kind) {

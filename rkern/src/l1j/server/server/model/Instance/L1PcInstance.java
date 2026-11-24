@@ -2455,6 +2455,10 @@ public class L1PcInstance extends L1Character {
         l1j.server.server.model.CReplyChecker.FinishWaitingReplyByRequester(this);
         suspendGroundSight();
         try {
+            try {
+                final CUserSocket warehouseSession = getNetConnection();
+                if (warehouseSession != null) warehouseSession.ClearWarehouseViewFor(this);
+            } catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout warehouse view release failed: " + getId(), e); }
             try { PcInventoryExpiryScheduler.getInstance().unregister(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout expiry unregister failed: " + getId(), e); }
             try { l1j.server.server.model.character.Item.Drop.PartyLootCursor.clearSolo(this); }
@@ -3553,7 +3557,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 	    // 3. 혈맹 및 동반자/봇 정리
 	    L1Clan clan = getClan();
 	    if (clan != null) {
-	        clan.deleteClanRetrieveUser(getId());
+	        clan.deleteClanRetrieveUser(this);
 	    }
 	    
 	    remove_companion();

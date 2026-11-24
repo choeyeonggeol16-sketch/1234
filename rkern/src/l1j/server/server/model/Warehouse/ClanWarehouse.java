@@ -27,13 +27,20 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.utils.SQLUtil;
 
 public class ClanWarehouse extends Warehouse {
 	private static final long serialVersionUID = 1L;
 	private volatile int _warehouse;
+    private long warehouseUserLease;
+    private CUserSocket warehouseUserSession;
+    private L1PcInstance warehouseUserPc;
 	public ClanWarehouse(String clan) {
 		super(clan);
 	}
@@ -127,28 +134,88 @@ public class ClanWarehouse extends Warehouse {
 		return _warehouse;
 	}
 
-	public synchronized boolean releaseWarehouseUser(int ownerId) {
-		if (ownerId <= 0 || _warehouse != ownerId) return false;
-		_warehouse = 0;
-		return true;
-	}
+    // All lease transitions share the existing warehouse mutation monitor.
+    // No socket or inventory monitor is acquired here.
+    public synchronized boolean AcquireWarehouseUser(L1PcInstance pc, CUserSocket session, long lease) {
+        if (isRetired() || pc == null || session == null || lease <= 0L
+                || pc.getId() <= 0 || pc.isLogoutStarted() || pc.isDead()
+                || pc.getNetConnection() != session || session.getActiveChar() != pc
+                || !session.isConnected() || !IsPledgeMember(pc)
+                || CacheD.getInstance().hasPendingOwnerApply(transferOrderKey())) return false;
 
-	public boolean setWarehouseUsingChar(int objid, int prevOwner) {
-		synchronized (this) {
-            if (objid != 0 && l1j.server.server.storage.CacheD.getInstance()
-                    .hasPendingOwnerApply(transferOrderKey())) return false;
-			if (objid == _warehouse) {
-				return true;
-			}
+        if (_warehouse != 0) {
+            if (warehouseUserLease == lease && warehouseUserSession == session
+                    && warehouseUserPc == pc) return true;
+            // Reclaim only a proven obsolete session. No caller-supplied previous ID.
+            if (warehouseUserSession == null || warehouseUserPc == null) return false;
+            if (warehouseUserSession.isConnected()
+                    && warehouseUserSession.getActiveChar() == warehouseUserPc
+                    && warehouseUserPc.getNetConnection() == warehouseUserSession
+                    && !warehouseUserPc.isLogoutStarted() && !warehouseUserPc.isDead()
+                    && IsPledgeMember(warehouseUserPc)) return false;
+            ClearWarehouseUser();
+        }
+        warehouseUserPc = pc;
+        warehouseUserSession = session;
+        warehouseUserLease = lease;
+        _warehouse = pc.getId();
+        return true;
+    }
 
-			if (objid != 0 && _warehouse != 0) {
-				if (prevOwner != _warehouse)
-					return false;
-			}
+    public synchronized boolean OwnsWarehouseUser(L1PcInstance pc, CUserSocket session, long lease) {
+        return !isRetired() && lease > 0L && warehouseUserLease == lease
+                && warehouseUserSession == session && warehouseUserPc == pc
+                && pc != null && _warehouse == pc.getId() && IsPledgeMember(pc);
+    }
 
-			_warehouse = objid;
+    public synchronized boolean ReleaseWarehouseUser(CUserSocket session, long lease) {
+        if (lease <= 0L || warehouseUserLease != lease || warehouseUserSession != session) return false;
+        ClearWarehouseUser();
+        return true;
+    }
 
-			return true;
-		}
-	}
+    /** Death/teleport cleanup must not release another incarnation of the same character ID. */
+    public synchronized boolean ReleaseWarehouseUser(L1PcInstance pc) {
+        if (pc == null || warehouseUserPc != pc) return false;
+        ClearWarehouseUser();
+        return true;
+    }
+
+    /** Legacy membership-removal hook. Release only a member that no longer belongs here.
+     * An old packet or stale session must never clear a new lease by character ID alone. */
+    public synchronized boolean releaseWarehouseUser(int ownerId) {
+        if (ownerId <= 0 || _warehouse != ownerId) return false;
+        if (warehouseUserPc != null && !warehouseUserPc.isLogoutStarted()
+                && !warehouseUserPc.isDead() && IsPledgeMember(warehouseUserPc)) return false;
+        ClearWarehouseUser();
+        return true;
+    }
+
+    private boolean IsPledgeMember(L1PcInstance pc) {
+        final L1Clan clan = pc.getClan();
+        return clan != null && getName().equals(clan.getClanName())
+                && clan.GetDbMember(pc.getId()) != null;
+    }
+
+    private void ClearWarehouseUser() {
+        warehouseUserLease = 0L;
+        warehouseUserSession = null;
+        warehouseUserPc = null;
+        _warehouse = 0;
+    }
+
+    /** Compatibility for old callers: cannot steal or clear a leased view. */
+    @Deprecated
+    public synchronized boolean setWarehouseUsingChar(int objid, int prevOwner) {
+        if (warehouseUserLease != 0L || isRetired()) return false;
+        if (objid == 0) {
+            if (_warehouse != 0 && prevOwner != _warehouse) return false;
+            ClearWarehouseUser();
+            return true;
+        }
+        if (objid < 0 || CacheD.getInstance().hasPendingOwnerApply(transferOrderKey())) return false;
+        if (_warehouse != 0 && _warehouse != objid) return false;
+        _warehouse = objid;
+        return true;
+    }
 }

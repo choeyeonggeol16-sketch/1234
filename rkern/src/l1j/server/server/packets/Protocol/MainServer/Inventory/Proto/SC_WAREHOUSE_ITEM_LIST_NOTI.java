@@ -103,29 +103,19 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
             SC_NPCTalkReturn.send(pc, npc_object_id, "noitemret", null);
             return;
         }
-        if (!whouse.setWarehouseUsingChar(pc.getId(), 0)) {
-            int id = whouse.getWarehouseUsingChar();
-            L1Object prev_user = L1World.getInstance().findObject(id);
-            if (prev_user instanceof L1PcInstance) {
-                L1PcInstance using_pc = (L1PcInstance) prev_user;
-                if (using_pc.getClan() == clan) {
-                    pc.sendPackets(String.format("혈맹원 %s님이 혈맹창고를 사용중입니다.잠시 후 이용해 주세요.", using_pc.getName()));
-                    return;
-                }
-            }
-            if(!whouse.setWarehouseUsingChar(pc.getId(), id)){
-                pc.sendPackets(String.format("혈맹원 %s님이 혈맹창고를 사용중입니다. 잠시 후 이용해 주세요.", whouse.getName()));
-                return;
-            }
+        final long lease = client.AcquirePledgeWarehouseView(pc, whouse, npc_object_id, clanId);
+        if (lease == 0L) {
+            pc.sendPackets("다른 혈맹원이 창고를 이용 중이거나 이전 창고 처리가 진행 중입니다. 잠시 후 이용해 주세요.");
+            return;
         }
         boolean opened = false;
         try {
             opened = sendWarehouseItemsChunked(pc, npc_object_id, castItemsSnapshot(whouse.getItems()),
                     whouse.getSize(), 500, eWarehouseType.TRADE_RETRIEVE_PLEDGE)
                     && pc.getClan() == clan
-                    && client.BindWarehouseView(pc, npc_object_id, 5, 0, clanId);
+                    && client.BindPledgeWarehouseView(pc, npc_object_id, clanId, whouse, lease);
         } finally {
-            if (!opened) whouse.releaseWarehouseUser(pc.getId());
+            if (!opened) client.ReleasePledgeWarehouseView(whouse, lease);
         }
     }
 

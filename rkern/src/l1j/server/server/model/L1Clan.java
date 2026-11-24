@@ -882,6 +882,11 @@ public class L1Clan {
 		_EinhasadBlessBuff = i;
 	}
 
+    public void deleteClanRetrieveUser(L1PcInstance pc) {
+        ClanWarehouse clanWarehouse = WarehouseManager.getInstance().getClanWarehouse(getClanName());
+        if (clanWarehouse != null) clanWarehouse.ReleaseWarehouseUser(pc);
+    }
+
 	public void deleteClanRetrieveUser(int targetObjectId){
 		ClanWarehouse clanWarehouse = WarehouseManager.getInstance().getClanWarehouse(getClanName());
 		if (clanWarehouse != null) clanWarehouse.releaseWarehouseUser(targetObjectId);
