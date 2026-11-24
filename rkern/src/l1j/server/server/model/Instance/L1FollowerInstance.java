@@ -29,7 +29,8 @@ public class L1FollowerInstance extends L1NpcInstance {
             deleteMe();
             return true;
         }
-        if (!(_master instanceof L1PcInstance owner)) {
+        final L1PcInstance owner = _master;
+        if (owner == null) {
             deleteMe();
             return true;
         }
