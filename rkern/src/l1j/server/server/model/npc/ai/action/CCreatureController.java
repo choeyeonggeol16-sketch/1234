@@ -104,6 +104,13 @@ public final class CCreatureController {
             return;
         }
 
+        // An already queued ordinary AI decision must not replace an
+        // absolute return. Explicit cancellation still enters cancelFromAi.
+        if (dMoveTo.isReturningHome(creature)
+                && action != ACTION_MOVE_TO_POINT) {
+            return;
+        }
+
         if (action == ACTION_THINK
                 && CCreatureController.currentAction(creature)
                         == ACTION_MOVE_AROUND_NATIVE) {
