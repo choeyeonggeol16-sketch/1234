@@ -17,7 +17,7 @@ import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1MobGroupInfo;
 import l1j.server.server.model.L1MobSkillUse;
-import l1j.server.server.model.L1NpcChatTimer;
+import l1j.server.server.model.npc.ai.TimerData;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Spawn;
 import l1j.server.server.model.L1World;
@@ -144,7 +144,7 @@ public class L1NpcInstance extends L1Character {
     private volatile boolean _deathProcessing = false;
     // Null without active dialogue; the volatile head publishes the earliest
     // deadline. The existing NPC monitor protects list updates.
-    private volatile L1NpcChatTimer _npcChatTimers;
+    private volatile TimerData _npcChatTimers;
     private static final int TIMER_CORPSE_DELETE = 0x434F5250;
     public static final int TIMER_TIMED_DELETE = 0x54444C54;
     private int _corpseTimerGeneration;
@@ -2112,15 +2112,15 @@ public class L1NpcInstance extends L1Character {
             if ((chatTiming == CHAT_TIMING_APPEARANCE || chatTiming == CHAT_TIMING_HIDE)
                     && isDead()) return;
             if (chatTiming == CHAT_TIMING_DEAD && !isDead()) return;
-            addNpcChat(new L1NpcChatTimer(npcChat, npcEventEpoch(), System.currentTimeMillis()));
+            addNpcChat(new TimerData(npcChat, npcEventEpoch(), System.currentTimeMillis()));
         }
         CNPCServer.getInstance().register(this);
     }
 
     /** Caller holds the NPC monitor; no new work queue or timer node. */
-    private void addNpcChat(final L1NpcChatTimer timer) {
-        L1NpcChatTimer prev = null;
-        L1NpcChatTimer cur = _npcChatTimers;
+    private void addNpcChat(final TimerData timer) {
+        TimerData prev = null;
+        TimerData cur = _npcChatTimers;
         while (cur != null && cur.deadlineMs <= timer.deadlineMs) {
             prev = cur;
             cur = cur.next;
@@ -2135,10 +2135,10 @@ public class L1NpcInstance extends L1Character {
     }
 
     private void pruneNpcChats() {
-        L1NpcChatTimer prev = null;
-        L1NpcChatTimer cur = _npcChatTimers;
+        TimerData prev = null;
+        TimerData cur = _npcChatTimers;
         while (cur != null) {
-            final L1NpcChatTimer next = cur.next;
+            final TimerData next = cur.next;
             if (!cur.isValid(this)) {
                 if (prev == null) _npcChatTimers = next;
                 else prev.next = next;
@@ -2151,14 +2151,14 @@ public class L1NpcInstance extends L1Character {
     }
 
     public final long npcChatDeadlineMs() {
-        final L1NpcChatTimer head = _npcChatTimers;
+        final TimerData head = _npcChatTimers;
         return head == null || _destroyed ? 0L : head.deadlineMs;
     }
 
     /** One line per owner wheel visit; broadcast outside the NPC monitor. */
     public final void tickNpcChat(long nowMs) {
         if (!CNPCServer.getInstance().isOwnerThread(this)) return;
-        final L1NpcChatTimer timer;
+        final TimerData timer;
         synchronized (this) {
             timer = _npcChatTimers;
             if (timer == null || timer.deadlineMs > nowMs || _destroyed) return;
