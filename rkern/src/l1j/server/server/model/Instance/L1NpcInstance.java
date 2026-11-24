@@ -2,6 +2,7 @@ package l1j.server.server.model.Instance;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -142,6 +143,9 @@ public class L1NpcInstance extends L1Character {
 	public volatile L1Character _target = null;
     public L1PcInstance _master = null;
     private volatile boolean _deathProcessing = false;
+    // Only reward-bearing deaths publish their existing worker task here.
+    // The existing coalesced NPC wake delivers it after the final hate batch.
+    private Runnable _deathSettlement;
     // Null without active dialogue; the volatile head publishes the earliest
     // deadline. The existing NPC monitor protects list updates.
     private volatile TimerData _npcChatTimers;
@@ -720,6 +724,78 @@ public class L1NpcInstance extends L1Character {
     protected void onDeath(L1Character lastAttacker) {
     }
 
+    /** Common once-per-life death transition. Subtypes retain their own
+     * animation, tile, inventory, reward and corpse policies.
+     */
+    protected final synchronized boolean Die() {
+        if (_destroyed || isDead() || _deathProcessing) return false;
+        setDeathProcessing(true);
+        setCurrentHp(0);
+        setDead(true);
+        cancelDigestItems();
+        return true;
+    }
+
+    /** Publish completion before admitting a corpse deadline. */
+    protected final synchronized void DeathFinished(boolean deleteCorpse) {
+        setDeathProcessing(false);
+        if (deleteCorpse && isDead() && !_destroyed) startDeleteTimer();
+    }
+
+    public final synchronized boolean PublishDeathSettlement(Runnable task) {
+        if (task == null || _destroyed || !isDead() || !_deathProcessing
+                || _deathSettlement != null) return false;
+        _deathSettlement = task;
+        return true;
+    }
+
+    protected final void SubmitDeathSettlement(Runnable task) {
+        if (!CNPCServer.getInstance().postNpcDeath(this, task)) {
+            // Existing mandatory worker fallback when the NPC engine is closed.
+            ExecuteDeathSettlement(task);
+        }
+    }
+
+    /** Called only by the existing NPC shard (including its final drain). */
+    public final void DispatchDeathSettlement() {
+        final Runnable task;
+        synchronized (this) {
+            task = _deathSettlement;
+            _deathSettlement = null;
+        }
+        if (task == null) return;
+        try {
+            if (isDead() && !_destroyed && _deathProcessing) {
+                CNpcAI.DrainDeathContribution(this);
+            }
+        } finally {
+            ExecuteDeathSettlement(task);
+        }
+    }
+
+    private static void ExecuteDeathSettlement(Runnable task) {
+        try {
+            ThreadPool.getInstance().execute(task);
+        } catch (RejectedExecutionException rejected) {
+            // A confirmed death may not lose its mandatory settlement.
+            task.run();
+        }
+    }
+
+    /** Close the inbox without discarding accepted contribution events. */
+    public final CNPCEvent TakeDeathEvents() {
+        return CNPCEvent.Reverse(NPC_EVENT_INBOX.getAndSet(this, CNPCEvent.CLOSED));
+    }
+
+    /** Used by the companion's existing delayed removal, before DB work. */
+    protected final synchronized boolean ClaimDeathRemoval(int lifeEpoch, long smartId) {
+        if (_destroyed || _corpseDeleteStarted || _deathProcessing || !isDead()
+                || getCurrentHp() > 0 || npcEventEpoch() != lifeEpoch
+                || smartId == 0L || L1World.getInstance().findObjectBySmartId(smartId) != this) return false;
+        _corpseDeleteStarted = true;
+        return true;
+    }
+
     // No eager queue object or per-event queue node. MPSC producers publish
     // their own lease with CAS; only the existing NPC owner consumes a batch.
     private volatile CNPCEvent _npcEventInbox;
@@ -1231,14 +1307,15 @@ public class L1NpcInstance extends L1Character {
 
     public void NpcDie() {
         try {
-            setDeathProcessing(true);
-            setCurrentHp(0);
-            setDead(true);
-            setDeathProcessing(false);
-            setExp(0);
-            setKarma(0);
-            setLawful(0);
-            allTargetClear();
+            synchronized (this) {
+                if (_destroyed || _deathProcessing) return;
+                if (!isDead() && !Die()) return;
+                setExp(0);
+                setKarma(0);
+                setLawful(0);
+                allTargetClear();
+                DeathFinished(false);
+            }
             deleteMe();
         } catch (Exception e) {
         }
@@ -1925,6 +2002,8 @@ public class L1NpcInstance extends L1Character {
                 CNPCServer.getInstance().unregister(this);
             }
         } else if (wasDead) {
+            ReopenNpcEvents();
+            _npcChatTimers = null;
             StartRegeneration();
         }
     }
@@ -1964,7 +2043,8 @@ public class L1NpcInstance extends L1Character {
 
     @Override
     public synchronized void resurrect(int hp) {
-        if (_destroyed || _corpseDeleteStarted) {
+        // Do not reopen a life while its XP/drop/inventory settlement owns it.
+        if (_destroyed || _corpseDeleteStarted || _deathProcessing) {
             return;
         }
         if ((_corpseTimerGeneration & 1) != 0) {
@@ -1977,7 +2057,6 @@ public class L1NpcInstance extends L1Character {
             allTargetClear();
             _deathProcessing = false;
             _npcChatTimers = null;
-            ReopenNpcEvents();
             NPC_ACTION_ADMISSION_EPOCH.incrementAndGet(this);
         }
         super.resurrect(hp);        
@@ -1993,7 +2072,7 @@ public class L1NpcInstance extends L1Character {
     protected void startDeleteTimer() {
         final int generation;
         synchronized (this) {
-            if (_destroyed || _corpseDeleteStarted || !isDead()
+            if (_destroyed || _corpseDeleteStarted || !isDead() || _deathProcessing
                     || (_corpseTimerGeneration & 1) != 0) {
                 return;
             }

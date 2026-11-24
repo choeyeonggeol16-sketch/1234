@@ -391,21 +391,20 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 
 	@Override
 	protected void onDeath(L1Character lastAttacker) {
-		if (isDead()) {
-			return;
-		}
-
-		setDeathProcessing(true);
-		setCurrentHp(0);
-		setDead(true);
-		setStatus(ActionCodes.ACTION_Die);
-		releaseNpcTileNow();
-		SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
-		startChat(CHAT_TIMING_DEAD);
-		allTargetClear();
-		setDeathProcessing(false);
-		startDeleteTimer();
-	}
+        if (!Die()) return;
+        try {
+            setStatus(ActionCodes.ACTION_Die);
+            releaseNpcTileNow();
+            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+            startChat(CHAT_TIMING_DEAD);
+        } finally {
+            try {
+                allTargetClear();
+            } finally {
+                DeathFinished(true);
+            }
+        }
+    }
 
 	private boolean checkHasCastle(L1PcInstance pc, int castleId) {
 		boolean isExistDefenseClan = false;

@@ -32,7 +32,6 @@ public class L1TowerFromLfcInstance extends L1TowerInstance {
 			int newHp = applyNpcHpDelta(-(long) damage);
 
 			if (newHp == 0 && !isDead()) {
-				_crackStatus = 0;
 				setDeath(attacker);
 
 			} else if (newHp > 0) {
@@ -74,15 +73,17 @@ public class L1TowerFromLfcInstance extends L1TowerInstance {
 	}
 	
 	private void setDeath(L1Character attacker) {
-		setDead(true);
-		setStatus(ActionCodes.ACTION_TowerDie);
+        if (!Die()) return;
+        try {
+            _crackStatus = 0;
+            setStatus(ActionCodes.ACTION_TowerDie);
+            _lastattacker = attacker;
+            sendDead();
+        } finally {
+            DeathFinished(false);
+        }
+    }
 
-	//	getMap().setPassable(getX(), getY(), true);
-
-		_lastattacker = attacker;
-		sendDead();
-	}
-	
 	public void sendDead() {
 		SC_DoActionGFX.broadcast(
 				this,

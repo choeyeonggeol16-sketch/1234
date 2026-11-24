@@ -137,9 +137,6 @@ public class L1CataInstance extends L1NpcInstance {
 			if (newHp == 0 && !isDead()) {
 				int transformId = getNpcTemplate().getTransformId();
 				if (transformId == -1) {
-					setCurrentHp(0);
-					setDead(true);
-					setStatus(ActionCodes.ACTION_Die);
 					die(this);
 				}
 			}
@@ -157,18 +154,12 @@ public class L1CataInstance extends L1NpcInstance {
 	}
 
 	public void die(L1Character lastAttacker) {
-		try {
-			setDeathProcessing(true);
-			setCurrentHp(0);
-			setDead(true);
-			setStatus(ActionCodes.ACTION_Die);
-
-			SC_DoActionGFX.broadcast(
-					this,
-					ActionCodes.ACTION_Die);
-
-			setDeathProcessing(false);
-		} catch (Exception e) {
-		}
-	}
+        if (!Die()) return;
+        try {
+            setStatus(ActionCodes.ACTION_Die);
+            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+        } finally {
+            DeathFinished(false);
+        }
+    }
 }

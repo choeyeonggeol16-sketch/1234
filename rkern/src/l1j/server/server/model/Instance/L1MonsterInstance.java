@@ -2,8 +2,6 @@ package l1j.server.server.model.Instance;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -59,12 +57,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 
 	private static final long serialVersionUID = 1L;
 	private static Random _random = new Random(System.nanoTime());
-    private volatile int _deathClaimed;
     private volatile int _deathEpoch;
-    private static final AtomicIntegerFieldUpdater<L1MonsterInstance> DEATH_CLAIMED =
-            AtomicIntegerFieldUpdater.newUpdater(L1MonsterInstance.class, "_deathClaimed");
-    private static final AtomicIntegerFieldUpdater<L1MonsterInstance> DEATH_EPOCH =
-            AtomicIntegerFieldUpdater.newUpdater(L1MonsterInstance.class, "_deathEpoch");
 
 	private boolean _storeDroped;
 
@@ -750,70 +743,49 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     
 	@Override
 	public void onDeath(L1Character lastAttacker) {
-	    //  중복 실행 방지 
-	    if (isDead() || _destroyed || isDeathProcessing()) {
-	        return;
-	    }   
-	    if (!DEATH_CLAIMED.compareAndSet(this, 0, 1)) return;
-        final int deathEpoch = DEATH_EPOCH.incrementAndGet(this);
-        setDeathProcessing(true);
+        final int deathEpoch;
+        synchronized (this) {
+            if (!Die()) return;
+            deathEpoch = ++_deathEpoch;
+        }
 
-	    // 마지막 타격자(보상 대상) 확정
-	    L1Character attacker = lastAttacker;
-	    // 즉시 처리해야 할 시각적/물리적 상태 
-	    setCurrentHp(0);
-	    setDead(true);
-        // Retire food expiry before asynchronous reward/drop distribution.
-        cancelDigestItems();
-	    setStatus(ActionCodes.ACTION_Die);
-        // The body is released here, not after the asynchronous reward/DB work.
-        // Release its claimed melee destination at the same death boundary.
-        CDesirePQ.releaseBlockedAttack(this);
-	    releaseNpcTileNow();
-	    // 죽는 모션 패킷 전송
-	    int dieGfx = (getNpcId() >= 8500142 && getNpcId() <= 8500144) ? 11 : ActionCodes.ACTION_Die;
-	    SC_DoActionGFX.broadcast(this, dieGfx);
-
-	    // 무거운 보상 로직은 전용 쓰레드풀로 전송
-	    final L1Character finalAttacker = attacker;
-	    final Runnable mandatoryDeath = () -> {
-	    	try {
-                // Delayed rewards belong to the death generation that claimed
-                // them. A resurrected or recycled monster must not receive an
-                // earlier generation's drops, XP or world event callbacks.
+        final Runnable mandatoryDeath = () -> {
+            try {
                 if (!isCurrentDeath(deathEpoch)) return;
-	    		processDeathLogic(finalAttacker, deathEpoch);
-	    	} catch (Exception e) {
-	    		e.printStackTrace();
-	    	} finally {
+                processDeathLogic(lastAttacker, deathEpoch);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
                 synchronized (this) {
-                    if (_deathEpoch == deathEpoch && isDead()) {
+                    if (isCurrentDeath(deathEpoch)) {
                         setExp(0);
                         setLawful(0);
                         setKarma(0);
-                        // Publish completion after all reward-state writes.
-                        setDeathProcessing(false);
+                        // Even a failed script must not strand a corpse.
+                        try {
+                            allTargetClear();
+                        } finally {
+                            DeathFinished(true);
+                        }
                     }
                 }
-	    	}
+            }
+        };
 
-	    };
         try {
-            ThreadPool.getInstance().execute(mandatoryDeath);
-        } catch (RejectedExecutionException rejected) {
-            // The monster is already dead: losing this task would permanently
-            // lose drops/XP and leave deathProcessing claimed. Never drop it.
-            // This explicit exceptional fallback may stall the caller while
-            // overloaded; it is NOT the general pool CallerRuns policy.
-            java.util.logging.Logger.getLogger(L1MonsterInstance.class.getName())
-                    .log(java.util.logging.Level.SEVERE,
-                            "Mandatory monster death settlement rejected; running in caller", rejected);
-            mandatoryDeath.run();
+            setStatus(ActionCodes.ACTION_Die);
+            CDesirePQ.releaseBlockedAttack(this);
+            releaseNpcTileNow();
+            final int dieGfx = getNpcId() >= 8500142 && getNpcId() <= 8500144
+                    ? 11 : ActionCodes.ACTION_Die;
+            SC_DoActionGFX.broadcast(this, dieGfx);
+        } finally {
+            SubmitDeathSettlement(mandatoryDeath);
         }
-	}
-	
+    }
+
     private boolean isCurrentDeath(int deathEpoch) {
-        return _deathEpoch == deathEpoch && isDead() && !_destroyed;
+        return _deathEpoch == deathEpoch && isDead() && !_destroyed && isDeathProcessing();
     }
 
     private void processDeathLogic(L1Character lastAttacker, int deathEpoch) {
@@ -829,9 +801,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         startChat(CHAT_TIMING_DEAD);
         if (!isCurrentDeath(deathEpoch)) return;
         allTargetClear();
-        if (!isCurrentDeath(deathEpoch)) return;
-        startDeleteTimer();
-        if (!isCurrentDeath(deathEpoch)) return;
         if (!isCurrentDeath(deathEpoch)) return;
         혈맹포인트(lastAttacker);
         if (!isCurrentDeath(deathEpoch)) return;
@@ -1195,29 +1164,24 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	
     @Override
     public synchronized void resurrect(int hp) {
-        if (_destroyed) return;
+        if (_destroyed || isDeathProcessing()) return;
         final boolean wasDead = isDead();
-        if (wasDead) DEATH_EPOCH.incrementAndGet(this);
         super.resurrect(hp);
-        if (wasDead && !isDead() && getCurrentHp() > 0) {
-            setDeathProcessing(false);
-            DEATH_CLAIMED.set(this, 0);
-        }
+        if (wasDead && !isDead() && getCurrentHp() > 0) ++_deathEpoch;
     }
 
-	public void re() {
-        DEATH_EPOCH.incrementAndGet(this);
-        DEATH_CLAIMED.set(this, 1);
-		setDeathProcessing(true);
-		setCurrentHp(0);
-		setDead(true);
-		setDeathProcessing(false);
-		setExp(0);
-		setKarma(0);
-		setLawful(0);
-		allTargetClear();
-		deleteRe();
-	}
+    public synchronized void re() {
+        // Administrative/script removal is not a second reward-bearing death.
+        if (_destroyed || isDeathProcessing()) return;
+        if (!isDead() && !Die()) return;
+        ++_deathEpoch;
+        setExp(0);
+        setKarma(0);
+        setLawful(0);
+        allTargetClear();
+        DeathFinished(false);
+        deleteRe();
+    }
 
 	// 오림 인던 관련
 	private boolean _isCurseMimic;

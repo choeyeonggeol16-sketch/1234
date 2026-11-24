@@ -3,7 +3,6 @@ package l1j.server.server.model.Instance;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.Config;
@@ -251,44 +250,41 @@ public class L1GuardianInstance extends L1NpcInstance {
 
 	@Override
 	protected void onDeath(final L1Character lastAttacker) {
-	    if (isDead()) {
-	        return;
-	    }  
-		// 사망 상태와 죽음 모션은 공격 처리 흐름에서 즉시 확정한다.
-		final int deathLifeEpoch = npcEventEpoch();
-		setDeathProcessing(true);
-		setCurrentHp(0);
-		setDead(true);
-		setStatus(ActionCodes.ACTION_Die);
-		releaseNpcTileNow();
-		SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+        final int deathLifeEpoch;
+        synchronized (this) {
+            if (!Die()) return;
+            deathLifeEpoch = npcEventEpoch();
+        }
 
-		// 보상 분배만 기존 ThreadPool에서 처리한다.
-		// 완료 전에는 hate 목록을 지우지 않는다.
-		final Runnable deathContinuation = () -> {
-			try {
-				processDeathRewards(lastAttacker);
-			} finally {
-				synchronized (this) {
-					if (npcEventEpoch() == deathLifeEpoch && isDead() && !isDestroyed()) {
-						setKarma(0);
-						setLawful(0);
-						setExp(0);
-						allTargetClear();
-						startDeleteTimer();
-						setDeathProcessing(false);
-					}
-				}
-			}
-		};
-		try {
-			ThreadPool.getInstance().execute(deathContinuation);
-		} catch (RejectedExecutionException rejected) {
-			// Already marked dead. Do not lose rewards or leave the corpse
-			// permanently pending when the instant pool refuses the job.
-			deathContinuation.run();
-		}
-	}
+        final Runnable deathContinuation = () -> {
+            try {
+                if (npcEventEpoch() == deathLifeEpoch && isDead()
+                        && !isDestroyed() && isDeathProcessing()) {
+                    processDeathRewards(lastAttacker);
+                }
+            } finally {
+                synchronized (this) {
+                    if (npcEventEpoch() == deathLifeEpoch && isDead() && !isDestroyed()) {
+                        setKarma(0);
+                        setLawful(0);
+                        setExp(0);
+                        try {
+                            allTargetClear();
+                        } finally {
+                            DeathFinished(true);
+                        }
+                    }
+                }
+            }
+        };
+        try {
+            setStatus(ActionCodes.ACTION_Die);
+            releaseNpcTileNow();
+            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+        } finally {
+            SubmitDeathSettlement(deathContinuation);
+        }
+    }
 
 	private void processDeathRewards(L1Character lastAttacker) {
 		L1PcInstance player = null;

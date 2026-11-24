@@ -412,7 +412,6 @@ public class L1CompanionInstance extends L1NpcInstance{
     private CompanionStatEffect m_stat_effect;
     private boolean m_is_teleporting;
     private long m_pink_name_millis;
-    private Object m_death_lock;
     private ConcurrentHashMap<Integer, EffectTriggerInstance> m_triggers;
     private L1CompanionInstance(){
         super(null);
@@ -423,7 +422,6 @@ public class L1CompanionInstance extends L1NpcInstance{
         m_is_teleporting = false;
         m_is_traning = false;
         m_pink_name_millis = 0;
-        m_death_lock = new Object();
         m_combo_count = 0;
         m_name_changed_count = 0;
         m_triggers = new ConcurrentHashMap<Integer, EffectTriggerInstance>();
@@ -1071,13 +1069,10 @@ public class L1CompanionInstance extends L1NpcInstance{
     
     @Override
     protected void onDeath(L1Character last_attacker) {
-        synchronized(m_death_lock){
-            if(isDead())
-                return;
-            setDead(true);
-        }
-
-        setCurrentHp(0);
+        if (!Die()) return;
+        final int lifeEpoch = npcEventEpoch();
+        final long smartId = L1World.getInstance().smartIdOf(this);
+        try {
         setStatus(ActionCodes.ACTION_Die);
         send_action(ActionCodes.ACTION_Die);
         releaseNpcTileNow();
@@ -1101,16 +1096,28 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(m_master != null)
             SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_ALL);
 
-        ThreadPool.getInstance().scheduleRequired(() -> {
-            if(isDead() && getCurrentHp() <= 0 && L1World.getInstance().contains_companion(getId())){
-                if(m_master != null)
-                    m_master.remove_companion();
-                else
-                    deleteMe();
-            }else{
-                CompanionInstanceCache.update_cache(this, false);
-            }
-        }, 60000);
+        } finally {
+            DeathFinished(false);
+            // Keep the existing 60-second one-shot worker: removal persists
+            // companion/inventory data, so it must not block the NPC owner.
+            ThreadPool.getInstance().scheduleRequired(() -> {
+                if (!L1World.getInstance().contains_companion(getId())
+                        || !ClaimDeathRemoval(lifeEpoch, smartId)) return;
+                // Delete this exact companion, never whatever the master
+                // happens to have summoned when the old deadline expires.
+                deleteMe();
+            }, 60000);
+        }
+    }
+
+    @Override
+    public synchronized void resurrect(int hp) {
+        final boolean wasDead = isDead();
+        super.resurrect(hp);
+        if (wasDead && !isDead() && m_master != null
+                && L1World.getInstance().smartIdOf(this) != 0L) {
+            CompanionInstanceCache.update_cache(this, true);
+        }
     }
 
     @Override
@@ -1124,7 +1131,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         update_buffs();
         do_drop_items();
         if(m_master != null){
-            m_master.set_companion(null);
+            if (m_master.get_companion() == this) m_master.set_companion(null);
             m_master = null;
         }
         remove_triggers();

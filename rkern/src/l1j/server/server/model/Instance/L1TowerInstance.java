@@ -77,12 +77,15 @@ public class L1TowerInstance extends L1NpcInstance {
 				int newHp = applyNpcHpDelta(-(long) damage);
 
 				if (newHp == 0 && !isDead()) {
-					setCurrentHp(0);
-					setDead(true);
-					setStatus(36);
-
-					_lastattacker = attacker;
-					_crackStatus = 0;
+                    if (Die()) {
+                        try {
+                            setStatus(36);
+                            _lastattacker = attacker;
+                            _crackStatus = 0;
+                        } finally {
+                            DeathFinished(false);
+                        }
+                    }
 				}
 
 				if (newHp > 0) {
@@ -246,15 +249,6 @@ public class L1TowerInstance extends L1NpcInstance {
 
 				if (newHp == 0 && !isDead()) {
 
-					setCurrentHp(0);
-					setDead(true);
-
-					setStatus(ActionCodes.ACTION_TowerDie);
-					setStatus(ActionCodes.ACTION_TowerDie);
-
-					_lastattacker = attacker;
-					_crackStatus = 0;
-
 					onDeath(attacker);
 				}
 
@@ -326,19 +320,20 @@ public class L1TowerInstance extends L1NpcInstance {
 
 	@Override
 	protected void onDeath(L1Character lastAttacker) {
-		setCurrentHp(0);
-		setDead(true);
-
-		setStatus(ActionCodes.ACTION_TowerDie);
-		setStatus(ActionCodes.ACTION_TowerDie);
-
-		SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_TowerDie);
-
-		if (!isSubTower()) {
-			L1WarSpawn warspawn = new L1WarSpawn();
-			warspawn.SpawnCrown(_castle_id);
-		}
-	}
+        if (!Die()) return;
+        try {
+            setStatus(ActionCodes.ACTION_TowerDie);
+            _lastattacker = lastAttacker;
+            _crackStatus = 0;
+            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_TowerDie);
+            if (!isSubTower()) {
+                L1WarSpawn warspawn = new L1WarSpawn();
+                warspawn.SpawnCrown(_castle_id);
+            }
+        } finally {
+            DeathFinished(false);
+        }
+    }
 
 	@Override
 	public void deleteMe() {

@@ -152,28 +152,29 @@ public class L1PeopleInstance extends L1NpcInstance {
 	}
 
 	@Override
-	protected void onDeath(L1Character lastAttacker) {	
-	    if (isDead()) {
-	        return;
-	    }   
-		setDeathProcessing(true);
-		try {
-			setCurrentHp(0);
-			setDead(true);
-			setStatus(ActionCodes.ACTION_Die);
-			SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
-			startChat(CHAT_TIMING_DEAD);
-			releaseNpcTileNow();
-		} finally {
-			setDeathProcessing(false);
-			allTargetClear();
-			startDeleteTimer();
-		}
-
-		if (lastAttacker != null) {
-			ThreadPool.getInstance().execute(() -> lastAttacker.addLawful(-5000));
-		}
-	}
+	protected void onDeath(L1Character lastAttacker) {
+        if (!Die()) return;
+        try {
+            setStatus(ActionCodes.ACTION_Die);
+            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+            startChat(CHAT_TIMING_DEAD);
+            releaseNpcTileNow();
+        } finally {
+            try {
+                allTargetClear();
+            } finally {
+                DeathFinished(true);
+            }
+        }
+        if (lastAttacker != null) {
+            final Runnable penalty = () -> lastAttacker.addLawful(-5000);
+            try {
+                ThreadPool.getInstance().execute(penalty);
+            } catch (java.util.concurrent.RejectedExecutionException rejected) {
+                penalty.run();
+            }
+        }
+    }
 
 	class RestMonitor implements Runnable {
 		@Override

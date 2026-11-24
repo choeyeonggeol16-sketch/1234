@@ -771,6 +771,38 @@ public final class CNpcAI {
         npc.startChat(L1NpcInstance.CHAT_TIMING_HIDE);
     }
 
+    /** Only accepted damage/hate, not new desires, survives the death boundary.
+     * Run on the NPC owner before any XP or drop snapshot is taken.
+     */
+    public static void DrainDeathContribution(final L1NpcInstance npc) {
+        CNPCEvent pending = npc.TakeDeathEvents();
+        while (pending != null) {
+            final CNPCEvent event = pending;
+            pending = event.next;
+            try {
+                final int value = event.value;
+                if (event.epoch != npc.npcEventEpoch() || event.cha == null
+                        || value <= L1NpcInstance.HATE_EVENT_HIDE_DRAGON_FLY
+                        || L1NpcInstance.isClanHateEvent(value)) continue;
+                AddContribution(npc, event.cha, L1NpcInstance.isAttackHateEvent(value)
+                        ? L1NpcInstance.eventDamage(value) : value);
+            } catch (Throwable failure) {
+                LOG.log(Level.WARNING, "[NPC-DEATH] contribution failed", failure);
+            } finally {
+                CNPCEvent.Release(event);
+            }
+        }
+    }
+
+    private static void AddContribution(L1NpcInstance npc, L1Character cha, int hate) {
+        if (!npc.isFirstAttack() && hate != 0) {
+            hate += npc.getMaxHp() / 10;
+            npc.setFirstAttack(true);
+        }
+        npc._hateList.add(cha, hate);
+        npc._dropHateList.add(cha, hate);
+    }
+
     private static boolean HandleEvent(
             final L1NpcInstance npc,
             final long nowMs) {
@@ -1001,17 +1033,7 @@ public final class CNpcAI {
                         }
                     }
 
-                    int hate = damage;
-
-                    if (!npc.isFirstAttack()
-                            && hate != 0) {
-
-                        hate += npc.getMaxHp() / 10;
-                        npc.setFirstAttack(true);
-                    }
-
-                    npc._hateList.add(cha, hate);
-                    npc._dropHateList.add(cha, hate);
+                    AddContribution(npc, cha, damage);
 
                     changed = true;
                     realHateChanged = true;
@@ -1057,15 +1079,7 @@ public final class CNpcAI {
                     interruptMoveAround = true;
                 }
 
-                if (!npc.isFirstAttack()
-                        && hate != 0) {
-
-                    hate += npc.getMaxHp() / 10;
-                    npc.setFirstAttack(true);
-                }
-
-                npc._hateList.add(cha, hate);
-                npc._dropHateList.add(cha, hate);
+                AddContribution(npc, cha, hate);
 
                 changed = true;
                 realHateChanged = true;

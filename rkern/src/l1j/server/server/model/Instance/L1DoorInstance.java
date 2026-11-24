@@ -3,7 +3,6 @@ package l1j.server.server.model.Instance;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.network.core.sc.packet.SC_Door;
 
-import java.util.concurrent.RejectedExecutionException;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
@@ -116,17 +115,7 @@ public class L1DoorInstance extends L1NpcInstance {
 		if (getCurrentHp() > 0 && !isDead()) {
 			int newHp = applyNpcHpDelta(-(long) damage);
 			if (newHp == 0 && !isDead()) {
-				setCurrentHp(0);
-				setDead(true);
-				setStatus(DoorAction(GfxId, ActionCodes.ACTION_DoorDie));
-				Death death = new Death(attacker);
-				try {
-					ThreadPool.getInstance().execute(death);
-				} catch (RejectedExecutionException rejected) {
-					// Passability and world collision must be released even when
-					// the instant executor refuses this mandatory transition.
-					death.run();
-				}
+                OnDoorDestroyed();
 			}
 			if (newHp > 0) {
 				if (attacker instanceof L1PcInstance) {
@@ -194,27 +183,19 @@ public class L1DoorInstance extends L1NpcInstance {
 		super.setCurrentHp(i);
 	}
 
-	class Death implements Runnable {
-		L1Character _lastAttacker;
-
-		public Death(L1Character lastAttacker) {
-			_lastAttacker = lastAttacker;
-		}
-
-		@Override
-		public void run() {
-			int GfxId = getCurrentSpriteId();
-			setCurrentHp(0);
-			setDead(true);
-			//isPassibleDoor(true);//하딘 시스템
-			setStatus(DoorAction(GfxId, ActionCodes.ACTION_DoorDie));
-		//	getMap().setPassable(getLocation(), true);
-			SC_DoActionGFX.broadcast(L1DoorInstance.this, DoorAction(GfxId, ActionCodes.ACTION_DoorDie));
-			setPassable(PASS);
-			updateDoorCache(false); // 삭제됨 -> 맵 뚫림
-			sendDoorPacket(null);
-		}
-	}
+    private synchronized void OnDoorDestroyed() {
+        if (!Die()) return;
+        try {
+            final int action = DoorAction(getCurrentSpriteId(), ActionCodes.ACTION_DoorDie);
+            setStatus(action);
+            setPassable(PASS);
+            updateDoorCache(false);
+            SC_DoActionGFX.broadcast(this, action);
+            sendDoorPacket(null);
+        } finally {
+            DeathFinished(false);
+        }
+    }
 
 	class DoorTimer implements Runnable {
 		@Override
@@ -379,7 +360,7 @@ public class L1DoorInstance extends L1NpcInstance {
 		}
 	}
 	
-	public void repairGate() {
+	public synchronized void repairGate() {
 		if (getMaxHp() > 1) {
 			setDead(false);
 			setCurrentHp(getMaxHp());

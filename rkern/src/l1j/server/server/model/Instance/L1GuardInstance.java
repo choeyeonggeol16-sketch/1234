@@ -360,26 +360,20 @@ public class L1GuardInstance extends L1NpcInstance {
 
 	@Override
 	protected void onDeath(L1Character lastAttacker) {
-		if (isDead()) {
-			return;
-		}
-
-		setDeathProcessing(true);
-		setCurrentHp(0);
-		setDead(true);
-		setStatus(ActionCodes.ACTION_Die);
-
-		SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
-
-		releaseNpcTileNow();
-
-		startChat(CHAT_TIMING_DEAD);
-		allTargetClear();
-
-		setDeathProcessing(false);
-
-		startDeleteTimer();
-	}
+        if (!Die()) return;
+        try {
+            setStatus(ActionCodes.ACTION_Die);
+            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+            releaseNpcTileNow();
+            startChat(CHAT_TIMING_DEAD);
+        } finally {
+            try {
+                allTargetClear();
+            } finally {
+                DeathFinished(true);
+            }
+        }
+    }
 
 	@Override
 	public void checkTarget() {

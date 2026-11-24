@@ -505,6 +505,18 @@ public final class CNPCServer {
         }
     }
 
+    /** Death settlement uses the existing coalesced wake, even with AI stopped. */
+    public boolean postNpcDeath(L1NpcInstance npc, Runnable task) {
+        if (!beginPost()) return false;
+        try {
+            if (npc == null || !npc.PublishDeathSettlement(task)) return false;
+            signalDeferred(npc);
+            return true;
+        } finally {
+            endPost();
+        }
+    }
+
     // Used only after a producer has been admitted by beginPost(). Unlike
     // ordinary AI wake, cancellation must reach the owner even if AI stopped.
     private void signalDeferred(L1NpcInstance npc) {
@@ -766,6 +778,7 @@ public final class CNPCServer {
                     npc.npcControllerDisarm();
                 }
                 npc.npcActionApplyDeferredArm();
+                npc.DispatchDeathSettlement();
                 if (npc.aiEngineIsRunning()) {
                     schedule(npc, System.currentTimeMillis());
                 } else {
@@ -1057,6 +1070,7 @@ public final class CNPCServer {
                 queued.npcSkillHeartbeatClearDeferredArm();
                 queued.npcSkillHeartbeatClearDeferredTick();
                 queued.npcActionClearDeferredCommands();
+                queued.DispatchDeathSettlement();
             }
             CorpseEvent event;
             while ((event = _corpse.poll()) != null) {

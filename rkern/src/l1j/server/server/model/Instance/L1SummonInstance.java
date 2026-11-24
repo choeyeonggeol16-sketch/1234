@@ -225,13 +225,8 @@ public class L1SummonInstance extends L1NpcInstance {
 
 	@Override
 	protected synchronized void onDeath(L1Character lastAttacker) {
-		if (!isDead()) {
-            // The owner stops movement immediately, but inventory settlement
-            // retains this death until the existing synchronous work finishes.
-            setDeathProcessing(true);
+        if (Die()) {
             try {
-				setDead(true);
-				setCurrentHp(0);
 				setStatus(ActionCodes.ACTION_Die);
 				releaseNpcTileNow();
 				L1Inventory targetInventory = _master.getInventory();
@@ -248,12 +243,11 @@ public class L1SummonInstance extends L1NpcInstance {
 				}
 				if (_tamed) {
 					SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
-					startDeleteTimer();
 				} else {
 					deleteMe();
 				}
             } finally {
-                setDeathProcessing(false);
+                DeathFinished(_tamed);
             }
 		}
 	}

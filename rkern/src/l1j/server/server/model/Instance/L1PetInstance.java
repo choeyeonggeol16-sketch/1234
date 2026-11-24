@@ -229,15 +229,16 @@ public class L1PetInstance extends L1NpcInstance {
 	 */
 	@Override
 	protected synchronized void onDeath(L1Character lastAttacker) {
-		if (isDead()) {
-			return;
-		}
-		setDead(true);
-		setStatus(ActionCodes.ACTION_Die);
-		setCurrentHp(0);
-		releaseNpcTileNow();
-		SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
-	}
+        if (!Die()) return;
+        try {
+            setStatus(ActionCodes.ACTION_Die);
+            releaseNpcTileNow();
+            SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Die);
+        } finally {
+            // A pet corpse remains available for resurrection.
+            DeathFinished(false);
+        }
+    }
 
 	public void evolvePet(int new_itemobjid) {
 
