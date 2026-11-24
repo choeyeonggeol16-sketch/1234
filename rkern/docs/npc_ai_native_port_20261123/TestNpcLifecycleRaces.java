@@ -8,6 +8,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import sun.misc.Unsafe;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.L1GroundInventory;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1Location;
+import l1j.server.server.model.L1IntRegistry;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1V1Map;
+import l1j.server.server.model.L1HateList;
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -15,13 +25,31 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.npc.ai.CNpcSpecialAction;
 
 public final class TestNpcLifecycleRaces {
-    static final class Monster extends L1MonsterInstance {
+    static class Monster extends L1MonsterInstance {
         Monster() { super(null); }
         @Override public int getNpcId() { return 1; }
         @Override public int getMaxHp() { return 100; }
         @Override public int getMaxMp() { return 100; }
         @Override public void setHate(L1Character attacker, int damage) { }
         @Override public void onNpcAI() { }
+    }
+
+    static final class Guardian extends Monster {
+        int awakenings;
+        @Override public int getNpcId() { return 707026; }
+        @Override public void setStatus(int status) {
+            if (status == 0) awakenings++;
+            super.setStatus(status);
+        }
+    }
+
+    // Only the transfer outcome is injected: no DB, item creation or socket.
+    static final class RefusingInventory extends L1Inventory {
+        int attempts;
+        @Override public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory target) {
+            attempts++;
+            return null;
+        }
     }
 
     static void check(boolean b, String why) {
@@ -115,13 +143,52 @@ public final class TestNpcLifecycleRaces {
         }
         System.out.println("PASS 100 MP debit / mana-credit contention rounds");
 
+        // A minimal world uses the real cluster and ground registry, without
+        // invoking MapsTable/database initialization.
+        L1World world = (L1World) u.allocateInstance(L1World.class);
+        Class<?> worldClass = Class.forName("l1j.server.server.model.CWorld");
+        Constructor<?> ctor = worldClass.getDeclaredConstructor(L1World.class);
+        ctor.setAccessible(true);
+        field(L1World.class, "_worldExecutor").set(world, ctor.newInstance(world));
+        byte[][] tiles = new byte[64][64];
+        for (byte[] col : tiles) Arrays.fill(col, (byte) 0x03);
+        L1Map map = new L1V1Map(996, tiles, 0, 0,
+                false, true, true, true, true, true,
+                true, true, true, true, true, false);
+        L1IntRegistry<L1Object> registry = new L1IntRegistry<>();
+        L1IntRegistry<?>[] visible = new L1IntRegistry<?>[997];
+        visible[996] = registry;
+        field(L1World.class, "_visibleObjects").set(world, visible);
+        field(L1World.class, "_instance").set(null, world);
+        L1GroundInventory ground = (L1GroundInventory) u.allocateInstance(L1GroundInventory.class);
+        ground.setId(-((20 - 30000) * 10000 + (20 - 30000)));
+        field(L1Object.class, "_loc").set(ground, new L1Location(20, 20, map));
+        registry.put(ground.getId(), ground);
+
+        Guardian guardian = (Guardian) u.allocateInstance(Guardian.class);
+        guardian.setId(997002);
+        field(L1Object.class, "_loc").set(guardian, new L1Location(20, 20, map));
+        for (int i = 0; i < 100; i++) {
+            guardian.awakenings = 0;
+            guardian.setStatus(6);
+            hp.setInt(guardian, 90);
+            race(() -> CNpcSpecialAction.OnHpChanged(guardian, 90),
+                    () -> CNpcSpecialAction.OnHpChanged(guardian, 90));
+            check(guardian.awakenings == 1 && guardian.getStatus() == 0,
+                    "duplicate guardian awakening claim");
+        }
+        System.out.println("PASS 100 simultaneous guardian awakening rounds (no connected viewers)");
+
         // A dead summon with unsettled inventory must not be deleted by
         // outside callers or the stale lifetime deadline. A failed retry
         // stays death-processing and advances the retry generation.
         L1SummonInstance summon = (L1SummonInstance) u.allocateInstance(L1SummonInstance.class);
         dead.setBoolean(summon, true);
         field(L1NpcInstance.class, "_deathProcessing").setBoolean(summon, true);
-        L1Inventory inv = new L1Inventory();
+        RefusingInventory inv = new RefusingInventory();
+        field(L1Object.class, "_loc").set(summon, new L1Location(20, 20, map));
+        summon._hateList = new L1HateList();
+        summon._dropHateList = new L1HateList();
         L1ItemInstance item = (L1ItemInstance) u.allocateInstance(L1ItemInstance.class);
         item.setId(997001);
         item.setCount(1);
@@ -135,8 +202,9 @@ public final class TestNpcLifecycleRaces {
         // Intentionally unregistered fixture: no real world timer is admitted.
         Method finish = L1SummonInstance.class.getDeclaredMethod("finishSummonDeath");
         finish.setAccessible(true);
-        summon.setInventory(null);
         finish.invoke(summon);
+        check(inv.attempts == 1 && inv.getItems().size() == 1,
+                "refused transfer lost item or was not attempted");
         Field retry = field(L1SummonInstance.class, "deathReturnGeneration");
         check(retry.getInt(summon) != 0 && summon.isDeathProcessing() && !summon.isDestroyed(),
                 "failed settlement did not request retry");

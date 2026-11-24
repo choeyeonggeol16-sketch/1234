@@ -5,6 +5,7 @@ import java.util.Arrays;
 import sun.misc.Unsafe;
 
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -52,6 +53,8 @@ public final class TestNpcMoveTo {
         npc.setId(id);
         loc.set(npc, new L1Location(x, y, map));
         hp.setInt(npc, 100);
+        npc._hateList = new L1HateList();
+        npc._dropHateList = new L1HateList();
         return npc;
     }
 

@@ -47,6 +47,7 @@ public final class TestNpcGuardGroup {
         loc.set(npc, new L1Location(x, y, map));
         hp.setInt(npc, 100);
         npc._hateList = new L1HateList();
+        npc._dropHateList = new L1HateList();
         return npc;
     }
 

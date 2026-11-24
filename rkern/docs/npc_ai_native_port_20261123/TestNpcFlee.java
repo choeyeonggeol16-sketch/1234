@@ -35,6 +35,7 @@ public final class TestNpcFlee {
         location.set(npc, new L1Location(x, y, map));
         health.setInt(npc, 100);
         npc._hateList = new L1HateList();
+        npc._dropHateList = new L1HateList();
         return npc;
     }
 

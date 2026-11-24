@@ -12,6 +12,7 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1World;
@@ -106,13 +107,23 @@ public final class TestNpcGetItem {
         check(CGetItemAction.onTick(npc) == CCreatureController.RESULT_DONE,
                 "a cleared pickup command cannot execute a stale item");
         npc.setPickupItem(true);
-        npc.setDead(true);
-        npc._targetItem = itemA;
-        check(dGetItem.dGetItem(npc, itemA) == CCreatureController.RESULT_INVALID,
-                "dead NPC must never attempt ground transfer");
-        check(npc._targetItem == null,
-                "dead NPC must retire the stale GET_ITEM request");
-        npc.setDead(false);
+        npc._hateList = new L1HateList();
+        npc._dropHateList = new L1HateList();
+        final byte[][] initialTiles = new byte[64][64];
+        for (byte[] col : initialTiles) java.util.Arrays.fill(col, (byte) 0x03);
+        final L1Map initialMap = new L1V1Map(996, initialTiles, 0, 0,
+                false, true, true, true, true, true,
+                true, true, true, true, true, false);
+        field(L1Object.class, "_loc").set(npc, new L1Location(20, 20, initialMap));
+        synchronized (npc) {
+            npc.setDead(true);
+            npc._targetItem = itemA;
+            check(dGetItem.dGetItem(npc, itemA) == CCreatureController.RESULT_INVALID,
+                    "dead NPC must never attempt ground transfer");
+            check(npc._targetItem == null,
+                    "dead NPC must retire the stale GET_ITEM request");
+            npc.setDead(false);
+        }
 
         // Normal pet item permissions are the original L1 restriction.
         final L1PetInstance pet = instance(unsafe, L1PetInstance.class);
