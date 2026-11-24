@@ -145,6 +145,7 @@ public class L1NpcInstance extends L1Character {
     // Existing packet/AI readers must observe both metadata updates.
     private volatile L1MobGroupInfo _mobGroupInfo = null;
     private volatile int _mobGroupId = 0;
+    private int _formationIndex = -1;
     private int num; /* 버경 관련 */
 
 
@@ -2040,6 +2041,16 @@ public class L1NpcInstance extends L1Character {
 
     public void setMobGroupInfo(L1MobGroupInfo m) {
         _mobGroupInfo = m;
+    }
+
+    // Published before the volatile group reference by L1MobGroupInfo.
+    // Slots do not change while a member is attached.
+    public int getFormationIndex() {
+        return _formationIndex;
+    }
+
+    public void setFormationIndex(int index) {
+        _formationIndex = index;
     }
 
     public int getMobGroupId() {

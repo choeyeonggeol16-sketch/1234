@@ -20,6 +20,7 @@ final class MoveIntentCache {
     static final byte KIND_NONE   = 0;
     static final byte KIND_COMBAT = 1;
     static final byte KIND_FOLLOW = 2;
+    static final byte KIND_FORMATION = 3;
 
     private static final int CACHE_SIZE = 4096;
     private static final int CACHE_MASK = CACHE_SIZE - 1;
@@ -387,6 +388,15 @@ final class MoveIntentCache {
             s.waitUntil[slot] = 0L;
             s.waitReason[slot] = 0;
         }
+    }
+
+    static boolean clearFormation(final L1NpcInstance npc) {
+        if (npc == null || npc.getId() == 0) return false;
+        final State s = LOCAL.get();
+        final int slot = slot(npc.getId());
+        if (s.key[slot] != key(npc) || s.kind[slot] != KIND_FORMATION) return false;
+        clearSlot(s, slot);
+        return true;
     }
 
     static void clearAll(final L1NpcInstance npc) {

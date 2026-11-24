@@ -93,7 +93,7 @@ public final class CMoveAction {
         case CCreatureController.ACTION_FOLLOW_GROUP: {
             if (!creature.isMovable() || creature.isRest()
                     || !L1World.getInstance().hasRecognizePlayerFast(creature)) {
-                dFollow.clear(creature);
+                dMoveFormation.clear(creature);
                 return CCreatureController.RESULT_DONE;
             }
             final L1MobGroupInfo group = creature.getMobGroupInfo();
@@ -102,7 +102,7 @@ public final class CMoveAction {
             if (group == null || group.isLeader(creature)) {
                 // A follower became its own new group leader, or its group
                 // was disbanded while the last CIO timer was pending.
-                dFollow.clear(creature);
+                dMoveFormation.clear(creature);
                 return CCreatureController.RESULT_DONE;
             }
 
@@ -111,7 +111,7 @@ public final class CMoveAction {
             // This is a suspended FOLLOW_GROUP, not an invalid AI actor:
             // never stop the whole NPC owner because its leader vanished.
             if (!validGroupLeader(creature, group, leader)) {
-                dFollow.clear(creature);
+                dMoveFormation.clear(creature);
                 ActionAccess.sleep(creature, 500L);
                 return CCreatureController.RESULT_RUNNING;
             }
@@ -420,7 +420,7 @@ public final class CMoveAction {
                 && leader.getMapId() == creature.getMapId();
     }
 
-    /** Followers of an L1 mob-group leader share the same slot policy. */
+    /** Group followers own a formation slot, separate from pet/master follow. */
     public static boolean followGroup(
             final L1NpcInstance creature, final L1NpcInstance leader) {
         final L1MobGroupInfo group =
@@ -428,7 +428,7 @@ public final class CMoveAction {
         final L1NpcInstance activeLeader =
                 group != null ? group.getActiveLeader() : null;
         if (!validGroupLeader(creature, group, activeLeader)) {
-            dFollow.clear(creature);
+            dMoveFormation.clear(creature);
             if (creature != null) {
                 ActionAccess.sleep(creature, 500L);
             }
@@ -436,7 +436,7 @@ public final class CMoveAction {
             // invalid AI). Lack of a leader only postpones this movement.
             return false;
         }
-        return dFollow.follow(creature, activeLeader);
+        return dMoveFormation.follow(creature, group, activeLeader);
     }
 
     /**
@@ -470,9 +470,14 @@ public final class CMoveAction {
             }
         }
 
+        return stepFollowGoal(creature, packed) == CCreatureController.RESULT_INVALID;
+    }
+
+    /** Shared path/occupancy step; formation may replan after BLOCKED. */
+    static byte stepFollowGoal(final L1NpcInstance creature, final long packed) {
         if (packed == MoveIntentCache.NO_POS) {
             ActionAccess.sleep(creature, 140L + (creature.getId() & 0x1f));
-            return false;
+            return CCreatureController.RESULT_RUNNING;
         }
 
         final int goalX = MoveIntentCache.unpackX(packed);
@@ -481,7 +486,7 @@ public final class CMoveAction {
         if (creature.getX() == goalX
                 && creature.getY() == goalY) {
             MoveIntentCache.clearProgress(creature);
-            return false;
+            return CCreatureController.RESULT_DONE;
         }
 
         final int dir = direction(creature, goalX, goalY);
@@ -491,11 +496,11 @@ public final class CMoveAction {
             ActionAccess.sleep(
                     creature,
                     softDelayMs(creature, lastBlockType(), 1));
-            return false;
+            return CCreatureController.RESULT_BLOCKED;
         }
 
         if (dir == DIR_RETRY) {
-            return false;
+            return CCreatureController.RESULT_RUNNING;
         }
 
         if (dir == DIR_HARD_BLOCK) {
@@ -508,11 +513,11 @@ public final class CMoveAction {
                             chebyshev(
                                     creature.getX(), creature.getY(),
                                     goalX, goalY)));
-            return false;
+            return CCreatureController.RESULT_BLOCKED;
         }
 
         if (dir == DIR_INVALID) {
-            return true;
+            return CCreatureController.RESULT_INVALID;
         }
 
         final int beforeX = creature.getX();
@@ -527,7 +532,7 @@ public final class CMoveAction {
                             creature,
                             WorldCollisionHash.MOVE_RESERVED,
                             1));
-            return false;
+            return CCreatureController.RESULT_BLOCKED;
         }
 
         final int noProgress = MoveIntentCache.reportMove(
@@ -544,9 +549,10 @@ public final class CMoveAction {
             MoveIntentCache.clearProgress(creature);
             invalidatePath(creature);
             ActionAccess.sleep(creature, 180L + (creature.getId() & 0x1f));
+            return CCreatureController.RESULT_BLOCKED;
         }
 
-        return false;
+        return CCreatureController.RESULT_RUNNING;
     }
 
     private static boolean validFollowGoal(

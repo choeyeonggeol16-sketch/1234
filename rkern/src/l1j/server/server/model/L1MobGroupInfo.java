@@ -33,6 +33,7 @@ public class L1MobGroupInfo {
 
 	// The NPC owner observes leader changes from respawn/delete threads.
 	private volatile L1NpcInstance _leader;
+	private int _nextFormationIndex;
 
 	public L1MobGroupInfo() {
 	}
@@ -133,6 +134,7 @@ public class L1MobGroupInfo {
 		}
 
 		_membersList.add(npc);
+		npc.setFormationIndex(_nextFormationIndex++);
 		npc.setMobGroupId(0);
 		npc.setMobGroupInfo(this);
 	}

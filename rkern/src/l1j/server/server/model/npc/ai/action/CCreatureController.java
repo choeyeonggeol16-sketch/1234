@@ -308,6 +308,12 @@ public final class CCreatureController {
             final byte action,
             final byte pendingAction) {
 
+        // A group follow completes one step then returns to THINK. Retain
+        // its goal across that boundary, but not when a different action wins.
+        if (action != ACTION_FOLLOW_GROUP && action != ACTION_THINK
+                && creature.getMobGroupInfo() != null) {
+            dMoveFormation.clearIfActive(creature);
+        }
         switch (action) {
         case ACTION_USE_SKILL:
             set(creature, ACTION_USE_SKILL);
@@ -721,6 +727,8 @@ public final class CCreatureController {
         } else if (previous == ACTION_MOVE_AROUND_NATIVE) {
             // Preserve the reserved ring hand-off to the new chase action.
             CMoveAroundAction.onInterrupted(creature);
+        } else if (previous == ACTION_FOLLOW_GROUP && nextAction != ACTION_THINK) {
+            dMoveFormation.clearIfActive(creature);
         } else if (previous == ACTION_MOVE_TO_TARGET_WAIT) {
             CMoveToTargetWaitAction.clear(creature);
         } else if ((previous == ACTION_MOVE_TO_POINT
@@ -805,6 +813,7 @@ public final class CCreatureController {
         // Cancellation does not invoke transitionFrom(). The normal exit
         // from a random walk does, so mirror its cleanup here before this
         // NPC can be reactivated or have its object id reused.
+        dMoveFormation.clearIfActive(creature);
         if (ActionAccess.currentAction(creature) == ACTION_MOVE_AROUND_NATIVE) {
             CMoveAroundAction.onInterrupted(creature);
         } else if ((ActionAccess.currentAction(creature) == ACTION_MOVE_TO_POINT
