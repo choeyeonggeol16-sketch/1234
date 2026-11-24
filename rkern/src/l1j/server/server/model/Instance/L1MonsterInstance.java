@@ -842,6 +842,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         L1Location origin;
         L1Inventory source;
         boolean claimed; // guarded by NPC monitor
+        boolean routed; // only the claimed dispatcher may run the initial drop
+        boolean retryArmed; // guarded by NPC monitor
+        int retryAttempts; // guarded by NPC monitor
         boolean handedOff; // initial worker only
         volatile boolean afterPickup;
         byte removalMode;
@@ -943,34 +946,119 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
             if (job == null || job.epoch != epoch || job.claimed) return;
             job.claimed = true;
         }
+
+        boolean complete = false;
         try {
-            // Accepted pickup owns this inventory until completion. Deferred
-            // deletion does not invalidate the accepted reward.
             if (getInventory() != job.source || _destroyed || !isDead()) {
                 throw new IllegalStateException("Admitted NPC drop source changed");
             }
-            DropTable.getInstance().dropShareSnapshot(this, job.snapshot, job.rewardPc,
-                    job.party, job.members, job.origin);
+            if (!job.routed) {
+                // Set before routing. A partial failure must never regenerate
+                // adena, select recipients again or repeat a successful share.
+                job.routed = true;
+                try {
+                    DropTable.getInstance().dropShareSnapshot(this, job.snapshot, job.rewardPc,
+                            job.party, job.members, job.origin);
+                } finally {
+                    // Recovery needs only the remaining inventory and origin.
+                    job.snapshot = null;
+                    job.party = null;
+                    job.members = null;
+                }
+            }
+            complete = RecoverPartyDrop(job);
         } catch (RuntimeException failure) {
-            DEATH_DROP_LOG.log(java.util.logging.Level.SEVERE, "Party pickup failed", failure);
+            if (job.retryAttempts == 0) {
+                DEATH_DROP_LOG.log(java.util.logging.Level.SEVERE, "Party pickup failed", failure);
+            }
         } finally {
-            synchronized (this) {
-                job.removalMode = _dropRemovalRequest;
-                _pendingPartyDrop = null;
-            }
-            job.snapshot = null;
-            job.party = null;
-            job.members = null;
-            job.origin = null;
-            job.source = null;
-            job.afterPickup = true;
-            // Keep scripts and death completion out of the normal CWorld drain.
-            // The existing mandatory-work rejection fallback is retained.
+            if (complete) CompletePartyDrop(job);
+            else SchedulePartyDropRetry(job);
+        }
+    }
+
+    /** Only transfer exact items still linked to the retained corpse inventory. */
+    private boolean RecoverPartyDrop(DeathSettlement job) {
+        final L1Inventory source = job.source;
+        if (source.getItems().isEmpty()) return true;
+        final L1World world = L1World.getInstance();
+        for (L1ItemInstance item : source.getItems()) {
+            if (item == null || source.getItem(item.getId()) != item || item.getCount() <= 0) continue;
             try {
-                ThreadPool.getInstance().execute(job);
-            } catch (RuntimeException rejected) {
-                job.run();
+                world.RecoverNpcDrop(job.origin, source, item);
+            } catch (RuntimeException failure) {
+                if (job.retryAttempts == 0) {
+                    DEATH_DROP_LOG.log(java.util.logging.Level.WARNING,
+                            "Party drop remainder recovery failed: " + item.getId(), failure);
+                }
             }
+        }
+        return source.getItems().isEmpty();
+    }
+
+    /** Exceptional path only. Retain the existing job and source until drained. */
+    private void SchedulePartyDropRetry(DeathSettlement job) {
+        // Keep claimed=true until the retry callback admits a new attempt.
+        // Late/duplicate world tickets cannot bypass the delay.
+        final int attempt;
+        synchronized (this) {
+            if (_pendingPartyDrop != job || !job.claimed || job.retryArmed) return;
+            if (job.retryAttempts < Integer.MAX_VALUE) ++job.retryAttempts;
+            attempt = job.retryAttempts;
+            job.retryArmed = true;
+        }
+        if (attempt == 1) {
+            DEATH_DROP_LOG.warning("Retaining unpaid party drop: npc=" + getId()
+                    + ", epoch=" + job.epoch + ", remaining=" + job.source.getItems().size());
+        }
+        // At most one delayed task per failed settlement, using the existing
+        // scheduler. Never block the world serializer or spin on a full tile.
+        final long delayMs = Math.min(30_000L, 250L << Math.min(7, attempt - 1));
+        try {
+            ThreadPool.getInstance().scheduleRequired(() -> RetryPartyDrop(job, attempt), delayMs);
+        } catch (java.util.concurrent.RejectedExecutionException rejected) {
+            // Typically shutdown: do not release the source merely because the
+            // retry was rejected. No durable crash guarantee is implied.
+            synchronized (this) {
+                if (_pendingPartyDrop == job && job.retryAttempts == attempt) job.retryArmed = false;
+            }
+            DEATH_DROP_LOG.log(java.util.logging.Level.SEVERE,
+                    "Party drop retry not admitted; NPC inventory retained: npc=" + getId(), rejected);
+        }
+    }
+
+    private void RetryPartyDrop(DeathSettlement job, int attempt) {
+        synchronized (this) {
+            if (_pendingPartyDrop != job || !job.claimed || !job.retryArmed
+                    || job.retryAttempts != attempt) return;
+            job.retryArmed = false;
+            job.claimed = false;
+        }
+        try {
+            if (!L1World.getInstance().AsyncPickItem(this, job.epoch)) DispatchPartyDrop(job.epoch);
+        } catch (RuntimeException failure) {
+            DEATH_DROP_LOG.log(java.util.logging.Level.WARNING, "Party pickup retry admission failed", failure);
+            DispatchPartyDrop(job.epoch);
+        }
+    }
+
+    private void CompletePartyDrop(DeathSettlement job) {
+        synchronized (this) {
+            if (_pendingPartyDrop != job) return;
+            job.removalMode = _dropRemovalRequest;
+            _pendingPartyDrop = null;
+        }
+        job.snapshot = null;
+        job.party = null;
+        job.members = null;
+        job.origin = null;
+        job.source = null;
+        job.afterPickup = true;
+        // Keep scripts and death completion out of the normal CWorld drain.
+        try {
+            ThreadPool.getInstance().execute(job);
+        } catch (java.util.concurrent.RejectedExecutionException rejected) {
+            job.run();
         }
     }
 

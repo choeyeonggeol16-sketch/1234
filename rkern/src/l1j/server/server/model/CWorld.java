@@ -594,11 +594,7 @@ public final class CWorld {
                 final var session = recipient.getNetConnection();
                 if (!recipient.isLogoutStarted() && session != null && session.isConnected()
                         && session.getActiveChar() == recipient) {
-                    final L1Inventory dest = recipient.getInventory();
-                    final L1ItemInstance adena = item.getItemId() == l1j.server.server.model.item.L1ItemId.ADENA
-                            ? dest.findItemId(item.getItemId()) : null;
-                    if ((adena == null || (long) adena.getCount() + count <= 2_000_000_000L)
-                            && source.tradeItem(item, count, dest) != null) return PICK_INVENTORY;
+                    if (DoAsyncAddItemToInventory(source, item, count, recipient)) return PICK_INVENTORY;
                     x = recipient.getX();
                     y = recipient.getY();
                     map = recipient.getMapId();
@@ -609,6 +605,21 @@ public final class CWorld {
         }
         return DropAtTile(source, item, count, origin.getX(), origin.getY(), (short) origin.getMapId())
                 ? PICK_GROUND : PICK_REJECTED;
+    }
+
+    /**
+     * Delivery phase of DoAsyncPickItem, executed in the already admitted world
+     * job (or its mandatory synchronous fallback). Do not enqueue a second
+     * ticket: completion belongs to the outer NPC settlement.
+     * Caller holds the recipient's existing logout/save lifecycle monitor.
+     */
+    private boolean DoAsyncAddItemToInventory(L1Inventory source, L1ItemInstance item, int count,
+            L1PcInstance recipient) {
+        final L1Inventory dest = recipient.getInventory();
+        final L1ItemInstance adena = item.getItemId() == l1j.server.server.model.item.L1ItemId.ADENA
+                ? dest.findItemId(item.getItemId()) : null;
+        return (adena == null || (long) adena.getCount() + count <= 2_000_000_000L)
+                && source.tradeItem(item, count, dest) != null;
     }
 
     private boolean DropAtTile(L1Inventory source, L1ItemInstance item, int count,
