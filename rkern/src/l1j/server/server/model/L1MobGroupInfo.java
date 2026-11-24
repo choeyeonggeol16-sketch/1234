@@ -37,19 +37,29 @@ public class L1MobGroupInfo {
 	public L1MobGroupInfo() {
 	}
 
-	/**
-	 * The group identity is the CURRENT leader's object ID. When the
-	 * leader changes, all members must see the same identity; otherwise
-	 * the existing group-help event compares stale IDs and ignores allies.
-	 *
-	 * Membership mutation is rare (spawn/death), never on the NPC hot path.
-	 */
+	/** One shared leader publication; no per-member identity rewrite. */
 	public synchronized void setLeader(final L1NpcInstance npc) {
 		_leader = npc;
-		final int groupId = npc != null ? npc.getId() : 0;
-		for (int i = 0; i < _membersList.size(); i++) {
-			_membersList.get(i).setMobGroupId(groupId);
+	}
+
+	public int getGroupId() {
+		final L1NpcInstance leader = _leader;
+		return leader == null ? 0 : leader.getId();
+	}
+
+	public static void onDelete(final L1NpcInstance npc) {
+		final L1MobGroupInfo group = npc.getMobGroupInfo();
+		if (group == null) {
+			if (npc.isReSpawn()) npc.onDecay(true);
+		} else if (group.removeMember(npc) == 0) {
+			npc.setMobGroupInfo(null);
+			if (npc.isReSpawn()) npc.onDecay(false);
 		}
+	}
+
+	public static boolean isFollower(final L1NpcInstance npc) {
+		final L1MobGroupInfo group = npc.getMobGroupInfo();
+		return group != null && group.getActiveLeader() != npc;
 	}
 
 	public L1NpcInstance getLeader() {
@@ -123,8 +133,8 @@ public class L1MobGroupInfo {
 		}
 
 		_membersList.add(npc);
+		npc.setMobGroupId(0);
 		npc.setMobGroupInfo(this);
-		npc.setMobGroupId(_leader != null ? _leader.getId() : 0);
 	}
 
 	public synchronized int removeMember(final L1NpcInstance npc) {

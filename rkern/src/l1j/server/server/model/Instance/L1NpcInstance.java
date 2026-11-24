@@ -70,6 +70,7 @@ public class L1NpcInstance extends L1Character {
     /** CNPCEvent 내부 SeeCreature sentinel. 실제 hate 값으로 사용하지 않는다. */
     public static final int HATE_EVENT_SIGHT = Integer.MIN_VALUE;
     public static final int HATE_EVENT_INVISIBILITY = Integer.MIN_VALUE + 1;
+    public static final int HATE_EVENT_GROUP_LINK = Integer.MIN_VALUE + 2;
 
     /*
      * ATTACKED / CLAN_ATTACKED도 pooled CNPCEvent를 그대로 사용한다.
@@ -852,57 +853,7 @@ public class L1NpcInstance extends L1Character {
     public void serchLink(
             L1PcInstance targetPlayer,
             int family) {
-
-        if (targetPlayer == null) {
-            return;
-        }
-
-        final int myGroupId =
-                getMobGroupId();
-
-        for (L1Object knownObject :
-                targetPlayer.getKnownObjects()) {
-
-            if (!(knownObject instanceof L1NpcInstance)) {
-                continue;
-            }
-
-            final L1NpcInstance npc =
-                    (L1NpcInstance) knownObject;
-
-            if (npc == this
-                    || npc.isDead()
-                    || npc.getCurrentHp() <= 0
-                    || npc.getMapId() != getMapId()) {
-                continue;
-            }
-
-            final L1Npc template =
-                    npc.getNpcTemplate();
-
-            if (template == null) {
-                continue;
-            }
-            
-            boolean linked =
-                    family > 0
-                    && template.get_family() == family
-                    && template.get_agrofamily() > 0
-                    && getLocation()
-                            .getTileLineDistance(
-                                    npc.getLocation()) <= 12;
-
-            if (!linked
-                    && myGroupId != 0
-                    && myGroupId == npc.getMobGroupId()) {
-
-                linked = true;
-            }
-
-            if (linked) {
-                npc.setLink(targetPlayer);
-            }
-        }
+        NpcEventFactory.searchLink(this, targetPlayer, family);
     }
 
     /**
@@ -1032,21 +983,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public boolean noTarget() {
-        if (_master != null && _master.getMapId() == getMapId() && getLocation().getTileLineDistance(_master.getLocation()) > 2) {
-            return noTargetMaster();
-        }    
-        if (!L1World.getInstance().hasRecognizePlayerFast(this)) {
-            return true;
-        }   
-        if (_master == null && isMovable() && !isRest()) {
-            L1MobGroupInfo mobGroupInfo = getMobGroupInfo();
-            if (mobGroupInfo == null || mobGroupInfo.isLeader(this)) {
-                noTargetNormal();
-            } else {
-                return noTargetGroup(mobGroupInfo.getLeader());
-            }
-        }
-        return false;
+        return CNpcAI.noTarget(this);
     }
 
     /**
@@ -1330,19 +1267,7 @@ public class L1NpcInstance extends L1Character {
             }
         }
         removeAllKnownObjects();
-        L1MobGroupInfo mobGroupInfo = getMobGroupInfo();
-        if (mobGroupInfo == null) {
-            if (isReSpawn()) {
-                onDecay(true);
-            }
-        } else {
-            if (mobGroupInfo.removeMember(this) == 0) {
-                setMobGroupInfo(null);
-                if (isReSpawn()) {
-                    onDecay(false);
-                }
-            }
-        }
+        L1MobGroupInfo.onDelete(this);
         dispose();
     }
 
@@ -2118,7 +2043,8 @@ public class L1NpcInstance extends L1Character {
     }
 
     public int getMobGroupId() {
-        return _mobGroupId;
+        final L1MobGroupInfo group = _mobGroupInfo;
+        return group != null ? group.getGroupId() : _mobGroupId;
     }
 
     public void setMobGroupId(int i) {

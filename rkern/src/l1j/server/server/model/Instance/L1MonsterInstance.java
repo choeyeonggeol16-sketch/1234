@@ -173,11 +173,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 
 	@Override
 	public void setLink(L1Character cha) {
-        if (cha == null || !_hateList.isEmpty()) {
-            return;
-        }
-        setHate(cha, 0);
-        onNpcAI();
+        NpcEventFactory.onGroupLink(this, cha);
 	}
 
     @Override

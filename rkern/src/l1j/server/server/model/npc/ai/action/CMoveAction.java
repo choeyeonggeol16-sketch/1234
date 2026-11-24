@@ -4,6 +4,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1MobGroupInfo;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.ai.core.PathFinder;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
@@ -90,6 +91,11 @@ public final class CMoveAction {
                     : CCreatureController.RESULT_DONE;
 
         case CCreatureController.ACTION_FOLLOW_GROUP: {
+            if (!creature.isMovable() || creature.isRest()
+                    || !L1World.getInstance().hasRecognizePlayerFast(creature)) {
+                dFollow.clear(creature);
+                return CCreatureController.RESULT_DONE;
+            }
             final L1MobGroupInfo group = creature.getMobGroupInfo();
             final L1NpcInstance leader =
                     group != null ? group.getActiveLeader() : null;

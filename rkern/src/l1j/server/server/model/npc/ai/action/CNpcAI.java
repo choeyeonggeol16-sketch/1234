@@ -48,6 +48,33 @@ public final class CNpcAI {
     private CNpcAI() {
     }
 
+    /** Base NPC keeps virtual hooks; decision and group policy live here. */
+    public static boolean noTarget(final L1NpcInstance npc) {
+        final L1Character master = npc.getMaster();
+        if (master != null && master.getMapId() == npc.getMapId()
+                && npc.getLocation().getTileLineDistance(master.getLocation()) > 2) {
+            return npc.noTargetMaster();
+        }
+        if (!L1World.getInstance().hasRecognizePlayerFast(npc)) return true;
+        if (master == null && npc.isMovable() && !npc.isRest()) {
+            final L1MobGroupInfo group = npc.getMobGroupInfo();
+            final L1NpcInstance leader = group == null ? null : group.getActiveLeader();
+            if (group == null || leader == npc) {
+                npc.noTargetNormal();
+            } else {
+                return npc.noTargetGroup(leader);
+            }
+        }
+        return false;
+    }
+
+    private static boolean idleGroupFollower(final L1MonsterInstance monster) {
+        // Preserve the L1 blocked-combat random-walk fallback.
+        return monster.getTarget() == null
+                && monster._desireBlockedAttackTargetId == 0
+                && L1MobGroupInfo.isFollower(monster);
+    }
+
     /**
      * AiEngine owner entry.
      *
@@ -274,6 +301,7 @@ public final class CNpcAI {
             if (currentAction
                     == CCreatureController.ACTION_MOVE_AROUND_NATIVE
                     && (!canMoveAround(npc)
+                            || idleGroupFollower((L1MonsterInstance) npc)
                             || (npc._target == null
                                     && !L1World.getInstance()
                                             .hasRecognizePlayerFast(npc)))) {
@@ -412,6 +440,7 @@ public final class CNpcAI {
              */
             final boolean moveAroundRunnable =
                     canMoveAround(monster)
+                    && !idleGroupFollower(monster)
                     && L1World.getInstance()
                             .hasRecognizePlayerFast(monster);
 
@@ -609,11 +638,7 @@ public final class CNpcAI {
                 && creature.isMovable()
                 && !creature.isRest()) {
 
-            final L1MobGroupInfo group =
-                    creature.getMobGroupInfo();
-
-            if (group != null
-                    && !group.isLeader(creature)) {
+            if (L1MobGroupInfo.isFollower(creature)) {
 
                 CCreatureController.submit(
                         creature,
@@ -758,6 +783,22 @@ public final class CNpcAI {
                     continue;
                 }
 
+                if (eventValue == L1NpcInstance.HATE_EVENT_GROUP_LINK) {
+                    // L1 awareness is not another damage-scaled attack.
+                    // Admit once on owner and reuse the non-damage desire floor.
+                    if (npc instanceof L1MonsterInstance
+                            && npc._hateList.isEmpty()
+                            && CDesirePQ.ensureAttackCandidate(
+                                    (L1MonsterInstance) npc, cha, nowMs)) {
+                        npc._hateList.add(cha, 0);
+                        npc._dropHateList.add(cha, 0);
+                        changed = true;
+                        attackDesireChanged = true;
+                        sightDesireChanged = true;
+                    }
+                    continue;
+                }
+
                 if (eventValue == L1NpcInstance.HATE_EVENT_INVISIBILITY) {
                     if (!(npc instanceof L1MonsterInstance)
                             || cha != npc._target
@@ -864,6 +905,7 @@ public final class CNpcAI {
 
                             changed = true;
                             attackDesireChanged = true;
+                            sightDesireChanged = true;
                         }
                     }
 

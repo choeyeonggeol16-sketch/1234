@@ -16,7 +16,7 @@
  */
 package l1j.server.server.model;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.MobGroupTable;
 import l1j.server.server.datatables.NpcTable;
@@ -30,22 +30,13 @@ import l1j.server.server.templates.L1Npc;
 
 public class L1MobGroupSpawn {
 
-	private static L1MobGroupSpawn _instance;
-
-	private static Random _random = new Random(System.nanoTime());
-
-	private boolean _isRespawnScreen;
-
-	private boolean _isInitSpawn;
+	private static final L1MobGroupSpawn INSTANCE = new L1MobGroupSpawn();
 
 	private L1MobGroupSpawn() {
 	}
 
 	public static L1MobGroupSpawn getInstance() {
-		if (_instance == null) {
-			_instance = new L1MobGroupSpawn();
-		}
-		return _instance;
+		return INSTANCE;
 	}
 
 	public void doSpawn(L1NpcInstance leader, int groupId,
@@ -56,86 +47,28 @@ public class L1MobGroupSpawn {
 			return;
 		}
 
-		L1NpcInstance mob;
-		_isRespawnScreen = isRespawnScreen;
-		_isInitSpawn = isInitSpawn;
-
-		L1MobGroupInfo mobGroupInfo = new L1MobGroupInfo();
+		final L1MobGroupInfo mobGroupInfo = new L1MobGroupInfo();
 		mobGroupInfo.setRemoveGroup(mobGroup.isRemoveGroupIfLeaderDie());
 		mobGroupInfo.addMember(leader);
 
-		if (mobGroup.getMinion1Id() > 0 && mobGroup.getMinion1Count() > 0) {
-			for (int i = 0; i < mobGroup.getMinion1Count(); i++) {
-				mob = spawn(leader, mobGroup.getMinion1Id());
-				if (mob != null) {
-					mobGroupInfo.addMember(mob);
-				}
-			}
-		}
-		if (mobGroup.getMinion2Id() > 0 && mobGroup.getMinion2Count() > 0) {
-			for (int i = 0; i < mobGroup.getMinion2Count(); i++) {
-				mob = spawn(leader, mobGroup.getMinion2Id());
-				if (mob != null) {
-					mobGroupInfo.addMember(mob);
-				}
-			}
-		}
-		if (mobGroup.getMinion3Id() > 0 && mobGroup.getMinion3Count() > 0) {
-			for (int i = 0; i < mobGroup.getMinion3Count(); i++) {
-				mob = spawn(leader, mobGroup.getMinion3Id());
-				if (mob != null) {
-					mobGroupInfo.addMember(mob);
-				}
-			}
-		}
-		if (mobGroup.getMinion4Id() > 0 && mobGroup.getMinion4Count() > 0) {
-			for (int i = 0; i < mobGroup.getMinion4Count(); i++) {
-				mob = spawn(leader, mobGroup.getMinion4Id());
-				if (mob != null) {
-					mobGroupInfo.addMember(mob);
-				}
-			}
-		}
-		if (mobGroup.getMinion5Id() > 0 && mobGroup.getMinion5Count() > 0) {
-			for (int i = 0; i < mobGroup.getMinion5Count(); i++) {
-				mob = spawn(leader, mobGroup.getMinion5Id());
-				if (mob != null) {
-					mobGroupInfo.addMember(mob);
-				}
-			}
-		}
-		if (mobGroup.getMinion6Id() > 0 && mobGroup.getMinion6Count() > 0) {
-			for (int i = 0; i < mobGroup.getMinion6Count(); i++) {
-				mob = spawn(leader, mobGroup.getMinion6Id());
-				if (mob != null) {
-					mobGroupInfo.addMember(mob);
-				}
-			}
-		}
-		if (mobGroup.getMinion7Id() > 0 && mobGroup.getMinion7Count() > 0) {
-			for (int i = 0; i < mobGroup.getMinion7Count(); i++) {
-				mob = spawn(leader, mobGroup.getMinion7Id());
-				if (mob != null) {
-					mobGroupInfo.addMember(mob);
-				}
-			}
-		}
-		if (mobGroup.getMinion8Id() > 0 && mobGroup.getMinion8Count() > 0) {
-			for (int i = 0; i < mobGroup.getMinion8Count(); i++) {
-				mob = spawn(leader, mobGroup.getMinion8Id());
-				if (mob != null) {
-					mobGroupInfo.addMember(mob);
-				}
+		for (int slot = 0; slot < L1MobGroup.MINION_SLOTS; slot++) {
+			final int npcId = mobGroup.getMinionId(slot);
+			final int count = mobGroup.getMinionCount(slot);
+			if (npcId <= 0 || count <= 0) continue;
+			for (int i = 0; i < count; i++) {
+				spawn(leader, npcId, mobGroupInfo, isRespawnScreen, isInitSpawn);
 			}
 		}
 	}
 
-	private L1NpcInstance spawn(L1NpcInstance leader, int npcId) {
+	private void spawn(final L1NpcInstance leader, final int npcId,
+			final L1MobGroupInfo group, final boolean isRespawnScreen,
+			final boolean isInitSpawn) {
 		L1NpcInstance mob = null;
 		try {
 			L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
 			if (l1npc == null) {
-				return null;
+				return;
 			}
 			mob = NpcTable.getInstance().newNpcInstance(l1npc);		
 			mob.setId(IdFactory.getInstance().nextId());
@@ -144,9 +77,10 @@ public class L1MobGroupSpawn {
 			mob.setMovementDistance(leader.getMovementDistance());
 			mob.setRest(leader.isRest());
 
-			mob.setX(leader.getX() + _random.nextInt(5) - 2);
-			mob.setY(leader.getY() + _random.nextInt(5) - 2);
-			if (!isDoSpawn(mob)) {
+			final ThreadLocalRandom random = ThreadLocalRandom.current();
+			mob.setX(leader.getX() + random.nextInt(5) - 2);
+			mob.setY(leader.getY() + random.nextInt(5) - 2);
+			if (!isDoSpawn(mob, isRespawnScreen)) {
 				mob.setX(leader.getX());
 				mob.setY(leader.getY());
 			}
@@ -167,25 +101,30 @@ public class L1MobGroupSpawn {
 				}
 			}
 
+			// Publish membership before perception and the first AI tick.
+			group.addMember(mob);
 			L1World.getInstance().storeAndEnterWorld(mob);
 
 			if (mob instanceof L1MonsterInstance) {
-				if (!_isInitSpawn && mob.getHiddenStatus() == 0) {
+				if (!isInitSpawn && mob.getHiddenStatus() == 0) {
 					mob.onNpcAI();
 				}
 			}
 			mob.getLight().turnOnOffLight();
 			mob.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
 		} catch (Exception e) {
+			if (mob != null && mob.getMobGroupInfo() == group
+					&& L1World.getInstance().findObject(mob.getId()) != mob) {
+				group.removeMember(mob);
+			}
 			e.printStackTrace();
 		}
-		return mob;
 	}
 
-	private boolean isDoSpawn(L1NpcInstance mob) {
+	private boolean isDoSpawn(L1NpcInstance mob, boolean isRespawnScreen) {
 		if (mob.getMap().isInMap(mob.getLocation())
 				&& mob.getMap().isPassable(mob.getLocation())) {
-			if (_isRespawnScreen) {
+			if (isRespawnScreen) {
 				return true;
 			}
 			if (L1World.getInstance().getVisiblePlayer(mob).size() == 0) {

@@ -20,6 +20,36 @@
 package l1j.server.server.templates;
 
 public class L1MobGroup {
+	public static final int MINION_SLOTS = 8;
+
+	public int getMinionId(final int slot) {
+		return switch (slot) {
+		case 0 -> getMinion1Id();
+		case 1 -> getMinion2Id();
+		case 2 -> getMinion3Id();
+		case 3 -> getMinion4Id();
+		case 4 -> getMinion5Id();
+		case 5 -> getMinion6Id();
+		case 6 -> getMinion7Id();
+		case 7 -> getMinion8Id();
+		default -> 0;
+		};
+	}
+
+	public int getMinionCount(final int slot) {
+		return switch (slot) {
+		case 0 -> getMinion1Count();
+		case 1 -> getMinion2Count();
+		case 2 -> getMinion3Count();
+		case 3 -> getMinion4Count();
+		case 4 -> getMinion5Count();
+		case 5 -> getMinion6Count();
+		case 6 -> getMinion7Count();
+		case 7 -> getMinion8Count();
+		default -> 0;
+		};
+	}
+
 	private int _minion6Id;
 	private int _minion6Count;
 	private int _minion7Id;

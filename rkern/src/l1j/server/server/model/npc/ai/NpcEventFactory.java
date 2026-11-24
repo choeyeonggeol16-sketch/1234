@@ -16,6 +16,7 @@ import l1j.server.server.model.Instance.L1ScarecrowInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1MobGroupInfo;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -963,6 +964,48 @@ public final class NpcEventFactory {
 	}
 
 
+    /** Pooled awareness event; admission and hate/PQ writes are owner-only. */
+    public static void onGroupLink(final L1MonsterInstance helper,
+            final L1Character attacker) {
+        if (helper == null || attacker == null || helper == attacker
+                || helper.isDead() || helper.isDestroyed()
+                || helper.getCurrentHp() <= 0
+                || helper.getMapId() != attacker.getMapId()) return;
+        NpcServer.getInstance().HandleEvent(helper, CNPCEvent.Create(attacker,
+                L1NpcInstance.HATE_EVENT_GROUP_LINK, helper.npcEventEpoch()));
+        helper.onNpcAI();
+    }
+
+    /** L1 mana-damage awareness, distinct from damage-scaled CLAN_ATTACKED. */
+    public static void searchLink(final L1NpcInstance source,
+            final L1PcInstance attacker, final int family) {
+        if (source == null || attacker == null || source.isDestroyed()) return;
+        if (family > 0) {
+            final ArrayList<L1Object> nearby = OBJECT_BUFFER.get();
+            try {
+                L1World.getInstance().getClusterGrid().queryNearby(
+                        source, CLAN_HELP_RANGE_TILES, nearby);
+                for (int i = 0, n = nearby.size(); i < n; i++) {
+                    final L1Object obj = nearby.get(i);
+                    if (!(obj instanceof L1NpcInstance)) continue;
+                    final L1NpcInstance helper = (L1NpcInstance) obj;
+                    if (helper == source || helper.isDestroyed() || helper.isDead()
+                            || helper.getCurrentHp() <= 0
+                            || helper.getMapId() != source.getMapId()
+                            || source.getLocation().getTileLineDistance(helper.getLocation())
+                                    > CLAN_HELP_RANGE_TILES) continue;
+                    final L1Npc t = helper.getNpcTemplate();
+                    if (t != null && t.get_family() == family && t.get_agrofamily() > 0) {
+                        helper.setLink(attacker);
+                    }
+                }
+            } finally {
+                nearby.clear();
+            }
+        }
+        onPartyAttacked(source, attacker);
+    }
+
     /**
      * Retail L2Server clan-help dispatch adapted to L1 template data.
      *
@@ -1070,17 +1113,17 @@ public final class NpcEventFactory {
      * CLAN_ATTACKED.
      */
     public static void onPartyAttacked(
-            final L1MonsterInstance source,
+            final L1NpcInstance source,
             final L1Character attacker) {
 
         if (source == null || attacker == null) {
             return;
         }
 
-        final int groupId =
-                source.getMobGroupId();
+        final L1MobGroupInfo group = source.getMobGroupInfo();
+        final int groupId = source.getMobGroupId();
 
-        if (groupId == 0) {
+        if (group == null && groupId == 0) {
             return;
         }
 
@@ -1114,8 +1157,10 @@ public final class NpcEventFactory {
                         || helper.getCurrentHp() <= 0
                         || helper.getMapId()
                                 != source.getMapId()
-                        || helper.getMobGroupId()
-                                != groupId) {
+                        || helper.isDestroyed()
+                        || (group != null
+                                ? helper.getMobGroupInfo() != group
+                                : helper.getMobGroupId() != groupId)) {
                     continue;
                 }
 
