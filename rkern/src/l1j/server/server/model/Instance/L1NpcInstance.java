@@ -142,6 +142,9 @@ public class L1NpcInstance extends L1Character {
 	public volatile L1Character _target = null;
     public L1PcInstance _master = null;
     private volatile boolean _deathProcessing = false;
+    // Null without active dialogue; the volatile head publishes the earliest
+    // deadline. The existing NPC monitor protects list updates.
+    private volatile L1NpcChatTimer _npcChatTimers;
     private static final int TIMER_CORPSE_DELETE = 0x434F5250;
     public static final int TIMER_TIMED_DELETE = 0x54444C54;
     private int _corpseTimerGeneration;
@@ -1170,6 +1173,7 @@ public class L1NpcInstance extends L1Character {
 
     @Override
     public void dispose() {
+        clearNpcChats();
         StopRegeneration();
         cancelDigestItems();
         _itemDigest = null;
@@ -1193,6 +1197,7 @@ public class L1NpcInstance extends L1Character {
                 return;
             }
             _destroyed = true;
+            _npcChatTimers = null;
             _corpseDeleteStarted = true;
             _corpseQueuedGeneration = 0;
             if ((_corpseTimerGeneration & 1) != 0) {
@@ -1918,6 +1923,7 @@ public class L1NpcInstance extends L1Character {
         if (dead) {
             StopRegeneration();
             if (!wasDead) {
+                pruneNpcChats();
                 // A dead NPC is excluded from ordinary wheel ticks. Stop its
                 // action explicitly at the death transition, not on a later tick.
                 setAiRunning(false);
@@ -1976,6 +1982,7 @@ public class L1NpcInstance extends L1Character {
             // A delayed owner cancellation must not clear a resurrected NPC.
             allTargetClear();
             _deathProcessing = false;
+            _npcChatTimers = null;
             ReopenNpcEvents();
             NPC_ACTION_ADMISSION_EPOCH.incrementAndGet(this);
         }
@@ -2099,11 +2106,76 @@ public class L1NpcInstance extends L1Character {
         }
         if (npcChat == null) return;
 
-        final L1NpcChatTimer timer = npcChat.isRepeat()
-                ? new L1NpcChatTimer(this, npcChat, npcChat.getRepeatInterval())
-                        : new L1NpcChatTimer(this, npcChat);
+        synchronized (this) {
+            if (_destroyed || getHiddenStatus() != HIDDEN_STATUS_NONE
+                    || L1World.getInstance().smartIdOf(this) == 0L) return;
+            if ((chatTiming == CHAT_TIMING_APPEARANCE || chatTiming == CHAT_TIMING_HIDE)
+                    && isDead()) return;
+            if (chatTiming == CHAT_TIMING_DEAD && !isDead()) return;
+            addNpcChat(new L1NpcChatTimer(npcChat, npcEventEpoch(), System.currentTimeMillis()));
+        }
+        CNPCServer.getInstance().register(this);
+    }
 
-                timer.startChat(npcChat.getStartDelayTime());
+    /** Caller holds the NPC monitor; no new work queue or timer node. */
+    private void addNpcChat(final L1NpcChatTimer timer) {
+        L1NpcChatTimer prev = null;
+        L1NpcChatTimer cur = _npcChatTimers;
+        while (cur != null && cur.deadlineMs <= timer.deadlineMs) {
+            prev = cur;
+            cur = cur.next;
+        }
+        timer.next = cur;
+        if (prev == null) _npcChatTimers = timer;
+        else prev.next = timer;
+    }
+
+    private synchronized void clearNpcChats() {
+        _npcChatTimers = null;
+    }
+
+    private void pruneNpcChats() {
+        L1NpcChatTimer prev = null;
+        L1NpcChatTimer cur = _npcChatTimers;
+        while (cur != null) {
+            final L1NpcChatTimer next = cur.next;
+            if (!cur.isValid(this)) {
+                if (prev == null) _npcChatTimers = next;
+                else prev.next = next;
+                cur.next = null;
+            } else {
+                prev = cur;
+            }
+            cur = next;
+        }
+    }
+
+    public final long npcChatDeadlineMs() {
+        final L1NpcChatTimer head = _npcChatTimers;
+        return head == null || _destroyed ? 0L : head.deadlineMs;
+    }
+
+    /** One line per owner wheel visit; broadcast outside the NPC monitor. */
+    public final void tickNpcChat(long nowMs) {
+        if (!CNPCServer.getInstance().isOwnerThread(this)) return;
+        final L1NpcChatTimer timer;
+        synchronized (this) {
+            timer = _npcChatTimers;
+            if (timer == null || timer.deadlineMs > nowMs || _destroyed) return;
+            _npcChatTimers = timer.next;
+            timer.next = null;
+        }
+        final long smartId = L1World.getInstance().smartIdOf(this);
+        if (smartId == 0L) return;
+        final long delay = timer.TimerExpired(this);
+        if (delay <= 0L) return;
+        synchronized (this) {
+            if (!timer.isValid(this)
+                    || L1World.getInstance().smartIdOf(this) != smartId) return;
+            timer.deadlineMs = System.currentTimeMillis() + delay;
+            addNpcChat(timer);
+        }
+        // processBucket() recomputes the existing wheel deadline.
     }
 
     public void set_num(int num) {
@@ -2248,6 +2320,7 @@ public class L1NpcInstance extends L1Character {
                 return;
             }
             _destroyed = true;
+            _npcChatTimers = null;
             _corpseDeleteStarted = true;
             _corpseQueuedGeneration = 0;
             if ((_corpseTimerGeneration & 1) != 0) {
