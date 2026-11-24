@@ -1581,10 +1581,15 @@ public class L1NpcInstance extends L1Character {
 
     /** A live NPC changes runtime hide state only on its existing AI owner. */
     public final boolean tryChangeHiddenStatus(int expected, int next) {
-        return CNPCServer.getInstance().isOwnerThread(this)
-                && !isDestroyed() && !isDead() && !isDeathProcessing()
-                && getCurrentHp() > 0
-                && HIDDEN_STATUS.compareAndSet(this, expected, next);
+        if (!CNPCServer.getInstance().isOwnerThread(this)
+                || isDestroyed() || isDead() || isDeathProcessing()
+                || getCurrentHp() <= 0
+                || !HIDDEN_STATUS.compareAndSet(this, expected, next)) {
+            return false;
+        }
+        // Retire commands admitted for the preceding visible/hidden state.
+        NPC_ACTION_ADMISSION_EPOCH.incrementAndGet(this);
+        return true;
     }
 
     public final boolean tryLandFromAir() {
