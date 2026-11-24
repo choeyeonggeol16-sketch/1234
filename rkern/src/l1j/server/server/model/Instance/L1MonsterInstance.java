@@ -794,11 +794,14 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	    	} catch (Exception e) {
 	    		e.printStackTrace();
 	    	} finally {
-                if (_deathEpoch == deathEpoch && isDead()) {
-                    setDeathProcessing(false);
-                    setExp(0);
-                    setLawful(0);
-                    setKarma(0);
+                synchronized (this) {
+                    if (_deathEpoch == deathEpoch && isDead()) {
+                        setExp(0);
+                        setLawful(0);
+                        setKarma(0);
+                        // Publish completion after all reward-state writes.
+                        setDeathProcessing(false);
+                    }
                 }
 	    	}
 
