@@ -157,9 +157,11 @@ public final class CS_Result {
 		}
 
         final boolean warehouse = (resultType == 20 && pc == findObject)
-                || (npcImpl.equalsIgnoreCase("L1Dwarf") && WarehouseTransactions.isDwarfAction(resultType));
-        if (warehouse && size != 1) {
-            WarehouseTransactions.execute(pc, resultType, size, packed0, params);
+                || (npcImpl.equalsIgnoreCase("L1Dwarf") && CWareHouseRequest.IsDwarfAction(resultType));
+        // Warehouse result kinds are disjoint from ordinary shop/exchange kinds.
+        // Route every selection count, including one, before legacy exchange flags.
+        if (warehouse) {
+            CWareHouseRequest.Request(pc, resultType, size, packed0, params);
             return;
         }
 
@@ -167,11 +169,6 @@ public final class CS_Result {
 		if (processChangeItems(pc, size, packed0, params)) {
 			return;
 		}
-
-        if (warehouse) {
-            WarehouseTransactions.execute(pc, resultType, size, packed0, params);
-            return;
-        }
 
         if (size == 0 || (resultType != 0 && resultType != 1)) return;
         if (npcImpl.equalsIgnoreCase("L1Merchant") || isPrivateNpcShop) {

@@ -7,15 +7,11 @@ import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightH
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.network.core.sc.packet.SC_ClanWareHouseHistory;
 import l1j.server.server.model.network.core.sc.packet.SC_ClassShop;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_NoSell;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_PremiumShopSellList;
-import l1j.server.server.model.network.core.sc.packet.SC_RetrieveList;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_ShopBuyList;
 import l1j.server.server.model.network.core.sc.packet.SC_ShopSellList;
@@ -23,7 +19,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.shop.L1AssessedItem;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_PERSONAL_SHOP_ITEM_LIST_NOTI;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
 
 final class NpcMarketCommands {
     private NpcMarketCommands() {}
@@ -149,65 +144,4 @@ final class NpcMarketCommands {
         if (htmlid != null) SC_NPCTalkReturn.send(pc, objid, htmlid, (String[]) null);
     }
 
-    static boolean isWarehouseCommand(String s) {
-        return s.equalsIgnoreCase("history") || s.equalsIgnoreCase("retrieve")
-                || s.equalsIgnoreCase("retrieve-elven") || s.equalsIgnoreCase("retrieve-aib")
-                || s.equalsIgnoreCase("retrieve-char") || s.equalsIgnoreCase("retrieve-pledge");
-    }
-    static void warehouse(L1PcInstance pc, int objid, String s) {
-        String htmlid = null;
-        if (s.equalsIgnoreCase("history")) {
-				if (pc.getClanid() > 0)
-					SC_ClanWareHouseHistory.send(pc);
-				else
-					SC_SystemMessage.send(pc, "혈맹 가입후 이용해 주세요.");
-			} else if (s.equalsIgnoreCase("retrieve")) {
-				
-				if (pc.getLevel() >= 5) {
-					SC_WAREHOUSE_ITEM_LIST_NOTI.send_user_warehouse_items(pc, objid);
-				}
-			} else if (s.equalsIgnoreCase("retrieve-elven")) {
-				if (pc.getInventory().getSize() > 180){
-					pc.sendPackets("\\f2인벤토리에 아이템이 180개 이하일때만 이용가능 합니다.   현재:(\\aG"+pc.getInventory().getSize()+"/\\aA150)\\f2 소지중입니다.");
-					SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "인벤토리에 아이템이 180개 이하일때만 이용가능 합니다. 현재:(\\aG"+pc.getInventory().getSize()+"/\\aA180)\\f2 소지중입니다.");
-					return;
-				}
-				if (pc.getLevel() >= 5 && pc.isElf()) {
-					if (SC_RetrieveList.sendElf(pc, objid))
-                        htmlid = "noitemret";
-				}
-			} else if (s.equalsIgnoreCase("retrieve-aib")) {
-				if (SC_RetrieveList.sendPackage(pc, objid))
-                    htmlid = "noitemret";
-			} else if (s.equalsIgnoreCase("retrieve-char")) { // 특수창고
-				if (pc.getInventory().getSize() > 180){
-					pc.sendPackets("\\f2인벤토리에 아이템이 180개 이하일때만 이용가능 합니다.   현재:(\\aG"+pc.getInventory().getSize()+"/\\aA180)\\f2 소지중입니다.");
-					SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "인벤토리에 아이템이 180개 이하일때만 이용가능 합니다. 현재:(\\aG"+pc.getInventory().getSize()+"/\\aA180)\\f2 소지중입니다.");
-					return;
-				}
-				if (pc.get_SpecialSize() == 0) {
-					SC_ServerMessage.send(pc, 1623);
-					return;
-				}
-			} else if (s.equalsIgnoreCase("retrieve-pledge")) {
-				if (pc.getInventory().getSize() > 150){
-					pc.sendPackets("\\f2인벤토리에 아이템이 180개 이하일때만 이용가능 합니다.   현재:(\\aG"+pc.getInventory().getSize()+"/\\aA180)\\f2 소지중입니다.");
-					SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "인벤토리에 아이템이 180개 이하일때만 이용가능 합니다. 현재:(\\aG"+pc.getInventory().getSize()+"/\\aA180)\\f2 소지중입니다.");
-					return;
-				}
-				if (pc.getLevel() >= 5) {
-					if (pc.getClanid() == 0) {
-						SC_SystemMessage.send(pc, "혈맹창고를 사용하려면 혈맹이 있어야 합니다.");
-						return;
-					}
-					if (pc.getClanRank() == L1Clan.수련) {
-						SC_ServerMessage.send(pc, 728);
-						return;
-					}
-					SC_WAREHOUSE_ITEM_LIST_NOTI.send_user_pledge_warehouse_items(pc, objid);
-					return;
-				}
-        }
-        if (htmlid != null) SC_NPCTalkReturn.send(pc, objid, htmlid, (String[]) null);
-    }
 }

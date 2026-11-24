@@ -62,8 +62,8 @@ final class NpcServiceHtmlCommands {
         } else if (s.equalsIgnoreCase("pssellps") || s.equalsIgnoreCase("sell")) {
             NpcMarketCommands.sell(pc, obj, objid);
             return;
-        } else if (NpcMarketCommands.isWarehouseCommand(s)) {
-            NpcMarketCommands.warehouse(pc, objid, s);
+        } else if (CWareHouseWithdraw.IsListCommand(s)) {
+            CWareHouseWithdraw.SendList(pc, objid, s);
             return;
         } else if (templateId == 200007) {//오류
             if (s.equalsIgnoreCase("1")) {
