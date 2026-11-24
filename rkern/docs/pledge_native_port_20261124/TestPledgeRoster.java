@@ -37,6 +37,16 @@ public final class TestPledgeRoster {
             throw new AssertionError("mutable roster escaped");
         } catch (UnsupportedOperationException expected) { }
         check(clan.GetDbMemberCount() == 2, "read-only roster");
-        System.out.println("PASS pledge roster identity, memo, rank, legacy order and concurrent duplicate registration");
+        check(clan.RemoveDbMember(999) == null, "unknown removal no-op");
+        check(clan.RemoveDbMember(10) == alpha, "remove indexed identity");
+        check(clan.GetDbMember(10) == null && clan.GetDbMemberCount() == 1, "remove updates index");
+        check(clan.getClanMemberList().size() == 1 && clan.getClanMemberList().get(0).memberId == 11,
+                "remove updates ordered view");
+        check(!alpha.online && alpha.player == null, "retired session cleared");
+        check(clan.RemoveDbMember(10) == null, "duplicate removal no-op");
+        clan.addLoadedClanMember("Alpha", 7, 20, "", 10, 1);
+        check(clan.GetDbMember(10) != alpha && clan.getClanMemberList().get(1) == clan.GetDbMember(10),
+                "rejoin creates new identity at end");
+        System.out.println("PASS pledge roster identity, memo, rank, ordered ID removal, rejoin and concurrent registration");
     }
 }

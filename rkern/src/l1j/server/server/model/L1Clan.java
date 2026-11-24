@@ -218,23 +218,45 @@ public class L1Clan {
         ClanTable.updateOnlineUser(this);
     }
 
+    /** CPledgeMemberList: detach exactly the indexed member identity.
+     * Memory-only primitive, used by the committed lifecycle path. */
+    ClanMember RemoveDbMember(int memberId) {
+        synchronized (clanMemberList) {
+            ClanMember member = memberById.get(memberId);
+            if (member == null) return null;
+            if (!clanMemberList.remove(member))
+                throw new IllegalStateException("Pledge roster index mismatch: " + memberId);
+            memberById.remove(memberId);
+            synchronized (member) {
+                member.player = null;
+                member.online = false;
+            }
+            return member;
+        }
+    }
+
+    private void FinishMemberRemoval(ClanMember removed) {
+        if (removed == null) return;
+        deleteClanRetrieveUser(removed.memberId);
+        ClanTable.updateOnlineUser(this);
+    }
+
+    public void removeClanMember(int memberId) {
+        FinishMemberRemoval(RemoveDbMember(memberId));
+    }
+
+    /** Compatibility for legacy name-only callers; resolve under the same lock. */
     public void removeClanMember(String name) {
         ClanMember removed = null;
         synchronized (clanMemberList) {
             for (ClanMember member : clanMemberList) {
-                if (member.name.equals(name) && clanMemberList.remove(member)) {
-                    memberById.remove(member.memberId);
-                    synchronized (member) {
-                        member.player = null;
-                        member.online = false;
-                    }
-                    removed = member;
+                if (member.name.equals(name)) {
+                    removed = RemoveDbMember(member.memberId);
                     break;
                 }
             }
         }
-        if (removed != null) deleteClanRetrieveUser(removed.memberId);
-        ClanTable.updateOnlineUser(this);
+        FinishMemberRemoval(removed);
     }
 
     /** Updating a memo is not a membership removal or warehouse release. */

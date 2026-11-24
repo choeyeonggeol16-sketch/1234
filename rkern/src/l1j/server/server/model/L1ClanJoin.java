@@ -30,6 +30,14 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.Warehouse.ClanWarehouse;
 import l1j.server.server.model.Warehouse.WarehouseManager;
 
+import java.util.concurrent.RejectedExecutionException;
+import l1j.server.server.datatables.CharacterTable;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.utils.ServerMessage;
+
 public class L1ClanJoin {
 
 	private static final Logger _log = Logger.getLogger(L1ClanJoin.class.getName());
@@ -510,4 +518,468 @@ public class L1ClanJoin {
 			return sb.toString();
 		}
 	}
+
+    // Pledge lifecycle operations share the existing domain executor.
+    public static void LeavePledge(
+            CUserSocket client) {
+
+        if (client == null) {
+            return;
+        }
+
+        final L1PcInstance player =
+                client.getActiveChar();
+
+        if (player == null
+                || player.isGhost()) {
+
+            return;
+        }
+
+        final int clanId =
+                player.getClanid();
+
+        if (clanId == 0) {
+            return;
+        }
+
+        final L1Clan clan =
+                L1World
+                        .getInstance()
+                        .getClan(clanId);
+
+        if (clan == null) {
+            return;
+        }
+
+        try {
+
+            /*
+             * 혈맹 군주:
+             * 혈맹 자체 해산.
+             */
+            if (player.isCrown()
+                    && player.getId()
+                            == clan.getLeaderId()) {
+
+                DisbandPledge(
+                        clan,
+                        player);
+
+                return;
+            }
+
+            /*
+             * 일반 혈맹원:
+             * 본인만 탈퇴.
+             */
+            LeaveMember(
+                    clan,
+                    player);
+
+        } catch (Exception e) {
+
+            _log.log(
+                    Level.SEVERE,
+                    "CS_LeavePledge 실행 중 예외 발생",
+                    e);
+        }
+    }
+
+    private static void DisbandPledge(
+            L1Clan clan,
+            L1PcInstance player)
+            throws Exception {
+
+        final String playerName =
+                player.getName();
+
+        final String clanName =
+                player.getClanname();
+
+        /*
+         * 혈맹 무인 로봇 존재 시 해산 불가.
+         */
+        if (player.hasSkillEffect(
+                L1SkillId.무인혈맹)) {
+
+            SC_PacketBox.send(player, SC_PacketBox.GREEN_MESSAGE, "혈맹무인로봇을 제거 후 혈맹해산이 가능합니다.");
+
+            player.sendPackets(
+                    "\\f3혈맹무인로봇을 제거 후 혈맹해산이 가능합니다.");
+
+            return;
+        }
+
+        /*
+         * 성/아지트 보유 상태.
+         */
+        if (clan.getCastleId() > 0
+                || clan.getHouseId() > 0) {
+
+            SC_ServerMessage.send(player, ServerMessage.HAVING_NEST_OF_CLAN);
+
+            return;
+        }
+
+        /*
+         * 전쟁 중.
+         */
+        if (clan.getCurrentWar() != null) {
+
+            SC_ServerMessage.send(player, ServerMessage.CANNOT_BREAK_CLAN);
+
+            return;
+        }
+
+        /*
+         * 동맹 존재.
+         */
+        if (clan.getAlliance() > 0) {
+
+            SC_ServerMessage.send(player, ServerMessage.CANNOT_BREAK_CLAN_HAVING_FRIENDS);
+
+            return;
+        }
+
+        /*
+         * 오프라인 혈맹원 DB 데이터 일괄 초기화.
+         */
+        ClanTable.getInstance().deleteClanWithMembers(clan);
+
+        /*
+         * 접속 중 혈맹원들의 실시간 상태 초기화.
+         *
+         * 기존 getClanMemberList() 순회 semantics 그대로.
+         */
+        // COMMIT already succeeded. Notice allocation/encoding must never
+        // prevent the authoritative member cleanup.
+        l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer notice = null;
+        try {
+            notice = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                    SC_ServerMessage.nativeWriter(269, playerName, clanName, null),
+                    Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (RuntimeException failure) {
+            _log.log(Level.WARNING, "Committed pledge disband notice preparation failed: " + clanName, failure);
+        }
+        try {
+            for (L1Clan.ClanMember member : clan.getClanMemberList()) {
+                if (member == null) continue;
+                final L1PcInstance pc = L1World.getInstance().getPlayer(member.name);
+                if (pc == null || pc.getId() != member.memberId
+                        || pc.getClanid() != clan.getClanId()) continue;
+                try {
+                    if (notice != null && !pc.getName().equalsIgnoreCase(playerName)) {
+                        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(notice, pc);
+                    }
+                } catch (RuntimeException failure) {
+                    _log.log(Level.WARNING, "Clan disband notice failed: " + member.name, failure);
+                }
+                try {
+                    pc.ClearPlayerClanData(clan);
+                } catch (Exception failure) {
+                    _log.log(Level.SEVERE, "Clan disband online cleanup failed: " + member.name, failure);
+                }
+            }
+        } finally {
+            try {
+                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(notice);
+            } catch (RuntimeException failure) {
+                _log.log(Level.WARNING, "Clan disband notice release failed: " + clanName, failure);
+            }
+        }
+
+        /*
+         * 혈맹 엠블럼 파일 삭제.
+         */
+        final String emblemFile =
+                String.valueOf(
+                        clan.getClanId());
+
+        final File file =
+                new File(
+                        "emblem/"
+                                + emblemFile);
+
+        if (file.exists()) {
+            file.delete();
+        }
+
+    }
+
+    /** No packet, buff or membership change is published before SQL COMMIT. */
+    public static void LeaveMember(L1Clan clan, L1PcInstance player) {
+        if (clan == null || player == null || player.getClanid() != clan.getClanId()
+                || player.getId() == clan.getLeaderId()) return;
+        final int oldClanId = clan.getClanId();
+        final String playerName = player.getName();
+        final String clanName = clan.getClanName();
+        try (l1j.server.server.model.L1InventoryTransaction tx =
+                l1j.server.server.model.L1InventoryTransaction.begin(player,
+                        l1j.server.server.storage.CacheD.accountOrderKey("$clan-membership"))) {
+            tx.requireTables("characters");
+            tx.sql(con -> {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "UPDATE characters SET ClanID=0,Clanname='',ClanRank=0,Title='',notes='' "
+                        + "WHERE objid=? AND ClanID=?")) {
+                    ps.setInt(1, player.getId());
+                    ps.setInt(2, oldClanId);
+                    if (ps.executeUpdate() != 1)
+                        throw new SQLException("Clan member leave before-image changed");
+                }
+            });
+            tx.onFailure(() ->
+                    l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.send(
+                            player, "혈맹 탈퇴를 완료하지 못했습니다."));
+            tx.commitAfterInventoryRelease(() -> {
+                if (player.getClanid() != oldClanId || player.getId() == clan.getLeaderId()
+                        || L1World.getInstance().getClan(oldClanId) != clan)
+                    throw new IllegalStateException("Clan leave memory preimage changed after COMMIT");
+                // Make the membership state authoritative before any observable effect.
+                try {
+                    player.ClearPlayerClanData(clan);
+                } catch (Exception failure) {
+                    throw new IllegalStateException("Committed clan leave memory cleanup failed", failure);
+                }
+                clan.removeClanMember(player.getId());
+                if (player.isClanBuff()) {
+                    player.killSkillEffectTimer(L1SkillId.CLANBUFF_YES);
+                    SC_PacketBox.send(player, SC_PacketBox.UNLIMITED_ICON1, 450, false);
+                    player.setClanBuff(false);
+                }
+                var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+       SC_ServerMessage.nativeWriter(178,playerName,clanName,null),Integer.MIN_VALUE,Integer.MAX_VALUE);
+try {
+for (L1PcInstance member : clan.getOnlineClanMember()) {
+                    if (member != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared,member);
+                }
+} finally {
+    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(shared);
+}
+            });
+        } catch (RuntimeException error) {
+            _log.log(Level.WARNING, "Clan leave receipt not admitted: " + playerName, error);
+            l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.send(
+                    player, "혈맹 탈퇴를 시작하지 못했습니다.");
+        }
+    }
+
+    public static void BanMember(
+            CUserSocket client,
+            String targetName) {
+
+        if (client == null) {
+            return;
+        }
+
+        final L1PcInstance pc =
+                client.getActiveChar();
+
+        if (pc == null
+                || pc.isGhost()) {
+
+            return;
+        }
+
+        if (targetName == null
+                || targetName.isEmpty()) {
+
+            return;
+        }
+
+        /*
+         * 군주 본인 추방 방지.
+         */
+        if (targetName.equalsIgnoreCase(
+                pc.getName())) {
+
+            return;
+        }
+
+        /*
+         * 원본은 clanId lookup이 아니라
+         * clanName 기반 findClan().
+         * semantics 그대로 유지.
+         */
+        final L1Clan clan =
+                L1World
+                        .getInstance()
+                        .findClan(
+                                pc.getClanname());
+
+        if (clan == null || pc.getClanid() != clan.getClanId()) {
+            return;
+        }
+
+        /*
+         * 군주 권한 검증.
+         */
+        if (!pc.isCrown()
+                || pc.getId()
+                        != clan.getLeaderId()) {
+
+            SC_ServerMessage.send(pc, 518);
+
+            return;
+        }
+
+        final int castleId =
+                clan.getCastleId();
+
+        /*
+         * 공성 중 추방 불가.
+         */
+        if (castleId != 0
+                && CastleWarBusiness
+                        .getInstance()
+                        .isNowWar(castleId)) {
+
+            SC_ServerMessage.send(pc, 439);
+
+            return;
+        }
+
+        /*
+         * 먼저 온라인 캐릭터 검색.
+         */
+        final L1PcInstance target =
+                L1World
+                        .getInstance()
+                        .getPlayer(
+                                targetName);
+
+        if (target != null) {
+
+            BanOnlineMember(
+                    pc,
+                    clan,
+                    target,
+                    targetName);
+
+            return;
+        }
+
+        /*
+         * 오프라인 캐릭터 복원.
+         */
+        BanOfflineMember(
+                client,
+                pc,
+                clan,
+                targetName);
+    }
+
+    private static void BanOnlineMember(
+            L1PcInstance pc,
+            L1Clan clan,
+            L1PcInstance target,
+            String targetName) {
+
+        if (target.getClanid() != clan.getClanId()
+                || target.getId() == clan.getLeaderId()
+                || clan.GetDbMember(target.getId()) == null) {
+
+            SC_ServerMessage.send(pc, 109, targetName);
+
+            return;
+        }
+
+        try {
+
+            target.ClearPlayerClanData(
+                    clan);
+
+        } catch (Exception error) {
+            _log.log(Level.WARNING, "Online clan ban save failed: " + targetName, error);
+            SC_SystemMessage.send(pc, "혈맹원 추방 저장에 실패했습니다.");
+            return;
+        }
+
+        clan.removeClanMember(target.getId());
+
+        SC_PacketBox.send(pc, 
+                        pc,
+                        SC_PacketBox.PLEDGE_REFRESH_MINUS);
+
+        SC_ServerMessage.send(target, 238, pc.getClanname());
+
+        SC_ServerMessage.send(pc, 240, target.getName());
+    }
+
+    private static void BanOfflineMember(
+            CUserSocket client,
+            L1PcInstance pc,
+            L1Clan clan,
+            String targetName) {
+
+        // Do not restore an offline character (JDBC) on the NIO.2 completion
+        // worker. A target-owner DB lane also waits behind earlier saves.
+        final l1j.server.server.templates.L1CharName known =
+                CharacterTable.getInstance().getCharName(targetName);
+        if (known == null || known.getId() <= 0) {
+            SC_ServerMessage.send(pc, 109, targetName);
+            return;
+        }
+        final int targetId = known.getId();
+        final int sourceClanId = pc.getClanid();
+        if (targetId == clan.getLeaderId() || clan.GetDbMember(targetId) == null) {
+            SC_ServerMessage.send(pc, 109, targetName);
+            return;
+        }
+        try {
+            CacheD.getInstance().submitDbJobOrdered(targetId, () -> {
+                final L1PcInstance restored;
+                try {
+                    restored = CharacterTable.getInstance().restoreCharacter(targetName);
+                } catch (Exception error) {
+                    _log.log(Level.WARNING, "Offline clan member load failed: " + targetName, error);
+                    CIOThreadCallback.getInstance().completeSession(client, () ->
+                            SC_SystemMessage.send(pc, "혈맹원 정보를 불러오지 못했습니다."));
+                    return;
+                }
+                if (!CIOThreadCallback.getInstance().completeSession(client, () -> {
+                    // Session, privileges, active clan, and siege state may
+                    // have changed while the target was being restored.
+                    if (client.getActiveChar() != pc || pc.isGhost()
+                            || pc.getClanid() != sourceClanId
+                            || !pc.isCrown() || pc.getId() != clan.getLeaderId()
+                            || L1World.getInstance().findClan(pc.getClanname()) != clan) {
+                        return;
+                    }
+                    final int castle = clan.getCastleId();
+                    if (castle != 0 && CastleWarBusiness.getInstance().isNowWar(castle)) {
+                        SC_ServerMessage.send(pc, 439);
+                        return;
+                    }
+                    // The target may have logged in while JDBC was loading.
+                    // Never persist a detached copy over a live character.
+                    final L1PcInstance live = L1World.getInstance().getPlayer(targetName);
+                    final L1PcInstance target = live != null ? live : restored;
+                    if (target == null || target.getId() != targetId
+                            || target.getClanid() != sourceClanId
+                            || targetId == clan.getLeaderId() || clan.GetDbMember(targetId) == null) {
+                        SC_ServerMessage.send(pc, 109, targetName);
+                        return;
+                    }
+                    if (live != null) {
+                        BanOnlineMember(pc, clan, live, targetName);
+                        return;
+                    }
+                    try {
+                        target.ClearPlayerClanData(clan);
+                        clan.removeClanMember(target.getId());
+                        SC_ServerMessage.send(pc, 240, target.getName());
+                    } catch (Exception error) {
+                        _log.log(Level.SEVERE, "Offline clan ban persistence failed: " + targetName, error);
+                        SC_SystemMessage.send(pc, "혈맹원 추방 저장에 실패했습니다.");
+                    }
+                })) {
+                    _log.warning("Offline clan ban owner completion rejected: " + targetName);
+                }
+            });
+        } catch (RejectedExecutionException rejected) {
+            _log.log(Level.WARNING, "Offline clan ban DB admission rejected: " + targetName, rejected);
+            SC_SystemMessage.send(pc, "혈맹원 추방 처리가 지연되고 있습니다. 다시 시도해 주세요.");
+        }
+    }
 }
