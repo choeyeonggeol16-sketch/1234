@@ -255,6 +255,7 @@ public class L1GuardianInstance extends L1NpcInstance {
 	        return;
 	    }  
 		// 사망 상태와 죽음 모션은 공격 처리 흐름에서 즉시 확정한다.
+		final int deathLifeEpoch = npcEventEpoch();
 		setDeathProcessing(true);
 		setCurrentHp(0);
 		setDead(true);
@@ -268,12 +269,16 @@ public class L1GuardianInstance extends L1NpcInstance {
 			try {
 				processDeathRewards(lastAttacker);
 			} finally {
-				setDeathProcessing(false);
-				setKarma(0);
-				setLawful(0);
-				setExp(0);
-				allTargetClear();
-				startDeleteTimer();
+				synchronized (this) {
+					if (npcEventEpoch() == deathLifeEpoch && isDead() && !isDestroyed()) {
+						setKarma(0);
+						setLawful(0);
+						setExp(0);
+						allTargetClear();
+						startDeleteTimer();
+						setDeathProcessing(false);
+					}
+				}
 			}
 		};
 		try {
