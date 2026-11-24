@@ -648,7 +648,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
 
     public void commit(Runnable afterCommitted) {
-        commitInternal(afterCommitted, false);
+        commitInternal(null, afterCommitted, false);
     }
 
     /** Committed item effects may change equipment, award items or save progression.
@@ -656,10 +656,16 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
      * participant gate released, still on the existing CIO owner.
      */
     public void commitAfterInventoryRelease(Runnable afterCommitted) {
-        commitInternal(afterCommitted, true);
+        commitInternal(null, afterCommitted, true);
     }
 
-    private void commitInternal(Runnable afterCommitted, boolean releaseBeforeEffects) {
+    /** Publish quest state on the owner while its gate is held; only then
+     * retire the receipt and resume the existing XML continuation. */
+    public void commitAfterInventoryRelease(Runnable publish, Runnable afterCommitted) {
+        commitInternal(Objects.requireNonNull(publish), afterCommitted, true);
+    }
+
+    private void commitInternal(Runnable publish, Runnable afterCommitted, boolean releaseBeforeEffects) {
         open();
         validateLive();validateCapacity();
         // Keep singleton receipts entirely inline. Multi-row receipts sort a
@@ -738,7 +744,11 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                     }
                 });
                 if (releaseBeforeEffects) {
-                    releaseGates();
+                    try {
+                        if (publish != null) publish.run();
+                    } finally {
+                        releaseGates();
+                    }
                 } else {
                     // The durable item images are already published. Packet/effect
                     // callbacks must not strand the owner's item-transfer gate.

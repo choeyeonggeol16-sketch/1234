@@ -38,6 +38,8 @@ public interface L1NpcAction {
      * calls completion exactly once on confirmed success or rejection, never
      * on an unknown receipt outcome. Immediate actions return their result. */
     L1NpcHtml DEFERRED = new L1NpcHtml("");
+    /** Failed prerequisite; propagate through nested lists without executing their tail. */
+    L1NpcHtml ABORTED = new L1NpcHtml("");
 
     default L1NpcHtml executeDeferred(String name, L1PcInstance pc, L1Object obj,
             byte[] args, Consumer<L1NpcHtml> completion) {
@@ -58,10 +60,11 @@ public interface L1NpcAction {
         Consumer<L1NpcHtml> sendDeferred = html -> {
             if (html != null && html != DEFERRED
                     && client != null && client.canReplyToNpcDialogue(pc, dialogueTarget, dialogueVersion))
-                SC_NPCTalkReturn.send(pc, objectId, html);
+                SC_NPCTalkReturn.send(pc, objectId, html == ABORTED ? L1NpcHtml.HTML_CLOSE : html);
         };
         L1NpcHtml result = amount == 0 ? executeDeferred(name, pc, obj, args, sendDeferred)
                 : executeAmountDeferred(name, pc, obj, amount, sendDeferred);
-        if (result != null && result != DEFERRED) SC_NPCTalkReturn.send(pc, objectId, result);
+        if (result != null && result != DEFERRED)
+            SC_NPCTalkReturn.send(pc, objectId, result == ABORTED ? L1NpcHtml.HTML_CLOSE : result);
     }
 }

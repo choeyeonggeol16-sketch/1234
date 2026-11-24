@@ -1,10 +1,13 @@
 package l1j.server.server.model.npc.action;
 
+import java.util.function.Consumer;
+
 import org.w3c.dom.Element;
 
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.L1NpcHtml;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 public class L1NpcSetQuestAction extends L1NpcXmlAction {
 	private final int _id;
@@ -16,15 +19,26 @@ public class L1NpcSetQuestAction extends L1NpcXmlAction {
 		_id = L1NpcXmlParser.parseQuestId(element.getAttribute("Id"));
 		_step = L1NpcXmlParser.parseQuestStep(element.getAttribute("Step"));
 
-		if (_id == -1 || _step == -1) {
+		if (_id <= 0 || _step == -1) {
 			throw new IllegalArgumentException();
 		}
 	}
 
 	@Override
 	public L1NpcHtml execute(String actionName, L1PcInstance pc, L1Object obj, byte[] args) {
-		pc.getQuest().set_step(_id, _step);
-		return null;
+		throw new IllegalStateException("XML quest requires continuation entry");
 	}
+
+    @Override
+    public L1NpcHtml executeDeferred(String name, L1PcInstance pc, L1Object obj,
+            byte[] args, Consumer<L1NpcHtml> completion) {
+        final var quest = pc.getQuest();
+        final int expected = quest.get_step(_id);
+        if (quest.RequestSetSelectedQuestDeferred(_id, expected, _step,
+                () -> completion.accept(null), () -> completion.accept(ABORTED)))
+            return DEFERRED;
+        SC_SystemMessage.send(pc, "퀘스트 진행 상태를 변경할 수 없습니다.");
+        return ABORTED;
+    }
 
 }

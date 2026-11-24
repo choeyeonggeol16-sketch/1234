@@ -65,10 +65,15 @@ public class L1NpcListedAction extends L1NpcXmlAction {
             L1NpcAction action = _actions.get(i);
             if (!action.acceptsRequest(name, pc, obj)) continue;
             L1NpcHtml r;
-            if (action instanceof L1NpcMakeItemAction || action instanceof L1NpcListedAction) {
+            if (action instanceof L1NpcMakeItemAction || action instanceof L1NpcListedAction
+                    || action instanceof L1NpcSetQuestAction) {
                 final int next = i + 1;
                 final L1NpcHtml previous = result;
                 Consumer<L1NpcHtml> resume = html -> {
+                    if (html == ABORTED) {
+                        completion.accept(ABORTED);
+                        return;
+                    }
                     L1NpcHtml tail = run(name, pc, obj, args, amount, next,
                             html == null ? previous : html, completion);
                     if (tail != DEFERRED) completion.accept(tail);
@@ -79,7 +84,7 @@ public class L1NpcListedAction extends L1NpcXmlAction {
                 r = amount == 0 ? action.execute(name, pc, obj, args)
                         : action.executeWithAmount(name, pc, obj, amount);
             }
-            if (r == DEFERRED) return DEFERRED;
+            if (r == DEFERRED || r == ABORTED) return r;
             if (r != null) result = r;
         }
         return result;

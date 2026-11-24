@@ -215,18 +215,38 @@ public class CQuestSystem {
      * Never wait for the DB worker while holding this quest monitor. */
     public final boolean RequestSetSelectedQuest(int questId, int expectedStep, int nextStep,
             Runnable afterCommitted) {
+        return RequestSetSelectedQuest(questId, expectedStep, nextStep, afterCommitted, null, false);
+    }
+
+    /** XML continuation must run after owner replay and receipt retirement,
+     * since its next action may itself submit an inventory/quest receipt. */
+    public final boolean RequestSetSelectedQuestDeferred(int questId, int expectedStep, int nextStep,
+            Runnable resume, Runnable rejected) {
+        return RequestSetSelectedQuest(questId, expectedStep, nextStep, resume, rejected, true);
+    }
+
+    private boolean RequestSetSelectedQuest(int questId, int expectedStep, int nextStep,
+            Runnable afterCommitted, Runnable rejected, boolean resumeAfterRelease) {
         if (questId <= 0 || !MatchesLoadedStep(questId, expectedStep)) return false;
         final int characterId = _owner.getId();
         final int resourceKey = CacheD.accountOrderKey("quest:", characterId);
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(_owner, resourceKey)) {
             if (!MatchesLoadedStep(questId, expectedStep)) return false;
             StageQuestStep(tx, characterId, questId, expectedStep, nextStep, 0);
-            tx.onFailure(() -> SC_SystemMessage.send(_owner, "퀘스트 진행 상태를 저장하지 못했습니다."));
-            // Publish under the receipt owner gate BEFORE releasing it.
-            tx.commit(() -> {
-                applyCommittedStepIfLoaded(questId, nextStep);
-                if (afterCommitted != null) afterCommitted.run();
+            tx.onFailure(() -> {
+                SC_SystemMessage.send(_owner, "퀘스트 진행 상태를 저장하지 못했습니다.");
+                if (rejected != null) rejected.run();
             });
+            // Publish under the receipt owner gate BEFORE releasing it.
+            if (resumeAfterRelease) {
+                tx.commitAfterInventoryRelease(
+                        () -> applyCommittedStepIfLoaded(questId, nextStep), afterCommitted);
+            } else {
+                tx.commit(() -> {
+                    applyCommittedStepIfLoaded(questId, nextStep);
+                    if (afterCommitted != null) afterCommitted.run();
+                });
+            }
             return true;
         } catch (RuntimeException failure) {
             return false;
