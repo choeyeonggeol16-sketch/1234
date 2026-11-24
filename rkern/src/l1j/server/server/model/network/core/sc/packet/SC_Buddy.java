@@ -6,15 +6,15 @@ import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOFrame;
 import java.nio.charset.Charset;
-import l1j.server.server.model.L1Buddy;
+import l1j.server.server.model.CFriends;
 
 public final class SC_Buddy {
     private SC_Buddy() {}
     private static final Charset NAME_CHARSET = Charset.forName("MS949");
 
-    public static boolean send(CUserSocket client, L1Buddy buddy) {
+    public static boolean send(CUserSocket client, CFriends buddy) {
         if (client == null || !client.isConnected()) return false;
-        final L1Buddy.FriendSnapshot friends = buddy == null ? null : buddy.snapshot();
+        final CFriends.FriendSnapshot friends = buddy == null ? null : buddy.Snapshot();
         final int count = friends == null ? 0 : friends.ids().length;
         final byte[][] names = new byte[count][];
         int size = 9;
@@ -40,7 +40,7 @@ public final class SC_Buddy {
                 buffer.writeC(len);
                 buffer.writeByte(name);
                 buffer.writeC(0x10);
-                buffer.writeC(L1Buddy.findOnlineFriend(friends.ids()[i]) != null ? 1 : 0);
+                buffer.writeC(CFriends.FindOnlineFriend(friends.ids()[i]) != null ? 1 : 0);
                 buffer.writeH(0x001a);
             }
             buffer.writeH(0);
@@ -50,7 +50,7 @@ public final class SC_Buddy {
             if (!committed) connection.abortDirectFrame(frame);
         }
     }
-    public static boolean send(L1PcInstance pc, L1Buddy buddy) {
+    public static boolean send(L1PcInstance pc, CFriends buddy) {
         return pc != null && send(pc.getNetConnection(), buddy);
     }
 

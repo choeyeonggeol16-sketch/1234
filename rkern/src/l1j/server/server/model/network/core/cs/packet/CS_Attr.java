@@ -11,7 +11,7 @@ import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.BossMonsterSpawnList;
-import l1j.server.server.datatables.BuddyTable;
+import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
@@ -19,7 +19,7 @@ import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
-import l1j.server.server.model.L1Buddy;
+import l1j.server.server.model.CFriends;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1ChatParty;
@@ -528,8 +528,8 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 			}
 			break;
 		case 622:
-			BuddyTable buddyTable = BuddyTable.getInstance();
-			L1Buddy buddyList = buddyTable.getBuddyTable(pc.getId());
+			CFriendsDb buddyTable = CFriendsDb.getInstance();
+			CFriends buddyList = buddyTable.GetFriends(pc.getId());
 			L1PcInstance target2 = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
 			pc.setTempID(0);
 			String name2 = pc.getName();
@@ -541,8 +541,8 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 				}
 			} else if (c == 1) {
 				if (target2 != null) {
-					buddyList.add(pc.getId(), name2);
-					buddyTable.addBuddy(target2.getId(), pc.getId(), name2);
+					buddyList.AddFriend(pc.getId(), name2);
+					buddyTable.EstablishFriendship(target2.getId(), pc.getId(), name2);
 					SC_SystemMessage.send(target2, pc.getName() + "님이 친구 등록 되었습니다.");
 					SC_SystemMessage.send(pc, target2.getName() + "님에게 친구 등록이 되었습니다.");
 				} else if (pc.getRaidGame()) {

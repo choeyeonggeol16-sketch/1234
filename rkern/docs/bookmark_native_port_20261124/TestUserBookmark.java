@@ -10,14 +10,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
-import l1j.server.server.templates.L1BookMark;
+import l1j.server.server.templates.BookmarkSlot;
 
 public final class TestUserBookmark {
     static void check(boolean ok, String why) {
         if (!ok) throw new AssertionError(why);
     }
-    static L1BookMark slot(int id, int position, int speed, String name) {
-        L1BookMark b = new L1BookMark();
+    static BookmarkSlot slot(int id, int position, int speed, String name) {
+        BookmarkSlot b = new BookmarkSlot();
         b.setId(id); b.setTemp_id(position); b.setSpeed_id(speed); b.setName(name);
         return b;
     }
@@ -28,10 +28,10 @@ public final class TestUserBookmark {
     }
     public static void main(String[] args) throws Exception {
         CUserBookmark book = new CUserBookmark();
-        ArrayList<L1BookMark> rows = new ArrayList<>();
-        L1BookMark a = slot(100, 5, 4, "A");
-        L1BookMark b = slot(200, 0, 0, "B");
-        L1BookMark c = slot(300, 3, -1, "C");
+        ArrayList<BookmarkSlot> rows = new ArrayList<>();
+        BookmarkSlot a = slot(100, 5, 4, "A");
+        BookmarkSlot b = slot(200, 0, 0, "B");
+        BookmarkSlot c = slot(300, 3, -1, "C");
         rows.add(a); rows.add(b); rows.add(c);
         book.OnLoadList(rows);
         check(book.slots().size() == 3 && book.FindWireSlot(0) == b
@@ -45,7 +45,7 @@ public final class TestUserBookmark {
         book.RemoveCommittedSlot(b);
         check(book.FindWireSlot(0) == c && book.FindById(200) == null
                 && book.shortcuts().size() == 1 && book.shortcuts().get(0) == a, "delete retires shortcut");
-        L1BookMark d = slot(400, 8, -1, "D");
+        BookmarkSlot d = slot(400, 8, -1, "D");
         book.AppendCommittedSlot(d);
         check(book.FindWireSlot(2) == d && d.getId() == 400 && d.getTemp_id() == 8, "row ID not wire ID");
         check(!CUserBookmark.validTitle(null) && !CUserBookmark.validTitle("")
@@ -116,14 +116,14 @@ public final class TestUserBookmark {
         System.out.println("PASS actual layout SQL with unique-order and shortcut collision probe");
         check(!CUserBookmark.validTitle("x".repeat(46)) && CUserBookmark.validTitle("x".repeat(45)), "DB title limit");
         check(book.snapshotSlots().length==book.size(), "slot snapshot size");
-        Method export = l1j.server.server.templates.L1ItemBookMark.class.getDeclaredMethod(
-                "writeSavedOrb",Connection.class,int.class,ArrayList.class);
+        Method export = l1j.server.server.templates.CItemBookmark.class.getDeclaredMethod(
+                "WriteSavedOrb",Connection.class,int.class,ArrayList.class);
         export.setAccessible(true);
-        var row = new l1j.server.server.templates.L1ItemBookMark();
+        var row = new l1j.server.server.templates.CItemBookmark();
         row.setId(123); row.setNumId(0); row.setSpeed_id(4); row.setName("test");
         row.setLocX(33333); row.setLocY(33334); row.setMapId((short)4);
         row.setRandomX(7); row.setRandomY(8);
-        ArrayList<l1j.server.server.templates.L1ItemBookMark> orbRows=new ArrayList<>();
+        ArrayList<l1j.server.server.templates.CItemBookmark> orbRows=new ArrayList<>();
         orbRows.add(row);
         Object[] bound=new Object[10];
         int[] writes={0};

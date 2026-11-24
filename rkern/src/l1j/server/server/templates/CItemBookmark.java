@@ -20,9 +20,9 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.utils.SQLUtil;
 
-public class L1ItemBookMark {
+public class CItemBookmark {
 
-	private static Logger _log = Logger.getLogger(L1ItemBookMark.class.getName());
+	private static Logger _log = Logger.getLogger(CItemBookmark.class.getName());
 
 	private int _charId;
 	private int _id;
@@ -121,21 +121,21 @@ public class L1ItemBookMark {
 		_randomY = i;
 	}
 
-	public L1ItemBookMark() {
+	public CItemBookmark() {
 	}
 
     /** Replace the owner's bookmarks and consume the physical storage orb in
      * one receipt. Never clear the live list before the SQL is confirmed. */
-    public static void useBookmarkItem(L1PcInstance pc, L1ItemInstance item) {
+    public static void UseBookmarkItem(L1PcInstance pc, L1ItemInstance item) {
         if (pc == null || item == null || item.getItemId() != 700023 || item.getCount() != 1
                 || pc.isItemTransferBusy() || pc.getTradeID() != 0 || pc.isTradeResolving()) return;
         final int charId = pc.getId(), objectId = item.getId(), limit = pc.getMark_count();
-        final ArrayList<L1BookMark> prepared = new ArrayList<>();
+        final ArrayList<BookmarkSlot> prepared = new ArrayList<>();
         try (l1j.server.server.model.L1InventoryTransaction tx =
                 l1j.server.server.model.L1InventoryTransaction.begin(pc,
                     l1j.server.server.storage.CacheD.accountOrderKey("bookmark:" + charId))) {
             if (!tx.debit(item, 1)) return;
-            tx.sql(con -> prepared.addAll(replaceItemBookmarks(con, charId, limit, objectId)));
+            tx.sql(con -> prepared.addAll(ReplaceItemSlots(con, charId, limit, objectId)));
             tx.onFailure(() -> pc.sendPackets("기억 장소를 교체하지 못했습니다. 구슬은 소비되지 않았습니다."));
             tx.commit(() -> {
                 pc.getUserBookmark().OnLoadList(prepared);
@@ -149,7 +149,7 @@ public class L1ItemBookMark {
 
     /** SQL-only helper. Source item ownership/debit is verified by the same
      * enclosing inventory receipt; the returned DTOs are installed on the CIO. */
-    public static ArrayList<L1BookMark> replaceItemBookmarks(Connection con, int charId,
+    public static ArrayList<BookmarkSlot> ReplaceItemSlots(Connection con, int charId,
             int markLimit, int objectId) throws SQLException {
         l1j.server.server.storage.cached.CTransaction.requireTransactionalTables(con,
                 "characters", "character_teleport", "character_teleport_item");
@@ -162,14 +162,14 @@ public class L1ItemBookMark {
                 capacity = Math.min(CUserBookmark.MAX_SLOT, Math.min(markLimit, rs.getInt(1)));
             }
         }
-        ArrayList<L1BookMark> result = new ArrayList<>();
+        ArrayList<BookmarkSlot> result = new ArrayList<>();
         try (PreparedStatement ps = con.prepareStatement("SELECT name,locx,locy,mapid,randomX,randomY,speed_id "
                 + "FROM character_teleport_item WHERE item_id=? ORDER BY num_id,id FOR UPDATE")) {
             ps.setInt(1, objectId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     if (result.size() >= capacity) throw new SQLException("Stored bookmark capacity exceeded");
-                    L1BookMark book = new L1BookMark();
+                    BookmarkSlot book = new BookmarkSlot();
                     book.setId(l1j.server.server.IdFactory.getInstance().nextId());
                     book.setCharId(charId); book.setNumId(result.size());
                     book.setTemp_id(book.getNumId()); book.setSpeed_id(rs.getInt("speed_id"));
@@ -182,7 +182,7 @@ public class L1ItemBookMark {
         }
         if (result.isEmpty()) throw new SQLException("Stored bookmark orb has no persistent destinations");
         int speedMask = 0;
-        for (L1BookMark b : result) {
+        for (BookmarkSlot b : result) {
             int speed = b.getSpeed_id();
             if (speed < 0 || speed >= CUserBookmark.SHORTCUTS || (speedMask & (1 << speed)) != 0)
                 b.setSpeed_id(-1);
@@ -193,7 +193,7 @@ public class L1ItemBookMark {
         }
         try (PreparedStatement ps = con.prepareStatement("INSERT INTO character_teleport "
                 + "(id,num_id,speed_id,char_id,name,locx,locy,mapid,randomX,randomY) VALUES(?,?,?,?,?,?,?,?,?,?)")) {
-            for (L1BookMark book : result) {
+            for (BookmarkSlot book : result) {
                 ps.setInt(1, book.getId()); ps.setInt(2, book.getNumId()); ps.setInt(3, book.getSpeed_id());
                 ps.setInt(4, charId); ps.setString(5, book.getName());
                 ps.setInt(6, book.getLocX()); ps.setInt(7, book.getLocY()); ps.setInt(8, book.getMapId());
@@ -208,7 +208,7 @@ public class L1ItemBookMark {
         return result;
     }
 
-    public static void bookmarItemkDB(L1PcInstance pc, L1ItemInstance item) {
+    public static void LoadItemSlots(L1PcInstance pc, L1ItemInstance item) {
         final String sql = "SELECT * FROM character_teleport_item WHERE item_id=? ORDER BY num_id ASC,id ASC";
 
         try (Connection con = DatabaseFactory.getInstance().getConnection();
@@ -216,11 +216,11 @@ public class L1ItemBookMark {
 
             pstm.setInt(1, item.getId());
 
-            final ArrayList<L1ItemBookMark> loaded = new ArrayList<>();
+            final ArrayList<CItemBookmark> loaded = new ArrayList<>();
             try (ResultSet rs = pstm.executeQuery()) {
                 int i = 0;
                 while (rs.next()) {
-                    L1ItemBookMark bookmark = new L1ItemBookMark();
+                    CItemBookmark bookmark = new CItemBookmark();
                     bookmark.setCharId(rs.getInt("item_id"));
                     bookmark.setId(rs.getInt("id"));
                     bookmark.setNumId(i);
@@ -246,15 +246,15 @@ public class L1ItemBookMark {
 
     /** L1-specific bookmark export: the physical token, new orb and every
      * destination row belong to the same durable inventory receipt. */
-    public static void saveBookmarkItem(L1PcInstance pc, L1ItemInstance source) {
+    public static void SaveItemSlots(L1PcInstance pc, L1ItemInstance source) {
         if (pc == null || source == null || source.getItemId() != 3000208
                 || pc.isLogoutStarted() || pc.isDead() || pc.isGhost()
                 || pc.isItemTransferBusy() || pc.getTradeID() != 0 || pc.isTradeResolving()
                 || pc.getInventory().getItem(source.getId()) != source) return;
-        final L1BookMark[] slots = pc.getBookMarkArray();
+        final BookmarkSlot[] slots = pc.getBookMarkArray();
         if (slots.length == 0 || slots.length > CUserBookmark.MAX_SLOT) return;
-        Arrays.sort(slots, Comparator.comparingInt(L1BookMark::getTemp_id)
-                .thenComparingInt(L1BookMark::getId));
+        Arrays.sort(slots, Comparator.comparingInt(BookmarkSlot::getTemp_id)
+                .thenComparingInt(BookmarkSlot::getId));
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc,
                 CacheD.accountOrderKey("bookmark:" + pc.getId()))) {
             if (!tx.debit(source, 1)) return;
@@ -262,10 +262,10 @@ public class L1ItemBookMark {
             if (grant == null || grant.isStackable() || grant.getCount() != 1)
                 throw new IllegalStateException("Saved bookmark orb must be a unique item");
             final int objectId = grant.getId();
-            final ArrayList<L1ItemBookMark> rows = new ArrayList<>(slots.length);
+            final ArrayList<CItemBookmark> rows = new ArrayList<>(slots.length);
             for (int n = 0; n < slots.length; n++) {
-                final L1BookMark b = slots[n];
-                final L1ItemBookMark row = new L1ItemBookMark();
+                final BookmarkSlot b = slots[n];
+                final CItemBookmark row = new CItemBookmark();
                 row.setId(IdFactory.getInstance().nextId());
                 row.setCharId(objectId); row.setNumId(n); row.setTemp_id(n);
                 row.setName(b.getName()); row.setSpeed_id(b.getSpeed_id());
@@ -275,7 +275,7 @@ public class L1ItemBookMark {
             }
             tx.sql(con -> {
                 CTransaction.requireTransactionalTables(con, "character_teleport_item");
-                writeSavedOrb(con, objectId, rows);
+                WriteSavedOrb(con, objectId, rows);
             });
             tx.onFailure(() -> pc.sendPackets("기억 저장에 실패했습니다. 구슬은 소비되지 않았습니다."));
             tx.commit(() -> {
@@ -291,11 +291,11 @@ public class L1ItemBookMark {
         }
     }
 
-    static void writeSavedOrb(Connection con, int objectId, ArrayList<L1ItemBookMark> rows)
+    static void WriteSavedOrb(Connection con, int objectId, ArrayList<CItemBookmark> rows)
             throws SQLException {
         try (PreparedStatement ps = con.prepareStatement(
                 "INSERT INTO character_teleport_item(id,num_id,speed_id,item_id,name,locx,locy,mapid,randomX,randomY) VALUES(?,?,?,?,?,?,?,?,?,?)")) {
-            for (L1ItemBookMark b : rows) {
+            for (CItemBookmark b : rows) {
                 ps.setInt(1, b.getId()); ps.setInt(2, b.getNumId()); ps.setInt(3, b.getSpeed_id());
                 ps.setInt(4, objectId); ps.setString(5, b.getName());
                 ps.setInt(6, b.getLocX()); ps.setInt(7, b.getLocY()); ps.setInt(8, b.getMapId());
@@ -305,7 +305,7 @@ public class L1ItemBookMark {
         }
     }
 
-	public static void deleteBookmarkItem(int itemid) {
+	public static void DeleteItemSlots(int itemid) {
 		Connection con = null;
 		PreparedStatement pstm = null;
 		try {

@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.datatables.BuddyTable;
+import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -18,16 +18,16 @@ public final class CS_AddBuddy {
         final L1CharName character = CharacterTable.getInstance().getCharName(charName);
         if (character == null) {
             // Preserve the previous case-insensitive duplicate result.
-            if (BuddyTable.getInstance().getBuddyTable(pc.getId()).containsName(charName))
+            if (CFriendsDb.getInstance().GetFriends(pc.getId()).HasFriend(charName))
                 SC_ServerMessage.send(pc, 1052, charName);
             else SC_ServerMessage.send(pc, 109, charName);
             return;
         }
         if (character.getId() == pc.getId()) return;
-        BuddyTable.getInstance().addBuddy(pc.getId(), character.getId(), character.getName(), result -> {
+        CFriendsDb.getInstance().EstablishFriendship(pc.getId(), character.getId(), character.getName(), result -> {
             if (!client.isConnected() || client.getActiveChar() != pc || pc.getNetConnection() != client) return;
-            if (result == BuddyTable.DUPLICATE) SC_ServerMessage.send(pc, 1052, charName);
-            else if (result == BuddyTable.FAILED) SC_SystemMessage.send(pc, "친구 등록에 실패했습니다.");
+            if (result == CFriendsDb.DUPLICATE) SC_ServerMessage.send(pc, 1052, charName);
+            else if (result == CFriendsDb.FAILED) SC_SystemMessage.send(pc, "친구 등록에 실패했습니다.");
         });
     }
 }

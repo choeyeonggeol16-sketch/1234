@@ -169,7 +169,7 @@ import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.Handler;
 import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.model.character.bookmark.CUserBookmark;
-import l1j.server.server.templates.L1BookMark;
+import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.utils.CalcStat;
 import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.ServerMessage;
@@ -958,11 +958,11 @@ public class L1PcInstance extends L1Character {
 	boolean isItemDrop;
 
 
-	public L1BookMark[] getBookMarkArray() {
+	public BookmarkSlot[] getBookMarkArray() {
 		return userBookmark.snapshotSlots();
 	}
 
-	public L1BookMark[] getSpeedBookMarkArray() {
+	public BookmarkSlot[] getSpeedBookMarkArray() {
 		return userBookmark.snapshotShortcuts();
 	}
 
@@ -3995,11 +3995,11 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 
-	public L1BookMark getBookMark(String name) { return userBookmark.FindSlot(name); }
-	public L1BookMark getBookMark(int id) { return userBookmark.FindById(id); }
+	public BookmarkSlot getBookMark(String name) { return userBookmark.FindSlot(name); }
+	public BookmarkSlot getBookMark(int id) { return userBookmark.FindById(id); }
 	public int getBookMarkSize() { return userBookmark.size(); }
-	public void addBookMark(L1BookMark book) { userBookmark.AppendCommittedSlot(book); }
-	public void removeBookMark(L1BookMark book) { userBookmark.RemoveCommittedSlot(book); }
+	public void addBookMark(BookmarkSlot book) { userBookmark.AppendCommittedSlot(book); }
+	public void removeBookMark(BookmarkSlot book) { userBookmark.RemoveCommittedSlot(book); }
 
 	public L1ItemInstance getWeapon() {
 		return _weapon;

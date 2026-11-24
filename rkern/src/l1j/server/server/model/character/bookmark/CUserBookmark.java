@@ -22,8 +22,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
-import l1j.server.server.templates.L1BookMark;
-import l1j.server.server.templates.L1ItemBookMark;
+import l1j.server.server.templates.BookmarkSlot;
+import l1j.server.server.templates.CItemBookmark;
 
 /**
  * User-owned NC CUserBookmark role adapted to the L1 wire protocol.
@@ -35,56 +35,56 @@ import l1j.server.server.templates.L1ItemBookMark;
 public final class CUserBookmark {
     private static final Logger LOG = Logger.getLogger(CUserBookmark.class.getName());
     public static final int MAX_SLOT = 100, SHORTCUTS = 5;
-    private final ArrayList<L1BookMark> slots = new ArrayList<>();
-    private final ArrayList<L1BookMark> shortcuts = new ArrayList<>();
+    private final ArrayList<BookmarkSlot> slots = new ArrayList<>();
+    private final ArrayList<BookmarkSlot> shortcuts = new ArrayList<>();
 
     public int size() { return slots.size(); }
-    public L1BookMark[] snapshotSlots() { return slots.toArray(new L1BookMark[slots.size()]); }
-    public L1BookMark[] snapshotShortcuts() { return shortcuts.toArray(new L1BookMark[shortcuts.size()]); }
+    public BookmarkSlot[] snapshotSlots() { return slots.toArray(new BookmarkSlot[slots.size()]); }
+    public BookmarkSlot[] snapshotShortcuts() { return shortcuts.toArray(new BookmarkSlot[shortcuts.size()]); }
     // Package-local views for regression checks; no external mutable list aliases.
-    ArrayList<L1BookMark> slots() { return slots; }
-    ArrayList<L1BookMark> shortcuts() { return shortcuts; }
+    ArrayList<BookmarkSlot> slots() { return slots; }
+    ArrayList<BookmarkSlot> shortcuts() { return shortcuts; }
 
-    public L1BookMark FindSlot(String name) {
+    public BookmarkSlot FindSlot(String name) {
         if (name == null) return null;
         for (int i = 0, n = slots.size(); i < n; i++) {
-            L1BookMark b = slots.get(i);
+            BookmarkSlot b = slots.get(i);
             if (b != null && b.getName() != null && b.getName().equalsIgnoreCase(name)) return b;
         }
         return null;
     }
 
-    public L1BookMark FindById(int id) {
+    public BookmarkSlot FindById(int id) {
         for (int i = 0, n = slots.size(); i < n; i++) {
-            L1BookMark b = slots.get(i);
+            BookmarkSlot b = slots.get(i);
             if (b != null && b.getId() == id) return b;
         }
         return null;
     }
 
-    public L1BookMark FindWireSlot(int id) {
+    public BookmarkSlot FindWireSlot(int id) {
         if (id < 0 || id >= slots.size()) return null;
-        L1BookMark b = slots.get(id);
+        BookmarkSlot b = slots.get(id);
         return b != null && b.getNumId() == id ? b : null;
     }
 
-    public void OnLoadList(ArrayList<L1BookMark> rows) {
+    public void OnLoadList(ArrayList<BookmarkSlot> rows) {
         if (rows == slots) throw new IllegalArgumentException("Detached bookmark snapshot required");
         slots.clear();
         shortcuts.clear();
         slots.addAll(rows);
-        slots.sort(Comparator.comparingInt(L1BookMark::getTemp_id).thenComparingInt(L1BookMark::getId));
+        slots.sort(Comparator.comparingInt(BookmarkSlot::getTemp_id).thenComparingInt(BookmarkSlot::getId));
         reindex();
     }
 
-    public void AppendCommittedSlot(L1BookMark b) {
+    public void AppendCommittedSlot(BookmarkSlot b) {
         if (b == null) return;
         b.setNumId(slots.size());
         slots.add(b);
         if (b.getSpeed_id() >= 0 && b.getSpeed_id() < SHORTCUTS) rebuildShortcuts();
     }
 
-    public void RemoveCommittedSlot(L1BookMark b) {
+    public void RemoveCommittedSlot(BookmarkSlot b) {
         if (!slots.remove(b)) return;
         reindex();
     }
@@ -98,12 +98,12 @@ public final class CUserBookmark {
         shortcuts.clear();
         int used = 0;
         for (int i = 0, n = slots.size(); i < n; i++) {
-            L1BookMark b = slots.get(i);
+            BookmarkSlot b = slots.get(i);
             if (b.getSpeed_id() < -1 || b.getSpeed_id() >= SHORTCUTS) b.setSpeed_id(-1);
         }
         for (int s = 0; s < SHORTCUTS; s++) {
             for (int i = 0, n = slots.size(); i < n; i++) {
-                L1BookMark b = slots.get(i);
+                BookmarkSlot b = slots.get(i);
                 if (b.getSpeed_id() == s) {
                     if ((used & (1 << s)) == 0) {
                         shortcuts.add(b);
@@ -147,7 +147,7 @@ public final class CUserBookmark {
     public boolean CanUseBookmark(L1PcInstance pc, int x, int y, short mapId) {
         if (pc == null || pc.isDead() || pc.isGhost() || pc.isLogoutStarted()) return false;
         for (int i = 0, n = slots.size(); i < n; i++) {
-            L1BookMark b = slots.get(i);
+            BookmarkSlot b = slots.get(i);
             if (b.getLocX() == x && b.getLocY() == y && b.getMapId() == mapId)
                 return IsValidLocation(x, y, mapId);
         }
@@ -169,7 +169,7 @@ public final class CUserBookmark {
         save(pc, name, x, y, mapId, 0, 0);
     }
 
-    public void SaveItemSlot(L1PcInstance pc, L1ItemBookMark item) {
+    public void SaveItemSlot(L1PcInstance pc, CItemBookmark item) {
         if (!ready(pc) || !validTitle(item.getName())) return;
         save(pc, item.getName(), item.getLocX(), item.getLocY(),
                 item.getMapId(), item.getRandomX(), item.getRandomY());
@@ -199,7 +199,7 @@ public final class CUserBookmark {
         }
         if (next >= MAX_SLOT) return;
         final int owner = pc.getId(), position = next;
-        final L1BookMark b = new L1BookMark();
+        final BookmarkSlot b = new BookmarkSlot();
         b.setId(IdFactory.getInstance().nextId());
         b.setCharId(owner); b.setNumId(count); b.setTemp_id(position);
         b.setSpeed_id(-1); b.setName(name); b.setLocX(x); b.setLocY(y);
@@ -227,7 +227,7 @@ public final class CUserBookmark {
 
     public void DeleteSlot(L1PcInstance pc, String name) {
         if (!ready(pc)) return;
-        final L1BookMark b = FindSlot(name);
+        final BookmarkSlot b = FindSlot(name);
         if (b == null) return;
         final int owner = pc.getId(), id = b.getId();
         mutate(pc, con -> {
@@ -238,7 +238,7 @@ public final class CUserBookmark {
             }
         }, () -> {
             RemoveCommittedSlot(b);
-            slots.sort(Comparator.comparingInt(L1BookMark::getTemp_id).thenComparingInt(L1BookMark::getId));
+            slots.sort(Comparator.comparingInt(BookmarkSlot::getTemp_id).thenComparingInt(BookmarkSlot::getId));
             reindex();
             resync(pc);
         });
@@ -256,18 +256,18 @@ public final class CUserBookmark {
         }, () -> { slots.clear(); shortcuts.clear(); resync(pc); });
     }
 
-    public void ModifySlots(L1PcInstance pc, int[] wireIds, String[] names) {
+    public void ModifySlot(L1PcInstance pc, int[] wireIds, String[] names) {
         if (!ready(pc) || wireIds == null || names == null
                 || wireIds.length != names.length || wireIds.length == 0
                 || wireIds.length > slots.size() || wireIds.length > MAX_SLOT) return;
         final int n = wireIds.length, owner = pc.getId();
-        final L1BookMark[] targets = new L1BookMark[n];
+        final BookmarkSlot[] targets = new BookmarkSlot[n];
         final String[] titles = names.clone();
         final boolean[] seen = new boolean[slots.size()];
         boolean changed = false;
         for (int i = 0; i < n; i++) {
             final int index = wireIds[i];
-            final L1BookMark b = FindWireSlot(index);
+            final BookmarkSlot b = FindWireSlot(index);
             if (b == null || seen[index] || !validTitle(titles[i])) { resync(pc); return; }
             seen[index] = true; targets[i] = b;
             changed |= !titles[i].equals(b.getName());
@@ -299,7 +299,7 @@ public final class CUserBookmark {
         final int[] oldOrder = new int[n];
         boolean changed = false;
         for (int i = 0; i < n; i++) {
-            L1BookMark b = slots.get(i);
+            BookmarkSlot b = slots.get(i);
             rows[i] = b.getId(); oldOrder[i] = b.getTemp_id();
             changed |= oldOrder[i] != layout[i] || b.getSpeed_id() != layout[n+i];
         }
@@ -307,7 +307,7 @@ public final class CUserBookmark {
         final int owner = pc.getId();
         mutate(pc, con -> writeLayout(con, owner, rows, oldOrder, layout), () -> {
             for (int i = 0; i < n; i++) {
-                L1BookMark b = slots.get(i);
+                BookmarkSlot b = slots.get(i);
                 b.setTemp_id(layout[i]);
                 b.setSpeed_id(layout[n+i]);
             }

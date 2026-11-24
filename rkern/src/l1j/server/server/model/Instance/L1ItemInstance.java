@@ -24,7 +24,7 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.world.instance.inn.InnHelper;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Item;
-import l1j.server.server.templates.L1ItemBookMark;
+import l1j.server.server.templates.CItemBookmark;
 import l1j.server.server.templates.L1Pet;
 import l1j.server.server.utils.BytesOutputStream;
 import l1j.server.server.utils.ItemPresentOutStream;
@@ -199,7 +199,7 @@ public class L1ItemInstance extends L1Object {
 		_count = 1;
 		_enchantLevel = 0;
 		_specialEnchant = 0;
-		_bookmarks = new ArrayList<L1ItemBookMark>();
+		_bookmarks = new ArrayList<CItemBookmark>();
 	}
 
 	public L1ItemInstance(L1Item item, int count) {
@@ -978,13 +978,13 @@ public class L1ItemInstance extends L1Object {
 		_Hotel_Town = name;
 	}
 
-	public ArrayList<L1ItemBookMark> _bookmarks;
+	public ArrayList<CItemBookmark> _bookmarks;
 
-	public ArrayList<L1ItemBookMark> getBookMark() {
+	public ArrayList<CItemBookmark> getBookMark() {
 		return _bookmarks;
 	}
 
-	public void addBookMark(L1ItemBookMark list) {
+	public void addBookMark(CItemBookmark list) {
 		_bookmarks.add(list);
 	}
 

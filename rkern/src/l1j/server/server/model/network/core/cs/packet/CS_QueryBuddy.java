@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.datatables.BuddyTable;
+import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Buddy;
@@ -12,7 +12,7 @@ public final class CS_QueryBuddy {
         if (client == null) return;
         final L1PcInstance pc = client.getActiveChar();
         if (pc == null) return;
-        BuddyTable.getInstance().queryBuddy(pc.getId(), buddy -> {
+        CFriendsDb.getInstance().MakeFriendList(pc.getId(), buddy -> {
             if (client.isConnected() && client.getActiveChar() == pc && pc.getNetConnection() == client)
                 SC_Buddy.send(client, buddy);
         }, () -> {

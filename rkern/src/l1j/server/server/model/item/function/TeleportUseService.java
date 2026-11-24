@@ -15,7 +15,7 @@ import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1BookMark;
+import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.ClientAutomationSession;
 
 public final class TeleportUseService {

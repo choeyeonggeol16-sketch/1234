@@ -29,7 +29,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_Weight;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
 import l1j.server.server.storage.CharactersItemStorage;
-import l1j.server.server.templates.L1BookMark;
+import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.templates.L1Item;
 
 public class L1PcInventory extends L1Inventory {
@@ -283,7 +283,7 @@ public class L1PcInventory extends L1Inventory {
         // packet returns to the original session, after the economy lane clears.
         try {
             l1j.server.server.storage.CacheD.getInstance().submitDbJobOrdered(_owner.getId(), () -> {
-                final var bookmarks = L1BookMark.ShowBookmarkitem(null, templateId);
+                final var bookmarks = BookmarkSlot.LoadItemSlots(null, templateId);
                 l1j.server.server.model.network.thread.CIOThreadCallback.getInstance().completeSessionReply(session, () -> {
                     if (_owner.getNetConnection() == session && session.getActiveChar() == _owner
                             && _owner.getSessionStamp() == stamp && getItem(objectId) == image)
@@ -574,7 +574,7 @@ public class L1PcInventory extends L1Inventory {
 		
 		if (item.getItemId() == 700024){
 			SC_PacketBox.send(_owner, SC_PacketBox.BOOKMARK, item.getId(), "$13719",
-					L1BookMark.ShowBookmarkitem(_owner, item.getItemId()));
+					BookmarkSlot.LoadItemSlots(_owner, item.getItemId()));
 		}
         // Arm only after the item has been added and all insert notifications ran.
         if (item.getEndTime() != null && !_owner.isLogoutStarted()

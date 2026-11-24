@@ -33,8 +33,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_ChangeCharName;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.templates.L1BookMark;
-import l1j.server.server.templates.L1ItemBookMark;
+import l1j.server.server.templates.BookmarkSlot;
+import l1j.server.server.templates.CItemBookmark;
 
 import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
 public final class CS_Channel {
@@ -433,7 +433,7 @@ for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
 
     private static void handleBookmarkColor(L1PcInstance pc, BookmarkColorPayload payload) {
         if (pc != null && payload != null)
-            pc.getUserBookmark().ModifySlots(pc, payload.numIds, payload.names);
+            pc.getUserBookmark().ModifySlot(pc, payload.numIds, payload.names);
     }
 
     private static void handleBookmarkSave(L1PcInstance pc, byte[] data) {
@@ -460,7 +460,7 @@ for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
         final L1ItemInstance useItem = pc.getInventory().getItem(itemId);
 
         if (useItem != null) {
-            L1ItemBookMark.saveBookmarkItem(pc, useItem);
+            CItemBookmark.SaveItemSlots(pc, useItem);
         }
     }
 

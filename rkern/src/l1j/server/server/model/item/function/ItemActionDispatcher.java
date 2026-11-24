@@ -27,7 +27,7 @@ import l1j.server.server.model.item.classchange.ClassChange;
 import l1j.server.server.model.item.collection.CollectionHandler;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.item.enchant.ItemEnchanterLoader;
-import l1j.server.server.templates.L1BookMark;
+import l1j.server.server.templates.BookmarkSlot;
 
 /** Explicit-ID dispatch. The default retains its original ordered range/use-type rules. */
 final class ItemActionDispatcher {
@@ -254,7 +254,7 @@ final class ItemActionDispatcher {
             case 41315 -> BlessingConsumables.handleHolyWaterOfEva(use);
             case 30055, 3000425, 711 -> { AreaDamageItems.use(pc, item, spellTargetId, itemId); yield ItemActionResult.STOP; }
             case 30071 -> { StarterEquipmentGiftBox.openStarterKit(pc, item); yield ItemActionResult.STOP; }
-            case 700024 -> { L1BookMark.Bookmarkitem(pc, item, itemId, false); yield ItemActionResult.COMPLETE; }
+            case 700024 -> { BookmarkSlot.UseBookmarkItem(pc, item, itemId, false); yield ItemActionResult.COMPLETE; }
             case 3000065, 3000256, 3110509, 3000509, 4100446 -> { ItemEnchanterLoader.getInstance().do_enchant(pc, item, targetItem); yield ItemActionResult.COMPLETE; }
             case 5558 -> { 정상의가호(pc, item); yield ItemActionResult.COMPLETE; }
             case 55558 -> { 정상의가호2(pc, item); yield ItemActionResult.STOP; }

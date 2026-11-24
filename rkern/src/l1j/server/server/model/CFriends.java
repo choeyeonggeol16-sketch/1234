@@ -6,17 +6,17 @@ import java.util.TreeMap;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 /** CFriends role: one character's committed friend relationships. */
-public class L1Buddy {
+public class CFriends {
     private final int _charId;
     private final HashMap<Integer, String> _buddys = new HashMap<>();
     private TreeMap<String, Integer> names;
     private int pending;
 
-    public L1Buddy(int charId) { _charId = charId; }
-    public int getCharId() { return _charId; }
+    public CFriends(int charId) { _charId = charId; }
+    public int GetCharId() { return _charId; }
 
-    public synchronized boolean add(int objId, String name) {
-        if (objId <= 0 || name == null || _buddys.containsKey(objId) || containsName(name))
+    public synchronized boolean AddFriend(int objId, String name) {
+        if (objId <= 0 || name == null || _buddys.containsKey(objId) || HasFriend(name))
             return false;
         if (names == null) names = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         _buddys.put(objId, name);
@@ -24,7 +24,7 @@ public class L1Buddy {
         return true;
     }
 
-    public synchronized boolean remove(int objId) {
+    public synchronized boolean RemoveFriend(int objId) {
         String name = _buddys.remove(objId);
         if (name == null) return false;
         names.remove(name);
@@ -32,24 +32,24 @@ public class L1Buddy {
         return true;
     }
 
-    public synchronized boolean remove(String name) {
-        return remove(getFriendDbId(name));
+    public synchronized boolean RemoveFriend(String name) {
+        return RemoveFriend(GetFriendDbId(name));
     }
 
-    public synchronized int getFriendDbId(String name) {
+    public synchronized int GetFriendDbId(String name) {
         if (name == null || names == null) return 0;
         Integer id = names.get(name);
         return id == null ? 0 : id;
     }
 
-    public synchronized boolean containsId(int objId) { return _buddys.containsKey(objId); }
-    public synchronized boolean containsName(String name) { return getFriendDbId(name) != 0; }
-    public synchronized int size() { return _buddys.size(); }
+    public synchronized boolean HasFriend(int objId) { return _buddys.containsKey(objId); }
+    public synchronized boolean HasFriend(String name) { return GetFriendDbId(name) != 0; }
+    public synchronized int GetFriendCount() { return _buddys.size(); }
 
     /** Compatibility accessor; no mutable collection escapes the friend-list lock. */
-    public synchronized HashMap<Integer, String> getBuddy() { return new HashMap<>(_buddys); }
+    public synchronized HashMap<Integer, String> GetFriendMap() { return new HashMap<>(_buddys); }
 
-    public synchronized String getName() {
+    public synchronized String GetLastFriendName() {
         String result = "";
         for (String name : _buddys.values()) result = name;
         return result;
@@ -58,7 +58,7 @@ public class L1Buddy {
     public record FriendSnapshot(int[] ids, String[] names) {}
     private static final FriendSnapshot EMPTY = new FriendSnapshot(new int[0], new String[0]);
 
-    public synchronized FriendSnapshot snapshot() {
+    public synchronized FriendSnapshot Snapshot() {
         int n = _buddys.size();
         if (n == 0) return EMPTY;
         int[] ids = new int[n];
@@ -72,26 +72,26 @@ public class L1Buddy {
     }
 
     /** Resolve by object ID, then confirm membership in the existing online index. */
-    public static L1PcInstance findOnlineFriend(int id) {
+    public static L1PcInstance FindOnlineFriend(int id) {
         L1World world = L1World.getInstance();
         if (world.findObject(id) instanceof L1PcInstance pc && world.getPlayer(pc.getName()) == pc)
             return pc;
         return null;
     }
 
-    public String getOnlineBuddyListString() {
-        FriendSnapshot friends = snapshot();
+    public String MakeOnlineFriendList() {
+        FriendSnapshot friends = Snapshot();
         if (friends.ids().length == 0) return "";
         StringBuilder result = new StringBuilder();
         for (int id : friends.ids()) {
-            L1PcInstance pc = findOnlineFriend(id);
+            L1PcInstance pc = FindOnlineFriend(id);
             if (pc != null) result.append(pc.getName()).append(' ');
         }
         return result.toString();
     }
 
     // Admission and query ordering use this same monitor. No JDBC runs under it.
-    public synchronized void beginMutation() { ++pending; }
-    public synchronized void endMutation() { --pending; }
-    public synchronized boolean hasPendingMutation() { return pending != 0; }
+    public synchronized void BeginMutation() { ++pending; }
+    public synchronized void EndMutation() { --pending; }
+    public synchronized boolean HasPendingMutation() { return pending != 0; }
 }

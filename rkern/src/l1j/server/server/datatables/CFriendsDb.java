@@ -12,58 +12,58 @@ import java.util.logging.Logger;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.model.L1Buddy;
+import l1j.server.server.model.CFriends;
 import l1j.server.server.storage.CacheD;
 
-public class BuddyTable {
-    private static final Logger _log = Logger.getLogger(BuddyTable.class.getName());
-    private static class Holder { static final BuddyTable INSTANCE = new BuddyTable(); }
-    private final TIntObjectMap<L1Buddy> _buddys = new TIntObjectHashMap<>(512);
+public class CFriendsDb {
+    private static final Logger _log = Logger.getLogger(CFriendsDb.class.getName());
+    private static class Holder { static final CFriendsDb INSTANCE = new CFriendsDb(); }
+    private final TIntObjectMap<CFriends> _buddys = new TIntObjectHashMap<>(512);
     private final boolean loaded;
 
-    public static BuddyTable getInstance() { return Holder.INSTANCE; }
+    public static CFriendsDb getInstance() { return Holder.INSTANCE; }
 
-    private BuddyTable() { loaded = loadBuddyList(); }
+    private CFriendsDb() { loaded = LoadFriends(); }
 
-    private boolean loadBuddyList() {
+    private boolean LoadFriends() {
         String sql = "SELECT char_id, buddy_id, buddy_name FROM character_buddys";
         try (Connection con = DatabaseFactory.getInstance().getConnection();
              PreparedStatement pstm = con.prepareStatement(sql);
              ResultSet rs = pstm.executeQuery()) {
             while (rs.next()) {
-                getBuddyTable(rs.getInt("char_id")).add(rs.getInt("buddy_id"), rs.getString("buddy_name"));
+                GetFriends(rs.getInt("char_id")).AddFriend(rs.getInt("buddy_id"), rs.getString("buddy_name"));
             }
             _log.config("loaded " + _buddys.size() + " character's buddylists");
             return true;
         } catch (SQLException e) {
             _buddys.clear();
-            _log.log(Level.SEVERE, "BuddyTable load error", e);
+            _log.log(Level.SEVERE, "CFriendsDb load error", e);
             return false;
         }
     }
 
-    public synchronized L1Buddy getBuddyTable(int charId) {
-        L1Buddy buddy = _buddys.get(charId);
+    public synchronized CFriends GetFriends(int charId) {
+        CFriends buddy = _buddys.get(charId);
         if (buddy == null) {
-            buddy = new L1Buddy(charId);
+            buddy = new CFriends(charId);
             _buddys.put(charId, buddy);
         }
         return buddy;
     }
 
     public static final int SUCCESS = 0, DUPLICATE = 1, FAILED = 2;
-    public void addBuddy(int charId, int objId, String name) {
-        addBuddy(charId, objId, name, null);
+    public void EstablishFriendship(int charId, int objId, String name) {
+        EstablishFriendship(charId, objId, name, null);
     }
 
-    public void addBuddy(int charId, int objId, String name, IntConsumer completion) {
+    public void EstablishFriendship(int charId, int objId, String name, IntConsumer completion) {
         if (!loaded || charId <= 0 || objId <= 0 || charId == objId || name == null || name.isEmpty()) {
             complete(completion, FAILED);
             return;
         }
-        L1Buddy buddy = getBuddyTable(charId);
+        CFriends buddy = GetFriends(charId);
         if (!enqueue(buddy, () -> {
-            if (buddy.containsId(objId) || buddy.containsName(name)) {
+            if (buddy.HasFriend(objId) || buddy.HasFriend(name)) {
                 complete(completion, DUPLICATE);
                 return;
             }
@@ -75,25 +75,25 @@ public class BuddyTable {
                 pstm.setString(3, name);
                 if (pstm.executeUpdate() != 1) throw new SQLException("Unexpected friend insert count");
             } catch (SQLException e) {
-                _log.log(Level.SEVERE, "BuddyTable addBuddy error", e);
+                _log.log(Level.SEVERE, "CFriendsDb EstablishFriendship error", e);
                 complete(completion, FAILED);
                 return;
             }
-            buddy.add(objId, name);
+            buddy.AddFriend(objId, name);
             complete(completion, SUCCESS);
         })) complete(completion, FAILED);
     }
 
-    public void removeBuddy(int charId, String buddyName) { removeBuddy(charId, buddyName, null); }
+    public void BreakFriendship(int charId, String buddyName) { BreakFriendship(charId, buddyName, null); }
 
-    public void removeBuddy(int charId, String buddyName, IntConsumer completion) {
+    public void BreakFriendship(int charId, String buddyName, IntConsumer completion) {
         if (!loaded || charId <= 0 || buddyName == null || buddyName.isEmpty()) {
             complete(completion, FAILED);
             return;
         }
-        L1Buddy buddy = getBuddyTable(charId);
+        CFriends buddy = GetFriends(charId);
         if (!enqueue(buddy, () -> {
-            int id = buddy.getFriendDbId(buddyName);
+            int id = buddy.GetFriendDbId(buddyName);
             if (id == 0) {
                 complete(completion, SUCCESS);
                 return;
@@ -105,26 +105,26 @@ public class BuddyTable {
                 pstm.setInt(2, id);
                 pstm.executeUpdate();
             } catch (SQLException e) {
-                _log.log(Level.SEVERE, "BuddyTable removeBuddy error", e);
+                _log.log(Level.SEVERE, "CFriendsDb BreakFriendship error", e);
                 complete(completion, FAILED);
                 return;
             }
-            buddy.remove(id);
+            buddy.RemoveFriend(id);
             complete(completion, SUCCESS);
         })) complete(completion, FAILED);
     }
 
-    private boolean enqueue(L1Buddy buddy, Runnable task) {
+    private boolean enqueue(CFriends buddy, Runnable task) {
         synchronized (buddy) {
-            buddy.beginMutation();
+            buddy.BeginMutation();
             try {
-                CacheD.getInstance().submitDbJobOrdered(buddy.getCharId(), () -> {
+                CacheD.getInstance().submitDbJobOrdered(buddy.GetCharId(), () -> {
                     try { task.run(); }
-                    finally { buddy.endMutation(); }
+                    finally { buddy.EndMutation(); }
                 });
                 return true;
             } catch (RejectedExecutionException e) {
-                buddy.endMutation();
+                buddy.EndMutation();
                 _log.log(Level.WARNING, "Friend operation admission rejected", e);
                 return false;
             }
@@ -132,12 +132,12 @@ public class BuddyTable {
     }
 
     /** Read memory directly unless a preceding operation must complete first. */
-    public void queryBuddy(int charId, Consumer<L1Buddy> response, Runnable failed) {
+    public void MakeFriendList(int charId, Consumer<CFriends> response, Runnable failed) {
         if (!loaded) { failed.run(); return; }
-        L1Buddy buddy = getBuddyTable(charId);
+        CFriends buddy = GetFriends(charId);
         boolean rejected = false;
         synchronized (buddy) {
-            if (buddy.hasPendingMutation()) {
+            if (buddy.HasPendingMutation()) {
                 if (enqueue(buddy, () -> response.accept(buddy))) return;
                 rejected = true;
             }

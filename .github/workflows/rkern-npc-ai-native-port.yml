@@ -1,4 +1,4 @@
-name: RKern NC NPC AI and Bookmark Java 21 regression
+name: RKern NC NPC AI, Friends and Bookmark Java 21 regression
 
 on:
   push:
@@ -17,8 +17,12 @@ on:
       - 'rkern/src/l1j/server/server/model/character/skill/L1SkillUse.java'
       - 'rkern/docs/npc_ai_native_port_20261123/**'
       - 'rkern/src/l1j/server/server/model/character/bookmark/**'
-      - 'rkern/src/l1j/server/server/templates/L1BookMark.java'
-      - 'rkern/src/l1j/server/server/templates/L1ItemBookMark.java'
+      - 'rkern/src/l1j/server/server/model/CFriends.java'
+      - 'rkern/src/l1j/server/server/datatables/CFriendsDb.java'
+      - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_*Buddy.java'
+      - 'rkern/src/l1j/server/server/model/network/core/sc/packet/SC_Buddy.java'
+      - 'rkern/src/l1j/server/server/templates/BookmarkSlot.java'
+      - 'rkern/src/l1j/server/server/templates/CItemBookmark.java'
       - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_Bookmark.java'
       - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_DeleteBookmark.java'
       - 'rkern/src/l1j/server/server/model/network/core/cs/packet/CS_Channel.java'
@@ -127,6 +131,11 @@ jobs:
                   if failure.code not in (429, 500, 502, 503, 504) or attempt == 5:
                       raise
                   time.sleep(min(4 * (attempt + 1), 20))
+          stale = subprocess.run(["git", "grep", "-nE", r"(^|[^[:alnum:]_])(L1Buddy|BuddyTable|L1BookMark|L1ItemBookMark)([^[:alnum:]_]|$)", "--", "rkern/src"], capture_output=True, text=True)
+          if stale.returncode == 0:
+              raise SystemExit("Old class references remain:\n" + stale.stdout)
+          if stale.returncode != 1:
+              raise SystemExit(stale.stderr)
           sources = sorted((root / "src").rglob("*.java"))
           test = root / "docs/npc_ai_native_port_20261123/TestNpcDesireBoost.java"
           sources.append(test)
@@ -190,5 +199,5 @@ jobs:
               raise SystemExit("Failed NPC suites: " + ", ".join(failures))
           print("PASS all 9 independent NPC and bookmark suites", flush=True)
           print("Remaining bookmark call sites:", flush=True)
-          subprocess.run(["git", "grep", "-nE", "L1BookMark\\.(insertBookmark|bookmarkDB|addBookmarkItem|deleteBookmarkItem|WriteBookmark)|L1ItemBookMark\\.addBookmark|\\._bookmarks|\\._speedbookmarks|handleSkillTeleport\\(", "--", "rkern/src"], check=False)
+          subprocess.run(["git", "grep", "-nE", "BookmarkSlot\\.(InsertSlot|Load|SaveItemSlot|DeleteItemSlots|WriteSlots)|CItemBookmark\\.SaveSlot|\\._bookmarks|\\._speedbookmarks|handleSkillTeleport\\(", "--", "rkern/src"], check=False)
           PY

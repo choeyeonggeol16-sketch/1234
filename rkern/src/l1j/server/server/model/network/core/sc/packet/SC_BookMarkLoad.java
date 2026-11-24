@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.templates.L1BookMark;
+import l1j.server.server.templates.BookmarkSlot;
 
 public final class SC_BookMarkLoad {
     private static final Logger LOG = Logger.getLogger(SC_BookMarkLoad.class.getName());
@@ -20,7 +20,7 @@ public final class SC_BookMarkLoad {
     private static final class Entry {
         final int id, order, map, x, y;
         final byte[] name;
-        Entry(L1BookMark mark) {
+        Entry(BookmarkSlot mark) {
             id = mark.getNumId();
             order = mark.getTemp_id();
             String s = mark.getName();
@@ -39,15 +39,15 @@ public final class SC_BookMarkLoad {
         try {
             markCount = Math.clamp(pc.getMark_count(), 0, 100);
             booksize = markCount + 6;
-            for (L1BookMark mark : pc.getBookMarkArray()) marks.add(new Entry(mark));
-            final L1BookMark[] shortcuts = pc.getSpeedBookMarkArray();
+            for (BookmarkSlot mark : pc.getBookMarkArray()) marks.add(new Entry(mark));
+            final BookmarkSlot[] shortcuts = pc.getSpeedBookMarkArray();
             int last = -1;
-            for (L1BookMark mark : shortcuts)
+            for (BookmarkSlot mark : shortcuts)
                 if (mark.getSpeed_id() >= 0 && mark.getSpeed_id() < 5)
                     last = Math.max(last, mark.getSpeed_id());
             speed = new int[last + 1];
             java.util.Arrays.fill(speed, 0xFF);
-            for (L1BookMark mark : shortcuts)
+            for (BookmarkSlot mark : shortcuts)
                 if (mark.getSpeed_id() >= 0 && mark.getSpeed_id() < speed.length)
                     speed[mark.getSpeed_id()] = mark.getNumId();
         } catch (Exception ex) {

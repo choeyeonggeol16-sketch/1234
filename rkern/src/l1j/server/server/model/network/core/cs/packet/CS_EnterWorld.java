@@ -110,9 +110,9 @@ import l1j.server.server.shared.EPcStatus;
 import l1j.server.server.shared.observer.CopyMapObservable;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.CharactersItemStorage;
-import l1j.server.server.templates.L1BookMark;
+import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.templates.L1GetBackRestart;
-import l1j.server.server.templates.L1ItemBookMark;
+import l1j.server.server.templates.CItemBookmark;
 import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.CheckInitStat;
 import l1j.server.swing.chocco;
@@ -180,8 +180,8 @@ public final class CS_EnterWorld {
         int[] levelGiftLevels;
         int[] lateralValues;
         BQSCharacterData bqs;
-        ArrayList<L1BookMark> bookmarks;
-        ArrayList<L1BookMark> templateOrbBookmarks;
+        ArrayList<BookmarkSlot> bookmarks;
+        ArrayList<BookmarkSlot> templateOrbBookmarks;
         SC_CharacterConfig.Snapshot characterConfig;
         boolean blocked;
     }
@@ -250,9 +250,9 @@ public final class CS_EnterWorld {
         // Bookmark metadata belongs to these detached item images. Its SQL
         // must finish before the CIO installs the inventory/world state.
         for (L1ItemInstance item : data.items) {
-            if (item.getItemId() == 700023) L1ItemBookMark.bookmarItemkDB(data.pc, item);
+            if (item.getItemId() == 700023) CItemBookmark.LoadItemSlots(data.pc, item);
             if (item.getItemId() == 700024 && data.templateOrbBookmarks == null)
-                data.templateOrbBookmarks = L1BookMark.ShowBookmarkitem(null, 700024);
+                data.templateOrbBookmarks = BookmarkSlot.LoadItemSlots(null, 700024);
         }
         data.warehouseItems = readWarehouseItems(data.pc.getAccountName(), data.pc.getName());
         if (Config.USE_ATTENDANCE_SYSTEM && data.pc.getLevel() >= 50)
@@ -274,7 +274,7 @@ public final class CS_EnterWorld {
         data.bqs = BQSCharacterDataLoader.readSnapshot(data.pc.getId());
         data.bqs.realloc_decks(data.pc);
         BQSCharacterDataLoader.storeCharacterBqs(data.bqs, false);
-        data.bookmarks = L1BookMark.readSnapshot(data.pc.getId());
+        data.bookmarks = BookmarkSlot.LoadSnapshot(data.pc.getId());
         if (Config.CHARACTER_CONFIG_IN_SERVER_SIDE)
             data.characterConfig = SC_CharacterConfig.load(data.pc.getId());
         PassiveLoader.getInstance();
@@ -481,7 +481,7 @@ public final class CS_EnterWorld {
         BQSCharacterDataLoader.applySnapshot(pc, data.bqs);
         sendSkillPacket(pc, skillList);
         CopyMapObservable.getInstance().resetPosition(pc);
-        L1BookMark.applySnapshot(pc, data.bookmarks);
+        BookmarkSlot.ApplySnapshot(pc, data.bookmarks);
         SC_BookMarkLoad.send(pc);
         SC_OwnCharAttrDef.send(pc);
         SC_Weight.send(pc);
