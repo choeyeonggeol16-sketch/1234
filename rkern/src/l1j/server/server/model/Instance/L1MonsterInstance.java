@@ -44,6 +44,7 @@ import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.npc.ai.action.dMoveTo;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.npc.ai.CNpcItemUse;
+import l1j.server.server.model.npc.ai.CNpcSpecialAction;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.shared.listener.MonsterDeathHandler;
@@ -176,8 +177,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 		super(template);
 		_storeDroped = false;
 		synchronized (this) {
-			if(template.get_npcId() == 707026)
-				setStatus(6);
+			CNpcSpecialAction.OnCreated(this, template.get_npcId());
 
 			if (this.getNpcTemplate().get_gfxid() == 7684 || this.getNpcTemplate().get_gfxid() == 7805
 					|| this.getNpcTemplate().get_gfxid() == 8063) {
@@ -649,16 +649,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 
     @Override
     protected void onNpcAtomicHpChanged(int i) {
-        if (getNpcId() == 707026 && i > 0) {
-			int p = (int) (((double) getCurrentHp() / (double) getMaxHp()) * 100D);
-			if (getStatus() == 6) {
-				if (p <= 90) {
-					SC_DoActionGFX.broadcast(this, 4);
-					setStatus(0);
-				}
-			}
-		}
-	}
+        CNpcSpecialAction.OnHpChanged(this, i);
+    }
 
 	@Override
 	public void setCurrentMp(int i) {

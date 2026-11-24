@@ -560,15 +560,9 @@ public class L1NpcInstance extends L1Character {
 
  //   public void searchTarget() {}
 
+    /** Scripted AI gate; companion/servant types retain their own override. */
     public boolean checkCondition() {
-        if (getNpcId() == 707026) {
-            int p = (int) (((double) getCurrentHp() / (double) getMaxHp()) * 100D);
-            if (p > 90) {
-                setSleepTime(200);
-                return true; 
-            }
-        }
-        return false;
+        return CNpcSpecialAction.CheckCondition(this);
     }
 
     public void checkTarget() {

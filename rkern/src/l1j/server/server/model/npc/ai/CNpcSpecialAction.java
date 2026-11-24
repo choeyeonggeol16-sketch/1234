@@ -6,6 +6,7 @@ import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 
 /** L1 scripted NPC actions, dispatched by the existing NPC AI owner. */
 public final class CNpcSpecialAction {
@@ -15,6 +16,7 @@ public final class CNpcSpecialAction {
     private static final byte SHIP_MOVE = 1;
     private static final byte SAND_STORM = 2;
     private static final byte FIELD_TRAP = 3;
+    private static final int ANCIENT_GUARDIAN = 707026;
 
     public static byte GetActionId(final int npcId) {
         return switch (npcId) {
@@ -32,6 +34,36 @@ public final class CNpcSpecialAction {
             case FIELD_TRAP -> FieldTrap(npc);
             default -> { }
         }
+    }
+
+    /** L1-specific script policy; the common instance retains only hooks. */
+    public static void OnCreated(final L1NpcInstance npc, final int npcId) {
+        if (npcId == ANCIENT_GUARDIAN) {
+            npc.setStatus(6);
+        }
+    }
+
+    public static boolean CheckCondition(final L1NpcInstance npc) {
+        if (npc.getNpcId() == ANCIENT_GUARDIAN && HpPercent(npc) > 90) {
+            npc.setSleepTime(200);
+            return true;
+        }
+        return false;
+    }
+
+    public static void OnHpChanged(final L1NpcInstance npc, final int hp) {
+        if (npc.getNpcId() == ANCIENT_GUARDIAN && hp > 0) {
+            final int percent = HpPercent(npc);
+            if (npc.getStatus() == 6 && percent <= 90) {
+                SC_DoActionGFX.broadcast(npc, 4);
+                npc.setStatus(0);
+            }
+        }
+    }
+
+    private static int HpPercent(final L1NpcInstance npc) {
+        // Preserve the original truncation and floating-point boundary.
+        return (int) (((double) npc.getCurrentHp() / (double) npc.getMaxHp()) * 100D);
     }
 
     private static void MoveShip(final L1NpcInstance npc) {
