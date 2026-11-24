@@ -2092,6 +2092,10 @@ public class L1NpcInstance extends L1Character {
             NPC_ACTION_ADMISSION_EPOCH.incrementAndGet(this);
             npcActionClearDeferredCommands();
             npcActionInvalidateGeneration();
+            // Death cancellation may not have reached the owner yet. Preserve
+            // the previous life's skill and movement cleanup before reopening.
+            CSkillAction2.resetAllSkillUseCount(this);
+            CMoveAction.resetMoveBlockedState(this);
             firstFound = true;
             ReopenNpcEvents();
             _npcChatTimers = null;

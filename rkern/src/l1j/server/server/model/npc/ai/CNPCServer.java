@@ -721,15 +721,23 @@ public final class CNPCServer {
             while (count++ < COMMAND_DRAIN_BUDGET
                     && (npc = _unregister.poll()) != null) {
                 npc.aiEngineClearQueuedUnregister();
-                unlink(npc);
-                npc.npcControllerDisarm();
+                synchronized (npc) {
+                    if (npc.aiEngineIsRunning()) {
+                        // An unregister from a prior life/stop must not disarm
+                        // a restarted NPC or overwrite its new AI deadline.
+                        scheduleNext(npc);
+                        continue;
+                    }
+                    unlink(npc);
+                    npc.npcControllerDisarm();
                 // The wake ticket is still in _wake. Releasing its CAS here
                 // allows another producer to enqueue the same NPC again
                 // before the owner drains the first wake, defeating bounded
                 // per-NPC coalescing under repeated stop/start races.
                 // Only the _wake consumer releases its own queued ticket.
-                npc.aiEngineDeadlineMs(0L);
-                scheduleNext(npc);
+                    npc.aiEngineDeadlineMs(0L);
+                    scheduleNext(npc);
+                }
             }
 
             count = 0;
@@ -834,7 +842,12 @@ public final class CNPCServer {
                         if (event.npc != null && event.npc.aiEngineIsRunning()
                                 && event.generation == event.npc.npcActionAdmissionEpoch()) {
                             if (event.action == CCreatureController.ACTION_NONE) {
-                                CCreatureController.cancelFromAi(event.npc);
+                                synchronized (event.npc) {
+                                    if (event.npc.aiEngineIsRunning()
+                                            && event.generation == event.npc.npcActionAdmissionEpoch()) {
+                                        CCreatureController.cancelFromAi(event.npc);
+                                    }
+                                }
                             } else {
                                 CCreatureController.acceptFromAi(event.npc, event.action, event.pendingAction);
                             }
@@ -851,9 +864,15 @@ public final class CNPCServer {
                         }
                         break;
                     case EVENT_CANCEL:
-                        CCreatureController.cancelFromAi(event.npc);
-                        event.npc.npcControllerDisarm();
-                        scheduleNext(event.npc);
+                        if (event.npc != null) {
+                            synchronized (event.npc) {
+                                if (event.generation == event.npc.npcActionAdmissionEpoch()) {
+                                    CCreatureController.cancelFromAi(event.npc);
+                                    event.npc.npcControllerDisarm();
+                                }
+                            }
+                            scheduleNext(event.npc);
+                        }
                         break;
                     default:
                         break;

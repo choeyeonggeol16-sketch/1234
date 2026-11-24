@@ -260,10 +260,16 @@ public class L1SummonInstance extends L1NpcInstance {
         boolean settled = false;
         try {
             final L1Character master = _master;
-            final L1Inventory masterInventory = master == null ? null : master.getInventory();
-            for (L1ItemInstance item : _inventory.getItems()) {
-                if (item == null) continue;
+            // A later retry may run after the owner's old session was removed.
+            // Never write into a retired PC inventory: use ground settlement.
+            final L1Inventory masterInventory = master instanceof L1PcInstance pc
+                    && L1World.getInstance().getPlayer(pc.getName()) == pc
+                    ? pc.getInventory() : null;
+            while (!_inventory.getItems().isEmpty()) {
+                final L1ItemInstance item = _inventory.getItems().get(0);
+                if (item == null) return;
                 final int count = item.getCount();
+                if (count <= 0) return;
                 if (masterInventory != null
                         && masterInventory.checkAddItem(item, count) == L1Inventory.OK
                         && _inventory.tradeItem(item, count, masterInventory) != null) {
@@ -278,6 +284,9 @@ public class L1SummonInstance extends L1NpcInstance {
                     final L1Inventory ground = L1World.getInstance().getInventory(getX(), getY(), getMapId());
                     if (_inventory.tradeItem(item, count, ground) == null) return;
                 }
+                // This is a full-stack transfer. A reported success that did
+                // not retire the exact source must not spin on the same item.
+                if (_inventory.getItem(item.getId()) == item) return;
             }
             settled = _inventory.getItems().isEmpty();
         } catch (RuntimeException failure) {
