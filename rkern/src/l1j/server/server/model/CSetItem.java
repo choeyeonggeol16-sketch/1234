@@ -5,15 +5,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import l1j.server.server.datatables.ArmorSetTable;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.ItemStat;
 import l1j.server.server.templates.L1ArmorSets;
 
 /** Shared set definition. A player's active sets are owned by L1EquipmentSlot. */
-final class CSetItem {
+public final class CSetItem {
     private static final Definitions DEFINITIONS = loadSets();
+
+    /** Eagerly finish the existing shared set-definition initialization. */
+    public static void PostLoad() {
+        definitions(false);
+    }
 
     private final int[] itemIds;
     private final int ac, hp, mp, hpr, mpr, mr;
@@ -59,7 +64,7 @@ final class CSetItem {
     private static Definitions loadSets() {
         final List<CSetItem> regular = new ArrayList<>();
         final List<CSetItem> polymorph = new ArrayList<>();
-        final L1ArmorSets[] rows = ArmorSetTable.getInstance().getAllList();
+        final L1ArmorSets[] rows = CObjectDB.LoadSetItem().getAllList();
         final int[] mainItemIds = new int[rows.length];
         int mainItemCount = 0;
         for (L1ArmorSets row : rows) {

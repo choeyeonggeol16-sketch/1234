@@ -3,6 +3,7 @@ package l1j.server.server.templates;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -89,6 +90,7 @@ public class L1Npc extends L1Object implements Cloneable {
 	}
 
 	private String _impl;
+	private byte _creationType;
 
 	public String getImpl() {
 		return _impl;
@@ -96,6 +98,13 @@ public class L1Npc extends L1Object implements Cloneable {
 
 	public void setImpl(String s) {
 		_impl = s;
+		_creationType = (byte) CObjectDB.ResolveNPCType(s);
+	}
+
+	public int getCreationType() {
+		// Older serialized templates may not contain the new discriminator.
+		return _creationType == 0 && _impl != null
+				? CObjectDB.ResolveNPCType(_impl) : _creationType;
 	}
 
 	private int _level;

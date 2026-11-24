@@ -261,6 +261,7 @@ public class GameServer {
 		Announcements.getInstance();
 		WeaponAddDamage.getInstance();
 		CObjectDB.LoadSetItem();
+		CObjectDB.PostLoad();
 		MapUserTeleportTable.getInstance();
 
 		ArmorEnchantInformationTable.getInstance();
