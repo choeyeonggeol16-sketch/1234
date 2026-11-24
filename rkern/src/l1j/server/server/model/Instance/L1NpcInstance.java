@@ -40,7 +40,7 @@ import l1j.server.server.model.npc.ai.CNPCEvent;
 import l1j.server.server.model.npc.ai.CItemDigest;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.npc.ai.NpcPotionPolicy;
-import l1j.server.server.model.npc.ai.NpcRefineRecipes;
+import l1j.server.server.model.npc.ai.CItemRefine;
 import l1j.server.server.model.npc.ai.NpcServer;
 import l1j.server.server.model.npc.ai.NpcSpecials;
 import l1j.server.server.model.npc.ai.action.CNpcAI;
@@ -1109,17 +1109,8 @@ public class L1NpcInstance extends L1Character {
     public void onNpcAI() {
     }
 
-    public void refineItem() {
-        if (getExp() == 0) {
-            return;
-        }
-        final NpcRefineRecipes.Recipe[] recipes = NpcRefineRecipes.get(_npcTemplate.get_npcId());
-        if (recipes == null) {
-            return;
-        }
-        for (NpcRefineRecipes.Recipe r : recipes) {
-            NpcRefineRecipes.tryRefine(this, getInventory(), r);
-        }
+    public void RefineItem() {
+        CItemRefine.RefineItem(this);
     }
 
     public L1HateList getHateList() {
@@ -1299,7 +1290,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void onGetItem(L1ItemInstance item) {
-        refineItem();
+        RefineItem();
         getInventory().shuffle();
         if (getNpcTemplate().get_digestitem() > 0) {
             setDigestItem(item);

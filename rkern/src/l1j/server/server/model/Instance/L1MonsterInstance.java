@@ -220,7 +220,7 @@ public class L1MonsterInstance extends L1NpcInstance {
     public void onGetItem(L1ItemInstance item, int acquiredCount) {
         if (item == null || isDestroyed() || isDead()) return;
         final int before = item.getCount();
-        refineItem();
+        RefineItem();
         final L1Inventory inventory = getInventory();
         if (inventory == null) return;
         inventory.shuffle();
