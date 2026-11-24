@@ -61,6 +61,14 @@ public final class dMoveTo {
         npc._pathFindFailCount = 0;
         CMoveAction.invalidatePath(npc);
         CCreatureController.submit(npc, CCreatureController.ACTION_MOVE_TO_POINT);
+        // The owner applies the action inline. A rejected shutdown/death
+        // admission must not leave the return marker and immunity behind.
+        if (targetId < 0 && isReturningHome(npc)
+                && CCreatureController.currentAction(npc)
+                        != CCreatureController.ACTION_MOVE_TO_POINT) {
+            CMoveAction.clearScriptMove(npc);
+            return false;
+        }
         return true;
     }
 
@@ -125,6 +133,11 @@ public final class dMoveTo {
         }
         final int x = SetMoving.unpackX(npc._scriptMoveGoalXY);
         final int y = SetMoving.unpackY(npc._scriptMoveGoalXY);
+        if (npc._scriptMoveTargetId == RETURN_WALK
+                && (!npc.isMovable() || !validDestination(npc, x, y))) {
+            npc._scriptMoveTargetId = RETURN_TELEPORT;
+            npc._pathFindFailCount = 0;
+        }
         if (npc._scriptMoveTargetId == RETURN_TELEPORT) {
             if (npc.isDestroyed() || npc.isDead() || npc.getCurrentHp() <= 0) {
                 return CCreatureController.RESULT_INVALID;
