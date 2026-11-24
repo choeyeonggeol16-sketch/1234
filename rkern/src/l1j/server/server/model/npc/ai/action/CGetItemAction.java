@@ -431,38 +431,34 @@ public final class CGetItemAction {
             return;
         }
 
-        final int acquiredCount = targetItem.getCount();
-        final boolean oldGiveItem = targetItem.isGiveItem();
+        final int acquiredCount;
         final L1ItemInstance transferred;
-        try {
-            targetItem.setGiveItem(true);
-            // Existing locked L1Inventory transfer rechecks exact source
-            // identity, capacity and CacheD pending-transaction gates.
-            transferred = groundInventory.tradeItem(
-                    targetItem, acquiredCount, destination);
-        } catch (IllegalStateException pendingTransfer) {
-            if (groundInventory.getItem(targetItem.getId()) == targetItem) {
-                targetItem.setGiveItem(oldGiveItem);
+        synchronized (groundInventory) {
+            if (groundInventory.getItem(targetItem.getId()) != targetItem
+                    || !isAllowedItem(creature, targetItem)) {
+                acquiredCount = 0;
+                transferred = null;
+            } else {
+                acquiredCount = targetItem.getCount();
+                final boolean oldGiveItem = targetItem.isGiveItem();
+                try {
+                    targetItem.setGiveItem(true);
+                    transferred = groundInventory.tradeItem(targetItem, acquiredCount, destination);
+                } catch (IllegalStateException pendingTransfer) {
+                    if (groundInventory.getItem(targetItem.getId()) == targetItem)
+                        targetItem.setGiveItem(oldGiveItem);
+                    if (!"Item mutation refused while CacheD transfer pending".equals(pendingTransfer.getMessage()))
+                        throw pendingTransfer;
+                    CCreatureController.sleep(creature, INVALID_TARGET_SLEEP_MS);
+                    return;
+                } catch (RuntimeException | Error failure) {
+                    if (groundInventory.getItem(targetItem.getId()) == targetItem)
+                        targetItem.setGiveItem(oldGiveItem);
+                    throw failure;
+                }
+                if (transferred == null && groundInventory.getItem(targetItem.getId()) == targetItem)
+                    targetItem.setGiveItem(oldGiveItem);
             }
-            // Only the known pre-COMMIT CacheD admission rejection is
-            // retriable. Propagate unexpected transaction-state failures;
-            // swallowing them could conceal a partial item mutation.
-            if (!"Item mutation refused while CacheD transfer pending"
-                    .equals(pendingTransfer.getMessage())) {
-                throw pendingTransfer;
-            }
-            CCreatureController.sleep(creature, INVALID_TARGET_SLEEP_MS);
-            return;
-        } catch (RuntimeException | Error failure) {
-            if (groundInventory.getItem(targetItem.getId()) == targetItem) {
-                targetItem.setGiveItem(oldGiveItem);
-            }
-            throw failure;
-        }
-
-        if (transferred == null
-                && groundInventory.getItem(targetItem.getId()) == targetItem) {
-            targetItem.setGiveItem(oldGiveItem);
         }
 
         // Synchronous L1 commit now supplies NC GetItemFinished outcome.
@@ -532,6 +528,7 @@ public final class CGetItemAction {
         if (creature == null || item == null || item.getItem() == null) {
             return false;
         }
+        if (!item.TryPickContributedItem(creature)) return false;
         if (creature instanceof L1PetInstance
                 && item.getItem().isUseHighPet()) {
             return false;

@@ -1383,7 +1383,32 @@ public class L1ItemInstance extends L1Object {
 		return Math.max(delayMs, 60_000L);
 	}
 	
-	private volatile L1PcInstance _itemOwner;
+	private transient volatile l1j.server.server.model.character.Item.Drop.CContributeData _contributeData;
+
+    public l1j.server.server.model.character.Item.Drop.CContributeData GetContributeData() { return _contributeData; }
+
+    public void SetContributeData(l1j.server.server.model.character.Item.Drop.CContributeData data) {
+        _itemOwner = null;
+        _itemOwnerUntilNs = 0L;
+        _contributeData = data;
+    }
+
+    public boolean TryPickContributedItem(l1j.server.server.model.L1Character actor) {
+        final var data = _contributeData;
+        return data == null || data.TryPickItem(actor, System.nanoTime());
+    }
+
+    public boolean SameGroundLootRights(L1ItemInstance other) {
+        final long now = System.nanoTime();
+        final var a = _contributeData;
+        final var b = other._contributeData;
+        final boolean activeA = a != null && !a.IsExpired(now);
+        final boolean activeB = b != null && !b.IsExpired(now);
+        if (activeA || activeB) return activeA && activeB && a == b;
+        return getItemOwner() == null && other.getItemOwner() == null;
+    }
+
+    private volatile L1PcInstance _itemOwner;
 	private volatile long _itemOwnerUntilNs;
 
 	public L1PcInstance getItemOwner() {
@@ -1399,11 +1424,13 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public void setItemOwner(L1PcInstance pc) {
+        _contributeData = null;
 	    _itemOwnerUntilNs = 0L;
 	    _itemOwner = pc;
 	}
 
 	public void startItemOwnerTimer(L1PcInstance pc) {
+        _contributeData = null;
 	    _itemOwnerUntilNs = pc == null
 	            ? 0L
 	            : System.nanoTime() + 10_000_000_000L;

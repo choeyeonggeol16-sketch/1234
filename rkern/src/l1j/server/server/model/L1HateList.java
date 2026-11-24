@@ -62,13 +62,24 @@ public class L1HateList {
     // Repeated updates allocate neither entries nor boxed values.
     public synchronized void addHateInfo(L1Character cha, int firstValue, int secondValue,
             boolean accumulate) {
+        addHateInfoInternal(cha, firstValue, secondValue, accumulate, false);
+    }
+
+    public synchronized void addDropContribution(L1Character cha, int hate, int damage) {
+        addHateInfoInternal(cha, hate, damage, true, true);
+    }
+
+    private void addHateInfoInternal(L1Character cha, int firstValue, int secondValue,
+            boolean accumulate, boolean saturateDamage) {
         if (cha == null) return;
         if (keys == null) resize(4);
         int slot = find(keys, cha);
         if (keys[slot] != null) {
             final long old = values[slot];
             values[slot] = accumulate
-                    ? pack(first(old) + firstValue, second(old) + secondValue)
+                    ? pack(first(old) + firstValue, saturateDamage
+                            ? (int) Math.min(Integer.MAX_VALUE, (long) second(old) + secondValue)
+                            : second(old) + secondValue)
                     : pack(firstValue, secondValue);
             return;
         }
@@ -213,16 +224,22 @@ public class L1HateList {
         return result;
     }
 
-    public synchronized void copySnapshotTo(ArrayList<L1Character> targets, ArrayList<Integer> hates) {
+    public void copySnapshotTo(ArrayList<L1Character> targets, ArrayList<Integer> hates) {
+        copySnapshotTo(targets, hates, null);
+    }
+
+    public synchronized void copySnapshotTo(ArrayList<L1Character> targets, ArrayList<Integer> hates, ArrayList<Integer> damages) {
         targets.clear();
         hates.clear();
         targets.ensureCapacity(size);
         hates.ensureCapacity(size);
+        if (damages != null) { damages.clear(); damages.ensureCapacity(size); }
         if (size == 0) return;
         for (int i = 0; i < keys.length; i++) {
             if (keys[i] != null) {
                 targets.add(keys[i]);
                 hates.add(first(values[i]));
+                if (damages != null) damages.add(second(values[i]));
             }
         }
     }

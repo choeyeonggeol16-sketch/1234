@@ -18,8 +18,10 @@ public final class DropAcqSnapshot {
 	public final int totalHate;
 	public final int maxIdx;
 	public final int maxHate;
+	public final CContributeData contribution;
 
-	private DropAcqSnapshot(L1Character[] acqs, int[] hates, int size, int totalHate, int maxIdx, int maxHate) {
+	private DropAcqSnapshot(L1Character[] acqs, int[] hates, int size, int totalHate, int maxIdx, int maxHate, CContributeData contribution) {
+		this.contribution = contribution;
 		this.acqs = acqs;
 		this.hates = hates;
 		this.size = size;
@@ -33,10 +35,15 @@ public final class DropAcqSnapshot {
 	}
 
 	public static DropAcqSnapshot build(L1NpcInstance npc, ArrayList<?> acquisitorList, ArrayList<?> hateList) {
+	    return build(npc, acquisitorList, hateList, null);
+	}
+
+	public static DropAcqSnapshot build(L1NpcInstance npc, ArrayList<?> acquisitorList, ArrayList<?> hateList, ArrayList<?> damage) {
 	    if (npc == null || acquisitorList == null || hateList == null) {
 	        return empty();
 	    }
 
+	    final CContributeData contribution = CContributeData.Distribute(npc, acquisitorList, damage);
 	    final int n = Math.min(acquisitorList.size(), hateList.size());
 	    if (n <= 0) return empty();
 
@@ -86,10 +93,10 @@ public final class DropAcqSnapshot {
 	        sz++;
 	    }
 
-	    if (sz <= 0) return empty();
+	    if (sz <= 0) return new DropAcqSnapshot(new L1Character[0], new int[0], 0, 0, -1, -1, contribution);
 
 	    if (sz == n) {
-	        return new DropAcqSnapshot(bufC, bufH, sz, total, maxIdx, maxHate);
+	        return new DropAcqSnapshot(bufC, bufH, sz, total, maxIdx, maxHate, contribution);
 	    }
 
 	    // 최종 결과물만 딱 맞는 크기로 잘라서 반환
@@ -98,7 +105,7 @@ public final class DropAcqSnapshot {
 	    System.arraycopy(bufC, 0, outC, 0, sz);
 	    System.arraycopy(bufH, 0, outH, 0, sz);
 
-	    return new DropAcqSnapshot(outC, outH, sz, total, maxIdx, maxHate);
+	    return new DropAcqSnapshot(outC, outH, sz, total, maxIdx, maxHate, contribution);
 	}
 
 	public L1Character pickByWeight(Random rnd) {
@@ -114,12 +121,12 @@ public final class DropAcqSnapshot {
 	}
 
 	private static DropAcqSnapshot empty() {
-		return new DropAcqSnapshot(new L1Character[0], new int[0], 0, 0, -1, -1);
+		return new DropAcqSnapshot(new L1Character[0], new int[0], 0, 0, -1, -1, null);
 	}
 
 	public static DropAcqSnapshot fromArrays(L1Character[] acqs, int[] hates, int size,
 			int totalHate, int maxIdx, int maxHate) {
-		return new DropAcqSnapshot(acqs, hates, size, totalHate, maxIdx, maxHate);
+		return new DropAcqSnapshot(acqs, hates, size, totalHate, maxIdx, maxHate, null);
 	}
 
 	public static DropAcqSnapshot emptyPublic() {

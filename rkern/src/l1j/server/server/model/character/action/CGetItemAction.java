@@ -12,10 +12,9 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.character.Item.Drop.PartyLootCursor;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -87,7 +86,7 @@ public final class CGetItemAction extends CNewAction {
                     return true;
                 }
 
-                final L1Party party = owner.getParty();
+                final CParty party = owner.getParty();
                 final int itemId = pickupItem.getItemId();
                 final int dropMobId = pickupItem.isDropMobId();
 
@@ -206,9 +205,14 @@ public final class CGetItemAction extends CNewAction {
             }
         }
 
+        if (!pickupItem.TryPickContributedItem(owner)) {
+            SC_ServerMessage.send(owner, 623);
+            return false;
+        }
+
         final L1PcInstance itemOwner = pickupItem.getItemOwner();
         if (itemOwner != null && itemOwner.getId() != owner.getId()) {
-            final L1Party ownerParty = itemOwner.getParty();
+            final CParty ownerParty = itemOwner.getParty();
             if (ownerParty == null || !ownerParty.isMember(owner)) {
                 SC_ServerMessage.send(owner, 623);
                 return false;
@@ -261,7 +265,7 @@ public final class CGetItemAction extends CNewAction {
 
     private boolean handlePartyDistribution(
             L1PcInstance owner,
-            L1Party party,
+            CParty party,
             int itemId,
             int dropMobId,
             long amount) {
@@ -347,7 +351,7 @@ public final class CGetItemAction extends CNewAction {
 
             if (Config.PARTY_LOOT_MODE == 2) {
                 luckyUser = members.get(
-                        PartyLootCursor.nextIndex(owner, members.size()));
+                        party.NextLootIndex(members.size()));
             } else {
                 luckyUser = members.get(
                         random.nextInt(members.size()));
@@ -389,7 +393,7 @@ public final class CGetItemAction extends CNewAction {
 
     private boolean handleSinglePickup(
             L1PcInstance owner,
-            L1Party party,
+            CParty party,
             long amount) {
 
         final L1ItemInstance moved =

@@ -199,7 +199,7 @@ public class L1Inventory extends L1Object {
 		if (item.getCount() <= 0 || count <= 0) {
 			return -1;
 		}
-		if (getSize() > Config.MAX_NPC_ITEM || (getSize() == Config.MAX_NPC_ITEM && (!item.isStackable() || !checkItem(item.getItem().getItemId())))) {
+		if (getSize() > Config.MAX_NPC_ITEM || (getSize() == Config.MAX_NPC_ITEM && (!item.isStackable() || findMergeItem(item) == null))) {
 			return SIZE_OVER;
 		}
 
@@ -211,8 +211,8 @@ public class L1Inventory extends L1Object {
 			return WEIGHT_OVER;
 		}
 
-		L1ItemInstance itemExist = findItemId(item.getItemId());
-		if (itemExist != null && (itemExist.getCount() + count) > MAX_AMOUNT) {
+		L1ItemInstance itemExist = findMergeItem(item);
+		if (itemExist != null && ((long) itemExist.getCount() + count) > MAX_AMOUNT) {
 			return AMOUNT_OVER;
 		}
 
@@ -253,7 +253,7 @@ public class L1Inventory extends L1Object {
 
 		if (temp.isStackable()) {
 			L1ItemInstance item = new L1ItemInstance(temp, count);
-			if (findItemId(id) == null) {
+			if (findMergeItem(item) == null) {
 				item.setId(IdFactory.getInstance().nextId());
 				L1World.getInstance().storeObject(item);
 			}
@@ -292,7 +292,7 @@ public class L1Inventory extends L1Object {
 		if (temp.isStackable()) {
 			L1ItemInstance item = new L1ItemInstance(temp, count);
 			item.setIdentified(isIden);
-			if (findItemId(id) == null) {
+			if (findMergeItem(item) == null) {
 				item.setId(IdFactory.getInstance().nextId());
 				L1World.getInstance().storeObject(item);
 			}
@@ -355,7 +355,7 @@ public class L1Inventory extends L1Object {
 		}
 		int itemId = item.getItem().getItemId();
 		if (item.isStackable()) {
-			L1ItemInstance findItem = findItemId(itemId);
+			L1ItemInstance findItem = findMergeItem(item);
 			if (findItem != null) {
                 changeStackCount(findItem, item.getCount());
                 return findItem;
@@ -411,7 +411,7 @@ public class L1Inventory extends L1Object {
 		}
 		int itemId = item.getItem().getItemId();
 		if (item.isStackable()) {
-			L1ItemInstance findItem = findItemId(itemId);
+			L1ItemInstance findItem = findMergeItem(item);
 			
 			if (findItem != null) {
                 changeStackCount(findItem, item.getCount());
@@ -436,7 +436,7 @@ public class L1Inventory extends L1Object {
 		case 41401:
 		case 810006:
 		case 810007:
-			L1ItemInstance findItem = findItemId(itemId);
+			L1ItemInstance findItem = findMergeItem(item);
 			if (findItem != null) {
 				chargeCount -= java.util.concurrent.ThreadLocalRandom.current().nextInt(5);
                 addStackCharge(findItem, chargeCount);
@@ -600,7 +600,7 @@ public class L1Inventory extends L1Object {
 		}
 		int itemId = item.getItem().getItemId();
 		if (item.isStackable()) {
-			L1ItemInstance findItem = findItemId(itemId);
+			L1ItemInstance findItem = findMergeItem(item);
 			
 			if (findItem != null) {
                 changeStackCount(findItem, item.getCount());
@@ -624,7 +624,7 @@ public class L1Inventory extends L1Object {
 		case 41401:
 		case 810006:
 		case 810007:
-			L1ItemInstance findItem = findItemId(itemId);
+			L1ItemInstance findItem = findMergeItem(item);
 			if (findItem != null) {
 				chargeCount -= java.util.concurrent.ThreadLocalRandom.current().nextInt(5);
                 addStackCharge(findItem, chargeCount);
@@ -814,7 +814,7 @@ public class L1Inventory extends L1Object {
 		if (item == null || item.getCount() <= 0) return null;
         CItemList.requireDetached(item);
 		if (item.isStackable()) {	
-			L1ItemInstance findItem = findItemId(item.getItem().getItemId());
+			L1ItemInstance findItem = findMergeItem(item);
 			
 			int itemId = item.getItem().getItemId();
 			if (findItem != null) {
@@ -842,7 +842,7 @@ public class L1Inventory extends L1Object {
 				return findItem;
 			}
 		}
-		L1ItemInstance findItem = findItemId(item.getItem().getItemId());
+		L1ItemInstance findItem = findMergeItem(item);
 
 
 		switch (item.getItem().getItemId()) {
@@ -1922,6 +1922,9 @@ public class L1Inventory extends L1Object {
 			carryItem.set_item_level(item.get_item_level());
 			/**여관 리뉴얼**/
 			carryItem.setHotel_Town(item.getHotel_Town());
+            if (inventory instanceof L1GroundInventory && item.GetContributeData() != null) {
+                carryItem.SetContributeData(item.GetContributeData());
+            }
 
 			removeItemCountCache(item.getItemId(), count);
 			item.setCount(item.getCount() - count);
@@ -1937,9 +1940,12 @@ public class L1Inventory extends L1Object {
             transferFailure = e;
         }
 		if (stored != null) {
-		    if (inventory instanceof L1PcInventory) {
-		        stored.setItemOwner(null);
-		    }
+		    if (!(inventory instanceof L1GroundInventory) && carryItem.GetContributeData() != null) {
+                carryItem.SetContributeData(null);
+            }
+            if (inventory instanceof L1PcInventory) {
+                stored.setItemOwner(null);
+            }
 			return stored;
 		}
 
@@ -2043,7 +2049,15 @@ public class L1Inventory extends L1Object {
 		}
 		return null;
 	}
-	public L1ItemInstance findItemId(int id) {
+	private L1ItemInstance findMergeItem(L1ItemInstance incoming) {
+        if (!(this instanceof L1GroundInventory)) return findItemId(incoming.getItemId());
+        for (L1ItemInstance candidate : _items) {
+            if (candidate.getItemId() == incoming.getItemId() && candidate.SameGroundLootRights(incoming)) return candidate;
+        }
+        return null;
+    }
+
+    public L1ItemInstance findItemId(int id) {
 		return _items.GetFirstItemByClassID(id);
 	}
 

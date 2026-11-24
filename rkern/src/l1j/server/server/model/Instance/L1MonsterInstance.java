@@ -1188,8 +1188,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
             if (npcId == 45640 && getCurrentSpriteId() != 2332) return false;
             ArrayList<L1Character> dropTargetList = new ArrayList<>();
             ArrayList<Integer> dropHateList = new ArrayList<>();
-            _dropHateList.copySnapshotTo(dropTargetList, dropHateList);
-            final DropAcqSnapshot snap = DropAcqSnapshot.build(this, dropTargetList, dropHateList);
+            ArrayList<Integer> damage = new ArrayList<>();
+            _dropHateList.copySnapshotTo(dropTargetList, dropHateList, damage);
+            final DropAcqSnapshot snap = DropAcqSnapshot.build(this, dropTargetList, dropHateList, damage);
             if (TryQueuePartyDrop(job, pc, snap)) return true;
             if (isCurrentDeath(job.epoch)) DropTable.getInstance().dropShareSnapshot(this, snap, pc);
         } catch (Exception failure) {

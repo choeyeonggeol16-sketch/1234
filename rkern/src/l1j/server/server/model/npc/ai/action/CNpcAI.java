@@ -794,17 +794,18 @@ public final class CNpcAI {
     private static void ApplyDeathContribution(L1NpcInstance npc, L1Character cha, int value) {
         if (value <= L1NpcInstance.HATE_EVENT_HIDE_DRAGON_FLY
                 || L1NpcInstance.isClanHateEvent(value)) return;
-        AddContribution(npc, cha, L1NpcInstance.isAttackHateEvent(value)
-                ? L1NpcInstance.eventDamage(value) : value);
+        final boolean attack = L1NpcInstance.isAttackHateEvent(value);
+        AddContribution(npc, cha, attack ? L1NpcInstance.eventDamage(value) : value, attack);
     }
 
-    private static void AddContribution(L1NpcInstance npc, L1Character cha, int hate) {
+    private static void AddContribution(L1NpcInstance npc, L1Character cha, int hate, boolean attack) {
+        final int damage = attack ? Math.max(0, hate) : 0;
         if (!npc.isFirstAttack() && hate != 0) {
             hate += npc.getMaxHp() / 10;
             npc.setFirstAttack(true);
         }
         npc._hateList.add(cha, hate);
-        npc._dropHateList.add(cha, hate);
+        npc._dropHateList.addDropContribution(cha, hate, damage);
     }
 
     private static boolean HandleEvent(
@@ -1043,7 +1044,7 @@ public final class CNpcAI {
                         }
                     }
 
-                    AddContribution(npc, cha, damage);
+                    AddContribution(npc, cha, damage, true);
 
                     changed = true;
                     realHateChanged = true;
@@ -1089,7 +1090,7 @@ public final class CNpcAI {
                     interruptMoveAround = true;
                 }
 
-                AddContribution(npc, cha, hate);
+                AddContribution(npc, cha, hate, false);
 
                 changed = true;
                 realHateChanged = true;

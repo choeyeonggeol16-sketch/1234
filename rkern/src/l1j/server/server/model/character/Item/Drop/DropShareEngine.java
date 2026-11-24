@@ -108,7 +108,7 @@ public final class DropShareEngine {
     private static boolean handleNonAuto(L1NpcInstance npc, L1Inventory mobInv, L1ItemInstance item, DropAcqSnapshot snap, L1PcInstance lastAttackerPc, L1Location origin) {
         item.setDropMobId(npc.getNpcTemplate().get_npcId());
         L1PcInstance owner = (snap != null && snap.maxIdx >= 0 && snap.acqs[snap.maxIdx] instanceof L1PcInstance pc) ? pc : lastAttackerPc;
-        if (owner != null) item.startItemOwnerTimer(owner);
+        if (owner != null && item.GetContributeData() == null) item.startItemOwnerTimer(owner);
         tradeSafely(mobInv, item, item.getCount(), pickGroundInventorySmart(origin));
         return true;
     }

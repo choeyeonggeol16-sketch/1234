@@ -265,6 +265,12 @@ public class DropTable {
 		}
 		
 		if (items.isEmpty()) return;
+        if (snap != null && snap.contribution != null) {
+            snap.contribution.StartDropPeriod();
+            for (L1ItemInstance item : items) {
+                if (item != null) item.SetContributeData(snap.contribution);
+            }
+        }
 
 		for (int i = 0; i < items.size(); i++) {
 			L1ItemInstance item = items.get(i);

@@ -39,8 +39,11 @@ public class CParty {
 
     private volatile L1PcInstance _leader;
     private long lootCursor;
+    private static final java.util.concurrent.atomic.AtomicLong LOOT_IDENTITIES = new java.util.concurrent.atomic.AtomicLong();
+    private final long lootIdentity = LOOT_IDENTITIES.incrementAndGet();
+    public final long GetLootIdentity() { return lootIdentity; }
 
-    private synchronized int NextLootIndex(int size) {
+    public synchronized int NextLootIndex(int size) {
         if (size <= 1) return 0;
         return (int) Math.floorMod(lootCursor++, (long) size);
     }
