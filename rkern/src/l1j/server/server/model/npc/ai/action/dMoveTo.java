@@ -1,6 +1,10 @@
 package l1j.server.server.model.npc.ai.action;
 
+import l1j.server.Config;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.ai.core.PathNodeWorld;
+import l1j.server.server.model.npc.ai.CNPCEvent;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.npc.ai.CNPCServer;
@@ -21,6 +25,9 @@ public final class dMoveTo {
     private static final long TELEPORT_MS = 3_000L;
     private static final long TELEPORT_DISTANCE_SQ = 82L * 82L;
     private static final int PATH_FAIL_TELEPORT = 20;
+    private static final int RETURN_WALK = -1;
+    private static final int RETURN_TELEPORT = -2;
+    private static final int RETURN_RETRY_LIMIT = 10;
     private static final WorldCollisionHash COLLISION =
             WorldCollisionHash.getInstance();
 
@@ -32,6 +39,15 @@ public final class dMoveTo {
             final L1NpcInstance npc,
             final int x,
             final int y) {
+        if (isReturningHome(npc)) {
+            return false;
+        }
+        return request(npc, x, y, 0);
+    }
+
+    private static boolean request(
+            final L1NpcInstance npc, final int x, final int y,
+            final int targetId) {
         if (npc == null
                 || !CNPCServer.getInstance().isOwnerThread(npc)
                 || !npc.aiEngineIsRunning()
@@ -40,7 +56,7 @@ public final class dMoveTo {
         }
         npc._scriptMoveMapId = npc.getMapId();
         npc._scriptMoveGoalXY = SetMoving.pack(x, y);
-        npc._scriptMoveTargetId = 0;
+        npc._scriptMoveTargetId = targetId;
         npc._scriptMoveStopDistance = 0;
         npc._pathFindFailCount = 0;
         CMoveAction.invalidatePath(npc);
@@ -48,14 +64,89 @@ public final class dMoveTo {
         return true;
     }
 
+    /** Reuse the existing positional payload; negative IDs are never object IDs. */
+    public static boolean isReturningHome(final L1NpcInstance npc) {
+        if (!(npc instanceof L1MonsterInstance)) return false;
+        final int mode = npc._scriptMoveTargetId;
+        return mode == RETURN_WALK || mode == RETURN_TELEPORT;
+    }
+
+    /** NC absolute return, using the existing spawn radius and positional action. */
+    public static boolean ReturnStartPoint(final L1NpcInstance npc) {
+        if (!(npc instanceof L1MonsterInstance)
+                || !CNPCServer.getInstance().isOwnerThread(npc)
+                || !npc.aiEngineIsRunning() || npc.isDestroyed()
+                || npc.isDead() || npc.getCurrentHp() <= 0
+                || isReturningHome(npc)) {
+            return false;
+        }
+
+        // L1 migration: prefer the spawn-specific movement radius; legacy
+        // rows without a radius retain their existing global fallback.
+        final int configured = npc.getMovementDistance();
+        final int radius = configured > 0 ? configured
+                : (npc.getMaxHp() >= 100000 ? Config.Boss_Location : Config.Npc_Location);
+        final int x = npc.getHomeX();
+        final int y = npc.getHomeY();
+        if (radius <= 0 || npc.getLocation().getLineDistance(x, y) <= radius) {
+            return false;
+        }
+        final L1Map map = npc.getMap();
+        if (map == null) return false;
+        if (!map.isInMap(x, y)) {
+            // Invalid spawn coordinates, as in NC: adopt the current position.
+            npc.setHomeX(npc.getX());
+            npc.setHomeY(npc.getY());
+            return false;
+        }
+        if (!validDestination(npc, x, y)) return false;
+
+        final boolean reachable = npc.isMovable()
+                && PathNodeWorld.moveStraight(map, npc.getX(), npc.getY(), x, y)
+                && PathNodeWorld.moveStraight(map, x, y, npc.getX(), npc.getY());
+
+        CCreatureController.think(npc);
+        npc.allTargetClear();
+        npc.npcChaseRetargetConsume();
+        npc.setFirstAttack(false);
+        // The HP CAS will not revive an NPC that has already reached zero.
+        if (npc.applyNpcHpDelta(npc.getMaxHp()) <= 0
+                || npc.isDead() || npc.isDestroyed()) return true;
+        npc.setCurrentMp(npc.getMaxMp());
+        CNPCEvent.ReleaseChain(npc.TakeNpcEvents());
+
+        return request(npc, x, y, reachable ? RETURN_WALK : RETURN_TELEPORT);
+    }
+
     /** Execute the stored DESIRE_MOVE_TO through the existing timer wheel. */
     static byte onTick(final L1NpcInstance npc) {
         if (npc == null || npc._scriptMoveMapId != npc.getMapId()) {
             return CCreatureController.RESULT_INVALID;
         }
-        return dMoveTo(npc,
-                SetMoving.unpackX(npc._scriptMoveGoalXY),
-                SetMoving.unpackY(npc._scriptMoveGoalXY));
+        final int x = SetMoving.unpackX(npc._scriptMoveGoalXY);
+        final int y = SetMoving.unpackY(npc._scriptMoveGoalXY);
+        if (npc._scriptMoveTargetId == RETURN_TELEPORT) {
+            if (npc.isDestroyed() || npc.isDead() || npc.getCurrentHp() <= 0) {
+                return CCreatureController.RESULT_INVALID;
+            }
+            if (npc.getX() == x && npc.getY() == y) {
+                return CCreatureController.RESULT_DONE;
+            }
+            if (teleportIfFree(npc, x, y)) {
+                npc._pathFindFailCount = 0;
+                return CCreatureController.RESULT_DONE;
+            }
+            // Do not leave an untargetable NPC stranded at an occupied home.
+            // NC also renews its spawn position after repeated failed returns.
+            if (++npc._pathFindFailCount >= RETURN_RETRY_LIMIT) {
+                npc.setHomeX(npc.getX());
+                npc.setHomeY(npc.getY());
+                return CCreatureController.RESULT_INVALID;
+            }
+            CCreatureController.sleep(npc, NEXT_MS);
+            return CCreatureController.RESULT_RUNNING;
+        }
+        return dMoveTo(npc, x, y);
     }
 
     /** One owner tick, without allocating a Point/path object. */
@@ -87,7 +178,8 @@ public final class dMoveTo {
             return CCreatureController.RESULT_RUNNING;
         }
 
-        if (distanceSq >= TELEPORT_DISTANCE_SQ) {
+        final boolean returning = isReturningHome(npc);
+        if (!returning && distanceSq >= TELEPORT_DISTANCE_SQ) {
             if (teleportIfFree(npc, x, y)) {
                 CCreatureController.sleep(npc, TELEPORT_MS);
                 npc._pathFindFailCount = 0;
@@ -105,6 +197,20 @@ public final class dMoveTo {
                 return CCreatureController.RESULT_RUNNING;
             }
             // Reservation lost between path probe and physical commit.
+            if (returning && ++npc._pathFindFailCount > PATH_FAIL_TELEPORT) {
+                npc._scriptMoveTargetId = RETURN_TELEPORT;
+                npc._pathFindFailCount = 0;
+            }
+            CCreatureController.sleep(npc, NEXT_MS);
+            return CCreatureController.RESULT_RUNNING;
+        }
+
+        if (returning) {
+            // Both static and transient blockage must have a bounded return.
+            if (++npc._pathFindFailCount > PATH_FAIL_TELEPORT) {
+                npc._scriptMoveTargetId = RETURN_TELEPORT;
+                npc._pathFindFailCount = 0;
+            }
             CCreatureController.sleep(npc, NEXT_MS);
             return CCreatureController.RESULT_RUNNING;
         }
