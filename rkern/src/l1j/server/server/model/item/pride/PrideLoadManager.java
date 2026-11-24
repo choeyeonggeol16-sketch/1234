@@ -1,10 +1,10 @@
 package l1j.server.server.model.item.pride;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Inventory;
@@ -127,7 +127,7 @@ public class PrideLoadManager {
 		if(adena_item == null || adena_item.getCount() <= NEED_ADENA_COUNT)
 			return;
 		
-		L1ItemInstance item = ItemTable.getInstance().createItem(PRIDE_ITEM_ID);
+		L1ItemInstance item = CObjectDB.LoadItem().createItem(PRIDE_ITEM_ID);
 		PrideInfo pInfo = PrideInfo.newInstance(item.getId(), target.getId(), target.getName());
 		put_pride(pInfo);
 		

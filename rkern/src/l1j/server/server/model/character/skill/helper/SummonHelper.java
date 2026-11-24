@@ -1,6 +1,6 @@
 package l1j.server.server.model.character.skill.helper;
 
-import l1j.server.server.datatables.NpcTable;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -79,7 +79,7 @@ public final class SummonHelper {
         }
 
         // NPC 템플릿
-        final L1Npc npcTemp = NpcTable.getInstance().getTemplate(summonId);
+        final L1Npc npcTemp = CObjectDB.GetNPC(summonId);
         if (npcTemp == null) return false;
 
         // 소환

@@ -18,11 +18,11 @@
  */
 package l1j.server.server.model.trap;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.List;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -69,9 +69,9 @@ public class L1MonsterTrap extends L1Trap {
 
 	private L1NpcInstance createNpc() throws Exception {
 		if (_npcTemp == null) {
-			_npcTemp = NpcTable.getInstance().getTemplate(_npcId);
+			_npcTemp = CObjectDB.GetNPC(_npcId);
 		}
-		return NpcTable.getInstance().newNpcInstance(_npcTemp);
+		return CObjectDB.CreateNPC(_npcTemp);
 	}
 
 	private void spawn(L1Location loc) throws Exception {

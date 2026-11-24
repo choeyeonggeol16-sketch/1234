@@ -1,5 +1,6 @@
 package l1j.server.server.model.Warehouse;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,7 +9,6 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -65,7 +65,7 @@ public class ElfWarehouse extends Warehouse {
 				item = new L1ItemInstance();
 				int objectId = rs.getInt("id");
 				item.setId(objectId);
-				itemTemplate = ItemTable.getInstance().getTemplate(rs.getInt("item_id"));
+				itemTemplate = CObjectDB.GetItem(rs.getInt("item_id"));
                 if (itemTemplate == null) throw new SQLException("Missing item template id=" + objectId);
 				item.setItem(itemTemplate);
 				item.setCount(rs.getInt("count"));

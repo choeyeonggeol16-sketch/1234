@@ -18,6 +18,7 @@
  */
 package l1j.server.server.model.Warehouse;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,7 +26,6 @@ import java.sql.SQLException;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -70,7 +70,7 @@ public class ClanWarehouse extends Warehouse {
 				int objectId = rs.getInt("id");
 				item.setId(objectId);
 				int itemId = rs.getInt("item_id");
-				itemTemplate = ItemTable.getInstance().getTemplate(itemId);
+				itemTemplate = CObjectDB.GetItem(itemId);
                 if (itemTemplate == null) throw new SQLException("Warehouse item template missing: " + objectId);
 				item.setItem(itemTemplate);
 				item.setCount(rs.getInt("count"));

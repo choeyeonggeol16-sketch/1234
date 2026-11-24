@@ -1,5 +1,6 @@
 package l1j.server.server.model.world.instance.dungeon.ice.demon;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -10,7 +11,6 @@ import l1j.server.server.model.world.instance.dungeon.ice.queen.QueenSystem;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -368,7 +368,7 @@ public class Demon implements Runnable {
 	
 	public static void spawn(int x, int y, short MapId, int Heading, int npcId, int randomRange, int type, int roomnumber) {
 		try {// 타입이란부분에 월래2였는데 얼음여왕은 1을 죠 타입을따라가보면
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(MapId);
 			if (randomRange == 0) {

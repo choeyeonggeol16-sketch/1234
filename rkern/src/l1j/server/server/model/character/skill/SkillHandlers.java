@@ -1,11 +1,11 @@
 package l1j.server.server.model.character.skill;
+import l1j.server.server.datatables.CObjectDB;
 import java.util.Iterator;
 import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -1459,7 +1459,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 			return HandlerResult.HANDLED;
 		}
 
-		final L1Npc npcTemp = NpcTable.getInstance().getTemplate(summonId);
+		final L1Npc npcTemp = CObjectDB.GetNPC(summonId);
 		if (npcTemp == null) {
 			return HandlerResult.HANDLED;
 		}
@@ -1614,7 +1614,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 			// 원본: summonMonster(pc, _bookmark_x);
 			su.hdSummonMonster(pc, su.hdBookmarkX());
 		} else {
-			final L1Npc npcTemp = NpcTable.getInstance().getTemplate(7320137);
+			final L1Npc npcTemp = CObjectDB.GetNPC(7320137);
 			if (npcTemp != null) {
 				final L1SummonInstance summon = new L1SummonInstance(npcTemp, pc);
 				summon.setPetcost(0);

@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.Config;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -197,7 +197,7 @@ public final class CS_DropItem {
 
         if (!pc.isGm() && NoDropItem.getInstance().isNoDropItem(itemId)) {
             final String itemName =
-                    ItemTable.getInstance().findItemIdByName(itemId);
+                    CObjectDB.LoadItem().findItemIdByName(itemId);
 
             SC_SystemMessage.send(pc, "서버 특성상 ["
                             + (itemName != null ? itemName : "아이템")

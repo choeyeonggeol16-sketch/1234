@@ -1,9 +1,9 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto.Attend;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.templates.L1Item;
@@ -19,7 +19,7 @@ public class AttendanceBonusInfo {
     public static AttendanceBonusInfo newInstance(ResultSet rs) throws SQLException{
         int itemId = rs.getInt("item_id");
         int count = rs.getInt("count");
-        L1Item item = ItemTable.getInstance().getTemplate(itemId);
+        L1Item item = CObjectDB.GetItem(itemId);
         if(item == null){
             System.out.println(String.format("아이템 아이디를 찾을 수 없습니다. [%d]", itemId));
             return null;

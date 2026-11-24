@@ -1,8 +1,8 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -21,7 +21,7 @@ final class ClanRaidNpcSpawn {
 
         try {
             final L1NpcInstance npc =
-                    NpcTable.getInstance().newNpcInstance(npcId);
+                    CObjectDB.CreateNPC(npcId);
 
             npc.setId(IdFactory.getInstance().nextId());
             npc.setMap(mapId);

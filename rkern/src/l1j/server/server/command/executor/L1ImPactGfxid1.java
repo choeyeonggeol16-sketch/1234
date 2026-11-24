@@ -18,6 +18,7 @@
  */
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,7 +32,6 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -67,7 +67,7 @@ public class L1ImPactGfxid1 implements L1CommandExecutor {
 			Constructor<?> constructor = null;
 			L1NpcInstance npc = null;
 
-			l1npc = NpcTable.getInstance().getTemplate(45001);
+			l1npc = CObjectDB.GetNPC(45001);
 			constructor = Class.forName("l1j.server.server.model.Instance." + l1npc.getImpl() + "Instance").getConstructors()[0];
 			Object aobj[] = { l1npc };
 

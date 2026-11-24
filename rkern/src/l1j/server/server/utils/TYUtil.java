@@ -1,9 +1,9 @@
 package l1j.server.server.utils;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
@@ -41,7 +41,7 @@ public class TYUtil
   }
   public static L1ItemInstance GetItemInstByID(int itemId)
   {
-    return ItemTable.getInstance().createItem(itemId);
+    return CObjectDB.LoadItem().createItem(itemId);
   }
   public static void SetSystemMessage(L1PcInstance pc, String msg)
   {

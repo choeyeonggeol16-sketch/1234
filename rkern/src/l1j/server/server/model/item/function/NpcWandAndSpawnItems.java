@@ -1,6 +1,7 @@
 package l1j.server.server.model.item.function;
 
 
+import l1j.server.server.datatables.CObjectDB;
 import static l1j.server.server.model.character.skill.L1SkillId.EARTH_BIND;
 import static l1j.server.server.model.character.skill.L1SkillId.ICE_LANCE;
 import static l1j.server.server.model.character.skill.L1SkillId.SHOCK_STUN;
@@ -39,7 +40,6 @@ import java.util.logging.Logger;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -60,7 +60,7 @@ public final class NpcWandAndSpawnItems {
                 || item.getChargeCount() <= 0) return;
         // Resolve the target and its executable constructor BEFORE any debit.
         // An invalid NPC implementation must not consume a wand charge.
-        final L1Npc template = NpcTable.getInstance().getTemplate(targetId);
+        final L1Npc template = CObjectDB.GetNPC(targetId);
         if (template == null) return;
         final Constructor<?> constructor;
         try {
@@ -135,7 +135,7 @@ public final class NpcWandAndSpawnItems {
 	public static void spawn(int x, int y, short MapId, int Heading, int npcId, int randomRange,
 			int roomnumber) {
 		try {// 타입이란부분에 월래2였는데 얼음여왕은 1을 죠 타입을따라가보면
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(MapId);
 			if (randomRange == 0) {

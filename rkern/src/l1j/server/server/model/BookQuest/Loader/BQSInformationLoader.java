@@ -1,11 +1,11 @@
 package l1j.server.server.model.BookQuest.Loader;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
@@ -83,7 +83,7 @@ public class BQSInformationLoader {
     
     public void mappedNpcInformation(){
         for(BQSInformation mInfo : _informations.values()){
-            L1Npc npc = NpcTable.getInstance().getTemplate(mInfo.getNpcId());
+            L1Npc npc = CObjectDB.GetNPC(mInfo.getNpcId());
             if(npc == null){
                 System.out.println(String.format("[도감]엔피씨 템플릿을 찾을 수 없습니다. 북아이디 : %d(%d), 북에 할당된 엔피씨 아이디 : %d(%s)", mInfo.getCriteriaId(), mInfo.getWeekDifficulty(), mInfo.getNpcId(), mInfo.getNpcName()));
                 continue;

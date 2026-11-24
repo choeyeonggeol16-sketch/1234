@@ -1,8 +1,8 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.StringTokenizer;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -39,7 +39,7 @@ public class L1DescIdWeapon implements L1CommandExecutor {
 					break;
 				}
 				countA++;
-				item = ItemTable.getInstance().createItem(87);
+				item = CObjectDB.LoadItem().createItem(87);
 				item.getItem().setItemDescId(descid + i);
 				item.getItem().setGfxId(1945);
 				item.setCount(1);

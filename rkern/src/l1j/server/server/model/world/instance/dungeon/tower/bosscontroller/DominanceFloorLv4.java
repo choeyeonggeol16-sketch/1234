@@ -1,11 +1,11 @@
 package l1j.server.server.model.world.instance.dungeon.tower.bosscontroller;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DollInstance;
@@ -194,7 +194,7 @@ public class DominanceFloorLv4 implements Runnable {
 
 	private static void spawn(int x, int y, short MapId, int Heading, int npcId, int actioncode) {
 		try {
-			L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(npcId);
+			L1NpcInstance npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(MapId);
 			int tryCount = 0;

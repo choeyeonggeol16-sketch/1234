@@ -5,9 +5,9 @@
 
 package l1j.server.swing;
 
+import l1j.server.server.datatables.CObjectDB;
 import javax.swing.JOptionPane;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -131,9 +131,9 @@ public class Give extends javax.swing.JFrame {
 		String name2 = PcName.getText();		
 		for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if(pc.getName().equalsIgnoreCase(name2)){					   
-				L1Item temp = ItemTable.getInstance().getTemplate(itemid);
+				L1Item temp = CObjectDB.GetItem(itemid);
 				if (temp != null) {
-					L1ItemInstance item = ItemTable.getInstance().createItem(itemid);
+					L1ItemInstance item = CObjectDB.LoadItem().createItem(itemid);
 					item.setEnchantLevel(enchant);
 					item.setCount(count);					
 					item.setIdentified(true);
@@ -150,7 +150,7 @@ public class Give extends javax.swing.JFrame {
 						L1ItemInstance item1 = null;
 						int createCount;
 						for (createCount = 0; createCount < count; createCount++) {
-							item1 = ItemTable.getInstance().createItem(itemid);
+							item1 = CObjectDB.LoadItem().createItem(itemid);
 							item1.setEnchantLevel(enchant);
 							if (pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK) {
 								pc.getInventory().storeItem(item);

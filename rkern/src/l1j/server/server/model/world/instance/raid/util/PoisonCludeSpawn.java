@@ -1,7 +1,7 @@
 package l1j.server.server.model.world.instance.raid.util;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
@@ -34,7 +34,7 @@ public class PoisonCludeSpawn implements Runnable{
 	@Override
 	public void run(){
 		try{
-			L1Npc poison = NpcTable.getInstance().getTemplate(_pid);
+			L1Npc poison = CObjectDB.GetNPC(_pid);
 			if(poison == null)
 				throw new NullPointerException(String.format(_exceptionMessage, _pid));
 			

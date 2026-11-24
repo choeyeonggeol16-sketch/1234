@@ -1,11 +1,11 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.BQSWQInformation;
 import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
@@ -243,7 +243,7 @@ public final class MonsterBookV2Info {
             public void set_item_id(int val){
                 _item_id = val;
                 if(_item_id != 0){
-                    L1Item item = ItemTable.getInstance().getTemplate(_item_id);
+                    L1Item item = CObjectDB.GetItem(_item_id);
                     if(item == null){
                         System.out.println(String.format("[도감]아이템 테이블에서 아이템을 찾을 수 없습니다. 아이템아이디 : %d", _item_id));
                         set_item_name_id(0);
@@ -387,7 +387,7 @@ public final class MonsterBookV2Info {
                 }
                 public void set_item_id(int i){
                     _item_id = i;
-                    L1Item item = ItemTable.getInstance().getTemplate(i);
+                    L1Item item = CObjectDB.GetItem(i);
                     if(item == null){
                         System.out.println(String.format("[도감]아이템 테이블에서 아이템을 찾을 수 없습니다. 아이템아이디 : %d", i));
                         set_item_name_id(0);

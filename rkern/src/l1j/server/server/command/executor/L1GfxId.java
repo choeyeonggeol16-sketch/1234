@@ -18,12 +18,12 @@
  */
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.lang.reflect.Constructor;
 import java.util.StringTokenizer;
 
 import l1j.server.server.GMCommands;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -49,7 +49,7 @@ public class L1GfxId implements L1CommandExecutor {
 			int loc_y = pc.getY();
 			
 			for (int i = 0; i < count; i++) {
-				L1Npc l1npc = NpcTable.getInstance().getTemplate(45001);
+				L1Npc l1npc = CObjectDB.GetNPC(45001);
 				if (l1npc != null) {
 					String s = l1npc.getImpl();
 					Constructor<?> constructor = Class.forName("l1j.server.server.model.Instance." + s + "Instance").getConstructors()[0];

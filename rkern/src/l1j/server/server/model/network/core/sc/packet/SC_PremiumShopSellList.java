@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
 import java.util.List;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -66,7 +66,7 @@ public final class SC_PremiumShopSellList {
                 name = item.getName();
             }
             byte[] status = null;
-            final L1Item template = ItemTable.getInstance().getTemplate(item.getItemId());
+            final L1Item template = CObjectDB.GetItem(item.getItemId());
             if (template != null) {
                 final L1ItemInstance dummy = new L1ItemInstance();
                 dummy.setItem(template);

@@ -1,11 +1,11 @@
 package l1j.server.server.model.world.instance.dungeon.training;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -33,7 +33,7 @@ public class BossTrainingSystem {
         }
         try {
             if (room.mapId != FIRST_MAP) L1WorldMap.getInstance().cloneMap(FIRST_MAP, room.mapId);
-            room.keeper = NpcTable.getInstance().newNpcInstance(7000080);
+            room.keeper = CObjectDB.CreateNPC(7000080);
             room.keeper.setId(IdFactory.getInstance().nextId());
             room.keeper.setX(32902);
             room.keeper.setY(32818);

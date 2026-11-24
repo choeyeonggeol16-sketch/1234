@@ -1,8 +1,8 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.Config;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -83,7 +83,7 @@ public final class MagicDoll {
             return;
         }
 
-        final L1Npc template = NpcTable.getInstance().getTemplate(def.getNpcId());
+        final L1Npc template = CObjectDB.GetNPC(def.getNpcId());
         if (template == null) return;
 
         if (consumeCount == 0) {

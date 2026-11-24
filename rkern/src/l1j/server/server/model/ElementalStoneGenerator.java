@@ -1,12 +1,12 @@
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
@@ -93,7 +93,7 @@ public class ElementalStoneGenerator implements Runnable {
 	private void putElementalStone(L1Location loc) {
 		L1GroundInventory gInventory = L1World.getInstance().getInventory(loc);
 
-		L1ItemInstance item = ItemTable.getInstance().createItem(
+		L1ItemInstance item = CObjectDB.LoadItem().createItem(
 				ELEMENTAL_STONE_ID);
 		item.setEnchantLevel(0);
 		item.setCount(1);

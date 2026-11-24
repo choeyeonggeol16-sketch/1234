@@ -1,9 +1,9 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -33,7 +33,7 @@ public class L1DescId implements L1CommandExecutor {
 					break;
 				}
 				countA++;
-				item = ItemTable.getInstance().createItem(40005);
+				item = CObjectDB.LoadItem().createItem(40005);
 				item.getItem().setType2(0);
 				item.getItem().setItemDescId(descid + i);
 				item.getItem().setGfxId(1945);

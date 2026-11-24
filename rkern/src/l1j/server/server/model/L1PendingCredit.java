@@ -1,5 +1,6 @@
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -123,7 +123,7 @@ public final class L1PendingCredit {
             for(Credit credit:credits) {
                 if(total+credit.amount>L1Inventory.MAX_AMOUNT)continue; // credit remains durable at the cap
                 if(stack==0) {
-                    L1ItemInstance item=new L1ItemInstance(ItemTable.getInstance().getTemplate(40308),credit.amount);
+                    L1ItemInstance item=new L1ItemInstance(CObjectDB.GetItem(40308),credit.amount);
                     item.setId(IdFactory.getInstance().nextId());item.setIdentified(true);
                     MySqlCharactersItemStorage.insertTradeSnapshot(con,
                         MySqlCharactersItemStorage.ItemSnapshot.capture(item,characterId));

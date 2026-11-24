@@ -1,6 +1,6 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.datatables.ItemTable;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -27,7 +27,7 @@ final class ItemCreationItems {
             int enchantLevel, boolean explicitProperties) {
         // No object is created for invalid quantities; none can be inserted.
         if (pc == null || count <= 0) return false;
-        final L1ItemInstance item = ItemTable.getInstance().createItem(itemId);
+        final L1ItemInstance item = CObjectDB.LoadItem().createItem(itemId);
         if (item == null) return false;
         try {
             item.setCount(count);

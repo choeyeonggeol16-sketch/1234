@@ -1,5 +1,6 @@
 package l1j.server.server.model.world.instance.dungeon.valakasroom;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,7 +9,6 @@ import java.util.ArrayList;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -54,10 +54,10 @@ public class ValakasRoomSpawn {
 			rs = pstm.executeQuery();
 			while(rs.next()){
 
-				l1npc = NpcTable.getInstance().getTemplate(rs.getInt("npc_id"));
+				l1npc = CObjectDB.GetNPC(rs.getInt("npc_id"));
 				if (l1npc != null) {
 					try {
-						field = NpcTable.getInstance().newNpcInstance(rs.getInt("npc_id"));
+						field = CObjectDB.CreateNPC(rs.getInt("npc_id"));
 						field.setId(IdFactory.getInstance().nextId());
 						field.setX(rs.getInt("locx"));
 						field.setY(rs.getInt("locy"));

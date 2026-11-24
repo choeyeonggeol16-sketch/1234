@@ -1,9 +1,9 @@
 package l1j.server.server.model.character.action.listener.npc;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.action.listener.ActionListener;
 import l1j.server.server.model.character.combat.arena.CombatEGameType;
@@ -78,7 +78,7 @@ public class CombatActionListener extends NpcActionListener{
 	
 	@Override
 	public String result_short_item(L1PcInstance pc){
-		L1Item item = ItemTable.getInstance().getTemplate(get_need_item_id());
+		L1Item item = CObjectDB.GetItem(get_need_item_id());
 		pc.sendPackets(String.format("%s %d이(가) 부족합니다.", item.getName(), get_need_item_amount()));
 		return super.result_short_item(pc);
 	}

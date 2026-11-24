@@ -18,7 +18,6 @@
  */
 package l1j.server.server.templates;
 
-import l1j.server.server.datatables.ItemTable;
 
 public class L1AdenShopItem implements Comparable<L1AdenShopItem>{
 	private int _id;
@@ -42,7 +41,7 @@ public class L1AdenShopItem implements Comparable<L1AdenShopItem>{
 			int status, int type) {
 		_id = id;
 		_itemId = itemId;
-		_item = ItemTable.getInstance().getTemplate(itemId);
+		_item = CObjectDB.GetItem(itemId);
 		_price = price;
 		_packCount = packCount;
 		_html = html;

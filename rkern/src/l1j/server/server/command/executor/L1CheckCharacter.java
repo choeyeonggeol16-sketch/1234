@@ -1,12 +1,12 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.StringTokenizer;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -102,7 +102,7 @@ public class L1CheckCharacter implements L1CommandExecutor {
 						p1.setInt(1, r.getInt(1));
 						r1 = p1.executeQuery();				
 						while(r1.next()){
-							L1ItemInstance item = ItemTable.getInstance().createItem(r1.getInt(1));							
+							L1ItemInstance item = CObjectDB.LoadItem().createItem(r1.getInt(1));							
 							if (item.getItem().getType2() == 1 || item.getItem().getType2() == 2) { // 무기 방어구만 표시
 								itemname = getInvenItem(r1.getInt(1),r1.getInt(2),r1.getInt(3),r1.getInt(4),r1.getString(5),r1.getInt(6),r1.getInt(7));
 								SC_SystemMessage.send(pc, "\\fU"+ ++searchCount +". " + itemname);

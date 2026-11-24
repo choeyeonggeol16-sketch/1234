@@ -1,9 +1,9 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 
 import l1j.server.Config;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
@@ -246,7 +246,7 @@ public final class CS_Result {
 						L1ItemInstance item = null;
 						for (L1ShopBuyOrder order : oList.getList()) {
 							int itemId = order.getItem().getItemId();
-							item = ItemTable.getInstance().createItem(itemId);
+							item = CObjectDB.LoadItem().createItem(itemId);
 						}
 						if (item != null) {
 							item.setEnchantLevel(defaultItem.getEnchantLevel());

@@ -1,6 +1,7 @@
 
 package l1j.server.swing;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,7 +10,6 @@ import java.util.ArrayList;
 import javax.swing.ImageIcon;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.L1Clan;
@@ -692,7 +692,7 @@ public class infomation extends javax.swing.JFrame {
         	L1Pet pett = PetTable.getInstance().getTemplate(itemv.getId());
         	if(pett != null){
         	layta4[++lj][0] = pett.get_name();
-        	L1Npc l1npc = NpcTable.getInstance().getTemplate(pett.get_npcid());
+        	L1Npc l1npc = CObjectDB.GetNPC(pett.get_npcid());
         	layta4[lj][1] = l1npc.get_name();        	
         	layta4[lj][2] = pett.get_level();
         	layta4[lj][3] = pett.get_exp();

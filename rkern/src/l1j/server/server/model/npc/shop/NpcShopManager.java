@@ -1,5 +1,6 @@
 package l1j.server.server.model.npc.shop;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,7 +20,6 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.L1World;
@@ -243,7 +243,7 @@ public class NpcShopManager {
 
     private void spawnOne(L1NpcShop shop) {
         try {
-            L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(shop.getNpcId());
+            L1NpcInstance npc = CObjectDB.CreateNPC(shop.getNpcId());
             npc.setId(IdFactory.getInstance().nextId());
             npc.setMap(shop.getMapId());
             npc.getLocation().set(shop.getX(), shop.getY(), shop.getMapId());

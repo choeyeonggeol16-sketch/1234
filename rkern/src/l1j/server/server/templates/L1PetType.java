@@ -18,7 +18,7 @@
  */
 package l1j.server.server.templates;
 
-import l1j.server.server.datatables.NpcTable;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.utils.IntRange;
 
 public class L1PetType {
@@ -36,7 +36,7 @@ public class L1PetType {
 			IntRange hpUpRange, IntRange mpUpRange, int npcIdForEvolving,
 			int msgIds[], int defyMsgId) {
 		_baseNpcId = baseNpcId;
-		_baseNpcTemplate = NpcTable.getInstance().getTemplate(baseNpcId);
+		_baseNpcTemplate = CObjectDB.GetNPC(baseNpcId);
 		_name = name;
 		_itemIdForTaming = itemIdForTaming;
 		_hpUpRange = hpUpRange;

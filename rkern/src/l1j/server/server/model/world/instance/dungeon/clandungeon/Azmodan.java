@@ -1,5 +1,6 @@
 package l1j.server.server.model.world.instance.dungeon.clandungeon;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Random;
@@ -8,7 +9,6 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.ClanTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
@@ -511,7 +511,7 @@ public class Azmodan implements Runnable {
 	public static L1NpcInstance spawn(int x, int y, short MapId, int Heading, int npcId, int randomRange, int roomnumber) {
 		L1NpcInstance npc = null;
 		try { 
-			npc = NpcTable.getInstance().newNpcInstance(npcId);
+			npc = CObjectDB.CreateNPC(npcId);
 			npc.setId(IdFactory.getInstance().nextId());
 			npc.setMap(MapId);
 			if (randomRange == 0) {

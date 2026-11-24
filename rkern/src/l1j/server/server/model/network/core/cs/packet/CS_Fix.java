@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.datatables.NpcTable;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1PcInventory;
@@ -137,9 +137,7 @@ public final class CS_Fix {
         }
 
         final L1Npc npcTemplate =
-                NpcTable
-                        .getInstance()
-                        .getTemplate(
+                CObjectDB.GetNPC(
                                 petTemplate.get_npcid());
 
         if (npcTemplate == null) {

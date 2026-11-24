@@ -1,8 +1,8 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.templates.L1Item;
@@ -22,7 +22,7 @@ final class PackageRewardStaging {
 	}
 	private static void stage(L1InventoryTransaction tx, ArrayList<String> notices, int itemId,
 			int count, int enchant, int bless, int attr, boolean identified, boolean expiry) {
-		L1Item template = ItemTable.getInstance().getTemplate(itemId);
+		L1Item template = CObjectDB.GetItem(itemId);
 		if (template == null || count <= 0) throw new IllegalStateException("Missing box reward: " + itemId);
 		L1ItemInstance reward = new L1ItemInstance(template, count);
 		reward.setId(IdFactory.getInstance().nextId());

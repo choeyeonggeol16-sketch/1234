@@ -18,10 +18,10 @@
  */
 package l1j.server.server.model;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.logging.Logger;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.UBTable;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -117,7 +117,7 @@ public class L1UbSpawn implements Comparable<L1UbSpawn> {
 		L1UltimateBattle ub = UBTable.getInstance().getUb(_ubId);
 		L1Location loc = ub.getLocation().randomLocation(
 				(ub.getLocX2() - ub.getLocX1()) / 2, false);
-		L1MonsterInstance mob = new L1MonsterInstance(NpcTable.getInstance().getTemplate(getNpcTemplateId()));
+		L1MonsterInstance mob = new L1MonsterInstance(CObjectDB.GetNPC(getNpcTemplateId()));
 		if (mob == null) {
 			_log.warning("mob == null");
 			System.out.println("mob == null");

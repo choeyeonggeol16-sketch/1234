@@ -18,13 +18,13 @@
  */
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -51,7 +51,7 @@ public class L1SpawnCmd implements L1CommandExecutor {
 		try {
 			npcid = Integer.parseInt(nameId);
 		} catch (NumberFormatException e) {
-			npcid = NpcTable.getInstance().findNpcIdByNameWithoutSpace(nameId);
+			npcid = CObjectDB.LoadNPC().findNpcIdByNameWithoutSpace(nameId);
 		}
 		return npcid;
 	}
@@ -71,7 +71,7 @@ public class L1SpawnCmd implements L1CommandExecutor {
 			}
 			int npcid = parseNpcId(nameId);
 
-			L1Npc npc = NpcTable.getInstance().getTemplate(npcid);
+			L1Npc npc = CObjectDB.GetNPC(npcid);
 			if (npc == null) {
 				SC_SystemMessage.send(pc, "해당 NPC가 발견되지 않습니다.");
 				return;

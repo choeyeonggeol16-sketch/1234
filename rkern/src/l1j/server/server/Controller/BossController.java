@@ -1,5 +1,6 @@
 package l1j.server.server.Controller;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -15,7 +16,6 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.BossMonsterSpawnList;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -451,7 +451,7 @@ public final class BossController {
         L1NpcInstance npc = null;
 
         try {
-            npc = NpcTable.getInstance().newNpcInstance(npcId);
+            npc = CObjectDB.CreateNPC(npcId);
 
             if (npc == null) {
                 _log.warning("[BossController] NPC template 없음 npcId=" + npcId);

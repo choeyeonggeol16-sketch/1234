@@ -1,10 +1,10 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import l1j.server.server.GMCommandsConfig;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -31,10 +31,10 @@ public class L1CreateItemSet implements L1CommandExecutor {
 			L1Item temp = null;
 			L1ItemInstance inst = null;
 			for (L1ItemSetItem item : list) {
-				temp = ItemTable.getInstance(). getTemplate(item.getId());
+				temp = CObjectDB.GetItem(item.getId());
 				if (! temp.isStackable() && 0 != item.getEnchant()) {
 					for (int i = 0; i < item.getAmount(); i++) {
-						inst = ItemTable.getInstance().createItem(item.getId());
+						inst = CObjectDB.LoadItem().createItem(item.getId());
 						inst.setEnchantLevel(item.getEnchant());
 						pc.getInventory(). storeItem(inst);
 					}

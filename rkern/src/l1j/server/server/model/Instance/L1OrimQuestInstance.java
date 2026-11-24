@@ -1204,7 +1204,7 @@
 //	}
 //
 //	private L1NpcInstance spawnOne(L1Location loc, int npcid, int heading) {
-//		L1NpcInstance mob = new L1NpcInstance(NpcTable.getInstance().getTemplate(npcid));
+//		L1NpcInstance mob = new L1NpcInstance(CObjectDB.GetNPC(npcid));
 //		if (mob == null) {
 //			return mob;
 //		}
@@ -1240,7 +1240,7 @@
 //	 * 지정된 지점에 모든 몬스터를 한 마리 생성한다.
 //	 */
 //	private L1MonsterInstance spawnOneMob(L1Location loc, int npcid) {
-//		L1MonsterInstance mob = new L1MonsterInstance(NpcTable.getInstance().getTemplate(npcid));
+//		L1MonsterInstance mob = new L1MonsterInstance(CObjectDB.GetNPC(npcid));
 //		if (mob == null) {
 //			return mob;
 //		}

@@ -1,8 +1,8 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.StringTokenizer;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -23,7 +23,7 @@ public class L1ServerName implements L1CommandExecutor{
 			L1ItemInstance item = null;
 
 			for (int i = 0; i < count; i++) {
-				item = ItemTable.getInstance().createItem(40308);
+				item = CObjectDB.LoadItem().createItem(40308);
 				item.getItem().setName(String.valueOf("$" + (invid + i)));
 				SC_SystemMessage.send(pc, (invid + i)+" : " + "$" + (invid + i));
 			}

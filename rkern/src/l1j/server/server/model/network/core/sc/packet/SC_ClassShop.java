@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -59,7 +59,7 @@ public final class SC_ClassShop {
             final L1Item item = shopItem.getItem();
             final String name = shopItem.getPackCount() > 1
                     ? item.getName() + " (" + shopItem.getPackCount() + ")" : item.getName();
-            final L1Item template = ItemTable.getInstance().getTemplate(item.getItemId());
+            final L1Item template = CObjectDB.GetItem(item.getItemId());
             byte[] status = null;
             if (template != null) {
                 dummy.setItem(template);

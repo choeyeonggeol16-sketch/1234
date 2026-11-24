@@ -1,5 +1,6 @@
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -11,7 +12,6 @@ import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.BossMonsterSpawnList;
 import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.datatables.DropTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
@@ -1366,7 +1366,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	}
 
 	private boolean createNewItem(L1PcInstance pc, int item_id, int count, int Bless) {
-		L1ItemInstance item = ItemTable.getInstance().createItem(item_id);
+		L1ItemInstance item = CObjectDB.LoadItem().createItem(item_id);
 
 		if (item != null) {
 			item.setCount(count);

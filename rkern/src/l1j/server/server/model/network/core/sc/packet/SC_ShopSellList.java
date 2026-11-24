@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 
 import l1j.server.Config;
 import l1j.server.server.Opcodes;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1TaxCalculator;
@@ -84,7 +84,7 @@ public final class SC_ShopSellList {
             } else {
                 name = item.getName();
             }
-            final L1Item template = ItemTable.getInstance().getTemplate(item.getItemId());
+            final L1Item template = CObjectDB.GetItem(item.getItemId());
             byte[] status = null;
             if (template != null) {
                 dummy.setItem(template);

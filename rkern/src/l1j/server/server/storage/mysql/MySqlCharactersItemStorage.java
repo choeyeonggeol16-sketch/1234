@@ -1,5 +1,6 @@
 package l1j.server.server.storage.mysql;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.KeyTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.storage.CacheD;
@@ -63,7 +63,7 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
     /** RS 한 행 → 아이템. 컬럼 매핑이 이 프로젝트에 이 메서드 하나에만 존재함. */
     private L1ItemInstance rowToItem(ResultSet rs) throws SQLException {
         final int itemId = rs.getInt("item_id");
-        L1Item template = ItemTable.getInstance().getTemplate(itemId);
+        L1Item template = CObjectDB.GetItem(itemId);
         if (template == null) {
             // A partial inventory load must not silently hide persisted items.
             throw new SQLException("Missing item template while loading character_items: " + itemId);

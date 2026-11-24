@@ -80,7 +80,7 @@ public class AdenShopTable {
 				_allShops.put(itemid, new L1AdenShopItem(id, itemid, price, pack,
 						html, status, type));
 
-				L1Item item = ItemTable.getInstance().getTemplate(itemid);
+				L1Item item = CObjectDB.GetItem(itemid);
 				String itemname = item.getName();
 				if (pack > 1)
 					itemname = itemname + "(" + pack + ")";

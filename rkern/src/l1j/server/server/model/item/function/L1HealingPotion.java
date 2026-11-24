@@ -14,6 +14,7 @@
  */
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.io.File;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -32,7 +33,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import l1j.server.Config;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -130,7 +130,7 @@ public class L1HealingPotion {
 			ItemEffectList list = (ItemEffectList) um.unmarshal(file);
 
 			for (L1HealingPotion each : list) {
-				if (ItemTable.getInstance().getTemplate(each.getItemId()) == null) {
+				if (CObjectDB.GetItem(each.getItemId()) == null) {
 					System.out.print("아이템 ID " + each.getItemId() + " 의 템플릿이 발견되지 않았습니다.");
 				} else {
 					dataMap.put(each.getItemId(), each);

@@ -1,12 +1,12 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.datatables.CObjectDB;
 import static l1j.server.server.model.item.function.CreatureItemActions.ITEM_USE2_LOG;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableTwoInput;
 import static l1j.server.server.model.item.function.PetWithdrawalItems.withdrawPet;
 import static l1j.server.server.model.item.function.PotionEffects.useFruit;
 import static l1j.server.server.model.item.function.SpecialEnchantScrolls.isOwnedScrollTarget;
 
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
@@ -90,7 +90,7 @@ final class PetAndSummonItems {
             SC_SystemMessage.send(pc, "더 이상 소환이 불가능 합니다.");
             return ItemActionResult.STOP;
         }
-        final L1Npc template = NpcTable.getInstance().getTemplate(
+        final L1Npc template = CObjectDB.GetNPC(
                 SUMMON_IDS[CommonUtil.random(3)]);
         if (template == null) {
             SC_ServerMessage.send(pc, 79);

@@ -1,10 +1,10 @@
 package l1j.server.server.command.executor;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import l1j.server.server.datatables.NpcSpawnTable;
-import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.SpawnTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -29,7 +29,7 @@ public class L1InsertSpawn implements L1CommandExecutor {
 			StringTokenizer tok = new StringTokenizer(arg);
 			String type = tok.nextToken();
 			int npcId = Integer.parseInt(tok.nextToken().trim());
-			L1Npc template = NpcTable.getInstance().getTemplate(npcId);
+			L1Npc template = CObjectDB.GetNPC(npcId);
 
 			if (template == null) {
 				msg = "해당 NPC가 발견되지 않습니다. ";

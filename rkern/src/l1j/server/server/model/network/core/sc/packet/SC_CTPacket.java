@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.item.collection.CollectionCharInfo;
 import l1j.server.server.model.item.collection.CollectionItem;
@@ -91,7 +91,7 @@ public final class SC_CTPacket {
 
 		int dummyId = 0;
 		int dummyType2 = 0;
-		L1ItemInstance item = ItemTable.getInstance().createItem(40005);
+		L1ItemInstance item = CObjectDB.LoadItem().createItem(40005);
 		if (item != null) {
 			dummyId = item.getId();
 			if (item.getItem() != null) {

@@ -1,4 +1,5 @@
 package l1j.server;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
 
 import static l1j.server.server.model.character.skill.L1SkillId.ADDITIONAL_FIRE;
@@ -14,7 +15,6 @@ import static l1j.server.server.model.character.skill.L1SkillId.NATURES_TOUCH;
 import static l1j.server.server.model.character.skill.L1SkillId.PHYSICAL_ENCHANT_DEX;
 import static l1j.server.server.model.character.skill.L1SkillId.PHYSICAL_ENCHANT_STR;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -55,7 +55,7 @@ public class SpecialEventHandler {
 		for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if (pc.getNetConnection() != null) {
 				pc.getInventory().storeItem(30104, 1);
-				L1ItemInstance item = ItemTable.getInstance().createItem(30104);
+				L1ItemInstance item = CObjectDB.LoadItem().createItem(30104);
 				SC_GMHtml.send(pc, "보낸이:" + pc.getName() + "", "아이템:"+item.getLogName()+" 이 도착 했습니다.");
 				final l1j.server.server.model.network.core.connection.CUserSocket connection=pc.getNetConnection();
                 if(connection!=null && connection.isConnected()) {
@@ -76,7 +76,7 @@ public class SpecialEventHandler {
 		for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if (pc.getNetConnection() != null) {
 				pc.getInventory().storeItem(7241, 1);
-				L1ItemInstance item = ItemTable.getInstance().createItem(7241);
+				L1ItemInstance item = CObjectDB.LoadItem().createItem(7241);
 				SC_GMHtml.send(pc, "보낸이:" + pc.getName() + "", "아이템:"+item.getLogName()+" 이 도착 했습니다.");
 				final l1j.server.server.model.network.core.connection.CUserSocket connection=pc.getNetConnection();
                 if(connection!=null && connection.isConnected()) {
@@ -97,7 +97,7 @@ public class SpecialEventHandler {
 		for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if (pc.getNetConnection() != null) {
 				pc.getInventory().storeItem(3000123, 1);
-				L1ItemInstance item = ItemTable.getInstance().createItem(3000123);
+				L1ItemInstance item = CObjectDB.LoadItem().createItem(3000123);
 				SC_GMHtml.send(pc, "보낸이:"+pc.getName()+"♥", "♥"+item.getLogName()+" 1장이 도착♥　　 　(필드에서만 사용이 가능합니다)　(혈원분들과 함께 레이드 하세요)");
 				final l1j.server.server.model.network.core.connection.CUserSocket connection=pc.getNetConnection();
                 if(connection!=null && connection.isConnected()) {

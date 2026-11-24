@@ -1,5 +1,6 @@
 package l1j.server.server.model.world.instance.dungeon.fanstasyisland;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.Calendar;
@@ -7,7 +8,6 @@ import java.util.Collection;
 import java.util.Random;
 
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -309,9 +309,9 @@ public class FantasyIsland implements Runnable {
 						} else if (rnd < 682) { itemId = 1136; //악몽의 장궁
 						} else if (rnd < 684) { itemId = 1137; //진노의 크로우
 						}
-						L1ItemInstance item = ItemTable.getInstance().createItem(810010);
+						L1ItemInstance item = CObjectDB.LoadItem().createItem(810010);
 						L1World.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).storeItem(item);
-						L1ItemInstance item1 = ItemTable.getInstance().createItem(itemId);
+						L1ItemInstance item1 = CObjectDB.LoadItem().createItem(itemId);
 						if (item1 != null) {
 							L1World.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).storeItem(item1);
 						} 

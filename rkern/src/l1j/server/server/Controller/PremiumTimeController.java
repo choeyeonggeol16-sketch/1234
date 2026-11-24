@@ -1,5 +1,6 @@
 package l1j.server.server.Controller;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
@@ -16,7 +17,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import l1j.server.Config;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -256,7 +256,7 @@ public final class PremiumTimeController implements Runnable {
 			int cln = Config.FEATHER_NUM1;
 			int can = Config.FEATHER_NUM2;
 
-			L1ItemInstance sucitem = ItemTable.getInstance().createItem(Config.깃털번호);
+			L1ItemInstance sucitem = CObjectDB.LoadItem().createItem(Config.깃털번호);
 			if (sucitem == null) return;
 
 			int addCount = fn;

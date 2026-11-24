@@ -1,8 +1,8 @@
 package l1j.server.server.model.world.instance.raid.compensator;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1World;
@@ -40,7 +40,7 @@ public class ItemCompensator implements CompensatorElement{
 				yi = -1;
 			
 			L1Inventory inv = L1World.getInstance().getInventory(x + (ThreadLocalRandom.current().nextInt(3) * xi), y + (ThreadLocalRandom.current().nextInt(3) * yi), (short)mid);
-			L1ItemInstance item = ItemTable.getInstance().createItem(_itemid);
+			L1ItemInstance item = CObjectDB.LoadItem().createItem(_itemid);
 			if(item == null){
 				System.out.println(String.format("레이드 보상 : %d 아이템을 찾을 수 없습니다.", _itemid));
 				return;

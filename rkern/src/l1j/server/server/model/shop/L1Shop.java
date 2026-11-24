@@ -1,5 +1,6 @@
 package l1j.server.server.model.shop;
 
+import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +10,6 @@ import l1j.server.Config;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.Controller.BugRaceController.BugTicketInfo;
 import l1j.server.server.datatables.ClanTable;
-import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcCashShopInstance;
@@ -897,7 +897,7 @@ public class L1Shop {
         return grantPrepared(inventory,item);
     }
     private static L1ItemInstance detachedShopItem(int templateId) {
-        L1Item template=ItemTable.getInstance().getTemplate(templateId);
+        L1Item template=CObjectDB.GetItem(templateId);
         if(template==null)throw new IllegalStateException("Missing NPC item template");
         L1ItemInstance item=new L1ItemInstance(template,1);
         item.setId(l1j.server.server.IdFactory.getInstance().nextId());
