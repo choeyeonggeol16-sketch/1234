@@ -428,8 +428,9 @@ public final class CWorld {
             objectFactory.install(object);
             installSecondary(object);
         }
-        if (object instanceof L1NpcInstance) {
-            NpcSpeedData.install_npc((L1NpcInstance) object);
+        if (object instanceof L1NpcInstance npc) {
+            NpcSpeedData.install_npc(npc);
+            npc.StartRegeneration();
         }
         if (previous != null && previous != object) {
             retireReplacedVisible(previous);
@@ -458,8 +459,9 @@ public final class CWorld {
             installSecondary(object);
         }
         // Keep NPC speed initialization outside the registry page monitor.
-        if (object instanceof L1NpcInstance) {
-            NpcSpeedData.install_npc((L1NpcInstance) object);
+        if (object instanceof L1NpcInstance npc) {
+            NpcSpeedData.install_npc(npc);
+            npc.StartRegeneration();
         }
         if (previous != null && previous != object) {
             retireReplacedVisible(previous);
@@ -480,6 +482,7 @@ public final class CWorld {
             }
         }
         clusterGrid.reconcileLeave(previous, oldPos);
+        if (previous instanceof L1NpcInstance npc) npc.StopRegenerationIfUnregistered();
     }
 
     public void removeObject(L1Object object) {
@@ -494,6 +497,7 @@ public final class CWorld {
             removeSecondary(object);
         }
 
+        if (object instanceof L1NpcInstance npc) npc.StopRegenerationIfUnregistered();
         if (object.instanceOf(L1Type.L1TYPE_ITEMINSTANCE)) {
             final L1ItemInstance item = (L1ItemInstance) object;
             if (item.getItemId() == InnHelper.INN_KEYID) {

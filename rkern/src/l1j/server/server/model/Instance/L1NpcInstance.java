@@ -327,13 +327,10 @@ public class L1NpcInstance extends L1Character {
     private L1NpcInstance _aiEngineWheelNext;
     private final byte _specialAction;
 
-    private final int _hprInterval;  
-    private final int _hprPoint;
-    private final int _mprInterval; 
-    private final int _mprPoint;
-
-    private long _nextHprAt = 0L;
-    private long _nextMprAt = 0L;
+    // NPC-local recovery deadlines share the existing intrusive owner wheel.
+    private volatile long _regenSmartId;
+    private volatile long _nextHprAt;
+    private volatile long _nextMprAt;
 
     public L1NpcInstance(L1Npc template) {
         setStatus(0);
@@ -343,17 +340,9 @@ public class L1NpcInstance extends L1Character {
 
         if (template != null) {
             _specialAction = CNpcSpecialAction.GetActionId(template.get_npcId());
-            _hprInterval = template.get_hprinterval() != 0 ? template.get_hprinterval() : 0;
-            _hprPoint    = Math.max(0, template.get_hpr());
-            _mprInterval = template.get_mprinterval() != 0 ? template.get_mprinterval() : 0;
-            _mprPoint    = Math.max(0, template.get_mpr());
             setting_template(template);
         } else {
             _specialAction = CNpcSpecialAction.NONE;
-            _hprInterval = 0;
-            _hprPoint = 0;
-            _mprInterval = 0;
-            _mprPoint = 0;
         }
     }
 
@@ -1206,6 +1195,7 @@ public class L1NpcInstance extends L1Character {
 
     @Override
     public void dispose() {
+        StopRegeneration();
         cancelDigestItems();
         _itemDigest = null;
         CloseNpcEvents();
@@ -1943,13 +1933,23 @@ public class L1NpcInstance extends L1Character {
         return _destroyed;
     }
 
+    @Override
+    public synchronized void setDead(boolean dead) {
+        final boolean wasDead = isDead();
+        super.setDead(dead);
+        if (dead) StopRegeneration();
+        else if (wasDead) StartRegeneration();
+    }
+
     protected void transform(int transformId) {
         int transformGfxId = getNpcTemplate().getTransformGfxId();
         if (transformGfxId != 0) {
             SC_SkillSound.broadcast(this, getId(), transformGfxId);
         }
         L1Npc npcTemplate = NpcTable.getInstance().getTemplate(transformId);
+        StopRegeneration();
         setting_template(npcTemplate);
+        StartRegeneration();
         sendShape(getCurrentSpriteId());
         for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(this)) {
             if (pc != null) {
@@ -2440,24 +2440,83 @@ public class L1NpcInstance extends L1Character {
         return this instanceof L1DollInstance;
     }
 
-    public void tickRegeneration(long nowMs) {
-        if (_destroyed || isDead()) return;
+    /** Register only after the NPC has a canonical world identity. */
+    public final synchronized void StartRegeneration() {
+        if (_destroyed || isDead() || getId() <= 0) return;
+        final L1Npc template = getNpcTemplate();
+        if (template == null) return;
+        final long smartId = L1World.getInstance().smartIdOf(this);
+        if (smartId == 0L || _regenSmartId == smartId) return;
 
-        if (_hprInterval > 0 && nowMs >= _nextHprAt) {
-            _nextHprAt = nowMs + _hprInterval;
-            final int hp = getCurrentHp();
-            if (hp > 0 && hp < getMaxHp()) {
-                applyNpcHpDelta(_hprPoint);
+        final long now = System.currentTimeMillis();
+        final int hpInterval = template.get_hprinterval();
+        final int mpInterval = template.get_mprinterval();
+        _nextHprAt = hpInterval > 0 && template.get_hpr() > 0 ? now + hpInterval : 0L;
+        _nextMprAt = mpInterval > 0 && template.get_mpr() > 0 ? now + mpInterval : 0L;
+        _regenSmartId = (_nextHprAt != 0L || _nextMprAt != 0L) ? smartId : 0L;
+        if (_regenSmartId != 0L) CNPCServer.getInstance().register(this);
+    }
+
+    public final synchronized void StopRegeneration() {
+        if (_regenSmartId == 0L) return;
+        _regenSmartId = 0L;
+        _nextHprAt = 0L;
+        _nextMprAt = 0L;
+        // Recompute the existing wheel link, even when AI is asleep.
+        CNPCServer.getInstance().register(this);
+    }
+
+    /** World removal/replacement can race a fresh registration. */
+    public final synchronized void StopRegenerationIfUnregistered() {
+        if (_regenSmartId != 0L && L1World.getInstance().smartIdOf(this) != _regenSmartId) {
+            StopRegeneration();
+        }
+    }
+
+    public final long npcRegenerationDeadlineMs() {
+        if (_regenSmartId == 0L || _destroyed || isDead()) return 0L;
+        final long hp = _nextHprAt;
+        final long mp = _nextMprAt;
+        return hp == 0L ? mp : mp == 0L ? hp : Math.min(hp, mp);
+    }
+
+    /** Only the NPC owner may advance recovery deadlines or mutate resources. */
+    public final synchronized void tickRegeneration(long nowMs) {
+        if (!CNPCServer.getInstance().isOwnerThread(this) || _regenSmartId == 0L) return;
+        if (_destroyed || isDead()
+                || L1World.getInstance().smartIdOf(this) != _regenSmartId) {
+            StopRegeneration();
+            return;
+        }
+        final L1Npc template = getNpcTemplate();
+        if (template == null) {
+            StopRegeneration();
+            return;
+        }
+        final long smartId = _regenSmartId;
+
+        if (_nextHprAt != 0L && nowMs >= _nextHprAt) {
+            final int interval = template.get_hprinterval();
+            final int amount = template.get_hpr();
+            _nextHprAt = interval > 0 && amount > 0 ? nowMs + interval : 0L;
+            if (_nextHprAt != 0L && !isDeathProcessing()
+                    && getCurrentHp() > 0 && getCurrentHp() < getMaxHp()) {
+                applyNpcHpDelta(amount);
             }
         }
 
-        if (_mprInterval > 0 && nowMs >= _nextMprAt) {
-            _nextMprAt = nowMs + _mprInterval;
-            final int mp = getCurrentMp();
-            if (mp < getMaxMp()) {
-                setCurrentMp(mp + _mprPoint);
+        // HP callbacks may change the NPC's incarnation or template.
+        if (_regenSmartId != smartId || getNpcTemplate() != template || _destroyed || isDead()) return;
+        if (_nextMprAt != 0L && nowMs >= _nextMprAt) {
+            final int interval = template.get_mprinterval();
+            final int amount = template.get_mpr();
+            _nextMprAt = interval > 0 && amount > 0 ? nowMs + interval : 0L;
+            if (_nextMprAt != 0L && !isDeathProcessing() && getCurrentHp() > 0
+                    && getCurrentMp() < getMaxMp()) {
+                setCurrentMp((int) Math.min((long) getMaxMp(), (long) getCurrentMp() + amount));
             }
         }
+        if (_nextHprAt == 0L && _nextMprAt == 0L) StopRegeneration();
     }
     
     public final void aiEngineClearQueuedWake() {

@@ -10,7 +10,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.action.CCreatureController;
-import l1j.server.server.model.npc.ai.NpcServer;
+import l1j.server.server.model.npc.ai.CNPCServer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback.CIOThread;
 import l1j.server.server.model.network.thread.CIOThreadCallback.TaskHandle;
@@ -412,7 +412,7 @@ public final class CThreadLocalTimer {
 									node.l0);
 
             if (obj instanceof L1NpcInstance) {
-                final NpcServer npcServer = NpcServer.getInstance();
+                final CNPCServer npcServer = CNPCServer.getInstance();
                 return npcServer.isRunning() && !npcServer.postNpcTimer((L1NpcInstance) obj,
                         node.l0, node.p0, node.p1);
             }
@@ -425,7 +425,7 @@ public final class CThreadLocalTimer {
 					(L1Spawn) node.payload;
 
             if (maker != null) {
-                final NpcServer npcServer = NpcServer.getInstance();
+                final CNPCServer npcServer = CNPCServer.getInstance();
                 return npcServer.isRunning() && !npcServer.postMakerTimer(maker, node.p0, node.p1);
             }
             return false;
@@ -453,7 +453,7 @@ public final class CThreadLocalTimer {
             if (actor instanceof L1NpcInstance) {
                 // Do not release the heartbeat generation merely because
                 // the NPC event pool is saturated: retry this SAME wheel node.
-                final NpcServer npcServer = NpcServer.getInstance();
+                final CNPCServer npcServer = CNPCServer.getInstance();
                 if (npcServer.postNpcSkillHeartbeat((L1NpcInstance) actor, generation)) return false;
                 if (npcServer.isRunning()) return true;
                 actor.skillEffectHeartbeatRelease(generation);

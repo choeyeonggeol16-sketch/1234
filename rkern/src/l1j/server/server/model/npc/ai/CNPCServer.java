@@ -890,6 +890,15 @@ public final class CNPCServer {
                     continue;
                 }
 
+                final long regenDue = npc.npcRegenerationDeadlineMs();
+                if (regenDue > 0L && regenDue <= nowMs) {
+                    try {
+                        npc.tickRegeneration(nowMs);
+                    } catch (Throwable failure) {
+                        _log.log(Level.SEVERE, "[NPC-REGEN] failed npc=" + safeNpcId(npc), failure);
+                    }
+                }
+
                 if (!npc.aiEngineIsRunning()) {
                     scheduleNext(npc);
                     continue;
@@ -948,6 +957,10 @@ public final class CNPCServer {
                 deadlineMs = npc.aiEngineDeadlineMs();
             }
 
+            final long regenDue = npc.npcRegenerationDeadlineMs();
+            if (regenDue > 0L && (deadlineMs <= 0L || regenDue < deadlineMs)) {
+                deadlineMs = regenDue;
+            }
             final long deleteAt = npc.npcDeleteDeadlineMs();
             if (deleteAt > 0L && (deadlineMs <= 0L || deleteAt < deadlineMs)) {
                 deadlineMs = deleteAt;
