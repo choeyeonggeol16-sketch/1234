@@ -134,7 +134,10 @@ jobs:
           sources.append(move)
           guards = root / "docs/npc_ai_native_port_20261123/TestNpcGuardGroup.java"
           sources.append(guards)
-          print(f"Production Java sources: {len(sources) - 7}", flush=True)
+          regression = root / "docs/npc_ai_native_port_20261123/TestNpcLifecycleRaces.java"
+          launcher = root / "docs/npc_ai_native_port_20261123/TestNpcSuiteMain.java"
+          sources += [regression, launcher]
+          print(f"Production Java sources: {len(sources) - 9}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
@@ -142,39 +145,38 @@ jobs:
                           "-cp", cp, "-d", str(classes), "@" + str(args)],
                          check=True, timeout=420)
           print("PASS NPC Java 21 compilation with worktree-only non-NPC shims", flush=True)
-          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
-                          "-XX:ActiveProcessorCount=2", "-cp", cp,
-                          "l1j.server.server.model.npc.ai.TestNpcDesireBoost"],
-                         check=True, timeout=90)
-          print("PASS NC NPC desire boost regression", flush=True)
-          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
-                          "-XX:ActiveProcessorCount=2", "-cp", cp,
-                          "l1j.server.server.model.npc.ai.TestNpcTwentyWayReservation"],
-                         check=True, timeout=90)
-          print("PASS 20-NPC live reservation-core contention regression", flush=True)
-          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
-                          "-XX:ActiveProcessorCount=2", "-cp", cp,
-                          "l1j.server.server.model.npc.ai.action.TestNpcFollow"],
-                         check=True, timeout=90)
-          print("PASS NC dFollow position-selection regression", flush=True)
-          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
-                          "-XX:ActiveProcessorCount=2", "-cp", cp,
-                          "l1j.server.server.model.npc.ai.action.TestNpcFlee"],
-                         check=True, timeout=90)
-          print("PASS NC dFlee/dFleeEx action regression", flush=True)
-          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
-                          "-XX:ActiveProcessorCount=2", "-cp", cp,
-                          "l1j.server.server.model.npc.ai.action.TestNpcGetItem"],
-                         check=True, timeout=90)
-          print("PASS NC dGetItem/GetItemFinished and follower pickup policy regression", flush=True)
-          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
-                          "-XX:ActiveProcessorCount=2", "-cp", cp,
-                          "l1j.server.server.model.npc.ai.action.TestNpcMoveTo"],
-                         check=True, timeout=90)
-          print("PASS NC dMoveTo/dMoveToTarget scripted movement regression", flush=True)
-          subprocess.run(["java", "--enable-preview", "-Xms128m", "-Xmx768m",
-                          "-XX:ActiveProcessorCount=2", "-cp", cp,
-                          "l1j.server.server.model.npc.ai.action.TestNpcGuardGroup"],
-                         check=True, timeout=90)
-          print("PASS NC guard and NPC group lifecycle regression", flush=True)
+          tests = [
+              "l1j.server.server.model.npc.ai.TestNpcDesireBoost",
+              "l1j.server.server.model.npc.ai.TestNpcTwentyWayReservation",
+              "l1j.server.server.model.npc.ai.action.TestNpcFollow",
+              "l1j.server.server.model.npc.ai.action.TestNpcFlee",
+              "l1j.server.server.model.npc.ai.action.TestNpcGetItem",
+              "l1j.server.server.model.npc.ai.action.TestNpcMoveTo",
+              "l1j.server.server.model.npc.ai.action.TestNpcGuardGroup",
+              "l1j.server.server.model.npc.ai.action.TestNpcLifecycleRaces",
+          ]
+          failures = []
+          for name in tests:
+              print("RUN " + name, flush=True)
+              cmd = ["java", "--enable-preview", "-Xms128m", "-Xmx768m",
+                     "-XX:ActiveProcessorCount=2", "-cp", cp,
+                     "l1j.server.server.model.npc.ai.action.TestNpcSuiteMain", name]
+              with subprocess.Popen(cmd) as process:
+                  try:
+                      code = process.wait(timeout=55)
+                  except subprocess.TimeoutExpired:
+                      print("TIMEOUT " + name, flush=True)
+                      try:
+                          subprocess.run(["jcmd", str(process.pid), "Thread.print"],
+                                         timeout=5, check=False)
+                      finally:
+                          process.kill()
+                          process.wait()
+                      code = -1
+              print(("PASS " if code == 0 else "FAIL ") + name, flush=True)
+              if code:
+                  failures.append(name)
+          if failures:
+              raise SystemExit("Failed NPC suites: " + ", ".join(failures))
+          print("PASS all 8 independent NPC suites", flush=True)
           PY
