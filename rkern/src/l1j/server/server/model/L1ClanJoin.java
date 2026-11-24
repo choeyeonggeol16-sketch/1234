@@ -962,41 +962,91 @@ public class L1ClanJoin {
                 targetName);
     }
 
-    private static void BanOnlineMember(
-            L1PcInstance pc,
-            L1Clan clan,
-            L1PcInstance target,
-            String targetName) {
+    private static boolean CanBanMember(L1PcInstance leader, L1Clan clan,
+            L1PcInstance target, int leaderStamp, int targetStamp) {
+        if (leader == null || target == null || leader.isLogoutStarted() || target.isLogoutStarted()
+                || leader.getSessionStamp() != leaderStamp || target.getSessionStamp() != targetStamp
+                || leader.isGhost() || !leader.isCrown()
+                || leader.getClanid() != clan.getClanId() || leader.getId() != clan.getLeaderId()
+                || target.getClanid() != clan.getClanId() || target.getId() == clan.getLeaderId()
+                || clan.GetDbMember(target.getId()) == null
+                || L1World.getInstance().getClan(clan.getClanId()) != clan
+                || L1World.getInstance().findObject(leader.getId()) != leader
+                || L1World.getInstance().findObject(target.getId()) != target) return false;
+        int castle = clan.getCastleId();
+        return castle == 0 || !CastleWarBusiness.getInstance().isNowWar(castle);
+    }
 
-        if (target.getClanid() != clan.getClanId()
-                || target.getId() == clan.getLeaderId()
-                || clan.GetDbMember(target.getId()) == null) {
-
+    private static void BanOnlineMember(L1PcInstance pc, L1Clan clan,
+            L1PcInstance target, String targetName) {
+        final int leaderStamp = pc.getSessionStamp(), targetStamp = target.getSessionStamp();
+        final int clanId = clan.getClanId(), targetId = target.getId(), leaderId = pc.getId();
+        final String clanName = clan.getClanName();
+        if (!CanBanMember(pc, clan, target, leaderStamp, targetStamp)) {
             SC_ServerMessage.send(pc, 109, targetName);
-
             return;
         }
-
-        try {
-
-            target.ClearPlayerClanData(
-                    clan);
-
-        } catch (Exception error) {
-            _log.log(Level.WARNING, "Online clan ban save failed: " + targetName, error);
-            SC_SystemMessage.send(pc, "혈맹원 추방 저장에 실패했습니다.");
-            return;
-        }
-
-        clan.removeClanMember(target.getId());
-
-        SC_PacketBox.send(pc, 
-                        pc,
-                        SC_PacketBox.PLEDGE_REFRESH_MINUS);
-
-        SC_ServerMessage.send(target, 238, pc.getClanname());
-
-        SC_ServerMessage.send(pc, 240, target.getName());
+        final CUserSocket targetSocket = target.getNetConnection();
+        CIOThreadCallback.getInstance().completeSession(targetSocket, () -> {
+            if (!CanBanMember(pc, clan, target, leaderStamp, targetStamp)) return;
+            try (L1InventoryTransaction tx = L1InventoryTransaction.begin(target,
+                    CacheD.accountOrderKey("clan-join:", clanId))) {
+                tx.requireTables("characters", "clan_data");
+                tx.sql(con -> {
+                    try (PreparedStatement ps = con.prepareStatement(
+                            "SELECT leader_id FROM clan_data WHERE clan_id=? AND clan_name=? FOR UPDATE")) {
+                        ps.setInt(1, clanId);
+                        ps.setString(2, clanName);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (!rs.next() || rs.getInt(1) != leaderId || leaderId == targetId)
+                                throw new SQLException("Pledge ban authority changed");
+                        }
+                    }
+                    try (PreparedStatement ps = con.prepareStatement(
+                            "UPDATE characters SET ClanID=0,Clanname='',ClanRank=0,Title='',notes='' "
+                            + "WHERE objid=? AND ClanID=?")) {
+                        ps.setInt(1, targetId);
+                        ps.setInt(2, clanId);
+                        if (ps.executeUpdate() != 1)
+                            throw new SQLException("Pledge ban before-image changed");
+                    }
+                });
+                tx.onFailure(() -> {
+                    if (pc.getSessionStamp() == leaderStamp && !pc.isLogoutStarted())
+                        SC_SystemMessage.send(pc, "혈맹원 추방 저장에 실패했습니다.");
+                });
+                tx.commitAfterInventoryRelease(() -> {
+                    if (target.getClanid() != clanId
+                            || L1World.getInstance().getClan(clanId) != clan)
+                        throw new IllegalStateException("Stale committed pledge ban");
+                    target.ClearCommittedClanData();
+                    clan.removeClanMember(targetId);
+                    try {
+                        target.NotifyClanDataCleared();
+                        SC_ServerMessage.send(target, 238, clanName);
+                    } catch (RuntimeException failure) {
+                        _log.log(Level.WARNING, "Committed pledge ban notification failed: " + targetId, failure);
+                    }
+                    if (pc.getSessionStamp() == leaderStamp && !pc.isLogoutStarted()
+                            && pc.getClanid() == clanId) {
+                        try {
+                            SC_PacketBox.send(pc, pc, SC_PacketBox.PLEDGE_REFRESH_MINUS);
+                            SC_ServerMessage.send(pc, 240, target.getName());
+                        } catch (RuntimeException failure) {
+                            _log.log(Level.WARNING, "Committed pledge ban leader notification failed: " + leaderId, failure);
+                        }
+                    }
+                });
+            } catch (RuntimeException failure) {
+                _log.log(Level.WARNING, "Pledge ban receipt admission failed: " + targetId, failure);
+                if (pc.getSessionStamp() == leaderStamp && !pc.isLogoutStarted())
+                    SC_SystemMessage.send(pc, "혈맹원 추방을 시작하지 못했습니다.");
+            }
+        }, failure -> {
+            if (failure != null && pc.getSessionStamp() == leaderStamp && !pc.isLogoutStarted()) {
+                SC_SystemMessage.send(pc, "혈맹원 추방 대상의 접속 상태가 변경되었습니다.");
+            }
+        });
     }
 
     private static void BanOfflineMember(
