@@ -14,7 +14,7 @@ import l1j.server.server.model.npc.ai.NpcServer;
  * NPC creature action controller.
  *
  * reference design ownership split:
- * - AiRuntime chooses the next primitive action id.
+ * - CNpcAI chooses the next primitive action id.
  * - this controller executes only on the NPC's fixed CIO owner.
  * - current/pending state stays on L1NpcInstance; no per-NPC controller object.
  * - action cadence is driven by CIO shared wheel, not AiEngine polling.
@@ -89,7 +89,7 @@ public final class CCreatureController {
 
     /**
      * CIO owner only. Applies an AI decision and immediately performs the same
-     * first action tick the old AiRuntime -> CCreatureController.tick path did.
+     * first action tick the old CNpcAI -> CCreatureController.tick path did.
      */
     public static void acceptFromAi(
             final L1NpcInstance creature,
@@ -204,20 +204,20 @@ public final class CCreatureController {
         }
 
         if (runLegacyPreflight) {
-            final byte pre = AiRuntime.beforeActionTick(creature, nowMs);
+            final byte pre = CNpcAI.beforeActionTick(creature, nowMs);
 
-            if (pre == AiRuntime.PRE_STOP) {
+            if (pre == CNpcAI.PRE_STOP) {
                 creature.npcActionInvalidateGeneration();
-                AiRuntime.stopFromController(creature);
+                CNpcAI.stopFromController(creature);
                 return;
             }
 
-            if (pre == AiRuntime.PRE_WAIT) {
+            if (pre == CNpcAI.PRE_WAIT) {
                 armNext(creature, generation, nowMs);
                 return;
             }
 
-            if (pre == AiRuntime.PRE_RETHINK) {
+            if (pre == CNpcAI.PRE_RETHINK) {
                 creature.npcActionReleaseCadence();
                 creature._nextAllowedTickMs = nowMs;
                 NpcServer.getInstance().wake(creature);
@@ -260,7 +260,7 @@ public final class CCreatureController {
         if (stop) {
             creature.npcActionInvalidateGeneration();
             creature.npcActionReleaseCadence();
-            AiRuntime.stopFromController(creature);
+            CNpcAI.stopFromController(creature);
             return;
         }
 
@@ -502,7 +502,7 @@ public final class CCreatureController {
                  *
                  * Do not change ordinary NPC/monster idle behavior. Only the
                  * two guard classes cancel this STOP when a hate event is
-                 * already pending, then return to THINK so AiRuntime drains it
+                 * already pending, then return to THINK so CNpcAI drains it
                  * and selects MOVE_TO_TARGET / ATTACK normally.
                  */
                 if ((creature instanceof L1GuardInstance

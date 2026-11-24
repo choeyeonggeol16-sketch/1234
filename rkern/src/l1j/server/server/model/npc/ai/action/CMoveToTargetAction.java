@@ -230,7 +230,7 @@ public final class CMoveToTargetAction {
 
             // A claimed and still usable melee slot belongs to target A.
             // Another admitted ATTACK desire alone must not preempt it:
-            // AiRuntime queues a genuine higher-priority winner safely.
+            // CNpcAI queues a genuine higher-priority winner safely.
             // Only blocked routing below may gate A and select another target.
 
             final byte resumeResult =

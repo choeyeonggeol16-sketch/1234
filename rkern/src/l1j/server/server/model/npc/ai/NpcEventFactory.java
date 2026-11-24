@@ -555,7 +555,7 @@ public final class NpcEventFactory {
 	}
 
 	/**
-	 * AiRuntime owner-side consume.
+	 * CNpcAI owner-side consume.
 	 *
 	 * old target이 아직 그대로일 때만 blocked-retarget을 적용한다.
 	 * stale event가 새 hate target을 덮어쓰지 않게 target id를 검증한다.
@@ -920,7 +920,7 @@ public final class NpcEventFactory {
 
 	/**
 	 * searchTarget polling을 제거한 NPC 종류.
-	 * 다음 subclass를 event-only로 옮길 때 여기만 추가하면 AiRuntime도 같이 따라간다.
+	 * 다음 subclass를 event-only로 옮길 때 여기만 추가하면 CNpcAI도 같이 따라간다.
 	 */
 	public static boolean usesEventTargeting(L1NpcInstance npc) {
 		return npc instanceof L1MonsterInstance
@@ -1049,7 +1049,7 @@ public final class NpcEventFactory {
                 }
 
                 /*
-                 * Per-helper event.  AiRuntime owner drains this and applies
+                 * Per-helper event.  CNpcAI owner drains this and applies
                  * warrior::CLAN_ATTACKED desire math.
                  */
                 helper.setClanHate(
@@ -1474,7 +1474,7 @@ public final class NpcEventFactory {
 
 	/**
 	 * zero-hate SeeCreature 후보끼리만 비교한다.
-	 * 실제 hate가 생긴 target은 AiRuntime에서 이 비교 자체를 하지 않는다.
+	 * 실제 hate가 생긴 target은 CNpcAI에서 이 비교 자체를 하지 않는다.
 	 */
 	public static boolean isBetterSightTarget(
 			L1MonsterInstance npc,
@@ -1650,7 +1650,7 @@ public final class NpcEventFactory {
 	 * 중요:
 	 * - _hateList / _target은 여기서 건드리지 않는다.
 	 * - 외부 thread에서 호출되어도 NPC owner state를 직접 변경하지 않는다.
-	 * - 실제 target 반영은 setHate() -> AiRuntime owner drain에서 수행한다.
+	 * - 실제 target 반영은 setHate() -> CNpcAI owner drain에서 수행한다.
 	 */
 	public static boolean isPlayerTargetCandidate(
 			L1MonsterInstance npc,

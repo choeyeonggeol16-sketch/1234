@@ -449,7 +449,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         m_command_state = command_state;
         final boolean collecting = command_state == eCommand.TM_GetItem;
         // Publish the pickup command to the existing CIO owner. Before,
-        // find_items() only assigned _targetItem; AiRuntime required
+        // find_items() only assigned _targetItem; CNpcAI required
         // isPickupItem() and never entered ACTION_GET_ITEM.
         if (!collecting) {
             // Publish canceled item A before the pickup-mode flag changes,

@@ -44,7 +44,7 @@ import l1j.server.server.model.npc.ai.NpcPotionPolicy;
 import l1j.server.server.model.npc.ai.NpcRefineRecipes;
 import l1j.server.server.model.npc.ai.NpcServer;
 import l1j.server.server.model.npc.ai.NpcSpecials;
-import l1j.server.server.model.npc.ai.action.AiRuntime;
+import l1j.server.server.model.npc.ai.action.CNpcAI;
 import l1j.server.server.model.npc.ai.action.CCreatureController;
 import l1j.server.server.model.npc.ai.action.CGetItemAction;
 import l1j.server.server.model.npc.ai.action.CMoveAction;
@@ -1944,7 +1944,7 @@ public class L1NpcInstance extends L1Character {
         if (_aiThinkRequested != 0) {
             _aiThinkRequested = 0;
         }
-        return AiRuntime.tick(this, nowMs);
+        return CNpcAI.tick(this, nowMs);
     }
 
     public final long aiEngineDeadlineMs() {

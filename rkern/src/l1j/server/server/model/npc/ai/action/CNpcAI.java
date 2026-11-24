@@ -33,10 +33,10 @@ import l1j.server.server.model.npc.ai.NpcServer;
  *
  * Existing L1 target/action priority is intentionally preserved.
  */
-public final class AiRuntime {
+public final class CNpcAI {
 
     private static final Logger LOG =
-            Logger.getLogger(AiRuntime.class.getName());
+            Logger.getLogger(CNpcAI.class.getName());
 
     static final long BASE_TICK_MS = 100L;
 
@@ -45,7 +45,7 @@ public final class AiRuntime {
     static final byte PRE_RETHINK = 2;
     static final byte PRE_STOP = 3;
 
-    private AiRuntime() {
+    private CNpcAI() {
     }
 
     /**
@@ -81,7 +81,7 @@ public final class AiRuntime {
                 return -1L;
             }
 
-            // Preserve the original AiRuntime deadline gate (including startAI).
+            // Preserve the original CNpcAI deadline gate (including startAI).
             if (nowMs < npc._nextAllowedTickMs) {
                 return npc._nextAllowedTickMs;
             }
@@ -138,7 +138,7 @@ public final class AiRuntime {
     /**
      * CIO action timer preflight.
      *
-     * The old AiRuntime ran these checks before every action tick. They remain
+     * The old CNpcAI ran these checks before every action tick. They remain
      * in the same order, but execute on the action owner so the original
      * semantics are not lost when action cadence leaves AiEngine.
      */
@@ -379,7 +379,7 @@ public final class AiRuntime {
 
     /**
      * Existing CCreatureController.selectAction() policy moved here verbatim in
-     * priority/order. Only the mutation point changes: AiRuntime submits a
+     * priority/order. Only the mutation point changes: CNpcAI submits a
      * primitive action id to the fixed CIO owner instead of executing it here.
      */
     private static void selectAction(final L1NpcInstance creature) {

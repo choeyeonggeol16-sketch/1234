@@ -268,7 +268,7 @@ public final class NpcServer {
         return npc != null && Thread.currentThread() == _shards[shardIndex(npc)]._thread;
     }
 
-    /** AiRuntime normally calls this inline on its existing NPC owner. */
+    /** CNpcAI normally calls this inline on its existing NPC owner. */
     public void submitAction(L1NpcInstance npc, byte action, byte pending) {
         if (!beginPost()) {
             // CCreatureController.submit claimed cadence before reaching here.

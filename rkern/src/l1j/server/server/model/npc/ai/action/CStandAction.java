@@ -86,7 +86,7 @@ public final class CStandAction {
             }
             // guard_stand MOVE_TO_FINISHED -> AddDoNothingDesire(40, 30).
             // Existing owner wheel provides the timed hold. An admitted combat
-            // event interrupts it through AiRuntime; no extra timer is needed.
+            // event interrupts it through CNpcAI; no extra timer is needed.
             ActionAccess.sleep(creature, GUARD_IDLE_MS);
             return CCreatureController.RESULT_RUNNING;
         }
