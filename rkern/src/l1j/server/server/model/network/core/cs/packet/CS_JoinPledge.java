@@ -3,12 +3,12 @@ package l1j.server.server.model.network.core.cs.packet;
 import java.util.ArrayList;
 
 import l1j.server.server.datatables.CharacterTable;
+import l1j.server.server.model.CReplyChecker;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.FaceToFace;
@@ -193,10 +193,8 @@ public final class CS_JoinPledge {
         /*
          * 수동 가입 승인 요청.
          */
-        target.setTempID(
-                player.getId());
-
-        SC_MessageYN.send(target, 97,
-                        player.getName());
+        if (!CReplyChecker.AttachReplyChecker(player, target, clan)) {
+            SC_SystemMessage.send(player, "혈맹 가입 승인 대기 중이거나 요청할 수 없는 상태입니다.");
+        }
     }
 }

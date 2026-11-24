@@ -2452,6 +2452,7 @@ public class L1PcInstance extends L1Character {
 
 	public void logout() {
         if (!_destroyed.compareAndSet(false, true)) return;
+        l1j.server.server.model.CReplyChecker.FinishWaitingReplyByRequester(this);
         suspendGroundSight();
         try {
             try { PcInventoryExpiryScheduler.getInstance().unregister(this); }

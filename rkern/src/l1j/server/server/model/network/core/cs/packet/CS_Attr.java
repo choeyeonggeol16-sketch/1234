@@ -24,7 +24,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1ClanJoin;
+import l1j.server.server.model.CReplyChecker;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
@@ -353,19 +353,8 @@ public final class CS_Attr {
 			}
 			break;
 		case 97:
-			L1PcInstance joinPc = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
-			pc.setTempID(0);
-			if (joinPc != null) {
-				if (c == 0) {
-					SC_ServerMessage.send(joinPc, 96, pc.getName());
-				} else if (c == 1) {
-					try {
-						L1ClanJoin.getInstance().ClanJoin(pc.getClan(), joinPc);
-					} catch (Exception e) {
-					}
-				}
-			}
-			break;
+            CReplyChecker.FinishWaitingReplyByReplier(pc, msgIdx, c);
+            break;
 		case 3348:
 			if (c == 1) {
 				L1PcInstance GazePc = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
