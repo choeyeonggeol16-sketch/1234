@@ -5,7 +5,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+import l1j.server.server.model.CReplyChecker;
 
 /**
  * CS_PARTY_CONTROL (0x033C)
@@ -116,13 +116,11 @@ public final class CS_PARTY_CONTROL_REQ {
                         pc.sendPackets(416);	// 파티의 리더만을 초대할 수 있습니다.
                         return;
                     }
-                    target.setPartyID(pc.getId());
-                    SC_MessageYN.send(target, 953 + pc.getPartyType(), pc.getName());
-                } else {
-                    target.setPartyID(pc.getId());
-                    pc.setPartyType(type.getPartyServerType());
-                    SC_MessageYN.send(target, 953 + pc.getPartyType(), pc.getName());
                 }
+                final int kind = (party == null ? type.getPartyServerType() : pc.getPartyType()) == 1
+                        ? CReplyChecker.RANDOM_PARTY : CReplyChecker.PARTY;
+                if (!CReplyChecker.AttachReplyChecker(pc, target, kind))
+                    pc.sendPackets("이미 승인 대기 중이거나 초대할 수 없는 상태입니다.");
                 break;
             }
             case Command_InvateChatParty: {
@@ -143,17 +141,12 @@ public final class CS_PARTY_CONTROL_REQ {
                     pc.sendPackets(415);
                     return;
                 }
-                L1Party party = pc.getParty();
-                if (party != null) {
-                    if (!party.isLeader(pc)) {
-                        pc.sendPackets(416);
-                        return;
-                    }
-                    SC_MessageYN.send(target, 951, pc.getName());
-                } else {
-                    target.setPartyID(pc.getId());
-                    SC_MessageYN.send(target, 951, pc.getName());
+                if (pc.isInChatParty() && !pc.getChatParty().isLeader(pc)) {
+                    pc.sendPackets(416);
+                    return;
                 }
+                if (!CReplyChecker.AttachReplyChecker(pc, target, CReplyChecker.CHAT_PARTY))
+                    pc.sendPackets("이미 승인 대기 중이거나 초대할 수 없는 상태입니다.");
                 break;
             }
             case Command_TransforLeader: {

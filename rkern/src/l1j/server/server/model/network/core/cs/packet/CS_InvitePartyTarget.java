@@ -4,7 +4,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+import l1j.server.server.model.CReplyChecker;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -106,36 +106,11 @@ public final class CS_InvitePartyTarget {
 				return;
 			}
 
-			targetPc.setPartyID(pc.getId());
-
-			/*
-			 * 1/5 = 자동 분배
-			 * 0/4 = 일반 파티
-			 */
-			if (type == 1 || type == 5) {
-				SC_MessageYN.send(targetPc, 954, pc.getName());
-			} else {
-				SC_MessageYN.send(targetPc, 953, pc.getName());
-			}
-			return;
 		}
 
-		/*
-		 * 아직 파티가 없는 상태.
-		 */
-		targetPc.setPartyID(pc.getId());
-
-		if (type == 0 || type == 4) {
-			pc.setPartyType(0);
-			SC_MessageYN.send(targetPc, 953, pc.getName());
-			return;
-		}
-
-		/*
-		 * type 1 / 5
-		 */
-		pc.setPartyType(1);
-		SC_MessageYN.send(targetPc, 954, pc.getName());
+        final int kind = type == 1 || type == 5 ? CReplyChecker.RANDOM_PARTY : CReplyChecker.PARTY;
+        if (!CReplyChecker.AttachReplyChecker(pc, targetPc, kind))
+            SC_SystemMessage.send(pc, "이미 승인 대기 중이거나 초대할 수 없는 상태입니다.");
 	}
 
 	private static void handleChatPartyInvite(L1PcInstance pc, String targetName) {
@@ -166,13 +141,9 @@ public final class CS_InvitePartyTarget {
 				return;
 			}
 
-			targetPc.setPartyID(pc.getId());
-			SC_MessageYN.send(targetPc, 951, pc.getName());
-			return;
 		}
-
-		targetPc.setPartyID(pc.getId());
-		SC_MessageYN.send(targetPc, 951, pc.getName());
+        if (!CReplyChecker.AttachReplyChecker(pc, targetPc, CReplyChecker.CHAT_PARTY))
+            SC_SystemMessage.send(pc, "이미 승인 대기 중이거나 초대할 수 없는 상태입니다.");
 	}
 
 	private static void handlePassLeader(L1PcInstance pc, int targetId) {

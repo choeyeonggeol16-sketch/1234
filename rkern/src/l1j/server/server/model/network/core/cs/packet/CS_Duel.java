@@ -2,7 +2,8 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+import l1j.server.server.model.CReplyChecker;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.utils.FaceToFace;
 
@@ -68,13 +69,7 @@ public final class CS_Duel {
             return;
         }
 
-        pc.setFightId(
-                target.getId());
-
-        target.setFightId(
-                pc.getId());
-
-        SC_MessageYN.send(target, 630,
-                        pc.getName());
+        if (!CReplyChecker.AttachReplyChecker(pc, target, CReplyChecker.DUEL))
+            SC_SystemMessage.send(pc, "이미 승인 대기 중이거나 결투를 신청할 수 없는 상태입니다.");
     }
 }

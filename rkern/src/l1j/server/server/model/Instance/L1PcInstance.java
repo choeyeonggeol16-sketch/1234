@@ -843,7 +843,7 @@ public class L1PcInstance extends L1Character {
 	private int _bowDmgRate = 0; // 방어용 기구에 의한 활의 추타율
 	
 	private int _tempCharGfxAtDead;
-	private int _fightId;
+	private volatile int _fightId;
 	private byte _chatCount = 0;
 	private long _oldChatTimeInMillis = 0L;
 
@@ -934,11 +934,11 @@ public class L1PcInstance extends L1Character {
 	private L1ItemInstance _secondweapon;
 	private L1ItemInstance _armor;
 	private volatile L1Party _party;
-	private L1ChatParty _chatParty;
+	private volatile L1ChatParty _chatParty;
 
 	private int _cookingId = 0;
 	private int _partyID;
-	private int _partyType;
+	private volatile int _partyType;
 	private volatile int _tradeID;
 	private int _tempID;
 

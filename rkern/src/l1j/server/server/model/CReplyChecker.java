@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -12,13 +13,14 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** NC-style two-sided reply ownership. Phase 5 enables only pledge requests.
+/** NC-style two-sided reply ownership for pledge, party, chat party and duel requests.
  * The existing CIO wheel drives expiration; the registry never locks a PC or
  * socket and never invokes game logic while holding its monitor.
  */
 public final class CReplyChecker {
     private static final Logger LOG = Logger.getLogger(CReplyChecker.class.getName());
     static final int PLEDGE = 97;
+    public static final int DUEL = 630, CHAT_PARTY = 951, PARTY = 953, RANDOM_PARTY = 954;
     static final long TIMEOUT_MS = 30_000L;
     static final long TIMEOUT_NS = TIMEOUT_MS * 1_000_000L;
     private static final Registry WAITING = new Registry();
@@ -29,7 +31,10 @@ public final class CReplyChecker {
         final Registry registry;
         final int requesterId, replierId, requesterStamp, replierStamp;
         final int sourceClanId, targetClanId, mapId;
-        final int token;
+        final int token, kind, replierMapId;
+        L1Party party;
+        L1ChatParty chatParty;
+        private boolean claimed;
         final long expiresAt;
         L1PcInstance requester, replier;
         L1Clan sourceClan, targetClan;
@@ -40,7 +45,7 @@ public final class CReplyChecker {
                 L1PcInstance requester, L1PcInstance replier,
                 int requesterStamp, int replierStamp, L1Clan sourceClan,
                 L1Clan targetClan, int sourceClanId, int targetClanId,
-                int mapId, int token, long expiresAt) {
+                int mapId, int token, long expiresAt, int kind) {
             this.registry = registry;
             this.requesterId = requesterId;
             this.replierId = replierId;
@@ -54,6 +59,10 @@ public final class CReplyChecker {
             this.targetClanId = targetClanId;
             this.mapId = mapId;
             this.token = token;
+            this.kind = kind;
+            this.replierMapId = replier == null ? mapId : replier.getMapId();
+            this.party = requester != null && (kind == PARTY || kind == RANDOM_PARTY) ? requester.getParty() : null;
+            this.chatParty = requester != null && kind == CHAT_PARTY ? requester.getChatParty() : null;
             this.expiresAt = expiresAt;
         }
 
@@ -70,6 +79,8 @@ public final class CReplyChecker {
             replier = null;
             sourceClan = null;
             targetClan = null;
+            party = null;
+            chatParty = null;
         }
     }
 
@@ -89,6 +100,17 @@ public final class CReplyChecker {
                 int requesterStamp, int replierStamp, L1Clan sourceClan,
                 L1Clan targetClan, int sourceClanId, int targetClanId,
                 int mapId, long now) {
+            return attach(requesterId, replierId, requester, replier, requesterStamp, replierStamp,
+                    sourceClan, targetClan, sourceClanId, targetClanId, mapId, now, PLEDGE);
+        }
+
+        synchronized Pending attach(int requesterId, int replierId,
+                L1PcInstance requester, L1PcInstance replier,
+                int requesterStamp, int replierStamp, L1Clan sourceClan,
+                L1Clan targetClan, int sourceClanId, int targetClanId,
+                int mapId, long now, int kind) {
+            if (kind != PLEDGE && kind != DUEL && kind != CHAT_PARTY && kind != PARTY && kind != RANDOM_PARTY)
+                return null;
             if (requesterId <= 0 || replierId <= 0 || requesterId == replierId
                     || lastToken == Integer.MAX_VALUE) return null;
             if ((requester != null && requester.isLogoutStarted())
@@ -98,7 +120,7 @@ public final class CReplyChecker {
             if (byId.containsKey(requesterId) || byId.containsKey(replierId)) return null;
             Pending p = new Pending(this, requesterId, replierId, requester, replier,
                     requesterStamp, replierStamp, sourceClan, targetClan, sourceClanId,
-                    targetClanId, mapId, ++lastToken, now + TIMEOUT_NS);
+                    targetClanId, mapId, ++lastToken, now + TIMEOUT_NS, kind);
             byId.put(requesterId, p);
             byId.put(replierId, p);
             return p;
@@ -117,7 +139,7 @@ public final class CReplyChecker {
         }
 
         synchronized boolean claimAuto(Pending p, long now) {
-            if (p.cancelled || p.ready || byId.get(p.requesterId) != p
+            if (p.kind != PLEDGE || p.cancelled || p.ready || byId.get(p.requesterId) != p
                     || byId.get(p.replierId) != p) return false;
             if (now - p.expiresAt >= 0) {
                 remove(p);
@@ -131,7 +153,7 @@ public final class CReplyChecker {
         synchronized Pending finish(int replierId, L1PcInstance session,
                 int stamp, int token, long now) {
             Pending p = byId.get(replierId);
-            if (p == null || !p.ready || p.replierId != replierId || token != p.token
+            if (p == null || p.kind != PLEDGE || !p.ready || p.replierId != replierId || token != p.token
                     || p.replier != session || p.replierStamp != stamp
                     || byId.get(p.requesterId) != p) return null;
             if (now - p.expiresAt >= 0) {
@@ -141,6 +163,19 @@ public final class CReplyChecker {
             detach(p);
             // The caller exclusively owns the detached record and clears
             // session references before it posts any owner completion.
+            return p;
+        }
+
+        // Keep both participants reserved while a social reply is being
+        // dispatched. A duplicate reply or a different dialog cannot claim it.
+        synchronized Pending claimSocial(int replierId, L1PcInstance session,
+                int stamp, int kind, int token, long now) {
+            Pending p = byId.get(replierId);
+            if (p == null || p.kind == PLEDGE || p.kind != kind || !p.ready || p.claimed
+                    || p.replierId != replierId || p.token != token || p.replier != session
+                    || p.replierStamp != stamp || byId.get(p.requesterId) != p) return null;
+            if (now - p.expiresAt >= 0) { remove(p); return null; }
+            p.claimed = true;
             return p;
         }
 
@@ -181,10 +216,10 @@ public final class CReplyChecker {
         if (!live(requester, p.requesterStamp) || !live(replier, p.replierStamp)) return false;
         if (requester.getClanid() != p.sourceClanId || replier.getClanid() != p.targetClanId
                 || requester.getMapId() != p.mapId || replier.getMapId() != p.mapId
-                || target == null || L1World.getInstance().getClan(p.targetClanId) != target
+                || target == null || target.IsDismissed() || L1World.getInstance().getClan(p.targetClanId) != target
                 || (!replier.isCrown() && replier.getClanRank() != L1Clan.수호)) return false;
         if (p.sourceClanId == 0) return source == null;
-        return source != null && source != target
+        return source != null && !source.IsDismissed() && source != target
                 && L1World.getInstance().getClan(p.sourceClanId) == source
                 && requester.isCrown() && requester.getId() == source.getLeaderId()
                 && source.getCastleId() == 0 && source.getHouseId() == 0;
@@ -304,6 +339,113 @@ public final class CReplyChecker {
                 SC_SystemMessage.send(requester, "혈맹 가입을 시작하지 못했습니다.");
             }
         });
+    }
+
+    private static boolean validSocial(Pending p, L1PcInstance requester, L1PcInstance replier) {
+        if (p.isCancelled() || !live(requester, p.requesterStamp) || !live(replier, p.replierStamp)
+                || requester.getMapId() != p.mapId || replier.getMapId() != p.replierMapId)
+            return false;
+        if (p.kind == DUEL) {
+            return requester.getFightId() == 0 && replier.getFightId() == 0
+                    && !replier.isParalyzed() && requester.getMapId() == replier.getMapId()
+                    && requester.getLocation().getTileLineDistance(replier.getLocation()) <= 1;
+        }
+        if (!requester.is_world() || !replier.is_world() || requester.getAutoHunt()) return false;
+        if (p.kind == CHAT_PARTY) {
+            final L1ChatParty current = requester.getChatParty();
+            return replier.getChatParty() == null && current == p.chatParty
+                    && (current == null || current.isLeader(requester));
+        }
+        final L1Party current = requester.getParty();
+        return !replier.getAutoHunt() && replier.getParty() == null
+                && current == p.party && (current == null || current.isLeader(requester))
+                && partyMapAllowed(requester.getMapId()) && partyMapAllowed(replier.getMapId());
+    }
+
+    private static boolean partyMapAllowed(int map) {
+        return map != 5554 && map != 5153 && map != 5001;
+    }
+
+    /** Only the request record holds pending IDs and the division mode. */
+    public static boolean AttachReplyChecker(L1PcInstance requester, L1PcInstance replier, int kind) {
+        if (requester == null || replier == null || kind == PLEDGE) return false;
+        final int rs = requester.getSessionStamp(), ts = replier.getSessionStamp();
+        if (!live(requester, rs) || !live(replier, ts)) return false;
+        final Pending p = WAITING.attach(requester.getId(), replier.getId(), requester, replier,
+                rs, ts, null, null, 0, 0, requester.getMapId(), System.nanoTime(), kind);
+        if (p == null) return false;
+        boolean sent = false;
+        try {
+            if (!validSocial(p, requester, replier)
+                    || !CIOThreadCallback.getInstance().scheduleCharacterEffectTick(replier, p, TIMEOUT_MS)
+                    || !WAITING.publish(p, System.nanoTime())) return false;
+            sent = SC_MessageYN.send(replier, p.token, kind, requester.getName());
+            return sent;
+        } finally {
+            if (!sent) WAITING.remove(p);
+        }
+    }
+
+    public static void FinishWaitingReplyByReplier(L1PcInstance replier, int kind, int token, int answer) {
+        if (replier == null || token <= 0 || (answer != 0 && answer != 1)) return;
+        final Pending p = WAITING.claimSocial(replier.getId(), replier, replier.getSessionStamp(),
+                kind, token, System.nanoTime());
+        if (p == null) return;
+        final L1PcInstance requester = p.requester;
+        if (requester == null) { WAITING.remove(p); return; }
+        try {
+            CIOThreadCallback.getInstance().completeSession(requester.getNetConnection(), () -> {
+                try {
+                    if (System.nanoTime() - p.expiresAt >= 0 || !validSocial(p, requester, replier))
+                        return;
+                    if (answer == 0) {
+                        SC_ServerMessage.send(requester, kind == DUEL ? 631 : 423, replier.getName());
+                        return;
+                    }
+                    // The existing shared party/duel operations retain their
+                    // packet and membership behavior; only approved replies enter.
+                    if (kind == DUEL) {
+                        requester.setFightId(replier.getId());
+                        replier.setFightId(requester.getId());
+                        if (!live(requester, p.requesterStamp) || !live(replier, p.replierStamp)) {
+                            if (requester.getFightId() == replier.getId()) requester.setFightId(0);
+                            if (replier.getFightId() == requester.getId()) replier.setFightId(0);
+                            return;
+                        }
+                        SC_PacketBox.send(requester, SC_PacketBox.MSG_DUEL, requester.getFightId(), requester.getId());
+                        SC_PacketBox.send(replier, SC_PacketBox.MSG_DUEL, replier.getFightId(), replier.getId());
+                    } else if (kind == CHAT_PARTY) {
+                        L1ChatParty current = requester.getChatParty();
+                        if (current == null) {
+                            current = new L1ChatParty();
+                            current.addMember(requester);
+                        }
+                        if (current.isVacancy() || requester.isGm()) current.addMember(replier);
+                        else SC_ServerMessage.send(requester, 417);
+                        if (!live(requester, p.requesterStamp) && requester.getChatParty() == current)
+                            current.leaveMember(requester);
+                        else if (!live(replier, p.replierStamp) && replier.getChatParty() == current)
+                            current.leaveMember(replier);
+                    } else {
+                        L1Party current = requester.getParty();
+                        if (current == null) {
+                            requester.setPartyType(kind == RANDOM_PARTY ? 1 : 0);
+                            current = new L1Party();
+                            current.addMember(requester);
+                        }
+                        if (current.isVacancy() || requester.isGm()) current.addMember(replier);
+                        else SC_ServerMessage.send(requester, 417);
+                        if (!live(requester, p.requesterStamp) && requester.getParty() == current)
+                            current.leaveMember(requester);
+                        else if (!live(replier, p.replierStamp) && replier.getParty() == current)
+                            current.leaveMember(replier);
+                    }
+                } finally { WAITING.remove(p); }
+            }, failure -> { if (failure != null) WAITING.remove(p); });
+        } catch (RuntimeException failure) {
+            WAITING.remove(p);
+            LOG.log(Level.WARNING, "Social reply dispatch failed: " + p.requesterId, failure);
+        }
     }
 
     /** Either participant's exact session may cancel; old logout is a no-op. */

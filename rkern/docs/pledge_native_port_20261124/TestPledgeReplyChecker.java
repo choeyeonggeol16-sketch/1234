@@ -86,6 +86,28 @@ public final class TestPledgeReplyChecker {
             r.cancelSession(100, null, 1);
             check(r.size() == 0, "no mapping leak after race");
         }
+        for (int kind : new int[]{CReplyChecker.DUEL, CReplyChecker.CHAT_PARTY,
+                CReplyChecker.PARTY, CReplyChecker.RANDOM_PARTY}) {
+            CReplyChecker.Pending social = r.attach(1, 2, null, null, 3, 4, null, null,
+                    0, 0, 4, now, kind);
+            check(social != null && r.size() == 2, "social two-side reservation");
+            check(r.claimSocial(2, null, 4, kind, social.token, now) == null, "not published");
+            check(r.publish(social, now), "publish social");
+            check(r.finish(2, null, 4, social.token, now) == null, "pledge code cannot consume social");
+            check(r.claimSocial(2, null, 4, kind + 1, social.token, now) == null, "wrong kind");
+            check(r.claimSocial(2, null, 4, kind, 0, now) == null, "zero token");
+            check(r.claimSocial(2, null, 5, kind, social.token, now) == null, "stale session");
+            check(r.claimSocial(2, null, 4, kind, social.token, now) == social, "claim social once");
+            check(r.claimSocial(2, null, 4, kind, social.token, now) == null, "duplicate answer");
+            check(attach(r, 1, 3, 3, 5, now) == null, "reservation held through apply");
+            r.remove(social);
+            check(r.size() == 0, "terminal releases both");
+            CReplyChecker.Pending expiredSocial = r.attach(1, 2, null, null, 3, 4, null, null,
+                    0, 0, 4, now, kind);
+            check(r.publish(expiredSocial, now), "publish expiry");
+            check(r.claimSocial(2, null, 4, kind, expiredSocial.token,
+                    now + CReplyChecker.TIMEOUT_NS) == null && r.size() == 0, "social expiry");
+        }
         testAccountCheck();
         System.out.println("PASS pledge reply checker: identity, DB preflight, account restriction, deadline, cancellation and 100 concurrent races");
     }

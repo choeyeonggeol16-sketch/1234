@@ -22,13 +22,11 @@ import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.CFriends;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CReplyChecker;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.L1World;
@@ -540,18 +538,8 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 			}
 			break;
 		case 630:
-			L1PcInstance fightPc = (L1PcInstance) L1World.getInstance().findObject(pc.getFightId());
-			if (fightPc != null) {
-				if (c == 0) {
-					pc.setFightId(0);
-					fightPc.setFightId(0);
-					SC_ServerMessage.send(fightPc, 631, pc.getName());
-				} else if (c == 1) {
-					SC_PacketBox.send(fightPc, SC_PacketBox.MSG_DUEL, fightPc.getFightId(), fightPc.getId());
-					SC_PacketBox.send(pc, SC_PacketBox.MSG_DUEL, pc.getFightId(), pc.getId());
-				}
-			}
-			break;
+            CReplyChecker.FinishWaitingReplyByReplier(pc, attrcode, msgIdx, c);
+            break;
 		case 653:
 			if (c == 1) {
 				pc.setPartnerId(0);
@@ -589,90 +577,10 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
             if (c == MSGCODE_YES) recoverExperience(pc, true);
             break;
 		case 951:
-			L1PcInstance chatPc = (L1PcInstance) L1World.getInstance().findObject(pc.getPartyID());
-			if (chatPc != null) {
-				if (c == 0) {
-					SC_ServerMessage.send(chatPc, 423, pc.getName());
-					pc.setPartyID(0);
-				} else if (c == 1) {
-					if (chatPc.isInChatParty()) {
-						if (chatPc.getChatParty().isVacancy() || chatPc.isGm()) {
-							chatPc.getChatParty().addMember(pc);
-						} else {
-							SC_ServerMessage.send(chatPc, 417);
-						}
-					} else {
-						L1ChatParty chatParty = new L1ChatParty();
-						chatParty.addMember(chatPc);
-						chatParty.addMember(pc);
-					}
-				}
-			}
-			break;
 		case 953:
 		case 954:
-			
-		    final int inviterId = pc.getPartyID();
-		    if (inviterId <= 0) {
-		        // 초대 ID가 이미 비었거나, 유효하지 않음
-		        break;
-		    }
-
-		    final L1Object obj = L1World.getInstance().findObject(inviterId);
-		    if (!(obj instanceof L1PcInstance)) {
-		        // 초대자가 없거나 PC가 아님(안전 처리)
-		        pc.setPartyID(0);
-		        break;
-		    }
-
-		    final L1PcInstance inviter = (L1PcInstance) obj;
-		    
-		    // 거절
-		    if (c == 0) {
-		        SC_ServerMessage.send(inviter, 423, pc.getName()); // %0가 초대를 거부했습니다.
-		        pc.setPartyID(0);
-		        break;
-		    }	    
-		    // 수락(1이 아닌 값은 무시)
-		    if (c != 1) {
-		        break;
-		    }
-		    // 공통 정책: 해당 맵에서는 파티 금지
-		    if (inviter.getMapId() == 5554 || pc.getMapId() == 5554) {
-		        SC_SystemMessage.send(inviter, "해당 맵에서는 파티 기능을 사용 할 수 없습니다.");
-		        pc.setPartyID(0);
-		        break;
-		    }
-		    
-			if(inviter.getAutoHunt()) {
-				SC_SystemMessage.send(inviter, "현재 자동사냥중이므로 파티를 받을 수 없습니다.");
-				return;
-			}
-
-		    // 배틀존에서는 파티 불가
-			if (inviter.getMapId() == 5153 || inviter.getMapId() == 5001 ||
-					pc.getMapId() == 5153 || pc.getMapId() == 5001) {
-				SC_ServerMessage.send(inviter, 423, pc.getName()); // 거부로 처리
-				pc.setPartyID(0);
-				break;
-			}
-
-		    // 초대자 파티 상태에 따라 합류/생성
-		    if (inviter.isInParty()) {
-		        if (inviter.getParty().isVacancy() || inviter.isGm()) {
-		            inviter.getParty().addMember(pc);
-		        } else {
-		            SC_ServerMessage.send(inviter, 417); // 파티 인원 꽉참
-		        }
-		    } else {
-		        final L1Party party = new L1Party();
-		        party.addMember(inviter);
-		        party.addMember(pc);
-		    }
-
-		    // 초대 처리 끝났으면 PartyID 정리(중복 수락/재사용 방지)
-		    pc.setPartyID(0);
-			break;
+            CReplyChecker.FinishWaitingReplyByReplier(pc, attrcode, msgIdx, c);
+            break;
 		case 1256:
 			switch (c) {
 			case 0:
