@@ -623,7 +623,9 @@ public final class CMoveAction {
 
     /** target이 없을 때의 기본 wander 구현. */
     public static void move(final L1NpcInstance creature) {
-        if (creature == null) {
+        // The idle action may have been selected before a dialog/rest or
+        // template change. Recheck the physical movement gate on its owner.
+        if (creature == null || !creature.isMovable() || creature.isRest()) {
             return;
         }
 
