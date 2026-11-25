@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - rkern/nc-inventory-carrying-weight-20261125
+      - rkern/nc-ground-pick-receipt-20261125
   workflow_dispatch:
 permissions:
   contents: read
@@ -40,6 +41,7 @@ jobs:
           import subprocess
           import time
           import urllib.error
+          import urllib.request
           root = Path("rkern").resolve()
           work = Path(os.environ["RUNNER_TEMP"]) / "inventory-admission"
           classes = work / "classes"
@@ -47,6 +49,15 @@ jobs:
           spec = importlib.util.spec_from_file_location("helper", root / "docs/jproring_cio_integration_20261120/run_game_ab.py")
           helper = importlib.util.module_from_spec(spec)
           spec.loader.exec_module(helper)
+          original_urlopen = urllib.request.urlopen
+          def central_urlopen(url, *args, **kwargs):
+              try:
+                  return original_urlopen(url, *args, **kwargs)
+              except urllib.error.HTTPError as exc:
+                  if exc.code != 429 or not isinstance(url, str) or not url.startswith("https://repo.maven.apache.org/maven2/"):
+                      raise
+                  return original_urlopen(url.replace("https://repo.maven.apache.org/maven2/", "https://repo1.maven.org/maven2/", 1), *args, **kwargs)
+          urllib.request.urlopen = central_urlopen
           for attempt in range(6):
               try:
                   cp = helper.classpath(classes, Path.home() / ".cache/rkern-skill-deps")
