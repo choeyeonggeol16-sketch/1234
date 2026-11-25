@@ -731,10 +731,7 @@ public class CInventory extends L1Object {
         if (item.isStackable())
             return item.getCount() >= count && removeItem(item, count) == count;
         final L1ItemInstance[] items = GetItemListByClassIDEnchanted(item.getItemId(), enchant);
-        if (items.length < count) return false;
-        for (int i = 0; i < count; i++)
-            if (removeItem(items[i], 1) != 1) return false;
-        return true;
+        return DeleteSelectedItems(items, count, false, false, 0);
 	}
 	public synchronized boolean consumeItem(int itemid, int count) {
         if (count <= 0) return false;
@@ -745,21 +742,13 @@ public class CInventory extends L1Object {
             return item != null && item.getCount() >= count && removeItem(item, count) == count;
         }
         final L1ItemInstance[] items = GetItemListByClassID(itemid);
-        if (items.length < count) return false;
-        if (items.length > count) extracted(items, new DataComparator());
-        for (int i = 0; i < count; i++)
-            if (removeItem(items[i], 1) != 1) return false;
-        return true;
+        return DeleteSelectedItems(items, count, true, false, 0);
 	}
 	
 	public synchronized boolean consumeItem2(int descid, int count) {
         if (count <= 0) return false;
         final L1ItemInstance[] items = GetItemListByDescID(descid);
-        if (items.length < count) return false;
-        if (items.length > count) extracted(items, new DataComparator());
-        for (int i = 0; i < count; i++)
-            if (removeItem(items[i], 1) != 1) return false;
-        return true;
+        return DeleteSelectedItems(items, count, true, false, 0);
 	}
 	
 	public synchronized boolean consumeItem(int itemid, int count, int descid) {
@@ -773,11 +762,7 @@ public class CInventory extends L1Object {
                     && removeItem(item, count, descid) == count;
         }
         final L1ItemInstance[] items = GetItemListByClassID(itemid, descid);
-        if (items.length < count) return false;
-        if (items.length > count) extracted(items, new DataComparator());
-        for (int i = 0; i < count; i++)
-            if (removeItem(items[i], 1, descid) != 1) return false;
-        return true;
+        return DeleteSelectedItems(items, count, true, true, descid);
 	}
 	
 	public synchronized boolean consumeItem(int itemid) {
@@ -787,17 +772,23 @@ public class CInventory extends L1Object {
         return removeItem(item, count) == count;
 	}
 
-	@SuppressWarnings("unchecked")
-	private void extracted(L1ItemInstance[] itemList, DataComparator dc) {
-		Arrays.sort(itemList, dc);
-	}
+    private static final java.util.Comparator<L1ItemInstance> ITEM_ENCHANT_ORDER =
+            (left, right) -> Integer.compare(left.getEnchantLevel(), right.getEnchantLevel());
 
-	@SuppressWarnings("rawtypes")
-	public class DataComparator implements java.util.Comparator {
-		public int compare(Object item1, Object item2) {
-			return ((L1ItemInstance) item1).getEnchantLevel() - ((L1ItemInstance) item2).getEnchantLevel();
-		}
-	}
+    /** Select before debiting. Retain stable membership order on equal enchant.
+     * The caller holds the inventory monitor. No per-request comparator object.
+     * This is a sequential removal path, not a multi-row CacheD receipt.
+     */
+    private boolean DeleteSelectedItems(L1ItemInstance[] items, int count,
+            boolean preferLowEnchant, boolean matchDescId, int descId) {
+        if (count <= 0 || items.length < count) return false;
+        if (preferLowEnchant && items.length > count) Arrays.sort(items, ITEM_ENCHANT_ORDER);
+        for (int i = 0; i < count; i++) {
+            final L1ItemInstance item = items[i];
+            if (removeItemInternal(item, 1, matchDescId, descId) != 1) return false;
+        }
+        return true;
+    }
 
 	public synchronized int removeItem(int objectId) {
 		L1ItemInstance item = GetByServerID(objectId);
@@ -864,12 +855,6 @@ public class CInventory extends L1Object {
 			deleteItem(item);
 			L1World.getInstance().removeObject(item);
 		} else {
-			
-			int itemId = item.getItemId();
-
-			// [디버그 로그]
-			//System.out.println(String.format("[아이템소모-일부] ID: %d, 소모수량: %d, 맵잔량: %d", itemId, count, _itemCountMap.getOrDefault(itemId, 0)));
-			
 			changeStackCount(item, -count);
 		}
 		return count;
