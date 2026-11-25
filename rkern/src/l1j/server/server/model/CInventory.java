@@ -1585,18 +1585,16 @@ public class CInventory extends L1Object {
                 && L1World.getInstance().findGroundInventory(inventory.getX(), inventory.getY(),
                         inventory.getMapId()) != inventory) return null;
         if (inventory instanceof CUserInventory) {
-            if (item.isStackable() && inventory.getSize() >= CUserInventory.MAX_SIZE
-                    && inventory.findMergeItem(item) == null) return null;
             final boolean chargeMerge = !item.isStackable() && Warehouse.chargeMergeItem(item.getItemId())
                     && inventory.GetFirstItemByClassID(item.getItemId()) != null;
             if ((long) inventory.GetItemAmount(item.getItemId()) + (chargeMerge ? 0 : count) > MAX_AMOUNT)
                 return null;
         }
 
-		// destination 상태도 transfer 직전에 다시 검증한다.
-		if (inventory.CheckAddable(item, count) != OK) {
-			return null;
-		}
+		// Validate against the same merge target used by ordinary transfer.
+        final int admission = inventory instanceof CUserInventory pcInventory && !CacheD.isWarehouseApplying()
+                ? pcInventory.CheckAddableTransfer(item, count) : inventory.CheckAddable(item, count);
+		if (admission != OK) return null;
 
         final int oldX = item.getX(), oldY = item.getY();
         final short oldMap = item.getMapId();
@@ -1751,7 +1749,7 @@ public class CInventory extends L1Object {
 		}
 		return null;
 	}
-	private L1ItemInstance findMergeItem(L1ItemInstance incoming) {
+	protected final L1ItemInstance findMergeItem(L1ItemInstance incoming) {
         if (incoming.isStackable() && !CacheD.isWarehouseApplying())
             return _items.GetMergeableStack(incoming, this instanceof L1GroundInventory);
         if (!(this instanceof L1GroundInventory)) return GetFirstItemByClassID(incoming.getItemId());
