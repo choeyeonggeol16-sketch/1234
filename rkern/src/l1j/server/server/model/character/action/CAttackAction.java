@@ -65,7 +65,6 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI.eNotiType;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.L1Type;
-import l1j.server.server.utils.CalcStat;
 import l1j.server.server.utils.CommonUtil;
 import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.TYUtil;
@@ -907,7 +906,7 @@ public final class CAttackAction extends CNewAction {
 		return _leverage;
 	}
 
-	// Damage stat tables are owned exclusively by CalcStat (1..80 clamped).
+	// Intrinsic damage contribution is read from the common creature owner.
 
 	public void setActId(int actId) {
 		_attckActId = actId;
@@ -1038,9 +1037,7 @@ public final class CAttackAction extends CNewAction {
 				_weaponDoubleDmgChance = weapon.getItem().getDoubleDmgChance();
 				_weaponAttrLevel = weapon.getAttrEnchantLevel();
 			}
-            _statusDamage = (_weaponType == 20 || _weaponType == 62)
-                    ? CalcStat.원거리대미지(_pc.GetTotalStatDex())
-                    : CalcStat.근거리대미지(_pc.GetTotalStatStr());
+            _statusDamage = _pc.GetStatPAttack(_weaponType == 20 || _weaponType == 62);
 		} else if (attacker instanceof L1NpcInstance) {
 			_npc = (L1NpcInstance) attacker;
 			if (target instanceof L1PcInstance) {
@@ -1490,9 +1487,7 @@ public final class CAttackAction extends CNewAction {
 
 	/** Shared NPC physical base roll for PC and NPC targets. */
 	private int rollNpcBaseDamage(boolean rangedNpc) {
-		int status;
-		if (rangedNpc) status = CalcStat.원거리대미지(_npc.GetTotalStatDex());
-		else           status = CalcStat.근거리대미지(_npc.GetTotalStatStr());
+		int status = _npc.GetStatPAttack(rangedNpc);
 
 		int dmg = status + ThreadLocalRandom.current().nextInt(Math.max(1, _npc.getLevel() / 2)) + 1;
 		dmg += _npc.getDmgup();
@@ -1585,7 +1580,7 @@ public final class CAttackAction extends CNewAction {
         int scaled = (int) Math.floor(dice * a);
 
         // Keylink magic critical is 1.25x, not the spell critical's 1.5x.
-        int critChance = CalcStat.마법치명타(_pc.GetTotalStatInt())
+        int critChance = _pc.GetStatMCriticalProb()
                 + (int) (_pc.getBaseMagicCritical() * Config.CHARACTER_MAGICCRI_RATE);
         if (_pc.hasSkillEffect(L1SkillId.LIND_MAAN)
                 || _pc.hasSkillEffect(L1SkillId.SHAPE_MAAN)

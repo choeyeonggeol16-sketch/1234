@@ -4496,7 +4496,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	public int getMaxWeight() {
 		try {
-			_maxweight = CalcStat.최대소지무게(GetTotalStatStr(), GetTotalStatCon());
+			_maxweight = GetStatCarryWeight();
 			_maxweight += getWeightReduction();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -5371,7 +5371,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
    }
 	
 	public final void RefreshBasePDefend() {
-		int base = CalcStat.물리방어력(GetTotalStatDex());
+		int base = GetStatPDefend();
 		final int div = getBaseAcLevelDiv();
 		if (div > 0) base -= getLevel() / div;
 		SetBasePDefend(base, false);
@@ -5390,7 +5390,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public final void RefreshBaseMDefend() {
-		SetOrgMDefend(CalcStat.마법방어(getType(), GetTotalStatWis()) + getLevel() / 2);
+		SetOrgMDefend(GetStatMDefend(getType()) + getLevel() / 2);
 	}
 
 	public void resetBaseMr() {

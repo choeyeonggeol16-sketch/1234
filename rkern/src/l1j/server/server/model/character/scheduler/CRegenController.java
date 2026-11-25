@@ -219,8 +219,7 @@ public final class CRegenController {
         if (pc.getCurrentMp() >= pc.getMaxMp()) return;
         if (pc.hasSkillEffect(L1SkillId.ABSOLUTE_BARRIER)) return;
 
-        int baseMpr = CalcStat.naturalMpRegen(pc.getLevel(),
-                pc.GetTotalStatWis(), pc.GetStatWis());
+        int baseMpr = pc.GetStatMPRegen();
 
         if (pc.hasSkillEffect(L1SkillId.STATUS_BLUE_POTION2)) baseMpr += 1;
         else if (pc.hasSkillEffect(L1SkillId.STATUS_BLUE_POTION)) baseMpr += 2;
@@ -274,7 +273,7 @@ public final class CRegenController {
             if (pc.GetTotalStatCon() > 25) maxBonus = 14;
         }
 
-        int basebonus = CalcStat.피회복틱(pc.GetStatCon());
+        int basebonus = pc.GetStatHPRegen();
         int equipHpr = pc.getHpr();
 
         int bonus = ThreadLocalRandom.current().nextInt(maxBonus) + 1;

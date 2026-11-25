@@ -27,7 +27,6 @@ import l1j.server.server.model.character.effect.poison.DamagePoison;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Skills;
-import l1j.server.server.utils.CalcStat;
 import l1j.server.server.utils.CommonUtil;
 import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.eKind;
@@ -2481,7 +2480,7 @@ public class L1Magic {
         boolean critical = false;
 
 		if (_calcType == PC_PC || _calcType == PC_NPC) {
-			int propCritical = CalcStat.마법치명타(_pc.GetTotalStatInt());
+			int propCritical = _pc.GetStatMCriticalProb();
 			switch (skillId) {
 			// 6레벨 이하 광역마법 제외한 공격마법
 			case ENERGY_BOLT:

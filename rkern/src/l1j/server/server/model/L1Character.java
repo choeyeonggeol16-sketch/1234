@@ -536,6 +536,37 @@ public class L1Character extends L1Object {
 
 
 
+	// Intrinsic L1 stat contributions, shared by PC and NPC. Equipment,
+	// class/level, target-dependent effects and random rolls remain with their owners.
+	public final int GetStatPAttack(boolean ranged) {
+		return ranged ? CalcStat.원거리대미지(GetTotalStatDex())
+				: CalcStat.근거리대미지(GetTotalStatStr());
+	}
+
+	public final int GetStatMCriticalProb() {
+		return CalcStat.마법치명타(GetTotalStatInt());
+	}
+
+	public final int GetStatCarryWeight() {
+		return CalcStat.최대소지무게(GetTotalStatStr(), GetTotalStatCon());
+	}
+
+	public final int GetStatPDefend() {
+		return CalcStat.물리방어력(GetTotalStatDex());
+	}
+
+	public final int GetStatMDefend(int classType) {
+		return CalcStat.마법방어(classType, GetTotalStatWis());
+	}
+
+	public final int GetStatHPRegen() {
+		return CalcStat.피회복틱(GetStatCon());
+	}
+
+	public final int GetStatMPRegen() {
+		return CalcStat.naturalMpRegen(getLevel(), GetTotalStatWis(), GetStatWis());
+	}
+
 	private int getDefaultER() {
 		return CalcStat.원거리회피(GetTotalStatDex());
 	}
