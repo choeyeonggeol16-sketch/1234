@@ -83,14 +83,15 @@ public class L1GroundInventory extends CInventory {
     public void insertItem(L1ItemInstance item) {
         if (item == null) return;
         if (DEBUG_GROUND_ITEM_TIMER) debug("SPAWN", item, "before OnSpawned");
-        item.OnSpawned();
-        // World entry publishes the item itself to User::InSight.
+        // Timer admission is part of insertion and shares its cleanup.
         try {
+            item.OnSpawned();
             L1World.getInstance().addVisibleObject(item);
         } catch (RuntimeException | Error failure) {
             try { L1World.getInstance().removeVisibleObject(item); }
             catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
-            item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
+            try { item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE); }
+            catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
             throw failure;
         }
     }
