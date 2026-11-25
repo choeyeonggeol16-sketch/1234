@@ -332,7 +332,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
      */
     private static void initializeNewGrant(L1ItemInstance item) {
         item.setChargeCount(item.getItemId()==20383 ? 50 : item.getItem().getMaxChargeCount());
-        CInventory.InitializeNewItemLifetimeAndFuel(item, true);
+        L1ItemInstance.InitializeNewItemLifetimeAndFuel(item, true);
     }
     public L1ItemInstance grantCopy(L1PcInstance pc,L1ItemInstance image,int count) {
         // Public inputs may be held or mutated by a caller; always detach them.
