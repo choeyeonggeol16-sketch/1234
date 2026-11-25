@@ -11,7 +11,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.model.L1Spawn;
+import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1Npc;
@@ -21,7 +21,7 @@ public class NpcSpawnTable {
 	private static final Logger _log = Logger.getLogger(NpcSpawnTable.class.getName());
 	private static NpcSpawnTable _instance;
 
-	private final TIntObjectMap<L1Spawn> _spawntable = new TIntObjectHashMap<L1Spawn>(2048);
+	private final TIntObjectMap<CNpcMaker> _spawntable = new TIntObjectHashMap<CNpcMaker>(2048);
 
 	private int _highestId;
 
@@ -83,7 +83,7 @@ public class NpcSpawnTable {
 					}
 				}
 
-				L1Spawn l1spawn;
+				CNpcMaker l1spawn;
 				if (l1npc == null) {
 					_log.warning("mob data for id:" + npcTemplateid + " missing in npc table");
 					l1spawn = null;
@@ -91,7 +91,7 @@ public class NpcSpawnTable {
 					if (rs.getInt("count") == 0) {
 						continue;
 					}
-					l1spawn = new L1Spawn(l1npc);
+					l1spawn = new CNpcMaker(l1npc);
 					int spawnId = rs.getInt("id");
 					l1spawn.setId(spawnId);
 					l1spawn.setAmount(rs.getInt("count"));
@@ -175,7 +175,7 @@ public class NpcSpawnTable {
 		}
 	}
 
-	public L1Spawn getTemplate(int i) {
+	public CNpcMaker getTemplate(int i) {
 		return _spawntable.get(i);
 	}
 }

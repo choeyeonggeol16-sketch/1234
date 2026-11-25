@@ -5,7 +5,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import l1j.server.server.datatables.NpcSpawnTable;
-import l1j.server.server.datatables.SpawnTable;
+import l1j.server.server.datatables.CNpcMakerDB;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Npc;
@@ -40,7 +40,7 @@ public class L1InsertSpawn implements L1CommandExecutor {
 					msg = "지정한 NPC는 L1Monster가 아닙니다. ";
 					return;
 				}
-				SpawnTable.storeSpawn(pc, template);
+				CNpcMakerDB.storeSpawn(pc, template);
 			} else if (type.equals("엔")) {
 				NpcSpawnTable.getInstance().storeSpawn(pc, template);
 				L1SpawnUtil.spawngmcmd(pc, npcId);

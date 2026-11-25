@@ -40,7 +40,7 @@ import l1j.server.server.datatables.HouseTable;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.ShopTable;
-import l1j.server.server.datatables.SpawnTable;
+import l1j.server.server.datatables.CNpcMakerDB;
 import l1j.server.server.model.Attendance.AttendanceLoadManager;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.Instance.L1DollInstance;
@@ -630,7 +630,7 @@ public class GMCommands {
 				int mapid = Integer.parseInt(st.nextToken());
 				String locName = MapsTable.getInstance().getMapName(mapid);
 				L1World.getInstance().getMapObject(mapid);
-				SpawnTable.getInstance().reload(mapid);
+				CNpcMakerDB.getInstance().reload(mapid);
 				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "["+locName+"]의 몬스터들을 리스폰하였습니다.");
 				//gm.sendPackets("몬스폰리스트 (지정맵) 리로드 완료");
 			} catch (Exception e) {

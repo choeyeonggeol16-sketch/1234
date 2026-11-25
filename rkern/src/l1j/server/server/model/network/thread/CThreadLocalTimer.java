@@ -4,7 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jctools.queues.MpmcArrayQueue;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Spawn;
+import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -237,7 +237,7 @@ public final class CThreadLocalTimer {
 
 	synchronized void scheduleNpcMaker(
 			long delayMs,
-			L1Spawn maker,
+			CNpcMaker maker,
 			int timerId,
 			int generation) {
 
@@ -421,8 +421,8 @@ public final class CThreadLocalTimer {
 
 
 		case KIND_NPC_MAKER: {
-			final L1Spawn maker =
-					(L1Spawn) node.payload;
+			final CNpcMaker maker =
+					(CNpcMaker) node.payload;
 
             if (maker != null) {
                 final CNPCServer npcServer = CNPCServer.getInstance();

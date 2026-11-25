@@ -21,9 +21,9 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 
-public class L1Spawn {
+public class CNpcMaker {
 
-    private static final Logger _log = Logger.getLogger(L1Spawn.class.getName());
+    private static final Logger _log = Logger.getLogger(CNpcMaker.class.getName());
 
     /*
      * Local timer ids for the CIO-backed NpcMaker bridge.
@@ -87,8 +87,8 @@ public class L1Spawn {
     /** Maker 하나가 owner를 독점하지 않도록 한 번에 처리할 due slot 상한. */
     private static final int MAKER_STEP_BUDGET = 32;
 
-    private static final AtomicIntegerFieldUpdater<L1Spawn> NPC_MAKER_QUEUED =
-            AtomicIntegerFieldUpdater.newUpdater(L1Spawn.class, "_npcMakerQueued");
+    private static final AtomicIntegerFieldUpdater<CNpcMaker> NPC_MAKER_QUEUED =
+            AtomicIntegerFieldUpdater.newUpdater(CNpcMaker.class, "_npcMakerQueued");
 
     private static final VarHandle SLOT_STATE_HANDLE =
             MethodHandles.arrayElementVarHandle(byte[].class);
@@ -129,7 +129,7 @@ public class L1Spawn {
      */
     private int _npcMakerTimerGeneration;
 
-    public L1Spawn(L1Npc mobTemplate) throws SecurityException, ClassNotFoundException {
+    public CNpcMaker(L1Npc mobTemplate) throws SecurityException, ClassNotFoundException {
         _template = mobTemplate;
         _npcid = mobTemplate != null ? mobTemplate.get_npcId() : 0;
     }

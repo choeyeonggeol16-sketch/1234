@@ -21,7 +21,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Spawn;
+import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.CCreatureController;
 import l1j.server.server.model.character.effect.poison.PoisonEffect;
@@ -1545,7 +1545,7 @@ public final class CIOThreadCallback {
 			case TimerOp.NPC_MAKER_TIMER:
 				onNpcMakerTimerSchedule(
 						delayMs,
-						(L1Spawn) o0,
+						(CNpcMaker) o0,
 						p0,
 						p1);
 				break;
@@ -1691,7 +1691,7 @@ public final class CIOThreadCallback {
 
 		void onNpcMakerTimerSchedule(
 				long delayMs,
-				L1Spawn maker,
+				CNpcMaker maker,
 				int timerId,
 				int generation) {
 
@@ -2882,23 +2882,23 @@ public final class CIOThreadCallback {
 	 * 같은 Maker에 여러 decay가 동시에 들어와도 npcMakerTryQueue()가
 	 * wake task를 하나로 합치고, 실제 slot state commit은 owner가 수행한다.
 	 */
-	public void wakeNpcMaker(L1Spawn maker) {
+	public void wakeNpcMaker(CNpcMaker maker) {
 		if (maker == null || !maker.npcMakerTryQueue()) {
 			return;
 		}
 
 		scheduleNpcMakerTimer(
 				maker,
-				L1Spawn.TIMER_NPC_MAKER_WAKE,
+				CNpcMaker.TIMER_NPC_MAKER_WAKE,
 				0,
 				1L);
 	}
 
 	/**
 	 * startup initial spawn 실패 slot을 CIO owner에 등록한다.
-	 * 이미 deadline은 L1Spawn에 들어 있으므로 wake만 필요하다.
+	 * 이미 deadline은 CNpcMaker에 들어 있으므로 wake만 필요하다.
 	 */
-	public void activateNpcMaker(L1Spawn maker) {
+	public void activateNpcMaker(CNpcMaker maker) {
 		wakeNpcMaker(maker);
 	}
 
@@ -2909,7 +2909,7 @@ public final class CIOThreadCallback {
 	 * server object이므로 같은 Maker는 항상 같은 CIOThread에서 직렬 처리된다.
 	 */
 	public void scheduleNpcMakerTimer(
-			L1Spawn maker,
+			CNpcMaker maker,
 			int timerId,
 			int generation,
 			long delayMs) {
@@ -2928,14 +2928,14 @@ public final class CIOThreadCallback {
 			 * wake CAS를 이미 올린 상태라면 owner 선택 실패 시 다시 시도 가능하게 내린다.
 			 * 현재 shardCount는 항상 1 이상이라 정상적으로는 도달하지 않는다.
 			 */
-			if (timerId == L1Spawn.TIMER_NPC_MAKER_WAKE) {
+			if (timerId == CNpcMaker.TIMER_NPC_MAKER_WAKE) {
 				maker.npcMakerClearQueued();
 			}
 			return;
 		}
 
 		if (!owner.running) {
-			if (timerId == L1Spawn.TIMER_NPC_MAKER_WAKE) maker.npcMakerClearQueued();
+			if (timerId == CNpcMaker.TIMER_NPC_MAKER_WAKE) maker.npcMakerClearQueued();
 			return;
 		}
 
@@ -2958,7 +2958,7 @@ public final class CIOThreadCallback {
 						maker,
 						null,
 						null)
-				&& timerId == L1Spawn.TIMER_NPC_MAKER_WAKE) {
+				&& timerId == CNpcMaker.TIMER_NPC_MAKER_WAKE) {
 			// Admission failed during shutdown: no wheel node owns this wake.
 			// Release the existing coalescing flag so a later producer can retry.
 			maker.npcMakerClearQueued();
@@ -2998,7 +2998,7 @@ public final class CIOThreadCallback {
 		return shards[(h & 0x7fffffff) % shardCount];
 	}
 
-	private CIOThread npcMakerOwner(L1Spawn maker) {
+	private CIOThread npcMakerOwner(CNpcMaker maker) {
 		if (maker == null || shardCount <= 0) {
 			return null;
 		}

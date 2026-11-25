@@ -107,13 +107,13 @@ public class L1MobGroupInfo {
 		return npc != null && npc == _leader;
 	}
 
-	private L1Spawn _spawn;
+	private CNpcMaker _spawn;
 
-	public synchronized void setSpawn(L1Spawn spawn) {
+	public synchronized void setSpawn(CNpcMaker spawn) {
 		_spawn = spawn;
 	}
 
-	public synchronized L1Spawn getSpawn() {
+	public synchronized CNpcMaker getSpawn() {
 		return _spawn;
 	}
 

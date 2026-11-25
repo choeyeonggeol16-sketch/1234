@@ -8,32 +8,32 @@ import java.util.logging.Logger;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.model.L1Spawn;
+import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.NumberUtil;
 
-public class SpawnTable {
-	private static final Logger _log = Logger.getLogger(SpawnTable.class.getName());
+public class CNpcMakerDB {
+	private static final Logger _log = Logger.getLogger(CNpcMakerDB.class.getName());
 
-	private final TIntObjectMap<L1Spawn> _spawntable = new TIntObjectHashMap<L1Spawn>(10240);
+	private final TIntObjectMap<CNpcMaker> _spawntable = new TIntObjectHashMap<CNpcMaker>(10240);
 
 	private int _highestId;
 
 	private static class SingletonHolder {
-		private static SpawnTable INSTANCE = new SpawnTable();
+		private static CNpcMakerDB INSTANCE = new CNpcMakerDB();
 	}
 
-	public static SpawnTable getInstance() {
+	public static CNpcMakerDB getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
 
-	private SpawnTable() {
+	private CNpcMakerDB() {
 		fillSpawnTable();
 	}
 
 	public static void reload() {
-		SingletonHolder.INSTANCE = new SpawnTable();
+		SingletonHolder.INSTANCE = new CNpcMakerDB();
 	}
 
 	public void reload(int mpaid) {
@@ -70,7 +70,7 @@ public class SpawnTable {
 						continue;
 					}
 
-					L1Spawn spawnDat = new L1Spawn(template1);
+					CNpcMaker spawnDat = new CNpcMaker(template1);
 					spawnDat.setId(spawnid);
 					spawnDat.setAmount(count);
 					spawnDat.setGroupId(rs.getInt("group_id"));
@@ -108,7 +108,7 @@ public class SpawnTable {
 				}
 			}
 		} catch (Exception e) {
-			_log.log(Level.SEVERE, "SpawnTable reload(mapid) error", e);
+			_log.log(Level.SEVERE, "CNpcMakerDB reload(mapid) error", e);
 		}
 	}
 
@@ -140,7 +140,7 @@ public class SpawnTable {
 				}
 
 				int spawnid = rs.getInt("id");
-				L1Spawn spawnDat = new L1Spawn(template1);
+				CNpcMaker spawnDat = new CNpcMaker(template1);
 				spawnDat.setId(spawnid);
 				spawnDat.setAmount(count);
 				spawnDat.setGroupId(rs.getInt("group_id"));
@@ -179,12 +179,12 @@ public class SpawnTable {
 			}
 
 		} catch (Exception e) {
-			_log.log(Level.SEVERE, "SpawnTable fillSpawnTable error", e);
+			_log.log(Level.SEVERE, "CNpcMakerDB fillSpawnTable error", e);
 		}
 		_log.config("총 monster 수: " + spawnCount + "마리 로드 완료");
 	}
 
-	public L1Spawn getTemplate(int id) {
+	public CNpcMaker getTemplate(int id) {
 		return _spawntable.get(id);
 	}
 
@@ -192,7 +192,7 @@ public class SpawnTable {
 		_spawntable.remove(id);
 	}
 
-	public void addNewSpawn(L1Spawn spawn) {
+	public void addNewSpawn(CNpcMaker spawn) {
 		_highestId++;
 		spawn.setId(_highestId);
 		_spawntable.put(spawn.getId(), spawn);
@@ -225,7 +225,7 @@ public class SpawnTable {
 			pstm.execute();
 
 		} catch (Exception e) {
-			_log.log(Level.SEVERE, "SpawnTable storeSpawn error", e);
+			_log.log(Level.SEVERE, "CNpcMakerDB storeSpawn error", e);
 		}
 	}
 
