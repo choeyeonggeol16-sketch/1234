@@ -10,7 +10,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import sun.misc.Unsafe;
 
-/** Exercise the actual production party and generation-tagged world registry. */
+/** 실제 파티 관리부와 세대 번호 기반 월드 객체 등록부를 검증한다. */
 public final class TestPartyRoster {
     private static final Unsafe UNSAFE;
     private static final Field DESTROYED;
@@ -24,7 +24,22 @@ public final class TestPartyRoster {
         } catch (ReflectiveOperationException e) { throw new ExceptionInInitializerError(e); }
     }
     private static final class Fixture extends L1PcInstance {
+        volatile CountDownLatch cleanupEntered, cleanupRelease;
         @Override public boolean isCrown() { return false; }
+        @Override public boolean getPbavatar() {
+            final CountDownLatch entered = cleanupEntered, release = cleanupRelease;
+            if (entered != null && release != null) {
+                entered.countDown();
+                try {
+                    if (!release.await(3, java.util.concurrent.TimeUnit.SECONDS))
+                        throw new AssertionError("cleanup release timeout");
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new AssertionError(e);
+                }
+            }
+            return false;
+        }
         @Override public double getCurrentHpPercent() { return 100; }
         @Override public double getCurrentMpPercent() { return 100; }
         @Override public int getClassNumber() { return 1; }
@@ -130,9 +145,37 @@ public final class TestPartyRoster {
                 check(!t1.isAlive() && !t2.isAlive() && failure.get() == null, "dismiss concurrency");
                 cleared(party, a, b);
             }
+            // 이전 파티의 효과 정리 중에는 새 파티의 가입을 거절한다.
+            for (boolean dismiss : new boolean[]{false, true}) {
+                CParty old = new CParty(), next = new CParty();
+                check(old.addMember(a) && old.addMember(b) && old.addMember(c), "departure setup");
+                b.cleanupEntered = new CountDownLatch(1);
+                b.cleanupRelease = new CountDownLatch(1);
+                AtomicReference<Throwable> failure = new AtomicReference<>();
+                Thread leave = thread(new CountDownLatch(0), failure,
+                        () -> old.leaveMember(dismiss ? a : b));
+                leave.start();
+                try {
+                    check(b.cleanupEntered.await(3, java.util.concurrent.TimeUnit.SECONDS), "cleanup entered");
+                    check(b.getParty() == null && !old.isMember(b), "detached during cleanup");
+                    check(!next.addMember(b), "no admission during cleanup");
+                    check(!b.isPartyAdmissionAvailable(), "departure owner reserved");
+                } finally {
+                    b.cleanupRelease.countDown();
+                    leave.join(3000);
+                    b.cleanupEntered = null;
+                    b.cleanupRelease = null;
+                }
+                check(!leave.isAlive() && failure.get() == null, "cleanup finished");
+                check(next.addMember(b), "admission after cleanup");
+                next.leaveMember(b);
+                if (!dismiss) old.leaveMember(a);
+                cleared(old, a, b, c);
+                cleared(next, b);
+            }
             ((AtomicBoolean) DESTROYED.get(d)).set(true);
             check(!new CParty().addMember(d) && d.getParty() == null, "logout admission");
-            System.out.println("PASS party roster: order, capacity, ownership, generation, leadership, arena, 100 join races, 100 dismissal races");
+            System.out.println("PASS party roster: order, capacity, ownership, generation, leadership, arena, 100 join races, 100 dismissal races, departure/rejoin fence");
         } finally {
             for (Fixture member : new Fixture[]{a,b,c,d}) L1World.getInstance().removeObject(member);
             Config.MAX_PT = original;

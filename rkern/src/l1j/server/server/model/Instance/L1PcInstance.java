@@ -933,9 +933,11 @@ public class L1PcInstance extends L1Character {
 	private L1ItemInstance _weapon;
 	private L1ItemInstance _secondweapon;
 	private L1ItemInstance _armor;
-	private volatile CParty _party;
-    private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater<L1PcInstance, CParty> PARTY_OWNER =
-            java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater(L1PcInstance.class, CParty.class, "_party");
+	// 탈퇴 정리가 끝날 때까지 다른 파티의 가입을 막는다.
+    private static final Object PARTY_DEPARTING = new Object();
+    private volatile Object _party;
+    private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater<L1PcInstance, Object> PARTY_OWNER =
+            java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater(L1PcInstance.class, Object.class, "_party");
 	private volatile L1ChatParty _chatParty;
 
 	private int _cookingId = 0;
@@ -2090,10 +2092,7 @@ public class L1PcInstance extends L1Character {
 
 		super.setCurrentHp(i);
 		SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
-		if (isInParty()) {
-			// TODO 파티 프로토
-			getParty().refreshPartyMemberStatus(this);
-		}
+		refreshOwnPartyStatus();
 	}
 
 	@Override
@@ -2107,10 +2106,7 @@ public class L1PcInstance extends L1Character {
 
 		super.setCurrentMp(i);
 		SC_MpUpdate.send(this, getCurrentMp(), getMaxMp());
-		if (isInParty()) {
-			// TODO 파티 프로토
-			getParty().refreshPartyMemberStatus(this);
-		}
+		refreshOwnPartyStatus();
 	}
 
 	@Override
@@ -2636,11 +2632,35 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public CParty getParty() {
-		return _party;
-	}
+        final Object owner = _party;
+        return owner instanceof CParty party ? party : null;
+    }
 
     public final boolean compareAndSetParty(CParty expected, CParty next) {
         return PARTY_OWNER.compareAndSet(this, expected, next);
+    }
+
+    public final boolean isPartyAdmissionAvailable() {
+        return _party == null;
+    }
+
+    public final boolean beginPartyDeparture(CParty expected) {
+        return expected != null && PARTY_OWNER.compareAndSet(this, expected, PARTY_DEPARTING);
+    }
+
+    public final void finishPartyDeparture() {
+        PARTY_OWNER.compareAndSet(this, PARTY_DEPARTING, null);
+    }
+
+    private void refreshOwnPartyStatus() {
+        final CParty party = getParty();
+        if (party != null) party.refreshPartyMemberStatus(this);
+    }
+
+    private void broadcastPartyProtectionEffect() {
+        final CParty party = getParty();
+        if (party != null && party.broadcastProtectionEffect(this, 14446)) return;
+        SC_SkillSound.send(this, getId(), 14446);
     }
 
 	public boolean isInChatParty() {
@@ -3121,7 +3141,7 @@ public class L1PcInstance extends L1Character {
 						if (getInstStatus() == InstStatus.INST_USERSTATUS_LFC && newHp > oldHp)
 							addDamageFromLfc(newHp - oldHp);
 						SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
-						if (isInParty()) getParty().refreshPartyMemberStatus(this);
+						refreshOwnPartyStatus();
 					}
 				} else {
 					try {
@@ -3148,21 +3168,7 @@ public class L1PcInstance extends L1Character {
 												"\\f3할파스의 신의: PVP대미지리덕션 대폭상승 (" + aa / 1000 + "초)");
 										sendPackets("\\fY할파스의 신의가 발동되었습니다.");
 
-										if (this.isInParty()) {
-											var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-SC_SkillSound.nativeWriter(getId(),14446),Integer.MIN_VALUE,Integer.MAX_VALUE);
-try {
-for (L1PcInstance partymember : this.getParty().getMembers()) {
-												//partymember.sendPackets(new S_SkillSound(getId(), 12444), true);
-												l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared,partymember);
-											}
-} finally {
-    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(shared);
-}
-										} else {
-											//this.sendPackets(new S_SkillSound(getId(), 12444), true);
-											SC_SkillSound.send(this, getId(), 14446);
-										}
+										broadcastPartyProtectionEffect();
 									}
 
 								}
@@ -3208,7 +3214,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 					} finally {
 						if (getCurrentHp() == 0) {
 							SC_HpUpdate.send(this, 0, getMaxHp());
-							if (isInParty()) getParty().refreshPartyMemberStatus(this);
+							refreshOwnPartyStatus();
 						}
 					}
 				}
@@ -3446,7 +3452,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 					if (getInstStatus() == InstStatus.INST_USERSTATUS_LFC && newHp > oldHp)
 						addDamageFromLfc(newHp - oldHp);
 					SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
-					if (isInParty()) getParty().refreshPartyMemberStatus(this);
+					refreshOwnPartyStatus();
 				}
 			} else {
 				try {
@@ -3473,21 +3479,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 											"\\f3할파스의 신의: PVP대미지리덕션 대폭상승 (" + aa / 1000 + "초)");
 									sendPackets("\\fY할파스의 신의가 발동되었습니다.");
 
-									if (this.isInParty()) {
-										var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-SC_SkillSound.nativeWriter(getId(),14446),Integer.MIN_VALUE,Integer.MAX_VALUE);
-try {
-for (L1PcInstance partymember : this.getParty().getMembers()) {
-											//partymember.sendPackets(new S_SkillSound(getId(), 12444), true);
-											l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared,partymember);
-										}
-} finally {
-    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(shared);
-}
-									} else {
-										//this.sendPackets(new S_SkillSound(getId(), 12444), true);
-										SC_SkillSound.send(this, getId(), 14446);
-									}
+									broadcastPartyProtectionEffect();
 								}
 
 							}
@@ -3535,7 +3527,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 					// or skill has already restored positive HP.
 					if (getCurrentHp() == 0) {
 						SC_HpUpdate.send(this, 0, getMaxHp());
-						if (isInParty()) getParty().refreshPartyMemberStatus(this);
+						refreshOwnPartyStatus();
 					}
 				}
 			}
@@ -4828,10 +4820,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		setAdvenMp(getBaseMaxMp() / 5);
 		addMaxHp(getAdvenHp());
 		addMaxMp(getAdvenMp());
-		if (isInParty()) {
-			//TODO 파티 프로토
-			getParty().refreshPartyMemberStatus(this);
-		}
+		refreshOwnPartyStatus();
 		}
 		SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
 		SC_MpUpdate.send(this, getCurrentMp(), getMaxMp());
@@ -4963,10 +4952,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			setAdvenMp(getBaseMaxMp() / 5);
 			addMaxHp(getAdvenHp());
 			addMaxMp(getAdvenMp());
-			if (isInParty()) {
-				//TODO 파티 프로토
-				getParty().refreshPartyMemberStatus(this);
-			}
+			refreshOwnPartyStatus();
 			}
 			SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
 			SC_MpUpdate.send(this, getCurrentMp(), getMaxMp());
@@ -5086,7 +5072,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
         if (getInstStatus() == InstStatus.INST_USERSTATUS_LFC && newHp > oldHp)
             addDamageFromLfc(newHp - oldHp);
         SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
-        if (isInParty()) getParty().refreshPartyMemberStatus(this);
+        refreshOwnPartyStatus();
     }
 
 	@Override
@@ -7917,7 +7903,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	        }
 	    }
 
-	    final CParty party = isInParty() ? getParty() : null;
+	    final CParty party = getParty();
 
 	    final int clanId = getClanid();
 
@@ -8005,7 +7991,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	    }
 
 	    final CParty party =
-	            isInParty() ? getParty() : null;
+	            getParty();
 
 	    final int clanId =
 	            getClanid();
@@ -8047,7 +8033,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	    }
 
 	    final CParty party =
-	            isInParty() ? getParty() : null;
+	            getParty();
 
 	    final int clanId =
 	            getClanid();

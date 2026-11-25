@@ -15,13 +15,15 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.character.Item.Drop.CContributeData;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_LIST;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_LIST_CHANGE;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_MARK_CHANGE_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_STATUS;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_SYNC_PERIODIC_INFO;
 import l1j.server.server.model.network.core.sc.packet.SC_Party;
+import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -29,8 +31,8 @@ public class CParty {
 
     private static final Logger _log = Logger.getLogger(CParty.class.getName());
 
-    // NC-style ordered SID roster. The existing world identity includes the
-    // allocation generation, so neither PC objects nor reused IDs are retained.
+    // 가입 순서대로 세대 번호를 포함한 객체 식별자를 저장한다.
+    // 캐릭터 객체를 직접 보관하지 않아 접속 종료 및 ID 재사용 시 참조를 분리한다.
     private long[] m_aOrderedMember = new long[Math.max(2, Config.MAX_PT)];
     private int[] m_aTacticalSign = new int[m_aOrderedMember.length];
     private long[] m_aLastFullListSentAt = new long[m_aOrderedMember.length];
@@ -52,7 +54,7 @@ public class CParty {
     private synchronized void ResetLootIndex() { lootCursor = 0L; }
 
     // ─────────────────────────────────────────────
-    // helpers
+    // 보조 기능
     // ─────────────────────────────────────────────
     private static boolean ok(L1PcInstance pc) {
         return pc != null && pc.getNetConnection() != null;
@@ -71,12 +73,20 @@ public class CParty {
     }
 
     private int FindMemberIndex(L1PcInstance pc) {
-        return pc == null || pc.getParty() != this ? -1 : FindMemberIndex(pc.getId());
+        if (pc == null || pc.getParty() != this) return -1;
+        final long sid = L1World.getInstance().smartIdOf(pc);
+        if (sid == 0L) {
+            // 월드에서 먼저 제거된 기존 소유자의 탈퇴는 허용한다.
+            return FindMemberIndex(pc.getId());
+        }
+        for (int i = 0; i < m_nMemberCount; i++)
+            if (m_aOrderedMember[i] == sid) return i;
+        return -1;
     }
 
     private void EnsureCapacity() {
         if (m_nMemberCount < m_aOrderedMember.length) return;
-        // Preserve the existing GM capacity exception and configuration reload.
+        // 운영자 인원 제한 예외와 설정 재적용을 유지한다.
         final int capacity = Math.max(m_nMemberCount + 1,
                 Math.max(Config.MAX_PT, m_aOrderedMember.length * 2));
         m_aOrderedMember = Arrays.copyOf(m_aOrderedMember, capacity);
@@ -100,13 +110,13 @@ public class CParty {
         m_aLastFullListSentAt[m_nMemberCount] = 0L;
     }
 
-    private synchronized int GetTacticalSignId(int objectId) {
-        final int index = FindMemberIndex(objectId);
+    private synchronized int GetTacticalSignId(L1PcInstance pc) {
+        final int index = FindMemberIndex(pc);
         return index < 0 ? 0 : m_aTacticalSign[index];
     }
 
-    private synchronized boolean canSendFullListNow(int objectId) {
-        final int index = FindMemberIndex(objectId);
+    private synchronized boolean canSendFullListNow(L1PcInstance pc) {
+        final int index = FindMemberIndex(pc);
         if (index < 0) return false;
         final long now = System.currentTimeMillis();
         final long last = m_aLastFullListSentAt[index];
@@ -122,8 +132,28 @@ public class CParty {
     }
 
     /** 파티 전원에게 공유 바이트 전송 */
-    public void broadcastRaw(byte[] data) {
-        sendRawTo(getMembers(), data);
+    public synchronized void broadcastRaw(byte[] data) {
+        if (m_nMemberCount == 0) return;
+        // 파티 변경 알림과 송신 등록 순서를 맞추고 수신자 배열 생성을 피한다.
+        try (var shared = CSharedBroadcast.openRaw(data)) {
+            if (shared == null) return;
+            for (int i = 0; i < m_nMemberCount; i++)
+                CSharedBroadcast.sendRecipient(shared, ResolveUser(m_aOrderedMember[i]));
+        }
+    }
+
+    public synchronized boolean broadcastProtectionEffect(L1PcInstance pc, int effectId) {
+        final int index = FindMemberIndex(pc);
+        if (index < 0 || ResolveUser(m_aOrderedMember[index]) != pc) return false;
+        var shared = new CAsyncSendConstBuffer(
+                SC_SkillSound.nativeWriter(pc.getId(), effectId), Integer.MIN_VALUE, Integer.MAX_VALUE);
+        try {
+            for (int i = 0; i < m_nMemberCount; i++)
+                CSharedBroadcast.sendRecipientBestEffort(shared, ResolveUser(m_aOrderedMember[i]));
+        } finally {
+            CSharedBroadcast.closeOptional(shared);
+        }
+        return true;
     }
 
     /** exclude 제외한 멤버 배열 */
@@ -145,7 +175,7 @@ public class CParty {
         for(L1PcInstance m:snapshot){
             if(!ok(m))continue;
             members.add(SC_PARTY_MEMBER_LIST.Member.from(m,
-                    GetTacticalSignId(m.getId())));
+                    GetTacticalSignId(m)));
         }
         final L1PcInstance leader = getLeader();
         byte[] data=new SC_PARTY_MEMBER_LIST(
@@ -153,7 +183,7 @@ public class CParty {
         try(var shared=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(data)){
             for(L1PcInstance t:targets){
                 if(!ok(t))continue;
-                if(!force && !canSendFullListNow(t.getId()))continue;
+                if(!force && !canSendFullListNow(t))continue;
                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,t);
             }
         }
@@ -167,7 +197,7 @@ public class CParty {
     }
 
     // ─────────────────────────────────────────────
-    // party ops
+    // 파티 관리
     // ─────────────────────────────────────────────
     public boolean addMember(L1PcInstance pc) {
         if (pc == null) throw new NullPointerException();
@@ -175,10 +205,10 @@ public class CParty {
             pc.sendPackets("자동사냥 중에는 파티에 참가할 수 없습니다.");
             return false;
         }
-        if (pc.isLogoutStarted() || pc.getParty() != null) return false;
+        if (pc.isLogoutStarted() || !pc.isPartyAdmissionAvailable()) return false;
         final long sid = L1World.getInstance().smartIdOf(pc);
         if (sid == 0L) return false;
-        // DB/skill lookup must not run while holding the roster monitor.
+        // DB 및 스킬 조회는 파티 잠금을 잡기 전에 수행한다.
         final boolean crownAura = pc.isCrown()
                 && SkillsTable.getInstance().spellCheck(pc.getId(), 121);
 
@@ -194,7 +224,7 @@ public class CParty {
                 return false;
             EnsureCapacity();
             if (!pc.compareAndSetParty(null, this)) return false;
-            // Logout can win the admission race before seeing the new party.
+            // 가입 도중 로그아웃이 시작되었는지 다시 확인한다.
             if (pc.isLogoutStarted() || L1World.getInstance().smartIdOf(pc) != sid) {
                 pc.compareAndSetParty(this, null);
                 return false;
@@ -203,15 +233,14 @@ public class CParty {
             InsertMemberSid(sid);
             if (beforeSize == 0) m_MasterSid = sid;
             if (crownAura) AuraController.getInstance().addMember(pc);
-            // State is committed before packet emission. Packet failure cannot
-            // roll back ownership or leave a half-inserted member.
+            // 파티 상태를 확정한 뒤 알림을 송신한다. 송신 실패로 가입 상태를 되돌리지 않는다.
             try {
                 final L1PcInstance[] after = getMembers();
                 final L1PcInstance master = getLeader();
                 if (beforeSize > 0 && ok(pc) && master != null) {
                     final ArrayList<SC_PARTY_MEMBER_LIST.Member> list = new ArrayList<>(after.length);
                     for (L1PcInstance member : after)
-                        list.add(SC_PARTY_MEMBER_LIST.Member.from(member, GetTacticalSignId(member.getId())));
+                        list.add(SC_PARTY_MEMBER_LIST.Member.from(member, GetTacticalSignId(member)));
                     SC_PARTY_MEMBER_LIST.sendFields(pc, master.getName(), list);
                 }
                 if (beforeSize == 1 && after.length == 2) {
@@ -228,7 +257,7 @@ public class CParty {
         }
     }
 
-    /** All roster fields have already been retired when the notification runs. */
+    /** 파티원 목록에서 제거한 뒤 탈퇴 알림을 보낸다. */
     private void NotifyRemoved(L1PcInstance pc, boolean wasLeader) {
         final L1PcInstance[] rest = getMembers();
         sendRawTo(rest, SC_PARTY_MEMBER_LIST_CHANGE.ofOutUser(pc.getName()).encode());
@@ -239,8 +268,7 @@ public class CParty {
     }
 
     private void CleanupDeparted(L1PcInstance pc) {
-        // Do not hold the party monitor while touching a creature's skills.
-        if (pc.getParty() != null) return;
+        // 파티 잠금 밖에서 효과를 정리하고 완료 후 가입 제한을 해제한다.
         try {
             if (pc.isCrown()) AuraController.getInstance().removeMember(pc);
             if (pc.getPbavatar()) AuraController.getInstance().brave_end(pc);
@@ -253,6 +281,8 @@ public class CParty {
             }
         } catch (RuntimeException failure) {
             _log.log(java.util.logging.Level.WARNING, "Party departure effect cleanup failed", failure);
+        } finally {
+            pc.finishPartyDeparture();
         }
     }
 
@@ -277,7 +307,8 @@ public class CParty {
     }
 
     public synchronized boolean isLeader(L1PcInstance pc) {
-        return pc != null && pc.getParty() == this && (int) m_MasterSid == pc.getId();
+        final int index = FindMemberIndex(pc);
+        return index >= 0 && m_MasterSid == m_aOrderedMember[index];
     }
 
     public boolean isAutoDivision(L1PcInstance pc) {
@@ -292,21 +323,17 @@ public class CParty {
         return result.toString();
     }
 
-    public void refresh(L1PcInstance pc) {// 파티추가
+    public synchronized void refresh(L1PcInstance pc) {// 파티추가
+        final int index = FindMemberIndex(pc);
+        if (index < 0 || ResolveUser(m_aOrderedMember[index]) != pc) return;
         L1PcInstance leader = getLeader();
         final int partyColor=(leader!=null && leader.getId()==pc.getId())?2:1;
         try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 SC_Party.nativeNameColorWriter(pc.getId(),partyColor),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance member : getMembers()) {
-            if(member == null || pc.getId() == member.getId())
-                continue;
-
-            if (leader != null && leader.getId() == pc.getId()) {
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-            } else {
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
+for (int i = 0; i < m_nMemberCount; i++) {
+                final L1PcInstance member = ResolveUser(m_aOrderedMember[i]);
+                if (member != null && member != pc) CSharedBroadcast.sendRecipient(shared, member);
             }
-        }
 }
     }
 
@@ -319,9 +346,10 @@ for (L1PcInstance member : getMembers()) {
         refreshPartyList();
     }
 
-    public void refreshPartyList() {
-        ArrayList<SC_PARTY_SYNC_PERIODIC_INFO.MemberStatus> list = new ArrayList<>();
-        for (L1PcInstance member : getMembers()) {
+    public synchronized void refreshPartyList() {
+        ArrayList<SC_PARTY_SYNC_PERIODIC_INFO.MemberStatus> list = new ArrayList<>(m_nMemberCount);
+        for (int i = 0; i < m_nMemberCount; i++) {
+            final L1PcInstance member = ResolveUser(m_aOrderedMember[i]);
             if (!ok(member)) continue;
             list.add(new SC_PARTY_SYNC_PERIODIC_INFO.MemberStatus(
                     member.getName(),
@@ -331,32 +359,49 @@ for (L1PcInstance member : getMembers()) {
                     member.isDead() ? 0 : 1,
                     member.getMapId(),
                     member.getLongLocation(),
-                    GetTacticalSignId(member.getId())));
+                    m_aTacticalSign[i]));
         }
         broadcastRaw(new SC_PARTY_SYNC_PERIODIC_INFO(list).encode());
     }
 
-    public void handshakePartyMemberStatus(L1PcInstance pc1, L1PcInstance pc2) {
+    public synchronized void handshakePartyMemberStatus(L1PcInstance pc1, L1PcInstance pc2) {
         if (!ok(pc1) || !ok(pc2)) return;
-        SC_PARTY_MEMBER_STATUS.sendFrom(pc2, pc1, GetTacticalSignId(pc1.getId()), true);
-        SC_PARTY_MEMBER_STATUS.sendFrom(pc1, pc2, GetTacticalSignId(pc2.getId()), true);
+        final int first = FindMemberIndex(pc1), second = FindMemberIndex(pc2);
+        if (first < 0 || second < 0 || ResolveUser(m_aOrderedMember[first]) != pc1
+                || ResolveUser(m_aOrderedMember[second]) != pc2) return;
+        SC_PARTY_MEMBER_STATUS.sendFrom(pc2, pc1, GetTacticalSignId(pc1), true);
+        SC_PARTY_MEMBER_STATUS.sendFrom(pc1, pc2, GetTacticalSignId(pc2), true);
     }
 
-    public void refreshPartyMemberStatus(L1PcInstance pc) {
-        if (!ok(pc) || !isMember(pc)) return;
+    public synchronized void refreshPartyMemberStatus(L1PcInstance pc) {
+        if (!ok(pc)) return;
+        final int index = FindMemberIndex(pc);
+        if (index < 0 || ResolveUser(m_aOrderedMember[index]) != pc) return;
         byte[] data = SC_PARTY_MEMBER_STATUS
-                .from(pc, GetTacticalSignId(pc.getId()), true)
+                .from(pc, m_aTacticalSign[index], true)
                 .encode();
         broadcastRaw(data);
     }
 
-    /** The ordinary L1 party disbands on leader departure; arena teams elect
-     * a replacement. Keep the two existing gameplay policies distinct. */
+    /** 일반 파티는 파티장 탈퇴 시 해산하며, 경기장 파티는 다음 파티장을 선출한다. */
     protected boolean dismissOnMasterLeave() { return true; }
 
     private L1PcInstance[] Dismiss(L1PcInstance departing) {
-        // Only called with the party monitor held; exactly one transition.
-        final L1PcInstance[] members = getMembers();
+        // 파티 잠금 내부에서 한 번만 해산한다.
+        L1PcInstance[] members = getMembers();
+        int claimed = 0;
+        boolean includesDeparting = false;
+        for (L1PcInstance member : members) {
+            if (!member.beginPartyDeparture(this)) continue;
+            members[claimed++] = member;
+            if (member == departing) includesDeparting = true;
+        }
+        // 월드 조회가 먼저 끊어진 탈퇴자도 정리 대상에 포함한다.
+        if (!includesDeparting && departing.beginPartyDeparture(this)) {
+            if (claimed == members.length) members = Arrays.copyOf(members, claimed + 1);
+            members[claimed++] = departing;
+        }
+        if (claimed != members.length) members = Arrays.copyOf(members, claimed);
         m_Dismissed = true;
         ResetLootIndex();
         Arrays.fill(m_aOrderedMember, 0, m_nMemberCount, 0L);
@@ -364,13 +409,9 @@ for (L1PcInstance member : getMembers()) {
         Arrays.fill(m_aLastFullListSentAt, 0, m_nMemberCount, 0L);
         m_nMemberCount = 0;
         m_MasterSid = 0L;
-        for (L1PcInstance member : members) member.compareAndSetParty(this, null);
-        // Logout may already have unpublished the calling character.
-        departing.compareAndSetParty(this, null);
         try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                 SC_ServerMessage.nativeWriter(418), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
             for (L1PcInstance member : members) {
-                if (member.getParty() != null) continue;
                 try {
                     clearPartyUIForLeaver(member);
                     if (ok(member)) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared, member);
@@ -401,8 +442,8 @@ for (L1PcInstance member : getMembers()) {
             if (m_nMemberCount <= 2 || (!kick && wasLeader && dismissOnMasterLeave())) {
                 dismissed = Dismiss(pc);
             } else {
+                if (!pc.beginPartyDeparture(this)) return;
                 DeleteMemberSid(index);
-                pc.compareAndSetParty(this, null);
                 if (wasLeader) {
                     m_MasterSid = 0L;
                     for (int i = 0; i < m_nMemberCount; i++) {
@@ -422,7 +463,6 @@ for (L1PcInstance member : getMembers()) {
                         if (!kick && pc.getParty() == null)
                             l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared, pc);
                     }
-                    if (kick) sendKickMessage(pc);
                 } catch (RuntimeException failure) {
                     _log.log(java.util.logging.Level.WARNING, "Party departure notification failed", failure);
                 }
@@ -437,12 +477,7 @@ for (L1PcInstance member : getMembers()) {
         if (dismissed == null) {
             CleanupDeparted(pc);
         } else {
-            boolean found = false;
-            for (L1PcInstance member : dismissed) {
-                CleanupDeparted(member);
-                if (member == pc) found = true;
-            }
-            if (!found) CleanupDeparted(pc);
+            for (L1PcInstance member : dismissed) CleanupDeparted(member);
         }
     }
 
@@ -462,10 +497,6 @@ for (L1PcInstance member : getMembers()) {
 
     public synchronized int getNumOfMembers() {
         return m_nMemberCount;
-    }
-
-    private void sendKickMessage(L1PcInstance kickpc) {
-        SC_ServerMessage.send(kickpc, 419);
     }
 
     protected void sendLeftMessage(L1PcInstance sendTo, L1PcInstance left) {
@@ -494,7 +525,7 @@ for (L1PcInstance member : getMembers()) {
 
     
 
-    /** Same map/range/hate policy for both currency and item routing. */
+    /** 아데나와 아이템 분배에 동일한 맵·거리·기여도 조건을 적용한다. */
     private boolean CheckRouteCond(L1Location origin, CContributeData snap, L1PcInstance member) {
         if (member == null || member.getParty() != this || member.isDead()
                 || member.getMapId() != origin.getMapId()
@@ -513,7 +544,7 @@ for (L1PcInstance member : getMembers()) {
         return npc != null && Route(npc.getLocation(), source, item, snap, primaryOwner, null);
     }
 
-    /** Queued drops retain the original party, roster and death position. */
+    /** 예약된 드롭은 사망 당시의 파티, 파티원 및 위치를 사용한다. */
     public boolean Route(L1Location origin, L1Inventory source, L1ItemInstance item,
             CContributeData snap, L1PcInstance primaryOwner, L1PcInstance[] admittedMembers) {
         if (!Config.PARTY_LOOT_ENABLE || primaryOwner == null || primaryOwner.getParty() != this
@@ -566,8 +597,7 @@ for (L1PcInstance member : getMembers()) {
     private void RouteItem(CWorld world, L1Location origin, L1Inventory source, L1ItemInstance item,
             CContributeData snap, L1PcInstance[] members, int size, String tag) {
         final int mode = Config.PARTY_LOOT_MODE;
-        // The previous general mode already chose a random eligible winner.
-        // Random mode also had a uniform final selection; keep that distribution.
+        // 일반 및 무작위 분배의 기존 균등 확률을 유지한다.
         final int index = mode == 2 ? NextLootIndex(size)
                 : java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
         final L1PcInstance target = members[index];
