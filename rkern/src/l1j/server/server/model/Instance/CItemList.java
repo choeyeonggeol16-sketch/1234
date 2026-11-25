@@ -19,6 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
+import l1j.server.server.templates.L1Item;
 
 /** Intrusive, ordered inventory membership. The list monitor protects only links;
  * never invoke persistence, packets, or callers under it. Existing owner locks
@@ -39,6 +40,53 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     private transient int size;
     private transient volatile List<L1ItemInstance> snapshot;
 
+    // OFF CInventory::GetCarryingWeight caches the aggregate. Store the raw
+    // L1 per-row rounded sum, not the rate-adjusted value. Negative means dirty.
+    private transient volatile long carryingWeight;
+    private transient volatile long weightEpoch;
+
+    public long GetCarryingWeight() {
+        final long epoch = L1Item.WeightEpoch();
+        // Read the publication stamp before its value.
+        final long cachedEpoch = weightEpoch;
+        final long cached = carryingWeight;
+        if (cached >= 0 && cachedEpoch == epoch) return cached;
+        return ValidateCarringWeight();
+    }
+
+    /** Rebuild on membership or template-generation changes; no snapshot. */
+    public synchronized long ValidateCarringWeight() {
+        for (;;) {
+            final long epoch = L1Item.WeightEpoch();
+            if (carryingWeight >= 0 && weightEpoch == epoch) return carryingWeight;
+            long sum = 0;
+            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+                sum += item.getWeight();
+            if (L1Item.WeightEpoch() != epoch) continue;
+            carryingWeight = sum;
+            weightEpoch = epoch;
+            return sum;
+        }
+    }
+
+    // Called with this list's existing monitor held by the item setter.
+    int weightBeforeChange(L1ItemInstance item) {
+        assert Thread.holdsLock(this);
+        return carryingWeight >= 0 && weightEpoch == L1Item.WeightEpoch()
+                ? item.getWeight() : -1;
+    }
+
+    void weightChanged(L1ItemInstance item, int before) {
+        assert Thread.holdsLock(this);
+        if (before >= 0 && carryingWeight >= 0 && weightEpoch == L1Item.WeightEpoch())
+            carryingWeight += (long) item.getWeight() - before;
+        else carryingWeight = -1L;
+    }
+
+    // Defensive publication race: a formerly detached setter must invalidate
+    // a newly linked destination, without acquiring any other list monitor.
+    synchronized void invalidateCarryingWeight() { carryingWeight = -1L; }
+
     private void claim(L1ItemInstance item) {
         Objects.requireNonNull(item, "inventory item");
         if (!OWNER.compareAndSet(item, null, this))
@@ -53,6 +101,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         last = item;
         size++;
         snapshot = null;
+        carryingWeight = -1L;
     }
 
     /** Reject a still-owned item before any caller changes counts or persistence. */
@@ -117,6 +166,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         item.inventoryNext = null;
         size--;
         snapshot = null;
+        carryingWeight = -1L;
         OWNER.setVolatile(item, null);
     }
 
@@ -143,6 +193,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         first = last = null;
         size = 0;
         snapshot = null;
+        carryingWeight = -1L;
         while (item != null) {
             final L1ItemInstance next = item.inventoryNext;
             item.inventoryPrev = null;
