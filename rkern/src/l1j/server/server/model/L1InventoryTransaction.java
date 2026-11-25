@@ -490,12 +490,12 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                     return e.image;
                 }
             }
-            for (L1ItemInstance item : pc.getInventory().getItems()) {
-                if (findEntry(item.getId()) != null || !mergeable(item,prepared)) continue;
-                Entry e=entry(pc,item);
-                long total=(long)e.image.getCount()+count;
-                if (total>CInventory.MAX_AMOUNT) return null;
-                e.image.setCount((int)total);
+            final L1ItemInstance item = findLiveMergeTarget(pc, prepared);
+            if (item != null) {
+                final long total = (long) item.getCount() + count;
+                if (total > CInventory.MAX_AMOUNT) return null;
+                final Entry e = entry(pc, item);
+                e.image.setCount((int) total);
                 return e.image;
             }
         }
@@ -505,6 +505,15 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         addEntry(added);
         return added.image;
     }
+    /** Only unprepared, positive live rows may participate in a new merge. */
+    private L1ItemInstance findLiveMergeTarget(L1PcInstance pc, L1ItemInstance image) {
+        for (L1ItemInstance item : pc.getInventory().getItems()) {
+            if (item != null && item.getCount() > 0 && findEntry(item.getId()) == null
+                    && mergeable(item, image)) return item;
+        }
+        return null;
+    }
+
     public L1ItemInstance transfer(L1PcInstance from,L1ItemInstance item,int count,L1PcInstance to) {
         open(); owns(from); owns(to);
         if (from==to || count<=0 || item==null || item.isEquipped()
@@ -528,12 +537,11 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
             // Preserve the original row ID when no merge is required.
             boolean merge=false;
             if (e.image.isStackable()) {
-                for (L1ItemInstance other : to.getInventory().getItems())
-                    if (mergeable(other,e.image)) { merge=true;break; }
                 for (int index = 0; index < entryCount; index++) {
                     Entry other = entryAt(index);
                     if (other.owner==to && other.image.getCount()>0 && mergeable(other.image,e.image)) {merge=true;break;}
                 }
+                if (!merge) merge = findLiveMergeTarget(to, e.image) != null;
             }
             if (!merge) { e.owner=to;return e.image; }
         }
