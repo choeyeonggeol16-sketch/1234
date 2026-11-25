@@ -148,7 +148,7 @@ final class NpcLocalCommands {
 
 
 		if (pc.getWeapon() != null) {
-			pc.getInventory().setEquipped(pc.getWeapon(), false, false, false, false);
+			pc.UnequipItem(pc.getWeapon());
 		}
 
 		SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
@@ -157,7 +157,7 @@ final class NpcLocalCommands {
 		for (L1ItemInstance armor : pc.getInventory().getItems()) {
 			for (int type = 0; type <= 12; type++) {
 				if (armor != null) {
-					pc.getInventory().setEquipped(armor, false, false, false, false);
+					pc.UnequipItem(armor);
 				}
 			}
 		}

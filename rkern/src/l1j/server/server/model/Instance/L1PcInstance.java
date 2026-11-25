@@ -4370,10 +4370,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	private long equipmentTimeVisible;
 
-	public void setTimeVisible(long tick) {
-		equipmentTimeVisible = tick;
-	}
-
 	/** Restore persisted equipment using the same character execution path as live equips. */
 	public void RestoreEquippedItems() {
 		try {

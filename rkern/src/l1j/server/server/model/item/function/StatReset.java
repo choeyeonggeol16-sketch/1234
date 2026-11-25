@@ -80,12 +80,12 @@ public class StatReset {
         			L1SkillUse.TYPE_LOGIN);
 
             if (pc.getWeapon() != null) {
-				pc.getInventory().setEquipped(pc.getWeapon(), false, false, false, false);
+				pc.UnequipItem(pc.getWeapon());
 			}
 
 			for (L1ItemInstance armor : pc.getInventory().getItems()) {
                 if (armor != null && armor.isEquipped()) {
-                    pc.getInventory().setEquipped(armor, false, false, false, false);
+                    pc.UnequipItem(armor);
                 }
             }
             // 스텟 리턴 포인트 설정

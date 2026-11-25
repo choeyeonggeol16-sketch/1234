@@ -423,7 +423,7 @@ public final class SkillUseHelper {
 					inv.getEquippedItem(INVIS_EQUIP_ITEM_IDS[i]);
 
 			if (item != null) {
-				inv.setEquipped(item, false);
+				pc.UnequipItem(item);
 			}
 		}
 	}

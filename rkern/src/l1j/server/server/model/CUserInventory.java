@@ -116,11 +116,6 @@ public class CUserInventory extends CInventory {
 		_stingId = 0;
 	}
 
-	@Deprecated
-	public void setTimeVisible(long l) {
-		_owner.setTimeVisible(l);
-	}
-
 	public L1PcInstance getOwner() {
 		return _owner;
 	}
@@ -454,12 +449,6 @@ public class CUserInventory extends CInventory {
 
 	public void sendOverMessage(int message_id) {
 		SC_ServerMessage.send(_owner, message_id);
-	}
-
-	/** Compatibility entry point for callers outside the migrated login path. */
-	@Deprecated
-	public void sendOptioon() {
-		_owner.RestoreEquippedItems();
 	}
 
     @Override
@@ -815,12 +804,6 @@ public class CUserInventory extends CInventory {
 		return equipeitem;
 	}
 
-	@Deprecated
-	public void setEquipped(L1ItemInstance item, boolean equipped) {
-		if (equipped) _owner.EquipItem(item);
-		else _owner.UnequipItem(item);
-	}
-
 	public L1ItemInstance getEquippedItem(int itemId) {
 		L1ItemInstance equipeitem = null;
 		L1ItemInstance item = null;
@@ -833,13 +816,6 @@ public class CUserInventory extends CInventory {
 		}
 		return equipeitem;
 	}
-	/** Legacy entry point for callers not yet migrated to the character API. */
-	@Deprecated
-	public void setEquipped(L1ItemInstance item, boolean equipped, boolean loaded, boolean changeWeapon, boolean shieldWeapon) {
-		if (equipped) _owner.EquipItem(item, loaded, changeWeapon);
-		else _owner.UnequipItem(item, loaded, changeWeapon);
-	}
-
 	/** Update only the inventory's equipped-template index, under the existing item gate. */
 	public void SetEquippedCount(int itemId, boolean equipped) {
 		if (equipped) _equippedCountMap.add(itemId, 1);
@@ -1083,14 +1059,6 @@ public class CUserInventory extends CInventory {
 				equipeCount++;
 		}
 		return equipeCount;
-	}
-
-	public boolean slotItemFind(L1PcInstance pc, int id, int itemobjId, int enchant, int bless, int attr) {
-		final L1ItemInstance item = getItem(itemobjId);
-		if (item == null || item.getItemId() != id || item.getEnchantLevel() != enchant
-				|| item.getBless() != bless || item.getAttrEnchantLevel() != attr) return false;
-		pc.EquipItem(item);
-		return true;
 	}
 
 	public int checkItemCount(int id) {
