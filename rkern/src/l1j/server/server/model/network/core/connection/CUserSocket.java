@@ -141,7 +141,6 @@ public final class CUserSocket extends CSocket {
     static final long NETWORK_WRITE_STALL_NANOS = TimeUnit.SECONDS.toNanos(30);
     private static final long NETWORK_GRACEFUL_CLOSE_NANOS = TimeUnit.SECONDS.toNanos(30);
     private static final long NETWORK_PARTIAL_READ_NANOS = TimeUnit.SECONDS.toNanos(30);
-    private volatile long _networkWriteProgress;
     private volatile long _gracefulCloseStartedNs;
     // Zero for ordinary graceful close; a denial retains its original grace.
     // The WRITE completion and native deadline inspect this under _stateLock.
@@ -232,9 +231,7 @@ public final class CUserSocket extends CSocket {
     }
     // Only SEND-watermark transitions touch the pause start under _stateLock.
     // Pause time is excluded from the current partial-frame deadline on resume.
-    private volatile long _partialReadPausedAtNs;
 
-    long networkWriteProgress() { return _networkWriteProgress; }
     boolean hasPendingNetworkSend() {
         _stateLock.lock();
         try { return _closed == 0 && (_outstandingWireBytes != 0 || _reservedDirect != 0); }
@@ -265,16 +262,10 @@ public final class CUserSocket extends CSocket {
     private IPacketWriter<CUserSocket> _deferredClosePacket;
 
     private final Closed _closedCallback;
-    private CIOBufferEx[] _pending;
-    private final int _maxQueuedFrames;
     // Volatile primitives avoid five standalone Atomic* objects per connection.
     // VarHandles preserve CAS/getAndAdd semantics when completion threads race.
     private volatile int _closeNotified;
 
-    private static final int WRITE_DONE = 1;
-    private static final int WRITE_FAILED = 2;
-    private static final int GATHER_DONE = 3;
-    private static final int GATHER_FAILED = 4;
     // Defer automatic SEND burst flushing until the current READ
     // buffer pass ends, but only if that buffer holds multiple complete frames.
     // Forced flushSendBurst(), close and READ-pressure boundaries stay intact.
@@ -332,7 +323,6 @@ public final class CUserSocket extends CSocket {
     // READ-pass-only WRITE start threshold. Does not alter action/producer packing.
     private static final int READ_PASS_WRITE_START_BYTES = 32 * 1024;
     // Scatter/gather covers multiple independent 16K leases; this is not a lease size.
-    private static final int GATHER_MAX_BYTES = 64 * 1024;
     private static final int BURST_INITIAL_SOCKETS = 32;
     private static final int BURST_MAX_SOCKETS = 256;
 
@@ -479,11 +469,7 @@ public final class CUserSocket extends CSocket {
     }
 
     /* Queue and active WRITE mutations use _stateLock, never a global pool lock. */
-    private int _head;
-    private int _tail;
-    private int _queued;
     // Frames admitted to the 512-slot serializer but not yet attached to SEND.
-    private int _stagedSends;
     // One still-unconsumed SEND_ENQUEUE can absorb consecutive small packets
     // before the socket FIFO owner encrypts it. State-lock protected. The
     // later tickets remain CANCELLED FIFO positions, never bypassed.
@@ -492,97 +478,14 @@ public final class CUserSocket extends CSocket {
     private long _stagedPacketLastTicket;
     // Byte-based connection-local backpressure, independent of the physical lease bound.
     // Counts all committed wire bytes including gather writes and packed frames.
-    private static final int MAX_PENDING_WIRE_BYTES = 2 * 1024 * 1024;
     // Flow-control stops inbound processing before a slow client accumulates
     // hundreds of 16K leases. The wire-byte and physical SEND lease caps are
     // preserved; logical frame pressure is READ backpressure, not a lease cap.
-    private static final boolean SEND_READ_WATERMARK = true;
-    private static final int SEND_READ_HIGH_WATER_BYTES = 256 * 1024;
-    private static final int SEND_READ_LOW_WATER_BYTES = SEND_READ_HIGH_WATER_BYTES / 2;
-    private static final int SEND_READ_HIGH_WATER_FRAMES = 256;
-    private static final int SEND_READ_LOW_WATER_FRAMES = SEND_READ_HIGH_WATER_FRAMES / 2;
-    private int _outstandingWireBytes;
     // Uncommitted direct producers own pooled leases too. Include their maximum
     // wire sizes in admission and READ watermark decisions until commit/abort.
-    private int _reservedWireBytes;
-    private int _outstandingFrames;
-
-    /** Always invoked with this socket's state lock held. */
-    private boolean canAdmitBytes(int count) {
-        return count > 0 && count <= MAX_PENDING_WIRE_BYTES - _outstandingWireBytes - _reservedWireBytes;
-    }
-
-    /** Physical SEND leases under _stateLock, including every in-flight gather member. */
-    private int physicalSendLeasesLocked() {
-        return _queued + _reservedDirect + _stagedSends
-                + (_writing == null ? 0 : _gatherCount > 0 ? _gatherCount : 1);
-    }
-
-    private boolean physicalSendFullLocked() {
-        return physicalSendLeasesLocked() >= _maxQueuedFrames + 1;
-    }
-
-    // _maxQueuedFrames bounds physical SEND leases (all gather members plus
-    // queued leases and reservations), not packets packed into those leases. The
-    // logical packet count is separately tracked for READ backpressure.  Each
-    // accepted frame consumes at least HEADER_BYTES + 1 wire bytes, so the
-    // MAX_PENDING_WIRE_BYTES admission cap also strictly bounds that count.
-
-    private void bytesAdmitted(int count) {
-        bytesAdmittedBatch(count, 1);
-    }
-
-    /** Caller holds _stateLock. A validated batch publishes one watermark change. */
-    private void bytesAdmittedBatch(int wireBytes, int frames) {
-        _outstandingWireBytes += wireBytes;
-        _outstandingFrames += frames;
-        updateSendReadPauseLocked();
-    }
-
-    /** Under the state lock, accounting both published and uncommitted frames. */
-    private boolean updateSendReadPauseLocked() {
-        if (!SEND_READ_WATERMARK) return false;
-        final int bytes = _outstandingWireBytes + _reservedWireBytes;
-        final int frames = _outstandingFrames + _reservedDirect;
-        if (!_sendReadPaused && (bytes >= SEND_READ_HIGH_WATER_BYTES
-                || frames >= SEND_READ_HIGH_WATER_FRAMES)) {
-            _partialReadPausedAtNs = System.nanoTime();
-            _sendReadPaused = true;
-        } else if (_sendReadPaused && bytes <= SEND_READ_LOW_WATER_BYTES
-                && frames <= SEND_READ_LOW_WATER_FRAMES) {
-            // The READ pump may finish one frame and start another while SEND
-            // admission is turning the pause off. CAS protects that new clock;
-            // only the overlap between this frame and the pause is excluded.
-            final long pausedAt = _partialReadPausedAtNs;
-            if (pausedAt != 0L) {
-                final long now = System.nanoTime();
-                for (;;) {
-                    final long started = (long) PARTIAL_READ_STARTED.getVolatile(this);
-                    if (started == 0L) break;
-                    final long overlapFrom = Math.max(started, pausedAt);
-                    if (now <= overlapFrom || PARTIAL_READ_STARTED.compareAndSet(this,
-                            started, started + now - overlapFrom)) break;
-                }
-            }
-            _partialReadPausedAtNs = 0L;
-            _sendReadPaused = false;
-            return _closed == 0 && _readActive != 0;
-        }
-        return false;
-    }
-
-    /** Under the state lock; caller kicks READ only after unlocking. */
-    private boolean bytesReleased(int count, int frames) {
-        _outstandingWireBytes -= count;
-        _outstandingFrames -= frames;
-        if (_outstandingWireBytes < 0 || _outstandingFrames < 0)
-            throw new IllegalStateException("negative outstanding SEND accounting");
-        return updateSendReadPauseLocked();
-    }
 
     // Reserved producer slots for existing direct-frame serializers. A reservation
     // survives the serializer and is consumed atomically by commit or abort.
-    private int _reservedDirect;
     // State-lock-owned first Action lease: only while a P6-A SEND_ENQUEUE is
     // published but has not yet been accepted by its FIFO serializer callback.
     // Do not store a lease after commit: it may be recycled by the pool.
@@ -591,7 +494,6 @@ public final class CUserSocket extends CSocket {
     // Native gathering WRITE maps to WSABUF arrays on Windows IOCP.
     // No new staging buffers or copies: select a wider gather only when a
     // connection already has enough committed SEND leases. Default unchanged.
-    private static final int GATHER_MAX_FRAMES = 8;
     // On a partial asynchronous WRITE the current lease is still the oldest
     // committed output. Reposting from the existing serializer avoids
     // reacquiring the state lock, without adding a completion worker or
@@ -599,8 +501,6 @@ public final class CUserSocket extends CSocket {
     // P19: retain the serializer-driven partial WRITE progression; no runtime flag.
     // Medium S-packets share the same ordered wire batch when space permits.
     private static final int PACK_MAX_FRAME_BYTES = 2048;
-    private CIOBufferEx[] _gatherFrames;
-    private int _zeroWriteCompletions;
 
     /* READ lease is released only after the last completion callback, never during a pending read. */
     // Only the READ pump touches this; preserves buffered frames if an ACK races pause.
@@ -608,227 +508,11 @@ public final class CUserSocket extends CSocket {
 
     // Native completion publishes into the existing READ pump, without a
     // JDK asynchronous channel or provider adapter.
-    @Override public void onRawWrite(long bytes, boolean gather) {
-        if (gather) publishWriteCompletion(GATHER_DONE, GATHER_FAILED, bytes);
-        else publishWriteCompletion(WRITE_DONE, WRITE_FAILED, bytes);
-    }
-
-    /**
-     * A WRITE's pending I/O keeps its lease attached to this socket. The native IOCP
-     * completion thread only publishes the result; the existing WRITE pump is
-     * the sole executor of completion, next-send and buffer-release transitions.
-     * There is only one in-flight WRITE per connection, so a single completion
-     * mailbox is sufficient. The existing bounded _pending ring continues to
-     * retain queued outbound buffers without a redundant callback queue.
-     */
-    private void publishWriteCompletion(int okKind, int failKind, long transferred) {
-
-        final boolean ok = transferred >= 0L && transferred <= Integer.MAX_VALUE;
-        final long event = (ok ? (transferred << 3) | okKind : failKind);
-        if (!WRITE_EVENT.compareAndSet(this, 0L, event)) {
-            // A second completion for one in-flight WRITE is a transport violation.
-            // Never overwrite the first callback or release its lease twice.
-            close();
-            return;
-        }
-        // Native IOCP completions run inside write() while this thread
-        // already owns the serializer. Defer their retirement until the write
-        // invocation returns, then consume in the existing nonrecursive loop.
-        if (INLINE_WRITE_COMPLETION && deferOwnerInlineWriteCompletion(event)) return;
-        // A WRITE already on the wire must be able to retire while a later
-        // SEND producer holds an unpublished FIFO reservation. Retire only
-        // this completed prefix under the existing socket serializer token;
-        // never consume or move the reserved SEND ticket itself.
-        if (tryRetireCommittedWriteAcrossUnpublishedSend(event)) return;
-        if (!serializeSocketCallback(SOCKET_WRITE_COMPLETE, event)) {
-            // The completion remains in the mailbox. Close and let the current
-            // drainer retire it once earlier callback tickets have finished.
-            close();
-        }
-    }
-
-    /**
-     * Only the serializer owner may publish this local deferral. A ticket
-     * reserved before this WRITE callback must still execute first. While
-     * dispatching a ticket, _socketPending includes that one active ticket;
-     * it has already been consumed and cannot be an earlier reservation.
-     * Checking the pending reservation count first also sees unpublished
-     * producer tickets whose ring slots are not yet visible.
-     */
-    private boolean deferOwnerInlineWriteCompletion(long event) {
-        if (!_socketPosting || _socketOwner != Thread.currentThread()
-                || _inlineWriteCompletion != 0L) return false;
-        final int active = _socketExecutingTicket ? 1 : 0;
-        if ((int) SOCKET_PENDING.getVolatile(this) != active
-                || (long) SOCKET_TICKET.getVolatile(this) != _socketHead
-                || (COALESCE_SEND_START
-                    && (int) SOCKET_START_PENDING.getAcquire(this) != 0)) {
-            // The current WRITE was committed before this callback. A later
-            // SEND may have reserved the oldest pending slot but not sealed
-            // it yet. Retiring the WRITE cannot overtake that SEND's bytes;
-            // the reserved slot remains untouched until its producer seals it.
-            if (!hasUnpublishedSendBehindWriting(active)) return false;
-        }
-        _inlineWriteCompletion = event;
-        return true;
-    }
-
-    /**
-     * Only a WRITE already in flight may retire ahead of a later producer's
-     * unsealed SEND reservation. This does not claim or consume the reservation.
-     * The serializer token must already be held before calling this check.
-     */
-    private boolean hasUnpublishedSendBehindWriting(int active) {
-        if (_writing == null || !_writing._ioPending || _closed != 0
-                || (int) SOCKET_PENDING.getVolatile(this) <= active) return false;
-        final int slot = (int) _socketHead & SOCKET_MASK;
-        return (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot) == 0L;
-    }
-
-    /**
-     * An earlier committed WRITE may finish while a newer SEND encoder has
-     * reserved, but not published, the head FIFO slot. Waiting for that
-     * encoder would stall completion/lease retirement of an older WRITE.
-     * Only consume the WRITE mailbox with the normal serializer ownership;
-     * later SEND tickets stay reserved and are executed in their FIFO order.
-     * The active provider call and owner-inline callback stay on their
-     * original, write()-return-safe path.
-     */
-    private boolean tryRetireCommittedWriteAcrossUnpublishedSend(long event) {
-        // The common inline completion was already handled by the owner.
-        // A FOREIGN completion can arrive before write() returns while the
-        // posting owner is blocked in the provider and a later SEND ticket
-        // is reserved but unpublished. Hand off only the notification, never
-        // its lease. Keep this rare case outside the ordinary serializer CAS.
-        if (_socketPosting) {
-            if (_closed != 0 || _socketOwner == Thread.currentThread()
-                    || (int) SOCKET_PENDING.getAcquire(this) == 0
-                    || (int) SOCKET_DRAINING.getAcquire(this) == 0) return false;
-            final CIOBufferEx active = _writing;
-            if (active == null || !active._ioPending) return false;
-            _prefixWriteCompletion = event;
-            drainSocketCallbacks();
-            return true;
-        }
-        // Uncontended and already-returned completions retain the P8 path.
-        if (_closed != 0 || (int) SOCKET_PENDING.getAcquire(this) == 0) return false;
-        if (SOCKET_DRAINING.compareAndSet(this, 0, 1)) {
-            _socketOwner = Thread.currentThread();
-            try {
-                if (!hasUnpublishedSendBehindWriting(0)) return false;
-                if (WRITE_EVENT.compareAndSet(this, event, 0L))
-                    drainWriteCompletion(event);
-                return true;
-            } catch (Throwable failure) {
-                close();
-                return true;
-            } finally {
-                drainSocketCallbacksAcquired();
-            }
-        }
-        // The READ-fusion owner (or another callback drainer) already owns
-        // the token. Do NOT append WRITE_COMPLETE behind a reserved/unsealed
-        // SEND head: the owner would stop at that head and strand this WRITE.
-        // The in-flight WRITE predates any newer SEND; hand its one completion
-        // to the existing owner without moving any SEND ticket or lease.
-        final CIOBufferEx active = _writing;
-        if (active == null || !active._ioPending) return false;
-        _prefixWriteCompletion = event;
-        // A race with owner release is closed by the ordinary recheck below.
-        // The callback may claim the token if the old owner has left.
-        drainSocketCallbacks();
-        return true;
-    }
-
-    /**
-     * Claim the existing serializer token only when its FIFO is empty.
-     * A concurrent producer's reservation is visible through _socketPending
-     * before its ticket is published. Any contention takes the original
-     * ticket path without changing WRITE ownership or lease lifetime.
-     */
-
-
-    /** Runs only with the socket serializer's execution token. */
-    @Override final void drainWriteCompletion(long event) {
-
-        final int kind = (int) (event & 7L);
-        if (kind == WRITE_DONE || kind == GATHER_DONE)
-            _networkWriteProgress += event >>> 3;
-        if (kind == WRITE_FAILED) {
-            final CIOBufferEx lease = _writing;
-            if (lease != null) completeWrite(lease, false);
-            else close();
-            return;
-        }
-        if (kind == GATHER_FAILED) {
-            completeGather(false);
-            return;
-        }
-        if (kind == WRITE_DONE) {
-            final CIOBufferEx lease = _writing;
-            if (lease == null) { close(); return; }
-            if (_closed != 0) { completeWrite(lease, false); return; }
-            final ByteBuffer buffer = lease.buffer();
-            if (buffer.hasRemaining()) {
-                final long written = event >>> 3;
-
-                if (written == 0L && ++_zeroWriteCompletions >= 8) {
-                    completeWrite(lease, false);
-                    return;
-                }
-                if (written != 0L) {
-                    _zeroWriteCompletions = 0;
-                }
-                // This lease was already selected and has not been retired.
-                // A partial WRITE must finish before any later queued frame.
-                // The current serializer owns its lifetime; an inline callback
-                // is published and drained iteratively by the same serializer.
-                lease._ioPending = false;
-                kickWrite();
-            } else {
-                _zeroWriteCompletions = 0;
-                completeWrite(lease, true);
-            }
-            return;
-        }
-        if (kind == GATHER_DONE) {
-            if (_closed != 0) { completeGather(false); return; }
-            int firstRemaining = _gatherOffset;
-            while (firstRemaining < _gatherCount && !_gatherBuffers[firstRemaining].hasRemaining()) ++firstRemaining;
-            if (firstRemaining < _gatherCount) {
-                _gatherOffset = firstRemaining;
-                final long written = event >>> 3;
-
-                if (written == 0L && ++_zeroWriteCompletions >= 8) {
-                    completeGather(false);
-                    return;
-                }
-                if (written != 0L) {
-                    _zeroWriteCompletions = 0;
-                }
-                if (_writing == null) { close(); return; }
-                // Like the single-buffer partial path: the same serializer
-                // still owns every gather lease. Repost the remaining WSABUFs
-                // without reacquiring _stateLock or changing the FIFO head.
-                // The provider call remains outside the state lock and inline
-                // completions are trampolined by the existing callback ring.
-                _writing._ioPending = false;
-                kickWrite();
-            } else {
-                _zeroWriteCompletions = 0;
-                completeGather(true);
-            }
-            return;
-        }
-        close();
-    }
-
     CUserSocket(CIOServer registry, Connection peer, long id, CIOBufferPool pool,
             int maxQueuedFrames, Closed closedCallback, boolean gameSession) {
-        super(validateSocketArguments(registry, peer, pool, maxQueuedFrames), id, pool);
+        super(validateSocketArguments(registry, peer, pool, maxQueuedFrames), id, pool, maxQueuedFrames);
         this.registry = registry;
         _closedCallback = closedCallback;
-        _maxQueuedFrames = maxQueuedFrames;
         _gameSession = gameSession;
     }
 
@@ -1074,7 +758,7 @@ public final class CUserSocket extends CSocket {
         ON_DRAINED.setVolatile(this, null);
     }
 
-    private void onSendProgress() {
+    @Override final void onSendProgress() {
         // Admission is blocked during close. An accepted encoder reservation
         // remains visible until it has attached its FIFO ticket.
         if (_closing == 0 && ON_DRAINED.getVolatile(this) == null) return;
@@ -1125,11 +809,6 @@ public final class CUserSocket extends CSocket {
             // The provider drains its own I/O only. The game FIFO must be idle before handing off closure.
             if (closeNow) closeGracefully();
         }
-    }
-
-    /** Acquire a packet-writing slot; false/null means backpressure, not a silent successful SEND. */
-    public CIOBufferEx beginOutboundFrame(int maxWireBytes) {
-        return (_closed != 0) ? null : _pool.acquireSend(maxWireBytes);
     }
 
     /**
@@ -1417,30 +1096,6 @@ public final class CUserSocket extends CSocket {
                     failure); }
             catch (Throwable ignored) { /* socket has been closed */ }
         }
-    }
-
-    /**
-     * Allocate the large pending ring only when a connection actually has a burst.
-     * Called with the connection state lock held. The ring grows at most to the
-     * original configured bound; no extra queue or per-frame nodes are created.
-     */
-    private boolean ensurePendingSlot() {
-        final CIOBufferEx[] old = _pending;
-        if (old == null) {
-            _pending = new CIOBufferEx[Math.min(_maxQueuedFrames, 8)];
-            return true;
-        }
-        if (_queued < old.length) return true;
-        if (old.length >= _maxQueuedFrames) return false;
-        final int capacity = (int) Math.min((long) _maxQueuedFrames, (long) old.length << 1);
-        final CIOBufferEx[] next = new CIOBufferEx[capacity];
-        final int first = Math.min(_queued, old.length - _head);
-        System.arraycopy(old, _head, next, 0, first);
-        if (_queued > first) System.arraycopy(old, 0, next, first, _queued - first);
-        _pending = next;
-        _head = 0;
-        _tail = _queued;
-        return true;
     }
 
     /**
@@ -2650,14 +2305,6 @@ public final class CUserSocket extends CSocket {
                         | ((actionId & 0xffL) << 56));
     }
 
-    /** Only call this for a frame that was NOT committed. */
-    public void abortOutboundFrame(CIOBufferEx lease) {
-        if (lease == null) return;
-        if (!_pool.owns(lease) || !lease.reserved())
-            throw new IllegalStateException("abort after commit or foreign SEND lease");
-        _pool.release(lease);
-    }
-
     @Override final boolean dispatchPlaintext(CPacketReadBuffer decoded) {
         final int opcode = decoded.readUnsignedByte();
         if (this.checkPacketRateLimit(System.currentTimeMillis())) return false;
@@ -2718,324 +2365,6 @@ public final class CUserSocket extends CSocket {
         } finally {
             if (--burst.depth == 0) burst.flush();
         }
-    }
-
-    /**
-     * An unpublished FIFO ticket bars later SENDs, not the already committed
-     * prefix. A ready _writing lease was selected before that ticket and can
-     * be posted without consuming or overtaking the unpublished slot.
-     * Check under the existing state lock; never issue provider WRITE in it.
-     */
-    @Override final boolean hasCommittedWriteReady() {
-        _stateLock.lock();
-        try {
-            return _writing != null && !_writing._ioPending;
-        } finally {
-            _stateLock.unlock();
-        }
-    }
-
-    /** SEND registration and next-WRITE selection, executed by the serializer. */
-    @Override final void kickWrite() {
-        if (!COALESCE_SEND_START) {
-            if (!serializeSocketCallback(SOCKET_SEND_START, 0L)) close();
-            return;
-        }
-        // A ticket-free READ owner cannot bypass an earlier reserved SEND.
-        if (canExecuteOwnerControlDirect()) {
-            // Already-posted WRITE owns the committed FIFO prefix. Its
-            // completion (or failure/close) drives the next lease. Avoid
-            // reacquiring _stateLock only to find _ioPending=true. Keep the
-            // original wakeup path for foreign/unpublished FIFO reservations.
-            final CIOBufferEx active = _writing;
-            if (_closed == 0 && _closing == 0 && active != null && active._ioPending)
-                return;
-            driveWriteOnce();
-            return;
-        }
-        SOCKET_START_PENDING.setRelease(this, 1);
-        drainSocketCallbacks();
-    }
-
-    @Override final void driveWriteOnce() {
-        CIOBufferEx current = null;
-        boolean gather = false;
-        boolean cancelled = false;
-        _stateLock.lock();
-        try {
-            if (_writing != null && !_writing._ioPending) {
-                current = _writing;
-                cancelled = (_closed != 0);
-                if (!cancelled && _gatherCount == 0 && _queued != 0) {
-                    if (_gatherFrames == null) {
-                        _gatherFrames = new CIOBufferEx[GATHER_MAX_FRAMES];
-                        _gatherBuffers = new ByteBuffer[GATHER_MAX_FRAMES];
-                    }
-                    int totalBytes = current.wireLength();
-                    _gatherFrames[0] = current;
-                    _gatherCount = 1;
-                    while (_queued != 0 && _gatherCount < GATHER_MAX_FRAMES) {
-                        final CIOBufferEx candidate = _pending[_head];
-                        if (totalBytes + candidate.wireLength() > GATHER_MAX_BYTES)
-                            break;
-                        _pending[_head] = null;
-                        if (++_head == _pending.length) _head = 0;
-                        --_queued;
-                        _gatherFrames[_gatherCount++] = candidate;
-                        totalBytes += candidate.wireLength();
-                    }
-                    if (_gatherCount == 1) {
-                        _gatherFrames[0] = null;
-                        _gatherCount = 0;
-                    }
-                }
-                gather = _gatherCount > 1;
-                current._ioPending = true;
-            }
-        } finally {
-            _stateLock.unlock();
-
-        }
-
-        if (current != null) {
-            if (cancelled) {
-                if (gather) completeGather(false);
-                else completeWrite(current, false);
-            } else if (gather) postGather();
-            else postWrite(current);
-        }
-    }
-
-    /** Ordered packet leases; native owns per-frame cipher and serialized SEND/WRITE. */
-    private void postGather() {
-        if (_closed != 0) {
-            completeGather(false);
-            return;
-        }
-        try {
-            boolean preparedAny = false;
-            for (int i = _gatherOffset; i < _gatherCount; i++) {
-                final CIOBufferEx lease = _gatherFrames[i];
-                final ByteBuffer bytes = lease.buffer();
-                if (!lease._writePrepared) {
-                    preparedAny = true;
-                    if (lease._packedFrames ? !preparePackedEncryption(lease)
-                            : !encrypt(lease.writer(),
-                                    CIOBufferPool.HEADER_BYTES,
-                                    lease.wireLength() - CIOBufferPool.HEADER_BYTES)) {
-                        completeGather(false);
-                        return;
-                    }
-                    bytes.limit(lease.wireLength());
-                    bytes.position(0);
-                    lease._writePrepared = true;
-
-                }
-                _gatherBuffers[i] = bytes;
-            }
-
-
-            _socketPosting = true;
-            try {
-                submitTransportWrite(GATHER_WRITE);
-            } finally {
-                _socketPosting = false;
-
-            }
-        } catch (Throwable error) {
-            LOG.log(Level.WARNING, "[CIO WRITE] gather post failed remote=" + _remoteAddress, error);
-            // A provider may publish a completion before throwing. Let the
-            // serializer consume the mailbox exactly once after write returns.
-            if (INLINE_WRITE_COMPLETION && (long) WRITE_EVENT.getVolatile(this) != 0L) close();
-            else completeGather(false);
-        }
-    }
-
-    private void completeGather(boolean success) {
-
-        CIOBufferEx next = null;
-        boolean resumeInbound = false;
-        Throwable releaseFailure = null;
-        _stateLock.lock();
-        try {
-            if (_gatherCount <= 1 || _writing != _gatherFrames[0]) {
-                close();
-                return;
-            }
-            int releasedBytes = 0;
-            int releasedFrames = 0;
-            for (int i = 0; i < _gatherCount; i++) {
-                final CIOBufferEx frame = _gatherFrames[i];
-                releasedBytes += frame.wireLength();
-                releasedFrames += frame._frameCount;
-                try { _pool.release(frame); }
-                catch (Throwable failed) {
-                    if (releaseFailure == null) releaseFailure = failed;
-                    else if (releaseFailure != failed) releaseFailure.addSuppressed(failed);
-                    success = false;
-                } finally {
-                    _gatherFrames[i] = null;
-                    _gatherBuffers[i] = null;
-                }
-            }
-            // READ resumes once, after all gather frames have been retired.
-            resumeInbound = bytesReleased(releasedBytes, releasedFrames);
-            _gatherCount = 0;
-            _gatherOffset = 0;
-            _writing = null;
-            if (success && _closed == 0 && _queued != 0) {
-                // The next lease is already committed in FIFO order. Do not
-                // bypass unsealed producer tickets or the gather path.
-                next = _pending[_head];
-                _pending[_head] = null;
-                if (++_head == _pending.length) _head = 0;
-                --_queued;
-                _writing = next;
-                _zeroWriteCompletions = 0;
-            }
-        } finally {
-            _stateLock.unlock();
-
-        }
-        if (releaseFailure != null) try {
-            LOG.log(Level.WARNING, "[CIO WRITE] gather lease release failed remote="
-                    + _remoteAddress, releaseFailure);
-        } catch (Throwable ignored) { /* close broken connection below */ }
-        if (!success) close();
-        else if (next != null) {
-
-            kickWrite();
-        }
-        if (resumeInbound && _closed == 0) kickRead();
-        if (success && _closed == 0) notifySendSlotAvailable();
-        notifyClosedWhenReleased();
-    }
-
-    private void notifySendSlotAvailable() {
-        try { onSendProgress(); } catch (Throwable failure) { close(); }
-    }
-
-    private void postWrite(CIOBufferEx lease) {
-        if (_closed != 0) {
-            lease._ioPending = false;
-            completeWrite(lease, false);
-            return;
-        }
-        try {
-            final ByteBuffer bytes = lease.buffer();
-            final boolean preparing = !lease._writePrepared;
-            if (preparing) {
-                final CPacketWriteBuffer writer = lease.writer();
-                if (lease._packedFrames ? !preparePackedEncryption(lease)
-                        : !encrypt(writer,
-                                CIOBufferPool.HEADER_BYTES,
-                                lease.wireLength() - CIOBufferPool.HEADER_BYTES)) {
-                    lease._ioPending = false;
-                    completeWrite(lease, false);
-                    return;
-                }
-                bytes.limit(lease.wireLength());
-                bytes.position(0);
-                lease._writePrepared = true;
-
-            }
-
-
-            _socketPosting = true;
-            try {
-                submitTransportWrite(SINGLE_WRITE);
-            } finally {
-                _socketPosting = false;
-
-            }
-        } catch (Throwable error) {
-            LOG.log(Level.WARNING, "[CIO WRITE] post failed remote=" + _remoteAddress, error);
-            if (INLINE_WRITE_COMPLETION && (long) WRITE_EVENT.getVolatile(this) != 0L) close();
-            else {
-                lease._ioPending = false;
-                completeWrite(lease, false);
-            }
-        }
-    }
-
-    private void completeWrite(CIOBufferEx lease, boolean success) {
-
-        CIOBufferEx next = null;
-        boolean resumeInbound;
-        Throwable releaseFailure = null;
-        _stateLock.lock();
-        try {
-            if (_writing != lease) {
-                close();
-                return;
-            }
-            resumeInbound = bytesReleased(lease.wireLength(), lease._frameCount);
-            try { _pool.release(lease); }
-            catch (Throwable failed) { releaseFailure = failed; success = false; }
-            // Release failures must not leave the completed lease as _writing:
-            // otherwise close()/the next WRITE can never make progress.
-            _writing = null;
-            if (success && _closed == 0 && _queued != 0) {
-                // The next lease is already committed in FIFO order. Do not
-                // bypass unsealed producer tickets or the gather path.
-                next = _pending[_head];
-                _pending[_head] = null;
-                if (++_head == _pending.length) _head = 0;
-                --_queued;
-                _writing = next;
-                _zeroWriteCompletions = 0;
-            }
-        } finally {
-            _stateLock.unlock();
-
-        }
-        if (releaseFailure != null) try {
-            LOG.log(Level.WARNING, "[CIO WRITE] completed lease release failed remote="
-                    + _remoteAddress, releaseFailure);
-        } catch (Throwable ignored) { /* close broken connection below */ }
-        if (!success) {
-            close();
-        } else if (next != null) {
-
-            kickWrite();
-        }
-        if (resumeInbound && _closed == 0) kickRead();
-        if (success && _closed == 0) notifySendSlotAvailable();
-        notifyClosedWhenReleased();
-    }
-
-    /** No allocation; useful for admission diagnostics and slow-peer checks. */
-    public int pendingSendBytes() {
-        _stateLock.lock();
-        try { return _outstandingWireBytes + _reservedWireBytes; }
-        finally { _stateLock.unlock(); }
-    }
-
-    /** True when the connection's outbound backlog allows further socket reads. */
-    public boolean isSendReadWritable() { return !_sendReadPaused; }
-
-    /** Snapshot only; includes the active WRITE, queued frames and reserved producers. */
-    public int pendingSendFrames() {
-        _stateLock.lock();
-        try { return physicalSendLeasesLocked(); }
-        finally { _stateLock.unlock(); }
-    }
-
-    private boolean isWriteIdleLocked() {
-        // A primitive SOCKET_PACKED_ACTION is already accepted and charged
-        // to outstanding accounting BEFORE it becomes a physical SEND lease.
-        // A drain callback or graceful close must not overtake that FIFO ticket.
-        // Do not use _socketPending here: it includes the currently executing
-        // WRITE-completion control ticket and could prevent drain forever.
-        return _queued == 0 && _reservedDirect == 0 && _stagedSends == 0
-                && _writing == null && _outstandingWireBytes == 0
-                && _outstandingFrames == 0 && _reservedWireBytes == 0;
-    }
-
-    public boolean isWriteIdle() {
-        _stateLock.lock();
-        try { return isWriteIdleLocked(); }
-        finally { _stateLock.unlock(); }
     }
 
     /** Transport close callback is emitted after every in-flight I/O lease is released. */
