@@ -164,19 +164,19 @@ public class L1FakeCharacter implements L1CommandExecutor {
 
 			if (newPc.isKnight() || newPc.isCrown() || newPc.isDragonknight()) {// 기사.군주.용기사
 				newPc.getInventory().storeItem(item);
-				newPc.getInventory().setEquipped(item, true);
+				newPc.EquipItem(item);
 			} else if (newPc.isElf()){ //요정
 				newPc.getInventory().storeItem(item1);
-				newPc.getInventory().setEquipped(item1, true);
+				newPc.EquipItem(item1);
 			} else if (newPc.isWizard() || newPc.isBlackwizard()){//마법사. 환술사
 				newPc.getInventory().storeItem(item2);
-				newPc.getInventory().setEquipped(item2, true);
+				newPc.EquipItem(item2);
 			} else if (newPc.isDarkelf()){ //다크엘프
 				newPc.getInventory().storeItem(item3);
-				newPc.getInventory().setEquipped(item3, true);
+				newPc.EquipItem(item3);
 			} else if (newPc.isWarrior()){ //전사
 				newPc.getInventory().storeItem(item4);
-				newPc.getInventory().setEquipped(item4, true);
+				newPc.EquipItem(item4);
 			}
 
 			L1World.getInstance().storeAndEnterWorld(newPc);

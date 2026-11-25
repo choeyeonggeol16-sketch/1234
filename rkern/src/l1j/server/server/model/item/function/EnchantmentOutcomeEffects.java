@@ -303,7 +303,7 @@ final class EnchantmentOutcomeEffects {
 		// <= 22252)) {//신묘한 날자에 러쉬부분?
 		if ((itemId >= 1115 && itemId <= 1118)) {
 
-			pc.getInventory().setEquipped(item, false);
+			pc.UnequipItem(item);
 			item.setEnchantLevel(0);
             pc.getInventory().saveItem(item, CUserInventory.COL_ENCHANTLVL);
             sendEnchantUpdate(pc, item);
