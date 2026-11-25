@@ -106,6 +106,17 @@ public final class CNpcMakerDB {
 	private synchronized boolean reloadScope(int mapId) {
 		final List<CNpcMaker> definitions = LoadDefinitions(mapId, true);
 		if (definitions == null) return false;
+		// 다른 맵에서 이동한 행은 해당 맵의 기존 Maker까지 정리해야 한다.
+		// 부분 갱신으로 등록 키만 덮어쓰지 않고 전체 갱신을 요구한다.
+		if (mapId >= 0) {
+			for (CNpcMaker definition : definitions) {
+				final CNpcMaker previous = _spawntable.get(definition.getId());
+				if (previous != null && previous.getMapId() != mapId) {
+					_log.warning("스폰 정의의 맵이 변경되었습니다. 전체 리로드 필요: " + definition.getId());
+					return false;
+				}
+			}
+		}
 		if (!RetireScope(mapId)) {
 			_log.warning("기존 몬스터 삭제 대기 중: 스폰 리로드 보류, map=" + mapId);
 			return false;
