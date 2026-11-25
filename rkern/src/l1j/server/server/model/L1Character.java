@@ -1125,10 +1125,7 @@ public class L1Character extends L1Object {
 
 	public synchronized void setLevel(long level) {
 		_level = (int) level;
-		if (this instanceof L1PcInstance pc) {
-			pc.RefreshBaseMDefend();
-			pc.RefreshBasePDefend();
-		}
+		ValidateParameters(VB_MDEFEND | VB_PDEFEND);
 	}
 
 	private short m_sOrgHPRegen;
@@ -1464,6 +1461,22 @@ public class L1Character extends L1Object {
 	}
 
 	// CStats lane operations. No new object, array or temporary allocation.
+	// L1 validation groups: preserve existing vital clamp and defense ownership.
+	// These are local masks, not the L2 protocol flag values.
+	protected static final int VB_HP = 1;
+	protected static final int VB_MP = 2;
+	protected static final int VB_MDEFEND = 4;
+	protected static final int VB_PDEFEND = 8;
+
+	protected final void ValidateParameters(int parameter) {
+		if ((parameter & VB_HP) != 0) clampCurrentHp();
+		if ((parameter & VB_MP) != 0) clampCurrentMp();
+		if ((parameter & (VB_MDEFEND | VB_PDEFEND)) != 0 && this instanceof L1PcInstance pc) {
+			if ((parameter & VB_MDEFEND) != 0) pc.RefreshBaseMDefend();
+			if ((parameter & VB_PDEFEND) != 0) pc.RefreshBasePDefend();
+		}
+	}
+
 	final byte ValidateStat(int value, int minimum) {
 		return (byte) IntRange.ensure(value, minimum, 127);
 	}
@@ -1477,12 +1490,12 @@ public class L1Character extends L1Object {
 	public final byte GetOriginalStatDex() { return m_OriginalStatDex; }
 	public final void SetStatDex(int value) {
 		m_StatDex = ValidateStat(value, m_OriginalStatDex);
-		if (this instanceof L1PcInstance pc) pc.RefreshBasePDefend();
+		ValidateParameters(VB_PDEFEND);
 	}
 	public final byte GetAddedStatDex() { return ValidateStat(m_AddedStatDex + (byte) (m_SkillPrimaryStats >>> 8), -128); }
 	final void AddAddedStatDex(int value) {
 		m_AddedStatDex = ValidateStat(m_AddedStatDex + value, -128);
-		if (this instanceof L1PcInstance pc) pc.RefreshBasePDefend();
+		ValidateParameters(VB_PDEFEND);
 	}
 	public final byte GetTotalStatDex() { return ValidateStat(GetStatDex() + GetAddedStatDex(), 0); }
 	public final byte GetStatInt() { return m_StatInt; }
@@ -1496,19 +1509,19 @@ public class L1Character extends L1Object {
 	public final void SetStatWis(int value) {
 		final int previous = this instanceof L1PcInstance ? GetStatWis() : GetTotalStatWis();
 		m_StatWis = ValidateStat(value, m_OriginalStatWis);
-		if (this instanceof L1PcInstance pc) {
-			pc.RefreshBaseMDefend();
-			if (GetStatWis() < previous) clampCurrentMp();
+		if (this instanceof L1PcInstance) {
+			ValidateParameters(VB_MDEFEND);
+			if (GetStatWis() < previous) ValidateParameters(VB_MP);
 		} else if (GetTotalStatWis() < previous) {
-			clampCurrentMp();
+			ValidateParameters(VB_MP);
 		}
 	}
 	public final byte GetAddedStatWis() { return ValidateStat(m_AddedStatWis + (byte) (m_SkillPrimaryStats >>> 24), -128); }
 	final void AddAddedStatWis(int value) {
 		final int previous = GetTotalStatWis();
 		m_AddedStatWis = ValidateStat(m_AddedStatWis + value, -128);
-		if (this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
-		else if (GetTotalStatWis() < previous) clampCurrentMp();
+		if (this instanceof L1PcInstance) ValidateParameters(VB_MDEFEND);
+		else if (GetTotalStatWis() < previous) ValidateParameters(VB_MP);
 	}
 	public final byte GetTotalStatWis() { return ValidateStat(GetStatWis() + GetAddedStatWis(), 0); }
 	public final byte GetStatCon() { return m_StatCon; }
@@ -1516,7 +1529,7 @@ public class L1Character extends L1Object {
 	public final void SetStatCon(int value) {
 		final byte previous = m_StatCon;
 		m_StatCon = ValidateStat(value, m_OriginalStatCon);
-		if (m_StatCon < previous && this instanceof L1PcInstance) clampCurrentHp();
+		if (m_StatCon < previous && this instanceof L1PcInstance) ValidateParameters(VB_HP);
 	}
 	public final byte GetAddedStatCon() { return ValidateStat(m_AddedStatCon + (byte) (m_SkillPrimaryStats >>> 32), -128); }
 	final void AddAddedStatCon(int value) { m_AddedStatCon = ValidateStat(m_AddedStatCon + value, -128); }
@@ -1534,11 +1547,13 @@ public class L1Character extends L1Object {
 		if (changed == 0) return;
 		final int previousWis = GetTotalStatWis();
 		m_SkillPrimaryStats = value;
-		if (!(this instanceof L1PcInstance) && (changed & 0xff000000L) != 0 && GetTotalStatWis() < previousWis) clampCurrentMp();
-		if (this instanceof L1PcInstance pc) {
-			if ((changed & 0xff000000L) != 0) pc.RefreshBaseMDefend();
-			if ((changed & 0x0000ff00L) != 0) pc.RefreshBasePDefend();
+		int parameter = 0;
+		if ((changed & 0xff000000L) != 0) {
+			if (this instanceof L1PcInstance) parameter |= VB_MDEFEND;
+			else if (GetTotalStatWis() < previousWis) parameter |= VB_MP;
 		}
+		if ((changed & 0x0000ff00L) != 0) parameter |= VB_PDEFEND;
+		if (parameter != 0) ValidateParameters(parameter);
 		if (notify) NotifySkillPrimaryStats(changed);
 	}
 
@@ -1559,12 +1574,7 @@ public class L1Character extends L1Object {
 		m_StatInt = m_OriginalStatInt = ValidateStat(intel, 0);
 		m_StatWis = m_OriginalStatWis = ValidateStat(wis, 0);
 		m_StatCha = m_OriginalStatCha = ValidateStat(cha, 0);
-		clampCurrentHp();
-		clampCurrentMp();
-		if (this instanceof L1PcInstance pc) {
-			pc.RefreshBaseMDefend();
-			pc.RefreshBasePDefend();
-		}
+		ValidateParameters(VB_HP | VB_MP | VB_MDEFEND | VB_PDEFEND);
 	}
 
 	private byte CheckStatRange(int i) {

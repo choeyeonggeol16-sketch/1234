@@ -18,13 +18,13 @@ fields=creature[creature.index("// CStats: original,"):creature.index("// BEGIN 
 methods=creature[creature.index("// CStats lane operations."):creature.index("// BEGIN direct primary-stat operations")]
 methods+="\n".join(method(creature,s) for s in (
     "public synchronized void setLevel(", "public final void SetSkillPrimaryStats(", "private void NotifySkillPrimaryStats(",
-    "public final void ResetPrimaryStats(", "public final void SetOrgMDefend(",
+    "public final void ResetPrimaryStats(", "public final int GetStatMDefend(", "public final void SetOrgMDefend(",
     "public final int GetOrgMDefend(", "public final void AddMDefend(",
     "public final int GetMDefend()", "private int CheckMDefendRange(", "public final void SetSkillMDefend("))
 # GetMDefend reads the passive bit; fixture supplies the same state shape.
 res=creature.split("// BEGIN shared resistance sources (CCreature)",1)[1].split("// END shared resistance sources",1)[0]
 pcmethods="\n".join(method(pc,s) for s in ("public final void RefreshBaseMDefend(", "public void resetBaseMr()", "public void setType("))
-assert "RefreshBaseMDefend();" in pcmethods
+assert "ValidateParameters(VB_MDEFEND);" in pcmethods
 # Use actual CalcStat base table and formula.
 base=re.search(r"(?:private|public)\s+static\s+final\s+int\[\]\s+BASE_MR\s*=\s*\{[^}]+\};",calc).group(0)
 calcMethods=method(calc,"public static int 마법방어(")

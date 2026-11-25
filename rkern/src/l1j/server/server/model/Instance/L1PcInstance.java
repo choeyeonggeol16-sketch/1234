@@ -2145,7 +2145,7 @@ public class L1PcInstance extends L1Character {
 	public void setType(int i) {
 		_type = i;
         m_BaseParam.invalidate();
-        RefreshBaseMDefend();
+        ValidateParameters(VB_MDEFEND);
 	}
 
 	public short getAccessLevel() {
@@ -2163,7 +2163,7 @@ public class L1PcInstance extends L1Character {
 	public void setClassId(int i) {
 		_classId = i;
 		_classFeature = L1ClassFeature.newClassFeature(i);
-		RefreshBasePDefend();
+		ValidateParameters(VB_PDEFEND);
 	}
 
 	public L1ClassFeature getClassFeature() {
@@ -5378,7 +5378,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public void resetBaseAc() {
-		RefreshBasePDefend();
+		ValidateParameters(VB_PDEFEND);
 		if (getNetConnection() != null) SC_OwnCharAttrDef.send(this);
 	}
 	
@@ -5394,7 +5394,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public void resetBaseMr() {
-		RefreshBaseMDefend();
+		ValidateParameters(VB_MDEFEND);
 		SC_SPMR.send(this);
 	}
 
