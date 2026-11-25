@@ -26,10 +26,12 @@ final class CWareHouseWithdraw {
         final l1j.server.server.model.Instance.L1PcInstance pc =
                 ((CUserInventory) ownerInventory).getOwner();
         final CUserSocket session = pc.getNetConnection();
-        if (session == null || !session.isConnected() || !pc.tryBeginItemTransfer()) return false;
+        final int stamp = pc.getSessionStamp();
+        final int token = pc.tryReserveItemTransfer(session, stamp);
+        if (token == 0) return false;
         boolean submitted = false;
         try {
-            final int size = ids.length, stamp = pc.getSessionStamp();
+            final int size = ids.length;
             final long totalFee = (long) feeEach * size;
             final L1ItemInstance[] sources = new L1ItemInstance[size];
             final int[] sourceCounts = new int[size];
@@ -135,7 +137,7 @@ final class CWareHouseWithdraw {
                 try (CacheD.WarehouseMove move = reserved) {
                     source.requireWithdrawalTable(move);
                     final int[] expectedCharges = destCharges;
-                    move.onFailure(() -> CIOThreadCallback.getInstance().completeSession(session, session::kick));
+                    move.onFailure(() -> pc.quarantineItemTransferSession(session, stamp));
                     for (int i = 0; i < size; i++) {
                         final L1ItemInstance item = sources[i];
                         final int count = counts[i];
@@ -184,8 +186,7 @@ final class CWareHouseWithdraw {
                         synchronized (session) {
                             synchronized (ownerInventory) {
                                 synchronized (source) {
-                                    if (!session.isConnected() || pc.getSessionStamp() != stamp
-                                            || pc.getNetConnection() != session)
+                                    if (!pc.isItemTransferSession(session, stamp))
                                         throw new IllegalStateException("Stale warehouse withdrawal batch session");
                                     if (fee != null && (ownerInventory.GetByServerID(fee.getId()) != fee || fee.getCount() != feeCount))
                                         throw new IllegalStateException("Withdrawal batch fee preimage changed");
@@ -218,7 +219,7 @@ final class CWareHouseWithdraw {
                                     for (int i = 0; i < size; i++)
                                         l1j.server.server.model.Warehouse.Warehouse.recordCommittedMove(
                                                 pc, source, false, sources[i], counts[i]);
-                                    pc.endItemTransfer();
+                                    pc.endItemTransfer(token);
                                     if (onCommitted != null) {
                                         try { onCommitted.run(); }
                                         catch (RuntimeException auditFailure) {
@@ -236,7 +237,7 @@ final class CWareHouseWithdraw {
                 }
             }
         } finally {
-            if (!submitted) pc.endItemTransfer();
+            if (!submitted) pc.endItemTransfer(token);
         }
     }
 
