@@ -74,7 +74,22 @@ public final class TestPartyRoster {
             catch (Throwable e) { failure.compareAndSet(null, e); }
         });
     }
+    private static void initializeMapFixture() throws Exception {
+        // 파티 테스트에는 맵 데이터가 필요 없다. DB 대신 빈 맵 목록만 준비한다.
+        // 실제 월드 생성자, 객체 등록부와 파티 코드는 그대로 실행한다.
+        final Class<?> type = l1j.server.server.datatables.MapsTable.class;
+        final Field instance = type.getDeclaredField("_instance");
+        instance.setAccessible(true);
+        if (instance.get(null) != null) return;
+        final Object maps = UNSAFE.allocateInstance(type);
+        final Field data = type.getDeclaredField("_maps");
+        data.setAccessible(true);
+        data.set(maps, new java.util.HashMap<>());
+        instance.set(null, maps);
+    }
+
     public static void main(String[] args) throws Exception {
+        initializeMapFixture();
         int original = Config.MAX_PT;
         Config.MAX_PT = 3;
         Fixture a = pc(950001, "PartyA"), b = pc(950002, "PartyB"),
