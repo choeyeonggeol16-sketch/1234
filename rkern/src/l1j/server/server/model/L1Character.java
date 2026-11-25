@@ -138,18 +138,14 @@ public class L1Character extends L1Object {
 	private int _status;
 	private int _Desperadolv = 0;
 	// 대미지
-	private int _dmgup = 0;
-	private int _trueDmgup = 0;
-	private int _bowDmgup = 0;
-	private int _trueBowDmgup = 0;
-	private int _hitup = 0;
-	private int _trueHitup = 0;
+	private int m_nOrgMeleeDamage;
+	private int m_nOrgRangedDamage;
+	private int m_nOrgMeleeHit;
 	// Signed 16-bit values from low to high: melee hit, melee damage, ranged damage, ranged hit.
-	private volatile long pumpedWeapon;
+	private volatile long m_SkillWeapon;
 	// Signed 16-bit ranged critical, magic critical, magic hit, and weapon hit rate.
 	private volatile long pumpedCombatRates;
-	private int _bowHitup = 0;
-	private int _trueBowHitup = 0;
+	private int m_nOrgRangedHit;
 
 
 	private int _missile_critical_rate = 0;
@@ -1097,7 +1093,7 @@ public class L1Character extends L1Object {
 		SetSkillPrimaryStats(primaryStats, notify);
 		SetSkillElemental(elementalResistance);
 		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
-		if (pumpedWeapon != weapon) pumpedWeapon = weapon;
+		if (m_SkillWeapon != weapon) m_SkillWeapon = weapon;
 		if (pumpedCombatRates != combatRates) pumpedCombatRates = combatRates;
 		SetSkillSp(sp);
 	}
@@ -1153,51 +1149,27 @@ public class L1Character extends L1Object {
 	}
 
 	public int getDmgup() {
-		final int effect = (short) (pumpedWeapon >>> 16);
-		return effect == 0 ? _dmgup : Math.clamp((long) _trueDmgup + effect, -128, 127);
+		return Math.clamp((long) m_nOrgMeleeDamage + (short) (m_SkillWeapon >>> 16), -128, 127);
 	}
 
 	public void addDmgup(int i) {
-		_trueDmgup += i;
-		if (_trueDmgup >= 127) {
-			_dmgup = 127;
-		} else if (_trueDmgup <= -128) {
-			_dmgup = -128;
-		} else {
-			_dmgup = _trueDmgup;
-		}
+		m_nOrgMeleeDamage += i;
 	}
 
 	public int getBowDmgup() {
-		final int effect = (short) (pumpedWeapon >>> 32);
-		return effect == 0 ? _bowDmgup : Math.clamp((long) _trueBowDmgup + effect, -128, 127);
+		return Math.clamp((long) m_nOrgRangedDamage + (short) (m_SkillWeapon >>> 32), -128, 127);
 	}
 
 	public void addBowDmgup(int i) {
-		_trueBowDmgup += i;
-		if (_trueBowDmgup >= 127) {
-			_bowDmgup = 127;
-		} else if (_trueBowDmgup <= -128) {
-			_bowDmgup = -128;
-		} else {
-			_bowDmgup = _trueBowDmgup;
-		}
+		m_nOrgRangedDamage += i;
 	}
 
 	public int getHitup() {
-		final int effect = (short) pumpedWeapon;
-		return effect == 0 ? _hitup : Math.clamp((long) _trueHitup + effect, -128, 127);
+		return Math.clamp((long) m_nOrgMeleeHit + (short) m_SkillWeapon, -128, 127);
 	}
 
 	public void addHitup(int i) {
-		_trueHitup += i;
-		if (_trueHitup >= 127) {
-			_hitup = 127;
-		} else if (_trueHitup <= -128) {
-			_hitup = -128;
-		} else {
-			_hitup = _trueHitup;
-		}
+		m_nOrgMeleeHit += i;
 	}
 
 	public int get_Summonre() {
@@ -1209,19 +1181,11 @@ public class L1Character extends L1Object {
 	}
 
 	public int getBowHitup() {
-		final int effect = (short) (pumpedWeapon >>> 48);
-		return effect == 0 ? _bowHitup : Math.clamp((long) _trueBowHitup + effect, -128, 127);
+		return Math.clamp((long) m_nOrgRangedHit + (short) (m_SkillWeapon >>> 48), -128, 127);
 	}
 
 	public void addBowHitup(int i) {
-		_trueBowHitup += i;
-		if (_trueBowHitup >= 127) {
-			_bowHitup = 127;
-		} else if (_trueBowHitup <= -128) {
-			_bowHitup = -128;
-		} else {
-			_bowHitup = _trueBowHitup;
-		}
+		m_nOrgRangedHit += i;
 	}
 
 	public int getMagicLevel() {

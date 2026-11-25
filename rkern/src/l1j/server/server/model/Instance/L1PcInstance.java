@@ -716,10 +716,6 @@ public class L1PcInstance extends L1Character {
 	private short _baseMaxHp = 0;
 	private int _baseMaxMp = 0;
 	private int _originalMagicHit = 0;
-	private int _baseBowDmgup = 0;
-	private int _baseDmgup = 0;
-	private int _baseHitup = 0;
-	private int _baseBowHitup = 0;
 
     // Level/class snapshot; STR/DEX/INT table values remain in CalcStat.
     private final PcBaseAbilityCache m_BaseParam = new PcBaseAbilityCache();
@@ -4196,21 +4192,13 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 
-	public int getBaseDmgup() {
-		return _baseDmgup;
-	}
 
-	public int getBaseBowDmgup() {
-		return _baseBowDmgup;
-	}
 
-	public int getBaseHitup() {
-		return _baseHitup;
-	}
 
-	public int getBaseBowHitup() {
-		return _baseBowHitup;
-	}
+
+
+
+
 
 	public void setBaseMagicHitUp(int i) {
 		_baseMagicHitup = i;
