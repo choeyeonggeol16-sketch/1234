@@ -1,0 +1,41 @@
+name: Inventory lookup call-site audit
+on: [push]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan lookup declarations and receivers
+        run: |
+          python3 - <<'PY'
+          import pathlib,re,collections
+          root=pathlib.Path('rkern/src')
+          files=list(root.rglob('*.java'))
+          print('JAVA_FILES',len(files))
+          names='getItem findItemId findItemsId checkItem checkAddItem getWeight getItemCountDirect hasItemDirect hasItemAnyDirect findItemObjId getItemEquippend getEquippedItem checkEquippedItem findEquippedItemId checkItemCount countItems checkItemNotEquipped checkEnchantItem findItemsIdNotEquipped findItemsId_HighEnchant findItemDescId checkEquipped isEquippedDirect checkAddAdena checkAddItemToWarehouse'.split()
+          pattern=re.compile(r'\b('+'|'.join(names)+r')\s*\(')
+          decl=re.compile(r'\b(?:public|protected|private|abstract|static|final|synchronized|native|default)\s+[^;={]*?\b('+'|'.join(names)+r')\s*\(')
+          counts=collections.defaultdict(collections.Counter)
+          declarations=collections.defaultdict(list)
+          examples=collections.defaultdict(dict)
+          for p in files:
+            for i,line in enumerate(p.read_text(encoding='utf-8-sig',errors='replace').splitlines(),1):
+              if line.lstrip().startswith(('//','*','/*')): continue
+              for m in pattern.finditer(line):
+                name=m[1]; pre=line[:m.start()].rstrip()
+                d=decl.search(line)
+                if d and d[1]==name and not pre.endswith('.'):
+                  declarations[name].append(f'{p.relative_to(root)}:{i}: {line.strip()}');continue
+                if pre.endswith('.'):
+                  q=re.search(r'([\w.]+(?:\([^()]*\))?)\s*\.$',pre)
+                  receiver=q[1] if q else pre[-60:]
+                else: receiver='<implicit>'
+                counts[name][receiver]+=1
+                examples[name].setdefault(receiver,f'{p.name}:{i}: {line.strip()[:220]}')
+          for name in names:
+            print('METHOD',name,'CALLS',sum(counts[name].values()))
+            for d in declarations[name]: print('DECL',d)
+            for rec,n in counts[name].most_common(35): print('RECV',n,rec,examples[name][rec])
+          PY
