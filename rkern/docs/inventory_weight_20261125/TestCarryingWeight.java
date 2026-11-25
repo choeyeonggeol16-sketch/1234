@@ -57,7 +57,20 @@ public final class TestCarryingWeight {
         checkLifetime(1, false, 0, -1);
         System.out.println("PASS new-item lifetime and fuel checks");
     }
+    private static void checkWarehouseDispatch() {
+        CInventory nonPlayer = new CInventory();
+        int[] ids = {1, 2}, counts = {1, 1};
+        check(0, nonPlayer.tradeWarehouseDepositBatch(ids, counts, null, null) ? 1 : 0);
+        check(0, nonPlayer.tradeWarehouseWithdrawalBatch(ids, counts, null, 0, 0, null, null) ? 1 : 0);
+        check(0, nonPlayer.tradeWarehouseDepositBatch(null, null, null, null) ? 1 : 0);
+        check(0, nonPlayer.tradeWarehouseWithdrawalBatch(null, null, null, 0, 0, null, null) ? 1 : 0);
+        check(1, nonPlayer.tradeItem(1, 1, (l1j.server.server.model.Warehouse.Warehouse) null) == null ? 1 : 0);
+        check(1, nonPlayer.tradeItem((L1ItemInstance) null, 1, (l1j.server.server.model.Warehouse.Warehouse) null) == null ? 1 : 0);
+        check(0, nonPlayer.getSize());
+        System.out.println("PASS warehouse invalid-request delegation checks");
+    }
     public static void main(String[] args) throws Exception {
+        checkWarehouseDispatch();
         checkNewItemInitialization();
         Random rng = new Random(20261125L);
         L1EtcItem[] templates = {template(1,0),template(2,1),template(3,999),
