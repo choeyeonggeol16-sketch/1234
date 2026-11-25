@@ -97,7 +97,7 @@ public class L1DwarfForPackageInventory extends Warehouse {
     }
 
     @Override
-    public synchronized void Pop(L1ItemInstance item) {
+    public synchronized void deleteItem(L1ItemInstance item) {
         if (item == null || GetByServerID(item.getId()) != item)
             throw new IllegalArgumentException("Package item no longer owned");
         submitWarehouseDelete(PACKAGE_ROWS, item);
