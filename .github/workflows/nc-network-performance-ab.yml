@@ -1,0 +1,74 @@
+name: RKern network responsibility performance A-B
+on:
+  push:
+    branches: ['rkern/nc-network-responsibility-20261125']
+    paths: ['.github/workflows/nc-network-performance-ab.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        workload: [single, burst, large, load1024]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            rkern/src
+            rkern/docs/jproring_cio_integration_20261120
+            rkern/docs/jproring_selector_transport_20261120
+      - uses: actions/checkout@v4
+        with:
+          ref: 7432cb2b284460ece049691878c0fe8ea232c4e3
+          path: benchmark-baseline
+          persist-credentials: false
+          sparse-checkout: rkern/src
+      - name: Paired production TCP workload
+        env:
+          WORKLOAD: ${{ matrix.workload }}
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 -u rkern/docs/jproring_cio_integration_20261120/run_game_ab.py \
+            --baseline-root benchmark-baseline --mode off --workload "$WORKLOAD" \
+            --trials 3 --warmup-ms 2000 --measure-ms 3000 \
+            --sample-resources --output "$RUNNER_TEMP/benchmark"
+      - name: Report paired median throughput, p99 and CPU
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import csv, json, statistics, os
+          from pathlib import Path
+          p=Path(os.environ["RUNNER_TEMP"])/"benchmark"
+          if not (p/"results.csv").exists():
+              raise SystemExit("No measured results")
+          rows=list(csv.DictReader((p/"results.csv").open()))
+          out={}
+          for v in ("baseline","current"):
+              group=[r for r in rows if r["variant"]==v]
+              if len(group)!=3: raise SystemExit(f"{v}: only {len(group)} completed trials")
+              out[v]={k:statistics.median(float(r[k]) for r in group)
+                      for k in ("requests_per_s","p99_us","server_cpu_ns_per_op","send_rejections")}
+              out[v]["trials"]=len(group)
+          out["change_pct"]={k:100*(out["current"][k]/out["baseline"][k]-1)
+                             for k in ("requests_per_s","p99_us","server_cpu_ns_per_op")}
+          print("AB_MEDIAN "+json.dumps(out),flush=True)
+          (p/"summary.json").write_text(json.dumps(out,indent=2))
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as f:
+              f.write("### Paired TCP medians (3 trials each)\n\n")
+              f.write("| Build | requests/s | p99 (us) | CPU (ns/request) |\n|---|---:|---:|---:|\n")
+              for v in ("baseline","current"):
+                  x=out[v]
+                  f.write(f"| {v} | {x['requests_per_s']:.2f} | {x['p99_us']:.3f} | {x['server_cpu_ns_per_op']:.2f} |\n")
+              f.write("\n"+str(out["change_pct"])+"\n")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nc-network-ab-${{ matrix.workload }}
+          path: ${{ runner.temp }}/benchmark
+          if-no-files-found: warn
