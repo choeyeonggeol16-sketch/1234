@@ -400,15 +400,18 @@ public class CUserInventory extends CInventory {
 	}
 
 	public int calcWeight100(int weight) {
-		return weight * 100 / _owner.getMaxWeight();
+		return (int) Math.clamp((long) weight * 100L / _owner.getMaxWeight(),
+				Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
 
 	@Override
 	public int checkAddItem(L1Item item, int count) {
 		int code = super.checkAddItem(item, count);
 		if (code == OK) {
-			int weight = getWeight() + item.getWeight() * count / 1000 + 1;
-			if (calcWeight100(weight) >= 240)
+			final long addedWeight = (long) item.getWeight() * count / 1000L;
+			final long weight = getWeight() + addedWeight + 1L;
+			final int maxWeight = _owner.getMaxWeight();
+			if (weight < 0 || addedWeight < 0 || maxWeight <= 0 || weight * 100L >= 240L * maxWeight)
 				return WEIGHT_OVER;
 		}
 		return code;
