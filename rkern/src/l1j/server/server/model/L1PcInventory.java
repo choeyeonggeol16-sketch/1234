@@ -907,14 +907,7 @@ public class L1PcInventory extends L1Inventory {
 	}
 
 	public boolean checkEquipped(int id) {
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getItemId() == id && item.isEquipped()) {
-				return true;
-			}
-		}
-		return false;
+		return _items.IsEquippedByClassID(id);
 	}
 
 
@@ -1150,14 +1143,7 @@ public class L1PcInventory extends L1Inventory {
 		return cnt;
 	}
 	public L1ItemInstance checkEquippedItem(int id) {
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getItemId() == id && item.isEquipped()) {
-				return item;
-			}
-		}
-		return null;
+		return findEquippedItemId(id);
 	}
 	public L1ItemInstance get_etc_itemid(int itemid) {
 		Iterator<L1ItemInstance> iter = _items.iterator();
@@ -1187,37 +1173,19 @@ public class L1PcInventory extends L1Inventory {
 	}
 
 	public boolean slotItemFind(L1PcInstance pc, int id, int itemobjId, int enchant, int bless, int attr) {
-		for (L1ItemInstance item : _items) {
-			if (item.getItemId() == id && item.getId() == itemobjId && item.getEnchantLevel() == enchant && item.getBless() == bless
-					&& item.getAttrEnchantLevel() == attr) {
-				pc.getInventory().setEquipped(item, true);
-				return true;
-			}
-		}
-		return false;
+		final L1ItemInstance item = getItem(itemobjId);
+		if (item == null || item.getItemId() != id || item.getEnchantLevel() != enchant
+				|| item.getBless() != bless || item.getAttrEnchantLevel() != attr) return false;
+		pc.getInventory().setEquipped(item, true);
+		return true;
 	}
 
 	public int checkItemCount(int id) {
-		int cnt = 0;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItemId() == id)
-				cnt += item.getCount();
-		}
-		return cnt;
+		return _items.GetItemCountByClassID(id);
 	}
 
 	public L1ItemInstance findItemObjId(int id) {
-		for (L1ItemInstance item : _items) {
-			if (item == null)
-				continue;
-			if (item.getId() == id) {
-				return item;
-			}
-		}
-
-		return null;
+		return getItem(id);
 	}
 
 	public boolean checkEquipped(int[] ids) {

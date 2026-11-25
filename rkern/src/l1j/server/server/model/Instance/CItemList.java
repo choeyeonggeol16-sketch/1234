@@ -193,14 +193,8 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         final L1Object object = L1World.getInstance().findObject(objectId);
         if (object instanceof L1ItemInstance item
                 && item.getId() == objectId && contains(item)) return item;
-        final List<L1ItemInstance> rows = snapshot;
-        if (rows != null) {
-            for (int i = 0, n = rows.size(); i < n; i++) {
-                final L1ItemInstance item = rows.get(i);
-                if (item.getId() == objectId) return item;
-            }
-            return null;
-        }
+        // Identity lookup is used by mutation paths. Unlike snapshot iteration,
+        // it must not accept a detached row from a racing old snapshot.
         synchronized (this) {
             for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
                 if (item.getId() == objectId) return item;
@@ -237,6 +231,24 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
             for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
                 if (item.getItemId() == classId && --count == 0) return true;
             return false;
+        }
+    }
+
+    /** Legacy non-stackable count: one per matching unequipped instance. */
+    public int CountUnequippedInstancesByClassID(int classId) {
+        int total = 0;
+        final List<L1ItemInstance> rows = snapshot;
+        if (rows != null) {
+            for (int i = 0, n = rows.size(); i < n; i++) {
+                final L1ItemInstance item = rows.get(i);
+                if (item.getItemId() == classId && !item.isEquipped()) total++;
+            }
+            return total;
+        }
+        synchronized (this) {
+            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+                if (item.getItemId() == classId && !item.isEquipped()) total++;
+            return total;
         }
     }
 

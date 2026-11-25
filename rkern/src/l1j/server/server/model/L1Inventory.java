@@ -2130,6 +2130,7 @@ public class L1Inventory extends L1Object {
 			return true;
 		}
 		L1Item l1item = CObjectDB.GetItem(id);
+		if (l1item == null) return false;
 		if (l1item.isStackable()) {
 			L1ItemInstance item = findItemId(id);
 			if (item != null && item.getCount() >= count) {
@@ -2225,15 +2226,15 @@ public class L1Inventory extends L1Object {
 	}
 
 	public boolean checkItem(int[] ids) {
-		int len = ids.length;
-		int[] counts = new int[len];
-		for (int i = 0; i < len; i++) {
-			counts[i] = 1;
+		if (ids == null) return false;
+		for (int id : ids) {
+			if (!checkItem(id, 1)) return false;
 		}
-		return checkItem(ids, counts);
+		return true;
 	}
 
 	public boolean checkItem(int[] ids, int[] counts) {
+		if (ids == null || counts == null || ids.length != counts.length) return false;
 		for (int i = 0; i < ids.length; i++) {
 			if (!checkItem(ids[i], counts[i])) {
 				return false;
@@ -2243,16 +2244,13 @@ public class L1Inventory extends L1Object {
 	}
 
 	public int countItems(int id) {
-		if (CObjectDB.GetItem(id).isStackable()) {
-			L1ItemInstance item = findItemId(id);
-			if (item != null) {
-				return item.getCount();
-			}
-		} else {
-			Object[] itemList = findItemsIdNotEquipped(id);
-			return itemList.length;
+		final L1Item template = CObjectDB.GetItem(id);
+		if (template == null) return 0;
+		if (template.isStackable()) {
+			final L1ItemInstance item = findItemId(id);
+			return item == null ? 0 : item.getCount();
 		}
-		return 0;
+		return _items.CountUnequippedInstancesByClassID(id);
 	}
 
 	public void shuffle() {
