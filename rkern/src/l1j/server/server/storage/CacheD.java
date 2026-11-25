@@ -1941,6 +1941,17 @@ public final class CacheD {
         }
     }
 
+    /** Nonblocking admission fence for a dropped row (or its split source).
+     * Called outside list monitors. A failed/retrying row stays fenced.
+     */
+    public boolean isItemPersistencePending(int itemId) {
+        if (itemId <= 0) return false;
+        synchronized (lock) {
+            return activeItemIds.contains(itemId) || ready.itemsById.containsKey(itemId)
+                    || items.containsKey(itemId) || deletingItemIds.contains(itemId);
+        }
+    }
+
     public int pendingItems() {
         synchronized (lock) { return items.size() + pendingItemCommands; }
     }
