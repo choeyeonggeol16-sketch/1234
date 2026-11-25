@@ -63,7 +63,7 @@ final class ItemActionCompletion {
                 final int chargeCount = item.getChargeCount();
                 if (chargeCount <= 1) {
                     // Do not mutate the live charge if deletion is rejected.
-                    if (pc.getInventory().removeItem(item, 1) != 1) return;
+                    if (pc.getInventory().DeleteItemAmount(item, 1) != 1) return;
                     item.setChargeCount(0);
                 } else {
                     item.setChargeCount(chargeCount - 1);

@@ -58,7 +58,7 @@ public class L1Gambling3 {
 			SC_SystemMessage.send(pc, "\\f3아데나가 부족하여 취소되었습니다.");
 			return;
 		}
-		pc.getInventory().consumeItem(L1ItemId.ADENA, bet);
+		pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, bet);
 		pc.setGambling3(true);
 		pc.setGamblingMoney3(bet);
 		SC_SystemMessage.send(pc, "\\f2[신용소막딜러] " + bet + " 아데나 배팅! 배팅할 몹 이름을 입력하세요. (버그베어,장로,멧돼지,스파토이,슬라임,해골,늑대인간,괴물눈,오크전사) - 1마리 맞출 때마다 2배!");

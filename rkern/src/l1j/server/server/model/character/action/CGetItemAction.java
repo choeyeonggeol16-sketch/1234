@@ -228,7 +228,7 @@ public final class CGetItemAction extends CNewAction {
         if (itemCount <= 0L || itemCount > MAX_STACKABLE) {
             GameServer.disconnectChar(owner);
 
-            pickupGInven.deleteItem(pickupItem);
+            pickupGInven.Pop(pickupItem);
             L1World.getInstance().removeObject(pickupItem);
             return false;
         }

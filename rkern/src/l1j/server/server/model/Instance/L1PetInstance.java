@@ -302,7 +302,7 @@ public class L1PetInstance extends L1NpcInstance {
 			l1j.server.server.model.network.core.sc.packet.SC_PetCtrlMenu.send(_petMaster, (L1PcInstance) _master, monster, false);
 		}
 		
-		_petMaster.getInventory().removeItem(_itemObjId, 1);
+		_petMaster.getInventory().DeleteItemAmount(_itemObjId, 1);
 		PetTable.getInstance().deletePet(_itemObjId);
 
 		L1World.getInstance().storeAndEnterWorld(monster);

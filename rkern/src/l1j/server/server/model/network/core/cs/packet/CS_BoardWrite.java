@@ -200,7 +200,7 @@ public final class CS_BoardWrite {
                             500)) {
 
                 pc.getInventory()
-                        .consumeItem(
+                        .DeleteItemInInventory(
                                 L1ItemId.ADENA,
                                 500);
 
@@ -229,7 +229,7 @@ public final class CS_BoardWrite {
                             500)) {
 
                 pc.getInventory()
-                        .consumeItem(
+                        .DeleteItemInInventory(
                                 L1ItemId.ADENA,
                                 500);
 

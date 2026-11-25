@@ -1914,7 +1914,7 @@ public final class CAttackAction extends CNewAction {
             }
             int gfx;
             if (_arrow != null) {
-                if (!_pc.noPlayerCK) _pc.getInventory().removeItem(_arrow, 1);
+                if (!_pc.noPlayerCK) _pc.getInventory().DeleteItemAmount(_arrow, 1);
                 gfx = getArrowGfxId(spriteId);
             } else {
                 gfx = L1AttackPacketHelper.arrowGfxByWeaponIdWhenNoArrow(_weaponId);
@@ -1936,7 +1936,7 @@ public final class CAttackAction extends CNewAction {
         }
 
         if (_weaponType == 62 && _sting != null) {
-            if (!_pc.noPlayerCK) _pc.getInventory().removeItem(_sting, 1);
+            if (!_pc.noPlayerCK) _pc.getInventory().DeleteItemAmount(_sting, 1);
             if (_cycloneProc) sendProcSound(17557);
             if (_isHit && _isCritical) {
                 SC_AttackCritical.send(_pc.getNetConnection(), _pc, _targetId,

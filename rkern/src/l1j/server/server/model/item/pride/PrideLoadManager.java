@@ -153,7 +153,7 @@ public class PrideLoadManager {
 			return true;			
 		}
 		remove_pride(pInfo);
-		pc.getInventory().removeItem(item, 1);
+		pc.getInventory().DeleteItemAmount(item, 1);
 		pc.sendPackets(String.format("데스가 1감소 했습니다.(현재 데스 : %d)", --kda.death));
 		return true;
 	}

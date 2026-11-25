@@ -85,7 +85,7 @@ final class ArmorEnchantLevelLimits {
                     if (enchant_level >= Config.방어구고급인첸트) {
                         if (itemId == L1ItemId.C_SCROLL_OF_ENCHANT_ARMOR || itemId == L1ItemId.ENCHANT_ARMOR) {
 
-                            pc.getInventory().removeItem(item, 1);
+                            pc.getInventory().DeleteItemAmount(item, 1);
                             SuccessEnchant(pc, targetItem, client, -1);
 
                         } else {

@@ -43,7 +43,7 @@ public final class CItemRefine {
             if (!inventory.HaveItemByClassId(recipes[i], recipes[i + 1])) return;
         }
         for (int i = offset + 4; i < end; i += 2) {
-            inventory.consumeItem(recipes[i], recipes[i + 1]);
+            inventory.DeleteItemInInventory(recipes[i], recipes[i + 1]);
         }
         final L1ItemInstance item = inventory.CreateOrAddItem(resultId, recipes[offset + 1]);
         if (recipes[offset + 2] != 0 && item != null && npc.getNpcTemplate().get_digestitem() > 0) {

@@ -86,7 +86,7 @@ public class CraftInputItemSlotInfo {
                 if(cnt > removed.count)
                     cnt = removed.count;
             }
-            inv.removeItem(removed.item, cnt);
+            inv.DeleteItemAmount(removed.item, cnt);
             _temporaryRemovedCount -= cnt;
         }
         clearRemoved();

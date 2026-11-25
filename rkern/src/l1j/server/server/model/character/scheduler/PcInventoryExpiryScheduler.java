@@ -346,7 +346,7 @@ public final class PcInventoryExpiryScheduler {
         try {
             // Ordinary expiry has no extra durable reward. Contract/key cases
             // take the atomic receipt path above.
-            if (pc.getInventory().removeItem(item) <= 0) {
+            if (pc.getInventory().DeleteItemAmount(item) <= 0) {
                 throw new IllegalStateException("Expiry debit was not accepted: " + item.getId());
             }
             handleSpecialItems(pc, item);

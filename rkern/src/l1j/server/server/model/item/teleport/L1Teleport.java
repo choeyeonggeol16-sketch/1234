@@ -458,12 +458,12 @@ public class L1Teleport {
 
 	private void updateQuestState(L1PcInstance pc, int mapid, int newMapId) {
 		if (pc.isInFantasy && !isFantasyMap(mapid)) {
-			pc.getInventory().consumeItem(810006);
-			pc.getInventory().consumeItem(810007);
+			pc.getInventory().DeleteItemInInventory(810006);
+			pc.getInventory().DeleteItemInInventory(810007);
 			pc.isInFantasy = false;
 		}
 		if (pc.isInValakas && !isIndunMap(pc.getMap().getBaseMapId())) {
-			pc.getInventory().consumeItem(203003);
+			pc.getInventory().DeleteItemInInventory(203003);
 			pc.isInValakas = false;
 		}
 		if (pc.isInValakasBoss && mapid != 2600) {
@@ -477,8 +477,8 @@ public class L1Teleport {
 		}
 		
 		if (!isForbiddenItemMap(mapid)) {
-			pc.getInventory().consumeItem(30055);
-			pc.getInventory().consumeItem(30056);
+			pc.getInventory().DeleteItemInInventory(30055);
+			pc.getInventory().DeleteItemInInventory(30056);
 		}
 	}
 
@@ -525,9 +525,9 @@ public class L1Teleport {
 	}
 
 	private void cleanupIndunItems(L1PcInstance pc) {
-		pc.getInventory().consumeItem(203003);
-		pc.getInventory().consumeItem(810006);
-		pc.getInventory().consumeItem(810007);
+		pc.getInventory().DeleteItemInInventory(203003);
+		pc.getInventory().DeleteItemInInventory(810006);
+		pc.getInventory().DeleteItemInInventory(810007);
 	}
 	
 	

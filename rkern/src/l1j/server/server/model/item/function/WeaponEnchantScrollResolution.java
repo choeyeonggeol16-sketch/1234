@@ -46,7 +46,7 @@ final class WeaponEnchantScrollResolution {
         int enchant_level = targetItem.getEnchantLevel();
         // BEGIN_ORIGINAL_WEAPONENCHANTSCROLLRESOLUTION
                             if (itemId == L1ItemId.C_SCROLL_OF_ENCHANT_WEAPON || itemId == L1ItemId.ENCHANT_WEAPONA) {
-                                pc.getInventory().removeItem(item, 1);
+                                pc.getInventory().DeleteItemAmount(item, 1);
                                 int rnd = _random.nextInt(100) + 1;
                                 if (safe_enchant == 0 && rnd <= 30) {
                                     FailureEnchant(pc, targetItem, client);
@@ -129,15 +129,15 @@ final class WeaponEnchantScrollResolution {
                                     if (k3 >= 0 && k3 <= Config.Hero_weapon) {
 
                                         if (Config.ENCHANT_MAX_FAIL && enchant_level >= 11) {
-                                            pc.getInventory().removeItem(item, 1);
+                                            pc.getInventory().DeleteItemAmount(item, 1);
                                             resultNotice(pc, "강렬하게 빛났지만 인챈트에 실패 하였습니다.");
                                         } else {
-                                            pc.getInventory().removeItem(item, 1);
+                                            pc.getInventory().DeleteItemAmount(item, 1);
                                             SuccessEnchant(pc, targetItem, client, +1);
                                             resultNotice(pc, "강렬하게 빛을 내어 인챈트 성공 하였습니다.");
                                         }
                                     } else {
-                                        pc.getInventory().removeItem(item, 1);
+                                        pc.getInventory().DeleteItemAmount(item, 1);
                                         FailureEnchant(pc, targetItem, client);
                                         resultNotice(pc, "강렬하게 빛났지만 인챈트에 실패 하였습니다.");
                                     }
@@ -187,10 +187,10 @@ final class WeaponEnchantScrollResolution {
 
                                 }
                             } else if (enchant_level < safe_enchant) {
-                                pc.getInventory().removeItem(item, 1);
+                                pc.getInventory().DeleteItemAmount(item, 1);
                                 SuccessEnchant(pc, targetItem, client, RandomELevel(targetItem, itemId));
                             } else {
-                                pc.getInventory().removeItem(item, 1);
+                                pc.getInventory().DeleteItemAmount(item, 1);
                                 int rnd = _random.nextInt(100) + 1;
                                 int enchant_chance_wepon = WeaponEnchantChanceCalculation.calculate(
                                         pc, targetItem, weaponId, enchant_level, rnd);

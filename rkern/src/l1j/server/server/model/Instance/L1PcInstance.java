@@ -2397,7 +2397,7 @@ public class L1PcInstance extends L1Character {
 				if (item == null)
 					continue;
 				if (item.getCount() <= 0) {
-					getInventory().deleteItem(item);
+					getInventory().Pop(item);
 				}
 			}
 		} catch (Exception e) {
@@ -3846,7 +3846,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 
 	            if (item != null) {
 	                if (item.getBless() > 3) {
-	                    getInventory().removeItem(item, item.isStackable() ? item.getCount() : 1);
+	                    getInventory().DeleteItemAmount(item, item.isStackable() ? item.getCount() : 1);
 	                    SC_ServerMessage.send(this, 158, item.getLogName());// 증발
 	                    var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
        SC_SystemMessage.nativeWriter("\\fY[GM] " + getName() + "님의 [" + item.getLogName() + "] 증발"),Integer.MIN_VALUE,Integer.MAX_VALUE);
@@ -6331,7 +6331,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				if (item.getItemId() == 900022 & item.isEquipped()) {
 					SC_ServerMessage.send(this, 3802);
 					SC_ServerMessage.send(this, 158, "$22172");
-					getInventory().removeItem(item, 1);
+					getInventory().DeleteItemAmount(item, 1);
 					L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 					break;
 				}
@@ -6347,7 +6347,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				if (item.getItemId() == 4100122) {
 					SC_ServerMessage.send(this, 3802);
 					SC_ServerMessage.send(this, 158, "$27279"); 
-					getInventory().removeItem(item, 1);
+					getInventory().DeleteItemAmount(item, 1);
 					 L1World.getInstance().getInventory(getX(), getY(),
 					 getMapId()).CreateOrAddItem(drop);
 					//lastAttacker.getInventory().storeItem(drop);
@@ -6367,7 +6367,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				if (item.getItemId() == 4100121) {
 					SC_ServerMessage.send(this, 3802);
 					SC_ServerMessage.send(this, 158, "$26711");
-					getInventory().removeItem(item, 1);
+					getInventory().DeleteItemAmount(item, 1);
 					 L1World.getInstance().getInventory(getX(), getY(),
 					 getMapId()).CreateOrAddItem(drop);
 				//	 L1World.getInstance().getInventory(getX(), getY(),
@@ -6386,7 +6386,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item.getItemId() == 592247) {
 					SC_SystemMessage.send(this, "수호자의 가호를 드랍하였습니다.");
-					getInventory().removeItem(item, 1);
+					getInventory().DeleteItemAmount(item, 1);
 					 L1World.getInstance().getInventory(getX(), getY(),
 					 getMapId()).CreateOrAddItem(drop2);
 				//	 L1World.getInstance().getInventory(getX(), getY(),
@@ -6409,7 +6409,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				if (item.getItemId() == 10000 & item.isEquipped()) {
 					SC_ServerMessage.send(this, 3802);
 					SC_ServerMessage.send(this, 158, "$25382");
-					getInventory().removeItem(item, 1);
+					getInventory().DeleteItemAmount(item, 1);
 					L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 					break;
 				}
@@ -6425,7 +6425,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				if (item.getItemId() == 10001 & item.isEquipped()) {
 					SC_ServerMessage.send(this, 3802);
 					SC_ServerMessage.send(this, 158, "$25384");
-					getInventory().removeItem(item, 1);
+					getInventory().DeleteItemAmount(item, 1);
 					L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 					break;
 				}

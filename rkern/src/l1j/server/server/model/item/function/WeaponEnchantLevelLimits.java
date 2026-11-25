@@ -30,7 +30,7 @@ final class WeaponEnchantLevelLimits {
                             if (safe_enchant == 0) {
                                 if (enchant_level >= Config.무기고급인첸트 && (!(itemId >= 210064 && itemId <= 210067|| itemId >= 310064 && itemId <= 310068 || itemId >= 560030 &&  itemId <= 560033))){
                                     if (itemId == L1ItemId.C_SCROLL_OF_ENCHANT_WEAPON || itemId == L1ItemId.ENCHANT_WEAPONA) {
-                                        pc.getInventory().removeItem(item, 1);
+                                        pc.getInventory().DeleteItemAmount(item, 1);
                                         SuccessEnchant(pc, targetItem, client, -1);
                                     } else {
                                         SC_SystemMessage.send(pc, "무기는 +" + Config.무기고급인첸트 + "이상 강화할 수 없습니다.");

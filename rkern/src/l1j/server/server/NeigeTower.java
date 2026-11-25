@@ -60,11 +60,11 @@ public class NeigeTower{
 			cnt = 0;
 			cnt2 = 0;
 			while(cnt2 < 10){
-				pc.getInventory().consumeItem(num, 1);
+				pc.getInventory().DeleteItemInInventory(num, 1);
 				cnt2++;
 				num++;
 			}
-			pc.getInventory().consumeItem(40308, 10000000);
+			pc.getInventory().DeleteItemInInventory(40308, 10000000);
 			SC_SystemMessage.send(pc, "아이템 제작에 성공했습니다.");
 			SC_SkillSound.send(pc, pc.getId(), 7976);
 			SC_SkillSound.broadcast(pc, pc.getId(), 7976);

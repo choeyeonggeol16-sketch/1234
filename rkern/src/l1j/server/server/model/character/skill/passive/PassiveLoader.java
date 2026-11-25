@@ -164,7 +164,7 @@ public class PassiveLoader{
 			return false;
 		
 		if(masterPassive(pc, pInfo))
-			pc.getInventory().removeItem(item, 1);
+			pc.getInventory().DeleteItemAmount(item, 1);
 		return true;
 	}
 	

@@ -68,8 +68,8 @@ public class FantasyIsland implements Runnable {
 					if (pc != null) {
 						//						L1Teleport.teleport(pc, 33968, 32961, (short)  4, 2, true);
 						pc.start_teleport(33968, 32961, 4, 2, 169, true, false);
-						pc.getInventory().consumeItem(810006);
-						pc.getInventory().consumeItem(810007);
+						pc.getInventory().DeleteItemInInventory(810006);
+						pc.getInventory().DeleteItemInInventory(810007);
 						pc = null;
 					}
 					endRaid();
@@ -359,8 +359,8 @@ public class FantasyIsland implements Runnable {
 					//						//시스템 메시지: 1초 후에 마을로 텔레포트 합니다.
 					//					}
 					pc.start_teleport(33437, 32813, 4, 2, 169, true, false);
-					pc.getInventory().consumeItem(810006);
-					pc.getInventory().consumeItem(810007);
+					pc.getInventory().DeleteItemInInventory(810006);
+					pc.getInventory().DeleteItemInInventory(810007);
 					pc = null;
 					break;
 				default:
@@ -460,7 +460,7 @@ public class FantasyIsland implements Runnable {
 				if(ob instanceof L1ItemInstance){
 					L1ItemInstance obj = (L1ItemInstance)ob;
 					CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
-					groundInventory.removeItem(obj);
+					groundInventory.DeleteItemAmount(obj);
 				}else if(ob instanceof L1NpcInstance){
 					L1NpcInstance npc = (L1NpcInstance)ob;
 					npc.deleteMe();

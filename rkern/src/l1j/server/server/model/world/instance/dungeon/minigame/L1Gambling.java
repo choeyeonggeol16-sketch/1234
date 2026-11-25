@@ -57,7 +57,7 @@ public class L1Gambling {
 			SC_SystemMessage.send(pc, "\\f3아데나가 부족하여 취소되었습니다.");
 			return;
 		}
-		pc.getInventory().consumeItem(L1ItemId.ADENA, bet);
+		pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, bet);
 		pc.setGambling(true);
 		pc.setGamblingMoney(bet);
 		SC_SystemMessage.send(pc, "\\f2[주사위 딜러] " + bet + " 아데나 배팅! '홀' 또는 '짝'(2배), 1~6 숫자(3배)를 입력하세요.");

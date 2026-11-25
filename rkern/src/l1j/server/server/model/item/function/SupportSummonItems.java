@@ -184,7 +184,7 @@ public final class SupportSummonItems {
 			support = new L1SupportInstance(template, pc, supportType, itemObjectId);
 			SC_SkillSound.broadcast(support, support.getId(), 5935);
 			SC_OwnCharStatus.send(pc);
-			pc.getInventory().consumeItem(40308, 1);
+			pc.getInventory().DeleteItemInInventory(40308, 1);
 			pc.setSupporting(true);
 		} else {
 			SC_SkillSound.broadcast(support, support.getId(), 5936);

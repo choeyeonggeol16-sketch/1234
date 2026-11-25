@@ -21,7 +21,7 @@ final class TransformationScrollItems {
         int itemId = use.itemId();
         String text = use.text();
         if (usePolyScroll(pc, itemId, text)) {
-            pc.getInventory().removeItem(item, 1);
+            pc.getInventory().DeleteItemAmount(item, 1);
         } else {
             SC_ServerMessage.send(pc, 181);
         }
@@ -54,7 +54,7 @@ final class TransformationScrollItems {
         int itemId = use.itemId();
         String text = use.text();
         if (usePolyScroll(pc, itemId, text)) {
-            pc.getInventory().removeItem(item, 1);
+            pc.getInventory().DeleteItemAmount(item, 1);
         } else {
             SC_ServerMessage.send(pc, 181);
 

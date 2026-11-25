@@ -45,7 +45,7 @@ public class L1ItemDelete implements L1CommandExecutor  {
 					}
 
 					for(L1PcInstance players : L1World.getInstance().getAllPlayers()) {
-						players.getInventory().consumeItem(itemId);
+						players.getInventory().DeleteItemInInventory(itemId);
 						SC_SystemMessage.send(pc, "전체유저의 템번호 ["+itemId+"]를 삭제하였습니다.");
 						
 					}
@@ -78,7 +78,7 @@ public class L1ItemDelete implements L1CommandExecutor  {
 					
 					L1PcInstance player = L1World.getInstance().getPlayer(name);
 					if(player != null) {
-						player.getInventory().consumeItem(itemId);
+						player.getInventory().DeleteItemInInventory(itemId);
 						SC_SystemMessage.send(pc, player.getName()+"님의 템번호 ["+itemId+"]를 삭제하였습니다.");
 						
 					}

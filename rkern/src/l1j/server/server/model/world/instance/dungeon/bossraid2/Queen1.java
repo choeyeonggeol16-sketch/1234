@@ -280,7 +280,7 @@ public class Queen1 implements Runnable {
 				L1ItemInstance obj = (L1ItemInstance) ob;
 				CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(),
 						obj.getMapId());
-				groundInventory.removeItem(obj);
+				groundInventory.DeleteItemAmount(obj);
 			} else if (ob instanceof L1NpcInstance) {
 				L1NpcInstance npc = (L1NpcInstance) ob;
 				npc.deleteMe();

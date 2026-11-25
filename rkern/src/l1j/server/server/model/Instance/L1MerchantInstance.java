@@ -384,7 +384,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 522:
 				if (player.getInventory().HaveItemByClassId(40308, 200000)) {
-					player.getInventory().consumeItem(40308, 200000);
+					player.getInventory().DeleteItemInInventory(40308, 200000);
 					if (Config.POLY_EVENT1) {
 						L1PolyMorph.doPoly(player, 7925, 600, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
 					}
@@ -472,7 +472,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.isCrown()) {
 					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step == 2 && player.getInventory().HaveItemByClassId(41422)) {
-						player.getInventory().consumeItem(41422, 1);
+						player.getInventory().DeleteItemInInventory(41422, 1);
 						player.getInventory().CreateOrAddItem(40568, 1);
 					}
 				}
@@ -2554,8 +2554,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 			return;
 		}
 
-		pc.getInventory().consumeItem(protectionId, 1);
-		pc.getInventory().consumeItem(sealId, sealCount);
+		pc.getInventory().DeleteItemInInventory(protectionId, 1);
+		pc.getInventory().DeleteItemInInventory(sealId, sealCount);
 
 		final L1ItemInstance item =
 				pc.getInventory().CreateOrAddItem(rulerId, 1);

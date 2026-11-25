@@ -59,7 +59,7 @@ public class L1CardSyarna {
         }
 
         // 실행 (아이템 소모 및 변신)
-        pc.getInventory().consumeItem(POLY_SCROLL_ID, 1);
+        pc.getInventory().DeleteItemInInventory(POLY_SCROLL_ID, 1);
         int targetSprite = (pc.get_sex() == 0) ? maleSprite : femaleSprite;
         
         executeSyarnaPoly(pc, targetSprite);

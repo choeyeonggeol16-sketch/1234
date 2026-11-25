@@ -83,7 +83,7 @@ public class CompanionPotionInfo {
 		if(companion == null)
 			return;
 		
-		if(!pc.getInventory().consumeItem(item, 1))
+		if(!pc.getInventory().DeleteItemInInventory(item, 1))
 			return;
 		
 		companion.use_healing_potion(GameRandom.next(m_potion_min_hp, m_potion_max_hp));

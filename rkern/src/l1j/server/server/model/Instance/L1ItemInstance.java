@@ -1356,7 +1356,7 @@ public class L1ItemInstance extends L1Object {
 				return;
 			}
 
-			ground.removeItem(this);
+			ground.DeleteItemAmount(this);
 		}
 	}
 

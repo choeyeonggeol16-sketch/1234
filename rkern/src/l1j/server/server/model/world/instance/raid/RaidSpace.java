@@ -142,7 +142,7 @@ public class RaidSpace {
 				if(inv == null)
 					continue;
 				
-				inv.removeItem(item);
+				inv.DeleteItemAmount(item);
 			}
 		}catch(Exception e){
 			e.printStackTrace();

@@ -1526,7 +1526,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		final int itemId = item.getItem().getItemId();
 
 		if (itemId == 40320) {
-			pc.getInventory().removeItem(item, 1);
+			pc.getInventory().DeleteItemAmount(item, 1);
 			if (dark >= chance) {
 				pc.getInventory().CreateOrAddItem(40321, 1);
 				SC_ServerMessage.send(pc, 403, "$2475");
@@ -1537,7 +1537,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		}
 
 		if (itemId == 40321) {
-			pc.getInventory().removeItem(item, 1);
+			pc.getInventory().DeleteItemAmount(item, 1);
 			if (brave >= chance) {
 				pc.getInventory().CreateOrAddItem(40322, 1);
 				SC_ServerMessage.send(pc, 403, "$2476");
@@ -1548,7 +1548,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		}
 
 		if (itemId == 40322) {
-			pc.getInventory().removeItem(item, 1);
+			pc.getInventory().DeleteItemAmount(item, 1);
 			if (wise >= chance) {
 				pc.getInventory().CreateOrAddItem(40323, 1);
 				SC_ServerMessage.send(pc, 403, "$2477");
@@ -1559,7 +1559,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		}
 
 		if (itemId == 40323) {
-			pc.getInventory().removeItem(item, 1);
+			pc.getInventory().DeleteItemAmount(item, 1);
 			if (kayser >= chance) {
 				pc.getInventory().CreateOrAddItem(40324, 1);
 				SC_ServerMessage.send(pc, 403, "$2478");

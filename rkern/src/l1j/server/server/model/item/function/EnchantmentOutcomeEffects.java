@@ -316,7 +316,7 @@ final class EnchantmentOutcomeEffects {
 			} else if (itemType == 2) {
 			}
 		} else {
-			pc.getInventory().removeItem(item, item.getCount());
+			pc.getInventory().DeleteItemAmount(item, item.getCount());
 			/** 로그파일저장 **/
             try {
                 LoggerInstance.getInstance().addEnchant(pc, item, false);

@@ -202,7 +202,7 @@ final class NpcQuestHtmlCommands {
             // 어.서.나.를.그.곳.으.로
             if (s.equalsIgnoreCase("a")) {
                 // L1Teleport.teleport(pc, 32648, 32921, (short) 535, 5, true);
-                if (pc.getInventory().consumeItem(41028, 1))
+                if (pc.getInventory().DeleteItemInInventory(41028, 1))
                     pc.start_teleport(32648, 32921, 535, 5, 169, true, false);
             } else {
                 htmlid = "";
@@ -215,7 +215,7 @@ final class NpcQuestHtmlCommands {
             htmlid = "";
         } else if (templateId == 80063) {
             if (s.equalsIgnoreCase("a")) {
-                if (pc.getInventory().consumeItem(40921, 1)) {
+                if (pc.getInventory().DeleteItemInInventory(40921, 1)) {
                     pc.start_teleport(32674, 32832, 603, 2, 169, true, false);
                 } else {
                     htmlid = "gpass02";
@@ -544,7 +544,7 @@ final class NpcQuestHtmlCommands {
                         } else {
                             int level = pc.getLevel();
                             int cost = level * level * 10;
-                            if (pc.getInventory().consumeItem(L1ItemId.ADENA, cost)) {
+                            if (pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, cost)) {
                                 pc.setHomeTownId(town_id);
                                 pc.setContribution(0);
                                 pc.save();

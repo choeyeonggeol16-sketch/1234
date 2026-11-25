@@ -112,7 +112,7 @@ public class SurveyFactory {
 						isMegaphoneSpeaking = false;
 					}
 				}, duration_second * 1000L);
-				pc.getInventory().removeItem(num, 1);
+				pc.getInventory().DeleteItemAmount(num, 1);
 
 			}
 		};

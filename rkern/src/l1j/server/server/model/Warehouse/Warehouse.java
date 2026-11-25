@@ -798,11 +798,11 @@ public abstract class Warehouse extends L1Object {
             }
             try {
                 if (carryItem != null && inventory.GetByServerID(carryItem.getId()) == carryItem) {
-                    inventory.deleteItem(carryItem);
+                    inventory.Pop(carryItem);
                 } else if (destStack != null) {
                     final int excess = destStack.getCount() - destinationCount;
                     if (excess > 0) {
-                        inventory.removeItem(destStack, excess);
+                        inventory.DeleteItemAmount(destStack, excess);
                     } else if (destStack.getChargeCount() != destinationCharge) {
                         destStack.setChargeCount(destinationCharge);
                         inventory.updateItem(destStack);

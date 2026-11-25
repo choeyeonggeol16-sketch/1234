@@ -107,7 +107,7 @@ public class L1GroundInventory extends CInventory {
     }
 
     @Override
-    public synchronized void deleteItem(L1ItemInstance item) {
+    public synchronized void Pop(L1ItemInstance item) {
         if (item == null) return;
         // Ground lock must precede item lock (pickup holds ground before transfer).
         synchronized (item) {

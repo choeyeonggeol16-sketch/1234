@@ -32,7 +32,7 @@ public class LobbyCreator implements Runnable{
 		
 		private static void consumeItem(L1PcInstance pc, LobbyType type){
 			if(type.getNeedItemId() != 0)
-				pc.getInventory().consumeItem(type.getNeedItemId(),  type.getNeedItemCount());
+				pc.getInventory().DeleteItemInInventory(type.getNeedItemId(),  type.getNeedItemCount());
 		}
 		
 		protected static boolean isPossibleLfc(L1PcInstance user){

@@ -68,7 +68,7 @@ public final class TitanProcEngine {
         }
         final boolean consumed;
         try {
-            consumed = defender.getInventory().consumeItem(CATALYST_ITEM_ID, CATALYST_COUNT);
+            consumed = defender.getInventory().DeleteItemInInventory(CATALYST_ITEM_ID, CATALYST_COUNT);
         } catch (IllegalStateException ex) {
             if ("Item mutation refused while CacheD transfer pending".equals(ex.getMessage()))
                 return false;

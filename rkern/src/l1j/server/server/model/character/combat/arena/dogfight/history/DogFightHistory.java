@@ -306,7 +306,7 @@ public class DogFightHistory {
                 }
 
                 DogFightOldTicketInfo otInfo = get_old_ticket_info(item.getItemId());
-                int removed_count = pc.getInventory().removeItem(item, item_count);
+                int removed_count = pc.getInventory().DeleteItemAmount(item, item_count);
                 if(removed_count <= 0){
                     pc.sendPackets("아이템 판매에 실패했습니다.");
                     _log.warning(String.format("%s님 투견 티켓 판매 실패. (아이템: %s, 시도: %d, 삭제: %d)",

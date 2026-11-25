@@ -74,7 +74,7 @@ public class CUserInventory extends CInventory {
     public final boolean tryConsumeCombatReagent(int itemId, int count) {
         if (count <= 0 || !tryBeginEquipmentChange()) return false;
         try {
-            return consumeItem(itemId, count);
+            return DeleteItemInInventory(itemId, count);
         } finally {
             endEquipmentChange();
         }
@@ -724,7 +724,7 @@ public class CUserInventory extends CInventory {
 	}
 
 	@Override
-	public synchronized void deleteItem(L1ItemInstance item) {
+	public synchronized void Pop(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
         if (item == null || !_items.Have(item)) return;
@@ -990,7 +990,7 @@ public class CUserInventory extends CInventory {
 	public boolean DeleteEnchant(int id, int enchant) {
 		for (L1ItemInstance item : _items) {
 			if (item.getItemId() == id && item.getEnchantLevel() == enchant) {
-				return removeItem(item, 1) == 1;
+				return DeleteItemAmount(item, 1) == 1;
 			}
 		}
 		return false;
@@ -1056,13 +1056,13 @@ public class CUserInventory extends CInventory {
 		return false;
 	}
 
-	public synchronized boolean consumeItem(L1ItemInstance item, int count) {
+	public synchronized boolean DeleteItemInInventory(L1ItemInstance item, int count) {
         if (item == null || count <= 0 || GetByServerID(item.getId()) != item
                 || item.getCount() < count) return false;
-        return removeItem(item, count) == count;
+        return DeleteItemAmount(item, count) == count;
 	}
 
-	public synchronized boolean consumeItem(L1ItemInstance[] items, int[] counts) {
+	public synchronized boolean DeleteItemInInventory(L1ItemInstance[] items, int[] counts) {
         if (items == null || counts == null || items.length != counts.length) return false;
         final int size = items.length;
         // Validate a whole request under the same inventory lock as item mutation.
@@ -1097,7 +1097,7 @@ public class CUserInventory extends CInventory {
             int amount = counts[i];
             for (int j = 0; j < i; j++)
                 if (items[j].getId() == item.getId()) amount += counts[j];
-            if (removeItem(item, amount) != amount) return false;
+            if (DeleteItemAmount(item, amount) != amount) return false;
         }
         return true;
 	}

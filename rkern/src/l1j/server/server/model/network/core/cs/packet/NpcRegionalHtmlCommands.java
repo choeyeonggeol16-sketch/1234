@@ -314,7 +314,7 @@ final class NpcRegionalHtmlCommands {
                 if (pc.getCurrentSpriteId() != pc.getClassId()) {
                     htmlid = "keplisha9";
                 } else {
-                    if (pc.getInventory().consumeItem(41314, 1)) {
+                    if (pc.getInventory().DeleteItemInInventory(41314, 1)) {
                         int html = _random.nextInt(9) + 1;
                         int PolyId = 6180 + _random.nextInt(40);
                         NpcLocalCommands.polyByKeplisha(client, PolyId);
@@ -401,7 +401,7 @@ final class NpcRegionalHtmlCommands {
             }
         } else if (templateId == 200016) {
             if (s.equalsIgnoreCase("B")) {
-                if (pc.getInventory().consumeItem(210081, 1)) {
+                if (pc.getInventory().DeleteItemInInventory(210081, 1)) {
                     // L1Teleport.teleport(pc, 32618, 32736, (short) 4, 4,
                     // true);
                     pc.start_teleport(32618, 32736, 4, 5, 169, true, false);

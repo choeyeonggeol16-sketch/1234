@@ -40,6 +40,6 @@ public class Atk_DiceDagger extends ItemSkillModel{
 
 	private void remove(L1Character c, L1ItemInstance item){
 		if (c instanceof L1PcInstance) SC_ServerMessage.send(((L1PcInstance)c), 158, item.getLogName());
-		c.getInventory().removeItem(item, 1);
+		c.getInventory().DeleteItemAmount(item, 1);
 	}
 }

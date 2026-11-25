@@ -53,7 +53,7 @@ final class ArmorEnchantScrollResolution {
                     || itemId == L1ItemId.ENCHANT_ARMOR || itemId == L1ItemId.Inadril_T_ScrollB3
                     || itemId == L1ItemId.B_SCROLL_OF_ENCHANT_ARMOR5) {
 
-                pc.getInventory().removeItem(item, 1);
+                pc.getInventory().DeleteItemAmount(item, 1);
                 int rnd = _random.nextInt(100) + 1;
                 if (safe_enchant == 0 && rnd <= 30) {
                     FailureEnchant(pc, targetItem, client);
@@ -280,10 +280,10 @@ final class ArmorEnchantScrollResolution {
 
                 }
             } else if (enchant_level < safe_enchant) {
-                pc.getInventory().removeItem(item, 1);
+                pc.getInventory().DeleteItemAmount(item, 1);
                 SuccessEnchant(pc, targetItem, client, RandomELevel(targetItem, itemId));
             } else {
-                pc.getInventory().removeItem(item, 1);
+                pc.getInventory().DeleteItemAmount(item, 1);
 
                 int enchant_chance_armor = 0;
                 int enchant_level_tmp;

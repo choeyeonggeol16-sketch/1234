@@ -75,7 +75,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 
 			L1PolyMorph.doPoly(pc, 19094, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
@@ -93,7 +93,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 19168, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -110,7 +110,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 18291, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -127,7 +127,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 18273, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -144,7 +144,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 18269, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -161,7 +161,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 18295, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -178,7 +178,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21262, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -195,7 +195,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21270, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -212,7 +212,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21274, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			SC_SkillSound.send(pc, pc.getId(), 6082);
 			SC_SkillSound.broadcast(pc, pc.getId(), 6082);
@@ -228,7 +228,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21282, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			SC_SkillSound.send(pc, pc.getId(), 6082);
 			SC_SkillSound.broadcast(pc, pc.getId(), 6082);
@@ -244,7 +244,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21286, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			SC_SkillSound.send(pc, pc.getId(), 6082);
 			SC_SkillSound.broadcast(pc, pc.getId(), 6082);
@@ -260,7 +260,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21290, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			SC_SkillSound.send(pc, pc.getId(), 6082);
 			SC_SkillSound.broadcast(pc, pc.getId(), 6082);
@@ -276,7 +276,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21294, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			SC_SkillSound.send(pc, pc.getId(), 6082);
 			SC_SkillSound.broadcast(pc, pc.getId(), 6082);
@@ -292,7 +292,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21297, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -312,7 +312,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21310, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -330,7 +330,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 19995, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -347,7 +347,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 19510, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -364,7 +364,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21258, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -381,7 +381,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21266, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -398,7 +398,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21278, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -416,7 +416,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 19955, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -433,7 +433,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21304, 14400, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);

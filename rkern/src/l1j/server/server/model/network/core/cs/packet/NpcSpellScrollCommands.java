@@ -96,7 +96,7 @@ final class NpcSpellScrollCommands {
             SC_ChatPacket.sendDirect(pc, pc, "무기를 착용하고 받을 수 있습니다.");
             return;
         }
-        if (!pc.getInventory().HaveItemByClassId(40308, 1000) || !pc.getInventory().consumeItem(40308, 1000)) {
+        if (!pc.getInventory().HaveItemByClassId(40308, 1000) || !pc.getInventory().DeleteItemInInventory(40308, 1000)) {
             SC_SystemMessage.send(pc, "아데나가 부족합니다.");
             return;
         }

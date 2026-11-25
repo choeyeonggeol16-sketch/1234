@@ -253,7 +253,7 @@ public class L1HealingPotion {
 				item.setChargeCount(chargeCount - getRemove());
 				pc.getInventory().updateItem(item, CUserInventory.COL_CHARGE_COUNT);
 			} else {
-				pc.getInventory().removeItem(item, getRemove());
+				pc.getInventory().DeleteItemAmount(item, getRemove());
 			}
 		}
 		return true;

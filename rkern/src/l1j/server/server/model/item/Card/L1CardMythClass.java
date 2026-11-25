@@ -65,7 +65,7 @@ public class L1CardMythClass {
         }
 
         // 4. 실행 (소모 및 변신)
-        pc.getInventory().consumeItem(POLY_SCROLL_ID, 1);
+        pc.getInventory().DeleteItemInInventory(POLY_SCROLL_ID, 1);
         executeMythPoly(pc, targetSprite);
     }
 

@@ -148,7 +148,7 @@ public final class CItemDigest {
                                 && inventory.GetByServerID(item.getId()) == item) {
                             final int count = Math.min(counts[i],
                                     Math.max(0, item.getCount() - floors[i]));
-                            if (count > 0) inventory.removeItem(item, count);
+                            if (count > 0) inventory.DeleteItemAmount(item, count);
                         }
                     }
                 } catch (IllegalStateException failure) {

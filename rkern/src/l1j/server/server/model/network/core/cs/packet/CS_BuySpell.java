@@ -236,7 +236,7 @@ public final class CS_BuySpell {
         }
 
         pc.getInventory()
-                .consumeItem(
+                .DeleteItemInInventory(
                         L1ItemId.ADENA,
                         totalPrice);
 

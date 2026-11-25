@@ -291,7 +291,7 @@ public class L1WeaponSkill {
 			}
 			String msg = weapon.getLogName();
 			SC_ServerMessage.send(pc, 158, msg);
-			pc.getInventory().removeItem(weapon, 1);
+			pc.getInventory().DeleteItemAmount(weapon, 1);
 		}
 		L1PinkName.onAction(targetPc, pc);
 		return dmg;

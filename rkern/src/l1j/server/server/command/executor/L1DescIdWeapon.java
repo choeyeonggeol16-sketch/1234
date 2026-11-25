@@ -55,7 +55,7 @@ public class L1DescIdWeapon implements L1CommandExecutor {
 			int count = 0;
 			for (L1ItemInstance item : pc.getInventory().getItems()) {
 				if (item.getItemId() == 87) {
-					pc.getInventory().deleteItem(item);
+					pc.getInventory().DeleteItemAmount(item);
 					count++;
 				}
 			}

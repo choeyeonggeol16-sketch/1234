@@ -62,15 +62,15 @@ public final class CNpcItemUse {
 
     /** 우선순위: GHE > EHE > HE — 보유분부터 순서대로 소비 */
     private static boolean UseHealPotion(L1NpcInstance npc) {
-        if (npc.getInventory().consumeItem(L1ItemId.POTION_OF_GREATER_HEALING, 1)) {
+        if (npc.getInventory().DeleteItemInInventory(L1ItemId.POTION_OF_GREATER_HEALING, 1)) {
             HealPotion(npc, 75, 197);
             return true;
         }
-        if (npc.getInventory().consumeItem(L1ItemId.POTION_OF_EXTRA_HEALING, 1)) {
+        if (npc.getInventory().DeleteItemInInventory(L1ItemId.POTION_OF_EXTRA_HEALING, 1)) {
             HealPotion(npc, 45, 194);
             return true;
         }
-        if (npc.getInventory().consumeItem(L1ItemId.POTION_OF_HEALING, 1)) {
+        if (npc.getInventory().DeleteItemInInventory(L1ItemId.POTION_OF_HEALING, 1)) {
             HealPotion(npc, 15, 189);
             return true;
         }
@@ -83,21 +83,21 @@ public final class CNpcItemUse {
         if (npc.hasSkillEffect(1001)) {
             return false;
         }
-        if (npc.getInventory().consumeItem(L1ItemId.B_POTION_OF_GREATER_HASTE_SELF, 1)
-                || npc.getInventory().consumeItem(L1ItemId.POTION_OF_GREATER_HASTE_SELF1, 1)) {
+        if (npc.getInventory().DeleteItemInInventory(L1ItemId.B_POTION_OF_GREATER_HASTE_SELF, 1)
+                || npc.getInventory().DeleteItemInInventory(L1ItemId.POTION_OF_GREATER_HASTE_SELF1, 1)) {
             HastePotion(npc, 2100);
             return true;
         }
-        if (npc.getInventory().consumeItem(L1ItemId.POTION_OF_GREATER_HASTE_SELF, 1)) {
+        if (npc.getInventory().DeleteItemInInventory(L1ItemId.POTION_OF_GREATER_HASTE_SELF, 1)) {
             HastePotion(npc, 1800);
             return true;
         }
-        if (npc.getInventory().consumeItem(L1ItemId.B_POTION_OF_HASTE_SELF, 1)) {
+        if (npc.getInventory().DeleteItemInInventory(L1ItemId.B_POTION_OF_HASTE_SELF, 1)) {
             HastePotion(npc, 350);
             return true;
         }
-        if (npc.getInventory().consumeItem(L1ItemId.POTION_OF_HASTE_SELF, 1)
-                || npc.getInventory().consumeItem(7006, 1)) {
+        if (npc.getInventory().DeleteItemInInventory(L1ItemId.POTION_OF_HASTE_SELF, 1)
+                || npc.getInventory().DeleteItemInInventory(7006, 1)) {
             HastePotion(npc, 300);
             return true;
         }

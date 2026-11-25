@@ -357,7 +357,7 @@ public final class CS_GiveItem {
             if (highpetamu != null) {
                 pet.evolvePet(highpetamu.getId());
                 SC_ItemName.send(pc, highpetamu);
-                inv.removeItem(petamu, 1);
+                inv.DeleteItemAmount(petamu, 1);
                 SC_SystemMessage.send(pc, npcname + "의 진화에 성공 하였습니다.");
             }
 

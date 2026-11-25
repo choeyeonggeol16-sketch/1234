@@ -158,7 +158,7 @@ public class ShipTimeController implements Runnable {
 			for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				if (pc.getMapId() == 447) {
 					pc.start_teleport(32297, 33086, 440, pc.getHeading(), 169, false, false);
-					pc.getInventory().consumeItem(40303, 1); // 숨겨진 섬 선착장행 배표
+					pc.getInventory().DeleteItemInInventory(40303, 1); // 숨겨진 섬 선착장행 배표
 				}
 			}
 		}

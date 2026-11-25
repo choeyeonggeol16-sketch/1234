@@ -223,7 +223,7 @@ public final class MonsterBookV2Info {
             private RewardT(){}
 
             public SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode doReward(L1PcInstance pc){
-                if(_item_id > 0 && !pc.getInventory().consumeItem(_item_id, 1)){
+                if(_item_id > 0 && !pc.getInventory().DeleteItemInInventory(_item_id, 1)){
                     return SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode.REWARD_FAIL_NOT_ENOUGH_ITEM;
                 }
                 if(_bqsexp_reward != null)

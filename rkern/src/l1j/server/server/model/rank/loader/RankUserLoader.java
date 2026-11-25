@@ -130,7 +130,7 @@ public class RankUserLoader {
         if(pc == null || pc.isGm())
             return;
         
-        pc.getInventory().findAndRemoveItemId(RankLoadManager.MRK_TOPPROTECTION_ID);
+        pc.getInventory().DeleteAllItemsByClassID(RankLoadManager.MRK_TOPPROTECTION_ID);
         SC_TOP_RANKER_NOTI noti = get(pc.getId());
         if(noti != null)
             noti.set_characterInstance(null);
@@ -139,7 +139,7 @@ public class RankUserLoader {
     public void banUser(L1PcInstance pc){
         if(pc == null || pc.isGm())
             return;
-        pc.getInventory().findAndRemoveItemId(RankLoadManager.MRK_TOPPROTECTION_ID);
+        pc.getInventory().DeleteAllItemsByClassID(RankLoadManager.MRK_TOPPROTECTION_ID);
         SC_TOP_RANKER_NOTI noti = remove(pc.getId());
         
         if(noti != null)
@@ -150,7 +150,7 @@ public class RankUserLoader {
         if(pc == null || pc.isGm())
             return;
         
-        pc.getInventory().findAndRemoveItemId(RankLoadManager.MRK_TOPPROTECTION_ID);
+        pc.getInventory().DeleteAllItemsByClassID(RankLoadManager.MRK_TOPPROTECTION_ID);
         remove(pc.getId());
     
     }

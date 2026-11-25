@@ -75,7 +75,7 @@ final class BlessingConsumables {
     static ItemActionResult handleMembershipBuff(ItemActionContext use) {
         L1PcInstance pc = use.player();
         int itemId = use.itemId();
-        if (pc.getInventory().consumeItem(itemId, 1)) {
+        if (pc.getInventory().DeleteItemInInventory(itemId, 1)) {
             if (pc.getClan() != null)
                 pc.getClan().addBlessCount(10000000);
             SC_SystemMessage.send(pc, "축복의 기운 1000 추가되었습니다.");

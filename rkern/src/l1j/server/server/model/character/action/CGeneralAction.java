@@ -148,14 +148,14 @@ public final class CGeneralAction extends CNewAction {
         }
 
         if (item.getItemId() == 40412) {
-            owner.getInventory().removeItem(item, 1);
+            owner.getInventory().DeleteItemAmount(item, 1);
             return;
         }
 
         item.setChargeCount(item.getChargeCount() - 1);
 
         if (item.getChargeCount() <= 0) {
-            owner.getInventory().removeItem(item);
+            owner.getInventory().DeleteItemAmount(item);
         } else {
             owner.getInventory().updateItem(
                     item,

@@ -82,7 +82,7 @@ public class ActionListenerLinkage{
 			}
 			
 			if(t_listener.simple_teleport(pc)){
-				pc.getInventory().removeItem(item, 1);				
+				pc.getInventory().DeleteItemAmount(item, 1);				
 			}
 			return;
 		}

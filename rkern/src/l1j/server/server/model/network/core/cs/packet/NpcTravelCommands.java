@@ -33,7 +33,7 @@ final class NpcTravelCommands {
         final int itemId = npcId == 9000 ? 140100 : 40308;
         final int count = npcId == 9000 ? 1 : 1000;
         // Keep existing admission check; do not teleport on a failed debit.
-        if (pc.getInventory().HaveItemByClassId(itemId, count) && pc.getInventory().consumeItem(itemId, count)) {
+        if (pc.getInventory().HaveItemByClassId(itemId, count) && pc.getInventory().DeleteItemInInventory(itemId, count)) {
             pc.start_teleport(32769, 32837, 622, pc.getHeading(), 169, true, false);
         } else {
             SC_SystemMessage.send(pc, npcId == 9000 ? "축복받은 순간이동 주문서가 필요합니다." : "1,000 아데나가 필요합니다.");
@@ -74,7 +74,7 @@ final class NpcTravelCommands {
 																						// 리뉴얼
 				if (s.equals("teleportURL")) {// 액션코드
 					if (pc.getInventory().HaveItemByClassId(40308, 7777)
-                            && pc.getInventory().consumeItem(40308, 7777)) {
+                            && pc.getInventory().DeleteItemInInventory(40308, 7777)) {
 						int rx = _random.nextInt(7);
 						int ux = 33435 + rx;
 						int uy = 32812 + rx;
@@ -132,7 +132,7 @@ final class NpcTravelCommands {
 				}
 				if (locx == 0 || locy == 0) return htmlid;
 				if (pc.getInventory().HaveItemByClassId(40308, 500)
-                        && pc.getInventory().consumeItem(40308, 500)) {
+                        && pc.getInventory().DeleteItemInInventory(40308, 500)) {
 					pc.start_teleport(locx, locy, map, pc.getHeading(), 169, true, false);
 				} else {
 					htmlid = "cave2";
@@ -246,7 +246,7 @@ final class NpcTravelCommands {
 				}
 				if (locx == 0 || locy == 0) return htmlid;
 				if (pc.getInventory().HaveItemByClassId(40308, 100)
-                        && pc.getInventory().consumeItem(40308, 100)) {
+                        && pc.getInventory().DeleteItemInInventory(40308, 100)) {
 					pc.start_teleport(locx, locy, mapid, pc.getHeading(), 169, true, false);
 					htmlid = "";
 				} else {
@@ -363,7 +363,7 @@ final class NpcTravelCommands {
 	static String unicornTemple(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("a")) { // 입장
 					if (pc.getInventory().HaveItemByClassId(810000, 1)
-                            && pc.getInventory().consumeItem(810000, 1)) {
+                            && pc.getInventory().DeleteItemInInventory(810000, 1)) {
 						pc.start_teleport(32800, 32798, 1935, pc.getHeading(), 169, true, false);
 					} else {
 						SC_SystemMessage.send(pc, "입장을 위해 유니콘의 사원 열쇠가 필요합니다.");
@@ -457,7 +457,7 @@ final class NpcTravelCommands {
 				return htmlid;
 			}
 			if (pc.getInventory().HaveItemByClassId(40308, 1000)
-                            && pc.getInventory().consumeItem(40308, 1000)) {
+                            && pc.getInventory().DeleteItemInInventory(40308, 1000)) {
 				pc.start_teleport(32769, 32837, 622, pc.getHeading(), 169, true, false);
 			} else {
 				SC_SystemMessage.send(pc, "1,000 아데나가 필요합니다.");
@@ -491,7 +491,7 @@ final class NpcTravelCommands {
 			pc.start_teleport(32804, 32864, 537, pc.getHeading(), 169, true, false);
 		} else if (s.equals("d")) { // 전투 지역을 확인(5000아데나)
 			if (pc.getInventory().HaveItemByClassId(40308, 5000)) {
-				pc.getInventory().consumeItem(40308, 5000);
+				pc.getInventory().DeleteItemInInventory(40308, 5000);
 				SC_SystemMessage.send(pc, "아데나는 감사하지만, 지금은 사용 할 수 없습니다.");
 				htmlid = "";
 			} else {
@@ -569,7 +569,7 @@ final class NpcTravelCommands {
     static String hyosue(L1PcInstance pc, String s, String htmlid) {
         if (!s.equalsIgnoreCase("1")) return htmlid;
         if (!pc.getInventory().HaveItemByClassId(40308, 10000)
-                || !pc.getInventory().consumeItem(40308, 10000)) return "hyosue1";
+                || !pc.getInventory().DeleteItemInInventory(40308, 10000)) return "hyosue1";
         pc.start_teleport(32789, 33186, 4, 5, 169, true, false);
         return "";
     }

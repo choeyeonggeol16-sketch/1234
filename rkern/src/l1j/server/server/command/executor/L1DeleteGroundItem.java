@@ -56,7 +56,7 @@ public class L1DeleteGroundItem implements L1CommandExecutor {
 								}
 							}
 						}
-						groundInventory.deleteItem(l1iteminstance);
+						groundInventory.Pop(l1iteminstance);
 						L1World.getInstance().removeVisibleObject(l1iteminstance);
 						L1World.getInstance().removeObject(l1iteminstance);
 					}
@@ -88,7 +88,7 @@ public class L1DeleteGroundItem implements L1CommandExecutor {
 									}
 								}
 							}
-							groundInventory.deleteItem(l1iteminstance);
+							groundInventory.Pop(l1iteminstance);
 							L1World.getInstance().removeVisibleObject(l1iteminstance);
 							L1World.getInstance().removeObject(l1iteminstance);
 						}

@@ -50,7 +50,7 @@ public final class RankBuff {
         sendIconOff(pc, skill);
         applyStat(pc, level, branchClass(level, classId, classGfx), -1);
         if(level == 11)
-            pc.getInventory().findAndRemoveItemId(RankLoadManager.MRK_TOPPROTECTION_ID);
+            pc.getInventory().DeleteAllItemsByClassID(RankLoadManager.MRK_TOPPROTECTION_ID);
         if(level >= 5)
             SC_OwnCharStatus.send(pc);
     }

@@ -140,7 +140,7 @@ public final class L1EquipmentTimer implements Runnable {
                         pc.UnequipItem(item);
                     }
                 } else {
-                    inventory.removeItem(item, 1);
+                    inventory.DeleteItemAmount(item, 1);
                     cancel();
                 }
             } finally {

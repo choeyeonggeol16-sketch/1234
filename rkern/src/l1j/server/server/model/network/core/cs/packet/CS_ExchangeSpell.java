@@ -422,7 +422,7 @@ public final class CS_ExchangeSpell {
                     L1ItemId.PANS_LEATHER,
                     price)) {
 
-                inventory.consumeItem(
+                inventory.DeleteItemInInventory(
                         L1ItemId.PANS_LEATHER,
                         price);
 

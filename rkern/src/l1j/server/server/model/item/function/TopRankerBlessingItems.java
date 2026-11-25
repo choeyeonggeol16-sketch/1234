@@ -20,7 +20,7 @@ final class TopRankerBlessingItems {
 static void 정상의가호(L1PcInstance pc, L1ItemInstance useItem) {
     if (!pc.is_top_ranker()) {
         pc.sendPackets(String.format("현재 전체 랭킹 %d위 이므로 사용할 수 없습니다.", pc.getRankLevel()));
-        pc.getInventory().removeItem(useItem);
+        pc.getInventory().DeleteItemAmount(useItem);
         return;
     }
 

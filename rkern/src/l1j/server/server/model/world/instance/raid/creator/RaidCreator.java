@@ -71,7 +71,7 @@ public class RaidCreator {
 			RaidMessage.RAID_OPEN_FAIL_INVALID_ITEM.sendMessage(pc);
 			return;
 		}
-		pc.getInventory().removeItem(item, _needCount);
+		pc.getInventory().DeleteItemAmount(item, _needCount);
 		type.create(pc);
 		ArrayList<L1PcInstance> pcs = new ArrayList<L1PcInstance>();
 		pcs.addAll(L1World.getInstance().getAllPlayers());

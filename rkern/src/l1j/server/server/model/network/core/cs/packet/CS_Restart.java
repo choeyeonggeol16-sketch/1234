@@ -88,7 +88,7 @@ public final class CS_Restart {
 
         for (int itemId : REMOVE_IDS) {
             if (pc.getInventory().HaveAnyItemByClassId(itemId)) {
-                pc.getInventory().consumeItem(
+                pc.getInventory().DeleteItemInInventory(
                         itemId,
                         pc.getInventory().GetUnequippedItemAmount(itemId));
             }

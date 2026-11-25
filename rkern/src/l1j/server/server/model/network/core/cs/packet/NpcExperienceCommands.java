@@ -130,7 +130,7 @@ final class NpcExperienceCommands {
 	static String arcFreePass(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("a")) {
 					if (pc.getLevel() >= 56 && pc.getLevel() <= 59) {
-						if (!pc.getInventory().consumeItem(700016, 3)) {
+						if (!pc.getInventory().DeleteItemInInventory(700016, 3)) {
 							SC_SystemMessage.send(pc, "재료 또는 레벨이 맞지 않습니다.");
 							htmlid = "archekins2";
 							return htmlid;
@@ -148,7 +148,7 @@ final class NpcExperienceCommands {
 					}
 				} else if (s.equalsIgnoreCase("b")) {
 					if (pc.getLevel() >= 60 && pc.getLevel() <= 64) {
-						if (!pc.getInventory().consumeItem(700016, 5)) {
+						if (!pc.getInventory().DeleteItemInInventory(700016, 5)) {
 							SC_SystemMessage.send(pc, "재료 또는 레벨이 맞지 않습니다.");
 							htmlid = "archekins2";
 							return htmlid;
@@ -166,7 +166,7 @@ final class NpcExperienceCommands {
 					}
 				} else if (s.equalsIgnoreCase("c")) {
 					if (pc.getLevel() >= 65 && pc.getLevel() <= 69) {
-						if (!pc.getInventory().consumeItem(700016, 10)) {
+						if (!pc.getInventory().DeleteItemInInventory(700016, 10)) {
 							SC_SystemMessage.send(pc, "재료 또는 레벨이 맞지 않습니다.");
 							htmlid = "archekins2";
 							return htmlid;
@@ -234,8 +234,8 @@ final class NpcExperienceCommands {
 		String htmlid = "";
 		if (s.equalsIgnoreCase("a")) {
 			if (pc.getInventory().HaveItemByClassId(6003, 1) && pc.getInventory().HaveItemByClassId(6013, 100) && pc.getLevel() < 70) {
-				pc.getInventory().consumeItem(6003, 1);
-				pc.getInventory().consumeItem(6013, 100);
+				pc.getInventory().DeleteItemInInventory(6003, 1);
+				pc.getInventory().DeleteItemInInventory(6013, 100);
 				int needExp = ExpTable.getNeedExpNextLevel(52);
 				double exppenalty = ExpTable.getPenaltyRate(pc.getLevel());
 				int exp = 0;

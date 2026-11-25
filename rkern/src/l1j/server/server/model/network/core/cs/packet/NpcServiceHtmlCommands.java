@@ -597,7 +597,7 @@ final class NpcServiceHtmlCommands {
             } else if (pc.get_PKcount() < 5) {
                 SC_ServerMessage.send(pc, 560);
             } else {
-                if (pc.getInventory().consumeItem(L1ItemId.ADENA, 700000)) {
+                if (pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, 700000)) {
                     pc.set_PKcount(pc.get_PKcount() - 5);
                     SC_ServerMessage.send(pc, 561, String.valueOf(pc.get_PKcount()));
                 } else {
@@ -623,7 +623,7 @@ final class NpcServiceHtmlCommands {
                 }
                 if (pc.getLevel() > 54) {
                     if (pc.getInventory().HaveItemByClassId(200000)
-                            && pc.getInventory().consumeItem(200000, 1)) {
+                            && pc.getInventory().DeleteItemInInventory(200000, 1)) {
                         pc.start_teleport(32723 + CommonUtil.random(-10, 10), 32815 + CommonUtil.random(-10, 10), 5166,
                                 5, 169, true, false);
                         NpcLocalCommands.StatInitialize(pc);
@@ -701,7 +701,7 @@ final class NpcServiceHtmlCommands {
                         } else {
                             int level = pc.getLevel();
                             int cost = level * level * 10;
-                            if (pc.getInventory().consumeItem(L1ItemId.ADENA, cost)) {
+                            if (pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, cost)) {
                                 pc.setHomeTownId(town_id);
                                 pc.setContribution(0);
                                 pc.save();

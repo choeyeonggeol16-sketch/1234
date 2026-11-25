@@ -256,8 +256,8 @@ public final class CS_Result {
 							item.set_bless_level(defaultItem.get_bless_level());
 							item.set_item_level(defaultItem.get_item_level());
 							pc.getInventory().CreateOrAddItem(item);
-							pc.getInventory().consumeItem(consumeMaterialId, 1);
-							pc.getInventory().removeItem(defaultItem, 1);
+							pc.getInventory().DeleteItemInInventory(consumeMaterialId, 1);
+							pc.getInventory().DeleteItemAmount(defaultItem, 1);
 						}
 					} else {
 						SC_SystemMessage.send(pc, "재료 아이템이 존재하지 않습니다.");

@@ -136,7 +136,7 @@ public class InstanceSpace {
 				if(inv == null)
 					continue;
 				
-				inv.removeItem(item);
+				inv.DeleteItemAmount(item);
 			}
 			
 		}catch(Exception e){

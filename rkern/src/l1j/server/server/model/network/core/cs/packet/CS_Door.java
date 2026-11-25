@@ -109,7 +109,7 @@ public final class CS_Door {
                     .HaveItemByClassId(40163)) {
 
                 pc.getInventory()
-                        .consumeItem(40163, 1);
+                        .DeleteItemInInventory(40163, 1);
 
             } else {
                 return;
@@ -199,7 +199,7 @@ public final class CS_Door {
         }
 
         pc.getInventory()
-                .consumeItem(
+                .DeleteItemInInventory(
                         L1ItemId.GIRANCAVE_BOXKEY,
                         1);
 

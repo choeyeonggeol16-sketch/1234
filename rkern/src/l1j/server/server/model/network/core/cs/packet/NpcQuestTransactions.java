@@ -1014,7 +1014,7 @@ final class NpcQuestTransactions {
             SC_ServerMessage.send(pc, 143, npc.getNpcTemplate().get_name(), item.getItem().getName());
             return grantPage;
         }
-        if (command.equalsIgnoreCase("Z") && pc.getInventory().consumeItem(itemId, 1)) {
+        if (command.equalsIgnoreCase("Z") && pc.getInventory().DeleteItemInInventory(itemId, 1)) {
             return redeemPage;
         }
         return initialPage;

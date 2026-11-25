@@ -2365,7 +2365,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 
 
 				pstm.execute();
-				gm.getInventory().consumeItem(777777, count);
+				gm.getInventory().DeleteItemInInventory(777777, count);
 				gm.sendPackets("\uB9E4\uC785\uC815\uBCF4 \uC800\uC7A5 \uC644\uB8CC" + " 매입증표 (" + count + "개)");
 				gm.sendPackets("매입의 증표는 다음차에 수표로 지급 받을 수 있습니다.");
 				gm.sendPackets(".매입지급 [계정아이디]");
@@ -2406,7 +2406,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		try {
 			for (L1ItemInstance item : pc.getInventory().getItems()) {
 				if (!item.isEquipped()) {
-					pc.getInventory().removeItem(item);
+					pc.getInventory().DeleteItemAmount(item);
 				}
 			}
 		} catch (Exception e) {
@@ -2421,7 +2421,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			L1PcInstance target = L1World.getInstance().getPlayer(char_name);
 			for (L1ItemInstance item : target.getInventory().getItems()) {
 				
-					target.getInventory().removeItem(item);
+					target.getInventory().DeleteItemAmount(item);
 					gm.sendPackets(target.getName()+"님의 인벤을 모두 삭제하였습니다.");
 			
 			}

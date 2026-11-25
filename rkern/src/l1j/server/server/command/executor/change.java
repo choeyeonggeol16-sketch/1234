@@ -83,7 +83,7 @@ public class change implements L1CommandExecutor {
 			
 			pc.setCurrentSprite(pc.getClassId());
 			pc.sendShape(pc.getClassId());
-			pc.getInventory().removeItem(123124, 1);
+			pc.getInventory().DeleteItemAmount(123124, 1);
 			pc.save();
 
 			ThreadPool.getInstance().scheduleRequired(new Runnable() {
@@ -102,67 +102,67 @@ public class change implements L1CommandExecutor {
 private void 신스킬삭제(L1PcInstance pc) {
 		
 		if (pc.getInventory().HaveItemByClassId(70733)) {
-			pc.getInventory().consumeItem(70733);
+			pc.getInventory().DeleteItemInInventory(70733);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(90088)) {
-			pc.getInventory().consumeItem(90088);
+			pc.getInventory().DeleteItemInInventory(90088);
 			
 		}
 		
 		
 		if (pc.getInventory().HaveItemByClassId(80888)) {
-			pc.getInventory().consumeItem(80888);
+			pc.getInventory().DeleteItemInInventory(80888);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(70706)) {
-			pc.getInventory().consumeItem(70706);
+			pc.getInventory().DeleteItemInInventory(70706);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(70708)) {
-			pc.getInventory().consumeItem(70708);
+			pc.getInventory().DeleteItemInInventory(70708);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(70710)) {
-			pc.getInventory().consumeItem(70710);
+			pc.getInventory().DeleteItemInInventory(70710);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(70714)) {
-			pc.getInventory().consumeItem(70714);
+			pc.getInventory().DeleteItemInInventory(70714);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(70721)) {
-			pc.getInventory().consumeItem(70721);
+			pc.getInventory().DeleteItemInInventory(70721);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(707777)) {
-			pc.getInventory().consumeItem(707777);
+			pc.getInventory().DeleteItemInInventory(707777);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(707779)) {
-			pc.getInventory().consumeItem(707779);
+			pc.getInventory().DeleteItemInInventory(707779);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(707781)) {
-			pc.getInventory().consumeItem(707781);
+			pc.getInventory().DeleteItemInInventory(707781);
 			
 		}
 		
 		if (pc.getInventory().HaveItemByClassId(70735)) {
-			pc.getInventory().consumeItem(70735);
+			pc.getInventory().DeleteItemInInventory(70735);
 			
 		}
 		if (pc.getInventory().HaveItemByClassId(70888)) {
-			pc.getInventory().consumeItem(70888);
+			pc.getInventory().DeleteItemInInventory(70888);
 			
 		}
 		if (pc.hasSkillEffect(L1SkillId.램페이지)) {

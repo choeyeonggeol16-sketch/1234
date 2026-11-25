@@ -589,7 +589,7 @@ final class NpcCastleActions {
 					if (obj != null) {
 						if (obj instanceof L1CataInstance) {
 							L1CataInstance npc = (L1CataInstance) obj;
-							if (pc.getInventory().consumeItem(30124, 1)) {
+							if (pc.getInventory().DeleteItemInInventory(30124, 1)) {
 								SC_DoActionGFX.broadcast(
 										npc,
 										ActionCodes.ACTION_Attack);
@@ -709,7 +709,7 @@ final class NpcCastleActions {
             SC_SystemMessage.send(pc, "용병을 고용할 수 없습니다.");
             return false;
         }
-        if (!pc.getInventory().consumeItem(40308, 300000)) {
+        if (!pc.getInventory().DeleteItemInInventory(40308, 300000)) {
             SC_SystemMessage.send(pc, "용병 구입은 아데나 30만 입니다.");
             return false;
         }

@@ -52,7 +52,7 @@ final class NpcLocalCommands {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return true;
 				}
-				if (!pc.getInventory().consumeItem(875640379, 1)) {
+				if (!pc.getInventory().DeleteItemInInventory(875640379, 1)) {
                     SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
                     return true;
                 }
@@ -75,7 +75,7 @@ final class NpcLocalCommands {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return true;
 				}
-				if (!pc.getInventory().consumeItem(875640379, 1)) {
+				if (!pc.getInventory().DeleteItemInInventory(875640379, 1)) {
                     SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
                     return true;
                 }
@@ -120,7 +120,7 @@ final class NpcLocalCommands {
 
 		if (pc == null) return;
 		if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)
-                && pc.getInventory().consumeItem(L1ItemId.ADENA, 100)) {
+                && pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, 100)) {
 
 			L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_NPC, false);
 		} else {
@@ -133,7 +133,7 @@ final class NpcLocalCommands {
 
 		if (pc == null) return;
 		if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)
-                && pc.getInventory().consumeItem(L1ItemId.ADENA, 100)) {
+                && pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, 100)) {
 
 			L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_KEPLISHA, false);
 		} else {
@@ -221,7 +221,7 @@ final class NpcLocalCommands {
             htmldata = new String[] { new DecimalFormat("#,##0").format(elementalResetCost(pc)) };
         } else if (s.equalsIgnoreCase("money")) {
             if (!pc.isElf()) htmlid = "siabeth6";
-            else if (pc.getInventory().consumeItem(40308, elementalResetCost(pc))) {
+            else if (pc.getInventory().DeleteItemInInventory(40308, elementalResetCost(pc))) {
                 clearElementalProtection(pc);
                 pc.addElfAttrInitCount(1);
                 SC_SkillIconGFX.send(pc, 15, 0);
@@ -232,7 +232,7 @@ final class NpcLocalCommands {
             }
         } else if (s.equalsIgnoreCase("bm")) {
             if (!pc.isElf()) htmlid = "siabeth6";
-            else if (pc.getInventory().consumeItem(200000, 2)) {
+            else if (pc.getInventory().DeleteItemInInventory(200000, 2)) {
                 clearElementalProtection(pc);
                 SC_SkillIconGFX.send(pc, 15, 0);
                 htmlid = "";
@@ -274,7 +274,7 @@ final class NpcLocalCommands {
             return false;
         }
         if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)
-                && pc.getInventory().consumeItem(L1ItemId.ADENA, 100)) {
+                && pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, 100)) {
             L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_NPC, false);
         } else {
             SC_ServerMessage.send(pc, 189);

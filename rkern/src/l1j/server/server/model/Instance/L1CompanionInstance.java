@@ -102,7 +102,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             master.sendPackets(String.format("스탯 초기화를 위해서는 최소 %d레벨 이상이 되어야 합니다.", CompanionSettings.STATS_INITIALIZED_NEED_LEVEL));
             return true;
         }
-        if(!master.getInventory().consumeItem(CompanionSettings.STATS_INITIALIZED_ITEM_ID, 1)){
+        if(!master.getInventory().DeleteItemInInventory(CompanionSettings.STATS_INITIALIZED_ITEM_ID, 1)){
             master.sendPackets("아이템 정보를 찾을 수 없습니다.");
             return true;
         }
@@ -120,7 +120,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             return true;
         }
         
-        if(!master.getInventory().consumeItem(CompanionSettings.NAME_CHANGED_ITEM_ID, 1)){
+        if(!master.getInventory().DeleteItemInInventory(CompanionSettings.NAME_CHANGED_ITEM_ID, 1)){
             master.sendPackets("아이템 정보를 찾을 수 없습니다.");
             return true;
         }
@@ -141,7 +141,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             master.sendPackets("펫을 소환한 상태에서 사용해주세요.");
             return true;
         }
-        if(!master.getInventory().consumeItem(item.getItemId(), 1)){
+        if(!master.getInventory().DeleteItemInInventory(item.getItemId(), 1)){
             master.sendPackets("아이템 정보를 찾을 수 없습니다.");
             return true;
         }
@@ -176,7 +176,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             master.sendPackets("펫을 소환한 상태에서 사용해주세요.");
             return true;
         }
-        if(!master.getInventory().consumeItem(item.getItemId(), 1)){
+        if(!master.getInventory().DeleteItemInInventory(item.getItemId(), 1)){
             master.sendPackets("아이템 정보를 찾을 수 없습니다.");
             return true;
         }
@@ -231,7 +231,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             master.sendPackets(String.format("모든 스탯은 %d까지만 올릴 수 있습니다.", CompanionSettings.MAX_STAT));
             return;
         }
-        if(!master.getInventory().consumeItem(item_id, 1)){
+        if(!master.getInventory().DeleteItemInInventory(item_id, 1)){
             master.sendPackets("아이템 정보를 찾을 수 없습니다.");
             return;
         }
@@ -284,7 +284,7 @@ public class L1CompanionInstance extends L1NpcInstance{
                     master.sendPackets("결정체가 부족합니다.");
                     return true;
                 }
-                master.getInventory().consumeItem(41246, 1000);
+                master.getInventory().DeleteItemInInventory(41246, 1000);
                 companion.setDead(true);
                 companion.resurrect(companion.get_base_max_hp() / 4);
                 companion.setResurrect(true);
@@ -822,7 +822,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         
         if(m_master != null && 
                 m_master.getInventory().HaveItemByClassId(CompanionSettings.EXP_SAFETY_ITEMID) &&
-                m_master.getInventory().consumeItem(CompanionSettings.EXP_SAFETY_ITEMID, 1)){
+                m_master.getInventory().DeleteItemInInventory(CompanionSettings.EXP_SAFETY_ITEMID, 1)){
             m_master.sendPackets("가호로 인해 펫의 경험치가 보호되었습니다.");
             return;
         }
@@ -864,7 +864,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(!is_pass_needed){
             if(CompanionSettings.EXP_RESTORE_NEED_ADENA > 0){
                 if(!m_master.getInventory().HaveItemByClassId(L1ItemId.ADENA, CompanionSettings.EXP_RESTORE_NEED_ADENA) ||
-                        !m_master.getInventory().consumeItem(L1ItemId.ADENA, CompanionSettings.EXP_RESTORE_NEED_ADENA))
+                        !m_master.getInventory().DeleteItemInInventory(L1ItemId.ADENA, CompanionSettings.EXP_RESTORE_NEED_ADENA))
                 m_master.sendPackets(String.format("경험치 복구를 위해서는 최소 아데나 %d(이)가 필요합니다.", CompanionSettings.EXP_RESTORE_NEED_ADENA));
                 return;
             }
@@ -907,7 +907,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(!is_pass_needed){
             if(CompanionSettings.OBLIVION_NEED_ADENA > 0){
                 if(!m_master.getInventory().HaveItemByClassId(L1ItemId.ADENA, CompanionSettings.OBLIVION_NEED_ADENA) ||
-                        !m_master.getInventory().consumeItem(L1ItemId.ADENA, CompanionSettings.OBLIVION_NEED_ADENA))
+                        !m_master.getInventory().DeleteItemInInventory(L1ItemId.ADENA, CompanionSettings.OBLIVION_NEED_ADENA))
                 m_master.sendPackets(String.format("망각하기 위해서는 최소 아데나 %d(이)가 필요합니다.", CompanionSettings.OBLIVION_NEED_ADENA));
                 return;
             }			
@@ -963,7 +963,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             }
             
             if(!m_master.getInventory().HaveItemByClassId(CompanionSettings.TRANING_NEED_ITEM_ID, CompanionSettings.TRANING_NEED_ITEM_COUNT) ||
-                    !m_master.getInventory().consumeItem(CompanionSettings.TRANING_NEED_ITEM_ID, CompanionSettings.TRANING_NEED_ITEM_COUNT)){
+                    !m_master.getInventory().DeleteItemInInventory(CompanionSettings.TRANING_NEED_ITEM_ID, CompanionSettings.TRANING_NEED_ITEM_COUNT)){
                 m_master.sendPackets(String.format("훈련 시키기 위해서는 환생의 보석이 %d개 필요합니다.", CompanionSettings.TRANING_NEED_ITEM_COUNT));
                 return;
             }

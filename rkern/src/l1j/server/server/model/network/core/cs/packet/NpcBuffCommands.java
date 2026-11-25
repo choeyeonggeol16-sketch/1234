@@ -30,7 +30,7 @@ final class NpcBuffCommands {
 					htmlid = "birthday6";
 				}
 				if (s.equalsIgnoreCase("b")) {
-					if (pc.getInventory().consumeItem(3000048, 1)) {
+					if (pc.getInventory().DeleteItemInInventory(3000048, 1)) {
 						L1SkillUse.cast(pc, L1SkillId.COMA_B, pc.getId(), pc.getX(), pc.getY(), null, 0,
 								L1SkillUse.TYPE_SPELLSC);
 						
@@ -67,7 +67,7 @@ final class NpcBuffCommands {
 				}
 
 				if (count == 0) return "yuris3";
-				if (pc.getInventory().consumeItem(3000155, count)) {
+				if (pc.getInventory().DeleteItemInInventory(3000155, count)) {
 					pc.addLawful(lawful);
 					SC_ServerMessage.send(pc, 674);
 					SC_SkillSound.send(pc, pc.getId(), 8473);
@@ -82,7 +82,7 @@ final class NpcBuffCommands {
 	static String dragonHunter(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("a")) {
 					if (pc.getInventory().HaveItemByClassId(40308, 300000)
-                            && pc.getInventory().consumeItem(40308, 300000)) {
+                            && pc.getInventory().DeleteItemInInventory(40308, 300000)) {
 						L1SkillUse.cast(pc, L1SkillId.DRAGON_HUNTER_BLESS, pc.getId(), pc.getX(), pc.getY(), null, 0,
 								L1SkillUse.TYPE_GMBUFF);
 						SC_SkillSound.broadcast(pc, pc.getId(), 3944);
@@ -102,7 +102,7 @@ final class NpcBuffCommands {
 	static String miso(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("a")) {
 					if (pc.getInventory().HaveItemByClassId(40308, 1000)
-                            && pc.getInventory().consumeItem(40308, 1000)) {
+                            && pc.getInventory().DeleteItemInInventory(40308, 1000)) {
 
 						final int targetId = pc.getId();
 						final int targetX = pc.getX();
@@ -315,7 +315,7 @@ final class NpcBuffCommands {
 	static String hunterBless(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("giveto")) {
 					if (pc.getInventory().HaveItemByClassId(40308, 200000)
-                            && pc.getInventory().consumeItem(40308, 200000)) {
+                            && pc.getInventory().DeleteItemInInventory(40308, 200000)) {
 					
 						
 						L1SkillUse.cast(pc, L1SkillId.HUNTER_BLESS, pc.getId(), pc.getX(), pc.getY(), null, 0,
@@ -350,7 +350,7 @@ final class NpcBuffCommands {
         }
         // Legacy weapon branch required the equipped object to be in the inventory.
         if (weapon && !pc.getInventory().getItems().contains(equipped)) return;
-        if (!pc.getInventory().consumeItem(40308, 100)) {
+        if (!pc.getInventory().DeleteItemInInventory(40308, 100)) {
             SC_SystemMessage.send(pc, "아데나가 부족합니다.");
             return;
         }
@@ -367,7 +367,7 @@ final class NpcBuffCommands {
         for (int i=0; i<FEATHER_SKILLS.length; i++) {
             final int token=410057+i;
             if (!pc.getInventory().HaveItemByClassId(token,1)) continue;
-            if (!pc.getInventory().consumeItem(token,1)) return "suschef4";
+            if (!pc.getInventory().DeleteItemInInventory(token,1)) return "suschef4";
             for (int j : FEATHER_REMOVE_ORDER[i]) {
                 if (pc.hasSkillEffect(FEATHER_SKILLS[j])) pc.removeSkillEffect(FEATHER_SKILLS[j]);
             }

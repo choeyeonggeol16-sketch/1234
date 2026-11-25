@@ -226,7 +226,7 @@ public class NpcActionListener implements ActionListener{
 		
 		int need_item_id = get_need_item_id();
 		int need_item_amount = get_need_item_amount();
-		if(need_item_id > 0 && need_item_amount > 0 && !pc.getInventory().consumeItem(need_item_id, need_item_amount))
+		if(need_item_id > 0 && need_item_amount > 0 && !pc.getInventory().DeleteItemInInventory(need_item_id, need_item_amount))
 			return result_short_item(pc);
 		else if(need_item_id > 0 && need_item_amount == -1){
 			L1ItemInstance item = pc.getInventory().GetFirstItemByClassID(need_item_id);

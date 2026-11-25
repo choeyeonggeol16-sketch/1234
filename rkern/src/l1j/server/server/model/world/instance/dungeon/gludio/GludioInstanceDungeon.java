@@ -668,7 +668,7 @@ public final class GludioInstanceDungeon {
                 }
             clearNpcs(r);
             for(L1ItemInstance item:L1World.getInstance().getAllItem()) if(item!=null && item.getMapId()==r.mapId)
-                L1World.getInstance().getInventory(item.getX(),item.getY(),item.getMapId()).removeItem(item);
+                L1World.getInstance().getInventory(item.getX(),item.getY(),item.getMapId()).DeleteItemAmount(item);
             releaseMap(r);
         }
     }

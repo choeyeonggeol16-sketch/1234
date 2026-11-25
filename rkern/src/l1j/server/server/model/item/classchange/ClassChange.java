@@ -84,7 +84,7 @@ public class ClassChange {
         changeClass(pc, targetType);
 
         // 아이템 삭제 및 저장
-        pc.getInventory().removeItem(item, 1);
+        pc.getInventory().DeleteItemAmount(item, 1);
         pc.save();
 
         // 재시작 처리 (0.5초 후)
@@ -153,7 +153,7 @@ public class ClassChange {
 
         for (int itemId : itemIdsToConsume) {
             if (pc.getInventory().HaveItemByClassId(itemId)) {
-                pc.getInventory().consumeItem(itemId);
+                pc.getInventory().DeleteItemInInventory(itemId);
             }
         }
 

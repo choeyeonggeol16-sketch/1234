@@ -215,7 +215,7 @@ public final class CS_Attr {
 						}
 						pc.setCurrentSprite(pc.getClassId());
 						pc.sendShape(pc.getClassId());
-						pc.getInventory().removeItem(item, 1);
+						pc.getInventory().DeleteItemAmount(item, 1);
 					}
 					ThreadPool.getInstance().scheduleRequired(new Runnable(){
 						@Override
@@ -696,7 +696,7 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 				SC_ServerMessage.send(pc, 326);
 				return;
 			}else{
-				pc.getInventory().removeItem(removedItem, 1);
+				pc.getInventory().DeleteItemAmount(removedItem, 1);
 			}
 		}
 

@@ -130,7 +130,7 @@ public class BattleTournamentObserver extends CombatObserver{
 				public boolean isFilter(L1PcInstance pc){
 					if(pc != null && _user_kda_dictionary != null){
 						UserKda kda = _user_kda_dictionary.get(pc.getId());
-						return !(kda != null && kda.get_team_id() == team_id && pc.getInventory().consumeItem(key_item_id, 1));
+						return !(kda != null && kda.get_team_id() == team_id && pc.getInventory().DeleteItemInInventory(key_item_id, 1));
 					}else{
 						return true;
 					}
@@ -140,7 +140,7 @@ public class BattleTournamentObserver extends CombatObserver{
 			return new TreasureChestOpenFilter(){
 				@Override
 				public boolean isFilter(L1PcInstance pc){
-					return !pc.getInventory().consumeItem(key_item_id, 1);
+					return !pc.getInventory().DeleteItemInInventory(key_item_id, 1);
 				}
 			};
 		}
@@ -376,7 +376,7 @@ public class BattleTournamentObserver extends CombatObserver{
 		pc.set_mark_status(0);
 		pc.set_current_combat_id(0);
 		pc.set_current_combat_team_id(-1);
-		pc.getInventory().findAndRemoveItemId(_key_ids);
+		pc.getInventory().DeleteAllItemsByClassID(_key_ids);
 		
 		if(!pc.isDead())
 			pc.start_teleport(CopyMapObservable.RESET_X, CopyMapObservable.RESET_Y, CopyMapObservable.RESET_MAPID, pc.getHeading(), 169, true, false);

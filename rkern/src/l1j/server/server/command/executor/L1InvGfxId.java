@@ -56,7 +56,7 @@ public class L1InvGfxId implements L1CommandExecutor {
 	        int count = 0;
 	        for (L1ItemInstance item : pc.getInventory().getItems()) {
 	            if (item.getItemId() == 40005) {
-	                pc.getInventory().deleteItem(item);
+	                pc.getInventory().Pop(item);
 	                count++;
 	            }
 	        }

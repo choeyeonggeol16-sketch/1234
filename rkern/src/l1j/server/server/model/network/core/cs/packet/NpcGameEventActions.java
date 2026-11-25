@@ -95,7 +95,7 @@ final class NpcGameEventActions {
 				return "";
 			}
 
-			pc.getInventory().removeItem(L1ItemId.ADENA, 1000);
+			pc.getInventory().DeleteItemAmount(L1ItemId.ADENA, 1000);
 
 			L1HauntedHouse.getInstance().addMember(pc);
 		}
@@ -139,7 +139,7 @@ final class NpcGameEventActions {
 				return "";
 			}
 
-			pc.getInventory().removeItem(L1ItemId.ADENA, 1000);
+			pc.getInventory().DeleteItemAmount(L1ItemId.ADENA, 1000);
 
 			L1Racing.getInstance().add(0, pc);
 		}
@@ -300,7 +300,7 @@ final class NpcGameEventActions {
             if (bosses.length == 0) return "bosskey10";
             // Validate every possible random destination before consuming the key.
             for (int id : bosses) if (CObjectDB.LoadNPC().getTemplate(id) == null) return "bosskey10";
-            if (!pc.getInventory().consumeItem(80479, 1)) return "bosskey10";
+            if (!pc.getInventory().DeleteItemInInventory(80479, 1)) return "bosskey10";
             // Keep the existing 0..99 modulo selection and shared RNG order.
             spawn(32878, 32816, (short) pc.getMapId(), 0, bosses[random.nextInt(100) % bosses.length], 0);
             SC_NpcChatPacket.sendNpc(pc, npc, "어떤 몬스터가 나왔을까요??", 0);
@@ -309,7 +309,7 @@ final class NpcGameEventActions {
         for (int i = 0; i < BOSS_COMMANDS.length; i++) {
             if (!BOSS_COMMANDS[i].equalsIgnoreCase(command)) continue;
             if (CObjectDB.LoadNPC().getTemplate(BOSS_IDS[i]) == null
-                    || !pc.getInventory().consumeItem(BOSS_KEYS[i], 1)) {
+                    || !pc.getInventory().DeleteItemInInventory(BOSS_KEYS[i], 1)) {
                 tail = "bosskey10";
                 continue;
             }
@@ -627,7 +627,7 @@ final class NpcGameEventActions {
             return true;
         }
         if (!pc.getInventory().HaveItemByClassId(7005254, 1)
-                || !pc.getInventory().consumeItem(7005254, 1)) {
+                || !pc.getInventory().DeleteItemInInventory(7005254, 1)) {
             SC_SystemMessage.send(pc, "보스 레이드 입장권(1)이 부족합니다.");
             return true;
         }
@@ -650,7 +650,7 @@ final class NpcGameEventActions {
             return true;
         }
         if (!pc.getInventory().HaveItemAmount(7005254)
-                || !pc.getInventory().consumeItem(7005254, 1)) {
+                || !pc.getInventory().DeleteItemInInventory(7005254, 1)) {
             SC_SystemMessage.send(pc, "보스 레이드 입장권(1)이 부족합니다.");
             return true;
         }

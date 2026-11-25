@@ -444,7 +444,7 @@ public class L1PolyMorph {
 			SC_CloseList.send(pc, pc.getId());
 		}
 		if (pc.getMagicItemId() != 0) {
-			pc.getInventory().consumeItem(pc.getMagicItemId(), 1);
+			pc.getInventory().DeleteItemInInventory(pc.getMagicItemId(), 1);
 			pc.setMagicItemId(0);
 		}
 	}

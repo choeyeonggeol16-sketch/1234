@@ -90,7 +90,7 @@ public class BQSInformation {
 		if(teleport_need_item_id <= 0 || teleport_need_item_amount <= 0 || !pc.getMap().isEscapable())
 			return eResultCode.TELEPORT_FAIL_WRONG_LOCATION;
 		
-		if(!pc.getInventory().consumeItem(teleport_need_item_id, teleport_need_item_amount))
+		if(!pc.getInventory().DeleteItemInInventory(teleport_need_item_id, teleport_need_item_amount))
 			return eResultCode.TELEPORT_FAIL_NOT_ENOUGH_ADENA;
 		
 		pc.start_teleport(teleport_x, teleport_y, teleport_mapId, pc.getHeading(), 169, true, true);

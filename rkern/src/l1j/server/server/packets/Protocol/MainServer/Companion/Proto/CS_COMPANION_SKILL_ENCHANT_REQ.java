@@ -84,7 +84,7 @@ public final class CS_COMPANION_SKILL_ENCHANT_REQ {
                 SC_COMPANION_SKILL_ENCHANT_ACK.send(pc, skillId, eResult.NOTHING);
                 return;
             }
-            if (!pc.getInventory().consumeItem(eInfo.get_enchant_cost_item_id(), 1)) {
+            if (!pc.getInventory().DeleteItemInInventory(eInfo.get_enchant_cost_item_id(), 1)) {
                 SC_COMPANION_SKILL_ENCHANT_ACK.send(pc, skillId, eResult.NOTHING);
                 return;
             }

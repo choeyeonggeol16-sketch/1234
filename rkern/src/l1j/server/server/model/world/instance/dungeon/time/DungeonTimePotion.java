@@ -68,7 +68,7 @@ public class DungeonTimePotion{
 					pc.sendPackets("아직 던전 이용시간이 남아있습니다.");
 					return;
 				}
-				pc.getInventory().removeItem(item, 1);
+				pc.getInventory().DeleteItemAmount(item, 1);
 				progress.set_remain_seconds(dtInfo.get_amount_seconds());
 				DungeonTimeProgressLoader.update(progress);
 				pc.sendPackets(String.format("%s이(가) 충전되었습니다.", dtInfo.get_description()));

@@ -175,7 +175,7 @@ public class ValakasStart implements Runnable {
 					if(pc.getMapId() == _map){ 
 //						L1Teleport.teleport(pc, 33705, 32504, (short)4, 5, true);
 						pc.start_teleport(33705, 32504, 4, 5, 169, true, false);
-						pc.getInventory().consumeItem(203003);
+						pc.getInventory().DeleteItemInInventory(203003);
 					}
 					Running = false;
 					break;
@@ -268,7 +268,7 @@ public class ValakasStart implements Runnable {
 			if(ob instanceof L1ItemInstance){
 				L1ItemInstance obj = (L1ItemInstance)ob;
 				CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
-				groundInventory.removeItem(obj);
+				groundInventory.DeleteItemAmount(obj);
 			}else if(ob instanceof L1NpcInstance){
 				L1NpcInstance npc = (L1NpcInstance)ob;
 				npc.deleteMe();

@@ -105,7 +105,7 @@ final class GeneralSpellbookConsumable {
 			if (pc.getCurrentHp() <= 0) {
 				pc.death(null, true);
 			}
-			pc.getInventory().removeItem(item, 1);
+			pc.getInventory().DeleteItemAmount(item, 1);
 		} else {
 			SC_ServerMessage.send(pc, 79);
 		}

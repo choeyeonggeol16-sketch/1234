@@ -169,7 +169,7 @@ public enum SkillConsumeService {
 		// 82레벨 미만 대체(초보자) 아이템 로직 적용
 		final int actualItemId = getActualConsumeItemId(pc, inv, itemConsume, itemConsumeCount);
 
-		inv.consumeItem(actualItemId, itemConsumeCount);
+		inv.DeleteItemInInventory(actualItemId, itemConsumeCount);
 	}
 
 	private int getActualConsumeItemId(L1PcInstance pc, CUserInventory inv, int originalItemId, int count) {

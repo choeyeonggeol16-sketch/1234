@@ -669,7 +669,7 @@ public class CInventory extends L1Object {
         if (template.isStackable()) {
             final L1ItemInstance item = GetFirstItemByClassID(itemid);
             return item != null && item.getCount() >= count && item.getEnchantLevel() == en
-                    && removeItem(item, count) == count;
+                    && DeleteItemAmount(item, count) == count;
         }
         return consumeExactEnchantInstances(itemid, en, count, false, 0, 0, 0);
 	}
@@ -692,7 +692,7 @@ public class CInventory extends L1Object {
         if (item.isStackable())
             return item.getCount() >= count && item.getEnchantLevel() == en
                     && item.getBless() == bless && item.getItem().getItemDescId() == descid
-                    && item.getAttrEnchantLevel() == attr_en && removeItem(item, count) == count;
+                    && item.getAttrEnchantLevel() == attr_en && DeleteItemAmount(item, count) == count;
         return consumeExactEnchantInstances(item.getItemId(), en, count, true, bless, descid, attr_en);
 	}
 
@@ -711,7 +711,7 @@ public class CInventory extends L1Object {
 		for (int i = 0, n = rows.size(); i < n; i++) {
 			final L1ItemInstance item = rows.get(i);
 			if (!matchesExactEnchant(item, itemId, enchant, extra, bless, descId, attrEnchant)) continue;
-			if (removeItem(item, 1) != 1) return false;
+			if (DeleteItemAmount(item, 1) != 1) return false;
 			if (--count == 0) return true;
 		}
 		return false;
@@ -724,34 +724,34 @@ public class CInventory extends L1Object {
 				&& item.getAttrEnchantLevel() == attrEnchant));
 	}
 
-	public synchronized boolean ConsumeItemDescId(int descId, int enchant, int count) {
+	public synchronized boolean DeleteItemByDescIDEnchanted(int descId, int enchant, int count) {
         if (count <= 0) return false;
         final L1ItemInstance item = GetFirstItemByDescID(descId);
         if (item == null) return false;
         if (item.isStackable())
-            return item.getCount() >= count && removeItem(item, count) == count;
+            return item.getCount() >= count && DeleteItemAmount(item, count) == count;
         final L1ItemInstance[] items = GetItemListByClassIDEnchanted(item.getItemId(), enchant);
         return DeleteSelectedItems(items, count, false, false, 0);
 	}
-	public synchronized boolean consumeItem(int itemid, int count) {
+	public synchronized boolean DeleteItemInInventory(int itemid, int count) {
         if (count <= 0) return false;
         final L1Item template = CObjectDB.GetItem(itemid);
         if (template == null) return false;
         if (template.isStackable()) {
             final L1ItemInstance item = GetFirstItemByClassID(itemid);
-            return item != null && item.getCount() >= count && removeItem(item, count) == count;
+            return item != null && item.getCount() >= count && DeleteItemAmount(item, count) == count;
         }
         final L1ItemInstance[] items = GetItemListByClassID(itemid);
         return DeleteSelectedItems(items, count, true, false, 0);
 	}
 	
-	public synchronized boolean consumeItem2(int descid, int count) {
+	public synchronized boolean DeleteItemByDescID(int descid, int count) {
         if (count <= 0) return false;
         final L1ItemInstance[] items = GetItemListByDescID(descid);
         return DeleteSelectedItems(items, count, true, false, 0);
 	}
 	
-	public synchronized boolean consumeItem(int itemid, int count, int descid) {
+	public synchronized boolean DeleteItemInInventory(int itemid, int count, int descid) {
         if (count <= 0) return false;
         final L1Item template = CObjectDB.GetItem(itemid);
         if (template == null) return false;
@@ -759,17 +759,17 @@ public class CInventory extends L1Object {
             final L1ItemInstance item = GetFirstItemByClassID(itemid);
             return item != null && item.getCount() >= count
                     && item.getItem().getItemDescId() == descid
-                    && removeItem(item, count, descid) == count;
+                    && DeleteItemAmount(item, count, descid) == count;
         }
         final L1ItemInstance[] items = GetItemListByClassID(itemid, descid);
         return DeleteSelectedItems(items, count, true, true, descid);
 	}
 	
-	public synchronized boolean consumeItem(int itemid) {
+	public synchronized boolean DeleteItemInInventory(int itemid) {
         final L1ItemInstance item = GetFirstItemByClassID(itemid);
         if (item == null || item.getCount() <= 0) return false;
         final int count = item.getCount();
-        return removeItem(item, count) == count;
+        return DeleteItemAmount(item, count) == count;
 	}
 
     private static final java.util.Comparator<L1ItemInstance> ITEM_ENCHANT_ORDER =
@@ -785,37 +785,37 @@ public class CInventory extends L1Object {
         if (preferLowEnchant && items.length > count) Arrays.sort(items, ITEM_ENCHANT_ORDER);
         for (int i = 0; i < count; i++) {
             final L1ItemInstance item = items[i];
-            if (removeItemInternal(item, 1, matchDescId, descId) != 1) return false;
+            if (DeleteItemAmountInternal(item, 1, matchDescId, descId) != 1) return false;
         }
         return true;
     }
 
-	public synchronized int removeItem(int objectId) {
+	public synchronized int DeleteItemAmount(int objectId) {
 		L1ItemInstance item = GetByServerID(objectId);
 		if (item == null) return 0;
-		return removeItem(item, item.getCount());
+		return DeleteItemAmount(item, item.getCount());
 	}
 
-	public synchronized int removeItem(int objectId, int count) {
+	public synchronized int DeleteItemAmount(int objectId, int count) {
 		L1ItemInstance item = GetByServerID(objectId);
-		return removeItem(item, count);
+		return DeleteItemAmount(item, count);
 	}
 
-	public synchronized int removeItem(L1ItemInstance item) {
+	public synchronized int DeleteItemAmount(L1ItemInstance item) {
 		if (item == null) return 0;
-		return removeItem(item, item.getCount());
+		return DeleteItemAmount(item, item.getCount());
 	}
 
-	public synchronized int removeItem(L1ItemInstance item, int count) {
-		return removeItemInternal(item, count, false, 0);
+	public synchronized int DeleteItemAmount(L1ItemInstance item, int count) {
+		return DeleteItemAmountInternal(item, count, false, 0);
 	}
 	
-	public synchronized int removeItem(L1ItemInstance item, int count, int descid) {
-		return removeItemInternal(item, count, true, descid);
+	public synchronized int DeleteItemAmount(L1ItemInstance item, int count, int descid) {
+		return DeleteItemAmountInternal(item, count, true, descid);
 	}
 
 	/** Single removal path; retain caller-held inventory monitor and persistence order. */
-	private int removeItemInternal(L1ItemInstance item, int count, boolean matchDescId, int descId) {
+	private int DeleteItemAmountInternal(L1ItemInstance item, int count, boolean matchDescId, int descId) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		if (item == null || GetByServerID(item.getId()) != item) {
@@ -852,7 +852,7 @@ public class CInventory extends L1Object {
 					}
 				}
 			}
-			deleteItem(item);
+			Pop(item);
 			L1World.getInstance().removeObject(item);
 		} else {
 			changeStackCount(item, -count);
@@ -860,7 +860,8 @@ public class CInventory extends L1Object {
 		return count;
 	}
 
-	public synchronized void deleteItem(L1ItemInstance item) {
+	/** Detach an inventory row. The transfer or destruction caller owns world identity. */
+	public synchronized void Pop(L1ItemInstance item) {
 		_items.Pop(item);
 	}
 
@@ -875,7 +876,7 @@ public class CInventory extends L1Object {
         if (fee == null || amount <= 0 || GetByServerID(fee.getId()) != fee
                 || fee.getCount() < amount || !fee.isStackable()) return false;
         if (fee.getCount() == amount) {
-            deleteItem(fee);
+            Pop(fee);
             L1World.getInstance().removeObject(fee);
         } else {
             removeItemCountCache(fee.getItemId(), amount);
@@ -1445,7 +1446,7 @@ public class CInventory extends L1Object {
         L1ItemInstance carryItem = null;
         try {
 		if (count == item.getCount()) {
-			deleteItem(item);
+			Pop(item);
 			carryItem = item;
 		} else {
 			carryItem = move.replayCarry(item.getId());
@@ -1608,7 +1609,7 @@ public class CInventory extends L1Object {
 
 		L1ItemInstance carryItem;
 		if (count == item.getCount()) {
-			deleteItem(item);
+			Pop(item);
 			carryItem = item;
 		} else {
 			carryItem = CObjectDB.CreateItem(item.getItem().getItemId());
@@ -1898,7 +1899,7 @@ public class CInventory extends L1Object {
 			final int quantity = item.getCount();
 			if (quantity <= 0) continue;
 			final int take = Math.min(remaining, item.isStackable() ? quantity : 1);
-			if (removeItem(item, take) != take) return false;
+			if (DeleteItemAmount(item, take) != take) return false;
 			remaining -= take;
 			if (remaining == 0) return true;
 		}
@@ -1987,31 +1988,32 @@ public class CInventory extends L1Object {
 	public void updateItem(L1ItemInstance item, int colmn) {
 	}
 	
-	public void findAndRemoveItemId(int id){
-		for(L1ItemInstance item : _items){
-			if(item == null)
-				continue;
-			
-			if(item.getItemId() == id)
-				deleteItem(item);
-		}
-	}
-	
-	public void findAndRemoveItemId(int[] id){
-		for(L1ItemInstance item : _items){
-			if(item == null)
-				continue;
-			
-			int item_id = item.getItemId();
-			for(int i : id){
-				if(item_id == i){
-					deleteItem(item);
-					break;
-				}
-			}
-		}
-	}
-	
+    /** Remove matching inventory items, then unregister their world identities.
+     * Unlike Pop, this is final destruction rather than transfer.
+     */
+    public synchronized void DeleteAllItemsByClassID(int id) {
+        for (L1ItemInstance item : _items) {
+            if (item != null && item.getItemId() == id && _items.Have(item)) {
+                Pop(item);
+                L1World.getInstance().removeObject(item);
+            }
+        }
+    }
+
+    public synchronized void DeleteAllItemsByClassID(int[] ids) {
+        if (ids == null) return;
+        for (L1ItemInstance item : _items) {
+            if (item == null || !_items.Have(item)) continue;
+            for (int id : ids) {
+                if (item.getItemId() == id) {
+                    Pop(item);
+                    L1World.getInstance().removeObject(item);
+                    break;
+                }
+            }
+        }
+    }
+
 	private static int _instanceType = -1;
 	@Override
 	public int getL1Type(){

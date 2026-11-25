@@ -275,7 +275,7 @@ public class DogFightHistoryInfo {
 	        }
 
 	        // ── 결제 ──
-	        if(!pc.getInventory().consumeItem(L1ItemId.ADENA, total_price)){
+	        if(!pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, total_price)){
 	            pc.sendPackets("구입에 필요한 아데나를 소비 할 수 없습니다.");
 	            return null;
 	        }

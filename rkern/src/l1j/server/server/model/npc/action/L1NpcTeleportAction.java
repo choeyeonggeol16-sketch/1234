@@ -74,7 +74,7 @@ public class L1NpcTeleportAction extends L1NpcXmlAction {
             return L1NpcHtml.HTML_CLOSE;
         }
         // Keep the synchronous XML list contract. Validate actual debit result.
-        if (_price > 0 && pc.getInventory().removeItem(payment, _price) != _price) {
+        if (_price > 0 && pc.getInventory().DeleteItemAmount(payment, _price) != _price) {
             SC_ServerMessage.send(pc, 337, "$4");
             return L1NpcHtml.HTML_CLOSE;
         }

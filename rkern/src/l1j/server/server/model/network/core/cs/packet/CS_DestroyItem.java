@@ -87,7 +87,7 @@ public final class CS_DestroyItem {
         LoggerInstance.getInstance().addItemAction(ItemActionType.Delete, pc, item, requestedCount);
 
         final int removeCount = requestedCount == 0 ? item.getCount() : requestedCount;
-        pc.getInventory().removeItem(item, removeCount);
+        pc.getInventory().DeleteItemAmount(item, removeCount);
         pc.getLight().turnOnOffLight();
         return true;
     }

@@ -197,7 +197,7 @@ public class ActionControlHandler {
         if (pc.getAccount().getInfo_kir_poly() != 0) {
             int polyId = (pc.getCurrentSpriteId() != 21140) ? 21140 : 19514;
             L1PolyMorph.doPoly(pc, polyId, -1, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
-            pc.getInventory().consumeItem(875640379, 1);
+            pc.getInventory().DeleteItemInInventory(875640379, 1);
             soundAndBroadcast(pc, 6082);
         }
         return false;

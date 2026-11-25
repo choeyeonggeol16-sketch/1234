@@ -69,7 +69,7 @@ public final class CS_Fix {
             final L1ItemInstance item = inventory.GetByServerID(itemObjectId);
             if (item == null || item.get_durability() <= 0) return;
             final int durability = item.get_durability();
-            if (!inventory.consumeItem(L1ItemId.ADENA, durability * 200)) {
+            if (!inventory.DeleteItemInInventory(L1ItemId.ADENA, durability * 200)) {
                 SC_ServerMessage.send(pc, 189);
                 return;
             }

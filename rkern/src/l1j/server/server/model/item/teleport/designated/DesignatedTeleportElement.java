@@ -140,7 +140,7 @@ public class DesignatedTeleportElement{
 			if(item.isStackable() && _use_count > 1)
 				amount = _use_count;
 			
-			if(!pc.getInventory().consumeItem(item, amount)){
+			if(!pc.getInventory().DeleteItemInInventory(item, amount)){
 				pc.sendPackets(String.format("%s 아이템은 %d개가 있어야 사용할 수 있습니다.", item.getName(), amount));
 				return;
 			}

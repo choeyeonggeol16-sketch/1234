@@ -75,7 +75,7 @@ public static boolean NeigeMyth(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21417, -1, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -93,7 +93,7 @@ public static boolean NeigeMyth(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 			L1PolyMorph.doPoly(pc, 21413, -1, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
 			SC_SkillSound.send(pc, pc.getId(), 6082);
@@ -111,7 +111,7 @@ public static boolean NeigeMyth(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 				if(pc.get_sex() == 0){num = 21405;}else{num = 21409;}
 			L1PolyMorph.doPoly(pc, num, -1, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			
@@ -130,7 +130,7 @@ public static boolean NeigeMyth(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().consumeItem(875640379, 1);
+				pc.getInventory().DeleteItemInInventory(875640379, 1);
 				if(pc.get_sex() == 0){num2 = 21132;}else{num2 = 21136;}
 			L1PolyMorph.doPoly(pc, num2, -1, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
 			

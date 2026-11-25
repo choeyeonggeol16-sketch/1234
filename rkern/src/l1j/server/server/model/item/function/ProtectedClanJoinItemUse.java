@@ -39,7 +39,7 @@ final class ProtectedClanJoinItemUse {
 
             L1Clan clan = L1World.getInstance().findClan(PROTECTED_CLAN_NAMES[random_id]);
             L1ClanJoin.getInstance().tutorialJoin(clan, pc);
-            pc.getInventory().removeItem(item, 1);
+            pc.getInventory().DeleteItemAmount(item, 1);
             pc.start_teleport(pc.getX(), pc.getY(), pc.getMapId(), pc.getHeading(), 169, false, false);
             return ItemActionResult.COMPLETE;
         }

@@ -678,7 +678,7 @@ public final class CS_ActionUi {
                 }
 
                 if (!pc.getInventory()
-                        .consumeItem(
+                        .DeleteItemInInventory(
                                 needItem,
                                 1)) {
 
