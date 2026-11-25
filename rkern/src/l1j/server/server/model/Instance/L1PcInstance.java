@@ -4434,7 +4434,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				}
 				if (!item.isEquipped()) return; // Polymorph can remove the just-equipped item.
 				if (!loaded && weapon && slot.getWeaponCount() == 2) {
-					SC_SkillSound.send(this, this.getId(), 12534);
+					try { SC_SkillSound.send(this, this.getId(), 12534); }
+					catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 				}
 			} else {
 				beforeUnequip(template, itemId, loaded, weapon);
@@ -4447,15 +4448,22 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			if (!loaded) {
 				this.setCurrentHp(this.getCurrentHp());
 				this.setCurrentMp(this.getCurrentMp());
-				inv.updateItem(item, CUserInventory.COL_EQUIPPED);
+				try { inv.updateItem(item, CUserInventory.COL_EQUIPPED); }
+				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 				if (weapon && !changeWeapon) {
 					final long visual = SC_CharVisualUpdate.pack(this);
-					SC_CharVisualUpdate.sendPacked(this, visual);
-					SC_CharVisualUpdate.broadcastFastPacked(this, visual);
+					try { SC_CharVisualUpdate.sendPacked(this, visual); }
+					catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+					try { SC_CharVisualUpdate.broadcastFastPacked(this, visual); }
+					catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 				}
 			}
-			if (weapon) SC_PacketBox.send(this, SC_PacketBox.공격가능거리, this, item);
-			inv.updateEquipmentWindow(item);
+			if (weapon) {
+				try { SC_PacketBox.send(this, SC_PacketBox.공격가능거리, this, item); }
+				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+			}
+			try { inv.updateEquipmentWindow(item); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		} finally {
 			if (reserve) inv.endEquipmentChange();
 		}
@@ -4471,7 +4479,10 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		if (arrowId == 0) return;
 		final L1ItemInstance arrow = inv.findItemId(arrowId);
 		inv.setArrow(0);
-		if (arrow != null) SC_ItemName.send(this, arrow);
+		if (arrow != null) {
+			try { SC_ItemName.send(this, arrow); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+		}
 	}
 
 	private void beforeUnequip(L1Item template, int itemId, boolean loaded, boolean weapon) {
@@ -4487,12 +4498,17 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		}
 		if (template.isTwohandedWeapon() && this.hasSkillEffect(L1SkillId.COUNTER_BARRIER)) {
 			this.removeSkillEffect(L1SkillId.COUNTER_BARRIER);
-			SC_PacketBox.send(this, SC_PacketBox.UNLIMITED_ICON1, 71, false);
+			try { SC_PacketBox.send(this, SC_PacketBox.UNLIMITED_ICON1, 71, false); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		if (weapon) {
 			this.remove_elf_second_brave();
 			if (template.getType() == 4) clearArrowSelection();
 		}
+	}
+
+	private void equipmentNoticeFailed(RuntimeException notice) {
+		_log.log(Level.WARNING, "Equipment notification failed: " + getId(), notice);
 	}
 
 	public void TakeOffItems(int polyid) {
