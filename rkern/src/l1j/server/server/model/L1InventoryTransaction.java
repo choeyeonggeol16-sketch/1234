@@ -105,6 +105,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     private final CacheD.WarehouseMove move;
     private boolean submitted;
     private boolean closed;
+    private boolean invalidated;
     private Runnable failureAction;
     private Runnable durableCommitAction;
     private Runnable terminalFailureAction;
@@ -195,7 +196,8 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         }
     }
     private void open() {
-        if (closed || submitted) throw new IllegalStateException("Inventory transaction is closed");
+        if (closed || submitted || invalidated)
+            throw new IllegalStateException("Inventory transaction is closed or invalidated");
     }
     private void owns(L1PcInstance pc) {
         if (!owners.contains(pc)) throw new IllegalArgumentException("Unreserved inventory owner");
@@ -533,9 +535,21 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         }
         Entry e=entry(pc,item);
         if (item.isEquipped()) throw new IllegalArgumentException("Unequip before changing persistent item fields");
-        mutation.accept(e.image);
-        if (e.image.getId()!=item.getId() || e.image.getItemId()!=item.getItemId()
-                || e.image.getCount()<=0 || e.image.isEquipped()) throw new IllegalStateException("Invalid item field change");
+        // The input may itself be the prepared image. Capture identity
+        // BEFORE calling user code instead of comparing two aliases afterwards.
+        final int template = e.image.getItemId();
+        try {
+            mutation.accept(e.image);
+            if (e.image.getId() != e.rowId || e.image.getItemId() != template
+                    || e.image.getCount() <= 0 || e.image.getCount() > CInventory.MAX_AMOUNT
+                    || e.image.isEquipped())
+                throw new IllegalStateException("Invalid item field change");
+        } catch (RuntimeException | Error failure) {
+            // A callback may have modified the image before throwing. Never
+            // allow that partially mutated receipt to reach SQL staging.
+            invalidated = true;
+            throw failure;
+        }
     }
     public void sql(CTransaction.Mutation mutation) { open();move.stageWarehouseSql(Objects.requireNonNull(mutation));sqlCount++; }
     public boolean hasChanges() { return sqlCount != 0 || entryCount != 0; }
@@ -596,6 +610,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
 
     private void commitInternal(Runnable publish, Runnable afterCommitted, boolean releaseBeforeEffects) {
         open();
+        validatePreparedRows();
         validateLive();validateCapacity();
         // Keep singleton receipts entirely inline. Multi-row receipts sort a
         // private view, preserving insertion order if SQL staging throws.
@@ -712,6 +727,29 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         });
         submitted=true;
     }
+    /** The immutable row key and replay equipment policy must agree with
+     * the detached image before any SQL mutation is staged.
+     */
+    static void ValidatePreparedRow(int rowId, L1ItemInstance image,
+            boolean originallyEquipped, boolean sameOwner) {
+        if (image == null || rowId <= 0 || image.getId() != rowId
+                || image.getItem() == null || image.getCount() < 0
+                || image.getCount() > CInventory.MAX_AMOUNT
+                || (originallyEquipped && (!sameOwner || image.getCount() == 0))
+                || image.isEquipped() != originallyEquipped)
+            throw new IllegalStateException("Invalid prepared inventory row: " + rowId);
+    }
+
+    private void validatePreparedRows() {
+        for (int i = 0; i < entryCount; i++) {
+            final Entry e = entryAt(i);
+            owns(e.owner);
+            ValidatePreparedRow(e.rowId, e.image,
+                    e.before != null && e.before.equipped != 0,
+                    e.originalOwner == e.owner);
+        }
+    }
+
     private void validateLive() {
         for(int i=0;i<owners.size();i++) {
             L1PcInstance pc=owners.get(i);
