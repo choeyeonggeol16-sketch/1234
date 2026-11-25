@@ -15,6 +15,14 @@ public final class EquipmentEnchantOptions {
 
     private EquipmentEnchantOptions() {}
 
+    private static final java.util.logging.Logger NOTICE_LOG =
+            java.util.logging.Logger.getLogger(EquipmentEnchantOptions.class.getName());
+
+    private static void noticeFailed(L1PcInstance pc, RuntimeException notice) {
+        NOTICE_LOG.log(java.util.logging.Level.WARNING,
+                "Equipment option notice failed: " + pc.getId(), notice);
+    }
+
     // One reusable short-lived scratch record per executing thread, not per item.
     // Reentrant tooltip assembly uses a separate buffer so outer calculations
     // cannot be overwritten. releaseAccessoryBonusSnapshot is mandatory.
@@ -100,7 +108,12 @@ public final class EquipmentEnchantOptions {
             if (changes[i] != 0) STATS[i].apply(pc, changes[i]);
         }
         if (changes[EVASION.ordinal()] != 0) {
-            SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+            try { SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER()); }
+            catch (RuntimeException notice) { noticeFailed(pc, notice); }
+        }
+        if (changes[AC.ordinal()] != 0) {
+            try { SC_OwnCharAttrDef.send(pc); }
+            catch (RuntimeException notice) { noticeFailed(pc, notice); }
         }
         return changes[MR.ordinal()] != 0 || changes[SP.ordinal()] != 0
                 || changes[CHARACTER_SP.ordinal()] != 0;
@@ -134,6 +147,12 @@ public final class EquipmentEnchantOptions {
 
     static void applyNamedWeaponOptions(L1PcInstance pc, L1Item item, int enchant, int sign, int[] changes) {
         final int itemId = item.getItemId();
+        if (itemId == 123999) {
+            applyStat(pc, changes, MELEE_CRITICAL_RATE, sign * enchant);
+            applyStat(pc, changes, FEAR_PLERCE, sign * (3 + enchant));
+            applyStat(pc, changes, ABILITY_PLERCE, sign * (3 + enchant));
+            applyStat(pc, changes, SPIRIT_PLERCE, sign * (3 + enchant));
+        }
         if (itemId == 61 || itemId == 14061) {
             if (enchant > 0) {
                 applyStat(pc, changes, ABILITY_PLERCE, sign * (8 + enchant));
@@ -158,7 +177,10 @@ public final class EquipmentEnchantOptions {
                 applyStat(pc, changes, SP, sign * 7);
                 applyStat(pc, changes, MAGIC_HIT, sign * 2);
             }
-            if (changes == null) SC_SPMR.send(pc);
+            if (changes == null) {
+                try { SC_SPMR.send(pc); }
+                catch (RuntimeException notice) { noticeFailed(pc, notice); }
+            }
         }
 
         if (itemId == 86 || itemId == 14086) {
@@ -203,7 +225,10 @@ public final class EquipmentEnchantOptions {
                 applyStat(pc, changes, DRAGON_SPELL_PLERCE, sign * 7);
                 applyStat(pc, changes, MAGIC_CRITICAL_RATE, sign * 1);
             }
-            if (changes == null) SC_SPMR.send(pc);
+            if (changes == null) {
+                try { SC_SPMR.send(pc); }
+                catch (RuntimeException notice) { noticeFailed(pc, notice); }
+            }
         }
 
         if (itemId == 202014 || itemId == 2202014) {
@@ -533,11 +558,17 @@ public final class EquipmentEnchantOptions {
             switch (enchant) {
             case 7:
                 applyStat(pc, changes, SP, sign * 1);
-                if (changes == null) SC_SPMR.send(pc);
+                if (changes == null) {
+                    try { SC_SPMR.send(pc); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
                 break;
             case 8:
                 applyStat(pc, changes, SP, sign * 2);
-                if (changes == null) SC_SPMR.send(pc);
+                if (changes == null) {
+                    try { SC_SPMR.send(pc); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
                 break;
             case 9:
             case 10:
@@ -547,7 +578,10 @@ public final class EquipmentEnchantOptions {
             case 14:
             case 15:
                 applyStat(pc, changes, SP, sign * 3);
-                if (changes == null) SC_SPMR.send(pc);
+                if (changes == null) {
+                    try { SC_SPMR.send(pc); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
                 break;
             }
         }
@@ -722,7 +756,10 @@ public final class EquipmentEnchantOptions {
                 applyStat(pc, changes, MR, sign * 34);
                 applyStat(pc, changes, ALL_RESIS, sign * 5);
                 applyStat(pc, changes, EVASION, sign * 4);
-                if (changes == null) SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+                if (changes == null) {
+                    try { SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER()); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
                 break;
 
         default:
@@ -733,7 +770,10 @@ public final class EquipmentEnchantOptions {
                 applyStat(pc, changes, MR, sign * 34);
                 applyStat(pc, changes, ALL_RESIS, sign * 5);
                 applyStat(pc, changes, EVASION, sign * 4);
-                if (changes == null) SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+                if (changes == null) {
+                    try { SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER()); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
             }
                 break;
             }
@@ -806,8 +846,14 @@ public final class EquipmentEnchantOptions {
             applyStat(pc, changes, PVP_DMG_RED, sign * (2 + enchant));
             applyStat(pc, changes, MR, sign * (3 + enchant));
             applyStat(pc, changes, MAGIC_HIT, sign * (1 + enchant));
-            if (changes == null) SC_OwnCharAttrDef.send(pc);
-            if (changes == null) SC_SPMR.send(pc);
+            if (changes == null) {
+                try { SC_OwnCharAttrDef.send(pc); }
+                catch (RuntimeException notice) { noticeFailed(pc, notice); }
+            }
+            if (changes == null) {
+                try { SC_SPMR.send(pc); }
+                catch (RuntimeException notice) { noticeFailed(pc, notice); }
+            }
             if (enchant >= 5) {
                 applyStat(pc, changes, ALL_RESIS, sign * (enchant - 4));
                 applyStat(pc, changes, ALL_PLERCE, sign * (enchant - 4));
@@ -823,30 +869,48 @@ public final class EquipmentEnchantOptions {
             switch (enchant) {
             case 5:
                 applyStat(pc, changes, EVASION, sign * 1);
-                if (changes == null) SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+                if (changes == null) {
+                    try { SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER()); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
 
                 break;
             case 6:
                 applyStat(pc, changes, EVASION, sign * 2);
-                if (changes == null) SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+                if (changes == null) {
+                    try { SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER()); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
                 break;
             case 7:
                 applyStat(pc, changes, EVASION, sign * 3);
-                if (changes == null) SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+                if (changes == null) {
+                    try { SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER()); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
                 break;
             case 8:
                 applyStat(pc, changes, EVASION, sign * 4);
-                if (changes == null) SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+                if (changes == null) {
+                    try { SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER()); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
                 break;
             case 9:
                 applyStat(pc, changes, EVASION, sign * 5);
-                if (changes == null) SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+                if (changes == null) {
+                    try { SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER()); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
                 break;
 
         default:
             if (enchant > 9 ){
                 applyStat(pc, changes, EVASION, sign * 5);
-                if (changes == null) SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+                if (changes == null) {
+                    try { SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER()); }
+                    catch (RuntimeException notice) { noticeFailed(pc, notice); }
+                }
             }
                 break;
             }
