@@ -171,10 +171,13 @@ public class CInventory extends L1Object {
 	}
 
 	public int GetCarryingWeight() {
-		long weight = 0;
-		for (L1ItemInstance item : _items) weight += item.getWeight();
-		return (int) (weight / Config.RATE_WEIGHT_LIMIT);
+        return (int) (_items.GetCarryingWeight() / Config.RATE_WEIGHT_LIMIT);
 	}
+
+    /** OFF-style explicit aggregate validation; L1 rate remains a read-time conversion. */
+    public int ValidateCarringWeight() {
+        return (int) (_items.ValidateCarringWeight() / Config.RATE_WEIGHT_LIMIT);
+    }
 
 	public int CheckAddableAdena(int count){
 		if(count < 0 || count > MAX_AMOUNT)
