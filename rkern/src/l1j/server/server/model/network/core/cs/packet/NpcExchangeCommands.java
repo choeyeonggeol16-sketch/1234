@@ -389,8 +389,9 @@ final class NpcExchangeCommands {
 
     private static boolean debitEnchant(L1InventoryTransaction tx, L1PcInstance pc, int template, int enchant) {
         for (L1ItemInstance item : pc.getInventory().getItems()) {
-            if (item != null && !item.isEquipped() && item.getItemId() == template && item.getEnchantLevel() == enchant)
-                return tx.debit(item, item.getCount());
+            if (item == null || item.isEquipped() || item.getItemId() != template || item.getEnchantLevel() != enchant) continue;
+            final int remaining = tx.GetPreparedItemAmount(pc, item);
+            if (remaining > 0) return tx.debit(pc, item, remaining);
         }
         return false;
     }
@@ -402,9 +403,13 @@ final class NpcExchangeCommands {
         if (def == null || count <= 0) return false;
         if (def.isStackable() || count == 1) return debitLegacy(tx, pc, template, count);
         L1ItemInstance[] items = pc.getInventory().GetUnequippedItemListByClassID(template);
-        if (items.length < count) return false;
-        if (items.length > count) java.util.Arrays.sort(items, ENCHANT_ORDER);
-        for (int i = 0; i < count; i++) if (!tx.debit(items[i], 1)) return false;
+        int eligible = 0;
+        for (L1ItemInstance item : items) {
+            if (tx.GetPreparedItemAmount(pc, item) > 0) items[eligible++] = item;
+        }
+        if (eligible < count) return false;
+        if (eligible > count) java.util.Arrays.sort(items, 0, eligible, ENCHANT_ORDER);
+        for (int i = 0; i < count; i++) if (!tx.debit(pc, items[i], 1)) return false;
         return true;
     }
 
@@ -424,15 +429,17 @@ final class NpcExchangeCommands {
         if (def == null) return false;
         if (def.isStackable()) {
             L1ItemInstance item = pc.getInventory().GetFirstItemByClassID(template);
-            return item != null && tx.debit(item, count);
+            return count > 0 && item != null && tx.GetPreparedItemAmount(pc, item) >= count
+                    && tx.debit(pc, item, count);
         }
         if (count != 1) return false; // no multi-unit nonstackable recipes in these handlers
         L1ItemInstance chosen = null;
         for (L1ItemInstance item : pc.getInventory().getItems()) {
-            if (item == null || item.isEquipped() || item.getItemId() != template) continue;
+            if (item == null || item.isEquipped() || item.getItemId() != template
+                    || tx.GetPreparedItemAmount(pc, item) <= 0) continue;
             if (chosen == null || item.getEnchantLevel() < chosen.getEnchantLevel()) chosen = item;
         }
-        return chosen != null && tx.debit(chosen, 1);
+        return chosen != null && tx.debit(pc, chosen, 1);
     }
 
     static String fireGolem(L1PcInstance pc, L1Object obj, String command, String tail) {
