@@ -15,7 +15,6 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.CItemList;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Warehouse.Warehouse;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
