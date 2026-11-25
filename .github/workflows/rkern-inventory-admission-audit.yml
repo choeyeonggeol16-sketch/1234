@@ -23,6 +23,7 @@ on:
       - rkern/nc-equipment-notice-audit-20261125
       - rkern/nc-equipment-expiry-audit-20261125
       - rkern/nc-equipment-enchant-audit-20261125
+      - rkern/nc-inventory-integration-audit-20261125
   workflow_dispatch:
 permissions:
   contents: read
@@ -78,6 +79,10 @@ jobs:
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/docs/inventory_weight_20261125/test_equipment_enchant_delta.py
+      - name: Verify receipt completion session races
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/docs/inventory_weight_20261125/test_inventory_completion_race.py
       - name: Cache existing build dependencies
         uses: actions/cache@v4
         with:
