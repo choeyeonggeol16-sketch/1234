@@ -234,7 +234,31 @@ public final class TestCarryingWeight {
         inv._items.clear();
         System.out.println("PASS partial deletion and desc-ID guards");
     }
+    private static void checkDetachedRewardCopy() {
+        L1EtcItem t = template(123, 1000);
+        for (int id : new int[]{-1, 0, 12345}) {
+            for (int count : new int[]{0, 1, 17}) {
+                L1ItemInstance src = new L1ItemInstance(t, count);
+                src.setId(id); src.setChargeCount(7); src.setEquipped(true);
+                java.sql.Timestamp expiry = java.sql.Timestamp.valueOf("2027-01-02 03:04:05.123456789");
+                src.setEndTime(expiry);
+                L1ItemInstance image = L1InventoryTransaction.copy(src);
+                check(1, src != image ? 1 : 0);
+                check(id, image.getId()); check(count, image.getCount());
+                check(7, image.getChargeCount()); check(1, image.isEquipped() ? 1 : 0);
+                check(1, expiry.equals(image.getEndTime()) && expiry != image.getEndTime() ? 1 : 0);
+                CItemList.requireDetached(image);
+                boolean rejected = false;
+                try {
+                    l1j.server.server.model.Warehouse.Warehouse.transferCopy(src, id, count, 7);
+                } catch (IllegalArgumentException expected) { rejected = true; }
+                check(id <= 0 || count <= 0 ? 1 : 0, rejected ? 1 : 0);
+            }
+        }
+        System.out.println("PASS detached reward images and strict warehouse snapshot admission");
+    }
     public static void main(String[] args) throws Exception {
+        checkDetachedRewardCopy();
         checkDeleteAmount();
         checkLinkedSearch();
         checkItemCopyAttributes();
