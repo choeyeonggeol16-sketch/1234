@@ -66,7 +66,7 @@ public class Audit {
    if(nr.getMr()!=or.getMr())throw new AssertionError("detached MR");
    nr.init();or.init();
    for(eKind e:k)if(nr.getSpecialResistance(e)!=or.getSpecialResistance(e)||nr.getSpecialPierce(e)!=or.getSpecialPierce(e))throw new AssertionError("detached reset");
-   if(a.m_nOrgMDefend!=n.getBaseMr())throw new AssertionError("owner storage");
+   if(((L1Character)a).m_nOrgMDefend!=n.getBaseMr())throw new AssertionError("owner storage");
    System.out.println("PASS 30000 resistance/MR transitions, notification parity and NPC ownership/disposal");
  }
 }""")
