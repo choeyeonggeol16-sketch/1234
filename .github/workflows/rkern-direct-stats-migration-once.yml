@@ -1,4 +1,4 @@
-name: RKern damage mitigation source audit
+name: RKern HP MP source audit
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: rkern/src
-      - name: Enumerate damage mitigation and PvP source readers and writers
+      - name: Enumerate HP MP source readers and writers
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -26,6 +26,6 @@ jobs:
               s=p.read_text(encoding="utf-8")
               clean=lex.sub(lambda m:re.sub(r'[^\n]',' ',m.group()),s)
               for i,(a,b) in enumerate(zip(s.splitlines(),clean.splitlines()),1):
-                  if re.search(r'\b(?:getDamageReductionByArmor|addDamageReductionByArmor|getDamageReductionIgnore|addDamageReductionIgnore|getDamageReduction|addDamageReduction|getPVPMagicDamageReduction|addPVPMagicDamageReduction|setPumpedPvPMagicDamageReduction|getAddReduction|setAddReduction|getAddReductionRate|setAddReductionRate|GetPvpDamage|AddPvpDamage|GetPvpDamageReduction|AddPvpDamageReduction)\s*\(',b):
+                  if re.search(r'\b(?:getBaseMaxHp|addBaseMaxHp|getBaseMaxMp|addBaseMaxMp|getHpr|addHpr|getMpr|addMpr|setPumpedRegenAndWeaponRates|setMaxHp|setMaxMp|setting_template)\s*\(',b):
                       print(f"{p}:{i}: {a.strip()}")
           PY
