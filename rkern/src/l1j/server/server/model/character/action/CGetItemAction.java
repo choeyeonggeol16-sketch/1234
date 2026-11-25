@@ -12,6 +12,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
@@ -95,6 +96,16 @@ public final class CGetItemAction extends CNewAction {
                         && party.getLeader().getPartyType() == 1
                         && party.getNumOfMembers() > 1;
 
+                if (!partyAuto && pickupGInven instanceof L1GroundInventory ground
+                        && L1GroundInventory.supportsReceiptPickup(pickupItem)) {
+                    final L1ItemInstance pickedItem = pickupItem;
+                    final int count = (int) effectiveAmount;
+                    ground.RequestPickItem(owner, pickedItem, count, () -> {
+                        notifySinglePickup(owner, party, pickedItem);
+                        finalizePickup(owner, tId, count, pickedItem);
+                    });
+                    return true;
+                }
                 if (partyAuto) {
                     picked = handlePartyDistribution(
                             owner,
@@ -118,7 +129,7 @@ public final class CGetItemAction extends CNewAction {
                 return true;
             }
 
-            finalizePickup(owner, tId, effectiveAmount);
+            finalizePickup(owner, tId, effectiveAmount, pickupItem);
             return true;
         } catch (Throwable t) {
             t.printStackTrace();
@@ -176,7 +187,7 @@ public final class CGetItemAction extends CNewAction {
         }
 
         /* 서버에서 pickup 금지로 표시한 item은 direct packet으로도 획득 불가. */
-        if (pickupItem.is_Not_PickUp_Item()) {
+        if (pickupItem.is_Not_PickUp_Item() || pickupItem.isGroundPickupPending()) {
             return false;
         }
 
@@ -406,16 +417,19 @@ public final class CGetItemAction extends CNewAction {
             return false;
         }
 
-        if (party == null) {
-            return true;
-        }
+        notifySinglePickup(owner, party, pickupItem);
+        return true;
+    }
+
+    private static void notifySinglePickup(L1PcInstance owner, CParty party, L1ItemInstance item) {
+        if (party == null) return;
 
         final String distTag =
                 isPartyAuto(owner) ? "자동 분배" : "일반 분배";
 
         final String msg = String.format(
                 "%s 획득 : %s(%s)",
-                pickupItem.getLogName(),
+                item.getLogName(),
                 owner.getName(),
                 distTag);
 
@@ -432,13 +446,12 @@ for (L1PcInstance member : party.getMembers()) {
         }
 }
 
-        return true;
     }
 
-    private void finalizePickup(
+    private static void finalizePickup(
             L1PcInstance owner,
             int tId,
-            long amount) {
+            long amount, L1ItemInstance item) {
 
         final int attackId = owner.getId();
         final int attackHeading = owner.getHeading();
@@ -458,29 +471,29 @@ for (L1PcInstance member : party.getMembers()) {
             if (obj != null) {
                 obj.notifyRaidPickupItem(
                         owner,
-                        pickupItem,
+                        item,
                         (int) amount);
             }
         }
 
-        checkGlobalAnnouncement(owner);
+        checkGlobalAnnouncement(owner, item);
 
         owner.getLight().turnOnOffLight();
-        pickupItem.setGiveItem(false);
+        item.setGiveItem(false);
 
         LoggerInstance.getInstance().addItemAction(
                 ItemActionType.Pickup,
                 owner,
-                pickupItem,
+                item,
                 (int) amount);
     }
 
-    private void checkGlobalAnnouncement(L1PcInstance owner) {
+    private static void checkGlobalAnnouncement(L1PcInstance owner, L1ItemInstance item) {
         final int[] itemIds =
                 TYUtil.GetIntTokenizeIntArray(Config.ItemListId);
 
         for (int id : itemIds) {
-            if (pickupItem.getItemId() != id) {
+            if (item.getItemId() != id) {
                 continue;
             }
 
@@ -489,7 +502,7 @@ for (L1PcInstance member : party.getMembers()) {
 
             final String message =
                     (Config.SysMsg1 ? owner.getName() : "어느 아덴 용사")
-                            + " 님께서 " + pickupItem.getName()
+                            + " 님께서 " + item.getName()
                             + "를(을) 획득하였습니다. [장소: "
                             + locName + "]";
 
