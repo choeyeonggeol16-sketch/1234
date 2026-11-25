@@ -207,7 +207,35 @@ public final class TestCarryingWeight {
         inv._items.clear();
         System.out.println("PASS linked selection, order and recipe quantity regression");
     }
+    private static void checkDeleteAmount() {
+        CInventory inv = new CInventory();
+        L1EtcItem t = template(123, 1000);
+        t.setItemDescId(456);
+        int[] amounts = {Integer.MIN_VALUE, -1, 0, 1, 2, 3, 4, 5, Integer.MAX_VALUE};
+        for (int available = 1; available <= 4; available++) {
+            for (int requested : amounts) {
+                for (int descMode = 0; descMode < 3; descMode++) {
+                    inv._items.clear();
+                    L1ItemInstance item = new L1ItemInstance(t, available);
+                    // Avoid the world unregister path in this isolated test:
+                    // full deletion needs a world-registration integration test.
+                    if (requested >= available && descMode != 2) continue;
+                    item.setId(12345);
+                    inv._items.Push(item);
+                    int expected = requested <= 0 || descMode == 2 ? 0 : requested;
+                    int actual = descMode == 0 ? inv.DeleteItemAmount(item, requested)
+                            : inv.DeleteItemAmount(item, requested, descMode == 1 ? 456 : 457);
+                    check(expected, actual);
+                    check(available - expected, item.getCount());
+                    check(1, inv._items.Have(item) ? 1 : 0);
+                }
+            }
+        }
+        inv._items.clear();
+        System.out.println("PASS partial deletion and desc-ID guards");
+    }
     public static void main(String[] args) throws Exception {
+        checkDeleteAmount();
         checkLinkedSearch();
         checkItemCopyAttributes();
         checkChargeClassification();
