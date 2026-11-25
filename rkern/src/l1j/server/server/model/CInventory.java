@@ -609,10 +609,8 @@ public class CInventory extends L1Object {
         CItemList.requireDetached(item);
         if (this instanceof CUserInventory && !Warehouse.chargeMergeItem(item.getItemId())
                 && (long) GetItemAmount(item.getItemId()) + item.getCount() > MAX_AMOUNT) return null;
-		if (item.isStackable()) {	
+		if (item.isStackable()) {
 			L1ItemInstance findItem = findMergeItem(item);
-			
-			int itemId = item.getItem().getItemId();
 			if (findItem != null) {
                 if (!findItem.IsAddableAmount(item.getCount())) return null;
                 changeStackCount(findItem, item.getCount());
@@ -620,9 +618,6 @@ public class CInventory extends L1Object {
 				return findItem;
 			}
 		}
-		L1ItemInstance findItem = findMergeItem(item);
-
-
 		switch (item.getItem().getItemId()) {
 		case 40006:
 		case 40007:
@@ -632,7 +627,7 @@ public class CInventory extends L1Object {
 		case 41401:
 		case 810006:
 		case 810007:
-
+            final L1ItemInstance findItem = findMergeItem(item);
 			if (findItem != null) {
                 final int chargeCount = item.getChargeCount();
                 if (chargeCount < 0 || findItem.getChargeCount() < 0
@@ -1481,6 +1476,39 @@ public class CInventory extends L1Object {
 
     public L1ItemInstance tradeItem(L1ItemInstance item, int count, CInventory inventory) {
         if (item == null || inventory == null || inventory == this) return null;
+        try {
+            return tradeItemOrdered(item, count, inventory);
+        } catch (TransferRecoveryFailure failure) {
+            // Both inventory monitors and synchronous permits have been released.
+            // Do not continue accepting gameplay mutations after failed compensation.
+            java.util.logging.Logger.getLogger(CInventory.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Item transfer recovery failed: item="
+                            + item.getId() + ", count=" + count, failure);
+            closeTransferSession(this, failure);
+            closeTransferSession(inventory, failure);
+            throw failure;
+        }
+    }
+
+    private static void closeTransferSession(CInventory inventory, RuntimeException failure) {
+        if (!(inventory instanceof CUserInventory pcInventory)) return;
+        final var pc = pcInventory.getOwner();
+        final CUserSocket session = pc.getNetConnection();
+        if (session != null && session.getActiveChar() == pc && session.isConnected()) {
+            try { session.close(); }
+            catch (RuntimeException closeFailure) { failure.addSuppressed(closeFailure); }
+        }
+    }
+
+    private static final class TransferRecoveryFailure extends IllegalStateException {
+        private static final long serialVersionUID = 1L;
+        TransferRecoveryFailure(RuntimeException recovery, RuntimeException transfer) {
+            super("Item transfer compensation failed", recovery);
+            if (transfer != null && transfer != recovery) addSuppressed(transfer);
+        }
+    }
+
+    private L1ItemInstance tradeItemOrdered(L1ItemInstance item, int count, CInventory inventory) {
 
         final CInventory first;
         if (this instanceof L1GroundInventory && !(inventory instanceof L1GroundInventory)) {
@@ -1512,6 +1540,21 @@ public class CInventory extends L1Object {
 
     /** Both owner monitors must be held before any ownership/count mutation. */
     private L1ItemInstance tradeItemLocked(L1ItemInstance item, int count, CInventory inventory) {
+        if (CacheD.isWarehouseApplying()) return transferWithPermits(item, count, inventory);
+        final CUserInventory from = this instanceof CUserInventory pc ? pc : null;
+        final CUserInventory to = inventory instanceof CUserInventory pc ? pc : null;
+        // Existing CAS gate, non-blocking; no additional worker or lock order.
+        if (from != null && !from.tryBeginEquipmentChange()) return null;
+        try {
+            if (to != null && !to.tryBeginEquipmentChange()) return null;
+            try { return transferWithPermits(item, count, inventory); }
+            finally { if (to != null) to.endEquipmentChange(); }
+        } finally {
+            if (from != null) from.endEquipmentChange();
+        }
+    }
+
+    private L1ItemInstance transferWithPermits(L1ItemInstance item, int count, CInventory inventory) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		if (item == null || inventory == null || inventory == this) {
@@ -1602,19 +1645,29 @@ public class CInventory extends L1Object {
 			return stored;
 		}
 
-		// destination 저장 실패 시 source를 복구한다.
-		if (carryItem == item) {
-            item.setX(oldX);
-            item.setY(oldY);
-            item.setMap(oldMap);
-            insertLinkedItem(item);
-		} else {
-            try {
-                changeStackCount(item, count);
-            } finally {
-                L1World.getInstance().removeObject(carryItem);
+        // Recover the original owner on destination admission failure.
+        // If compensation itself fails, preserve both errors and fail closed.
+        try {
+            if (carryItem == item) {
+                item.setX(oldX);
+                item.setY(oldY);
+                item.setMap(oldMap);
+                insertLinkedItem(item);
+            } else {
+                try {
+                    changeStackCount(item, count);
+                } finally {
+                    L1World.getInstance().removeObject(carryItem);
+                }
             }
-		}
+        } catch (RuntimeException recovery) {
+            // A detached full-transfer object must not remain in the world index.
+            if (carryItem == item && !_items.Have(item)) {
+                try { L1World.getInstance().removeObject(item); }
+                catch (RuntimeException cleanup) { recovery.addSuppressed(cleanup); }
+            }
+            throw new TransferRecoveryFailure(recovery, transferFailure);
+        }
         if (transferFailure != null) throw transferFailure;
 		return null;
 	}
