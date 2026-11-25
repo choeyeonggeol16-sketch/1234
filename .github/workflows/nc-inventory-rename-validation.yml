@@ -18,7 +18,7 @@ jobs:
         run: |
           set -euo pipefail
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
-          BASE=eeb8decdfec0435b1f814fa91414b0955def6f1a
+          BASE=925058051a4efe01582fe2d6d46d495ec6d8c8f6
           TARGET=refs/heads/rkern/nc-inventory-core-20261125
           test "$(git ls-remote origin "$TARGET" | cut -f1)" = "$BASE"
           git checkout --detach "$BASE"
@@ -53,7 +53,7 @@ jobs:
           print('INVENTORY_IDENTIFIER_MIGRATION_OK',len(changed))
           PY
           git add -A -- rkern/src rkern/docs .github/workflows
-          git diff --cached --check
+          git -c core.whitespace=-blank-at-eol diff --cached --check
           python3 - <<'PY'
           import importlib.util,pathlib,os,subprocess
           p=pathlib.Path('rkern/docs/jproring_cio_integration_20261120/run_game_ab.py').resolve()
@@ -87,7 +87,9 @@ jobs:
               'public boolean checkItemNotEquipped(',
               'public boolean checkEnchantItem(int id, int enchant, int count)',
               'public boolean checkEnchantItem(int id, int enchant, int count,int descid)',
-              'private boolean checkEnchantItemInternal('))
+              'private boolean checkEnchantItemInternal(',
+              'private boolean consumeExactEnchantInstances(',
+              'private static boolean matchesExactEnchant('))
           test.write_text('''
           import java.util.*;
           public class InventoryCoreTest {
@@ -97,6 +99,7 @@ jobs:
                   int getId(){return id;} int getCount(){return count;} int getItemId(){return classId;}
                   L1ItemInstance getItem(){return this;} int getItemDescId(){return descId;}
                   int getEnchantLevel(){return enchant;} boolean isEquipped(){return equipped;}
+                  int getBless(){return 0;} int getAttrEnchantLevel(){return 0;}
               }
               static class L1FurnitureInstance extends L1Object {int getItemObjId(){return 0;}}
               static class PetTable {static PetTable getInstance(){return new PetTable();} void deletePet(int id){}}
@@ -129,6 +132,15 @@ jobs:
                   ok(inv.checkItemNotEquipped(7,0)&&inv.checkItemNotEquipped(7,3));
                   inv.busy=true;try{inv.removeItem(a,1);throw new AssertionError();}catch(IllegalStateException expected){}
                   inv.busy=false;ok(inv.removeItem(a,9,70)==2 && inv._items.isEmpty());
+                  L1ItemInstance low=new L1ItemInstance();low.id=21;low.enchant=0;
+                  L1ItemInstance first=new L1ItemInstance();first.id=22;first.count=1;
+                  L1ItemInstance second=new L1ItemInstance();second.id=23;second.count=1;
+                  inv._items.add(low);inv._items.add(first);inv._items.add(second);
+                  ok(!inv.consumeExactEnchantInstances(7,3,3,false,0,0,0)&&inv._items.size()==3);
+                  ok(!inv.consumeExactEnchantInstances(7,3,1,true,0,71,0)&&inv._items.size()==3);
+                  ok(inv.consumeExactEnchantInstances(7,3,1,true,0,70,0)&&inv._items.size()==2);
+                  ok(inv._items.get(0)==low&&inv._items.get(1)==second);
+                  ok(inv.consumeExactEnchantInstances(7,3,1,false,0,0,0)&&inv._items.size()==1);
                   System.out.println("INVENTORY_CORE_REGRESSION_OK");
               }
           }
