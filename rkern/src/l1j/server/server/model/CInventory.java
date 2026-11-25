@@ -736,6 +736,7 @@ public class CInventory extends L1Object {
 		if (item == null || GetByServerID(item.getId()) != item) {
 			return 0;
 		}
+		if (this instanceof L1GroundInventory && item.isGroundPickupPending()) return 0;
 		if (matchDescId && item.getItem().getItemDescId() != descId) return 0;
 		if (item.getCount() <= 0 || count <= 0) {
 			return 0;
@@ -1580,6 +1581,7 @@ public class CInventory extends L1Object {
 		if (item.isEquipped() || (!item.isStackable() && count != 1)) {
 			return null;
 		}
+        if (this instanceof L1GroundInventory && item.isGroundPickupPending()) return null;
         // Ordinary Pop on a character issues an entity-destruction command
         // for pet collars and physical letters. A transfer is not destruction.
         // Leave these rows to the dedicated transaction paths.
@@ -1875,7 +1877,8 @@ public class CInventory extends L1Object {
             return _items.GetMergeableStack(incoming, this instanceof L1GroundInventory);
         if (!(this instanceof L1GroundInventory)) return GetFirstItemByClassID(incoming.getItemId());
         for (L1ItemInstance candidate : _items) {
-            if (candidate.getItemId() == incoming.getItemId() && candidate.SameGroundLootRights(incoming)) return candidate;
+            if (!candidate.isGroundPickupPending() && candidate.getItemId() == incoming.getItemId()
+                    && candidate.SameGroundLootRights(incoming)) return candidate;
         }
         return null;
     }
