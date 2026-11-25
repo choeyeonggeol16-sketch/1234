@@ -1,0 +1,19 @@
+name: Builder command reference audit
+on:
+  push:
+    branches:
+      - rkern/builder-command-reference-audit-20261126
+permissions:
+  contents: read
+jobs:
+  references:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: rkern/src
+      - name: Find all legacy command symbols
+        run: |
+          git grep -n -w -E 'GMCommands|L1Commands|L1Command|L1CommandHelp|GMCommandsConfig' -- rkern/src || true
