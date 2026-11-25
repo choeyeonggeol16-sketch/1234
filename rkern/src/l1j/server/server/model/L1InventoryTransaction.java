@@ -108,6 +108,9 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     private Runnable failureAction;
     private Runnable durableCommitAction;
     private Runnable terminalFailureAction;
+    private Runnable confirmedRollbackAction;
+    private Runnable beforeInventoryReplay;
+    private volatile boolean durableCommitted;
     private int sqlCount;
 
     public static L1InventoryTransaction begin(L1PcInstance pc, int resourceKey) {
@@ -551,6 +554,20 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     /** Release a world reservation even if no original session can receive a reply.
      * The callback must be thread-safe and nonblocking.
      */
+    /** Ground reservation cleanup must also run when a confirmed rollback has no live session. */
+    void onConfirmedRollback(Runnable callback) {
+        open();
+        confirmedRollbackAction = Objects.requireNonNull(callback);
+    }
+
+    /** Apply a reserved source after durable confirmation, before installing its inventory image. */
+    void beforeInventoryReplay(Runnable callback) {
+        open();
+        beforeInventoryReplay = Objects.requireNonNull(callback);
+    }
+
+    boolean isDurablyCommitted() { return durableCommitted; }
+
     public void onTerminalFailure(Runnable callback) {
         open();
         terminalFailureAction = Objects.requireNonNull(callback);
@@ -635,11 +652,13 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
             e.image = copy(e.image);
         }
         move.commit(()->{
+            durableCommitted = true;
             final Runnable durable = durableCommitAction;
             durableCommitAction = null;
             if (durable != null) durable.run();
             post(()->{
                 validateLive();
+                if (beforeInventoryReplay != null) beforeInventoryReplay.run();
                 CacheD.applyCommittedWarehouseMove(move,()->{
                     for (int i = 0; i < orderedCount; i++) {
                         final Entry e = singleton != null ? singleton : commitOrder[i];
@@ -800,7 +819,14 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
             });
             return;
         }
-        // Rollback was confirmed. No live item changed, so there is nothing to
+        // Only a confirmed rollback may make a reserved ground item pickable again.
+        final Runnable rollback = confirmedRollbackAction;
+        confirmedRollbackAction = null;
+        if (rollback != null) {
+            try { rollback.run(); }
+            catch (RuntimeException callbackFailure) { failure.addSuppressed(callbackFailure); }
+        }
+        // Rollback was confirmed. No live inventory item changed, so there is nothing to
         // compensate. Release only on the original owner boundary.
         // completeWarehouseMove reports completion AFTER running the action.
         // A failure callback can start a new receipt as soon as we release the
