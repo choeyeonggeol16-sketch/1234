@@ -4374,6 +4374,20 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		equipmentTimeVisible = tick;
 	}
 
+	/** Restore persisted equipment using the same character execution path as live equips. */
+	public void RestoreEquippedItems() {
+		try {
+			for (L1ItemInstance item : getInventory().getItems()) {
+				if (item.isEquipped()) {
+					item.setEquipped(false);
+					EquipItem(item, true, false);
+				}
+			}
+		} catch (Exception failure) {
+			_log.log(Level.SEVERE, "Equipment restore failed: " + getId(), failure);
+		}
+	}
+
 	public void EquipItem(L1ItemInstance item) {
 		EquipItem(item, false, false);
 	}

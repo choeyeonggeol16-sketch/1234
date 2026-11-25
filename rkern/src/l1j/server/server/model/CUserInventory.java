@@ -15,7 +15,6 @@ import l1j.server.server.model.character.equip.EquipType;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_Ability;
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_DeleteInventoryItem;
 import l1j.server.server.model.network.core.sc.packet.SC_EquipmentWindow;
 import l1j.server.server.model.network.core.sc.packet.SC_ItemColor;
@@ -25,7 +24,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_Weight;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
 import l1j.server.server.storage.CharactersItemStorage;
@@ -458,17 +456,10 @@ public class CUserInventory extends CInventory {
 		SC_ServerMessage.send(_owner, message_id);
 	}
 
+	/** Compatibility entry point for callers outside the migrated login path. */
+	@Deprecated
 	public void sendOptioon() {
-		try {
-			for (L1ItemInstance item : _items) {
-				if (item.isEquipped()) {
-					item.setEquipped(false);
-					_owner.EquipItem(item, true, false);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		_owner.RestoreEquippedItems();
 	}
 
     @Override

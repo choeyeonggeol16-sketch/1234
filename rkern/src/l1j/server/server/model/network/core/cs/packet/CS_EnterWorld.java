@@ -955,7 +955,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
     private static void loadItems(L1PcInstance pc, boolean sendOption,
                                   List<L1ItemInstance> loadedItems) {
         if (sendOption) {
-            pc.getInventory().sendOptioon();
+            pc.RestoreEquippedItems();
             RankUserLoader.getInstance().onUser(pc);
         } else {
             CharacterTable.getInstance().restoreInventory(pc, loadedItems);
