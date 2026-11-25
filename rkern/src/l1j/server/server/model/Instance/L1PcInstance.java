@@ -4568,12 +4568,12 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	private void takeoffArmor(int polyid) {
 		final L1EquipmentSlot equipment = this.getEquipSlot();
 		for (int type = 0; type <= 12; type++) {
-			L1ItemInstance armor = equipment.getAppliedArmor(type);
-			if (armor == null || L1PolyMorph.isEquipableArmor(polyid, type)) continue;
-			UnequipItem(armor);
-			if (type == 9) {
-				armor = equipment.getAppliedArmor(type);
-				if (armor != null) UnequipItem(armor);
+			if (L1PolyMorph.isEquipableArmor(polyid, type)) continue;
+			L1ItemInstance armor;
+			while ((armor = equipment.getAppliedArmor(type)) != null) {
+				UnequipItem(armor);
+				// Reservation refusal must not spin or repeatedly retire effects.
+				if (armor.isEquipped()) break;
 			}
 		}
 	}
