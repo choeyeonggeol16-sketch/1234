@@ -6,7 +6,7 @@ import tempfile
 root = Path(__file__).resolve().parents[2]
 source = (root / "src/l1j/server/server/model/Instance/L1ItemInstance.java").read_text(encoding="utf-8")
 a = source.index("    public void Delete() {", source.index("public void TimerExpired("))
-b = source.index("\tprivate int nextGroundDeleteTimerGeneration()", a)
+b = source.index("    /** Wheel nodes contain only smart ID and primitive generation.", a)
 methods = source[a:b]
 harness = r'''
 import java.util.*;
