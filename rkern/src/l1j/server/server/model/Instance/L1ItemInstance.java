@@ -38,22 +38,30 @@ public class L1ItemInstance extends L1Object {
 
     // Only a PC-origin ground transfer sets this source row. The existing
     // CacheD item lane remains the authority until its admitted write settles.
-    private transient volatile int groundDropSourceId;
+    private transient volatile long groundDropSourceStamp;
+    private static final java.util.concurrent.atomic.AtomicLongFieldUpdater<L1ItemInstance>
+            GROUND_DROP_SOURCE = java.util.concurrent.atomic.AtomicLongFieldUpdater.newUpdater(
+                    L1ItemInstance.class, "groundDropSourceStamp");
 
-    public void markGroundDropSource(int sourceId) { groundDropSourceId = sourceId; }
+    public void markGroundDropSource(int sourceId) {
+        // Generation prevents a stale query from clearing a later drop of
+        // the same source ID. Writers are serialized by the ground monitor.
+        final long next = ((groundDropSourceStamp + (1L << 32)) & 0xffffffff00000000L)
+                | (sourceId & 0xffffffffL);
+        groundDropSourceStamp = next;
+    }
 
     public boolean isGroundDropUnsettled() {
-        final int sourceId = groundDropSourceId;
+        final long stamp = groundDropSourceStamp;
+        final int sourceId = (int) stamp;
         if (sourceId == 0) return false;
         if (l1j.server.server.storage.CacheD.getInstance().isItemPersistencePending(sourceId))
             return true;
-        // Caller holds the owning ground monitor (or is the timer checking
-        // under that monitor); a later drop cannot replace this source here.
-        groundDropSourceId = 0;
-        return false;
+        return !GROUND_DROP_SOURCE.compareAndSet(this, stamp, stamp & 0xffffffff00000000L);
     }
 
     private transient volatile Object groundPickupReservation;
+    private static final Object FROZEN_GROUND_PICKUP = new Object();
     private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater<L1ItemInstance,Object>
             GROUND_PICKUP_RESERVATION = java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater(
                     L1ItemInstance.class, Object.class, "groundPickupReservation");
@@ -64,7 +72,11 @@ public class L1ItemInstance extends L1Object {
         return token != null && GROUND_PICKUP_RESERVATION.compareAndSet(this, null, token);
     }
     public void releaseGroundPickup(Object token) {
-        if (token != null) GROUND_PICKUP_RESERVATION.compareAndSet(this, token, null);
+        if (token != null && token != FROZEN_GROUND_PICKUP)
+            GROUND_PICKUP_RESERVATION.compareAndSet(this, token, null);
+    }
+    public void freezeGroundPickup(Object token) {
+        if (token != null) GROUND_PICKUP_RESERVATION.compareAndSet(this, token, FROZEN_GROUND_PICKUP);
     }
 
 	public static String to_simple_description(String name, int bless, int enchant, int elemental, int level) {
