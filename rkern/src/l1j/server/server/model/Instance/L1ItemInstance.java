@@ -447,6 +447,11 @@ public class L1ItemInstance extends L1Object {
 		return _durability;
 	}
 
+    /** Initial charge for a newly created row, not an existing transfer. */
+    public int GetInitialChargeCount() {
+        return getItemId() == 20383 ? 50 : getItem().getMaxChargeCount();
+    }
+
 	public int getChargeCount() {
 		return _chargeCount;
 	}
