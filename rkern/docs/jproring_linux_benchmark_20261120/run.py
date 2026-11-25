@@ -51,7 +51,8 @@ def compile_sources(classes, netty, network=NETWORK):
     compiler = [shutil.which('javac')] if shutil.which('javac') else [
         'java', '--module', 'jdk.compiler/com.sun.tools.javac.Main']
     sources = [network / 'buffer/CPacketReadBuffer.java', network / 'buffer/CPacketWriteBuffer.java',
-               network / 'codec/CPacketCryptor.java', network.parents[1] / 'Opcodes.java',
+               (network / 'codec/SocketSecureKey.java' if (network / 'codec/SocketSecureKey.java').is_file()
+                else network / 'codec/CPacketCryptor.java'), network.parents[1] / 'Opcodes.java',
                *sorted((network / 'core/transport/selector').glob('*.java')),
                HERE / 'TransportServer.java', HERE / 'TransportDriver.java']
     subprocess.run([*compiler, '-encoding', 'UTF-8', '-cp', netty, '-d', str(classes), *sources], check=True)

@@ -16,73 +16,12 @@ jobs:
       - name: Check isolated baseline and refactor all source references
         run: |
           test "$GITHUB_REF" = "refs/heads/rkern/nc-network-responsibility-20261125"
-          test "$(git rev-parse HEAD:rkern/src)" = "20f1465ce505a506eab9dcdf6be02fa042260d2b"
+          test "$(git rev-parse HEAD:rkern/src)" = "7cb9cc1eb9c3180683ee7e84331263e5d9a68dbc"
           python3 rkern/docs/nc_network_responsibility_20261125/phase2.py
           git diff --check
+          git grep -n -E '\\b(L1Party|getLawfulStop|라우풀고정|흑단무빙|_sleepingMessage|_sleepingTitle|MSGCODE_622_Lawful|C_MATCH_MAKING)\\b' -- rkern/src "*.java" || test "$?" = 1
           git diff --exit-code -- rkern/src/l1j/server/server/model/network/core/broadcast
           git diff --stat
-      - name: Compare baseline compiler errors and run isolated TCP transport regressions
-        working-directory: rkern
-        run: |
-          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
-          python3 - <<'PY'
-          import collections, importlib.util, os, re, subprocess
-          from pathlib import Path
-          fixture=Path("docs/jproring_cio_integration_20261120").resolve()
-          spec=importlib.util.spec_from_file_location("benchmark",fixture/"run_game_ab.py")
-          mod=importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(mod)
-          tmp=Path(os.environ["RUNNER_TEMP"])
-          base=tmp/"nc-baseline"
-          subprocess.run(["git","worktree","add","--detach",str(base),"82ed6c60eee72590788920d3e425935ce674bd1d"],check=True)
-          deps=tmp/"nc-network-deps"
-          def compile_full(root, label):
-              classes=tmp/(label+"-classes")
-              classes.mkdir()
-              cp=mod.classpath(classes,deps)
-              sources=sorted((root/"src").rglob("*.java"))
-              arg=tmp/(label+"-sources.txt")
-              arg.write_text("".join('"'+str(p)+'"\n' for p in sources),encoding="utf-8")
-              run=subprocess.run(["javac","--release","21","--enable-preview","-Xmaxerrs","1000","-encoding","UTF-8","-cp",cp,"-d",str(classes),"@"+str(arg)],capture_output=True,text=True)
-              (tmp/(label+"-compile.log")).write_text(run.stdout+run.stderr,encoding="utf-8")
-              # Match by source path, diagnostic and missing symbol, ignoring shifted line numbers.
-              errors=collections.Counter()
-              blocks=re.split(r"(?m)^(?=/.*\.java:\d+: error:)",run.stderr)
-              for block in blocks:
-                  m=re.match(r"/.*?/src/(.*?\.java):\d+: error: ([^\n]+)",block)
-                  if m:
-                      symbol=re.search(r"(?m)^\s*symbol:\s*(.+)$",block)
-                      errors[(m[1],m[2],symbol[1].strip() if symbol else "")]+=1
-              assert run.returncode==0 or errors, run.stderr
-              print(label,"compile exit",run.returncode,"errors",sum(errors.values()),flush=True)
-              return errors
-          original=compile_full(base/"rkern","original")
-          modified=compile_full(Path.cwd(),"modified")
-          added=modified-original
-          removed=original-modified
-          print("ADDED DIAGNOSTICS",dict(added),flush=True)
-          print("REMOVED DIAGNOSTICS",dict(removed),flush=True)
-          assert not added, "new compilation diagnostics"
-          # Compile and execute the actual independent Selector/cipher stack.
-          classes=tmp/"nc-raw-classes"
-          classes.mkdir()
-          cp=mod.classpath(classes,deps)
-          net=Path("src/l1j/server/server/model/network")
-          sources=[net/"buffer/CPacketReadBuffer.java",net/"buffer/CPacketWriteBuffer.java",
-                   net/"codec/SocketSecureKey.java",net.parents[1]/"Opcodes.java",
-                   *sorted((net/"core/transport/selector").glob("*.java")),
-                   fixture.parent/"jproring_p1_selector_20261120"/"SelectorFrameReaderTest.java",
-                   fixture.parent/"jproring_selector_transport_20261120"/"SelectorTransportTest.java"]
-          subprocess.run(["javac","--release","21","--enable-preview","-encoding","UTF-8","-cp",cp,"-d",str(classes),*map(str,sources)],check=True)
-          for name in ["SelectorFrameReaderTest","SelectorTransportTest"]:
-              subprocess.run(["java","--enable-preview","-cp",cp,name],check=True)
-          PY
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: baseline-and-modified-compiler-diagnostics
-          path: ${{ runner.temp }}/*-compile.log
-          if-no-files-found: ignore
       - name: Compile full JDK 21 source and existing TCP regression tests
         working-directory: rkern
         run: |

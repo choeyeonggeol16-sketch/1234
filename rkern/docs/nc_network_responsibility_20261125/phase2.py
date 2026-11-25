@@ -124,6 +124,8 @@ for p in sorted(root.rglob("*.java")) + tests:
 for p in sorted(root.rglob("*.java")):
     s = mask(read(p))
     assert not re.search(r"\bCPacketCryptor\b|\bCUserSocketMap\b|l1j\.server\.server\.model\.network\.core\.server\.Server\b", s), str(p)
+    assert not re.search(r"\b(?:L1Party|getLawfulStop|라우풀고정|흑단무빙|_sleepingMessage|_sleepingTitle|MSGCODE_622_Lawful|C_MATCH_MAKING)\b", s), str(p)
+    assert not re.search(r"\bUserCommands\s*\.\s*(?:privateShop|buddys|편지삭제|isAlphaNumeric)\b", s), str(p)
     if p.name != "CUserSocket.java":
         assert not re.search(r"\bCUserSocketReleaseTask\b", s), str(p)
     if p.name != "CThreadLocalTimer.java":
