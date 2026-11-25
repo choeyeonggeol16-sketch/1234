@@ -368,11 +368,7 @@ public class CInventory extends L1Object {
     }
 
     private L1ItemInstance AddItemToInventory(L1ItemInstance item, boolean treasure, boolean explicitBless, int bless, boolean localNew) {
-        if (rejectPendingItemTransfer())
-            throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (item == null || item.getCount() <= 0 || item.getCount() > MAX_AMOUNT
-                || (!item.isStackable() && item.getCount() != 1)) return null;
-        CItemList.requireDetached(item);
+        if (!ValidateIncomingItem(item)) return null;
 		int itemId = item.getItem().getItemId();
         if (this instanceof CUserInventory && !Warehouse.chargeMergeItem(itemId)
                 && (long) GetItemAmount(itemId) + item.getCount() > MAX_AMOUNT) return null;
@@ -384,27 +380,13 @@ public class CInventory extends L1Object {
 		item.setX(getX());
 		item.setY(getY());
 		item.setMap(getMapId());
-		int chargeCount = item.getItem().getMaxChargeCount();
-		if (!treasure) switch (itemId) {
-		case 40006:
-		case 40007:
-		case 40008:
-		case 140006:
-		case 140008:
-		case 41401:
-		case 810006:
-		case 810007:
+		final int chargeCount = item.GetInitialChargeCount();
+		if (!treasure && Warehouse.chargeMergeItem(itemId)) {
 			L1ItemInstance findItem = findMergeItem(item);
 			if (findItem != null) {
-				chargeCount -= java.util.concurrent.ThreadLocalRandom.current().nextInt(5);
-                addStackCharge(findItem, chargeCount);
+				addStackCharge(findItem, chargeCount - java.util.concurrent.ThreadLocalRandom.current().nextInt(5));
                 return findItem;
 			}
-			break;
-		}
-
-		if (itemId == 20383) {
-			chargeCount = 50;
 		}
 
 		item.setChargeCount(chargeCount);
@@ -457,12 +439,18 @@ public class CInventory extends L1Object {
 	protected void persistTransferCharge(L1ItemInstance item) {
 	}
 
-	public synchronized L1ItemInstance storeTradeItem(L1ItemInstance item) {
+    /** Shared admission only; each caller retains its own merge and initialization rules. */
+    private boolean ValidateIncomingItem(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (item == null || item.getCount() <= 0 || item.getCount() > MAX_AMOUNT
-                || (!item.isStackable() && item.getCount() != 1)) return null;
+        if (item == null || item.getCount() <= 0 || item.getCount() > MAX_AMOUNT
+                || (!item.isStackable() && item.getCount() != 1)) return false;
         CItemList.requireDetached(item);
+        return true;
+    }
+
+	public synchronized L1ItemInstance storeTradeItem(L1ItemInstance item) {
+        if (!ValidateIncomingItem(item)) return null;
         if (this instanceof CUserInventory && !Warehouse.chargeMergeItem(item.getItemId())
                 && (long) GetItemAmount(item.getItemId()) + item.getCount() > MAX_AMOUNT) return null;
 		if (item.isStackable()) {
@@ -474,15 +462,7 @@ public class CInventory extends L1Object {
 				return findItem;
 			}
 		}
-		switch (item.getItem().getItemId()) {
-		case 40006:
-		case 40007:
-		case 40008:
-		case 140006:
-		case 140008:
-		case 41401:
-		case 810006:
-		case 810007:
+		if (Warehouse.chargeMergeItem(item.getItem().getItemId())) {
             final L1ItemInstance findItem = findMergeItem(item);
 			if (findItem != null) {
                 final int chargeCount = item.getChargeCount();
@@ -491,7 +471,6 @@ public class CInventory extends L1Object {
                 addStackCharge(findItem, chargeCount);
 				return findItem;
 			}
-			break;
 		}
 		item.setX(getX());
 		item.setY(getY());
