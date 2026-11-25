@@ -36,6 +36,20 @@ public class L1ItemInstance extends L1Object {
 	transient volatile CItemList inventoryLinkOwner;
 	transient L1ItemInstance inventoryPrev, inventoryNext;
 
+    private transient volatile Object groundPickupReservation;
+    private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater<L1ItemInstance,Object>
+            GROUND_PICKUP_RESERVATION = java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater(
+                    L1ItemInstance.class, Object.class, "groundPickupReservation");
+
+    public boolean isGroundPickupPending() { return groundPickupReservation != null; }
+    public boolean hasGroundPickupReservation(Object token) { return groundPickupReservation == token; }
+    public boolean reserveGroundPickup(Object token) {
+        return token != null && GROUND_PICKUP_RESERVATION.compareAndSet(this, null, token);
+    }
+    public void releaseGroundPickup(Object token) {
+        if (token != null) GROUND_PICKUP_RESERVATION.compareAndSet(this, token, null);
+    }
+
 	public static String to_simple_description(String name, int bless, int enchant, int elemental, int level) {
 		StringBuilder sb = new StringBuilder(name.length() + 32);
 		sb.append(get_blessed_description(bless));
@@ -1391,16 +1405,16 @@ public class L1ItemInstance extends L1Object {
 		final int y = getY();
 		final short mapId = getMapId();
 
-		final L1GroundInventory ground = L1World.getInstance().getInventory(x, y, mapId);
+		final L1GroundInventory ground = L1World.getInstance().findGroundInventory(x, y, mapId);
 
-		if (ground == null) {
-			return;
-		}
+		if (ground == null) return;
 		synchronized (ground) {
-			if (getX() == 0) {
-				return;
-			}
-
+            if (ground.GetByServerID(getId()) != this) return;
+            if (isGroundPickupPending()) {
+                // The receipt owns the item until it is committed or rolled back.
+                AddTimer(TIMER_GROUND_DELETE, groundDeleteDelayMs());
+                return;
+            }
 			ground.DeleteItemAmount(this);
 		}
 	}
