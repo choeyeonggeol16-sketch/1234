@@ -1577,6 +1577,14 @@ public class CInventory extends L1Object {
 		if (item.isEquipped() || (!item.isStackable() && count != 1)) {
 			return null;
 		}
+        // Ordinary Pop on a character issues an entity-destruction command
+        // for pet collars and physical letters. A transfer is not destruction.
+        // Leave these rows to the dedicated transaction paths.
+        if (this instanceof CUserInventory && !CacheD.isWarehouseApplying()) {
+            final int template = item.getItemId();
+            if (template == 40314 || template == 40316
+                    || (template >= 49016 && template <= 49025)) return null;
+        }
         // A pickup may retire the tile between lookup and lock acquisition.
         if (this instanceof L1GroundInventory
                 && L1World.getInstance().findGroundInventory(getX(), getY(), getMapId()) != this)
