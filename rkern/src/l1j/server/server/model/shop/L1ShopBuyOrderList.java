@@ -85,6 +85,7 @@ public class L1ShopBuyOrderList {
         final long addWeight;
         try {
             long w = (long) shopItem.getItem().getWeight();
+            if (w < 0) { bugok = 1; return; }
             addWeight = Math.multiplyExact(Math.multiplyExact(w, (long) count), (long) pack);
         } catch (ArithmeticException ae) {
             bugok = 1;
@@ -97,7 +98,8 @@ public class L1ShopBuyOrderList {
         _totalWeight = safeAdd(_totalWeight, addWeight);
 
         // 총액 한도 방어
-        if (_totalWeight < 0L || _totalPrice < 0L || _totalPrice > MAX_ADENA) {
+        if (_totalWeight < 0L || _totalWeight > (long) Integer.MAX_VALUE * 3000L
+                || _totalPrice < 0L || _totalPrice > MAX_ADENA) {
             bugok = 1;
             return;
         }
