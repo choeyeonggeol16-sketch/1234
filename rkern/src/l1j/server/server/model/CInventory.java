@@ -1604,6 +1604,10 @@ public class CInventory extends L1Object {
                 ? pcInventory.CheckAddableTransfer(item, count) : inventory.CheckAddable(item, count);
 		if (admission != OK) return null;
 
+        if (this instanceof CUserInventory pc && inventory instanceof L1GroundInventory ground
+                && !CacheD.isWarehouseApplying())
+            return dropWithStagedGround(pc, ground, item, count);
+
         final int oldX = item.getX(), oldY = item.getY();
         final short oldMap = item.getMapId();
 		L1ItemInstance carryItem;
@@ -1677,6 +1681,102 @@ public class CInventory extends L1Object {
         if (transferFailure != null) throw transferFailure;
 		return null;
 	}
+
+    /**
+     * Ground has no durable row. Stage its fallible registration BEFORE accepting
+     * a character DELETE/UPDATE. A rejected admission then needs only memory
+     * cleanup, not a compensating CacheD write. Both owner monitors and the
+     * existing character permit remain held throughout.
+     */
+    private L1ItemInstance dropWithStagedGround(CUserInventory pc, L1GroundInventory ground,
+            L1ItemInstance item, int count) {
+        assert Thread.holdsLock(this) && Thread.holdsLock(ground);
+        final CInventory dest = ground;
+        final L1World world = L1World.getInstance();
+        final boolean full = count == item.getCount();
+        final int oldX = item.getX(), oldY = item.getY();
+        final short oldMap = item.getMapId();
+        final L1ItemInstance carry = full ? item : Warehouse.allocateDetachedTransfer(item, count);
+        if (!full && item.GetContributeData() != null)
+            carry.SetContributeData(item.GetContributeData());
+        final boolean stack = item.isStackable();
+        final L1ItemInstance merge = stack || Warehouse.chargeMergeItem(item.getItemId())
+                ? dest.findMergeItem(carry) : null;
+        // A merge requires no new world registration. Delay mutation of the
+        // destination until the source admission succeeds.
+        if (merge != null) {
+            if (stack) {
+                if (!merge.IsAddableAmount(count)) return null;
+            } else if (merge.getChargeCount() < 0 || carry.getChargeCount() < 0
+                    || (long) merge.getChargeCount() + carry.getChargeCount() > Integer.MAX_VALUE) {
+                return null;
+            }
+        }
+
+        boolean detached = false;
+        boolean registered = false;
+        try {
+            if (full) {
+                if (!_items.Pop(item)) return null;
+                detached = true; // source count index is not changed yet
+            }
+            if (merge == null) {
+                carry.setX(ground.getX());
+                carry.setY(ground.getY());
+                carry.setMap(ground.getMapId());
+                if (!full) {
+                    world.storeObject(carry);
+                    registered = true;
+                }
+                dest.insertLinkedItem(carry);
+            }
+            // These are the only source persistence admissions. Rejection
+            // leaves the persistent source row unchanged.
+            if (full) pc.persistOwnedItemDelete(item);
+            else changeStackCount(item, -count);
+        } catch (RuntimeException failure) {
+            try {
+                if (merge == null && dest._items.Have(carry))
+                    ground.popForTransfer(carry);
+                if (registered || (!full && world.findObject(carry.getId()) == carry))
+                    world.removeObject(carry);
+                if (detached) {
+                    item.setX(oldX);
+                    item.setY(oldY);
+                    item.setMap(oldMap);
+                    _items.Push(item);
+                }
+                ground.finishGroundTransfer(carry);
+            } catch (RuntimeException recovery) {
+                throw new TransferRecoveryFailure(recovery, failure);
+            }
+            throw failure;
+        }
+
+        // No compensating persistent write is allowed after admission.
+        // Complete the in-memory source/destination state under the same locks.
+        try {
+            if (full) pc.finishOwnedItemDeletion(item);
+            if (merge != null) {
+                if (stack) {
+                    merge.setCount(merge.getCount() + count);
+                    merge.setGiveItem(carry.isGiveItem());
+                } else merge.setChargeCount(merge.getChargeCount() + carry.getChargeCount());
+                if (full) world.removeObject(item);
+                try { ground.updateItem(merge); }
+                catch (RuntimeException notice) {
+                    java.util.logging.Logger.getLogger(CInventory.class.getName())
+                            .log(java.util.logging.Level.WARNING, "Accepted ground merge notice failed", notice);
+                }
+                merge._cha = null;
+                return merge;
+            }
+            carry._cha = null;
+            return carry;
+        } catch (RuntimeException failure) {
+            throw new TransferRecoveryFailure(failure, null);
+        }
+    }
 
 	public L1ItemInstance receiveDamage(int objectId) {
 		L1ItemInstance item = GetByServerID(objectId);
