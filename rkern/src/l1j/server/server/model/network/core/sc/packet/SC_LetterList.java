@@ -16,7 +16,7 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -290,7 +290,7 @@ public Data(L1PcInstance pc, int type, int id, boolean value) {
 		_letters = null;
 	}
 
-private void writeImpl(CPacketWriteBuffer buffer) {
+private void writeImpl(Assemble buffer) {
 		buffer.writeC(Opcodes.S_MAIL_INFO);
 
 		if (_mode == 1) { // 편지 목록 출력

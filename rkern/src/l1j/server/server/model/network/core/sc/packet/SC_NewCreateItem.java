@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -235,7 +235,7 @@ public final class SC_NewCreateItem {
 
 	private SC_NewCreateItem() {}
 
-	private static void writeTypeCk(CPacketWriteBuffer buffer, int _type, boolean _ck) {
+	private static void writeTypeCk(Assemble buffer, int _type, boolean _ck) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeC(_type);
 		switch (_type) {
@@ -484,7 +484,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeCastleWarTime(CPacketWriteBuffer buffer, int _warType, int _second, String _castle) {
+	private static void writeCastleWarTime(Assemble buffer, int _warType, int _second, String _castle) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeH(CASTLE_WAR_TIME);
 		buffer.writeC(0x08);
@@ -501,7 +501,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeTypeSubtype(CPacketWriteBuffer buffer, int _type, int _subType) {
+	private static void writeTypeSubtype(Assemble buffer, int _type, int _subType) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeC(_type);
 		switch (_type) {
@@ -515,7 +515,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeTypeOrderSuborderCount(CPacketWriteBuffer buffer, int _type, int _order, int _subOrder, int _count) {
+	private static void writeTypeOrderSuborderCount(Assemble buffer, int _type, int _order, int _subOrder, int _count) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeH(_type);
 		switch (_type) {
@@ -549,7 +549,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeTamPoint(CPacketWriteBuffer buffer, int _type, int _tamPoint) {
+	private static void writeTamPoint(Assemble buffer, int _type, int _tamPoint) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeH(_type);
 		switch (_type) {
@@ -565,7 +565,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void writeTypeSubtypeObjid(CPacketWriteBuffer buffer, int _type, int _subType, int _objId) {
+	private static void writeTypeSubtypeObjid(Assemble buffer, int _type, int _subType, int _objId) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeC(_type);
 		switch (_type) {
@@ -613,7 +613,7 @@ public final class SC_NewCreateItem {
 		}
 	}
 
-	private static void byteWrite(CPacketWriteBuffer buffer, long value) {
+	private static void byteWrite(Assemble buffer, long value) {
 		long temp = value / 128;
 		if (temp > 0) {
 			buffer.writeC(hextable[(int) (value % 128)]);

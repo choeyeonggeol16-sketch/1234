@@ -4,7 +4,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.config.CIOConfig;
@@ -46,7 +46,7 @@ public final class SC_Light {
             return false;
         }
 
-        final CPacketWriteBuffer buffer =
+        final Assemble buffer =
                 frame.buffer();
 
         boolean committed = false;

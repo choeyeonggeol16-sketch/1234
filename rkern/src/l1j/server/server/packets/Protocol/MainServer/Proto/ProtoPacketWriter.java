@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -21,7 +21,7 @@ public final class ProtoPacketWriter extends CServerPacket {
 	}
 
 	@Override
-	protected void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
+	protected void writeImpl(CUserSocket client, Assemble buffer) {
 		_packet.writeTo(buffer, true);
 	}
 
@@ -40,7 +40,7 @@ public final class ProtoPacketWriter extends CServerPacket {
 		}
 
 		@Override
-		protected void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
+		protected void writeImpl(CUserSocket client, Assemble buffer) {
 			buffer.writeBytes(_data);
 		}
 	}

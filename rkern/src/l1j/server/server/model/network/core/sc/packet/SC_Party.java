@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -34,7 +34,7 @@ public final class SC_Party {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_HYPERTEXT);
             buffer.writeD(objId);
             buffer.writeS(html);
@@ -67,7 +67,7 @@ public final class SC_Party {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(0x6c);
             buffer.writeD(subject == null ? 0 : subject.getId());

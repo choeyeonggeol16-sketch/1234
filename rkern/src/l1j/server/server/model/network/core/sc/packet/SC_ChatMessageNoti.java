@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.shared.SimpleRgb;
@@ -94,7 +94,7 @@ public static final int CHAT_NORMAL 			= 0x00;
         }
     }
 
-	private static void writePayload(CPacketWriteBuffer buffer, int type, String msg, byte[] rgbBytes, String sender, int flag30, boolean hasObj, int objId, int x, int y, int rank) {
+	private static void writePayload(Assemble buffer, int type, String msg, byte[] rgbBytes, String sender, int flag30, boolean hasObj, int objId, int x, int y, int rank) {
 		buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		buffer.writeH(SC_CHAT_MESSAGE_NOTI_PACKET);
 

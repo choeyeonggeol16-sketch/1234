@@ -24,7 +24,7 @@ import l1j.server.server.model.L1EffectSpawn;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -55,7 +55,7 @@ final class NpcCastleActions {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_HYPERTEXT);
             buffer.writeD(objId);
             buffer.writeS(page);

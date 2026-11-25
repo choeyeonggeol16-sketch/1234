@@ -4,7 +4,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 
 public final class SC_SystemMessage {
 
@@ -54,7 +54,7 @@ public final class SC_SystemMessage {
         });
     }
 
-    private static void writeContent(CPacketWriteBuffer buffer, String msg, boolean nameId) {
+    private static void writeContent(Assemble buffer, String msg, boolean nameId) {
         if (!nameId) {
             buffer.writeC(Opcodes.S_MESSAGE);
             buffer.writeC(0x09);

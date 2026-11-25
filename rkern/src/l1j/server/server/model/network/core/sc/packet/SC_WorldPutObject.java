@@ -19,7 +19,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.config.CIOConfig;
@@ -44,13 +44,13 @@ public final class SC_WorldPutObject {
 
     /*
      * Full PC/NPC/Builder messages are protobuf-like and variable sized.
-     * Every writeS2 field is capped at 255 encoded bytes by CPacketWriteBuffer.
+     * Every writeS2 field is capped at 255 encoded bytes by Assemble.
      * 4096 bytes covers all fixed fields + all S2 strings with ample headroom.
      * PC adds the current shop-chat byte length because that field is raw bytes.
      */
     /*
      * Variable WorldPut frames cannot use one guessed fixed reserve.
-     * CPacketWriteBuffer.writeS2() reserves up to 2 bytes per UTF-16 code unit before
+     * Assemble.writeS2() reserves up to 2 bytes per UTF-16 code unit before
      * MS949 encoding, so calculate a safe upper bound from the actual strings.
      * FIXED_COMPLEX_RESERVE covers headers, protobuf keys/varints/bools/trailer.
      */
@@ -303,7 +303,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final CPacketWriteBuffer b = frame.buffer();
+        final Assemble b = frame.buffer();
 
         boolean committed = false;
 
@@ -461,7 +461,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final CPacketWriteBuffer b = frame.buffer();
+        final Assemble b = frame.buffer();
 
         boolean committed = false;
 
@@ -627,7 +627,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final CPacketWriteBuffer b = frame.buffer();
+        final Assemble b = frame.buffer();
 
         boolean committed = false;
 
@@ -734,7 +734,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final CPacketWriteBuffer b = frame.buffer();
+        final Assemble b = frame.buffer();
 
         boolean committed = false;
 
@@ -841,7 +841,7 @@ public final class SC_WorldPutObject {
             return false;
         }
 
-        final CPacketWriteBuffer b = frame.buffer();
+        final Assemble b = frame.buffer();
 
         boolean committed = false;
 
@@ -942,14 +942,14 @@ public final class SC_WorldPutObject {
     // =====================================================================
 
     private static void writeHeader(
-            CPacketWriteBuffer b) {
+            Assemble b) {
 
         b.writeC(Opcodes.S_EXTENDED_PROTOBUF);
         b.writeH(SC_WORLD_PUT_OBJECT_NOTI);
     }
 
     private static void writeBase(
-            CPacketWriteBuffer b,
+            Assemble b,
             int x,
             int y,
             int objectId,
@@ -979,7 +979,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writePoint(
-            CPacketWriteBuffer b,
+            Assemble b,
             int field,
             int x,
             int y) {
@@ -989,7 +989,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeVarint(
-            CPacketWriteBuffer b,
+            Assemble b,
             int field,
             long value) {
 
@@ -998,7 +998,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeBool(
-            CPacketWriteBuffer b,
+            Assemble b,
             int field,
             boolean value) {
 
@@ -1007,7 +1007,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeString(
-            CPacketWriteBuffer b,
+            Assemble b,
             int field,
             String value) {
 
@@ -1016,7 +1016,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeByteArray(
-            CPacketWriteBuffer b,
+            Assemble b,
             int field,
             byte[] value) {
 
@@ -1032,7 +1032,7 @@ public final class SC_WorldPutObject {
     }
 
     private static void writeTrailer(
-            CPacketWriteBuffer b) {
+            Assemble b) {
 
         b.writeH(0);
     }
@@ -1618,7 +1618,7 @@ public final class SC_WorldPutObject {
         
             final int capacity=output.capacity();
             final java.nio.ByteBuffer bytes=output.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-            final CPacketWriteBuffer b=new CPacketWriteBuffer();
+            final Assemble b=new Assemble();
             b.armExternal(bytes,0,capacity);
             b.beginDirect();
             b.position(CIOConfig.HEADER_SIZE);
@@ -1768,7 +1768,7 @@ public final class SC_WorldPutObject {
         
             final int capacity=output.capacity();
             final java.nio.ByteBuffer bytes=output.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-            final CPacketWriteBuffer b=new CPacketWriteBuffer();
+            final Assemble b=new Assemble();
             b.armExternal(bytes,0,capacity);
             b.beginDirect();
             b.position(CIOConfig.HEADER_SIZE);
@@ -1884,7 +1884,7 @@ public final class SC_WorldPutObject {
         
             final int capacity=output.capacity();
             final java.nio.ByteBuffer bytes=output.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-            final CPacketWriteBuffer b=new CPacketWriteBuffer();
+            final Assemble b=new Assemble();
             b.armExternal(bytes,0,capacity);
             b.beginDirect();
             b.position(CIOConfig.HEADER_SIZE);

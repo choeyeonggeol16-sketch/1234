@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -119,7 +119,7 @@ public final class SC_ChatPacket {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             writePayload(buffer, mode, opcode, type, objectId, text1, text2, x, y);
             committed = c.commitDirectFrame(frame);
             return committed;
@@ -152,7 +152,7 @@ public final class SC_ChatPacket {
         return sendDirectRaw(receiver, MODE_TARGET_MSG, Opcodes.S_MESSAGE, type, 0, formatted, "", 0, 0);
     }
 
-	private static void writePayload(CPacketWriteBuffer buffer, int mode, int opcode, int type, int objectId, String text1, String text2, int x, int y) {
+	private static void writePayload(Assemble buffer, int mode, int opcode, int type, int objectId, String text1, String text2, int x, int y) {
 		if (mode == 0) {
 			return;
 		}

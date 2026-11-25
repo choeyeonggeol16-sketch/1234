@@ -11,7 +11,7 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.utils.SQLUtil;
@@ -129,7 +129,7 @@ public final class SC_EnchantRanking1 {
 		return year2 + "/" + Month2 + "/" + date2;
 	}
 
-	private static void writeImpl(CPacketWriteBuffer buffer, Data obj) {
+	private static void writeImpl(Assemble buffer, Data obj) {
 		buffer.writeC(Opcodes.S_BOARD_READ);
 		buffer.writeD(obj._number);
 		buffer.writeS("GM");

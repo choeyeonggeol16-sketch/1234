@@ -17,9 +17,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.utill.CConnectionState;
-import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.buffer.Disassemble;
 import l1j.server.server.model.network.safe.CPacketFilter;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.packet.IPacketWriter;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -1510,7 +1510,7 @@ public final class CUserSocket extends CSocket {
     private boolean commitStagedOutboundFrameLocked(CIOBufferEx lease) {
         if (lease == null) return false;
         if (!_pool.owns(lease)) throw new IllegalArgumentException("foreign SEND lease");
-        final CPacketWriteBuffer writer = lease.writer();
+        final Assemble writer = lease.writer();
         final int length = writer.position();
         if (length <= CIOBufferPool.HEADER_BYTES
                 || length > lease._reservedWireBytes
@@ -1600,7 +1600,7 @@ public final class CUserSocket extends CSocket {
     // The existing serializer token pins the staged lease while an encoder runs
     // outside _stateLock. The compaction pass must not return that lease either.
     private CIOBufferEx _tailEncoding; // guarded by _stateLock
-    private CPacketWriteBuffer _tailWriter;   // used only by the pinned encoder
+    private Assemble _tailWriter;   // used only by the pinned encoder
 
     private CIOBufferEx reservePacketTailLocked(long ticket, int maxWireBytes) {
         final CIOBufferEx tail = _stagedPacketPack;
@@ -1633,7 +1633,7 @@ public final class CUserSocket extends CSocket {
         int length = 0;
         try {
             try {
-                if (_tailWriter == null) _tailWriter = new CPacketWriteBuffer();
+                if (_tailWriter == null) _tailWriter = new Assemble();
                 _tailWriter.armExternal(bytes, start, maxWireBytes);
                 _tailWriter.preparePacket(packet.getClass());
                 packet.writeData(client, _tailWriter);
@@ -1697,7 +1697,7 @@ public final class CUserSocket extends CSocket {
                 || (!finalPacket && _closing != 0)) return false;
         if ((int) SOCKET_PENDING.getAcquire(this) >= SOCKET_REJECT_AT - 32)
             drainPublishedSocketCallbacks();
-        final int learned = CPacketWriteBuffer.learnedPacketSize(packet.getClass());
+        final int learned = Assemble.learnedPacketSize(packet.getClass());
         final int maxTailWireBytes = packet instanceof IPacketWriter.DirectTail bounded
                 && peer.isOwnerThread() ? bounded.maximumWireBytes() : 0;
         final boolean direct;
@@ -1758,11 +1758,11 @@ public final class CUserSocket extends CSocket {
                     rejectSend(REJECT_POOL);
                     break;
                 }
-                final CPacketWriteBuffer writer = lease.beginPacket(packet.getClass());
+                final Assemble writer = lease.beginPacket(packet.getClass());
                 packet.writeData(client, writer);
                 writer.notePacketSize();
                 encoded = lease;
-            } catch (CPacketWriteBuffer.RegisteredCapacityExceededException oversized) {
+            } catch (Assemble.RegisteredCapacityExceededException oversized) {
                 retryLarge = capacity < CIOBufferPool.MAX_WIRE_BYTES;
                 if (!retryLarge) encodeFailed = true;
             } catch (Throwable failure) {
@@ -1997,7 +1997,7 @@ public final class CUserSocket extends CSocket {
                             rejectSend(REJECT_POOL);
                         } else {
                             try {
-                                final CPacketWriteBuffer writer = lease.writer();
+                                final Assemble writer = lease.writer();
                                 putAction(lease.buffer(), 0, objectId, actionId);
                                 writer.position(8);
                                 lease._frameCount = 1;
@@ -2305,7 +2305,7 @@ public final class CUserSocket extends CSocket {
                         | ((actionId & 0xffL) << 56));
     }
 
-    @Override final boolean dispatchPlaintext(CPacketReadBuffer decoded) {
+    @Override final boolean dispatchPlaintext(Disassemble decoded) {
         final int opcode = decoded.readUnsignedByte();
         if (this.checkPacketRateLimit(System.currentTimeMillis())) return false;
         if (!allowed(opcode, this.getConnectionState(), this.getAccount() != null,
@@ -2332,7 +2332,7 @@ public final class CUserSocket extends CSocket {
     }
 
 
-    private void dispatchDecodedFrame(UserPacketCallbackMap.PacketFunc callback, CPacketReadBuffer decoded) {
+    private void dispatchDecodedFrame(UserPacketCallbackMap.PacketFunc callback, Disassemble decoded) {
         // Even if this handler blocks on game logic or client synchronization,
         // unrelated SEND ticket owners must be able to drain immediately.
         releaseFusedReadSendOwner();
@@ -2530,7 +2530,7 @@ public final class CUserSocket extends CSocket {
         if(frame==null)return false;
         boolean committed=false;
         try {
-            final l1j.server.server.model.network.buffer.CPacketWriteBuffer writer=frame.buffer();
+            final l1j.server.server.model.network.buffer.Assemble writer=frame.buffer();
             final java.nio.ByteBuffer memory=writer.getBuffer();
             memory.position(writer.baseOffset()+writer.position());
             memory.put(frameBytes,CIOBufferPool.HEADER_BYTES,

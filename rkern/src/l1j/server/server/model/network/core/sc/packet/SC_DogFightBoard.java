@@ -8,7 +8,7 @@ import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightT
 import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightInstance;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -52,7 +52,7 @@ public final class SC_DogFightBoard {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_HYPERTEXT);
             buffer.writeD(1);
             buffer.writeS("maeno4");

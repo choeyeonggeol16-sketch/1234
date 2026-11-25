@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -40,7 +40,7 @@ public final class SC_Attack {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_ATTACK);
             buffer.writeC(1);
             buffer.writeD(attackerId);

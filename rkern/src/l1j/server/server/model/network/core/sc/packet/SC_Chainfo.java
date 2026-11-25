@@ -11,7 +11,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -148,7 +148,7 @@ public final class SC_Chainfo {
 		}
 	}
 
-	private static void writeImpl(CPacketWriteBuffer buffer, Data obj) {
+	private static void writeImpl(Assemble buffer, Data obj) {
 		if (!obj._hasData) {
 			return;
 		}

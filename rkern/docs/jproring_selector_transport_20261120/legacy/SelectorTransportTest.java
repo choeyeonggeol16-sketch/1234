@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.buffer.Disassemble;
 import l1j.server.server.model.network.core.transport.selector.CSelectorBufferPool;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.CloseReason;
@@ -235,7 +235,7 @@ public final class SelectorTransportTest {
         var opened = new LinkedBlockingQueue<Connection>();
         CSelectorTransport.Handler handler = new CSelectorTransport.Handler() {
             @Override public void onOpen(Connection connection) { opened.add(connection); }
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
+            @Override public void onFrame(Connection connection, Disassemble payload) throws IOException {
                 int size = payload.remaining();
                 check(connection.trySend(size, writer -> {
                     while (payload.remaining() != 0) writer.writeByte(payload.readByte());
@@ -302,7 +302,7 @@ public final class SelectorTransportTest {
                 1_000_000, 32, 4_096, Duration.ofMillis(300));
         var slow = burst(queued, closed, false);
         var handler = new CSelectorTransport.Handler() {
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
+            @Override public void onFrame(Connection connection, Disassemble payload) throws IOException {
                 if (payload.readByte() == 1) slow.onFrame(connection, payload);
                 else check(connection.trySend(1, writer -> writer.writeByte(2)), "healthy SEND during large-pool exhaustion");
             }
@@ -328,7 +328,7 @@ public final class SelectorTransportTest {
     private static CSelectorTransport.Handler burst(CountDownLatch queued, LinkedBlockingQueue<CloseReason> closed,
             boolean graceful) {
         return new CSelectorTransport.Handler() {
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
+            @Override public void onFrame(Connection connection, Disassemble payload) throws IOException {
                 for (int f = 0; f < BURST_FRAMES; f++) {
                     int sequence = f;
                     check(connection.trySend(BURST_BODY_BYTES, writer -> {
@@ -351,7 +351,7 @@ public final class SelectorTransportTest {
         var config = new CSelectorTransport.Config(2, 100, 128, 128, 1, 16,
                 slowCount * BURST_FRAMES, 1_000_000, 32, 4_096, Duration.ofMillis(750));
         try (var server = CSelectorTransport.bind(LOOPBACK, config, new CSelectorTransport.Handler() {
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
+            @Override public void onFrame(Connection connection, Disassemble payload) throws IOException {
                 if (payload.readByte() == 1) {
                     for (int i = 0; i < BURST_FRAMES; i++)
                         check(connection.trySend(BURST_BODY_BYTES, writer -> {
@@ -396,7 +396,7 @@ public final class SelectorTransportTest {
         AtomicInteger canceled = new AtomicInteger();
         try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(1, 2, 2), new CSelectorTransport.Handler() {
             @Override public void onOpen(Connection connection) { opened.add(connection); }
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) { }
+            @Override public void onFrame(Connection connection, Disassemble payload) { }
         }); Socket peer = connect(server, 0)) {
             Connection connection = await(opened);
             try {
@@ -494,7 +494,7 @@ public final class SelectorTransportTest {
                 check(connection.trySend(Opcodes.S_KEYBYTES.length, writer -> writer.writeBytes(Opcodes.S_KEYBYTES)),
                         "plaintext RKern handshake");
             }
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
+            @Override public void onFrame(Connection connection, Disassemble payload) throws IOException {
                 int size = payload.remaining();
                 echoEncrypted(connection, payload, size);
                 try {
@@ -528,7 +528,7 @@ public final class SelectorTransportTest {
         }
     }
 
-    private static void echoEncrypted(Connection connection, CPacketReadBuffer payload, int size) throws IOException {
+    private static void echoEncrypted(Connection connection, Disassemble payload, int size) throws IOException {
         check(connection.trySend(size, writer -> {
             while (payload.remaining() != 0) writer.writeByte(payload.readByte());
         }), "encrypted echo");

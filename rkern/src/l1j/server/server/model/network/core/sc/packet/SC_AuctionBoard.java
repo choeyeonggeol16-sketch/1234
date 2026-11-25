@@ -12,7 +12,7 @@ import java.util.List;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.nio.charset.Charset;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -160,7 +160,7 @@ public Data(int boardObjId, List<AuctionNode> nodes) {
 		_nodes = nodes != null ? nodes : new ArrayList<AuctionNode>();
 	}
 
-private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
+private void writeImpl(CUserSocket client, Assemble buffer) {
 		buffer.writeC(Opcodes.S_AGIT_LIST);
 		buffer.writeD(_boardObjId);
 		buffer.writeH(_nodes.size());

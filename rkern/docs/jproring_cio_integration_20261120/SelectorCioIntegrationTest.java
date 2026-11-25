@@ -30,7 +30,7 @@ import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
@@ -545,7 +545,7 @@ public final class SelectorCioIntegrationTest {
             this.beforeEncoding = beforeEncoding;
         }
 
-        @Override protected boolean write(CUserSocket client, CPacketWriteBuffer writer) {
+        @Override protected boolean write(CUserSocket client, Assemble writer) {
             beforeEncoding.run();
             writer.writeByte(0x45);
             writer.writeInt(sequence);

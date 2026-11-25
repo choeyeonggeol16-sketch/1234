@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.connection;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 /** L1 Java view of a pooled CIOBufferEx; JVM object layout is not the original C++ ABI. */
 public final class CIOBufferEx {
     private static final AtomicIntegerFieldUpdater<CIOBufferEx> ACTIVE =
@@ -19,7 +19,7 @@ public final class CIOBufferEx {
     boolean _actionOnly;
     volatile boolean _ioPending;
     private ByteBuffer _bytes;
-    private CPacketWriteBuffer _writer;
+    private Assemble _writer;
     private CIOFrame _directFrame;
     int _wireLength;
     int _frameCount;
@@ -35,7 +35,7 @@ public final class CIOBufferEx {
         return _bytes;
     }
 
-    public CPacketWriteBuffer writer() {
+    public Assemble writer() {
         if (_active == 0 || _writer == null)
             throw new IllegalStateException("not an active SEND lease");
         return _writer;
@@ -53,7 +53,7 @@ public final class CIOBufferEx {
     }
 
     /** Re-arm the same pooled buffer for an existing IPacketWriter.writeData(). */
-    CPacketWriteBuffer beginPacket(Class<?> packetClass) {
+    Assemble beginPacket(Class<?> packetClass) {
         if (_active != 1 || _writer == null || _writePrepared)
             throw new IllegalStateException("not a reserved SEND packet slot");
         _writer.releaseResources();
@@ -83,7 +83,7 @@ public final class CIOBufferEx {
             _actionOnly = false;
             _ioPending = false;
             if (send) {
-                if (_writer == null) _writer = new CPacketWriteBuffer();
+                if (_writer == null) _writer = new Assemble();
                 _writer.armExternal(_bytes, 0, capacity);
                 _writer.beginDirect();
                 _writer.position(CIOBufferPool.HEADER_BYTES);
@@ -140,7 +140,7 @@ public final class CIOBufferEx {
     public static final class CIOFrame {
         private CUserSocket owner;
         private CIOBufferEx lease;
-        private CPacketWriteBuffer buffer;
+        private Assemble buffer;
         private boolean active;
         private boolean optional;
         private int reservedBytes;
@@ -148,7 +148,7 @@ public final class CIOBufferEx {
         private long reservedTicketId = -1L;
 
         CIOFrame() {}
-        public CPacketWriteBuffer buffer() { return buffer; }
+        public Assemble buffer() { return buffer; }
         void beginIO(CUserSocket owner, CIOBufferEx lease) {
             if (active) throw new IllegalStateException("outbound frame still reserved");
             this.owner = owner;

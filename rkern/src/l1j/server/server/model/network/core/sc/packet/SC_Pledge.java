@@ -9,7 +9,7 @@ import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -36,7 +36,7 @@ public final class SC_Pledge {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(167);
             buffer.writeS(clanName);
@@ -92,7 +92,7 @@ public final class SC_Pledge {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(170);
             buffer.writeC(page);
@@ -128,7 +128,7 @@ public final class SC_Pledge {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(169);
             buffer.writeS(targetName);
@@ -214,7 +214,7 @@ public final class SC_Pledge {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(0x8a);
             buffer.writeC(0x08);

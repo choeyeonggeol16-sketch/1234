@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-public class CPacketWriteBuffer {
+public class Assemble {
 
     /*
      * Class-scoped allocation hint, not a permanent maximum.
@@ -172,7 +172,7 @@ public class CPacketWriteBuffer {
 
     /*
      * 패킷마다 변경되는 값.
-     * CPacketWriteBuffer wrapper 재사용을 위해 final이 아니다.
+     * Assemble wrapper 재사용을 위해 final이 아니다.
      */
     private Class<?> _packetClass;
     private PacketSizeState _packetSizeState;
@@ -225,7 +225,7 @@ public class CPacketWriteBuffer {
     // -------------------------------------------------------------------------
 
     /** Client당 재사용되는 wrapper. 실제 backing은 RConnection이 arm한다. */
-    public CPacketWriteBuffer() {
+    public Assemble() {
         _packetClass = null;
         _packetSizeState = null;
         _sizeCacheClass0 = null;
@@ -316,7 +316,7 @@ public class CPacketWriteBuffer {
     public void beginPrepared() {
         if (_buf != null) {
             throw new IllegalStateException(
-                    "CPacketWriteBuffer still owns a backing buffer. detach() or releaseResources() was not called.");
+                    "Assemble still owns a backing buffer. detach() or releaseResources() was not called.");
         }
 
         final Class<?> packetClass = _preparedPacketClass;
@@ -325,7 +325,7 @@ public class CPacketWriteBuffer {
         if (packetClass == null || state == null) {
             clearPreparedPacketClass();
             throw new IllegalStateException(
-                    "CPacketWriteBuffer beginPrepared without preparePacketClass().");
+                    "Assemble beginPrepared without preparePacketClass().");
         }
 
         _packetClass = packetClass;
@@ -338,7 +338,7 @@ public class CPacketWriteBuffer {
             clearArm();
             clearPreparedPacketClass();
             throw new IllegalStateException(
-                    "CPacketWriteBuffer beginPrepared without registered SEND backing.");
+                    "Assemble beginPrepared without registered SEND backing.");
         }
 
         _buf = armed;
@@ -371,7 +371,7 @@ public class CPacketWriteBuffer {
 
         if (_buf != null) {
             throw new IllegalStateException(
-                    "CPacketWriteBuffer still owns a backing buffer. detach() or releaseResources() was not called.");
+                    "Assemble still owns a backing buffer. detach() or releaseResources() was not called.");
         }
 
         _packetClass = packetClass;
@@ -405,7 +405,7 @@ public class CPacketWriteBuffer {
             clearArm();
 
             throw new IllegalStateException(
-                    "CPacketWriteBuffer reset without registered SEND backing.");
+                    "Assemble reset without registered SEND backing.");
         }
 
         _buf = armed;
@@ -443,7 +443,7 @@ public class CPacketWriteBuffer {
 
         if (_buf != null) {
             throw new IllegalStateException(
-                    "CPacketWriteBuffer already owns an active backing buffer.");
+                    "Assemble already owns an active backing buffer.");
         }
 
         if (base < 0
@@ -552,7 +552,7 @@ public class CPacketWriteBuffer {
     private void ensureSizeSlow(int required) {
         if (_buf == null) {
             throw new IllegalStateException(
-                    "CPacketWriteBuffer is not initialized. reset() required.");
+                    "Assemble is not initialized. reset() required.");
         }
         recordOverflowSize(required);
 
@@ -1077,7 +1077,7 @@ public class CPacketWriteBuffer {
     public void beginDirect() {
         if (_buf != null) {
             throw new IllegalStateException(
-                    "CPacketWriteBuffer still owns a backing buffer.");
+                    "Assemble still owns a backing buffer.");
         }
 
         final ByteBuffer armed = _armedBuf;
@@ -1087,7 +1087,7 @@ public class CPacketWriteBuffer {
             clearArm();
             clearPreparedPacketClass();
             throw new IllegalStateException(
-                    "CPacketWriteBuffer beginDirect without backing.");
+                    "Assemble beginDirect without backing.");
         }
 
         _packetClass = null;

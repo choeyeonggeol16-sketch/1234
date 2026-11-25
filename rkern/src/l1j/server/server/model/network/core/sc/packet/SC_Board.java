@@ -17,7 +17,7 @@ import java.util.List;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.templates.L1BoardPost;
 
 public final class SC_Board {
@@ -163,7 +163,7 @@ public final class SC_Board {
 		_bugRaceNodes = bugRaceNodes;
 	}
 
-	private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
+	private void writeImpl(CUserSocket client, Assemble buffer) {
 		switch (_mode) {
 		case 1: { // 일반 게시판 패킷 구조
 			buffer.writeC(Opcodes.S_BOARD_LIST);
@@ -284,7 +284,7 @@ public final class SC_Board {
 			writeImpl(client, frame.buffer());
 			committed = conn.commitDirectFrame(frame);
 			return committed;
-		} catch (CPacketWriteBuffer.RegisteredCapacityExceededException e) {
+		} catch (Assemble.RegisteredCapacityExceededException e) {
 			LOG.warning("SC_Board capacity calculation overflow mode=" + _mode
 					+ " requested=" + capacity);
 			return false;

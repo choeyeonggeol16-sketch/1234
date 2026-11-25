@@ -8,7 +8,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.config.CIOConfig;
@@ -91,7 +91,7 @@ public final class SC_PremiumShopSellList {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_BUY_LIST);
             buffer.writeD(objId);
             buffer.writeH(count);
@@ -115,7 +115,7 @@ public final class SC_PremiumShopSellList {
             }
             committed = connection.commitDirectFrame(frame);
             return committed;
-        } catch (CPacketWriteBuffer.RegisteredCapacityExceededException e) {
+        } catch (Assemble.RegisteredCapacityExceededException e) {
             System.err.println("[RPremiumShopSellList] SEND capacity exceeded npcId="
                     + npcId + " reserved=" + capacity
                     + " written=" + frame.buffer().position());
@@ -129,7 +129,7 @@ public final class SC_PremiumShopSellList {
         return npcId == 900107 ? 4 : 2;
     }
 
-    private static void writePremiumShopTail(CPacketWriteBuffer buffer, int npcId) {
+    private static void writePremiumShopTail(Assemble buffer, int npcId) {
         if (npcId == 7200002) {
             buffer.writeC(253);
             buffer.writeC(255);

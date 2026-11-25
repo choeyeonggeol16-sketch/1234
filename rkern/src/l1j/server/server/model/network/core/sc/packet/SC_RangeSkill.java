@@ -5,7 +5,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -91,7 +91,7 @@ public final class SC_RangeSkill {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer b = frame.buffer();
+            final Assemble b = frame.buffer();
             b.writeC(Opcodes.S_ATTACK_MANY);
             b.writeC(action);
             b.writeD(id);

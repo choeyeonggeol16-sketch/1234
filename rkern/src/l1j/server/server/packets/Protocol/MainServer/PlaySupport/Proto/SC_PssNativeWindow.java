@@ -1,7 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.PlaySupport.Proto;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -27,7 +27,7 @@ public final class SC_PssNativeWindow {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(TYPE);
             buffer.writeC(0x08);  // field 1: native-ignored result, never VALID

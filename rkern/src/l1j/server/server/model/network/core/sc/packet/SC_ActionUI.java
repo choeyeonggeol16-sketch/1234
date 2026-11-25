@@ -9,7 +9,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -125,7 +125,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeC(code);
             switch (code) {
@@ -161,7 +161,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(type);
             switch (type) {
@@ -197,7 +197,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(180);
             buffer.writeH(TAM);
             buffer.writeC(8);
@@ -218,7 +218,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeC(0x19);
             buffer.writeC(2);
@@ -259,7 +259,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(339);
             if (flag != null) buffer.writeByte(flag);
@@ -288,7 +288,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(MONSTER_BOOK_WEEK_QUEST);
             buffer.writeByte(QUEST_BYTES);
@@ -346,7 +346,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer out = frame.buffer();
+            final Assemble out = frame.buffer();
             out.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             out.writeH(ProtoMsg.SC_NOTIFICATION_INFO_NOTI);
             out.writeC(8);   // max page count
@@ -426,7 +426,7 @@ public final class SC_ActionUI {
         return size;
     }
 
-    private static void writeShop(CPacketWriteBuffer out, ShopEntry e, int pcId,
+    private static void writeShop(Assemble out, ShopEntry e, int pcId,
                                   long start, long end, int npcId) {
         out.writeC(0x1A); // notificationinfo, field 3
         out.writeBit(shopEntrySize(e, pcId, start, end, npcId));
@@ -454,7 +454,7 @@ public final class SC_ActionUI {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer out = frame.buffer();
+            final Assemble out = frame.buffer();
             out.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             out.writeH(ProtoMsg.SC_NOTIFICATION_CHANGE_NOTI);
             out.writeC(0x08); out.writeBit(EVENT_ADEN_SHOP);

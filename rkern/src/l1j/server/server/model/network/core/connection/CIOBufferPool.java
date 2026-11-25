@@ -6,7 +6,7 @@ import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 
 /** Bounded, lazy direct-buffer slots shared by async I/O connections. */
 public final class CIOBufferPool {
@@ -110,7 +110,7 @@ public final class CIOBufferPool {
         return rows;
     }
 
-    /** Each slot and its CPacketWriteBuffer are reused; no per-packet CIOBufferEx is allocated. */
+    /** Each slot and its Assemble are reused; no per-packet CIOBufferEx is allocated. */
     static final class Bucket {
         final int _bytes;
         final CIOSlotPool _slots;

@@ -7,7 +7,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.collection.CollectionSpell;
 import l1j.server.server.model.item.collection.loader.CollectionSpellLoader;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -231,7 +231,7 @@ public final class SC_InventoryIcon {
         }
     }
 
-    private static void writePayload(CPacketWriteBuffer buffer, int packetType, int priority, int type,
+    private static void writePayload(Assemble buffer, int packetType, int priority, int type,
                                      int skillId, int showType, long time, boolean good,
                                      int gfx, int tooltip, int startId, int endId) {
         buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);

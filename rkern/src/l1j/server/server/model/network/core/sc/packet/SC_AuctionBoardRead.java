@@ -9,7 +9,7 @@ import java.util.Calendar;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import java.nio.charset.Charset;
@@ -167,7 +167,7 @@ private Data(int objectId, String houseNumber, String houseName, String location
 		_hasData = hasData;
 	}
 
-private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
+private void writeImpl(CUserSocket client, Assemble buffer) {
 		if (!_hasData) {
 			return;
 		}

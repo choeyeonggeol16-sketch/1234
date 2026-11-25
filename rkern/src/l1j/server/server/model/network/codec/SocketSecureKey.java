@@ -3,8 +3,8 @@ package l1j.server.server.model.network.codec;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import l1j.server.server.model.network.buffer.CPacketReadBuffer;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Disassemble;
+import l1j.server.server.model.network.buffer.Assemble;
 
 /**********************************
  * Network Server SocketSecureKey
@@ -70,7 +70,7 @@ public class SocketSecureKey {
      * the wire buffer. A full decrypt must still advance the cipher exactly once.
      * The NIO.2 READ pump serializes these accesses for each connection.
      */
-    public int peekOpcode(CPacketReadBuffer buffer, int offset, int size) {
+    public int peekOpcode(Disassemble buffer, int offset, int size) {
         if (size < 8) return -1;
         final int c3 = (buffer.readByte(offset + 3) & 0xff)
                 ^ (int) ((_dk0 >>> 16) & 0xffL);
@@ -78,7 +78,7 @@ public class SocketSecureKey {
                 ^ (int) (_dk1 & 0xffL) ^ c3) & 0xff;
     }
 
-    /** Serialized READ view: preview without creating/resetting a CPacketReadBuffer. */
+    /** Serialized READ view: preview without creating/resetting a Disassemble. */
     public int peekOpcode(ByteBuffer wire, int start, int size) {
         if (size < 8) return -1;
         final int c3 = (wire.get(start + 3) & 0xff)
@@ -112,7 +112,7 @@ public class SocketSecureKey {
      * encrypted size N -> plaintext logical size N - 4.
      * 마지막 4바이트는 0으로 지우며 ReadHandler가 limit을 N - 4로 줄인다.
      */
-    public void decrypt(CPacketReadBuffer buffer, int offset, int size) {
+    public void decrypt(Disassemble buffer, int offset, int size) {
         if (size < 8) {
             throw new IllegalArgumentException("Invalid encrypted packet size: " + size);
         }
@@ -213,7 +213,7 @@ public class SocketSecureKey {
      * Encrypt consecutive 8-byte action frames in wire order.
      * The offset points to the first length header, relative to the writer.
      */
-    public void encryptActionBurst(CPacketWriteBuffer writer, int frameOffset, int frameCount) {
+    public void encryptActionBurst(Assemble writer, int frameOffset, int frameCount) {
         if (frameCount <= 0) return;
         final ByteBuffer buffer = writer.getBuffer();
         if (buffer.order() != ByteOrder.LITTLE_ENDIAN) {
@@ -248,7 +248,7 @@ public class SocketSecureKey {
     /**
      * 송신 암호화.
      */
-    public void encrypt(CPacketWriteBuffer wb, int offset, int size) {
+    public void encrypt(Assemble wb, int offset, int size) {
         if (size <= 0) {
             return;
         }

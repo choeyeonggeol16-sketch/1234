@@ -14,7 +14,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
-import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.buffer.Disassemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_ActionUi;
 import l1j.server.server.model.network.core.cs.packet.CS_AddBuddy;
@@ -119,7 +119,7 @@ public final class UserPacketCallbackMap {
 
     @FunctionalInterface
     public interface PacketFunc {
-        boolean execute(CPacketReadBuffer buffer, CUserSocket client);
+        boolean execute(Disassemble buffer, CUserSocket client);
     }
 
     // Static, per-process function pointers. No per-packet allocations.
@@ -411,7 +411,7 @@ public final class UserPacketCallbackMap {
     // 문 / 상자 열기 (OPEN)
     // ------------------------------------------------------------------
 
-    static boolean decodeOpen(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeOpen(Disassemble buffer, CUserSocket client) {
 
         if (buffer.remaining() < 8) {
             return true;
@@ -435,7 +435,7 @@ public final class UserPacketCallbackMap {
     // 이동 (MOVE)
     // ------------------------------------------------------------------
 
-    static boolean MoveToLocationPacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean MoveToLocationPacket(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 5) {
             return true;
         }
@@ -457,7 +457,7 @@ public final class UserPacketCallbackMap {
     // 공격 / 원거리 공격 (ATTACK / FAR ATTACK)
     // ------------------------------------------------------------------
 
-    static boolean AttackPacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean AttackPacket(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 8) {
             return true;
         }
@@ -479,7 +479,7 @@ public final class UserPacketCallbackMap {
     // 자동 공격 (AUTO ATTACK)
     // ------------------------------------------------------------------
 
-    static boolean decodeAutoAttack(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeAutoAttack(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 4) {
             return true;
         }
@@ -499,7 +499,7 @@ public final class UserPacketCallbackMap {
     // 스킬 사용 (USE SKILL)
     // ------------------------------------------------------------------
 
-    static boolean MagicSkillUsePacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean MagicSkillUsePacket(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 2) {
             return true;
         }
@@ -584,7 +584,7 @@ public final class UserPacketCallbackMap {
     // 아이템 줍기 (PICKUP)
     // ------------------------------------------------------------------
 
-    static boolean GetItemPacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean GetItemPacket(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 12) {
             return true;
         }
@@ -601,7 +601,7 @@ public final class UserPacketCallbackMap {
     // 방향 전환 (CHANGE HEADING)
     // ------------------------------------------------------------------
 
-    static boolean decodeChangeHeading(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeChangeHeading(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 1) {
             return true;
         }
@@ -615,7 +615,7 @@ public final class UserPacketCallbackMap {
     // 채팅 (CHAT)
     // ------------------------------------------------------------------
 
-    static boolean SayPacket2(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean SayPacket2(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 1) {
             return true;
         }
@@ -625,7 +625,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean LoginPacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean LoginPacket(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -654,7 +654,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean EnterWorldPacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean EnterWorldPacket(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -666,7 +666,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    private static int findCStringEnd(CPacketReadBuffer buffer, int start, int limit) {
+    private static int findCStringEnd(Disassemble buffer, int start, int limit) {
         for (int i = start; i < limit; i++) {
             if (buffer.readByte(i) == 0) {
                 return i;
@@ -679,7 +679,7 @@ public final class UserPacketCallbackMap {
     // 문자열 유틸리티 (String)
     // ------------------------------------------------------------------
 
-    private static String readCStringMs949(CPacketReadBuffer buffer, int index, int available) {
+    private static String readCStringMs949(Disassemble buffer, int index, int available) {
         if (available <= 0) {
             return "";
         }
@@ -702,7 +702,7 @@ public final class UserPacketCallbackMap {
         return new String(scratch, 0, length, MS949);
     }
 
-    static boolean decodeEnterPortal(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeEnterPortal(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 4) {
             return true;
         }
@@ -713,7 +713,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeAnswer(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeAnswer(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -816,7 +816,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean CharacterCreatePacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean CharacterCreatePacket(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -849,7 +849,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeChannel(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeChannel(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1026,7 +1026,7 @@ public final class UserPacketCallbackMap {
         }
     }
 
-    private static PasswordRead readSecondPassword(CPacketReadBuffer buffer, int start, int limit) {
+    private static PasswordRead readSecondPassword(Disassemble buffer, int start, int limit) {
         if (start >= limit) {
             return new PasswordRead(false, start, null);
         }
@@ -1052,7 +1052,7 @@ public final class UserPacketCallbackMap {
         return new PasswordRead(true, end, new String(chars));
     }
 
-    static boolean CharacterDeletePacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean CharacterDeletePacket(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1070,7 +1070,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean DestroyItem(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean DestroyItem(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 4) {
             return true;
@@ -1113,7 +1113,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeGiveItem(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeGiveItem(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 16) {
             return true;
         }
@@ -1127,7 +1127,7 @@ public final class UserPacketCallbackMap {
 
     private static final int EMBLEM_SIZE = 384;
 
-    static boolean decodeUploadEmblem(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeUploadEmblem(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < EMBLEM_SIZE) {
             return true;
         }
@@ -1140,7 +1140,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeBookmark(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBookmark(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1161,7 +1161,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeNpcTalk(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeNpcTalk(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 4) {
             return true;
         }
@@ -1171,7 +1171,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeCreatePledge(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeCreatePledge(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1205,7 +1205,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeReturnStatus(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeReturnStatus(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1251,7 +1251,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeWar(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeWar(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -1270,7 +1270,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeDeleteBookmark(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeDeleteBookmark(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize <= 0) {
             return true;
@@ -1291,7 +1291,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodePersonalShop(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodePersonalShop(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1317,7 +1317,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeWho(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeWho(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String targetName = null;
 
@@ -1339,7 +1339,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeBuySpell(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBuySpell(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -1382,7 +1382,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeExtraCommand(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeExtraCommand(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 1) {
             return true;
         }
@@ -1392,7 +1392,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean DropItemPacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean DropItemPacket(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 4) {
             return true;
@@ -1429,7 +1429,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeSaveIo(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeSaveIo(Disassemble buffer, CUserSocket client) {
         if (!Config.CHARACTER_CONFIG_IN_SERVER_SIDE) {
             return true;
         }
@@ -1457,7 +1457,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean HtmlCMDPacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean HtmlCMDPacket(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 5) {
             return true;
@@ -1523,7 +1523,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeChatPartyControl(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeChatPartyControl(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1554,7 +1554,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean UseItemPacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean UseItemPacket(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 4) {
             return true;
@@ -1613,7 +1613,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeMarriage(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeMarriage(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 1) {
             return true;
         }
@@ -1626,7 +1626,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeSlaveControl(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeSlaveControl(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 9) {
             return true;
         }
@@ -1637,7 +1637,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeRankControl(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeRankControl(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 2) {
             return true;
@@ -1664,7 +1664,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeHypertextInputResult(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeHypertextInputResult(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 10) {
             return true;
@@ -1698,7 +1698,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeBuySell(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBuySell(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 7) {
             return true;
@@ -1726,7 +1726,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeNpcItemControl(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeNpcItemControl(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 6) {
             return true;
         }
@@ -1739,7 +1739,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeInvitePartyTarget(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeInvitePartyTarget(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1777,7 +1777,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeCheckInventory(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeCheckInventory(Disassemble buffer, CUserSocket client) {
         if (buffer.remaining() < 4) {
             return true;
         }
@@ -1788,7 +1788,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeOnOff(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeOnOff(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int type = 0, button = 0;
 
@@ -1803,7 +1803,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeQueryCastleSecurity(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeQueryCastleSecurity(Disassemble buffer, CUserSocket client) {
         int objId = 0;
         if (buffer.remaining() >= 4) {
             objId = buffer.readInt(1);
@@ -1813,7 +1813,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeWarehouseControl(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeWarehouseControl(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         if (payloadSize < 1) {
             return true;
@@ -1847,11 +1847,11 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    private static int readCH3(CPacketReadBuffer buffer, int offset) {
+    private static int readCH3(Disassemble buffer, int offset) {
         return (buffer.readByte(offset) & 0xFF) | ((buffer.readByte(offset + 1) & 0xFF) << 8) | ((buffer.readByte(offset + 2) & 0xFF) << 16);
     }
 
-    static boolean decodeEmblem(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeEmblem(Disassemble buffer, CUserSocket client) {
         int emblemId = 0;
         if (buffer.remaining() >= 4) {
             emblemId = buffer.readInt(1);
@@ -1861,7 +1861,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeQueryPersonalShop(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeQueryPersonalShop(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int type = 0, objectId = 0;
 
@@ -1876,7 +1876,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean TradeAddItemsPacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean TradeAddItemsPacket(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int itemObjectId = 0, itemCount = 0;
 
@@ -1891,7 +1891,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeChangeCastleSecurity(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeChangeCastleSecurity(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objId = 0, type = 0;
 
@@ -1906,7 +1906,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean FriendRemove(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean FriendRemove(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String charName = null;
 
@@ -1923,7 +1923,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeBanishParty(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBanishParty(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String memberName = null;
 
@@ -1940,7 +1940,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeBoardDelete(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBoardDelete(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objId = 0, topicId = 0;
 
@@ -1955,7 +1955,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeBoardWrite(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBoardWrite(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int id = 0;
         String title = null, content = null;
@@ -1984,7 +1984,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeTax(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeTax(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int taxRate = 0;
 
@@ -1996,7 +1996,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeDeposit(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeDeposit(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int targetId = 0, amount = 0;
 
@@ -2011,7 +2011,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeBoardList(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBoardList(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objId = 0, topicNumber = 0;
 
@@ -2026,7 +2026,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeMail(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeMail(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int type = 0;
 
@@ -2118,7 +2118,7 @@ public final class UserPacketCallbackMap {
     }
 
 
-    private static int findMailCStringEnd(CPacketReadBuffer buffer, int start, int limit) {
+    private static int findMailCStringEnd(Disassemble buffer, int start, int limit) {
         for (int pos = start; pos < limit; pos++) {
             if (buffer.readByte(pos) == 0) {
                 return pos;
@@ -2127,7 +2127,7 @@ public final class UserPacketCallbackMap {
         return limit;
     }
 
-    private static String readMailCStringEucKr(CPacketReadBuffer buffer, int start, int end) {
+    private static String readMailCStringEucKr(Disassemble buffer, int start, int end) {
         final byte[] temp = FIXED_STRING_SCRATCH.get();
         final int length = Math.min(end - start, temp.length);
 
@@ -2137,7 +2137,7 @@ public final class UserPacketCallbackMap {
         return new String(temp, 0, length, EUC_KR);
     }
 
-    private static int findMailSsNext(CPacketReadBuffer buffer, int start, int limit) {
+    private static int findMailSsNext(Disassemble buffer, int start, int limit) {
         int pos = start;
         int guard = 0;
 
@@ -2156,7 +2156,7 @@ public final class UserPacketCallbackMap {
         return pos;
     }
 
-    private static String readMailSs(CPacketReadBuffer buffer, int start, int next) {
+    private static String readMailSs(Disassemble buffer, int start, int next) {
         final byte[] temp = FIXED_STRING_SCRATCH.get();
         int end = next;
 
@@ -2187,7 +2187,7 @@ public final class UserPacketCallbackMap {
     }
 
 
-    private static String readCStringEucKr(CPacketReadBuffer buffer, int start, int end) {
+    private static String readCStringEucKr(Disassemble buffer, int start, int end) {
         final int rawLength = end - start;
         if (rawLength <= 0) {
             return "";
@@ -2202,7 +2202,7 @@ public final class UserPacketCallbackMap {
         return new String(temp, 0, length, EUC_KR);
     }
 
-    static boolean decodePledgeContent(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodePledgeContent(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int data = 0;
         String content = null;
@@ -2226,7 +2226,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeCallPlayer(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeCallPlayer(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String name = null;
 
@@ -2245,7 +2245,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeBanMember(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBanMember(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String targetName = null;
 
@@ -2264,7 +2264,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeExchangeableSpell(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeExchangeableSpell(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int value = 0;
 
@@ -2276,7 +2276,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeWithdraw(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeWithdraw(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int drawAmount = 0;
 
@@ -2288,7 +2288,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeAddBuddy(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeAddBuddy(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String charName = null;
 
@@ -2307,7 +2307,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeBuyableSpell(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBuyableSpell(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int id = 0;
 
@@ -2319,7 +2319,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodePlate(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodePlate(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objectId = 0;
 
@@ -2331,7 +2331,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeFix(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeFix(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int itemObjectId = 0, npcObjectId = 0;
 
@@ -2346,7 +2346,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
 
-    static boolean decodeExtended(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeExtended(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int type = 0;
 
@@ -2408,7 +2408,7 @@ public final class UserPacketCallbackMap {
     }
 
     
-    static boolean decodePledgeWatch(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodePledgeWatch(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int data = 0;
         String targetClanName = null;
@@ -2432,7 +2432,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
     
-    static boolean decodeBoardRead(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeBoardRead(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int objId = 0;
         int topicNumber = 0;
@@ -2449,7 +2449,7 @@ public final class UserPacketCallbackMap {
     }
 
     
-    static boolean GiveNicknamePacket(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean GiveNicknamePacket(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         String charName = null;
         String title = null;
@@ -2484,7 +2484,7 @@ public final class UserPacketCallbackMap {
     
     
     
-    static boolean decodeExchangeSpell(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeExchangeSpell(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
         int count = 0;
 
@@ -2553,7 +2553,7 @@ public final class UserPacketCallbackMap {
 
     private static final ThreadLocal<byte[]> CRAFT_STRING_BUFFER = ThreadLocal.withInitial(() -> new byte[256]);
     
-    private static boolean dispatchExtendedProto(CPacketReadBuffer buffer, CUserSocket client, int payloadSize) {
+    private static boolean dispatchExtendedProto(Disassemble buffer, CUserSocket client, int payloadSize) {
         final byte[] frames = new byte[payloadSize + 1];
         frames[0] = (byte) (Opcodes.C_EXTENDED_PROTOBUF & 0xFF);
 
@@ -2582,7 +2582,7 @@ public final class UserPacketCallbackMap {
         }
     }
     
-    private static boolean decodeCraft(CPacketReadBuffer buffer, CUserSocket client, int type, int payloadSize) {
+    private static boolean decodeCraft(Disassemble buffer, CUserSocket client, int type, int payloadSize) {
         final int limit = 1 + payloadSize;
 
         /*
@@ -2873,7 +2873,7 @@ public final class UserPacketCallbackMap {
      * high 32bit = next position
      * low  32bit = decoded value
      */
-    private static long readCraftVarInt(CPacketReadBuffer buffer, int pos, int limit) {
+    private static long readCraftVarInt(Disassemble buffer, int pos, int limit) {
         if (pos >= limit) {
             return ((long) pos << 32);
         }
@@ -2896,7 +2896,7 @@ public final class UserPacketCallbackMap {
         return ((long) current << 32) | (value & 0xFFFFFFFFL);
     }
     
-    static boolean decodeExtendedMultiplexed(CPacketReadBuffer buffer, CUserSocket client) {
+    static boolean decodeExtendedMultiplexed(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
 
         if (payloadSize < 2) {
@@ -2937,7 +2937,7 @@ public final class UserPacketCallbackMap {
     private static final byte[] EMPTY_BYTES = new byte[0];
     private static final char[] HEX = "0123456789ABCDEF".toCharArray();
     
-    private static boolean decodeActionUi(CPacketReadBuffer buffer, CUserSocket client, int type, int payloadSize) {
+    private static boolean decodeActionUi(Disassemble buffer, CUserSocket client, int type, int payloadSize) {
         final int limit = 1 + payloadSize;
 
  
@@ -3219,7 +3219,7 @@ public final class UserPacketCallbackMap {
         return true;
     }
     
-    private static String readActionHex(CPacketReadBuffer buffer, int pos, int size, int limit) {
+    private static String readActionHex(Disassemble buffer, int pos, int size, int limit) {
         if (size <= 0) {
             return "";
         }
@@ -3242,7 +3242,7 @@ public final class UserPacketCallbackMap {
      * high 32bit = next position
      * low  32bit = value
      */
-    private static long readActionVarInt(CPacketReadBuffer buffer, int pos, int limit) {
+    private static long readActionVarInt(Disassemble buffer, int pos, int limit) {
         if (pos >= limit) {
             return ((long) pos << 32);
         }
@@ -3264,7 +3264,7 @@ public final class UserPacketCallbackMap {
         return ((long) current << 32) | (value & 0xFFFFFFFFL);
     }
     
-    private static String readActionFixedEucKr(CPacketReadBuffer buffer, int pos, int requestedLength, int limit) {
+    private static String readActionFixedEucKr(Disassemble buffer, int pos, int requestedLength, int limit) {
         if (requestedLength <= 0 || pos >= limit) {
             return null;
         }

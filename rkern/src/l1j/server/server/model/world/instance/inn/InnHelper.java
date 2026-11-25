@@ -12,7 +12,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.templates.L1Item;
@@ -216,7 +216,7 @@ public class InnHelper {
         if (frame == null) return false;
         boolean done = false;
         try {
-            final CPacketWriteBuffer b = frame.buffer();
+            final Assemble b = frame.buffer();
             b.writeC(Opcodes.S_HYPERTEXT);
             b.writeD(objId);
             b.writeS(html);
@@ -241,7 +241,7 @@ public class InnHelper {
         if (frame == null) return false;
         boolean done = false;
         try {
-            final CPacketWriteBuffer b = frame.buffer();
+            final Assemble b = frame.buffer();
             b.writeC(Opcodes.S_HYPERTEXT_INPUT);
             b.writeD(objId);
             b.writeD(cost); b.writeD(1); b.writeD(1); b.writeD(MAX_RENTAL_KEYS); b.writeH(0);
@@ -267,7 +267,7 @@ public class InnHelper {
         if (frame == null) return false;
         boolean done = false;
         try {
-            final CPacketWriteBuffer b = frame.buffer();
+            final Assemble b = frame.buffer();
             b.writeC(Opcodes.S_HYPERTEXT);
             b.writeD(objId); b.writeS("inn20"); b.writeH(1); b.writeH(2);
             b.writeS(name); b.writeS(cost);

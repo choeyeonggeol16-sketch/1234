@@ -5,7 +5,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 
 public final class SC_ServerMessage {
 
@@ -63,7 +63,7 @@ public final class SC_ServerMessage {
         }
     }
 
-    private static void writeContent(CPacketWriteBuffer buffer, int type, String msg1, String msg2, String msg3, String msg4, String msg5) {
+    private static void writeContent(Assemble buffer, int type, String msg1, String msg2, String msg3, String msg4, String msg5) {
         buffer.writeC(Opcodes.S_MESSAGE_CODE);
         buffer.writeH(type);
         final int count = (msg1 != null ? 1 : 0) + (msg2 != null ? 1 : 0) + (msg3 != null ? 1 : 0) + (msg4 != null ? 1 : 0) + (msg5 != null ? 1 : 0);
@@ -85,7 +85,7 @@ public final class SC_ServerMessage {
 
     /**
      * Wire-compatible single-parameter message-code packet for shared fanout.
-     * The same MS949 bytes and terminating NUL as CPacketWriteBuffer.writeS.
+     * The same MS949 bytes and terminating NUL as Assemble.writeS.
      */
 
     public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int type) {

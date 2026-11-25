@@ -9,7 +9,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.combat.statistics.Kda;
 import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -85,7 +85,7 @@ public final class SC_ChartRank {
     }
 
 
-    /** CPacketWriteBuffer.writeBit uses 32-bit unsigned semantics for negatives. */
+    /** Assemble.writeBit uses 32-bit unsigned semantics for negatives. */
     private static void putBit(java.nio.ByteBuffer out,long value){
         if(value<0L)value &= 0xffffffffL;
         while((value & ~0x7fL)!=0L){
@@ -105,7 +105,7 @@ public final class SC_ChartRank {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer out = frame.buffer();
+            final Assemble out = frame.buffer();
             out.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             out.writeH(SC_BASECAMP_CHART_NOTI_PACKET);
             if (snapshot.zero) {

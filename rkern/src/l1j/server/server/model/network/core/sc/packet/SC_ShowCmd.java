@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.sc.packet;
 import java.nio.charset.Charset;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -77,7 +77,7 @@ public final class SC_ShowCmd {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer out = frame.buffer();
+            final Assemble out = frame.buffer();
             out.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             out.writeH(mode == PK ? 0x247 : mode == MOVIE ? 0x245 : mode == TEXT ? 0x47 : opcode);
             switch (mode) {
@@ -107,7 +107,7 @@ public final class SC_ShowCmd {
         }
     }
 
-    private static void writeS2(CPacketWriteBuffer out, byte[] bytes) {
+    private static void writeS2(Assemble out, byte[] bytes) {
         out.writeC(bytes.length);
         out.writeByte(bytes);
     }

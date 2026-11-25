@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * 패킷 수신용 ByteBuffer wrapper.
  */
-public final class CPacketReadBuffer {
+public final class Disassemble {
 
     private ByteBuffer _buf;
 
@@ -25,7 +25,7 @@ public final class CPacketReadBuffer {
     /** payload 기준 mark. */
     private int _mark = -1;
 
-    public CPacketReadBuffer() {
+    public Disassemble() {
     }
 
     /**
@@ -33,7 +33,7 @@ public final class CPacketReadBuffer {
      * ByteOrder까지 여기서 확정한다.
      */
     public void reset(ByteBuffer buffer, int base, int length) {
-        Objects.requireNonNull(buffer, "CPacketReadBuffer buffer must not be null");
+        Objects.requireNonNull(buffer, "Disassemble buffer must not be null");
 
         if (base < 0 || length < 0 || base > buffer.capacity() - length) {
             throw new IndexOutOfBoundsException(

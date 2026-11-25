@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import java.nio.charset.Charset;
@@ -91,7 +91,7 @@ public final class SC_RetrieveList {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer b = frame.buffer();
+            final Assemble b = frame.buffer();
             b.writeC(Opcodes.S_RETRIEVE_LIST);
             b.writeD(objId);
             b.writeH(count);

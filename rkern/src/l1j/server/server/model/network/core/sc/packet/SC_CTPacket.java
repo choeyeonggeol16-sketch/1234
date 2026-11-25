@@ -11,7 +11,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.item.collection.CollectionCharInfo;
 import l1j.server.server.model.item.collection.CollectionItem;
 import l1j.server.server.model.item.collection.CollectionSpell;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -199,7 +199,7 @@ public boolean send(CUserSocket client) {
 		}
 	}
 
-private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
+private void writeImpl(CUserSocket client, Assemble buffer) {
 		switch (_mode) {
 		case MODE_CHAR_INFO:
 			buffer.writeC(Opcodes.S_BOARD_READ);

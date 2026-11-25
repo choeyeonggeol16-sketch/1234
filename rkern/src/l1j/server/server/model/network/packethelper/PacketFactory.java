@@ -68,7 +68,7 @@ public class PacketFactory {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final l1j.server.server.model.network.buffer.CPacketWriteBuffer buffer = frame.buffer();
+            final l1j.server.server.model.network.buffer.Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(0x48);
             committed = connection.commitDirectFrame(frame);
@@ -88,7 +88,7 @@ public class PacketFactory {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final l1j.server.server.model.network.buffer.CPacketWriteBuffer buffer = frame.buffer();
+            final l1j.server.server.model.network.buffer.Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EVENT);
             buffer.writeC(0x47);
             buffer.writeH((int) seconds);

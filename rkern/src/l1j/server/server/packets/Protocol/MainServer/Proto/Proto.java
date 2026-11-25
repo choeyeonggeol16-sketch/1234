@@ -4,7 +4,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 
 public final class Proto {
 
@@ -27,7 +27,7 @@ public final class Proto {
         final CIOFrame frame = connection.beginDirectFrame(maxWireBytes);
         if (frame == null) return null;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeH(messageId);
             final ProtoWriter writer = ProtoWriter.direct(buffer);

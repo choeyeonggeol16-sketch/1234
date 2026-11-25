@@ -9,7 +9,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.buffer.Disassemble;
 import l1j.server.server.model.network.core.transport.selector.CSelectorBufferPool;
 import l1j.server.server.model.network.core.transport.selector.CSelectorFrameReader;
 
@@ -58,7 +58,7 @@ public final class SelectorFrameReaderTest {
             remainder.put(first.slice(3, 2)).put(wireFrame(2, 17)).put(wireFrame(2, 27)).flip();
             conn.send(remainder);
             conn.receive(10);
-            CPacketReadBuffer[] borrowed = new CPacketReadBuffer[1];
+            Disassemble[] borrowed = new Disassemble[1];
             check(conn.reader.drain(8, frame -> {
                 borrowed[0] = frame;
                 return !checkPayload(frame, 3, 7);
@@ -140,7 +140,7 @@ public final class SelectorFrameReaderTest {
         }
     }
 
-    private static boolean checkPayload(CPacketReadBuffer frame, int length, int seed) {
+    private static boolean checkPayload(Disassemble frame, int length, int seed) {
         check(frame.remaining() == length, "payload length");
         for (int i = 0; i < length; i++) {
             check(frame.readByte() == payloadByte(seed, i), "payload byte");

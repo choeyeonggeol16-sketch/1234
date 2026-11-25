@@ -6,21 +6,21 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 
-import l1j.server.server.model.network.buffer.CPacketReadBuffer;
+import l1j.server.server.model.network.buffer.Disassemble;
 
 /** Receive state for one connection, owned by its Selector thread. */
 public final class CSelectorFrameReader implements AutoCloseable {
     @FunctionalInterface
     public interface Handler {
         /** Consume the borrowed payload before returning. Return false to pause after this frame. */
-        boolean onFrame(CPacketReadBuffer frame) throws IOException;
+        boolean onFrame(Disassemble frame) throws IOException;
     }
 
     private static final int HEADER_BYTES = Short.BYTES;
 
     private final CSelectorBufferPool pool;
     private final Thread owner = Thread.currentThread();
-    private final CPacketReadBuffer frame = new CPacketReadBuffer();
+    private final Disassemble frame = new Disassemble();
     private CSelectorBufferPool.Lease lease;
     private int readOffset;
     private boolean dispatching;

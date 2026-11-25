@@ -5,8 +5,8 @@ import java.lang.invoke.VarHandle;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.model.network.buffer.CPacketReadBuffer;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Disassemble;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.codec.SocketSecureKey;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.Connection;
@@ -72,12 +72,12 @@ public abstract class CSocket extends CIOSocket {
     public abstract void disconnect();
     public abstract int incrementEmptyPacketCount();
     public abstract void resetEmptyPacketCount();
-    abstract boolean dispatchPlaintext(CPacketReadBuffer decoded);
+    abstract boolean dispatchPlaintext(Disassemble decoded);
     abstract void beginReadPassSendBurst();
     abstract void endReadPassSendBurst();
 
     private static final class DecodeState {
-        final CPacketReadBuffer buffer = new CPacketReadBuffer();
+        final Disassemble buffer = new Disassemble();
         boolean active;
         DecodeState nested;
     }
@@ -103,7 +103,7 @@ public abstract class CSocket extends CIOSocket {
         _handshakePlainPending = false;
         _cryptor = null;
     }
-    public boolean encrypt(CPacketWriteBuffer buffer, int offset, int length) {
+    public boolean encrypt(Assemble buffer, int offset, int length) {
         if (_handshakePlainPending) {
             _handshakePlainPending = false;
             return true;
@@ -118,7 +118,7 @@ public abstract class CSocket extends CIOSocket {
             return false;
         }
     }
-    private boolean encryptActionBurst(CPacketWriteBuffer writer, int frameCount) {
+    private boolean encryptActionBurst(Assemble writer, int frameCount) {
         int frameOffset = 0;
         if (_handshakePlainPending) {
             _handshakePlainPending = false;
@@ -136,7 +136,7 @@ public abstract class CSocket extends CIOSocket {
         }
     }
 
-    public boolean decrypt(CPacketReadBuffer buffer, int offset, int length) {
+    public boolean decrypt(Disassemble buffer, int offset, int length) {
         final SocketSecureKey cipher = _cryptor;
         if (cipher == null) return true;
         try {
@@ -153,7 +153,7 @@ public abstract class CSocket extends CIOSocket {
      * Each packed frame is encrypted individually in wire order.
      */
     final boolean preparePackedEncryption(CIOBufferEx lease) {
-        final CPacketWriteBuffer writer = lease.writer();
+        final Assemble writer = lease.writer();
         final int length = lease.wireLength();
         if (lease._actionOnly) {
             final int frameCount = lease._frameCount;
@@ -402,7 +402,7 @@ public abstract class CSocket extends CIOSocket {
         // state, including filtered and unknown opcodes. Do not preview first.
         final DecodeState state = acquireDecodeState();
         try {
-            final CPacketReadBuffer decoded = state.buffer;
+            final Disassemble decoded = state.buffer;
             decoded.resetTrusted(wire, bodyStart, bodyLength);
             if (decrypt(decoded, 0, bodyLength)) {
                 int bytes = bodyLength - 4;
@@ -971,7 +971,7 @@ public abstract class CSocket extends CIOSocket {
             final ByteBuffer bytes = lease.buffer();
             final boolean preparing = !lease._writePrepared;
             if (preparing) {
-                final CPacketWriteBuffer writer = lease.writer();
+                final Assemble writer = lease.writer();
                 if (lease._packedFrames ? !preparePackedEncryption(lease)
                         : !encrypt(writer,
                                 CIOBufferPool.HEADER_BYTES,

@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.shared.SimpleRgb;
@@ -117,7 +117,7 @@ public final class SC_IconMessage {
         }
     }
 
-    private static void writePayload(CPacketWriteBuffer buffer, String msg, int index, byte[] rgb,
+    private static void writePayload(Assemble buffer, String msg, int index, byte[] rgb,
                                      int surface, int duration, boolean indexMode) {
         buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
         buffer.writeH(indexMode ? INDEX_MESSAGE : TEXT_MESSAGE);

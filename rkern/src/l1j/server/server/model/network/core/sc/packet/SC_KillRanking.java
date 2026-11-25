@@ -14,7 +14,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import java.nio.charset.Charset;
@@ -196,7 +196,7 @@ public Data(L1PcInstance pc, int number) {
 		_content = sb.toString();
 	}
 
-private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
+private void writeImpl(CUserSocket client, Assemble buffer) {
 		if (_mode == 1) { // 게시판 목록 출력
 			buffer.writeC(Opcodes.S_BOARD_LIST);
 			buffer.writeC(0x00);

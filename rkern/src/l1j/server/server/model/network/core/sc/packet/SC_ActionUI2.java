@@ -10,7 +10,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
@@ -84,7 +84,7 @@ public final class SC_ActionUI2 {
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
 buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 			buffer.writeC(type);
 			buffer.writeC(0x01);
@@ -194,7 +194,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeC(ICON_BUFF);
             buffer.writeC(0);
@@ -251,7 +251,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
         if (frame == null) return false;
         boolean committed = false;
         try {
-            final CPacketWriteBuffer buffer = frame.buffer();
+            final Assemble buffer = frame.buffer();
             buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
             buffer.writeC(code);
             if (code == CLAN_RANK) {
@@ -435,7 +435,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		_waitPlayers = Collections.emptyList();
 	}
 
-	private void byteWrite(CPacketWriteBuffer buffer, long value) {
+	private void byteWrite(Assemble buffer, long value) {
 		long temp = value / 128;
 		if (temp > 0) {
 			buffer.writeC(hextable[(int) value % 128]);
@@ -455,7 +455,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		}
 	}
 
-	private void writeImpl(CPacketWriteBuffer buffer) {
+	private void writeImpl(Assemble buffer) {
 		switch (_mode) {
 		case 1:
 			buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);

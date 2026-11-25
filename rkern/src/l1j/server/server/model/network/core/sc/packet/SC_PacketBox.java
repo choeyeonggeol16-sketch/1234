@@ -19,7 +19,7 @@ import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.utils.SQLUtil;
@@ -376,7 +376,7 @@ public static void broadcastGreen(String message) {
             writePayload(frame.buffer(), _constructorType, _subCode, _val1, _val2, _val3, _val4, _bool1, _strVal1, _strVal2, _item, _pc, _objs, _strs, _bookmarks);
             committed = connection.commitDirectFrame(frame);
             return committed;
-        } catch (CPacketWriteBuffer.RegisteredCapacityExceededException exceeded) {
+        } catch (Assemble.RegisteredCapacityExceededException exceeded) {
             return false;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);
@@ -414,7 +414,7 @@ public static void broadcastGreen(String message) {
         return size > Integer.MAX_VALUE ? -1 : (int) size;
     }
 
-	private static void writePayload(CPacketWriteBuffer buffer, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<BookmarkSlot> _bookmarks) {
+	private static void writePayload(Assemble buffer, int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<BookmarkSlot> _bookmarks) {
 		buffer.writeC(Opcodes.S_EVENT);
 		buffer.writeC(_subCode);
 
@@ -1084,7 +1084,7 @@ public static void broadcastGreen(String message) {
 	}
 
 
-	private static void callSomething(CPacketWriteBuffer buffer) {
+	private static void callSomething(Assemble buffer) {
 		Iterator<L1PcInstance> itr = L1World.getInstance().getAllPlayers().iterator();
 
 		buffer.writeC(L1World.getInstance().getAllPlayers().size());

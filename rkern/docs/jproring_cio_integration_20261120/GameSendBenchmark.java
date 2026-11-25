@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import l1j.server.Config;
 import l1j.server.Server;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.UserPacketCallbackMap;
@@ -308,7 +308,7 @@ public final class GameSendBenchmark {
     private static final class Reply extends IPacketWriter<CUserSocket> {
         final byte[] body;
         Reply(int payload) { body = new byte[payload]; }
-        @Override protected boolean write(CUserSocket client, CPacketWriteBuffer writer) {
+        @Override protected boolean write(CUserSocket client, Assemble writer) {
             writer.writeBytes(body);
             return true;
         }

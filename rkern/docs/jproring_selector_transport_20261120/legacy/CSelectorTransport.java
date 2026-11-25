@@ -23,8 +23,8 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
-import l1j.server.server.model.network.buffer.CPacketReadBuffer;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Disassemble;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.codec.SocketSecureKey;
 
 /** Bounded, standard-Java TCP transport. Each connection has one Selector owner for its entire lifetime. */
@@ -47,14 +47,14 @@ public final class CSelectorTransport implements AutoCloseable {
 
     public interface Handler {
         default void onOpen(Connection connection) throws IOException { }
-        void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException;
+        void onFrame(Connection connection, Disassemble payload) throws IOException;
         default void onClosed(Connection connection, CloseReason reason) { }
     }
 
     /** The server's existing wire codec and FIFO can supply buffers directly. */
     public interface RawHandler extends Handler {
         @Override
-        default void onFrame(Connection connection, CPacketReadBuffer payload) {
+        default void onFrame(Connection connection, Disassemble payload) {
             throw new IllegalStateException("Raw handler received a framed payload");
         }
     }
@@ -83,7 +83,7 @@ public final class CSelectorTransport implements AutoCloseable {
     @FunctionalInterface
     public interface FrameEncoder {
         /** Write the body into the borrowed writer without retaining it. */
-        void encode(CPacketWriteBuffer writer) throws IOException;
+        void encode(Assemble writer) throws IOException;
     }
 
     @FunctionalInterface
@@ -554,7 +554,7 @@ public final class CSelectorTransport implements AutoCloseable {
             terminate(CloseReason.APPLICATION);
         }
 
-        private boolean dispatch(CPacketReadBuffer payload) throws IOException {
+        private boolean dispatch(Disassemble payload) throws IOException {
             if (cipher != null) {
                 int length = payload.remaining();
                 if (length < 8) throw new IOException("Encrypted inbound frame is too short");
@@ -1200,7 +1200,7 @@ public final class CSelectorTransport implements AutoCloseable {
         private final int maxFrames;
         private CSelectorBufferPool.Lease head;
         private CSelectorBufferPool.Lease tail;
-        private CPacketWriteBuffer writer;
+        private Assemble writer;
         private int bytes;
         private int frames;
         private boolean closed;
@@ -1229,7 +1229,7 @@ public final class CSelectorTransport implements AutoCloseable {
             boolean committed = false;
             encoding = true;
             try {
-                if (writer == null) writer = new CPacketWriteBuffer();
+                if (writer == null) writer = new Assemble();
                 writer.armExternal(buffer, start, capacity);
                 writer.beginDirect();
                 writer.position(HEADER_BYTES);

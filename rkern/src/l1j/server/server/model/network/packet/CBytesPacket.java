@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.packet;
 
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
@@ -21,7 +21,7 @@ public class CBytesPacket extends IPacketWriter<CUserSocket> implements IPacketW
 	}
 
 	@Override
-	public boolean write(CUserSocket client, CPacketWriteBuffer buffer) {
+	public boolean write(CUserSocket client, Assemble buffer) {
 		if (_data != null && _data.length > 0) {
 			buffer.writeBytes(_data); 
 		}

@@ -11,7 +11,7 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
+import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import java.nio.charset.Charset;
@@ -203,7 +203,7 @@ private void loadRankData(int number) {
 		}
 	}
 
-private void writeImpl(CUserSocket client, CPacketWriteBuffer buffer) {
+private void writeImpl(CUserSocket client, Assemble buffer) {
 		buffer.writeC(Opcodes.S_BOARD_READ);
 		buffer.writeD(_number);
 		buffer.writeS("메티스");
