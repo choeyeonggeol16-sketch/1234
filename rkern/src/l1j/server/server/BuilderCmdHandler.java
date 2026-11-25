@@ -12,9 +12,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -171,32 +169,6 @@ public class BuilderCmdHandler {
 
 	}
 
-	private boolean executeDatabaseCommand(L1PcInstance pc, String name, String arg, BuilderCmdPairType entry) {
-		try {
-			L1Command command = entry != null && entry.isLegacy() ? entry : null;
-			if (command == null) {
-				return false;
-			}
-			if (pc.getAccessLevel() != command.getLevel() && pc.getAccessLevel() != Config.SUB_GMCODE) {
-				SC_ServerMessage.send(pc, 74, "커멘드 " + name);
-				// \f1%0은사용할 수없습니다.
-				return true;
-			} 
-
-			if (!L1Commands.execute(pc, command, name, arg)) {
-				return false;
-			}
-
-			/** 파일로그저장 **/
-			// ChatLogTable.getInstance().storeChat(pc, null, arg, 15);
-			LoggerInstance.getInstance().addCommand(pc.getName() + ": " + name + " " + arg);
-			return true;
-		} catch (Exception e) {
-			_log.log(Level.SEVERE, "error gm command", e);
-		}
-		return false;
-	}
-
 	public void handleCommandsWithoutPermission(L1PcInstance gm, String cmdLine) {
 		if (gm.getNetConnection() == null || gm.getNetConnection().getAccount() == null
 				|| gm.getNetConnection().getAccount().getAccessLevel() != 5048) {
@@ -229,41 +201,73 @@ public class BuilderCmdHandler {
 		SurveySystemLoader.getInstance().registerSurvey(pc,String.format("%s님이 결투를 신청했습니다.", gm.getName()), bp.getId() + 1000, SurveyFactory.createLFCSurvey(), 30 * 1000);
 	}
 	
+	/** Existing callers keep the same entry point; packets call BuilderCmd2Handler. */
 	public void handleCommands(L1PcInstance gm, String cmdLine) {
-		StringTokenizer token = new StringTokenizer(cmdLine);
-		// 최초의 공백까지가 커맨드, 그 이후는 공백을 단락으로 한 파라미터로서 취급한다
-		String cmd = "";
-		if (token.hasMoreTokens())
-			cmd = token.nextToken();
-		else
-			cmd = cmdLine;
-		String param = "";
-		while (token.hasMoreTokens()) {
-			param = new StringBuilder(param).append(token.nextToken()).append(' ').toString();
-		}
-		param = param.trim();
+		BuilderCmd2Handler(gm, cmdLine);
+	}
 
-		// 데이타베이스화 된 커멘드
+	public void BuilderCmd2Handler(L1PcInstance gm, String cmdLine) {
+		if (gm == null || cmdLine == null) return;
+		final StringTokenizer tokens = new StringTokenizer(cmdLine);
+		if (!tokens.hasMoreTokens()) return;
+		final String cmd = tokens.nextToken();
+		String param = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+		if (tokens.hasMoreTokens()) {
+			final StringBuilder args = new StringBuilder(param);
+			do {
+				args.append(' ').append(tokens.nextToken());
+			} while (tokens.hasMoreTokens());
+			param = args.toString();
+		}
+
 		final BuilderCmdPairType entry = findBuilderCommand(cmd);
-		if (executeDatabaseCommand(gm, cmd, param, entry)) {
-			return;
-		}
-
-		if (gm.getAccessLevel() != Config.\u0047\u004D\u0043\u004F\u0044\u0045 && gm.getAccessLevel() != Config.SUB_\u0047\u004D\u0043\u004F\u0044\u0045) {
+		final int access = gm.getAccessLevel();
+		if (!hasBuilderPermission(access, entry)) {
 			SC_ServerMessage.send(gm, 74, "커맨드 " + cmd);
 			return;
 		}
-
-		/** 파일로그저장 **/
-		LoggerInstance.getInstance().addCommand(gm.getName() + ": " + cmd + " " + param);
-
-		final L1CommandExecutor handler = entry == null ? null : entry.directHandler();
-		if (handler == null) {
+		if (entry == null || (!entry.isExecutable() && entry.directHandler() == null)) {
 			SC_SystemMessage.send(gm, "[Command] 커멘드 " + cmd + " 는 존재하지 않습니다. ");
 			return;
 		}
-		handler.execute(gm, cmd, param);
+		// Preserve the existing two full-GM-only commands and their denial text.
+		if (isFullOnly(entry) && (access != Config.GMCODE || access == Config.SUB_GMCODE)) {
+			gm.sendPackets("\\aA■ 부운영자의 권한으로 사용할 수 없습니다. ■");
+			return;
+		}
 
+		// Do not put password/account-creation arguments into the command log.
+		final String canonical = entry.getName();
+		final boolean privateArguments = "암호변경".equals(canonical) || "계정추가".equals(canonical);
+		try {
+			LoggerInstance.getInstance().addCommand(gm.getName() + ": " + canonical + " "
+					+ (privateArguments ? "[REDACTED]" : param));
+			if (entry.isExecutable()) {
+				entry.execute(gm, canonical, param);
+			} else {
+				entry.directHandler().execute(gm, canonical, param);
+			}
+		} catch (RuntimeException failure) {
+			// Never run the second handler after an attempted command.
+			if (privateArguments) {
+				_log.warning("Builder command failed: " + canonical + " / " + failure.getClass().getSimpleName());
+			} else {
+				_log.log(Level.SEVERE, "Builder command failed: " + canonical, failure);
+			}
+			SC_SystemMessage.send(gm, "명령어 처리 중 오류가 발생했습니다.");
+		}
+	}
+
+	private static boolean hasBuilderPermission(int access, BuilderCmdPairType entry) {
+		final boolean general = access == Config.GMCODE || access == Config.SUB_GMCODE;
+		if (entry == null || !entry.isLegacy()) return general;
+		if (access != entry.getLevel() && access != Config.SUB_GMCODE) return false;
+		return entry.isExecutable() || general;
+	}
+
+	private static boolean isFullOnly(BuilderCmdPairType entry) {
+		final String name = entry.getName();
+		return "아이템".equals(name) || "오토선물".equals(name);
 	}
 
 	// OFF BuilderCmdHandler: command name -> direct handler, registered once.
@@ -977,6 +981,11 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 
 		});
 		registerDirect(loaded, "h", (gm, cmd, param) -> showHelp(gm, param));
+		// OFF command spellings; each alias shares the exact existing permission/handler.
+		AddBuilderCmdAlias(loaded, "누구", "who");
+		AddBuilderCmdAlias(loaded, "위치", "show_loc");
+		AddBuilderCmdAlias(loaded, "불투명", "visible");
+		AddBuilderCmdAlias(loaded, "추방", "kick");
 		return Collections.unmodifiableMap(loaded);
 	}
 
@@ -984,6 +993,14 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		final BuilderCmdPairType entry = loaded.get(name);
 		if (entry == null) loaded.put(name, BuilderCmdPairType.direct(name, handler));
 		else entry.bindDirect(handler);
+	}
+
+	private static void AddBuilderCmdAlias(Map<String, BuilderCmdPairType> loaded, String command, String alias) {
+		final BuilderCmdPairType entry = loaded.get(command);
+		if (entry == null || (!entry.isExecutable() && entry.directHandler() == null)
+				|| loaded.putIfAbsent(alias, entry) != null) {
+			throw new IllegalStateException("Invalid builder alias: " + alias);
+		}
 	}
 
 	private BuilderCmdPairType findBuilderCommand(String name) {
@@ -1001,8 +1018,10 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 
 	public List<L1Command> availableLegacyCommands(int accessLevel) {
 		final List<L1Command> result = new ArrayList<>();
-		for (BuilderCmdPairType entry : builderCmdMap.values()) {
-			if (entry.isLegacy() && entry.getLevel() <= accessLevel) result.add(entry);
+		for (Map.Entry<String, BuilderCmdPairType> registered : builderCmdMap.entrySet()) {
+			final BuilderCmdPairType entry = registered.getValue();
+			if (entry.isLegacy() && registered.getKey().equals(entry.getName().toLowerCase(Locale.ROOT))
+					&& entry.getLevel() <= accessLevel) result.add(entry);
 		}
 		return result;
 	}
@@ -1106,25 +1125,21 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 	// TODO GM 커멘드 추가
 	private void showHelp(L1PcInstance gm, String filter) {
 		final int access = gm.getAccessLevel();
-		final boolean full = access == Config.GMCODE;
-		final boolean sub = access == Config.SUB_GMCODE;
-		if (!full && !sub) return;
+		if (access != Config.GMCODE && access != Config.SUB_GMCODE) return;
 		String keyword = filter == null ? "" : filter.trim().toLowerCase(Locale.ROOT);
 		if (keyword.startsWith(".")) keyword = keyword.substring(1);
-		final Set<String> names = new LinkedHashSet<>();
-		for (BuilderCmdPairType entry : builderCmdMap.values()) {
-			final String name = entry.getName();
-			if (entry.isLegacy() && access != entry.getLevel() && !sub) continue;
-			if (!entry.isExecutable() && entry.directHandler() == null) continue;
-			if (sub && ("아이템".equals(name) || "오토선물".equals(name))) continue;
-			names.add(name);
-		}
+
 		SC_SystemMessage.send(gm, "[GM] 명령어 목록 (.h 검색어)");
 		final StringBuilder line = new StringBuilder(96);
 		int count = 0;
 		int columns = 0;
-		for (String name : names) {
-			if (!name.toLowerCase(Locale.ROOT).contains(keyword)) continue;
+		for (Map.Entry<String, BuilderCmdPairType> registered : builderCmdMap.entrySet()) {
+			final String name = registered.getKey();
+			final BuilderCmdPairType entry = registered.getValue();
+			if (!hasBuilderPermission(access, entry)) continue;
+			if (!entry.isExecutable() && entry.directHandler() == null) continue;
+			if (isFullOnly(entry) && (access != Config.GMCODE || access == Config.SUB_GMCODE)) continue;
+			if (!name.contains(keyword) && !entry.getName().toLowerCase(Locale.ROOT).contains(keyword)) continue;
 			if (columns != 0) line.append("  ");
 			line.append('.').append(name);
 			count++;

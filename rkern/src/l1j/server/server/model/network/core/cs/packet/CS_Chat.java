@@ -29,17 +29,6 @@ public final class CS_Chat {
 
         if (l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.handleLinkCommand(pc, chatText)) return;
 
-        // Builder help never enters world chat.
-        if (chatText.startsWith(".h") && (chatText.length() == 2 || Character.isWhitespace(chatText.charAt(2)))) {
-            final int access = pc.getAccessLevel();
-            if (pc.isGm() && (access == Config.GMCODE || access == Config.SUB_GMCODE)) {
-                BuilderCmdHandler.getInstance().handleCommands(pc, chatText.substring(1));
-            } else {
-                SC_ServerMessage.send(pc, 74, "커맨드 h");
-            }
-            return;
-        }
-
         if (UserCommands.handleLightCommand(pc, chatText)) return;
 
         // Password commands are not connected to the general chat dispatcher.

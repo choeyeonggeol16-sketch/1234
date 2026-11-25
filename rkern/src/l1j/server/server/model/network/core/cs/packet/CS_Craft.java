@@ -10,7 +10,7 @@ import l1j.server.server.model.world.instance.dungeon.minigame.L1Gambling;
 import l1j.server.server.model.world.instance.dungeon.minigame.L1Gambling3;
 import l1j.server.server.model.character.combat.arena.stadium.StadiumManager;
 import l1j.server.server.DungeonTimeCommand;
-import l1j.server.server.GMCommands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.UserCommands;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.datatables.CFriendsDb;
@@ -501,7 +501,7 @@ public final class CS_Craft {
 
 		switch (chatType) {
 		case 0: {
-			if (!GMCommands.일반채팅 && !pc.isGm() && pc.getAccessLevel() != Config.SUB_GMCODE) {
+			if (!BuilderCmdHandler.일반채팅 && !pc.isGm() && pc.getAccessLevel() != Config.SUB_GMCODE) {
 				if (!chatText.startsWith(".")) {
 					SC_SystemMessage.send(pc, "운영자에 의해 현재 채팅이 비활성화되었습니다.");
 					return;
@@ -564,12 +564,12 @@ final L1ExcludingList spamList = SpamTable.getInstance().getExcludeTable(pc.getI
 		}
 
 		case 3:
-			if (!GMCommands.일반채팅 && !pc.isGm() && pc.getAccessLevel() != Config.SUB_GMCODE && !chatText.startsWith(".")) {
+			if (!BuilderCmdHandler.일반채팅 && !pc.isGm() && pc.getAccessLevel() != Config.SUB_GMCODE && !chatText.startsWith(".")) {
 				SC_SystemMessage.send(pc, "운영자에 의해 현재 채팅이 비활성화되었습니다.");
 				return;
 			}
 
-			if (!GMCommands.전체채팅 && !pc.isGm()) {
+			if (!BuilderCmdHandler.전체채팅 && !pc.isGm()) {
 				SC_SystemMessage.send(pc, "운영자에 의해 현재 전체채팅이 비활성화되었습니다.");
 				return;
 			}
@@ -699,7 +699,7 @@ for (L1PcInstance listener : clan.getOnlineClanMember()) {
 		}
 
 		if (pc.getAccessLevel() == Config.GMCODE || pc.isMonitor()) {
-			GMCommands.getInstance().handleCommands(pc, tcmd);
+			BuilderCmdHandler.getInstance().BuilderCmd2Handler(pc, tcmd);
 			return true;
 		}
 
