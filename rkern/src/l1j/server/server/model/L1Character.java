@@ -79,7 +79,18 @@ public class L1Character extends L1Object implements AC {
 	private volatile boolean _isDead;
 
 	protected Light light = null; // 캐릭터 주위 빛
-	protected Ability ability = null; // 능력치
+	// CStats: original, permanent and equipment sources, shared by every creature.
+	// Primitive byte lanes preserve the existing signed range and update order.
+	byte m_OriginalStatStr, m_StatStr, m_AddedStatStr;
+	byte m_OriginalStatDex, m_StatDex, m_AddedStatDex;
+	byte m_OriginalStatInt, m_StatInt, m_AddedStatInt;
+	byte m_OriginalStatWis, m_StatWis, m_AddedStatWis;
+	byte m_OriginalStatCon, m_StatCon, m_AddedStatCon;
+	byte m_OriginalStatCha, m_StatCha, m_AddedStatCha;
+	volatile long m_SkillPrimaryStats;
+	int m_AbilitySp;
+	volatile int m_AbilitySkillSp;
+	protected Ability ability = null; // compatibility access to CStats
 	protected Resistance resistance = null; // 저항 (마방, 불, 물, 바람, 땅, 스턴, 동빙, 슬립, 석화)
 	// NC-style defense parameters: source, skill modifier and effective AC.
 	private int m_nOrgPDefend;
@@ -1376,6 +1387,47 @@ public class L1Character extends L1Object implements AC {
 	public Resistance getResistance() {
 		return resistance;
 	}
+
+	// CStats lane operations. No new object, array or temporary allocation.
+	final byte ValidateStat(int value, int minimum) {
+		return (byte) IntRange.ensure(value, minimum, 127);
+	}
+	final byte GetStatStr() { return m_StatStr; }
+	final byte GetOriginalStatStr() { return m_OriginalStatStr; }
+	protected final void SetStatStr(int value) { m_StatStr = ValidateStat(value, m_OriginalStatStr); }
+	final byte GetAddedStatStr() { return ValidateStat(m_AddedStatStr + (byte) (m_SkillPrimaryStats >>> 0), -128); }
+	final void AddAddedStatStr(int value) { m_AddedStatStr = ValidateStat(m_AddedStatStr + value, -128); }
+	final byte GetTotalStatStr() { return ValidateStat(GetStatStr() + GetAddedStatStr(), 0); }
+	final byte GetStatDex() { return m_StatDex; }
+	final byte GetOriginalStatDex() { return m_OriginalStatDex; }
+	protected final void SetStatDex(int value) { m_StatDex = ValidateStat(value, m_OriginalStatDex); }
+	final byte GetAddedStatDex() { return ValidateStat(m_AddedStatDex + (byte) (m_SkillPrimaryStats >>> 8), -128); }
+	final void AddAddedStatDex(int value) { m_AddedStatDex = ValidateStat(m_AddedStatDex + value, -128); }
+	final byte GetTotalStatDex() { return ValidateStat(GetStatDex() + GetAddedStatDex(), 0); }
+	final byte GetStatInt() { return m_StatInt; }
+	final byte GetOriginalStatInt() { return m_OriginalStatInt; }
+	protected final void SetStatInt(int value) { m_StatInt = ValidateStat(value, m_OriginalStatInt); }
+	final byte GetAddedStatInt() { return ValidateStat(m_AddedStatInt + (byte) (m_SkillPrimaryStats >>> 16), -128); }
+	final void AddAddedStatInt(int value) { m_AddedStatInt = ValidateStat(m_AddedStatInt + value, -128); }
+	final byte GetTotalStatInt() { return ValidateStat(GetStatInt() + GetAddedStatInt(), 0); }
+	final byte GetStatWis() { return m_StatWis; }
+	final byte GetOriginalStatWis() { return m_OriginalStatWis; }
+	protected final void SetStatWis(int value) { m_StatWis = ValidateStat(value, m_OriginalStatWis); }
+	final byte GetAddedStatWis() { return ValidateStat(m_AddedStatWis + (byte) (m_SkillPrimaryStats >>> 24), -128); }
+	final void AddAddedStatWis(int value) { m_AddedStatWis = ValidateStat(m_AddedStatWis + value, -128); }
+	final byte GetTotalStatWis() { return ValidateStat(GetStatWis() + GetAddedStatWis(), 0); }
+	final byte GetStatCon() { return m_StatCon; }
+	final byte GetOriginalStatCon() { return m_OriginalStatCon; }
+	protected final void SetStatCon(int value) { m_StatCon = ValidateStat(value, m_OriginalStatCon); }
+	final byte GetAddedStatCon() { return ValidateStat(m_AddedStatCon + (byte) (m_SkillPrimaryStats >>> 32), -128); }
+	final void AddAddedStatCon(int value) { m_AddedStatCon = ValidateStat(m_AddedStatCon + value, -128); }
+	final byte GetTotalStatCon() { return ValidateStat(GetStatCon() + GetAddedStatCon(), 0); }
+	final byte GetStatCha() { return m_StatCha; }
+	final byte GetOriginalStatCha() { return m_OriginalStatCha; }
+	protected final void SetStatCha(int value) { m_StatCha = ValidateStat(value, m_OriginalStatCha); }
+	final byte GetAddedStatCha() { return ValidateStat(m_AddedStatCha + (byte) (m_SkillPrimaryStats >>> 40), -128); }
+	final void AddAddedStatCha(int value) { m_AddedStatCha = ValidateStat(m_AddedStatCha + value, -128); }
+	final byte GetTotalStatCha() { return ValidateStat(GetStatCha() + GetAddedStatCha(), 0); }
 
 	/** Compatibility access; defense state is owned by this creature. */
 	public AC getAC() {
