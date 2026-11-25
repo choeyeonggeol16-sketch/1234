@@ -594,10 +594,10 @@ public final class CS_EnterWorld {
         // 귀환 스탯 리셋 대기
         if (pc.getReturnStat() != 0) {
             if (pc.getWeapon() != null) {
-                pc.getInventory().setEquipped(pc.getWeapon(), false, false, false, false);
+                pc.UnequipItem(pc.getWeapon());
             }
             for (L1ItemInstance armor : pc.getInventory().getItems()) {
-                pc.getInventory().setEquipped(armor, false, false, false, false);
+                pc.UnequipItem(armor);
             }
             SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.START);
             try { pc.save(); } catch (Exception e) { _log.warning("귀환스탯 저장 실패: " + pc.getName()); }
@@ -1083,7 +1083,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 			
 
 			if (pc.getWeapon() != null) {
-				pc.getInventory().setEquipped(pc.getWeapon(), false, false, false, false);
+				pc.UnequipItem(pc.getWeapon());
 			}
 
 			SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
@@ -1092,7 +1092,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 			for (L1ItemInstance armor : pc.getInventory().getItems()) {
 				for (int type = 0; type <= 12; type++) {
 					if (armor != null) {
-						pc.getInventory().setEquipped(armor, false, false, false, false);
+						pc.UnequipItem(armor);
 					}
 				}
 			}
@@ -1430,11 +1430,11 @@ public static void loadNBuff(L1PcInstance pc) {
 			L1SkillUse.cast(pc, L1SkillId.CANCELLATION, pc.getId(), pc.getX(), pc.getY(), null, 0, L1SkillUse.TYPE_LOGIN);
 
 			if (pc.getWeapon() != null) {
-				pc.getInventory().setEquipped(pc.getWeapon(), false, false, false, false);
+				pc.UnequipItem(pc.getWeapon());
 			}
 			for (L1ItemInstance armor : pc.getInventory().getItems()) {
 				if (armor != null && armor.isEquipped()) {
-					pc.getInventory().setEquipped(armor, false, false, false, false);
+					pc.UnequipItem(armor);
 				}
 			}
 			SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.START);

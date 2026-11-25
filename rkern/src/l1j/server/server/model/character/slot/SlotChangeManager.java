@@ -148,13 +148,13 @@ public final class SlotChangeManager {
 
             mutated = true;
             for (int i = 0; i < unequipCount; i++) {
-                inventory.setEquipped(unequipBuffer[i], false);
+                owner.UnequipItem(unequipBuffer[i]);
                 if (unequipBuffer[i].isEquipped()) return;
             }
             for (int i = 0; i < equipCount; i++) {
                 final L1ItemInstance item = equipBuffer[i];
                 if (inventory.getItem(item.getId()) != item || !canEquipNow(inventory, item)) return;
-                inventory.setEquipped(item, true);
+                owner.EquipItem(item);
                 if (!item.isEquipped()) return;
             }
             for (int i = 0; i < plannedCount; i++) {
@@ -186,7 +186,7 @@ public final class SlotChangeManager {
             final L1ItemInstance item = equipBuffer[i];
             if (item == null || !item.isEquipped()) continue;
             try {
-                inventory.setEquipped(item, false);
+                owner.UnequipItem(item);
             } catch (RuntimeException failure) {
                 java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
                         .log(java.util.logging.Level.SEVERE, "Preset rollback remove failed", failure);
@@ -196,7 +196,7 @@ public final class SlotChangeManager {
         if (originalPrimary != null && !originalPrimary.isEquipped()
                 && inventory.getItem(originalPrimary.getId()) == originalPrimary) {
             try {
-                inventory.setEquipped(originalPrimary, true);
+                owner.EquipItem(originalPrimary);
             } catch (RuntimeException failure) {
                 java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
                         .log(java.util.logging.Level.SEVERE, "Preset rollback primary failed", failure);
@@ -206,7 +206,7 @@ public final class SlotChangeManager {
             final L1ItemInstance item = originalBuffer[i];
             if (item == null || item.isEquipped() || inventory.getItem(item.getId()) != item) continue;
             try {
-                inventory.setEquipped(item, true);
+                owner.EquipItem(item);
                 if (!item.isEquipped()) {
                     java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
                             .severe("Preset rollback restore refused: item=" + item.getId());

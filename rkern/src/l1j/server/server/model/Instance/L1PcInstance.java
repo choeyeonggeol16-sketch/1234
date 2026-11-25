@@ -113,6 +113,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_Fishing;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
+import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
+import l1j.server.server.templates.L1Item;
 import l1j.server.server.model.network.core.sc.packet.SC_Invis;
 import l1j.server.server.model.network.core.sc.packet.SC_Lawful;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
@@ -2406,11 +2408,11 @@ public class L1PcInstance extends L1Character {
 		L1ItemInstance invisItem2 = this.getInventory().getEquippedItem(120077);
 		if(invisItem != null){
 			this.setGmInvis(false);
-			this.getInventory().setEquipped(invisItem, false);
+			UnequipItem(invisItem);
 			//this.delInvis();
 		}else if(invisItem2 != null){
 			this.setGmInvis(false);
-			this.getInventory().setEquipped(invisItem2, false);
+			UnequipItem(invisItem2);
 		}
 		}  catch (Exception e) {
 			e.printStackTrace();
@@ -4366,6 +4368,149 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return _equipSlot;
 	}
 
+	private long equipmentTimeVisible;
+
+	public void setTimeVisible(long tick) {
+		equipmentTimeVisible = tick;
+	}
+
+	public void EquipItem(L1ItemInstance item) {
+		EquipItem(item, false, false);
+	}
+
+	public void EquipItem(L1ItemInstance item, boolean loaded, boolean changeWeapon) {
+		changeEquipment(item, true, loaded, changeWeapon);
+	}
+
+	public void UnequipItem(L1ItemInstance item) {
+		UnequipItem(item, false, false);
+	}
+
+	public void UnequipItem(L1ItemInstance item, boolean loaded, boolean changeWeapon) {
+		changeEquipment(item, false, loaded, changeWeapon);
+	}
+
+	private void changeEquipment(L1ItemInstance item, boolean equipped, boolean loaded, boolean changeWeapon) {
+		if (item == null) return;
+		final CUserInventory inv = getInventory();
+		// A committed replay already holds the inventory reservation.
+		final boolean reserve = !l1j.server.server.storage.CacheD.isItemTransferReplaying();
+		if (reserve && !inv.tryBeginEquipmentChange()) return;
+		try {
+			if (inv.getItem(item.getId()) != item || item.isEquipped() == equipped) return;
+			final L1Item template = item.getItem();
+			if (template == null) return;
+			final L1EquipmentSlot slot = this.getEquipSlot();
+			final int itemId = item.getItemId();
+			final int type = template.getType2();
+			final boolean weapon = type == 1;
+			if (equipped) {
+				if (weapon && !slot.hasRoomForWeapon(item)) return;
+				if (type == 2 && slot.getSecondWeapon() != null
+						&& (template.getType() == 7 || template.getType() == 13)) return;
+				if (isInvisibilityGear(itemId) && System.currentTimeMillis() - equipmentTimeVisible < 3000L) return;
+				if (type != 0 && !item.startEquipmentTimer(this)) return;
+				try {
+					if (template.getType() != 4) clearArrowSelection();
+					item.setEquipped(true);
+					inv.SetEquippedCount(itemId, true);
+					slot.equipItem(item);
+				} finally {
+					if (!item.isEquipped()) item.stopEquipmentTimer();
+				}
+				if (!item.isEquipped()) return; // Polymorph can remove the just-equipped item.
+				if (!loaded && weapon && slot.getWeaponCount() == 2) {
+					SC_SkillSound.send(this, this.getId(), 12534);
+				}
+			} else {
+				beforeUnequip(template, itemId, loaded, weapon);
+				item.setEquipped(false);
+				item.stopEquipmentTimer();
+				inv.SetEquippedCount(itemId, false);
+				slot.unequipItem(item);
+			}
+
+			if (!loaded) {
+				this.setCurrentHp(this.getCurrentHp());
+				this.setCurrentMp(this.getCurrentMp());
+				inv.updateItem(item, CUserInventory.COL_EQUIPPED);
+				if (weapon && !changeWeapon) {
+					final long visual = SC_CharVisualUpdate.pack(this);
+					SC_CharVisualUpdate.sendPacked(this, visual);
+					SC_CharVisualUpdate.broadcastFastPacked(this, visual);
+				}
+			}
+			if (weapon) SC_PacketBox.send(this, SC_PacketBox.공격가능거리, this, item);
+			inv.updateEquipmentWindow(item);
+		} finally {
+			if (reserve) inv.endEquipmentChange();
+		}
+	}
+
+	private static boolean isInvisibilityGear(int itemId) {
+		return itemId == 20077 || itemId == 20062 || itemId == 120077;
+	}
+
+	private void clearArrowSelection() {
+		final CUserInventory inv = getInventory();
+		final int arrowId = inv.getArrowItemId();
+		if (arrowId == 0) return;
+		final L1ItemInstance arrow = inv.findItemId(arrowId);
+		inv.setArrow(0);
+		if (arrow != null) SC_ItemName.send(this, arrow);
+	}
+
+	private void beforeUnequip(L1Item template, int itemId, boolean loaded, boolean weapon) {
+		if (!loaded && isInvisibilityGear(itemId)) {
+			if (this.isInvisble()) {
+				this.delInvis();
+				this.beginInvisTimer();
+			}
+			equipmentTimeVisible = System.currentTimeMillis();
+		}
+		if (weapon && template.getType1() == 4 && this.hasSkillEffect(L1SkillId.INFERNO)) {
+			this.removeSkillEffect(L1SkillId.INFERNO);
+		}
+		if (template.isTwohandedWeapon() && this.hasSkillEffect(L1SkillId.COUNTER_BARRIER)) {
+			this.removeSkillEffect(L1SkillId.COUNTER_BARRIER);
+			SC_PacketBox.send(this, SC_PacketBox.UNLIMITED_ICON1, 71, false);
+		}
+		if (weapon) {
+			this.remove_elf_second_brave();
+			if (template.getType() == 4) clearArrowSelection();
+		}
+	}
+
+	public void TakeOffItems(int polyid) {
+		takeoffWeapon(polyid);
+		takeoffArmor(polyid);
+	}
+
+	private void takeoffWeapon(int polyid) {
+		final L1ItemInstance primary = this.getWeapon();
+		final L1ItemInstance secondary = this.getSecondWeapon();
+		if (primary != null && !L1PolyMorph.isEquipableWeapon(polyid, primary.getItem().getType())) {
+			UnequipItem(primary);
+		}
+		if (secondary != null && !L1PolyMorph.isEquipableWeapon(polyid, secondary.getItem().getType())) {
+			UnequipItem(secondary);
+		}
+	}
+
+	private void takeoffArmor(int polyid) {
+		final L1EquipmentSlot equipment = this.getEquipSlot();
+		for (int type = 0; type <= 12; type++) {
+			L1ItemInstance armor = equipment.getAppliedArmor(type);
+			if (armor == null || L1PolyMorph.isEquipableArmor(polyid, type)) continue;
+			UnequipItem(armor);
+			if (type == 9) {
+				armor = equipment.getAppliedArmor(type);
+				if (armor != null) UnequipItem(armor);
+			}
+		}
+	}
+
+
 	public static L1PcInstance load(String charName) {
 		L1PcInstance result = null;
 		try {
@@ -5397,7 +5542,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 					L1SkillUse.TYPE_LOGIN);
 			
 			if (getWeapon() != null) {
-				getInventory().setEquipped(getWeapon(), false, false, false, false);
+				UnequipItem(getWeapon());
 			}
 
 			SC_CharVisualUpdate.sendPacked(this, SC_CharVisualUpdate.pack(this));
@@ -5406,7 +5551,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			for (L1ItemInstance armor : getInventory().getItems()) {
 				for (int type = 0; type <= 12; type++) {
 					if (armor != null) {
-						getInventory().setEquipped(armor, false, false, false, false);
+						UnequipItem(armor);
 					}
 				}
 			}
@@ -5444,7 +5589,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 					L1SkillUse.TYPE_LOGIN);
 
 			if (getWeapon() != null) {
-				getInventory().setEquipped(getWeapon(), false, false, false, false);
+				UnequipItem(getWeapon());
 			}
 
 			SC_CharVisualUpdate.sendPacked(this, SC_CharVisualUpdate.pack(this));
@@ -5453,7 +5598,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			for (L1ItemInstance armor : getInventory().getItems()) {
 				for (int type = 0; type <= 12; type++) {
 					if (armor != null) {
-						getInventory().setEquipped(armor, false, false, false, false);
+						UnequipItem(armor);
 					}
 				}
 			}

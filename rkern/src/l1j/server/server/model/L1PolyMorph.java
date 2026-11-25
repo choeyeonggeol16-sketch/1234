@@ -271,7 +271,7 @@ public class L1PolyMorph {
 					if (!pc.isGmInvis() && !pc.isInvisble() && !pc.isGhost()) {
 						SC_ChangeShape.broadcast(pc, pc.getId(), polyId, 29);
 					}
-					pc.getInventory().takeoffEquip(polyId);
+					pc.TakeOffItems(polyId);
 					weapon = pc.getWeapon();
 					if (weapon != null) {
 						final long charVisual = SC_CharVisualUpdate.pack(pc);
@@ -343,7 +343,7 @@ public class L1PolyMorph {
 				boolean weaponTakeoff = (weapon != null
 						&& !isEquipableWeapon(PolyList[polyIndex - 1], weapon.getItem().getType()));
 				if (weaponTakeoff) {
-					pc.getInventory().setEquipped(weapon, false);
+					pc.UnequipItem(weapon);
 				}
 				SC_ChangeShape.send(pc, pc.getId(), PolyList[polyIndex - 1], ActionCodes.ACTION_Shop);
 				if (!pc.isGmInvis() && !pc.isInvisble()) {
@@ -402,8 +402,8 @@ public class L1PolyMorph {
 						if (items.getItem().getType1() == 50) {
 							items.getItem().setType1(83);
 							if (weapon != null) {
-								pc.getInventory().setEquipped(weapon, false);
-								pc.getInventory().setEquipped(weapon, true);
+								pc.UnequipItem(weapon);
+								pc.EquipItem(weapon);
 							}
 						}
 					}

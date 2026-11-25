@@ -111,8 +111,6 @@ public class CUserInventory extends CInventory {
 
 	private int _stingId;
 
-	private long timeVisible = 0;
-	private long timeVisibleDelay = 3000;
 
 	public CUserInventory(L1PcInstance owner) {
 		_owner = owner;
@@ -120,8 +118,9 @@ public class CUserInventory extends CInventory {
 		_stingId = 0;
 	}
 
+	@Deprecated
 	public void setTimeVisible(long l) {
-		timeVisible = l;
+		_owner.setTimeVisible(l);
 	}
 
 	public L1PcInstance getOwner() {
@@ -464,7 +463,7 @@ public class CUserInventory extends CInventory {
 			for (L1ItemInstance item : _items) {
 				if (item.isEquipped()) {
 					item.setEquipped(false);
-					setEquipped(item, true, true, false, false);
+					_owner.EquipItem(item, true, false);
 				}
 			}
 		} catch (Exception e) {
@@ -770,7 +769,7 @@ public class CUserInventory extends CInventory {
             throw new IllegalStateException("CacheD inventory delete failed: item=" + item.getId(), e);
         }
         if (item.isEquipped()) {
-            setEquipped(item, false);
+            _owner.UnequipItem(item);
         }
 
         final int itemId = item.getItemId();
@@ -825,8 +824,10 @@ public class CUserInventory extends CInventory {
 		return equipeitem;
 	}
 
+	@Deprecated
 	public void setEquipped(L1ItemInstance item, boolean equipped) {
-		setEquipped(item, equipped, false, false, false);
+		if (equipped) _owner.EquipItem(item);
+		else _owner.UnequipItem(item);
 	}
 
 	public L1ItemInstance getEquippedItem(int itemId) {
@@ -841,93 +842,17 @@ public class CUserInventory extends CInventory {
 		}
 		return equipeitem;
 	}
+	/** Legacy entry point for callers not yet migrated to the character API. */
+	@Deprecated
 	public void setEquipped(L1ItemInstance item, boolean equipped, boolean loaded, boolean changeWeapon, boolean shieldWeapon) {
-		if (item == null) return;
-		// A committed replay already holds the inventory reservation.
-		final boolean reserve = !l1j.server.server.storage.CacheD.isItemTransferReplaying();
-		if (reserve && !tryBeginEquipmentChange()) return;
-		try {
-			if (item.isEquipped() == equipped) return;
-			final L1Item template = item.getItem();
-			if (template == null) return;
-			final L1EquipmentSlot slot = _owner.getEquipSlot();
-			final int itemId = item.getItemId();
-			final int type = template.getType2();
-			final boolean weapon = type == 1;
-			if (equipped) {
-				if (weapon && !slot.hasRoomForWeapon(item)) return;
-				if (type == 2 && slot.getSecondWeapon() != null
-						&& (template.getType() == 7 || template.getType() == 13)) return;
-				if (isInvisibilityGear(itemId) && System.currentTimeMillis() - timeVisible < timeVisibleDelay) return;
-				if (type != 0 && !item.startEquipmentTimer(_owner)) return;
-				try {
-					if (template.getType() != 4) clearArrowSelection();
-					item.setEquipped(true);
-					_equippedCountMap.add(itemId, 1);
-					slot.equipItem(item);
-				} finally {
-					if (!item.isEquipped()) item.stopEquipmentTimer();
-				}
-				if (!item.isEquipped()) return; // Polymorph can remove the just-equipped item.
-				if (!loaded && weapon && slot.getWeaponCount() == 2) {
-					SC_SkillSound.send(_owner, _owner.getId(), 12534);
-				}
-			} else {
-				beforeUnequip(template, itemId, loaded, weapon);
-				item.setEquipped(false);
-				item.stopEquipmentTimer();
-				_equippedCountMap.subtract(itemId, 1);
-				slot.unequipItem(item);
-			}
-
-			if (!loaded) {
-				_owner.setCurrentHp(_owner.getCurrentHp());
-				_owner.setCurrentMp(_owner.getCurrentMp());
-				updateItem(item, COL_EQUIPPED);
-				if (weapon && !changeWeapon) {
-					final long visual = SC_CharVisualUpdate.pack(_owner);
-					SC_CharVisualUpdate.sendPacked(_owner, visual);
-					SC_CharVisualUpdate.broadcastFastPacked(_owner, visual);
-				}
-			}
-			if (weapon) SC_PacketBox.send(_owner, SC_PacketBox.공격가능거리, _owner, item);
-			updateEquipmentWindow(item);
-		} finally {
-			if (reserve) endEquipmentChange();
-		}
+		if (equipped) _owner.EquipItem(item, loaded, changeWeapon);
+		else _owner.UnequipItem(item, loaded, changeWeapon);
 	}
 
-	private static boolean isInvisibilityGear(int itemId) {
-		return itemId == 20077 || itemId == 20062 || itemId == 120077;
-	}
-
-	private void clearArrowSelection() {
-		final int arrowId = getArrowItemId();
-		if (arrowId == 0) return;
-		final L1ItemInstance arrow = findItemId(arrowId);
-		setArrow(0);
-		if (arrow != null) SC_ItemName.send(_owner, arrow);
-	}
-
-	private void beforeUnequip(L1Item template, int itemId, boolean loaded, boolean weapon) {
-		if (!loaded && isInvisibilityGear(itemId)) {
-			if (_owner.isInvisble()) {
-				_owner.delInvis();
-				_owner.beginInvisTimer();
-			}
-			timeVisible = System.currentTimeMillis();
-		}
-		if (weapon && template.getType1() == 4 && _owner.hasSkillEffect(L1SkillId.INFERNO)) {
-			_owner.removeSkillEffect(L1SkillId.INFERNO);
-		}
-		if (template.isTwohandedWeapon() && _owner.hasSkillEffect(L1SkillId.COUNTER_BARRIER)) {
-			_owner.removeSkillEffect(L1SkillId.COUNTER_BARRIER);
-			SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 71, false);
-		}
-		if (weapon) {
-			_owner.remove_elf_second_brave();
-			if (template.getType() == 4) clearArrowSelection();
-		}
+	/** Update only the inventory's equipped-template index, under the existing item gate. */
+	public void SetEquippedCount(int itemId, boolean equipped) {
+		if (equipped) _equippedCountMap.add(itemId, 1);
+		else _equippedCountMap.subtract(itemId, 1);
 	}
 
 	public boolean checkEquipped(int id) {
@@ -1004,33 +929,9 @@ public class CUserInventory extends CInventory {
 		return equipeItem;
 	}
 
+	@Deprecated
 	public void takeoffEquip(int polyid) {
-		takeoffWeapon(polyid);
-		takeoffArmor(polyid);
-	}
-
-	private void takeoffWeapon(int polyid) {
-		final L1ItemInstance primary = _owner.getWeapon();
-		final L1ItemInstance secondary = _owner.getSecondWeapon();
-		if (primary != null && !L1PolyMorph.isEquipableWeapon(polyid, primary.getItem().getType())) {
-			setEquipped(primary, false, false, false, false);
-		}
-		if (secondary != null && !L1PolyMorph.isEquipableWeapon(polyid, secondary.getItem().getType())) {
-			setEquipped(secondary, false, false, false, false);
-		}
-	}
-
-	private void takeoffArmor(int polyid) {
-		final L1EquipmentSlot equipment = _owner.getEquipSlot();
-		for (int type = 0; type <= 12; type++) {
-			L1ItemInstance armor = equipment.getAppliedArmor(type);
-			if (armor == null || L1PolyMorph.isEquipableArmor(polyid, type)) continue;
-			setEquipped(armor, false, false, false, false);
-			if (type == 9) {
-				armor = equipment.getAppliedArmor(type);
-				if (armor != null) setEquipped(armor, false, false, false, false);
-			}
-		}
+		_owner.TakeOffItems(polyid);
 	}
 
 	public L1ItemInstance getArrow() {
@@ -1128,7 +1029,7 @@ public class CUserInventory extends CInventory {
             }
         }
 
-		setEquipped(penaltyItem, false, false, true, false);
+		_owner.UnequipItem(penaltyItem, false, true);
 		return penaltyItem;
 	}
 
@@ -1197,7 +1098,7 @@ public class CUserInventory extends CInventory {
 		final L1ItemInstance item = getItem(itemobjId);
 		if (item == null || item.getItemId() != id || item.getEnchantLevel() != enchant
 				|| item.getBless() != bless || item.getAttrEnchantLevel() != attr) return false;
-		pc.getInventory().setEquipped(item, true);
+		pc.EquipItem(item);
 		return true;
 	}
 

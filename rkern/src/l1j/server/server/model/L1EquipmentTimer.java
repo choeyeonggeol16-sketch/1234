@@ -137,7 +137,7 @@ public final class L1EquipmentTimer implements Runnable {
                     } catch (RejectedExecutionException unavailable) {
                         // Stop timed bonuses if both schedulers are unavailable.
                         // Preserve the remaining seconds for a later re-equip.
-                        inventory.setEquipped(item, false);
+                        pc.UnequipItem(item);
                     }
                 } else {
                     inventory.removeItem(item, 1);

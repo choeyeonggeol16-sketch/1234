@@ -17,7 +17,7 @@ public final class EquipService {
         if (!inv.tryBeginEquipmentChange()) return;
         try {
             if (armor.isEquipped()) {
-                inv.setEquipped(armor, false);
+                pc.UnequipItem(armor);
                 return;
             }
 
@@ -25,7 +25,7 @@ public final class EquipService {
             if (!r.ok) { r.applyFail(pc); return; }
 
             pc.cancelAbsoluteBarrier();
-            inv.setEquipped(armor, true);
+            pc.EquipItem(armor);
         } finally {
             inv.endEquipmentChange();
         }
@@ -68,7 +68,7 @@ public final class EquipService {
                 SC_ServerMessage.send(pc, 150);
                 return;
             }
-            inv.setEquipped(weapon, false);
+            pc.UnequipItem(weapon);
             return;
         }
 
@@ -90,8 +90,8 @@ public final class EquipService {
         // Reserve time ticking before removing weapons already in use.
         if (!weapon.startEquipmentTimer(pc)) return;
         try {
-            inv.setEquipped(current, false, false, true, false);
-            if (second != null) inv.setEquipped(second, false, false, true, false);
+            pc.UnequipItem(current, false, true);
+            if (second != null) pc.UnequipItem(second, false, true);
             equipWeapon(pc, inv, weapon, false);
         } finally {
             if (!weapon.isEquipped()) weapon.stopEquipmentTimer();
@@ -102,7 +102,7 @@ public final class EquipService {
         if (weapon.getItemId() == 200002) {
             SC_ServerMessage.send(pc, 149, weapon.getLogName());
         }
-        inv.setEquipped(weapon, true, false, false, secondSlot);
+        pc.EquipItem(weapon);
     }
 
     private static boolean isCursed(L1ItemInstance weapon) {

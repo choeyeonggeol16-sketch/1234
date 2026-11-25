@@ -96,13 +96,13 @@ public class ClassChange {
         
         // 장비 해제
         if (pc.getWeapon() != null) {
-            pc.getInventory().setEquipped(pc.getWeapon(), false, false, false, false);
+            pc.UnequipItem(pc.getWeapon());
         }
         pc.getInventory().takeoffEquip(945); 
 
         for (L1ItemInstance armor : pc.getInventory().getItems()) {
             if (armor != null && armor.isEquipped()) {
-                pc.getInventory().setEquipped(armor, false, false, false, false);
+                pc.UnequipItem(armor);
             }
         }
        
@@ -190,7 +190,7 @@ public class ClassChange {
 
             for (L1ItemInstance item : pc.getInventory().getItems()) {
                 if (item != null && item.isEquipped()) {
-                    pc.getInventory().setEquipped(item, false, false, false, false);
+                    pc.UnequipItem(item);
                 }
             }
 
