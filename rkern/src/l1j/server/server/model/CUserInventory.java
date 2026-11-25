@@ -544,6 +544,7 @@ public class CUserInventory extends CInventory {
 	  //  System.out.println(String.format("[아이템추가] ID: %d, 수량: %d, 맵총량: %d", itemId, amount, _itemCountMap.get(itemId)));
 	    
 	    
+	    if (itemId == 900075) _owner.setPolyRingMaster(true);
 	    // Admission succeeded: notification errors must not unlink the item.
 	    try {
 	        SC_ADD_INVENTORY_NOTI.sendItem(_owner, item, false, _owner.getId());
@@ -556,7 +557,6 @@ public class CUserInventory extends CInventory {
 		if (item.getItemId() == 900075) {
 			SC_Ability.send(_owner, 2, true);
 			SC_Ability.send(_owner, 7, true);
-			_owner.setPolyRingMaster(true);
 		}
 		
 		if (!item.getItem().isEndedTimeMessage()) {
