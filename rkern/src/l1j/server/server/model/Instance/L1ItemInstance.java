@@ -14,6 +14,7 @@ import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CInventory;
+import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.assembly.CItemAssembler;
@@ -475,6 +476,152 @@ public class L1ItemInstance extends L1Object {
 
 	public void setLastWeight(int weight) {
 		_lastWeight = weight;
+	}
+
+	/** New-item initialization only: transfers must preserve existing lifetime and fuel. */
+	public static void InitializeNewItemLifetimeAndFuel(L1ItemInstance item, boolean ordinary) {
+		final int itemId = item.getItemId();
+		switch (itemId) {
+		// 호랑이/진돗개
+		case 3000048: // 꼬마 요정의 마음
+			SetDeleteTime(item, 1439); // 24시간 -1분
+			break;
+		case L1ItemId.KILLTON_CONTRACT:
+		case L1ItemId.MERIN_CONTRACT:
+			SetDeleteTime(item, 60);
+			break;
+		default:
+			if (ordinary) SetOrdinaryItemDeleteTime(item, itemId);
+			break;
+		}
+
+		if (item.getItem().getType2() == 0 && item.getItem().getType() == 2) { // light
+			item.setRemainingTime(item.getItem().getLightFuel());
+		} else {
+			item.setRemainingTime(item.getItem().getMaxUseTime());
+		}
+	}
+
+	private static void SetOrdinaryItemDeleteTime(L1ItemInstance item, int itemId) {
+		switch (itemId) {
+		case 80500:
+			SetDeleteTime(item, 120);
+			break;
+		case 555000:
+		case 555001: // 마법인형: 레데그
+		case 555002: // 마법인형: 엘레그
+		case 555003: // 마법인형: 그레그
+			SetDeleteTime(item, Config.영웅유물); // 5시간
+			break;
+		// case L1ItemId.MERIN_CONTRACT:
+		// SetDeleteTime(item, 60);
+		// break;
+		case 100036:
+		case 500210: // 테베,쿠쿨 제단 열쇠
+		case L1ItemId.DRAGON_KEY: // 드래곤키
+		case 490012:
+		case 490013:
+		case 490014:
+		case 40312:
+			SetDeleteTime(item, 180); // 3시간
+			break;
+		case 30022: // 마법인형: 블레그
+		case 30023: // 마법인형: 레데그
+		case 30024: // 마법인형: 엘레그
+		case 30025: // 마법인형: 그레그
+			SetDeleteTime(item, 300); // 5시간
+			break;
+		case 22328: // 베테르랑 방어구
+		case 22329:
+		case 22330:
+		case 22331:
+		case 22332:
+		case 22333:
+		case 22334:
+		case 22335:
+		case 1126: // 베테르랑 무기
+		case 1127:
+		case 1128:
+		case 1129:
+		case 1130:
+		case 1131:
+		case 1132:
+		case 1133:
+			SetDeleteTime(item, 4320); // 3일
+			break;
+		case 20282: // 수련자의 방어구
+		case 7: // 수련자의 무기
+		case 105:
+		case 120:
+		case 156:
+		case 174:
+		case 224:
+		case 203012:
+			SetDeleteTime(item, 4320); // 3일
+			break;
+		case 3000213:// 자동사냥 3일
+			SetDeleteTime(item, 4320);// 자동사냥 3일
+			break;
+		case 45453: // 마법인형: 그레그
+			SetDeleteTime(item, 360); // 5시간
+			break;
+		case 45451: // 마법인형: 그레그
+			SetDeleteTime(item, 1440); // 5시간
+			break;
+		case 45452: // 마법인형: 그레그
+			SetDeleteTime(item, 4320); // 5시간
+			break;
+		case 41922:
+		case 41923:
+		case 41924:
+		case 41925:
+		case 3000209: // 자동사냥 1일
+		case 775:
+		case 774:
+		case 773:
+		case 772:
+			SetDeleteTime(item, 1440); // 1일
+			break;
+		case 3000214:// 자동사냥 7일
+			SetDeleteTime(item, 8640); // 7일
+			break;
+		case 210095:
+		case 2100950:
+		case 2100951:
+		case 2100952:
+		case 2100953:// 쫄사냥
+			SetDeleteTime(item, 180); // 3일
+			break;
+		/** 신규 초보자 무기 **/
+		case 7000137:
+		case 7000138:
+		case 7000139:
+		case 7000140:
+		case 7000141:
+		case 7000142:
+		case 7000143:
+		case 7000144:
+		case 505001:
+		case 505002:
+		case 505003:
+		case 505004:
+		case 505005:
+		case 505006:
+		case 505007:
+		case 505008:
+			SetDeleteTime1(item, 1440); // 3일
+			break;
+		default:
+			break;
+		}
+	}
+
+	private static void SetDeleteTime(L1ItemInstance item, int minute) {
+		item.setEndTime(new Timestamp(Math.addExact(System.currentTimeMillis(), 60000L * minute)));
+	}
+
+	private static void SetDeleteTime1(L1ItemInstance item, int minute) {
+		item.setEndTime(new Timestamp(Math.addExact(System.currentTimeMillis(), 20000L * minute)));
 	}
 
 	public Timestamp getEndTime() {
