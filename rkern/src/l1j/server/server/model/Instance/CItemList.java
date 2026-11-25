@@ -229,6 +229,15 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         }
     }
 
+    /** No snapshot or temporary collection for a compatible stack lookup. */
+    public synchronized L1ItemInstance GetMergeableStack(L1ItemInstance incoming, boolean ground) {
+        for (L1ItemInstance item = first; item != null; item = item.inventoryNext) {
+            if (item != incoming && item.getCount() > 0 && L1ItemInstance.CanMergeStack(item, incoming)
+                    && (!ground || item.SameGroundLootRights(incoming))) return item;
+        }
+        return null;
+    }
+
     /** Check the number of matching instances, not their accumulated quantity. */
     public boolean HasInstancesByClassID(int classId, int count) {
         if (count <= 0) return true;
