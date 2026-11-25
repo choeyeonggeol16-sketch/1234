@@ -368,14 +368,7 @@ public abstract class Warehouse extends L1Object {
 
     public static L1ItemInstance transferCopy(L1ItemInstance source, int id, int count, int charge) {
         if (source == null || id <= 0 || count <= 0) throw new IllegalArgumentException("Transfer snapshot");
-        L1ItemInstance result = new L1ItemInstance();
-        result.setId(id);
-        result.setItem(source.getItem());
-        // Detached SQL image: package copied, last-used cloned, expiry cloned below.
-        result.CopyItemAttributesFrom(source, count, charge, true, false, true);
-        result.setKeyId(source.getKeyId());
-        result.setEndTime(L1ItemInstance.CopyTimestamp(source.getEndTime()));
-        return result;
+        return source.CopyDetachedImage(id, count, charge);
     }
 
     // A split transfer needs a reserved ID, not a visible world object. The
