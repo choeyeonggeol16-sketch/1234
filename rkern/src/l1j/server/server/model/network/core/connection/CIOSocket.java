@@ -15,7 +15,7 @@ import l1j.server.server.model.network.core.transport.selector.CSelectorTranspor
  * The subclass retains packet framing, SEND serialization and session policy.
  * All state is inherited by the existing socket object; no delegate is allocated.
  */
-public abstract class CIOSocket implements AutoCloseable, CSelectorTransport.RawEndpoint {
+public abstract class CIOSocket extends CExecutionSerializerFast implements AutoCloseable, CSelectorTransport.RawEndpoint {
     private static final Logger LOG = Logger.getLogger(CUserSocket.class.getName());
     final Connection peer;
     final long id;
@@ -27,7 +27,6 @@ public abstract class CIOSocket implements AutoCloseable, CSelectorTransport.Raw
     volatile int _closed;
     volatile int _readKick;
     volatile int _readEvent;
-    boolean _readSocketOwnerActive;
     volatile boolean _sendReadPaused;
     volatile CIOBufferEx _writing;
     ByteBuffer[] _gatherBuffers;
@@ -79,6 +78,7 @@ public abstract class CIOSocket implements AutoCloseable, CSelectorTransport.Raw
     }
 
     @Override public abstract void close();
+    @Override final boolean serializerClosed() { return _closed != 0; }
     abstract boolean tryOwnReadWritePass();
     abstract boolean onReadSingleCompleteFrame();
     abstract boolean OnRead();

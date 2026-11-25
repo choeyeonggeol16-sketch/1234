@@ -1,10 +1,11 @@
-name: NC network CIOSocket ownership regression
+name: NC network socket and serializer ownership regression
 on:
   push:
     branches: ['rkern/nc-network-responsibility-20261125']
     paths:
       - '.github/workflows/nc-network-ciosocket-phase3.yml'
       - 'rkern/src/l1j/server/server/model/network/core/connection/CIOSocket.java'
+      - 'rkern/src/l1j/server/server/model/network/core/connection/CExecutionSerializerFast.java'
       - 'rkern/src/l1j/server/server/model/network/core/connection/CUserSocket.java'
 permissions:
   contents: read

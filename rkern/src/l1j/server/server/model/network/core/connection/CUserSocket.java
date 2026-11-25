@@ -345,48 +345,6 @@ public final class CUserSocket extends CIOSocket {
     // VarHandles preserve CAS/getAndAdd semantics when completion threads race.
     private volatile int _closeNotified;
 
-    private static final int SOCKET_SLOTS = 512;
-    private static final int SOCKET_MASK = SOCKET_SLOTS - 1;
-    private static final int SOCKET_REJECT_AT = SOCKET_SLOTS - 8;
-    private static final byte SOCKET_SEND_START = 1;
-    private static final byte SOCKET_WRITE_COMPLETE = 2;
-    private static final byte SOCKET_SEND_ENQUEUE = 3;
-    private static final byte SOCKET_CANCELLED = 4;
-    // The existing serializer ring can carry an 8-byte action in one long.
-    // No SEND lease is rented while an earlier foreign producer ticket is unsealed.
-    private static final byte SOCKET_PACKED_ACTION = 5;
-    private final byte[] _socketCallbacks = new byte[SOCKET_SLOTS];
-    private final long[] _socketArguments = new long[SOCKET_SLOTS];
-    private final CIOBufferEx[] _socketSendArguments = new CIOBufferEx[SOCKET_SLOTS];
-
-    private volatile long _socketTicket;
-    // The producer may inspect whether a staged ticket was already claimed.
-    private volatile long _socketHead;
-    private volatile int _socketPending;
-    private volatile int _socketDraining;
-    // Optional SEND_START ticket coalescing: a reusable one-bit wake-up. The
-    // serializer clears it only while owning the socket callback token.
-    private volatile int _socketStartPending;
-    private volatile Thread _socketOwner;
-    // Owner-only scope: a single complete READ frame can reuse the otherwise
-    // idle socket serializer. No additional ring slot or worker is allocated.
-    // Java NIO.2 may complete synchronously inside the write() invocation.
-    // Such a callback must not retire its pooled ByteBuffer until write() returns.
-    private volatile boolean _socketPosting;
-    // Owner-thread-only: a completion observed inside write() is consumed by
-    // the serializer loop after write() returns, without a second ring ticket.
-    // Never consume it from the completion handler or recurse into the pump.
-    private long _inlineWriteCompletion;
-    // A completed WRITE already committed before a later SEND reservation.
-    // Published by the callback, consumed only by the socket serializer owner.
-    // Unlike a ring ticket this cannot sit behind an unpublished SEND head.
-    private volatile long _prefixWriteCompletion;
-    // The current callback has already advanced _socketHead but is still
-    // included in _socketPending until its finally block runs.
-    private boolean _socketExecutingTicket;
-    // A socket issues at most one outstanding WRITE. The mailbox rejects a
-    // duplicate completion before its serializer ticket can run.
-    private volatile long _writeEvent;
     private static final int WRITE_DONE = 1;
     private static final int WRITE_FAILED = 2;
     private static final int GATHER_DONE = 3;
@@ -400,27 +358,17 @@ public final class CUserSocket extends CIOSocket {
     private static final int READ_PASS_MIN_BUFFERED_BYTES = 64;
     // P8: a completed READ may directly claim the idle READ pump token.
     // The already-owned/inline callback path still publishes its mailbox event.
-    private static final boolean READ_WRITE_OWNER_FUSION = true;
     private static final int FUSED_READ_MAX_BYTES = 256;
     // READ completion is consumed only by the existing per-socket READ pump.
     // 0=empty, 1=failure, >=2=successful completion (transferred bytes + 2).
     // This keeps _readPending and zero-completion handling off foreign I/O threads.
     private static final VarHandle CLOSE_NOTIFIED, LIFECYCLE,
-            WRITE_EVENT, SOCKET_TICKET, SOCKET_PENDING, SOCKET_DRAINING,
-            SOCKET_START_PENDING,
             DISCONNECTING, ON_DRAINED, PARTIAL_READ_STARTED;
-    private static final VarHandle SOCKET_CALLBACK_SLOT = MethodHandles.arrayElementVarHandle(byte[].class);
-    private static final VarHandle SOCKET_ARGUMENT_SLOT = MethodHandles.arrayElementVarHandle(long[].class);
     static {
         try {
             final MethodHandles.Lookup lookup = MethodHandles.lookup();
             CLOSE_NOTIFIED = lookup.findVarHandle(CUserSocket.class, "_closeNotified", int.class);
             LIFECYCLE = lookup.findVarHandle(CUserSocket.class, "socketLifecycle", int.class);
-            SOCKET_TICKET = lookup.findVarHandle(CUserSocket.class, "_socketTicket", long.class);
-            SOCKET_PENDING = lookup.findVarHandle(CUserSocket.class, "_socketPending", int.class);
-            SOCKET_DRAINING = lookup.findVarHandle(CUserSocket.class, "_socketDraining", int.class);
-            SOCKET_START_PENDING = lookup.findVarHandle(CUserSocket.class, "_socketStartPending", int.class);
-            WRITE_EVENT = lookup.findVarHandle(CUserSocket.class, "_writeEvent", long.class);
             DISCONNECTING = lookup.findVarHandle(CUserSocket.class, "_disconnecting", int.class);
             ON_DRAINED = lookup.findVarHandle(CUserSocket.class, "_onDrained", Runnable.class);
             PARTIAL_READ_STARTED = lookup.findVarHandle(CUserSocket.class, "_partialReadStartedNs", long.class);
@@ -443,10 +391,8 @@ public final class CUserSocket extends CIOSocket {
     // Experimental: avoid a separate SEND_START ticket for foreign callers.
     // Retain the original ticket path unless a matched correctness/CPU trial
     // explicitly opts in; no new worker or packet queue is introduced.
-    private static final boolean COALESCE_SEND_START = true;
     // Retire a synchronous owner-thread WRITE callback only after write()
     // returns. Profiling keeps the old ticket path for comparable traces.
-    private static final boolean INLINE_WRITE_COMPLETION = true;
     // Experimental P6-A: one already-published first Action SEND may be
     // consumed by the existing SendBurst.flush() instead of entering the
     // serializer twice. Disabled until matched TCP performance checks pass.
@@ -884,7 +830,7 @@ public final class CUserSocket extends CIOSocket {
 
 
     /** Runs only with the socket serializer's execution token. */
-    private void drainWriteCompletion(long event) {
+    @Override final void drainWriteCompletion(long event) {
 
         final int kind = (int) (event & 7L);
         if (kind == WRITE_DONE || kind == GATHER_DONE)
@@ -1783,25 +1729,6 @@ public final class CUserSocket extends CIOSocket {
         return true;
     }
 
-    private boolean isSocketSerializerOwner() {
-        return _socketOwner == Thread.currentThread() && !_socketPosting;
-    }
-
-    /**
-     * A ticket-free READ owner may execute a SEND control callback directly
-     * only while the FIFO is still empty. Foreign producers can reserve a
-     * ticket without taking _stateLock, including before publishing its slot.
-     * Normal ticket-owning serializer callbacks retain their existing path.
-     */
-    private boolean canExecuteOwnerControlDirect() {
-        if (!isSocketSerializerOwner()) return false;
-        if (!READ_WRITE_OWNER_FUSION || !_readSocketOwnerActive) return true;
-        return (int) SOCKET_PENDING.getVolatile(this) == 0
-                && (long) SOCKET_TICKET.getVolatile(this) == _socketHead
-                && (!COALESCE_SEND_START
-                    || (int) SOCKET_START_PENDING.getAcquire(this) == 0);
-    }
-
     /**
      * Inline only a fully encoded 8-byte action while executing the sole
      * serializer callback. _socketHead has already consumed that callback's
@@ -1856,7 +1783,7 @@ public final class CUserSocket extends CIOSocket {
     }
 
     /** Consume SEND under the current socket serializer token. */
-    private void acceptStagedSend(CIOBufferEx lease) {
+    @Override final void acceptStagedSend(CIOBufferEx lease) {
         boolean start = false;
         boolean resumeRead = false;
         boolean success = false;
@@ -2395,7 +2322,7 @@ public final class CUserSocket extends CIOSocket {
     }
 
     /** Convert one FIFO-reserved primitive action to wire bytes on the owner. */
-    private void acceptPackedAction(long packed) {
+    @Override final void acceptPackedAction(long packed) {
         boolean valid = true;
         boolean resume = false;
         _stateLock.lock();
@@ -3162,205 +3089,13 @@ public final class CUserSocket extends CIOSocket {
         }
     }
 
-    private boolean serializeSocketCallback(byte kind, long argument) {
-        if (canExecuteOwnerControlDirect()) {
-            if (kind == SOCKET_SEND_START) driveWriteOnce();
-            else if (kind == SOCKET_WRITE_COMPLETE
-                    && WRITE_EVENT.compareAndSet(this, argument, 0L))
-                drainWriteCompletion(argument);
-            return true;
-        }
-        for (;;) {
-            final int pending = (int) SOCKET_PENDING.getVolatile(this);
-            if (pending >= SOCKET_REJECT_AT) return false;
-            if (SOCKET_PENDING.compareAndSet(this, pending, pending + 1)) break;
-        }
-        final long ticket = (long) SOCKET_TICKET.getAndAdd(this, 1L);
-        final int slot = (int) ticket & SOCKET_MASK;
-        SOCKET_ARGUMENT_SLOT.setRelease(_socketArguments, slot, argument);
-        SOCKET_CALLBACK_SLOT.setRelease(_socketCallbacks, slot, kind);
-        drainSocketCallbacks();
-        return true;
-    }
-
-    /**
-     * A packed SEND still occupies a FIFO CANCELLED ticket until the owner
-     * consumes it. If the current thread already owns the serializer, a plain
-     * drainSocketCallbacks() CAS fails and leaves hundreds of ready slots in
-     * the 512-entry ring. Drive the ready prefix with the existing owner token.
-     *
-     * Never recurse during an active ticket or inside write(): their outer
-     * serializer loop will drain after the callback/provider returns.
-     */
-    private void drainPublishedSocketCallbacks() {
-        if (_socketOwner == Thread.currentThread()
-                && (int) SOCKET_DRAINING.getVolatile(this) != 0) {
-            if (!_socketPosting && !_socketExecutingTicket)
-                drainSocketCallbacksOwnedReady();
-            return;
-        }
-        drainSocketCallbacks();
-    }
-
-    /** First contender becomes the inline drainer; other callers return. */
-    private void drainSocketCallbacks() {
-        if (!SOCKET_DRAINING.compareAndSet(this, 0, 1)) return;
-        drainSocketCallbacksAcquired();
-    }
-
-    /**
-     * Consume only ready FIFO callbacks while the current thread holds the
-     * serializer. Never releases the ownership bit: a fused READ still owns
-     * it until its outer finally runs. An unsealed foreign ticket stops the
-     * drain rather than permitting later SENDs to overtake it.
-     */
-    private void drainSocketCallbacksOwnedReady() {
-            for (;;) {
-                // Deferred owner-inline completions precede any SEND ticket
-                // reserved after their callback. Consume only after write()
-                // returned; kickWrite may post another inline completion, so
-                // drive this iteratively rather than recursively.
-                if (INLINE_WRITE_COMPLETION && _inlineWriteCompletion != 0L) {
-                    final long inline = _inlineWriteCompletion;
-                    _inlineWriteCompletion = 0L;
-                    try {
-                        // A mailbox retirement must be atomic. Keeping the
-                        // compare-and-clear protects a late/duplicate provider
-                        // callback or unexpected CLOSE race from losing an event.
-                        // The owner still consumes only after write() returns.
-                        if (WRITE_EVENT.compareAndSet(this, inline, 0L))
-                            drainWriteCompletion(inline);
-                    } catch (Throwable failure) { close(); }
-                    continue;
-                }
-                final int pending = (int) SOCKET_PENDING.getVolatile(this);
-                final int slot = (int) _socketHead & SOCKET_MASK;
-                final long kind = pending == 0 ? 0L
-                        : (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, slot);
-                // Consume a completed on-wire WRITE only at an empty or
-                // unpublished FIFO head. Published earlier tickets still run
-                // in order. No WRITE_COMPLETE ticket exists for this event,
-                // so an identical later completion value cannot be mistaken
-                // for an old queued callback.
-                if (_prefixWriteCompletion != 0L && !_socketPosting
-                        && (pending == 0 || kind == 0L)) {
-                    final long prefix = _prefixWriteCompletion;
-                    _prefixWriteCompletion = 0L;
-                    try {
-                        if (WRITE_EVENT.compareAndSet(this, prefix, 0L))
-                            drainWriteCompletion(prefix);
-                    } catch (Throwable failure) { close(); }
-                    continue;
-                }
-                if (pending == 0 || kind == 0L) break;
-                final long argument = (long) SOCKET_ARGUMENT_SLOT.getAcquire(_socketArguments, slot);
-                final CIOBufferEx sendLease = kind == SOCKET_SEND_ENQUEUE
-                        ? _socketSendArguments[slot] : null;
-                _socketSendArguments[slot] = null;
-                SOCKET_ARGUMENT_SLOT.setRelease(_socketArguments, slot, 0L);
-                SOCKET_CALLBACK_SLOT.setRelease(_socketCallbacks, slot, (byte) 0);
-                ++_socketHead;
-                // An on-send-progress callback can reenter this owner drain.
-                // Preserve the surrounding ticket's posting/inline state.
-                final boolean outerExecutingTicket = _socketExecutingTicket;
-                if (INLINE_WRITE_COMPLETION) _socketExecutingTicket = true;
-                try {
-                    if (kind == SOCKET_WRITE_COMPLETE) {
-                        if (WRITE_EVENT.compareAndSet(this, argument, 0L))
-                            drainWriteCompletion(argument);
-                    } else if (kind == SOCKET_SEND_START) {
-                        driveWriteOnce();
-                    } else if (kind == SOCKET_SEND_ENQUEUE && sendLease != null) {
-
-                        acceptStagedSend(sendLease);
-                    } else if (kind == SOCKET_PACKED_ACTION) {
-                        acceptPackedAction(argument);
-                    } else if (kind != SOCKET_CANCELLED) {
-                        close();
-                    }
-                } catch (Throwable failure) {
-                    close();
-                } finally {
-                    if (INLINE_WRITE_COMPLETION) _socketExecutingTicket = outerExecutingTicket;
-                    SOCKET_PENDING.getAndAdd(this, -1);
-                }
-            }
-    }
-
-    /** The caller already holds _socketDraining == 1. */
-    private void drainSocketCallbacksAcquired() {
-        for (;;) {
-            _socketOwner = Thread.currentThread();
-            drainSocketCallbacksOwnedReady();
-
-            // A SEND_START notification is not a payload reservation. Every
-            // attached SEND was already consumed in ticket order above; any
-            // earlier unsealed ticket keeps later SENDs in that FIFO ring.
-            // A reserved but not yet published FIFO ticket bars newer SENDs.
-            // It cannot hold up an already committed, ready _writing prefix.
-            if (COALESCE_SEND_START
-                    && (int) SOCKET_START_PENDING.getAcquire(this) != 0
-                    && ((int) SOCKET_PENDING.getVolatile(this) == 0
-                        || hasCommittedWriteReady())
-                    && (int) SOCKET_START_PENDING.getAndSet(this, 0) != 0) {
-                try { driveWriteOnce(); }
-                catch (Throwable failure) { close(); }
-            }
-
-            if (_closed != 0 && (int) SOCKET_PENDING.getVolatile(this) == 0) {
-                final long stranded = (long) WRITE_EVENT.getAndSet(this, 0L);
-                if (stranded != 0L) {
-                    try { drainWriteCompletion(stranded); }
-                    catch (Throwable ignored) { close(); }
-                }
-                try { driveWriteOnce(); }
-                catch (Throwable ignored) { close(); }
-            }
-            
-            // The coalesced SEND_START drive above can complete write()
-            // inline after the inner loop has already exited. Keep the
-            // current owner until the deferred completion is retired.
-            if (INLINE_WRITE_COMPLETION && _inlineWriteCompletion != 0L)
-                continue;
-
-            final int nextSlot = (int) _socketHead & SOCKET_MASK;
-            _socketOwner = null;
-            // This store must precede the readiness loads below (StoreLoad).
-            // A release-only store permits both this owner to miss a newly
-            // published callback and its publisher to observe the old owner.
-            // Then the ready callback has no drainer and no future I/O to
-            // wake it. Volatile release closes that lost-wakeup window.
-            SOCKET_DRAINING.setVolatile(this, 0);
-            
-            // Release/reacquire handshake: a writer that posts just before
-            // release sees the old owner, which must recheck this bit; a
-            // writer arriving afterwards can itself acquire the token.
-            // A deferred start may progress across an unpublished head only
-            // when an earlier committed WRITE is ready. Otherwise wait for
-            // the publisher instead of spinning on an empty slot.
-            final int pending = (int) SOCKET_PENDING.getVolatile(this);
-            final boolean startReady = COALESCE_SEND_START
-                    && (int) SOCKET_START_PENDING.getAcquire(this) != 0
-                    && (pending == 0 || hasCommittedWriteReady());
-            final boolean callbackReady = pending != 0
-                    && (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, nextSlot) != 0L;
-            // A foreign completion may publish the prefix after this owner
-            // checked the blocked head but before it released its token.
-            // Reacquire rather than losing the sole completion notification.
-            final boolean prefixReady = _prefixWriteCompletion != 0L && !_socketPosting;
-            if ((!startReady && !callbackReady && !prefixReady)
-                    || !SOCKET_DRAINING.compareAndSet(this, 0, 1)) break;
-        }
-        notifyClosedWhenReleased();
-    }
-
     /**
      * An unpublished FIFO ticket bars later SENDs, not the already committed
      * prefix. A ready _writing lease was selected before that ticket and can
      * be posted without consuming or overtaking the unpublished slot.
      * Check under the existing state lock; never issue provider WRITE in it.
      */
-    private boolean hasCommittedWriteReady() {
+    @Override final boolean hasCommittedWriteReady() {
         _stateLock.lock();
         try {
             return _writing != null && !_writing._ioPending;
@@ -3391,7 +3126,7 @@ public final class CUserSocket extends CIOSocket {
         drainSocketCallbacks();
     }
 
-    private void driveWriteOnce() {
+    @Override final void driveWriteOnce() {
         CIOBufferEx current = null;
         boolean gather = false;
         boolean cancelled = false;
