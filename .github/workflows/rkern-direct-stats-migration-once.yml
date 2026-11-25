@@ -79,8 +79,9 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm rkern/docs/nc_creature_stat_audit_20261125/migrate_direct_stats_once.py .github/workflows/rkern-direct-stats-migration-once.yml
-          git add -A rkern/src rkern/docs/nc_creature_stat_audit_20261125/ .github/workflows/rkern-inventory-admission-audit.yml
+          git rm rkern/docs/nc_creature_stat_audit_20261125/migrate_direct_stats_once.py
+          git restore --source=HEAD -- .github/workflows/rkern-inventory-admission-audit.yml
+          git add -A rkern/src rkern/docs/nc_creature_stat_audit_20261125/
           git diff --cached --stat
           git commit -m "refactor(stats): remove Ability Resistance and AC compatibility facades"
           git push origin HEAD:refs/heads/rkern/nc-creature-stats-core-20261125
