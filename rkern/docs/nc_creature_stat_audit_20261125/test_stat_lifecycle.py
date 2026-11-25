@@ -17,7 +17,7 @@ vfields="\n".join(re.search(r"[^\n]*\b"+n+r"\s*;",src).group(0) for n in (
     "m_nBaseHP","m_nAddedHP","m_nMaxHP","m_nBaseMP","m_nAddedMP","m_nMaxMP","m_SkillHPMP",
     "m_nOrgMeleeDamage","m_nOrgMeleeHit","m_SkillWeapon"))
 methods="\n".join(method(src,s) for s in (
-    "public final void ResetPrimaryStats(","public final void SetSkillPrimaryStats(","public void setPumpedSkillModifiers(",
+    "public final void ResetPrimaryStats(","public final void SetSkillPrimaryStats(","private void NotifySkillPrimaryStats(","public void setPumpedSkillModifiers(",
     "public int getMaxHp(","public int getMaxMp(","private void clampCurrentHp(","private void clampCurrentMp(",
     "public void setMaxHp(","public void setMaxMp(","private void ValidateMaxHP(","private void ValidateMaxMP(",
     "public int getDmgup(","public void addDmgup(","public int getHitup(","public void addHitup("))
@@ -58,9 +58,10 @@ public class LifecycleAudit {
     p.SetStatCon(24);p.SetStatWis(24);
     eq(p._currentHp,p.getMaxHp());eq(p._currentMp,p.getMaxMp());
     p.AddAddedStatDex(5);p.AddAddedStatWis(4);p.SetSkillPrimaryStats(3L<<8,false);
-    p.ResetPrimaryStats();eq(p.GetAddedStatDex(),8);eq(p.GetAddedStatWis(),4);
+    p.ResetPrimaryStats(12,14,45,13,45,10);eq(p.GetAddedStatDex(),8);eq(p.GetAddedStatWis(),4);eq(p.GetStatCon(),45);eq(p.GetOriginalStatWis(),45);
+    p.fill();p.ResetPrimaryStats(12,14,45,13,45,10);eq(p._currentHp,p.getMaxHp());eq(p._currentMp,p.getMaxMp());
     p.AddAddedStatDex(-5);p.AddAddedStatWis(-4);p.SetSkillPrimaryStats(0,false);
-    eq(p.GetAddedStatDex(),0);eq(p.GetAddedStatWis(),0);
+    eq(p.GetAddedStatDex(),0);eq(p.GetAddedStatWis(),0);p.ResetPrimaryStats(0,0,0,0,0,0);
   }
   L1NpcInstance n=new L1NpcInstance();n.setMaxHp(1000);n.setMaxMp(500);
   n.addDmgup(7);n.addHitup(9);

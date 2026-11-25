@@ -16,6 +16,9 @@ for stat in ("Str","Dex","Con","Int","Wis","Cha"):
 for stat,cur in (("Str","str"),("Dex","dex"),("Con","con"),("Int","intel"),("Wis","wis"),("Cha","cha")):
     old=old.replace(f"{cur} = base{stat} = added{stat} = 0;",f"{cur} = base{stat} = 0;")
 old=re.sub(r"\n[ \t]*pc\.resetBaseMr\(\);[ \t]*","",old)
+old=old.replace("public void init() {","public void init(int s,int d,int c,int i,int w,int a) {")
+for stat,cur,arg in (("Str","str","s"),("Dex","dex","d"),("Con","con","c"),("Int","intel","i"),("Wis","wis","w"),("Cha","cha","a")):
+    old=old.replace(f"{cur} = base{stat} = 0;",f"{cur} = base{stat} = checkRange({arg});")
 fields=creature[creature.index("\t// CStats: original,"):creature.index("\t// BEGIN shared resistance sources")]
 methods=creature[creature.index("\t// CStats lane operations."):creature.index("\t// BEGIN direct primary-stat operations")]
 assert "m_OriginalStatStr" in fields and "GetTotalStatCha" in methods
@@ -85,7 +88,7 @@ public class StatAudit {
      case 5 -> mutate(old,now,"setSkillPrimaryStats",skill,rng.nextLong(),rng.nextBoolean());
      case 6 -> mutate(old,now,"setSkillSp",integer,v);
      case 7 -> mutate(old,now,"addSp",integer,v);
-     case 8 -> mutate(old,now,"init",none);
+     case 8 -> mutate(old,now,"init",new Class<?>[]{int.class,int.class,int.class,int.class,int.class,int.class},0,0,0,0,0,0);
     }
     for(String key:STATS)for(String prefix:new String[]{"get","getBase","getAdded","getTotal"})
       equal(invoke(old,prefix+key,none),invoke(now,prefix+key,none));

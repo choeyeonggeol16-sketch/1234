@@ -13,7 +13,7 @@ fields="\n".join(re.search(r"[^\n]*\b"+n+r"\s*;",src).group(0) for n in names)
 methods="\n".join(method(s) for s in (
     "public int getMaxHp(","public int getMaxMp(","public final int getBaseMaxHp(","public final int getBaseMaxMp(",
     "public final void addBaseMaxHp(","public final void addBaseMaxMp(","public void setMaxHp(","public void setMaxMp(",
-    "public void addMaxHp(","public void addMaxMp(","private void ValidateMaxHP(","private void ValidateMaxMP(",
+    "public void addMaxHp(","public void addMaxMp(","private void ValidateMaxHP(","private void ValidateMaxMP(","private void clampCurrentMp(",
     "public final short getHpr(","public final short getMpr(","public final void addHpr(","public final void addMpr(",
     "public final void setPumpedRegenAndWeaponRates("))
 stub="""

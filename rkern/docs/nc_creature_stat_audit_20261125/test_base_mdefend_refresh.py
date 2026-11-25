@@ -17,7 +17,7 @@ def method(src, signature):
 fields=creature[creature.index("// CStats: original,"):creature.index("// BEGIN shared resistance sources")]
 methods=creature[creature.index("// CStats lane operations."):creature.index("// BEGIN direct primary-stat operations")]
 methods+="\n".join(method(creature,s) for s in (
-    "public synchronized void setLevel(", "public final void SetSkillPrimaryStats(",
+    "public synchronized void setLevel(", "public final void SetSkillPrimaryStats(", "private void NotifySkillPrimaryStats(",
     "public final void ResetPrimaryStats(", "public final void SetOrgMDefend(",
     "public final int GetOrgMDefend(", "public final void AddMDefend(",
     "public final int GetMDefend()", "private int CheckMDefendRange(", "public final void SetSkillMDefend("))
@@ -72,7 +72,7 @@ public class BaseMrAudit {
        case 4 -> p.SetSkillPrimaryStats(r.nextLong(),false);
        case 5 -> {int delta=r.nextInt(41)-20;bonus+=delta;p.AddMDefend(delta);}
        case 6 -> {skill=r.nextInt(81)-40;p.SetSkillMDefend(skill);}
-       case 7 -> p.ResetPrimaryStats();
+       case 7 -> p.ResetPrimaryStats(0,0,0,0,0,0);
        case 8 -> p.passive=!p.passive;
      }
      check(p,bonus,skill);

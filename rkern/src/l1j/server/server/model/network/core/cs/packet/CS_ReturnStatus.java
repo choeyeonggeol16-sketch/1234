@@ -119,7 +119,7 @@ public final class CS_ReturnStatus {
 		rst.upMp = 0;
 		rst.ac = 10;
 
-		pc.ResetPrimaryStats();
+		pc.ResetPrimaryStats(str, dex, con, intel, wis, cha);
 
 		pc.SetOriginalStatStr(str);
 		pc.SetOriginalStatInt(intel);
@@ -365,7 +365,7 @@ public final class CS_ReturnStatus {
 
 			pc.start_teleport(33430, 32810, 4, pc.getHeading(), 169, true, false);
 
-			pc.ResetPrimaryStats();
+			pc.ResetPrimaryStats(pc.rst.basestr, pc.rst.basedex, pc.rst.basecon, pc.rst.baseint, pc.rst.basewis, pc.rst.basecha);
 			pc.SetOriginalStatStr(pc.rst.basestr);
 			pc.SetOriginalStatInt(pc.rst.baseint);
 			pc.SetOriginalStatWis(pc.rst.basewis);

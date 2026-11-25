@@ -1132,12 +1132,13 @@ public class L1Character extends L1Object {
 		final long previous = m_SkillHPMP;
 		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
 		if (previous != updated) m_SkillHPMP = updated;
-		// Publish both HP/MP and WIS sources before applying the final limits.
+		if ((int) previous != hp) clampCurrentHp();
+		final long changedPrimary = m_SkillPrimaryStats ^ primaryStats;
+		SetSkillPrimaryStats(primaryStats, false);
+		if ((int) (previous >>> 32) != mp) clampCurrentMp();
 		setSkillAc(ac, notify);
 		SetSkillMDefend(mr);
-		SetSkillPrimaryStats(primaryStats, notify);
-		if ((int) previous != hp) clampCurrentHp();
-		if ((int) (previous >>> 32) != mp) clampCurrentMp();
+		if (notify) NotifySkillPrimaryStats(changedPrimary);
 		SetSkillElemental(elementalResistance);
 		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
 		if (m_SkillWeapon != weapon) m_SkillWeapon = weapon;
@@ -1507,7 +1508,10 @@ public class L1Character extends L1Object {
 			if ((changed & 0xff000000L) != 0) pc.RefreshBaseMDefend();
 			if ((changed & 0x0000ff00L) != 0) pc.RefreshBasePDefend();
 		}
-		if (!notify) return;
+		if (notify) NotifySkillPrimaryStats(changed);
+	}
+
+	private void NotifySkillPrimaryStats(long changed) {
 		if ((changed & 0x000000ff) != 0) NotifyStatBonusStr();
 		if ((changed & 0x0000ff00) != 0) NotifyStatBonusDex();
 		if ((changed & 0xff00000000L) != 0) NotifyStatBonusCon();
@@ -1517,13 +1521,13 @@ public class L1Character extends L1Object {
 
 	// Stat redistribution resets permanent allocations only; equipment and
 	// skill sources remain owned by their original apply/remove paths.
-	public final void ResetPrimaryStats() {
-		m_StatStr = m_OriginalStatStr = 0;
-		m_StatDex = m_OriginalStatDex = 0;
-		m_StatCon = m_OriginalStatCon = 0;
-		m_StatInt = m_OriginalStatInt = 0;
-		m_StatWis = m_OriginalStatWis = 0;
-		m_StatCha = m_OriginalStatCha = 0;
+	public final void ResetPrimaryStats(int str, int dex, int con, int intel, int wis, int cha) {
+		m_StatStr = m_OriginalStatStr = ValidateStat(str, 0);
+		m_StatDex = m_OriginalStatDex = ValidateStat(dex, 0);
+		m_StatCon = m_OriginalStatCon = ValidateStat(con, 0);
+		m_StatInt = m_OriginalStatInt = ValidateStat(intel, 0);
+		m_StatWis = m_OriginalStatWis = ValidateStat(wis, 0);
+		m_StatCha = m_OriginalStatCha = ValidateStat(cha, 0);
 		clampCurrentHp();
 		clampCurrentMp();
 		if (this instanceof L1PcInstance pc) {
