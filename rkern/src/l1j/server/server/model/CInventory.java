@@ -1059,8 +1059,24 @@ public class CInventory extends L1Object {
                         if (destinations[i] == null && ++slots > CUserInventory.MAX_SIZE) return false;
                         if (fee != null && destinations[i] == fee) feeGroup = i;
                     }
-                    if (deadlines != null && deadlines[i] != null
-                            && (g != i || destinations[i] != null)) return false;
+                    // A timed supplementary item must retain its own deadline.
+                    // Its replay path does not collect a withdrawal fee.
+                    if (deadlines != null) {
+                        if (deadlines[i] != null && (feeEach != 0 || g != i || destinations[i] != null))
+                            return false;
+                        if (g != i && deadlines[g] != null) return false;
+                    }
+                    // Check the complete template total, not just the first
+                    // stack: replay updates the character's aggregate count.
+                    long addedCount = mergeCharge ? (g == i && destinations[i] == null ? 1L : 0L) : count;
+                    for (int j = 0; j < i; j++) {
+                        if (sources[j].getItemId() != item.getItemId()) continue;
+                        if (mergeCharge) {
+                            if (group[j] == j && destinations[j] == null) addedCount++;
+                        } else addedCount += counts[j];
+                    }
+                    if ((long) GetItemAmount(item.getItemId()) + addedCount > MAX_AMOUNT)
+                        return false;
                     if (mergeCharge) {
                         if (chargeTotals == null) {
                             chargeTotals = new long[size];
