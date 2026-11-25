@@ -1543,6 +1543,9 @@ public class L1ItemInstance extends L1Object {
 	 * 별도 Future/Handle/Map을 item마다 들고 있지 않는다.
 	 */
 	private volatile int _groundDeleteTimerGeneration;
+    private static final java.util.concurrent.atomic.AtomicIntegerFieldUpdater<L1ItemInstance>
+            GROUND_DELETE_GENERATION = java.util.concurrent.atomic.AtomicIntegerFieldUpdater.newUpdater(
+                    L1ItemInstance.class, "_groundDeleteTimerGeneration");
 	
 	@Override
 	public void onPerceive(L1PcInstance viewer) {
@@ -1583,7 +1586,8 @@ public class L1ItemInstance extends L1Object {
 		switch (timerId) {
 		case TIMER_GROUND_DELETE: {
 			final int generation = nextGroundDeleteTimerGeneration();
-			CIOThreadCallback.getInstance().scheduleItemTimer(getId(), timerId, generation, delayMs);
+            if (!CIOThreadCallback.getInstance().scheduleItemTimer(this, timerId, generation, delayMs))
+                throw new RejectedExecutionException("Ground delete timer admission failed: " + getId());
 			break;
 		}
 		default:
@@ -1615,7 +1619,7 @@ public class L1ItemInstance extends L1Object {
 
 		switch (timerId) {
 		case TIMER_GROUND_DELETE:
-			if (generation != _groundDeleteTimerGeneration) {
+			if (!isItemTimerCurrent(timerId, generation)) {
 				return;
 			}
 
@@ -1675,15 +1679,20 @@ public class L1ItemInstance extends L1Object {
         }
     }
 
-	private int nextGroundDeleteTimerGeneration() {
-		int next = _groundDeleteTimerGeneration + 1;
+    /** Wheel nodes contain only smart ID and primitive generation. */
+    public final boolean isItemTimerCurrent(int timerId, int generation) {
+        return timerId == TIMER_GROUND_DELETE && generation != 0
+                && generation == _groundDeleteTimerGeneration;
+    }
 
-		if (next == 0) {
-			next = 1;
-		}
-		_groundDeleteTimerGeneration = next;
-		return next;
-	}
+    private int nextGroundDeleteTimerGeneration() {
+        for (;;) {
+            final int before = _groundDeleteTimerGeneration;
+            int next = before + 1;
+            if (next == 0) next = 1;
+            if (GROUND_DELETE_GENERATION.compareAndSet(this, before, next)) return next;
+        }
+    }
 
 	private static long groundDeleteDelayMs() {
 		final long minutes = Config.ALT_ITEM_DELETION_TIME;
