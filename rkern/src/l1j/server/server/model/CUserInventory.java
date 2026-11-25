@@ -510,6 +510,7 @@ public class CUserInventory extends CInventory {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		final L1PcInstance previousOwner = item._cha;
+        final int previousBless = item.getBless();
 		final int itemId = item.getItemId();
 		final int amount = item.getCount();
 		if (amount <= 0 || (long) _itemCountMap.getOrDefault(itemId, 0) + amount > MAX_AMOUNT)
@@ -526,6 +527,7 @@ public class CUserInventory extends CInventory {
 			CharactersItemStorage.create().storeItem(_owner.getId(), item);
 		} catch (Exception e) {
 			item._cha = previousOwner;
+            item.setBless(previousBless);
 			throw new IllegalStateException("CacheD inventory insert failed: item=" + item.getId(), e);
 		}
 				
