@@ -757,11 +757,22 @@ public class CUserInventory extends CInventory {
     }
 
     private void deleteOwnedItem(L1ItemInstance item) {
+        persistOwnedItemDelete(item);
+        finishOwnedItemDeletion(item);
+    }
+
+    /** The ordinary drop path stages ground membership before admitting this command. */
+    void persistOwnedItemDelete(L1ItemInstance item) {
+        assert Thread.holdsLock(this);
         try {
             CharactersItemStorage.create().deleteItem(item);
         } catch (Exception e) {
             throw new IllegalStateException("CacheD inventory delete failed: item=" + item.getId(), e);
         }
+    }
+
+    void finishOwnedItemDeletion(L1ItemInstance item) {
+        assert Thread.holdsLock(this);
         if (item.isEquipped()) {
             _owner.UnequipItem(item);
         }
