@@ -21,6 +21,7 @@ on:
       - rkern/nc-ground-tile-retirement-20261125
       - rkern/nc-inventory-cache-audit-20261125
       - rkern/nc-equipment-notice-audit-20261125
+      - rkern/nc-equipment-expiry-audit-20261125
   workflow_dispatch:
 permissions:
   contents: read
