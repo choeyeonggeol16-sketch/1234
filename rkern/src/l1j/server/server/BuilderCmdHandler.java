@@ -135,13 +135,13 @@ public class BuilderCmdHandler {
 	public List<L1MonsterInstance> fieldbosslist = new ArrayList<L1MonsterInstance>();
 
 
-	protected BuilderCmdHandler() {}
+	BuilderCmdHandler() {}
 
 	private static final class Holder {
-		private static final GMCommands INSTANCE = new GMCommands();
+		private static final BuilderCmdHandler INSTANCE = new BuilderCmdHandler();
 	}
 
-	public static GMCommands getInstance() {
+	public static BuilderCmdHandler getInstance() {
 		return Holder.INSTANCE;
 	}
 

@@ -22,7 +22,7 @@ import l1j.server.server.datatables.CObjectDB;
 import java.lang.reflect.Constructor;
 import java.util.StringTokenizer;
 
-import l1j.server.server.GMCommands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -76,7 +76,7 @@ public class L1GfxId implements L1CommandExecutor {
 					npc.setStatus(0);
 					L1World.getInstance().storeAndEnterWorld(npc);
 					
-					GMCommands.getInstance().add_list(npc);
+					BuilderCmdHandler.getInstance().add_list(npc);
 				}
 			}
 		} catch (Exception exception) {

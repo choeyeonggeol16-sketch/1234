@@ -22,7 +22,7 @@ import java.util.StringTokenizer;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.logging.Logger;
 
-import l1j.server.server.GMCommands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1PcInstance;
 
@@ -49,7 +49,7 @@ public class L1SkillEffect implements L1CommandExecutor {
 			for (int i = _sprid; i <= _count; i++) {
 				try {				
 					
-				if(GMCommands.getInstance().Stop){				
+				if(BuilderCmdHandler.getInstance().Stop){				
 					SC_SystemMessage.send(_pc, "이펙트 번호: "+i+"");
 					SC_SkillSound.send(_pc, _pc.getId(), i);			
 					Thread.sleep(1000);

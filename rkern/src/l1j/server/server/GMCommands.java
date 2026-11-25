@@ -1,6 +1,7 @@
 package l1j.server.server;
 
-/** Source compatibility only; all execution and state live in BuilderCmdHandler. */
+/** Temporary source-name bridge; never instantiated and owns no state. */
+@Deprecated
 public final class GMCommands extends BuilderCmdHandler {
-    GMCommands() {}
+    private GMCommands() {}
 }

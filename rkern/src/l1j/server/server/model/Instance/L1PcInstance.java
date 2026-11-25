@@ -26,7 +26,7 @@ import l1j.server.server.Account;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.Controller.PremiumTimeController;
-import l1j.server.server.GMCommands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.Opcodes;
 import l1j.server.server.SkillCheck;
 import l1j.server.server.ThreadPool;
@@ -3724,7 +3724,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 				return;
 			}
 
-			if (GMCommands.IS_PROTECTION) {
+			if (BuilderCmdHandler.IS_PROTECTION) {
 				if (getKDA() != null) {
 					getKDA().onProtection(L1PcInstance.this);
 				}
