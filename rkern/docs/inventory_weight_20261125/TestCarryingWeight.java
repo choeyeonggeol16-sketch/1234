@@ -69,7 +69,29 @@ public final class TestCarryingWeight {
         check(0, nonPlayer.getSize());
         System.out.println("PASS warehouse invalid-request delegation checks");
     }
+    private static void checkTransferAdmission() {
+        int[] amounts = {Integer.MIN_VALUE, -1, 0, 1, 2, 3, CInventory.MAX_AMOUNT, Integer.MAX_VALUE};
+        for (boolean stackable : new boolean[]{false, true}) {
+            L1EtcItem t = template(1, 0);
+            t.set_stackable(stackable);
+            for (boolean equipped : new boolean[]{false, true}) {
+                L1ItemInstance item = new L1ItemInstance(t, 1);
+                item.setEquipped(equipped);
+                for (int available : amounts) {
+                    item.setCount(available);
+                    for (int count : amounts) {
+                        boolean old = !(item.getCount() <= 0 || count <= 0 || count > item.getCount()
+                                || item.isEquipped() || (!item.isStackable() && count != 1));
+                        check(old ? 1 : 0, item.IsTransferableAmount(count) ? 1 : 0);
+                        check(available, item.getCount());
+                    }
+                }
+            }
+        }
+        System.out.println("PASS source transfer admission equivalence");
+    }
     public static void main(String[] args) throws Exception {
+        checkTransferAdmission();
         checkWarehouseDispatch();
         checkNewItemInitialization();
         Random rng = new Random(20261125L);
