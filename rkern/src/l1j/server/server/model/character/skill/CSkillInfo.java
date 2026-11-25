@@ -565,7 +565,7 @@ public final class CSkillInfo {
         target.applySkillModifierFromOwner(skillId, captured);
     }
 
-    void pump(L1Character target, long captured, SkillEffectContainer.SkillModifiers modifiers) {
+    void pump(L1Character target, long captured, SkillEffectContainer.CCreatureSkillMod modifiers) {
         for (CSkillEffect effect : effects) {
             if (effect.checkPumpCondition(target)) effect.pump(captured, modifiers);
         }
