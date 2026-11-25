@@ -4,6 +4,7 @@ on:
     branches:
       - rkern/nc-inventory-carrying-weight-20261125
       - rkern/nc-ground-pick-receipt-20261125
+      - rkern/nc-inventory-change-notice-20261125
   workflow_dispatch:
 permissions:
   contents: read
