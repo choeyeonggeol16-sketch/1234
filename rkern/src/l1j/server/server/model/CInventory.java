@@ -407,27 +407,8 @@ public class CInventory extends L1Object {
 
 		item.setChargeCount(chargeCount);
 
-		// 시간제 아이템
-		switch (itemId) {
-		// 호랑이/진돗개
-		case 3000048: // 꼬마 요정의 마음
-			SetDeleteTime(item, 1439); // 24시간 -1분
-			break;
-		case L1ItemId.KILLTON_CONTRACT:
-		case L1ItemId.MERIN_CONTRACT:
-			SetDeleteTime(item, 60);
-			break;
-		default:
-			if (!treasure) SetOrdinaryItemDeleteTime(item, itemId);
-			break;
-		}
+		InitializeNewItemLifetimeAndFuel(item, !treasure);
 
-		if (item.getItem().getType2() == 0 && item.getItem().getType() == 2) { // light
-			item.setRemainingTime(item.getItem().getLightFuel());
-		} else {
-			item.setRemainingTime(item.getItem().getMaxUseTime());
-		}
-		
 		if (!treasure) {
 			item.setBless(explicitBless ? bless : item.getItem().getBless());
 			item.setIdentified(true);
@@ -440,7 +421,31 @@ public class CInventory extends L1Object {
 		return item;
 	}
 
-	private void SetOrdinaryItemDeleteTime(L1ItemInstance item, int itemId) {
+	/** New-item initialization only: transfers must preserve existing lifetime and fuel. */
+	static void InitializeNewItemLifetimeAndFuel(L1ItemInstance item, boolean ordinary) {
+		final int itemId = item.getItemId();
+		switch (itemId) {
+		// 호랑이/진돗개
+		case 3000048: // 꼬마 요정의 마음
+			SetDeleteTime(item, 1439); // 24시간 -1분
+			break;
+		case L1ItemId.KILLTON_CONTRACT:
+		case L1ItemId.MERIN_CONTRACT:
+			SetDeleteTime(item, 60);
+			break;
+		default:
+			if (ordinary) SetOrdinaryItemDeleteTime(item, itemId);
+			break;
+		}
+
+		if (item.getItem().getType2() == 0 && item.getItem().getType() == 2) { // light
+			item.setRemainingTime(item.getItem().getLightFuel());
+		} else {
+			item.setRemainingTime(item.getItem().getMaxUseTime());
+		}
+	}
+
+	private static void SetOrdinaryItemDeleteTime(L1ItemInstance item, int itemId) {
 		switch (itemId) {
 		case 80500:
 			SetDeleteTime(item, 120);
@@ -554,16 +559,12 @@ public class CInventory extends L1Object {
 		}
 	}
 
-	private void SetDeleteTime(L1ItemInstance item, int minute) {
-		Timestamp deleteTime = null;
-		deleteTime = new Timestamp(System.currentTimeMillis() + (60000 * minute));
-		item.setEndTime(deleteTime);
+	private static void SetDeleteTime(L1ItemInstance item, int minute) {
+		item.setEndTime(new Timestamp(Math.addExact(System.currentTimeMillis(), 60000L * minute)));
 	}
 
-	private void SetDeleteTime1(L1ItemInstance item, int minute) {
-		Timestamp deleteTime = null;
-		deleteTime = new Timestamp(System.currentTimeMillis() + (20000 * minute));
-		item.setEndTime(deleteTime);
+	private static void SetDeleteTime1(L1ItemInstance item, int minute) {
+		item.setEndTime(new Timestamp(Math.addExact(System.currentTimeMillis(), 20000L * minute)));
 	}
 
     protected final boolean rejectPendingItemTransfer() {
