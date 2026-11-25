@@ -1,4 +1,4 @@
-name: RKern attack parameter source audit
+name: RKern critical and magic hit audit
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: rkern/src
-      - name: Enumerate attack source readers and writers
+      - name: Enumerate critical and magic hit source readers and writers
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -26,6 +26,6 @@ jobs:
               s=p.read_text(encoding="utf-8")
               clean=lex.sub(lambda m:re.sub(r'[^\n]',' ',m.group()),s)
               for i,(a,b) in enumerate(zip(s.splitlines(),clean.splitlines()),1):
-                  if re.search(r'\b(?:getBaseDmgup|getBaseBowDmgup|getBaseHitup|getBaseBowHitup|getDmgupByArmor|addDmgupByArmor|getBowDmgupByArmor|addBowDmgupByArmor|getDmgRate|addDmgRate|getHitRate|addHitRate|getBowDmgRate|addBowDmgRate|getBowHitRate|addBowHitRate|getDmgup|getBowDmgup|getHitup|getBowHitup|addDmgup|addBowDmgup|addHitup|addBowHitup)\s*\(',b):
+                  if re.search(r'\b(?:getOriginalMagicHit|setBaseMagicHitUp|addBaseMagicHitUp|getBaseMagicHitUp|getTotalMagicHitup|setBaseMagicCritical|addBaseMagicCritical|getBaseMagicCritical|getMagicHit|addMagicHit|set_missile_critical_rate|add_missile_critical_rate|get_missile_critical_rate|set_melee_critical_rate|add_melee_critical_rate|get_melee_critical_rate|set_magic_critical_rate|add_magic_critical_rate|get_magic_critical_rate)\s*\(',b):
                       print(f"{p}:{i}: {a.strip()}")
           PY
