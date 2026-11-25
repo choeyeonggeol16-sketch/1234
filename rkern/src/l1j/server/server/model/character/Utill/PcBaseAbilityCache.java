@@ -9,41 +9,46 @@ import l1j.server.server.model.Instance.L1PcInstance;
  */
 public final class PcBaseAbilityCache {
 
-    // Recompute on level/type changes; publish an immutable-in-practice snapshot.
-    private volatile BaseAbility base = new BaseAbility();
-
-    private volatile int cachedLevel = Integer.MIN_VALUE;
-    private volatile int cachedType  = Integer.MIN_VALUE;
+    // One publication carries its own class/level identity. A reader cannot
+    // observe a key from one calculation and values from another.
+    private static final BaseAbility EMPTY = new BaseAbility(Integer.MIN_VALUE, Integer.MIN_VALUE);
+    private volatile BaseAbility base = EMPTY;
+    private volatile boolean invalidated = true;
 
     public BaseAbility get() {
         return base;
     }
 
-    public void invalidate() {
-        cachedLevel = Integer.MIN_VALUE;
-        cachedType  = Integer.MIN_VALUE;
+    public synchronized void invalidate() {
+        invalidated = true;
     }
 
-    /** 베이스 계산(캐시) */
     public void refresh(final L1PcInstance pc) {
-        if (pc == null) return;
+        ValidateBaseData(pc);
+    }
 
+    public BaseAbility ValidateBaseData(final L1PcInstance pc) {
+        BaseAbility current = base;
+        if (pc == null) return current;
         final int level = pc.getLevel();
-        final int type  = pc.getType();
-
-        if (cachedLevel == level && cachedType == type) return;
-
+        final int type = pc.getType();
+        if (!invalidated && current.level == level && current.type == type) return current;
         synchronized (this) {
-            if (cachedLevel == level && cachedType == type) return;
-            final BaseAbility next = new BaseAbility();
-            applyBaseHit(next, type, level);
-            applyBaseDmg(next, type, level);
-            applyBaseCritical(next, type, level);
-            applyBasePvpDr(next, type, level);
-            applyMagicLevel(next, type, level);
+            // Re-read after entering; do not publish a request captured before
+            // another refresh while waiting for the monitor.
+            final int actualLevel = pc.getLevel();
+            final int actualType = pc.getType();
+            current = base;
+            if (!invalidated && current.level == actualLevel && current.type == actualType) return current;
+            final BaseAbility next = new BaseAbility(actualLevel, actualType);
+            applyBaseHit(next, actualType, actualLevel);
+            applyBaseDmg(next, actualType, actualLevel);
+            applyBaseCritical(next, actualType, actualLevel);
+            applyBasePvpDr(next, actualType, actualLevel);
+            applyMagicLevel(next, actualType, actualLevel);
             base = next;
-            cachedType = type;
-            cachedLevel = level;
+            invalidated = false;
+            return next;
         }
     }
 
@@ -209,6 +214,15 @@ public final class PcBaseAbilityCache {
 
     /** 베이스만 담는 구조체 */
     public static final class BaseAbility {
+        private final int level, type;
+
+        // Preserve the previous public no-argument constructor for callers.
+        public BaseAbility() { this(Integer.MIN_VALUE, Integer.MIN_VALUE); }
+
+        private BaseAbility(int level, int type) {
+            this.level = level;
+            this.type = type;
+        }
         private int dmg, bowDmg, magicDmg;
         private int hit, bowHit, magicHit;
         private int cri, bowCri, magicCri;
