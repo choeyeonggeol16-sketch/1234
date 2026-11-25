@@ -42,7 +42,7 @@ public final class SlotChangeManager {
     private L1ItemInstance[] plannedBuffer = EMPTY_ITEMS;
     private L1ItemInstance[] originalBuffer = EMPTY_ITEMS;
 
-    /** applySlot 중첩 실행 방지  */
+    /** SwapSlotItems 중첩 실행 방지  */
     private boolean swapping = false;
 
     public SlotChangeManager(L1PcInstance owner) {
@@ -91,19 +91,19 @@ public final class SlotChangeManager {
         return getList(slotNum);
     }
 
-    public void applySlot(int slotNum) {
+    public void SwapSlotItems(int slotNum) {
         final IntIdList desired = getList(slotNum);
         if (desired == null) return;
         final CUserInventory inventory = owner.getInventory();
         if (!inventory.tryBeginEquipmentChange()) return;
         try {
-            if (!swapping) applySlot(slotNum, desired, inventory);
+            if (!swapping) SwapSlotItems(slotNum, desired, inventory);
         } finally {
             inventory.endEquipmentChange();
         }
     }
 
-    private void applySlot(int slotNum, IntIdList desired, CUserInventory inventory) {
+    private void SwapSlotItems(int slotNum, IntIdList desired, CUserInventory inventory) {
         final int spriteId = owner.getCurrentSpriteId();
         final L1ItemInstance originalPrimary = owner.getWeapon();
         int unequipCount = 0, equipCount = 0, plannedCount = 0, originalCount = 0;

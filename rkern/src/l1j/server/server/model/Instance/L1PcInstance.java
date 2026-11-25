@@ -7562,7 +7562,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return _slotChange.getSlotItems(slotNum);
 	}
 	public void getChangeSlot(int slotNum) {
-		_slotChange.applySlot(slotNum);
+		_slotChange.SwapSlotItems(slotNum);
 	}
 
 	public void clearSlotChange() {
