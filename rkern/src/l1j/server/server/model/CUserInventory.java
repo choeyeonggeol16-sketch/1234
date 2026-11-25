@@ -748,48 +748,69 @@ public class CUserInventory extends CInventory {
 	public synchronized void deleteItem(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-        // Never submit a persistent deletion for another inventory's item.
         if (item == null || !_items.Have(item)) return;
-		
-		try {
-			CharactersItemStorage.create().deleteItem(item);
-		} catch (Exception e) {
-			throw new IllegalStateException("CacheD inventory delete failed: item=" + item.getId(), e);
-		}
-		if (item.isEquipped()) {
-			setEquipped(item, false);
-		}
-		
-		int itemId = item.getItemId();
-		int amount = item.getCount();
 
-		// 맵에서 빼기
-		_itemCountMap.subtract(itemId, amount);
-
-		// [디버그 로그]
-	//	System.out.println(String.format("[아이템삭제] ID: %d, 삭제수량: %d, 맵잔량: %d", itemId, amount, _itemCountMap.getOrDefault(itemId, 0)));
-		
-		SC_DeleteInventoryItem.send(_owner, item);
-		_items.Pop(item);
-        if (item.getEndTime() != null) {
-            l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
-                    .getInstance().cancelItem(_owner, item);
+        // Acquire the same short reservation used by setEquipped before
+        // accepting a deletion that also needs to retire equipped state.
+        final boolean reserve = item.isEquipped()
+                && !l1j.server.server.storage.CacheD.isItemTransferReplaying();
+        if (reserve && !tryBeginEquipmentChange())
+            throw new IllegalStateException("Equipment change busy during inventory delete");
+        try {
+            deleteOwnedItem(item);
+        } finally {
+            if (reserve) endEquipmentChange();
         }
-		
-		if (item.getItem().getWeight() != 0) {
-			SC_Weight.send(_owner);
-		}
-		
-		if (item.getItemId() == 900075) {
-			SC_Ability.send(_owner, 2, false);
-			SC_Ability.send(_owner, 7, false);
-			_owner.setPolyRingMaster(false);
-			if (_owner.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
-				// Skill end callback performs polymorph and stat teardown once.
-				_owner.removeSkillEffect(L1SkillId.POLY_RING_MASTER);
-			}
-		}
-	}
+    }
+
+    private void deleteOwnedItem(L1ItemInstance item) {
+        try {
+            CharactersItemStorage.create().deleteItem(item);
+        } catch (Exception e) {
+            throw new IllegalStateException("CacheD inventory delete failed: item=" + item.getId(), e);
+        }
+        if (item.isEquipped()) {
+            setEquipped(item, false);
+        }
+
+        final int itemId = item.getItemId();
+        _itemCountMap.subtract(itemId, item.getCount());
+        _items.Pop(item);
+
+        if (item.getEndTime() != null) {
+            try {
+                l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
+                        .getInstance().cancelItem(_owner, item);
+            } catch (RuntimeException failure) {
+                RECEIPT_NOTICE_LOG.log(java.util.logging.Level.SEVERE,
+                        "Accepted inventory expiry cancellation failed", failure);
+            }
+        }
+
+        if (itemId == 900075) {
+            _owner.setPolyRingMaster(false);
+            if (_owner.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
+                // The skill end callback owns modifier and visual retirement.
+                try { _owner.removeSkillEffect(L1SkillId.POLY_RING_MASTER); }
+                catch (RuntimeException failure) { receiptNoticeFailed("poly-ring retirement", failure); }
+            }
+        }
+
+        // Notifications cannot undo an accepted deletion or prevent the
+        // caller from unregistering or transferring the detached object.
+        try { SC_DeleteInventoryItem.send(_owner, item); }
+        catch (RuntimeException failure) { receiptNoticeFailed("delete", failure); }
+        if (item.getItem().getWeight() != 0) {
+            try { SC_Weight.send(_owner); }
+            catch (RuntimeException failure) { receiptNoticeFailed("weight", failure); }
+        }
+        if (itemId == 900075) {
+            try { SC_Ability.send(_owner, 2, false); }
+            catch (RuntimeException failure) { receiptNoticeFailed("ability-off-2", failure); }
+            try { SC_Ability.send(_owner, 7, false); }
+            catch (RuntimeException failure) { receiptNoticeFailed("ability-off-7", failure); }
+        }
+    }
 
 	public L1ItemInstance getItemEquippend(int itemId) {// 아이템 착용 상태 확인의 오브젝트 인식
 		L1ItemInstance equipeitem = null;
