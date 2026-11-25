@@ -13,7 +13,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.gametime.L1GameTimeClock;
-import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CPCParamDB;
 
 public final class L1AttackHelper {
 
@@ -101,11 +101,11 @@ public final class L1AttackHelper {
 
 		if (isRanged) {
 			baseHit = pc.getBaseBowHitByLevelClass();
-			statHit = CalcStat.원거리명중(pc.GetTotalStatDex());
+			statHit = CPCParamDB.원거리명중(pc.GetTotalStatDex());
 			miscHit = (long) pc.getBowHitup() + pc.getBowHitRate();
 		} else {
 			baseHit = pc.getBaseMeleeHitByLevelClass();
-			statHit = CalcStat.근거리명중(pc.GetTotalStatStr());
+			statHit = CPCParamDB.근거리명중(pc.GetTotalStatStr());
 			miscHit = (long) pc.getHitup() + pc.getHitRate();
 		}
 
@@ -124,11 +124,11 @@ public final class L1AttackHelper {
 
 		final int baseHit = npc.getLevel();	   
 		if (isRanged) {
-			final int statHit = CalcStat.원거리명중(npc.GetTotalStatDex());
+			final int statHit = CPCParamDB.원거리명중(npc.GetTotalStatDex());
 			final int miscHit = npc.getBowHitup();
 			return baseHit + statHit + miscHit;
 		} else {
-			final int statHit = CalcStat.근거리명중(npc.GetTotalStatStr());
+			final int statHit = CPCParamDB.근거리명중(npc.GetTotalStatStr());
 			final int miscHit = npc.getHitup();
 			return baseHit + statHit + miscHit; 
 		}

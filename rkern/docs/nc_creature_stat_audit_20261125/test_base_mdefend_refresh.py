@@ -5,7 +5,7 @@ root=Path(__file__).resolve().parents[2]
 model=root/"src/l1j/server/server/model"
 creature=(model/"L1Character.java").read_text(encoding="utf-8")
 pc=(model/"Instance/L1PcInstance.java").read_text(encoding="utf-8")
-calc=(root/"src/l1j/server/server/utils/CalcStat.java").read_text(encoding="utf-8")
+calc=(root/"src/l1j/server/server/utils/CPCParamDB.java").read_text(encoding="utf-8")
 def method(src, signature):
     start=src.index(signature)
     end=src.index("{",start)+1
@@ -25,7 +25,7 @@ methods+="\n".join(method(creature,s) for s in (
 res=creature.split("// BEGIN shared resistance sources (CCreature)",1)[1].split("// END shared resistance sources",1)[0]
 pcmethods="\n".join(method(pc,s) for s in ("public final void RefreshBaseMDefend(", "public void resetBaseMr()", "public void setType("))
 assert "ValidateParameters(VB_MDEFEND);" in pcmethods
-# Use actual CalcStat base table and formula.
+# Use actual CPCParamDB base table and formula.
 base=re.search(r"(?:private|public)\s+static\s+final\s+int\[\]\s+BASE_MR\s*=\s*\{[^}]+\};",calc).group(0)
 calcMethods=method(calc,"public static int 마법방어(")
 stub="""
@@ -47,7 +47,7 @@ class BaseParam {void invalidate(){}}
 class SC_SPMR {static void send(L1PcInstance p){p.packets++;}}
 class IntRange {static int ensure(int n,int lo,int hi){return Math.max(lo,Math.min(hi,n));}}
 enum PassiveID {RESIST_ELEMENT; int toInt(){return 0;}}
-class CalcStat {
+class CPCParamDB {
   """+base+"""
   static int clampType(int n){return Math.max(0,Math.min(BASE_MR.length-1,n));}
   """+calcMethods+"""
@@ -55,7 +55,7 @@ class CalcStat {
 public class BaseMrAudit {
  static int clamp(int n){return Math.max(0,Math.min(250,n));}
  static void check(L1PcInstance p,int bonus,int skill){
-   int expected=clamp(CalcStat.마법방어(p.getType(),p.GetTotalStatWis())+p.getLevel()/2);
+   int expected=clamp(CPCParamDB.마법방어(p.getType(),p.GetTotalStatWis())+p.getLevel()/2);
    if(p.GetOrgMDefend()!=expected||p.GetMDefend()!=clamp(expected+bonus+skill+(p.passive?5:0)))throw new AssertionError("MR "+expected+" vs "+p.GetOrgMDefend());
  }
  public static void main(String[] args){

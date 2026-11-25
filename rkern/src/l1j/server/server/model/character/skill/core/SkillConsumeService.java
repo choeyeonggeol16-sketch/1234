@@ -8,7 +8,7 @@ import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Skills;
-import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CPCParamDB;
 
 public enum SkillConsumeService {
 	INSTANCE;
@@ -47,7 +47,7 @@ public enum SkillConsumeService {
 
 			// INT에 따른 MP 절감
 			try {
-				double int_pre = CalcStat.엠소모감소(pc.GetStatInt()) * 0.01;
+				double int_pre = CPCParamDB.엠소모감소(pc.GetStatInt()) * 0.01;
 				int min_mp = (int) (mpConsume * int_pre);
 				if (min_mp > 0) mpConsume -= min_mp;
 			} catch (Throwable ignore) {}

@@ -5,7 +5,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
-import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CPCParamDB;
 
 /**
  * 무기 특수 발동 판정 헬퍼
@@ -229,12 +229,12 @@ public final class L1SkillProcHelper {
 
 		if (ranged) {
 			final int baseCri = pc.getBaseBowCriByLevelClass();
-			final int statCri = CalcStat.원거리치명타(pc.GetTotalStatDex());
+			final int statCri = CPCParamDB.원거리치명타(pc.GetTotalStatDex());
 			final int miscCri = pc.get_missile_critical_rate();
 			chance = baseCri + statCri + miscCri;
 		} else {
 			final int baseCri = pc.getBaseMeleeCriByLevelClass(); 
-			final int statCri = CalcStat.근거리치명타(pc.GetTotalStatStr());
+			final int statCri = CPCParamDB.근거리치명타(pc.GetTotalStatStr());
 			final int miscCri = pc.get_melee_critical_rate();
 			chance = baseCri + statCri + miscCri;
 

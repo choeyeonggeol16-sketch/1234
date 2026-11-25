@@ -43,7 +43,7 @@ import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.types.Point;
-import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CPCParamDB;
 import l1j.server.server.utils.IntRange;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
@@ -539,36 +539,36 @@ public class L1Character extends L1Object {
 	// Intrinsic L1 stat contributions, shared by PC and NPC. Equipment,
 	// class/level, target-dependent effects and random rolls remain with their owners.
 	public final int GetStatPAttack(boolean ranged) {
-		return ranged ? CalcStat.원거리대미지(GetTotalStatDex())
-				: CalcStat.근거리대미지(GetTotalStatStr());
+		return ranged ? CPCParamDB.원거리대미지(GetTotalStatDex())
+				: CPCParamDB.근거리대미지(GetTotalStatStr());
 	}
 
 	public final int GetStatMCriticalProb() {
-		return CalcStat.마법치명타(GetTotalStatInt());
+		return CPCParamDB.마법치명타(GetTotalStatInt());
 	}
 
 	public final int GetStatCarryWeight() {
-		return CalcStat.최대소지무게(GetTotalStatStr(), GetTotalStatCon());
+		return CPCParamDB.최대소지무게(GetTotalStatStr(), GetTotalStatCon());
 	}
 
 	public final int GetStatPDefend() {
-		return CalcStat.물리방어력(GetTotalStatDex());
+		return CPCParamDB.물리방어력(GetTotalStatDex());
 	}
 
 	public final int GetStatMDefend(int classType) {
-		return CalcStat.마법방어(classType, GetTotalStatWis());
+		return CPCParamDB.마법방어(classType, GetTotalStatWis());
 	}
 
 	public final int GetStatHPRegen() {
-		return CalcStat.피회복틱(GetStatCon());
+		return CPCParamDB.피회복틱(GetStatCon());
 	}
 
 	public final int GetStatMPRegen() {
-		return CalcStat.naturalMpRegen(getLevel(), GetTotalStatWis(), GetStatWis());
+		return CPCParamDB.naturalMpRegen(getLevel(), GetTotalStatWis(), GetStatWis());
 	}
 
 	private int getDefaultER() {
-		return CalcStat.원거리회피(GetTotalStatDex());
+		return CPCParamDB.원거리회피(GetTotalStatDex());
 	}
 
 	private int getEffectedER() {
@@ -1179,7 +1179,7 @@ public class L1Character extends L1Object {
 		int maxhp = delta == 0 ? m_nMaxHP : Math.clamp((long) (m_nBaseHP + m_nAddedHP) + delta, 1, 10_000_000);
 
         if (this instanceof L1PcInstance)
-            maxhp += CalcStat.pureHpMpBonus(GetStatCon());
+            maxhp += CPCParamDB.pureHpMpBonus(GetStatCon());
 		return maxhp;
 	}
 
@@ -1225,7 +1225,7 @@ public class L1Character extends L1Object {
 		int maxmp = delta == 0 ? m_nMaxMP : Math.clamp((long) (m_nBaseMP + m_nAddedMP) + delta, 0, 10_000_000);
 
         int wis = this instanceof L1PcInstance ? GetStatWis() : GetTotalStatWis();
-        maxmp += CalcStat.pureHpMpBonus(wis);
+        maxmp += CPCParamDB.pureHpMpBonus(wis);
 		return maxmp;
 	}
 
@@ -1621,7 +1621,7 @@ public class L1Character extends L1Object {
 		int i = GetTotalStatInt();
 		final int classType = (this instanceof L1PcInstance)
                 ? ((L1PcInstance) this).getType() : 0;
-        return CalcStat.마법보너스(classType, i);
+        return CPCParamDB.마법보너스(classType, i);
 		/*
 		 * if (i <= 5) return -2; else if (i <= 8) return -1; else if (i <= 11)
 		 * return 0; else if (i <= 14) return 1; else if (i <= 17) return 2;

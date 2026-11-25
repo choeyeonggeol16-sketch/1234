@@ -19,7 +19,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
 
-import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CPCParamDB;
 import l1j.server.server.utils.CheckInitStat;
 
 public final class CS_ReturnStatus {
@@ -474,8 +474,8 @@ public final class CS_ReturnStatus {
 
 		pc.rst.level++;
 
-		final int hp = CalcStat.increaseHp(pc.getType(), (byte) (pc.rst.con + pc.rst.basecon));
-		final int mp = CalcStat.increaseMp(pc.getType(), (byte) (pc.rst.wis + pc.rst.basewis));
+		final int hp = CPCParamDB.increaseHp(pc.getType(), (byte) (pc.rst.con + pc.rst.basecon));
+		final int mp = CPCParamDB.increaseMp(pc.getType(), (byte) (pc.rst.wis + pc.rst.basewis));
 
         int oldHp = Math.min(32767, pc.rst.baseHp + pc.rst.upHp);
         int oldMp = Math.min(32767, pc.rst.baseMp + pc.rst.upMp);
@@ -518,11 +518,11 @@ public final class CS_ReturnStatus {
 	// =========================================================
 
 	private static short getInitHp(L1PcInstance pc) {
-        return CalcStat.initialHp(pc.getType());
+        return CPCParamDB.initialHp(pc.getType());
     }
 
 	private static short getInitMp(L1PcInstance pc, int baseWis) {
-        return CalcStat.initialMp(pc.getType(), baseWis);
+        return CPCParamDB.initialMp(pc.getType(), baseWis);
     }
 
 	// =========================================================

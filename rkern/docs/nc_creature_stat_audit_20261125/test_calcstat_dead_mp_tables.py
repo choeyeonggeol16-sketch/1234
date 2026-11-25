@@ -1,11 +1,11 @@
-"""Compare the production CalcStat API against the exact pre-cleanup revision."""
+"""Compare the production CPCParamDB API against the exact pre-cleanup revision."""
 from pathlib import Path
 import re
 import subprocess
 import tempfile
 
 root=Path(__file__).resolve().parents[2]
-path=root/"src/l1j/server/server/utils/CalcStat.java"
+path=root/"src/l1j/server/server/utils/CPCParamDB.java"
 old=subprocess.check_output(["git","show","2cdff1c07e6e6f2e32686ef03f15746dd95c4097:rkern/src/l1j/server/server/utils/CalcStat.java"],cwd=root).decode("utf-8")
 new=path.read_text(encoding="utf-8")
 dead=("MP_MIN","MP_RANGE","MP_MIN_LU","MP_MAX_LU","MpRule","StepRule",
@@ -15,7 +15,7 @@ for name in dead:
 with tempfile.TemporaryDirectory() as tmp:
     p=Path(tmp)
     (p/"OldCalcStat.java").write_text(old.replace("class CalcStat {","class OldCalcStat {").replace("private CalcStat()","private OldCalcStat()"),encoding="utf-8")
-    (p/"CalcStat.java").write_text(new,encoding="utf-8")
+    (p/"CPCParamDB.java").write_text(new,encoding="utf-8")
     (p/"GrowthAudit.java").write_text(r"""
 package l1j.server.server.utils;
 import java.lang.reflect.*;
@@ -25,7 +25,7 @@ public class GrowthAudit {
     static void check(boolean ok,String msg){if(!ok)throw new AssertionError(msg);checks++;}
     public static void main(String[] args)throws Exception {
         int[] types={-2147483648,-1,0,1,2,3,4,5,6,7,8,2147483647};
-        for(Method m:CalcStat.class.getDeclaredMethods()){
+        for(Method m:CPCParamDB.class.getDeclaredMethods()){
             if(!Modifier.isPublic(m.getModifiers())||!Modifier.isStatic(m.getModifiers()))continue;
             Class<?>[] params=m.getParameterTypes();
             Method baseline=OldCalcStat.class.getMethod(m.getName(),params);
@@ -34,8 +34,8 @@ public class GrowthAudit {
                     int u=v&255;
                     int a=((Number)m.invoke(null,t,(byte)v)).intValue();
                     int b=((Number)baseline.invoke(null,t,(byte)v)).intValue();
-                    int lo=m.getName().equals("increaseHp")?CalcStat.PureHp(t,u):CalcStat.MinincreaseMp(t,u);
-                    int hi=m.getName().equals("increaseHp")?lo+1:CalcStat.MaxincreaseMp(t,u);
+                    int lo=m.getName().equals("increaseHp")?CPCParamDB.PureHp(t,u):CPCParamDB.MinincreaseMp(t,u);
+                    int hi=m.getName().equals("increaseHp")?lo+1:CPCParamDB.MaxincreaseMp(t,u);
                     check(a>=lo&&a<=hi&&b>=lo&&b<=hi,m.getName());
                 }
                 continue;
@@ -56,5 +56,5 @@ public class GrowthAudit {
     }
 }
 """,encoding="utf-8")
-    subprocess.run(["javac","-encoding","UTF-8","-d",tmp,str(p/"OldCalcStat.java"),str(p/"CalcStat.java"),str(p/"GrowthAudit.java")],check=True)
+    subprocess.run(["javac","-encoding","UTF-8","-d",tmp,str(p/"OldCalcStat.java"),str(p/"CPCParamDB.java"),str(p/"GrowthAudit.java")],check=True)
     subprocess.run(["java","-cp",tmp,"l1j.server.server.utils.GrowthAudit"],check=True)

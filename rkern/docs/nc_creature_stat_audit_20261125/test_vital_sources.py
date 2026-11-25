@@ -27,13 +27,13 @@ class L1Character {
 class L1PcInstance extends L1Character {}
 class L1NpcInstance extends L1Character {}
 class IntRange {static int ensure(int n,int lo,int hi){return Math.clamp(n,lo,hi);}}
-class CalcStat {static int pureHpMpBonus(int n){return n>=45?100:n>=35?50:n>=25?20:0;}}
+class CPCParamDB {static int pureHpMpBonus(int n){return n>=45?100:n>=35?50:n>=25?20:0;}}
 public class VitalAudit {
  static class Old {
    int hp,mp,effHp,effMp,bh,bm,sh,sm,curHp,curMp,con,wis; short hpr,mpr;
    final boolean pc; Old(boolean p){pc=p;}
-   int maxHp(){return (sh==0?effHp:Math.clamp((long)hp+sh,1,10000000))+(pc?CalcStat.pureHpMpBonus(con):0);}
-   int maxMp(){return (sm==0?effMp:Math.clamp((long)mp+sm,0,10000000))+CalcStat.pureHpMpBonus(wis);}
+   int maxHp(){return (sh==0?effHp:Math.clamp((long)hp+sh,1,10000000))+(pc?CPCParamDB.pureHpMpBonus(con):0);}
+   int maxMp(){return (sm==0?effMp:Math.clamp((long)mp+sm,0,10000000))+CPCParamDB.pureHpMpBonus(wis);}
    void setHp(int n){hp=n;effHp=Math.clamp(n,1,10000000);curHp=Math.min(curHp,maxHp());}
    void setMp(int n){mp=n;effMp=Math.clamp(n,0,10000000);curMp=Math.min(curMp,maxMp());}
    void baseHp(short n){int next=Math.clamp(bh+n,1,32767);setHp(hp+next-bh);bh=next;}

@@ -238,8 +238,8 @@ public final class CS_CreateChar {
 			pc.setClassId(FEMALE_LIST[pc.getType()]);
 		}
 
-        init_hp = l1j.server.server.utils.CalcStat.initialHp(pc.getType());
-        init_mp = l1j.server.server.utils.CalcStat.initialMp(pc.getType(), pc.GetOriginalStatWis());
+        init_hp = l1j.server.server.utils.CPCParamDB.initialHp(pc.getType());
+        init_mp = l1j.server.server.utils.CPCParamDB.initialMp(pc.getType(), pc.GetOriginalStatWis());
 
 		if (Config.캐릭터시작점) {
 			pc.setX(START_LOC_X[startPosType][startPos]);

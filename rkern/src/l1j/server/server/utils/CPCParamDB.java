@@ -2,9 +2,9 @@ package l1j.server.server.utils;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class CalcStat {
+public final class CPCParamDB {
 
-    private CalcStat() {}
+    private CPCParamDB() {}
 
     // =========================
     // Public API (80 tables)
@@ -443,26 +443,4 @@ public class CalcStat {
         if (con <= 64) return 44;
         return 45;
     }
-
-    // Legacy public API aliases. All game-source callers use the Korean table APIs
-    // directly; these delegates protect extensions compiled against old CalcStat.
-    @Deprecated public static int calcDmgup(int str) { return 근거리대미지(str); }
-    @Deprecated public static int calcHitup(int str) { return 근거리명중(str); }
-    @Deprecated public static int calcDmgCritical(int str) { return 근거리치명타(str); }
-    @Deprecated public static int calcBowDmgup(int dex) { return 원거리대미지(dex); }
-    @Deprecated public static int calcBowHitup(int dex) { return 원거리명중(dex); }
-    @Deprecated public static int calcBowCritical(int dex) { return 원거리치명타(dex); }
-    @Deprecated public static int calcAc(int dex) { return 물리방어력(dex); }
-    @Deprecated public static int calcMagicDmg(int intel) { return 마법대미지(intel); }
-    @Deprecated public static int calcMagicHitUp(int intel) { return 마법적중(intel); }
-    @Deprecated public static int calcMagicCritical(int intel) { return 마법치명타(intel); }
-    @Deprecated public static int calcMagicBonus(int type, int intel) { return 마법보너스(type, intel); }
-    @Deprecated public static int calcDecreaseMp(int intel) { return 엠소모감소(intel); }
-    @Deprecated public static int calcMpr(int wis) { return 엠회복틱(wis); }
-    @Deprecated public static int calcMprPotion(int wis) { return 엠피물약회복(wis); }
-    @Deprecated public static int calcStatMr(int type, int wis) { return 마법방어(type, wis); }
-    @Deprecated public static int calcHpr(int con) { return 피회복틱(con); }
-    @Deprecated public static double calcHprPotion(int con) { return 물약회복증가(con); }
-    @Deprecated public static int getMaxWeight(int str, int con) { return 최대소지무게(str, con); }
-    @Deprecated public static int get_consume_mp(int intel) { return 엠소모감소(intel); }
 }

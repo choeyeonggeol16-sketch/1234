@@ -7,7 +7,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2] / "src"
 BASE = ROOT / "l1j/server/server"
 character = (BASE / "model/L1Character.java").read_text(encoding="utf-8")
-calc = (BASE / "utils/CalcStat.java").read_text(encoding="utf-8")
+calc = (BASE / "utils/CPCParamDB.java").read_text(encoding="utf-8")
 names = ("GetStatPAttack", "GetStatMCriticalProb", "GetStatCarryWeight",
          "GetStatPDefend", "GetStatMDefend", "GetStatHPRegen", "GetStatMPRegen")
 methods = []
@@ -17,12 +17,12 @@ for name in names:
     methods.append(match.group())
 attack = (BASE / "model/character/action/CAttackAction.java").read_text(encoding="utf-8")
 magic = (BASE / "model/L1Magic.java").read_text(encoding="utf-8")
-assert "CalcStat." not in attack and "CalcStat." not in magic
+assert "CPCParamDB." not in attack and "CPCParamDB." not in magic
 assert "_pc.GetStatPAttack(_weaponType == 20 || _weaponType == 62)" in attack
 assert "_npc.GetStatPAttack(rangedNpc)" in attack
 assert "_pc.GetStatMCriticalProb()" in attack and "_pc.GetStatMCriticalProb()" in magic
 harness = """
-import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CPCParamDB;
 public class IntrinsicStatTest {
     int str, dex, intel, con, wis, pureCon, pureWis, level;
     int GetTotalStatStr(){return str;}
@@ -48,14 +48,14 @@ public class IntrinsicStatTest {
             c.wis=rng.nextInt(256)-128; c.pureCon=rng.nextInt(128);
             c.pureWis=rng.nextInt(128); c.level=rng.nextInt(256);
             int type=rng.nextInt(16)-4;
-            eq(CalcStat.근거리대미지(c.str),c.GetStatPAttack(false));
-            eq(CalcStat.원거리대미지(c.dex),c.GetStatPAttack(true));
-            eq(CalcStat.마법치명타(c.intel),c.GetStatMCriticalProb());
-            eq(CalcStat.최대소지무게(c.str,c.con),c.GetStatCarryWeight());
-            eq(CalcStat.물리방어력(c.dex),c.GetStatPDefend());
-            eq(CalcStat.마법방어(type,c.wis),c.GetStatMDefend(type));
-            eq(CalcStat.피회복틱(c.pureCon),c.GetStatHPRegen());
-            eq(CalcStat.naturalMpRegen(c.level,c.wis,c.pureWis),c.GetStatMPRegen());
+            eq(CPCParamDB.근거리대미지(c.str),c.GetStatPAttack(false));
+            eq(CPCParamDB.원거리대미지(c.dex),c.GetStatPAttack(true));
+            eq(CPCParamDB.마법치명타(c.intel),c.GetStatMCriticalProb());
+            eq(CPCParamDB.최대소지무게(c.str,c.con),c.GetStatCarryWeight());
+            eq(CPCParamDB.물리방어력(c.dex),c.GetStatPDefend());
+            eq(CPCParamDB.마법방어(type,c.wis),c.GetStatMDefend(type));
+            eq(CPCParamDB.피회복틱(c.pureCon),c.GetStatHPRegen());
+            eq(CPCParamDB.naturalMpRegen(c.level,c.wis,c.pureWis),c.GetStatMPRegen());
         }
         System.out.println("PASS "+checks+" intrinsic-stat comparisons");
     }
@@ -63,8 +63,8 @@ public class IntrinsicStatTest {
 """
 with tempfile.TemporaryDirectory() as tmp:
     temp = Path(tmp)
-    (temp / "CalcStat.java").write_text(calc, encoding="utf-8")
+    (temp / "CPCParamDB.java").write_text(calc, encoding="utf-8")
     (temp / "IntrinsicStatTest.java").write_text(harness, encoding="utf-8")
     subprocess.run(["javac", "-encoding", "UTF-8", "-d", tmp,
-                    str(temp / "CalcStat.java"), str(temp / "IntrinsicStatTest.java")], check=True)
+                    str(temp / "CPCParamDB.java"), str(temp / "IntrinsicStatTest.java")], check=True)
     subprocess.run(["java", "-cp", tmp, "IntrinsicStatTest"], check=True)

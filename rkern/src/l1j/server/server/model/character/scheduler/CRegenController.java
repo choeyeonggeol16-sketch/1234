@@ -15,7 +15,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 
-import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CPCParamDB;
 
 /**
  * Per-PC creature heartbeat regen owner.
@@ -254,7 +254,7 @@ public final class CRegenController {
 
         if (pc.get_food() < 40) return;
 
-        int mpr = CalcStat.naturalRegenAfterWeight(baseMpr + itemMpr,
+        int mpr = CPCParamDB.naturalRegenAfterWeight(baseMpr + itemMpr,
                 isOverWeight(pc), pc.GetStatWis());
         int newMp = pc.getCurrentMp() + mpr;
         if (newMp > pc.getMaxMp()) newMp = pc.getMaxMp();
@@ -303,7 +303,7 @@ public final class CRegenController {
         }
 
         int normalHpr = bonus + equipHpr + basebonus;
-        int recovered = CalcStat.naturalRegenAfterWeight(normalHpr,
+        int recovered = CPCParamDB.naturalRegenAfterWeight(normalHpr,
                 isOverWeight(pc), pc.GetStatCon());
         int newHp = pc.getCurrentHp() + recovered;
         if (newHp < 1) newHp = 1;

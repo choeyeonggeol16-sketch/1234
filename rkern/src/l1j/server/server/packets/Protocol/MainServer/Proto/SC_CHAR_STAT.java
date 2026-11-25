@@ -5,7 +5,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
-import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CPCParamDB;
 import l1j.server.server.utils.StatContext;
 
 public final class SC_CHAR_STAT extends ProtoPacket {
@@ -58,42 +58,42 @@ public final class SC_CHAR_STAT extends ProtoPacket {
 
 		switch (targetType) {
 		case Str:
-			v1 = CalcStat.근거리대미지(str);
-			v2 = CalcStat.근거리명중(str);
-			v3 = CalcStat.근거리치명타(str);
-			v4 = CalcStat.최대소지무게(str, con);
+			v1 = CPCParamDB.근거리대미지(str);
+			v2 = CPCParamDB.근거리명중(str);
+			v3 = CPCParamDB.근거리치명타(str);
+			v4 = CPCParamDB.최대소지무게(str, con);
 			break;
 
 		case Int:
-			v1 = CalcStat.마법대미지(intel);
-			v2 = CalcStat.마법적중(intel);
-			v3 = CalcStat.마법치명타(intel);
-			v4 = CalcStat.마법보너스(classType, intel);
-			v5 = CalcStat.엠소모감소(intel);
+			v1 = CPCParamDB.마법대미지(intel);
+			v2 = CPCParamDB.마법적중(intel);
+			v3 = CPCParamDB.마법치명타(intel);
+			v4 = CPCParamDB.마법보너스(classType, intel);
+			v5 = CPCParamDB.엠소모감소(intel);
 			break;
 
 		case Wis:
-			v1 = CalcStat.엠회복틱(wis);
-			v2 = CalcStat.엠피물약회복(wis);
-			v3 = CalcStat.마법방어(classType, wis);
-			v4 = CalcStat.MinincreaseMp(classType, wis);
-			v5 = CalcStat.MaxincreaseMp(classType, wis);
+			v1 = CPCParamDB.엠회복틱(wis);
+			v2 = CPCParamDB.엠피물약회복(wis);
+			v3 = CPCParamDB.마법방어(classType, wis);
+			v4 = CPCParamDB.MinincreaseMp(classType, wis);
+			v5 = CPCParamDB.MaxincreaseMp(classType, wis);
 			v6 = getHpMpValue(pc, false);
 			break;
 
 		case Dex:
-			v1 = CalcStat.원거리대미지(dex);
-			v2 = CalcStat.원거리명중(dex);
-			v3 = CalcStat.원거리치명타(dex);
-			v4 = CalcStat.물리방어력(dex);
-			v5 = CalcStat.원거리회피(dex);
+			v1 = CPCParamDB.원거리대미지(dex);
+			v2 = CPCParamDB.원거리명중(dex);
+			v3 = CPCParamDB.원거리치명타(dex);
+			v4 = CPCParamDB.물리방어력(dex);
+			v5 = CPCParamDB.원거리회피(dex);
 			break;
 
 		case Con:
-			v1 = CalcStat.피회복틱(con);
-			v2 = (int) CalcStat.물약회복증가(con);
-			v3 = CalcStat.최대소지무게(str, con);
-			v4 = CalcStat.PureHp(classType, con);
+			v1 = CPCParamDB.피회복틱(con);
+			v2 = (int) CPCParamDB.물약회복증가(con);
+			v3 = CPCParamDB.최대소지무게(str, con);
+			v4 = CPCParamDB.PureHp(classType, con);
 			v6 = getHpMpValue(pc, true);
 			break;
 
@@ -124,42 +124,42 @@ public final class SC_CHAR_STAT extends ProtoPacket {
 
 			switch (statType) {
 			case Stat_Str:
-				v1 = CalcStat.근거리대미지(str);
-				v2 = CalcStat.근거리명중(str);
-				v3 = CalcStat.근거리치명타(str);
-				v4 = CalcStat.최대소지무게(str, con);
+				v1 = CPCParamDB.근거리대미지(str);
+				v2 = CPCParamDB.근거리명중(str);
+				v3 = CPCParamDB.근거리치명타(str);
+				v4 = CPCParamDB.최대소지무게(str, con);
 				break;
 
 			case Stat_Int:
-				v1 = CalcStat.마법대미지(intel);
-				v2 = CalcStat.마법적중(intel);
-				v3 = CalcStat.마법치명타(intel);
-				v4 = CalcStat.마법보너스(type, intel);
-				v5 = CalcStat.엠소모감소(intel);
+				v1 = CPCParamDB.마법대미지(intel);
+				v2 = CPCParamDB.마법적중(intel);
+				v3 = CPCParamDB.마법치명타(intel);
+				v4 = CPCParamDB.마법보너스(type, intel);
+				v5 = CPCParamDB.엠소모감소(intel);
 				break;
 
 			case Stat_Wis:
-				v1 = CalcStat.naturalMpRegen(0, wis, pc.GetStatWis());
-				v2 = CalcStat.엠피물약회복(wis);
-				v3 = CalcStat.마법방어(type, wis);
-				v4 = CalcStat.MinincreaseMp(type, pc.GetStatWis());
-				v5 = CalcStat.MaxincreaseMp(type, pc.GetStatWis());
+				v1 = CPCParamDB.naturalMpRegen(0, wis, pc.GetStatWis());
+				v2 = CPCParamDB.엠피물약회복(wis);
+				v3 = CPCParamDB.마법방어(type, wis);
+				v4 = CPCParamDB.MinincreaseMp(type, pc.GetStatWis());
+				v5 = CPCParamDB.MaxincreaseMp(type, pc.GetStatWis());
 				v6 = getHpMpValue(pc, false);
 				break;
 
 			case Stat_Dex:
-				v1 = CalcStat.원거리대미지(dex);
-				v2 = CalcStat.원거리명중(dex);
-				v3 = CalcStat.원거리치명타(dex);
-				v4 = CalcStat.물리방어력(dex);
-				v5 = CalcStat.원거리회피(dex);
+				v1 = CPCParamDB.원거리대미지(dex);
+				v2 = CPCParamDB.원거리명중(dex);
+				v3 = CPCParamDB.원거리치명타(dex);
+				v4 = CPCParamDB.물리방어력(dex);
+				v5 = CPCParamDB.원거리회피(dex);
 				break;
 
 			case Stat_Con:
-				v1 = CalcStat.피회복틱(con);
-				v2 = (int) CalcStat.물약회복증가(con);
-				v3 = CalcStat.최대소지무게(str, con);
-				v4 = CalcStat.PureHp(type, pc.GetStatCon());
+				v1 = CPCParamDB.피회복틱(con);
+				v2 = (int) CPCParamDB.물약회복증가(con);
+				v3 = CPCParamDB.최대소지무게(str, con);
+				v4 = CPCParamDB.PureHp(type, pc.GetStatCon());
 				v6 = getHpMpValue(pc, true);
 				break;
 
@@ -652,42 +652,42 @@ public final class SC_CHAR_STAT extends ProtoPacket {
 
                 switch (targetType) {
                 case Str:
-                    v1 = CalcStat.근거리대미지(str);
-                    v2 = CalcStat.근거리명중(str);
-                    v3 = CalcStat.근거리치명타(str);
-                    v4 = CalcStat.최대소지무게(str, con);
+                    v1 = CPCParamDB.근거리대미지(str);
+                    v2 = CPCParamDB.근거리명중(str);
+                    v3 = CPCParamDB.근거리치명타(str);
+                    v4 = CPCParamDB.최대소지무게(str, con);
                     break;
 
                 case Int:
-                    v1 = CalcStat.마법대미지(intel);
-                    v2 = CalcStat.마법적중(intel);
-                    v3 = CalcStat.마법치명타(intel);
-                    v4 = CalcStat.마법보너스(classType, intel);
-                    v5 = CalcStat.엠소모감소(intel);
+                    v1 = CPCParamDB.마법대미지(intel);
+                    v2 = CPCParamDB.마법적중(intel);
+                    v3 = CPCParamDB.마법치명타(intel);
+                    v4 = CPCParamDB.마법보너스(classType, intel);
+                    v5 = CPCParamDB.엠소모감소(intel);
                     break;
 
                 case Wis:
-                    v1 = CalcStat.엠회복틱(wis);
-                    v2 = CalcStat.엠피물약회복(wis);
-                    v3 = CalcStat.마법방어(classType, wis);
-                    v4 = CalcStat.MinincreaseMp(classType, wis);
-                    v5 = CalcStat.MaxincreaseMp(classType, wis);
+                    v1 = CPCParamDB.엠회복틱(wis);
+                    v2 = CPCParamDB.엠피물약회복(wis);
+                    v3 = CPCParamDB.마법방어(classType, wis);
+                    v4 = CPCParamDB.MinincreaseMp(classType, wis);
+                    v5 = CPCParamDB.MaxincreaseMp(classType, wis);
                     v6 = getHpMpValue(pc, false);
                     break;
 
                 case Dex:
-                    v1 = CalcStat.원거리대미지(dex);
-                    v2 = CalcStat.원거리명중(dex);
-                    v3 = CalcStat.원거리치명타(dex);
-                    v4 = CalcStat.물리방어력(dex);
-                    v5 = CalcStat.원거리회피(dex);
+                    v1 = CPCParamDB.원거리대미지(dex);
+                    v2 = CPCParamDB.원거리명중(dex);
+                    v3 = CPCParamDB.원거리치명타(dex);
+                    v4 = CPCParamDB.물리방어력(dex);
+                    v5 = CPCParamDB.원거리회피(dex);
                     break;
 
                 case Con:
-                    v1 = CalcStat.피회복틱(con);
-                    v2 = (int) CalcStat.물약회복증가(con);
-                    v3 = CalcStat.최대소지무게(str, con);
-                    v4 = CalcStat.PureHp(classType, con);
+                    v1 = CPCParamDB.피회복틱(con);
+                    v2 = (int) CPCParamDB.물약회복증가(con);
+                    v3 = CPCParamDB.최대소지무게(str, con);
+                    v4 = CPCParamDB.PureHp(classType, con);
                     v6 = getHpMpValue(pc, true);
                     break;
 
@@ -716,42 +716,42 @@ public final class SC_CHAR_STAT extends ProtoPacket {
 
                     switch (statType) {
                     case Stat_Str:
-                        v1 = CalcStat.근거리대미지(str);
-                        v2 = CalcStat.근거리명중(str);
-                        v3 = CalcStat.근거리치명타(str);
-                        v4 = CalcStat.최대소지무게(str, con);
+                        v1 = CPCParamDB.근거리대미지(str);
+                        v2 = CPCParamDB.근거리명중(str);
+                        v3 = CPCParamDB.근거리치명타(str);
+                        v4 = CPCParamDB.최대소지무게(str, con);
                         break;
 
                     case Stat_Int:
-                        v1 = CalcStat.마법대미지(intel);
-                        v2 = CalcStat.마법적중(intel);
-                        v3 = CalcStat.마법치명타(intel);
-                        v4 = CalcStat.마법보너스(type, intel);
-                        v5 = CalcStat.엠소모감소(intel);
+                        v1 = CPCParamDB.마법대미지(intel);
+                        v2 = CPCParamDB.마법적중(intel);
+                        v3 = CPCParamDB.마법치명타(intel);
+                        v4 = CPCParamDB.마법보너스(type, intel);
+                        v5 = CPCParamDB.엠소모감소(intel);
                         break;
 
                     case Stat_Wis:
-                        v1 = CalcStat.naturalMpRegen(0, wis, pc.GetStatWis());
-                        v2 = CalcStat.엠피물약회복(wis);
-                        v3 = CalcStat.마법방어(type, wis);
-                        v4 = CalcStat.MinincreaseMp(type, pc.GetStatWis());
-                        v5 = CalcStat.MaxincreaseMp(type, pc.GetStatWis());
+                        v1 = CPCParamDB.naturalMpRegen(0, wis, pc.GetStatWis());
+                        v2 = CPCParamDB.엠피물약회복(wis);
+                        v3 = CPCParamDB.마법방어(type, wis);
+                        v4 = CPCParamDB.MinincreaseMp(type, pc.GetStatWis());
+                        v5 = CPCParamDB.MaxincreaseMp(type, pc.GetStatWis());
                         v6 = getHpMpValue(pc, false);
                         break;
 
                     case Stat_Dex:
-                        v1 = CalcStat.원거리대미지(dex);
-                        v2 = CalcStat.원거리명중(dex);
-                        v3 = CalcStat.원거리치명타(dex);
-                        v4 = CalcStat.물리방어력(dex);
-                        v5 = CalcStat.원거리회피(dex);
+                        v1 = CPCParamDB.원거리대미지(dex);
+                        v2 = CPCParamDB.원거리명중(dex);
+                        v3 = CPCParamDB.원거리치명타(dex);
+                        v4 = CPCParamDB.물리방어력(dex);
+                        v5 = CPCParamDB.원거리회피(dex);
                         break;
 
                     case Stat_Con:
-                        v1 = CalcStat.피회복틱(con);
-                        v2 = (int) CalcStat.물약회복증가(con);
-                        v3 = CalcStat.최대소지무게(str, con);
-                        v4 = CalcStat.PureHp(type, pc.GetStatCon());
+                        v1 = CPCParamDB.피회복틱(con);
+                        v2 = (int) CPCParamDB.물약회복증가(con);
+                        v3 = CPCParamDB.최대소지무게(str, con);
+                        v4 = CPCParamDB.PureHp(type, pc.GetStatCon());
                         v6 = getHpMpValue(pc, true);
                         break;
 

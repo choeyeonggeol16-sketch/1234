@@ -171,7 +171,7 @@ import l1j.server.server.storage.sql.handler.Handler;
 import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.model.character.bookmark.CUserBookmark;
 import l1j.server.server.templates.BookmarkSlot;
-import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.CPCParamDB;
 import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.ServerMessage;
 import l1j.server.swing.chocco;
@@ -714,7 +714,7 @@ public class L1PcInstance extends L1Character {
 
 	
 
-    // Level/class snapshot; STR/DEX/INT table values remain in CalcStat.
+    // Level/class snapshot; STR/DEX/INT table values remain in CPCParamDB.
     private final PcBaseAbilityCache m_BaseParam = new PcBaseAbilityCache();
 
     public PcBaseAbilityCache.BaseAbility getBaseAbility() {
@@ -4869,8 +4869,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
                 addBaseMaxMp(hpMpGrowth.mp(earnedLevel));
             } else {
                 int oldHp = getBaseMaxHp(), oldMp = getBaseMaxMp();
-                addBaseMaxHp(CalcStat.increaseHp(getType(), GetStatCon()));
-                addBaseMaxMp(CalcStat.increaseMp(getType(), GetStatWis()));
+                addBaseMaxHp(CPCParamDB.increaseHp(getType(), GetStatCon()));
+                addBaseMaxMp(CPCParamDB.increaseMp(getType(), GetStatWis()));
                 hpMpGrowth.record(earnedLevel, getBaseMaxHp() - oldHp, getBaseMaxMp() - oldMp);
             }
             level = target;

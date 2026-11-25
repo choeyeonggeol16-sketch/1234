@@ -24,7 +24,7 @@ methods="\n".join(method(src,s) for s in (
 template=method(npc,"private void SetTemplateAttackBonus(")
 assert "SetTemplateAttackBonus(bonus * 2);" in npc
 assert "setAc(pc.GetBasePDefend())" not in rst
-calc=(root/"src/l1j/server/server/utils/CalcStat.java").read_text(encoding="utf-8")
+calc=(root/"src/l1j/server/server/utils/CPCParamDB.java").read_text(encoding="utf-8")
 # Read the actual permanent CON/WIS bonus formula.
 bonus=method(calc,"public static int pureHpMpBonus(")
 stub="""
@@ -48,7 +48,7 @@ class L1NpcInstance extends L1Character {
  void transform(int b){SetTemplateAttackBonus(b);}
 }
 class IntRange {static int ensure(int n,int lo,int hi){return Math.clamp(n,lo,hi);}}
-class CalcStat { """+bonus+""" }
+class CPCParamDB { """+bonus+""" }
 public class LifecycleAudit {
  static void eq(int a,int b){if(a!=b)throw new AssertionError(a+" != "+b);}
  public static void main(String[] args){
