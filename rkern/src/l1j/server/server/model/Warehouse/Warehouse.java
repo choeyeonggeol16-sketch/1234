@@ -111,16 +111,9 @@ public abstract class Warehouse extends L1Object {
             blessLevel = item.get_bless_level();
             itemLevel = item.get_item_level();
             hotel = item.getHotel_Town();
-            lastUsed = copyTime(item.getLastUsed());
-            endTime = copyTime(item.getEndTime());
+            lastUsed = L1ItemInstance.CopyTimestamp(item.getLastUsed());
+            endTime = L1ItemInstance.CopyTimestamp(item.getEndTime());
         }
-    }
-
-    private static Timestamp copyTime(Timestamp time) {
-        if (time == null) return null;
-        Timestamp copy = new Timestamp(time.getTime());
-        copy.setNanos(time.getNanos());
-        return copy;
     }
 
     private int persistenceKey(int type) {
@@ -378,23 +371,10 @@ public abstract class Warehouse extends L1Object {
         L1ItemInstance result = new L1ItemInstance();
         result.setId(id);
         result.setItem(source.getItem());
-        result.setCount(count);
-        result.setEnchantLevel(source.getEnchantLevel());
-        result.setIdentified(source.isIdentified());
-        result.set_durability(source.get_durability());
-        result.setChargeCount(charge);
-        result.setRemainingTime(source.getRemainingTime());
-        result.setLastUsed(copyTime(source.getLastUsed()));
-        result.setBless(source.getBless());
-        result.setAttrEnchantLevel(source.getAttrEnchantLevel());
-        result.setSpecialEnchant(source.getSpecialEnchant());
-        result.setPackage(source.isPackage());
-        result.set_bless_level(source.get_bless_level());
-        result.set_bless_level2(source.get_bless_level2());
-        result.set_item_level(source.get_item_level());
-        result.setHotel_Town(source.getHotel_Town());
+        // Detached SQL image: package copied, last-used cloned, expiry cloned below.
+        result.CopyItemAttributesFrom(source, count, charge, true, false, true);
         result.setKeyId(source.getKeyId());
-        result.setEndTime(copyTime(source.getEndTime()));
+        result.setEndTime(L1ItemInstance.CopyTimestamp(source.getEndTime()));
         return result;
     }
 
@@ -591,7 +571,7 @@ public abstract class Warehouse extends L1Object {
             } else {
                 L1ItemInstance row = characterTransferCopy(carry, carry.getId(),
                         carry.getCount(), carry.getChargeCount());
-                if (withdrawalEndTime != null) row.setEndTime(copyTime(withdrawalEndTime));
+                if (withdrawalEndTime != null) row.setEndTime(L1ItemInstance.CopyTimestamp(withdrawalEndTime));
                 move.prepareCharacterWrite(row, true);
             }
             if (fee != null) {
@@ -680,7 +660,7 @@ public abstract class Warehouse extends L1Object {
                 if (endTime != null && item != null
                         && (item.isStackable() || chargeMergeItem(item.getItemId()))
                         && inventory.GetFirstItemByClassID(item.getItemId()) != null) return null;
-                return tradePreparedItemLocked(item, count, inventory, 0, 0, copyTime(endTime), onCommitted);
+                return tradePreparedItemLocked(item, count, inventory, 0, 0, L1ItemInstance.CopyTimestamp(endTime), onCommitted);
             }
         }
     }
@@ -734,32 +714,15 @@ public abstract class Warehouse extends L1Object {
 			carryItem = move.replayCarry(item.getId());
             if (carryItem == null)
                 throw new IllegalStateException("Warehouse withdrawal missing committed item ID");
-			carryItem.setCount(count);
-			carryItem.setEnchantLevel(item.getEnchantLevel());
-			carryItem.setIdentified(item.isIdentified());
-			carryItem.set_durability(item.get_durability());
-			carryItem.setChargeCount(item.getChargeCount());
-			carryItem.setRemainingTime(item.getRemainingTime());
-			carryItem.setLastUsed(item.getLastUsed());
-			carryItem.setBless(item.getBless());
-			carryItem.setAttrEnchantLevel(item.getAttrEnchantLevel());
-            carryItem.setSpecialEnchant(item.getSpecialEnchant());
-			/** 패키지상점 **/
-			carryItem.setPackage(item.isPackage());
-			carryItem.set_bless_level(item.get_bless_level());
-            carryItem.set_bless_level2(item.get_bless_level2());
-			carryItem.setEndTime(item.getEndTime());
-			/**특수 인챈트 시스템**/
-			carryItem.set_item_level(item.get_item_level());
-			/**여관 리뉴얼**/
-			carryItem.setHotel_Town(item.getHotel_Town());
+            // Withdrawal replay copies package and expiry without cloning timestamps.
+            carryItem.CopyItemAttributesFrom(item, count, item.getChargeCount(), true, true, false);
 			item.setCount(item.getCount() - count);
 			updateItem(item);
 		}
         L1ItemInstance stored = null;
         RuntimeException transferFailure = null;
         try {
-            if (withdrawalEndTime != null) carryItem.setEndTime(copyTime(withdrawalEndTime));
+            if (withdrawalEndTime != null) carryItem.setEndTime(L1ItemInstance.CopyTimestamp(withdrawalEndTime));
             stored = inventory.storeTradeItem(carryItem);
         } catch (RuntimeException e) {
             transferFailure = e;
