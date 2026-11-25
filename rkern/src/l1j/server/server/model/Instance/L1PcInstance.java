@@ -5501,7 +5501,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		if (div > 0) {
 			newAc -= getLevel() / div;
 		}
-		ac.addAc(newAc - _baseAc);
+		addAc(newAc - _baseAc);
 		_baseAc = newAc;
 	}
 	

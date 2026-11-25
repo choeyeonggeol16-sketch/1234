@@ -25,6 +25,7 @@ on:
       - rkern/nc-equipment-enchant-audit-20261125
       - rkern/nc-inventory-integration-audit-20261125
       - rkern/nc-creature-parameter-core-20261125
+      - rkern/nc-creature-defense-core-20261125
   workflow_dispatch:
 permissions:
   contents: read
@@ -89,6 +90,10 @@ jobs:
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/docs/nc_creature_stat_audit_20261125/test_base_parameters.py
+      - name: Verify shared creature defense
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/docs/nc_creature_stat_audit_20261125/test_creature_defense.py
       - name: Cache existing build dependencies
         uses: actions/cache@v4
         with:

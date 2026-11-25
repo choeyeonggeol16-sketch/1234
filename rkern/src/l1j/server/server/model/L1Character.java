@@ -33,6 +33,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_Lawful;
 import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
 import l1j.server.server.model.network.core.sc.packet.SC_Poison;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -44,7 +45,7 @@ import l1j.server.server.shared.L1Type;
 import l1j.server.server.types.Point;
 import l1j.server.server.utils.CalcStat;
 import l1j.server.server.utils.IntRange;
-public class L1Character extends L1Object {
+public class L1Character extends L1Object implements AC {
 	private static final long serialVersionUID = 1L;
 	// 캐릭터 기본
 	private String _name;
@@ -80,7 +81,12 @@ public class L1Character extends L1Object {
 	protected Light light = null; // 캐릭터 주위 빛
 	protected Ability ability = null; // 능력치
 	protected Resistance resistance = null; // 저항 (마방, 불, 물, 바람, 땅, 스턴, 동빙, 슬립, 석화)
-	protected AC ac = null; // AC 방어
+	// NC-style defense parameters: source, skill modifier and effective AC.
+	private int m_nOrgPDefend;
+	private int m_nSkillPDefend;
+	private volatile int m_nPDefend;
+	// Transitional typed alias for existing callers; no allocated AC object.
+	protected final AC ac = this;
 	
 	private int _status;
 	private int _Desperadolv = 0;
@@ -162,7 +168,6 @@ public class L1Character extends L1Object {
 		_level = 1;
 		ability = new Ability(this);
 		resistance = new Resistance(this);
-		ac = new AC(this);
 		light = new Light(this);
 	}
 
@@ -1062,7 +1067,7 @@ public class L1Character extends L1Object {
                 }
             }
 		}
-		getAC().setSkillAc(ac, notify);
+		setSkillAc(ac, notify);
 		getResistance().setSkillMr(mr);
 		getAbility().setSkillPrimaryStats(primaryStats, notify);
 		getResistance().setSkillElemental(elementalResistance);
@@ -1372,8 +1377,43 @@ public class L1Character extends L1Object {
 		return resistance;
 	}
 
+	/** Compatibility access; defense state is owned by this creature. */
 	public AC getAC() {
-		return ac;
+		return this;
+	}
+
+	@Override
+	public final int getAc() {
+		return m_nPDefend;
+	}
+
+	@Override
+	public final void addAc(int i) {
+		setAc(m_nOrgPDefend + i);
+	}
+
+	@Override
+	public final void setAc(int i) {
+		m_nOrgPDefend = i;
+		ValidatePDefend(true);
+	}
+
+	@Override
+	public final void setSkillAc(int value, boolean notify) {
+		if (m_nSkillPDefend == value) return;
+		m_nSkillPDefend = value;
+		ValidatePDefend(notify);
+	}
+
+	private void ValidatePDefend(boolean notify) {
+		m_nPDefend = IntRange.ensure(m_nOrgPDefend + m_nSkillPDefend, -999, 999);
+		final int decreaseAC = -m_nPDefend - 100;
+		final int effectedValue = decreaseAC >= 0 ? decreaseAC / 10 + 1 : 0;
+		final boolean isChangedDG = setCharacterDG(effectedValue);
+		final boolean isChangedER = setCharacterER(effectedValue);
+		if (notify && (isChangedDG || isChangedER) && instanceOf(L1Type.L1TYPE_PC)) {
+			SC_OwnCharAttrDef.send((L1PcInstance) this);
+		}
 	}
 
 	public int getDesperadolv() {

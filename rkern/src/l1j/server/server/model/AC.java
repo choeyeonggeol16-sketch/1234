@@ -1,57 +1,12 @@
 package l1j.server.server.model;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.shared.L1Type;
-import l1j.server.server.utils.IntRange;
 
-public class AC {
-	private L1Character _cha;
-	
-	private volatile int ac;
-	private int skillAc;
-
-	private int baseAc = 0;
-
-	public AC(L1Character cha){
-		_cha = cha;
-	}
-	
-	public int getAc() {
-		return ac;
-	}
-
-	public void addAc(int i) {
-		setAc(baseAc + i);
-	}
-
-	public void setAc(int i) {
-		baseAc = i;
-		updateAc(true);
-	}
-
-	void setSkillAc(int value, boolean notify) {
-		if (skillAc == value) return;
-		skillAc = value;
-		updateAc(notify);
-	}
-
-	private void updateAc(boolean notify) {
-		ac = IntRange.ensure(baseAc + skillAc, -999, 999);
-		if(_cha != null){
-			boolean isChangedDG = false;
-			boolean isChangedER = false;
-			int decreaseAC = -ac - 100;
-			if(decreaseAC >= 0){
-				int effectedValue = ((decreaseAC / 10) + 1);
-				isChangedDG = _cha.setCharacterDG(effectedValue);	
-				isChangedER = _cha.setCharacterER(effectedValue);
-			}else{
-				isChangedDG = _cha.setCharacterDG(0);	
-				isChangedER = _cha.setCharacterER(0);
-			}
-			if(notify && (isChangedDG || isChangedER) && _cha.instanceOf(L1Type.L1TYPE_PC)){
-				SC_OwnCharAttrDef.send((L1PcInstance)_cha);	
-			}
-		}
-	}
+/**
+ * Legacy typed access to creature defense during the full call-site migration.
+ * L1Character implements it directly; no per-creature AC object is allocated.
+ */
+public interface AC {
+	int getAc();
+	void addAc(int i);
+	void setAc(int i);
+	void setSkillAc(int value, boolean notify);
 }
