@@ -2,7 +2,7 @@ name: RKern inventory admission and compilation
 on:
   push:
     branches:
-      - rkern/inventory-drop-admission-20261125
+      - rkern/nc-inventory-carrying-weight-20261125
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,6 +17,7 @@ jobs:
           sparse-checkout: |
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
+            rkern/docs/inventory_weight_20261125
       - name: Check bookmark field references
         run: |
           if grep -RnE '\.[[:space:]]*_bookmarks\b' rkern/src --include='*.java' --exclude=L1ItemInstance.java; then
@@ -55,6 +56,8 @@ jobs:
                       raise
                   time.sleep(min(4 * (attempt + 1), 20))
           sources = sorted((root / "src").rglob("*.java"))
+          print("Production Java files:", len(sources), flush=True)
+          sources.append(root / "docs/inventory_weight_20261125/TestCarryingWeight.java")
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           print("Production Java files:", len(sources), flush=True)
@@ -62,4 +65,6 @@ jobs:
                           "-target", "21", "--enable-preview", "-cp", cp, "-d", str(classes),
                           "@" + str(args)], check=True, timeout=300)
           print("PASS full production Java 21 compile", flush=True)
+          subprocess.run(["java", "--enable-preview", "-ea", "-cp", cp,
+                          "l1j.server.server.model.TestCarryingWeight"], cwd=work, check=True, timeout=120)
           PY
