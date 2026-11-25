@@ -1543,9 +1543,19 @@ public class CInventory extends L1Object {
 		if (item.getCount() <= 0 || count <= 0 || count > item.getCount()) {
 			return null;
 		}
-		if (item.isEquipped()) {
+		if (item.isEquipped() || (!item.isStackable() && count != 1)) {
 			return null;
 		}
+        // A pickup may retire the tile between lookup and lock acquisition.
+        if (inventory instanceof L1GroundInventory
+                && L1World.getInstance().findGroundInventory(inventory.getX(), inventory.getY(),
+                        inventory.getMapId()) != inventory) return null;
+        if (inventory instanceof CUserInventory) {
+            final boolean chargeMerge = !item.isStackable() && Warehouse.chargeMergeItem(item.getItemId())
+                    && inventory.GetFirstItemByClassID(item.getItemId()) != null;
+            if ((long) inventory.GetItemAmount(item.getItemId()) + (chargeMerge ? 0 : count) > MAX_AMOUNT)
+                return null;
+        }
 
 		// destination 상태도 transfer 직전에 다시 검증한다.
 		if (inventory.CheckAddable(item, count) != OK) {
@@ -1557,34 +1567,20 @@ public class CInventory extends L1Object {
 			Pop(item);
 			carryItem = item;
 		} else {
-			carryItem = CObjectDB.CreateItem(item.getItem().getItemId());
-			if (carryItem == null) {
-				return null;
-			}
-
-			carryItem.setCount(count);
-			carryItem.setEnchantLevel(item.getEnchantLevel());
-			carryItem.setIdentified(item.isIdentified());
-			carryItem.set_durability(item.get_durability());
-			carryItem.setChargeCount(item.getChargeCount());
-			carryItem.setRemainingTime(item.getRemainingTime());
-			carryItem.setLastUsed(item.getLastUsed());
-			carryItem.setBless(item.getBless());
-			carryItem.setAttrEnchantLevel(item.getAttrEnchantLevel());
-			carryItem.setSpecialEnchant(item.getSpecialEnchant());
-			carryItem.set_bless_level(item.get_bless_level());
-			/**특수 인챈트 시스템**/
-			carryItem.set_item_level(item.get_item_level());
-			/**여관 리뉴얼**/
-			carryItem.setHotel_Town(item.getHotel_Town());
-            if (inventory instanceof L1GroundInventory && item.GetContributeData() != null) {
+            // Use the existing transfer snapshot so split items retain all
+            // persistent attributes, including expiry, package and key data.
+            carryItem = Warehouse.allocateDetachedTransfer(item, count);
+            if (inventory instanceof L1GroundInventory && item.GetContributeData() != null)
                 carryItem.SetContributeData(item.GetContributeData());
+            final L1World world = L1World.getInstance();
+            try {
+                world.storeObject(carryItem);
+                changeStackCount(item, -count);
+            } catch (RuntimeException failure) {
+                try { world.removeObject(carryItem); }
+                catch (RuntimeException cleanup) { failure.addSuppressed(cleanup); }
+                throw failure;
             }
-
-			removeItemCountCache(item.getItemId(), count);
-			item.setCount(item.getCount() - count);
-			persistTransferCount(item);
-			updateItem(item);
 		}
 
         L1ItemInstance stored = null;
@@ -1601,6 +1597,8 @@ public class CInventory extends L1Object {
             if (inventory instanceof CUserInventory) {
                 stored.setItemOwner(null);
             }
+            // Merged carry has no inventory owner; retire its world ID.
+            if (stored != carryItem) L1World.getInstance().removeObject(carryItem);
 			return stored;
 		}
 
@@ -1609,11 +1607,11 @@ public class CInventory extends L1Object {
 			_items.Push(item);
 			insertItem(item);
 		} else {
-			item.setCount(item.getCount() + count);
-			persistTransferCount(item);
-			addItemCountCache(item.getItemId(), count);
-			updateItem(item);
-			L1World.getInstance().removeObject(carryItem);
+            try {
+                changeStackCount(item, count);
+            } finally {
+                L1World.getInstance().removeObject(carryItem);
+            }
 		}
         if (transferFailure != null) throw transferFailure;
 		return null;
