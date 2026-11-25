@@ -514,9 +514,9 @@ public abstract class Warehouse extends L1Object {
                 (l1j.server.server.model.CUserInventory) inventory;
         final l1j.server.server.model.Instance.L1PcInstance pc = pcInventory.getOwner();
         final CUserSocket session = pc.getNetConnection();
-        if (session == null || !session.isConnected()) return null;
         final int stamp = pc.getSessionStamp();
-        if (!pc.tryBeginItemTransfer()) return null;
+        final int token = pc.tryReserveItemTransfer(session, stamp);
+        if (token == 0) return null;
         boolean submitted = false;
         try {
         final int sourceCount = item.getCount();
@@ -542,7 +542,7 @@ public abstract class Warehouse extends L1Object {
         catch (java.util.concurrent.RejectedExecutionException busy) { return null; }
         try (CacheD.WarehouseMove move = reserved) {
             requireWithdrawalTable(move);
-            move.onFailure(() -> CIOThreadCallback.getInstance().completeSession(session, session::kick));
+            move.onFailure(() -> pc.quarantineItemTransferSession(session, stamp));
             move.expectOriginal(item);
             if (destStack != null && (countMerge || chargeMerge)) move.expectOriginal(destStack);
             if (fee != null) move.expectOriginal(fee);
@@ -585,8 +585,8 @@ public abstract class Warehouse extends L1Object {
                 synchronized (session) {
                     synchronized (inventory) {
                         synchronized (Warehouse.this) {
-                            if (!session.isConnected() || pc.getSessionStamp() != stamp
-                                    || pc.getNetConnection() != session || GetByServerID(item.getId()) != item
+                            if (!pc.isItemTransferSession(session, stamp)
+                                    || GetByServerID(item.getId()) != item
                                     || item.getCount() != sourceCount
                                     || (destStack != null && (inventory.GetByServerID(destStack.getId()) != destStack
                                            || destStack.getCount() != destCount
@@ -605,7 +605,7 @@ public abstract class Warehouse extends L1Object {
                         }
                     }
                     recordCommittedMove(pc, Warehouse.this, false, item, count);
-                    pc.endItemTransfer();
+                    pc.endItemTransfer(token);
                     // Defer the next selected item until CacheD releases this
                     // item's durable owner lanes; never recursively submit it here.
                     if (onCommitted != null) onCommitted.run();
@@ -615,7 +615,7 @@ public abstract class Warehouse extends L1Object {
             return item;
         }
         } finally {
-            if (!submitted) pc.endItemTransfer();
+            if (!submitted) pc.endItemTransfer(token);
         }
     }
 
