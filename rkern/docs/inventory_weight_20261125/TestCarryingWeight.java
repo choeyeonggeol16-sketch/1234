@@ -27,7 +27,38 @@ public final class TestCarryingWeight {
         }
         return total;
     }
+    private static void checkLifetime(int id, boolean ordinary, int type, long durationMs) {
+        L1EtcItem t = template(id, 0);
+        t.setType2(0); t.setType(type); t.setMaxUseTime(123);
+        L1ItemInstance item = new L1ItemInstance(t, 1);
+        java.sql.Timestamp sentinel = new java.sql.Timestamp(1234);
+        item.setEndTime(sentinel);
+        long before = System.currentTimeMillis();
+        L1ItemInstance.InitializeNewItemLifetimeAndFuel(item, ordinary);
+        long after = System.currentTimeMillis();
+        if (durationMs < 0) {
+            check(1234, item.getEndTime().getTime());
+        } else {
+            long expiration = item.getEndTime().getTime();
+            check(1, expiration >= before + durationMs && expiration <= after + durationMs ? 1 : 0);
+        }
+        check(type == 2 ? t.getLightFuel() : 123, item.getRemainingTime());
+    }
+    private static void checkNewItemInitialization() {
+        checkLifetime(80500, true, 0, 120L * 60000);
+        checkLifetime(80500, false, 0, -1);
+        checkLifetime(3000048, true, 0, 1439L * 60000);
+        checkLifetime(3000048, false, 0, 1439L * 60000);
+        checkLifetime(7000137, true, 0, 1440L * 20000);
+        checkLifetime(7000137, false, 0, -1);
+        checkLifetime(40001, true, 2, -1);
+        checkLifetime(40001, false, 2, -1);
+        checkLifetime(1, true, 0, -1);
+        checkLifetime(1, false, 0, -1);
+        System.out.println("PASS new-item lifetime and fuel checks");
+    }
     public static void main(String[] args) throws Exception {
+        checkNewItemInitialization();
         Random rng = new Random(20261125L);
         L1EtcItem[] templates = {template(1,0),template(2,1),template(3,999),
             template(4,1000),template(5,1001),template(6,Integer.MAX_VALUE)};
