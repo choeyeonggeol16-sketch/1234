@@ -6,6 +6,7 @@ on:
       - rkern/nc-ground-pick-receipt-20261125
       - rkern/nc-inventory-change-notice-20261125
       - rkern/nc-inventory-responsibility-20261125
+      - rkern/nc-warehouse-transaction-20261125
   workflow_dispatch:
 permissions:
   contents: read
