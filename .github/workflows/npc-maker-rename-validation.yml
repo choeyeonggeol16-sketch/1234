@@ -1,0 +1,106 @@
+name: Validate NPC maker naming and spawn fixes
+on:
+  push:
+    branches: ['rkern/npc-maker-rename-validation-20261125']
+    paths: ['.github/workflows/npc-maker-rename-validation.yml']
+permissions:
+  contents: write
+jobs:
+  rename:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Rename and validate before publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          BASE=a4bc7bbe04b8f42b28072f559f3902838b93a19d
+          TARGET=refs/heads/rkern/npc-maker-audit-20261125
+          test "$(git ls-remote origin "$TARGET" | cut -f1)" = "$BASE"
+          git checkout --detach "$BASE"
+          python3 - <<'PY'
+          import pathlib, re, subprocess
+          mapping = {b'L1Spawn': b'CNpcMaker', b'SpawnTable': b'CNpcMakerDB'}
+          pattern = re.compile(rb'\b(?:L1Spawn|SpawnTable)\b')
+          def convert(data):
+              return pattern.sub(lambda m: mapping[m.group()], data)
+          suffixes = {'.java','.py','.sh','.ps1','.cmd','.bat','.yml','.yaml','.xml','.gradle','.kts','.properties','.groovy'}
+          changed = {}
+          paths = subprocess.check_output(['git','ls-files','-z','--','rkern/src','rkern/docs','.github/workflows']).decode().split('\0')
+          for name in filter(None, paths):
+              p = pathlib.Path(name)
+              if not p.is_file() or p.suffix.lower() not in suffixes:
+                  continue
+              old = p.read_bytes()
+              new = convert(old)
+              dest = p.with_name(convert(p.name.encode()).decode())
+              if new == old and dest == p: continue
+              if dest != p and dest.exists(): raise RuntimeError(f'collision: {dest}')
+              changed[p] = (dest, new)
+          root = pathlib.Path('rkern/src/l1j/server/server')
+          assert changed[root/'model/L1Spawn.java'][0] == root/'model/CNpcMaker.java'
+          assert changed[root/'datatables/SpawnTable.java'][0] == root/'datatables/CNpcMakerDB.java'
+          for p, (dest,new) in changed.items():
+              dest.write_bytes(new)
+              if dest != p: p.unlink()
+          for p, (dest,new) in changed.items():
+              assert dest.read_bytes() == convert(subprocess.check_output(['git','show','HEAD:'+str(p)]))
+          for p in pathlib.Path('rkern/src').rglob('*.java'):
+              assert not pattern.search(p.read_bytes()), str(p)
+              assert not pattern.search(p.name.encode()), str(p)
+          print('IDENTIFIER_RENAME_OK',len(changed))
+          PY
+          git add -A -- rkern/src rkern/docs .github/workflows
+          git diff --cached --check
+          git diff --cached --stat
+          python3 - <<'PY'
+          import importlib.util, pathlib, os, subprocess
+          p = pathlib.Path('rkern/docs/jproring_cio_integration_20261120/run_game_ab.py').resolve()
+          spec = importlib.util.spec_from_file_location('bench',p)
+          bench = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(bench)
+          work = pathlib.Path(os.environ['RUNNER_TEMP'])/'npc-maker-validation'
+          classes = work/'classes'
+          classes.mkdir(parents=True)
+          cp = bench.classpath(classes,work/'deps')
+          bench.compile_java(cp,classes,False)
+          print('JAVA21_FULL_COMPILE_OK')
+          test = work/'NpcMakerDeadlineTest.java'
+          test.write_text('''
+          import java.lang.reflect.Field;
+          import l1j.server.server.model.CNpcMaker;
+          public class NpcMakerDeadlineTest {
+              static void put(CNpcMaker m, String field, Object v) throws Exception {
+                  Field f=CNpcMaker.class.getDeclaredField(field);
+                  f.setAccessible(true);
+                  f.set(m,v);
+              }
+              static void eq(long a,long b) {if(a!=b)throw new AssertionError(a+" != "+b);}
+              public static void main(String[] args) throws Exception {
+                  CNpcMaker m=new CNpcMaker(null);
+                  m.setAmount(4);
+                  eq(m.npcMakerStep(100),-1);
+                  put(m,"_spawnSlotState",new byte[]{0,1,2,1,2});
+                  put(m,"_respawnAtMs",new long[]{0,0,200,0,150});
+                  put(m,"_respawnObjectId",new int[5]);
+                  eq(m.npcMakerStep(100),150);
+                  eq(m.npcMakerNextDeadlineMs(),150);
+                  put(m,"_spawnSlotState",new byte[]{0,1,1,1,1});
+                  eq(m.npcMakerStep(100),-1);
+                  System.out.println("NPC_MAKER_DEADLINE_REGRESSION_OK");
+              }
+          }
+          ''')
+          subprocess.run(['javac','--release','21','--enable-preview','-encoding','UTF-8','-cp',cp,'-d',str(classes),str(test)],check=True)
+          subprocess.run(['java','--enable-preview','-cp',cp,'NpcMakerDeadlineTest'],cwd=work,check=True)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'refactor(spawn): adopt CNpcMaker and CNpcMakerDB names'
+          test "$(git ls-remote origin "$TARGET" | cut -f1)" = "$BASE"
+          git push origin "HEAD:$TARGET"
+          git rev-parse HEAD
