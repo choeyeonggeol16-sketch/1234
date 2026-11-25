@@ -410,11 +410,11 @@ public class L1NpcInstance extends L1Character {
         }
         setAc(ac);
         int bonus = template.get_randomlevel() == 0 ? 0 : (int) diff;
-        ability.setStr(cap127(template.get_str() + bonus));
-        ability.setCon(cap127(template.get_con() + bonus));
-        ability.setDex(cap127(template.get_dex() + bonus));
-        ability.setInt(cap127(template.get_int() + bonus));
-        ability.setWis(cap127(template.get_wis() + bonus));
+        SetStatStr(cap127(template.get_str() + bonus));
+        SetStatCon(cap127(template.get_con() + bonus));
+        SetStatDex(cap127(template.get_dex() + bonus));
+        SetStatInt(cap127(template.get_int() + bonus));
+        SetStatWis(cap127(template.get_wis() + bonus));
         resistance.setBaseMr(cap127(template.get_mr() + bonus));
         if (bonus != 0) {
             addHitup(bonus * 2);
