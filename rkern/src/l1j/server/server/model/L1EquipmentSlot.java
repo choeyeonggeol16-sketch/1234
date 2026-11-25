@@ -119,7 +119,7 @@ public class L1EquipmentSlot {
 		_owner.setCurrentWeapon(secondary != null ? 88 : primary == null ? 0 : primary.getItem().getType1());
 	}
 
-	boolean hasRoomForWeapon(L1ItemInstance weapon) {
+	public boolean hasRoomForWeapon(L1ItemInstance weapon) {
 		final L1ItemInstance primary = getWeapon();
 		if (primary == null) return true;
 		return getSecondWeapon() == null && canUseSecondWeaponBySlayer(primary, weapon)
@@ -178,7 +178,7 @@ public class L1EquipmentSlot {
 		return getAppliedArmor(type) != null;
 	}
 
-	L1ItemInstance getAppliedArmor(int type) {
+	public L1ItemInstance getAppliedArmor(int type) {
 		for (int i = 0; i < _armors.size(); i++) {
 			final L1ItemInstance armor = _armors.get(i);
 			if (armor.isEquipped() && armor.getItem().getType() == type) return armor;
