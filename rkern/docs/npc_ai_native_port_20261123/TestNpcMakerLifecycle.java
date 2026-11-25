@@ -60,6 +60,46 @@ public final class TestNpcMakerLifecycle {
         CNpcSpawnDefine definition = new CNpcMaker(null);
         definition.setAmount(7);
         check(definition.getAmount() == 7, "definition handle");
-        System.out.println("PASS Maker definition, quota, duplicate decay, deadline, retry, wake and definition handle");
+        maker.init();
+        check(maker.attempts == 5, "initialization is one-shot");
+        check(maker.npcMakerPublishDecay(1, 124, now), "decay before retire");
+        maker.npcMakerDrainDecayEvents();
+        check(maker.npcMakerPendingCount() == 1, "pending before retire");
+        maker.Retire();
+        maker.Retire();
+        check(maker.IsRetired() && maker.npcMakerPendingCount() == 0
+                && maker.npcMakerActiveCount() == 0, "retire logical slots");
+        check(!maker.npcMakerPublishDecay(3, 125, now), "late decay rejected");
+        check(!maker.npcMakerTryQueue(), "retired wake rejected");
+        maker.TimerExpired(CNpcMaker.TIMER_NPC_MAKER_WAKE, 0);
+        maker.TimerExpired(CNpcMaker.TIMER_NPC_MAKER_RESPAWN, 1);
+        maker.init();
+        maker.doSpawn(1, 0);
+        check(maker.npcMakerStep(Long.MAX_VALUE) == -1 && maker.attempts == 5,
+                "retired maker cannot generate");
+        java.util.concurrent.ThreadLocalRandom rnd = java.util.concurrent.ThreadLocalRandom.current();
+        definition.setLocX(33000);
+        definition.setLocY(33100);
+        long pos = definition.GenerateSpawnPos(rnd, 0, false, 0, 0);
+        check((int)(pos >>> 32) == 33000 && (int)pos == 33100, "fixed position");
+        definition.setRandomx(3);
+        definition.setRandomy(2);
+        for (int i = 0; i < 1000; i++) {
+            pos = definition.GenerateSpawnPos(rnd, 0, false, 0, 0);
+            check((int)(pos >>> 32) >= 32997 && (int)(pos >>> 32) <= 33003
+                    && (int)pos >= 33098 && (int)pos <= 33102, "random radius");
+        }
+        definition.setLocX1(32990);
+        definition.setLocX2(33010);
+        definition.setLocY1(33090);
+        definition.setLocY2(33110);
+        for (int i = 0; i < 1000; i++) {
+            pos = definition.GenerateSpawnPos(rnd, 0, false, 0, 0);
+            check((int)(pos >>> 32) >= 32990 && (int)(pos >>> 32) < 33010
+                    && (int)pos >= 33090 && (int)pos < 33110, "area bounds");
+        }
+        pos = definition.GenerateSpawnPos(rnd, 50, false, 0, 0);
+        check((int)(pos >>> 32) == 33000 && (int)pos == 33100, "area fallback");
+        System.out.println("PASS Maker definition, quota, duplicate decay, deadline, retry, wake, retirement and position rules");
     }
 }

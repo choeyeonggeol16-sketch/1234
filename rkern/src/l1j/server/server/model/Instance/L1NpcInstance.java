@@ -114,7 +114,7 @@ public class L1NpcInstance extends L1Character {
     private static final int[] DIR_DY = {-1, -1, 0, 1, 1, 1, 0, -1};
 
     private L1Npc _npcTemplate;
-    private CNpcMaker _spawn;
+    private volatile CNpcMaker _spawn;
 
     private int _spawnNumber;
     private int _petcost;

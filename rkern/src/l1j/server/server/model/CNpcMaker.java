@@ -71,6 +71,7 @@ public class CNpcMaker extends CNpcSpawnDefine {
 
     @SuppressWarnings("unused")
     private volatile int _npcMakerQueued;
+    private volatile boolean _retired;
 
     /** owner-only slot state. 외부 thread는 acquire read만 한다. */
     private byte[] _spawnSlotState;
@@ -124,7 +125,22 @@ public class CNpcMaker extends CNpcSpawnDefine {
     private boolean _initSpawn = false;
     private boolean _spawnHomePoint;
     
-    public void init() {
+    /** 초기 생성과 타이머 실행이 종료될 때까지 동일 Maker의 폐기를 직렬화한다. */
+    public final synchronized void Retire() {
+        if (_retired) return;
+        _retired = true;
+        nextNpcMakerTimerGeneration();
+        npcMakerClearQueued();
+        _pendingRespawnCount = 0;
+        _activeSpawnCount = 0;
+    }
+
+    public final boolean IsRetired() {
+        return _retired;
+    }
+
+    public synchronized void init() {
+        if (_retired || _spawnSlotState != null) return;
         _delayInterval = _maxRespawnDelay - _minRespawnDelay;
 
         final int size = _maximumCount + 1;
@@ -184,8 +200,8 @@ public class CNpcMaker extends CNpcSpawnDefine {
     }
 
     /** 기존 외부 호출 계약 보존. Maker 내부에서는 성공 여부가 필요한 doSpawnInternal을 사용한다. */
-    public void doSpawn(int spawnNumber, int objectId) {
-        doSpawnInternal(spawnNumber, objectId);
+    public synchronized void doSpawn(int spawnNumber, int objectId) {
+        if (!_retired) doSpawnInternal(spawnNumber, objectId);
     }
 
     /**
@@ -200,7 +216,6 @@ public class CNpcMaker extends CNpcSpawnDefine {
         final ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
         try {
-            final short mapId = _mapid;
             int newlocx = getLocX();
             int newlocy = getLocY();
             int tryCount = 0;
@@ -230,39 +245,17 @@ public class CNpcMaker extends CNpcSpawnDefine {
                 mob.setMap(getMapId());
             }
 
+            final short mapId = mob.getMapId();
             mob.setMovementDistance(getMovementDistance());
             mob.setRest(isRest());
 
             while (tryCount <= 50) {
-                if (isAreaSpawn()) {
-                    if (!_initSpawn && _spawnHomePoint && _homeX != null
-                            && spawnNumber < _homeX.length && _homeX[spawnNumber] != 0) {
-                        final int hx = _homeX[spawnNumber];
-                        final int hy = _homeY[spawnNumber];
-                        newlocx = hx - Config.SPAWN_HOME_POINT_RANGE
-                                + rnd.nextInt(Config.SPAWN_HOME_POINT_RANGE * 2 + 1);
-                        newlocy = hy - Config.SPAWN_HOME_POINT_RANGE
-                                + rnd.nextInt(Config.SPAWN_HOME_POINT_RANGE * 2 + 1);
-                    } else {
-                        final int rangeX = getLocX2() - getLocX1();
-                        final int rangeY = getLocY2() - getLocY1();
-                        newlocx = rnd.nextInt(rangeX > 0 ? rangeX : 1) + getLocX1();
-                        newlocy = rnd.nextInt(rangeY > 0 ? rangeY : 1) + getLocY1();
-                    }
-
-                    if (tryCount > 49) {
-                        newlocx = getLocX();
-                        newlocy = getLocY();
-                    }
-                } else if (isRandomSpawn()) {
-                    final int rx = getRandomx();
-                    final int ry = getRandomy();
-                    newlocx = getLocX() + (rx > 0 ? rnd.nextInt(rx * 2 + 1) - rx : 0);
-                    newlocy = getLocY() + (ry > 0 ? rnd.nextInt(ry * 2 + 1) - ry : 0);
-                } else {
-                    newlocx = getLocX();
-                    newlocy = getLocY();
-                }
+                final boolean useHome = !_initSpawn && _spawnHomePoint && _homeX != null
+                        && spawnNumber < _homeX.length && _homeX[spawnNumber] != 0;
+                final long position = GenerateSpawnPos(rnd, tryCount, useHome,
+                        useHome ? _homeX[spawnNumber] : 0, useHome ? _homeY[spawnNumber] : 0);
+                newlocx = (int) (position >>> 32);
+                newlocy = (int) position;
 
                 mob.setX(newlocx);
                 mob.setHomeX(newlocx);
@@ -385,7 +378,7 @@ public class CNpcMaker extends CNpcSpawnDefine {
         final long[] mailbox = _decayMailbox;
         final long[] decayAt = _decayAtMs;
 
-        if (states == null
+        if (_retired || states == null
                 || mailbox == null
                 || decayAt == null
                 || spawnNumber <= 0
@@ -445,7 +438,7 @@ public class CNpcMaker extends CNpcSpawnDefine {
         final long[] mailbox = _decayMailbox;
         final long[] decayAt = _decayAtMs;
 
-        if (mailbox == null || decayAt == null || _spawnSlotState == null) {
+        if (_retired || mailbox == null || decayAt == null || _spawnSlotState == null) {
             return;
         }
 
@@ -503,7 +496,7 @@ public class CNpcMaker extends CNpcSpawnDefine {
     }
 
     public final boolean npcMakerTryQueue() {
-        return NPC_MAKER_QUEUED.compareAndSet(this, 0, 1);
+        return !_retired && NPC_MAKER_QUEUED.compareAndSet(this, 0, 1);
     }
 
     public final void npcMakerClearQueued() {
@@ -512,7 +505,7 @@ public class CNpcMaker extends CNpcSpawnDefine {
 
     /** 현재 Maker가 가진 가장 빠른 WAIT_RESPAWN deadline. owner thread 전용. */
     public final long npcMakerNextDeadlineMs() {
-        if (_spawnSlotState == null) {
+        if (_retired || _spawnSlotState == null) {
             return -1L;
         }
 
@@ -547,7 +540,7 @@ public class CNpcMaker extends CNpcSpawnDefine {
             int objectId = 0;
             long next = Long.MAX_VALUE;
 
-            if (_spawnSlotState == null) {
+            if (_retired || _spawnSlotState == null) {
                 return -1L;
             }
 
@@ -643,7 +636,7 @@ public class CNpcMaker extends CNpcSpawnDefine {
 
     /** owner 예외 후 SPAWNING으로 남은 slot을 WAIT_RESPAWN으로 복구한다. */
     public final long npcMakerRecover(final long nowMs) {
-        if (_spawnSlotState == null) {
+        if (_retired || _spawnSlotState == null) {
             return -1L;
         }
 
@@ -689,7 +682,8 @@ public class CNpcMaker extends CNpcSpawnDefine {
      * RESPAWN:
      *   generation이 현재 값과 일치할 때만 due slot을 처리한다.
      */
-    public final void TimerExpired(final int timerId, final int generation) {
+    public final synchronized void TimerExpired(final int timerId, final int generation) {
+        if (_retired) return;
         if (timerId == TIMER_NPC_MAKER_WAKE) {
             /*
              * 먼저 queued flag를 내린다.

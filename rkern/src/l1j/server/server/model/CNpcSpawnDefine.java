@@ -1,6 +1,7 @@
 package l1j.server.server.model;
 
 import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.Config;
 import l1j.server.server.templates.L1Npc;
 
 /** 스폰 행의 몬스터 원형, 수량, 위치 및 재생성 설정. */
@@ -222,6 +223,35 @@ public abstract class CNpcSpawnDefine {
         return getRandomx() != 0 || getRandomy() != 0;
     }
   
+    /** 기존 사각 영역, 랜덤 반경 및 홈 좌표 규칙으로 후보 위치를 생성한다. */
+    protected final long GenerateSpawnPos(ThreadLocalRandom rnd, int attempt, boolean useHome, int hx, int hy) {
+        int x = getLocX();
+        int y = getLocY();
+        if (isAreaSpawn()) {
+            if (useHome) {
+                x = hx - Config.SPAWN_HOME_POINT_RANGE
+                        + rnd.nextInt(Config.SPAWN_HOME_POINT_RANGE * 2 + 1);
+                y = hy - Config.SPAWN_HOME_POINT_RANGE
+                        + rnd.nextInt(Config.SPAWN_HOME_POINT_RANGE * 2 + 1);
+            } else {
+                final int rangeX = getLocX2() - getLocX1();
+                final int rangeY = getLocY2() - getLocY1();
+                x = rnd.nextInt(rangeX > 0 ? rangeX : 1) + getLocX1();
+                y = rnd.nextInt(rangeY > 0 ? rangeY : 1) + getLocY1();
+            }
+            if (attempt > 49) {
+                x = getLocX();
+                y = getLocY();
+            }
+        } else if (isRandomSpawn()) {
+            final int rx = getRandomx();
+            final int ry = getRandomy();
+            x += rx > 0 ? rnd.nextInt(rx * 2 + 1) - rx : 0;
+            y += ry > 0 ? rnd.nextInt(ry * 2 + 1) - ry : 0;
+        }
+        return ((long) x << 32) | (y & 0xFFFF_FFFFL);
+    }
+
     public long calcRespawnDelayPublic() {
         return calcRespawnDelay();
     }

@@ -31,10 +31,17 @@ public class L1NpcDown implements L1CommandExecutor{
 
       if (type.equals("몬스터")) {
         if (spawn.equals("배치")) {
-          CNpcMakerDB.getInstance().reload();
+          if (!CNpcMakerDB.reload()) {
+            SC_SystemMessage.send(pc, "스폰 리로드 실패 또는 기존 몬스터 삭제 대기 중입니다.");
+            return;
+          }
  
           SC_PacketBox.broadcastGreen("[긴급공지] 월드전체 몬스터가 재배치 되었습니다.");
         } else if (spawn.equals("삭제")) {
+          if (!CNpcMakerDB.getInstance().DespawnAll()) {
+            SC_SystemMessage.send(pc, "기존 몬스터 삭제 대기 중입니다.");
+            return;
+          }
         	 for (L1Object obj : L1World.getInstance().getAllObj()) {
         		 if ((obj != null) && ((obj instanceof L1MonsterInstance))) {
         			 L1MonsterInstance mon = (L1MonsterInstance) obj;

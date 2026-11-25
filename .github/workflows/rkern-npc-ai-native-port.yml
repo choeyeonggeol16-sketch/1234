@@ -10,6 +10,7 @@ on:
       - 'rkern/src/l1j/server/server/datatables/CNpcMakerDB.java'
       - 'rkern/src/l1j/server/server/datatables/NpcSpawnTable.java'
       - 'rkern/src/l1j/server/server/command/executor/L1NpcDown.java'
+      - 'rkern/src/l1j/server/server/GMCommands.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1PetInstance.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1SummonInstance.java'

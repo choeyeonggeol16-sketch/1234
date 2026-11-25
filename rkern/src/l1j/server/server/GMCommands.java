@@ -629,8 +629,10 @@ public class GMCommands {
 				StringTokenizer st = new StringTokenizer(param);
 				int mapid = Integer.parseInt(st.nextToken());
 				String locName = MapsTable.getInstance().getMapName(mapid);
-				L1World.getInstance().getMapObject(mapid);
-				CNpcMakerDB.getInstance().reload(mapid);
+				if (!CNpcMakerDB.getInstance().reload(mapid)) {
+					gm.sendPackets("스폰 리로드 실패 또는 기존 몬스터 삭제 대기 중입니다.");
+					break;
+				}
 				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "["+locName+"]의 몬스터들을 리스폰하였습니다.");
 				//gm.sendPackets("몬스폰리스트 (지정맵) 리로드 완료");
 			} catch (Exception e) {

@@ -165,7 +165,9 @@ public class L1MobGroupInfo {
 				final L1NpcInstance minion = _membersList.get(i);
 				minion.setMobGroupInfo(null);
 				minion.setMobGroupId(0);
-				minion.setSpawn(null);
+				// 폐기 중인 Maker는 나머지 편대원이 제거될 때까지 소유 참조를 유지한다.
+				final CNpcMaker maker = minion.getSpawn();
+				if (maker == null || !maker.IsRetired()) minion.setSpawn(null);
 				minion.setRespawn(false);
 			}
 			_membersList.clear();

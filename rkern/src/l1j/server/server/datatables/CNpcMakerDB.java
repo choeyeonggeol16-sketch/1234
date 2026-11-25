@@ -3,6 +3,10 @@ package l1j.server.server.datatables;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import gnu.trove.map.TIntObjectMap;
@@ -17,118 +21,122 @@ import l1j.server.server.utils.NumberUtil;
 public final class CNpcMakerDB {
 	private static final Logger _log = Logger.getLogger(CNpcMakerDB.class.getName());
 
-	private final TIntObjectMap<CNpcMaker> _spawntable = new TIntObjectHashMap<CNpcMaker>(10240);
+	private volatile TIntObjectMap<CNpcMaker> _spawntable = new TIntObjectHashMap<CNpcMaker>(10240);
 
 	private int _highestId;
 
 	private static final class SingletonHolder {
-		private static volatile CNpcMakerDB INSTANCE = new CNpcMakerDB();
+		private static final CNpcMakerDB INSTANCE = new CNpcMakerDB();
 	}
 
 	public static CNpcMakerDB getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
 
-	public static void reload() {
-		SingletonHolder.INSTANCE = new CNpcMakerDB();
+	public static boolean reload() {
+		return getInstance().reloadScope(-1);
 	}
 
 	private CNpcMakerDB() {
-		fillSpawnTable();
+		final List<CNpcMaker> definitions = LoadDefinitions(-1, false);
+		if (definitions != null) PublishAndStart(definitions, -1);
 	}
 
-	public void reload(int mpaid) {
-		String sql = "SELECT * FROM spawnlist WHERE mapid = ?";
+	public boolean reload(int mapId) {
+		return mapId >= 0 && reloadScope(mapId);
+	}
 
+	/** SQL 조회를 완료하기 전에는 기존 스폰에 영향을 주지 않는다. */
+	private static List<CNpcMaker> LoadDefinitions(int mapId, boolean reloading) {
+		final List<CNpcMaker> definitions = new ArrayList<>();
+		final String sql = mapId < 0 ? "SELECT * FROM spawnlist" : "SELECT * FROM spawnlist WHERE mapid = ?";
 		try (Connection con = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement pstm = con.prepareStatement(sql)) {
-
-			pstm.setInt(1, mpaid);
+		     PreparedStatement pstm = con.prepareStatement(sql)) {
+			if (mapId >= 0) pstm.setInt(1, mapId);
 			try (ResultSet rs = pstm.executeQuery()) {
 				while (rs.next()) {
-					int spawnid = rs.getInt("id");
-
-					if (_spawntable.containsKey(spawnid)) {
-						_spawntable.remove(spawnid);
-					}
-
-					int npcTemplateId = rs.getInt("npc_templateid");
-					L1Npc template1 = CObjectDB.GetNPC(npcTemplateId);
-
-					if (template1 == null) {
-						_log.warning("mob data for id:" + npcTemplateId + " missing in npc table");
+					final int spawnId = rs.getInt("id");
+					final int npcId = rs.getInt("npc_templateid");
+					final L1Npc template = CObjectDB.GetNPC(npcId);
+					if (template == null) {
+						if (reloading) throw new IllegalStateException("스폰 원형 없음: " + npcId);
+						_log.warning("스폰 원형 없음: " + npcId);
 						continue;
 					}
-					
-					if (rs.getInt("count") == 0) {
-						continue;
-					}
-
-					double amount_rate = MapsTable.getInstance().getMonsterAmount(rs.getShort("mapid"));
-					int count = calcCount(template1, rs.getInt("count"), amount_rate);
-
-					if (count == 0) {
-						continue;
-					}
-
-					CNpcMaker spawnDat = readSpawnDefine(rs, template1, spawnid, count, true);
-
-					spawnDat.init();
-
-					_spawntable.put(spawnDat.getId(), spawnDat);
-					if (spawnDat.getId() > _highestId) {
-						_highestId = spawnDat.getId();
-					}
+					final int amount = rs.getInt("count");
+					if (amount <= 0) continue;
+					final int count = calcCount(template, amount,
+							MapsTable.getInstance().getMonsterAmount(rs.getShort("mapid")));
+					if (count <= 0) continue;
+					definitions.add(readSpawnDefine(rs, template, spawnId, count, mapId >= 0));
 				}
 			}
 		} catch (Exception e) {
-			_log.log(Level.SEVERE, "CNpcMakerDB reload(mapid) error", e);
+			_log.log(Level.SEVERE, "몬스터 스폰 정의 로딩 실패", e);
+			return null;
 		}
+		return definitions;
 	}
 
-	private void fillSpawnTable() {
-		int spawnCount = 0;
-		String sql = "SELECT * FROM spawnlist";
-
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement pstm = con.prepareStatement(sql);
-			 ResultSet rs = pstm.executeQuery()) {
-
-			while (rs.next()) {
-				int npcTemplateId = rs.getInt("npc_templateid");
-				L1Npc template1 = CObjectDB.GetNPC(npcTemplateId);
-
-				if (template1 == null) {
-					_log.warning("mob data for id:" + npcTemplateId + " missing in npc table");
-					continue;
-				}
-				
-				if (rs.getInt("count") == 0) {
-					continue;
-				}
-
-				double amount_rate = MapsTable.getInstance().getMonsterAmount(rs.getShort("mapid"));
-				int count = calcCount(template1, rs.getInt("count"), amount_rate);
-				if (count == 0) {
-					continue;
-				}
-
-				int spawnid = rs.getInt("id");
-				CNpcMaker spawnDat = readSpawnDefine(rs, template1, spawnid, count, false);
-
-				spawnDat.init();
-				spawnCount += spawnDat.getAmount();
-
-				_spawntable.put(spawnDat.getId(), spawnDat);
-				if (spawnDat.getId() > _highestId) {
-					_highestId = spawnDat.getId();
-				}
-			}
-
-		} catch (Exception e) {
-			_log.log(Level.SEVERE, "CNpcMakerDB fillSpawnTable error", e);
+	/** 폐기한 Maker에 속하는 몬스터만 제거한다. 드롭 처리 중인 개체는 그대로 둔다. */
+	private boolean RetireScope(int mapId) {
+		final TIntObjectMap<CNpcMaker> current = _spawntable;
+		for (CNpcMaker maker : current.valueCollection()) {
+			if (mapId < 0 || maker.getMapId() == mapId) maker.Retire();
 		}
-		_log.config("총 monster 수: " + spawnCount + "마리 로드 완료");
+		final L1World world = L1World.getInstance();
+		for (L1NpcInstance npc : world.getAllNpc()) {
+			if (!BelongsToRetiredScope(npc, current, mapId)) continue;
+			if (!npc.isDestroyed() && !npc.isDeathProcessing()) npc.NpcDie();
+		}
+		// 정산이나 삭제가 아직 끝나지 않았다면 새 세대를 생성하지 않는다.
+		for (L1NpcInstance npc : world.getAllNpc()) {
+			if (BelongsToRetiredScope(npc, current, mapId)) return false;
+		}
+		return true;
+	}
+
+	private static boolean BelongsToRetiredScope(L1NpcInstance npc, TIntObjectMap<CNpcMaker> current, int mapId) {
+		final CNpcMaker maker = npc.getSpawn();
+		return maker != null && maker.IsRetired()
+				&& (mapId < 0 || maker.getMapId() == mapId)
+				&& current.get(maker.getId()) == maker;
+	}
+
+	private synchronized boolean reloadScope(int mapId) {
+		final List<CNpcMaker> definitions = LoadDefinitions(mapId, true);
+		if (definitions == null) return false;
+		if (!RetireScope(mapId)) {
+			_log.warning("기존 몬스터 삭제 대기 중: 스폰 리로드 보류, map=" + mapId);
+			return false;
+		}
+		PublishAndStart(definitions, mapId);
+		return true;
+	}
+
+	/** 월드 재배치 및 삭제 명령에서도 기존 예약을 먼저 무효화한다. */
+	public synchronized boolean DespawnAll() {
+		return RetireScope(-1);
+	}
+
+	private void PublishAndStart(List<CNpcMaker> definitions, int mapId) {
+		final TIntObjectMap<CNpcMaker> next = new TIntObjectHashMap<>(Math.max(16, _spawntable.size() + definitions.size()));
+		if (mapId >= 0) {
+			for (CNpcMaker maker : _spawntable.valueCollection()) {
+				if (maker.getMapId() != mapId) next.put(maker.getId(), maker);
+			}
+		}
+		for (CNpcMaker maker : definitions) {
+			next.put(maker.getId(), maker);
+			if (maker.getId() > _highestId) _highestId = maker.getId();
+		}
+		_spawntable = next;
+		int spawnCount = 0;
+		for (CNpcMaker maker : definitions) {
+			maker.init();
+			spawnCount += maker.getAmount();
+		}
+		_log.config("몬스터 스폰 정의 로드: " + spawnCount + "마리");
 	}
 
 	/** 최초 로딩과 맵별 갱신의 공통 정의 로딩. 기존 방향 및 화면 설정 차이는 유지한다. */
@@ -168,14 +176,21 @@ public final class CNpcMakerDB {
 		return _spawntable.get(id);
 	}
 
-	public void delspawntable(int id) {
-		_spawntable.remove(id);
+	public synchronized void delspawntable(int id) {
+		final CNpcMaker maker = _spawntable.get(id);
+		if (maker == null) return;
+		maker.Retire();
+		final TIntObjectMap<CNpcMaker> next = new TIntObjectHashMap<>(_spawntable);
+		next.remove(id);
+		_spawntable = next;
 	}
 
-	public void addNewSpawn(CNpcMaker spawn) {
+	public synchronized void addNewSpawn(CNpcMaker spawn) {
 		_highestId++;
 		spawn.setId(_highestId);
-		_spawntable.put(spawn.getId(), spawn);
+		final TIntObjectMap<CNpcMaker> next = new TIntObjectHashMap<>(_spawntable);
+		next.put(spawn.getId(), spawn);
+		_spawntable = next;
 	}
 
 	public static void storeSpawn(L1PcInstance pc, L1Npc npc) {
