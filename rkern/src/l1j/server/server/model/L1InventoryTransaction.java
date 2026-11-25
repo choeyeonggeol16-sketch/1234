@@ -331,7 +331,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
      * NEW reward only. Ownership transfers never reset a purchased lifetime.
      */
     private static void initializeNewGrant(L1ItemInstance item) {
-        item.setChargeCount(item.GetInitialChargeCount());
+        item.setChargeCount(item.GetInitialChargeCount(item.getItemId()));
         L1ItemInstance.InitializeNewItemLifetimeAndFuel(item, true);
     }
     public L1ItemInstance grantCopy(L1PcInstance pc,L1ItemInstance image,int count) {
