@@ -90,7 +90,25 @@ public final class TestCarryingWeight {
         }
         System.out.println("PASS source transfer admission equivalence");
     }
+    private static void checkChargeClassification() {
+        int[] refill = {40006,40007,40008,140006,140008,41401,810006,810007};
+        for (int id = 0; id <= 810010; id++) {
+            boolean expected = false;
+            for (int value : refill) if (value == id) { expected = true; break; }
+            check(expected ? 1 : 0,
+                l1j.server.server.model.Warehouse.Warehouse.chargeMergeItem(id) ? 1 : 0);
+        }
+        L1EtcItem t = template(20383, 0);
+        L1ItemInstance item = new L1ItemInstance(t, 1);
+        check(50, item.GetInitialChargeCount(t.getItemId()));
+        item.setItemId(40006);
+        check(t.getMaxChargeCount(), item.GetInitialChargeCount(item.getItemId()));
+        check(50, item.GetInitialChargeCount(t.getItemId()));
+        check(0, item.getChargeCount());
+        System.out.println("PASS refill classification and new item charge initialization");
+    }
     public static void main(String[] args) throws Exception {
+        checkChargeClassification();
         checkTransferAdmission();
         checkWarehouseDispatch();
         checkNewItemInitialization();
