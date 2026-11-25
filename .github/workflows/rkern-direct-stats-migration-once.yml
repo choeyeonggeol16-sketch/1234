@@ -1,4 +1,4 @@
-name: RKern critical and magic hit audit
+name: RKern damage mitigation source audit
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: rkern/src
-      - name: Enumerate critical and magic hit source readers and writers
+      - name: Enumerate damage mitigation and PvP source readers and writers
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -26,6 +26,6 @@ jobs:
               s=p.read_text(encoding="utf-8")
               clean=lex.sub(lambda m:re.sub(r'[^\n]',' ',m.group()),s)
               for i,(a,b) in enumerate(zip(s.splitlines(),clean.splitlines()),1):
-                  if re.search(r'\b(?:getOriginalMagicHit|setBaseMagicHitUp|addBaseMagicHitUp|getBaseMagicHitUp|getTotalMagicHitup|setBaseMagicCritical|addBaseMagicCritical|getBaseMagicCritical|getMagicHit|addMagicHit|set_missile_critical_rate|add_missile_critical_rate|get_missile_critical_rate|set_melee_critical_rate|add_melee_critical_rate|get_melee_critical_rate|set_magic_critical_rate|add_magic_critical_rate|get_magic_critical_rate)\s*\(',b):
+                  if re.search(r'\b(?:getDamageReductionByArmor|addDamageReductionByArmor|getDamageReductionIgnore|addDamageReductionIgnore|getDamageReduction|addDamageReduction|getPVPMagicDamageReduction|addPVPMagicDamageReduction|setPumpedPvPMagicDamageReduction|getAddReduction|setAddReduction|getAddReductionRate|setAddReductionRate|GetPvpDamage|AddPvpDamage|GetPvpDamageReduction|AddPvpDamageReduction)\s*\(',b):
                       print(f"{p}:{i}: {a.strip()}")
           PY
