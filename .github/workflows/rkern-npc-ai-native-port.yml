@@ -35,6 +35,7 @@ on:
       - 'rkern/src/l1j/server/server/model/L1ClanJoin.java'
       - 'rkern/src/l1j/server/server/model/CReplyChecker.java'
       - 'rkern/src/l1j/server/server/model/CParty.java'
+      - 'rkern/src/l1j/server/server/datatables/CObjectDB.java'
       - 'rkern/src/l1j/server/server/shared/Party.java'
       - 'rkern/src/l1j/server/server/model/character/combat/arena/CombatObserver.java'
       - 'rkern/src/l1j/server/server/model/character/combat/arena/games/BattleTournamentObserver.java'
@@ -196,8 +197,9 @@ jobs:
           pledge = root / "docs/pledge_native_port_20261124/TestPledgeRoster.java"
           pledge_reply = root / "docs/pledge_native_port_20261124/TestPledgeReplyChecker.java"
           party_roster = root / "docs/pledge_native_port_20261124/TestPartyRoster.java"
-          sources += [regression, launcher, bookmark, pledge, pledge_reply, party_roster]
-          print(f"Production Java sources: {len(sources) - 13}", flush=True)
+          objectdb_types = root / "docs/pledge_native_port_20261124/TestObjectDBTypes.java"
+          sources += [regression, launcher, bookmark, pledge, pledge_reply, party_roster, objectdb_types]
+          print(f"Production Java sources: {len(sources) - 14}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
@@ -218,6 +220,7 @@ jobs:
               "l1j.server.server.model.TestPledgeRoster",
               "l1j.server.server.model.TestPledgeReplyChecker",
               "l1j.server.server.model.TestPartyRoster",
+              "l1j.server.server.model.TestObjectDBTypes",
           ]
           failures = []
           for name in tests:
@@ -242,7 +245,7 @@ jobs:
                   failures.append(name)
           if failures:
               raise SystemExit("Failed NPC suites: " + ", ".join(failures))
-          print("PASS all 12 independent NPC, bookmark, pledge and party suites", flush=True)
+          print("PASS all 13 independent NPC, bookmark, pledge, party and ObjectDB suites", flush=True)
           print("Remaining bookmark call sites:", flush=True)
           subprocess.run(["git", "grep", "-nE", "BookmarkSlot\\.(InsertSlot|Load|SaveItemSlot|DeleteItemSlots|WriteSlots)|CItemBookmark\\.SaveSlot|\\._bookmarks|\\._speedbookmarks|handleSkillTeleport\\(", "--", "rkern/src"], check=False)
           PY

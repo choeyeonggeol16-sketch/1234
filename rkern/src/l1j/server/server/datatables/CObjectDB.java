@@ -385,8 +385,11 @@ public final class CObjectDB {
     				weapon.setItemId(rs.getInt("item_id"));
     				weapon.setName(rs.getString("name"));
     				weapon.setNameId(rs.getString("name_id"));
-    				weapon.setType(parseWeaponType(rs.getString("type")));
-    				weapon.setType1(parseWeaponId(rs.getString("type")));
+                    final String weaponType = rs.getString("type");
+                    final int type = parseWeaponType(weaponType);
+                    weapon.setType(type);
+                    if (type == 0) System.out.println("invalid item weapon Id " + weaponType);
+                    weapon.setType1(WeaponMotion(type));
     				weapon.setType2(1);
     				weapon.setUseType(1);
     				weapon.setMaterial(parseMaterial(rs.getString("material")));
@@ -463,9 +466,10 @@ public final class CObjectDB {
     				armor.setItemId(rs.getInt("item_id"));
     				armor.setName(rs.getString("name"));
     				armor.setNameId(rs.getString("name_id"));
-    				armor.setType(parseArmorType(rs.getString("type")));
-    				armor.setType2(2);
-    				armor.setUseType(parseUseType(rs.getString("type")));
+                    final String armorType = rs.getString("type");
+                    armor.setType(parseArmorType(armorType));
+                    armor.setType2(2);
+                    armor.setUseType(parseUseType(armorType));
     				armor.set장신구처리(rs.getInt("acctype"));
     				armor.setGrade(rs.getInt("grade"));
     				armor.setMaterial(parseMaterial(rs.getString("material")));
@@ -671,180 +675,221 @@ public final class CObjectDB {
     		return _allTemplates.containsKey(id);
     	}
 
-    	public static int parseWeaponId(String s) {
-    		if (s.equalsIgnoreCase("sword")) return 4;
-    		else if (s.equalsIgnoreCase("dagger")) return 46;
-    		else if (s.equalsIgnoreCase("tohandsword")) return 50;
-    		else if (s.equalsIgnoreCase("bow")) return 20;
-    		else if (s.equalsIgnoreCase("spear")) return 24;
-    		else if (s.equalsIgnoreCase("blunt")) return 11;
-    		else if (s.equalsIgnoreCase("staff")) return 40;
-    		else if (s.equalsIgnoreCase("throwingknife")) return 2922;
-    		else if (s.equalsIgnoreCase("arrow")) return 66;
-    		else if (s.equalsIgnoreCase("gauntlet")) return 62;
-    		else if (s.equalsIgnoreCase("claw")) return 58;
-    		else if (s.equalsIgnoreCase("edoryu")) return 54;
-    		else if (s.equalsIgnoreCase("singlebow")) return 20;
-    		else if (s.equalsIgnoreCase("singlespear")) return 24;
-    		else if (s.equalsIgnoreCase("tohandblunt")) return 11;
-    		else if (s.equalsIgnoreCase("tohandstaff")) return 40;
-    		else if (s.equalsIgnoreCase("keyring")) return 58;
-    		else if (s.equalsIgnoreCase("chainsword")) return 83;
-    		System.out.println(String.format("invalid item weapon Id %s", s));
-    		return 0;
-    	}
+        // 이미 정규화된 문자열은 재사용하고 기존 대소문자 비교 규칙을 유지한다.
+        private static String FoldType(String value) {
+            final int length = value.length();
+            for (int i = 0; i < length; i++) {
+                final char ch = value.charAt(i);
+                final char folded = Character.toLowerCase(Character.toUpperCase(ch));
+                if (ch == folded) continue;
+                final char[] chars = value.toCharArray();
+                chars[i] = folded;
+                for (int j = i + 1; j < length; j++)
+                    chars[j] = Character.toLowerCase(Character.toUpperCase(chars[j]));
+                return new String(chars);
+            }
+            return value;
+        }
 
-    	public static int parseWeaponType(String s) {
-    		if (s.equalsIgnoreCase("sword")) return 1;
-    		else if (s.equalsIgnoreCase("dagger")) return 2;
-    		else if (s.equalsIgnoreCase("tohandsword")) return 3;
-    		else if (s.equalsIgnoreCase("bow")) return 4;
-    		else if (s.equalsIgnoreCase("spear")) return 5;
-    		else if (s.equalsIgnoreCase("blunt")) return 6;
-    		else if (s.equalsIgnoreCase("staff")) return 7;
-    		else if (s.equalsIgnoreCase("throwingknife")) return 8;
-    		else if (s.equalsIgnoreCase("arrow")) return 9;
-    		else if (s.equalsIgnoreCase("gauntlet")) return 10;
-    		else if (s.equalsIgnoreCase("claw")) return 11;
-    		else if (s.equalsIgnoreCase("edoryu")) return 12;
-    		else if (s.equalsIgnoreCase("singlebow")) return 13;
-    		else if (s.equalsIgnoreCase("singlespear")) return 14;
-    		else if (s.equalsIgnoreCase("tohandblunt")) return 15;
-    		else if (s.equalsIgnoreCase("tohandstaff")) return 16;
-    		else if (s.equalsIgnoreCase("keyring")) return 17;
-    		else if (s.equalsIgnoreCase("chainsword")) return 18;
-    		System.out.println(String.format("invalid item weapon type %s", s));
-    		return 0;
-    	}
+        private static int WeaponType(String key) {
+            return switch (key) {
+                case "sword" -> 1;
+                case "dagger" -> 2;
+                case "tohandsword" -> 3;
+                case "bow" -> 4;
+                case "spear" -> 5;
+                case "blunt" -> 6;
+                case "staff" -> 7;
+                case "throwingknife" -> 8;
+                case "arrow" -> 9;
+                case "gauntlet" -> 10;
+                case "claw" -> 11;
+                case "edoryu" -> 12;
+                case "singlebow" -> 13;
+                case "singlespear" -> 14;
+                case "tohandblunt" -> 15;
+                case "tohandstaff" -> 16;
+                case "keyring" -> 17;
+                case "chainsword" -> 18;
+                default -> 0;
+            };
+        }
 
-    	public static int parseArmorType(String s) {
-    		if (s.equalsIgnoreCase("none")) return 0;
-    		else if (s.equalsIgnoreCase("helm")) return 1;
-    		else if (s.equalsIgnoreCase("armor")) return 2;
-    		else if (s.equalsIgnoreCase("T")) return 3;
-    		else if (s.equalsIgnoreCase("cloak")) return 4;
-    		else if (s.equalsIgnoreCase("glove")) return 5;
-    		else if (s.equalsIgnoreCase("boots")) return 6;
-    		else if (s.equalsIgnoreCase("shield")) return 7;
-    		else if (s.equalsIgnoreCase("amulet")) return 8;
-    		else if (s.equalsIgnoreCase("ring")) return 9;
-    		else if (s.equalsIgnoreCase("belt")) return 10;
-    		else if (s.equalsIgnoreCase("ring2")) return 11;
-    		else if (s.equalsIgnoreCase("earring")) return 12;
-    		else if (s.equalsIgnoreCase("garder")) return 13;
-    		else if (s.equalsIgnoreCase("ron")) return 14;
-    		else if (s.equalsIgnoreCase("pair")) return 15;
-    		else if (s.equalsIgnoreCase("ron2")) return 28;
-    		else if (s.equalsIgnoreCase("should")) return 29;
-    		else if (s.equalsIgnoreCase("badge")) return 30;
-    		System.out.println(String.format("invalid item armor type %s", s));
-    		return 0;
-    	}
+        // 무기 분류 번호에서 기존 모션 번호를 구한다.
+        private static int WeaponMotion(int type) {
+            return switch (type) {
+                case 1 -> 4;
+                case 2 -> 46;
+                case 3 -> 50;
+                case 4, 13 -> 20;
+                case 5, 14 -> 24;
+                case 6, 15 -> 11;
+                case 7, 16 -> 40;
+                case 8 -> 2922;
+                case 9 -> 66;
+                case 10 -> 62;
+                case 11, 17 -> 58;
+                case 12 -> 54;
+                case 18 -> 83;
+                default -> 0;
+            };
+        }
 
-    	public static int parseEtcType(String s) {
-    		if (s.equalsIgnoreCase("arrow")) return 0;
-    		else if (s.equalsIgnoreCase("wand")) return 1;
-    		else if (s.equalsIgnoreCase("light")) return 2;
-    		else if (s.equalsIgnoreCase("gem")) return 3;
-    		else if (s.equalsIgnoreCase("totem")) return 4;
-    		else if (s.equalsIgnoreCase("firecracker")) return 5;
-    		else if (s.equalsIgnoreCase("potion")) return 6;
-    		else if (s.equalsIgnoreCase("food")) return 7;
-    		else if (s.equalsIgnoreCase("scroll")) return 8;
-    		else if (s.equalsIgnoreCase("questitem")) return 9;
-    		else if (s.equalsIgnoreCase("spellbook")) return 10;
-    		else if (s.equalsIgnoreCase("petitem")) return 11;
-    		else if (s.equalsIgnoreCase("other")) return 12;
-    		else if (s.equalsIgnoreCase("material")) return 13;
-    		else if (s.equalsIgnoreCase("event")) return 14;
-    		else if (s.equalsIgnoreCase("sting")) return 15;
-    		else if (s.equalsIgnoreCase("treasure_box")) return 16;
-    		else if (s.equalsIgnoreCase("teleport_scroll")) return 17;
-    		System.out.println(String.format("invalid item etc type %s", s));
-    		return -1;
-    	}
+        public static int parseWeaponId(String s) {
+            final int type = WeaponType(FoldType(s));
+            if (type == 0) System.out.println("invalid item weapon Id " + s);
+            return WeaponMotion(type);
+        }
 
-    	public static int parseMaterial(String s) {
-    		if (s.equalsIgnoreCase("none")) return 0;
-    		else if (s.equalsIgnoreCase("liquid")) return 1;
-    		else if (s.equalsIgnoreCase("web")) return 2;
-    		else if (s.equalsIgnoreCase("vegetation")) return 3;
-    		else if (s.equalsIgnoreCase("animalmatter")) return 4;
-    		else if (s.equalsIgnoreCase("paper")) return 5;
-    		else if (s.equalsIgnoreCase("cloth")) return 6;
-    		else if (s.equalsIgnoreCase("leather")) return 7;
-    		else if (s.equalsIgnoreCase("wood")) return 8;
-    		else if (s.equalsIgnoreCase("bone")) return 9;
-    		else if (s.equalsIgnoreCase("dragonscale")) return 10;
-    		else if (s.equalsIgnoreCase("iron")) return 11;
-    		else if (s.equalsIgnoreCase("steel")) return 12;
-    		else if (s.equalsIgnoreCase("copper")) return 13;
-    		else if (s.equalsIgnoreCase("silver")) return 14;
-    		else if (s.equalsIgnoreCase("gold")) return 15;
-    		else if (s.equalsIgnoreCase("platinum")) return 16;
-    		else if (s.equalsIgnoreCase("mithril")) return 17;
-    		else if (s.equalsIgnoreCase("blackmithril")) return 18;
-    		else if (s.equalsIgnoreCase("glass")) return 19;
-    		else if (s.equalsIgnoreCase("gemstone")) return 20;
-    		else if (s.equalsIgnoreCase("mineral")) return 21;
-    		else if (s.equalsIgnoreCase("oriharukon")) return 22;
+        public static int parseWeaponType(String s) {
+            final int type = WeaponType(FoldType(s));
+            if (type == 0) System.out.println("invalid item weapon type " + s);
+            return type;
+        }
 
-    		System.out.println(String.format("invalid item material %s", s));
-    		return 0;
-    	}
 
-    	public static int parseUseType(String s) {
-    		if (s.equalsIgnoreCase("none")) return -1;
-    		else if (s.equalsIgnoreCase("normal")) return 0;
-    		else if (s.equalsIgnoreCase("weapon")) return 1;
-    		else if (s.equalsIgnoreCase("armor")) return 2;
-    		else if (s.equalsIgnoreCase("spell_long")) return 5;
-    		else if (s.equalsIgnoreCase("ntele")) return 6;
-    		else if (s.equalsIgnoreCase("identify")) return 7;
-    		else if (s.equalsIgnoreCase("res")) return 8;
-    		else if (s.equalsIgnoreCase("teleport")) return 9;
-    		else if (s.equalsIgnoreCase("letter")) return 12;
-    		else if (s.equalsIgnoreCase("letter_w")) return 13;
-    		else if (s.equalsIgnoreCase("choice")) return 14;
-    		else if (s.equalsIgnoreCase("instrument")) return 15;
-    		else if (s.equalsIgnoreCase("sosc")) return 16;
-    		else if (s.equalsIgnoreCase("spell_short")) return 17;
-    		else if (s.equalsIgnoreCase("T")) return 18;
-    		else if (s.equalsIgnoreCase("cloak")) return 19;
-    		else if (s.equalsIgnoreCase("glove")) return 20;
-    		else if (s.equalsIgnoreCase("boots")) return 21;
-    		else if (s.equalsIgnoreCase("helm")) return 22;
-    		else if (s.equalsIgnoreCase("ring")) return 23;
-    		else if (s.equalsIgnoreCase("amulet")) return 24;
-    		else if (s.equalsIgnoreCase("shield") || s.equalsIgnoreCase("garder")) return 25;
-    		else if (s.equalsIgnoreCase("dai")) return 26;
-    		else if (s.equalsIgnoreCase("zel")) return 27;
-    		else if (s.equalsIgnoreCase("blank")) return 28;
-    		else if (s.equalsIgnoreCase("btele")) return 29;
-    		else if (s.equalsIgnoreCase("spell_buff")) return 30;
-    		else if (s.equalsIgnoreCase("ccard")) return 31;
-    		else if (s.equalsIgnoreCase("ccard_w")) return 32;
-    		else if (s.equalsIgnoreCase("vcard")) return 33;
-    		else if (s.equalsIgnoreCase("vcard_w")) return 34;
-    		else if (s.equalsIgnoreCase("wcard")) return 35;
-    		else if (s.equalsIgnoreCase("wcard_w")) return 36;
-    		else if (s.equalsIgnoreCase("belt")) return 37;
-    		else if (s.equalsIgnoreCase("spell_long2")) return 39;
-    		else if (s.equalsIgnoreCase("earring")) return 40;
-    		else if (s.equalsIgnoreCase("fishing_rod")) return 42;
-    		else if (s.equalsIgnoreCase("ron")) return 44;
-    		else if (s.equalsIgnoreCase("acczel")) return 46;
-    		else if (s.equalsIgnoreCase("healing")) return 51;
-    		else if (s.equalsIgnoreCase("tam")) return 68;
-    		else if (s.equalsIgnoreCase("ron2")) return 74;
-    		else if (s.equalsIgnoreCase("pair")) return 70;
-    		else if (s.equalsIgnoreCase("magic_doll")) return 73;
-    		else if (s.equalsIgnoreCase("should")) return 75;
-    		else if (s.equalsIgnoreCase("petp")) return 77;
-    		else if (s.equalsIgnoreCase("badge")) return 78;
-    		else if (s.equalsIgnoreCase("JJ")) return 79;
-    		else return Integer.parseInt(s);
-    	}
+
+        public static int parseArmorType(String s) {
+            return switch (FoldType(s)) {
+                case "none" -> 0;
+                case "helm" -> 1;
+                case "armor" -> 2;
+                case "t" -> 3;
+                case "cloak" -> 4;
+                case "glove" -> 5;
+                case "boots" -> 6;
+                case "shield" -> 7;
+                case "amulet" -> 8;
+                case "ring" -> 9;
+                case "belt" -> 10;
+                case "ring2" -> 11;
+                case "earring" -> 12;
+                case "garder" -> 13;
+                case "ron" -> 14;
+                case "pair" -> 15;
+                case "ron2" -> 28;
+                case "should" -> 29;
+                case "badge" -> 30;
+                default -> {
+                    System.out.println("invalid item armor type " + s);
+                    yield 0;
+                }
+            };
+        }
+
+        public static int parseEtcType(String s) {
+            return switch (FoldType(s)) {
+                case "arrow" -> 0;
+                case "wand" -> 1;
+                case "light" -> 2;
+                case "gem" -> 3;
+                case "totem" -> 4;
+                case "firecracker" -> 5;
+                case "potion" -> 6;
+                case "food" -> 7;
+                case "scroll" -> 8;
+                case "questitem" -> 9;
+                case "spellbook" -> 10;
+                case "petitem" -> 11;
+                case "other" -> 12;
+                case "material" -> 13;
+                case "event" -> 14;
+                case "sting" -> 15;
+                case "treasure_box" -> 16;
+                case "teleport_scroll" -> 17;
+                default -> {
+                    System.out.println("invalid item etc type " + s);
+                    yield -1;
+                }
+            };
+        }
+
+        public static int parseMaterial(String s) {
+            return switch (FoldType(s)) {
+                case "none" -> 0;
+                case "liquid" -> 1;
+                case "web" -> 2;
+                case "vegetation" -> 3;
+                case "animalmatter" -> 4;
+                case "paper" -> 5;
+                case "cloth" -> 6;
+                case "leather" -> 7;
+                case "wood" -> 8;
+                case "bone" -> 9;
+                case "dragonscale" -> 10;
+                case "iron" -> 11;
+                case "steel" -> 12;
+                case "copper" -> 13;
+                case "silver" -> 14;
+                case "gold" -> 15;
+                case "platinum" -> 16;
+                case "mithril" -> 17;
+                case "blackmithril" -> 18;
+                case "glass" -> 19;
+                case "gemstone" -> 20;
+                case "mineral" -> 21;
+                case "oriharukon" -> 22;
+                default -> {
+                    System.out.println("invalid item material " + s);
+                    yield 0;
+                }
+            };
+        }
+
+        public static int parseUseType(String s) {
+            return switch (FoldType(s)) {
+                case "none" -> -1;
+                case "normal" -> 0;
+                case "weapon" -> 1;
+                case "armor" -> 2;
+                case "spell_long" -> 5;
+                case "ntele" -> 6;
+                case "identify" -> 7;
+                case "res" -> 8;
+                case "teleport" -> 9;
+                case "letter" -> 12;
+                case "letter_w" -> 13;
+                case "choice" -> 14;
+                case "instrument" -> 15;
+                case "sosc" -> 16;
+                case "spell_short" -> 17;
+                case "t" -> 18;
+                case "cloak" -> 19;
+                case "glove" -> 20;
+                case "boots" -> 21;
+                case "helm" -> 22;
+                case "ring" -> 23;
+                case "amulet" -> 24;
+                case "shield", "garder" -> 25;
+                case "dai" -> 26;
+                case "zel" -> 27;
+                case "blank" -> 28;
+                case "btele" -> 29;
+                case "spell_buff" -> 30;
+                case "ccard" -> 31;
+                case "ccard_w" -> 32;
+                case "vcard" -> 33;
+                case "vcard_w" -> 34;
+                case "wcard" -> 35;
+                case "wcard_w" -> 36;
+                case "belt" -> 37;
+                case "spell_long2" -> 39;
+                case "earring" -> 40;
+                case "fishing_rod" -> 42;
+                case "ron" -> 44;
+                case "acczel" -> 46;
+                case "healing" -> 51;
+                case "tam" -> 68;
+                case "ron2" -> 74;
+                case "pair" -> 70;
+                case "magic_doll" -> 73;
+                case "should" -> 75;
+                case "petp" -> 77;
+                case "badge" -> 78;
+                case "jj" -> 79;
+                default -> Integer.parseInt(s);
+            };
+        }
 
     	public List<L1Item> findItemId(TableFindItemFilter filter) {
     		List<L1Item> list = new LinkedList<L1Item>();
