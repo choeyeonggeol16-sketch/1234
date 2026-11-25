@@ -518,6 +518,11 @@ public class CUserInventory extends CInventory {
 	public synchronized void insertItem(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
+		final L1PcInstance previousOwner = item._cha;
+		final int itemId = item.getItemId();
+		final int amount = item.getCount();
+		if (amount <= 0 || (long) _itemCountMap.getOrDefault(itemId, 0) + amount > MAX_AMOUNT)
+			throw new IllegalArgumentException("Invalid inventory insert quantity");
 		item._cha = _owner;
 		
 		if (item.get_bless_level() > 0) {
@@ -529,33 +534,19 @@ public class CUserInventory extends CInventory {
 		try {
 			CharactersItemStorage.create().storeItem(_owner.getId(), item);
 		} catch (Exception e) {
+			item._cha = previousOwner;
 			throw new IllegalStateException("CacheD inventory insert failed: item=" + item.getId(), e);
 		}
 				
-	    int itemId = item.getItemId();
-	    int amount = item.getCount();
-
-	    // 맵에 더하기
 	    _itemCountMap.add(itemId, amount);
 	    
 	    // [디버그 로그]
 	  //  System.out.println(String.format("[아이템추가] ID: %d, 수량: %d, 맵총량: %d", itemId, amount, _itemCountMap.get(itemId)));
 	    
 	    
-	    if (_owner.isFishing()) {
-	        switch (item.getItemId()) {
-	        case 41297: case 41296: case 41301: case 41304: case 41303:
-	        case 600230: case 820018:
-	        case 49092: case 49093: case 49094: case 49095:
-                SC_ADD_INVENTORY_NOTI.sendItem(_owner, item, false, _owner.getId());
-	            break;
-	        default:
-                SC_ADD_INVENTORY_NOTI.sendItem(_owner, item, false, _owner.getId());
-	            break;
-	        }
-	    } else {
+	    // Admission succeeded: notification errors must not unlink the item.
+	    try {
 	        SC_ADD_INVENTORY_NOTI.sendItem(_owner, item, false, _owner.getId());
-	    }
 
 		// _owner.sendPackets(new S_AddItem(item));
 		if (item.getItem().getWeight() != 0) {
@@ -579,11 +570,18 @@ public class CUserInventory extends CInventory {
 			SC_PacketBox.send(_owner, SC_PacketBox.BOOKMARK, item.getId(), "$13719",
 					BookmarkSlot.LoadItemSlots(_owner, item.getItemId()));
 		}
-        // Arm only after the item has been added and all insert notifications ran.
+	    } catch (RuntimeException notice) {
+	        RECEIPT_NOTICE_LOG.log(java.util.logging.Level.WARNING, "Accepted inventory insert notice failed", notice);
+	    }
+        // Expiry registration is independent of packet delivery.
         if (item.getEndTime() != null && !_owner.isLogoutStarted()
                 && getItem(item.getId()) == item) {
-            l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
-                    .getInstance().scheduleItem(_owner, item);
+            try {
+                l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
+                        .getInstance().scheduleItem(_owner, item);
+            } catch (RuntimeException expiry) {
+                RECEIPT_NOTICE_LOG.log(java.util.logging.Level.SEVERE, "Accepted inventory expiry registration failed", expiry);
+            }
         }
     }
 
