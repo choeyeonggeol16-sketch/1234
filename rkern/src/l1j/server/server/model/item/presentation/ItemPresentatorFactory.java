@@ -502,13 +502,7 @@ public class ItemPresentatorFactory {
 				}
 				//TODO 효과적용
 				@Override
-				public void do_equip(L1PcInstance pc, L1ItemInstance item, int signed){
-					int enchant = item.getEnchantLevel();
-					pc.add_melee_critical_rate(enchant * signed);
-					pc.getResistance().addSpecialPierce(eKind.FEAR, (3 + enchant) * signed);
-					pc.getResistance().addSpecialPierce(eKind.ABILITY, (3 + enchant) * signed);
-					pc.getResistance().addSpecialPierce(eKind.SPIRIT, (3 + enchant) * signed);
-				}
+				public void do_equip(L1PcInstance pc, L1ItemInstance item, int signed){}
 			};
 			break;
 		}
