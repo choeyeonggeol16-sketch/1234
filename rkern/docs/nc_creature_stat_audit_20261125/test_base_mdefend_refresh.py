@@ -39,6 +39,7 @@ class L1PcInstance extends L1Character {
   int _type, packets;
   BaseParam m_BaseParam=new BaseParam();
   int getType(){return _type;}
+  void RefreshBasePDefend(){}
   """+pcmethods+"""
 }
 class BaseParam {void invalidate(){}}

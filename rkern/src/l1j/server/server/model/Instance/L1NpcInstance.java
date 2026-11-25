@@ -408,7 +408,7 @@ public class L1NpcInstance extends L1Character {
         if (template.get_randomac() != 0) {
             ac = (int) (ac + calcRandomVal(ac, template.get_randomac(), rate));
         }
-        setAc(ac);
+        SetBasePDefend(ac, false);
         int bonus = template.get_randomlevel() == 0 ? 0 : (int) diff;
         SetStatStr(cap127(template.get_str() + bonus));
         SetStatCon(cap127(template.get_con() + bonus));

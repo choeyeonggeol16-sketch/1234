@@ -28,15 +28,16 @@ def method(signature):
 methods = "\n".join(method(s) for s in (
     "public final int getAc()", "public final void addAc(",
     "public final void setAc(", "public final void setSkillAc(", "private void ValidatePDefend(",
+    "public final int GetBasePDefend(", "protected final void SetBasePDefend(", "private static int GetPDefendEvasion(",
 ))
 fields = "\n".join(re.search(r"[^\n]*\b" + n + r"\s*;", creature).group(0)
-                   for n in ("m_nOrgPDefend", "m_nSkillPDefend", "m_nPDefend"))
+                   for n in ("m_nBasePDefend", "m_nAddedPDefend", "m_nSkillPDefend", "m_nPDefend"))
 stub = """
 class L1Character {
     """ + fields + """
-    int dg, er, packets;
-    public boolean setCharacterDG(int n) {int old=dg; dg=n; return old!=n;}
-    public boolean setCharacterER(int n) {int old=er; er=n; return old!=n;}
+    int packets;
+    int dg(){return GetPDefendEvasion(getAc());}
+    int er(){return GetPDefendEvasion(getAc());}
     public boolean instanceOf(int n) {return this instanceof L1PcInstance;}
     """ + methods + """
 }
@@ -64,7 +65,7 @@ public class DefenseAudit {
         }
     }
     static void check(OldAC old,L1Character c){
-        if(old.value!=c.getAc()||old.dg!=c.dg||old.er!=c.er||old.packets!=c.packets
+        if(old.value!=c.getAc()||old.dg!=c.dg()||old.er!=c.er()||old.packets!=c.packets
                 )throw new AssertionError();
     }
     public static void main(String[] args){
@@ -88,6 +89,24 @@ public class DefenseAudit {
                     default -> {old.setSkillAc(value,notify);c.setSkillAc(value,notify);}
                 }
                 check(old,c);count++;
+            }
+        }
+        for(boolean pc:new boolean[]{false,true}){
+            L1Character c=pc?new L1PcInstance():new L1Character(); OldAC old=new OldAC(pc);
+            java.util.Random rng=new java.util.Random(182);
+            int base=0;
+            for(int i=0;i<20000;i++){
+                int v=rng.nextInt(1200)-600;
+                boolean notify=rng.nextBoolean();
+                switch(i%4){
+                    case 0 -> {c.SetBasePDefend(v,false);old.source+=v-base;base=v;old.update(false);}
+                    case 1 -> {c.addAc(v);old.addAc(v);}
+                    case 2 -> {c.setSkillAc(v,notify);old.setSkillAc(v,notify);}
+                    case 3 -> {c.setAc(v);old.setAc(v);}
+                }
+                check(old,c);
+                if(c.GetBasePDefend()!=base)throw new AssertionError("base lost");
+                count++;
             }
         }
         System.out.println("PASS "+count+" PC/NPC defense transition comparisons");

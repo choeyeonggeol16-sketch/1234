@@ -715,7 +715,6 @@ public class L1PcInstance extends L1Character {
 	
 	private short _baseMaxHp = 0;
 	private int _baseMaxMp = 0;
-	private int _baseAc = 0;
 	private int _originalMagicHit = 0;
 	private int _baseBowDmgup = 0;
 	private int _baseDmgup = 0;
@@ -2209,6 +2208,7 @@ public class L1PcInstance extends L1Character {
 	public void setClassId(int i) {
 		_classId = i;
 		_classFeature = L1ClassFeature.newClassFeature(i);
+		RefreshBasePDefend();
 	}
 
 	public L1ClassFeature getClassFeature() {
@@ -4195,9 +4195,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return _originalMagicHit;
 	}
 
-	public int getBaseAc() {
-		return _baseAc;
-	}
 
 	public int getBaseDmgup() {
 		return _baseDmgup;
@@ -5494,14 +5491,16 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
    	 m_BaseParam.refresh(this);
    }
 	
-	public void resetBaseAc() {
-		int newAc = CalcStat.물리방어력(GetTotalStatDex());
+	public final void RefreshBasePDefend() {
+		int base = CalcStat.물리방어력(GetTotalStatDex());
 		final int div = getBaseAcLevelDiv();
-		if (div > 0) {
-			newAc -= getLevel() / div;
-		}
-		addAc(newAc - _baseAc);
-		_baseAc = newAc;
+		if (div > 0) base -= getLevel() / div;
+		SetBasePDefend(base, false);
+	}
+
+	public void resetBaseAc() {
+		RefreshBasePDefend();
+		if (getNetConnection() != null) SC_OwnCharAttrDef.send(this);
 	}
 	
 	private int getBaseAcLevelDiv() {

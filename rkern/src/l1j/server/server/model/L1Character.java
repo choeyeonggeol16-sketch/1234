@@ -130,7 +130,8 @@ public class L1Character extends L1Object {
 	volatile long m_SkillElemental;
 	// END shared resistance sources
 	// NC-style defense parameters: source, skill modifier and effective AC.
-	private int m_nOrgPDefend;
+	private int m_nBasePDefend;
+	private int m_nAddedPDefend;
 	private int m_nSkillPDefend;
 	private volatile int m_nPDefend;
 	
@@ -493,9 +494,7 @@ public class L1Character extends L1Object {
 	}
 
 	private int _effectedDG = 0;
-	private int _characterDG = 0;
 	private int _effectedER = 0;
-	private int _characterER = 0;
 	// ER in the low half, DG in the high half.
 	private volatile int pumpedEvasion;
 
@@ -503,36 +502,18 @@ public class L1Character extends L1Object {
 		_effectedDG += i;
 	}
 	
-	public boolean setCharacterDG(int i) {
-		int old = _characterDG;
-		_characterDG = i;
-		return old != i;
-	}
 
 	public int getDg() {
-		return _effectedDG + _characterDG + (pumpedEvasion >> 16);
+		return _effectedDG + GetPDefendEvasion(m_nPDefend) + (pumpedEvasion >> 16);
 	}
 
-	public boolean setCharacterER(int i) {
-		int old = _characterER;
-		_characterER = i;
-		return old != i;
+
+
+	private int getDefaultER() {
+		return CalcStat.원거리회피(GetTotalStatDex());
 	}
 
-	public int getStatER() {
-		int er = 0;
-		er = (GetTotalStatDex() - 8) / 2;
-		return er;
-	}
-
-	public int getDefaultER() {
-		int er = 0;
-		int BaseEr = CalcStat.원거리회피(GetTotalStatDex());
-		er += BaseEr;
-		return er;
-	}
-
-	public int getEffectedER() {
+	private int getEffectedER() {
 		return _effectedER + (short) pumpedEvasion;
 	}
 
@@ -544,7 +525,7 @@ public class L1Character extends L1Object {
 		int er = 0;
 		er += getDefaultER();
 		er += getEffectedER();
-		er += _characterER;
+		er += GetPDefendEvasion(m_nPDefend);
 		if (er < 0) {
 			er = 0;
 		} else {
@@ -1086,7 +1067,10 @@ public class L1Character extends L1Object {
 
 	public synchronized void setLevel(long level) {
 		_level = (int) level;
-		if (this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
+		if (this instanceof L1PcInstance pc) {
+			pc.RefreshBaseMDefend();
+			pc.RefreshBasePDefend();
+		}
 	}
 
 	private volatile long pumpedHpMp;
@@ -1400,9 +1384,15 @@ public class L1Character extends L1Object {
 	public final byte GetTotalStatStr() { return ValidateStat(GetStatStr() + GetAddedStatStr(), 0); }
 	public final byte GetStatDex() { return m_StatDex; }
 	public final byte GetOriginalStatDex() { return m_OriginalStatDex; }
-	public final void SetStatDex(int value) { m_StatDex = ValidateStat(value, m_OriginalStatDex); }
+	public final void SetStatDex(int value) {
+		m_StatDex = ValidateStat(value, m_OriginalStatDex);
+		if (this instanceof L1PcInstance pc) pc.RefreshBasePDefend();
+	}
 	public final byte GetAddedStatDex() { return ValidateStat(m_AddedStatDex + (byte) (m_SkillPrimaryStats >>> 8), -128); }
-	final void AddAddedStatDex(int value) { m_AddedStatDex = ValidateStat(m_AddedStatDex + value, -128); }
+	final void AddAddedStatDex(int value) {
+		m_AddedStatDex = ValidateStat(m_AddedStatDex + value, -128);
+		if (this instanceof L1PcInstance pc) pc.RefreshBasePDefend();
+	}
 	public final byte GetTotalStatDex() { return ValidateStat(GetStatDex() + GetAddedStatDex(), 0); }
 	public final byte GetStatInt() { return m_StatInt; }
 	public final byte GetOriginalStatInt() { return m_OriginalStatInt; }
@@ -1440,7 +1430,10 @@ public class L1Character extends L1Object {
 		final long changed = m_SkillPrimaryStats ^ value;
 		if (changed == 0) return;
 		m_SkillPrimaryStats = value;
-		if ((changed & 0xff000000L) != 0 && this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
+		if (this instanceof L1PcInstance pc) {
+			if ((changed & 0xff000000L) != 0) pc.RefreshBaseMDefend();
+			if ((changed & 0x0000ff00L) != 0) pc.RefreshBasePDefend();
+		}
 		if (!notify) return;
 		if ((changed & 0x000000ff) != 0) NotifyStatBonusStr();
 		if ((changed & 0x0000ff00) != 0) NotifyStatBonusDex();
@@ -1456,7 +1449,10 @@ public class L1Character extends L1Object {
 		m_StatInt = m_OriginalStatInt = m_AddedStatInt = 0;
 		m_StatWis = m_OriginalStatWis = m_AddedStatWis = 0;
 		m_StatCha = m_OriginalStatCha = m_AddedStatCha = 0;
-		if (this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
+		if (this instanceof L1PcInstance pc) {
+			pc.RefreshBaseMDefend();
+			pc.RefreshBasePDefend();
+		}
 	}
 
 	private byte CheckStatRange(int i) {
@@ -2030,11 +2026,12 @@ public class L1Character extends L1Object {
 	}
 
 	public final void addAc(int i) {
-		setAc(m_nOrgPDefend + i);
+		m_nAddedPDefend += i;
+		ValidatePDefend(true);
 	}
 
 	public final void setAc(int i) {
-		m_nOrgPDefend = i;
+		m_nAddedPDefend = i - m_nBasePDefend;
 		ValidatePDefend(true);
 	}
 
@@ -2044,13 +2041,24 @@ public class L1Character extends L1Object {
 		ValidatePDefend(notify);
 	}
 
+	public final int GetBasePDefend() { return m_nBasePDefend; }
+
+	protected final void SetBasePDefend(int value, boolean notify) {
+		if (m_nBasePDefend == value) return;
+		m_nBasePDefend = value;
+		ValidatePDefend(notify);
+	}
+
+	private static int GetPDefendEvasion(int ac) {
+		final int decrease = -ac - 100;
+		return decrease >= 0 ? decrease / 10 + 1 : 0;
+	}
+
 	private void ValidatePDefend(boolean notify) {
-		m_nPDefend = IntRange.ensure(m_nOrgPDefend + m_nSkillPDefend, -999, 999);
-		final int decreaseAC = -m_nPDefend - 100;
-		final int effectedValue = decreaseAC >= 0 ? decreaseAC / 10 + 1 : 0;
-		final boolean isChangedDG = setCharacterDG(effectedValue);
-		final boolean isChangedER = setCharacterER(effectedValue);
-		if (notify && (isChangedDG || isChangedER) && instanceOf(L1Type.L1TYPE_PC)) {
+		final int previous = m_nPDefend;
+		final int effective = IntRange.ensure(m_nBasePDefend + m_nAddedPDefend + m_nSkillPDefend, -999, 999);
+		m_nPDefend = effective;
+		if (notify && GetPDefendEvasion(previous) != GetPDefendEvasion(effective) && instanceOf(L1Type.L1TYPE_PC)) {
 			SC_OwnCharAttrDef.send((L1PcInstance) this);
 		}
 	}
