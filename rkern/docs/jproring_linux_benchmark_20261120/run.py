@@ -53,7 +53,9 @@ def compile_sources(classes, netty, network=NETWORK):
     sources = [network / 'buffer/CPacketReadBuffer.java', network / 'buffer/CPacketWriteBuffer.java',
                (network / 'codec/SocketSecureKey.java' if (network / 'codec/SocketSecureKey.java').is_file()
                 else network / 'codec/CPacketCryptor.java'), network.parents[1] / 'Opcodes.java',
-               *sorted((network / 'core/transport/selector').glob('*.java')),
+               *sorted(((HERE.parent / 'jproring_selector_transport_20261120/legacy')
+                        if (network / 'core/transport/selector/CSelectorBufferPool.java').is_file() is False
+                        else network / 'core/transport/selector').glob('CSelector*.java')),
                HERE / 'TransportServer.java', HERE / 'TransportDriver.java']
     subprocess.run([*compiler, '-encoding', 'UTF-8', '-cp', netty, '-d', str(classes), *sources], check=True)
 

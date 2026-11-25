@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketReadBuffer;
-import l1j.server.server.model.network.core.transport.selector.CSelectorBufferPool;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.CloseReason;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.Connection;
@@ -33,22 +32,16 @@ public final class SelectorTransportTest {
     private static final int BURST_BODY_BYTES = 60_000;
 
     public static void main(String[] args) throws Exception {
-        checkOwnersAndFraming();
-        checkSendAndGracefulClose();
-        checkWriteStall();
-        checkMixedSlowPeers(1);
-        checkMixedSlowPeers(10);
         checkMailboxAndShutdown();
         checkConcurrentMailbox();
         checkOwnerFailure();
-        checkCipher();
         checkCallbackFailureIsolation();
         checkRawGracefulGather();
         checkRawGatherTail();
         checkHostedAttachFailure();
         checkHostedWaitBeforeAdvance();
         checkIndexedDeadlines();
-        System.out.println("PASS multi-owner TCP, Java cipher, callback isolation, raw graceful gather and hosted rollback");
+        System.out.println("PASS raw TCP callbacks, graceful gather, mailbox concurrency, deadlines and hosted rollback");
     }
 
     private static CSelectorTransport.Config config(int owners, int connectionsPerOwner, int mailboxCapacity) {
@@ -149,7 +142,7 @@ public final class SelectorTransportTest {
             address = (InetSocketAddress) probe.getLocalSocketAddress();
         }
         var published = new AtomicReference<CSelectorTransport.OwnerDriver>();
-        CSelectorTransport.Handler noPackets = (socket, payload) -> {};
+        CSelectorTransport.RawHandler noPackets = new CSelectorTransport.RawHandler() {};
         try {
             CSelectorTransport.bindHosted(address, config(2, 2, 4), noPackets, drivers -> {
                 published.set(drivers.getFirst());
@@ -213,7 +206,7 @@ public final class SelectorTransportTest {
     private static void checkHostedWaitBeforeAdvance() throws Exception {
         var owner = new AtomicReference<CSelectorTransport.OwnerDriver>();
         var failure = new AtomicReference<Throwable>();
-        try (var server = CSelectorTransport.bindHosted(LOOPBACK, config(1, 1, 4), (socket, payload) -> {}, drivers -> {
+        try (var server = CSelectorTransport.bindHosted(LOOPBACK, config(1, 1, 4), new CSelectorTransport.RawHandler() {}, drivers -> {
             owner.set(drivers.getFirst());
             drivers.getFirst().advance(); // Before the transport commits attachment, this must return without initializing.
         })) {
@@ -231,172 +224,14 @@ public final class SelectorTransportTest {
         }
     }
 
-    private static void checkOwnersAndFraming() throws Exception {
-        var opened = new LinkedBlockingQueue<Connection>();
-        CSelectorTransport.Handler handler = new CSelectorTransport.Handler() {
-            @Override public void onOpen(Connection connection) { opened.add(connection); }
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
-                int size = payload.remaining();
-                check(connection.trySend(size, writer -> {
-                    while (payload.remaining() != 0) writer.writeByte(payload.readByte());
-                }), "echo send");
-            }
-        };
-        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(3, 2, 8), handler)) {
-            Socket[] clients = new Socket[6];
-            Set<Integer> ownerIds = new HashSet<>();
-            try {
-                for (int i = 0; i < clients.length; i++) {
-                    clients[i] = connect(server, 0);
-                    ownerIds.add(await(opened).ownerIndex());
-                }
-                check(ownerIds.equals(Set.of(0, 1, 2)), "round-robin uses all three owners");
-                try (Socket overflow = connect(server, 0)) {
-                    check(overflow.getInputStream().read() == -1, "unused admission is bounded");
-                }
-                for (int i = 0; i < clients.length; i++) {
-                    Socket socket = clients[i];
-                    byte[] p1 = {(byte) i, 11, 12};
-                    byte[] p2 = {(byte) i, 21, 22, 23};
-                    byte[] wire = frame(p1);
-                    socket.getOutputStream().write(wire, 0, 1);
-                    socket.getOutputStream().write(ByteBuffer.allocate(wire.length - 1 + p2.length + 2)
-                            .put(wire, 1, wire.length - 1).put(frame(p2)).array());
-                    expectFrame(socket, p1);
-                    expectFrame(socket, p2);
-                    socket.shutdownOutput();
-                    check(socket.getInputStream().read() == -1, "remote half-close drains");
-                }
-            } finally {
-                for (Socket client : clients) if (client != null) client.close();
-            }
-            server.close();
-            balanced(server.shutdownStats());
-        }
-    }
-
-    private static void checkSendAndGracefulClose() throws Exception {
-        var closed = new LinkedBlockingQueue<CloseReason>();
-        CountDownLatch queued = new CountDownLatch(1);
-        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(1, 2, 8), burst(queued, closed, true));
-                Socket socket = connect(server, 16_384)) {
-            socket.getOutputStream().write(frame(new byte[] {1}));
-            await(queued);
-            Thread.sleep(150); // permit a real socket send window to fill before reading
-            for (int f = 0; f < BURST_FRAMES; f++) {
-                byte[] received = readFrame(socket);
-                check(received.length == BURST_BODY_BYTES, "burst frame length");
-                for (int i = 0; i < received.length; i++) check(received[i] == sample(f, i), "burst FIFO/partial bytes");
-            }
-            check(socket.getInputStream().read() == -1, "graceful close sends FIN after the whole FIFO");
-            check(await(closed) == CloseReason.APPLICATION, "graceful close reason");
-            server.close();
-            balanced(server.shutdownStats());
-        }
-    }
-
-    private static void checkWriteStall() throws Exception {
-        var closed = new LinkedBlockingQueue<CloseReason>();
-        CountDownLatch queued = new CountDownLatch(1);
-        var config = new CSelectorTransport.Config(1, 2, 32, 8, 1, 1, BURST_FRAMES,
-                1_000_000, 32, 4_096, Duration.ofMillis(300));
-        var slow = burst(queued, closed, false);
-        var handler = new CSelectorTransport.Handler() {
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
-                if (payload.readByte() == 1) slow.onFrame(connection, payload);
-                else check(connection.trySend(1, writer -> writer.writeByte(2)), "healthy SEND during large-pool exhaustion");
-            }
-
-            @Override public void onClosed(Connection connection, CloseReason reason) { closed.add(reason); }
-        };
-        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config, handler);
-                Socket socket = connect(server, 8_192)) {
-            socket.getOutputStream().write(frame(new byte[] {1}));
-            await(queued);
-            try (Socket healthy = connect(server, 0)) {
-                healthy.getOutputStream().write(frame(new byte[] {2}));
-                expectFrame(healthy, new byte[] {2});
-                check(await(closed) == CloseReason.WRITE_TIMEOUT, "slow peer timed out without reading");
-                var owner = server.ownerDiagnostics().getFirst();
-                check(owner.stalledWrites() == 0, "timed-out peer removed from stall heap");
-            }
-            server.close();
-            balanced(server.shutdownStats());
-        }
-    }
-
-    private static CSelectorTransport.Handler burst(CountDownLatch queued, LinkedBlockingQueue<CloseReason> closed,
-            boolean graceful) {
-        return new CSelectorTransport.Handler() {
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
-                for (int f = 0; f < BURST_FRAMES; f++) {
-                    int sequence = f;
-                    check(connection.trySend(BURST_BODY_BYTES, writer -> {
-                        for (int i = 0; i < BURST_BODY_BYTES; i++) writer.writeByte(sample(sequence, i));
-                    }), "burst queued within pool capacity");
-                }
-                check(!connection.trySend(BURST_BODY_BYTES, writer -> { throw new AssertionError("pool is full"); }),
-                        "send-pool exhaustion refuses before encoding");
-                if (graceful) connection.closeAfterFlush();
-                queued.countDown();
-            }
-
-            @Override public void onClosed(Connection connection, CloseReason reason) { closed.add(reason); }
-        };
-    }
-
-    private static void checkMixedSlowPeers(int slowCount) throws Exception {
-        var queued = new CountDownLatch(slowCount);
-        var timeouts = new CountDownLatch(slowCount);
-        var config = new CSelectorTransport.Config(2, 100, 128, 128, 1, 16,
-                slowCount * BURST_FRAMES, 1_000_000, 32, 4_096, Duration.ofMillis(750));
-        try (var server = CSelectorTransport.bind(LOOPBACK, config, new CSelectorTransport.Handler() {
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
-                if (payload.readByte() == 1) {
-                    for (int i = 0; i < BURST_FRAMES; i++)
-                        check(connection.trySend(BURST_BODY_BYTES, writer -> {
-                            for (int j = 0; j < BURST_BODY_BYTES; j++) writer.writeByte(j);
-                        }), "slow peer burst admitted");
-                    queued.countDown();
-                } else {
-                    check(connection.trySend(1, writer -> writer.writeByte(2)), "fast peer admitted");
-                }
-            }
-            @Override public void onClosed(Connection connection, CloseReason reason) {
-                if (reason == CloseReason.WRITE_TIMEOUT) timeouts.countDown();
-            }
-        })) {
-            var peers = new ArrayList<Socket>();
-            try {
-                for (int i = 0; i < 100; i++) peers.add(connect(server, i < slowCount ? 4_096 : 0));
-                for (int i = 0; i < slowCount; i++) peers.get(i).getOutputStream().write(frame(new byte[] {1}));
-                await(queued);
-                for (int i = slowCount; i < 100; i++) {
-                    peers.get(i).getOutputStream().write(frame(new byte[] {2}));
-                    expectFrame(peers.get(i), new byte[] {2});
-                }
-                await(timeouts);
-                for (int i = slowCount; i < 100; i++) {
-                    peers.get(i).getOutputStream().write(frame(new byte[] {2}));
-                    expectFrame(peers.get(i), new byte[] {2});
-                }
-            } finally {
-                for (Socket peer : peers) peer.close();
-            }
-            server.close();
-            balanced(server.shutdownStats());
-        }
-    }
-
     private static void checkMailboxAndShutdown() throws Exception {
         var opened = new LinkedBlockingQueue<Connection>();
         CountDownLatch started = new CountDownLatch(1);
         CountDownLatch release = new CountDownLatch(1);
         AtomicInteger executed = new AtomicInteger();
         AtomicInteger canceled = new AtomicInteger();
-        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(1, 2, 2), new CSelectorTransport.Handler() {
+        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(1, 2, 2), new CSelectorTransport.RawHandler() {
             @Override public void onOpen(Connection connection) { opened.add(connection); }
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) { }
         }); Socket peer = connect(server, 0)) {
             Connection connection = await(opened);
             try {
@@ -480,58 +315,6 @@ public final class SelectorTransportTest {
                 check(expected.getCause() == failure, "close preserved the fatal cause");
             }
         }
-    }
-
-    private static void checkCipher() throws Exception {
-        long seed = Opcodes.getSeed();
-        try (CSelectorTransport server = CSelectorTransport.bind(LOOPBACK, config(2, 2, 8), new CSelectorTransport.Handler() {
-            @Override public void onOpen(Connection connection) throws IOException {
-                connection.enableCipher(seed, true);
-                try {
-                    connection.trySend(3, writer -> { });
-                    throw new AssertionError("empty encoder result should fail");
-                } catch (IllegalArgumentException expected) { }
-                check(connection.trySend(Opcodes.S_KEYBYTES.length, writer -> writer.writeBytes(Opcodes.S_KEYBYTES)),
-                        "plaintext RKern handshake");
-            }
-            @Override public void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException {
-                int size = payload.remaining();
-                echoEncrypted(connection, payload, size);
-                try {
-                    connection.trySend(3, writer -> { throw new IOException("cancel appended frame"); });
-                    throw new AssertionError("encoder failure should propagate");
-                } catch (IOException expected) {
-                    check(connection.pendingSendBytes() == size + 2, "failed append preserves prior frame");
-                }
-                payload.position(0);
-                echoEncrypted(connection, payload, size);
-            }
-        }); Socket socket = connect(server, 0)) {
-            expectFrame(socket, Opcodes.S_KEYBYTES);
-            ScalarClient peer = new ScalarClient(seed);
-            for (int round = 0; round < 28; round++) {
-                byte[] request = new byte[4 + (round % 14)];
-                for (int i = 0; i < request.length; i++) request[i] = sample(round, i);
-                socket.getOutputStream().write(frame(peer.toServer(request)));
-                expectFrame(socket, peer.fromServer(request));
-                expectFrame(socket, peer.fromServer(request));
-            }
-            socket.getOutputStream().write(frame(new byte[] {1, 2, 3}));
-            check(socket.getInputStream().read() == -1, "too-short encrypted packet is rejected");
-            try (Socket empty = connect(server, 0)) {
-                expectFrame(empty, Opcodes.S_KEYBYTES);
-                empty.getOutputStream().write(frame(new byte[0]));
-                check(empty.getInputStream().read() == -1, "empty encrypted packet is rejected");
-            }
-            server.close();
-            balanced(server.shutdownStats());
-        }
-    }
-
-    private static void echoEncrypted(Connection connection, CPacketReadBuffer payload, int size) throws IOException {
-        check(connection.trySend(size, writer -> {
-            while (payload.remaining() != 0) writer.writeByte(payload.readByte());
-        }), "encrypted echo");
     }
 
     /** Byte-at-a-time reference for the separate client-to-server and server-to-client streams. */
@@ -628,14 +411,7 @@ public final class SelectorTransportTest {
     private static void balanced(List<CSelectorTransport.OwnerStats> stats) {
         for (CSelectorTransport.OwnerStats owner : stats) {
             check(owner.remainingConnections() == 0 && owner.remainingCommands() == 0, "no live connections or commands");
-            balanced(owner.receive());
-            balanced(owner.send());
         }
-    }
-
-    private static void balanced(CSelectorBufferPool.Stats pool) {
-        check(pool.inUse() == 0, "lease ownership reconciles");
-        check(pool.allocatedDirectBytes() <= pool.maxDirectBytes(), "direct allocation respects cap");
     }
 
     private static <T> T await(LinkedBlockingQueue<T> queue) throws InterruptedException {

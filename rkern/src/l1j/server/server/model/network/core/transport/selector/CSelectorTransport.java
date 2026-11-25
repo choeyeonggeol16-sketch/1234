@@ -23,9 +23,6 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
-import l1j.server.server.model.network.buffer.CPacketReadBuffer;
-import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.codec.SocketSecureKey;
 
 /** Bounded, standard-Java TCP transport. Each connection has one Selector owner for its entire lifetime. */
 public final class CSelectorTransport implements AutoCloseable {
@@ -45,18 +42,10 @@ public final class CSelectorTransport implements AutoCloseable {
 
     public enum CloseReason { APPLICATION, REMOTE_EOF, WRITE_TIMEOUT, IO_ERROR, HANDLER_ERROR, SHUTDOWN }
 
-    public interface Handler {
+    /** Caller owns packet framing, buffers and encryption. */
+    public interface RawHandler {
         default void onOpen(Connection connection) throws IOException { }
-        void onFrame(Connection connection, CPacketReadBuffer payload) throws IOException;
         default void onClosed(Connection connection, CloseReason reason) { }
-    }
-
-    /** The server's existing wire codec and FIFO can supply buffers directly. */
-    public interface RawHandler extends Handler {
-        @Override
-        default void onFrame(Connection connection, CPacketReadBuffer payload) {
-            throw new IllegalStateException("Raw handler received a framed payload");
-        }
     }
 
     /** The raw endpoint owns buffers until the corresponding completion. */
@@ -81,20 +70,13 @@ public final class CSelectorTransport implements AutoCloseable {
     }
 
     @FunctionalInterface
-    public interface FrameEncoder {
-        /** Write the body into the borrowed writer without retaining it. */
-        void encode(CPacketWriteBuffer writer) throws IOException;
-    }
-
-    @FunctionalInterface
     public interface OwnerCommand {
         void run(Connection connection) throws IOException;
         default void cancel() { }
         default void cancel(Connection connection) { cancel(); }
     }
 
-    public record OwnerStats(CSelectorBufferPool.Stats receive, CSelectorBufferPool.Stats send,
-            int remainingConnections, int remainingCommands) { }
+    public record OwnerStats(int remainingConnections, int remainingCommands) { }
 
     public record OwnerDiagnostics(int index, int admitted, int queuedCommands,
             int deadlines, int stalledWrites) { }
@@ -102,15 +84,12 @@ public final class CSelectorTransport implements AutoCloseable {
     private static final int ACCEPT_BUDGET = 32;
     private static final int COMMAND_BUDGET = 64;
     private static final int READY_BUDGET = 256;
-    private static final int FRAME_BUDGET = 16;
-    private static final int GATHER_LIMIT = 16;
     private static final long OWNER_PHASE_NANOS = 500_000;
     private static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(5);
     private static final System.Logger LOG = System.getLogger(CSelectorTransport.class.getName());
-    private static final CSelectorBufferPool.Stats EMPTY_POOL_STATS = new CSelectorBufferPool.Stats(0, 0, 0);
 
     private final Config config;
-    private final Handler handler;
+    private final RawHandler handler;
     private final Owner[] owners;
     private final ServerSocketChannel listener;
     private final InetSocketAddress localAddress;
@@ -122,16 +101,16 @@ public final class CSelectorTransport implements AutoCloseable {
     private int acceptOwner;
     private volatile boolean accepting = true;
 
-    public static CSelectorTransport bind(InetSocketAddress address, Config config, Handler handler) throws IOException {
+    public static CSelectorTransport bind(InetSocketAddress address, Config config, RawHandler handler) throws IOException {
         return new CSelectorTransport(address, config, handler, null);
     }
 
-    public static CSelectorTransport bindHosted(InetSocketAddress address, Config config, Handler handler,
+    public static CSelectorTransport bindHosted(InetSocketAddress address, Config config, RawHandler handler,
             OwnerHost host) throws IOException {
         return new CSelectorTransport(address, config, handler, Objects.requireNonNull(host));
     }
 
-    private CSelectorTransport(InetSocketAddress address, Config config, Handler handler, OwnerHost host) throws IOException {
+    private CSelectorTransport(InetSocketAddress address, Config config, RawHandler handler, OwnerHost host) throws IOException {
         this.config = Objects.requireNonNull(config);
         this.handler = Objects.requireNonNull(handler);
         writeStallNanos = config.writeStallTimeout().toNanos();
@@ -241,7 +220,6 @@ public final class CSelectorTransport implements AutoCloseable {
         private final SocketChannel channel;
         private final SelectionKey key;
         private final InetSocketAddress remoteAddress;
-        private final boolean raw;
         private RawEndpoint rawEndpoint;
         // Only the Selector owner can touch an armed operation. Callers retain their leases.
         private ByteBuffer readTarget;
@@ -252,13 +230,7 @@ public final class CSelectorTransport implements AutoCloseable {
         private int writeCount;
         private long drainBytes;
         private LongConsumer writeCompletion;
-        private CSelectorFrameReader reader;
-        private CSelectorSendQueue send;
-        private final CSelectorFrameReader.Handler dispatch;
-        private SocketSecureKey cipher;
-        private boolean plaintextNext;
         private boolean inputPaused;
-        private boolean sendPressure;
         private boolean writeBlocked;
         private volatile boolean closed;
         private boolean linked;
@@ -277,13 +249,7 @@ public final class CSelectorTransport implements AutoCloseable {
             this.owner = owner;
             this.channel = channel;
             remoteAddress = (InetSocketAddress) channel.getRemoteAddress();
-            raw = handler instanceof RawHandler;
-            dispatch = raw ? null : this::dispatch;
-            if (!raw) {
-                reader = new CSelectorFrameReader(owner.receivePool);
-                send = new CSelectorSendQueue(owner.sendPool, config.sendBytesPerConnection(), config.sendFramesPerConnection());
-            }
-            key = channel.register(owner.selector, raw ? 0 : SelectionKey.OP_READ, this);
+            key = channel.register(owner.selector, 0, this);
         }
 
         public InetSocketAddress remoteAddress() { return remoteAddress; }
@@ -301,7 +267,6 @@ public final class CSelectorTransport implements AutoCloseable {
 
         public void attachRawEndpoint(RawEndpoint endpoint) {
             owner.requireOwner();
-            requireRaw();
             if (closed || rawEndpoint != null) throw new IllegalStateException("Raw endpoint already attached or closed");
             rawEndpoint = Objects.requireNonNull(endpoint);
         }
@@ -344,7 +309,6 @@ public final class CSelectorTransport implements AutoCloseable {
 
         private boolean armRawRead(ByteBuffer target, IntConsumer completion) {
             owner.requireOwner();
-            requireRaw();
             if (closed || drainReason != null || owner.stopping) return false;
             if (!target.hasRemaining() || target.isReadOnly()) throw new IllegalArgumentException("READ buffer");
             if (readTarget != null) throw new IllegalStateException("READ already pending");
@@ -385,7 +349,6 @@ public final class CSelectorTransport implements AutoCloseable {
 
         private boolean armRawWrite(ByteBuffer source, ByteBuffer[] sources, int offset, int count, LongConsumer completion) {
             owner.requireOwner();
-            requireRaw();
             if (closed || drainReason != null || owner.stopping) return false;
             if (hasRawWrite()) throw new IllegalStateException("WRITE already pending");
             singleWrite = count == 1 ? Objects.requireNonNull(sources[offset]) : source;
@@ -465,14 +428,6 @@ public final class CSelectorTransport implements AutoCloseable {
             else rawEndpoint.onRawWrite(bytes, gathered);
         }
 
-        private void requireRaw() {
-            if (!raw) throw new IllegalStateException("Connection uses the framed transport");
-        }
-
-        private void requireFramed() {
-            if (raw) throw new IllegalStateException("Connection uses caller-managed buffers");
-        }
-
         /** A successful publish will run or cancel on this owner. A false return leaves ownership with the caller. */
         public boolean tryExecute(OwnerCommand command) {
             return submit(command, false);
@@ -499,74 +454,23 @@ public final class CSelectorTransport implements AutoCloseable {
             catch (RuntimeException error) { owner.reportCallbackFailure("command cancellation", error); }
         }
 
-        public void enableCipher(long seed, boolean firstOutboundPlaintext) {
-            owner.requireOwner();
-            requireFramed();
-            if (closed || drainReason != null || cipher != null || !send.isEmpty() || send.isEncoding())
-                throw new IllegalStateException("Cipher must start before any pending send");
-            cipher = new SocketSecureKey();
-            cipher.initKey(seed);
-            plaintextNext = firstOutboundPlaintext;
-        }
-
-        public boolean trySend(int maxPayloadBytes, FrameEncoder encoder) throws IOException {
-            owner.requireOwner();
-            requireFramed();
-            Objects.requireNonNull(encoder);
-            if (closed || drainReason != null) return false;
-            CSelectorSendQueue queue = send;
-            boolean accepted;
-            try {
-                accepted = queue.send(maxPayloadBytes, encoder, cipher, plaintextNext);
-            } catch (RuntimeException | Error error) {
-                if (queue.isClosed()) terminate(CloseReason.HANDLER_ERROR);
-                throw error;
-            }
-            if (!accepted) return false;
-            plaintextNext = false;
-            updatePressure();
-            updateInterest();
-            if (!writeBlocked) owner.schedule(this);
-            return true;
-        }
-
-        public int pendingSendBytes() { owner.requireOwner(); return closed || raw ? 0 : send.pendingBytes(); }
-
         public void pauseReads(boolean paused) {
             owner.requireOwner();
             inputPaused = paused;
             if (!closed) {
                 updateInterest();
-                if (!raw && canRead() && reader.hasBufferedFrame()) owner.schedule(this);
             }
         }
 
-        /** Drain the accepted framed queue or complete the single pending raw WRITE, then send FIN. */
+        /** Complete the single pending raw WRITE, then send FIN. */
         public void closeAfterFlush() {
             owner.requireOwner();
-            if (send != null && send.isEncoding()) throw new IllegalStateException("Cannot drain inside an encoder");
             beginDrain(CloseReason.APPLICATION);
         }
 
         public void abort() {
             owner.requireOwner();
-            if (send != null && send.isEncoding()) throw new IllegalStateException("Cannot abort inside an encoder");
             terminate(CloseReason.APPLICATION);
-        }
-
-        private boolean dispatch(CPacketReadBuffer payload) throws IOException {
-            if (cipher != null) {
-                int length = payload.remaining();
-                if (length < 8) throw new IOException("Encrypted inbound frame is too short");
-                cipher.decrypt(payload, 0, length);
-                payload.limit(length - 4);
-            }
-            try {
-                handler.onFrame(this, payload);
-            } catch (IOException | RuntimeException e) {
-                terminate(CloseReason.HANDLER_ERROR);
-            }
-            return canRead();
         }
 
         private void turn() {
@@ -575,20 +479,9 @@ public final class CSelectorTransport implements AutoCloseable {
             if (closed) return;
             try {
                 if ((operations & SelectionKey.OP_WRITE) != 0) writeBlocked = false;
-                if (raw) {
-                    if (canRead() && (operations & SelectionKey.OP_READ) != 0 && readRawReady() < 0)
-                        beginDrain(CloseReason.REMOTE_EOF);
-                    if (!closed && !writeBlocked && hasRawWrite()) rawFlush();
-                    finishTurn();
-                    return;
-                }
-                if (canRead()) {
-                    if ((operations & SelectionKey.OP_READ) != 0 && !reader.hasBufferedFrame()
-                            && reader.read(channel) == -1) beginDrain(CloseReason.REMOTE_EOF);
-                    if (canRead() && reader.hasBufferedFrame()) reader.drain(FRAME_BUDGET, dispatch);
-                }
-                if (closed) return;
-                if (!writeBlocked && !send.isEmpty()) flush();
+                if (canRead() && (operations & SelectionKey.OP_READ) != 0 && readRawReady() < 0)
+                    beginDrain(CloseReason.REMOTE_EOF);
+                if (!closed && !writeBlocked && hasRawWrite()) rawFlush();
                 finishTurn();
             } catch (IOException | RuntimeException e) {
                 terminate(CloseReason.IO_ERROR);
@@ -602,20 +495,15 @@ public final class CSelectorTransport implements AutoCloseable {
                 return;
             }
             updateInterest();
-            if ((!writeBlocked && hasWrites()) || (!raw && canRead() && reader.hasBufferedFrame()))
+            if (!writeBlocked && hasWrites())
                 owner.schedule(this);
         }
 
-        private boolean hasWrites() { return raw ? hasRawWrite() : !send.isEmpty(); }
+        private boolean hasWrites() { return hasRawWrite(); }
 
         private void rawFlush() throws IOException {
             long written = writeRawReady();
             if (!closed) recordWrite(written);
-        }
-
-        private void flush() throws IOException {
-            recordWrite(send.flush(channel, owner.gather));
-            updatePressure();
         }
 
         private void recordWrite(long written) {
@@ -630,22 +518,10 @@ public final class CSelectorTransport implements AutoCloseable {
             }
         }
 
-        private void updatePressure() {
-            int bytes = send.pendingBytes();
-            int frames = send.pendingFrames();
-            int byteLimit = config.sendBytesPerConnection();
-            int frameLimit = config.sendFramesPerConnection();
-            if (sendPressure) {
-                if (bytes <= byteLimit / 2 && frames <= frameLimit / 2) sendPressure = false;
-            } else if (bytes >= byteLimit - byteLimit / 4 || frames >= frameLimit - frameLimit / 4) {
-                sendPressure = true;
-            }
-        }
-
-        private boolean canRead() { return !closed && drainReason == null && !inputPaused && !sendPressure; }
+        private boolean canRead() { return !closed && drainReason == null && !inputPaused; }
 
         private void updateInterest() {
-            int interests = canRead() && (!raw || readTarget != null) ? SelectionKey.OP_READ : 0;
+            int interests = canRead() && readTarget != null ? SelectionKey.OP_READ : 0;
             if (writeBlocked) interests |= SelectionKey.OP_WRITE;
             if (key.interestOps() != interests) key.interestOps(interests);
         }
@@ -653,7 +529,6 @@ public final class CSelectorTransport implements AutoCloseable {
         private void beginDrain(CloseReason reason) {
             if (closed || drainReason != null) return;
             drainReason = reason;
-            if (reader != null) reader.close();
             if (!hasWrites()) terminate(reason);
             else {
                 updateInterest();
@@ -683,23 +558,12 @@ public final class CSelectorTransport implements AutoCloseable {
             try { channel.close(); }
             catch (IOException closeError) { failure.compareAndSet(null, closeError); }
             finally {
-                CSelectorFrameReader inbound = reader;
-                CSelectorSendQueue outbound = send;
-                // Application code may retain a closed handle. It must not pin either owner pool.
-                reader = null;
-                send = null;
-                cipher = null;
                 try {
-                    try {
-                        if (raw) cancelRawIo();
-                        else inbound.close();
-                    } finally {
-                        try { if (outbound != null) outbound.close(); }
-                        finally {
-                            owner.admitted.decrementAndGet();
-                            try { handler.onClosed(this, reason); }
-                            catch (RuntimeException error) { owner.reportCallbackFailure("terminal notification", error); }
-                        }
+                    try { cancelRawIo(); }
+                    finally {
+                        owner.admitted.decrementAndGet();
+                        try { handler.onClosed(this, reason); }
+                        catch (RuntimeException error) { owner.reportCallbackFailure("terminal notification", error); }
                     }
                 } catch (RuntimeException | Error invariantFailure) {
                     owner.fail(invariantFailure);
@@ -799,10 +663,7 @@ public final class CSelectorTransport implements AutoCloseable {
         private final ArrayDeque<Connection> closing = new ArrayDeque<>();
         private final DeadlineHeap stalled = new DeadlineHeap(true);
         private final DeadlineHeap deadlines = new DeadlineHeap(false);
-        private final ByteBuffer[] gather = new ByteBuffer[GATHER_LIMIT];
         private final Consumer<SelectionKey> collector = this::collect;
-        private CSelectorBufferPool receivePool;
-        private CSelectorBufferPool sendPool;
         private volatile boolean stopping;
         private volatile boolean finished;
         private boolean acceptReady;
@@ -973,9 +834,6 @@ public final class CSelectorTransport implements AutoCloseable {
         private void initialize() {
             if (thread == null) thread = Thread.currentThread();
             requireOwner();
-            if (handler instanceof RawHandler || receivePool != null) return;
-            receivePool = CSelectorBufferPool.receive(config.connectionsPerOwner(), config.largeReceivesPerOwner());
-            sendPool = CSelectorBufferPool.send(config.smallSendsPerOwner(), config.largeSendsPerOwner());
         }
 
         private void fail(Throwable unexpected) {
@@ -1145,9 +1003,7 @@ public final class CSelectorTransport implements AutoCloseable {
             try (Selector closingSelector = selector) {
                 if (index == 0) listener.close();
             } catch (IOException e) { failure.compareAndSet(null, e); }
-            stats = new OwnerStats(receivePool == null ? EMPTY_POOL_STATS : receivePool.stats(),
-                    sendPool == null ? EMPTY_POOL_STATS : sendPool.stats(), admitted.get(), pendingCommands());
-            receivePool = sendPool = null;
+            stats = new OwnerStats(admitted.get(), pendingCommands());
         }
     }
 
@@ -1187,132 +1043,5 @@ public final class CSelectorTransport implements AutoCloseable {
     private static void closeSuppressing(AutoCloseable resource, Throwable failure) {
         try { resource.close(); }
         catch (Exception closeError) { failure.addSuppressed(closeError); }
-    }
-
-    /** Owner-local FIFO. A slot stays owned until the last byte is accepted by the socket. */
-    private static final class CSelectorSendQueue implements AutoCloseable {
-        private static final int HEADER_BYTES = Short.BYTES;
-        private static final int MAX_WIRE_BYTES = 0xffff;
-        private static final int GATHER_BYTES = 256 * 1024;
-
-        private final CSelectorBufferPool pool;
-        private final int maxBytes;
-        private final int maxFrames;
-        private CSelectorBufferPool.Lease head;
-        private CSelectorBufferPool.Lease tail;
-        private CPacketWriteBuffer writer;
-        private int bytes;
-        private int frames;
-        private boolean closed;
-        private boolean encoding;
-
-        CSelectorSendQueue(CSelectorBufferPool pool, int maxBytes, int maxFrames) {
-            this.pool = pool;
-            this.maxBytes = maxBytes;
-            this.maxFrames = maxFrames;
-        }
-
-        boolean send(int maxPayloadBytes, CSelectorTransport.FrameEncoder encoder, SocketSecureKey cipher, boolean plaintext)
-                throws IOException {
-            if (maxPayloadBytes < 1 || maxPayloadBytes > MAX_WIRE_BYTES - HEADER_BYTES)
-                throw new IllegalArgumentException("Invalid outbound payload size");
-            if (encoding) throw new IllegalStateException("Reentrant frame encoding");
-            if (closed || frames == maxFrames || maxBytes - bytes <= HEADER_BYTES) return false;
-            int capacity = maxPayloadBytes + HEADER_BYTES;
-            CSelectorBufferPool.Lease lease = tail;
-            boolean append = lease != null && lease.buffer.position() == 0
-                    && capacity <= lease.buffer.capacity() - lease.buffer.limit();
-            if (!append) lease = pool.acquire(capacity);
-            if (lease == null) return false;
-            ByteBuffer buffer = lease.buffer;
-            int start = append ? buffer.limit() : 0;
-            boolean committed = false;
-            encoding = true;
-            try {
-                if (writer == null) writer = new CPacketWriteBuffer();
-                writer.armExternal(buffer, start, capacity);
-                writer.beginDirect();
-                writer.position(HEADER_BYTES);
-                encoder.encode(writer);
-                int length = writer.position();
-                if (length <= HEADER_BYTES || length > capacity)
-                    throw new IllegalArgumentException("Invalid encoded frame size");
-                if (closed || length > maxBytes - bytes) return false;
-                buffer.putShort(start, (short) length);
-                if (cipher != null && !plaintext) {
-                    try {
-                        cipher.encrypt(writer, HEADER_BYTES, length - HEADER_BYTES);
-                    } catch (RuntimeException | Error failure) {
-                        // A broken encryption attempt may already have advanced the outbound key.
-                        close();
-                        throw failure;
-                    }
-                }
-                buffer.position(0).limit(start + length);
-                if (!append) {
-                    if (tail == null) head = lease;
-                    else tail.next = lease;
-                    tail = lease;
-                }
-                lease.frames++;
-                bytes += length;
-                frames++;
-                committed = true;
-                return true;
-            } finally {
-                if (writer != null) writer.releaseResources();
-                encoding = false;
-                if (!committed) {
-                    if (!append) pool.release(lease);
-                    else if (!closed) buffer.position(0).limit(start);
-                }
-            }
-        }
-
-        long flush(SocketChannel channel, ByteBuffer[] gather) throws IOException {
-            int count = 0;
-            int offered = 0;
-            long written;
-            try {
-                for (CSelectorBufferPool.Lease lease = head; lease != null && count < gather.length; lease = lease.next) {
-                    int remaining = lease.buffer.remaining();
-                    if (count != 0 && offered + remaining > GATHER_BYTES) break;
-                    gather[count++] = lease.buffer;
-                    offered += remaining;
-                }
-                if (count == 0) return 0;
-                written = count == 1 ? channel.write(gather[0]) : channel.write(gather, 0, count);
-            } finally {
-                for (int i = 0; i < count; i++) gather[i] = null;
-            }
-            bytes -= (int) written;
-            while (head != null && !head.buffer.hasRemaining()) {
-                CSelectorBufferPool.Lease sent = head;
-                head = sent.next;
-                frames -= sent.frames;
-                pool.release(sent);
-            }
-            if (head == null) tail = null;
-            return written;
-        }
-
-        int pendingBytes() { return bytes; }
-        int pendingFrames() { return frames; }
-        boolean isEmpty() { return head == null; }
-        boolean isEncoding() { return encoding; }
-        boolean isClosed() { return closed; }
-
-        @Override
-        public void close() {
-            closed = true;
-            while (head != null) {
-                CSelectorBufferPool.Lease discarded = head;
-                head = discarded.next;
-                pool.release(discarded);
-            }
-            tail = null;
-            bytes = 0;
-            frames = 0;
-        }
     }
 }

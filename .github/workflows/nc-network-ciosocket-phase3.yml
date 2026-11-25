@@ -21,9 +21,9 @@ jobs:
           persist-credentials: false
       - name: Audit live Selector references
         run: |
-          git grep -n -E 'CSelectorBufferPool|CSelectorFrameReader|CSelectorSendQueue|CSelectorTransport[.]bind(Hosted)?[(]' -- rkern/src
-          if git grep -n -w CSelectorSendQueue -- rkern/src ':!rkern/src/l1j/server/server/model/network/core/transport/selector/CSelectorTransport.java'; then
-            echo "Unexpected external SEND queue reference" >&2
+          git grep -n -E 'CSelectorTransport[.]bind(Hosted)?[(]' -- rkern/src
+          if git grep -n -E 'CSelectorBufferPool|CSelectorFrameReader|CSelectorSendQueue|CSelectorTransport[.]Handler' -- rkern/src; then
+            echo "Unexpected legacy framed transport reference" >&2
             exit 1
           fi
       - name: Compile all Java 21 source and execute existing TCP regressions
@@ -43,10 +43,10 @@ jobs:
           cp=mod.classpath(classes,tmp/"nc-network-deps")
           mod.compile_java(cp, classes, False)
           tests=[fixture/"SelectorCioIntegrationTest.java",fixture/"CIOBufferPoolAffinityTest.java",
-                 fixture.parent/"jproring_p1_selector_20261120"/"SelectorFrameReaderTest.java"]
+                 ]
           subprocess.run(["javac","--release","21","--enable-preview","-encoding","UTF-8","-cp",cp,"-d",str(classes),*map(str,tests)],check=True)
           runtime=tmp/"nc-network-runtime"
           runtime.mkdir()
-          for name in ["SelectorFrameReaderTest","SelectorTransportTest","l1j.server.server.model.network.core.connection.CIOBufferPoolAffinityTest","SelectorCioIntegrationTest"]:
+          for name in ["SelectorTransportTest","l1j.server.server.model.network.core.connection.CIOBufferPoolAffinityTest","SelectorCioIntegrationTest"]:
               subprocess.run(["java","--enable-preview","-XX:MaxDirectMemorySize=64m","-cp",cp,name],cwd=runtime,check=True)
           PY
