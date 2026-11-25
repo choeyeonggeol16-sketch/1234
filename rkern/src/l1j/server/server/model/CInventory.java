@@ -1735,21 +1735,31 @@ public class CInventory extends L1Object {
             if (full) pc.persistOwnedItemDelete(item);
             else changeStackCount(item, -count);
         } catch (RuntimeException failure) {
+            RuntimeException recovery = null;
             try {
                 if (merge == null && dest._items.Have(carry))
                     ground.popForTransfer(carry);
-                if (registered || (!full && world.findObject(carry.getId()) == carry))
+            } catch (RuntimeException e) { recovery = e; }
+            try {
+                if (!full && !dest._items.Have(carry)
+                        && (registered || world.findObject(carry.getId()) == carry))
                     world.removeObject(carry);
-                if (detached) {
+                if (detached && !dest._items.Have(item)) {
                     item.setX(oldX);
                     item.setY(oldY);
                     item.setMap(oldMap);
                     _items.Push(item);
                 }
-                ground.finishGroundTransfer(carry);
-            } catch (RuntimeException recovery) {
-                throw new TransferRecoveryFailure(recovery, failure);
+            } catch (RuntimeException e) {
+                if (recovery == null) recovery = e;
+                else recovery.addSuppressed(e);
             }
+            try { ground.finishGroundTransfer(carry); }
+            catch (RuntimeException e) {
+                if (recovery == null) recovery = e;
+                else recovery.addSuppressed(e);
+            }
+            if (recovery != null) throw new TransferRecoveryFailure(recovery, failure);
             throw failure;
         }
 
