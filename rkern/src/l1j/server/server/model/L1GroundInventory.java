@@ -162,9 +162,25 @@ public class L1GroundInventory extends CInventory {
     void finishGroundTransfer(L1ItemInstance item) {
         assert Thread.holdsLock(this);
         if (_items.isEmpty()) {
-            L1World.getInstance().removeVisibleObject(this);
+            final L1World world = L1World.getInstance();
+            if (world.findGroundInventory(getX(), getY(), getMapId()) != this) return;
+            world.removeVisibleObject(this);
             if (DEBUG_GROUND_ITEM_TIMER)
                 debug("GROUND-EMPTY", item, "inventory removed from visible world");
+        }
+    }
+
+    /** Destination cleanup after an accepted or rejected transfer.
+     * The existing ordered inventory monitors are still held.
+     * Cleanup must not replace the original transfer exception.
+     */
+    void retireEmptyTileAfterTransfer() {
+        assert Thread.holdsLock(this);
+        if (!_items.isEmpty()) return;
+        try {
+            finishGroundTransfer(null);
+        } catch (RuntimeException failure) {
+            _log.log(java.util.logging.Level.SEVERE, "Empty ground tile retirement failed: " + getId(), failure);
         }
     }
 
