@@ -1,0 +1,152 @@
+name: Recipe material regression
+on: [push]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: a17dfcf3892598f5f63fe73a0bbf21c137a92340
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Check production references and material selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path('rkern/src')
+          files=list(root.rglob('*.java'))
+          assert len(files)==1824
+          lex=re.compile(r'//[^\r\n]*|/\*[\s\S]*?\*/|"""[\s\S]*?"""|"(?:\\.|[^"\\\r\n])*"|\'(?:\\.|[^\'\\\r\n])*\'|[\w$]+|::|[^\s]')
+          obsolete={'제작리스트','제작리스트1','제작리스트3','consumeEnchantItem','consumeExactEnchantInstances','matchesExactEnchant','consumeEnchantAmount','hasEnchantAmount','matchesUnequippedEnchant','DeleteItemByDescIDEnchanted','GetItemListByClassIDEnchanted','checkEnchant','DeleteEnchant','debitEnchantWeapon'}
+          for p in files:
+              s=p.read_text(encoding='utf-8-sig')
+              ts=[m.group() for m in lex.finditer(s) if not m.group().startswith(('//','/*','"',"'" ))]
+              for i,t in enumerate(ts):
+                  if t in obsolete and (i+1<len(ts) and ts[i+1]=='(' or i>0 and ts[i-1]=='::'):
+                      raise AssertionError((str(p),t))
+          print('REFERENCE_SCAN_OK',len(files))
+          Path('/tmp/recipe-sources.txt').write_text('\n'.join(map(str,files))+'\n')
+          p=root/'l1j/server/server/model'
+          inv=(p/'CInventory.java').read_text(encoding='utf-8-sig')
+          tx=(p/'L1InventoryTransaction.java').read_text(encoding='utf-8-sig')
+          def extract(s,sig):
+              a=s.index(sig);b=s.index('{',a);d=1
+              for i in range(b+1,len(s)):
+                  if s[i]=='{':d+=1
+                  elif s[i]=='}':
+                      d-=1
+                      if d==0:return s[a:i+1]
+              raise AssertionError(sig)
+          inventory_sigs=['public long GetRecipeMaterialAmount(int classId)','public long GetRecipeMaterialAmount(int classId, int enchant)','private long GetRecipeMaterialAmount(int classId, int enchant,','public boolean HaveUnequippedItemByClassIdEnchanted(int id, int enchant, int count)']
+          tx_sigs=['public boolean debit(L1PcInstance pc,int templateId,int count)','public boolean DebitRecipeMaterial(int templateId, int enchant, int count)','private boolean debitMatchingMaterial(L1PcInstance pc, int templateId,','private static boolean requiresEntityDeletion(int template)']
+          stubs='''
+          class L1ItemInstance {
+           final int id,cid,enchant; final boolean stack,equipped; int count;
+           L1ItemInstance(int id,int cid,int enchant,boolean stack,boolean eq,int count){this.id=id;this.cid=cid;this.enchant=enchant;this.stack=stack;equipped=eq;this.count=count;}
+           int getId(){return id;} int getItemId(){return cid;} int getEnchantLevel(){return enchant;} boolean isStackable(){return stack;} boolean isEquipped(){return equipped;} int getCount(){return count;}
+           L1ItemInstance copy(){return new L1ItemInstance(id,cid,enchant,stack,equipped,count);}
+          }
+          class ItemList extends ArrayList<L1ItemInstance>{List<L1ItemInstance> snapshot(){return this;}}
+          class CInventory {
+           final ItemList _items=new ItemList();
+           List<L1ItemInstance> getItems(){return _items;}
+          '''
+          stubtx='''
+          class L1PcInstance { final CInventory inv=new CInventory(); CInventory getInventory(){return inv;} }
+          class Entry { L1PcInstance owner; L1ItemInstance image; Entry(L1PcInstance pc,L1ItemInstance i){owner=pc;image=i.copy();} }
+          class L1InventoryTransaction {
+           final L1PcInstance primary;
+           final Map<Integer,Entry> entries=new HashMap<>();
+           L1InventoryTransaction(L1PcInstance pc){primary=pc;}
+           void open(){} void owns(L1PcInstance pc){if(pc!=primary)throw new IllegalStateException();}
+           Entry findEntry(int id){return entries.get(id);}
+           boolean debit(L1PcInstance pc,L1ItemInstance i,int count){
+              if(i==null||count<=0||i.isEquipped()||requiresEntityDeletion(i.getItemId()))return false;
+              owns(pc);
+              Entry e=entries.get(i.id);
+              if(e!=null&&e.owner!=pc)return false;
+              int remaining=e==null?i.count:e.image.count;
+              if(remaining<count)return false;
+              if(e==null){e=new Entry(pc,i);entries.put(i.id,e);}
+              e.image.count-=count;
+              return true;
+           }
+           int remaining(L1ItemInstance i){Entry e=entries.get(i.id);return e==null?i.count:e.image.count;}
+          '''
+          test='''
+          public class RecipeRegression {
+           static int checks;
+           static void ck(boolean b,String label){checks++;if(!b)throw new AssertionError(label);}
+           static void eq(long a,long b,String label){ck(a==b,label+" "+a+" != "+b);}
+           static int quantity(L1InventoryTransaction tx,L1ItemInstance i){Entry e=tx.findEntry(i.id);return e==null?i.count:e.image.count;}
+           public static void main(String[] args){
+             Random r=new Random(92561);
+             for(int run=0;run<4000;run++){
+               L1PcInstance pc=new L1PcInstance();L1InventoryTransaction tx=new L1InventoryTransaction(pc);
+               int n=r.nextInt(28);
+               for(int i=0;i<n;i++)pc.inv._items.add(new L1ItemInstance(i+1,10+r.nextInt(3),r.nextInt(5)-2,r.nextBoolean(),r.nextBoolean(),r.nextInt(14)-2));
+               for(int round=0;round<5;round++){
+                 int id=10+r.nextInt(4),en=r.nextInt(5)-2,count=r.nextInt(30)-2;
+                 boolean exact=r.nextBoolean();long live=0,liveExact=0,instances=0,available=0;
+                 int[] before=new int[n];int k=0;
+                 for(var i:pc.inv._items){
+                   before[k++]=quantity(tx,i);
+                   if(i.cid==id&&!i.equipped&&i.count>0){live+=i.count;if(i.enchant==en){liveExact+=i.count;instances+=i.stack?i.count:1;}}
+                   if(i.cid==id&&!i.equipped&&(!exact||i.enchant==en))available+=Math.max(0,quantity(tx,i));
+                 }
+                 eq(pc.inv.GetRecipeMaterialAmount(id),live,"all recipe amount");
+                 eq(pc.inv.GetRecipeMaterialAmount(id,en),liveExact,"exact amount");
+                 ck(pc.inv.HaveUnequippedItemByClassIdEnchanted(id,en,count)==(count>0&&instances>=count),"legacy check");
+                 boolean want=count>0&&available>=count;
+                 boolean got=exact?tx.DebitRecipeMaterial(id,en,count):tx.debit(pc,id,count);
+                 ck(want==got,"preflight result");
+                 int left=want?count:0;k=0;
+                 for(var i:pc.inv._items){
+                   int prev=before[k++];int take=0;
+                   if(left>0&&i.cid==id&&!i.equipped&&(!exact||i.enchant==en)&&prev>0){take=Math.min(prev,left);left-=take;}
+                   eq(quantity(tx,i),prev-take,"staged membership order and no partial failure");
+                 }
+                 eq(left,0,"remaining");
+               }
+             }
+             L1PcInstance pc=new L1PcInstance();L1InventoryTransaction tx=new L1InventoryTransaction(pc);
+             var a=new L1ItemInstance(1,20,7,true,false,2_000_000_000);var b=new L1ItemInstance(2,20,7,true,false,2_000_000_000);
+             pc.inv._items.add(a);pc.inv._items.add(b);eq(pc.inv.GetRecipeMaterialAmount(20,7),4_000_000_000L,"64-bit sum");
+             ck(tx.DebitRecipeMaterial(20,7,2_100_000_000),"multi stack");eq(tx.remaining(a),0,"first stack");eq(tx.remaining(b),1_900_000_000,"second stack");
+             var pet=new L1ItemInstance(3,40314,0,false,false,1);pc.inv._items.add(pet);ck(!tx.DebitRecipeMaterial(40314,0,1),"protected entity");
+             System.out.println("RECIPE_ASSERTIONS "+checks+" PASS");
+           }
+          }
+          '''
+          Path('/tmp/RecipeRegression.java').write_text('import java.util.*;\n'+stubs+'\n'+'\n'.join(extract(inv,s) for s in inventory_sigs)+'\n}\n'+stubtx+'\n'+'\n'.join(extract(tx,s) for s in tx_sigs)+'\n}\n'+test)
+          print('EXTRACTED_METHODS',len(inventory_sigs)+len(tx_sigs))
+          
+          PY
+          javac --release 21 -d /tmp /tmp/RecipeRegression.java
+          java -cp /tmp RecipeRegression
+          cat >/tmp/ParseRecipes.java <<'JAVA'
+          import javax.tools.*;
+          import com.sun.source.util.JavacTask;
+          import java.nio.file.*;
+          import java.util.*;
+          public class ParseRecipes {
+           public static void main(String[] args)throws Exception{
+           var paths=Files.readAllLines(Path.of(args[0])); var c=ToolProvider.getSystemJavaCompiler(); var d=new DiagnosticCollector<JavaFileObject>();
+           try(var f=c.getStandardFileManager(d,null,java.nio.charset.StandardCharsets.UTF_8)){
+           var t=(JavacTask)c.getTask(null,f,d,List.of("-proc:none","--release","21"),null,f.getJavaFileObjectsFromStrings(paths));
+           int n=0; for(var u:t.parse())n++;
+           long errors=d.getDiagnostics().stream().filter(x->x.getKind()==Diagnostic.Kind.ERROR).count();
+           System.out.println("PARSE_FILES "+n+" ERRORS "+errors);
+           if(errors!=0||n!=paths.size()){d.getDiagnostics().forEach(System.out::println);System.exit(1);}
+           }
+           }
+          }
+          JAVA
+          java /tmp/ParseRecipes.java /tmp/recipe-sources.txt
