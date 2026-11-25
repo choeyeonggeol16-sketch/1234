@@ -694,9 +694,7 @@ public abstract class Warehouse extends L1Object {
         if ((feeItemId == 0) != (feeAmount == 0) || feeAmount < 0) return null;
         if (feeAmount != 0 && feeItemId != 40308 && feeItemId != 40494) return null;
 		if (item == null || inventory == null || GetByServerID(item.getId()) != item) return null;
-		if (item.getCount() <= 0 || count <= 0 || count > item.getCount()) return null;
-		if (item.isEquipped()) return null;
-        if (!item.isStackable() && count != 1) return null;
+        if (!item.IsTransferableAmount(count)) return null;
 		if (inventory.CheckAddable(item, count) != CInventory.OK) return null;
 		
         if (!(inventory instanceof l1j.server.server.model.CUserInventory)) return null;
@@ -736,7 +734,6 @@ public abstract class Warehouse extends L1Object {
 			carryItem = move.replayCarry(item.getId());
             if (carryItem == null)
                 throw new IllegalStateException("Warehouse withdrawal missing committed item ID");
-			if (carryItem == null) return null;
 			carryItem.setCount(count);
 			carryItem.setEnchantLevel(item.getEnchantLevel());
 			carryItem.setIdentified(item.isIdentified());
