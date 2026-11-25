@@ -1,29 +1,19 @@
 package l1j.server.server.command;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
-
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.command.executor.*;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1Command;
 
-/**
- * Java-owned GM command definitions migrated from the 88-row commands table.
- * Keep original names, level 9999 and executor-class names as metadata.
- * Missing legacy executors remain recorded but are not resurrected.
- */
+/** Legacy definitions and source compatibility; no separate command map. */
 public final class L1Commands {
-    private static final Map<String, L1Command> COMMANDS = createCommands();
-
     private L1Commands() {}
 
-    private static Map<String, L1Command> createCommands() {
-        final Map<String, L1Command> loaded = new LinkedHashMap<>(128);
+    public static void registerBuilderCommands(Map<String, BuilderCmdPairType> loaded) {
         register(loaded, "감시", "L1Patrol", L1Patrol::getInstance);
         register(loaded, "개인버프", "L1AllBuff", L1AllBuff::getInstance);
         register(loaded, "검사", "L1CheckCharacter", L1CheckCharacter::getInstance);
@@ -112,37 +102,23 @@ public final class L1Commands {
         register(loaded, "편지삭제", "L1RemoveLetter", L1RemoveLetter::getInstance);
         register(loaded, "피바", "L1HpBar", L1HpBar::getInstance);
         register(loaded, "홈타운", "L1HomeTown", L1HomeTown::getInstance);
-        return Collections.unmodifiableMap(loaded);
     }
 
-    private static void register(Map<String, L1Command> loaded, String name, String className, Supplier<L1CommandExecutor> factory) {
-        loaded.put(name.toLowerCase(Locale.ROOT), new L1Command(name, 9999, className, factory));
-    }
-
-    /** Compatibility with GameServer startup: all registrations are now static. */
-    public static void reload() {
-        // Class initialization already published the immutable command map.
-    }
-
-    public static L1Command get(String name) {
-        return name == null ? null : COMMANDS.get(name.toLowerCase(Locale.ROOT));
-    }
-
-    public static List<L1Command> availableCommandList(int accessLevel) {
-        final List<L1Command> result = new ArrayList<>();
-        for (L1Command command : COMMANDS.values()) {
-            if (command.getLevel() <= accessLevel) {
-                result.add(command);
-            }
+    private static void register(Map<String, BuilderCmdPairType> loaded, String name, String className,
+                                 Supplier<L1CommandExecutor> factory) {
+        if (loaded.putIfAbsent(name.toLowerCase(Locale.ROOT),
+                BuilderCmdPairType.legacy(name, 9999, className, factory)) != null) {
+            throw new IllegalStateException("Duplicate builder command: " + name);
         }
-        return result;
     }
 
-    /**
-     * Preserve one executor creation per call, as in the old reflection path.
-     * Unavailable legacy classes return false so GMCommands retains its existing
-     * hardcoded fallback. No database access or reflection occurs.
-     */
+    public static void reload() { BuilderCmdHandler.LoadBuilderCmdHandler(); }
+    public static L1Command get(String name) {
+        return BuilderCmdHandler.getInstance().getLegacyCommand(name);
+    }
+    public static List<L1Command> availableCommandList(int accessLevel) {
+        return BuilderCmdHandler.getInstance().availableLegacyCommands(accessLevel);
+    }
     public static boolean execute(L1PcInstance pc, L1Command command, String name, String arg) {
         return command != null && command.execute(pc, name, arg);
     }

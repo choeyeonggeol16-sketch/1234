@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.Config;
-import l1j.server.server.GMCommands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.UserCommands;
 import l1j.server.server.datatables.SpamTable;
 import l1j.server.server.model.L1ExcludingList;
@@ -28,6 +28,17 @@ public final class CS_Chat {
         }
 
         if (l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.handleLinkCommand(pc, chatText)) return;
+
+        // Builder help never enters world chat.
+        if (chatText.startsWith(".h") && (chatText.length() == 2 || Character.isWhitespace(chatText.charAt(2)))) {
+            final int access = pc.getAccessLevel();
+            if (pc.isGm() && (access == Config.GMCODE || access == Config.SUB_GMCODE)) {
+                BuilderCmdHandler.getInstance().handleCommands(pc, chatText.substring(1));
+            } else {
+                SC_ServerMessage.send(pc, 74, "커맨드 h");
+            }
+            return;
+        }
 
         if (UserCommands.handleLightCommand(pc, chatText)) return;
 
@@ -84,7 +95,7 @@ public final class CS_Chat {
             return;
         }
 
-        if (GMCommands.전체채팅) {
+        if (BuilderCmdHandler.전체채팅) {
             broadcastToWorld(pc, chatText);
         }
     }

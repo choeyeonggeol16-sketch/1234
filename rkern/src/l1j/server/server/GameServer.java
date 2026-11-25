@@ -20,7 +20,7 @@ import l1j.server.server.Controller.PremiumTimeController;
 import l1j.server.server.Controller.ShipTimeController;
 import l1j.server.server.appcenter.AppCenterService;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
-import l1j.server.server.command.L1Commands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.datatables.AccessoryEnchantInformationTable;
 import l1j.server.server.datatables.AlchemyProbability;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
@@ -150,7 +150,7 @@ public class GameServer {
 		AlchemyProbabilityBox.getInstance().shuffleList();
 
 		IdFactory.getInstance();
-		L1Commands.reload();
+		BuilderCmdHandler.LoadBuilderCmdHandler();
 		L1WorldMap.getInstance();
 		SpriteInformationLoader.getInstance().loadSpriteInformation();
 
