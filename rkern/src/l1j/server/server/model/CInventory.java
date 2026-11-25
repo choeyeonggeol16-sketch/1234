@@ -706,14 +706,7 @@ public class CInventory extends L1Object {
             Runnable onCommitted) {
         synchronized (this) {
             final L1ItemInstance item = GetByServerID(objectId);
-            if (inventory == null || item == null) {
-                if (rejectPendingItemTransfer())
-                    throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-                return null;
-            }
-            synchronized (inventory) {
-                return CWareHouseDeposit.RequestLocked(this, item, count, inventory, onCommitted);
-            }
+            return tradeWarehouseItemLocked(item, count, inventory, onCommitted);
         }
     }
 
@@ -729,14 +722,21 @@ public class CInventory extends L1Object {
     public L1ItemInstance tradeItem(L1ItemInstance item, int count,
             Warehouse inventory, Runnable onCommitted) {
         synchronized (this) {
-            if (inventory == null || item == null) {
-                if (rejectPendingItemTransfer())
-                    throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-                return null;
-            }
-            synchronized (inventory) {
-                return CWareHouseDeposit.RequestLocked(this, item, count, inventory, onCommitted);
-            }
+            return tradeWarehouseItemLocked(item, count, inventory, onCommitted);
+        }
+    }
+
+    /** The caller already holds this inventory monitor; warehouse is second. */
+    private L1ItemInstance tradeWarehouseItemLocked(L1ItemInstance item, int count,
+            Warehouse inventory, Runnable onCommitted) {
+        assert Thread.holdsLock(this);
+        if (inventory == null || item == null) {
+            if (rejectPendingItemTransfer())
+                throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
+            return null;
+        }
+        synchronized (inventory) {
+            return CWareHouseDeposit.RequestLocked(this, item, count, inventory, onCommitted);
         }
     }
 
@@ -849,12 +849,7 @@ public class CInventory extends L1Object {
 			return null;
 		}
 
-		if (item.getCount() <= 0 || count <= 0 || count > item.getCount()) {
-			return null;
-		}
-		if (item.isEquipped() || (!item.isStackable() && count != 1)) {
-			return null;
-		}
+        if (!item.IsTransferableAmount(count)) return null;
         if (this instanceof L1GroundInventory && (item.isGroundPickupPending() || item.isGroundDropUnsettled())) return null;
         // Ordinary Pop on a character issues an entity-destruction command
         // for pet collars and physical letters. A transfer is not destruction.
@@ -898,9 +893,7 @@ public class CInventory extends L1Object {
 		} else {
             // Use the existing transfer snapshot so split items retain all
             // persistent attributes, including expiry, package and key data.
-            carryItem = Warehouse.allocateDetachedTransfer(item, count);
-            if (inventory instanceof L1GroundInventory && item.GetContributeData() != null)
-                carryItem.SetContributeData(item.GetContributeData());
+            carryItem = allocateTransferCarry(item, count, inventory instanceof L1GroundInventory);
             final L1World world = L1World.getInstance();
             try {
                 world.storeObject(carryItem);
@@ -964,6 +957,14 @@ public class CInventory extends L1Object {
 		return null;
 	}
 
+    /** Preserve loot rights only for a split destined for a ground tile. */
+    private static L1ItemInstance allocateTransferCarry(L1ItemInstance item, int count, boolean toGround) {
+        final L1ItemInstance carry = Warehouse.allocateDetachedTransfer(item, count);
+        if (toGround && item.GetContributeData() != null)
+            carry.SetContributeData(item.GetContributeData());
+        return carry;
+    }
+
     /**
      * Ground has no durable row. Stage its fallible registration BEFORE accepting
      * a character DELETE/UPDATE. A rejected admission then needs only memory
@@ -978,9 +979,7 @@ public class CInventory extends L1Object {
         final boolean full = count == item.getCount();
         final int oldX = item.getX(), oldY = item.getY();
         final short oldMap = item.getMapId();
-        final L1ItemInstance carry = full ? item : Warehouse.allocateDetachedTransfer(item, count);
-        if (!full && item.GetContributeData() != null)
-            carry.SetContributeData(item.GetContributeData());
+        final L1ItemInstance carry = full ? item : allocateTransferCarry(item, count, true);
         final boolean stack = item.isStackable();
         final L1ItemInstance merge = stack || Warehouse.chargeMergeItem(item.getItemId())
                 ? dest.findMergeItem(carry) : null;
