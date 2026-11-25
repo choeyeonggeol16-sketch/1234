@@ -7,7 +7,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
@@ -22,7 +22,7 @@ final class BattleCommandWandEffect {
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
         L1Object target = L1World.getInstance().findObject(targetId);
-        L1Party party = pc.getParty();
+        CParty party = pc.getParty();
         if (target != null) {
             if (party != null) {
                 if (target instanceof L1PcInstance) {

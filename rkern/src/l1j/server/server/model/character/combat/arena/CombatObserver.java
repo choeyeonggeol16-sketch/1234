@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.combat.arena.loader.CombatTrapsLoader;
@@ -58,7 +58,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
 
     protected int _team_size;
     protected LinkedList<Integer> _team_q;
-    protected L1Party[]	_parties;
+    protected CParty[]	_parties;
     protected EStatus _status;
     protected AtomicInteger _team_id;
     protected byte[][] _box_attr;
@@ -139,7 +139,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         int size = _combat_info.team_informations_size();
         _team_size = 0;
         _team_kda = new TeamKda[size];
-        _parties = new L1Party[size];
+        _parties = new CParty[size];
         _user_kda_dictionary = new HashMap<Integer, UserKda>(size * _combat_info.get_team_max_player());
         for(int i=0; i<size; ++i){
             CombatTeamInformation tInfo = _combat_info.get_team_informations(i);
@@ -183,7 +183,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         }
         final int copy_map_id = _copyMapId;
         final TeamKda[] team_kda = _team_kda;
-        final L1Party[] parties	= _parties;
+        final CParty[] parties	= _parties;
         ThreadPool.getInstance().scheduleRequired(new Runnable(){
             @Override
             public void run(){
@@ -198,7 +198,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
                         if(team_id < 0)
                             continue;
                         
-                        L1Party party = pc.getParty();
+                        CParty party = pc.getParty();
                         if(party != null)
                             party.leaveMember(pc);
                     }
@@ -377,7 +377,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
                 }
             }
             
-            L1Party party = pc.getParty();
+            CParty party = pc.getParty();
             if(party != null){
                 party.leaveMember(pc);
             }
@@ -447,7 +447,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         if(pc == null || !pc.is_combat_field())
             return;
         
-        L1Party party = pc.getParty();
+        CParty party = pc.getParty();
         if(party != null){
             party.leaveMember(pc);
             pc.setParty(null);
@@ -482,7 +482,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             return;
         
         _user_kda_dictionary.remove(pc.getId());
-        L1Party party = pc.getParty();
+        CParty party = pc.getParty();
         if(party != null)
             party.leaveMember(pc);
         is_live_and_quit(team_id);

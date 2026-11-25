@@ -17,7 +17,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanJoin;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
@@ -971,7 +971,7 @@ public final class CS_ActionUi {
             return;
         }
 
-        final L1Party party =
+        final CParty party =
                 pc.getParty();
 
         if (party == null) {

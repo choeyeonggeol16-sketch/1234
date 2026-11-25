@@ -9,7 +9,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -33,7 +33,7 @@ final class CallAdvanceItemEffect {
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
         L1Object target = L1World.getInstance().findObject(targetId);
-        L1Party party = pc.getParty();
+        CParty party = pc.getParty();
         if ((pc.getType() == 0 && pc.getLevel() >= Config.어드밴스레벨) || pc.isGm()) {
             if (target != null) {
                 if (party != null) {

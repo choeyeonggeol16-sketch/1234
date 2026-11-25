@@ -4,7 +4,7 @@ import l1j.server.server.model.Dungeon;
 import l1j.server.server.model.DungeonRandom;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1NeigeShip;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.actionValidator.WalkDelayValidator;
@@ -268,7 +268,7 @@ public final class CMoveAction extends CNewAction {
 
             L1WorldTraps.getInstance().onPlayerMoved(pc);
 
-            final L1Party party = pc.getParty();
+            final CParty party = pc.getParty();
             if (party != null) {
                 party.refreshPartyMemberStatus(pc);
             }

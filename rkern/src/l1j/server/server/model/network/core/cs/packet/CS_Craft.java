@@ -28,7 +28,7 @@ import l1j.server.server.model.L1ClanRanking.RankData;
 import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Party;
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1PcInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -544,7 +544,7 @@ final L1ExcludingList spamList = SpamTable.getInstance().getExcludeTable(pc.getI
 
 				if (!listener.isOutsideChat() && !pc.isGm()) {
 					final CFriends buddyList = CFriendsDb.getInstance().GetFriends(listener.getId());
-					final L1Party party = listener.getParty();
+					final CParty party = listener.getParty();
 					final L1ChatParty cParty = listener.getChatParty();
 
 					if (!(buddyList.HasFriend(pc.getId()) || (listener.getClanid() > 0 && listener.getClanid() == pc.getClanid()) || (party != null && party.isMember(pc)) || (cParty != null && cParty.isMember(pc)))) {
