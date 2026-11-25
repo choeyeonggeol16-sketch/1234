@@ -16,7 +16,7 @@ interface CSkillEffect {
 
     default boolean checkPumpCondition(L1Character target) { return true; }
 
-    default void pump(long captured, SkillEffectContainer.SkillModifiers modifiers) { }
+    default void pump(long captured, SkillEffectContainer.CCreatureSkillMod modifiers) { }
 
     default void pumpStart(L1PcInstance target, int skillId, int duration) { }
 
@@ -25,31 +25,31 @@ interface CSkillEffect {
     }
 
     enum Bonus implements CSkillEffect {
-        MAX_HP { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        MAX_HP { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.hp += (int) captured;
         }},
-        MAX_MP { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        MAX_MP { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.mp += (int) (captured >>> 32);
         }},
-        AC { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        AC { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.ac += (int) captured;
         }},
-        MR { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        MR { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.mr += (int) (captured >>> 32);
         }},
-        PRIMARY_STATS { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.primaryStats = SkillEffectContainer.SkillModifiers.addPrimaryLanes(out.primaryStats, captured);
+        PRIMARY_STATS { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
+            out.primaryStats = SkillEffectContainer.CCreatureSkillMod.addPrimaryLanes(out.primaryStats, captured);
         }},
-        PRIMARY_PENALTY { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.primaryPenalty = SkillEffectContainer.SkillModifiers.addPrimaryLanes(out.primaryPenalty, captured);
+        PRIMARY_PENALTY { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
+            out.primaryPenalty = SkillEffectContainer.CCreatureSkillMod.addPrimaryLanes(out.primaryPenalty, captured);
         }},
-        ELEMENTAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        ELEMENTAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.waterResistance += (int) captured & 0xff;
             out.windResistance += (int) (captured >>> 8) & 0xff;
             out.earthResistance += (int) (captured >>> 16) & 0xff;
             out.fireResistance += (int) (captured >>> 24) & 0xff;
         }},
-        ELEMENTAL_WEAKNESS { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        ELEMENTAL_WEAKNESS { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             switch ((int) captured) {
                 case 1 -> out.earthResistance -= 50;
                 case 2 -> out.fireResistance -= 50;
@@ -60,85 +60,85 @@ interface CSkillEffect {
         }
             @Override public boolean checkPumpCondition(L1Character target) { return true; }
         },
-        ER { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        ER { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.er += (int) captured;
         }},
-        DG { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        DG { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.dg += (int) captured;
         }},
-        MELEE_HIT { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        MELEE_HIT { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.meleeHit += (int) captured;
         }},
-        MELEE_DAMAGE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        MELEE_DAMAGE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.meleeDamage += (int) (captured >>> 32);
         }},
-        RANGED_DAMAGE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        RANGED_DAMAGE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.rangedDamage += (int) captured;
         }},
-        RANGED_HIT { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        RANGED_HIT { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.rangedHit += (int) captured;
         }},
-        RANGED_CRITICAL { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        RANGED_CRITICAL { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.rangedCritical += (int) captured;
         }},
-        MAGIC_CRITICAL { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        MAGIC_CRITICAL { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.magicCritical += (int) captured;
         }},
-        WEAPON_DAMAGE_RATE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        WEAPON_DAMAGE_RATE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.weaponDamageRate += (int) captured;
         }},
-        WEAPON_HIT_RATE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        WEAPON_HIT_RATE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.weaponHitRate += (int) captured;
         }},
-        BOW_HIT_RATE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        BOW_HIT_RATE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.bowHitRate += (int) captured;
         }},
-        BOW_DAMAGE_RATE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        BOW_DAMAGE_RATE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.bowDamageRate += (int) captured;
         }},
-        BASE_MAGIC_HIT { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        BASE_MAGIC_HIT { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.baseMagicHit += (int) captured;
         }},
-        MAGIC_HIT { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        MAGIC_HIT { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.magicHit += (int) captured;
         }},
-        SP { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        SP { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.sp += (int) captured;
         }},
-        HP_REGEN { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        HP_REGEN { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.hpRegen += (int) captured;
         }},
-        MP_REGEN { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        MP_REGEN { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.mpRegen += (int) captured;
         }},
-        ARMOR_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        ARMOR_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.armorReduction += (int) captured;
         }},
-        PVP_DAMAGE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        PVP_DAMAGE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.pvpDamage += (int) captured;
         }},
-        PVP_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        PVP_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.pvpReduction += (int) (captured >>> 32);
         }},
-        SPECIAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.specialResistance = SkillEffectContainer.SkillModifiers.addSpecialLanes(out.specialResistance, captured);
+        SPECIAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
+            out.specialResistance = SkillEffectContainer.CCreatureSkillMod.addSpecialLanes(out.specialResistance, captured);
         }},
-        SPIRIT_PIERCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.specialResistance = SkillEffectContainer.SkillModifiers.addSpecialLanes(out.specialResistance,
+        SPIRIT_PIERCE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
+            out.specialResistance = SkillEffectContainer.CCreatureSkillMod.addSpecialLanes(out.specialResistance,
                     ((captured >>> 32) & 0xffL) << 40);
         }},
-        IMPACT_PROBABILITY { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        IMPACT_PROBABILITY { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.impactProbability += (int) captured;
         }},
-        ALL_PIERCE { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.specialResistance = SkillEffectContainer.SkillModifiers.addSpecialLanes(out.specialResistance,
+        ALL_PIERCE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
+            out.specialResistance = SkillEffectContainer.CCreatureSkillMod.addSpecialLanes(out.specialResistance,
                     (captured & 0xffL) << 48);
         }},
-        PVP_MAGIC_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        PVP_MAGIC_REDUCTION { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.pvpMagicReduction += (int) captured;
         }},
-        SPECIAL_PIERCE_FOUR { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
-            out.specialPierce = SkillEffectContainer.SkillModifiers.addSpecialPierceLanes(
+        SPECIAL_PIERCE_FOUR { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
+            out.specialPierce = SkillEffectContainer.CCreatureSkillMod.addSpecialPierceLanes(
                     out.specialPierce, (int) captured);
         }};
 
@@ -151,13 +151,13 @@ interface CSkillEffect {
             return target instanceof L1PcInstance;
         }
 
-        @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.addSpecialPenalty(kindIndex, amount);
         }
     }
 
     record CarryLimit(int amount) implements CSkillEffect {
-        @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.carryLimit += amount;
         }
     }
@@ -167,7 +167,7 @@ interface CSkillEffect {
             return bonus.checkPumpCondition(target);
         }
 
-        @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             bonus.pump(amount, out);
         }
     }
@@ -175,7 +175,7 @@ interface CSkillEffect {
     record UpperWord(Bonus bonus) implements CSkillEffect {
         @Override public boolean checkPumpCondition(L1Character target) { return bonus.checkPumpCondition(target); }
 
-        @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             bonus.pump(captured >>> 32, out);
         }
     }
@@ -210,16 +210,16 @@ interface CSkillEffect {
     }
 
     enum Potential implements CSkillEffect {
-        MR { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        MR { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.mr += (int) out.potentialMagic;
         }},
-        SP { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        SP { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.sp += (int) (out.potentialMagic >>> 32);
         }},
-        ER { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        ER { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.er += (int) out.potentialEvasion;
         }},
-        DG { @Override public void pump(long captured, SkillEffectContainer.SkillModifiers out) {
+        DG { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.dg += (int) (out.potentialEvasion >>> 32);
         }};
     }
