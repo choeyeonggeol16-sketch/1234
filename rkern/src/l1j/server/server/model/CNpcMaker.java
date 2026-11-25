@@ -22,7 +22,7 @@ import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 
 /** 생성 슬롯과 삭제 이벤트를 소유하고 재생성 타이머를 실행한다. */
-public abstract class CNpcMaker extends CNpcSpawnDefine {
+public class CNpcMaker extends CNpcSpawnDefine {
 
     private static final Logger _log = Logger.getLogger(CNpcMaker.class.getName());
 
@@ -39,7 +39,7 @@ public abstract class CNpcMaker extends CNpcSpawnDefine {
      * 스폰 실행 상태.
      *
      * slot state/deadline/objectId/population counter는
-     * init() 이후 해당 Maker의 CIOThread owner만 변경한다.
+     * 초기 생성 이후 담당 NPC 실행 스레드만 변경한다.
      *
      * 외부 death/decay thread는 owner state를 직접 쓰지 않는다.
      * slot별 primitive mailbox에 decay event만 publish하고
@@ -102,18 +102,15 @@ public abstract class CNpcMaker extends CNpcSpawnDefine {
      */
     private int _npcMakerTimerGeneration;
 
-    protected CNpcMaker(L1Npc template) {
+    public CNpcMaker(L1Npc template) {
         super(template);
     }
-
-    /** 기존 NPC 소유 참조를 연결한다. */
-    protected abstract void bindSpawn(L1NpcInstance npc);
 
     /**
      * 기존 호출 계약 보존용 wrapper.
      *
      * death/decay thread에서는 primitive mailbox publish만 수행하고,
-     * 실제 Maker state 변경/respawn은 고정 CIOThread owner가 직렬 처리한다.
+     * 실제 상태 변경 및 재생성은 담당 NPC 실행 스레드가 직렬 처리한다.
      */
     public void executeSpawnTask(int spawnNumber, int objectId) {
         final long deathAtMs = nowMs();
@@ -289,7 +286,7 @@ public abstract class CNpcMaker extends CNpcSpawnDefine {
                 ((L1MonsterInstance) mob).initHide();
             }
 
-            bindSpawn(mob);
+            mob.setSpawn(this);
             mob.setRespawn(true);
             mob.setSpawnNumber(spawnNumber);
 

@@ -6,8 +6,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import l1j.server.server.datatables.NpcSpawnTable;
-import l1j.server.server.datatables.SpawnTable;
-import l1j.server.server.model.L1Spawn;
+import l1j.server.server.datatables.CNpcMakerDB;
+import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -37,9 +37,9 @@ public class L1ToSpawn implements L1CommandExecutor {
 				StringTokenizer st = new StringTokenizer(arg);
 				id = Integer.parseInt(st.nextToken());
 			}
-			L1Spawn spawn = NpcSpawnTable.getInstance(). getTemplate(id);
+			CNpcMaker spawn = NpcSpawnTable.getInstance(). getTemplate(id);
 			if (spawn == null) {
-				spawn = SpawnTable.getInstance(). getTemplate(id);
+				spawn = CNpcMakerDB.getInstance(). getTemplate(id);
 			}
 			if (spawn != null) {
 				pc.start_teleport(spawn.getLocX(), spawn.getLocY(), spawn.getMapId(), 5, 169, false, false);

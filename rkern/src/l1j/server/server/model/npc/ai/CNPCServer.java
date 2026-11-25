@@ -12,7 +12,7 @@ import org.jctools.queues.MpscUnboundedArrayQueue;
 import org.jctools.queues.MpscArrayQueue;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.L1Spawn;
+import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.npc.ai.action.CCreatureController;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -72,7 +72,7 @@ public final class CNPCServer {
         int generation;
         long smartId;
         int timerId;
-        L1Spawn maker;
+        CNpcMaker maker;
         byte skillOp;
         int skillId;
         int skillDuration;
@@ -402,7 +402,7 @@ public final class CNPCServer {
         }
     }
 
-    public boolean postMakerTimer(L1Spawn maker, int timerId, int generation) {
+    public boolean postMakerTimer(CNpcMaker maker, int timerId, int generation) {
         if (!beginPost()) return false;
         try {
         if (maker == null || !_running) return false;

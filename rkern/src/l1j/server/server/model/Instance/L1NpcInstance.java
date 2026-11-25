@@ -26,7 +26,7 @@ import l1j.server.server.model.L1MobGroupInfo;
 import l1j.server.server.model.npc.ai.action.CSkillAction2;
 import l1j.server.server.model.npc.ai.TimerData;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Spawn;
+import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
@@ -114,7 +114,7 @@ public class L1NpcInstance extends L1Character {
     private static final int[] DIR_DY = {-1, -1, 0, 1, 1, 1, 0, -1};
 
     private L1Npc _npcTemplate;
-    private L1Spawn _spawn;
+    private CNpcMaker _spawn;
 
     private int _spawnNumber;
     private int _petcost;
@@ -1295,11 +1295,11 @@ public class L1NpcInstance extends L1Character {
         return _petcost;
     }
 
-    public void setSpawn(L1Spawn spawn) {
+    public void setSpawn(CNpcMaker spawn) {
         _spawn = spawn;
     }
 
-    public L1Spawn getSpawn() {
+    public CNpcMaker getSpawn() {
         return _spawn;
     }
 
@@ -1313,7 +1313,8 @@ public class L1NpcInstance extends L1Character {
 
     public void onDecay(boolean isReuseId) {
         int id = isReuseId ? getId() : 0;
-        _spawn.executeSpawnTask(_spawnNumber, id);
+        final CNpcMaker maker = _spawn;
+        if (maker != null) maker.executeSpawnTask(_spawnNumber, id);
     }
 
     public int PASS = 1;

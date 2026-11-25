@@ -62,7 +62,7 @@ import l1j.server.server.datatables.ReportTable;
 import l1j.server.server.datatables.ResolventTable;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.datatables.SkillsTable;
-import l1j.server.server.datatables.SpawnTable;
+import l1j.server.server.datatables.CNpcMakerDB;
 import l1j.server.server.datatables.UBSpawnTable;
 import l1j.server.server.datatables.UBTable;
 import l1j.server.server.datatables.UserProtectMonsterTable;
@@ -221,7 +221,7 @@ public class GameServer {
 		NpcCashShopSpawnTable.getInstance();
 		NpcCashShopSpawnTable.getInstance().Start();
 		ItemSkillModelLoader.getInstance();
-		SpawnTable.getInstance();
+		CNpcMakerDB.getInstance();
 		MobGroupTable.getInstance();
 		SkillsTable.getInstance();
 		PolyTable.getInstance();

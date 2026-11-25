@@ -8,20 +8,32 @@ import java.util.logging.Logger;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.model.L1Spawn;
+import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.NumberUtil;
 
 /** 몬스터 스폰 정의를 읽고 행별 Maker를 등록한다. */
-public class CNpcMakerDB {
+public final class CNpcMakerDB {
 	private static final Logger _log = Logger.getLogger(CNpcMakerDB.class.getName());
 
-	private final TIntObjectMap<L1Spawn> _spawntable = new TIntObjectHashMap<L1Spawn>(10240);
+	private final TIntObjectMap<CNpcMaker> _spawntable = new TIntObjectHashMap<CNpcMaker>(10240);
 
 	private int _highestId;
 
-	protected CNpcMakerDB() {
+	private static final class SingletonHolder {
+		private static volatile CNpcMakerDB INSTANCE = new CNpcMakerDB();
+	}
+
+	public static CNpcMakerDB getInstance() {
+		return SingletonHolder.INSTANCE;
+	}
+
+	public static void reload() {
+		SingletonHolder.INSTANCE = new CNpcMakerDB();
+	}
+
+	private CNpcMakerDB() {
 		fillSpawnTable();
 	}
 
@@ -59,7 +71,7 @@ public class CNpcMakerDB {
 						continue;
 					}
 
-					L1Spawn spawnDat = readSpawnDefine(rs, template1, spawnid, count, true);
+					CNpcMaker spawnDat = readSpawnDefine(rs, template1, spawnid, count, true);
 
 					spawnDat.init();
 
@@ -102,7 +114,7 @@ public class CNpcMakerDB {
 				}
 
 				int spawnid = rs.getInt("id");
-				L1Spawn spawnDat = readSpawnDefine(rs, template1, spawnid, count, false);
+				CNpcMaker spawnDat = readSpawnDefine(rs, template1, spawnid, count, false);
 
 				spawnDat.init();
 				spawnCount += spawnDat.getAmount();
@@ -120,8 +132,8 @@ public class CNpcMakerDB {
 	}
 
 	/** 최초 로딩과 맵별 갱신의 공통 정의 로딩. 기존 방향 및 화면 설정 차이는 유지한다. */
-	private static L1Spawn readSpawnDefine(ResultSet rs, L1Npc template1, int spawnid, int count, boolean mapReload) throws Exception {
-		L1Spawn spawnDat = new L1Spawn(template1);
+	private static CNpcMaker readSpawnDefine(ResultSet rs, L1Npc template1, int spawnid, int count, boolean mapReload) throws Exception {
+		CNpcMaker spawnDat = new CNpcMaker(template1);
 		spawnDat.setId(spawnid);
 		spawnDat.setAmount(count);
 		spawnDat.setGroupId(rs.getInt("group_id"));
@@ -152,7 +164,7 @@ public class CNpcMakerDB {
 		return spawnDat;
 	}
 
-	public L1Spawn getTemplate(int id) {
+	public CNpcMaker getTemplate(int id) {
 		return _spawntable.get(id);
 	}
 
@@ -160,7 +172,7 @@ public class CNpcMakerDB {
 		_spawntable.remove(id);
 	}
 
-	public void addNewSpawn(L1Spawn spawn) {
+	public void addNewSpawn(CNpcMaker spawn) {
 		_highestId++;
 		spawn.setId(_highestId);
 		_spawntable.put(spawn.getId(), spawn);

@@ -1,7 +1,5 @@
 package l1j.server.server.model;
 
-import l1j.server.server.model.Instance.L1NpcInstance;
-
 /** 실제 Maker 슬롯 처리의 수량, 중복 삭제, 재생성 실패 및 재시도 검증. */
 public final class TestNpcMakerLifecycle {
     private static final class Maker extends CNpcMaker {
@@ -13,9 +11,6 @@ public final class TestNpcMakerLifecycle {
             setAmount(amount);
             setMinRespawnDelay(5);
             setMaxRespawnDelay(5);
-        }
-        @Override protected void bindSpawn(L1NpcInstance npc) {
-            throw new AssertionError("fixture creates no world object");
         }
         @Override protected boolean doSpawnInternal(int slot, int objectId) {
             attempts++;
@@ -62,9 +57,9 @@ public final class TestNpcMakerLifecycle {
         check(maker.npcMakerTryQueue() && !maker.npcMakerTryQueue(), "wake coalescing");
         maker.npcMakerClearQueued();
         check(maker.npcMakerTryQueue(), "wake rearm");
-        L1Spawn legacy = new L1Spawn(null);
-        legacy.setAmount(7);
-        check(legacy instanceof CNpcMaker && legacy.getAmount() == 7, "legacy handle");
-        System.out.println("PASS Maker definition, quota, duplicate decay, deadline, retry, wake and legacy handle");
+        CNpcSpawnDefine definition = new CNpcMaker(null);
+        definition.setAmount(7);
+        check(definition.getAmount() == 7, "definition handle");
+        System.out.println("PASS Maker definition, quota, duplicate decay, deadline, retry, wake and definition handle");
     }
 }
