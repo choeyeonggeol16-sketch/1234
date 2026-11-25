@@ -28,7 +28,7 @@ public final class SkillEffectContainer {
 	private int[] remainingSeconds = new int[INITIAL_CAPACITY];
 	private long[] nextTickAtMillis = new long[INITIAL_CAPACITY];
 	private int[] expiredScratch;
-	private SkillModifiers skillModifiers;
+	private CCreatureSkillMod m_SkillMod;
 
 	private int size;
 	private int timedCount;
@@ -52,7 +52,7 @@ public final class SkillEffectContainer {
 	}
 
 	/** Only allocated for characters with an applied, migrated effect. */
-	static final class SkillModifiers {
+	static final class CCreatureSkillMod {
 		// Two words per source, starting with the numeric ID.
 		long[] applied = new long[4];
 		int count;
@@ -155,8 +155,8 @@ public final class SkillEffectContainer {
 
 	private void applySkillModifier(int skillId, long captured, boolean changedOtherValues) {
 		if (!CSkillInfo.isManaged(skillId)) throw new IllegalArgumentException("Unmanaged skill " + skillId);
-		SkillModifiers state = skillModifiers;
-		if (state == null) skillModifiers = state = new SkillModifiers();
+		CCreatureSkillMod state = m_SkillMod;
+		if (state == null) m_SkillMod = state = new CCreatureSkillMod();
 		int index = state.find(skillId);
 		if (index >= 0 && state.applied[index + 1] == captured && !changedOtherValues) return;
 		if (index < 0) {
@@ -171,8 +171,8 @@ public final class SkillEffectContainer {
 	}
 
 	public void applyPotentialModifier(int hp, int mp, int mr, int sp, int er, int dg) {
-		SkillModifiers state = skillModifiers;
-		if (state == null) skillModifiers = state = new SkillModifiers();
+		CCreatureSkillMod state = m_SkillMod;
+		if (state == null) m_SkillMod = state = new CCreatureSkillMod();
 		final long magic = ((long) sp << 32) | Integer.toUnsignedLong(mr);
 		final long evasion = ((long) dg << 32) | Integer.toUnsignedLong(er);
 		final boolean changed = state.potentialMagic != magic || state.potentialEvasion != evasion;
@@ -182,7 +182,7 @@ public final class SkillEffectContainer {
 	}
 
 	public boolean removeSkillModifier(int skillId, boolean notify) {
-		SkillModifiers state = skillModifiers;
+		CCreatureSkillMod state = m_SkillMod;
 		if (state == null) return false;
 		int index = state.find(skillId);
 		if (index < 0) return false;
@@ -191,7 +191,7 @@ public final class SkillEffectContainer {
 		if (state.count == 0) {
 			// A character with no migrated modifiers must not retain the
 			// backing array and per-effect accumulator for the entire session.
-			skillModifiers = null;
+			m_SkillMod = null;
 		} else {
 			state.applied[index] = state.applied[last];
 			state.applied[index + 1] = state.applied[last + 1];
@@ -201,7 +201,7 @@ public final class SkillEffectContainer {
 	}
 
 	public void validateSkillMod(boolean notify) {
-		SkillModifiers state = skillModifiers;
+		CCreatureSkillMod state = m_SkillMod;
 		if (state == null) {
 			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0L, 0L, 0, notify);
 			owner.getResistance().setSkillCombatModifiers(0, 0L, 0, 0, notify);
@@ -427,8 +427,8 @@ public final class SkillEffectContainer {
 		} finally {
 			endWrite();
 		}
-		if (skillModifiers != null) {
-			skillModifiers = null;
+		if (m_SkillMod != null) {
+			m_SkillMod = null;
 			validateSkillMod(false);
 		}
 		return heartbeatGeneration;
@@ -607,7 +607,7 @@ public final class SkillEffectContainer {
 	}
 
 	private void retireModifierIfInactive(int id) {
-		if (skillModifiers != null && skillModifiers.find(id) >= 0 && !contains(id))
+		if (m_SkillMod != null && m_SkillMod.find(id) >= 0 && !contains(id))
 			removeSkillModifier(id, false);
 	}
 
