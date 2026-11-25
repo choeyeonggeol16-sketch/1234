@@ -18,6 +18,7 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
@@ -2830,50 +2831,25 @@ public final class CIOThreadCallback {
 	 * PC affinity와 무관한 world object이므로 objectId hash로 고정 owner를 정한다.
 	 * 이미 owner thread 안이면 MPSC command allocation 없이 바로 wheel에 등록한다.
 	 */
-	public void scheduleItemTimer(
-			int objectId,
-			int timerId,
-			int generation,
-			long delayMs) {
+    public boolean scheduleItemTimer(int objectId, int timerId, int generation, long delayMs) {
+        final L1Object object = L1World.getInstance().findObject(objectId);
+        return object instanceof L1ItemInstance item
+                && scheduleItemTimer(item, timerId, generation, delayMs);
+    }
 
-		if (objectId <= 0
-				|| timerId <= 0
-				|| generation == 0
-				|| delayMs <= 0L) {
-			return;
-		}
-
-		final long smartId = L1World.getInstance().smartIdOf(objectId);
-		if (smartId == 0L) {
-			return;
-		}
-
-		int h = objectId;
-		h ^= (h >>> 16);
-
-		final CIOThread owner =
-				shards[(h & 0x7fffffff) % shardCount];
-
-		if (currentShardIndex() == owner.idx) {
-			owner.onItemTimerSchedule(
-					delayMs,
-					smartId,
-					timerId,
-					generation);
-			return;
-		}
-
-		owner.admitTimer(
-						TimerOp.ITEM_TIMER,
-						(int) smartId,
-						delayMs,
-						(int) (smartId >>> 32),
-						timerId,
-						generation,
-						null,
-						null,
-						null);
-	}
+    public boolean scheduleItemTimer(L1ItemInstance item, int timerId, int generation, long delayMs) {
+        if (item == null || item.getId() <= 0 || timerId <= 0
+                || generation == 0 || delayMs <= 0L) return false;
+        final long smartId = L1World.getInstance().smartIdOf(item);
+        if (smartId == 0L) return false;
+        int h = item.getId();
+        h ^= (h >>> 16);
+        final CIOThread owner = shards[(h & 0x7fffffff) % shardCount];
+        // Both owner-local and foreign producers share the shutdown gate.
+        // No mailbox or new worker is introduced.
+        return owner != null && owner.admitTimer(TimerOp.ITEM_TIMER, (int) smartId,
+                delayMs, (int) (smartId >>> 32), timerId, generation, null, null, null);
+    }
 
 
 	/**
