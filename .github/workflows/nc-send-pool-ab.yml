@@ -1,0 +1,32 @@
+name: NC inspired SEND pool experiment
+on:
+  push:
+    branches: ['rkern/nc-network-responsibility-20261125']
+    paths: ['.github/workflows/nc-send-pool-ab.yml', 'rkern/docs/nc_send_pool_ab_20261125/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        workload: ['pool', '1', '8']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compare actual pooled buffers and production TCP (test-only overlay)
+        env:
+          WORKLOAD: ${{ matrix.workload }}
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 -u rkern/docs/nc_send_pool_ab_20261125/run.py "$WORKLOAD"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nc-send-pool-${{ matrix.workload }}
+          path: ${{ runner.temp }}/benchmark
+          if-no-files-found: warn
