@@ -1,4 +1,4 @@
-name: RKern magic parameter source audit
+name: RKern defense parameter source audit
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: rkern/src
-      - name: Enumerate actual legacy and canonical magic sources
+      - name: Enumerate AC ER DG writers and base refresh callers
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -26,6 +26,6 @@ jobs:
               s=p.read_text(encoding="utf-8")
               clean=lex.sub(lambda m:re.sub(r'[^\n]',' ',m.group()),s)
               for i,(a,b) in enumerate(zip(s.splitlines(),clean.splitlines()),1):
-                  if re.search(r'\b(?:getMr|addMr|getTrueMr|getSp|addSp|getTrueSp|getMagicBonus|getMagicLevel|calcMrDefense|SetOrgMDefend|resetBaseMr)\s*\(',b):
+                  if re.search(r'\b(?:setCharacterDG|setCharacterER|getStatER|getDefaultER|getEffectedER|setAc|resetBaseAc|getBaseAc|setSkillAc)\s*\(',b):
                       print(f"{p}:{i}: {a.strip()}")
           PY
