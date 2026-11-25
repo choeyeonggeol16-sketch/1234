@@ -292,7 +292,6 @@ final class CWareHouseDeposit {
 
 			ownerInventory.removeItemCountCache(item.getItemId(), count);
 			item.setCount(item.getCount() - count);
-			ownerInventory.persistTransferCount(item);
 			ownerInventory.updateItem(item);
 		}
         L1ItemInstance stored = null;
@@ -315,7 +314,6 @@ final class CWareHouseDeposit {
 			ownerInventory.insertItem(item);
 		} else {
 			item.setCount(item.getCount() + count);
-			ownerInventory.persistTransferCount(item);
 			ownerInventory.addItemCountCache(item.getItemId(), count);
 			ownerInventory.updateItem(item);
 		}
@@ -339,7 +337,6 @@ final class CWareHouseDeposit {
                     int delta = originalCount - item.getCount();
                     item.setCount(originalCount);
                     ownerInventory.addItemCountCache(item.getItemId(), delta);
-                    ownerInventory.persistTransferCount(item);
                     ownerInventory.updateItem(item);
                 }
             } catch (RuntimeException recovery) {
