@@ -1117,7 +1117,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	        if (GameRandom.next(100) < 15) { // 15% 확률 (기존 rnd >= 85와 동일)
 	            int itemId = (mapId == 781) ? 100036 : 500210;
 	            if (!pc.getInventory().HaveItemByClassId(itemId, 1)) {
-	                L1ItemInstance item = pc.getInventory().storeItem(itemId, 1);
+	                L1ItemInstance item = pc.getInventory().CreateOrAddItem(itemId, 1);
 	                SC_ServerMessage.send(pc, 143, getNpcTemplate().get_name(), item.getItem().getName());
 	            }
 	        }
@@ -1372,11 +1372,11 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 			item.setCount(count);
 			item.setBless(Bless);
 			if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
-				pc.getInventory().storeItem(item);
+				pc.getInventory().CreateOrAddItem(item);
 				pc.getInventory().updateItem(item, CUserInventory.COL_BLESS);
 				pc.getInventory().saveItem(item, CUserInventory.COL_BLESS);
 			} else { // 가질 수 없는 경우는 지면에 떨어뜨리는 처리의 캔슬은 하지 않는다(부정 방지)
-				L1World.getInstance().getInventory(pc.getX(), pc.getY(), pc.getMapId()).storeItem(item);
+				L1World.getInstance().getInventory(pc.getX(), pc.getY(), pc.getMapId()).CreateOrAddItem(item);
 			}
 			if (pc.isInParty()) { // 파티 인경우
                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArrayBestEffort(

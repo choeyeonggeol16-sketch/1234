@@ -22,7 +22,7 @@ public class L1Adena implements L1CommandExecutor {
 			StringTokenizer stringtokenizer = new StringTokenizer(arg);
 			
 			int count = Integer.parseInt(stringtokenizer.nextToken());
-			L1ItemInstance adena = pc.getInventory(). storeItem(L1ItemId.ADENA, count);
+			L1ItemInstance adena = pc.getInventory(). CreateOrAddItem(L1ItemId.ADENA, count);
 			
 			if (adena != null) {
 				SC_SystemMessage.send(pc, (new StringBuilder()).append(count).append("아데나를 생성했습니다.").toString());

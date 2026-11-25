@@ -63,7 +63,7 @@ public class L1CreateItem implements L1CommandExecutor {
 						item.setIdentified(true);
 					}
 					if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
-						pc.getInventory().storeItem(item);
+						pc.getInventory().CreateOrAddItem(item);
 						SC_SystemMessage.send(pc, "\\fY아이템:[\\aA"+item.getLogName()+"\\fY] 아이템ID:[\\aA"+itemid+"\\fY] 인챈트:[\\aA"+enchant+"\\fY] \\aG생성");;
 					}
 				} else {
@@ -77,7 +77,7 @@ public class L1CreateItem implements L1CommandExecutor {
 							item.setIdentified(true);
 						}
 						if (pc.getInventory(). CheckAddable(item, 1) == CInventory.OK) {
-							pc.getInventory(). storeItem(item);
+							pc.getInventory(). CreateOrAddItem(item);
 						} else {
 							break;
 						}

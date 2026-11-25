@@ -138,7 +138,7 @@ public class Give extends javax.swing.JFrame {
 					item.setCount(count);					
 					item.setIdentified(true);
 					if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
-						pc.getInventory().storeItem(item);												
+						pc.getInventory().CreateOrAddItem(item);												
 						if(item.getItem().getType2() == 1 || item.getItem().getType2() == 2){
 							SC_SystemMessage.send(pc, "운영자가 +"+ enchant + " " + temp.getName() + " 을(를) 생성해 주었습니다.");
 							jop.showMessageDialog(this, name2+" : +"+enchant+" "+temp.getName());
@@ -153,7 +153,7 @@ public class Give extends javax.swing.JFrame {
 							item1 = CObjectDB.LoadItem().createItem(itemid);
 							item1.setEnchantLevel(enchant);
 							if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK) {
-								pc.getInventory().storeItem(item);
+								pc.getInventory().CreateOrAddItem(item);
 							} else
 								break;
 						}

@@ -42,7 +42,7 @@ final class ItemCreationItems {
             // storeItem may merge a stackable grant into an existing instance.
             // In that case ItemTable's pre-registered temporary object is orphaned
             // unless it is removed from L1World.
-            if (pc.getInventory().storeItem(item) == null) return false;
+            if (pc.getInventory().CreateOrAddItem(item) == null) return false;
             SC_ServerMessage.send(pc, 403, item.getLogName());
             return true;
         } finally {

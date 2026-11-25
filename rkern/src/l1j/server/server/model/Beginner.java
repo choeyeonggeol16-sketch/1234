@@ -72,7 +72,7 @@ public class Beginner {
 								item.setCount(count);
 								item.setEnchantLevel(enchant);
 								if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
-									if (pc.getInventory().storeItem(item) != null) {
+									if (pc.getInventory().CreateOrAddItem(item) != null) {
 										SC_ServerMessage.send(pc, 403, item.getLogName() + "(ID:" + itemId + ")");
 									}
 								}
@@ -92,7 +92,7 @@ public class Beginner {
 								try {
 									item.setEnchantLevel(enchant);
 									if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK) {
-										if (pc.getInventory().storeItem(item) != null) {
+										if (pc.getInventory().CreateOrAddItem(item) != null) {
 											SC_ServerMessage.send(pc, 403, item.getLogName() + "(ID:" + itemId + ")");
 										}
 									} else {

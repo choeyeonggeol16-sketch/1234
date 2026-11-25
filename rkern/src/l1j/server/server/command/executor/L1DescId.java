@@ -41,7 +41,7 @@ public class L1DescId implements L1CommandExecutor {
 				item.getItem().setName(String.valueOf(descid + i));
 				item.getItem().setNameId(String.valueOf(descid + i));
 				item.setIdentified(true);
-				pc.getInventory().storeItem(item);
+				pc.getInventory().CreateOrAddItem(item);
 			}
 			SC_SystemMessage.send(pc, "\\aH이티시 " + descid + "~" + String.valueOf(descid + countA) + " 생성 되었습니다.");
 		} catch (Exception exception) {

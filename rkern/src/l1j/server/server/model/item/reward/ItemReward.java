@@ -19,9 +19,9 @@ public class ItemReward extends AbstractReward{
 		pc.sendPackets(String.format("아이템 %s을(를) %d개 보상받았습니다.", item.getName(), item_amount));
 		if(!item.isStackable() && item_amount > 1){
 			for(int i=item_amount - 1; i>=0; --i)
-				pc.getInventory().storeItem(item_id, 1);
+				pc.getInventory().CreateOrAddItem(item_id, 1);
 		}else{
-			pc.getInventory().storeItem(item_id, item_amount);			
+			pc.getInventory().CreateOrAddItem(item_id, item_amount);			
 		}
 	}
 }

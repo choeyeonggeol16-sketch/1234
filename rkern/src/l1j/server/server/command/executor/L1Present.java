@@ -77,7 +77,7 @@ public class L1Present implements L1CommandExecutor {
 					item.setEnchantLevel(0);
 					item.setCount(count);
 					if (target.getInventory().CheckAddable(item, count) == CInventory.OK) {
-						target.getInventory().storeItem(item);
+						target.getInventory().CreateOrAddItem(item);
 					//	target.sendPackets(new S_GMHtml("선물: "+target.getName()+"" , ""+item.getLogName()+" 를(을) 획득함 인벤토리 확인."));
 						target.sendPackets("\\f:선물: " + item.getLogName() + " " + count + "개 획득 인벤토리 확인하세요");
 						SC_PacketBox.send(target, SC_PacketBox.GREEN_MESSAGE, "\\f=메티스로부터 "+target.getName()+"님께 선물이 도착했습니다! ▶▶ "+ temp.getNameId()+"("+count+")");
@@ -95,7 +95,7 @@ public class L1Present implements L1CommandExecutor {
 							item.setBless(bless);
 						}
 						//if (target.getInventory().checkAddItem(item, 1) == CInventory.OK) {
-						target.getInventory().storeItem(item);
+						target.getInventory().CreateOrAddItem(item);
 						if (bless == 129) {
 							item.setBless(bless);
 							target.getInventory().updateItem(item, CUserInventory.COL_BLESS);

@@ -157,7 +157,7 @@ public class DropTable {
 		item.setCount((int) cnt);
 
 		try {
-			monster.getInventory().storeItem(item);
+			monster.getInventory().CreateOrAddItem(item);
 		} catch (Throwable ignored) {}
 	}
 
@@ -220,7 +220,7 @@ public class DropTable {
 			item.setCount((int) cnt);
 
 			try {
-				inventory.storeItem(item);
+				inventory.CreateOrAddItem(item);
 			} catch (Throwable ignored) {}
 		}
 	}

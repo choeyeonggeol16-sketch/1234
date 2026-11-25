@@ -276,7 +276,7 @@ public final class PremiumTimeController implements Runnable {
 
 			if (addCount > 0) {
 				sucitem.setCount(addCount);
-				pc.getInventory().storeItem(sucitem);
+				pc.getInventory().CreateOrAddItem(sucitem);
 				SC_SystemMessage.send(pc, sucitem.getName() + "(" + msgType + ")개를 얻었습니다.");
 			}
 		} catch (Exception e) {

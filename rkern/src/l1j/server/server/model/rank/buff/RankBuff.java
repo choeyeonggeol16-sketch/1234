@@ -269,7 +269,7 @@ public final class RankBuff {
         try {
             if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK
                     && !pc.getInventory().HaveItemByClassId(itemId)) {
-                pc.getInventory().storeItem(item);
+                pc.getInventory().CreateOrAddItem(item);
             }
         } finally {
             if (pc.getInventory().GetByServerID(item.getId()) != item) {

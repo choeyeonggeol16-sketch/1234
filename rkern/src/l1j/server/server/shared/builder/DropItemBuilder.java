@@ -71,7 +71,7 @@ public class DropItemBuilder {
 			item.setCount(_min == _max ? _min : _rnd.nextInt(_max - _min + 1) + _min);
 			item.setIdentified(true);
 			CInventory inv = L1World.getInstance().getInventory(x, y, (short)m.getId());
-			inv.storeItem(item);
+			inv.CreateOrAddItem(item);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

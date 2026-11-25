@@ -34,6 +34,6 @@ public class LobbyItemCompensate implements LobbyCompensate{
 	
 	@Override
 	public void compensate(L1PcInstance pc){
-		pc.getInventory().storeItem(_itemId, _itemQuantity, _level);
+		pc.getInventory().CreateOrAddItem(_itemId, _itemQuantity, _level);
 	}
 }

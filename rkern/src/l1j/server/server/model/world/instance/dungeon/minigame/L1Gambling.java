@@ -113,7 +113,7 @@ public class L1Gambling {
 					int face = gfxid - 3203; // 1~6
 					if (win) {
 						int payout = bet * mult;
-						pc.getInventory().storeItem(L1ItemId.ADENA, payout);
+						pc.getInventory().CreateOrAddItem(L1ItemId.ADENA, payout);
 						say(pc, dealer, "결과 [" + face + "]! " + pc.getName() + "님 적중! " + payout + " 아데나 지급했습니다.");
 					} else {
 						say(pc, dealer, "결과 [" + face + "]! " + pc.getName() + "님 아쉽네요. 뽀찌는 없습니다. 즐~");

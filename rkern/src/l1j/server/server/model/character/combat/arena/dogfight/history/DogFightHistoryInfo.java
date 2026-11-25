@@ -287,7 +287,7 @@ public class DogFightHistoryInfo {
 	            L1ItemInstance ticket = tickets.get(i);
 	            DogFightTicketInfo tInfo = m_tickets_info.get(pair.key);
 
-	            pc.getInventory().storeItem(ticket);
+	            pc.getInventory().CreateOrAddItem(ticket);
 	            L1World.getInstance().storeObject(ticket);
 
 	            m_total_ticket_count += pair.value;
@@ -317,7 +317,7 @@ public class DogFightHistoryInfo {
 	    }catch(Exception e){
 	        if(paid){
 	            try{
-	                pc.getInventory().storeItem(L1ItemId.ADENA, total_price);
+	                pc.getInventory().CreateOrAddItem(L1ItemId.ADENA, total_price);
 	                pc.sendPackets("구매 처리 중 오류가 발생하여 아데나를 환불했습니다.");
 	            }catch(Exception ignore){}
 	        }else{

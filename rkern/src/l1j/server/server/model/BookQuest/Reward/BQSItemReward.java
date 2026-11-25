@@ -41,6 +41,6 @@ public class BQSItemReward extends BQSAbstractReward{
 	
 	@Override
 	public void doReward(L1PcInstance pc) {
-		pc.getInventory().storeItem(_itemId, _amount);
+		pc.getInventory().CreateOrAddItem(_itemId, _amount);
 	}
 }

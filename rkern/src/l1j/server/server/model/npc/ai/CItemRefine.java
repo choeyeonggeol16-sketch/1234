@@ -45,7 +45,7 @@ public final class CItemRefine {
         for (int i = offset + 4; i < end; i += 2) {
             inventory.consumeItem(recipes[i], recipes[i + 1]);
         }
-        final L1ItemInstance item = inventory.storeItem(resultId, recipes[offset + 1]);
+        final L1ItemInstance item = inventory.CreateOrAddItem(resultId, recipes[offset + 1]);
         if (recipes[offset + 2] != 0 && item != null && npc.getNpcTemplate().get_digestitem() > 0) {
             npc.setDigestItem(item);
         }

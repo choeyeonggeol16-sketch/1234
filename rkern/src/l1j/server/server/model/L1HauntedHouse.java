@@ -224,7 +224,7 @@ for (L1PcInstance player : getMembersArray()) {
 				if (pc.getMapId() == 5140) {
 					// 경기 최소 인원이 2명이 만족하지 않아 경기를 강제 종료 합니다. 1000 아데나를 돌려 드렸습니다.
 					sendGameNotice(shared,pc);
-					pc.getInventory().storeItem(40308, 1000); // 1000 아데나 지급
+					pc.getInventory().CreateOrAddItem(40308, 1000); // 1000 아데나 지급
 
 //					L1Teleport.teleport(pc, 32624, 32813, (short) 4, 5, true);
 					pc.start_teleport(32624, 32813, 4, pc.getHeading(), 169, true, false);
@@ -440,13 +440,13 @@ for (L1PcInstance player : getMembersArray()) {
 			try {
 				if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK) {
 					item.setCount(1);
-					if (pc.getInventory().storeItem(item) != null) {
+					if (pc.getInventory().CreateOrAddItem(item) != null) {
 						SC_ServerMessage.send(pc, 403, item.getLogName());
 
 						Random random = new Random(System.nanoTime()); // 펫레이싱
 						if (random.nextInt() < 33) {
 							// Reuse the actual grant for the one-item notice.
-							L1ItemInstance bonus = pc.getInventory().storeItem(3000023, 1);
+							L1ItemInstance bonus = pc.getInventory().CreateOrAddItem(3000023, 1);
 							if (bonus != null) {
 								SC_ServerMessage.send(pc, 403, bonus.getNumberedName(1));
 							}

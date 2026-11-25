@@ -306,7 +306,7 @@ public class L1Racing implements Runnable
 					if(pc.getMapId() == getMapId()){
 					// 경기 최소 인원이 2명이 만족하지 않아 경기를 강제 종료 합니다. 1000 아데나를 돌려 드렸습니다.
 						sendGameNotice(shared,pc);
-						pc.getInventory().storeItem(40308, 1000); // 1000 아데나 지급
+						pc.getInventory().CreateOrAddItem(40308, 1000); // 1000 아데나 지급
 
 //						L1Teleport.teleport(pc, 32616 + Rnd(4), 32774 + Rnd(4), (short)4, 5, true);
 						pc.start_teleport(32616 + Rnd(4), 32774 + Rnd(4), 4, 5, 169, true, false);

@@ -245,7 +245,7 @@ public class Kda {
 							
 						 }
 					 }
-					killer.getInventory().storeItem(L1ItemId.ADENA, Config.수배금액);
+					killer.getInventory().CreateOrAddItem(L1ItemId.ADENA, Config.수배금액);
 					victim.removeSkillEffect(L1SkillId.USER_WANTED);
 					victim.doWanted(false);
 					SC_InventoryIcon.icoEnd(victim, L1SkillId.수배);
@@ -255,7 +255,7 @@ public class Kda {
 							+ victim.getName() + "]님의 \\aA수배금(" + Config.수배금액 / 10000 + "만) \\f>획득!");
 				} 
 				if (victim.hasSkillEffect(L1SkillId.USER_WANTED1)) {
-					killer.getInventory().storeItem(L1ItemId.ADENA, Config.수배금액);
+					killer.getInventory().CreateOrAddItem(L1ItemId.ADENA, Config.수배금액);
 					victim.removeSkillEffect(L1SkillId.USER_WANTED1);
 					victim.doWanted1(false);
 					SC_InventoryIcon.icoEnd(victim, L1SkillId.수배1);
@@ -279,7 +279,7 @@ public class Kda {
 						
 					 }
 				 }
-				killer.getInventory().storeItem(L1ItemId.ADENA, Config.수배금액);
+				killer.getInventory().CreateOrAddItem(L1ItemId.ADENA, Config.수배금액);
 				victim.removeSkillEffect(L1SkillId.USER_WANTED);
 				victim.doWanted(false);
 				SC_InventoryIcon.icoEnd(victim, L1SkillId.수배);
@@ -289,7 +289,7 @@ public class Kda {
 						+ victim.getName() + "]님의 \\aA수배금(" + Config.수배금액 / 10000 + "만) \\f>획득!");
 			} 
 			if (victim.hasSkillEffect(L1SkillId.USER_WANTED1)) {
-				killer.getInventory().storeItem(L1ItemId.ADENA, Config.수배금액);
+				killer.getInventory().CreateOrAddItem(L1ItemId.ADENA, Config.수배금액);
 				victim.removeSkillEffect(L1SkillId.USER_WANTED1);
 				victim.doWanted1(false);
 				SC_InventoryIcon.icoEnd(victim, L1SkillId.수배1);

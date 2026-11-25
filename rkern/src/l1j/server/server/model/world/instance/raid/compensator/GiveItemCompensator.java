@@ -17,6 +17,6 @@ public class GiveItemCompensator implements CompensatorElement{
 			return;
 		
 		L1PcInstance pc = (L1PcInstance)obj;
-		pc.getInventory().storeItem(_itemid, _count, 0);
+		pc.getInventory().CreateOrAddItem(_itemid, _count, 0);
 	}
 }

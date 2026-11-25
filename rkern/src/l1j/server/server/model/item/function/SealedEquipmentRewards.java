@@ -26,7 +26,7 @@ public final class SealedEquipmentRewards {
                 SC_ServerMessage.send(pc, 82);
                 return false;
             }
-            pc.getInventory().storeItem(item);
+            pc.getInventory().CreateOrAddItem(item);
             item.setBless(bless);
             pc.getInventory().updateItem(item, CUserInventory.COL_BLESS);
             pc.getInventory().saveItem(item, CUserInventory.COL_BLESS);

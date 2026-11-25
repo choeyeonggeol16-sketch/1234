@@ -339,7 +339,7 @@ public class DogFightHistory {
         } finally {
             // ★루프 도중 예외가 나도 이미 삭제된 티켓만큼은 반드시 지급
             if(total_price > 0){
-                pc.getInventory().storeItem(L1ItemId.ADENA, (int)Math.min(total_price, Integer.MAX_VALUE));
+                pc.getInventory().CreateOrAddItem(L1ItemId.ADENA, (int)Math.min(total_price, Integer.MAX_VALUE));
             }
         }
 

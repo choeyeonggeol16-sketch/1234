@@ -255,7 +255,7 @@ public final class CS_Result {
 							item.setIdentified(true);
 							item.set_bless_level(defaultItem.get_bless_level());
 							item.set_item_level(defaultItem.get_item_level());
-							pc.getInventory().storeItem(item);
+							pc.getInventory().CreateOrAddItem(item);
 							pc.getInventory().consumeItem(consumeMaterialId, 1);
 							pc.getInventory().removeItem(defaultItem, 1);
 						}

@@ -241,15 +241,15 @@ public class CInventory extends L1Object {
 		return OK;
 	}
 
-	public synchronized L1ItemInstance storeItem(int id, int count, int enchant) {
+	public synchronized L1ItemInstance CreateOrAddItem(int id, int count, int enchant) {
 		return CreateOrAddItem(id, count, true, true, enchant);
 	}
 
-	public L1ItemInstance storeItem(int id, int count) {
-		return storeItem(id, count, true);
+	public L1ItemInstance CreateOrAddItem(int id, int count) {
+		return CreateOrAddItem(id, count, true);
 	}
 	
-	public synchronized L1ItemInstance storeItem(int id, int count, boolean isIden) {
+	public synchronized L1ItemInstance CreateOrAddItem(int id, int count, boolean isIden) {
 		return CreateOrAddItem(id, count, false, isIden, 0);
 	}
 
@@ -267,7 +267,7 @@ public class CInventory extends L1Object {
 				item.setId(IdFactory.getInstance().nextId());
 				return registerCreatedItem(item);
 			}
-			return storeItem(item);
+			return CreateOrAddItem(item);
 		}
 		L1ItemInstance result = null;
 		for (int i = 0; i < count; i++) {
@@ -290,7 +290,7 @@ public class CInventory extends L1Object {
 		final L1World world = L1World.getInstance();
 		try {
 			world.storeObject(item);
-			final L1ItemInstance stored = storeItem(item);
+			final L1ItemInstance stored = CreateOrAddItem(item);
 			if (stored != item && !_items.Have(item)) world.removeObject(item);
 			return stored;
 		} catch (RuntimeException failure) {
@@ -347,15 +347,15 @@ public class CInventory extends L1Object {
         }
     }
 
-	public synchronized L1ItemInstance storeItemTrea(L1ItemInstance item) {
+	public synchronized L1ItemInstance AddTreasureItemToInventory(L1ItemInstance item) {
 		return AddItemToInventory(item, true, false, 0);
 	}
 
-	public synchronized L1ItemInstance storeItem(L1ItemInstance item) {
+	public synchronized L1ItemInstance CreateOrAddItem(L1ItemInstance item) {
 		return AddItemToInventory(item, false, false, 0);
 	}
 
-	public synchronized L1ItemInstance storeItem(L1ItemInstance item, int bless) {
+	public synchronized L1ItemInstance CreateOrAddItem(L1ItemInstance item, int bless) {
 		return AddItemToInventory(item, false, true, bless);
 	}
 

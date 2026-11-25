@@ -103,7 +103,7 @@ final class NpcExperienceCommands {
 				item.setAttrEnchantLevel(attr);
 				item.setIdentified(true);
 				if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
-					L1ItemInstance stored = pc.getInventory().storeItem(item);
+					L1ItemInstance stored = pc.getInventory().CreateOrAddItem(item);
 					if (stored == null) return false;
 					stored.setBless(Bless);
 					pc.getInventory().updateItem(stored, CUserInventory.COL_BLESS);
@@ -171,7 +171,7 @@ final class NpcExperienceCommands {
 							htmlid = "archekins2";
 							return htmlid;
 						}
-						pc.getInventory().storeItem(3000213, 1);
+						pc.getInventory().CreateOrAddItem(3000213, 1);
 						pc.addExp((ExpTable.getExpByLevel(70) - 1) - pc.getExp()
 								+ ((ExpTable.getExpByLevel(70) - 1) / 30000000));
 						pc.setCurrentHp(pc.getMaxHp());

@@ -1031,7 +1031,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			StringTokenizer stringtokenizer = new StringTokenizer(arg);
 
 			int count = Integer.parseInt(stringtokenizer.nextToken());
-			L1ItemInstance adena = pc.getInventory().storeItem(L1ItemId.ADENA, count);
+			L1ItemInstance adena = pc.getInventory().CreateOrAddItem(L1ItemId.ADENA, count);
 
 			if (adena != null) {
 				pc.sendPackets((new StringBuilder()).append(count).append("아데나를 생성했습니다.").toString());
@@ -1076,7 +1076,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 					item.setCount(count);
 					item.setIdentified(true);
 					if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
-						pc.getInventory().storeItem(item);
+						pc.getInventory().CreateOrAddItem(item);
 						SC_SystemMessage.send(pc, "\\fY아이템:[\\aA" + item.getLogName() + "\\fY] 아이템ID:[\\aA"
 								+ itemid + "\\fY] 인챈트:[\\aA" + enchant + "\\fY] \\aG생성");
 						;
@@ -1090,7 +1090,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 						item.setAttrEnchantLevel(attrenchant);
 						item.setIdentified(true);
 						if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK) {
-							pc.getInventory().storeItem(item);
+							pc.getInventory().CreateOrAddItem(item);
 						} else {
 							break;
 						}
@@ -1977,7 +1977,7 @@ for (L1PcInstance target : player) {
 									item.setEnchantLevel(enchant);
 									if (item != null) {
 										if (target.getInventory().CheckAddable(item, count) == CInventory.OK) {
-											target.getInventory().storeItem(item);
+											target.getInventory().CreateOrAddItem(item);
 										}
 									}
 									final String giftMessage = "오픈 대기 보상: " + item.getLogName() + " " + count + "개 획득 인벤토리 확인하세요";
@@ -2555,7 +2555,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 			 int count = (int) ((itemcount*7) *((Config.\uC9C0\uAE09\uC728*\u0031\u002E0)\u002F\u003100)) ;
 
 			if (gm.getAccountName().equalsIgnoreCase(account)) {				
-				gm.getInventory().storeItem(400254, count*7);
+				gm.getInventory().CreateOrAddItem(400254, count*7);
 				AccountSettlementTable.deleteMeepByLogin(login);
 				gm.sendPackets("증표 1개당 7억->"+Config.지급율+" % = 총지급율" );
 				gm.sendPackets(\u0022\uC9C0\uAE09\uC728 \u003A \u0022 \u002B \u0043\u006F\u006E\u0066\u0069\u0067\u002E\uC9C0\uAE09\uC728 \u002B \u0022 \u0025\u0022);
@@ -2593,7 +2593,7 @@ for (L1PcInstance target : player) {
 					item.setEnchantLevel(enchant);
 					if (item != null) {
 						if (target.getInventory().CheckAddable(item, count) == CInventory.OK) {
-							target.getInventory().storeItem(item);
+							target.getInventory().CreateOrAddItem(item);
 						}
 					}
 					/*SC_GMHtml.send(target, "전체선물:" + target.getName() + "", "아이템:" + item.getLogName() + " 수량:" + count + " 획득");*/

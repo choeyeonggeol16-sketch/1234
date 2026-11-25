@@ -885,7 +885,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 
         int currentTime = (int) (System.currentTimeMillis() / 1000);
         if (pc.getSealScrollTime() < currentTime) {
-            pc.getInventory().storeItem(50021, pc.getSealScrollCount());
+            pc.getInventory().CreateOrAddItem(50021, pc.getSealScrollCount());
             pc.setSealScrollTime(0);
             pc.setSealScrollCount(0);
             pc.save();

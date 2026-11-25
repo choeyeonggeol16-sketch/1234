@@ -97,7 +97,7 @@ public class ElementalStoneGenerator implements Runnable {
 				ELEMENTAL_STONE_ID);
 		item.setEnchantLevel(0);
 		item.setCount(1);
-		gInventory.storeItem(item);
+		gInventory.CreateOrAddItem(item);
 		_itemList.add(gInventory);
 	}
 

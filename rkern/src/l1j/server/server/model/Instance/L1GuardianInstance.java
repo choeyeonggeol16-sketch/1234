@@ -119,13 +119,13 @@ public class L1GuardianInstance extends L1NpcInstance {
 		if (getNpcTemplate().get_npcId() == 70848) { // tree
 			int chance = _random.nextInt(100) + 1;
 			if (chance <= 10) {
-				player.getInventory().storeItem(40506, 1);
+				player.getInventory().CreateOrAddItem(40506, 1);
 				SC_ServerMessage.send(player, 143, "$755", "$794");
 			} else if (chance <= 20) {
-				player.getInventory().storeItem(40507, 1);
+				player.getInventory().CreateOrAddItem(40507, 1);
 				SC_ServerMessage.send(player, 143, "$755", "$763");
 			} else if (chance <= 30) {
-				player.getInventory().storeItem(40505, 1);
+				player.getInventory().CreateOrAddItem(40505, 1);
 				SC_ServerMessage.send(player, 143, "$755", "$770");
 			} else {
 				return false; // original path skips swing and commit when no tree reward
@@ -134,14 +134,14 @@ public class L1GuardianInstance extends L1NpcInstance {
 		if (getNpcTemplate().get_npcId() == 70850) {
 			int chance = _random.nextInt(100) + 1;
 			if (chance <= 30) {
-				player.getInventory().storeItem(40519, 5);
+				player.getInventory().CreateOrAddItem(40519, 5);
 				SC_ServerMessage.send(player, 143, "$753", "$760" + " (" + 5 + ")");
 			}
 		}
 		if (getNpcTemplate().get_npcId() == 70846) {
 			int chance = _random.nextInt(100) + 1;
 			if (chance <= 30) {
-				player.getInventory().storeItem(40503, 1);
+				player.getInventory().CreateOrAddItem(40503, 1);
 				SC_ServerMessage.send(player, 143, "$752", "$769");
 			}
 		}

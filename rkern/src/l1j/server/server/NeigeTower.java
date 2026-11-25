@@ -68,7 +68,7 @@ public class NeigeTower{
 			SC_SystemMessage.send(pc, "아이템 제작에 성공했습니다.");
 			SC_SkillSound.send(pc, pc.getId(), 7976);
 			SC_SkillSound.broadcast(pc, pc.getId(), 7976);
-			pc.getInventory().storeItem(560028, 1);
+			pc.getInventory().CreateOrAddItem(560028, 1);
 			SC_ChatPacket.sendDirect(pc, pc, "환상의 오만의 탑 지배 부적을 획득하였습니다.", 1);
 			
 		}

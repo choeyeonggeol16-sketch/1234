@@ -172,7 +172,7 @@ public class HadinTrap implements Runnable {
 				if(ob instanceof L1PcInstance){
 					L1PcInstance pc = (L1PcInstance) ob;
 					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
-					pc.getInventory().storeItem(410108, 1); //비밀보따리
+					pc.getInventory().CreateOrAddItem(410108, 1); //비밀보따리
 				}
 			}
                 }

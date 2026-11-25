@@ -101,7 +101,7 @@ public class L1Gambling3 {
 					int hits = (m1 == target ? 1 : 0) + (m2 == target ? 1 : 0) + (m3 == target ? 1 : 0);
 					if (hits > 0) {
 						int payout = bet * 2 * hits;
-						pc.getInventory().storeItem(L1ItemId.ADENA, payout);
+						pc.getInventory().CreateOrAddItem(L1ItemId.ADENA, payout);
 						say(pc, dealer, "오!굿... " + hits + "마리 적중! 배당금 " + payout + " 아데나 지급했습니다.");
 					} else {
 						say(pc, dealer, "아쉽군요ㅋㅋ 다음 기회에 도전해주세요~!");

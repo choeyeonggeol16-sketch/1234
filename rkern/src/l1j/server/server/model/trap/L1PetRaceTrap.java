@@ -148,13 +148,13 @@ public class L1PetRaceTrap extends L1Trap {
 				}else{
 					SC_SystemMessage.send(c, racing.size(racing.순위99) + " 등 하셨습니다.");
 				}
-				c.getInventory().storeItem(41308, 1);
+				c.getInventory().CreateOrAddItem(41308, 1);
 
 				Random random = new Random(System.nanoTime()); // 펫레이싱
 
 				if(random.nextInt() < 33)
 				{
-					L1ItemInstance item = c.getInventory().storeItem(3000024, 1);
+					L1ItemInstance item = c.getInventory().CreateOrAddItem(3000024, 1);
 					// Preserve the one-item notification even when storeItem merged a stack.
 					// Do not create a second, world-registered dummy item for the message.
 					if (item != null) SC_ServerMessage.send(c, 403, item.getNumberedName(1));

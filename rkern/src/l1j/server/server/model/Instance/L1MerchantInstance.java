@@ -473,7 +473,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step == 2 && player.getInventory().HaveItemByClassId(41422)) {
 						player.getInventory().consumeItem(41422, 1);
-						player.getInventory().storeItem(40568, 1);
+						player.getInventory().CreateOrAddItem(40568, 1);
 					}
 				}
 				break;
@@ -2558,7 +2558,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 		pc.getInventory().consumeItem(sealId, sealCount);
 
 		final L1ItemInstance item =
-				pc.getInventory().storeItem(rulerId, 1);
+				pc.getInventory().CreateOrAddItem(rulerId, 1);
 
 		if (item != null) {
 			SC_ServerMessage.send(pc, 143, getNpcTemplate().get_name(), item.getLogName());

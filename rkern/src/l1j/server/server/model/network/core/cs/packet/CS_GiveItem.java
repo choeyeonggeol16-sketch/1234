@@ -312,7 +312,7 @@ public final class CS_GiveItem {
         if (charisma >= 6 && inv.getSize() < 180) {
             if (isTamePet(target)) {
                 final L1ItemInstance petamu =
-                        inv.storeItem(40314, 1);
+                        inv.CreateOrAddItem(40314, 1);
 
                 if (petamu != null) {
                     new L1PetInstance(
@@ -352,7 +352,7 @@ public final class CS_GiveItem {
                 && petamu != null) {
 
             final L1ItemInstance highpetamu =
-                    inv.storeItem(40316, 1);
+                    inv.CreateOrAddItem(40316, 1);
 
             if (highpetamu != null) {
                 pet.evolvePet(highpetamu.getId());

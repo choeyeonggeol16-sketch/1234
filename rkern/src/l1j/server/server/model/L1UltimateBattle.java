@@ -313,7 +313,7 @@ for (L1PcInstance pc : getMembersArray()) {
 						loc.getY(), _mapId);
 				try {
 					if (ground.CheckAddable(item, stackCount) == CInventory.OK) {
-						ground.storeItem(item);
+						ground.CreateOrAddItem(item);
 					}
 				} finally {
 					// A failed ground insert or stack merge cannot retain a
@@ -331,7 +331,7 @@ for (L1PcInstance pc : getMembersArray()) {
 							loc.getY(), _mapId);
 					try {
 						if (ground.CheckAddable(item, stackCount) == CInventory.OK) {
-							ground.storeItem(item);
+							ground.CreateOrAddItem(item);
 						}
 					} finally {
 						// A failed ground insert or stack merge cannot retain a

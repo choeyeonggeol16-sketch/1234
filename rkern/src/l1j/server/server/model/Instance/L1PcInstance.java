@@ -6332,7 +6332,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 					SC_ServerMessage.send(this, 3802);
 					SC_ServerMessage.send(this, 158, "$22172");
 					getInventory().removeItem(item, 1);
-					L1World.getInstance().getInventory(getX(), getY(), getMapId()).storeItem(drop);
+					L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 					break;
 				}
 			}
@@ -6349,7 +6349,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 					SC_ServerMessage.send(this, 158, "$27279"); 
 					getInventory().removeItem(item, 1);
 					 L1World.getInstance().getInventory(getX(), getY(),
-					 getMapId()).storeItem(drop);
+					 getMapId()).CreateOrAddItem(drop);
 					//lastAttacker.getInventory().storeItem(drop);
 					//lastAttacker.sendPackets(new SC_SystemMessage("타버린 불멸의 가호를 획득하였습니다."));
 					break;
@@ -6369,7 +6369,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 					SC_ServerMessage.send(this, 158, "$26711");
 					getInventory().removeItem(item, 1);
 					 L1World.getInstance().getInventory(getX(), getY(),
-					 getMapId()).storeItem(drop);
+					 getMapId()).CreateOrAddItem(drop);
 				//	 L1World.getInstance().getInventory(getX(), getY(),
 				//	 getMapId()).storeItem(drop0, count22);
 				//	 sendPackets(new SC_SystemMessage("투게더코인 [드랍] : "+count22+"개"));
@@ -6388,7 +6388,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 					SC_SystemMessage.send(this, "수호자의 가호를 드랍하였습니다.");
 					getInventory().removeItem(item, 1);
 					 L1World.getInstance().getInventory(getX(), getY(),
-					 getMapId()).storeItem(drop2);
+					 getMapId()).CreateOrAddItem(drop2);
 				//	 L1World.getInstance().getInventory(getX(), getY(),
 				//	 getMapId()).storeItem(drop0, count22);
 				//	 sendPackets(new SC_SystemMessage("투게더코인 [드랍] : "+count22+"개"));
@@ -6410,7 +6410,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 					SC_ServerMessage.send(this, 3802);
 					SC_ServerMessage.send(this, 158, "$25382");
 					getInventory().removeItem(item, 1);
-					L1World.getInstance().getInventory(getX(), getY(), getMapId()).storeItem(drop);
+					L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 					break;
 				}
 			}
@@ -6426,7 +6426,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 					SC_ServerMessage.send(this, 3802);
 					SC_ServerMessage.send(this, 158, "$25384");
 					getInventory().removeItem(item, 1);
-					L1World.getInstance().getInventory(getX(), getY(), getMapId()).storeItem(drop);
+					L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 					break;
 				}
 			}
@@ -6538,7 +6538,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			item.setEnchantLevel(EnchantLevel);
 			item.setAttrEnchantLevel(AttEnchantLevel);
 			item.setIdentified(true);
-			pc.getInventory().storeItem(item);
+			pc.getInventory().CreateOrAddItem(item);
 			item.setBless(Bless);
 			pc.getInventory().updateItem(item, CUserInventory.COL_BLESS);
 			pc.getInventory().saveItem(item, CUserInventory.COL_BLESS);

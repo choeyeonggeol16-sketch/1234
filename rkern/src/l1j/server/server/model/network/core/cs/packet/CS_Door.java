@@ -206,51 +206,51 @@ public final class CS_Door {
         door.open();
 
         if (ran <= 15) {
-            pc.getInventory().storeItem(40308, 10000);
+            pc.getInventory().CreateOrAddItem(40308, 10000);
             SC_SystemMessage.send(pc, "아데나 (10000)을 얻었습니다.");
 
         } else if (ran <= 29) {
-            pc.getInventory().storeItem(40308, 20000);
+            pc.getInventory().CreateOrAddItem(40308, 20000);
             SC_SystemMessage.send(pc, "아데나 (20000)을 얻었습니다.");
 
         } else if (ran <= 49) {
-            pc.getInventory().storeItem(40308, 30000);
+            pc.getInventory().CreateOrAddItem(40308, 30000);
             SC_SystemMessage.send(pc, "아데나 (30000)을 얻었습니다.");
 
         } else if (ran <= 59) {
-            pc.getInventory().storeItem(40308, 50000);
+            pc.getInventory().CreateOrAddItem(40308, 50000);
             SC_SystemMessage.send(pc, "아데나 (50000)을 얻었습니다.");
 
         } else if (ran <= 64) {
-            pc.getInventory().storeItem(40308, 100000);
+            pc.getInventory().CreateOrAddItem(40308, 100000);
             SC_SystemMessage.send(pc, "아데나 (100000)을 얻었습니다.");
 
         } else if (ran <= 69) {
-            pc.getInventory().storeItem(40308, 200000);
+            pc.getInventory().CreateOrAddItem(40308, 200000);
             SC_SystemMessage.send(pc, "아데나 (200000)을 얻었습니다.");
 
         } else if (ran <= 72) {
-            pc.getInventory().storeItem(40308, 300000);
+            pc.getInventory().CreateOrAddItem(40308, 300000);
             SC_SystemMessage.send(pc, "아데나 (300000)을 얻었습니다.");
 
         } else if (ran <= 75) {
-            pc.getInventory().storeItem(40308, 400000);
+            pc.getInventory().CreateOrAddItem(40308, 400000);
             SC_SystemMessage.send(pc, "아데나 (400000)을 얻었습니다.");
 
         } else if (ran <= 78) {
-            pc.getInventory().storeItem(40308, 500000);
+            pc.getInventory().CreateOrAddItem(40308, 500000);
             SC_SystemMessage.send(pc, "아데나 (500000)을 얻었습니다.");
 
         } else if (ran <= 80) {
-            pc.getInventory().storeItem(40308, 1000000);
+            pc.getInventory().CreateOrAddItem(40308, 1000000);
             SC_SystemMessage.send(pc, "아데나 (1000000)을 얻었습니다.");
 
         } else if (ran <= 90) {
-            pc.getInventory().storeItem(40074, 3);
+            pc.getInventory().CreateOrAddItem(40074, 3);
             SC_SystemMessage.send(pc, "갑옷 마법 주문서 (3)을 얻었습니다.");
 
         } else {
-            pc.getInventory().storeItem(40087, 3);
+            pc.getInventory().CreateOrAddItem(40087, 3);
             SC_SystemMessage.send(pc, "무기 마법 주문서 (3)을 얻었습니다.");
         }
     }
@@ -270,61 +270,61 @@ public final class CS_Door {
 
         if (ran <= 10) {
             item = pc.getInventory()
-                    .storeItem(40010, 5);
+                    .CreateOrAddItem(40010, 5);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (5)");
 
         } else if (ran <= 20) {
             item = pc.getInventory()
-                    .storeItem(40010, 10);
+                    .CreateOrAddItem(40010, 10);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (10)");
 
         } else if (ran <= 30) {
             item = pc.getInventory()
-                    .storeItem(40010, 15);
+                    .CreateOrAddItem(40010, 15);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (15)");
 
         } else if (ran <= 40) {
             item = pc.getInventory()
-                    .storeItem(40010, 30);
+                    .CreateOrAddItem(40010, 30);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (30)");
 
         } else if (ran <= 50) {
             item = pc.getInventory()
-                    .storeItem(40010, 50);
+                    .CreateOrAddItem(40010, 50);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (50)");
 
         } else if (ran <= 60) {
             item = pc.getInventory()
-                    .storeItem(40012, 5);
+                    .CreateOrAddItem(40012, 5);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (5)");
 
         } else if (ran <= 70) {
             item = pc.getInventory()
-                    .storeItem(40012, 10);
+                    .CreateOrAddItem(40012, 10);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (10)");
 
         } else if (ran <= 80) {
             item = pc.getInventory()
-                    .storeItem(40012, 15);
+                    .CreateOrAddItem(40012, 15);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (15)");
 
         } else if (ran <= 90) {
             item = pc.getInventory()
-                    .storeItem(40012, 30);
+                    .CreateOrAddItem(40012, 30);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (30)");
 
         } else {
             item = pc.getInventory()
-                    .storeItem(40012, 50);
+                    .CreateOrAddItem(40012, 50);
 
             SC_ServerMessage.send(pc, 403, item.getName() + " (50)");
         }

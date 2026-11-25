@@ -497,7 +497,7 @@ final class NpcExchangeCommands {
             item.setEnchantLevel(enchant);
             destination = pc.getInventory().CheckAddable(item, count) == CInventory.OK
                     ? pc.getInventory() : world.getInventory(pc.getX(), pc.getY(), pc.getMapId());
-            stored = destination.storeItem(item);
+            stored = destination.CreateOrAddItem(item);
             if (stored == null) return false;
             SC_ServerMessage.send(pc, 143, npcName, item.getLogName());
             return true;

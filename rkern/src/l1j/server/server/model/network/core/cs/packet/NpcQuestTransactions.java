@@ -718,7 +718,7 @@ final class NpcQuestTransactions {
 				SC_ChatPacket.sendDirect(pc, pc, "이미 낡은 고서를 가지고있네요");
 				htmlid = "";
 			} else {
-				if (pc.getInventory().storeItem(60032, 1) != null) {
+				if (pc.getInventory().CreateOrAddItem(60032, 1) != null) {
 					htmlid = "oldbook2";
 				}
 			}
@@ -762,7 +762,7 @@ final class NpcQuestTransactions {
 				SC_SystemMessage.send(pc, "'클라우디아 이동 주문서' 을 소지하고 계십니다.");
 				htmlid = "";
 			} else {
-				if (pc.getInventory().storeItem(99115, 5) != null) {
+				if (pc.getInventory().CreateOrAddItem(99115, 5) != null) {
 					SC_SystemMessage.send(pc, "'클라우디아 이동 주문서'을 지급 하였습니다..");
 				}
 			}
@@ -867,7 +867,7 @@ final class NpcQuestTransactions {
 			if (pc.getInventory().HaveItemByClassId(40637)) {
 				htmlid = "marba20";
 			} else {
-				L1ItemInstance item = pc.getInventory().storeItem(40637, 1);
+				L1ItemInstance item = pc.getInventory().CreateOrAddItem(40637, 1);
 				if (item == null) return htmlid;
 				String itemName = item.getItem().getName();
 				String npcName = npc.getNpcTemplate().get_name();
@@ -1009,7 +1009,7 @@ final class NpcQuestTransactions {
     private static String orcQuestToken(L1PcInstance pc, L1NpcInstance npc, String command,
             int itemId, String grantPage, String redeemPage, String initialPage) {
         if (command.equalsIgnoreCase("A")) {
-            L1ItemInstance item = pc.getInventory().storeItem(itemId, 1);
+            L1ItemInstance item = pc.getInventory().CreateOrAddItem(itemId, 1);
             if (item == null) return null;
             SC_ServerMessage.send(pc, 143, npc.getNpcTemplate().get_name(), item.getItem().getName());
             return grantPage;
@@ -1193,7 +1193,7 @@ final class NpcQuestTransactions {
     static void grantLegacyNpcItem(L1PcInstance pc, L1NpcInstance npc, int itemId,
             int count, boolean onlyIfAbsent, String page) {
         if (onlyIfAbsent && pc.getInventory().HaveItemByClassId(itemId, 1)) return;
-        final L1ItemInstance item = pc.getInventory().storeItem(itemId, count);
+        final L1ItemInstance item = pc.getInventory().CreateOrAddItem(itemId, count);
         if (item == null) {
             SC_SystemMessage.send(pc, "아이템을 수령할 수 없습니다.");
             return;

@@ -94,7 +94,7 @@ public class FantasyIsland implements Runnable {
 					Sleep(3000);
 					SC_NpcChatPacket.broadcastNpc(unicorn, unicorn, "$17947", 0);
 					SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "$17947");//마법 막대를 이용해 적을 처치해주세요.
-					pc.getInventory().storeItem(810006, 1);
+					pc.getInventory().CreateOrAddItem(810006, 1);
 					SC_SystemMessage.send(pc, "$17948");
 					SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "경고! 오토방지 코드는 무시하세요.");
 					
@@ -133,7 +133,7 @@ public class FantasyIsland implements Runnable {
 					SC_PacketBox.send(pc, SC_PacketBox.ROUND, 2, 4);
 					SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "$17703");
 					//적들이 더 몰려옵니다. 준비해 주세요
-					pc.getInventory().storeItem(810006, 1);
+					pc.getInventory().CreateOrAddItem(810006, 1);
 					SC_SystemMessage.send(pc, "$17948");
 					Sleep(5000);
 					//11시 포르시스, 베네보스
@@ -166,7 +166,7 @@ public class FantasyIsland implements Runnable {
 					SC_PacketBox.send(pc, SC_PacketBox.ROUND, 3, 4);
 					SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "$17703");
 					//적들이 더 몰려옵니다. 준비해 주세요
-					pc.getInventory().storeItem(810006, 1);
+					pc.getInventory().CreateOrAddItem(810006, 1);
 					SC_SystemMessage.send(pc, "$17948");
 					//7시 메가+비아
 					L1SpawnUtil.spawnCount(32789, 32861, _map, 7200011, 0, 0, 7);
@@ -204,7 +204,7 @@ public class FantasyIsland implements Runnable {
 					SC_PacketBox.send(pc, SC_PacketBox.ROUND, 4, 4);
 					SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "$17703");
 					//적들이 더 몰려옵니다. 준비해 주세요
-					pc.getInventory().storeItem(810006, 1);
+					pc.getInventory().CreateOrAddItem(810006, 1);
 					SC_SystemMessage.send(pc, "$17948");
 					SC_NpcChatPacket.broadcastNpc(unicorn, unicorn, "$17706", 0);
 					//얼마 남지 않았습니다. 조금만 더 버텨주세요
@@ -310,10 +310,10 @@ public class FantasyIsland implements Runnable {
 						} else if (rnd < 684) { itemId = 1137; //진노의 크로우
 						}
 						L1ItemInstance item = CObjectDB.LoadItem().createItem(810010);
-						L1World.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).storeItem(item);
+						L1World.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).CreateOrAddItem(item);
 						L1ItemInstance item1 = CObjectDB.LoadItem().createItem(itemId);
 						if (item1 != null) {
-							L1World.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).storeItem(item1);
+							L1World.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).CreateOrAddItem(item1);
 						} 
 
 						unicorn.deleteMe();

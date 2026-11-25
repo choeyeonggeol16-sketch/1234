@@ -36,10 +36,10 @@ public class L1CreateItemSet implements L1CommandExecutor {
 					for (int i = 0; i < item.getAmount(); i++) {
 						inst = CObjectDB.LoadItem().createItem(item.getId());
 						inst.setEnchantLevel(item.getEnchant());
-						pc.getInventory(). storeItem(inst);
+						pc.getInventory(). CreateOrAddItem(inst);
 					}
 				} else {
-					pc.getInventory(). storeItem(item.getId(), item.getAmount());
+					pc.getInventory(). CreateOrAddItem(item.getId(), item.getAmount());
 				}
 			}
 		} catch (Exception e) {
