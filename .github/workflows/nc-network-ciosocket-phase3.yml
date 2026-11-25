@@ -9,6 +9,7 @@ on:
       - 'rkern/src/l1j/server/server/model/network/core/connection/CSocket.java'
       - 'rkern/src/l1j/server/server/model/network/core/connection/CUserSocket.java'
       - 'rkern/src/l1j/server/server/model/network/core/transport/selector/**'
+      - 'rkern/src/l1j/server/server/model/network/packet/**'
 permissions:
   contents: read
 jobs:
@@ -24,6 +25,13 @@ jobs:
           git grep -n -E 'CSelectorTransport[.]bind(Hosted)?[(]' -- rkern/src
           if git grep -n -E 'CSelectorBufferPool|CSelectorFrameReader|CSelectorSendQueue|CSelectorTransport[.]Handler' -- rkern/src; then
             echo "Unexpected legacy framed transport reference" >&2
+            exit 1
+          fi
+      - name: Audit packet callback references
+        run: |
+          git grep -n -E 'UserPacketCallbackMap|checkPacketRateLimit' -- rkern/src
+          if git grep -n -w CPacketHandler -- rkern/src; then
+            echo "Stale CPacketHandler references" >&2
             exit 1
           fi
       - name: Compile all Java 21 source and execute existing TCP regressions

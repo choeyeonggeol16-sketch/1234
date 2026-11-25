@@ -27,7 +27,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.packet.CBytesPacket;
-import l1j.server.server.model.network.packet.CPacketHandler;
+import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -70,8 +70,8 @@ public final class GameSendBenchmark {
         var sessions = ConcurrentHashMap.<CUserSocket>newKeySet();
         var rejected = new AtomicInteger();
         var locals = ThreadLocal.withInitial(() -> new Reply(payload));
-        var old = CPacketHandler.HANDLERS[REQUEST];
-        CPacketHandler.HANDLERS[REQUEST] = (request, client) -> {
+        var old = UserPacketCallbackMap.gPacketTableFromClient[REQUEST];
+        UserPacketCallbackMap.gPacketTableFromClient[REQUEST] = (request, client) -> {
             CUserSocket socket = client;
             if (socket.affinityShard() != CIOThreadCallback.currentShardIndex()) throw new AssertionError("shard");
             Reply packet = locals.get();
@@ -151,7 +151,7 @@ public final class GameSendBenchmark {
         } finally {
             try { Server.stopLoginServer(); }
             finally {
-                CPacketHandler.HANDLERS[REQUEST] = old;
+                UserPacketCallbackMap.gPacketTableFromClient[REQUEST] = old;
                 PlaySupportWindow.stopIndependent();
                 CIOThreadCallback scheduler = CIOThreadCallback.getInstance();
                 scheduler.shutdown();

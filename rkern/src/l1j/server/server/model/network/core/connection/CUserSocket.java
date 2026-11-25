@@ -20,7 +20,7 @@ import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.network.buffer.CPacketReadBuffer;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.packet.CPacketHandler;
+import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.packet.IPacketWriter;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -2310,14 +2310,15 @@ public final class CUserSocket extends CSocket {
         if (this.checkPacketRateLimit(System.currentTimeMillis())) return false;
         if (!allowed(opcode, this.getConnectionState(), this.getAccount() != null,
                 this.getActiveChar() != null, this.isGameSessionReady())) return inboundHandlerConnected();
-        if (!CPacketHandler.isFastOpcode(opcode)) {
+        final UserPacketCallbackMap.PacketFunc callback = UserPacketCallbackMap.gPacketTableFromClient[opcode];
+        if (callback == UserPacketCallbackMap.DummyUserPacket) {
             CPacketFilter.isFilter(this, opcode);
         } else if (CPacketFilter.isFilter(this, opcode) != CPacketFilter.RESULT_FILTER) {
-            if (CPacketHandler.isDirectOpcode(opcode) || (this.isGameSessionReady() && !isSessionOpcode(opcode))) {
-                dispatchDecodedFrame(opcode, decoded);
+            if (UserPacketCallbackMap.isDirectOpcode(opcode) || (this.isGameSessionReady() && !isSessionOpcode(opcode))) {
+                dispatchDecodedFrame(callback, decoded);
             } else {
                 synchronized (this) {
-                    if (this.isConnected()) dispatchDecodedFrame(opcode, decoded);
+                    if (this.isConnected()) dispatchDecodedFrame(callback, decoded);
                 }
             }
         }
@@ -2331,15 +2332,14 @@ public final class CUserSocket extends CSocket {
     }
 
 
-    private void dispatchDecodedFrame(int opcode, CPacketReadBuffer decoded) {
+    private void dispatchDecodedFrame(UserPacketCallbackMap.PacketFunc callback, CPacketReadBuffer decoded) {
         // Even if this handler blocks on game logic or client synchronization,
         // unrelated SEND ticket owners must be able to drain immediately.
         releaseFusedReadSendOwner();
-        final CPacketHandler.PacketHandler handler = CPacketHandler.HANDLERS[opcode & 0xFF];
         // Only the current socket READ pump can set this flag. A full buffer
         // owns the SEND burst and its finally always flushes it.
         if (_readPassBurstActive) {
-            if (handler != null) handler.execute(decoded, this);
+            callback.execute(decoded, this);
             // With large responses, READ pressure may stop the pass after a
             // single request. Submit its already accepted output immediately;
             // do not make that request wait for the outer frame-loop epilogue.
@@ -2356,7 +2356,7 @@ public final class CUserSocket extends CSocket {
         }
         ++burst.depth;
         try {
-            if (handler != null) handler.execute(decoded, this);
+            callback.execute(decoded, this);
             // The ordinary single-frame path exits the scope below. Its
             // finally performs the one mandatory flush, including on throw.
             // Nested dispatch must still flush immediately even while the

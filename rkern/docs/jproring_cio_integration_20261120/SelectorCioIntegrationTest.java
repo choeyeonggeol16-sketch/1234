@@ -31,7 +31,7 @@ import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.packet.CPacketHandler;
+import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.network.safe.CPacketFilter;
@@ -79,10 +79,10 @@ public final class SelectorCioIntegrationTest {
             CountDownLatch overflowStaged = new CountDownLatch(1);
             CountDownLatch overflowRetired = new CountDownLatch(1);
             AtomicInteger overflowCalls = new AtomicInteger();
-            CPacketHandler.PacketHandler alive = CPacketHandler.HANDLERS[ALIVE];
-            CPacketHandler.PacketHandler move = CPacketHandler.HANDLERS[MOVE];
-            CPacketHandler.HANDLERS[MOVE] = (payload, client) -> { rejectedOpcodePackets.incrementAndGet(); return true; };
-            CPacketHandler.HANDLERS[ALIVE] = (payload, client) -> {
+            UserPacketCallbackMap.PacketFunc alive = UserPacketCallbackMap.gPacketTableFromClient[ALIVE];
+            UserPacketCallbackMap.PacketFunc move = UserPacketCallbackMap.gPacketTableFromClient[MOVE];
+            UserPacketCallbackMap.gPacketTableFromClient[MOVE] = (payload, client) -> { rejectedOpcodePackets.incrementAndGet(); return true; };
+            UserPacketCallbackMap.gPacketTableFromClient[ALIVE] = (payload, client) -> {
                 CUserSocket socket = client;
                 int shard = CIOThreadCallback.currentShardIndex();
                 check(shard >= 0 && socket.affinityShard() == shard, "packet executed on its existing CIO shard");
@@ -287,8 +287,8 @@ public final class SelectorCioIntegrationTest {
             } finally {
                 try { Server.stopLoginServer(); }
                 finally {
-                    CPacketHandler.HANDLERS[ALIVE] = alive;
-                    CPacketHandler.HANDLERS[MOVE] = move;
+                    UserPacketCallbackMap.gPacketTableFromClient[ALIVE] = alive;
+                    UserPacketCallbackMap.gPacketTableFromClient[MOVE] = move;
                 }
             }
         } finally {

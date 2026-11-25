@@ -55,14 +55,25 @@ def classpath(classes, deps):
 def compile_java(cp, classes, reuse, source_root=ROOT):
     compiler = [shutil.which('javac')] if shutil.which('javac') else [
         'java', '--module', 'jdk.compiler/com.sun.tools.javac.Main']
-    fixtures = [(HERE.parent / 'jproring_selector_transport_20261120/SelectorTransportTest.java'),
-                HERE / 'GameSendBenchmark.java']
-    sources = fixtures if reuse else [*sorted((source_root / 'src').rglob('*.java')), *fixtures]
-    with tempfile.NamedTemporaryFile('w', encoding='utf-8') as arguments:
-        arguments.writelines('"' + str(path) + '"\n' for path in sources)
-        arguments.flush()
-        subprocess.run([*compiler, '-encoding', 'UTF-8', '-source', '21', '-target', '21', '--enable-preview',
-                        '-cp', cp, '-d', str(classes), '@' + arguments.name], check=True)
+    with tempfile.TemporaryDirectory(prefix='rkern-bench-fixtures-') as temp:
+        benchmark = HERE / 'GameSendBenchmark.java'
+        # The same benchmark must also compile against historical pre-rename revisions.
+        packet_map = 'l1j/server/server/model/network/packet/UserPacketCallbackMap'
+        has_new_map = ((source_root / 'src' / (packet_map + '.java')).exists() if not reuse
+                       else (classes / (packet_map + '.class')).exists())
+        if not has_new_map:
+            legacy = Path(temp) / benchmark.name
+            legacy.write_text(benchmark.read_text(encoding='utf-8')
+                              .replace('UserPacketCallbackMap', 'CPacketHandler')
+                              .replace('gPacketTableFromClient', 'HANDLERS'), encoding='utf-8')
+            benchmark = legacy
+        fixtures = [(HERE.parent / 'jproring_selector_transport_20261120/SelectorTransportTest.java'), benchmark]
+        sources = fixtures if reuse else [*sorted((source_root / 'src').rglob('*.java')), *fixtures]
+        with tempfile.NamedTemporaryFile('w', encoding='utf-8') as arguments:
+            arguments.writelines('"' + str(path) + '"\n' for path in sources)
+            arguments.flush()
+            subprocess.run([*compiler, '-encoding', 'UTF-8', '-source', '21', '-target', '21', '--enable-preview',
+                            '-cp', cp, '-d', str(classes), '@' + arguments.name], check=True)
 
 
 def line(process, prefix, timeout=15):

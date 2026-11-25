@@ -115,15 +115,16 @@ import l1j.server.server.utils.GameUtils;
  * Decoder가 primitive payload를 추출하고 현재 READ 완료 스택에서
  * 기존 게임 핸들러를 직접 실행한다. 중간 명령 저장/게시 단계는 없다.
  */
-public final class CPacketHandler {
+public final class UserPacketCallbackMap {
 
     @FunctionalInterface
-    public interface PacketHandler {
+    public interface PacketFunc {
         boolean execute(CPacketReadBuffer buffer, CUserSocket client);
     }
 
     // Static, per-process function pointers. No per-packet allocations.
-    public static final PacketHandler[] HANDLERS = new PacketHandler[256];
+    public static final PacketFunc DummyUserPacket = (buffer, client) -> true;
+    public static final PacketFunc[] gPacketTableFromClient = new PacketFunc[256];
     private static final boolean[] DIRECT_OPCODE = new boolean[256];
 
     private static final Charset MS949 = Charset.forName("MS949");
@@ -135,263 +136,264 @@ public final class CPacketHandler {
             () -> new byte[CIOConfig.READ_BUFFER_SIZE]);
 
     static {
-        HANDLERS[Opcodes.C_PLATE & 0xFF] = CPacketHandler::decodePlate;
+        Arrays.fill(gPacketTableFromClient, DummyUserPacket);
+        gPacketTableFromClient[Opcodes.C_PLATE & 0xFF] = UserPacketCallbackMap::decodePlate;
         DIRECT_OPCODE[Opcodes.C_PLATE & 0xFF] = false;
-        HANDLERS[Opcodes.C_BUYABLE_SPELL & 0xFF] = CPacketHandler::decodeBuyableSpell;
+        gPacketTableFromClient[Opcodes.C_BUYABLE_SPELL & 0xFF] = UserPacketCallbackMap::decodeBuyableSpell;
         DIRECT_OPCODE[Opcodes.C_BUYABLE_SPELL & 0xFF] = false;
-        HANDLERS[Opcodes.C_HYPERTEXT_INPUT_RESULT & 0xFF] = CPacketHandler::decodeHypertextInputResult;
+        gPacketTableFromClient[Opcodes.C_HYPERTEXT_INPUT_RESULT & 0xFF] = UserPacketCallbackMap::decodeHypertextInputResult;
         DIRECT_OPCODE[Opcodes.C_HYPERTEXT_INPUT_RESULT & 0xFF] = false;
-        HANDLERS[Opcodes.C_ADD_BUDDY & 0xFF] = CPacketHandler::decodeAddBuddy;
+        gPacketTableFromClient[Opcodes.C_ADD_BUDDY & 0xFF] = UserPacketCallbackMap::decodeAddBuddy;
         DIRECT_OPCODE[Opcodes.C_ADD_BUDDY & 0xFF] = false;
-        HANDLERS[Opcodes.C_WITHDRAW & 0xFF] = CPacketHandler::decodeWithdraw;
+        gPacketTableFromClient[Opcodes.C_WITHDRAW & 0xFF] = UserPacketCallbackMap::decodeWithdraw;
         DIRECT_OPCODE[Opcodes.C_WITHDRAW & 0xFF] = false;
-        HANDLERS[Opcodes.C_ACCEPT_XCHG & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_ACCEPT_XCHG & 0xFF] = (buffer, client) -> {
             handleAcceptXchg(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_ACCEPT_XCHG & 0xFF] = false;
-        HANDLERS[Opcodes.C_HACTION & 0xFF] = CPacketHandler::HtmlCMDPacket;
+        gPacketTableFromClient[Opcodes.C_HACTION & 0xFF] = UserPacketCallbackMap::HtmlCMDPacket;
         DIRECT_OPCODE[Opcodes.C_HACTION & 0xFF] = false;
-        HANDLERS[Opcodes.C_EXCHANGEABLE_SPELL & 0xFF] = CPacketHandler::decodeExchangeableSpell;
+        gPacketTableFromClient[Opcodes.C_EXCHANGEABLE_SPELL & 0xFF] = UserPacketCallbackMap::decodeExchangeableSpell;
         DIRECT_OPCODE[Opcodes.C_EXCHANGEABLE_SPELL & 0xFF] = false;
-        HANDLERS[Opcodes.C_USE_SPELL & 0xFF] = CPacketHandler::MagicSkillUsePacket;
+        gPacketTableFromClient[Opcodes.C_USE_SPELL & 0xFF] = UserPacketCallbackMap::MagicSkillUsePacket;
         DIRECT_OPCODE[Opcodes.C_USE_SPELL & 0xFF] = true;
-        HANDLERS[Opcodes.C_ATTACK & 0xFF] = CPacketHandler::AttackPacket;
+        gPacketTableFromClient[Opcodes.C_ATTACK & 0xFF] = UserPacketCallbackMap::AttackPacket;
         DIRECT_OPCODE[Opcodes.C_ATTACK & 0xFF] = true;
-        HANDLERS[Opcodes.C_UPLOAD_EMBLEM & 0xFF] = CPacketHandler::decodeUploadEmblem;
+        gPacketTableFromClient[Opcodes.C_UPLOAD_EMBLEM & 0xFF] = UserPacketCallbackMap::decodeUploadEmblem;
         DIRECT_OPCODE[Opcodes.C_UPLOAD_EMBLEM & 0xFF] = false;
-        HANDLERS[Opcodes.C_USE_ITEM & 0xFF] = CPacketHandler::UseItemPacket;
+        gPacketTableFromClient[Opcodes.C_USE_ITEM & 0xFF] = UserPacketCallbackMap::UseItemPacket;
         DIRECT_OPCODE[Opcodes.C_USE_ITEM & 0xFF] = false;
-        HANDLERS[Opcodes.C_LEAVE_PLEDGE & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_LEAVE_PLEDGE & 0xFF] = (buffer, client) -> {
             handleLeavePledge(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_LEAVE_PLEDGE & 0xFF] = false;
-        HANDLERS[Opcodes.C_RANK_CONTROL & 0xFF] = CPacketHandler::decodeRankControl;
+        gPacketTableFromClient[Opcodes.C_RANK_CONTROL & 0xFF] = UserPacketCallbackMap::decodeRankControl;
         DIRECT_OPCODE[Opcodes.C_RANK_CONTROL & 0xFF] = false;
-        HANDLERS[Opcodes.C_BOOKMARK & 0xFF] = CPacketHandler::decodeBookmark;
+        gPacketTableFromClient[Opcodes.C_BOOKMARK & 0xFF] = UserPacketCallbackMap::decodeBookmark;
         DIRECT_OPCODE[Opcodes.C_BOOKMARK & 0xFF] = false;
-        HANDLERS[Opcodes.C_MOVE & 0xFF] = CPacketHandler::MoveToLocationPacket;
+        gPacketTableFromClient[Opcodes.C_MOVE & 0xFF] = UserPacketCallbackMap::MoveToLocationPacket;
         DIRECT_OPCODE[Opcodes.C_MOVE & 0xFF] = true;
-        HANDLERS[Opcodes.C_WHO_PLEDGE & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_WHO_PLEDGE & 0xFF] = (buffer, client) -> {
             handleWhoPledge(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_WHO_PLEDGE & 0xFF] = false;
-        HANDLERS[Opcodes.C_SLAVE_CONTROL & 0xFF] = CPacketHandler::decodeSlaveControl;
+        gPacketTableFromClient[Opcodes.C_SLAVE_CONTROL & 0xFF] = UserPacketCallbackMap::decodeSlaveControl;
         DIRECT_OPCODE[Opcodes.C_SLAVE_CONTROL & 0xFF] = false;
-        HANDLERS[Opcodes.C_SAVEIO & 0xFF] = CPacketHandler::decodeSaveIo;
+        gPacketTableFromClient[Opcodes.C_SAVEIO & 0xFF] = UserPacketCallbackMap::decodeSaveIo;
         DIRECT_OPCODE[Opcodes.C_SAVEIO & 0xFF] = false;
-        HANDLERS[Opcodes.C_DROP & 0xFF] = CPacketHandler::DropItemPacket;
+        gPacketTableFromClient[Opcodes.C_DROP & 0xFF] = UserPacketCallbackMap::DropItemPacket;
         DIRECT_OPCODE[Opcodes.C_DROP & 0xFF] = false;
-        HANDLERS[Opcodes.C_ALIVE & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_ALIVE & 0xFF] = (buffer, client) -> {
             handleAlive(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_ALIVE & 0xFF] = false;
-        HANDLERS[Opcodes.C_PERSONAL_SHOP & 0xFF] = CPacketHandler::decodePersonalShop;
+        gPacketTableFromClient[Opcodes.C_PERSONAL_SHOP & 0xFF] = UserPacketCallbackMap::decodePersonalShop;
         DIRECT_OPCODE[Opcodes.C_PERSONAL_SHOP & 0xFF] = false;
-        HANDLERS[Opcodes.C_DELETE_CHARACTER & 0xFF] = CPacketHandler::CharacterDeletePacket;
+        gPacketTableFromClient[Opcodes.C_DELETE_CHARACTER & 0xFF] = UserPacketCallbackMap::CharacterDeletePacket;
         DIRECT_OPCODE[Opcodes.C_DELETE_CHARACTER & 0xFF] = false;
-        HANDLERS[Opcodes.C_SHUTDOWN & 0xFF] = CPacketHandler::decodePledgeContent;
+        gPacketTableFromClient[Opcodes.C_SHUTDOWN & 0xFF] = UserPacketCallbackMap::decodePledgeContent;
         DIRECT_OPCODE[Opcodes.C_SHUTDOWN & 0xFF] = false;
-        HANDLERS[Opcodes.C_WHO & 0xFF] = CPacketHandler::decodeWho;
+        gPacketTableFromClient[Opcodes.C_WHO & 0xFF] = UserPacketCallbackMap::decodeWho;
         DIRECT_OPCODE[Opcodes.C_WHO & 0xFF] = false;
-        HANDLERS[Opcodes.C_WHO_PARTY & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_WHO_PARTY & 0xFF] = (buffer, client) -> {
             handleWhoParty(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_WHO_PARTY & 0xFF] = false;
-        HANDLERS[Opcodes.C_RETURN_SUMMON & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_RETURN_SUMMON & 0xFF] = (buffer, client) -> {
             handleReturnSummon(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_RETURN_SUMMON & 0xFF] = false;
-        HANDLERS[Opcodes.C_QUERY_PERSONAL_SHOP & 0xFF] = CPacketHandler::decodeQueryPersonalShop;
+        gPacketTableFromClient[Opcodes.C_QUERY_PERSONAL_SHOP & 0xFF] = UserPacketCallbackMap::decodeQueryPersonalShop;
         DIRECT_OPCODE[Opcodes.C_QUERY_PERSONAL_SHOP & 0xFF] = false;
-        HANDLERS[Opcodes.C_EXTENDED_PROTOBUF & 0xFF] = CPacketHandler::decodeExtendedMultiplexed;
+        gPacketTableFromClient[Opcodes.C_EXTENDED_PROTOBUF & 0xFF] = UserPacketCallbackMap::decodeExtendedMultiplexed;
         DIRECT_OPCODE[Opcodes.C_EXTENDED_PROTOBUF & 0xFF] = false;
-        HANDLERS[Opcodes.C_CANCEL_XCHG & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_CANCEL_XCHG & 0xFF] = (buffer, client) -> {
             handleCancelXchg(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_CANCEL_XCHG & 0xFF] = false;
-        HANDLERS[Opcodes.C_NPC_ITEM_CONTROL & 0xFF] = CPacketHandler::decodeNpcItemControl;
+        gPacketTableFromClient[Opcodes.C_NPC_ITEM_CONTROL & 0xFF] = UserPacketCallbackMap::decodeNpcItemControl;
         DIRECT_OPCODE[Opcodes.C_NPC_ITEM_CONTROL & 0xFF] = false;
-        HANDLERS[Opcodes.C_LEAVE_PARTY & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_LEAVE_PARTY & 0xFF] = (buffer, client) -> {
             handleLeaveParty(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_LEAVE_PARTY & 0xFF] = false;
-        HANDLERS[Opcodes.C_ADD_XCHG & 0xFF] = CPacketHandler::TradeAddItemsPacket;
+        gPacketTableFromClient[Opcodes.C_ADD_XCHG & 0xFF] = UserPacketCallbackMap::TradeAddItemsPacket;
         DIRECT_OPCODE[Opcodes.C_ADD_XCHG & 0xFF] = false;
-        HANDLERS[Opcodes.C_WAREHOUSE_CONTROL & 0xFF] = CPacketHandler::decodeWarehouseControl;
+        gPacketTableFromClient[Opcodes.C_WAREHOUSE_CONTROL & 0xFF] = UserPacketCallbackMap::decodeWarehouseControl;
         DIRECT_OPCODE[Opcodes.C_WAREHOUSE_CONTROL & 0xFF] = false;
-        HANDLERS[Opcodes.C_MARRIAGE & 0xFF] = CPacketHandler::decodeMarriage;
+        gPacketTableFromClient[Opcodes.C_MARRIAGE & 0xFF] = UserPacketCallbackMap::decodeMarriage;
         DIRECT_OPCODE[Opcodes.C_MARRIAGE & 0xFF] = false;
-        HANDLERS[Opcodes.C_CHANNEL & 0xFF] = CPacketHandler::decodeChannel;
+        gPacketTableFromClient[Opcodes.C_CHANNEL & 0xFF] = UserPacketCallbackMap::decodeChannel;
         DIRECT_OPCODE[Opcodes.C_CHANNEL & 0xFF] = false;
-        HANDLERS[Opcodes.C_GET & 0xFF] = CPacketHandler::GetItemPacket;
+        gPacketTableFromClient[Opcodes.C_GET & 0xFF] = UserPacketCallbackMap::GetItemPacket;
         DIRECT_OPCODE[Opcodes.C_GET & 0xFF] = true;
-        HANDLERS[Opcodes.C_CREATE_CUSTOM_CHARACTER & 0xFF] = CPacketHandler::CharacterCreatePacket;
+        gPacketTableFromClient[Opcodes.C_CREATE_CUSTOM_CHARACTER & 0xFF] = UserPacketCallbackMap::CharacterCreatePacket;
         DIRECT_OPCODE[Opcodes.C_CREATE_CUSTOM_CHARACTER & 0xFF] = false;
-        HANDLERS[Opcodes.C_DEAD_RESTART & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_DEAD_RESTART & 0xFF] = (buffer, client) -> {
             handleDeadRestart(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_DEAD_RESTART & 0xFF] = false;
-        HANDLERS[Opcodes.C_QUERY_CASTLE_SECURITY & 0xFF] = CPacketHandler::decodeQueryCastleSecurity;
+        gPacketTableFromClient[Opcodes.C_QUERY_CASTLE_SECURITY & 0xFF] = UserPacketCallbackMap::decodeQueryCastleSecurity;
         DIRECT_OPCODE[Opcodes.C_QUERY_CASTLE_SECURITY & 0xFF] = false;
-        HANDLERS[Opcodes.C_GIVE & 0xFF] = CPacketHandler::decodeGiveItem;
+        gPacketTableFromClient[Opcodes.C_GIVE & 0xFF] = UserPacketCallbackMap::decodeGiveItem;
         DIRECT_OPCODE[Opcodes.C_GIVE & 0xFF] = false;
-        HANDLERS[Opcodes.C_CHAT & 0xFF] = CPacketHandler::SayPacket2;
+        gPacketTableFromClient[Opcodes.C_CHAT & 0xFF] = UserPacketCallbackMap::SayPacket2;
         DIRECT_OPCODE[Opcodes.C_CHAT & 0xFF] = false;
-        HANDLERS[Opcodes.C_FIX & 0xFF] = CPacketHandler::decodeFix;
+        gPacketTableFromClient[Opcodes.C_FIX & 0xFF] = UserPacketCallbackMap::decodeFix;
         DIRECT_OPCODE[Opcodes.C_FIX & 0xFF] = false;
-        HANDLERS[Opcodes.C_QUERY_BUDDY & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_QUERY_BUDDY & 0xFF] = (buffer, client) -> {
             handleQueryBuddy(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_QUERY_BUDDY & 0xFF] = false;
-        HANDLERS[Opcodes.C_FAR_ATTACK & 0xFF] = CPacketHandler::AttackPacket;
+        gPacketTableFromClient[Opcodes.C_FAR_ATTACK & 0xFF] = UserPacketCallbackMap::AttackPacket;
         DIRECT_OPCODE[Opcodes.C_FAR_ATTACK & 0xFF] = true;
-        HANDLERS[Opcodes.C_CHANGE_DIRECTION & 0xFF] = CPacketHandler::decodeChangeHeading;
+        gPacketTableFromClient[Opcodes.C_CHANGE_DIRECTION & 0xFF] = UserPacketCallbackMap::decodeChangeHeading;
         DIRECT_OPCODE[Opcodes.C_CHANGE_DIRECTION & 0xFF] = true;
-        HANDLERS[Opcodes.C_EXTENDED & 0xFF] = CPacketHandler::decodeExtended;
+        gPacketTableFromClient[Opcodes.C_EXTENDED & 0xFF] = UserPacketCallbackMap::decodeExtended;
         DIRECT_OPCODE[Opcodes.C_EXTENDED & 0xFF] = false;
-        HANDLERS[Opcodes.C_READ_NEWS & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_READ_NEWS & 0xFF] = (buffer, client) -> {
             handleReadNews(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_READ_NEWS & 0xFF] = false;
-        HANDLERS[Opcodes.C_OPEN & 0xFF] = CPacketHandler::decodeOpen;
+        gPacketTableFromClient[Opcodes.C_OPEN & 0xFF] = UserPacketCallbackMap::decodeOpen;
         DIRECT_OPCODE[Opcodes.C_OPEN & 0xFF] = false;
-        HANDLERS[Opcodes.C_DUEL & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_DUEL & 0xFF] = (buffer, client) -> {
             handleDuel(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_DUEL & 0xFF] = false;
-        HANDLERS[Opcodes.C_ASK_XCHG & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_ASK_XCHG & 0xFF] = (buffer, client) -> {
             handleAskXchg(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_ASK_XCHG & 0xFF] = false;
-        HANDLERS[Opcodes.C_FIXABLE_ITEM & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_FIXABLE_ITEM & 0xFF] = (buffer, client) -> {
             handleFixableItem(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_FIXABLE_ITEM & 0xFF] = false;
-        HANDLERS[Opcodes.C_CHECK_PK & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_CHECK_PK & 0xFF] = (buffer, client) -> {
             handleCheckPk(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_CHECK_PK & 0xFF] = false;
-        HANDLERS[Opcodes.C_TITLE & 0xFF] = CPacketHandler::GiveNicknamePacket;
+        gPacketTableFromClient[Opcodes.C_TITLE & 0xFF] = UserPacketCallbackMap::GiveNicknamePacket;
         DIRECT_OPCODE[Opcodes.C_TITLE & 0xFF] = false;
-        HANDLERS[Opcodes.C_DELETE_BOOKMARK & 0xFF] = CPacketHandler::decodeDeleteBookmark;
+        gPacketTableFromClient[Opcodes.C_DELETE_BOOKMARK & 0xFF] = UserPacketCallbackMap::decodeDeleteBookmark;
         DIRECT_OPCODE[Opcodes.C_DELETE_BOOKMARK & 0xFF] = false;
-        HANDLERS[Opcodes.C_QUIT & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_QUIT & 0xFF] = (buffer, client) -> {
             handleQuit(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_QUIT & 0xFF] = false;
-        HANDLERS[Opcodes.C_BOARD_READ & 0xFF] = CPacketHandler::decodeBoardRead;
+        gPacketTableFromClient[Opcodes.C_BOARD_READ & 0xFF] = UserPacketCallbackMap::decodeBoardRead;
         DIRECT_OPCODE[Opcodes.C_BOARD_READ & 0xFF] = false;
-        HANDLERS[Opcodes.C_EMBLEM & 0xFF] = CPacketHandler::decodeEmblem;
+        gPacketTableFromClient[Opcodes.C_EMBLEM & 0xFF] = UserPacketCallbackMap::decodeEmblem;
         DIRECT_OPCODE[Opcodes.C_EMBLEM & 0xFF] = false;
-        HANDLERS[Opcodes.C_REMOVE_BUDDY & 0xFF] = CPacketHandler::FriendRemove;
+        gPacketTableFromClient[Opcodes.C_REMOVE_BUDDY & 0xFF] = UserPacketCallbackMap::FriendRemove;
         DIRECT_OPCODE[Opcodes.C_REMOVE_BUDDY & 0xFF] = false;
-        HANDLERS[Opcodes.C_EXCHANGE_SPELL & 0xFF] = CPacketHandler::decodeExchangeSpell;
+        gPacketTableFromClient[Opcodes.C_EXCHANGE_SPELL & 0xFF] = UserPacketCallbackMap::decodeExchangeSpell;
         DIRECT_OPCODE[Opcodes.C_EXCHANGE_SPELL & 0xFF] = false;
-        HANDLERS[Opcodes.C_BANISH_PARTY & 0xFF] = CPacketHandler::decodeBanishParty;
+        gPacketTableFromClient[Opcodes.C_BANISH_PARTY & 0xFF] = UserPacketCallbackMap::decodeBanishParty;
         DIRECT_OPCODE[Opcodes.C_BANISH_PARTY & 0xFF] = false;
-        HANDLERS[Opcodes.C_LOGOUT & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_LOGOUT & 0xFF] = (buffer, client) -> {
             handleLogout(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_LOGOUT & 0xFF] = false;
-        HANDLERS[Opcodes.C_INVITE_PARTY_TARGET & 0xFF] = CPacketHandler::decodeInvitePartyTarget;
+        gPacketTableFromClient[Opcodes.C_INVITE_PARTY_TARGET & 0xFF] = UserPacketCallbackMap::decodeInvitePartyTarget;
         DIRECT_OPCODE[Opcodes.C_INVITE_PARTY_TARGET & 0xFF] = false;
-        HANDLERS[Opcodes.C_BOARD_DELETE & 0xFF] = CPacketHandler::decodeBoardDelete;
+        gPacketTableFromClient[Opcodes.C_BOARD_DELETE & 0xFF] = UserPacketCallbackMap::decodeBoardDelete;
         DIRECT_OPCODE[Opcodes.C_BOARD_DELETE & 0xFF] = false;
-        HANDLERS[Opcodes.C_EXIT_GHOST & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_EXIT_GHOST & 0xFF] = (buffer, client) -> {
             handleExitGhost(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_EXIT_GHOST & 0xFF] = false;
-        HANDLERS[Opcodes.C_CHECK_INVENTORY & 0xFF] = CPacketHandler::decodeCheckInventory;
+        gPacketTableFromClient[Opcodes.C_CHECK_INVENTORY & 0xFF] = UserPacketCallbackMap::decodeCheckInventory;
         DIRECT_OPCODE[Opcodes.C_CHECK_INVENTORY & 0xFF] = false;
-        HANDLERS[Opcodes.C_ENTER_PORTAL & 0xFF] = CPacketHandler::decodeEnterPortal;
+        gPacketTableFromClient[Opcodes.C_ENTER_PORTAL & 0xFF] = UserPacketCallbackMap::decodeEnterPortal;
         DIRECT_OPCODE[Opcodes.C_ENTER_PORTAL & 0xFF] = false;
-        HANDLERS[Opcodes.C_THROW & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_THROW & 0xFF] = (buffer, client) -> {
             handleThrow(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_THROW & 0xFF] = false;
-        HANDLERS[Opcodes.C_GOTO_PORTAL & 0xFF] = CPacketHandler::decodeEnterPortal;
+        gPacketTableFromClient[Opcodes.C_GOTO_PORTAL & 0xFF] = UserPacketCallbackMap::decodeEnterPortal;
         DIRECT_OPCODE[Opcodes.C_GOTO_PORTAL & 0xFF] = false;
-        HANDLERS[Opcodes.C_WAR & 0xFF] = CPacketHandler::decodeWar;
+        gPacketTableFromClient[Opcodes.C_WAR & 0xFF] = UserPacketCallbackMap::decodeWar;
         DIRECT_OPCODE[Opcodes.C_WAR & 0xFF] = false;
-        HANDLERS[Opcodes.C_BOARD_WRITE & 0xFF] = CPacketHandler::decodeBoardWrite;
+        gPacketTableFromClient[Opcodes.C_BOARD_WRITE & 0xFF] = UserPacketCallbackMap::decodeBoardWrite;
         DIRECT_OPCODE[Opcodes.C_BOARD_WRITE & 0xFF] = false;
-        HANDLERS[Opcodes.C_VOICE_CHAT & 0xFF] = CPacketHandler::decodeReturnStatus;
+        gPacketTableFromClient[Opcodes.C_VOICE_CHAT & 0xFF] = UserPacketCallbackMap::decodeReturnStatus;
         DIRECT_OPCODE[Opcodes.C_VOICE_CHAT & 0xFF] = false;
-        HANDLERS[Opcodes.C_JOIN_PLEDGE & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_JOIN_PLEDGE & 0xFF] = (buffer, client) -> {
             handleJoinPledge(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_JOIN_PLEDGE & 0xFF] = false;
-        HANDLERS[Opcodes.C_TAX & 0xFF] = CPacketHandler::decodeTax;
+        gPacketTableFromClient[Opcodes.C_TAX & 0xFF] = UserPacketCallbackMap::decodeTax;
         DIRECT_OPCODE[Opcodes.C_TAX & 0xFF] = false;
-        HANDLERS[Opcodes.C_BUY_SELL & 0xFF] = CPacketHandler::decodeBuySell;
+        gPacketTableFromClient[Opcodes.C_BUY_SELL & 0xFF] = UserPacketCallbackMap::decodeBuySell;
         DIRECT_OPCODE[Opcodes.C_BUY_SELL & 0xFF] = false;
-        HANDLERS[Opcodes.C_ONOFF & 0xFF] = CPacketHandler::decodeOnOff;
+        gPacketTableFromClient[Opcodes.C_ONOFF & 0xFF] = UserPacketCallbackMap::decodeOnOff;
         DIRECT_OPCODE[Opcodes.C_ONOFF & 0xFF] = false;
-        HANDLERS[Opcodes.C_DEPOSIT & 0xFF] = CPacketHandler::decodeDeposit;
+        gPacketTableFromClient[Opcodes.C_DEPOSIT & 0xFF] = UserPacketCallbackMap::decodeDeposit;
         DIRECT_OPCODE[Opcodes.C_DEPOSIT & 0xFF] = false;
-        HANDLERS[Opcodes.C_BOARD_LIST & 0xFF] = CPacketHandler::decodeBoardList;
+        gPacketTableFromClient[Opcodes.C_BOARD_LIST & 0xFF] = UserPacketCallbackMap::decodeBoardList;
         DIRECT_OPCODE[Opcodes.C_BOARD_LIST & 0xFF] = false;
-        HANDLERS[Opcodes.C_MAIL & 0xFF] = CPacketHandler::decodeMail;
+        gPacketTableFromClient[Opcodes.C_MAIL & 0xFF] = UserPacketCallbackMap::decodeMail;
         DIRECT_OPCODE[Opcodes.C_MAIL & 0xFF] = false;
-        HANDLERS[Opcodes.C_PLEDGE_WATCH & 0xFF] = CPacketHandler::decodePledgeWatch;
+        gPacketTableFromClient[Opcodes.C_PLEDGE_WATCH & 0xFF] = UserPacketCallbackMap::decodePledgeWatch;
         DIRECT_OPCODE[Opcodes.C_PLEDGE_WATCH & 0xFF] = false;
-        HANDLERS[Opcodes.C_RESTART & 0xFF] = (buffer, client) -> {
+        gPacketTableFromClient[Opcodes.C_RESTART & 0xFF] = (buffer, client) -> {
             handleCharSelect(client);
             return true;
         };
         DIRECT_OPCODE[Opcodes.C_RESTART & 0xFF] = false;
-        HANDLERS[Opcodes.C_SUMMON & 0xFF] = CPacketHandler::decodeCallPlayer;
+        gPacketTableFromClient[Opcodes.C_SUMMON & 0xFF] = UserPacketCallbackMap::decodeCallPlayer;
         DIRECT_OPCODE[Opcodes.C_SUMMON & 0xFF] = false;
-        HANDLERS[Opcodes.C_CHAT_PARTY_CONTROL & 0xFF] = CPacketHandler::decodeChatPartyControl;
+        gPacketTableFromClient[Opcodes.C_CHAT_PARTY_CONTROL & 0xFF] = UserPacketCallbackMap::decodeChatPartyControl;
         DIRECT_OPCODE[Opcodes.C_CHAT_PARTY_CONTROL & 0xFF] = false;
-        HANDLERS[Opcodes.C_LOGIN & 0xFF] = CPacketHandler::LoginPacket;
+        gPacketTableFromClient[Opcodes.C_LOGIN & 0xFF] = UserPacketCallbackMap::LoginPacket;
         DIRECT_OPCODE[Opcodes.C_LOGIN & 0xFF] = false;
-        HANDLERS[Opcodes.C_ENTER_WORLD & 0xFF] = CPacketHandler::EnterWorldPacket;
+        gPacketTableFromClient[Opcodes.C_ENTER_WORLD & 0xFF] = UserPacketCallbackMap::EnterWorldPacket;
         DIRECT_OPCODE[Opcodes.C_ENTER_WORLD & 0xFF] = false;
-        HANDLERS[Opcodes.C_ATTACK_CONTINUE & 0xFF] = CPacketHandler::decodeAutoAttack;
+        gPacketTableFromClient[Opcodes.C_ATTACK_CONTINUE & 0xFF] = UserPacketCallbackMap::decodeAutoAttack;
         DIRECT_OPCODE[Opcodes.C_ATTACK_CONTINUE & 0xFF] = true;
-        HANDLERS[Opcodes.C_CREATE_PLEDGE & 0xFF] = CPacketHandler::decodeCreatePledge;
+        gPacketTableFromClient[Opcodes.C_CREATE_PLEDGE & 0xFF] = UserPacketCallbackMap::decodeCreatePledge;
         DIRECT_OPCODE[Opcodes.C_CREATE_PLEDGE & 0xFF] = false;
-        HANDLERS[Opcodes.C_BAN_MEMBER & 0xFF] = CPacketHandler::decodeBanMember;
+        gPacketTableFromClient[Opcodes.C_BAN_MEMBER & 0xFF] = UserPacketCallbackMap::decodeBanMember;
         DIRECT_OPCODE[Opcodes.C_BAN_MEMBER & 0xFF] = false;
-        HANDLERS[Opcodes.C_ACTION & 0xFF] = CPacketHandler::decodeExtraCommand;
+        gPacketTableFromClient[Opcodes.C_ACTION & 0xFF] = UserPacketCallbackMap::decodeExtraCommand;
         DIRECT_OPCODE[Opcodes.C_ACTION & 0xFF] = false;
-        HANDLERS[Opcodes.C_CHANGE_CASTLE_SECURITY & 0xFF] = CPacketHandler::decodeChangeCastleSecurity;
+        gPacketTableFromClient[Opcodes.C_CHANGE_CASTLE_SECURITY & 0xFF] = UserPacketCallbackMap::decodeChangeCastleSecurity;
         DIRECT_OPCODE[Opcodes.C_CHANGE_CASTLE_SECURITY & 0xFF] = false;
-        HANDLERS[Opcodes.C_ANSWER & 0xFF] = CPacketHandler::decodeAnswer;
+        gPacketTableFromClient[Opcodes.C_ANSWER & 0xFF] = UserPacketCallbackMap::decodeAnswer;
         DIRECT_OPCODE[Opcodes.C_ANSWER & 0xFF] = false;
-        HANDLERS[Opcodes.C_DESTROY_ITEM & 0xFF] = CPacketHandler::DestroyItem;
+        gPacketTableFromClient[Opcodes.C_DESTROY_ITEM & 0xFF] = UserPacketCallbackMap::DestroyItem;
         DIRECT_OPCODE[Opcodes.C_DESTROY_ITEM & 0xFF] = false;
-        HANDLERS[Opcodes.C_DIALOG & 0xFF] = CPacketHandler::decodeNpcTalk;
+        gPacketTableFromClient[Opcodes.C_DIALOG & 0xFF] = UserPacketCallbackMap::decodeNpcTalk;
         DIRECT_OPCODE[Opcodes.C_DIALOG & 0xFF] = false;
-        HANDLERS[Opcodes.C_BUY_SPELL & 0xFF] = CPacketHandler::decodeBuySpell;
+        gPacketTableFromClient[Opcodes.C_BUY_SPELL & 0xFF] = UserPacketCallbackMap::decodeBuySpell;
         DIRECT_OPCODE[Opcodes.C_BUY_SPELL & 0xFF] = false;
     }
 
-    private CPacketHandler() {}
+    private UserPacketCallbackMap() {}
 
     public static boolean isFastOpcode(int opcode) {
-        return opcode >= 0 && opcode < 256 && HANDLERS[opcode] != null;
+        return opcode >= 0 && opcode < 256 && gPacketTableFromClient[opcode] != DummyUserPacket;
     }
 
     public static boolean isDirectOpcode(int opcode) {
@@ -441,7 +443,13 @@ public final class CPacketHandler {
         final int y = buffer.readShort(3) & 0xFFFF;
         final int h = buffer.readByte(5) & 0xFF;
 
-        handleMove(client, x, y, h);
+        if (client.isConnected()) {
+            try {
+                move(client, x, y, h);
+            } catch (Throwable failure) {
+                reportHandlerError(failure);
+            }
+        }
         return true;
     }
 
@@ -457,7 +465,13 @@ public final class CPacketHandler {
         final int x = buffer.readShort(5) & 0xFFFF;
         final int y = buffer.readShort(7) & 0xFFFF;
 
-        handleAttack(client, targetId, x, y);
+        if (client.isConnected()) {
+            try {
+                attack(client, targetId, x, y);
+            } catch (Throwable failure) {
+                reportHandlerError(failure);
+            }
+        }
         return true;
     }
 
@@ -471,7 +485,13 @@ public final class CPacketHandler {
         }
         final int targetId = buffer.readInt(1);
 
-        handleAutoAttack(client, targetId);
+        if (client.isConnected()) {
+            try {
+                autoAttack(client, targetId);
+            } catch (Throwable failure) {
+                reportHandlerError(failure);
+            }
+        }
         return true;
     }
 
@@ -550,7 +570,13 @@ public final class CPacketHandler {
             break;
         }
 
-        handleUseSkill(client, skillId, targetId, targetX, targetY, message);
+        if (client.isConnected()) {
+            try {
+                useSkill(client, skillId, targetId, targetX, targetY, message);
+            } catch (Throwable failure) {
+                reportHandlerError(failure);
+            }
+        }
         return true;
     }
 
@@ -3254,7 +3280,7 @@ public final class CPacketHandler {
     }
 
     private static final Logger HANDLER_LOG =
-            Logger.getLogger(CPacketHandler.class.getName());
+            Logger.getLogger(UserPacketCallbackMap.class.getName());
 
 
     private static void reportHandlerError(Throwable failure) {
@@ -3277,42 +3303,6 @@ public final class CPacketHandler {
             p1, // locY
             p2  // objectId
             );
-        } catch (Throwable failure) {
-            reportHandlerError(failure);
-        }
-    }
-
-    static void handleMove( CUserSocket client, int p0, int p1, int p2 ) {
-        if (!client.isConnected()) return;
-        try {
-            move(client, p0, p1, p2);
-        } catch (Throwable failure) {
-            reportHandlerError(failure);
-        }
-    }
-
-    static void handleAttack( CUserSocket client, int p0, int p1, int p2 ) {
-        if (!client.isConnected()) return;
-        try {
-            attack(client, p0, p1, p2);
-        } catch (Throwable failure) {
-            reportHandlerError(failure);
-        }
-    }
-
-    static void handleAutoAttack( CUserSocket client, int p0 ) {
-        if (!client.isConnected()) return;
-        try {
-            autoAttack(client, p0);
-        } catch (Throwable failure) {
-            reportHandlerError(failure);
-        }
-    }
-
-    static void handleUseSkill( CUserSocket client, int p0, int p1, int p2, int p3, String s0 ) {
-        if (!client.isConnected()) return;
-        try {
-            useSkill(client, p0, p1, p2, p3, s0);
         } catch (Throwable failure) {
             reportHandlerError(failure);
         }

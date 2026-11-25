@@ -19,7 +19,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.packet.CBytesPacket;
-import l1j.server.server.model.network.packet.CPacketHandler;
+import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
@@ -43,8 +43,8 @@ public final class GameFanoutVerification {
         Set<CUserSocket> recipients = ConcurrentHashMap.newKeySet();
         var encodes = new AtomicInteger();
         var denials = new AtomicInteger();
-        var previous = CPacketHandler.HANDLERS[ALIVE];
-        CPacketHandler.HANDLERS[ALIVE] = (request, client) -> {
+        var previous = UserPacketCallbackMap.gPacketTableFromClient[ALIVE];
+        UserPacketCallbackMap.gPacketTableFromClient[ALIVE] = (request, client) -> {
             int sequence = request.readInt();
             if (sequence != BROADCAST) {
                 recipients.add(client.getConnection());
@@ -90,7 +90,7 @@ public final class GameFanoutVerification {
             } finally {
                 try { Server.stopLoginServer(); }
                 finally {
-                    CPacketHandler.HANDLERS[ALIVE] = previous;
+                    UserPacketCallbackMap.gPacketTableFromClient[ALIVE] = previous;
                     PlaySupportWindow.stopIndependent();
                     var owners = CIOThreadCallback.getInstance();
                     owners.shutdown();
