@@ -1,0 +1,130 @@
+name: RKern 1024 connection steady P99 recheck
+on:
+  push:
+    branches: ['rkern/nc-network-responsibility-20261125']
+    paths: ['.github/workflows/nc-network-p99-recheck.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  recheck:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    strategy:
+      fail-fast: false
+      matrix:
+        window: [8, 1]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            rkern/src
+            rkern/docs/jproring_cio_integration_20261120
+            rkern/docs/jproring_selector_transport_20261120
+      - uses: actions/checkout@v4
+        with:
+          ref: 7432cb2b284460ece049691878c0fe8ea232c4e3
+          path: pre-extraction
+          persist-credentials: false
+          sparse-checkout: rkern/src
+      - uses: actions/checkout@v4
+        with:
+          ref: 993230fcf213cb703072a9bcbb9b9b1817e2d044
+          path: pre-raw-only
+          persist-credentials: false
+          sparse-checkout: rkern/src
+      - name: Six counterbalanced production TCP trials per revision
+        env:
+          WINDOW: ${{ matrix.window }}
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 -u - <<'PY'
+          import csv, importlib.util, itertools, json, os, platform, statistics, subprocess
+          from pathlib import Path
+          from types import SimpleNamespace
+          root=Path.cwd()
+          fixture=root/"rkern/docs/jproring_cio_integration_20261120/run_game_ab.py"
+          spec=importlib.util.spec_from_file_location("bench",fixture)
+          mod=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+          window=int(os.environ["WINDOW"])
+          mod.WORK["load1024"]=(1024,window,2,256,"mixed")
+          args=SimpleNamespace(warmup_ms=10000,measure_ms=15000,jfr=False,profile_writes=False,sample_resources=True)
+          work=Path(os.environ["RUNNER_TEMP"])/"p99-work"
+          work.mkdir()
+          output=Path(os.environ["RUNNER_TEMP"])/"benchmark"
+          output.mkdir()
+          sources={"baseline":root/"pre-extraction/rkern","phase6":root/"pre-raw-only/rkern","current":root/"rkern"}
+          env={"window":window,"clients":1024,"payload_bytes":256,"owners":2,"warmup_ms":10000,"measure_ms":15000,
+               "kernel":platform.release(),"cpu_affinity":sorted(os.sched_getaffinity(0)),
+               "java":subprocess.check_output(["java","-version"],stderr=subprocess.STDOUT,text=True),
+               "cpu_model":Path("/proc/cpuinfo").read_text().split("model name")[1].splitlines()[0].strip(),
+               "revisions":{k:subprocess.check_output(["git","rev-parse","HEAD"],cwd=v,text=True).strip() for k,v in sources.items()}}
+          (output/"environment.json").write_text(json.dumps(env,indent=2))
+          print("ENVIRONMENT",json.dumps(env),flush=True)
+          targets={}
+          for name,source in sources.items():
+              classes=work/name
+              classes.mkdir()
+              cp=mod.classpath(classes,work/"deps")
+              mod.compile_java(cp,classes,False,source_root=source)
+              targets[name]=cp
+          orders=list(itertools.permutations(targets))
+          rows=[]
+          errors=[]
+          with (output/"results.csv").open("w",newline="") as f:
+              writer=csv.writer(f)
+              writer.writerow(mod.FIELDS)
+              for trial,order in enumerate(orders,1):
+                  for variant in order:
+                      logs=output/"logs"/variant
+                      logs.mkdir(parents=True,exist_ok=True)
+                      try:
+                          row=mod.measure(targets[variant],work,args,trial,"load1024","off",logs)
+                      except (OSError,RuntimeError,subprocess.SubprocessError) as e:
+                          errors.append({"trial":trial,"variant":variant,"error":str(e)})
+                          print("FAILED",variant,trial,str(e),flush=True)
+                          continue
+                      row=[*row,variant]
+                      writer.writerow(row)
+                      f.flush()
+                      rows.append(dict(zip(mod.FIELDS,row)))
+                      print("PASS",variant,*row,flush=True)
+          (output/"failures.json").write_text(json.dumps(errors,indent=2))
+          keys=("requests_per_s","p50_us","p95_us","p99_us","p999_us","server_cpu_ns_per_op","server_alloc_bytes_per_op","send_rejections")
+          summary={}
+          for variant in targets:
+              group=[r for r in rows if r["variant"]==variant]
+              if not group: continue
+              summary[variant]={"trials":len(group)}
+              for k in keys:
+                  vals=[float(r[k]) for r in group if r[k]!="NA"]
+                  if vals: summary[variant][k]={"median":statistics.median(vals),"min":min(vals),"max":max(vals)}
+          for left,right in (("baseline","phase6"),("phase6","current"),("baseline","current")):
+              if left not in summary or right not in summary: continue
+              changes={}
+              for k in ("requests_per_s","p99_us","p999_us","server_cpu_ns_per_op"):
+                  a={r["trial"]:float(r[k]) for r in rows if r["variant"]==left}
+                  b={r["trial"]:float(r[k]) for r in rows if r["variant"]==right}
+                  diffs=[100*(b[i]/a[i]-1) for i in a.keys() & b.keys() if a[i]]
+                  if diffs: changes[k]={"median_pct":statistics.median(diffs),"min_pct":min(diffs),"max_pct":max(diffs),"paired_trials":len(diffs)}
+              summary[left+"_to_"+right]=changes
+          print("STEADY_SUMMARY",json.dumps(summary),flush=True)
+          (output/"summary.json").write_text(json.dumps(summary,indent=2))
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as f:
+              f.write("### 1024 connections, window "+str(window)+"\n\n")
+              f.write("| Revision | Trials | requests/s | p99 (us) | p99.9 (us) | CPU ns/request |\n|---|---:|---:|---:|---:|---:|\n")
+              for v in targets:
+                  if v not in summary: continue
+                  x=summary[v]
+                  f.write("| "+v+" | "+str(x["trials"])+" | "+" | ".join(f'{x[k]["median"]:.3f}' for k in ("requests_per_s","p99_us","p999_us","server_cpu_ns_per_op"))+" |\n")
+          if errors or len(rows)!=18: raise SystemExit("Incomplete benchmark: "+str(errors))
+          if any(float(r["send_rejections"])!=0 for r in rows): raise SystemExit("SEND rejection detected")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: network-p99-steady-window-${{ matrix.window }}
+          path: ${{ runner.temp }}/benchmark
+          if-no-files-found: warn
