@@ -9,6 +9,7 @@ on:
       - 'rkern/src/l1j/server/server/model/CNpc*.java'
       - 'rkern/src/l1j/server/server/datatables/CNpcMakerDB.java'
       - 'rkern/src/l1j/server/server/datatables/NpcSpawnTable.java'
+      - 'rkern/src/l1j/server/server/command/executor/L1NpcDown.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1PetInstance.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1SummonInstance.java'
@@ -206,6 +207,8 @@ jobs:
           print("Legacy spawn references:", flush=True)
           legacy_spawn = subprocess.run(["git", "grep", "-nE", "(^|[^[:alnum:]_])(L1Spawn|SpawnTable)([^[:alnum:]_]|$)", "--", "rkern/src"], capture_output=True, text=True)
           print(legacy_spawn.stdout, flush=True)
+          if legacy_spawn.returncode != 1:
+              raise SystemExit("Legacy spawn source references remain or audit failed")
           print(f"Production Java sources: {len(sources) - 15}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
