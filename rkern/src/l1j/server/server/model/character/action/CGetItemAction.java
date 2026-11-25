@@ -102,7 +102,7 @@ public final class CGetItemAction extends CNewAction {
                     final int count = (int) effectiveAmount;
                     ground.RequestPickItem(owner, pickedItem, count, () -> {
                         notifySinglePickup(owner, party, pickedItem);
-                        finalizePickup(owner, tId, count, pickedItem);
+                        finalizePickup(owner, tId, count, pickedItem, false);
                     });
                     return true;
                 }
@@ -129,7 +129,7 @@ public final class CGetItemAction extends CNewAction {
                 return true;
             }
 
-            finalizePickup(owner, tId, effectiveAmount, pickupItem);
+            finalizePickup(owner, tId, effectiveAmount, pickupItem, true);
             return true;
         } catch (Throwable t) {
             t.printStackTrace();
@@ -187,7 +187,8 @@ public final class CGetItemAction extends CNewAction {
         }
 
         /* 서버에서 pickup 금지로 표시한 item은 direct packet으로도 획득 불가. */
-        if (pickupItem.is_Not_PickUp_Item() || pickupItem.isGroundPickupPending()) {
+        if (pickupItem.is_Not_PickUp_Item() || pickupItem.isGroundPickupPending()
+                || pickupItem.isGroundDropUnsettled()) {
             return false;
         }
 
@@ -451,7 +452,7 @@ for (L1PcInstance member : party.getMembers()) {
     private static void finalizePickup(
             L1PcInstance owner,
             int tId,
-            long amount, L1ItemInstance item) {
+            long amount, L1ItemInstance item, boolean clearGiveItem) {
 
         final int attackId = owner.getId();
         final int attackHeading = owner.getHeading();
@@ -479,7 +480,7 @@ for (L1PcInstance member : party.getMembers()) {
         checkGlobalAnnouncement(owner, item);
 
         owner.getLight().turnOnOffLight();
-        item.setGiveItem(false);
+        if (clearGiveItem) item.setGiveItem(false);
 
         LoggerInstance.getInstance().addItemAction(
                 ItemActionType.Pickup,
