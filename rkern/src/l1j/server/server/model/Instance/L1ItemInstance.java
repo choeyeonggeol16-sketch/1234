@@ -343,6 +343,15 @@ public class L1ItemInstance extends L1Object {
                 && java.util.Objects.equals(a.getHotel_Town(),b.getHotel_Town());
     }
 
+    /** Source-side quantity/equipment admission only. Caller owns the source lock.
+     * Ownership, destination limits and durable transfer gates remain separate.
+     */
+    public boolean IsTransferableAmount(int amount) {
+        final int available = getCount();
+        return available > 0 && amount > 0 && amount <= available
+                && !isEquipped() && (isStackable() || amount == 1);
+    }
+
 	public boolean IsAddableAmount(int amount) {
 		final int before = _count;
 		final long after = (long) before + amount;
