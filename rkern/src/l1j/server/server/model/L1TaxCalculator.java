@@ -33,31 +33,33 @@ public class L1TaxCalculator {
 	}
 
 	public int calcTotalTaxPrice(int price) {
-		int taxCastle = price * _taxRatesCastle;
-		int taxTown = price * _taxRatesTown;
-		int taxWar = price * WAR_TAX_RATES;
-		return (taxCastle + taxTown + taxWar) / 100;
+		return Math.toIntExact(totalTaxLong(price));
 	}
 
-	// XXX 개별적으로 계산하기 때문에(위해), 둥근 오차가 나온다.
+	private long totalTaxLong(int price) {
+		return ((long) price * _taxRatesCastle + (long) price * _taxRatesTown
+				+ (long) price * WAR_TAX_RATES) / 100L;
+	}
+
+	// Preserve the original separate-tax rounding policy.
 	public int calcCastleTaxPrice(int price) {
-		return (price * _taxRatesCastle) / 100 - calcNationalTaxPrice(price);
+		return Math.toIntExact((long) price * _taxRatesCastle / 100L - calcNationalTaxPrice(price));
 	}
 
 	public int calcNationalTaxPrice(int price) {
-		return (price * _taxRatesCastle) / 100 / (100 / NATIONAL_TAX_RATES);
+		return Math.toIntExact((long) price * _taxRatesCastle / 100L / (100 / NATIONAL_TAX_RATES));
 	}
 
 	public int calcTownTaxPrice(int price) {
-		return (price * _taxRatesTown) / 100;
+		return Math.toIntExact((long) price * _taxRatesTown / 100L);
 	}
 
 	public int calcWarTaxPrice(int price) {
-		return (price * _taxRatesWar) / 100;
+		return Math.toIntExact((long) price * _taxRatesWar / 100L);
 	}
 
 	public int calcDiadTaxPrice(int price) {
-		return (price * _taxRatesWar) / 100 / (100 / DIAD_TAX_RATES);
+		return Math.toIntExact((long) price * _taxRatesWar / 100L / (100 / DIAD_TAX_RATES));
 	}
 
 	/**
@@ -68,6 +70,11 @@ public class L1TaxCalculator {
 	 * @return 과세 후의 가격
 	 */
 	public int layTax(int price) {
-		return price + calcTotalTaxPrice(price);
+		final long taxed = layTaxLong(price);
+		return (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, taxed));
+	}
+
+	public long layTaxLong(int price) {
+		return (long) price + totalTaxLong(price);
 	}
 }
