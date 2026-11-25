@@ -24,6 +24,7 @@ on:
       - rkern/nc-equipment-expiry-audit-20261125
       - rkern/nc-equipment-enchant-audit-20261125
       - rkern/nc-inventory-integration-audit-20261125
+      - rkern/nc-creature-parameter-core-20261125
   workflow_dispatch:
 permissions:
   contents: read
@@ -39,6 +40,7 @@ jobs:
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
             rkern/docs/inventory_weight_20261125
+            rkern/docs/nc_creature_stat_audit_20261125
       - name: Check bookmark field references
         run: |
           if grep -RnE '\.[[:space:]]*_bookmarks\b' rkern/src --include='*.java' --exclude=L1ItemInstance.java; then
@@ -83,6 +85,10 @@ jobs:
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/docs/inventory_weight_20261125/test_inventory_completion_race.py
+      - name: Verify base parameters
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/docs/nc_creature_stat_audit_20261125/test_base_parameters.py
       - name: Cache existing build dependencies
         uses: actions/cache@v4
         with:
