@@ -20,7 +20,7 @@ final class ClassPackageRewardReceipt {
 
     public static void useClassPackage(L1PcInstance pc, L1ItemInstance packageItem) {
         if (pc == null || packageItem == null || packageItem.getItemId() != 77799
-                || pc.getInventory().getItem(packageItem.getId()) != packageItem) return;
+                || pc.getInventory().GetByServerID(packageItem.getId()) != packageItem) return;
         final int type = pc.getType();
         final int classItem;
         switch (type) {

@@ -128,7 +128,7 @@ public class CUserInventory extends CInventory {
         if (!l1j.server.server.storage.CacheD.isWarehouseApplying())
             throw new IllegalStateException("Economy replay scope required");
         if (original != null) {
-            if (getItem(original.getId()) != original)
+            if (GetByServerID(original.getId()) != original)
                 throw new IllegalStateException("Economy source object changed");
             removeItemCountCache(original.getItemId(), original.getCount());
             if (image == null) {
@@ -234,7 +234,7 @@ public class CUserInventory extends CInventory {
             try { SC_ItemColor.send(_owner, original); }
             catch (RuntimeException failure) { receiptNoticeFailed("item-color", failure); }
         } else {
-            if (image == null || getItem(image.getId()) != null)
+            if (image == null || GetByServerID(image.getId()) != null)
                 throw new IllegalStateException("Economy destination object exists");
             image._cha = _owner;
             image.getLastStatus().updateAll();
@@ -278,7 +278,7 @@ public class CUserInventory extends CInventory {
                 final var bookmarks = BookmarkSlot.LoadItemSlots(null, templateId);
                 l1j.server.server.model.network.thread.CIOThreadCallback.getInstance().completeSessionReply(session, () -> {
                     if (_owner.getNetConnection() == session && session.getActiveChar() == _owner
-                            && _owner.getSessionStamp() == stamp && getItem(objectId) == image)
+                            && _owner.getSessionStamp() == stamp && GetByServerID(objectId) == image)
                         SC_PacketBox.send(_owner, SC_PacketBox.BOOKMARK, objectId, "$13719", bookmarks);
                 });
             });
@@ -289,12 +289,12 @@ public class CUserInventory extends CInventory {
     }
 
 	@Override
-	public int getItemCountDirect(int itemId) {
+	public int GetItemAmount(int itemId) {
 		return _itemCountMap.getOrDefault(itemId, 0);
 	}
 
 	@Override
-	public boolean isEquippedDirect(int itemId) {
+	public boolean IsEquippedByClassIDCached(int itemId) {
 		return _equippedCountMap.getOrDefault(itemId, 0) > 0;
 	}
 
@@ -388,7 +388,7 @@ public class CUserInventory extends CInventory {
     }
 
 	public int getWeight100() {
-		return calcWeight100(getWeight());
+		return calcWeight100(GetCarryingWeight());
 	}
 
 	public int calcWeight100(int weight) {
@@ -397,11 +397,11 @@ public class CUserInventory extends CInventory {
 	}
 
 	@Override
-	public int checkAddItem(L1Item item, int count) {
-		int code = super.checkAddItem(item, count);
+	public int CheckAddable(L1Item item, int count) {
+		int code = super.CheckAddable(item, count);
 		if (code == OK) {
 			final long addedWeight = (long) item.getWeight() * count / 1000L;
-			final long weight = getWeight() + addedWeight + 1L;
+			final long weight = GetCarryingWeight() + addedWeight + 1L;
 			final int maxWeight = _owner.getMaxWeight();
 			if (weight < 0 || addedWeight < 0 || maxWeight <= 0 || weight * 100L >= 240L * maxWeight)
 				return WEIGHT_OVER;
@@ -410,11 +410,11 @@ public class CUserInventory extends CInventory {
 	}
 
 	@Override
-	public int checkAddItem(L1ItemInstance item, int count) {
-		return checkAddItem(item, count, true);
+	public int CheckAddable(L1ItemInstance item, int count) {
+		return CheckAddable(item, count, true);
 	}
 
-	public int checkAddItem(L1ItemInstance item, int count, boolean message) {
+	public int CheckAddable(L1ItemInstance item, int count, boolean message) {
 		if (item == null) {
 			return -1;
 		}
@@ -423,7 +423,7 @@ public class CUserInventory extends CInventory {
 			return AMOUNT_OVER;
 		}
 
-		if (getSize() > MAX_SIZE || (getSize() == MAX_SIZE && (!item.isStackable() || !checkItem(item.getItem().getItemId())))) {
+		if (getSize() > MAX_SIZE || (getSize() == MAX_SIZE && (!item.isStackable() || !HaveItemByClassId(item.getItem().getItemId())))) {
 			if (message) {
 				sendOverMessage(263);
 			}
@@ -431,14 +431,14 @@ public class CUserInventory extends CInventory {
 		}
 
 		final long addedWeight = (long) item.getItem().getWeight() * count / 1000L;
-		final long weight = getWeight() + addedWeight + 1L;
+		final long weight = GetCarryingWeight() + addedWeight + 1L;
 		final int maxWeight = _owner.getMaxWeight();
 		if (weight < 0 || addedWeight < 0 || maxWeight <= 0 || weight * 100L >= 240L * maxWeight) {
 			if (message) sendOverMessage(82);
 			return WEIGHT_OVER;
 		}
 
-		L1ItemInstance itemExist = findItemId(item.getItemId());
+		L1ItemInstance itemExist = GetFirstItemByClassID(item.getItemId());
 		if (itemExist != null && (itemExist.getCount() < 0 || (long) itemExist.getCount() + count > 1_800_000_000L)) {
 			SC_ServerMessage.send(getOwner(), 166, "소지하고 있는 아데나", "2,000,000,000을 초과하고 있습니다.");
 			return AMOUNT_OVER;
@@ -554,7 +554,7 @@ public class CUserInventory extends CInventory {
 	    }
         // Expiry registration is independent of packet delivery.
         if (item.getEndTime() != null && !_owner.isLogoutStarted()
-                && getItem(item.getId()) == item) {
+                && GetByServerID(item.getId()) == item) {
             try {
                 l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
                         .getInstance().scheduleItem(_owner, item);
@@ -791,38 +791,14 @@ public class CUserInventory extends CInventory {
         }
     }
 
-	public L1ItemInstance getItemEquippend(int itemId) {// 아이템 착용 상태 확인의 오브젝트 인식
-		L1ItemInstance equipeitem = null;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getItemId() == itemId && item.isEquipped()) {
-				equipeitem = item;
-				break;
-			}
-		}
-		return equipeitem;
-	}
 
-	public L1ItemInstance getEquippedItem(int itemId) {
-		L1ItemInstance equipeitem = null;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getItemId() == itemId) {
-				equipeitem = item;
-				break;
-			}
-		}
-		return equipeitem;
-	}
 	/** Update only the inventory's equipped-template index, under the existing item gate. */
 	public void SetEquippedCount(int itemId, boolean equipped) {
 		if (equipped) _equippedCountMap.add(itemId, 1);
 		else _equippedCountMap.subtract(itemId, 1);
 	}
 
-	public boolean checkEquipped(int id) {
+	public boolean IsEquippedByClassID(int id) {
 		return _items.IsEquippedByClassID(id);
 	}
 
@@ -922,7 +898,7 @@ public class CUserInventory extends CInventory {
 			priorityId = _stingId;
 		}
 		if (priorityId > 0) {
-			bullet = findItemId(priorityId);
+			bullet = GetFirstItemByClassID(priorityId);
 			if (bullet != null) {
 				return bullet;
 			} else {
@@ -1031,9 +1007,6 @@ public class CUserInventory extends CInventory {
 		}
 		return cnt;
 	}
-	public L1ItemInstance checkEquippedItem(int id) {
-		return findEquippedItemId(id);
-	}
 	public L1ItemInstance get_etc_itemid(int itemid) {
 		Iterator<L1ItemInstance> iter = _items.iterator();
 		L1ItemInstance item = null;
@@ -1061,17 +1034,11 @@ public class CUserInventory extends CInventory {
 		return equipeCount;
 	}
 
-	public int checkItemCount(int id) {
-		return _items.GetItemCountByClassID(id);
-	}
 
-	public L1ItemInstance findItemObjId(int id) {
-		return getItem(id);
-	}
 
-	public boolean checkEquipped(int[] ids) {
+	public boolean IsEquippedByClassID(int[] ids) {
 		for (int id : ids) {
-			if (!checkEquipped(id)) {
+			if (!IsEquippedByClassID(id)) {
 				return false;
 			}
 		}
@@ -1090,7 +1057,7 @@ public class CUserInventory extends CInventory {
 	}
 
 	public synchronized boolean consumeItem(L1ItemInstance item, int count) {
-        if (item == null || count <= 0 || getItem(item.getId()) != item
+        if (item == null || count <= 0 || GetByServerID(item.getId()) != item
                 || item.getCount() < count) return false;
         return removeItem(item, count) == count;
 	}
@@ -1102,7 +1069,7 @@ public class CUserInventory extends CInventory {
         // Duplicate object IDs are one combined debit, not separate stale reads.
         for (int i = 0; i < size; i++) {
             final L1ItemInstance item = items[i];
-            if (item == null || counts[i] <= 0 || getItem(item.getId()) != item) return false;
+            if (item == null || counts[i] <= 0 || GetByServerID(item.getId()) != item) return false;
             boolean first = true;
             for (int j = 0; j < i; j++) {
                 if (items[j].getId() == item.getId()) {

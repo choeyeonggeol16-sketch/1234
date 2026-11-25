@@ -16,17 +16,17 @@ final class TravelUtilityExchangeItems {
         int[] loc = null;
         switch (itemId) {
 		case 700021: // 봉인해제 주문서 신청서
-			if (pc.getInventory().checkItem(50021)) {
+			if (pc.getInventory().HaveItemByClassId(50021)) {
 				SC_ChatPacket.sendDirect(pc, pc, "이미 봉인해제 주문서를 갖고 있습니다.");
 				return;
 			}
-			if (pc.getInventory().checkItem(700021, 1)) {
+			if (pc.getInventory().HaveItemByClassId(700021, 1)) {
 				ItemReceiptOperations.UseDurableExchange(pc, l1iteminstance, 50021, 15, null);
 			}
 			break;
 
 		case 60256:
-			if (pc.getInventory().checkItem(60255)) {
+			if (pc.getInventory().HaveItemByClassId(60255)) {
 				SC_ServerMessage.send(pc, 939);
 				SC_SystemMessage.send(pc, "드래곤의 자수정 보유.");
 				return;

@@ -165,7 +165,7 @@ public final class GludioInstanceDungeon {
         if(pc==null || r==null || r.started || r.admitting || r.ended || memberRooms.containsKey(pc.getId())
                 || r.members.size()>=r.maximum || pc.getLevel()<r.minLevel
                 || (r.closed && !invited && !r.password.equals(password))
-                || !pc.getInventory().checkItem(KEY_ITEM,r.keyCount())) return false;
+                || !pc.getInventory().HaveItemByClassId(KEY_ITEM,r.keyCount())) return false;
         r.members.add(new Member(pc,false));memberRooms.put(pc.getId(),r);
         pendingInvites.remove(pc.getId());
         return true;
@@ -178,7 +178,7 @@ public final class GludioInstanceDungeon {
                 || r.members.size()>=r.maximum) return false;
         L1PcInstance guest=L1World.getInstance().getPlayer(guestName);
         if(guest==null || guest==owner || memberRooms.containsKey(guest.getId())
-                || guest.getLevel()<r.minLevel || !guest.getInventory().checkItem(KEY_ITEM,r.keyCount())
+                || guest.getLevel()<r.minLevel || !guest.getInventory().HaveItemByClassId(KEY_ITEM,r.keyCount())
                 || guest.getNetConnection()==null || !guest.getNetConnection().isConnected()) return false;
         final long now=System.nanoTime();
         // At most one pending invite per target; do not retain expired invitations indefinitely.
@@ -217,7 +217,7 @@ public final class GludioInstanceDungeon {
         if(newTitle.isBlank() || newTitle.length()>128 || newMin<1 || newMax<r.members.size()
                 || newMax>6 || (newClosed && newPassword.length()!=4)) return false;
         for(Member m:r.members) if(m.pc.getLevel()<newMin
-                || !m.pc.getInventory().checkItem(KEY_ITEM,newBoost?3:1)) return false;
+                || !m.pc.getInventory().HaveItemByClassId(KEY_ITEM,newBoost?3:1)) return false;
         r.title=newTitle;r.minLevel=newMin;r.maximum=newMax;r.closed=newClosed;
         r.password=newPassword;r.boost=newBoost;
         if(distribution!=null) r.distribution=distribution;
@@ -267,7 +267,7 @@ public final class GludioInstanceDungeon {
                 || !m.pc.getNetConnection().isConnected() || m.pc.getLevel()<r.minLevel
                 || m.pc.get_teleport()
                 || m.pc.getMapId()==r.mapId && r.mapId!=0
-                || !m.pc.getInventory().checkItem(KEY_ITEM,r.keyCount())) return false;
+                || !m.pc.getInventory().HaveItemByClassId(KEY_ITEM,r.keyCount())) return false;
         final int mapId=reserveMapId(terrain);
         if(mapId<0 || CObjectDB.GetNPC(50000220)==null
                 || CObjectDB.GetNPC(50000221)==null

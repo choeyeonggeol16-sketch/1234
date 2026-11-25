@@ -62,7 +62,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			//만능 3가지
 		case "rnlpolyh01":
 			if(pc.getAccount().getInfo_heaven_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -78,7 +78,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh02":
 			if(pc.getAccount().gethero01() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -95,7 +95,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 		case "rnlpolyh03":
 
 			if(pc.getAccount().gethero02() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -112,7 +112,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			//근거리
 		case "rnlpolyh04":
 			if(pc.getAccount().gethero03() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -128,7 +128,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh05":
 			if(pc.getAccount().gethero04() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -144,7 +144,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh06":
 			if(pc.getAccount().gethero05() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -160,7 +160,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh07":
 			if(pc.getAccount().gethero06() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -176,7 +176,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh08":
 			if(pc.getAccount().gethero07() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -192,7 +192,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh09":
 			if(pc.getAccount().getInfo_assm_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -208,7 +208,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh10":
 			if(pc.getAccount().gethero08() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -224,7 +224,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh11":
 			if(pc.getAccount().gethero09() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -240,7 +240,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh12":
 			if(pc.getAccount().getInfo_unik_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -256,7 +256,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh13":
 			if(pc.getAccount().gethero10() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -272,7 +272,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh14":
 			if(pc.getAccount().gethero11() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -288,7 +288,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh15":
 			if(pc.getAccount().getInfo_val_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -304,7 +304,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh16":
 			if(pc.getAccount().getInfo_larry_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -320,7 +320,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh17":
 			if(pc.getAccount().getInfo_gunter_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -336,7 +336,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh18":
 			if(pc.getAccount().getInfo_depor_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -352,7 +352,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh19":
 			if(pc.getAccount().getInfo_deathred_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -368,7 +368,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh20":
 			if(pc.getAccount().getInfo_ecil_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -384,7 +384,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh21":
 			if(pc.getAccount().gethero12() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -401,7 +401,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			//원거리
 		case "rnlpolyh22":
 			if(pc.getAccount().gethero13() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -417,7 +417,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh23":
 			if(pc.getAccount().gethero14() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -433,7 +433,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh24":
 			if(pc.getAccount().gethero15() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -449,7 +449,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh25":
 			if(pc.getAccount().gethero16() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -465,7 +465,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh26":
 			if(pc.getAccount().getInfo_unir_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -481,7 +481,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh27":
 			if(pc.getAccount().getInfo_yozil_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -497,7 +497,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh28":
 			if(pc.getAccount().getInfo_owen_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -513,7 +513,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh29":
 			if(pc.getAccount().getInfo_helv_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -530,7 +530,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			//마법
 		case "rnlpolyh30":
 			if(pc.getAccount().gethero17() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -546,7 +546,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh31":
 			if(pc.getAccount().gethero18() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -562,7 +562,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh32":
 			if(pc.getAccount().gethero19() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -578,7 +578,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh33":
 			if(pc.getAccount().gethero20() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -594,7 +594,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh34":
 			if(pc.getAccount().getInfo_unim_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -610,7 +610,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh35":
 			if(pc.getAccount().getInfo_kerep_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -626,7 +626,7 @@ public static boolean Neige(L1PcInstance pc, String s) {
 			return false;
 		case "rnlpolyh36":
 			if(pc.getAccount().getInfo_jowo_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}

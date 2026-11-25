@@ -66,9 +66,9 @@ final class NpcSpellScrollCommands {
         final int material = 40090 + recipe / 5;
         final int fee = amount * (recipe < 5 ? 50 : recipe < 15 ? 100 : 200);
         final boolean extra = recipe == 18 || recipe == 19;
-        if (!pc.getInventory().checkItem(material, amount)
-                || !pc.getInventory().checkItem(40308, fee)
-                || (extra && !pc.getInventory().checkItem(40318, amount))) {
+        if (!pc.getInventory().HaveItemByClassId(material, amount)
+                || !pc.getInventory().HaveItemByClassId(40308, fee)
+                || (extra && !pc.getInventory().HaveItemByClassId(40318, amount))) {
             sendResult(pc, objid, false);
             return;
         }
@@ -96,7 +96,7 @@ final class NpcSpellScrollCommands {
             SC_ChatPacket.sendDirect(pc, pc, "무기를 착용하고 받을 수 있습니다.");
             return;
         }
-        if (!pc.getInventory().checkItem(40308, 1000) || !pc.getInventory().consumeItem(40308, 1000)) {
+        if (!pc.getInventory().HaveItemByClassId(40308, 1000) || !pc.getInventory().consumeItem(40308, 1000)) {
             SC_SystemMessage.send(pc, "아데나가 부족합니다.");
             return;
         }

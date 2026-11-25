@@ -26,7 +26,7 @@ final class ExperiencePotionTransactions {
 
     static void useLevelExpPotion(L1PcInstance pc, L1ItemInstance item) {
         if (pc == null || item == null || item.getItemId() != 111556
-                || pc.getInventory().getItem(item.getId()) != item)
+                || pc.getInventory().GetByServerID(item.getId()) != item)
             return;
         final int level = pc.getLevel();
         if (Config.STANDBY_SERVER || level <= 0 || level >= Config.LIMITLEVEL
@@ -79,7 +79,7 @@ final class ExperiencePotionTransactions {
         if (pc == null || item == null || expReward <= 0
                 || (item.getItemId() != 700000 && item.getItemId() != 4100074
                     && item.getItemId() != 4100075)
-                || pc.getInventory().getItem(item.getId()) != item) return;
+                || pc.getInventory().GetByServerID(item.getId()) != item) return;
         final int level = pc.getLevel();
         if (Config.STANDBY_SERVER || level <= 0 || level >= Config.LIMITLEVEL
                 || level >= ExpTable.MAX_LEVEL) {

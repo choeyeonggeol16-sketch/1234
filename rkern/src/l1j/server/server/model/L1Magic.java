@@ -1981,8 +1981,8 @@ public class L1Magic {
 		
 		
 		if (_calcType == PC_PC) {
-			L1ItemInstance item = _pc.getInventory().findEquippedItemId(123666);
-			L1ItemInstance item1 = _pc.getInventory().findEquippedItemId(134);
+			L1ItemInstance item = _pc.getInventory().GetFirstEquippedItemByClassID(123666);
+			L1ItemInstance item1 = _pc.getInventory().GetFirstEquippedItemByClassID(134);
 			if (item != null) {
 				if (item.getEnchantLevel() <= 0) {
 				dmg += dmg * 0.1;
@@ -2314,8 +2314,8 @@ public class L1Magic {
 		}
 		
 		if (_calcType == PC_NPC) {
-			L1ItemInstance item = _pc.getInventory().findEquippedItemId(123666);
-			L1ItemInstance item1 = _pc.getInventory().findEquippedItemId(134);
+			L1ItemInstance item = _pc.getInventory().GetFirstEquippedItemByClassID(123666);
+			L1ItemInstance item1 = _pc.getInventory().GetFirstEquippedItemByClassID(134);
 			if (item != null) {
 				if (item.getEnchantLevel() <= 0) {
 				dmg += dmg * 0.1;

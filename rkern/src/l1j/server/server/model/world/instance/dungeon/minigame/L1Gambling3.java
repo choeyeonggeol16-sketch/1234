@@ -54,7 +54,7 @@ public class L1Gambling3 {
 			SC_SystemMessage.send(pc, "\\f3배팅이 취소되었습니다. (1 ~ " + MAX_BET + ")");
 			return;
 		}
-		if (!pc.getInventory().checkItem(L1ItemId.ADENA, bet)) {
+		if (!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, bet)) {
 			SC_SystemMessage.send(pc, "\\f3아데나가 부족하여 취소되었습니다.");
 			return;
 		}

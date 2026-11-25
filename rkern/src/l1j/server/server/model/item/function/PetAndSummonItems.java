@@ -30,9 +30,9 @@ final class PetAndSummonItems {
         final int petAmuletId = use.itemObjectId();
         final L1ItemInstance amulet = use.item();
         // The object id in this use request must refer to the selected amulet.
-        if (pc.getInventory().getItem(petAmuletId) != amulet)
+        if (pc.getInventory().GetByServerID(petAmuletId) != amulet)
             return ItemActionResult.STOP;
-        final L1ItemInstance flute = pc.getInventory().findItemId(41160);
+        final L1ItemInstance flute = pc.getInventory().GetFirstItemByClassID(41160);
         if (flute == null || flute.getCount() <= 0) {
             SC_ServerMessage.send(pc, 79);
             return ItemActionResult.STOP;
@@ -46,7 +46,7 @@ final class PetAndSummonItems {
             try {
                 // A pet amulet can be moved or replaced while the flute debit
                 // is in flight. Never spawn against a stale item reference.
-                if (pc.getInventory().getItem(petAmuletId) == amulet)
+                if (pc.getInventory().GetByServerID(petAmuletId) == amulet)
                     withdrawPet(pc, petAmuletId);
             } finally {
                 // The amulet itself survives. Its normal item-use delay belongs

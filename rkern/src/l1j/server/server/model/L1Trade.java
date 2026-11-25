@@ -37,11 +37,11 @@ public class L1Trade {
                 if(player.getTradeID()!=partner.getId() || partner.getTradeID()!=player.getId()
                         || player.isItemTransferBusy() || partner.isItemTransferBusy()
                         || player.getTradeOk() || partner.getTradeOk())return;
-                L1ItemInstance source=player.getInventory().getItem(itemId);
+                L1ItemInstance source=player.getInventory().GetByServerID(itemId);
                 if(source==null || source.isEquipped() || !source.getItem().isTradable() || source.getBless()>=128
                         || (!source.isStackable() && amount!=1))return;
                 if(characterToken(source)) {unsupportedCharacterTrade(player);return;}
-                L1ItemInstance previous=player.getTradeWindowInventory().getItem(itemId);
+                L1ItemInstance previous=player.getTradeWindowInventory().GetByServerID(itemId);
                 long offered=(long)amount+(previous==null?0:previous.getCount());
                 if(offered>source.getCount() || offered>CInventory.MAX_AMOUNT)return;
                 // Preserve distinct persistent IDs even for equal templates.
@@ -65,7 +65,7 @@ public class L1Trade {
     }
     private static void plan(L1InventoryTransaction tx,L1PcInstance from,L1PcInstance to,List<Offered> logs) {
         for(L1ItemInstance offer:from.getTradeWindowInventory().getItems()) {
-            L1ItemInstance source=from.getInventory().getItem(offer.getId());
+            L1ItemInstance source=from.getInventory().GetByServerID(offer.getId());
             if(source==null || source.getItemId()!=offer.getItemId() || source.getCount()<offer.getCount()
                     || offer.getCount()<=0 || source.isEquipped() || characterToken(source)
                     || source.getEnchantLevel()!=offer.getEnchantLevel() || source.getBless()!=offer.getBless()
@@ -116,7 +116,7 @@ public class L1Trade {
     private static void clearOffers(L1PcInstance pc) {
         synchronized(pc.getTradeWindowInventory()) {
             for(L1ItemInstance offer:pc.getTradeWindowInventory().getItems()) {
-                L1ItemInstance source=pc.getInventory().getItem(offer.getId());
+                L1ItemInstance source=pc.getInventory().GetByServerID(offer.getId());
                 if(source!=null)try{SC_ItemStatus.send(pc,source);}catch(RuntimeException failure){LOG.fine("Trade resync send expired");}
             }
             pc.getTradeWindowInventory()._items.clear();

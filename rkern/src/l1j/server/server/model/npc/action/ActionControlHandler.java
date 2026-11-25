@@ -187,7 +187,7 @@ public class ActionControlHandler {
     }
 
     private boolean handleKirPolyAction(L1PcInstance pc) {
-        if (!pc.getInventory().checkItem(875640379, 1)) {
+        if (!pc.getInventory().HaveItemByClassId(875640379, 1)) {
             SC_ChatPacket.sendDirect(pc, pc, "변신주문서가 부족합니다.");
             return false;
         }

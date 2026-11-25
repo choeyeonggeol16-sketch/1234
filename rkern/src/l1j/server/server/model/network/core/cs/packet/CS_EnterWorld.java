@@ -726,8 +726,8 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
     	}
 
         // 이벤트 맵 만료 아이템 정리
-        if (pc.getInventory().hasItemDirect(810006)) pc.getInventory().consumeItem(810006);
-        if (pc.getInventory().hasItemDirect(810007)) pc.getInventory().consumeItem(810007);
+        if (pc.getInventory().HaveItemAmount(810006)) pc.getInventory().consumeItem(810006);
+        if (pc.getInventory().HaveItemAmount(810007)) pc.getInventory().consumeItem(810007);
 
         if (pc.getHeading() < 0 || pc.getHeading() > 7) pc.setHeading(0);
 

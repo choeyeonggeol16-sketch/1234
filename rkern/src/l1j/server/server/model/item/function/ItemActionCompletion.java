@@ -34,7 +34,7 @@ final class ItemActionCompletion {
     static void finishCommittedConsumable(L1PcInstance pc, L1ItemInstance input) {
         if (input.getItem().getType2() == 0
                 && ((l1j.server.server.templates.L1EtcItem) input.getItem()).get_delayEffect() > 0) {
-            L1ItemInstance live = pc.getInventory().getItem(input.getId());
+            L1ItemInstance live = pc.getInventory().GetByServerID(input.getId());
             if (live == input) {
                 final Timestamp oldLastUsed = live.getLastUsed();
                 live.setLastUsed(new Timestamp(System.currentTimeMillis()));
@@ -57,7 +57,7 @@ final class ItemActionCompletion {
         boolean isDelayEffect = use.delayEffect();
         // Legacy handlers may have removed the last unit before returning
         // COMPLETE. Never dirty a deleted inventory row; keep the use delay.
-        if (isDelayEffect && pc.getInventory().getItem(item.getId()) == item) {
+        if (isDelayEffect && pc.getInventory().GetByServerID(item.getId()) == item) {
             if (itemId == 410008 || itemId == 40414 || itemId == 700012 || itemId == 30043 || itemId == 30045
                      || itemId == 30026 || itemId == 4100131 || itemId == 4100132) {
                 final int chargeCount = item.getChargeCount();

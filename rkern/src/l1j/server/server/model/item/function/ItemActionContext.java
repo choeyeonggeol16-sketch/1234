@@ -27,7 +27,7 @@ final class ItemActionContext {
         // A zero target is not an item object id. Avoid the inventory's
         // linear scan for the overwhelmingly common untargeted consumable.
         final int selectedObjectId = targetItemObjectId();
-        targetItem = selectedObjectId == 0 ? null : player.getInventory().getItem(selectedObjectId);
+        targetItem = selectedObjectId == 0 ? null : player.getInventory().GetByServerID(selectedObjectId);
     }
     CUserSocket client(){return client;}
     L1PcInstance player(){return player;}

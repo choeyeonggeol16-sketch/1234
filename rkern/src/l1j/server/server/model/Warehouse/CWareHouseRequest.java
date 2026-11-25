@@ -110,7 +110,7 @@ public final class CWareHouseRequest {
         final long now = (deposit && kind != 8) || kind == 20 ? System.currentTimeMillis() : 0L;
         if (size == 1) {
             final int id = CS_Result.param1(first, rest, 0);
-            final L1ItemInstance item = deposit ? inventory.getItem(id) : warehouse.getItem(id);
+            final L1ItemInstance item = deposit ? inventory.GetByServerID(id) : warehouse.GetByServerID(id);
             final int count = selectedCount(pc, item, (int) CS_Result.param2D(first, rest, 0));
             if (count == 0) return;
             if (deposit) CWareHouseDeposit.Request(pc, kind, warehouse, item, count, now);
@@ -131,7 +131,7 @@ public final class CWareHouseRequest {
                     return;
                 }
             }
-            final L1ItemInstance item = deposit ? inventory.getItem(id) : warehouse.getItem(id);
+            final L1ItemInstance item = deposit ? inventory.GetByServerID(id) : warehouse.GetByServerID(id);
             final int count = selectedCount(pc, item, (int) CS_Result.param2D(first, rest, i));
             if (count == 0) return;
             if (deposit && !CWareHouseDeposit.CanDeposit(pc, kind, warehouse, item, count, now)) return;

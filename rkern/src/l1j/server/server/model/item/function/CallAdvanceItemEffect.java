@@ -28,7 +28,7 @@ final class CallAdvanceItemEffect {
 
     public static boolean 콜어드밴스(L1PcInstance pc, int targetId, L1ItemInstance item) {
         if (pc == null || item == null || item.getItemId() != 70721
-                || pc.getInventory().getItem(item.getId()) != item
+                || pc.getInventory().GetByServerID(item.getId()) != item
                 || pc.isDead() || pc.get_teleport()) return false;
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
@@ -59,7 +59,7 @@ final class CallAdvanceItemEffect {
                             SC_SystemMessage.send(pc, "콜 클랜 어드밴스는 투명상태로 시전이 불가능합니다.");
                             return false;
                         }
-                        if (!pc.getInventory().checkItem(41246, 200)) {
+                        if (!pc.getInventory().HaveItemByClassId(41246, 200)) {
                             SC_SystemMessage.send(pc, "결정체가 부족합니다.");
                             return false;
                         }

@@ -23,7 +23,7 @@ public class LobbyCreator implements Runnable{
 			if(type.getNeedItemId() == 0)
 				return true;
 			
-			if (!pc.getInventory().checkItem(type.getNeedItemId(), type.getNeedItemCount())) {
+			if (!pc.getInventory().HaveItemByClassId(type.getNeedItemId(), type.getNeedItemCount())) {
 				LFCMessages.REGIST_ERR_NOADENA.sendSystemMsg(pc);
 				return false;
 			}

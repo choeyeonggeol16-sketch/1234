@@ -438,7 +438,7 @@ for (L1PcInstance player : getMembersArray()) {
 
 		if (item != null) {
 			try {
-				if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK) {
+				if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK) {
 					item.setCount(1);
 					if (pc.getInventory().storeItem(item) != null) {
 						SC_ServerMessage.send(pc, 403, item.getLogName());
@@ -456,7 +456,7 @@ for (L1PcInstance player : getMembersArray()) {
 			} finally {
 				// ItemTable pre-registers this object. Stack merge/rejection/exception
 				// must not retain a world index entry for the unowned image.
-				if (pc.getInventory().getItem(item.getId()) != item) {
+				if (pc.getInventory().GetByServerID(item.getId()) != item) {
 					L1World.getInstance().removeObject(item);
 				}
 			}

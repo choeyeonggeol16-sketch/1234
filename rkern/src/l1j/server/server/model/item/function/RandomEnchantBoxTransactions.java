@@ -26,7 +26,7 @@ final class RandomEnchantBoxTransactions {
     private RandomEnchantBoxTransactions() {}
 
     static void useRandomEnchantBox(L1PcInstance pc, L1ItemInstance box) {
-        if (pc == null || box == null || pc.getInventory().getItem(box.getId()) != box) return;
+        if (pc == null || box == null || pc.getInventory().GetByServerID(box.getId()) != box) return;
         final int[] rewards;
         final int[] enchants;
         final int boxId = box.getItemId();

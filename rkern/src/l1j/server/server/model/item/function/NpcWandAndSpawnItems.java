@@ -56,7 +56,7 @@ import l1j.server.server.templates.L1Npc;
 public final class NpcWandAndSpawnItems {
     private NpcWandAndSpawnItems() {}
 	public static void useNpcSpownWand(L1PcInstance pc, int targetId, L1ItemInstance item) {
-        if (pc == null || item == null || pc.getInventory().getItem(item.getId()) != item
+        if (pc == null || item == null || pc.getInventory().GetByServerID(item.getId()) != item
                 || item.getChargeCount() <= 0) return;
         // Resolve the target and its executable constructor BEFORE any debit.
         // An invalid NPC implementation must not consume a wand charge.
@@ -83,7 +83,7 @@ public final class NpcWandAndSpawnItems {
         }
         try (l1j.server.server.model.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc, CacheD.accountOrderKey("item-use:", pc.getId()))) {
-            if (pc.getInventory().getItem(item.getId()) != item) return;
+            if (pc.getInventory().GetByServerID(item.getId()) != item) return;
             final int chargeCount = item.getChargeCount();
             if (chargeCount <= 0) return;
             if (chargeCount == 1) {

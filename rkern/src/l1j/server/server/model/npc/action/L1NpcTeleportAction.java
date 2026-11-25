@@ -60,7 +60,7 @@ public class L1NpcTeleportAction extends L1NpcXmlAction {
             return L1NpcHtml.HTML_CLOSE;
         }
         final L1ItemInstance payment = _price == 0 ? null
-                : pc.getInventory().findItemId(L1ItemId.ADENA);
+                : pc.getInventory().GetFirstItemByClassID(L1ItemId.ADENA);
         if (_price > 0 && (payment == null || payment.getCount() < _price)) {
             SC_ServerMessage.send(pc, 337, "$4");
             return L1NpcHtml.HTML_CLOSE;

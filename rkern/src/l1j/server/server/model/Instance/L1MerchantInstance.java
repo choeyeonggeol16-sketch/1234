@@ -161,11 +161,11 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 5162:
-				if (player.getInventory().checkItem(3000400)) {
+				if (player.getInventory().HaveItemByClassId(3000400)) {
 					htmlid = "slots";
-				} else if (player.getInventory().checkItem(3000401)) 
+				} else if (player.getInventory().HaveItemByClassId(3000401)) 
 					htmlid = "slotr";
-				else if (player.getInventory().checkItem(3000402))
+				else if (player.getInventory().HaveItemByClassId(3000402))
 					htmlid = "slotb";
 				break;
 			case 70005:// 파고
@@ -191,8 +191,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 				player.start_teleport(33614, 32763, 4, player.getHeading(), 169, true, false);
 				break;
 			case 82700:
-				if(player.getInventory().checkItem(131300)) { 
-					int count = player.getInventory().countItems(131300);
+				if(player.getInventory().HaveItemByClassId(131300)) { 
+					int count = player.getInventory().GetUnequippedItemAmount(131300);
 					SC_PacketBox.send(player, SC_PacketBox.GREEN_MESSAGE, "\\fY현재 보유중인 마일리지는 \\aG"+count+"개"+" \\fY입니다.");
 				} else { 
 					SC_PacketBox.send(player, SC_PacketBox.GREEN_MESSAGE, "\\fY현재 보유중인 마일리지는 \\aG0개 \\fY입니다.");
@@ -383,7 +383,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 522:
-				if (player.getInventory().checkItem(40308, 200000)) {
+				if (player.getInventory().HaveItemByClassId(40308, 200000)) {
 					player.getInventory().consumeItem(40308, 200000);
 					if (Config.POLY_EVENT1) {
 						L1PolyMorph.doPoly(player, 7925, 600, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
@@ -424,7 +424,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getLevel() < 52) {
 					htmlid = "marbinquestA";
 				} else {
-					if (player.getInventory().checkItem(700012, 1)) {
+					if (player.getInventory().HaveItemByClassId(700012, 1)) {
 						htmlid = "marbinquest3";
 					} else {
 						htmlid = "marbinquest1";
@@ -448,7 +448,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.isCrown()) {
 					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step >= 1 && lv45_step != CQuestSystem.QUEST_END) {
-						if (player.getInventory().checkItem(40586)) {
+						if (player.getInventory().HaveItemByClassId(40586)) {
 							htmlid = "richard4";
 						} else {
 							htmlid = "richard1";
@@ -471,7 +471,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 71200: // 백마법사피에타
 				if (player.isCrown()) {
 					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
-					if (lv45_step == 2 && player.getInventory().checkItem(41422)) {
+					if (lv45_step == 2 && player.getInventory().HaveItemByClassId(41422)) {
 						player.getInventory().consumeItem(41422, 1);
 						player.getInventory().storeItem(40568, 1);
 					}
@@ -584,7 +584,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.isKnight()) {
 					int lv45_step = quest.get_step(CQuestSystem.QUEST_LEVEL45);
 					if (lv45_step == 2) {
-						if (player.getInventory().checkItem(20026)) {
+						if (player.getInventory().HaveItemByClassId(20026)) {
 							htmlid = "giantk1";
 						}
 					} else if (lv45_step == 3) {
@@ -1057,22 +1057,22 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 80059:
 				if (player.getKarmaLevel() >= 3) {
 					htmlid = "cpass03";
-				} else if (player.getInventory().checkItem(40921)) {
+				} else if (player.getInventory().HaveItemByClassId(40921)) {
 					htmlid = "wpass02";
-				} else if (player.getInventory().checkItem(40917)) {
+				} else if (player.getInventory().HaveItemByClassId(40917)) {
 					htmlid = "wpass14";
-				} else if (player.getInventory().checkItem(40912) || player.getInventory().checkItem(40910)
-						|| player.getInventory().checkItem(40911)) {
+				} else if (player.getInventory().HaveItemByClassId(40912) || player.getInventory().HaveItemByClassId(40910)
+						|| player.getInventory().HaveItemByClassId(40911)) {
 					htmlid = "wpass04";
-				} else if (player.getInventory().checkItem(40909)) {
+				} else if (player.getInventory().HaveItemByClassId(40909)) {
 					int count = getNecessarySealCount(player);
-					if (player.getInventory().checkItem(40913, count)) {
+					if (player.getInventory().HaveItemByClassId(40913, count)) {
 						createRuler(player, 1, count);
 						htmlid = "wpass06";
 					} else {
 						htmlid = "wpass03";
 					}
-				} else if (player.getInventory().checkItem(40913)) {
+				} else if (player.getInventory().HaveItemByClassId(40913)) {
 					htmlid = "wpass08";
 				} else {
 					htmlid = "wpass05";
@@ -1081,22 +1081,22 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 80060:
 				if (player.getKarmaLevel() >= 3) {
 					htmlid = "cpass03";
-				} else if (player.getInventory().checkItem(40921)) {
+				} else if (player.getInventory().HaveItemByClassId(40921)) {
 					htmlid = "wpass02";
-				} else if (player.getInventory().checkItem(40920)) {
+				} else if (player.getInventory().HaveItemByClassId(40920)) {
 					htmlid = "wpass13";
-				} else if (player.getInventory().checkItem(40909) || player.getInventory().checkItem(40910)
-						|| player.getInventory().checkItem(40911)) {
+				} else if (player.getInventory().HaveItemByClassId(40909) || player.getInventory().HaveItemByClassId(40910)
+						|| player.getInventory().HaveItemByClassId(40911)) {
 					htmlid = "wpass04";
-				} else if (player.getInventory().checkItem(40912)) {
+				} else if (player.getInventory().HaveItemByClassId(40912)) {
 					int count = getNecessarySealCount(player);
-					if (player.getInventory().checkItem(40916, count)) {
+					if (player.getInventory().HaveItemByClassId(40916, count)) {
 						createRuler(player, 8, count);
 						htmlid = "wpass06";
 					} else {
 						htmlid = "wpass03";
 					}
-				} else if (player.getInventory().checkItem(40916)) {
+				} else if (player.getInventory().HaveItemByClassId(40916)) {
 					htmlid = "wpass08";
 				} else {
 					htmlid = "wpass05";
@@ -1105,22 +1105,22 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 80061:
 				if (player.getKarmaLevel() >= 3) {
 					htmlid = "cpass03";
-				} else if (player.getInventory().checkItem(40921)) {
+				} else if (player.getInventory().HaveItemByClassId(40921)) {
 					htmlid = "wpass02";
-				} else if (player.getInventory().checkItem(40918)) {
+				} else if (player.getInventory().HaveItemByClassId(40918)) {
 					htmlid = "wpass11";
-				} else if (player.getInventory().checkItem(40909) || player.getInventory().checkItem(40912)
-						|| player.getInventory().checkItem(40911)) {
+				} else if (player.getInventory().HaveItemByClassId(40909) || player.getInventory().HaveItemByClassId(40912)
+						|| player.getInventory().HaveItemByClassId(40911)) {
 					htmlid = "wpass04";
-				} else if (player.getInventory().checkItem(40910)) {
+				} else if (player.getInventory().HaveItemByClassId(40910)) {
 					int count = getNecessarySealCount(player);
-					if (player.getInventory().checkItem(40914, count)) {
+					if (player.getInventory().HaveItemByClassId(40914, count)) {
 						createRuler(player, 4, count);
 						htmlid = "wpass06";
 					} else {
 						htmlid = "wpass03";
 					}
-				} else if (player.getInventory().checkItem(40914)) {
+				} else if (player.getInventory().HaveItemByClassId(40914)) {
 					htmlid = "wpass08";
 				} else {
 					htmlid = "wpass05";
@@ -1129,22 +1129,22 @@ public class L1MerchantInstance extends L1NpcInstance {
 			case 80062:
 				if (player.getKarmaLevel() >= 3) {
 					htmlid = "cpass03";
-				} else if (player.getInventory().checkItem(40921)) {
+				} else if (player.getInventory().HaveItemByClassId(40921)) {
 					htmlid = "wpass02";
-				} else if (player.getInventory().checkItem(40919)) {
+				} else if (player.getInventory().HaveItemByClassId(40919)) {
 					htmlid = "wpass12";
-				} else if (player.getInventory().checkItem(40909) || player.getInventory().checkItem(40912)
-						|| player.getInventory().checkItem(40910)) {
+				} else if (player.getInventory().HaveItemByClassId(40909) || player.getInventory().HaveItemByClassId(40912)
+						|| player.getInventory().HaveItemByClassId(40910)) {
 					htmlid = "wpass04";
-				} else if (player.getInventory().checkItem(40911)) {
+				} else if (player.getInventory().HaveItemByClassId(40911)) {
 					int count = getNecessarySealCount(player);
-					if (player.getInventory().checkItem(40915, count)) {
+					if (player.getInventory().HaveItemByClassId(40915, count)) {
 						createRuler(player, 2, count);
 						htmlid = "wpass06";
 					} else {
 						htmlid = "wpass03";
 					}
-				} else if (player.getInventory().checkItem(40915)) {
+				} else if (player.getInventory().HaveItemByClassId(40915)) {
 					htmlid = "wpass08";
 				} else {
 					htmlid = "wpass05";
@@ -1183,62 +1183,62 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (karmaLevel == 0) {
 					htmlid = "aliceyet";
 				} else if (karmaLevel >= 1) {
-					if (player.getInventory().checkItem(196) || player.getInventory().checkItem(197)
-							|| player.getInventory().checkItem(198) || player.getInventory().checkItem(199)
-							|| player.getInventory().checkItem(200) || player.getInventory().checkItem(201)
-							|| player.getInventory().checkItem(202) || player.getInventory().checkItem(203)) {
+					if (player.getInventory().HaveItemByClassId(196) || player.getInventory().HaveItemByClassId(197)
+							|| player.getInventory().HaveItemByClassId(198) || player.getInventory().HaveItemByClassId(199)
+							|| player.getInventory().HaveItemByClassId(200) || player.getInventory().HaveItemByClassId(201)
+							|| player.getInventory().HaveItemByClassId(202) || player.getInventory().HaveItemByClassId(203)) {
 						htmlid = "alice_gd";
 					} else {
 						htmlid = "gd";
 					}
 				} else if (karmaLevel <= -1) {
-					if (player.getInventory().checkItem(40991)) {
+					if (player.getInventory().HaveItemByClassId(40991)) {
 						if (karmaLevel <= -1) {
 							htmlid = "Mate_1";
 						}
-					} else if (player.getInventory().checkItem(196)) {
+					} else if (player.getInventory().HaveItemByClassId(196)) {
 						if (karmaLevel <= -2) {
 							htmlid = "Mate_2";
 						} else {
 							htmlid = "alice_1";
 						}
-					} else if (player.getInventory().checkItem(197)) {
+					} else if (player.getInventory().HaveItemByClassId(197)) {
 						if (karmaLevel <= -3) {
 							htmlid = "Mate_3";
 						} else {
 							htmlid = "alice_2";
 						}
-					} else if (player.getInventory().checkItem(198)) {
+					} else if (player.getInventory().HaveItemByClassId(198)) {
 						if (karmaLevel <= -4) {
 							htmlid = "Mate_4";
 						} else {
 							htmlid = "alice_3";
 						}
-					} else if (player.getInventory().checkItem(199)) {
+					} else if (player.getInventory().HaveItemByClassId(199)) {
 						if (karmaLevel <= -5) {
 							htmlid = "Mate_5";
 						} else {
 							htmlid = "alice_4";
 						}
-					} else if (player.getInventory().checkItem(200)) {
+					} else if (player.getInventory().HaveItemByClassId(200)) {
 						if (karmaLevel <= -6) {
 							htmlid = "Mate_6";
 						} else {
 							htmlid = "alice_5";
 						}
-					} else if (player.getInventory().checkItem(201)) {
+					} else if (player.getInventory().HaveItemByClassId(201)) {
 						if (karmaLevel <= -7) {
 							htmlid = "Mate_7";
 						} else {
 							htmlid = "alice_6";
 						}
-					} else if (player.getInventory().checkItem(202)) {
+					} else if (player.getInventory().HaveItemByClassId(202)) {
 						if (karmaLevel <= -8) {
 							htmlid = "Mate_8";
 						} else {
 							htmlid = "alice_7";
 						}
-					} else if (player.getInventory().checkItem(203)) {
+					} else if (player.getInventory().HaveItemByClassId(203)) {
 						htmlid = "alice_8";
 					} else {
 						htmlid = "alice_no";
@@ -1393,10 +1393,10 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getLevel() < 12) {
 					htmlid = "jpe0155";
 				} else if (player.getLevel() >= 12 && player.getLevel() < 25) {
-					if (player.getInventory().checkItem(41230) || player.getInventory().checkItem(41231)
-							|| player.getInventory().checkItem(41232) || player.getInventory().checkItem(41233)
-							|| player.getInventory().checkItem(41235) || player.getInventory().checkItem(41238)
-							|| player.getInventory().checkItem(41239) || player.getInventory().checkItem(41240)) {
+					if (player.getInventory().HaveItemByClassId(41230) || player.getInventory().HaveItemByClassId(41231)
+							|| player.getInventory().HaveItemByClassId(41232) || player.getInventory().HaveItemByClassId(41233)
+							|| player.getInventory().HaveItemByClassId(41235) || player.getInventory().HaveItemByClassId(41238)
+							|| player.getInventory().HaveItemByClassId(41239) || player.getInventory().HaveItemByClassId(41240)) {
 						htmlid = "jpe0158";
 					}
 				}
@@ -1405,13 +1405,13 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getLevel() < 12) {
 					htmlid = "jpe0145";
 				} else if (player.getLevel() >= 12 && player.getLevel() < 25) {
-					if (player.getInventory().checkItem(41233) || player.getInventory().checkItem(41234)) {
+					if (player.getInventory().HaveItemByClassId(41233) || player.getInventory().HaveItemByClassId(41234)) {
 						htmlid = "jpe0143";
-					} else if (player.getInventory().checkItem(41238) || player.getInventory().checkItem(41239)
-							|| player.getInventory().checkItem(41240)) {
+					} else if (player.getInventory().HaveItemByClassId(41238) || player.getInventory().HaveItemByClassId(41239)
+							|| player.getInventory().HaveItemByClassId(41240)) {
 						htmlid = "jpe0147";
-					} else if (player.getInventory().checkItem(41235) || player.getInventory().checkItem(41236)
-							|| player.getInventory().checkItem(41237)) {
+					} else if (player.getInventory().HaveItemByClassId(41235) || player.getInventory().HaveItemByClassId(41236)
+							|| player.getInventory().HaveItemByClassId(41237)) {
 						htmlid = "jpe0144";
 					}
 				}
@@ -1420,12 +1420,12 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getLevel() < 12) {
 					htmlid = "jpe0125";
 				} else if (player.getLevel() >= 12 && player.getLevel() < 25) {
-					if (player.getInventory().checkItem(41231)) {
+					if (player.getInventory().HaveItemByClassId(41231)) {
 						htmlid = "jpe0123";
-					} else if (player.getInventory().checkItem(41232) || player.getInventory().checkItem(41233)
-							|| player.getInventory().checkItem(41234) || player.getInventory().checkItem(41235)
-							|| player.getInventory().checkItem(41238) || player.getInventory().checkItem(41239)
-							|| player.getInventory().checkItem(41240)) {
+					} else if (player.getInventory().HaveItemByClassId(41232) || player.getInventory().HaveItemByClassId(41233)
+							|| player.getInventory().HaveItemByClassId(41234) || player.getInventory().HaveItemByClassId(41235)
+							|| player.getInventory().HaveItemByClassId(41238) || player.getInventory().HaveItemByClassId(41239)
+							|| player.getInventory().HaveItemByClassId(41240)) {
 						htmlid = "jpe0126";
 					}
 				}
@@ -1434,7 +1434,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getLevel() < 12) {
 					htmlid = "jpe0114";
 				} else if (player.getLevel() >= 12 && player.getLevel() < 25) {
-					if (player.getInventory().checkItem(41239)) {
+					if (player.getInventory().HaveItemByClassId(41239)) {
 						htmlid = "jpe0113";
 					} else {
 						htmlid = "jpe0111";
@@ -1445,7 +1445,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getLevel() < 12) {
 					htmlid = "jpe0133";
 				} else if (player.getLevel() >= 12 && player.getLevel() < 25) {
-					if (player.getInventory().checkItem(41240)) {
+					if (player.getInventory().HaveItemByClassId(41240)) {
 						htmlid = "jpe0132";
 					} else {
 						htmlid = "jpe0131";
@@ -1456,11 +1456,11 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getLevel() < 10) {
 					htmlid = "jpe0086";
 				} else if (player.getLevel() >= 10 && player.getLevel() < 25) {
-					if (player.getInventory().checkItem(41226)) {
+					if (player.getInventory().HaveItemByClassId(41226)) {
 						htmlid = "jpe0084";
-					} else if (player.getInventory().checkItem(41225)) {
+					} else if (player.getInventory().HaveItemByClassId(41225)) {
 						htmlid = "jpe0083";
-					} else if (player.getInventory().checkItem(40653) || player.getInventory().checkItem(40613)) {
+					} else if (player.getInventory().HaveItemByClassId(40653) || player.getInventory().HaveItemByClassId(40613)) {
 						htmlid = "jpe0081";
 					}
 				}
@@ -1490,9 +1490,9 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 71038:
-				if (player.getInventory().checkItem(41060)) {
-					if (player.getInventory().checkItem(41090) || player.getInventory().checkItem(41091)
-							|| player.getInventory().checkItem(41092)) {
+				if (player.getInventory().HaveItemByClassId(41060)) {
+					if (player.getInventory().HaveItemByClassId(41090) || player.getInventory().HaveItemByClassId(41091)
+							|| player.getInventory().HaveItemByClassId(41092)) {
 						htmlid = "orcfnoname7";
 					} else {
 						htmlid = "orcfnoname8";
@@ -1502,10 +1502,10 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 71040:
-				if (player.getInventory().checkItem(41060)) {
-					if (player.getInventory().checkItem(41065)) {
-						if (player.getInventory().checkItem(41086) || player.getInventory().checkItem(41087)
-								|| player.getInventory().checkItem(41088) || player.getInventory().checkItem(41089)) {
+				if (player.getInventory().HaveItemByClassId(41060)) {
+					if (player.getInventory().HaveItemByClassId(41065)) {
+						if (player.getInventory().HaveItemByClassId(41086) || player.getInventory().HaveItemByClassId(41087)
+								|| player.getInventory().HaveItemByClassId(41088) || player.getInventory().HaveItemByClassId(41089)) {
 							htmlid = "orcfnoa6";
 						} else {
 							htmlid = "orcfnoa5";
@@ -1518,11 +1518,11 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 71041:
-				if (player.getInventory().checkItem(41060)) {
-					if (player.getInventory().checkItem(41064)) {
-						if (player.getInventory().checkItem(41081) || player.getInventory().checkItem(41082)
-								|| player.getInventory().checkItem(41083) || player.getInventory().checkItem(41084)
-								|| player.getInventory().checkItem(41085)) {
+				if (player.getInventory().HaveItemByClassId(41060)) {
+					if (player.getInventory().HaveItemByClassId(41064)) {
+						if (player.getInventory().HaveItemByClassId(41081) || player.getInventory().HaveItemByClassId(41082)
+								|| player.getInventory().HaveItemByClassId(41083) || player.getInventory().HaveItemByClassId(41084)
+								|| player.getInventory().HaveItemByClassId(41085)) {
 							htmlid = "orcfhuwoomo2";
 						} else {
 							htmlid = "orcfhuwoomo8";
@@ -1535,11 +1535,11 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 71042:
-				if (player.getInventory().checkItem(41060)) {
-					if (player.getInventory().checkItem(41062)) {
-						if (player.getInventory().checkItem(41071) || player.getInventory().checkItem(41072)
-								|| player.getInventory().checkItem(41073) || player.getInventory().checkItem(41074)
-								|| player.getInventory().checkItem(41075)) {
+				if (player.getInventory().HaveItemByClassId(41060)) {
+					if (player.getInventory().HaveItemByClassId(41062)) {
+						if (player.getInventory().HaveItemByClassId(41071) || player.getInventory().HaveItemByClassId(41072)
+								|| player.getInventory().HaveItemByClassId(41073) || player.getInventory().HaveItemByClassId(41074)
+								|| player.getInventory().HaveItemByClassId(41075)) {
 							htmlid = "orcfbakumo2";
 						} else {
 							htmlid = "orcfbakumo8";
@@ -1552,11 +1552,11 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 71043:
-				if (player.getInventory().checkItem(41060)) {
-					if (player.getInventory().checkItem(41063)) {
-						if (player.getInventory().checkItem(41076) || player.getInventory().checkItem(41077)
-								|| player.getInventory().checkItem(41078) || player.getInventory().checkItem(41079)
-								|| player.getInventory().checkItem(41080)) {
+				if (player.getInventory().HaveItemByClassId(41060)) {
+					if (player.getInventory().HaveItemByClassId(41063)) {
+						if (player.getInventory().HaveItemByClassId(41076) || player.getInventory().HaveItemByClassId(41077)
+								|| player.getInventory().HaveItemByClassId(41078) || player.getInventory().HaveItemByClassId(41079)
+								|| player.getInventory().HaveItemByClassId(41080)) {
 							htmlid = "orcfbuka2";
 						} else {
 							htmlid = "orcfbuka8";
@@ -1569,11 +1569,11 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 71044:
-				if (player.getInventory().checkItem(41060)) {
-					if (player.getInventory().checkItem(41061)) {
-						if (player.getInventory().checkItem(41066) || player.getInventory().checkItem(41067)
-								|| player.getInventory().checkItem(41068) || player.getInventory().checkItem(41069)
-								|| player.getInventory().checkItem(41070)) {
+				if (player.getInventory().HaveItemByClassId(41060)) {
+					if (player.getInventory().HaveItemByClassId(41061)) {
+						if (player.getInventory().HaveItemByClassId(41066) || player.getInventory().HaveItemByClassId(41067)
+								|| player.getInventory().HaveItemByClassId(41068) || player.getInventory().HaveItemByClassId(41069)
+								|| player.getInventory().HaveItemByClassId(41070)) {
 							htmlid = "orcfkame2";
 						} else {
 							htmlid = "orcfkame8";
@@ -1590,12 +1590,12 @@ public class L1MerchantInstance extends L1NpcInstance {
 					htmlid = "lukein13";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == CQuestSystem.QUEST_END
 						&& player.getQuest().get_step(CQuestSystem.QUEST_RESTA) == 2
-						&& player.getInventory().checkItem(40631)) {
+						&& player.getInventory().HaveItemByClassId(40631)) {
 					htmlid = "lukein10";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == CQuestSystem.QUEST_END) {
 					htmlid = "lukein0";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) == 11) {
-					if (player.getInventory().checkItem(40716)) {
+					if (player.getInventory().HaveItemByClassId(40716)) {
 						htmlid = "lukein9";
 					}
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LUKEIN1) >= 1
@@ -1656,7 +1656,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				break;
 			case 71056:
 				if (player.getQuest().get_step(CQuestSystem.QUEST_RESTA) == 4) {
-					if (player.getInventory().checkItem(40631)) {
+					if (player.getInventory().HaveItemByClassId(40631)) {
 						htmlid = "SIMIZZ11";
 					} else {
 						htmlid = "SIMIZZ0";
@@ -1699,10 +1699,10 @@ public class L1MerchantInstance extends L1NpcInstance {
 					htmlid = "resta16";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ) == 2
 						&& player.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 1
-						|| player.getInventory().checkItem(40647)) {
+						|| player.getInventory().HaveItemByClassId(40647)) {
 					htmlid = "resta1a";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == 1
-						|| player.getInventory().checkItem(40647)) {
+						|| player.getInventory().HaveItemByClassId(40647)) {
 					htmlid = "resta1c";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ) == 2) {
 					htmlid = "resta1b";
@@ -1723,22 +1723,22 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == CQuestSystem.QUEST_END) {
 					htmlid = "kamyla26";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 4
-						&& player.getInventory().checkItem(40717)) {
+						&& player.getInventory().HaveItemByClassId(40717)) {
 					htmlid = "kamyla15";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 4) {
 					htmlid = "kamyla14";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 3
-						&& player.getInventory().checkItem(40630)) {
+						&& player.getInventory().HaveItemByClassId(40630)) {
 					htmlid = "kamyla12";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 3) {
 					htmlid = "kamyla11";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 2
-						&& player.getInventory().checkItem(40644)) {
+						&& player.getInventory().HaveItemByClassId(40644)) {
 					htmlid = "kamyla9";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_KAMYLA) == 1) {
 					htmlid = "kamyla8";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_CADMUS) == CQuestSystem.QUEST_END
-						&& player.getInventory().checkItem(40621)) {
+						&& player.getInventory().HaveItemByClassId(40621)) {
 					htmlid = "kamyla1";
 				}
 				break;
@@ -1748,14 +1748,14 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 71090:
-				if (player.getQuest().get_step(CQuestSystem.QUEST_CRYSTAL) == 1 && player.getInventory().checkItem(40620)) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_CRYSTAL) == 1 && player.getInventory().HaveItemByClassId(40620)) {
 					htmlid = "jcrystal2";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_CRYSTAL) == 1) {
 					htmlid = "jcrystal3";
 				}
 				break;
 			case 71091:
-				if (player.getQuest().get_step(CQuestSystem.QUEST_CRYSTAL) == 2 && player.getInventory().checkItem(40654)) {
+				if (player.getQuest().get_step(CQuestSystem.QUEST_CRYSTAL) == 2 && player.getInventory().HaveItemByClassId(40654)) {
 					htmlid = "jcrystall2";
 				}
 				break;
@@ -1764,12 +1764,12 @@ public class L1MerchantInstance extends L1NpcInstance {
 					// htmlid = "lelder0";
 					htmlid = "lelder1"; // 퀘스트 무한 재생
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 3
-						&& player.getInventory().checkItem(40634)) {
+						&& player.getInventory().HaveItemByClassId(40634)) {
 					htmlid = "lelder12";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 3) {
 					htmlid = "lelder11";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 2
-						&& player.getInventory().checkItem(40633)) {
+						&& player.getInventory().HaveItemByClassId(40633)) {
 					htmlid = "lelder7";
 				} else if (player.getQuest().get_step(CQuestSystem.QUEST_LIZARD) == 2) {
 					htmlid = "lelder7b";
@@ -1816,7 +1816,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 71168: // 진명황 단테스
-				if (player.getInventory().checkItem(41028)) {
+				if (player.getInventory().HaveItemByClassId(41028)) {
 					htmlid = "dantes1";
 				}
 				break;
@@ -1832,11 +1832,11 @@ public class L1MerchantInstance extends L1NpcInstance {
 						&& !player.getInventory().checkItem(41312)) {
 					htmlid = "keplisha6";
 				} else {*/
-					if (player.getInventory().checkItem(41314)) {
+					if (player.getInventory().HaveItemByClassId(41314)) {
 						htmlid = "keplisha3";
-					} else if (player.getInventory().checkItem(41313)) {
+					} else if (player.getInventory().HaveItemByClassId(41313)) {
 						htmlid = "keplisha2";
-					} else if (player.getInventory().checkItem(41312)) {
+					} else if (player.getInventory().HaveItemByClassId(41312)) {
 						htmlid = "keplisha4";
 					}
 //				}
@@ -1872,19 +1872,19 @@ public class L1MerchantInstance extends L1NpcInstance {
 					htmlid = "tion7";
 				} else if (player.getQuest().get_step(71198) == 5) {
 					htmlid = "tion5";
-				} else if (player.getInventory().checkItem(21059, 1)) {
+				} else if (player.getInventory().HaveItemByClassId(21059, 1)) {
 					htmlid = "tion19";
 				}
 				break;
 			case 71199:
 				if (player.getQuest().get_step(71199) == 1) {
 					htmlid = "jeron3";
-				} else if (player.getInventory().checkItem(21059, 1) || player.getQuest().get_step(71199) == 255) {
+				} else if (player.getInventory().HaveItemByClassId(21059, 1) || player.getQuest().get_step(71199) == 255) {
 					htmlid = "jeron7";
 				}
 				break;
 			case 6000015:// 마야의 그림자
-				if (player.getInventory().checkItem(41158)) {
+				if (player.getInventory().HaveItemByClassId(41158)) {
 					htmlid = "adenshadow1";
 				} else {
 					htmlid = "adenshadow2";
@@ -1893,7 +1893,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 			// 에킨스
 			case 7200000:
 				if (player.getLevel() >= 56) {
-					if (player.getInventory().checkItem(3000215, 1) || player.getInventory().checkItem(1000004, 1)) {
+					if (player.getInventory().HaveItemByClassId(3000215, 1) || player.getInventory().HaveItemByClassId(1000004, 1)) {
 						htmlid = "ekins2";
 					} else {
 						htmlid = "ekins1";
@@ -1903,41 +1903,41 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 81200:
-				if (player.getInventory().checkItem(21069) || player.getInventory().checkItem(21074)) {
+				if (player.getInventory().HaveItemByClassId(21069) || player.getInventory().HaveItemByClassId(21074)) {
 					htmlid = "c_belt";
 				}
 				break;
 			case 900135:// 유리에
-				if (player.getInventory().checkItem(410096, 1) || player.getInventory().checkItem(410096, 1)) {
+				if (player.getInventory().HaveItemByClassId(410096, 1) || player.getInventory().HaveItemByClassId(410096, 1)) {
 					htmlid = "j_html00";
 				} else {
 					htmlid = "j_html01";
 				}
 				break;
 			case 80076: // 넘어진 항해사
-				if (player.getInventory().checkItem(41058)) { // 완성한 항해 일지
+				if (player.getInventory().HaveItemByClassId(41058)) { // 완성한 항해 일지
 					htmlid = "voyager8";
-				} else if (player.getInventory().checkItem(49082) // 미완성의 항해 일지
-						|| player.getInventory().checkItem(49083)) {
+				} else if (player.getInventory().HaveItemByClassId(49082) // 미완성의 항해 일지
+						|| player.getInventory().HaveItemByClassId(49083)) {
 					// 페이지를 추가하고 있지 않는 상태
-					if (player.getInventory().checkItem(41038) // 항해 일지 1 페이지
-							|| player.getInventory().checkItem(41039) // 항해 일지 2
+					if (player.getInventory().HaveItemByClassId(41038) // 항해 일지 1 페이지
+							|| player.getInventory().HaveItemByClassId(41039) // 항해 일지 2
 																		// 페이지
-							|| player.getInventory().checkItem(41039) // 항해 일지 3
+							|| player.getInventory().HaveItemByClassId(41039) // 항해 일지 3
 																		// 페이지
-							|| player.getInventory().checkItem(41039) // 항해 일지 4
+							|| player.getInventory().HaveItemByClassId(41039) // 항해 일지 4
 																		// 페이지
-							|| player.getInventory().checkItem(41039) // 항해 일지 5
+							|| player.getInventory().HaveItemByClassId(41039) // 항해 일지 5
 																		// 페이지
-							|| player.getInventory().checkItem(41039) // 항해 일지 6
+							|| player.getInventory().HaveItemByClassId(41039) // 항해 일지 6
 																		// 페이지
-							|| player.getInventory().checkItem(41039) // 항해 일지 7
+							|| player.getInventory().HaveItemByClassId(41039) // 항해 일지 7
 																		// 페이지
-							|| player.getInventory().checkItem(41039) // 항해 일지 8
+							|| player.getInventory().HaveItemByClassId(41039) // 항해 일지 8
 																		// 페이지
-							|| player.getInventory().checkItem(41039) // 항해 일지 9
+							|| player.getInventory().HaveItemByClassId(41039) // 항해 일지 9
 																		// 페이지
-							|| player.getInventory().checkItem(41039)) { // 항해
+							|| player.getInventory().HaveItemByClassId(41039)) { // 항해
 																			// 일지
 																			// 10
 																			// 페이지
@@ -1945,12 +1945,12 @@ public class L1MerchantInstance extends L1NpcInstance {
 					} else {
 						htmlid = "voyager7";
 					}
-				} else if (player.getInventory().checkItem(49082) // 미완성의 항해 일지
-						|| player.getInventory().checkItem(49083) || player.getInventory().checkItem(49084)
-						|| player.getInventory().checkItem(49085) || player.getInventory().checkItem(49086)
-						|| player.getInventory().checkItem(49087) || player.getInventory().checkItem(49088)
-						|| player.getInventory().checkItem(49089) || player.getInventory().checkItem(49090)
-						|| player.getInventory().checkItem(49091)) {
+				} else if (player.getInventory().HaveItemByClassId(49082) // 미완성의 항해 일지
+						|| player.getInventory().HaveItemByClassId(49083) || player.getInventory().HaveItemByClassId(49084)
+						|| player.getInventory().HaveItemByClassId(49085) || player.getInventory().HaveItemByClassId(49086)
+						|| player.getInventory().HaveItemByClassId(49087) || player.getInventory().HaveItemByClassId(49088)
+						|| player.getInventory().HaveItemByClassId(49089) || player.getInventory().HaveItemByClassId(49090)
+						|| player.getInventory().HaveItemByClassId(49091)) {
 					// 페이지를 추가한 상태
 					htmlid = "voyager7";
 				}
@@ -2036,13 +2036,13 @@ public class L1MerchantInstance extends L1NpcInstance {
 																									// 신전측
 																									// 퀘스트
 																									// 종료
-						|| player.getInventory().checkItem(41121) // 카헬의 지령서
-						|| player.getInventory().checkItem(41122)) { // 카헬의 명령서
+						|| player.getInventory().HaveItemByClassId(41121) // 카헬의 지령서
+						|| player.getInventory().HaveItemByClassId(41122)) { // 카헬의 명령서
 					htmlid = "minicod01";
-				} else if (player.getInventory().checkItem(41130) // 핏자국의 지령서
-						&& player.getInventory().checkItem(41131)) { // 핏자국의 명령서
+				} else if (player.getInventory().HaveItemByClassId(41130) // 핏자국의 지령서
+						&& player.getInventory().HaveItemByClassId(41131)) { // 핏자국의 명령서
 					htmlid = "minicod06";
-				} else if (player.getInventory().checkItem(41130)) { // 핏자국의 명령서
+				} else if (player.getInventory().HaveItemByClassId(41130)) { // 핏자국의 명령서
 					htmlid = "minicod02";
 				}
 				break;
@@ -2103,29 +2103,29 @@ public class L1MerchantInstance extends L1NpcInstance {
 																									// 동굴측
 																									// 퀘스트
 																									// 종료
-						|| player.getInventory().checkItem(41130) // 핏자국의 지령서
-						|| player.getInventory().checkItem(41131)) { // 핏자국의 명령서
+						|| player.getInventory().HaveItemByClassId(41130) // 핏자국의 지령서
+						|| player.getInventory().HaveItemByClassId(41131)) { // 핏자국의 명령서
 					htmlid = "minitos01";
-				} else if (player.getInventory().checkItem(41121) // 카헬의 지령서
-						&& player.getInventory().checkItem(41122)) { // 카헬의 명령서
+				} else if (player.getInventory().HaveItemByClassId(41121) // 카헬의 지령서
+						&& player.getInventory().HaveItemByClassId(41122)) { // 카헬의 명령서
 					htmlid = "minitos06";
-				} else if (player.getInventory().checkItem(41121)) { // 카헬의 명령서
+				} else if (player.getInventory().HaveItemByClassId(41121)) { // 카헬의 명령서
 					htmlid = "minitos02";
 				}
 				break;
 			case 81208: // 더러워진 브롭브
-				if (player.getInventory().checkItem(41129) // 핏자국의 정수
-						|| player.getInventory().checkItem(41138)) { // 카헬의 정수
+				if (player.getInventory().HaveItemByClassId(41129) // 핏자국의 정수
+						|| player.getInventory().HaveItemByClassId(41138)) { // 카헬의 정수
 					htmlid = "minibrob04";
-				} else if (player.getInventory().checkItem(41126) // 핏자국의 타락 한
+				} else if (player.getInventory().HaveItemByClassId(41126) // 핏자국의 타락 한
 																	// 정수
-						&& player.getInventory().checkItem(41127) // 핏자국의 무력한 정수
-						&& player.getInventory().checkItem(41128) // 핏자국의 아집인 정수
-						|| player.getInventory().checkItem(41135) // 카헬의 타락 한 정수
-								&& player.getInventory().checkItem(41136) // 카헬의
+						&& player.getInventory().HaveItemByClassId(41127) // 핏자국의 무력한 정수
+						&& player.getInventory().HaveItemByClassId(41128) // 핏자국의 아집인 정수
+						|| player.getInventory().HaveItemByClassId(41135) // 카헬의 타락 한 정수
+								&& player.getInventory().HaveItemByClassId(41136) // 카헬의
 																			// 아집인
 																			// 정수
-								&& player.getInventory().checkItem(41137)) { // 카헬의
+								&& player.getInventory().HaveItemByClassId(41137)) { // 카헬의
 																				// 아집인
 																				// 정수
 					htmlid = "minibrob02";
@@ -2139,12 +2139,12 @@ public class L1MerchantInstance extends L1NpcInstance {
 				경험치멘트(player);
 				break;
 			case 777849: // 킬톤 (호랑이 사육)
-				if (player.getInventory().checkItem(87050)) {
+				if (player.getInventory().HaveItemByClassId(87050)) {
 					htmlid = "killton2";
 				}
 				break;
 			case 777848: // 메린 (진돗개 사육)
-				if (player.getInventory().checkItem(87051)) {
+				if (player.getInventory().HaveItemByClassId(87051)) {
 					htmlid = "merin2";
 				}
 				break;
@@ -2221,7 +2221,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getLevel() < 52) {
 					htmlid = "marbinquestA";
 				} else {
-					if (player.getInventory().checkItem(46115, 1)) {
+					if (player.getInventory().HaveItemByClassId(46115, 1)) {
 						htmlid = "marbinquest3";
 					} else {
 						htmlid = "marbinquest1";
@@ -2229,8 +2229,8 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 5088: // 보석세공사 데이빗(얼녀귀걸이)
-				if (player.getInventory().checkItem(49031)) {
-					if (player.getInventory().checkItem(21081)) {
+				if (player.getInventory().HaveItemByClassId(49031)) {
+					if (player.getInventory().HaveItemByClassId(21081)) {
 						htmlid = "gemout1";
 					} else if (player.getQuest().get_step(CQuestSystem.QUEST_ICEQUEENRING) == 1) {
 						htmlid = "gemout2";
@@ -2270,16 +2270,16 @@ public class L1MerchantInstance extends L1NpcInstance {
 					htmlid = "marba1";
 				} else if (!player.isElf()) {
 					htmlid = "marba2";
-				} else if (player.getInventory().checkItem(40665)
-						&& (player.getInventory().checkItem(40693) || player.getInventory().checkItem(40694)
-								|| player.getInventory().checkItem(40695) || player.getInventory().checkItem(40697)
-								|| player.getInventory().checkItem(40698) || player.getInventory().checkItem(40699))) {
+				} else if (player.getInventory().HaveItemByClassId(40665)
+						&& (player.getInventory().HaveItemByClassId(40693) || player.getInventory().HaveItemByClassId(40694)
+								|| player.getInventory().HaveItemByClassId(40695) || player.getInventory().HaveItemByClassId(40697)
+								|| player.getInventory().HaveItemByClassId(40698) || player.getInventory().HaveItemByClassId(40699))) {
 					htmlid = "marba8";
-				} else if (player.getInventory().checkItem(40665)) {
+				} else if (player.getInventory().HaveItemByClassId(40665)) {
 					htmlid = "marba17";
-				} else if (player.getInventory().checkItem(40664)) {
+				} else if (player.getInventory().HaveItemByClassId(40664)) {
 					htmlid = "marba19";
-				} else if (player.getInventory().checkItem(40637)) {
+				} else if (player.getInventory().HaveItemByClassId(40637)) {
 					htmlid = "marba18";
 				} else {
 					htmlid = "marba3";
@@ -2455,16 +2455,16 @@ public class L1MerchantInstance extends L1NpcInstance {
 	private static int getNecessarySealCount(L1PcInstance pc) {
 		int rulerCount = 0;
 
-		if (pc.getInventory().checkItem(40917)) {
+		if (pc.getInventory().HaveItemByClassId(40917)) {
 			rulerCount++;
 		}
-		if (pc.getInventory().checkItem(40920)) {
+		if (pc.getInventory().HaveItemByClassId(40920)) {
 			rulerCount++;
 		}
-		if (pc.getInventory().checkItem(40918)) {
+		if (pc.getInventory().HaveItemByClassId(40918)) {
 			rulerCount++;
 		}
-		if (pc.getInventory().checkItem(40919)) {
+		if (pc.getInventory().HaveItemByClassId(40919)) {
 			rulerCount++;
 		}
 
@@ -2589,11 +2589,11 @@ public class L1MerchantInstance extends L1NpcInstance {
 		String htmlid = "";
 		if (pc.getLevel() < 25) {
 			htmlid = "jpe0041";
-			if (pc.getInventory().checkItem(41209) || pc.getInventory().checkItem(41210)
-					|| pc.getInventory().checkItem(41211) || pc.getInventory().checkItem(41212)) {
+			if (pc.getInventory().HaveItemByClassId(41209) || pc.getInventory().HaveItemByClassId(41210)
+					|| pc.getInventory().HaveItemByClassId(41211) || pc.getInventory().HaveItemByClassId(41212)) {
 				htmlid = "jpe0043";
 			}
-			if (pc.getInventory().checkItem(41213)) {
+			if (pc.getInventory().HaveItemByClassId(41213)) {
 				htmlid = "jpe0044";
 			}
 		} else {
@@ -2605,7 +2605,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 	private String talkToSecondtbox(L1PcInstance pc) {
 		String htmlid = "";
 		if (pc.getQuest().get_step(CQuestSystem.QUEST_TBOX1) == CQuestSystem.QUEST_END) {
-			if (pc.getInventory().checkItem(40701)) {
+			if (pc.getInventory().HaveItemByClassId(40701)) {
 				htmlid = "maptboxa";
 			} else {
 				htmlid = "maptbox0";
@@ -2619,7 +2619,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 	private String talkToThirdtbox(L1PcInstance pc) {
 		String htmlid = "";
 		if (pc.getQuest().get_step(CQuestSystem.QUEST_TBOX2) == CQuestSystem.QUEST_END) {
-			if (pc.getInventory().checkItem(40701)) {
+			if (pc.getInventory().HaveItemByClassId(40701)) {
 				htmlid = "maptboxd";
 			} else {
 				htmlid = "maptbox0";

@@ -80,7 +80,7 @@ public final class CS_COMPANION_SKILL_ENCHANT_REQ {
                 return;
             }
             if (companion.get_friend_ship_marble() < eInfo.get_enchant_cost_friend_ship()
-                    || !pc.getInventory().checkItem(eInfo.get_enchant_cost_item_id())) {
+                    || !pc.getInventory().HaveItemByClassId(eInfo.get_enchant_cost_item_id())) {
                 SC_COMPANION_SKILL_ENCHANT_ACK.send(pc, skillId, eResult.NOTHING);
                 return;
             }

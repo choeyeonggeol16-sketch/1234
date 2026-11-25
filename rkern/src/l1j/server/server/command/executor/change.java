@@ -101,67 +101,67 @@ public class change implements L1CommandExecutor {
 	}
 private void 신스킬삭제(L1PcInstance pc) {
 		
-		if (pc.getInventory().checkItem(70733)) {
+		if (pc.getInventory().HaveItemByClassId(70733)) {
 			pc.getInventory().consumeItem(70733);
 			
 		}
 		
-		if (pc.getInventory().checkItem(90088)) {
+		if (pc.getInventory().HaveItemByClassId(90088)) {
 			pc.getInventory().consumeItem(90088);
 			
 		}
 		
 		
-		if (pc.getInventory().checkItem(80888)) {
+		if (pc.getInventory().HaveItemByClassId(80888)) {
 			pc.getInventory().consumeItem(80888);
 			
 		}
 		
-		if (pc.getInventory().checkItem(70706)) {
+		if (pc.getInventory().HaveItemByClassId(70706)) {
 			pc.getInventory().consumeItem(70706);
 			
 		}
 		
-		if (pc.getInventory().checkItem(70708)) {
+		if (pc.getInventory().HaveItemByClassId(70708)) {
 			pc.getInventory().consumeItem(70708);
 			
 		}
 		
-		if (pc.getInventory().checkItem(70710)) {
+		if (pc.getInventory().HaveItemByClassId(70710)) {
 			pc.getInventory().consumeItem(70710);
 			
 		}
 		
-		if (pc.getInventory().checkItem(70714)) {
+		if (pc.getInventory().HaveItemByClassId(70714)) {
 			pc.getInventory().consumeItem(70714);
 			
 		}
 		
-		if (pc.getInventory().checkItem(70721)) {
+		if (pc.getInventory().HaveItemByClassId(70721)) {
 			pc.getInventory().consumeItem(70721);
 			
 		}
 		
-		if (pc.getInventory().checkItem(707777)) {
+		if (pc.getInventory().HaveItemByClassId(707777)) {
 			pc.getInventory().consumeItem(707777);
 			
 		}
 		
-		if (pc.getInventory().checkItem(707779)) {
+		if (pc.getInventory().HaveItemByClassId(707779)) {
 			pc.getInventory().consumeItem(707779);
 			
 		}
 		
-		if (pc.getInventory().checkItem(707781)) {
+		if (pc.getInventory().HaveItemByClassId(707781)) {
 			pc.getInventory().consumeItem(707781);
 			
 		}
 		
-		if (pc.getInventory().checkItem(70735)) {
+		if (pc.getInventory().HaveItemByClassId(70735)) {
 			pc.getInventory().consumeItem(70735);
 			
 		}
-		if (pc.getInventory().checkItem(70888)) {
+		if (pc.getInventory().HaveItemByClassId(70888)) {
 			pc.getInventory().consumeItem(70888);
 			
 		}

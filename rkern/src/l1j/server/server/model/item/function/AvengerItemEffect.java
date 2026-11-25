@@ -27,7 +27,7 @@ final class AvengerItemEffect {
 
     public static boolean 어벤저(L1PcInstance pc, int targetId, L1ItemInstance item) {
         if (pc == null || item == null || item.getItemId() != 707779
-                || pc.getInventory().getItem(item.getId()) != item
+                || pc.getInventory().GetByServerID(item.getId()) != item
                 || pc.isDead() || pc.get_teleport()) return false;
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
@@ -73,7 +73,7 @@ final class AvengerItemEffect {
                         SC_SystemMessage.send(pc, "어벤저는 투명상태로 시전이 불가능합니다.");
                         return false;
                     }
-                    if (!pc.getInventory().checkItem(40321, 2)) {
+                    if (!pc.getInventory().HaveItemByClassId(40321, 2)) {
                         SC_SystemMessage.send(pc, "마법 재료가 부족합니다.");
                         return false;
                     }

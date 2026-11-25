@@ -35,7 +35,7 @@ final class ItemCreationItems {
                 item.setEnchantLevel(enchantLevel);
                 item.setIdentified(true);
             }
-            if (pc.getInventory().checkAddItem(item, count) != CInventory.OK) {
+            if (pc.getInventory().CheckAddable(item, count) != CInventory.OK) {
                 SC_ServerMessage.send(pc, 82);
                 return false;
             }
@@ -48,7 +48,7 @@ final class ItemCreationItems {
         } finally {
             // Keep the world object only when THIS new instance really entered
             // inventory. On rejection, merge, or a failed insert, release it.
-            if (pc.getInventory().getItem(item.getId()) != item) {
+            if (pc.getInventory().GetByServerID(item.getId()) != item) {
                 L1World.getInstance().removeObject(item);
             }
         }

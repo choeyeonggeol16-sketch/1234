@@ -40,7 +40,7 @@ final class CraftingSupportAndTravelItems {
 
 		case 410094: { // 마력의 숨결: consume scroll + selected sealed rune atomically
 			if (l1iteminstance1 == null || l1iteminstance1 == l1iteminstance
-					|| pc.getInventory().getItem(l1iteminstance1.getId()) != l1iteminstance1)
+					|| pc.getInventory().GetByServerID(l1iteminstance1.getId()) != l1iteminstance1)
 				return;
 			final int rewardId = switch (l1iteminstance1.getItemId()) {
 				case 410114 -> 22232;
@@ -75,7 +75,7 @@ final class CraftingSupportAndTravelItems {
 
 		case 210082: { // 균열의 핵: selected material and core must both commit
 			if (l1iteminstance1 == null || l1iteminstance1 == l1iteminstance
-					|| pc.getInventory().getItem(l1iteminstance1.getId()) != l1iteminstance1) {
+					|| pc.getInventory().GetByServerID(l1iteminstance1.getId()) != l1iteminstance1) {
 				SC_ServerMessage.send(pc, 79);
 				break;
 			}

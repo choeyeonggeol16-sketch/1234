@@ -349,7 +349,7 @@ public class PrivateWarehouse extends Warehouse {
 
     synchronized void preparePrivateTransferDelete(L1ItemInstance item) {
         assertWarehouseActive();
-        if (item == null || getItem(item.getId()) != item)
+        if (item == null || GetByServerID(item.getId()) != item)
             throw new IllegalStateException("Private warehouse move stale source");
         final String owner = getName();
         final int id = item.getId(), itemId = item.getItemId();
@@ -361,7 +361,7 @@ public class PrivateWarehouse extends Warehouse {
     @Override
     public synchronized void deleteItem(L1ItemInstance item) {
         assertWarehouseActive();
-        if (item == null || getItem(item.getId()) != item) {
+        if (item == null || GetByServerID(item.getId()) != item) {
             throw new IllegalArgumentException("Warehouse item is not owned by account=" + getName());
         }
         final String account = getName();

@@ -51,7 +51,7 @@ public class DungeonTimePotion{
 				if(!isYes)
 					return;
 				
-				L1ItemInstance item = pc.getInventory().findItemObjId(num);
+				L1ItemInstance item = pc.getInventory().GetByServerID(num);
 				if(item == null){
 					pc.sendPackets("충전 아이템을 찾을 수 없습니다.");
 					return;

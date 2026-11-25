@@ -55,7 +55,7 @@ public final class User {
 
 		final L1PcInstance pc = client.getActiveChar();
 		if (pc == null) return;
-		final L1ItemInstance l1iteminstance = pc.getInventory().getItem(itemObjid);
+		final L1ItemInstance l1iteminstance = pc.getInventory().GetByServerID(itemObjid);
 
         // This item only opens an owned settings window. It has no item effects,
         // consumption, transfer or PSS start, so it must not enter effect gates.

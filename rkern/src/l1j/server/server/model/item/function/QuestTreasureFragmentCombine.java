@@ -40,8 +40,8 @@ final class QuestTreasureFragmentCombine {
             }
             if (targetItem == null || targetItem == item
                     || targetItem.getItemId() != requiredId
-                    || pc.getInventory().getItem(item.getId()) != item
-                    || pc.getInventory().getItem(targetItem.getId()) != targetItem) {
+                    || pc.getInventory().GetByServerID(item.getId()) != item
+                    || pc.getInventory().GetByServerID(targetItem.getId()) != targetItem) {
                 SC_ServerMessage.send(pc, 79);
                 return ItemActionResult.STOP;
             }

@@ -22,7 +22,7 @@ public final class SealedEquipmentRewards {
             item.setEnchantLevel(enchantLevel);
             item.setAttrEnchantLevel(attr);
             item.setIdentified(true); // Original operation sets identified twice.
-            if (pc.getInventory().checkAddItem(item, count) != CInventory.OK) {
+            if (pc.getInventory().CheckAddable(item, count) != CInventory.OK) {
                 SC_ServerMessage.send(pc, 82);
                 return false;
             }
@@ -33,7 +33,7 @@ public final class SealedEquipmentRewards {
             SC_ServerMessage.send(pc, 403, item.getLogName());
             return true;
         } finally {
-            if (pc.getInventory().getItem(item.getId()) != item) {
+            if (pc.getInventory().GetByServerID(item.getId()) != item) {
                 L1World.getInstance().removeObject(item);
             }
         }

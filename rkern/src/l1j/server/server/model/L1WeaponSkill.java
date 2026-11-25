@@ -323,7 +323,7 @@ public class L1WeaponSkill {
 	}
 
 	public static void 체인소드(L1PcInstance pc) { // 체인소드 대미지.
-		if (pc.getInventory().checkEquipped(123007)) {
+		if (pc.getInventory().IsEquippedByClassID(123007)) {
 			if (_random.nextInt(100) >= Config.약점노출 + 7)
 				return;
 		} else {

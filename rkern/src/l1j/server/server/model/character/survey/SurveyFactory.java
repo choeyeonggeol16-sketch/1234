@@ -85,7 +85,7 @@ public class SurveyFactory {
 				if(!isYes)
 					return;
 				
-				L1ItemInstance item = pc.getInventory().findItemObjId(num);
+				L1ItemInstance item = pc.getInventory().GetByServerID(num);
 				if(item == null){
 					pc.sendPackets("확성기를 찾을 수 없습니다.");
 					return;

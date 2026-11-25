@@ -47,7 +47,7 @@ public final class CItemDigest {
         final int current;
         synchronized (inventory) {
             if (!live() || npc.getInventory() != inventory
-                    || inventory.getItem(item.getId()) != item) return;
+                    || inventory.GetByServerID(item.getId()) != item) return;
             current = item.getCount();
         }
         final int count = Math.min(acquiredCount, current);
@@ -145,7 +145,7 @@ public final class CItemDigest {
                 try {
                     synchronized (inventory) {
                         if (live() && npc.getInventory() == inventory
-                                && inventory.getItem(item.getId()) == item) {
+                                && inventory.GetByServerID(item.getId()) == item) {
                             final int count = Math.min(counts[i],
                                     Math.max(0, item.getCount() - floors[i]));
                             if (count > 0) inventory.removeItem(item, count);

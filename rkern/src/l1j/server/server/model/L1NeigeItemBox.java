@@ -25,7 +25,7 @@ public final class L1NeigeItemBox {
     private static boolean useBox(L1PcInstance pc, L1ItemInstance box, int expectedId,
             boolean hero) {
         if (pc == null || box == null || box.getItemId() != expectedId
-                || pc.getInventory().getItem(box.getId()) != box) return false;
+                || pc.getInventory().GetByServerID(box.getId()) != box) return false;
         final int reward = rewardFor(pc.getClassId(), hero);
         if (reward == 0) {
             SC_SystemMessage.send(pc, "해당 클래스는 보상 상자를 사용할 수 없습니다.");

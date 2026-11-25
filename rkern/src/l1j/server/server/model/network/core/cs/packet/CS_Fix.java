@@ -66,7 +66,7 @@ public final class CS_Fix {
         final CUserInventory inventory = pc.getInventory();
         if (!inventory.tryBeginEquipmentChange()) return;
         try {
-            final L1ItemInstance item = inventory.getItem(itemObjectId);
+            final L1ItemInstance item = inventory.GetByServerID(itemObjectId);
             if (item == null || item.get_durability() <= 0) return;
             final int durability = item.get_durability();
             if (!inventory.consumeItem(L1ItemId.ADENA, durability * 200)) {

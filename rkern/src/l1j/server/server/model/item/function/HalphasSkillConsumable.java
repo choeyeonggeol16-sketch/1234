@@ -29,7 +29,7 @@ final class HalphasSkillConsumable {
                     SC_SystemMessage.send(pc, "체인소드를 착용 후 스킬시전이 가능합니다.");
                     return;
                 }
-                if (!pc.getInventory().checkItem(210035, 1)) {
+                if (!pc.getInventory().HaveItemByClassId(210035, 1)) {
                     pc.sendPackets("각인의 뼈조각이 부족합니다.");
                     return;
                 }

@@ -27,7 +27,7 @@ final class RuneRewardPackages {
         switch (itemId) {
 
 		case 60036:
-			if (pc.getInventory().checkItem(60036, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60036, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 60033, 1, 0, 1, 0, true); // 빛바랜 고서
 				if (pc.isWarrior()) {
@@ -59,7 +59,7 @@ final class RuneRewardPackages {
 
 
 		case 60037:
-			if (pc.getInventory().checkItem(60037, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60037, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 60033, 1, 0, 1, 0, true); // 빛바랜 고서
 				if (pc.isWarrior()) {
@@ -91,7 +91,7 @@ final class RuneRewardPackages {
 
 
 		case 60038:
-			if (pc.getInventory().checkItem(60038, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60038, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 60033, 1, 0, 1, 0, true); // 빛바랜 고서
 				if (pc.isWarrior()) {
@@ -123,7 +123,7 @@ final class RuneRewardPackages {
 
 
 		case 60039:
-			if (pc.getInventory().checkItem(60039, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60039, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 60033, 1, 0, 1, 0, true); // 빛바랜 고서
 				if (pc.isWarrior()) {
@@ -155,7 +155,7 @@ final class RuneRewardPackages {
 
 
 		case 60040:
-			if (pc.getInventory().checkItem(60040, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60040, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 60033, 1, 0, 1, 0, true); // 빛바랜 고서
 				if (pc.isWarrior()) {
@@ -193,7 +193,7 @@ final class RuneRewardPackages {
         switch (itemId) {
 
 		case 60041:
-			if (pc.getInventory().checkItem(60041, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60041, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68093, 1, 0, 1, 0, true); // 마력의 고서(70)
 				if (pc.isWarrior()) {
@@ -225,7 +225,7 @@ final class RuneRewardPackages {
 
 
 		case 60042:
-			if (pc.getInventory().checkItem(60042, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60042, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68093, 1, 0, 1, 0, true); // 마력의 고서(70)
 				if (pc.isWarrior()) {
@@ -257,7 +257,7 @@ final class RuneRewardPackages {
 
 
 		case 60043:
-			if (pc.getInventory().checkItem(60043, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60043, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68093, 1, 0, 1, 0, true); // 마력의 고서(70)
 				if (pc.isWarrior()) {
@@ -289,7 +289,7 @@ final class RuneRewardPackages {
 
 
 		case 60044:
-			if (pc.getInventory().checkItem(60044, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60044, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68093, 1, 0, 1, 0, true); // 마력의 고서(70)
 				if (pc.isWarrior()) {
@@ -321,7 +321,7 @@ final class RuneRewardPackages {
 
 
 		case 60045:
-			if (pc.getInventory().checkItem(60045, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(60045, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68093, 1, 0, 1, 0, true); // 마력의 고서(70)
 				if (pc.isWarrior()) {
@@ -359,7 +359,7 @@ final class RuneRewardPackages {
         switch (itemId) {
 
 		case 68078:
-			if (pc.getInventory().checkItem(68078, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68078, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68094, 1, 0, 1, 0, true); // 마력의 고서(80)
 				if (pc.isWarrior()) {
@@ -391,7 +391,7 @@ final class RuneRewardPackages {
 
 
 		case 68079:
-			if (pc.getInventory().checkItem(68079, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68079, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68094, 1, 0, 1, 0, true); // 마력의 고서(80)
 				if (pc.isWarrior()) {
@@ -423,7 +423,7 @@ final class RuneRewardPackages {
 
 
 		case 68080:
-			if (pc.getInventory().checkItem(68080, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68080, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68094, 1, 0, 1, 0, true); // 마력의 고서(80)
 				if (pc.isWarrior()) {
@@ -455,7 +455,7 @@ final class RuneRewardPackages {
 
 
 		case 68081:
-			if (pc.getInventory().checkItem(68081, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68081, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68094, 1, 0, 1, 0, true); // 마력의 고서(80)
 				if (pc.isWarrior()) {
@@ -487,7 +487,7 @@ final class RuneRewardPackages {
 
 
 		case 68082:
-			if (pc.getInventory().checkItem(68082, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68082, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68094, 1, 0, 1, 0, true); // 마력의 고서(80)
 				if (pc.isWarrior()) {
@@ -525,7 +525,7 @@ final class RuneRewardPackages {
         switch (itemId) {
 
 		case 68083:
-			if (pc.getInventory().checkItem(68083, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68083, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68095, 1, 0, 1, 0, true); // 마력의 고서(85)
 				if (pc.isWarrior()) {
@@ -557,7 +557,7 @@ final class RuneRewardPackages {
 
 
 		case 68084:
-			if (pc.getInventory().checkItem(68084, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68084, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68095, 1, 0, 1, 0, true); // 마력의 고서(85)
 				if (pc.isWarrior()) {
@@ -589,7 +589,7 @@ final class RuneRewardPackages {
 
 
 		case 68085:
-			if (pc.getInventory().checkItem(68085, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68085, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68095, 1, 0, 1, 0, true); // 마력의 고서(85)
 				if (pc.isWarrior()) {
@@ -621,7 +621,7 @@ final class RuneRewardPackages {
 
 
 		case 68086:
-			if (pc.getInventory().checkItem(68086, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68086, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68095, 1, 0, 1, 0, true); // 마력의 고서(85)
 				if (pc.isWarrior()) {
@@ -653,7 +653,7 @@ final class RuneRewardPackages {
 
 
 		case 68087:
-			if (pc.getInventory().checkItem(68087, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68087, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68095, 1, 0, 1, 0, true); // 마력의 고서(85)
 				if (pc.isWarrior()) {
@@ -691,7 +691,7 @@ final class RuneRewardPackages {
         switch (itemId) {
 
 		case 68088:
-			if (pc.getInventory().checkItem(68088, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68088, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68096, 1, 0, 1, 0, true); // 마력의 고서(90)
 				if (pc.isWarrior()) {
@@ -723,7 +723,7 @@ final class RuneRewardPackages {
 
 
 		case 68089:
-			if (pc.getInventory().checkItem(68089, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68089, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68096, 1, 0, 1, 0, true); // 마력의 고서(90)
 				if (pc.isWarrior()) {
@@ -755,7 +755,7 @@ final class RuneRewardPackages {
 
 
 		case 68090:
-			if (pc.getInventory().checkItem(68090, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68090, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68096, 1, 0, 1, 0, true); // 마력의 고서(90)
 				if (pc.isWarrior()) {
@@ -787,7 +787,7 @@ final class RuneRewardPackages {
 
 
 		case 68091:
-			if (pc.getInventory().checkItem(68091, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68091, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68096, 1, 0, 1, 0, true); // 마력의 고서(90)
 				if (pc.isWarrior()) {
@@ -819,7 +819,7 @@ final class RuneRewardPackages {
 
 
 		case 68092:
-			if (pc.getInventory().checkItem(68092, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(68092, 1)) { // 체크 되는 아이템과 수량
 
 				stageSealedReward(tx, messages, 68096, 1, 0, 1, 0, true); // 마력의 고서(90)
 				if (pc.isWarrior()) {

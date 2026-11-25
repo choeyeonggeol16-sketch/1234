@@ -24,7 +24,7 @@ final class NameChangeRequestItemUse {
             pc.sendPackets("해당 지역에서는 사용할 수 없습니다.");
             return ItemActionResult.STOP;
         }
-        if (!pc.getInventory().checkItem(408991)) {
+        if (!pc.getInventory().HaveItemByClassId(408991)) {
             return ItemActionResult.STOP;
         }
         if (InstanceSpace.isInInstance(pc)) {

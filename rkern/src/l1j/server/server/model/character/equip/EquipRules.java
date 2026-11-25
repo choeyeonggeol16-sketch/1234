@@ -95,7 +95,7 @@ public final class EquipRules {
         final int type = armor.getItem().getType();
         if (armor.getItemId() == 900111) {
             if (planned == null) {
-                if (inv.isEquippedDirect(900111) || inv.isEquippedDirect(20288))
+                if (inv.IsEquippedByClassIDCached(900111) || inv.IsEquippedByClassIDCached(20288))
                     return EquipResult.fail(EquipFail.text("이미 착용중인 아이템입니다."));
             } else {
                 for (int i = 0; i < plannedCount; i++) {

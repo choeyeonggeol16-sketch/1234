@@ -420,7 +420,7 @@ public final class CRegenController {
 
     private static boolean isUnderwater(L1PcInstance pc) {
         if (pc.hasSkillEffect(L1SkillId.STATUS_UNDERWATER_BREATH)) return false;
-        if (pc.getInventory().isEquippedDirect(22207)) return false;
+        if (pc.getInventory().IsEquippedByClassIDCached(22207)) return false;
         return pc.getMap().isUnderwater();
     }
 

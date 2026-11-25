@@ -20,7 +20,7 @@ final class LegacyEquipmentExchangeReceipt {
 
     public static void exchangeLegacyItem(L1PcInstance pc, L1ItemInstance source) {
         if (pc == null || source == null
-                || pc.getInventory().getItem(source.getId()) != source) return;
+                || pc.getInventory().GetByServerID(source.getId()) != source) return;
         final int id = source.getItemId();
         final int rewardId;
         if (id >= 40280 && id <= 40288) {

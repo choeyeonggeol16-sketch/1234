@@ -1075,7 +1075,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 					item.setEnchantLevel(0);
 					item.setCount(count);
 					item.setIdentified(true);
-					if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
+					if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
 						pc.getInventory().storeItem(item);
 						SC_SystemMessage.send(pc, "\\fY아이템:[\\aA" + item.getLogName() + "\\fY] 아이템ID:[\\aA"
 								+ itemid + "\\fY] 인챈트:[\\aA" + enchant + "\\fY] \\aG생성");
@@ -1089,7 +1089,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 						item.setEnchantLevel(enchant);
 						item.setAttrEnchantLevel(attrenchant);
 						item.setIdentified(true);
-						if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK) {
+						if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK) {
 							pc.getInventory().storeItem(item);
 						} else {
 							break;
@@ -1111,8 +1111,8 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 
 
 	public static void 할파스의신의(L1PcInstance gm, String param) {
-		if (!(gm.getInventory().checkEquipped(123111) || gm.getInventory().checkEquipped(123112)
-				|| gm.getInventory().checkEquipped(123113))) {
+		if (!(gm.getInventory().IsEquippedByClassID(123111) || gm.getInventory().IsEquippedByClassID(123112)
+				|| gm.getInventory().IsEquippedByClassID(123113))) {
 			gm.sendPackets("\\fY할파스의 갑옷을 착용하고 있지 않습니다.");
 			return;
 		} else {
@@ -1976,7 +1976,7 @@ for (L1PcInstance target : player) {
 									item.setCount(count);
 									item.setEnchantLevel(enchant);
 									if (item != null) {
-										if (target.getInventory().checkAddItem(item, count) == CInventory.OK) {
+										if (target.getInventory().CheckAddable(item, count) == CInventory.OK) {
 											target.getInventory().storeItem(item);
 										}
 									}
@@ -2350,7 +2350,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 
 			statement = con.prepareStatement("select * from \u006D\u0065\u0065\u0070 where login Like '" + account + "'");
 			ResultSet rs = statement.executeQuery();
-			L1ItemInstance total = gm.getInventory().findItemId(777777);
+			L1ItemInstance total = gm.getInventory().GetFirstItemByClassID(777777);
 			int count = total.getCount();
 			if (rs.next())
 				login = rs.getString(1);
@@ -2592,7 +2592,7 @@ for (L1PcInstance target : player) {
 					item.setCount(count);
 					item.setEnchantLevel(enchant);
 					if (item != null) {
-						if (target.getInventory().checkAddItem(item, count) == CInventory.OK) {
+						if (target.getInventory().CheckAddable(item, count) == CInventory.OK) {
 							target.getInventory().storeItem(item);
 						}
 					}

@@ -45,7 +45,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 			case 50014: // 디론
 				if (player.isWizard()) { // 위저드
 					if (quest.get_step(CQuestSystem.QUEST_LEVEL30) == 1
-							&& !player.getInventory().checkItem(40579)) { // 안 데드의 뼈
+							&& !player.getInventory().HaveItemByClassId(40579)) { // 안 데드의 뼈
 						htmlid = "dilong1";
 					} else {
 						htmlid = "dilong3";
@@ -58,7 +58,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 				} else if (player.getCurrentSpriteId() == 1039) {// 쟈이안트안트소르쟈 변신
 					if (player.isCrown()) { // 군주
 						if (quest.get_step(CQuestSystem.QUEST_LEVEL30) == 1) {
-							if (player.getInventory().checkItem(40547)) { // 주민들의 유품
+							if (player.getInventory().HaveItemByClassId(40547)) { // 주민들의 유품
 								htmlid = "antsn";
 							} else {
 								htmlid = "ants1";
@@ -74,7 +74,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 			case 70853: // 페어리 프린세스
 				if (player.isElf()) { // 에르프
 					if (quest.get_step(CQuestSystem.QUEST_LEVEL30) == 1) {
-						if (!player.getInventory().checkItem(40592)) { // 저주해진 정령서
+						if (!player.getInventory().HaveItemByClassId(40592)) { // 저주해진 정령서
 							Random random = new Random(System.nanoTime());
 							if (random.nextInt(100) < 50) { // 50%로 다크마르단젼
 								htmlid = "fairyp2";
@@ -88,7 +88,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 			case 50031: // 세피아
 				if (player.isElf()) { // 에르프
 					if (quest.get_step(CQuestSystem.QUEST_LEVEL45) == 2) {
-						if (!player.getInventory().checkItem(40602)) { // 블루 플룻
+						if (!player.getInventory().HaveItemByClassId(40602)) { // 블루 플룻
 							htmlid = "sepia1";
 						}
 					}
@@ -409,7 +409,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 		boolean isTeleport = true;
 
 		if (npcid == 50014) { // 디 론
-			if (!player.getInventory().checkItem(40581)) { // 안 데드의 키
+			if (!player.getInventory().HaveItemByClassId(40581)) { // 안 데드의 키
 				isTeleport = false;
 				htmlid = "dilongn";
 			}

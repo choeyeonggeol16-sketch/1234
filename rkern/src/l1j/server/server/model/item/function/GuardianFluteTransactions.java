@@ -26,7 +26,7 @@ final class GuardianFluteTransactions {
 
     static void useGuardianFlute(L1PcInstance pc, L1ItemInstance flute) {
         if (pc == null || flute == null || flute.getItemId() != 40493
-                || pc.getInventory().getItem(flute.getId()) != flute) return;
+                || pc.getInventory().GetByServerID(flute.getId()) != flute) return;
         boolean guardianPresent = false;
         for (l1j.server.server.model.L1Object visible : pc.getKnownObjects()) {
             if (visible instanceof l1j.server.server.model.Instance.L1GuardianInstance guardian

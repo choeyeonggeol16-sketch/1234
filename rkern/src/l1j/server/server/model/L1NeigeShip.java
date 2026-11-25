@@ -11,7 +11,7 @@ public class L1NeigeShip {
 	public static void join(L1PcInstance pc) {
 		int servertime = L1GameTimeClock.getInstance().getGameTime().getSeconds();
 		int nowtime = servertime % 86400;
-		if(!pc.getInventory().checkItem(40303, 1)){return;}
+		if(!pc.getInventory().HaveItemByClassId(40303, 1)){return;}
 		if (nowtime >= -62370 && nowtime < -60870 //13시 8분 ~ 13시 33분 배
 				|| nowtime >= -56982 && nowtime < -55482
 				|| nowtime >= -51576 && nowtime < -50076

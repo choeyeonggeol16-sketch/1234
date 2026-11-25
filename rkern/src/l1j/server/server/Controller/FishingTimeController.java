@@ -240,7 +240,7 @@ public final class FishingTimeController {
         }
 
         final L1ItemInstance rod = pc._fishingRod;
-        if (rod == null || pc.getInventory().getItem(rod.getId()) != rod
+        if (rod == null || pc.getInventory().GetByServerID(rod.getId()) != rod
                 || rod.getCount() <= 0) {
             endFishing(pc);
             return -1L;

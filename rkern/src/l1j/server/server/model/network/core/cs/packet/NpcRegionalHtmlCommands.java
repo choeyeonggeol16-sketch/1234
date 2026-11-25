@@ -42,7 +42,7 @@ final class NpcRegionalHtmlCommands {
 
         } else if (templateId == 71005) {
             if (s.equalsIgnoreCase("0")) {
-                if (pc.getInventory().checkItem(41209)) htmlid = "";
+                if (pc.getInventory().HaveItemByClassId(41209)) htmlid = "";
                 else {
                     NpcQuestTransactions.grantLegacyNpcItem(pc, (L1NpcInstance) obj, 41209, 1, true, "");
                     return;
@@ -55,13 +55,13 @@ final class NpcRegionalHtmlCommands {
             if (s.equalsIgnoreCase("0")) {
                 if (pc.getLevel() > 25) {
                     htmlid = "jpe0057";
-                } else if (pc.getInventory().checkItem(41213)) {
+                } else if (pc.getInventory().HaveItemByClassId(41213)) {
                     htmlid = "jpe0056";
-                } else if (pc.getInventory().checkItem(41210) || pc.getInventory().checkItem(41211)) {
+                } else if (pc.getInventory().HaveItemByClassId(41210) || pc.getInventory().HaveItemByClassId(41211)) {
                     htmlid = "jpe0055";
-                } else if (pc.getInventory().checkItem(41209)) {
+                } else if (pc.getInventory().HaveItemByClassId(41209)) {
                     htmlid = "jpe0054";
-                } else if (pc.getInventory().checkItem(41212)) {
+                } else if (pc.getInventory().HaveItemByClassId(41212)) {
                     htmlid = "jpe0056";
                     materials = Recipes.RECIPE_VALUES_46;
                     counts = NpcCraftCommands.UnitCounts.ONE;
@@ -165,8 +165,8 @@ final class NpcRegionalHtmlCommands {
                         pc.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ), 1, "SIMIZZ7");
                 return;
             } else if (s.equalsIgnoreCase("b")) {
-                if (pc.getInventory().checkItem(40661) && pc.getInventory().checkItem(40662)
-                        && pc.getInventory().checkItem(40663)) {
+                if (pc.getInventory().HaveItemByClassId(40661) && pc.getInventory().HaveItemByClassId(40662)
+                        && pc.getInventory().HaveItemByClassId(40663)) {
                     NpcQuestTransactions.simizzReceipt(pc, (L1NpcInstance) obj);
                     return;
                 }
@@ -185,7 +185,7 @@ final class NpcRegionalHtmlCommands {
             } else if (s.equalsIgnoreCase("6")) {
                 htmlid = "doil6";
             } else if (s.equalsIgnoreCase("1")) {
-                if (pc.getInventory().checkItem(40714)) {
+                if (pc.getInventory().HaveItemByClassId(40714)) {
                     NpcQuestTransactions.questItemExchange(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_DOIL,
                             pc.getQuest().get_step(CQuestSystem.QUEST_DOIL), CQuestSystem.QUEST_END,
                             40714, 1, 0, 40647, 0, "doil8", "doil7");
@@ -204,7 +204,7 @@ final class NpcRegionalHtmlCommands {
                         0, 1, 40700, 1, "rudian6");
                 return;
             } else if (s.equalsIgnoreCase("B")) {
-                if (pc.getInventory().checkItem(40710)) {
+                if (pc.getInventory().HaveItemByClassId(40710)) {
                     NpcQuestTransactions.questItemExchange(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_RUDIAN,
                             pc.getQuest().get_step(CQuestSystem.QUEST_RUDIAN), CQuestSystem.QUEST_END,
                             40700, 1, 40710, 40647, 0, "rudian8", "rudian9");
@@ -234,7 +234,7 @@ final class NpcRegionalHtmlCommands {
                 final int step = pc.getQuest().get_step(CQuestSystem.QUEST_CADMUS);
                 if (step >= 2) {
                     SC_NPCTalkReturn.send(pc, objid, "cadmus6");
-                } else if (pc.getInventory().checkItem(40647, 3)) {
+                } else if (pc.getInventory().HaveItemByClassId(40647, 3)) {
                     NpcQuestTransactions.npcQuestDebit(pc, (L1NpcInstance) obj, CQuestSystem.QUEST_CADMUS,
                             step, 2, 40647, 3, "cadmus6", "cadmus5");
                 } else {
@@ -297,7 +297,7 @@ final class NpcRegionalHtmlCommands {
             if (NpcQuestTransactions.handleJeronQuest(pc, (L1NpcInstance) obj, s)) return;
         } else if (templateId == 80079) {
             if (s.equalsIgnoreCase("0")) {
-                if (!pc.getInventory().checkItem(41312)) {
+                if (!pc.getInventory().HaveItemByClassId(41312)) {
                     // The first clue is a one-time quest award; after it was
                     // consumed, another click must not mint a second clue.
                     if (pc.getQuest().get_step(CQuestSystem.QUEST_KEPLISHA) == 0)
@@ -371,7 +371,7 @@ final class NpcRegionalHtmlCommands {
             }
         } else if (templateId == 80084) {
             if (s.equalsIgnoreCase("q")) {
-                if (pc.getInventory().checkItem(41356, 1)) htmlid = "rparum4";
+                if (pc.getInventory().HaveItemByClassId(41356, 1)) htmlid = "rparum4";
                 else {
                     NpcQuestTransactions.grantLegacyNpcItem(pc, (L1NpcInstance) obj, 41356, 1, true, "rparum3");
                     return;

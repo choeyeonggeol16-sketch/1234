@@ -87,10 +87,10 @@ public final class CS_Restart {
         processRestart(pc);
 
         for (int itemId : REMOVE_IDS) {
-            if (pc.getInventory().hasItemAnyDirect(itemId)) {
+            if (pc.getInventory().HaveAnyItemByClassId(itemId)) {
                 pc.getInventory().consumeItem(
                         itemId,
-                        pc.getInventory().countItems(itemId));
+                        pc.getInventory().GetUnequippedItemAmount(itemId));
             }
         }
     }

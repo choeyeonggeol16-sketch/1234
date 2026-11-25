@@ -33,7 +33,7 @@ case 40566: { // 신비한 소라 껍데기
 		            && pc.getY() >= 32324
 		            && pc.getY() <= 32328
 		            && pc.getMapId() == 4
-		            && !pc.getInventory().checkItem(40548)) { // 망령의 봉투
+		            && !pc.getInventory().HaveItemByClassId(40548)) { // 망령의 봉투
 
 		        final L1NpcInstance npc =
 		                L1World.getInstance()
@@ -88,7 +88,7 @@ case 40700: { // 실버 플룻
 		
 case 41121:// 카헬의 계약서
 			if (pc.getQuest().get_step(CQuestSystem.QUEST_SHADOWS) == CQuestSystem.QUEST_END
-			|| pc.getInventory().checkItem(41122, 1)) {
+			|| pc.getInventory().HaveItemByClassId(41122, 1)) {
 				SC_ServerMessage.send(pc, 79);
 			} else {
 				CreatureItemActions.createNewItem(pc, 41122, 1);
@@ -97,7 +97,7 @@ case 41121:// 카헬의 계약서
 		
 case 41130:// 혈흔의 계약서
 			if (pc.getQuest().get_step(CQuestSystem.QUEST_DESIRE) == CQuestSystem.QUEST_END
-			|| pc.getInventory().checkItem(41131, 1)) {
+			|| pc.getInventory().HaveItemByClassId(41131, 1)) {
 				SC_ServerMessage.send(pc, 79);
 			} else {
 				CreatureItemActions.createNewItem(pc, 41131, 1);

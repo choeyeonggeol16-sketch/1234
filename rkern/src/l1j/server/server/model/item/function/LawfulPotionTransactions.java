@@ -19,7 +19,7 @@ public final class LawfulPotionTransactions {
     private LawfulPotionTransactions() {}
 
     public static void UseLawfulPotionAtomic(L1PcInstance pc, L1ItemInstance input) {
-        if (pc == null || input == null || pc.getInventory().getItem(input.getId()) != input)
+        if (pc == null || input == null || pc.getInventory().GetByServerID(input.getId()) != input)
             return;
         final int itemId = input.getItemId();
         if (itemId != 490028 && itemId != 490029) return;

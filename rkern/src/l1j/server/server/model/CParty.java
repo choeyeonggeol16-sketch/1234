@@ -507,7 +507,7 @@ for (L1PcInstance member : getMembers()) {
     }
 
     private void RecoverRemainder(CWorld world, L1Location origin, CInventory source, L1ItemInstance item) {
-        if (source.getItem(item.getId()) != item || item.getCount() <= 0) return;
+        if (source.GetByServerID(item.getId()) != item || item.getCount() <= 0) return;
         if (!world.RecoverDropRemainder(origin, source, item)) {
             _log.warning("Party drop ground recovery rejected: item=" + item.getId()
                     + ", count=" + item.getCount());

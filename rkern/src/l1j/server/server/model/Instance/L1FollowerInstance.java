@@ -212,7 +212,7 @@ public class L1FollowerInstance extends L1NpcInstance {
                     questHandoff = HANDOFF_COMMITTED;
                     return;
                 }
-                if (once && pc.getInventory().checkItem(itemId)) {
+                if (once && pc.getInventory().HaveItemByClassId(itemId)) {
                     questHandoff = HANDOFF_COMMITTED;
                     return;
                 }

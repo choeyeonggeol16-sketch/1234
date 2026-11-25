@@ -49,7 +49,7 @@ final class SkillBookLearning {
                                String skillName, int[] levels, int sound) {
         if (pc == null || book == null || skillId <= 0 || skillName == null
                 || pc.isSkillMastery(skillId)
-                || pc.getInventory().getItem(book.getId()) != book) return;
+                || pc.getInventory().GetByServerID(book.getId()) != book) return;
         final int playerId = pc.getId();
         try {
             if (book.getRecordingColumns() != 0)

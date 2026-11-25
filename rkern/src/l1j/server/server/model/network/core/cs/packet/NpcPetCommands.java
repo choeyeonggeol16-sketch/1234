@@ -70,7 +70,7 @@ final class NpcPetCommands {
                     LOG.log(Level.WARNING, "Committed NPC pet could not enter the world: " + amuletId, failure);
                     SC_SystemMessage.send(pc, "아뮬렛으로 펫을 소환해 주세요.");
                 }
-                L1ItemInstance current = pc.getInventory().getItem(amuletId);
+                L1ItemInstance current = pc.getInventory().GetByServerID(amuletId);
                 if (current != null) SC_ItemName.send(pc, current);
             });
         } catch (RuntimeException failure) {

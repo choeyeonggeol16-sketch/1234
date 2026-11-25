@@ -88,8 +88,8 @@ public static boolean isOwnedScrollTarget(L1PcInstance pc, L1ItemInstance scroll
             && scroll.getItem() != null
             && target.getItem() != null
             && scroll.getCount() > 0 && target.getCount() > 0
-            && pc.getInventory().getItem(scroll.getId()) == scroll
-            && pc.getInventory().getItem(target.getId()) == target;
+            && pc.getInventory().GetByServerID(scroll.getId()) == scroll
+            && pc.getInventory().GetByServerID(target.getId()) == target;
 }
 
 public static boolean isAccessoryEnchantTarget(L1ItemInstance target) {

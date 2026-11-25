@@ -23,8 +23,8 @@ final class DollPotentialTransactions {
         final int mode = scroll.getItemId();
         if (mode != 300001 && mode != 400001 && mode != 500001
                 && mode != 600001 && mode != 700001) return;
-        if (pc.getInventory().getItem(scroll.getId()) != scroll
-                || pc.getInventory().getItem(doll.getId()) != doll || doll.isEquipped()) return;
+        if (pc.getInventory().GetByServerID(scroll.getId()) != scroll
+                || pc.getInventory().GetByServerID(doll.getId()) != doll || doll.isEquipped()) return;
         for (Object value : pc.getDollList().values()) {
             if (value instanceof L1DollInstance
                     && ((L1DollInstance) value).getItemObjId() == doll.getId()) {

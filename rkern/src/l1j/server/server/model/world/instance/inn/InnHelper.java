@@ -71,7 +71,7 @@ public class InnHelper {
         if (_mInfo == null || _mInfo.length <= index || _mInfo[index] == null) return;
         final InnMapInfo info = _mInfo[index];
         final CInventory inv = pc.getInventory();
-        if (inv.checkItem(INN_KEYID)) {
+        if (inv.HaveItemByClassId(INN_KEYID)) {
             sendNormal(pc, npc.getId(), hall ? "inn15" : "inn5");
             return;
         }
@@ -80,7 +80,7 @@ public class InnHelper {
             return;
         }
         final int price = hall ? HALL_PRICE : INN_PRICE;
-        if (!inv.checkItem(L1ItemId.ADENA, amount * price)) {
+        if (!inv.HaveItemByClassId(L1ItemId.ADENA, amount * price)) {
             sendNormal(pc, npc.getId(), "inn3");
             return;
         }
@@ -90,7 +90,7 @@ public class InnHelper {
         InnRoom reserved = null;
         boolean submitted = false;
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, INN_KEYID)) {
-            if (inv.checkItem(INN_KEYID)) {
+            if (inv.HaveItemByClassId(INN_KEYID)) {
                 sendNormal(pc, objectId, hall ? "inn15" : "inn5");
                 return;
             }
@@ -159,7 +159,7 @@ public class InnHelper {
 	
 	public void onAction(L1NpcInstance npc, L1PcInstance pc, String s) throws IOException{
         if (pc.isItemTransferBusy()) return;
-		L1ItemInstance[] keys = pc.getInventory().findItemsId(INN_KEYID);
+		L1ItemInstance[] keys = pc.getInventory().GetItemListByClassID(INN_KEYID);
 		
 		switch(s){
 		

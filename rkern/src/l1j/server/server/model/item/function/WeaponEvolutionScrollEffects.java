@@ -66,8 +66,8 @@ final class WeaponEvolutionScrollEffects {
 
     static void 집행진화주문서(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {
 		if (scroll == null || target == null || scroll == target
-				|| pc.getInventory().getItem(scroll.getId()) != scroll
-				|| pc.getInventory().getItem(target.getId()) != target) return;
+				|| pc.getInventory().GetByServerID(scroll.getId()) != scroll
+				|| pc.getInventory().GetByServerID(target.getId()) != target) return;
 		if (target.getBless() >= 128) {
 			pc.sendPackets("봉인된 아이템에는 사용할 수 없습니다.");
 			return;

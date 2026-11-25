@@ -38,9 +38,9 @@ public final class CItemRefine {
     private static void Refine(final L1NpcInstance npc, final CInventory inventory,
             final int[] recipes, final int offset, final int end) {
         final int resultId = recipes[offset];
-        if (inventory.hasItemDirect(resultId)) return;
+        if (inventory.HaveItemAmount(resultId)) return;
         for (int i = offset + 4; i < end; i += 2) {
-            if (!inventory.checkItem(recipes[i], recipes[i + 1])) return;
+            if (!inventory.HaveItemByClassId(recipes[i], recipes[i + 1])) return;
         }
         for (int i = offset + 4; i < end; i += 2) {
             inventory.consumeItem(recipes[i], recipes[i + 1]);

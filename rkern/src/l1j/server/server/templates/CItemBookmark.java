@@ -250,7 +250,7 @@ public class CItemBookmark {
         if (pc == null || source == null || source.getItemId() != 3000208
                 || pc.isLogoutStarted() || pc.isDead() || pc.isGhost()
                 || pc.isItemTransferBusy() || pc.getTradeID() != 0 || pc.isTradeResolving()
-                || pc.getInventory().getItem(source.getId()) != source) return;
+                || pc.getInventory().GetByServerID(source.getId()) != source) return;
         final BookmarkSlot[] slots = pc.getBookMarkArray();
         if (slots.length == 0 || slots.length > CUserBookmark.MAX_SLOT) return;
         Arrays.sort(slots, Comparator.comparingInt(BookmarkSlot::getTemp_id)
@@ -279,7 +279,7 @@ public class CItemBookmark {
             });
             tx.onFailure(() -> pc.sendPackets("기억 저장에 실패했습니다. 구슬은 소비되지 않았습니다."));
             tx.commit(() -> {
-                L1ItemInstance item = pc.getInventory().getItem(objectId);
+                L1ItemInstance item = pc.getInventory().GetByServerID(objectId);
                 if (item != null && item.getItemId() == 700023) {
                     item.getBookMark().clear();
                     item.getBookMark().addAll(rows);

@@ -214,7 +214,7 @@ public class L1MonsterInstance extends L1NpcInstance {
         final CInventory inventory = getInventory();
         if (inventory == null) return;
         inventory.shuffle();
-        if (inventory.getItem(item.getId()) == item) {
+        if (inventory.GetByServerID(item.getId()) == item) {
             final int remaining = Math.max(0,
                     acquiredCount - Math.max(0, before - item.getCount()));
             setDigestItem(item, remaining);
@@ -981,7 +981,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         if (source.getItems().isEmpty()) return true;
         final L1World world = L1World.getInstance();
         for (L1ItemInstance item : source.getItems()) {
-            if (item == null || source.getItem(item.getId()) != item || item.getCount() <= 0) continue;
+            if (item == null || source.GetByServerID(item.getId()) != item || item.getCount() <= 0) continue;
             try {
                 world.RecoverNpcDrop(job.origin, source, item);
             } catch (RuntimeException failure) {
@@ -1116,7 +1116,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	    if (mapId == 781 || mapId == 783) {
 	        if (GameRandom.next(100) < 15) { // 15% 확률 (기존 rnd >= 85와 동일)
 	            int itemId = (mapId == 781) ? 100036 : 500210;
-	            if (!pc.getInventory().checkItem(itemId, 1)) {
+	            if (!pc.getInventory().HaveItemByClassId(itemId, 1)) {
 	                L1ItemInstance item = pc.getInventory().storeItem(itemId, 1);
 	                SC_ServerMessage.send(pc, 143, getNpcTemplate().get_name(), item.getItem().getName());
 	            }
@@ -1371,7 +1371,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 		if (item != null) {
 			item.setCount(count);
 			item.setBless(Bless);
-			if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
+			if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
 				pc.getInventory().storeItem(item);
 				pc.getInventory().updateItem(item, CUserInventory.COL_BLESS);
 				pc.getInventory().saveItem(item, CUserInventory.COL_BLESS);

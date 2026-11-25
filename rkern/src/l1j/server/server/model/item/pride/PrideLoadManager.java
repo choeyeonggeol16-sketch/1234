@@ -123,7 +123,7 @@ public class PrideLoadManager {
 		if(!USE_PRIDE_SYSTEM)
 			return;
 		
-		L1ItemInstance adena_item = target.getInventory().findItemId(L1ItemId.ADENA);
+		L1ItemInstance adena_item = target.getInventory().GetFirstItemByClassID(L1ItemId.ADENA);
 		if(adena_item == null || adena_item.getCount() <= NEED_ADENA_COUNT)
 			return;
 		

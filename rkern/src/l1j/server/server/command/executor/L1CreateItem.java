@@ -62,7 +62,7 @@ public class L1CreateItem implements L1CommandExecutor {
 					if (isId == 1) {
 						item.setIdentified(true);
 					}
-					if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
+					if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
 						pc.getInventory().storeItem(item);
 						SC_SystemMessage.send(pc, "\\fY아이템:[\\aA"+item.getLogName()+"\\fY] 아이템ID:[\\aA"+itemid+"\\fY] 인챈트:[\\aA"+enchant+"\\fY] \\aG생성");;
 					}
@@ -76,7 +76,7 @@ public class L1CreateItem implements L1CommandExecutor {
 						if (isId == 1) {
 							item.setIdentified(true);
 						}
-						if (pc.getInventory(). checkAddItem(item, 1) == CInventory.OK) {
+						if (pc.getInventory(). CheckAddable(item, 1) == CInventory.OK) {
 							pc.getInventory(). storeItem(item);
 						} else {
 							break;

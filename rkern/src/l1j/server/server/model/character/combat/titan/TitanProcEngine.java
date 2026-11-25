@@ -62,7 +62,7 @@ public final class TitanProcEngine {
 
         // Do not reflect when CacheD will reject the catalyst mutation.
         if (defender.isItemTransferBusy()) return false;
-        if (!defender.getInventory().checkItem(CATALYST_ITEM_ID, CATALYST_COUNT)) {
+        if (!defender.getInventory().HaveItemByClassId(CATALYST_ITEM_ID, CATALYST_COUNT)) {
             SC_SystemMessage.send(defender, "타이탄: 촉매제가 부족합니다.");
             return false;
         }

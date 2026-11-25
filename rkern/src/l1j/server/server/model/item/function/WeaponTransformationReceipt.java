@@ -19,8 +19,8 @@ final class WeaponTransformationReceipt {
     static void useWeaponTransformation(L1PcInstance pc, L1ItemInstance scroll,
             L1ItemInstance weapon) {
         if (pc == null || scroll == null || weapon == null || scroll == weapon
-                || pc.getInventory().getItem(scroll.getId()) != scroll
-                || pc.getInventory().getItem(weapon.getId()) != weapon) return;
+                || pc.getInventory().GetByServerID(scroll.getId()) != scroll
+                || pc.getInventory().GetByServerID(weapon.getId()) != weapon) return;
         final int scrollId = scroll.getItemId();
         final int weaponId = weapon.getItemId();
         final int[] rewards;

@@ -46,7 +46,7 @@ final class CWareHouseDeposit {
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "현재 소환 된 인형은 맡길수가 없습니다.");
             return false;
         }
-        if (warehouse.checkAddItemToWarehouse(item, count) == CInventory.SIZE_OVER) {
+        if (warehouse.CheckAddableToWarehouse(item, count) == CInventory.SIZE_OVER) {
             SC_ServerMessage.send(pc, 75);
             return false;
         }

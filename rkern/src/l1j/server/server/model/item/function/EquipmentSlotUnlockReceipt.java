@@ -33,7 +33,7 @@ final class EquipmentSlotUnlockReceipt {
     private EquipmentSlotUnlockReceipt() {}
 
     static void useSlotUnlockAtomic(L1PcInstance pc, L1ItemInstance item) {
-        if (pc == null || item == null || pc.getInventory().getItem(item.getId()) != item)
+        if (pc == null || item == null || pc.getInventory().GetByServerID(item.getId()) != item)
             return;
         final int id = item.getItemId();
         final int selected = id == 4100203 ? 31

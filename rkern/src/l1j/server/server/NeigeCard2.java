@@ -67,7 +67,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			//근거리
 		case "rnlll01":
 			if(pc.getAccount().getInfo_ds_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -85,7 +85,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll02":
 			if(pc.getAccount().getInfo_dru_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -102,7 +102,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll03":
 			if(pc.getAccount().getInfo_dev_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -119,7 +119,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll04":
 			if(pc.getAccount().getInfo_pen_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -136,7 +136,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll05":
 			if(pc.getAccount().getInfo_atun_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -153,7 +153,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll06":
 			if(pc.getAccount().getInfo_mar_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -170,7 +170,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll07":
 			if(pc.getAccount().getlegend01() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -187,7 +187,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll08":
 			if(pc.getAccount().getlegend02() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -204,7 +204,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll09":
 			if(pc.getAccount().getlegend03() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -220,7 +220,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll10":
 			if(pc.getAccount().getlegend04() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -236,7 +236,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll11":
 			if(pc.getAccount().getlegend05() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -252,7 +252,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll12":
 			if(pc.getAccount().getlegend06() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -268,7 +268,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll13":
 			if(pc.getAccount().getlegend07() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -284,7 +284,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll14":
 			if(pc.getAccount().getlegend08() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -304,7 +304,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll16":
 			if(pc.getAccount().getlegend10() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -322,7 +322,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			//원거리
 		case "rnlll17":
 			if(pc.getAccount().getInfo_ga_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -339,7 +339,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll18":
 			if(pc.getAccount().getInfo_moon_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -356,7 +356,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll19":
 			if(pc.getAccount().getlegend11() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -373,7 +373,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll20":
 			if(pc.getAccount().getlegend12() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -390,7 +390,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll21":
 			if(pc.getAccount().getlegend13() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -408,7 +408,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			//마법
 		case "rnlll22":
 			if(pc.getAccount().getInfo_ger_poly() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}
@@ -425,7 +425,7 @@ public static boolean NeigeLegend(L1PcInstance pc, String s) {
 			return false;
 		case "rnlll23":
 			if(pc.getAccount().getlegend14() != 0){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return false;
 				}

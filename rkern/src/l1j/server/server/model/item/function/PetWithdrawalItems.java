@@ -122,7 +122,7 @@ public final class PetWithdrawalItems {
 		}
 
 		L1Pet l1pet = PetTable.getInstance().getTemplate(itemObjectId);
-        L1ItemInstance amulet = pc.getInventory().getItem(itemObjectId);
+        L1ItemInstance amulet = pc.getInventory().GetByServerID(itemObjectId);
         if (l1pet == null || amulet == null
                 || (amulet.getItemId() != 40314 && amulet.getItemId() != 40316)) return false;
         return CObjectDB.LoadNPC().getTemplate(l1pet.get_npcid()) != null;

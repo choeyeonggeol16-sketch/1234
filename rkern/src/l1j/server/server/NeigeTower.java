@@ -44,7 +44,7 @@ public class NeigeTower{
 		int cnt = 0;
 		int cnt2 = 0;
 		while(cnt2 < 10){
-			if(pc.getInventory().checkItem(num, 1)){cnt += 1;}
+			if(pc.getInventory().HaveItemByClassId(num, 1)){cnt += 1;}
 			cnt2++;
 			num++;
 		}
@@ -52,7 +52,7 @@ public class NeigeTower{
 			pc.sendPackets("부적이 모자랍니다.");
 			return;
 		}else{
-			if(!pc.getInventory().checkItem(40308, 10000000)){
+			if(!pc.getInventory().HaveItemByClassId(40308, 10000000)){
 				pc.sendPackets("아데나가 모자랍니다.");
 				return;
 			}

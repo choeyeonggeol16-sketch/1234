@@ -49,7 +49,7 @@ public class CInventory extends L1Object {
 	 * PC 인벤토리는 CUserInventory에서 캐시를 사용한다.
 	 * 일반/NPC 인벤토리는 별도 ConcurrentHashMap을 만들지 않고 필요 시 목록에서 계산한다.
 	 */
-	public int getItemCountDirect(int itemId) {
+	public int GetItemAmount(int itemId) {
 		return _items.GetItemCountByClassID(itemId);
 	}
 
@@ -62,33 +62,33 @@ public class CInventory extends L1Object {
 	}
 
 	/** 아이템 존재 여부만 확인 */
-	public boolean hasItemDirect(int itemId) {
-		   return hasItemDirect(itemId, 1);
+	public boolean HaveItemAmount(int itemId) {
+		   return HaveItemAmount(itemId, 1);
 	}
 	
-	public boolean hasItemAnyDirect(int... itemIds) {
+	public boolean HaveAnyItemByClassId(int... itemIds) {
 	    for (int id : itemIds) {
-	        if (getItemCountDirect(id) > 0) {
+	        if (GetItemAmount(id) > 0) {
 	            return true;
 	        }
 	    }
 	    return false;
 	}
 
-	public boolean hasItemDirect(int itemId, int count) {
+	public boolean HaveItemAmount(int itemId, int count) {
 	    if (count <= 0) {
 	        return true; 
 	    }
-	    return getItemCountDirect(itemId) >= count;
+	    return GetItemAmount(itemId) >= count;
 	}
 	
-	public boolean isEquippedDirect(int itemId) {
+	public boolean IsEquippedByClassIDCached(int itemId) {
 		return _items.IsEquippedByClassID(itemId);
 	}
 
 	public boolean isEquippedAny(int... itemIds) {
 	    for (int id : itemIds) {
-	        if (isEquippedDirect(id)) return true;
+	        if (IsEquippedByClassIDCached(id)) return true;
 	    }
 	    return false;
 	}
@@ -170,17 +170,17 @@ public class CInventory extends L1Object {
 		return itemList;
 	}
 
-	public int getWeight() {
+	public int GetCarryingWeight() {
 		long weight = 0;
 		for (L1ItemInstance item : _items) weight += item.getWeight();
 		return (int) (weight / Config.RATE_WEIGHT_LIMIT);
 	}
 
-	public int checkAddAdena(int count){
+	public int CheckAddableAdena(int count){
 		if(count < 0 || count > MAX_AMOUNT)
 			return AMOUNT_OVER;
 		
-		if(!checkItem(L1ItemId.ADENA) && getSize() >= 180)
+		if(!HaveItemByClassId(L1ItemId.ADENA) && getSize() >= 180)
 			return SIZE_OVER;
 		
 		return OK;
@@ -188,7 +188,7 @@ public class CInventory extends L1Object {
 	
 	
 	
-	public int checkAddItem(L1ItemInstance item, int count) {
+	public int CheckAddable(L1ItemInstance item, int count) {
 		if (item == null) {
 			return -1;
 		}
@@ -204,7 +204,7 @@ public class CInventory extends L1Object {
 		}
 
 		final long addedWeight = (long) item.getItem().getWeight() * count / 1000L;
-		final long weight = getWeight() + addedWeight + 1L;
+		final long weight = GetCarryingWeight() + addedWeight + 1L;
 		if (weight < 0 || weight > Integer.MAX_VALUE || addedWeight < 0) {
 			return WEIGHT_OVER;
 		}
@@ -220,7 +220,7 @@ public class CInventory extends L1Object {
 		return OK;
 	}
 
-	public int checkAddItemToWarehouse(L1ItemInstance item, int count, int type) {
+	public int CheckAddableToWarehouse(L1ItemInstance item, int count, int type) {
 		if (item == null) {
 			return -1;
 		}
@@ -234,7 +234,7 @@ public class CInventory extends L1Object {
 			maxSize = Config.MAX_CLAN_WAREHOUSE_ITEM;
 		}
 		if (getSize() > maxSize
-				|| (getSize() == maxSize && (!item.isStackable() || !checkItem(item.getItem().getItemId())))) {
+				|| (getSize() == maxSize && (!item.isStackable() || !HaveItemByClassId(item.getItem().getItemId())))) {
 			return SIZE_OVER;
 		}
 
@@ -874,13 +874,13 @@ public class CInventory extends L1Object {
         final L1Item template = CObjectDB.GetItem(itemid);
         if (template == null) return false;
         if (template.isStackable()) {
-            final L1ItemInstance item = findItemId(itemid);
+            final L1ItemInstance item = GetFirstItemByClassID(itemid);
             return item != null && item.getCount() >= count && item.getEnchantLevel() == en
                     && removeItem(item, count) == count;
         }
         return consumeExactEnchantInstances(itemid, en, count, false, 0, 0, 0);
 	}
-	public L1ItemInstance[] findItemsId_HighEnchant(int id, int enchant) {
+	public L1ItemInstance[] GetItemListByClassIDEnchanted(int id, int enchant) {
 		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
 		for (L1ItemInstance item : _items) {
 			if (item.getItemId() == id && item.getEnchantLevel() == enchant) {
@@ -891,7 +891,7 @@ public class CInventory extends L1Object {
 	}
 	
 	public synchronized boolean 제작리스트3(int itemid, int count, int en, int bless, int descid, int attr, int attr_en) {
-        final L1ItemInstance item = findItemDescId(itemid);
+        final L1ItemInstance item = GetFirstItemByDescID(itemid);
         if (item == null || count <= 0) return false;
         if (attr == 2) attr_en += 5;
         else if (attr == 3) attr_en += 10;
@@ -933,11 +933,11 @@ public class CInventory extends L1Object {
 
 	public synchronized boolean ConsumeItemDescId(int descId, int enchant, int count) {
         if (count <= 0) return false;
-        final L1ItemInstance item = findItemDescId(descId);
+        final L1ItemInstance item = GetFirstItemByDescID(descId);
         if (item == null) return false;
         if (item.isStackable())
             return item.getCount() >= count && removeItem(item, count) == count;
-        final L1ItemInstance[] items = findItemsId_HighEnchant(item.getItemId(), enchant);
+        final L1ItemInstance[] items = GetItemListByClassIDEnchanted(item.getItemId(), enchant);
         if (items.length < count) return false;
         for (int i = 0; i < count; i++)
             if (removeItem(items[i], 1) != 1) return false;
@@ -948,10 +948,10 @@ public class CInventory extends L1Object {
         final L1Item template = CObjectDB.GetItem(itemid);
         if (template == null) return false;
         if (template.isStackable()) {
-            final L1ItemInstance item = findItemId(itemid);
+            final L1ItemInstance item = GetFirstItemByClassID(itemid);
             return item != null && item.getCount() >= count && removeItem(item, count) == count;
         }
-        final L1ItemInstance[] items = findItemsId(itemid);
+        final L1ItemInstance[] items = GetItemListByClassID(itemid);
         if (items.length < count) return false;
         if (items.length > count) extracted(items, new DataComparator());
         for (int i = 0; i < count; i++)
@@ -961,7 +961,7 @@ public class CInventory extends L1Object {
 	
 	public synchronized boolean consumeItem2(int descid, int count) {
         if (count <= 0) return false;
-        final L1ItemInstance[] items = findItemsId(descid, true);
+        final L1ItemInstance[] items = GetItemListByDescID(descid);
         if (items.length < count) return false;
         if (items.length > count) extracted(items, new DataComparator());
         for (int i = 0; i < count; i++)
@@ -974,12 +974,12 @@ public class CInventory extends L1Object {
         final L1Item template = CObjectDB.GetItem(itemid);
         if (template == null) return false;
         if (template.isStackable()) {
-            final L1ItemInstance item = findItemId(itemid);
+            final L1ItemInstance item = GetFirstItemByClassID(itemid);
             return item != null && item.getCount() >= count
                     && item.getItem().getItemDescId() == descid
                     && removeItem(item, count, descid) == count;
         }
-        final L1ItemInstance[] items = findItemsId(itemid, descid);
+        final L1ItemInstance[] items = GetItemListByClassID(itemid, descid);
         if (items.length < count) return false;
         if (items.length > count) extracted(items, new DataComparator());
         for (int i = 0; i < count; i++)
@@ -988,7 +988,7 @@ public class CInventory extends L1Object {
 	}
 	
 	public synchronized boolean consumeItem(int itemid) {
-        final L1ItemInstance item = findItemId(itemid);
+        final L1ItemInstance item = GetFirstItemByClassID(itemid);
         if (item == null || item.getCount() <= 0) return false;
         final int count = item.getCount();
         return removeItem(item, count) == count;
@@ -1007,13 +1007,13 @@ public class CInventory extends L1Object {
 	}
 
 	public synchronized int removeItem(int objectId) {
-		L1ItemInstance item = getItem(objectId);
+		L1ItemInstance item = GetByServerID(objectId);
 		if (item == null) return 0;
 		return removeItem(item, item.getCount());
 	}
 
 	public synchronized int removeItem(int objectId, int count) {
-		L1ItemInstance item = getItem(objectId);
+		L1ItemInstance item = GetByServerID(objectId);
 		return removeItem(item, count);
 	}
 
@@ -1034,7 +1034,7 @@ public class CInventory extends L1Object {
 	private int removeItemInternal(L1ItemInstance item, int count, boolean matchDescId, int descId) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (item == null || getItem(item.getId()) != item) {
+		if (item == null || GetByServerID(item.getId()) != item) {
 			return 0;
 		}
 		if (matchDescId && item.getItem().getItemDescId() != descId) return 0;
@@ -1094,7 +1094,7 @@ public class CInventory extends L1Object {
     public synchronized boolean debitWarehouseFee(L1ItemInstance fee, int amount) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-        if (fee == null || amount <= 0 || getItem(fee.getId()) != fee
+        if (fee == null || amount <= 0 || GetByServerID(fee.getId()) != fee
                 || fee.getCount() < amount || !fee.isStackable()) return false;
         if (fee.getCount() == amount) {
             deleteItem(fee);
@@ -1111,14 +1111,14 @@ public class CInventory extends L1Object {
     /** Only for restoring a fee when WarehouseMove SQL was NOT submitted. */
     public synchronized void restoreWarehouseFee(L1ItemInstance fee, int original) {
         if (fee == null || original <= 0) throw new IllegalArgumentException("Invalid fee rollback");
-        if (getItem(fee.getId()) == fee) {
+        if (GetByServerID(fee.getId()) == fee) {
             final int now = fee.getCount();
             if (now > original) throw new IllegalStateException("Fee changed during rollback");
             fee.setCount(original);
             addItemCountCache(fee.getItemId(), original - now);
             persistTransferCount(fee);
             updateItem(fee);
-        } else if (getItem(fee.getId()) == null) {
+        } else if (GetByServerID(fee.getId()) == null) {
             CItemList.requireDetached(fee);
             final int previousCount = fee.getCount();
             _items.Push(fee);
@@ -1165,7 +1165,7 @@ public class CInventory extends L1Object {
             synchronized (dest) {
                 int newSlots = 0;
                 for (int i = 0; i < size; i++) {
-                    final L1ItemInstance item = getItem(ids[i]);
+                    final L1ItemInstance item = GetByServerID(ids[i]);
                     final int count = counts[i];
                     if (item == null || item.getId() != ids[i] || item.getCount() <= 0
                             || count <= 0 || count > item.getCount() || item.isEquipped()
@@ -1184,7 +1184,7 @@ public class CInventory extends L1Object {
                     }
                     group[i] = g;
                     if (g == i) {
-                        destinations[i] = item.isStackable() ? dest.findItemId(item.getItemId()) : null;
+                        destinations[i] = item.isStackable() ? dest.GetFirstItemByClassID(item.getItemId()) : null;
                         destinationCounts[i] = destinations[i] == null ? 0 : destinations[i].getCount();
                         if (destinations[i] == null) newSlots++;
                     }
@@ -1235,11 +1235,11 @@ public class CInventory extends L1Object {
                                             || pc.getNetConnection() != session)
                                         throw new IllegalStateException("Stale warehouse batch session");
                                     for (int i = 0; i < size; i++) {
-                                        if (getItem(ids[i]) != sources[i]
+                                        if (GetByServerID(ids[i]) != sources[i]
                                                 || sources[i].getCount() != sourceCounts[i])
                                             throw new IllegalStateException("Warehouse batch source changed after COMMIT");
                                         if (group[i] == i && destinations[i] != null
-                                                && (dest.getItem(destinations[i].getId()) != destinations[i]
+                                                && (dest.GetByServerID(destinations[i].getId()) != destinations[i]
                                                 || destinations[i].getCount() != destinationCounts[i]))
                                             throw new IllegalStateException("Warehouse batch destination changed after COMMIT");
                                     }
@@ -1311,7 +1311,7 @@ public class CInventory extends L1Object {
             int[] destCharges = null;
             final L1ItemInstance[] carries = new L1ItemInstance[size];
             synchronized (source) {
-                final L1ItemInstance fee = feeEach == 0 ? null : findItemId(feeItemId);
+                final L1ItemInstance fee = feeEach == 0 ? null : GetFirstItemByClassID(feeItemId);
                 if (feeEach != 0 && (fee == null || !fee.isStackable() || fee.getCount() < totalFee))
                     return false;
                 final int feeCount = fee == null ? 0 : fee.getCount();
@@ -1319,7 +1319,7 @@ public class CInventory extends L1Object {
                 long additionalWeight = 0L;
                 int feeGroup = -1;
                 for (int i = 0; i < size; i++) {
-                    final L1ItemInstance item = source.getItem(ids[i]);
+                    final L1ItemInstance item = source.GetByServerID(ids[i]);
                     final int count = counts[i];
                     if (item == null || item.getId() != ids[i] || item.getCount() <= 0
                             || count <= 0 || count > item.getCount() || item.isEquipped()
@@ -1346,7 +1346,7 @@ public class CInventory extends L1Object {
                     group[i] = g;
                     if (!stackable && slots >= CUserInventory.MAX_SIZE) return false;
                     if (g == i) {
-                        destinations[i] = stackable || mergeCharge ? findItemId(item.getItemId()) : null;
+                        destinations[i] = stackable || mergeCharge ? GetFirstItemByClassID(item.getItemId()) : null;
                         destCounts[i] = destinations[i] == null ? 0 : destinations[i].getCount();
                         if (destinations[i] == null && ++slots > CUserInventory.MAX_SIZE) return false;
                         if (fee != null && destinations[i] == fee) feeGroup = i;
@@ -1374,7 +1374,7 @@ public class CInventory extends L1Object {
                 final double weightRate = Config.RATE_WEIGHT_LIMIT;
                 if (!Double.isFinite(weightRate) || weightRate <= 0.0
                         || pc.getMaxWeight() <= 0) return false;
-                final double projectedWeight = getWeight()
+                final double projectedWeight = GetCarryingWeight()
                         + (additionalWeight + size) / Math.min(1.0, weightRate) + size;
                 if (projectedWeight < 0.0
                         || projectedWeight >= (double) pc.getMaxWeight() * 2.4
@@ -1442,14 +1442,14 @@ public class CInventory extends L1Object {
                                     if (!session.isConnected() || pc.getSessionStamp() != stamp
                                             || pc.getNetConnection() != session)
                                         throw new IllegalStateException("Stale warehouse withdrawal batch session");
-                                    if (fee != null && (getItem(fee.getId()) != fee || fee.getCount() != feeCount))
+                                    if (fee != null && (GetByServerID(fee.getId()) != fee || fee.getCount() != feeCount))
                                         throw new IllegalStateException("Withdrawal batch fee preimage changed");
                                     for (int i = 0; i < size; i++) {
-                                        if (source.getItem(ids[i]) != sources[i]
+                                        if (source.GetByServerID(ids[i]) != sources[i]
                                                 || sources[i].getCount() != sourceCounts[i])
                                             throw new IllegalStateException("Withdrawal source changed after COMMIT");
                                         if (group[i] == i && destinations[i] != null
-                                                && (getItem(destinations[i].getId()) != destinations[i]
+                                                && (GetByServerID(destinations[i].getId()) != destinations[i]
                                                         || destinations[i].getCount() != destCounts[i]
                                                         || (expectedCharges != null
                                                             && !sources[i].isStackable()
@@ -1507,7 +1507,7 @@ public class CInventory extends L1Object {
         boolean submitted = false;
         try {
         final int sourceCount = item.getCount();
-        final L1ItemInstance destStack = item.isStackable() ? dest.findItemId(item.getItemId()) : null;
+        final L1ItemInstance destStack = item.isStackable() ? dest.GetFirstItemByClassID(item.getItemId()) : null;
         final int destCount = destStack == null ? 0 : destStack.getCount();
         if (destStack != null && !destStack.IsAddableAmount(count)) return null;
 
@@ -1541,9 +1541,9 @@ public class CInventory extends L1Object {
                     synchronized (CInventory.this) {
                         synchronized (dest) {
                             if (!session.isConnected() || pc.getSessionStamp() != sessionStamp
-                                    || pc.getNetConnection() != session || getItem(item.getId()) != item
+                                    || pc.getNetConnection() != session || GetByServerID(item.getId()) != item
                                     || item.getCount() != sourceCount
-                                    || (destStack != null && (dest.getItem(destStack.getId()) != destStack
+                                    || (destStack != null && (dest.GetByServerID(destStack.getId()) != destStack
                                             || destStack.getCount() != destCount)))
                                 throw new IllegalStateException("Warehouse deposit preimage changed after DB COMMIT");
                             CacheD.applyCommittedWarehouseMove(move, () -> {
@@ -1580,7 +1580,7 @@ public class CInventory extends L1Object {
     public L1ItemInstance tradeItem(int objectId, int count, Warehouse inventory,
             Runnable onCommitted) {
         synchronized (this) {
-            final L1ItemInstance item = getItem(objectId);
+            final L1ItemInstance item = GetByServerID(objectId);
             if (inventory == null || item == null) {
                 if (rejectPendingItemTransfer())
                     throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
@@ -1593,7 +1593,7 @@ public class CInventory extends L1Object {
     }
 
 	public L1ItemInstance tradeItem(int objectId, int count, CInventory inventory) {
-		L1ItemInstance item = getItem(objectId);
+		L1ItemInstance item = GetByServerID(objectId);
 		return tradeItem(item, count, inventory);
 	}
 
@@ -1626,7 +1626,7 @@ public class CInventory extends L1Object {
 		}
 
 		// caller가 들고 온 stale object를 믿지 않는다.
-		final L1ItemInstance owned = getItem(item.getId());
+		final L1ItemInstance owned = GetByServerID(item.getId());
 		if (owned != item) {
 			return null;
 		}
@@ -1638,7 +1638,7 @@ public class CInventory extends L1Object {
 			return null;
 		}
         if (!item.isStackable() && count != 1) return null;
-		if (inventory.checkAddItemToWarehouse(item, count) != CInventory.OK) {
+		if (inventory.CheckAddableToWarehouse(item, count) != CInventory.OK) {
 			return null;
 		}
 
@@ -1660,7 +1660,7 @@ public class CInventory extends L1Object {
         if (session != null) move.onFailure(() ->
                 CIOThreadCallback.getInstance().completeSession(session, session::kick));
         move.expectOriginal(item);
-        L1ItemInstance destStack = inventory.findItemId(item.getItemId());
+        L1ItemInstance destStack = inventory.GetFirstItemByClassID(item.getItemId());
         if (destStack != null) move.expectOriginal(destStack);
         final int originalCount = item.getCount();
         final int destinationCount = destStack == null ? 0 : destStack.getCount();
@@ -1729,13 +1729,13 @@ public class CInventory extends L1Object {
             // SQL was NEVER submitted. Restore the game state before the
             // reserved FIFO slot is cancelled by WarehouseMove.close().
             try {
-                if (carryItem != null && inventory.getItem(carryItem.getId()) == carryItem) {
+                if (carryItem != null && inventory.GetByServerID(carryItem.getId()) == carryItem) {
                     inventory.deleteItem(carryItem);
                 } else if (destStack != null && destStack.getCount() != destinationCount) {
                     destStack.setCount(destinationCount);
                     inventory.updateItem(destStack);
                 }
-                if (getItem(item.getId()) != item) {
+                if (GetByServerID(item.getId()) != item) {
                     item.setCount(originalCount);
                     _items.Push(item);
                     insertItem(item);
@@ -1811,7 +1811,7 @@ public class CInventory extends L1Object {
         if (inventory.rejectPendingItemTransfer()) return null;
 
 		// source inventory가 현재 이 exact object를 소유하는지 다시 확인한다.
-		final L1ItemInstance owned = getItem(item.getId());
+		final L1ItemInstance owned = GetByServerID(item.getId());
 		if (owned != item) {
 			return null;
 		}
@@ -1824,7 +1824,7 @@ public class CInventory extends L1Object {
 		}
 
 		// destination 상태도 transfer 직전에 다시 검증한다.
-		if (inventory.checkAddItem(item, count) != OK) {
+		if (inventory.CheckAddable(item, count) != OK) {
 			return null;
 		}
 
@@ -1896,7 +1896,7 @@ public class CInventory extends L1Object {
 	}
 
 	public L1ItemInstance receiveDamage(int objectId) {
-		L1ItemInstance item = getItem(objectId);
+		L1ItemInstance item = GetByServerID(objectId);
 		return receiveDamage(item);
 	}
 
@@ -1964,35 +1964,29 @@ public class CInventory extends L1Object {
 		updateItem(item, CUserInventory.COL_DURABILITY);
 	}
 
-	public L1ItemInstance findEquippedItemId(int id) {
-		for (L1ItemInstance item : _items) {
-			if (item == null)
-				continue;
-			if ((item.getItem().getItemId() == id) && item.isEquipped()) {
-				return item;
-			}
-		}
-		return null;
+	public L1ItemInstance GetFirstEquippedItemByClassID(int classId) {
+		return _items.GetFirstEquippedItemByClassID(classId);
 	}
-	public L1ItemInstance findItemDescId(int descId) {
+
+	public L1ItemInstance GetFirstItemByDescID(int descId) {
 		for (L1ItemInstance item : _items) {
 			if (item.getItem().getItemDescId() == descId) return item;
 		}
 		return null;
 	}
 	private L1ItemInstance findMergeItem(L1ItemInstance incoming) {
-        if (!(this instanceof L1GroundInventory)) return findItemId(incoming.getItemId());
+        if (!(this instanceof L1GroundInventory)) return GetFirstItemByClassID(incoming.getItemId());
         for (L1ItemInstance candidate : _items) {
             if (candidate.getItemId() == incoming.getItemId() && candidate.SameGroundLootRights(incoming)) return candidate;
         }
         return null;
     }
 
-    public L1ItemInstance findItemId(int id) {
+    public L1ItemInstance GetFirstItemByClassID(int id) {
 		return _items.GetFirstItemByClassID(id);
 	}
 
-	public L1ItemInstance[] findItemsId(int id) {
+	public L1ItemInstance[] GetItemListByClassID(int id) {
 		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
 		for (L1ItemInstance item : _items) {
 			if (item == null)
@@ -2004,7 +1998,7 @@ public class CInventory extends L1Object {
 		return itemList.toArray(new L1ItemInstance[] {});
 	}
 	
-	public L1ItemInstance[] findItemsId(int descid, boolean flag) {
+	public L1ItemInstance[] GetItemListByDescID(int descid) {
 		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
 		for (L1ItemInstance item : _items) {
 			if (item == null)
@@ -2016,7 +2010,7 @@ public class CInventory extends L1Object {
 		return itemList.toArray(new L1ItemInstance[] {});
 	}
 	
-	public L1ItemInstance[] findItemsId(int id, int descid) {
+	public L1ItemInstance[] GetItemListByClassID(int id, int descid) {
 		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
 		for (L1ItemInstance item : _items) {
 			if (item == null)
@@ -2028,7 +2022,7 @@ public class CInventory extends L1Object {
 		return itemList.toArray(new L1ItemInstance[] {});
 	}
 
-	public L1ItemInstance[] findItemsIdNotEquipped(int id) {
+	public L1ItemInstance[] GetUnequippedItemListByClassID(int id) {
 		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
 		for (L1ItemInstance item : _items) {
 			if (item == null)
@@ -2042,17 +2036,17 @@ public class CInventory extends L1Object {
 		return itemList.toArray(new L1ItemInstance[] {});
 	}
 	
-	public L1ItemInstance getItem(int objectId) {
+	public L1ItemInstance GetByServerID(int objectId) {
 		return _items.GetByServerID(objectId);
 	}
 
-	public boolean checkItem(int id) {
-		return checkItem(id, 1);
+	public boolean HaveItemByClassId(int id) {
+		return HaveItemByClassId(id, 1);
 	}
 	
 	
 
-	public boolean checkItem(int id, int count) {
+	public boolean HaveItemByClassId(int id, int count) {
 		if (count < 0) {
 			return false;
 		}
@@ -2063,7 +2057,7 @@ public class CInventory extends L1Object {
 		L1Item l1item = CObjectDB.GetItem(id);
 		if (l1item == null) return false;
 		if (l1item.isStackable()) {
-			L1ItemInstance item = findItemId(id);
+			L1ItemInstance item = GetFirstItemByClassID(id);
 			if (item != null && item.getCount() >= count) {
 				return true;
 			}
@@ -2073,15 +2067,15 @@ public class CInventory extends L1Object {
 		return false;
 	}
 
-	public boolean checkEnchantItem(int id, int enchant, int count) {
-		return checkEnchantItemInternal(id, enchant, count, false, 0);
+	public boolean HaveUnequippedItemByClassIdEnchanted(int id, int enchant, int count) {
+		return HaveUnequippedItemByClassIdEnchantedInternal(id, enchant, count, false, 0);
 	}
 	
-	public boolean checkEnchantItem(int id, int enchant, int count,int descid) {
-		return checkEnchantItemInternal(id, enchant, count, true, descid);
+	public boolean HaveUnequippedItemByClassIdEnchanted(int id, int enchant, int count,int descid) {
+		return HaveUnequippedItemByClassIdEnchantedInternal(id, enchant, count, true, descid);
 	}
 
-	private boolean checkEnchantItemInternal(int id, int enchant, int count, boolean matchDescId, int descId) {
+	private boolean HaveUnequippedItemByClassIdEnchantedInternal(int id, int enchant, int count, boolean matchDescId, int descId) {
 		if (count <= 0) return false;
 		return hasEnchantAmount(_items.snapshot(), id, enchant, count, matchDescId, descId);
 	}
@@ -2155,34 +2149,34 @@ public class CInventory extends L1Object {
 
 	// ////////////////////////////////////
 
-	public boolean checkItemNotEquipped(int id, int count) {
+	public boolean HaveUnequippedItemByClassId(int id, int count) {
 		if (count < 0) return false;
-		return count == 0 || count <= countItems(id);
+		return count == 0 || count <= GetUnequippedItemAmount(id);
 	}
 
-	public boolean checkItem(int[] ids) {
+	public boolean HaveItemByClassId(int[] ids) {
 		if (ids == null) return false;
 		for (int id : ids) {
-			if (!checkItem(id, 1)) return false;
+			if (!HaveItemByClassId(id, 1)) return false;
 		}
 		return true;
 	}
 
-	public boolean checkItem(int[] ids, int[] counts) {
+	public boolean HaveItemByClassId(int[] ids, int[] counts) {
 		if (ids == null || counts == null || ids.length != counts.length) return false;
 		for (int i = 0; i < ids.length; i++) {
-			if (!checkItem(ids[i], counts[i])) {
+			if (!HaveItemByClassId(ids[i], counts[i])) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	public int countItems(int id) {
+	public int GetUnequippedItemAmount(int id) {
 		final L1Item template = CObjectDB.GetItem(id);
 		if (template == null) return 0;
 		if (template.isStackable()) {
-			final L1ItemInstance item = findItemId(id);
+			final L1ItemInstance item = GetFirstItemByClassID(id);
 			return item == null ? 0 : item.getCount();
 		}
 		return _items.CountUnequippedInstancesByClassID(id);
@@ -2246,12 +2240,12 @@ public class CInventory extends L1Object {
 		return _instanceType == -1 ? _instanceType = super.getL1Type() | L1Type.L1TYPE_INVENTORY : _instanceType;		
 	}
 
-	public int checkAddItem(int itemId, int count){
+	public int CheckAddable(int itemId, int count){
 		L1Item item = CObjectDB.GetItem(itemId);		
-		return checkAddItem(item, count);
+		return CheckAddable(item, count);
 	}
 	
-	public int checkAddItem(L1Item item, int count) {
+	public int CheckAddable(L1Item item, int count) {
 		if (item == null) {
 			return -1;
 		}
@@ -2260,15 +2254,15 @@ public class CInventory extends L1Object {
 			return AMOUNT_OVER;
 		}
 
-		if (getSize() > 180 || (getSize() == 180 && (!item.isStackable() || !checkItem(item.getItemId()))))
+		if (getSize() > 180 || (getSize() == 180 && (!item.isStackable() || !HaveItemByClassId(item.getItemId()))))
 			return SIZE_OVER;
 
 		final long addedWeight = (long) item.getWeight() * count / 1000L;
-		final long weight = getWeight() + addedWeight + 1L;
+		final long weight = GetCarryingWeight() + addedWeight + 1L;
 		if (weight < 0 || weight > Integer.MAX_VALUE || addedWeight < 0)
 			return WEIGHT_OVER;
 
-		L1ItemInstance itemExist = findItemId(item.getItemId());
+		L1ItemInstance itemExist = GetFirstItemByClassID(item.getItemId());
 		if (itemExist != null && !itemExist.IsAddableAmount(count))
 			return AMOUNT_OVER;
 		

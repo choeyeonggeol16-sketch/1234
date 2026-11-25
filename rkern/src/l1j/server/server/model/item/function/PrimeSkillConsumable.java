@@ -32,7 +32,7 @@ final class PrimeSkillConsumable {
             pc.sendPackets("프라임을 사용하기 위해서는 혈맹을 창설하여야 합니다.");
             return;
         }
-        if (!pc.getInventory().checkItem(41246, 1000)) {
+        if (!pc.getInventory().HaveItemByClassId(41246, 1000)) {
             pc.sendPackets("결정체가 부족합니다.");
             return;
         }

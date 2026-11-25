@@ -30,7 +30,7 @@ final class CharacterSlotReceipt {
             L1PcInstance pc, L1ItemInstance input) {
         if (client == null || client.getAccount() == null || pc == null || input == null
                 || input.getItemId() != 210083
-                || pc.getInventory().getItem(input.getId()) != input) return;
+                || pc.getInventory().GetByServerID(input.getId()) != input) return;
         final int before = client.getAccount().getCharSlot();
         if (before >= 8) {
             SC_SystemMessage.send(pc, "캐릭터 슬롯이 이미 가득찼습니다.");

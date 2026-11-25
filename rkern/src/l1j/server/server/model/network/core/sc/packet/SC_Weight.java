@@ -40,7 +40,7 @@ public final class SC_Weight {
     }
     public static boolean send(L1PcInstance pc) {
         if (pc == null || pc.getInventory() == null) return false;
-        return send(pc, pc.getInventory().getWeight100(), pc.getInventory().getWeight(), pc.getMaxWeight());
+        return send(pc, pc.getInventory().getWeight100(), pc.getInventory().GetCarryingWeight(), pc.getMaxWeight());
     }
 
     private static void write7B(Assemble buffer, int value) {

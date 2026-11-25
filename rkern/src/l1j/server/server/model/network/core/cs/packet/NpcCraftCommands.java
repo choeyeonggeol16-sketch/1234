@@ -49,7 +49,7 @@ final class NpcCraftCommands {
         for (int i = 0; i < materials.length; i++) {
             L1Item def = CObjectDB.LoadItem().getTemplate(materials[i]);
             if (def == null) { fail(pc, objid, failure, data); return; }
-            if (!pc.getInventory().checkItemNotEquipped(materials[i], counts[i])) {
+            if (!pc.getInventory().HaveUnequippedItemByClassId(materials[i], counts[i])) {
                 SC_ServerMessage.send(pc, 337, def.getName());
                 enough = false;
             }
@@ -64,7 +64,7 @@ final class NpcCraftCommands {
             L1Item def = CObjectDB.LoadItem().getTemplate(rewards[i]);
             if (def == null) { fail(pc, objid, failure, data); return; }
             if (def.isStackable()) {
-                if (!pc.getInventory().checkItem(rewards[i])) slots++;
+                if (!pc.getInventory().HaveItemByClassId(rewards[i])) slots++;
             } else slots += rewardCounts[i];
             if (slots > 180) { SC_ServerMessage.send(pc, 263); return; }
             weight += (long) def.getWeight() * rewardCounts[i] / 1000L;
@@ -73,7 +73,7 @@ final class NpcCraftCommands {
         if ((long) pc.getInventory().getSize() + slots > 180) {
             SC_ServerMessage.send(pc, 263); return;
         }
-        if (pc.getMaxWeight() < (long) pc.getInventory().getWeight() + weight) {
+        if (pc.getMaxWeight() < (long) pc.getInventory().GetCarryingWeight() + weight) {
             SC_ServerMessage.send(pc, 82); return;
         }
         final String npcName = target instanceof L1NpcInstance npc ? npc.getNpcTemplate().get_name() : "";
@@ -142,7 +142,7 @@ final class NpcCraftCommands {
         final var inventory = pc.getInventory();
         int mask = 0;
         for (int slot = 0; slot < TOTEM_PRICE.length; slot++)
-            if (inventory.checkItem(40131 + slot)) mask |= 1 << slot;
+            if (inventory.HaveItemByClassId(40131 + slot)) mask |= 1 << slot;
         if (mask == 0) {
             if (cancelContract) {
                 NpcQuestTransactions.requestQuestPage(pc, npc, objid, CQuestSystem.QUEST_LYRA,
@@ -156,7 +156,7 @@ final class NpcCraftCommands {
         final int[] counts = new int[materials.length];
         final int[] rewardCounts = new int[materials.length];
         for (int index = 0; index < materials.length; index++) {
-            L1ItemInstance item = inventory.findItemId(materials[index]);
+            L1ItemInstance item = inventory.GetFirstItemByClassID(materials[index]);
             if (item == null) {
                 fail(pc, objid, null, null);
                 return;

@@ -229,11 +229,11 @@ public class NpcActionListener implements ActionListener{
 		if(need_item_id > 0 && need_item_amount > 0 && !pc.getInventory().consumeItem(need_item_id, need_item_amount))
 			return result_short_item(pc);
 		else if(need_item_id > 0 && need_item_amount == -1){
-			L1ItemInstance item = pc.getInventory().findItemId(need_item_id);
+			L1ItemInstance item = pc.getInventory().GetFirstItemByClassID(need_item_id);
 			if(item == null){
 				// 지배의 탑 npc일 경우 환상부적이 있는지 체크한다.
 				if(m_tower_npcs.contains(_npc_id)){	
-					item = pc.getInventory().findItemId(560028);
+					item = pc.getInventory().GetFirstItemByClassID(560028);
 					if(item == null)
 						return result_short_item(pc);
 					

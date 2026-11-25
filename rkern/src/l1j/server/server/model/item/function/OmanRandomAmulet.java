@@ -12,7 +12,7 @@ public class OmanRandomAmulet {
 
     public static void clickItem(L1PcInstance pc, int itemId, L1ItemInstance item) {
         if (pc == null || item == null || item.getItemId() != itemId
-                || pc.getInventory().getItem(item.getId()) != item) return;
+                || pc.getInventory().GetByServerID(item.getId()) != item) return;
 
         // Both chaos (830042-830051) and transformed (830052-830061)
         // amulets give the same floor-specific reward. Preserve the

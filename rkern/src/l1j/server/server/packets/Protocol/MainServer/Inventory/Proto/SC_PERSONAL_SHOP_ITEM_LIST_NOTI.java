@@ -125,7 +125,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
             } else {
                 for (DynamicShopItem listing : listings) {
                     if (listing == null) continue;
-                    L1ItemInstance item = shop.getInventory().getItem(listing.objId);
+                    L1ItemInstance item = shop.getInventory().GetByServerID(listing.objId);
                     if (item == null || item.isEquipped() || item.getCount() <= 0
                             || item.getItemId() != listing.itemId) continue;
                     addPlayerShopRow(items, view, listing, item, false);

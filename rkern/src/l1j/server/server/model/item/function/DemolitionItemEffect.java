@@ -31,7 +31,7 @@ final class DemolitionItemEffect {
 
     public static boolean 데몰리션(L1PcInstance pc, int targetId, L1ItemInstance item) {
         if (pc == null || item == null || item.getItemId() != 707781
-                || pc.getInventory().getItem(item.getId()) != item
+                || pc.getInventory().GetByServerID(item.getId()) != item
                 || pc.isDead() || pc.get_teleport()) return false;
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
@@ -74,7 +74,7 @@ final class DemolitionItemEffect {
                         SC_SystemMessage.send(pc, "한손 둔기 착용 시에만 사용가능합니다.");
                         return false;
                     }
-                    if (!pc.getInventory().checkItem(41246, 100)) {
+                    if (!pc.getInventory().HaveItemByClassId(41246, 100)) {
                         SC_SystemMessage.send(pc, "마법 재료가 부족합니다.");
                         return false;
                     }

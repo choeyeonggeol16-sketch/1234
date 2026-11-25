@@ -50,7 +50,7 @@ public abstract class PoisonEffect implements CIOThreadCallback.WheelTask {
                 || target.hasSkillEffect(L1SkillId.EARTH_BIND)
                 || player.hasSkillEffect(L1SkillId.VENOM_RESIST)) return false;
         for (int itemId : IMMUNE_ITEMS) {
-            if (player.getInventory().checkEquipped(itemId)) return false;
+            if (player.getInventory().IsEquippedByClassID(itemId)) return false;
         }
         return true;
     }

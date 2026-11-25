@@ -19,8 +19,8 @@ final class TargetedPurificationReceipt {
             L1ItemInstance target) {
         if (pc == null) return;
         if (reagent == null || target == null || reagent == target
-                || pc.getInventory().getItem(reagent.getId()) != reagent
-                || pc.getInventory().getItem(target.getId()) != target) {
+                || pc.getInventory().GetByServerID(reagent.getId()) != reagent
+                || pc.getInventory().GetByServerID(target.getId()) != target) {
             SC_ServerMessage.send(pc, 79);
             return;
         }

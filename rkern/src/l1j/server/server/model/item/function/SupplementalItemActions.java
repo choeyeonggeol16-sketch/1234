@@ -13,14 +13,14 @@ final class SupplementalItemActions {
         // Do not accept a separately supplied itemId or look up a different item.
         if (pc == null || client == null || client.getActiveChar() != pc
                 || l1iteminstance == null || l1iteminstance.getItem() == null
-                || pc.getInventory().getItem(l1iteminstance.getId()) != l1iteminstance) {
+                || pc.getInventory().GetByServerID(l1iteminstance.getId()) != l1iteminstance) {
             return;
         }
         final int itemId = l1iteminstance.getItem().getItemId();
 
         final int l = SupplementalTargetId.select(itemId, I);
         if (!SupplementalElixirEligibility.allow(pc, itemId)) return;
-        L1ItemInstance l1iteminstance1 = l == 0 ? null : pc.getInventory().getItem(l);
+        L1ItemInstance l1iteminstance1 = l == 0 ? null : pc.getInventory().GetByServerID(l);
         if (!SupplementalEarringTargetRules.allow(pc, l1iteminstance, l1iteminstance1, itemId)) return;
 
 		switch (itemId) {

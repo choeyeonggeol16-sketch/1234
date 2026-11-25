@@ -30,7 +30,7 @@ public final class CollectionHandler {
 
     private static boolean admit(L1PcInstance pc, L1ItemInstance item, int expected) {
         if (pc == null || item == null || item.getItemId() != expected
-                || pc.getInventory().getItem(item.getId()) != item || pc.getAccount() == null
+                || pc.getInventory().GetByServerID(item.getId()) != item || pc.getAccount() == null
                 || pc.getAccountName() == null || ESCROW.equalsIgnoreCase(pc.getAccountName())) return false;
         if (!pc.getMap().isSafetyZone(pc.getLocation())) {
             SC_SystemMessage.send(pc, "마을에서만 사용하실 수 있습니다.");
@@ -98,7 +98,7 @@ public final class CollectionHandler {
             });
             CDB.RequestUseItem(pc, tx, () -> {
                 // Only the stored character lost TAM; do not clear the caller's buff.
-                L1ItemInstance live = pc.getInventory().getItem(marbleId);
+                L1ItemInstance live = pc.getInventory().GetByServerID(marbleId);
                 if (live != null) SC_ItemName.send(pc, live);
                 if (completion != null) completion.run();
                 updateCharacterStatus(pc);

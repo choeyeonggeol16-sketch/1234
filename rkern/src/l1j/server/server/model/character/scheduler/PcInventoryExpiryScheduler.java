@@ -321,7 +321,7 @@ public final class PcInventoryExpiryScheduler {
         }
         if (pc.isLogoutStarted() || pc.getNetConnection() == null
                 || !pc.getNetConnection().isConnected()
-                || pc.getInventory().getItem(item.getId()) != item) {
+                || pc.getInventory().GetByServerID(item.getId()) != item) {
             removeTask(task);
             return;
         }
@@ -355,7 +355,7 @@ public final class PcInventoryExpiryScheduler {
             removeTask(task);
         } catch (RuntimeException failure) {
             LOG.log(Level.WARNING, "Expiry processing failed: " + item.getId(), failure);
-            if (pc.getInventory().getItem(item.getId()) == item) {
+            if (pc.getInventory().GetByServerID(item.getId()) == item) {
                 retryExpiry(task, 5000L);
             } else {
                 // The debit was already applied; never retry a post-debit reward.
@@ -371,7 +371,7 @@ public final class PcInventoryExpiryScheduler {
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, item.getId())) {
             if (scheduled.get(item.getId()) != task
                     || pc.isLogoutStarted()
-                    || pc.getInventory().getItem(item.getId()) != item) return;
+                    || pc.getInventory().GetByServerID(item.getId()) != item) return;
             if (!tx.debit(item, item.getCount()))
                 throw new IllegalStateException("Expired special item cannot be debited: " + item.getId());
             if (template == L1ItemId.MERIN_CONTRACT || template == L1ItemId.KILLTON_CONTRACT) {

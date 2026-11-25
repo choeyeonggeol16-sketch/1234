@@ -238,9 +238,9 @@ public final class BuffRestoreRegistryInit {
 
         // ================= 14. 할파스의신의 (장비 착용 조건) =================
         BuffRestoreRegistry.register(L1SkillId.할파스의신의, (pc, sid, polyId, rt, icon) -> {
-            if (pc.getInventory().isEquippedDirect(123111)
-                    || pc.getInventory().isEquippedDirect(123112)
-                    || pc.getInventory().isEquippedDirect(123113)) {
+            if (pc.getInventory().IsEquippedByClassIDCached(123111)
+                    || pc.getInventory().IsEquippedByClassIDCached(123112)
+                    || pc.getInventory().IsEquippedByClassIDCached(123113)) {
                 SC_InventoryIcon.icoEnd(pc, L1SkillId.할파스의신의1);
                 SC_InventoryIcon.icoNew(pc, L1SkillId.할파스의신의, 3942, rt, true);
             }

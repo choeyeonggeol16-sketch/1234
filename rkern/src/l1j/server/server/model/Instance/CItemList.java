@@ -286,18 +286,22 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     }
 
     public boolean IsEquippedByClassID(int classId) {
+        return GetFirstEquippedItemByClassID(classId) != null;
+    }
+
+    public L1ItemInstance GetFirstEquippedItemByClassID(int classId) {
         final List<L1ItemInstance> rows = snapshot;
         if (rows != null) {
             for (int i = 0, n = rows.size(); i < n; i++) {
                 final L1ItemInstance item = rows.get(i);
-                if (item.getItemId() == classId && item.isEquipped()) return true;
+                if (item.getItemId() == classId && item.isEquipped()) return item;
             }
-            return false;
+            return null;
         }
         synchronized (this) {
             for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-                if (item.getItemId() == classId && item.isEquipped()) return true;
-            return false;
+                if (item.getItemId() == classId && item.isEquipped()) return item;
+            return null;
         }
     }
 

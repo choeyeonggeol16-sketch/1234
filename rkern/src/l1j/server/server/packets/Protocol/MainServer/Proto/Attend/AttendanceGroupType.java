@@ -63,7 +63,7 @@ public enum AttendanceGroupType{
         AttendanceBonusGroup bGroup = _gInfo.get_bonusGroup().get(index);
         CInventory inv = pc.getInventory();
         for(AttendanceBonusInfo bInfo : bGroup.get_bonuses()){
-            if(inv.checkAddItem(bInfo.get_itemId(), bInfo.get_itemCount()) == CInventory.OK)
+            if(inv.CheckAddable(bInfo.get_itemId(), bInfo.get_itemCount()) == CInventory.OK)
                 inv.storeItem(bInfo.get_itemId(), bInfo.get_itemCount());
         }
     }

@@ -312,13 +312,13 @@ for (L1PcInstance pc : getMembersArray()) {
 				ground = L1World.getInstance().getInventory(loc.getX(),
 						loc.getY(), _mapId);
 				try {
-					if (ground.checkAddItem(item, stackCount) == CInventory.OK) {
+					if (ground.CheckAddable(item, stackCount) == CInventory.OK) {
 						ground.storeItem(item);
 					}
 				} finally {
 					// A failed ground insert or stack merge cannot retain a
 					// world-registered, unowned temporary item.
-					if (ground.getItem(item.getId()) != item) {
+					if (ground.GetByServerID(item.getId()) != item) {
 						L1World.getInstance().removeObject(item);
 					}
 				}
@@ -330,13 +330,13 @@ for (L1PcInstance pc : getMembersArray()) {
 					ground = L1World.getInstance().getInventory(loc.getX(),
 							loc.getY(), _mapId);
 					try {
-						if (ground.checkAddItem(item, stackCount) == CInventory.OK) {
+						if (ground.CheckAddable(item, stackCount) == CInventory.OK) {
 							ground.storeItem(item);
 						}
 					} finally {
 						// A failed ground insert or stack merge cannot retain a
 						// world-registered, unowned temporary item.
-						if (ground.getItem(item.getId()) != item) {
+						if (ground.GetByServerID(item.getId()) != item) {
 							L1World.getInstance().removeObject(item);
 						}
 					}

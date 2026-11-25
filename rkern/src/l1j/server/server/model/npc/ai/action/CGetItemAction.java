@@ -126,8 +126,8 @@ public final class CGetItemAction {
                         || item.getMapId() != npc.getMapId() || item.getCount() <= 0) continue;
                 final int distance = chebyshev(npc.getX(), npc.getY(), item.getX(), item.getY());
                 if (distance >= nearest || distance > AIR_FOOD_RADIUS
-                        || inventory.checkAddItem(item, item.getCount()) != CInventory.OK
-                        || ground.getItem(item.getId()) != item) continue;
+                        || inventory.CheckAddable(item, item.getCount()) != CInventory.OK
+                        || ground.GetByServerID(item.getId()) != item) continue;
                 found = item;
                 nearest = distance;
             }
@@ -249,7 +249,7 @@ public final class CGetItemAction {
                 if (item == null
                         || item.getMapId() != creature.getMapId()
                         || item.getCount() <= 0
-                        || ground.getItem(item.getId()) != item
+                        || ground.GetByServerID(item.getId()) != item
                         || !isAllowedItem(creature, item)) {
                     continue;
                 }
@@ -265,7 +265,7 @@ public final class CGetItemAction {
                     continue;
                 }
 
-                if (inventory.checkAddItem(
+                if (inventory.CheckAddable(
                         item,
                         item.getCount()) != CInventory.OK) {
                     continue;
@@ -420,7 +420,7 @@ public final class CGetItemAction {
         // NC dGetItem completes only its captured GET_ITEM key. A stale
         // pointer must never consume a replacement object with the same ID.
         if (groundInventory == null
-                || groundInventory.getItem(targetItem.getId()) != targetItem) {
+                || groundInventory.GetByServerID(targetItem.getId()) != targetItem) {
             dGetItem.GetItemFinished(creature, targetItem, null);
             return;
         }
@@ -434,7 +434,7 @@ public final class CGetItemAction {
         final int acquiredCount;
         final L1ItemInstance transferred;
         synchronized (groundInventory) {
-            if (groundInventory.getItem(targetItem.getId()) != targetItem
+            if (groundInventory.GetByServerID(targetItem.getId()) != targetItem
                     || !isAllowedItem(creature, targetItem)) {
                 acquiredCount = 0;
                 transferred = null;
@@ -445,18 +445,18 @@ public final class CGetItemAction {
                     targetItem.setGiveItem(true);
                     transferred = groundInventory.tradeItem(targetItem, acquiredCount, destination);
                 } catch (IllegalStateException pendingTransfer) {
-                    if (groundInventory.getItem(targetItem.getId()) == targetItem)
+                    if (groundInventory.GetByServerID(targetItem.getId()) == targetItem)
                         targetItem.setGiveItem(oldGiveItem);
                     if (!"Item mutation refused while CacheD transfer pending".equals(pendingTransfer.getMessage()))
                         throw pendingTransfer;
                     CCreatureController.sleep(creature, INVALID_TARGET_SLEEP_MS);
                     return;
                 } catch (RuntimeException | Error failure) {
-                    if (groundInventory.getItem(targetItem.getId()) == targetItem)
+                    if (groundInventory.GetByServerID(targetItem.getId()) == targetItem)
                         targetItem.setGiveItem(oldGiveItem);
                     throw failure;
                 }
-                if (transferred == null && groundInventory.getItem(targetItem.getId()) == targetItem)
+                if (transferred == null && groundInventory.GetByServerID(targetItem.getId()) == targetItem)
                     targetItem.setGiveItem(oldGiveItem);
             }
         }
@@ -519,7 +519,7 @@ public final class CGetItemAction {
                         item.getMapId());
 
         /* itemId가 아니라 exact objectId/object identity를 확인한다. */
-        return groundInventory != null && groundInventory.getItem(item.getId()) == item;
+        return groundInventory != null && groundInventory.GetByServerID(item.getId()) == item;
     }
 
     /** L1 pet item restrictions and companion's owner-only ground loot. */

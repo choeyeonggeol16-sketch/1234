@@ -13,7 +13,7 @@ final class EquipmentStarterPackages {
     static void stage(L1PcInstance pc, int itemId, L1InventoryTransaction tx, ArrayList<String> messages) {
         switch (itemId) {
 		case 3000508://장비상자(초보)
-			if (pc.getInventory().checkItem(3000508, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(3000508, 1)) { // 체크 되는 아이템과 수량
 
 				
 				if (pc.isWarrior()) {
@@ -44,7 +44,7 @@ final class EquipmentStarterPackages {
 			break;
 
 		case 7020://반왕 패키지(7검/8셋/6악세)
-			if (pc.getInventory().checkItem(7020, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(7020, 1)) { // 체크 되는 아이템과 수량
 
 				
 				if (pc.isWarrior()) {
@@ -75,7 +75,7 @@ final class EquipmentStarterPackages {
 			break;
 
 		case 7021://영웅 패키지(8검/9셋/7악세)
-			if (pc.getInventory().checkItem(7021, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(7021, 1)) { // 체크 되는 아이템과 수량
 
 				
 				if (pc.isWarrior()) {
@@ -106,7 +106,7 @@ final class EquipmentStarterPackages {
 			break;
 
 		case 4100080:// 악세패키지 상자
-			if (pc.getInventory().checkItem(4100080, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(4100080, 1)) { // 체크 되는 아이템과 수량
 
 
 				if (pc.isWarrior()) {

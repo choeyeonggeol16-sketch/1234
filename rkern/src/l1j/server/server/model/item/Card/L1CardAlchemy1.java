@@ -137,7 +137,7 @@ public class L1CardAlchemy1 {
             SC_SystemMessage.send(pc, "합성에 필요한 카드가 부족합니다.");
             return false;
         }
-        if (!(pc.getInventory().checkItem(40308, Config.legend_cost))) {
+        if (!(pc.getInventory().HaveItemByClassId(40308, Config.legend_cost))) {
             SC_SystemMessage.send(pc, "합성에 필요한 아데나가 부족합니다.");
             return false;
         }

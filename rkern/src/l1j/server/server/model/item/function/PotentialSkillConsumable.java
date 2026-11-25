@@ -30,7 +30,7 @@ final class PotentialSkillConsumable {
                 if (GameUtils.isNonAction(pc)) {
                     return;
                 }
-                if (!pc.getInventory().checkItem(210038, 2)) {
+                if (!pc.getInventory().HaveItemByClassId(210038, 2)) {
                     pc.sendPackets("속성석이 부족합니다.");
                     return;
                 }

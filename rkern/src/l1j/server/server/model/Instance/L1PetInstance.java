@@ -321,7 +321,7 @@ public class L1PetInstance extends L1NpcInstance {
 			if (item.isEquipped()) {
 				continue;
 			}
-			if (_petMaster.getInventory().checkAddItem( 
+			if (_petMaster.getInventory().CheckAddable( 
 					item, item.getCount()) == CInventory.OK) {
 				_inventory.tradeItem(item, item.getCount(), targetInventory);
 				SC_ServerMessage.send(_petMaster, 143, getName(), item

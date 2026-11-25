@@ -124,7 +124,7 @@ public final class L1EquipmentTimer implements Runnable {
             }
             try {
                 if (!active || !item.ownsEquipmentTimer(this) || !item.isEquipped()
-                        || inventory.getItem(item.getId()) != item) {
+                        || inventory.GetByServerID(item.getId()) != item) {
                     cancel();
                     return;
                 }

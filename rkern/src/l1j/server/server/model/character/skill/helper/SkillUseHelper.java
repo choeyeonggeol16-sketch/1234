@@ -420,7 +420,7 @@ public final class SkillUseHelper {
 
 		for (int i = 0; i < INVIS_EQUIP_ITEM_IDS.length; i++) {
 			final L1ItemInstance item =
-					inv.getEquippedItem(INVIS_EQUIP_ITEM_IDS[i]);
+					inv.GetFirstEquippedItemByClassID(INVIS_EQUIP_ITEM_IDS[i]);
 
 			if (item != null) {
 				pc.UnequipItem(item);

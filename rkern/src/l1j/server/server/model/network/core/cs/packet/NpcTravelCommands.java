@@ -33,7 +33,7 @@ final class NpcTravelCommands {
         final int itemId = npcId == 9000 ? 140100 : 40308;
         final int count = npcId == 9000 ? 1 : 1000;
         // Keep existing admission check; do not teleport on a failed debit.
-        if (pc.getInventory().checkItem(itemId, count) && pc.getInventory().consumeItem(itemId, count)) {
+        if (pc.getInventory().HaveItemByClassId(itemId, count) && pc.getInventory().consumeItem(itemId, count)) {
             pc.start_teleport(32769, 32837, 622, pc.getHeading(), 169, true, false);
         } else {
             SC_SystemMessage.send(pc, npcId == 9000 ? "축복받은 순간이동 주문서가 필요합니다." : "1,000 아데나가 필요합니다.");
@@ -73,7 +73,7 @@ final class NpcTravelCommands {
 	static String jeep(L1PcInstance pc, String s, String htmlid, Random _random) {
 																						// 리뉴얼
 				if (s.equals("teleportURL")) {// 액션코드
-					if (pc.getInventory().checkItem(40308, 7777)
+					if (pc.getInventory().HaveItemByClassId(40308, 7777)
                             && pc.getInventory().consumeItem(40308, 7777)) {
 						int rx = _random.nextInt(7);
 						int ux = 33435 + rx;
@@ -131,7 +131,7 @@ final class NpcTravelCommands {
 					map = 50;
 				}
 				if (locx == 0 || locy == 0) return htmlid;
-				if (pc.getInventory().checkItem(40308, 500)
+				if (pc.getInventory().HaveItemByClassId(40308, 500)
                         && pc.getInventory().consumeItem(40308, 500)) {
 					pc.start_teleport(locx, locy, map, pc.getHeading(), 169, true, false);
 				} else {
@@ -164,7 +164,7 @@ final class NpcTravelCommands {
 
 	static String gunterTravel(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("a")) {
-					if (pc.getInventory().checkItem(447011, 1)) {
+					if (pc.getInventory().HaveItemByClassId(447011, 1)) {
 					} else {
 						if (pc.getLevel() <= 90) {// 해당레벨이하일경우
 							SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "군터: 퀘스트를 먼저 진행 하시오..");
@@ -245,7 +245,7 @@ final class NpcTravelCommands {
 					mapid = 4;
 				}
 				if (locx == 0 || locy == 0) return htmlid;
-				if (pc.getInventory().checkItem(40308, 100)
+				if (pc.getInventory().HaveItemByClassId(40308, 100)
                         && pc.getInventory().consumeItem(40308, 100)) {
 					pc.start_teleport(locx, locy, mapid, pc.getHeading(), 169, true, false);
 					htmlid = "";
@@ -362,7 +362,7 @@ final class NpcTravelCommands {
 
 	static String unicornTemple(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("a")) { // 입장
-					if (pc.getInventory().checkItem(810000, 1)
+					if (pc.getInventory().HaveItemByClassId(810000, 1)
                             && pc.getInventory().consumeItem(810000, 1)) {
 						pc.start_teleport(32800, 32798, 1935, pc.getHeading(), 169, true, false);
 					} else {
@@ -398,7 +398,7 @@ final class NpcTravelCommands {
 
 	static String aldran(L1PcInstance pc, String s, String htmlid) {
 				if (s.equals("a")) {
-					if (pc.getInventory().checkItem(41207, 1)) {
+					if (pc.getInventory().HaveItemByClassId(41207, 1)) {
 						// L1Teleport.teleport(pc, 32674, 32871, (short) 550, 0,
 						// true);
 						pc.start_teleport(32674, 32871, 550, pc.getHeading(), 169, true, false);
@@ -407,7 +407,7 @@ final class NpcTravelCommands {
 						htmlid = "aldran9";
 					}
 				} else if (s.equals("b")) {
-					if (pc.getInventory().checkItem(41207, 1)) {
+					if (pc.getInventory().HaveItemByClassId(41207, 1)) {
 						// L1Teleport.teleport(pc, 32778, 33009, (short) 550, 0,
 						// true);
 						pc.start_teleport(32778, 33009, 550, pc.getHeading(), 169, true, false);
@@ -416,7 +416,7 @@ final class NpcTravelCommands {
 						htmlid = "aldran9";
 					}
 				} else if (s.equals("c")) {
-					if (pc.getInventory().checkItem(41207, 1)) {
+					if (pc.getInventory().HaveItemByClassId(41207, 1)) {
 						// L1Teleport.teleport(pc, 32471, 32766, (short) 550, 0,
 						// true);
 						pc.start_teleport(32471, 32766, 550, pc.getHeading(), 169, true, false);
@@ -425,7 +425,7 @@ final class NpcTravelCommands {
 						htmlid = "aldran9";
 					}
 				} else if (s.equals("d")) {
-					if (pc.getInventory().checkItem(41207, 1)) {
+					if (pc.getInventory().HaveItemByClassId(41207, 1)) {
 						// L1Teleport.teleport(pc, 32511, 32998, (short) 550, 0,
 						// true);
 						pc.start_teleport(32511, 32998, 550, pc.getHeading(), 169, true, false);
@@ -434,7 +434,7 @@ final class NpcTravelCommands {
 						htmlid = "aldran9";
 					}
 				} else if (s.equals("e")) {
-					if (pc.getInventory().checkItem(41207, 1)) {
+					if (pc.getInventory().HaveItemByClassId(41207, 1)) {
 						// L1Teleport.teleport(pc, 32998, 33028, (short) 558, 0,
 						// true);
 						pc.start_teleport(32998, 33028, 558, pc.getHeading(), 169, true, false);
@@ -456,7 +456,7 @@ final class NpcTravelCommands {
 				SC_SystemMessage.send(pc, "PC방 이용권을 사용중에만 사용 가능한 행동입니다.");
 				return htmlid;
 			}
-			if (pc.getInventory().checkItem(40308, 1000)
+			if (pc.getInventory().HaveItemByClassId(40308, 1000)
                             && pc.getInventory().consumeItem(40308, 1000)) {
 				pc.start_teleport(32769, 32837, 622, pc.getHeading(), 169, true, false);
 			} else {
@@ -467,7 +467,7 @@ final class NpcTravelCommands {
     }
 
     static String orimLaboratory(L1PcInstance pc, int npcObjectId, String htmlid) {
-        if (!pc.getInventory().checkItem(410096, 1) || !pc.getInventory().checkItem(40308, 10000)) return "j_html02";
+        if (!pc.getInventory().HaveItemByClassId(410096, 1) || !pc.getInventory().HaveItemByClassId(40308, 10000)) return "j_html02";
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 900135)) {
             if (!NpcExchangeCommands.debitLegacy(tx, pc, 410096, 1)
                     || !NpcExchangeCommands.debitLegacy(tx, pc, 40308, 10000)) return "j_html02";
@@ -490,7 +490,7 @@ final class NpcTravelCommands {
 		} else if (s.equals("b")) { // 전초기지로 이동
 			pc.start_teleport(32804, 32864, 537, pc.getHeading(), 169, true, false);
 		} else if (s.equals("d")) { // 전투 지역을 확인(5000아데나)
-			if (pc.getInventory().checkItem(40308, 5000)) {
+			if (pc.getInventory().HaveItemByClassId(40308, 5000)) {
 				pc.getInventory().consumeItem(40308, 5000);
 				SC_SystemMessage.send(pc, "아데나는 감사하지만, 지금은 사용 할 수 없습니다.");
 				htmlid = "";
@@ -554,8 +554,8 @@ final class NpcTravelCommands {
         } else if (s.equalsIgnoreCase("d") || s.equalsIgnoreCase("f")) {
             final boolean removeProtection = s.equalsIgnoreCase("f");
             try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
-                L1ItemInstance seal = pc.getInventory().findItemId(sealId);
-                if (removeProtection && pc.getInventory().checkItem(protectionId)
+                L1ItemInstance seal = pc.getInventory().GetFirstItemByClassID(sealId);
+                if (removeProtection && pc.getInventory().HaveItemByClassId(protectionId)
                         && !tx.debit(protectionId, 1)) return htmlid;
                 if (seal != null && !tx.debit(sealId, seal.getCount())) return htmlid;
                 if (tx.hasChanges()) tx.commit(null);
@@ -568,7 +568,7 @@ final class NpcTravelCommands {
 
     static String hyosue(L1PcInstance pc, String s, String htmlid) {
         if (!s.equalsIgnoreCase("1")) return htmlid;
-        if (!pc.getInventory().checkItem(40308, 10000)
+        if (!pc.getInventory().HaveItemByClassId(40308, 10000)
                 || !pc.getInventory().consumeItem(40308, 10000)) return "hyosue1";
         pc.start_teleport(32789, 33186, 4, 5, 169, true, false);
         return "";
@@ -611,7 +611,7 @@ final class NpcTravelCommands {
 
     private static void paidTowerTravel(L1PcInstance pc, int npcId, int objectId,
             int token, int count, int adena, int x, int y, int map, int heading, String failurePage) {
-        if (!pc.getInventory().checkItem(token,count) || (adena != 0 && !pc.getInventory().checkItem(40308,adena))) {
+        if (!pc.getInventory().HaveItemByClassId(token,count) || (adena != 0 && !pc.getInventory().HaveItemByClassId(40308,adena))) {
             towerFailure(pc,objectId,failurePage);
             return;
         }

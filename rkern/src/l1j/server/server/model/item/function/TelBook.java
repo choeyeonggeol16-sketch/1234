@@ -173,7 +173,7 @@ public final class TelBook {
                     ItemActionCompletion.finishCommittedConsumable(pc, item);
                 }
             });
-        } else if (pc.getInventory().getItem(item.getId()) == item) {
+        } else if (pc.getInventory().GetByServerID(item.getId()) == item) {
             pc.start_teleport(dest[0], dest[1], dest[2],
                     pc.getHeading(), 169, true, true);
         }

@@ -30,7 +30,7 @@ case 700001:
 		
 case 900001:
 
-			if (!pc.getInventory().checkItem(900001, 100)) {
+			if (!pc.getInventory().HaveItemByClassId(900001, 100)) {
 				SC_SystemMessage.send(pc, "잠재력 강화의 비약이 부족합니다.");
 				SC_SystemMessage.send(pc, "100개 모을 시 [잠재력 강화]아이템으로 제작됩니다.");
 				return;

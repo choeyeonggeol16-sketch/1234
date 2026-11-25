@@ -9,7 +9,7 @@ public final class CItem {
 
     static boolean CheckItemUseCondition(L1PcInstance pc, L1ItemInstance item) {
         if (item == null || item.getItem() == null || item.getCount() <= 0
-                || pc.getInventory().getItem(item.getId()) != item) {
+                || pc.getInventory().GetByServerID(item.getId()) != item) {
             return false;
         }
         if (item.getItem().getUseType() == -1) {

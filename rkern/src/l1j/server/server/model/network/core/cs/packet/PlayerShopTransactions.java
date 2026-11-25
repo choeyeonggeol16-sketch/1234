@@ -86,7 +86,7 @@ final class PlayerShopTransactions {
                     if (purchase && itemId != view.customerItemId(row)) return;
                     Transfer transfer = items.get(itemId);
                     if (transfer == null) {
-                        L1ItemInstance item = seller.getInventory().getItem(itemId);
+                        L1ItemInstance item = seller.getInventory().GetByServerID(itemId);
                         if (!canTransfer(seller, item, debit.expected, count, now)) return;
                         transfer = new Transfer(debit, item);
                         items.put(itemId, transfer);
@@ -99,7 +99,7 @@ final class PlayerShopTransactions {
                     total += (long) debit.expected.price * count;
                     if (total <= 0 || total > CInventory.MAX_AMOUNT) return;
                 }
-                final L1ItemInstance adena = buyer.getInventory().findItemId(L1ItemId.ADENA);
+                final L1ItemInstance adena = buyer.getInventory().GetFirstItemByClassID(L1ItemId.ADENA);
                 if (adena == null || adena.getCount() < total) {
                     SC_ServerMessage.send(buyer, 189);
                     return;
@@ -152,12 +152,12 @@ final class PlayerShopTransactions {
                 || listing.price <= 0 || count > listing.count) return;
         final int itemId = purchase ? CS_Result.param1(first, null, 0) : listingId;
         if (purchase && itemId != view.customerItemId(row)) return;
-        final L1ItemInstance item = seller.getInventory().getItem(itemId);
+        final L1ItemInstance item = seller.getInventory().GetByServerID(itemId);
         if (!canTransfer(seller, item, listing, count, System.currentTimeMillis())
                 || count > item.getCount()) return;
         final long total = (long) listing.price * count;
         if (total > CInventory.MAX_AMOUNT) return;
-        final L1ItemInstance adena = buyer.getInventory().findItemId(L1ItemId.ADENA);
+        final L1ItemInstance adena = buyer.getInventory().GetFirstItemByClassID(L1ItemId.ADENA);
         if (adena == null || adena.getCount() < total) {
             SC_ServerMessage.send(buyer, 189);
             return;

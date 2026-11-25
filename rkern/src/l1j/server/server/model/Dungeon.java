@@ -144,17 +144,17 @@ public class Dungeon {
 						&& nowtime < 115 * 360 // 10.30~11. 30
 						|| nowtime >= 135 * 360 && nowtime < 145 * 360 || nowtime >= 165 * 360 && nowtime < 175 * 360 || nowtime >= 195 * 360 && nowtime < 205 * 360
 						|| nowtime >= 225 * 360 && nowtime < 235 * 360) {
-					if ((pc.getInventory().hasItemDirect(40299, 1) && dungeonType == DungeonType.SHIP_FOR_GLUDIN) // TalkingIslandShiptoAdenMainland
-							|| (pc.getInventory().hasItemDirect(40301, 1) && dungeonType == DungeonType.SHIP_FOR_HEINE) // AdenMainlandShiptoForgottenIsland
-							|| (pc.getInventory().hasItemDirect(40302, 1) && dungeonType == DungeonType.SHIP_FOR_PI)) { // ShipPirateislandtoHiddendock
+					if ((pc.getInventory().HaveItemAmount(40299, 1) && dungeonType == DungeonType.SHIP_FOR_GLUDIN) // TalkingIslandShiptoAdenMainland
+							|| (pc.getInventory().HaveItemAmount(40301, 1) && dungeonType == DungeonType.SHIP_FOR_HEINE) // AdenMainlandShiptoForgottenIsland
+							|| (pc.getInventory().HaveItemAmount(40302, 1) && dungeonType == DungeonType.SHIP_FOR_PI)) { // ShipPirateislandtoHiddendock
 						teleportable = true;
 					}
 				} else if (nowtime >= 0 && nowtime < 360 || nowtime >= 30 * 360 && nowtime < 40 * 360 || nowtime >= 60 * 360 && nowtime < 70 * 360 || nowtime >= 90 * 360
 						&& nowtime < 100 * 360 || nowtime >= 120 * 360 && nowtime < 130 * 360 || nowtime >= 150 * 360 && nowtime < 160 * 360 || nowtime >= 180 * 360
 						&& nowtime < 190 * 360 || nowtime >= 210 * 360 && nowtime < 220 * 360) {
-					if ((pc.getInventory().hasItemDirect(40298, 1) && dungeonType == DungeonType.SHIP_FOR_TI) // AdenMainlandShiptoTalkingIsland
-							|| (pc.getInventory().hasItemDirect(40300, 1) && dungeonType == DungeonType.SHIP_FOR_FI) // ForgottenIslandShiptoAdenMainland
-							|| (pc.getInventory().hasItemDirect(40303, 1) && dungeonType == DungeonType.SHIP_FOR_HIDDENDOCK)) { // ShipHiddendocktoPirateisland
+					if ((pc.getInventory().HaveItemAmount(40298, 1) && dungeonType == DungeonType.SHIP_FOR_TI) // AdenMainlandShiptoTalkingIsland
+							|| (pc.getInventory().HaveItemAmount(40300, 1) && dungeonType == DungeonType.SHIP_FOR_FI) // ForgottenIslandShiptoAdenMainland
+							|| (pc.getInventory().HaveItemAmount(40303, 1) && dungeonType == DungeonType.SHIP_FOR_HIDDENDOCK)) { // ShipHiddendocktoPirateisland
 						teleportable = true;
 					}
 				}

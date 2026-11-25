@@ -471,7 +471,7 @@ public class L1Teleport {
 		}
 		
 		if(!isGahoMap(mapid)) {			
-			if(pc.getInventory().checkEquipped(900022)) {
+			if(pc.getInventory().IsEquippedByClassID(900022)) {
 				SC_PacketBox.send(pc, SC_PacketBox.UNLIMITED_ICON1, 484, false);
 			}
 		}
@@ -515,7 +515,7 @@ public class L1Teleport {
 	}
 
 	private void updateRulerIcon(L1PcInstance pc) {
-		if (pc.getInventory().checkItem(900111)) {
+		if (pc.getInventory().HaveItemByClassId(900111)) {
 			if (isRulerMap(pc.getMapId())) {
 				SC_InventoryIcon.iconNewUnLimit(pc, L1SkillId.TELEPORT_RULER, 5119, true);
 			} else {

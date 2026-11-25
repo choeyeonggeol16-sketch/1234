@@ -73,7 +73,7 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
 	}
 	
 	public static boolean input(L1PcInstance pc, int innId){
-		L1ItemInstance[] items = pc.getInventory().findItemsId(InnHelper.INN_KEYID);
+		L1ItemInstance[] items = pc.getInventory().GetItemListByClassID(InnHelper.INN_KEYID);
 		
 		if(items == null || items.length <= 0)
 			return false;
@@ -92,7 +92,7 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
 	}
 	
 	public static boolean input(L1PcInstance pc){
-		L1ItemInstance[] items = pc.getInventory().findItemsId(InnHelper.INN_KEYID);
+		L1ItemInstance[] items = pc.getInventory().GetItemListByClassID(InnHelper.INN_KEYID);
 		if(items == null || items.length <= 0)
 			return false;
 		return input(items, pc);

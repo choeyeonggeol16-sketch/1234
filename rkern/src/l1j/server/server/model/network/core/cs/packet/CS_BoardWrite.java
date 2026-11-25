@@ -195,7 +195,7 @@ public final class CS_BoardWrite {
         case 500002:
 
             if (pc.getInventory()
-                    .checkItem(
+                    .HaveItemByClassId(
                             L1ItemId.ADENA,
                             500)) {
 
@@ -224,7 +224,7 @@ public final class CS_BoardWrite {
         default:
 
             if (pc.getInventory()
-                    .checkItem(
+                    .HaveItemByClassId(
                             L1ItemId.ADENA,
                             500)) {
 

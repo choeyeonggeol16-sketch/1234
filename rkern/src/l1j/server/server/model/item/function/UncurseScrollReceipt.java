@@ -42,7 +42,7 @@ final class UncurseScrollReceipt {
                         || normal.getType() != item.getItem().getType()
                         || normal.getType1() != item.getItem().getType1()) continue;
                 if (item.getBless() < 1) continue;
-                if (normal.isStackable() && pc.getInventory().checkItem(normal.getItemId())
+                if (normal.isStackable() && pc.getInventory().HaveItemByClassId(normal.getItemId())
                         && !item.isEquipped()) {
                     int amount = item.getCount();
                     if (!tx.debit(item, amount) || tx.grant(normal.getItemId(), amount) == null)

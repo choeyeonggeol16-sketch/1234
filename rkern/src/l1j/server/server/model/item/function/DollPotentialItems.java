@@ -12,8 +12,8 @@ final class DollPotentialItems {
         // by the client. A missing target must not crash the item handler.
         if (pc == null || scroll == null || doll == null || scroll == doll
                 || scroll.getItem() == null || doll.getItem() == null
-                || pc.getInventory().getItem(scroll.getId()) != scroll
-                || pc.getInventory().getItem(doll.getId()) != doll) {
+                || pc.getInventory().GetByServerID(scroll.getId()) != scroll
+                || pc.getInventory().GetByServerID(doll.getId()) != doll) {
             if (pc != null) SC_ServerMessage.send(pc, 79);
             return;
         }

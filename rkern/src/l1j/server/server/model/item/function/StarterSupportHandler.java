@@ -37,7 +37,7 @@ public class StarterSupportHandler {
             SC_ChatPacket.sendDirect(pc, pc, "이 아이템은 마을에서만 사용 할 수 있습니다.");
             return;
         }
-        if (pc.getInventory().getItem(item.getId()) != item || item.getItemId() != itemId) return;
+        if (pc.getInventory().GetByServerID(item.getId()) != item || item.getItemId() != itemId) return;
 
         final int configuredLevel = Config.STARTER_REWARD_LEVEL;
         if (configuredLevel < 1 || configuredLevel > ExpTable.MAX_LEVEL) {

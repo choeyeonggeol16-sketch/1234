@@ -31,7 +31,7 @@ public final class PetVoucherTransactions {
     public static void UsePetAmulet(CUserSocket client, L1ItemInstance input, int npcId) {
         final L1PcInstance pc = client == null ? null : client.getActiveChar();
         if (pc == null || input == null
-                || pc.getInventory().getItem(input.getId()) != input) return;
+                || pc.getInventory().GetByServerID(input.getId()) != input) return;
         final l1j.server.server.templates.L1Npc template =
                 l1j.server.server.datatables.CObjectDB.LoadNPC().getTemplate(npcId);
         if (template == null || PetTypeTable.getInstance().get(npcId) == null) return;
@@ -96,7 +96,7 @@ public final class PetVoucherTransactions {
                 PetTable.getInstance().registerCommittedPet(pet);
                 final L1PetInstance spawned = new L1PetInstance(template, pc, pet);
                 spawned.setPetcost(6);
-                final L1ItemInstance current = pc.getInventory().getItem(amulet.getId());
+                final L1ItemInstance current = pc.getInventory().GetByServerID(amulet.getId());
                 if (current != null) {
                     try {
                         SC_ItemName.send(pc, current);

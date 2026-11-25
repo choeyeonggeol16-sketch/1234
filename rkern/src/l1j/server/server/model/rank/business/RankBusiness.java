@@ -238,7 +238,7 @@ public class RankBusiness implements TimeListener{
     /** The rank reward and its consumable must survive or roll back together. */
     public void onExpendiantItem(L1PcInstance pc, L1ItemInstance input) {
         if (pc == null || input == null || input.getItemId() != 5990
-                || pc.getInventory().getItem(input.getId()) != input) return;
+                || pc.getInventory().GetByServerID(input.getId()) != input) return;
         if (_expendiant <= 0 || !RankLoadManager.MRK_SYS_ISON) {
             pc.sendPackets("운영자에 의해 랭킹 시스템이 중단되어 있는 상태입니다.");
             return;

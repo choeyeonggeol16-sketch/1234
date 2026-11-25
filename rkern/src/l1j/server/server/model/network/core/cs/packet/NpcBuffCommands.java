@@ -81,7 +81,7 @@ final class NpcBuffCommands {
 
 	static String dragonHunter(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("a")) {
-					if (pc.getInventory().checkItem(40308, 300000)
+					if (pc.getInventory().HaveItemByClassId(40308, 300000)
                             && pc.getInventory().consumeItem(40308, 300000)) {
 						L1SkillUse.cast(pc, L1SkillId.DRAGON_HUNTER_BLESS, pc.getId(), pc.getX(), pc.getY(), null, 0,
 								L1SkillUse.TYPE_GMBUFF);
@@ -101,7 +101,7 @@ final class NpcBuffCommands {
 
 	static String miso(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("a")) {
-					if (pc.getInventory().checkItem(40308, 1000)
+					if (pc.getInventory().HaveItemByClassId(40308, 1000)
                             && pc.getInventory().consumeItem(40308, 1000)) {
 
 						final int targetId = pc.getId();
@@ -314,7 +314,7 @@ final class NpcBuffCommands {
 
 	static String hunterBless(L1PcInstance pc, String s, String htmlid) {
 				if (s.equalsIgnoreCase("giveto")) {
-					if (pc.getInventory().checkItem(40308, 200000)
+					if (pc.getInventory().HaveItemByClassId(40308, 200000)
                             && pc.getInventory().consumeItem(40308, 200000)) {
 					
 						
@@ -340,7 +340,7 @@ final class NpcBuffCommands {
             SC_ServerMessage.send(pc, 79);
             return;
         }
-        if (!pc.getInventory().checkItem(40308, 100)) {
+        if (!pc.getInventory().HaveItemByClassId(40308, 100)) {
             SC_SystemMessage.send(pc, "아데나가 부족합니다.");
             return;
         }
@@ -366,7 +366,7 @@ final class NpcBuffCommands {
     static String featherBuff(L1PcInstance pc) {
         for (int i=0; i<FEATHER_SKILLS.length; i++) {
             final int token=410057+i;
-            if (!pc.getInventory().checkItem(token,1)) continue;
+            if (!pc.getInventory().HaveItemByClassId(token,1)) continue;
             if (!pc.getInventory().consumeItem(token,1)) return "suschef4";
             for (int j : FEATHER_REMOVE_ORDER[i]) {
                 if (pc.hasSkillEffect(FEATHER_SKILLS[j])) pc.removeSkillEffect(FEATHER_SKILLS[j]);

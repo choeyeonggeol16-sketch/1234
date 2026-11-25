@@ -44,7 +44,7 @@ final class NpcLocalCommands {
 		if(s.contains("nenome") || s.contains("nenormal")){
 			SC_SkillSound.send(pc, pc.getId(), 21174);
 			if(s.contains("nenormal")){
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return true;
 				}
@@ -67,7 +67,7 @@ final class NpcLocalCommands {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG희귀 등급 변신은 48레벨 부터 변신할 수 있습니다.");
 					return true;
 				}
-				if (!(pc.getInventory().checkItem(875640379, 1))) {
+				if (!(pc.getInventory().HaveItemByClassId(875640379, 1))) {
 					SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
 					return true;
 				}
@@ -119,7 +119,7 @@ final class NpcLocalCommands {
 		L1PcInstance pc = clientthread.getActiveChar();
 
 		if (pc == null) return;
-		if (pc.getInventory().checkItem(L1ItemId.ADENA, 100)
+		if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)
                 && pc.getInventory().consumeItem(L1ItemId.ADENA, 100)) {
 
 			L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_NPC, false);
@@ -132,7 +132,7 @@ final class NpcLocalCommands {
 		L1PcInstance pc = clientthread.getActiveChar();
 
 		if (pc == null) return;
-		if (pc.getInventory().checkItem(L1ItemId.ADENA, 100)
+		if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)
                 && pc.getInventory().consumeItem(L1ItemId.ADENA, 100)) {
 
 			L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_KEPLISHA, false);
@@ -273,7 +273,7 @@ final class NpcLocalCommands {
             pc.sendPackets("레벨83 이상인 용사에게는 해줄수가 없소!");
             return false;
         }
-        if (pc.getInventory().checkItem(L1ItemId.ADENA, 100)
+        if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)
                 && pc.getInventory().consumeItem(L1ItemId.ADENA, 100)) {
             L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_NPC, false);
         } else {

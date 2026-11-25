@@ -17,7 +17,7 @@ final class LifeEyeCraftReceipt {
 
     static void craftLifeEye(L1PcInstance pc, L1ItemInstance fragment) {
         if (pc == null || fragment == null || fragment.getItemId() != 3000150
-                || pc.getInventory().getItem(fragment.getId()) != fragment) return;
+                || pc.getInventory().GetByServerID(fragment.getId()) != fragment) return;
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, fragment.getId())) {
             if (!tx.debit(3000150, 100)) {
                 SC_SystemMessage.send(pc, "생명의마안 조각 이 부족합니다.");

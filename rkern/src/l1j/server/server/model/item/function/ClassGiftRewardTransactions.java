@@ -26,7 +26,7 @@ final class ClassGiftRewardTransactions {
 
     static void useClassGiftBundle(L1PcInstance pc, L1ItemInstance voucher) {
         if (pc == null || voucher == null || voucher.getItemId() != 5922794
-                || pc.getInventory().getItem(voucher.getId()) != voucher) return;
+                || pc.getInventory().GetByServerID(voucher.getId()) != voucher) return;
         final int classType = pc.getType();
         final int classReward;
         switch (classType) {

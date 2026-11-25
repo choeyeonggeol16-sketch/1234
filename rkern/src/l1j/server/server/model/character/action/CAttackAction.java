@@ -333,7 +333,7 @@ public final class CAttackAction extends CNewAction {
         final int mid = owner.getMapId();
 
         if (!(mid >= 2600 && mid <= 2699)
-                && owner.getInventory().checkEquipped(203003)) {
+                && owner.getInventory().IsEquippedByClassID(203003)) {
 
             if (!isAuto) {
                 owner.sendPackets(

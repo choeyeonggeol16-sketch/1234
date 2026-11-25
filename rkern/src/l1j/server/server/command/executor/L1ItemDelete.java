@@ -53,7 +53,7 @@ public class L1ItemDelete implements L1CommandExecutor  {
 					L1ItemInstance clanItem;
 					for(L1Clan clans : L1World.getInstance().getAllClans()) {
 						_clanWarehouse = wareHouse.getClanItems(clans.getClanName());
-						clanItem = _clanWarehouse.findItemId(itemId);
+						clanItem = _clanWarehouse.GetFirstItemByClassID(itemId);
 						if(clanItem != null) {
 							_clanWarehouse.deleteItem(clanItem);
 						}
@@ -105,9 +105,9 @@ public class L1ItemDelete implements L1CommandExecutor  {
 		_privateWarehouse = wareHouse.getPrivateItems(accountName);
 		_elfWarehouse =  wareHouse.getElfItems(accountName);
 		_supplementaryService =  wareHouse.getSupplementaryItems(accountName);					
-		itemPrivate = _privateWarehouse.findItemId(itemId);
-		itemElf = _elfWarehouse.findItemId(itemId);
-		itemSupple = _supplementaryService.findItemId(itemId);	
+		itemPrivate = _privateWarehouse.GetFirstItemByClassID(itemId);
+		itemElf = _elfWarehouse.GetFirstItemByClassID(itemId);
+		itemSupple = _supplementaryService.GetFirstItemByClassID(itemId);	
 		if(itemPrivate != null) {
 			_privateWarehouse.deleteItem(itemPrivate);
 		}

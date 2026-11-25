@@ -13,7 +13,7 @@ final class StarterSupportPackages {
     static void stage(L1PcInstance pc, int itemId, L1InventoryTransaction tx, ArrayList<String> messages) {
         switch (itemId) {
 		case 4100164:// 반놀자 지원 상자
-			if (pc.getInventory().checkItem(4100164, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(4100164, 1)) { // 체크 되는 아이템과 수량
 
 
 				if (pc.isWarrior()) {
@@ -44,7 +44,7 @@ final class StarterSupportPackages {
 			break;
 
 		case 4100165:// 반하자 지원상자
-			if (pc.getInventory().checkItem(4100165, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(4100165, 1)) { // 체크 되는 아이템과 수량
 
 
 				if (pc.isWarrior()) {
@@ -75,7 +75,7 @@ final class StarterSupportPackages {
 			break;
 
 		case 3000035:// 하자 지원 상자
-			if (pc.getInventory().checkItem(3000035, 1)) { // 체크 되는 아이템과 수량				
+			if (pc.getInventory().HaveItemByClassId(3000035, 1)) { // 체크 되는 아이템과 수량				
 
 
 				if (pc.isWarrior()) {

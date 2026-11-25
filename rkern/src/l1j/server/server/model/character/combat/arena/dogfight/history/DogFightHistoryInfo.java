@@ -259,7 +259,7 @@ public class DogFightHistoryInfo {
 	            return null;
 	        }
 
-	        if(!pc.getInventory().checkItem(L1ItemId.ADENA, total_price)){
+	        if(!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, total_price)){
 	            pc.sendPackets("구입에 필요한 아데나가 부족합니다.");
 	            return null;
 	        }

@@ -27,7 +27,7 @@ public final class AdminItemPackages {
 
     public static void open(L1PcInstance pc, L1ItemInstance packageItem) {
         if (pc == null || !pc.isGm() || packageItem == null || packageItem.getItemId() != 123123
-                || pc.getInventory().getItem(packageItem.getId()) != packageItem) return;
+                || pc.getInventory().GetByServerID(packageItem.getId()) != packageItem) return;
         try (L1InventoryTransaction tx = User.CheckAndSetPendingUseETCItem(pc,
                 CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(packageItem, 1)) return;

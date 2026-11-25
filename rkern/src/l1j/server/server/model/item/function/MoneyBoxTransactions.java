@@ -74,7 +74,7 @@ final class MoneyBoxTransactions {
     }
 
     static void useBurnedCharm(L1PcInstance pc, L1ItemInstance charm) {
-        if (pc == null || charm == null || pc.getInventory().getItem(charm.getId()) != charm) return;
+        if (pc == null || charm == null || pc.getInventory().GetByServerID(charm.getId()) != charm) return;
         final int id = charm.getItemId();
         final int min;
         final int max;

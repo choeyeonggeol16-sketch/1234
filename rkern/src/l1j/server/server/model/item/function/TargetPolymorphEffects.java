@@ -105,7 +105,7 @@ final class TargetPolymorphEffects {
 
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			if (pc.getInventory().checkEquipped(20281) || pc.isPolyRingMaster()) {
+			if (pc.getInventory().IsEquippedByClassID(20281) || pc.isPolyRingMaster()) {
 				if (usePolyScroll(pc, itemId, s)) {
 				} else {
 					SC_ServerMessage.send(pc, 181);

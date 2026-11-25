@@ -43,7 +43,7 @@ public final class CS_TradeAddItem {
 
         final L1ItemInstance item =
                 pc.getInventory()
-                        .getItem(itemObjectId);
+                        .GetByServerID(itemObjectId);
 
         if (item == null
                 || item.getItem() == null) {
@@ -243,7 +243,7 @@ public final class CS_TradeAddItem {
 
         if (tradingPartner
                 .getInventory()
-                .checkAddItem(
+                .CheckAddable(
                         item,
                         itemCount)
                 != CInventory.OK) {

@@ -76,7 +76,7 @@ public class L1Present implements L1CommandExecutor {
 					L1ItemInstance item = CObjectDB.CreateItem(itemid);
 					item.setEnchantLevel(0);
 					item.setCount(count);
-					if (target.getInventory().checkAddItem(item, count) == CInventory.OK) {
+					if (target.getInventory().CheckAddable(item, count) == CInventory.OK) {
 						target.getInventory().storeItem(item);
 					//	target.sendPackets(new S_GMHtml("선물: "+target.getName()+"" , ""+item.getLogName()+" 를(을) 획득함 인벤토리 확인."));
 						target.sendPackets("\\f:선물: " + item.getLogName() + " " + count + "개 획득 인벤토리 확인하세요");

@@ -35,8 +35,8 @@ final class NpcExchangeCommands {
         };
         if (i < 0) return tail;
         // Original A requires possession of 30,000 but charges 3,000. Do not change price policy.
-        if (!pc.getInventory().checkEnchantItem(GOLEM_LEFT[i], 7, 1)
-                || !pc.getInventory().checkEnchantItem(GOLEM_RIGHT[i], 7, 1)
+        if (!pc.getInventory().HaveUnequippedItemByClassIdEnchanted(GOLEM_LEFT[i], 7, 1)
+                || !pc.getInventory().HaveUnequippedItemByClassIdEnchanted(GOLEM_RIGHT[i], 7, 1)
                 || !has(pc, 41246, 30000)) return "joegolem15";
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 200201)) {
             if (!debitEnchantWeapon(tx, pc, GOLEM_LEFT[i]) || !debitEnchantWeapon(tx, pc, GOLEM_RIGHT[i])
@@ -401,7 +401,7 @@ final class NpcExchangeCommands {
         L1Item def = CObjectDB.LoadItem().getTemplate(template);
         if (def == null || count <= 0) return false;
         if (def.isStackable() || count == 1) return debitLegacy(tx, pc, template, count);
-        L1ItemInstance[] items = pc.getInventory().findItemsId(template);
+        L1ItemInstance[] items = pc.getInventory().GetItemListByClassID(template);
         if (items.length < count) return false;
         if (items.length > count) java.util.Arrays.sort(items, ENCHANT_ORDER);
         for (int i = 0; i < count; i++) if (!tx.debit(items[i], 1)) return false;
@@ -415,7 +415,7 @@ final class NpcExchangeCommands {
     }
 
     private static boolean has(L1PcInstance pc, int itemId, int count) {
-        return CObjectDB.LoadItem().getTemplate(itemId) != null && pc.getInventory().checkItem(itemId, count);
+        return CObjectDB.LoadItem().getTemplate(itemId) != null && pc.getInventory().HaveItemByClassId(itemId, count);
     }
 
     /** Original consumeEnchantItem removes the whole first matching object. */
@@ -432,7 +432,7 @@ final class NpcExchangeCommands {
         L1Item def = CObjectDB.LoadItem().getTemplate(template);
         if (def == null) return false;
         if (def.isStackable()) {
-            L1ItemInstance item = pc.getInventory().findItemId(template);
+            L1ItemInstance item = pc.getInventory().GetFirstItemByClassID(template);
             return item != null && tx.debit(item, count);
         }
         if (count != 1) return false; // no multi-unit nonstackable recipes in these handlers
@@ -495,7 +495,7 @@ final class NpcExchangeCommands {
         try {
             item.setCount(count);
             item.setEnchantLevel(enchant);
-            destination = pc.getInventory().checkAddItem(item, count) == CInventory.OK
+            destination = pc.getInventory().CheckAddable(item, count) == CInventory.OK
                     ? pc.getInventory() : world.getInventory(pc.getX(), pc.getY(), pc.getMapId());
             stored = destination.storeItem(item);
             if (stored == null) return false;
@@ -504,7 +504,7 @@ final class NpcExchangeCommands {
         } finally {
             // A merged stack never adopts the newly registered world object.
             // On a rejected insertion, retain it only if the destination did adopt it.
-            if (stored != item && (destination == null || destination.getItem(item.getId()) != item)
+            if (stored != item && (destination == null || destination.GetByServerID(item.getId()) != item)
                     && world.findObject(item.getId()) == item) {
                 world.removeObject(item);
             }
@@ -542,7 +542,7 @@ final class NpcExchangeCommands {
     }
 
     static void PiersItem(L1PcInstance pc, int objid, String npcName, int objectId, int checkEnchant, int adena) {
-        final L1ItemInstance input = objectId > 0 ? pc.getInventory().getItem(objectId) : null;
+        final L1ItemInstance input = objectId > 0 ? pc.getInventory().GetByServerID(objectId) : null;
         if (input == null || input.isEquipped() || input.getEnchantLevel() != checkEnchant
                 || !validPiersSelection(pc, input.getItemId(), checkEnchant, adena)) {
             SC_NPCTalkReturn.send(pc, objid, "piers04");
@@ -596,7 +596,7 @@ final class NpcExchangeCommands {
 			case 162:
 			case 177:
 			case 194:
-				if (item.getEnchantLevel() == enchant && pc.getInventory().checkItem(40308, adena)) {
+				if (item.getEnchantLevel() == enchant && pc.getInventory().HaveItemByClassId(40308, adena)) {
 					list[listcount] = "+" + item.getEnchantLevel() + " " + item.getName();
 					pc.PiersItemId[listcount] = item.getId(); // bind exact owned object
 					pc.PiersEnchant[listcount] = enchant;
@@ -607,7 +607,7 @@ final class NpcExchangeCommands {
 				break;
 			}
 		}
-		if (listcount == 0 || !pc.getInventory().checkItem(40308, adena)) {
+		if (listcount == 0 || !pc.getInventory().HaveItemByClassId(40308, adena)) {
 			SC_NPCTalkReturn.send(pc, objid, "piers04");
 		} else {
 			pc.PiersItemId[16] = newItem;
@@ -640,8 +640,8 @@ final class NpcExchangeCommands {
                 if (item.isEquipped()) continue;
                 switch (item.getItemId()) {
                     case 13, 81, 162, 177, 194 -> {
-                        if (item.getEnchantLevel() == 8 && pc.getInventory().checkItem(40308, 5000000)) flags |= 1;
-                        else if (item.getEnchantLevel() == 9 && pc.getInventory().checkItem(40308, 10000000)) flags |= 2;
+                        if (item.getEnchantLevel() == 8 && pc.getInventory().HaveItemByClassId(40308, 5000000)) flags |= 1;
+                        else if (item.getEnchantLevel() == 9 && pc.getInventory().HaveItemByClassId(40308, 10000000)) flags |= 2;
                     }
                     default -> { }
                 }
@@ -673,7 +673,7 @@ final class NpcExchangeCommands {
 
     /** The donation and (if present) ring charge image share one receipt. */
     static void rechargeWeddingRing(L1PcInstance pc) {
-        if (!pc.getInventory().checkItem(L1ItemId.ADENA, 1000)) {
+        if (!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 1000)) {
             SC_SystemMessage.send(pc, "아데나가 부족합니다.");
             return;
         }
@@ -685,7 +685,7 @@ final class NpcExchangeCommands {
             L1ItemInstance ring = null;
             if (pc.getPartnerId() != 0) {
                 for (int id = 40906; id >= 40903 && ring == null; --id)
-                    ring = pc.getInventory().findItemId(id);
+                    ring = pc.getInventory().GetFirstItemByClassID(id);
                 if (ring != null) tx.changeChargeCount(ring, ring.getItem().getMaxChargeCount());
             }
             final boolean recharged = ring != null;
@@ -705,7 +705,7 @@ final class NpcExchangeCommands {
     }
 
     static String hugrint(L1PcInstance pc, int objectId) {
-        if (pc.getInventory().checkItem(L1ItemId.MAGIC_BREATH, 1)) return "hugrint4";
+        if (pc.getInventory().HaveItemByClassId(L1ItemId.MAGIC_BREATH, 1)) return "hugrint4";
         return paidPurchase(pc, 900146, objectId, L1ItemId.ADENA, 1000, L1ItemId.MAGIC_BREATH, 1,
                 "hugrint2", "hugrint3", null, null);
     }
@@ -768,12 +768,12 @@ final class NpcExchangeCommands {
     }
 
     static void rechargeCrownRelic(L1PcInstance pc, int objectId) {
-        if (!pc.isCrown() || !pc.getInventory().checkItem(20383,1)) return;
-        if (!pc.getInventory().checkItem(L1ItemId.ADENA,100000)) {
+        if (!pc.isCrown() || !pc.getInventory().HaveItemByClassId(20383,1)) return;
+        if (!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA,100000)) {
             SC_ServerMessage.send(pc,337,"$4");
             return;
         }
-        final L1ItemInstance relic=pc.getInventory().findItemId(20383);
+        final L1ItemInstance relic=pc.getInventory().GetFirstItemByClassID(20383);
         if (relic == null || relic.getChargeCount()==50) return;
         try (L1InventoryTransaction tx=L1InventoryTransaction.begin(pc,80105)) {
             if (!debitLegacy(tx,pc,L1ItemId.ADENA,100000)) {

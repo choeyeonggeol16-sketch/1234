@@ -26,7 +26,7 @@ public final class OmanTowerTeleportHandler {
 
     public void clickItem(L1PcInstance pc, int itemId, L1ItemInstance item) {
         if (pc == null || item == null || item.getItemId() != itemId
-                || pc.getInventory().getItem(item.getId()) != item) return;
+                || pc.getInventory().GetByServerID(item.getId()) != item) return;
         if (pc.isParalyzed() || pc.isSleeped() || pc.isDead() || !pc.getMap().isEscapable()) return;
 
         final int floor = itemId - 830001;

@@ -429,7 +429,7 @@ public abstract class Warehouse extends L1Object {
 
     public final void prepareTransferDelete(L1ItemInstance source) {
         assertWarehouseActive();
-        if (source == null || getItem(source.getId()) != source)
+        if (source == null || GetByServerID(source.getId()) != source)
             throw new IllegalStateException("Warehouse move stale source");
         if (this instanceof PrivateWarehouse) {
             ((PrivateWarehouse) this).preparePrivateTransferDelete(source);
@@ -482,18 +482,18 @@ public abstract class Warehouse extends L1Object {
 	public abstract void updateItem(L1ItemInstance findItem);
 	protected abstract int getMax();
 	
-	public L1ItemInstance findItemId(int id) {
+	public L1ItemInstance GetFirstItemByClassID(int id) {
 		return _items.GetFirstItemByClassID(id);
 	}
 
 	public synchronized L1ItemInstance storeTradeItem(L1ItemInstance item) {
         assertWarehouseActive();
-		if (item == null || item.getCount() <= 0 || checkAddItemToWarehouse(item, item.getCount()) != 0) {
+		if (item == null || item.getCount() <= 0 || CheckAddableToWarehouse(item, item.getCount()) != 0) {
 			return null;
 		}
         CItemList.requireDetached(item);
 		if (item.isStackable()) {
-			L1ItemInstance findItem = findItemId(item.getItem().getItemId());
+			L1ItemInstance findItem = GetFirstItemByClassID(item.getItem().getItemId());
 			if (findItem != null) {
 				final int before = findItem.getCount();
 				if (!findItem.AddAmount(item.getCount())) return null;
@@ -547,7 +547,7 @@ public abstract class Warehouse extends L1Object {
         boolean submitted = false;
         try {
         final int sourceCount = item.getCount();
-        final L1ItemInstance destStack = inventory.findItemId(item.getItemId());
+        final L1ItemInstance destStack = inventory.GetFirstItemByClassID(item.getItemId());
         final boolean countMerge = item.isStackable() && destStack != null;
         final boolean chargeMerge = !item.isStackable() && chargeMergeItem(item.getItemId())
                 && destStack != null;
@@ -555,7 +555,7 @@ public abstract class Warehouse extends L1Object {
         final int destCharge = destStack == null ? 0 : destStack.getChargeCount();
         if (countMerge && !destStack.IsAddableAmount(count)) return null;
         if (chargeMerge && (long) destCharge + item.getChargeCount() > Integer.MAX_VALUE) return null;
-        final L1ItemInstance fee = feeAmount == 0 ? null : inventory.findItemId(feeItemId);
+        final L1ItemInstance fee = feeAmount == 0 ? null : inventory.GetFirstItemByClassID(feeItemId);
         if (feeAmount != 0 && (fee == null || !fee.isStackable()
                 || fee.getCount() < feeAmount)) return null;
         final int feeCount = fee == null ? 0 : fee.getCount();
@@ -609,12 +609,12 @@ public abstract class Warehouse extends L1Object {
                     synchronized (inventory) {
                         synchronized (Warehouse.this) {
                             if (!session.isConnected() || pc.getSessionStamp() != stamp
-                                    || pc.getNetConnection() != session || getItem(item.getId()) != item
+                                    || pc.getNetConnection() != session || GetByServerID(item.getId()) != item
                                     || item.getCount() != sourceCount
-                                    || (destStack != null && (inventory.getItem(destStack.getId()) != destStack
+                                    || (destStack != null && (inventory.GetByServerID(destStack.getId()) != destStack
                                            || destStack.getCount() != destCount
                                            || destStack.getChargeCount() != destCharge))
-                                    || (fee != null && (inventory.getItem(fee.getId()) != fee
+                                    || (fee != null && (inventory.GetByServerID(fee.getId()) != fee
                                            || fee.getCount() != feeCount)))
                                 throw new IllegalStateException("Warehouse withdrawal preimage changed after DB COMMIT");
                             CacheD.applyCommittedWarehouseMove(move, () -> {
@@ -674,7 +674,7 @@ public abstract class Warehouse extends L1Object {
             synchronized (this) {
                 // Per-instance deadlines cannot be represented by a merged stack.
                 if (endTime != null && item != null && item.isStackable()
-                        && inventory.findItemId(item.getItemId()) != null) return null;
+                        && inventory.GetFirstItemByClassID(item.getItemId()) != null) return null;
                 return tradePreparedItemLocked(item, count, inventory, 0, 0, copyTime(endTime), onCommitted);
             }
         }
@@ -688,11 +688,11 @@ public abstract class Warehouse extends L1Object {
         assertWarehouseActive();
         if ((feeItemId == 0) != (feeAmount == 0) || feeAmount < 0) return null;
         if (feeAmount != 0 && feeItemId != 40308 && feeItemId != 40494) return null;
-		if (item == null || inventory == null || getItem(item.getId()) != item) return null;
+		if (item == null || inventory == null || GetByServerID(item.getId()) != item) return null;
 		if (item.getCount() <= 0 || count <= 0 || count > item.getCount()) return null;
 		if (item.isEquipped()) return null;
         if (!item.isStackable() && count != 1) return null;
-		if (inventory.checkAddItem(item, count) != CInventory.OK) return null;
+		if (inventory.CheckAddable(item, count) != CInventory.OK) return null;
 		
         if (!(inventory instanceof l1j.server.server.model.CUserInventory)) return null;
         final int characterId = ((l1j.server.server.model.CUserInventory) inventory)
@@ -709,12 +709,12 @@ public abstract class Warehouse extends L1Object {
         if (session != null) move.onFailure(() ->
                 CIOThreadCallback.getInstance().completeSession(session, session::kick));
         move.expectOriginal(item);
-        L1ItemInstance destStack = inventory.findItemId(item.getItemId());
+        L1ItemInstance destStack = inventory.GetFirstItemByClassID(item.getItemId());
         if (destStack != null) move.expectOriginal(destStack);
         final int originalCount = item.getCount();
         final int destinationCount = destStack == null ? 0 : destStack.getCount();
         final int destinationCharge = destStack == null ? 0 : destStack.getChargeCount();
-        final L1ItemInstance fee = feeAmount == 0 ? null : inventory.findItemId(feeItemId);
+        final L1ItemInstance fee = feeAmount == 0 ? null : inventory.GetFirstItemByClassID(feeItemId);
         if (feeAmount != 0 && (fee == null || fee.getCount() < feeAmount || !fee.isStackable()))
             return null;
         if (fee != null) move.expectOriginal(fee);
@@ -797,7 +797,7 @@ public abstract class Warehouse extends L1Object {
                 catch (RuntimeException recovery) { failure.addSuppressed(recovery); }
             }
             try {
-                if (carryItem != null && inventory.getItem(carryItem.getId()) == carryItem) {
+                if (carryItem != null && inventory.GetByServerID(carryItem.getId()) == carryItem) {
                     inventory.deleteItem(carryItem);
                 } else if (destStack != null) {
                     final int excess = destStack.getCount() - destinationCount;
@@ -810,7 +810,7 @@ public abstract class Warehouse extends L1Object {
                 }
             } catch (RuntimeException recovery) { failure.addSuppressed(recovery); }
             try {
-                if (getItem(item.getId()) != item) {
+                if (GetByServerID(item.getId()) != item) {
                     item.setCount(originalCount);
                     item._cha = null;
                     insertItem(item);
@@ -973,7 +973,7 @@ public abstract class Warehouse extends L1Object {
 		}
 	}
 
-	public L1ItemInstance getItem(int objectId) {
+	public L1ItemInstance GetByServerID(int objectId) {
 		return _items.GetByServerID(objectId);
 	}
 	
@@ -1007,7 +1007,7 @@ public abstract class Warehouse extends L1Object {
         _items.clear();
     }
 
-	public L1ItemInstance[] findItemsId(int id) {
+	public L1ItemInstance[] GetItemListByClassID(int id) {
 		ArrayList<L1ItemInstance> itemList = new ArrayList<>(4);
 		for (L1ItemInstance item : _items) {
 			if (item.getItemId() == id) {
@@ -1017,35 +1017,30 @@ public abstract class Warehouse extends L1Object {
 		return itemList.toArray(new L1ItemInstance[] {});
 	}
 
-	public boolean checkItem(int id, int count) {
+	public boolean HaveItemByClassId(int id, int count) {
+		if (count < 0) return false;
 		if (count == 0) return true;
-		if (CObjectDB.GetItem(id).isStackable()) {
-			L1ItemInstance item = findItemId(id);
-			if (item != null && item.getCount() >= count) {
-				return true;
-			}
-		} 
-		else {
-			Object[] itemList = findItemsId(id);
-			if (itemList.length >= count) {
-				return true;
-			}
+		final L1Item template = CObjectDB.GetItem(id);
+		if (template == null) return false;
+		if (template.isStackable()) {
+			final L1ItemInstance item = GetFirstItemByClassID(id);
+			return item != null && item.getCount() >= count;
 		}
-		return false;
+		return _items.HasInstancesByClassID(id, count);
 	}
 
 	public int getSize() {
 		return _items.size();
 	}
 
-	public int checkAddItemToWarehouse(L1ItemInstance item, int count) {
+	public int CheckAddableToWarehouse(L1ItemInstance item, int count) {
         assertWarehouseActive();
 		if (item == null) 						return -1;
 		if (item.getCount() <= 0 || count <= 0) return -1;
 
 		final int OK = 0, SIZE_OVER = 1;
 		final int maxSize = getMax(), SIZE = getSize();
-		if ( SIZE > maxSize || (SIZE == maxSize && (!item.isStackable() || !checkItem(item.getItem().getItemId(), 1))))  
+		if ( SIZE > maxSize || (SIZE == maxSize && (!item.isStackable() || !HaveItemByClassId(item.getItem().getItemId(), 1))))  
 			return SIZE_OVER;
 	
 		return OK;

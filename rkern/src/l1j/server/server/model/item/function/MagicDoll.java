@@ -28,7 +28,7 @@ public final class MagicDoll {
 
     public static void useMagicDoll(L1PcInstance pc, L1ItemInstance item) {
         if (pc == null || item == null || pc.isInvisble()
-                || pc.getInventory().getItem(item.getId()) != item) return;
+                || pc.getInventory().GetByServerID(item.getId()) != item) return;
 
         final long now = System.currentTimeMillis();
         if (pc.getQuizTime3() + 1000 > now) return;
@@ -78,7 +78,7 @@ public final class MagicDoll {
 
         final int consumeCount = def.getCrystalCost();
         if (consumeCount < 0) return;
-        if (consumeCount > 0 && !pc.getInventory().checkItem(MAGIC_CRYSTAL, consumeCount)) {
+        if (consumeCount > 0 && !pc.getInventory().HaveItemByClassId(MAGIC_CRYSTAL, consumeCount)) {
             SC_ServerMessage.send(pc, 337, "$5240");
             return;
         }

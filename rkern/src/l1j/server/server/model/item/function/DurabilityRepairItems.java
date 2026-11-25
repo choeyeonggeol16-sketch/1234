@@ -19,8 +19,8 @@ public final class DurabilityRepairItems {
     public static void UseDurableRepair(L1PcInstance pc, L1ItemInstance whetstone,
             L1ItemInstance target, Runnable afterCommitted) {
         if (pc == null || whetstone == null || target == null || whetstone == target
-                || pc.getInventory().getItem(whetstone.getId()) != whetstone
-                || pc.getInventory().getItem(target.getId()) != target
+                || pc.getInventory().GetByServerID(whetstone.getId()) != whetstone
+                || pc.getInventory().GetByServerID(target.getId()) != target
                 || target.getItem().getType2() == 0 || target.get_durability() <= 0) return;
         try (l1j.server.server.model.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,

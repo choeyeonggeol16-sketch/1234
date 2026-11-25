@@ -51,7 +51,7 @@ final class NpcExperienceCommands {
 					if (pc.getLevel() >= Config.New_Cha) {// 이하
 						SC_SystemMessage.send(pc, "신규가 아니므로, 더 이상 지원은 불가능 합니다.");
 						return htmlid;
-					} else if (pc.getInventory().checkItem(7241, 1) || pc.getInventory().checkItem(1000004, 1)) {
+					} else if (pc.getInventory().HaveItemByClassId(7241, 1) || pc.getInventory().HaveItemByClassId(1000004, 1)) {
 						SC_SystemMessage.send(pc, "중복 지급은 불가능합니다.");
 						return htmlid;
 					}
@@ -73,7 +73,7 @@ final class NpcExperienceCommands {
         else if ("b".equalsIgnoreCase(command)) { catalyst = 810002; reward = 1; diamond = false; largeExp = true; }
         else if ("a".equalsIgnoreCase(command)) { catalyst = 810001; reward = 1; diamond = false; largeExp = false; }
         else return tail;
-        if (!pc.getInventory().checkItem(catalyst, 1) || (diamond && !pc.getInventory().checkItem(1000004, 1))) return "ekins5";
+        if (!pc.getInventory().HaveItemByClassId(catalyst, 1) || (diamond && !pc.getInventory().HaveItemByClassId(1000004, 1))) return "ekins5";
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 7200000)) {
             if (!NpcExchangeCommands.debitLegacy(tx, pc, catalyst, 1)
                     || (diamond && !NpcExchangeCommands.debitLegacy(tx, pc, 1000004, 1))
@@ -102,7 +102,7 @@ final class NpcExperienceCommands {
 				item.setEnchantLevel(EnchantLevel);
 				item.setAttrEnchantLevel(attr);
 				item.setIdentified(true);
-				if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
+				if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
 					L1ItemInstance stored = pc.getInventory().storeItem(item);
 					if (stored == null) return false;
 					stored.setBless(Bless);
@@ -118,7 +118,7 @@ final class NpcExperienceCommands {
 			} finally {
 				// ItemTable registers before an inventory decision; rejected or
 				// stack-merged item images must not survive in L1World.
-				if (pc.getInventory().getItem(item.getId()) != item) {
+				if (pc.getInventory().GetByServerID(item.getId()) != item) {
 					L1World.getInstance().removeObject(item);
 				}
 			}
@@ -233,7 +233,7 @@ final class NpcExperienceCommands {
     static String 게렝(L1PcInstance pc, String s) {
 		String htmlid = "";
 		if (s.equalsIgnoreCase("a")) {
-			if (pc.getInventory().checkItem(6003, 1) && pc.getInventory().checkItem(6013, 100) && pc.getLevel() < 70) {
+			if (pc.getInventory().HaveItemByClassId(6003, 1) && pc.getInventory().HaveItemByClassId(6013, 100) && pc.getLevel() < 70) {
 				pc.getInventory().consumeItem(6003, 1);
 				pc.getInventory().consumeItem(6013, 100);
 				int needExp = ExpTable.getNeedExpNextLevel(52);
@@ -306,8 +306,8 @@ final class NpcExperienceCommands {
         final int second = diamond ? 1000004 : 700016;
         final String failure = small ? "marbinquest9" : gift ? "marbinquest8" : "marbinquest7";
         final String success = small ? "marbinquest4" : gift ? "marbinquest2" : "marbinquest6";
-        if (!gift && (!pc.getInventory().checkItem(first, 1) || !pc.getInventory().checkItem(second, 1)
-                || !pc.getInventory().checkItem(700015, 100))) return failure;
+        if (!gift && (!pc.getInventory().HaveItemByClassId(first, 1) || !pc.getInventory().HaveItemByClassId(second, 1)
+                || !pc.getInventory().HaveItemByClassId(700015, 100))) return failure;
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 70000)) {
             if (!gift && (!NpcExchangeCommands.debitLegacy(tx, pc, first, 1)
                     || !NpcExchangeCommands.debitLegacy(tx, pc, second, 1)

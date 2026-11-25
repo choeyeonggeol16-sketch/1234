@@ -34,7 +34,7 @@ public final class AinBlessingItems {
 			int maximumBefore, Runnable afterCommitted) {
 		if (pc == null || input == null || delta <= 0 || maximumBefore < 0
 				|| maximumBefore > MAX_BLESS || pc.getAccount() == null
-				|| pc.getInventory().getItem(input.getId()) != input) return;
+				|| pc.getInventory().GetByServerID(input.getId()) != input) return;
 		final Account account = pc.getAccount();
 		final String login = account.getName();
 		if (login == null || login.isEmpty()) return;

@@ -25,8 +25,8 @@ public final class AttributeEnchantScrolls {
         final int current = weapon.getAttrEnchantLevel();
         // The packet handler has already verified scroll/weapon type and enchant eligibility.
         // Repeat the identity/equipment checks here, since this is the durable boundary.
-        if (pc.getInventory().getItem(scroll.getId()) != scroll
-                || pc.getInventory().getItem(weapon.getId()) != weapon
+        if (pc.getInventory().GetByServerID(scroll.getId()) != scroll
+                || pc.getInventory().GetByServerID(weapon.getId()) != weapon
                 || weapon.getItem() == null || weapon.getItem().getType2() != 1
                 || weapon.isEquipped() || scroll.isEquipped() || current < 0 || current > 20) {
             SC_ServerMessage.send(pc, 79);

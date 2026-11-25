@@ -35,7 +35,7 @@ public final class CWareHouseWithdraw {
 
     static boolean CheckFee(L1PcInstance pc, int kind, int size, int feeItem, int feeEach) {
         final int minimumFee = feeEach * size + (kind == 3 ? 1 : 0);
-        if (minimumFee != 0 && pc.getInventory().getItemCountDirect(feeItem) < minimumFee) {
+        if (minimumFee != 0 && pc.getInventory().GetItemAmount(feeItem) < minimumFee) {
             SC_SystemMessage.send(pc, kind == 9 ? "창고 출금 수수료 아이템이 부족합니다." : "아데나가 부족합니다.");
             return false;
         }
@@ -45,7 +45,7 @@ public final class CWareHouseWithdraw {
     static void Request(L1PcInstance pc, int kind, Warehouse warehouse, int feeItem, int feeEach,
             L1ItemInstance item, int count, Timestamp deadline) {
         final var inventory = pc.getInventory();
-        if (inventory.checkAddItem(item, count) != CInventory.OK) {
+        if (inventory.CheckAddable(item, count) != CInventory.OK) {
             SC_ServerMessage.send(pc, 270);
             return;
         }

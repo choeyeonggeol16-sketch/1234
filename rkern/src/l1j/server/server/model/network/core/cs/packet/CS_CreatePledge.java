@@ -60,7 +60,7 @@ public final class CS_CreatePledge {
         /*
          * 생성 비용.
          */
-        if (!pc.getInventory().checkItem(L1ItemId.ADENA, 10000)) {
+        if (!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 10000)) {
             SC_ServerMessage.send(pc, 337, "$4");
             return;
         }

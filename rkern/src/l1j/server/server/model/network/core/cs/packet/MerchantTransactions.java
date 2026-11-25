@@ -122,7 +122,7 @@ final class MerchantTransactions {
             final int id = CS_Result.param1(first, rest, i);
             final int count = (int) CS_Result.param2D(first, rest, i);
             if (count <= 0 || count > CInventory.MAX_AMOUNT || repeated(first, rest, i, id)) return;
-            final var item = pc.getInventory().getItem(id);
+            final var item = pc.getInventory().GetByServerID(id);
             if (item == null || item.isEquipped()) return;
             if (!dynamic && npcId >= 6100000 && npcId <= 6100035 && !item.isPackage()) {
                 SC_SystemMessage.send(pc, "패킷상점에서 구매하지 않은 아이템이 포함되어 있습니다.");

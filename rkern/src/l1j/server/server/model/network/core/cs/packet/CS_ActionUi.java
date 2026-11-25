@@ -302,7 +302,7 @@ public final class CS_ActionUi {
         try {
 
             if (!pc.getInventory()
-                    .checkItem(
+                    .HaveItemByClassId(
                             40308,
                             1000)) {
 
@@ -348,7 +348,7 @@ public final class CS_ActionUi {
                     RUNE_ARMOR_IDS) {
 
                 if (pc.getInventory()
-                        .checkEquipped(runeId)) {
+                        .IsEquippedByClassID(runeId)) {
 
                     SC_ChatPacket.sendDirect(pc, pc, "룬을 착용하셨다면 해제하시기 바랍니다.");
 
@@ -430,7 +430,7 @@ public final class CS_ActionUi {
                     if (type != 0x12 && type != 0x1A) continue;
                     final int objectId = entries[base + 1], price = entries[base + 2], amount = entries[base + 3];
                     final boolean purchase = type == 0x1A;
-                    final L1ItemInstance item = pc.getInventory().getItem(objectId);
+                    final L1ItemInstance item = pc.getInventory().GetByServerID(objectId);
                     if (item == null || item.getCount() <= 0 || amount <= 0 || price <= 0
                             || (!item.isStackable() && amount != 1)
                             || (!purchase && (item.isEquipped() || amount > item.getCount()))
@@ -668,7 +668,7 @@ public final class CS_ActionUi {
             if (needItem > 0) {
 
                 if (!pc.getInventory()
-                        .checkItem(
+                        .HaveItemByClassId(
                                 needItem,
                                 1)) {
 

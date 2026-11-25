@@ -24,7 +24,7 @@ final class MassImmuneSkillConsumable {
             L1Clan clan11 = pc.getClan();
             CParty party = pc.getParty();
             if (pc.getType() == 3 && pc.getLevel() >= 1) {
-                if (!pc.getInventory().checkItem(40318, Config.매스이뮨마돌)) {
+                if (!pc.getInventory().HaveItemByClassId(40318, Config.매스이뮨마돌)) {
                     pc.sendPackets("마력의 돌이 부족합니다.");
                     return;
                 }

@@ -2404,8 +2404,8 @@ public class L1PcInstance extends L1Character {
 			e.printStackTrace();
 		}
 		try{
-		L1ItemInstance invisItem = this.getInventory().getEquippedItem(20077);
-		L1ItemInstance invisItem2 = this.getInventory().getEquippedItem(120077);
+		L1ItemInstance invisItem = this.getInventory().GetFirstEquippedItemByClassID(20077);
+		L1ItemInstance invisItem2 = this.getInventory().GetFirstEquippedItemByClassID(120077);
 		if(invisItem != null){
 			this.setGmInvis(false);
 			UnequipItem(invisItem);
@@ -3109,7 +3109,7 @@ public class L1PcInstance extends L1Character {
 				} else if (damage < 0) {
 					return;
 				}
-				if (getInventory().checkEquipped(145) || getInventory().checkEquipped(149)) {
+				if (getInventory().IsEquippedByClassID(145) || getInventory().IsEquippedByClassID(149)) {
 					damage *= 1.5;
 				}
 
@@ -3126,8 +3126,8 @@ public class L1PcInstance extends L1Character {
 					}
 				} else {
 					try {
-					if ((getInventory().checkEquipped(123111) || getInventory().checkEquipped(123112)
-							|| getInventory().checkEquipped(123113))) {
+					if ((getInventory().IsEquippedByClassID(123111) || getInventory().IsEquippedByClassID(123112)
+							|| getInventory().IsEquippedByClassID(123113))) {
 						if (!hasSkillEffect(L1SkillId.할파스의신의)) {
 
 							for (L1ItemInstance item : getInventory().getItems()) {
@@ -3451,8 +3451,8 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 				}
 			} else {
 				try {
-				if ((getInventory().checkEquipped(123111) || getInventory().checkEquipped(123112)
-						|| getInventory().checkEquipped(123113))) {
+				if ((getInventory().IsEquippedByClassID(123111) || getInventory().IsEquippedByClassID(123112)
+						|| getInventory().IsEquippedByClassID(123113))) {
 					if (!hasSkillEffect(L1SkillId.할파스의신의)) {
 
 						for (L1ItemInstance item : getInventory().getItems()) {
@@ -3756,23 +3756,23 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 			}
 
 			// [불멸의 가호 / 고급 가호 / 고대 가호 체크 압축
-			if (getInventory().hasItemDirect(4100122)) {
+			if (getInventory().HaveItemAmount(4100122)) {
 				gahodrop(lastAttacker);
 				return;
 			}
-			if (getInventory().hasItemDirect(4100121)) {
+			if (getInventory().HaveItemAmount(4100121)) {
 				specialgahodrop(lastAttacker);
 				return;
 			}
-			if ((getMapId() >= 1708 && getMapId() <= 1709) && getInventory().isEquippedDirect(900022)) {
+			if ((getMapId() >= 1708 && getMapId() <= 1709) && getInventory().IsEquippedByClassIDCached(900022)) {
 				drop1();
 				return;
 			}
-			if (getInventory().isEquippedDirect(10000)) {
+			if (getInventory().IsEquippedByClassIDCached(10000)) {
 				drop2();
 				return;
 			}
-			if (getInventory().isEquippedDirect(10001)) {
+			if (getInventory().IsEquippedByClassIDCached(10001)) {
 				drop3();
 				return;
 			}
@@ -3799,7 +3799,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 			}
 
 			// 카오틱 성향치에 따른 아이템 드랍/소멸 처리
-			if (!getInventory().isEquippedDirect(10001) && !getInventory().hasItemDirect(4100121)) {
+			if (!getInventory().IsEquippedByClassIDCached(10001) && !getInventory().HaveItemAmount(4100121)) {
 				int dropCount = calculateChaosDropCount(getLawful());
 				caoPenaltyResult(dropCount);
 			}
@@ -4407,7 +4407,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		final boolean reserve = !l1j.server.server.storage.CacheD.isItemTransferReplaying();
 		if (reserve && !inv.tryBeginEquipmentChange()) return;
 		try {
-			if (inv.getItem(item.getId()) != item || item.isEquipped() == equipped) return;
+			if (inv.GetByServerID(item.getId()) != item || item.isEquipped() == equipped) return;
 			final L1Item template = item.getItem();
 			if (template == null) return;
 			final L1EquipmentSlot slot = this.getEquipSlot();
@@ -4473,7 +4473,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		final CUserInventory inv = getInventory();
 		final int arrowId = inv.getArrowItemId();
 		if (arrowId == 0) return;
-		final L1ItemInstance arrow = inv.findItemId(arrowId);
+		final L1ItemInstance arrow = inv.GetFirstItemByClassID(arrowId);
 		inv.setArrow(0);
 		if (arrow != null) {
 			try { SC_ItemName.send(this, arrow); }
@@ -6323,7 +6323,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	// 고대의 가호 효과 구현
 	private void drop1() {
-		if ((getMapId() >= 1708 && getMapId() <= 1709) && getInventory().checkEquipped(900022)) { // 착용한
+		if ((getMapId() >= 1708 && getMapId() <= 1709) && getInventory().IsEquippedByClassID(900022)) { // 착용한
 																									// 아이템
 			L1ItemInstance drop = CObjectDB.CreateItem(3000122); // 드랍
 																				// 시킬아이템
@@ -6341,7 +6341,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	// 불멸의 가호
 	private void gahodrop(L1Character lastAttacker) {
-		if (getInventory().checkItem(4100122)) {
+		if (getInventory().HaveItemByClassId(4100122)) {
 			L1ItemInstance drop = CObjectDB.CreateItem(4100120);
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item.getItemId() == 4100122) {
@@ -6361,7 +6361,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	// 고급 불멸의 가호
 	private void specialgahodrop(L1Character lastAttacker) {
 
-		if (getInventory().checkItem(4100121)) {
+		if (getInventory().HaveItemByClassId(4100121)) {
 			L1ItemInstance drop = CObjectDB.CreateItem(4100119);
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item.getItemId() == 4100121) {
@@ -6380,7 +6380,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 			}
 		} 
-		if (getInventory().checkItem(592247)) { 
+		if (getInventory().HaveItemByClassId(592247)) { 
 
 			L1ItemInstance drop2 = CObjectDB.CreateItem(592248);
 			for (L1ItemInstance item : getInventory().getItems()) {
@@ -6402,7 +6402,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	private void drop2() {
-		if (getInventory().checkEquipped(10000)) { // 착용한 아이템
+		if (getInventory().IsEquippedByClassID(10000)) { // 착용한 아이템
 			L1ItemInstance drop = CObjectDB.CreateItem(738); // 드랍
 																			// 시킬아이템
 			for (L1ItemInstance item : getInventory().getItems()) {
@@ -6418,7 +6418,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	private void drop3() {
-		if (getInventory().checkEquipped(10001)) { // 착용한 아이템
+		if (getInventory().IsEquippedByClassID(10001)) { // 착용한 아이템
 			L1ItemInstance drop = CObjectDB.CreateItem(739); // 드랍
 																			// 시킬아이템
 			for (L1ItemInstance item : getInventory().getItems()) {
@@ -6589,7 +6589,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			FishingTimeController.getInstance().endFishing(this);
 		}
 
-		if (getInventory().checkEquipped(900022)) {
+		if (getInventory().IsEquippedByClassID(900022)) {
 			boolean mapcheck = getMapId() >= 1708 && getMapId() <= 1712;
 			if (!mapcheck) {
 				SC_PacketBox.send(this, SC_PacketBox.UNLIMITED_ICON1, 484, false);

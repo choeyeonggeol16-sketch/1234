@@ -456,7 +456,7 @@ for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
             return;
         }
 
-        final L1ItemInstance useItem = pc.getInventory().getItem(itemId);
+        final L1ItemInstance useItem = pc.getInventory().GetByServerID(itemId);
 
         if (useItem != null) {
             CItemBookmark.SaveItemSlots(pc, useItem);

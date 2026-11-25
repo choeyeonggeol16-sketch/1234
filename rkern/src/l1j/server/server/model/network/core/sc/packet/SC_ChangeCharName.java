@@ -75,7 +75,7 @@ public final class SC_ChangeCharName {
 				return RESULT_FAILURE;
 			}
 
-			if (!pc.getInventory().checkItem(408991, 1)) {
+			if (!pc.getInventory().HaveItemByClassId(408991, 1)) {
 				if (pc.getNetConnection() != null) {
 					pc.getNetConnection().close();
 				}

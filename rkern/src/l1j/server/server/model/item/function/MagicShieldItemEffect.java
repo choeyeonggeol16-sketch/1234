@@ -67,7 +67,7 @@ final class MagicShieldItemEffect {
 			return false;
 		}
 
-		if (!pc.getInventory().checkItem(40319, 5)) {
+		if (!pc.getInventory().HaveItemByClassId(40319, 5)) {
 			SC_SystemMessage.send(pc, "마법재료가 부족합니다.");
 			return false;
 		}

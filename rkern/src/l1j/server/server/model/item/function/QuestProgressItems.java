@@ -24,7 +24,7 @@ final class QuestProgressItems {
         L1PcInstance pc = use.player();
         L1ItemInstance item = use.item();
         if (pc == null || item == null || item.getItemId() != 700022
-                || pc.getInventory().getItem(item.getId()) != item) return ItemActionResult.COMPLETE;
+                || pc.getInventory().GetByServerID(item.getId()) != item) return ItemActionResult.COMPLETE;
         final int before = pc.getMark_count();
         if (before >= 100) {
             SC_ServerMessage.send(pc, 2930);

@@ -144,8 +144,8 @@ public final class CSetItem {
         if (polyId == -1) return false;
         if (polyId == 6080 || polyId == 6094) {
             final CUserInventory inventory = pc.getInventory();
-            final L1ItemInstance item = inventory.findItemId(20383);
-            return item != null && item.getChargeCount() != 0 && inventory.checkItem(20383, 1);
+            final L1ItemInstance item = inventory.GetFirstItemByClassID(20383);
+            return item != null && item.getChargeCount() != 0 && inventory.HaveItemByClassId(20383, 1);
         }
         return true;
     }

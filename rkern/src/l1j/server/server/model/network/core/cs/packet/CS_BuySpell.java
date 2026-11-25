@@ -226,7 +226,7 @@ public final class CS_BuySpell {
                 + level3Cost;
 
         if (!pc.getInventory()
-                .checkItem(
+                .HaveItemByClassId(
                         L1ItemId.ADENA,
                         totalPrice)) {
 

@@ -106,7 +106,7 @@ public final class CS_Door {
 
         if (doorId == 113) {
             if (pc.getInventory()
-                    .checkItem(40163)) {
+                    .HaveItemByClassId(40163)) {
 
                 pc.getInventory()
                         .consumeItem(40163, 1);
@@ -123,7 +123,7 @@ public final class CS_Door {
                 && doorId <= 8010) {
 
             if (pc.getInventory()
-                    .checkItem(
+                    .HaveItemByClassId(
                             L1ItemId.GIRANCAVE_BOXKEY,
                             1)) {
 

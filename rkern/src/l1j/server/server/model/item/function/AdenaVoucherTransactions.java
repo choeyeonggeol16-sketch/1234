@@ -47,7 +47,7 @@ final class AdenaVoucherTransactions {
 
         // Enforce the original 2-billion warning as a real projected limit.
         // Using subtraction also avoids an int overflow near MAX_AMOUNT.
-        final int heldAdena = pc.getInventory().countItems(ITEM_ADENA);
+        final int heldAdena = pc.getInventory().GetUnequippedItemAmount(ITEM_ADENA);
         if (heldAdena < 0 || heldAdena > ADENA_EXCHANGE_LIMIT - adena) {
             SC_ServerMessage.send(pc, 3369);
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE,

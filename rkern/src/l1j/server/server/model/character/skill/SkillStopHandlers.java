@@ -2107,9 +2107,9 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
-		if (pc.getInventory().checkEquipped(123111)
-				|| pc.getInventory().checkEquipped(123112)
-				|| pc.getInventory().checkEquipped(123113)) {
+		if (pc.getInventory().IsEquippedByClassID(123111)
+				|| pc.getInventory().IsEquippedByClassID(123112)
+				|| pc.getInventory().IsEquippedByClassID(123113)) {
 
 			SC_InventoryIcon.icoEnd(pc, L1SkillId.할파스의신의);
 			SC_InventoryIcon.iconNewUnLimit(pc, L1SkillId.할파스의신의1, 3943, true);

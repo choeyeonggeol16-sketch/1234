@@ -216,7 +216,7 @@ public enum SkillUsabilityPolicy {
 		// 홀리워크 : 에볼루션 (마력의 돌 2개)
 		// -----------------------------------------------------
 		if (skillId == L1SkillId.HOLY_WALK && pc.hasSkillEffect(L1SkillId.에볼루션)) {
-			if (!pc.getInventory().checkItem(40318, 2)) {
+			if (!pc.getInventory().HaveItemByClassId(40318, 2)) {
 				SC_SystemMessage.send(pc, "홀리워크:에볼루션 효과를 받기 위해서는 마력의 돌 2개가 필요합니다.");
 				return false;
 			}
@@ -226,7 +226,7 @@ public enum SkillUsabilityPolicy {
 		// 무빙 악셀레이션 : 맥시멈 (흑요석 2개)
 		// -----------------------------------------------------
 		if (skillId == L1SkillId.MOVING_ACCELERATION && pc.hasSkillEffect(L1SkillId.맥시멈)) {
-			if (!pc.getInventory().checkItem(40321, 2)) {
+			if (!pc.getInventory().HaveItemByClassId(40321, 2)) {
 				SC_SystemMessage.send(pc, "무빙 악셀레이션:맥시멈 효과를 받기 위해서는 흑요석 2개가 필요합니다.");
 				return false;
 			}
@@ -263,7 +263,7 @@ public enum SkillUsabilityPolicy {
 		// 쉐도우 아머 : 데스티니 (흑요석 2개)
 		// -----------------------------------------------------
 		if (skillId == L1SkillId.SHADOW_ARMOR && pc.hasSkillEffect(L1SkillId.아머데스티니)) {
-			if (!pc.getInventory().checkItem(40321, 2)) {
+			if (!pc.getInventory().HaveItemByClassId(40321, 2)) {
 				SC_SystemMessage.send(pc, "쉐도우 아머:데스티니 효과를 받기 위해서는 흑요석 2개가 필요합니다.");
 				return false;
 			}

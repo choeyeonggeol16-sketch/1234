@@ -174,7 +174,7 @@ case 40616:
 			break;
 		
 case 40692:// 완성된 보물의 지도
-			if (pc.getInventory().checkItem(40621)) {
+			if (pc.getInventory().HaveItemByClassId(40621)) {
 				// \f1 아무것도 일어나지 않았습니다.
 				SC_ServerMessage.send(pc, 79);
 			} else if ((pc.getX() >= 32856 && pc.getX() <= 32858) && (pc.getY() >= 32857 && pc.getY() <= 32858)

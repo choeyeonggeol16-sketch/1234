@@ -242,7 +242,7 @@ public final class CS_Result {
 							oList.add(itemNumber, 1, pc);
 						}
 					}
-					if (pc.getInventory().checkItem(consumeMaterialId) && pc.getInventory().checkItem(itemno)) {
+					if (pc.getInventory().HaveItemByClassId(consumeMaterialId) && pc.getInventory().HaveItemByClassId(itemno)) {
 						L1ItemInstance item = null;
 						for (L1ShopBuyOrder order : oList.getList()) {
 							int itemId = order.getItem().getItemId();

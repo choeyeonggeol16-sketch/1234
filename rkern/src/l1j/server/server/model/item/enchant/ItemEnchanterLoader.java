@@ -58,10 +58,10 @@ public class ItemEnchanterLoader{
 		if(enchantee_item == null)
 			return false;
 
-		if(!pc.getInventory().checkItem(enchanter_item.getItemId()))
+		if(!pc.getInventory().HaveItemByClassId(enchanter_item.getItemId()))
 			return false;
 
-		if(!pc.getInventory().checkItem(enchantee_item.getItemId()))
+		if(!pc.getInventory().HaveItemByClassId(enchantee_item.getItemId()))
 			return false;
 
 		ItemEnchanter enchanter = _enchanters.get(enchanter_item.getItemId());

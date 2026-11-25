@@ -71,7 +71,7 @@ public class Beginner {
 							try {
 								item.setCount(count);
 								item.setEnchantLevel(enchant);
-								if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
+								if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
 									if (pc.getInventory().storeItem(item) != null) {
 										SC_ServerMessage.send(pc, 403, item.getLogName() + "(ID:" + itemId + ")");
 									}
@@ -79,7 +79,7 @@ public class Beginner {
 							} finally {
 								// createItem() registers in L1World before the inventory owns it.
 								// A rejection, failed insert, or stack merge must release that image.
-								if (pc.getInventory().getItem(item.getId()) != item) {
+								if (pc.getInventory().GetByServerID(item.getId()) != item) {
 									L1World.getInstance().removeObject(item);
 								}
 							}
@@ -91,7 +91,7 @@ public class Beginner {
 							if (item != null) {
 								try {
 									item.setEnchantLevel(enchant);
-									if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK) {
+									if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK) {
 										if (pc.getInventory().storeItem(item) != null) {
 											SC_ServerMessage.send(pc, 403, item.getLogName() + "(ID:" + itemId + ")");
 										}
@@ -99,7 +99,7 @@ public class Beginner {
 										break;
 									}
 								} finally {
-									if (pc.getInventory().getItem(item.getId()) != item) {
+									if (pc.getInventory().GetByServerID(item.getId()) != item) {
 										L1World.getInstance().removeObject(item);
 									}
 								}

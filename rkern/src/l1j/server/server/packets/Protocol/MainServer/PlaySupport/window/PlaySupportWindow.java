@@ -91,7 +91,7 @@ public final class PlaySupportWindow {
     public static boolean tryOpenItem(CUserSocket client, L1PcInstance pc, L1ItemInstance item) {
         if (item == null || item.getItem() == null || item.getItem().getItemId() != ITEM_ID) return false;
         if (client == null || pc == null || client.getActiveChar() != pc || pc.getNetConnection() != client
-                || pc.getInventory().getItem(item.getId()) != item || item.getCount() <= 0) return true;
+                || pc.getInventory().GetByServerID(item.getId()) != item || item.getCount() <= 0) return true;
         open(pc);
         return true;
     }

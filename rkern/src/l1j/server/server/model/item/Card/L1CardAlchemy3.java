@@ -95,7 +95,7 @@ public class L1CardAlchemy3 {
 			return false;
 		}
 
-		if (!(pc.getInventory().checkItem(40308, Config.myth_cost))) {
+		if (!(pc.getInventory().HaveItemByClassId(40308, Config.myth_cost))) {
 			SC_SystemMessage.send(pc, "합성에 필요한 아데나가 부족합니다.");
 			return false;
 		}

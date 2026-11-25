@@ -35,7 +35,7 @@ final class NpcQuestTransactions {
         else if (command.equalsIgnoreCase("c")) count = 10;
         else return htmlid;
         final int rewardCount = count * 3;
-        if (!pc.getInventory().checkItem(3000506, count)) {
+        if (!pc.getInventory().HaveItemByClassId(3000506, count)) {
             sendProtonGunRequirement(pc, count);
             return "falllovef";
         }
@@ -190,9 +190,9 @@ final class NpcQuestTransactions {
      * On success the legacy two RNG draws and horoscope page are unchanged.
      */
     static void keplishaHoroscopeReceipt(L1PcInstance pc, L1NpcInstance npc) {
-        if (pc.getInventory().checkItem(41314)) return;
-        if (!pc.getInventory().checkItem(L1ItemId.ADENA, 1000)
-                || !pc.getInventory().checkItem(41313, 1)) {
+        if (pc.getInventory().HaveItemByClassId(41314)) return;
+        if (!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 1000)
+                || !pc.getInventory().HaveItemByClassId(41313, 1)) {
             SC_NPCTalkReturn.send(pc, npc.getId(), "keplisha8");
             return;
         }
@@ -257,7 +257,7 @@ final class NpcQuestTransactions {
      */
     static void dragonEyeUpgrade(L1PcInstance pc, L1NpcInstance npc,
             int firstMaterial, int secondMaterial, int rewardId, int percent) {
-        if (pc.getInventory().checkItem(rewardId)) {
+        if (pc.getInventory().HaveItemByClassId(rewardId)) {
             SC_NPCTalkReturn.send(pc, npc.getId(), "sherme0");
             return;
         }
@@ -405,9 +405,9 @@ final class NpcQuestTransactions {
         final int firstId = firstGroup ? 510012 : secondGroup ? 3000128 : 30104;
         final int secondId = firstGroup ? 510013 : 3000129;
         final int thirdId = firstGroup ? 510014 : 3000130;
-        final boolean first = pc.getInventory().checkItem(firstId, 300);
-        final boolean second = !thirdGroup && pc.getInventory().checkItem(secondId, 300);
-        final boolean third = !thirdGroup && pc.getInventory().checkItem(thirdId, 300);
+        final boolean first = pc.getInventory().HaveItemByClassId(firstId, 300);
+        final boolean second = !thirdGroup && pc.getInventory().HaveItemByClassId(secondId, 300);
+        final boolean third = !thirdGroup && pc.getInventory().HaveItemByClassId(thirdId, 300);
         if (!first && !second && !third) {
             pc.sendPackets("매입가능한 품목이 부족 하다구!");
             if (thirdGroup) SC_NPCTalkReturn.send(pc, npc.getId(), "");
@@ -449,12 +449,12 @@ final class NpcQuestTransactions {
         }
         final boolean leave = action.equalsIgnoreCase("c");
         if (!leave && !action.equalsIgnoreCase("b")) return false;
-        if (pc.getInventory().checkEquipped(246) || pc.getInventory().checkEquipped(247)
-                || pc.getInventory().checkEquipped(248) || pc.getInventory().checkEquipped(249)) {
+        if (pc.getInventory().IsEquippedByClassID(246) || pc.getInventory().IsEquippedByClassID(247)
+                || pc.getInventory().IsEquippedByClassID(248) || pc.getInventory().IsEquippedByClassID(249)) {
             SC_NPCTalkReturn.send(pc, npc.getId(), "jcrystal5");
             return true;
         }
-        if (!leave && pc.getInventory().checkItem(40660)) {
+        if (!leave && pc.getInventory().HaveItemByClassId(40660)) {
             SC_NPCTalkReturn.send(pc, npc.getId(), "jcrystal4");
             return true;
         }
@@ -467,7 +467,7 @@ final class NpcQuestTransactions {
         try (l1j.server.server.model.L1InventoryTransaction tx =
                 l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
             // Reclaim existing crystal stones only on the return route.
-            final L1ItemInstance stones = leave ? pc.getInventory().findItemId(40660) : null;
+            final L1ItemInstance stones = leave ? pc.getInventory().GetFirstItemByClassID(40660) : null;
             if ((stones != null && stones.getCount() > 0 && !tx.debit(stones, stones.getCount()))
                     || !tx.debit(246, 1) || !tx.debit(247, 1) || !tx.debit(248, 1)
                     || !tx.debit(249, 1) || !tx.debit(40620, 1)) {
@@ -553,7 +553,7 @@ final class NpcQuestTransactions {
             return true;
         }
         if (action.equalsIgnoreCase("C")) {
-            if (!pc.getInventory().checkItemNotEquipped(40634, 1)) {
+            if (!pc.getInventory().HaveUnequippedItemByClassId(40634, 1)) {
                 final L1Item required = CObjectDB.LoadItem().getTemplate(40634);
                 if (required != null) SC_ServerMessage.send(pc, 337, required.getName());
                 SC_NPCTalkReturn.send(pc, npc.getId(), "lelder13");
@@ -570,23 +570,23 @@ final class NpcQuestTransactions {
     static boolean handleTionQuest(L1PcInstance pc, L1NpcInstance npc, String action) {
         final int step = pc.getQuest().get_step(71198);
         if (action.equalsIgnoreCase("A")) {
-            if (step == 0 && !pc.getInventory().checkItem(21059, 1))
+            if (step == 0 && !pc.getInventory().HaveItemByClassId(21059, 1))
                 questItemExchange(pc, npc, 71198, 0, 1, 41339, 5, 0, 41340, 0, "tion4", "tion9");
             return true;
         } else if (action.equalsIgnoreCase("B")) {
-            if (step == 1 && !pc.getInventory().checkItem(21059, 1))
+            if (step == 1 && !pc.getInventory().HaveItemByClassId(21059, 1))
                 questItemExchange(pc, npc, 71198, 1, 2, 41341, 1, 0, 0, 0, "tion5", "tion10");
             return true;
         } else if (action.equalsIgnoreCase("C")) {
-            if (step == 2 && !pc.getInventory().checkItem(21059, 1))
+            if (step == 2 && !pc.getInventory().HaveItemByClassId(21059, 1))
                 questItemExchange(pc, npc, 71198, 2, 3, 41343, 1, 0, 21057, 0, "tion6", "tion12");
             return true;
         } else if (action.equalsIgnoreCase("D")) {
-            if (step == 3 && !pc.getInventory().checkItem(21059, 1))
+            if (step == 3 && !pc.getInventory().HaveItemByClassId(21059, 1))
                 questItemExchange(pc, npc, 71198, 3, 4, 41344, 1, 21057, 21058, 0, "tion7", "tion13");
             return true;
         } else if (action.equalsIgnoreCase("E")) {
-            if (step == 4 && !pc.getInventory().checkItem(21059, 1))
+            if (step == 4 && !pc.getInventory().HaveItemByClassId(21059, 1))
                 questItemExchange(pc, npc, 71198, 4, 0, 41345, 1, 21058, 21059, 71199, "tion8", "tion15");
             return true;
         }
@@ -595,20 +595,20 @@ final class NpcQuestTransactions {
 
     static boolean handleJeronQuest(L1PcInstance pc, L1NpcInstance npc, String action) {
         if (action.equalsIgnoreCase("A")) {
-            if (pc.getQuest().get_step(71199) != 0 || pc.getInventory().checkItem(21059, 1)) return true;
-            if (pc.getInventory().checkItem(41340, 1)) {
+            if (pc.getQuest().get_step(71199) != 0 || pc.getInventory().HaveItemByClassId(21059, 1)) return true;
+            if (pc.getInventory().HaveItemByClassId(41340, 1)) {
                 requestQuestPage(pc, npc, npc.getId(), 71199, 0, 1, "jeron2");
             } else {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "jeron10");
             }
             return true;
         } else if (action.equalsIgnoreCase("B")) {
-            if (pc.getQuest().get_step(71199) == 1 && !pc.getInventory().checkItem(21059, 1))
+            if (pc.getQuest().get_step(71199) == 1 && !pc.getInventory().HaveItemByClassId(21059, 1))
                 questItemExchange(pc, npc, 71199, 1, 255, 40308, 1000000,
                         41340, 41341, 0, "jeron6", "jeron8");
             return true;
         } else if (action.equalsIgnoreCase("C")) {
-            if (pc.getQuest().get_step(71199) == 1 && !pc.getInventory().checkItem(21059, 1))
+            if (pc.getQuest().get_step(71199) == 1 && !pc.getInventory().HaveItemByClassId(21059, 1))
                 questItemExchange(pc, npc, 71199, 1, 255, 41342, 1,
                         41340, 41341, 0, "jeron5", "jeron9");
             return true;
@@ -714,7 +714,7 @@ final class NpcQuestTransactions {
 
     static String oldBook(L1PcInstance pc, String s, String htmlid) {
 		if (s.equalsIgnoreCase("a")) {
-			if (pc.getInventory().checkItem(60032)) {
+			if (pc.getInventory().HaveItemByClassId(60032)) {
 				SC_ChatPacket.sendDirect(pc, pc, "이미 낡은 고서를 가지고있네요");
 				htmlid = "";
 			} else {
@@ -736,7 +736,7 @@ final class NpcQuestTransactions {
         }
         final int questId = CQuestSystem.QUEST_HAMO;
         final int expected = pc.getQuest().get_step(questId);
-        if (pc.getInventory().checkItem(820000) || expected == CQuestSystem.QUEST_END) return "hamo1";
+        if (pc.getInventory().HaveItemByClassId(820000) || expected == CQuestSystem.QUEST_END) return "hamo1";
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, questId)) {
             if (tx.grant(820000, 1) == null) {
                 SC_SystemMessage.send(pc, "퀘스트 아이템을 수령할 수 없습니다.");
@@ -758,7 +758,7 @@ final class NpcQuestTransactions {
 
     static String claudiaScroll(L1PcInstance pc, String s, String htmlid) {
 		if (s.equalsIgnoreCase("a")) {
-			if (pc.getInventory().checkItem(99115, 5)) {
+			if (pc.getInventory().HaveItemByClassId(99115, 5)) {
 				SC_SystemMessage.send(pc, "'클라우디아 이동 주문서' 을 소지하고 계십니다.");
 				htmlid = "";
 			} else {
@@ -853,18 +853,18 @@ final class NpcQuestTransactions {
     static String 마르바(L1PcInstance pc, L1Object obj, String s) {
 		String htmlid = "";
 		L1NpcInstance npc = (L1NpcInstance) obj;
-		if (pc.getInventory().checkItem(40665)) {
+		if (pc.getInventory().HaveItemByClassId(40665)) {
 			htmlid = "marba17";
 			if (s.equalsIgnoreCase("B")) {
 				htmlid = "marba7";
-				if (pc.getInventory().checkItem(214) && pc.getInventory().checkItem(20389)
-						&& pc.getInventory().checkItem(20393) && pc.getInventory().checkItem(20401)
-						&& pc.getInventory().checkItem(20406) && pc.getInventory().checkItem(20409)) {
+				if (pc.getInventory().HaveItemByClassId(214) && pc.getInventory().HaveItemByClassId(20389)
+						&& pc.getInventory().HaveItemByClassId(20393) && pc.getInventory().HaveItemByClassId(20401)
+						&& pc.getInventory().HaveItemByClassId(20406) && pc.getInventory().HaveItemByClassId(20409)) {
 					htmlid = "marba15";
 				}
 			}
 		} else if (s.equalsIgnoreCase("A")) {
-			if (pc.getInventory().checkItem(40637)) {
+			if (pc.getInventory().HaveItemByClassId(40637)) {
 				htmlid = "marba20";
 			} else {
 				L1ItemInstance item = pc.getInventory().storeItem(40637, 1);
@@ -1081,7 +1081,7 @@ final class NpcQuestTransactions {
                 return;
             }
             for (int id = firstDocument; id <= firstDocument + 1; id++) {
-                if (pc.getInventory().checkItem(id, 1)
+                if (pc.getInventory().HaveItemByClassId(id, 1)
                         && !NpcExchangeCommands.debitLegacy(tx, pc, id, 1)) {
                     SC_NPCTalkReturn.send(pc, objid, failurePage);
                     return;
@@ -1116,7 +1116,7 @@ final class NpcQuestTransactions {
         }
         try (L1InventoryTransaction tx=L1InventoryTransaction.begin(pc,quest)) {
             for (int id=first; id<first+7; id++) {
-                if (pc.getInventory().checkItem(id,1) && !NpcExchangeCommands.debitLegacy(tx,pc,id,1)) {
+                if (pc.getInventory().HaveItemByClassId(id,1) && !NpcExchangeCommands.debitLegacy(tx,pc,id,1)) {
                     SC_SystemMessage.send(pc,"퀘스트 아이템을 회수할 수 없습니다.");
                     return;
                 }
@@ -1159,10 +1159,10 @@ final class NpcQuestTransactions {
             SC_ServerMessage.send(pc, 3255);
             return true;
         }
-        final boolean useCoupon = pc.getInventory().checkItem(coupon, 1)
-                && pc.getInventory().checkItem(L1ItemId.ADENA, discounted);
+        final boolean useCoupon = pc.getInventory().HaveItemByClassId(coupon, 1)
+                && pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, discounted);
         final int price = useCoupon ? discounted : discounted * 2;
-        if (pc.getLevel() < level || !pc.getInventory().checkItem(L1ItemId.ADENA, price)) {
+        if (pc.getLevel() < level || !pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, price)) {
             SC_NPCTalkReturn.send(pc, pc.getId(), failurePage);
             return true;
         }
@@ -1192,7 +1192,7 @@ final class NpcQuestTransactions {
      * eligibility; don't emit successful HTML or dereference a missing reward. */
     static void grantLegacyNpcItem(L1PcInstance pc, L1NpcInstance npc, int itemId,
             int count, boolean onlyIfAbsent, String page) {
-        if (onlyIfAbsent && pc.getInventory().checkItem(itemId, 1)) return;
+        if (onlyIfAbsent && pc.getInventory().HaveItemByClassId(itemId, 1)) return;
         final L1ItemInstance item = pc.getInventory().storeItem(itemId, count);
         if (item == null) {
             SC_SystemMessage.send(pc, "아이템을 수령할 수 없습니다.");
@@ -1204,7 +1204,7 @@ final class NpcQuestTransactions {
 
     /** NPC 71005: one quest token buys 20 potions, or neither row changes. */
     static void jpePotionExchange(L1PcInstance pc, L1NpcInstance npc) {
-        if (!pc.getInventory().checkItem(41213, 1)) return;
+        if (!pc.getInventory().HaveItemByClassId(41213, 1)) return;
         final int objectId = npc.getId();
         final String name = npc.getNpcTemplate().get_name();
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 71005)) {
@@ -1230,13 +1230,13 @@ final class NpcQuestTransactions {
         int first = shadow ? 41121 : 41130;
         int objectId = npc.getId();
         String page = shadow ? "minitos09" : "minicod09";
-        if (!pc.getInventory().checkItem(first, 1) && !pc.getInventory().checkItem(first + 1, 1)) {
+        if (!pc.getInventory().HaveItemByClassId(first, 1) && !pc.getInventory().HaveItemByClassId(first + 1, 1)) {
             SC_NPCTalkReturn.send(pc, objectId, page);
             return;
         }
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
             for (int id = first; id <= first + 1; id++) {
-                if (pc.getInventory().checkItem(id, 1) && !NpcExchangeCommands.debitLegacy(tx, pc, id, 1)) {
+                if (pc.getInventory().HaveItemByClassId(id, 1) && !NpcExchangeCommands.debitLegacy(tx, pc, id, 1)) {
                     SC_SystemMessage.send(pc, "퀘스트 아이템을 회수할 수 없습니다.");
                     return;
                 }
@@ -1252,7 +1252,7 @@ final class NpcQuestTransactions {
     static void spyGift(L1PcInstance pc, L1NpcInstance npc, boolean shadow) {
         int itemId = shadow ? 41121 : 41130;
         int objectId = npc.getId();
-        if (pc.getInventory().checkItem(itemId, 1)) {
+        if (pc.getInventory().HaveItemByClassId(itemId, 1)) {
             SC_NPCTalkReturn.send(pc, objectId, "");
             return;
         }
@@ -1281,7 +1281,7 @@ final class NpcQuestTransactions {
             SC_NPCTalkReturn.send(pc, objectId, "lind_sm9");
             return;
         }
-        if (pc.getInventory().checkItem(bundle ? 30070 : 200000, 1)) {
+        if (pc.getInventory().HaveItemByClassId(bundle ? 30070 : 200000, 1)) {
             SC_NPCTalkReturn.send(pc, objectId, bundle ? "lind_sm4" : "lind_sm5");
             return;
         }
@@ -1325,14 +1325,14 @@ final class NpcQuestTransactions {
     /** The three optional horoscope items are discarded together or not at all. */
     static void discardKeplisha(L1PcInstance pc, L1NpcInstance npc, String tail) {
         final int objectId = npc.getId();
-        if (!pc.getInventory().checkItem(41312, 1) && !pc.getInventory().checkItem(41313, 1)
-                && !pc.getInventory().checkItem(41314, 1)) {
+        if (!pc.getInventory().HaveItemByClassId(41312, 1) && !pc.getInventory().HaveItemByClassId(41313, 1)
+                && !pc.getInventory().HaveItemByClassId(41314, 1)) {
             if (tail != null) SC_NPCTalkReturn.send(pc, objectId, tail);
             return;
         }
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 80079)) {
             for (int id = 41312; id <= 41314; id++) {
-                if (pc.getInventory().checkItem(id, 1) && !NpcExchangeCommands.debitLegacy(tx, pc, id, 1)) {
+                if (pc.getInventory().HaveItemByClassId(id, 1) && !NpcExchangeCommands.debitLegacy(tx, pc, id, 1)) {
                     SC_SystemMessage.send(pc, "퀘스트 아이템을 회수할 수 없습니다.");
                     return;
                 }
@@ -1349,7 +1349,7 @@ final class NpcQuestTransactions {
         final int objectId = npc.getId();
         final String npcName = npc.getNpcTemplate().get_name();
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
-            if (pc.getInventory().checkItem(itemId, 1)) {
+            if (pc.getInventory().HaveItemByClassId(itemId, 1)) {
                 if (alreadyPage != null) SC_NPCTalkReturn.send(pc, objectId, alreadyPage);
                 return;
             }
@@ -1386,7 +1386,7 @@ final class NpcQuestTransactions {
         final int objectId = npc.getId();
         int missing = 0;
         for (int i = 0; i < size; i++) {
-            if (!pc.getInventory().checkItem(first + i, 1)) missing |= 1 << i;
+            if (!pc.getInventory().HaveItemByClassId(first + i, 1)) missing |= 1 << i;
         }
         if (missing == 0) {
             SC_NPCTalkReturn.send(pc, objectId, alreadyPage);
@@ -1397,7 +1397,7 @@ final class NpcQuestTransactions {
             final String[] names = new String[Integer.bitCount(missing)];
             int n = 0;
             for (int i = 0; i < size; i++) {
-                if ((missing & (1 << i)) == 0 || pc.getInventory().checkItem(first + i, 1)) continue;
+                if ((missing & (1 << i)) == 0 || pc.getInventory().HaveItemByClassId(first + i, 1)) continue;
                 final L1ItemInstance reward = tx.grant(first + i, quantity);
                 if (reward == null) {
                     SC_SystemMessage.send(pc, "지원품을 수령할 수 없습니다.");

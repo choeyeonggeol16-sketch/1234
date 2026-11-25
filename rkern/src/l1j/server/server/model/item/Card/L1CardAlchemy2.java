@@ -147,7 +147,7 @@ public class L1CardAlchemy2 {
         }
 
         // 아데나 체크
-        if (!(pc.getInventory().checkItem(40308, Config.hero_cost))) {
+        if (!(pc.getInventory().HaveItemByClassId(40308, Config.hero_cost))) {
             SC_SystemMessage.send(pc, "합성에 필요한 아데나가 부족합니다.");
             return false;
         }

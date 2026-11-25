@@ -60,8 +60,8 @@ private static final int[] TOWER_KEYS = {
         final int mapId = pc.getMapId();
 
         if (mapId >= 101 && mapId <= 110) {
-            L1ItemInstance need = pc.getInventory().findItemId(TOWER_KEYS[mapId - 101]);
-            L1ItemInstance alt  = pc.getInventory().findItemId(560028);
+            L1ItemInstance need = pc.getInventory().GetFirstItemByClassID(TOWER_KEYS[mapId - 101]);
+            L1ItemInstance alt  = pc.getInventory().GetFirstItemByClassID(560028);
             if (need != null || alt != null) return true;
             SC_ServerMessage.send(pc, 276);
             pc.tpEndFinish();
@@ -69,8 +69,8 @@ private static final int[] TOWER_KEYS = {
         }
 
         if (mapId >= 12852 && mapId <= 12861) {
-            L1ItemInstance need = pc.getInventory().findItemId(TOWER_KEYS[mapId - 12852]);
-            L1ItemInstance alt  = pc.getInventory().findItemId(4100135);
+            L1ItemInstance need = pc.getInventory().GetFirstItemByClassID(TOWER_KEYS[mapId - 12852]);
+            L1ItemInstance alt  = pc.getInventory().GetFirstItemByClassID(4100135);
             if (need != null || alt != null) return true;
             SC_ServerMessage.send(pc, 276);
             pc.tpEndFinish();
@@ -105,7 +105,7 @@ private static final int[] TOWER_KEYS = {
         }
 
         L1Map map = pc.getMap();
-        if (map.isTeleportable() || TeleportUseService.canBypassMapRestrictions(pc) || (pc.getInventory().checkItem(900111) && map.isRuler())) {
+        if (map.isTeleportable() || TeleportUseService.canBypassMapRestrictions(pc) || (pc.getInventory().HaveItemByClassId(900111) && map.isRuler())) {
             return true;
         }
         pc.tpEndFinish();

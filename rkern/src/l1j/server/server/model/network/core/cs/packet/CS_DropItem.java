@@ -145,7 +145,7 @@ public final class CS_DropItem {
         }
 
         final CInventory inventory = pc.getInventory();
-        final L1ItemInstance item = inventory.getItem(objectId);
+        final L1ItemInstance item = inventory.GetByServerID(objectId);
 
         /*
          * objectId는 반드시 현재 PC inventory가 실제로 소유하고 있어야 한다.
@@ -260,7 +260,7 @@ public final class CS_DropItem {
          * 수량을 다시 확인한다. 앞의 검증 도중 다른 경로에서 아이템 상태가
          * 바뀌었더라도 stale L1ItemInstance로 드랍하지 못한다.
          */
-        final L1ItemInstance current = inventory.getItem(objectId);
+        final L1ItemInstance current = inventory.GetByServerID(objectId);
 
         if (current != item
                 || current.getCount() <= 0
@@ -315,7 +315,7 @@ public final class CS_DropItem {
              * 부분 드랍이면 source stack이 inventory에 그대로 남아 있으므로
              * 남은 stack에도 기존 의미의 재드랍 delay를 적용한다.
              */
-            final L1ItemInstance remain = inventory.getItem(objectId);
+            final L1ItemInstance remain = inventory.GetByServerID(objectId);
 
             if (remain == current) {
                 remain.setItemdelay3(nextDropTime);

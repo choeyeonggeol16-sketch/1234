@@ -54,7 +54,7 @@ public final class PcRoomPassTransactions {
 
 	public static void 피씨방코인(L1PcInstance pc, int itemId, L1ItemInstance useItem, int day) {
         if (pc == null || useItem == null || useItem.getItemId() != itemId || day <= 0
-                || pc.PC방_버프 || pc.getInventory().getItem(useItem.getId()) != useItem) return;
+                || pc.PC방_버프 || pc.getInventory().GetByServerID(useItem.getId()) != useItem) return;
         final long now = System.currentTimeMillis();
         final Timestamp expiration = new Timestamp(now + 86400000L * day + 10000L);
         final String accountName = pc.getAccount().getName();

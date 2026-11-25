@@ -80,7 +80,7 @@ public class ElementalStoneGenerator implements Runnable {
 		L1GroundInventory gInventory  = null;
 		for (int i = 0; i < _itemList.size(); i++) {
 			gInventory = _itemList.get(i);
-			if (!gInventory.checkItem(ELEMENTAL_STONE_ID)) {
+			if (!gInventory.HaveItemByClassId(ELEMENTAL_STONE_ID)) {
 				_itemList.remove(i);
 				i--;
 			}

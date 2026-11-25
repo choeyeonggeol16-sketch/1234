@@ -452,7 +452,7 @@ public final class SkillHandlers {
 				return;
 			}
 		}
-		if (pc.getInventory().checkEquipped(20281)) {
+		if (pc.getInventory().IsEquippedByClassID(20281)) {
 			SC_MessageYN.send(pc, 180);
 			return;
 		}
@@ -1513,7 +1513,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		final int itemObjId = su.hdItemObjId();
 		if (itemObjId <= 0) return HandlerResult.HANDLED;
 
-		final L1ItemInstance item = pc.getInventory().getItem(itemObjId);
+		final L1ItemInstance item = pc.getInventory().GetByServerID(itemObjId);
 		if (item == null || item.getItem() == null) return HandlerResult.HANDLED;
 
 		final int chance = su.hdRandom().nextInt(100) + 1;
@@ -1610,7 +1610,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 			return HandlerResult.HANDLED;
 		}
 
-		if (pc.getInventory().checkEquipped(20284)) {
+		if (pc.getInventory().IsEquippedByClassID(20284)) {
 			// 원본: summonMonster(pc, _bookmark_x);
 			su.hdSummonMonster(pc, su.hdBookmarkX());
 		} else {

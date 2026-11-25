@@ -21,7 +21,7 @@ final class BerserkSkillConsumable {
                     pc.sendPackets("HP가 부족합니다.");
                     return;
                 }
-                if (!pc.getInventory().checkItem(41246, 100)) {
+                if (!pc.getInventory().HaveItemByClassId(41246, 100)) {
                     pc.sendPackets("결정체가 부족합니다.");
                     return;
                 }

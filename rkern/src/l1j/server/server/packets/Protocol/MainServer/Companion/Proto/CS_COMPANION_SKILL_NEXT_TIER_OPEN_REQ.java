@@ -67,7 +67,7 @@ public final class CS_COMPANION_SKILL_NEXT_TIER_OPEN_REQ {
                         sourceTier, oInfo.get_open_cost_min_enchant()));
                 return;
             }
-            if (!pc.getInventory().checkItem(L1ItemId.ADENA, oInfo.get_open_cost_adena()) ||
+            if (!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, oInfo.get_open_cost_adena()) ||
                     !pc.getInventory().consumeItem(L1ItemId.ADENA, oInfo.get_open_cost_adena())) {
                 pc.sendPackets(String.format("%d단계 야성을 활성화 하기 위해서는 아데나 %d이(가) 필요합니다.",
                         nextTier, oInfo.get_open_cost_adena()));

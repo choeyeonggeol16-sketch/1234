@@ -25,7 +25,7 @@ public class StatReset {
 
     public static void useCandle(L1PcInstance pc, L1ItemInstance item) {
         if (pc == null || item == null || item.getItemId() != CANDLE_ITEM_ID
-                || pc.getInventory().getItem(item.getId()) != item) return;
+                || pc.getInventory().GetByServerID(item.getId()) != item) return;
         //  사전 체크 (레벨 51 미만)
         if (pc.getLevel() < 51) {
             SC_SystemMessage.send(pc, "스텟초기화는 51레벨 이상만 가능합니다.");

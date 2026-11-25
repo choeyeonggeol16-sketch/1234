@@ -119,7 +119,7 @@ public class ClanWarehouse extends Warehouse {
 	@Override
 	public synchronized void deleteItem(L1ItemInstance item) {
         assertWarehouseActive();
-        if (item == null || getItem(item.getId()) != item) {
+        if (item == null || GetByServerID(item.getId()) != item) {
             throw new IllegalArgumentException("Warehouse item is not owned: " + getName());
         }
         submitWarehouseDelete(CLAN_ROWS, item);

@@ -15,7 +15,7 @@ final class SupplementalEarringTargetRules {
 		// Targeted earrings must be a live inventory object, not a null or stale id.
 		if (itemId >= 40925 && itemId <= 40929
 				&& (target == null || target.getItem() == null
-						|| pc.getInventory().getItem(target.getId()) != target
+						|| pc.getInventory().GetByServerID(target.getId()) != target
 						|| target == source)) {
 			SC_ServerMessage.send(pc, 79);
 			return false;

@@ -418,7 +418,7 @@ public final class CS_ExchangeSpell {
                 continue;
             }
 
-            if (inventory.checkItem(
+            if (inventory.HaveItemByClassId(
                     L1ItemId.PANS_LEATHER,
                     price)) {
 

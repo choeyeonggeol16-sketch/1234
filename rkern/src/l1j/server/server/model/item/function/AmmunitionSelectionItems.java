@@ -14,7 +14,7 @@ final class AmmunitionSelectionItems {
             pc.getInventory().setArrow(item.getItem().getItemId());
             SC_ItemName.send(pc, item);
         } else if (pc.getWeapon().getItem().getType() != 4) {
-            L1ItemInstance arrow = pc.getInventory().findItemId(pc.getInventory().getArrowItemId());
+            L1ItemInstance arrow = pc.getInventory().GetFirstItemByClassID(pc.getInventory().getArrowItemId());
             if (arrow != null) {
                 pc.getInventory().setArrow(0);
                 SC_ItemName.send(pc, arrow);

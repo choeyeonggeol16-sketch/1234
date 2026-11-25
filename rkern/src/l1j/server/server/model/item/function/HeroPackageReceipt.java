@@ -29,7 +29,7 @@ final class HeroPackageReceipt {
 
     static void useHeroPackageAtomic(L1PcInstance pc, L1ItemInstance input) {
         if (pc == null || input == null || input.getItemId() != 753
-                || pc.getInventory().getItem(input.getId()) != input) return;
+                || pc.getInventory().GetByServerID(input.getId()) != input) return;
         if (pc.getInventory().getSize() > 120) {
             SC_SystemMessage.send(pc, "소지하고 있는 아이템이 너무 많습니다.");
             return;

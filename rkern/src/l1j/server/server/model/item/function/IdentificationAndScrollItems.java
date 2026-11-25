@@ -21,8 +21,8 @@ final class IdentificationAndScrollItems {
         final L1ItemInstance scroll = use.item();
         final L1ItemInstance target = use.targetItem();
         if (pc == null || scroll == null || target == null || scroll == target
-                || pc.getInventory().getItem(scroll.getId()) != scroll
-                || pc.getInventory().getItem(target.getId()) != target)
+                || pc.getInventory().GetByServerID(scroll.getId()) != scroll
+                || pc.getInventory().GetByServerID(target.getId()) != target)
             return ItemActionResult.COMPLETE;
 
         // Read the immutable template metadata before queuing the receipt.

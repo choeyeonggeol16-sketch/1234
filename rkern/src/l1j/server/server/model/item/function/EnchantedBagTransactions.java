@@ -23,7 +23,7 @@ public final class EnchantedBagTransactions {
     public static void UseDurableEnchantedBag(L1PcInstance pc, L1ItemInstance input,
             int rewardId, int enchantLevel) {
         if (pc == null || input == null
-                || pc.getInventory().getItem(input.getId()) != input
+                || pc.getInventory().GetByServerID(input.getId()) != input
                 || (input.getItemId() != 3000126 && input.getItemId() != 3000127)
                 || (input.getItemId() == 3000126 ? rewardId != 900021 : rewardId != 900020)
                 || enchantLevel != 3) return;

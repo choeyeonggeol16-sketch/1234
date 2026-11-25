@@ -20,14 +20,14 @@ final class AdenaCurrencyConversionReceipt {
 
     public static void convertAdena(L1PcInstance pc, L1ItemInstance bank) {
         if (pc == null || bank == null
-                || pc.getInventory().getItem(bank.getId()) != bank) return;
+                || pc.getInventory().GetByServerID(bank.getId()) != bank) return;
         final int id = bank.getItemId();
         if (id != 400253 && id != 875640445) return;
         final int cost = id == 400253 ? 100_000_000 : 10_000_000;
         final int reward = id == 400253 ? 400254 : 600254;
-        final L1ItemInstance adena = pc.getInventory().findItemId(L1ItemId.ADENA);
+        final L1ItemInstance adena = pc.getInventory().GetFirstItemByClassID(L1ItemId.ADENA);
         if (adena == null || adena.getCount() < cost
-                || pc.getInventory().getItem(adena.getId()) != adena) {
+                || pc.getInventory().GetByServerID(adena.getId()) != adena) {
             SC_SystemMessage.send(pc, id == 400253
                     ? "100,000,000원 아데나가 부족합니다."
                     : "10,000,000원 아데나가 부족합니다.");

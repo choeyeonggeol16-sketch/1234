@@ -139,7 +139,7 @@ public final class CS_PersonalShop {
 
             cursor += 12;
 
-            final L1ItemInstance item = pc.getInventory().getItem(objectId);
+            final L1ItemInstance item = pc.getInventory().GetByServerID(objectId);
 
             if (price <= 0 || item == null || objectId != item.getId() || item.isEquipped()
                     || (!item.isStackable() && count != 1) || item.getCount() < count || count <= 0
@@ -203,7 +203,7 @@ public final class CS_PersonalShop {
 
             cursor += 12;
 
-            final L1ItemInstance item = pc.getInventory().getItem(objectId);
+            final L1ItemInstance item = pc.getInventory().GetByServerID(objectId);
 
             if (price <= 0 || item == null || objectId != item.getId()
                     || (!item.isStackable() && count != 1) || count <= 0 || item.getCount() <= 0

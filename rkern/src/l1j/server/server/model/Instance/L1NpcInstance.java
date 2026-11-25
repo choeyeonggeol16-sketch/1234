@@ -1236,7 +1236,7 @@ public class L1NpcInstance extends L1Character {
                 } catch (RuntimeException failure) {
                     log.log(java.util.logging.Level.WARNING, "NPC drop routing failed: " + item.getId(), failure);
                 }
-                if (source.getItem(item.getId()) == item && item.getCount() > 0) {
+                if (source.GetByServerID(item.getId()) == item && item.getCount() > 0) {
                     try {
                         if (!world.RecoverNpcDrop(origin, source, item))
                             log.warning("NPC drop remains in source: " + item.getId() + ", count=" + item.getCount());

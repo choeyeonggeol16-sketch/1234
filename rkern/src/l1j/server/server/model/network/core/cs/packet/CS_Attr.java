@@ -97,7 +97,7 @@ public final class CS_Attr {
             boolean resetKill, boolean resetDeath) {
         if (unavailable(pc) || item == null || (!resetKill && !resetDeath)) return;
         final Kda kda = pc.getKDA();
-        if (kda == null || kda.isBot || pc.getInventory().getItem(item.getId()) != item) return;
+        if (kda == null || kda.isBot || pc.getInventory().GetByServerID(item.getId()) != item) return;
         final KdaLoader loader = KdaLoader.getInstance();
         try {
             synchronized (loader) {
@@ -691,7 +691,7 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 		}
 		L1Npc l1npc = CObjectDB.GetNPC(pet.getNpcId());
 		if (!(pet.getName().equalsIgnoreCase(l1npc.get_name()))) {
-			L1ItemInstance removedItem = pc.getInventory().findItemId(410016);
+			L1ItemInstance removedItem = pc.getInventory().GetFirstItemByClassID(410016);
 			if(removedItem == null){
 				SC_ServerMessage.send(pc, 326);
 				return;
@@ -703,7 +703,7 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 		pet.setName(name);
 		petTemplate.set_name(name);
 		PetTable.getInstance().storePet(petTemplate);
-		L1ItemInstance item = pc.getInventory().getItem(pet.getItemObjId());
+		L1ItemInstance item = pc.getInventory().GetByServerID(pet.getItemObjId());
 		pc.getInventory().updateItem(item);
 
 		SC_RemoveObject.send(pc.getNetConnection(), pet);

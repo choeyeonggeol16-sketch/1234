@@ -152,7 +152,7 @@ public final class CS_ALCHEMY_MAKE_REQ {
             }
 
             MakeResult result = selectResult(alchemy, pc, alchemyId, inputs, filledSlots);
-            int addCode = pc.getInventory().checkAddItem(result.template, 1);
+            int addCode = pc.getInventory().CheckAddable(result.template, 1);
             if (addCode != CInventory.OK) {
                 doNotAllowInventory(pc, addCode);
                 return;

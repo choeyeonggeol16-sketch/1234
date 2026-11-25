@@ -181,11 +181,11 @@ final class NpcServiceHtmlCommands {
                 || templateId == 70096) {
             SC_SkillSound.send(pc, pc.getId(), 612);
             if (s.equalsIgnoreCase("room")) {
-                if (pc.getInventory().checkItem(40312))
+                if (pc.getInventory().HaveItemByClassId(40312))
 
                     htmlid = "inn5";
                 else {
-                    L1ItemInstance item = pc.getInventory().findItemId(40308);
+                    L1ItemInstance item = pc.getInventory().GetFirstItemByClassID(40308);
                     if(item != null && item.getCount() >= 300){
                         materials = Recipes.RECIPE_VALUES_1;
                         counts = Recipes.RECIPE_VALUES_2;
@@ -214,8 +214,8 @@ final class NpcServiceHtmlCommands {
                     htmlid = "inn11";
                 }
             } else if (s.equalsIgnoreCase("return")) {
-                if (pc.getInventory().checkItem(40312)) {
-                    int ct = pc.getInventory().findItemId(40312).getCount();
+                if (pc.getInventory().HaveItemByClassId(40312)) {
+                    int ct = pc.getInventory().GetFirstItemByClassID(40312).getCount();
                     int cash = Math.multiplyExact(ct, 60);
                     materials = Recipes.RECIPE_VALUES_3;
                     counts = (new int[] { ct });
@@ -233,7 +233,7 @@ final class NpcServiceHtmlCommands {
                 int nowX = pc.getX();
                 int nowY = pc.getY();
                 short map = pc.getMapId();
-                if (pc.getInventory().checkItem(40312)) {
+                if (pc.getInventory().HaveItemByClassId(40312)) {
                     if (map == 0)
                         pc.start_teleport(32746, 32803, 16384, 5, 169, false, false);
                     else if (map > 0)
@@ -251,7 +251,7 @@ final class NpcServiceHtmlCommands {
                             pc.start_teleport(32745, 32803, 21504, 5, 169, false, false);
                         else if (nowX < 34078 && nowX > 34058 && nowY < 32264 && nowY > 32244)
                             pc.start_teleport(32745, 32803, 19456, 5, 169, false, false);
-                } else if (pc.getInventory().checkItem(40312)) {
+                } else if (pc.getInventory().HaveItemByClassId(40312)) {
                     if (map == 0)
                         pc.start_teleport(32744, 32808, 16896, 5, 169, false, false);
                     else if (map > 0)
@@ -579,7 +579,7 @@ final class NpcServiceHtmlCommands {
             }
             htmlid = "";
         } else if (s.equalsIgnoreCase("material")) { // 구호의 증서
-            if (pc.getInventory().checkItem(3000049, 1)) {
+            if (pc.getInventory().HaveItemByClassId(3000049, 1)) {
                 if (pc.getExpRes() == 1) {
                     SC_MessageYN.send(pc, 2551, "");
                 } else {
@@ -622,7 +622,7 @@ final class NpcServiceHtmlCommands {
                     return;
                 }
                 if (pc.getLevel() > 54) {
-                    if (pc.getInventory().checkItem(200000)
+                    if (pc.getInventory().HaveItemByClassId(200000)
                             && pc.getInventory().consumeItem(200000, 1)) {
                         pc.start_teleport(32723 + CommonUtil.random(-10, 10), 32815 + CommonUtil.random(-10, 10), 5166,
                                 5, 169, true, false);

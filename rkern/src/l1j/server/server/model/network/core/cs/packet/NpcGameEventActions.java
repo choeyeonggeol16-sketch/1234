@@ -90,7 +90,7 @@ final class NpcGameEventActions {
 		}
 
 		if (!L1HauntedHouse.getInstance().isMember(pc)) {
-			if (!pc.getInventory().checkItem(L1ItemId.ADENA, 1000)) {
+			if (!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 1000)) {
 				SC_ServerMessage.send(pc, 189);
 				return "";
 			}
@@ -134,7 +134,7 @@ final class NpcGameEventActions {
 		}
 
 		if (!L1Racing.getInstance().isMember(pc)) {
-			if (!pc.getInventory().checkItem(L1ItemId.ADENA, 1000)) {
+			if (!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 1000)) {
 				SC_ServerMessage.send(pc, 189);
 				return "";
 			}
@@ -157,7 +157,7 @@ final class NpcGameEventActions {
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 7000021)) {
             int remaining = type;
             for (int id = 3000022; id <= 3000026 && remaining > 0; id++) {
-                if (!pc.getInventory().checkItem(id, 1)) continue;
+                if (!pc.getInventory().HaveItemByClassId(id, 1)) continue;
                 if (!tx.debit(id, 1)) {
                     SC_NPCTalkReturn.send(pc, objid, "coma3");
                     return;
@@ -371,16 +371,16 @@ final class NpcGameEventActions {
     static String bossTraining(L1PcInstance pc, L1NpcInstance npc, String s, String htmlid) {
         final BossTrainingSystem training = BossTrainingSystem.getInstance();
         if (s.equalsIgnoreCase("1")) {
-            if (pc.getInventory().checkItem(80500)) return "bosskey6";
+            if (pc.getInventory().HaveItemByClassId(80500)) return "bosskey6";
             return training.countRaidPotal() >= 99 ? "bosskey3" : "bosskey4";
         }
         if (s.length() == 1 && s.charAt(0) >= '2' && s.charAt(0) <= '4') {
-            if (pc.getInventory().checkItem(80500)) return "bosskey6";
+            if (pc.getInventory().HaveItemByClassId(80500)) return "bosskey6";
             if (training.countRaidPotal() >= 99) return "bosskey3";
             return rentTrainingRoom(pc, npc, training, 4 << (s.charAt(0) - '2'), htmlid);
         }
         if (s.equalsIgnoreCase("6")) {
-            L1ItemInstance key = pc.getInventory().findItemId(80500);
+            L1ItemInstance key = pc.getInventory().GetFirstItemByClassID(80500);
             if (key == null || !training.isActive(key)) return "bosskey2";
             pc.start_teleport(32901, 32814, key.getKeyId(), pc.getHeading(), 169, true, false);
         }
@@ -396,7 +396,7 @@ final class NpcGameEventActions {
         BossTraining reserved = null;
         boolean submitted = false;
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
-            if (pc.getInventory().checkItem(80500)) return "bosskey6";
+            if (pc.getInventory().HaveItemByClassId(80500)) return "bosskey6";
             if (!tx.debit(40308, count * 300)) return "bosskey5";
             final BossTraining room = training.reserveRaid();
             if (room == null) return "bosskey3";
@@ -469,7 +469,7 @@ final class NpcGameEventActions {
     static String valakasRaid(L1PcInstance pc, int templateId, String command, String htmlid) {
         if (!command.equalsIgnoreCase("enter")) return htmlid;
         if (pc.getLevel() < 60) return "fd_death2";
-        if (pc.getInventory().checkItem(203003, 1)) return htmlid;
+        if (pc.getInventory().HaveItemByClassId(203003, 1)) return htmlid;
         final ValakasRoomSystem rooms = ValakasRoomSystem.getInstance();
         if (rooms.countStartRaid() >= 49) {
             sendValakasLimit(pc);
@@ -478,7 +478,7 @@ final class NpcGameEventActions {
         ValakasStart reserved = null;
         boolean submitted = false;
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, templateId)) {
-            if (pc.getInventory().checkItem(203003, 1) || tx.grant(203003, 1) == null) return htmlid;
+            if (pc.getInventory().HaveItemByClassId(203003, 1) || tx.grant(203003, 1) == null) return htmlid;
             final ValakasStart room = rooms.reserve(pc);
             if (room == null) {
                 sendValakasLimit(pc);
@@ -508,9 +508,9 @@ final class NpcGameEventActions {
     static String orim(L1PcInstance pc, L1Object obj, String s, String htmlid) {
         if (s.equalsIgnoreCase("b")) return enterOrim(pc, (L1NpcInstance) obj, htmlid);
         if (s.equalsIgnoreCase("c")) {
-            if (pc.getInventory().checkItem(410095, 1)) return "j_html03";
+            if (pc.getInventory().HaveItemByClassId(410095, 1)) return "j_html03";
             try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, ((L1NpcInstance) obj).getNpcId())) {
-                if (pc.getInventory().checkItem(410095, 1)) return "j_html03";
+                if (pc.getInventory().HaveItemByClassId(410095, 1)) return "j_html03";
                 L1ItemInstance jar = tx.grant(410095, 1);
                 if (jar == null) return htmlid;
                 String jarName = jar.getName();
@@ -535,7 +535,7 @@ final class NpcGameEventActions {
         final L1PcInstance[] members = party.getMembers();
         for (L1PcInstance member : members) {
             if (member == null || member.getMapId() != 0) break;
-            if (!member.getInventory().checkItem(410096, 1)) {
+            if (!member.getInventory().HaveItemByClassId(410096, 1)) {
                 orimMissingOrb(leader, member);
                 return htmlid;
             }
@@ -626,7 +626,7 @@ final class NpcGameEventActions {
             SC_SystemMessage.send(pc, "파티장만 신청 가능합니다.");
             return true;
         }
-        if (!pc.getInventory().checkItem(7005254, 1)
+        if (!pc.getInventory().HaveItemByClassId(7005254, 1)
                 || !pc.getInventory().consumeItem(7005254, 1)) {
             SC_SystemMessage.send(pc, "보스 레이드 입장권(1)이 부족합니다.");
             return true;
@@ -649,7 +649,7 @@ final class NpcGameEventActions {
             SC_SystemMessage.send(pc, "파티장만 신청 가능합니다.");
             return true;
         }
-        if (!pc.getInventory().hasItemDirect(7005254)
+        if (!pc.getInventory().HaveItemAmount(7005254)
                 || !pc.getInventory().consumeItem(7005254, 1)) {
             SC_SystemMessage.send(pc, "보스 레이드 입장권(1)이 부족합니다.");
             return true;

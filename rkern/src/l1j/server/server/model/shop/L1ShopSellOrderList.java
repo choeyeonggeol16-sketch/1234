@@ -52,7 +52,7 @@ public class L1ShopSellOrderList {
         }
 
         // _pc 기준으로 통일 (외부 param 혼용 방지)
-        final L1ItemInstance item = _pc.getInventory().getItem(itemObjectId);
+        final L1ItemInstance item = _pc.getInventory().GetByServerID(itemObjectId);
         if (item == null || item.getItem() == null) {
             bugok = 1;
             return;

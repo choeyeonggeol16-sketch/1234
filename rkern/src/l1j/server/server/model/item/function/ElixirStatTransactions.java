@@ -20,7 +20,7 @@ public final class ElixirStatTransactions {
     private ElixirStatTransactions() {}
 
     public static void UseElixirAtomic(L1PcInstance pc, L1ItemInstance item) {
-        if (pc == null || item == null || pc.getInventory().getItem(item.getId()) != item)
+        if (pc == null || item == null || pc.getInventory().GetByServerID(item.getId()) != item)
             return;
         final int type = item.getItemId() - 40033;
         if (type < 0 || type > 5) return;

@@ -62,7 +62,7 @@ public final class CS_GiveItem {
             return;
         }
 
-        L1ItemInstance item = inv.getItem(itemObjectId);
+        L1ItemInstance item = inv.GetByServerID(itemObjectId);
 
         if (target.getNpcTemplate().get_npcId() != 45032) {
             if (pc.getLevel() > 0 && !pc.isGm()) {
@@ -178,7 +178,7 @@ public final class CS_GiveItem {
         }
 
         if (!pc.isGm()
-                && targetInv.checkAddItem(item, count) != CInventory.OK) {
+                && targetInv.CheckAddable(item, count) != CInventory.OK) {
 
             SC_ServerMessage.send(pc, 942);
             return;
@@ -342,7 +342,7 @@ public final class CS_GiveItem {
         final CUserInventory inv = pc.getInventory();
         final L1PetInstance pet = (L1PetInstance) target;
         final L1ItemInstance petamu =
-                inv.getItem(pet.getItemObjId());
+                inv.GetByServerID(pet.getItemObjId());
 
         final String npcname =
                 target.getNpcTemplate().get_name();

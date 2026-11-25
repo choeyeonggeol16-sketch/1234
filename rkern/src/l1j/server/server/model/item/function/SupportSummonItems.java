@@ -148,7 +148,7 @@ public final class SupportSummonItems {
 			return;
 		}
 
-		if (!pc.getInventory().checkItem(40308, 5000)) {
+		if (!pc.getInventory().HaveItemByClassId(40308, 5000)) {
 			SC_ServerMessage.send(pc, 337, "$4"); // \f1%0이 부족합니다.
 			return;
 		}

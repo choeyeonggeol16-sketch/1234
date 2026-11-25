@@ -283,7 +283,7 @@ public class DogFightHistory {
                 if(item_object_id <= 0 || item_count <= 0)
                     return;
 
-                L1ItemInstance item = pc.getInventory().getItem(item_object_id);
+                L1ItemInstance item = pc.getInventory().GetByServerID(item_object_id);
                 if(item == null || item.getItem() == null)
                     continue;
 
@@ -397,7 +397,7 @@ public class DogFightHistory {
         }
 
         int final_price = (int)total_price;
-        if(!pc.getInventory().checkItem(L1ItemId.ADENA, final_price)){
+        if(!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, final_price)){
             pc.sendPackets("구입에 필요한 아데나가 부족합니다.");
             return;
         }

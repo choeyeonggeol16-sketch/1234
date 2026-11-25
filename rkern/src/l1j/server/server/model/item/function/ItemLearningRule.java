@@ -94,7 +94,7 @@ final class ItemLearningRule {
     boolean canLearn(L1PcInstance pc) {
         // Some original items report class/level failure before checking ownership.
         if (!duplicateFirst && !gate.allows(pc)) return unavailable(pc);
-        if (passive ? pc.hasSkillEffect(target) : pc.getInventory().checkItem(target)) {
+        if (passive ? pc.hasSkillEffect(target) : pc.getInventory().HaveItemByClassId(target)) {
             pc.sendPackets(alreadyKnown);
             return false;
         }

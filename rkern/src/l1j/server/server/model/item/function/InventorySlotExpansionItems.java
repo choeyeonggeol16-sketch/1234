@@ -19,7 +19,7 @@ public final class InventorySlotExpansionItems {
 
     public static void UseSpecialSizeExpansion(L1PcInstance pc, L1ItemInstance input) {
         if (pc == null || input == null || input.getItemId() != 89136
-                || pc.getInventory().getItem(input.getId()) != input) return;
+                || pc.getInventory().GetByServerID(input.getId()) != input) return;
         final int before = pc.get_SpecialSize();
         if (before == 40) {
             SC_ServerMessage.send(pc, 1622);

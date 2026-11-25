@@ -33,7 +33,7 @@ public final class BlankMagicScrolls {
             SC_ServerMessage.send(pc, 591);
             return;
         }
-        if (pc.getInventory().getItem(scroll.getId()) != scroll || scroll.isEquipped()) return;
+        if (pc.getInventory().GetByServerID(scroll.getId()) != scroll || scroll.isEquipped()) return;
         final L1Skills skill = SkillsTable.getInstance().getTemplate(skillIndex + 1);
         if (skill == null) {
             SC_ServerMessage.send(pc, 79);
@@ -53,7 +53,7 @@ public final class BlankMagicScrolls {
             return;
         }
         if (materialId != 0 && materialCount > 0
-                && !pc.getInventory().checkItem(materialId, materialCount)) {
+                && !pc.getInventory().HaveItemByClassId(materialId, materialCount)) {
             SC_ServerMessage.send(pc, 299);
             return;
         }

@@ -244,7 +244,7 @@ public class L1TreasureBox {
                            java.util.function.Consumer<L1InventoryTransaction> prepareSettlement,
                            Runnable afterCommitted) {
         if (pc == null || source == null || source.getItemId() != getBoxId()
-                || pc.getInventory().getItem(source.getId()) != source) return;
+                || pc.getInventory().GetByServerID(source.getId()) != source) return;
         final int boxId=getBoxId();
         final boolean erzabe=boxId==30102 && pc._ErzabeBox;
         final boolean sandworm=boxId==30103 && pc._SandwormBox;
@@ -314,7 +314,7 @@ public class L1TreasureBox {
                 for(TreasureNotice notice:outputs) {
                     // Notification failures cannot unwind an already committed reward.
                     try {
-                        L1ItemInstance live=pc.getInventory().getItem(notice.objectId);
+                        L1ItemInstance live=pc.getInventory().GetByServerID(notice.objectId);
                         if(live!=null) live.setOpenEffect(live.getItem().isEndedTimeMessage()?0x01:0x20);
                         SC_ServerMessage.send(pc,403,notice.acquiredName);
                         announceCommitted(pc,boxId,notice,erzabe,sandworm);

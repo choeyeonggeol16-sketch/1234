@@ -15,7 +15,7 @@ final class FishingRodSession {
     private static final int BAIT_ITEM_ID = 41295;
 
     static void doStartFishing(L1PcInstance pc, int fishX, int fishY, int itemObjectId) {
-        final L1ItemInstance rod = pc.getInventory().getItem(itemObjectId);
+        final L1ItemInstance rod = pc.getInventory().GetByServerID(itemObjectId);
         if (rod == null) {
             SC_ServerMessage.send(pc, 1137);
             return;
@@ -28,7 +28,7 @@ final class FishingRodSession {
             return;
         }
         
-         if (!isBaitlessRodFallback(rodId) && pc.getInventory().countItems(BAIT_ITEM_ID) <= 0) {
+         if (!isBaitlessRodFallback(rodId) && pc.getInventory().GetUnequippedItemAmount(BAIT_ITEM_ID) <= 0) {
              SC_ServerMessage.send(pc, 1137);
              return;
          }

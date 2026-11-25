@@ -271,7 +271,7 @@ public class L1SummonInstance extends L1NpcInstance {
                 final int count = item.getCount();
                 if (count <= 0) return;
                 if (masterInventory != null
-                        && masterInventory.checkAddItem(item, count) == CInventory.OK
+                        && masterInventory.CheckAddable(item, count) == CInventory.OK
                         && _inventory.tradeItem(item, count, masterInventory) != null) {
                     if (master instanceof L1PcInstance pc) {
                         try {
@@ -286,7 +286,7 @@ public class L1SummonInstance extends L1NpcInstance {
                 }
                 // This is a full-stack transfer. A reported success that did
                 // not retire the exact source must not spin on the same item.
-                if (_inventory.getItem(item.getId()) == item) return;
+                if (_inventory.GetByServerID(item.getId()) == item) return;
             }
             settled = _inventory.getItems().isEmpty();
         } catch (RuntimeException failure) {
@@ -325,7 +325,7 @@ public class L1SummonInstance extends L1NpcInstance {
 			List<L1ItemInstance> items = _inventory.getItems();
 			for (L1ItemInstance item : items) {
 				if(item == null) continue;
-				if (_master.getInventory().checkAddItem( item, item.getCount()) == CInventory.OK) {
+				if (_master.getInventory().CheckAddable( item, item.getCount()) == CInventory.OK) {
 					_inventory.tradeItem(item, item.getCount(), targetInventory);
 					SC_ServerMessage.send(((L1PcInstance) _master), 143, getName(), item.getLogName());
 				} else {

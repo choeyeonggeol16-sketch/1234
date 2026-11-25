@@ -102,7 +102,7 @@ final class NpcEventHtmlCommands {
         } else if (templateId == 900005) { // 드루가
             if (s.equalsIgnoreCase("a") || s.equalsIgnoreCase("b")
                     || s.equalsIgnoreCase("c") || s.equalsIgnoreCase("d")) {
-                if (pc.getInventory().checkItem(L1ItemId.DRUGA_POKET)) {
+                if (pc.getInventory().HaveItemByClassId(L1ItemId.DRUGA_POKET)) {
                     SC_NPCTalkReturn.send(pc, objid, "veil3");
                     return;
                 }
@@ -154,7 +154,7 @@ final class NpcEventHtmlCommands {
                 final int rewardId = s.equalsIgnoreCase("A") ? 410034
                         : s.equalsIgnoreCase("B") ? 410032
                         : s.equalsIgnoreCase("C") ? 410035 : 410033;
-                if (pc.getInventory().checkItem(rewardId)) {
+                if (pc.getInventory().HaveItemByClassId(rewardId)) {
                     SC_NPCTalkReturn.send(pc, objid, "sherme0");
                     return;
                 }
@@ -216,8 +216,8 @@ final class NpcEventHtmlCommands {
         } else if (templateId == 71179) { // 디에츠(빛고목제작)
             if (s.equalsIgnoreCase("A")) {// 복원된 고대의 목걸이
                 ThreadLocalRandom random = ThreadLocalRandom.current();
-                if (pc.getInventory().checkItem(49028, 1) && pc.getInventory().checkItem(49029, 1)
-                        && pc.getInventory().checkItem(49030, 1) && pc.getInventory().checkItem(41139, 1)) { // 보석과
+                if (pc.getInventory().HaveItemByClassId(49028, 1) && pc.getInventory().HaveItemByClassId(49029, 1)
+                        && pc.getInventory().HaveItemByClassId(49030, 1) && pc.getInventory().HaveItemByClassId(41139, 1)) { // 보석과
                                                                                                                 // 볼품없는
                     // 목걸이 확인
                     if (random.nextInt(10) > 6) {
@@ -238,7 +238,7 @@ final class NpcEventHtmlCommands {
                 }
             } else if (s.equalsIgnoreCase("B")) {// 빛나는 고대의 목걸이 제작을 부탁한다.
                 ThreadLocalRandom random = ThreadLocalRandom.current();
-                if (pc.getInventory().checkItem(49027, 1) && pc.getInventory().checkItem(41140, 1)) { // 다이아몬드와
+                if (pc.getInventory().HaveItemByClassId(49027, 1) && pc.getInventory().HaveItemByClassId(41140, 1)) { // 다이아몬드와
                     // 복원된 목걸이
                     if (random.nextInt(10) > 7) {
                         materials = Recipes.RECIPE_VALUES_97;

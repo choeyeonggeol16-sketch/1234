@@ -163,7 +163,7 @@ public final class CGetItemAction extends CNewAction {
          * stale L1ItemInstance 참조를 사용하지 않는다.
          * 현재 ground inventory가 소유한 objectId를 lock 안에서 다시 조회한다.
          */
-        final L1Object obj = pickupGInven.getItem(tId);
+        final L1Object obj = pickupGInven.GetByServerID(tId);
         if (!(obj instanceof L1ItemInstance) || obj.getId() != tId) {
             return false;
         }
@@ -199,7 +199,7 @@ public final class CGetItemAction extends CNewAction {
 
         if (!(pickupInven.getWeight100() > 90 && owner.is_ranking_buff())) {
             if (pickupInven.getWeight100() > 90
-                    || owner.getMaxWeight() <= pickupInven.getWeight()) {
+                    || owner.getMaxWeight() <= pickupInven.GetCarryingWeight()) {
                 owner.sendPackets("소지품이 너무 무겁습니다.");
                 return false;
             }
@@ -246,7 +246,7 @@ public final class CGetItemAction extends CNewAction {
             }
 
             final L1ItemInstance invItem =
-                    pickupInven.findItemId(pickupItem.getItemId());
+                    pickupInven.GetFirstItemByClassID(pickupItem.getItemId());
 
             final long sum = invItem == null ? 0L : invItem.getCount();
 
@@ -258,7 +258,7 @@ public final class CGetItemAction extends CNewAction {
             return false;
         }
 
-        return pickupInven.checkAddItem(
+        return pickupInven.CheckAddable(
                 pickupItem,
                 (int) effectiveAmount) == CInventory.OK;
     }

@@ -61,20 +61,20 @@ public enum SkillConsumeService {
 			// 장비 반감
 			final CUserInventory inv = pc.getInventory();
 			if (inv != null) {
-				if ((su.hdSkillId() == L1SkillId.PHYSICAL_ENCHANT_DEX || su.hdSkillId() == L1SkillId.HASTE) && inv.isEquippedDirect(20013)) {
+				if ((su.hdSkillId() == L1SkillId.PHYSICAL_ENCHANT_DEX || su.hdSkillId() == L1SkillId.HASTE) && inv.IsEquippedByClassIDCached(20013)) {
 					mpConsume >>= 1;
 				}
-				if ((su.hdSkillId() == L1SkillId.HEAL || su.hdSkillId() == L1SkillId.EXTRA_HEAL) && inv.isEquippedDirect(20014)) {
+				if ((su.hdSkillId() == L1SkillId.HEAL || su.hdSkillId() == L1SkillId.EXTRA_HEAL) && inv.IsEquippedByClassIDCached(20014)) {
 					mpConsume >>= 1;
 				}
 				if ((su.hdSkillId() == L1SkillId.ENCHANT_WEAPON || su.hdSkillId() == L1SkillId.DETECTION
-						|| su.hdSkillId() == L1SkillId.PHYSICAL_ENCHANT_STR) && inv.isEquippedDirect(20015)) {
+						|| su.hdSkillId() == L1SkillId.PHYSICAL_ENCHANT_STR) && inv.IsEquippedByClassIDCached(20015)) {
 					mpConsume >>= 1;
 				}
-				if (su.hdSkillId() == L1SkillId.HASTE && inv.isEquippedDirect(20008)) {
+				if (su.hdSkillId() == L1SkillId.HASTE && inv.IsEquippedByClassIDCached(20008)) {
 					mpConsume >>= 1;
 				}
-				if (su.hdSkillId() == L1SkillId.GREATER_HASTE && inv.isEquippedDirect(20023)) {
+				if (su.hdSkillId() == L1SkillId.GREATER_HASTE && inv.IsEquippedByClassIDCached(20023)) {
 					mpConsume >>= 1;
 				}
 			}
@@ -125,7 +125,7 @@ public enum SkillConsumeService {
 		// 82레벨 미만 대체(초보자) 아이템 로직 적용
 		final int actualItemId = getActualConsumeItemId(pc, inv, itemConsume, itemConsumeCount);
 
-		return inv.checkItem(actualItemId, itemConsumeCount);
+		return inv.HaveItemByClassId(actualItemId, itemConsumeCount);
 	}
 
 	/** 실제 차감(재검사 X) */
@@ -189,7 +189,7 @@ public enum SkillConsumeService {
 		}
 
 		// 인벤토리에 대체 아이템이 요구 수량만큼 있는지 확인
-		if (inv.checkItem(substituteId, count)) {
+		if (inv.HaveItemByClassId(substituteId, count)) {
 			return substituteId;
 		}
 

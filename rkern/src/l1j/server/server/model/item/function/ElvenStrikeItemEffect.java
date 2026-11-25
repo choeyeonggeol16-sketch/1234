@@ -41,7 +41,7 @@ final class ElvenStrikeItemEffect {
     public static boolean 엘븐스트라이크(L1PcInstance pc, int targetId, L1ItemInstance item) {
         // The acquired skill item is reusable; reject stale or mismatched input.
         if (pc == null || item == null || item.getItemId() != 70888
-                || pc.getInventory().getItem(item.getId()) != item
+                || pc.getInventory().GetByServerID(item.getId()) != item
                 || pc.isDead() || pc.get_teleport()) return false;
         L1Object target = L1World.getInstance().findObject(targetId);
         if (!validTarget(pc, target)) return false;
@@ -87,7 +87,7 @@ final class ElvenStrikeItemEffect {
                         SC_SystemMessage.send(pc, "엘븐스트라이크는 투명상태로 시전이 불가능합니다.");
                         return false;
                     }
-                    if (!pc.getInventory().checkItem(40319, 2)) {
+                    if (!pc.getInventory().HaveItemByClassId(40319, 2)) {
                         SC_SystemMessage.send(pc, "마법재료가 부족합니다.");
                         return false;
                     }
@@ -197,7 +197,7 @@ final class ElvenStrikeItemEffect {
                         SC_SystemMessage.send(pc, "엘븐스트라이크는 투명상태로 시전이 불가능합니다.");
                         return false;
                     }
-                    if (!pc.getInventory().checkItem(40319, 2)) {
+                    if (!pc.getInventory().HaveItemByClassId(40319, 2)) {
                         SC_SystemMessage.send(pc, "마법재료가 부족합니다.");
                         return false;
                     }

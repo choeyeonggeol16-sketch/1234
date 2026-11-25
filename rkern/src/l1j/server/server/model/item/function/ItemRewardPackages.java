@@ -15,8 +15,8 @@ public final class ItemRewardPackages {
 
 	public static void clickItem(L1PcInstance pc, int itemId, L1ItemInstance input) {
 		if (pc == null || input == null || input.getItemId() != itemId
-				|| pc.getInventory().getItem(input.getId()) != input
-				|| !pc.getInventory().checkItem(itemId, 1)) return;
+				|| pc.getInventory().GetByServerID(input.getId()) != input
+				|| !pc.getInventory().HaveItemByClassId(itemId, 1)) return;
 		try (L1InventoryTransaction tx = L1InventoryTransaction.begin(
 				pc, CacheD.accountOrderKey("item-use:", pc.getId()))) {
 			if (!tx.debit(input, 1)) return;

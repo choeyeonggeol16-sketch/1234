@@ -509,18 +509,18 @@ public class L1PolyMorph {
 						polyId = 0;
 					}
 				} else if (poly.getOption() == 2) { // 변신 지배반지
-					if (!pc.getInventory().checkItem(4100023) && !pc.getInventory().checkItem(4100024)
-							&& !pc.getInventory().checkItem(4100025) && !pc.getInventory().checkItem(4100026)
-							&& !pc.getInventory().checkItem(4100027) && !pc.getInventory().checkItem(4100028)
-							&& !pc.getInventory().checkItem(4100029) && !pc.getInventory().checkItem(4100030)
-							&& !pc.getInventory().checkItem(4100031) && !pc.getInventory().checkItem(4100032)) {
+					if (!pc.getInventory().HaveItemByClassId(4100023) && !pc.getInventory().HaveItemByClassId(4100024)
+							&& !pc.getInventory().HaveItemByClassId(4100025) && !pc.getInventory().HaveItemByClassId(4100026)
+							&& !pc.getInventory().HaveItemByClassId(4100027) && !pc.getInventory().HaveItemByClassId(4100028)
+							&& !pc.getInventory().HaveItemByClassId(4100029) && !pc.getInventory().HaveItemByClassId(4100030)
+							&& !pc.getInventory().HaveItemByClassId(4100031) && !pc.getInventory().HaveItemByClassId(4100032)) {
 						if (poly.getOption() != 2 || !pc.isPolyRingMaster()) {
 							System.out.println(pc.getName() + " 님이 변신 버그를 시도 합니다.");
 							polyId = 0;
 						}
 					}
 				} else if (poly.getOption() == 3) { // 이벤트 변신 반지
-					if (!pc.getInventory().checkItem(4100133)) {
+					if (!pc.getInventory().HaveItemByClassId(4100133)) {
 						System.out.println(pc.getName() + " 님이 변신 버그를 시도 합니다.");
 						polyId = 0;
 					}
@@ -571,7 +571,7 @@ public class L1PolyMorph {
 							polyId = 12614;
 					}
 				} else if (poly.getOption() == 5) { // 이벤트변신
-					if (!pc.getInventory().checkItem(900077)) {
+					if (!pc.getInventory().HaveItemByClassId(900077)) {
 						System.out.println(pc.getName() + " 님이 변신 버그를 시도 합니다.");
 						polyId = 0;
 					}

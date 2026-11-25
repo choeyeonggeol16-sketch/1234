@@ -67,7 +67,7 @@ public class RaidCreator {
 			return;
 		}
 		
-		if(!pc.getInventory().checkItem(_needItemId, _needCount)){
+		if(!pc.getInventory().HaveItemByClassId(_needItemId, _needCount)){
 			RaidMessage.RAID_OPEN_FAIL_INVALID_ITEM.sendMessage(pc);
 			return;
 		}

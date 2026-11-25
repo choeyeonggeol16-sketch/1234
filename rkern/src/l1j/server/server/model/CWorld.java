@@ -577,7 +577,7 @@ public final class CWorld {
     /** Validate ownership before a party route; tradeItem revalidates under both inventory monitors. */
     boolean PickItemCond(CInventory source, L1ItemInstance item, int count) {
         return source != null && item != null && count > 0
-                && source.getItem(item.getId()) == item && count <= item.getCount();
+                && source.GetByServerID(item.getId()) == item && count <= item.getCount();
     }
 
     /** Existing ordered inventory monitors remain authoritative for each transfer. */
@@ -617,7 +617,7 @@ public final class CWorld {
             L1PcInstance recipient) {
         final CInventory dest = recipient.getInventory();
         final L1ItemInstance adena = item.getItemId() == l1j.server.server.model.item.L1ItemId.ADENA
-                ? dest.findItemId(item.getItemId()) : null;
+                ? dest.GetFirstItemByClassID(item.getItemId()) : null;
         return (adena == null || (long) adena.getCount() + count <= 2_000_000_000L)
                 && source.tradeItem(item, count, dest) != null;
     }
@@ -651,7 +651,7 @@ public final class CWorld {
 
     /** Try the corpse tile and nearby passable tiles, without changing stack caps. */
     boolean RecoverDropRemainder(L1Location origin, CInventory source, L1ItemInstance item) {
-        if (source.getItem(item.getId()) != item || item.getCount() <= 0) return true;
+        if (source.GetByServerID(item.getId()) != item || item.getCount() <= 0) return true;
         final int x = origin.getX(), y = origin.getY();
         final short map = (short) origin.getMapId();
         if (DropAtTile(source, item, item.getCount(), x, y, map)) return true;
@@ -664,7 +664,7 @@ public final class CWorld {
                 }
             }
         }
-        return source.getItem(item.getId()) != item;
+        return source.GetByServerID(item.getId()) != item;
     }
 
     /** Non-creating ground lookup: pickup and validation must never publish empty tiles. */

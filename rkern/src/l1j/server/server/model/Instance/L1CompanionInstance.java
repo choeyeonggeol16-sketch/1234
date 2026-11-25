@@ -280,7 +280,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             companion.update_skills();
         }else{
             if(companion.getCurrentHp() <= 0){
-                if(!master.getInventory().checkItem(41246, 1000)){
+                if(!master.getInventory().HaveItemByClassId(41246, 1000)){
                     master.sendPackets("결정체가 부족합니다.");
                     return true;
                 }
@@ -821,7 +821,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             return;
         
         if(m_master != null && 
-                m_master.getInventory().checkItem(CompanionSettings.EXP_SAFETY_ITEMID) &&
+                m_master.getInventory().HaveItemByClassId(CompanionSettings.EXP_SAFETY_ITEMID) &&
                 m_master.getInventory().consumeItem(CompanionSettings.EXP_SAFETY_ITEMID, 1)){
             m_master.sendPackets("가호로 인해 펫의 경험치가 보호되었습니다.");
             return;
@@ -863,7 +863,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         }
         if(!is_pass_needed){
             if(CompanionSettings.EXP_RESTORE_NEED_ADENA > 0){
-                if(!m_master.getInventory().checkItem(L1ItemId.ADENA, CompanionSettings.EXP_RESTORE_NEED_ADENA) ||
+                if(!m_master.getInventory().HaveItemByClassId(L1ItemId.ADENA, CompanionSettings.EXP_RESTORE_NEED_ADENA) ||
                         !m_master.getInventory().consumeItem(L1ItemId.ADENA, CompanionSettings.EXP_RESTORE_NEED_ADENA))
                 m_master.sendPackets(String.format("경험치 복구를 위해서는 최소 아데나 %d(이)가 필요합니다.", CompanionSettings.EXP_RESTORE_NEED_ADENA));
                 return;
@@ -906,7 +906,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     public void do_oblivion(boolean is_pass_needed){
         if(!is_pass_needed){
             if(CompanionSettings.OBLIVION_NEED_ADENA > 0){
-                if(!m_master.getInventory().checkItem(L1ItemId.ADENA, CompanionSettings.OBLIVION_NEED_ADENA) ||
+                if(!m_master.getInventory().HaveItemByClassId(L1ItemId.ADENA, CompanionSettings.OBLIVION_NEED_ADENA) ||
                         !m_master.getInventory().consumeItem(L1ItemId.ADENA, CompanionSettings.OBLIVION_NEED_ADENA))
                 m_master.sendPackets(String.format("망각하기 위해서는 최소 아데나 %d(이)가 필요합니다.", CompanionSettings.OBLIVION_NEED_ADENA));
                 return;
@@ -962,7 +962,7 @@ public class L1CompanionInstance extends L1NpcInstance{
                 return;
             }
             
-            if(!m_master.getInventory().checkItem(CompanionSettings.TRANING_NEED_ITEM_ID, CompanionSettings.TRANING_NEED_ITEM_COUNT) ||
+            if(!m_master.getInventory().HaveItemByClassId(CompanionSettings.TRANING_NEED_ITEM_ID, CompanionSettings.TRANING_NEED_ITEM_COUNT) ||
                     !m_master.getInventory().consumeItem(CompanionSettings.TRANING_NEED_ITEM_ID, CompanionSettings.TRANING_NEED_ITEM_COUNT)){
                 m_master.sendPackets(String.format("훈련 시키기 위해서는 환생의 보석이 %d개 필요합니다.", CompanionSettings.TRANING_NEED_ITEM_COUNT));
                 return;
@@ -992,7 +992,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         CUserInventory master_inventory = m_master.getInventory();
         List<L1ItemInstance> items = _inventory.getItems();
         for(L1ItemInstance item : items){
-            if(master_inventory.checkAddItem(item, item.getCount()) == CInventory.OK){
+            if(master_inventory.CheckAddable(item, item.getCount()) == CInventory.OK){
                 _inventory.tradeItem(item,  item.getCount(), master_inventory);
                 SC_ServerMessage.send(m_master, 143, getName(), item.getLogName());
             }else{
@@ -1296,7 +1296,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             return;
         
         CUserInventory master_inventory = m_master.getInventory();
-        if(master_inventory.checkAddItem(item, item.getCount()) == CInventory.OK){
+        if(master_inventory.CheckAddable(item, item.getCount()) == CInventory.OK){
             _inventory.tradeItem(item,  item.getCount(), master_inventory);
             SC_ServerMessage.send(m_master, 143, getName(), item.getLogName());
         }else{

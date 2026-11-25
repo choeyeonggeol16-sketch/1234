@@ -23,7 +23,7 @@ final class LegacyGiftBoxes {
         final L1ItemInstance source = use.item();
         if (pc == null || source == null || (boxId != 41303 && boxId != 41304)
                 || source.getItemId() != boxId
-                || pc.getInventory().getItem(source.getId()) != source)
+                || pc.getInventory().GetByServerID(source.getId()) != source)
             return ItemActionResult.STOP;
 
         // Sample EXACTLY once, with the same shared RNG and bounds as the original boxes.

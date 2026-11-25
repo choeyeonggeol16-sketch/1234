@@ -36,7 +36,7 @@ public final class ChargedRewardBoxItems {
     }
 
     public static void UseDurableChargedBox(L1PcInstance pc, L1ItemInstance box) {
-        if (pc == null || box == null || pc.getInventory().getItem(box.getId()) != box)
+        if (pc == null || box == null || pc.getInventory().GetByServerID(box.getId()) != box)
             return;
         final int id = box.getItemId();
         switch (id) {

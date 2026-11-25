@@ -156,7 +156,7 @@ public class L1HealingPotion {
 
 	public boolean use(L1PcInstance pc, L1ItemInstance item) {
 		if (pc == null || item == null || pc.isItemTransferBusy()
-				|| pc.getInventory().getItem(item.getId()) != item
+				|| pc.getInventory().GetByServerID(item.getId()) != item
 				|| item.getCount() <= 0) return false;
 		if (pc.hasSkillEffect(L1SkillId.DECAY_POTION)) { 
 			SC_ServerMessage.send(pc, 698); // 마력에 의해 아무것도 마실 수가 없습니다.

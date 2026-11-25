@@ -27,7 +27,7 @@ final class LanternOilReceipt {
     private LanternOilReceipt() {}
 
     static void useDurableLanternOil(L1PcInstance pc, L1ItemInstance oil) {
-        if (pc == null || oil == null || pc.getInventory().getItem(oil.getId()) != oil) return;
+        if (pc == null || oil == null || pc.getInventory().GetByServerID(oil.getId()) != oil) return;
         try (l1j.server.server.model.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {

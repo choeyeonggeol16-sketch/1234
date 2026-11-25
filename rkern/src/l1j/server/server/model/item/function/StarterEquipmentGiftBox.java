@@ -99,7 +99,7 @@ final class StarterEquipmentGiftBox {
 
     public static void openStarterKit(L1PcInstance pc, L1ItemInstance source) {
         if (pc == null || source == null || source.getItemId() != 30071
-                || pc.getInventory().getItem(source.getId()) != source) return;
+                || pc.getInventory().GetByServerID(source.getId()) != source) return;
         final int clazz = pc.isCrown() ? 0 : pc.isKnight() ? 1 : pc.isElf() ? 2
                 : pc.isWizard() ? 3 : pc.isDarkelf() ? 4
                 : pc.isDragonknight() ? 5 : pc.isBlackwizard() ? 6 : -1;
@@ -151,7 +151,7 @@ final class StarterEquipmentGiftBox {
                 for (int i = 0; i < rewards.size(); i++) {
                     final L1ItemInstance reward = rewards.get(i);
                     try {
-                        if (pc.getInventory().getItem(reward.getId()) != null)
+                        if (pc.getInventory().GetByServerID(reward.getId()) != null)
                             SC_ServerMessage.send(pc, 403, reward.getLogName());
                     } catch (RuntimeException notificationFailure) {
                         // A disconnected client cannot undo a committed reward.

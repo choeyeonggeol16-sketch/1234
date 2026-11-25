@@ -22,7 +22,7 @@ final class GemConversionItems {
         L1ItemInstance targetItem = use.targetItem();
         {
             if (targetItem == null || targetItem == item
-                    || pc.getInventory().getItem(targetItem.getId()) != targetItem
+                    || pc.getInventory().GetByServerID(targetItem.getId()) != targetItem
                     || (targetItem.getItemId() != 1000004
                             && targetItem.getItemId() != 410064)) {
                 SC_ServerMessage.send(pc, 79);

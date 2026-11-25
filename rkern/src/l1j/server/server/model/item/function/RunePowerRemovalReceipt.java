@@ -19,8 +19,8 @@ final class RunePowerRemovalReceipt {
             L1ItemInstance rune) {
         if (pc == null || remover == null || rune == null || remover == rune
                 || remover.getItemId() != 60035
-                || pc.getInventory().getItem(remover.getId()) != remover
-                || pc.getInventory().getItem(rune.getId()) != rune) return;
+                || pc.getInventory().GetByServerID(remover.getId()) != remover
+                || pc.getInventory().GetByServerID(rune.getId()) != rune) return;
         final int runeId = rune.getItemId();
         final int rewardId;
         final String message;

@@ -41,7 +41,7 @@ public final class ItemTransactionActions {
     }
 
     private static boolean owned(L1PcInstance pc, L1ItemInstance input) {
-        return pc != null && input != null && pc.getInventory().getItem(input.getId()) == input;
+        return pc != null && input != null && pc.getInventory().GetByServerID(input.getId()) == input;
     }
 
     private static void consumeInputs(L1PcInstance pc, L1ItemInstance first,

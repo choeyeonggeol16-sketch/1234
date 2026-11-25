@@ -32,7 +32,7 @@ final class BurningShotSkillConsumable {
                 SC_SystemMessage.send(pc, "버닝샷은 투명상태로 시전이 불가능합니다.");
                 return;
             }
-            if (!pc.getInventory().checkItem(40319, 2)) {
+            if (!pc.getInventory().HaveItemByClassId(40319, 2)) {
                 SC_SystemMessage.send(pc, "마법재료가 부족합니다.");
                 return;
             }

@@ -55,7 +55,7 @@ public class L1CardMythClass {
         if (targetSprite == -1) return;
 
         // 공통 제약 조건 체크 
-        if (!pc.getInventory().checkItem(POLY_SCROLL_ID, 1)) {
+        if (!pc.getInventory().HaveItemByClassId(POLY_SCROLL_ID, 1)) {
             SC_SystemMessage.send(pc, "변신주문서가 부족합니다.");
             return;
         }

@@ -152,7 +152,7 @@ public class ClassChange {
         };
 
         for (int itemId : itemIdsToConsume) {
-            if (pc.getInventory().checkItem(itemId)) {
+            if (pc.getInventory().HaveItemByClassId(itemId)) {
                 pc.getInventory().consumeItem(itemId);
             }
         }

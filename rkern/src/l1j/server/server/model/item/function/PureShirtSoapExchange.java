@@ -22,8 +22,8 @@ final class PureShirtSoapExchange {
     public static void exchangePureShirt(L1PcInstance pc, L1ItemInstance soap, L1ItemInstance shirt) {
         if (pc == null || soap == null || shirt == null || soap == shirt
                 || soap.getItemId() != 30116
-                || pc.getInventory().getItem(soap.getId()) != soap
-                || pc.getInventory().getItem(shirt.getId()) != shirt) {
+                || pc.getInventory().GetByServerID(soap.getId()) != soap
+                || pc.getInventory().GetByServerID(shirt.getId()) != shirt) {
             if (pc != null) SC_ServerMessage.send(pc, 79);
             return;
         }

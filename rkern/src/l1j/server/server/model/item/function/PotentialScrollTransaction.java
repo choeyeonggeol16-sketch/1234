@@ -40,7 +40,7 @@ final class PotentialScrollTransaction {
 
     static void useDurablePotentialScroll(L1PcInstance pc, L1ItemInstance input,
             int newSkill, String notice) {
-        if (pc == null || input == null || pc.getInventory().getItem(input.getId()) != input) return;
+        if (pc == null || input == null || pc.getInventory().GetByServerID(input.getId()) != input) return;
         try (l1j.server.server.model.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {

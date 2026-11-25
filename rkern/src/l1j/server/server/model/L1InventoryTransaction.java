@@ -204,7 +204,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 throw new IllegalStateException("Item owner/identity changed while preparing");
             return e;
         }
-        if (pc.getInventory().getItem(item.getId()) != item || item.getCount() <= 0)
+        if (pc.getInventory().GetByServerID(item.getId()) != item || item.getCount() <= 0)
             throw new IllegalStateException("Stale inventory object");
         e = new Entry(pc,item,true);
         addEntry(e);
@@ -225,7 +225,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         open(); owns(pc);
         Entry e = findEntry(item.getId());
         if (e == null) {
-            if (pc.getInventory().getItem(item.getId()) != item || item.getCount() <= 0)
+            if (pc.getInventory().GetByServerID(item.getId()) != item || item.getCount() <= 0)
                 throw new IllegalStateException("Stale inventory object");
             if (item.getCount() < count) return false;
         }
@@ -485,7 +485,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         // object-identity checks for both live and already staged rows.
         Entry prepared = findEntry(item.getId());
         if (prepared == null) {
-            if (from.getInventory().getItem(item.getId()) != item || item.getCount() <= 0)
+            if (from.getInventory().GetByServerID(item.getId()) != item || item.getCount() <= 0)
                 throw new IllegalStateException("Stale inventory object");
             if (item.getCount() < count) throw new IllegalStateException("Insufficient transfer quantity");
         } else {
@@ -564,7 +564,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 || (item.getItem().getType2() != 1 && item.getItem().getType2() != 2)
                 || nextLevel != expectedLevel + 1)
                 && findEntry(item.getId()) == null
-                && primary.getInventory().getItem(item.getId()) == item && item.getCount() > 0)
+                && primary.getInventory().GetByServerID(item.getId()) == item && item.getCount() > 0)
             throw new IllegalStateException("Invalid enchant receipt target/state");
         Entry e = entry(primary, item);
         if (e.image.getCount() <= 0 || e.image.getEnchantLevel() != expectedLevel
@@ -612,7 +612,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         open(); owns(pc);
         if (item != null && item.isEquipped()) {
             Entry prepared = findEntry(item.getId());
-            if ((prepared == null && pc.getInventory().getItem(item.getId()) == item && item.getCount() > 0)
+            if ((prepared == null && pc.getInventory().GetByServerID(item.getId()) == item && item.getCount() > 0)
                     || (prepared != null && prepared.owner == pc
                             && (prepared.original == item || prepared.image == item)))
                 throw new IllegalArgumentException("Unequip before changing persistent item fields");
@@ -789,7 +789,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         for (int i = 0; i < entryCount; i++) {
             Entry e = entryAt(i);
             if (e.before == null) continue;
-            if(e.originalOwner.getInventory().getItem(e.original.getId())!=e.original
+            if(e.originalOwner.getInventory().GetByServerID(e.original.getId())!=e.original
                     || !e.before.matchesCurrent(e.original,e.originalOwner.getId()))
                 throw new IllegalStateException("Economy memory preimage changed: "+e.original.getId());
         }

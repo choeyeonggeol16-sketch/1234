@@ -137,12 +137,12 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
                 L1Item definition = templates.getTemplate(row.getObject());
                 if (definition == null) return false;
                 int count = row.getAmount() * amount;
-                slots += definition.isStackable() ? (inv.checkItem(row.getObject()) ? 0 : 1) : count;
+                slots += definition.isStackable() ? (inv.HaveItemByClassId(row.getObject()) ? 0 : 1) : count;
                 weight = Math.addExact(weight, (long) definition.getWeight() * count / 1000);
                 if (slots > 1000) return false;
             }
             if (inv.getSize() + slots > 180) { SC_ServerMessage.send(pc, 263); return false; }
-            if (pc.getMaxWeight() < Math.addExact((long) inv.getWeight(), weight)) {
+            if (pc.getMaxWeight() < Math.addExact((long) inv.GetCarryingWeight(), weight)) {
                 SC_ServerMessage.send(pc, 82); return false;
             }
             final String[] rewardNames = new String[_items.size()];

@@ -61,7 +61,7 @@ final class NpcQuestHtmlCommands {
             if (s.equalsIgnoreCase("1")) {
                 htmlid = "meet105";
             } else if (s.equalsIgnoreCase("2")) {
-                if (pc.getInventory().checkItem(40718)) {
+                if (pc.getInventory().HaveItemByClassId(40718)) {
                     htmlid = "meet106";
                 } else {
                     htmlid = "meet110";
@@ -69,7 +69,7 @@ final class NpcQuestHtmlCommands {
             } else if (NpcQuestTransactions.exchangeCrystalForKarma(pc, (L1NpcInstance) obj, s, true)) {
                 return;
             } else if (s.equalsIgnoreCase("d")) {
-                if (pc.getInventory().checkItem(40066)) {
+                if (pc.getInventory().HaveItemByClassId(40066)) {
                     htmlid = "";
                 } else {
                     if (pc.getKarmaLevel() < -1) {
@@ -97,7 +97,7 @@ final class NpcQuestHtmlCommands {
                 int aliceMaterialId = 0;
 
                 for (int id : Recipes.ALICE_MATERIAL_IDS) {
-                    if (pc.getInventory().checkItem(id)) {
+                    if (pc.getInventory().HaveItemByClassId(id)) {
                         aliceMaterialId = id;
                         break;
                     }
@@ -225,7 +225,7 @@ final class NpcQuestHtmlCommands {
             if (s.equalsIgnoreCase("1")) {
                 htmlid = "meet005";
             } else if (s.equalsIgnoreCase("2")) {
-                if (pc.getInventory().checkItem(40678)) {
+                if (pc.getInventory().HaveItemByClassId(40678)) {
                     htmlid = "meet006";
                 } else {
                     htmlid = "meet010";
@@ -233,7 +233,7 @@ final class NpcQuestHtmlCommands {
             } else if (NpcQuestTransactions.exchangeCrystalForKarma(pc, (L1NpcInstance) obj, s, false)) {
                 return;
             } else if (s.equalsIgnoreCase("d")) {
-                if (pc.getInventory().checkItem(40066) // 잠시 송편으로 대체하자! 송편이있을경우
+                if (pc.getInventory().HaveItemByClassId(40066) // 잠시 송편으로 대체하자! 송편이있을경우
                                                         // 안날라가지게~
                 /*
                  * || pc.getInventory().checkItem(40910) ||

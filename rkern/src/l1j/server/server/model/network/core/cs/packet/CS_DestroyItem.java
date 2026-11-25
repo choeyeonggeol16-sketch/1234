@@ -41,7 +41,7 @@ public final class CS_DestroyItem {
 
     /** false: 금지된 아이템 발견. 원본처럼 나머지 항목 삭제를 즉시 중단. */
     private static boolean destroyOne(L1PcInstance pc, int itemObjectId, int requestedCount) {
-        final L1ItemInstance item = pc.getInventory().getItem(itemObjectId);
+        final L1ItemInstance item = pc.getInventory().GetByServerID(itemObjectId);
         if (item == null) return true;
 
         if (!pc.isGm() && item.getItem().isCantDelete()) {

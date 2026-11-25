@@ -300,7 +300,7 @@ public final class CS_Craft {
 			// Refuse before touching the target or charging the fee.  Inventory
 			// update/save gates run too late to undo a direct setBless call.
 			if (pc == null || pc.isItemTransferBusy() || pc.getTradeID() != 0) return;
-			final L1ItemInstance targetItem = pc.getInventory().getItem(sealItemObjId);
+			final L1ItemInstance targetItem = pc.getInventory().GetByServerID(sealItemObjId);
 
 			if (targetItem == null || targetItem.getItem().getType2() == 0) {
 				SC_ServerMessage.send(pc, 79);
@@ -318,7 +318,7 @@ public final class CS_Craft {
 			}
 
 			final int sealFee = 100000;
-			if (!pc.getInventory().checkItem(40308, sealFee)) {
+			if (!pc.getInventory().HaveItemByClassId(40308, sealFee)) {
 				pc.sendPackets("아데나 100,000원이 부족합니다.");
 				return;
 			}

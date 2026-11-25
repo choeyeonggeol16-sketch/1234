@@ -263,16 +263,16 @@ public final class RankBuff {
     private static void giveProtectionItem(L1PcInstance pc){
         final int itemId = RankLoadManager.MRK_TOPPROTECTION_ID;
         // Reapplying the rank buff must not allocate and register a throwaway item.
-        if (pc.getInventory().checkItem(itemId)) return;
+        if (pc.getInventory().HaveItemByClassId(itemId)) return;
         final L1ItemInstance item = CObjectDB.LoadItem().createItem(itemId);
         if (item == null) return;
         try {
-            if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK
-                    && !pc.getInventory().checkItem(itemId)) {
+            if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK
+                    && !pc.getInventory().HaveItemByClassId(itemId)) {
                 pc.getInventory().storeItem(item);
             }
         } finally {
-            if (pc.getInventory().getItem(item.getId()) != item) {
+            if (pc.getInventory().GetByServerID(item.getId()) != item) {
                 L1World.getInstance().removeObject(item);
             }
         }

@@ -23,7 +23,7 @@ final class LevelMilestonePackages {
 
     // Exact class-sensitive rewards, in original order: no changes to receipts.
     private static void stageLevel82(L1PcInstance pc, L1InventoryTransaction tx, ArrayList<String> messages) {
-			if (pc.getInventory().checkItem(714, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(714, 1)) { // 체크 되는 아이템과 수량
 
 
 				if (pc.isWarrior()) {
@@ -62,7 +62,7 @@ final class LevelMilestonePackages {
 			    }
 
     private static void stageLevel84(L1PcInstance pc, L1InventoryTransaction tx, ArrayList<String> messages) {
-			if (pc.getInventory().checkItem(715, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(715, 1)) { // 체크 되는 아이템과 수량
 
 
 				if (pc.isWarrior()) {
@@ -101,7 +101,7 @@ final class LevelMilestonePackages {
 			    }
 
     private static void stageLevel86(L1PcInstance pc, L1InventoryTransaction tx, ArrayList<String> messages) {
-			if (pc.getInventory().checkItem(716, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(716, 1)) { // 체크 되는 아이템과 수량
 
 
 				if (pc.isWarrior()) {
@@ -140,7 +140,7 @@ final class LevelMilestonePackages {
 			    }
 
     private static void stageLevel88(L1PcInstance pc, L1InventoryTransaction tx, ArrayList<String> messages) {
-			if (pc.getInventory().checkItem(717, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(717, 1)) { // 체크 되는 아이템과 수량
 
 
 				if (pc.isWarrior()) {
@@ -187,7 +187,7 @@ final class LevelMilestonePackages {
 			    }
 
     private static void stageLevel89(L1PcInstance pc, L1InventoryTransaction tx, ArrayList<String> messages) {
-			if (pc.getInventory().checkItem(721, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(721, 1)) { // 체크 되는 아이템과 수량
 
 
 				if (pc.isWarrior()) {
@@ -226,7 +226,7 @@ final class LevelMilestonePackages {
 			    }
 
     private static void stageLevel90(L1PcInstance pc, L1InventoryTransaction tx, ArrayList<String> messages) {
-			if (pc.getInventory().checkItem(722, 1)) { // 체크 되는 아이템과 수량
+			if (pc.getInventory().HaveItemByClassId(722, 1)) { // 체크 되는 아이템과 수량
 
 
 				if (pc.isWarrior()) {

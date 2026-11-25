@@ -153,7 +153,7 @@ public final class SlotChangeManager {
             }
             for (int i = 0; i < equipCount; i++) {
                 final L1ItemInstance item = equipBuffer[i];
-                if (inventory.getItem(item.getId()) != item || !canEquipNow(inventory, item)) return;
+                if (inventory.GetByServerID(item.getId()) != item || !canEquipNow(inventory, item)) return;
                 owner.EquipItem(item);
                 if (!item.isEquipped()) return;
             }
@@ -194,7 +194,7 @@ public final class SlotChangeManager {
         }
         // Preserve the original primary position when restoring dual weapons.
         if (originalPrimary != null && !originalPrimary.isEquipped()
-                && inventory.getItem(originalPrimary.getId()) == originalPrimary) {
+                && inventory.GetByServerID(originalPrimary.getId()) == originalPrimary) {
             try {
                 owner.EquipItem(originalPrimary);
             } catch (RuntimeException failure) {
@@ -204,7 +204,7 @@ public final class SlotChangeManager {
         }
         for (int i = 0; i < originalCount; i++) {
             final L1ItemInstance item = originalBuffer[i];
-            if (item == null || item.isEquipped() || inventory.getItem(item.getId()) != item) continue;
+            if (item == null || item.isEquipped() || inventory.GetByServerID(item.getId()) != item) continue;
             try {
                 owner.EquipItem(item);
                 if (!item.isEquipped()) {
