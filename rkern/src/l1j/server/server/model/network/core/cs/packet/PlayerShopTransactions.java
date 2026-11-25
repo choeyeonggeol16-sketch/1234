@@ -54,7 +54,7 @@ final class PlayerShopTransactions {
 
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(customer, shop)) {
             synchronized (listings) {
-                if (!view.matches(shop, purchase)
+                if (!canReach(customer, shop) || !view.matches(shop, purchase)
                         || listings != (purchase ? shop.getPurchasings() : shop.getSellings())) return;
                 if (size == 1) {
                     executeSingle(tx, customer, shop, seller, buyer, purchase, listings, view, first);
@@ -78,7 +78,7 @@ final class PlayerShopTransactions {
                     ListingDebit debit = debits.get(listingId);
                     if (debit == null) {
                         DynamicShopItem listing = findListing(listings, listingId);
-                        if (listing == null || listing.isPurchase != purchase || listing.price != view.price(row)) return;
+                        if (listing == null || listing.isPurchase != purchase || listing.price <= 0 || listing.price != view.price(row)) return;
                         debit = new ListingDebit(listing);
                         debits.put(listingId, debit);
                     }
@@ -223,7 +223,8 @@ final class PlayerShopTransactions {
 
     private static boolean canTransfer(L1PcInstance seller, L1ItemInstance item, DynamicShopItem listing,
             int count, long now) {
-        return item != null && !item.isEquipped() && item.getItem().isTradable() && item.getBless() < 128
+        return item != null && item.getItem() != null && !item.isEquipped() && item.getItem().isTradable() && item.getBless() < 128
+                && (item.isIdentified() ? item.getBless() : -1) == listing.iden
                 && item.getItemdelay3() < now && item.getItemId() == listing.itemId
                 && item.getEnchantLevel() == listing.enchant && item.getAttrEnchantLevel() == listing.attr
                 && (item.isStackable() || count == 1)
