@@ -736,7 +736,7 @@ public class CInventory extends L1Object {
 		if (item == null || GetByServerID(item.getId()) != item) {
 			return 0;
 		}
-		if (this instanceof L1GroundInventory && item.isGroundPickupPending()) return 0;
+		if (this instanceof L1GroundInventory && (item.isGroundPickupPending() || item.isGroundDropUnsettled())) return 0;
 		if (matchDescId && item.getItem().getItemDescId() != descId) return 0;
 		if (item.getCount() <= 0 || count <= 0) {
 			return 0;
@@ -1581,7 +1581,7 @@ public class CInventory extends L1Object {
 		if (item.isEquipped() || (!item.isStackable() && count != 1)) {
 			return null;
 		}
-        if (this instanceof L1GroundInventory && item.isGroundPickupPending()) return null;
+        if (this instanceof L1GroundInventory && (item.isGroundPickupPending() || item.isGroundDropUnsettled())) return null;
         // Ordinary Pop on a character issues an entity-destruction command
         // for pet collars and physical letters. A transfer is not destruction.
         // Leave these rows to the dedicated transaction paths.
@@ -1652,7 +1652,10 @@ public class CInventory extends L1Object {
             if (inventory instanceof CUserInventory) {
                 stored.setItemOwner(null);
             }
-            if (inventory instanceof L1GroundInventory) stored._cha = null;
+            if (inventory instanceof L1GroundInventory) {
+                if (this instanceof CUserInventory) stored.markGroundDropSource(item.getId());
+                stored._cha = null;
+            }
             if (carryItem == item && this instanceof L1GroundInventory ground)
                 ground.finishGroundTransfer(item);
             // Merged carry has no inventory owner; retire its world ID.
@@ -1768,6 +1771,9 @@ public class CInventory extends L1Object {
             throw failure;
         }
 
+        // The legacy drop is visible only under the tile lock until this
+        // fence is set. All pickup paths now wait for its source DB row.
+        (merge == null ? carry : merge).markGroundDropSource(item.getId());
         // No compensating persistent write is allowed after admission.
         // Complete the in-memory source/destination state under the same locks.
         try {
@@ -1873,12 +1879,22 @@ public class CInventory extends L1Object {
 		return null;
 	}
 	protected final L1ItemInstance findMergeItem(L1ItemInstance incoming) {
-        if (incoming.isStackable() && !CacheD.isWarehouseApplying())
-            return _items.GetMergeableStack(incoming, this instanceof L1GroundInventory);
-        if (!(this instanceof L1GroundInventory)) return GetFirstItemByClassID(incoming.getItemId());
+        final boolean ground = this instanceof L1GroundInventory;
+        if (!ground) {
+            if (incoming.isStackable() && !CacheD.isWarehouseApplying())
+                return _items.GetMergeableStack(incoming, false);
+            return GetFirstItemByClassID(incoming.getItemId());
+        }
+        // Ground membership is already protected by the tile monitor in
+        // transfer/creation. Do not take CacheD's lock inside CItemList.
         for (L1ItemInstance candidate : _items) {
-            if (!candidate.isGroundPickupPending() && candidate.getItemId() == incoming.getItemId()
-                    && candidate.SameGroundLootRights(incoming)) return candidate;
+            if (candidate == incoming || candidate.isGroundPickupPending()
+                    || candidate.getItemId() != incoming.getItemId()
+                    || !candidate.SameGroundLootRights(incoming)
+                    || candidate.isGroundDropUnsettled()) continue;
+            if (incoming.isStackable() && !CacheD.isWarehouseApplying()
+                    && !L1ItemInstance.CanMergeStack(candidate, incoming)) continue;
+            return candidate;
         }
         return null;
     }
