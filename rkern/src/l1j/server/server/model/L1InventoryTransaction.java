@@ -302,7 +302,8 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     public L1ItemInstance grant(int template,int count) { return grant(primary,template,count); }
     public L1ItemInstance grant(L1PcInstance pc,int template,int count) {
         L1Item definition=CObjectDB.GetItem(template);
-        if (definition==null || count<=0) return null;
+        if (definition==null || count<=0 || count>CInventory.MAX_AMOUNT
+                || (!definition.isStackable() && count>CUserInventory.MAX_SIZE)) return null;
         L1ItemInstance image=new L1ItemInstance(definition,count);
         image.setId(IdFactory.getInstance().nextId());
         image.setBless(definition.getBless());
@@ -313,7 +314,8 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
     public L1ItemInstance grant(L1ItemInstance image) {
         open();
-        if (image == null || image.getCount() <= 0) return null;
+        if (image == null || image.getCount() <= 0 || image.getCount()>CInventory.MAX_AMOUNT
+                || (!image.isStackable() && image.getCount()>CUserInventory.MAX_SIZE)) return null;
         // A grant is a NEW persistent row, never an already published world item.
         // Transferring an owned item must use transfer() with its preimage check.
         if (image.getId() > 0 && L1World.getInstance().findObject(image.getId()) != null)
@@ -325,138 +327,8 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
      * NEW reward only. Ownership transfers never reset a purchased lifetime.
      */
     private static void initializeNewGrant(L1ItemInstance item) {
-        int itemId=item.getItemId();
-        item.setChargeCount(itemId==20383 ? 50 : item.getItem().getMaxChargeCount());
-		// 시간제 아이템
-		switch (itemId) {
-		// 호랑이/진돗개
-		case 3000048: // 꼬마 요정의 마음
-			newExpiry(item, 60000L, 1439); // 24시간 -1분
-			break;
-		case l1j.server.server.model.item.L1ItemId.KILLTON_CONTRACT:
-		case l1j.server.server.model.item.L1ItemId.MERIN_CONTRACT:
-			newExpiry(item, 60000L, 60);
-			break;
-		case 80500:
-			newExpiry(item, 60000L, 120);
-			break;
-		case 555000:
-		case 555001: // 마법인형: 레데그
-		case 555002: // 마법인형: 엘레그
-		case 555003: // 마법인형: 그레그
-			newExpiry(item, 60000L, Config.영웅유물); // 5시간
-			break;
-		// case l1j.server.server.model.item.L1ItemId.MERIN_CONTRACT:
-		// newExpiry(item, 60000L, 60);
-		// break;
-		case 100036:
-		case 500210: // 테베,쿠쿨 제단 열쇠
-		case l1j.server.server.model.item.L1ItemId.DRAGON_KEY: // 드래곤키
-		case 490012:
-		case 490013:
-		case 490014:
-		case 40312:
-			newExpiry(item, 60000L, 180); // 3시간
-			break;
-		case 30022: // 마법인형: 블레그
-		case 30023: // 마법인형: 레데그
-		case 30024: // 마법인형: 엘레그
-		case 30025: // 마법인형: 그레그
-			newExpiry(item, 60000L, 300); // 5시간
-			break;
-		case 22328: // 베테르랑 방어구
-		case 22329:
-		case 22330:
-		case 22331:
-		case 22332:
-		case 22333:
-		case 22334:
-		case 22335:
-		case 1126: // 베테르랑 무기
-		case 1127:
-		case 1128:
-		case 1129:
-		case 1130:
-		case 1131:
-		case 1132:
-		case 1133:
-			newExpiry(item, 60000L, 4320); // 3일
-			break;
-		case 20282: // 수련자의 방어구
-		case 7: // 수련자의 무기
-		case 105:
-		case 120:
-		case 156:
-		case 174:
-		case 224:
-		case 203012:
-			newExpiry(item, 60000L, 4320); // 3일
-			break;
-		case 3000213:// 자동사냥 3일
-			newExpiry(item, 60000L, 4320);// 자동사냥 3일
-			break;
-		case 45453: // 마법인형: 그레그
-			newExpiry(item, 60000L, 360); // 5시간
-			break;
-		case 45451: // 마법인형: 그레그
-			newExpiry(item, 60000L, 1440); // 5시간
-			break;
-		case 45452: // 마법인형: 그레그
-			newExpiry(item, 60000L, 4320); // 5시간
-			break;
-		case 41922:
-		case 41923:
-		case 41924:
-		case 41925:
-		case 3000209: // 자동사냥 1일
-		case 775:
-		case 774:
-		case 773:
-		case 772:
-			newExpiry(item, 60000L, 1440); // 1일
-			break;
-		case 3000214:// 자동사냥 7일
-			newExpiry(item, 60000L, 8640); // 7일
-			break;
-		case 210095:
-		case 2100950:
-		case 2100951:
-		case 2100952:
-		case 2100953:// 쫄사냥
-			newExpiry(item, 60000L, 180); // 3일
-			break;
-		/** 신규 초보자 무기 **/
-		case 7000137:
-		case 7000138:
-		case 7000139:
-		case 7000140:
-		case 7000141:
-		case 7000142:
-		case 7000143:
-		case 7000144:
-		case 505001:
-		case 505002:
-		case 505003:
-		case 505004:
-		case 505005:
-		case 505006:
-		case 505007:
-		case 505008:
-			newExpiry(item, 20000L, 1440); // 3일
-			break;
-		default:
-			break;
-		}
-
-		if (item.getItem().getType2() == 0 && item.getItem().getType() == 2) { // light
-			item.setRemainingTime(item.getItem().getLightFuel());
-		} else {
-			item.setRemainingTime(item.getItem().getMaxUseTime());
-		}
-		
-    }
-    private static void newExpiry(L1ItemInstance item,long scale,int minutes) {
-        item.setEndTime(new java.sql.Timestamp(Math.addExact(System.currentTimeMillis(),Math.multiplyExact(scale,(long)minutes))));
+        item.setChargeCount(item.getItemId()==20383 ? 50 : item.getItem().getMaxChargeCount());
+        CInventory.InitializeNewItemLifetimeAndFuel(item, true);
     }
     public L1ItemInstance grantCopy(L1PcInstance pc,L1ItemInstance image,int count) {
         // Public inputs may be held or mutated by a caller; always detach them.
