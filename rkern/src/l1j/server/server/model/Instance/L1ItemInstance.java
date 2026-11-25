@@ -1619,7 +1619,7 @@ public class L1ItemInstance extends L1Object {
 				return;
 			}
 
-			onGroundDeleteTimerExpired();
+			deleteGroundItem(generation);
 			break;
 
 		default:
@@ -1630,52 +1630,45 @@ public class L1ItemInstance extends L1Object {
 	/**
 	 * 이 메서드는 지면에 존재하는 item 삭제용이다.
 	 */
-	public void Delete() {
-		CancelTimer(TIMER_GROUND_DELETE);
+    public void Delete() {
+        deleteGroundItem(0);
+    }
 
-		final int x = getX();
-
-		if (x == 0) {
-			return;
-		}
-
-		final int y = getY();
-		final short mapId = getMapId();
-
-		final L1GroundInventory ground = L1World.getInstance().findGroundInventory(x, y, mapId);
-
-		if (ground == null) return;
-		synchronized (ground) {
-            if (ground.GetByServerID(getId()) != this) return;
+    /** A timer must validate its generation again under the tile monitor.
+     * Zero denotes explicit deletion, not a timing-wheel callback.
+     */
+    private void deleteGroundItem(int generation) {
+        final int x = getX();
+        if (x == 0) return;
+        final int y = getY();
+        final short mapId = getMapId();
+        final L1World world = L1World.getInstance();
+        final L1GroundInventory ground = world.findGroundInventory(x, y, mapId);
+        if (ground == null) return;
+        synchronized (ground) {
+            if ((generation != 0 && generation != _groundDeleteTimerGeneration)
+                    || getX() != x || getY() != y || getMapId() != mapId
+                    || world != L1World.getInstance()
+                    || world.findGroundInventory(x, y, mapId) != ground
+                    || ground.GetByServerID(getId()) != this) return;
+            if (generation != 0) {
+                if (world.findObject(getId()) != this || getItemId() == 40515) return;
+                if ("auto".equalsIgnoreCase(Config.ALT_ITEM_DELETION_TYPE)) {
+                    if (L1HouseLocation.isInHouse(x, y, mapId)) return;
+                    if (!world.getVisiblePlayer(this, Config.ALT_ITEM_DELETION_RANGE).isEmpty()) {
+                        AddTimer(TIMER_GROUND_DELETE, groundDeleteDelayMs());
+                        return;
+                    }
+                }
+            }
+            CancelTimer(TIMER_GROUND_DELETE);
             if (isGroundPickupPending() || isGroundDropUnsettled()) {
-                // The receipt owns the item until it is committed or rolled back.
                 AddTimer(TIMER_GROUND_DELETE, groundDeleteDelayMs());
                 return;
             }
-			ground.DeleteItemAmount(this);
-		}
-	}
-
-	private void onGroundDeleteTimerExpired() {
-		final L1Object current = L1World.getInstance().findObject(getId());
-		if (current != this) {
-			return;
-		}
-		if (getX() == 0 || getItemId() == 40515) {
-			return;
-		}
-		final String type = Config.ALT_ITEM_DELETION_TYPE;
-		if ("auto".equalsIgnoreCase(type)) {
-			if (L1HouseLocation.isInHouse(getX(), getY(), getMapId())) {
-				return;
-			}
-			if (!L1World.getInstance().getVisiblePlayer(this, Config.ALT_ITEM_DELETION_RANGE).isEmpty()) {
-				AddTimer(TIMER_GROUND_DELETE, groundDeleteDelayMs());
-				return;
-			}
-		}
-		Delete();
-	}
+            ground.DeleteItemAmount(this);
+        }
+    }
 
 	private int nextGroundDeleteTimerGeneration() {
 		int next = _groundDeleteTimerGeneration + 1;
