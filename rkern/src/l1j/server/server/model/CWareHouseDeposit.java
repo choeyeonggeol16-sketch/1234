@@ -3,7 +3,6 @@ package l1j.server.server.model;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Warehouse.Warehouse;
-import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
@@ -199,7 +198,7 @@ final class CWareHouseDeposit {
             }
             move.commit(() -> CIOThreadCallback.getInstance().completeWarehouseMove(pc,
                     sessionStamp, () -> {
-                // RECV packet handling uses ownerInventory same session monitor.
+                // RECV packet handling uses this same session monitor.
                 synchronized (session) {
                     synchronized (ownerInventory) {
                         synchronized (dest) {
