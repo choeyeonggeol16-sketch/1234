@@ -458,7 +458,7 @@ public class CUserInventory extends CInventory {
         }
     }
 
-    public void loadItems(List<L1ItemInstance> loadedItems) {
+    public synchronized void loadItems(List<L1ItemInstance> loadedItems) {
         if (loadedItems == null) throw new IllegalArgumentException("loadedItems");
         try {
             // Restore exactly what was committed to the DB. The previous path
@@ -472,24 +472,55 @@ public class CUserInventory extends CInventory {
                 if (count <= 0) {
                     throw new IllegalStateException("Invalid stored item amount: " + item.getId());
                 }
-                final long total = (long) _itemCountMap.getOrDefault(itemId, 0) + count;
+                final int previousCount = _itemCountMap.getOrDefault(itemId, 0);
+                final long total = (long) previousCount + count;
                 if (total > MAX_AMOUNT) {
                     throw new IllegalStateException("Stored item amount overflow: " + itemId);
                 }
-                item._cha = _owner;
+                if (GetByServerID(item.getId()) != null)
+                    throw new IllegalStateException("Duplicate stored item identity: " + item.getId());
+                final L1PcInstance previousOwner = item._cha;
+                final L1World world = L1World.getInstance();
                 _items.Push(item);
-                if (itemId == 900075) {
-                    SC_Ability.send(_owner, 2, true);
-                    SC_Ability.send(_owner, 7, true);
-                    _owner.setPolyRingMaster(true);
+                item._cha = _owner;
+                try {
+                    _itemCountMap.put(itemId, (int) total);
+                    world.storeObject(item);
+                } catch (RuntimeException failure) {
+                    _items.Pop(item);
+                    _itemCountMap.put(itemId, previousCount);
+                    item._cha = previousOwner;
+                    try { world.removeObject(item); }
+                    catch (RuntimeException cleanup) {
+                        if (cleanup != failure) failure.addSuppressed(cleanup);
+                    }
+                    throw failure;
                 }
-                L1World.getInstance().storeObject(item);
-                _itemCountMap.put(itemId, (int) total);
+                if (itemId == 900075) {
+                    _owner.setPolyRingMaster(true);
+                    try { SC_Ability.send(_owner, 2, true); }
+                    catch (RuntimeException notice) { receiptNoticeFailed("restore-ability-2", notice); }
+                    try { SC_Ability.send(_owner, 7, true); }
+                    catch (RuntimeException notice) { receiptNoticeFailed("restore-ability-7", notice); }
+                }
             }
 		} catch (Exception e) {
 			throw new IllegalStateException("CacheD character inventory restore failed: " + _owner.getId(), e);
 		}
 	}
+
+    /** Logout cleanup: membership and both primitive indexes retire together.
+     * Equipment restore still owns initial equipped-state publication.
+     */
+    @Override
+    public synchronized void clearItems() {
+        super.clearItems();
+        _itemCountMap.clear();
+        _equippedCountMap.clear();
+        displayedAccessories = null;
+        displayedPrimaryWeapon = 0;
+        displayedSecondaryWeapon = 0;
+    }
 
 	@Override
 	public synchronized void insertItem(L1ItemInstance item) {
