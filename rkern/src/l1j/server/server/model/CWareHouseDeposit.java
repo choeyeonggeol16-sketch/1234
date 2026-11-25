@@ -25,7 +25,9 @@ final class CWareHouseDeposit {
         final l1j.server.server.model.Instance.L1PcInstance pc =
                 ((CUserInventory) ownerInventory).getOwner();
         final CUserSocket session = pc.getNetConnection();
-        if (session == null || !session.isConnected() || !pc.tryBeginItemTransfer()) return false;
+        final int stamp = pc.getSessionStamp();
+        final int token = pc.tryReserveItemTransfer(session, stamp);
+        if (token == 0) return false;
         boolean submitted = false;
         try {
             final int size = ids.length;
@@ -36,7 +38,6 @@ final class CWareHouseDeposit {
             final L1ItemInstance[] destinations = new L1ItemInstance[size];
             final int[] destinationCounts = new int[size];
             final L1ItemInstance[] carry = new L1ItemInstance[size];
-            final int stamp = pc.getSessionStamp();
             synchronized (dest) {
                 int newSlots = 0;
                 for (int i = 0; i < size; i++) {
@@ -72,7 +73,7 @@ final class CWareHouseDeposit {
                 try { reserved = CacheD.beginWarehouseMove(pc.getId(), dest.transferOrderKey()); }
                 catch (java.util.concurrent.RejectedExecutionException busy) { return false; }
                 try (CacheD.WarehouseMove move = reserved) {
-                    move.onFailure(() -> CIOThreadCallback.getInstance().completeSession(session, session::kick));
+                    move.onFailure(() -> pc.quarantineItemTransferSession(session, stamp));
                     for (int i = 0; i < size; i++) {
                         final L1ItemInstance item = sources[i];
                         final int count = counts[i];
@@ -105,8 +106,7 @@ final class CWareHouseDeposit {
                         synchronized (session) {
                             synchronized (ownerInventory) {
                                 synchronized (dest) {
-                                    if (!session.isConnected() || pc.getSessionStamp() != stamp
-                                            || pc.getNetConnection() != session)
+                                    if (!pc.isItemTransferSession(session, stamp))
                                         throw new IllegalStateException("Stale warehouse batch session");
                                     for (int i = 0; i < size; i++) {
                                         if (ownerInventory.GetByServerID(ids[i]) != sources[i]
@@ -128,7 +128,7 @@ final class CWareHouseDeposit {
                                     });
                                     for (int i = 0; i < size; i++)
                                         Warehouse.recordCommittedMove(pc, dest, true, sources[i], counts[i]);
-                                    pc.endItemTransfer();
+                                    pc.endItemTransfer(token);
                                     if (onCommitted != null) {
                                         try { onCommitted.run(); }
                                         catch (RuntimeException auditFailure) {
@@ -152,7 +152,7 @@ final class CWareHouseDeposit {
                 }
             }
         } finally {
-            if (!submitted) pc.endItemTransfer();
+            if (!submitted) pc.endItemTransfer(token);
         }
     }
 
@@ -162,9 +162,9 @@ final class CWareHouseDeposit {
         final CUserInventory pcInventory = (CUserInventory) ownerInventory;
         final l1j.server.server.model.Instance.L1PcInstance pc = pcInventory.getOwner();
         final CUserSocket session = pc.getNetConnection();
-        if (session == null || !session.isConnected()) return null;
         final int sessionStamp = pc.getSessionStamp();
-        if (!pc.tryBeginItemTransfer()) return null;
+        final int token = pc.tryReserveItemTransfer(session, sessionStamp);
+        if (token == 0) return null;
         boolean submitted = false;
         try {
         final int sourceCount = item.getCount();
@@ -176,7 +176,7 @@ final class CWareHouseDeposit {
         try { reserved = CacheD.beginWarehouseMove(pc.getId(), dest.transferOrderKey()); }
         catch (java.util.concurrent.RejectedExecutionException busy) { return null; }
         try (CacheD.WarehouseMove move = reserved) {
-            move.onFailure(() -> CIOThreadCallback.getInstance().completeSession(session, session::kick));
+            move.onFailure(() -> pc.quarantineItemTransferSession(session, sessionStamp));
             move.expectOriginal(item);
             if (destStack != null) move.expectOriginal(destStack);
             final L1ItemInstance carry;
@@ -201,8 +201,8 @@ final class CWareHouseDeposit {
                 synchronized (session) {
                     synchronized (ownerInventory) {
                         synchronized (dest) {
-                            if (!session.isConnected() || pc.getSessionStamp() != sessionStamp
-                                    || pc.getNetConnection() != session || ownerInventory.GetByServerID(item.getId()) != item
+                            if (!pc.isItemTransferSession(session, sessionStamp)
+                                    || ownerInventory.GetByServerID(item.getId()) != item
                                     || item.getCount() != sourceCount
                                     || (destStack != null && (dest.GetByServerID(destStack.getId()) != destStack
                                             || destStack.getCount() != destCount)))
@@ -217,7 +217,7 @@ final class CWareHouseDeposit {
                         }
                     }
                     Warehouse.recordCommittedMove(pc, dest, true, item, count);
-                    pc.endItemTransfer();
+                    pc.endItemTransfer(token);
                     try { pc.getLight().turnOnOffLight(); }
                     catch (RuntimeException lightFailure) {
                         java.util.logging.Logger.getLogger(CInventory.class.getName())
@@ -230,7 +230,7 @@ final class CWareHouseDeposit {
             return item; // accepted; game memory changes ONLY in post-COMMIT callback
         }
         } finally {
-            if (!submitted) pc.endItemTransfer();
+            if (!submitted) pc.endItemTransfer(token);
         }
     }
 
