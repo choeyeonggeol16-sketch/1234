@@ -796,17 +796,24 @@ public class CInventory extends L1Object {
 
     /** Both owner monitors must be held before any ownership/count mutation. */
     private L1ItemInstance tradeItemLocked(L1ItemInstance item, int count, CInventory inventory) {
-        if (CacheD.isWarehouseApplying()) return transferWithPermits(item, count, inventory);
-        final CUserInventory from = this instanceof CUserInventory pc ? pc : null;
-        final CUserInventory to = inventory instanceof CUserInventory pc ? pc : null;
-        // Existing CAS gate, non-blocking; no additional worker or lock order.
-        if (from != null && !from.tryBeginEquipmentChange()) return null;
         try {
-            if (to != null && !to.tryBeginEquipmentChange()) return null;
-            try { return transferWithPermits(item, count, inventory); }
-            finally { if (to != null) to.endEquipmentChange(); }
+            if (CacheD.isWarehouseApplying()) return transferWithPermits(item, count, inventory);
+            final CUserInventory from = this instanceof CUserInventory pc ? pc : null;
+            final CUserInventory to = inventory instanceof CUserInventory pc ? pc : null;
+            // Existing CAS gate, non-blocking; no additional worker or lock order.
+            if (from != null && !from.tryBeginEquipmentChange()) return null;
+            try {
+                if (to != null && !to.tryBeginEquipmentChange()) return null;
+                try { return transferWithPermits(item, count, inventory); }
+                finally { if (to != null) to.endEquipmentChange(); }
+            } finally {
+                if (from != null) from.endEquipmentChange();
+            }
         } finally {
-            if (from != null) from.endEquipmentChange();
+            // A failed drop can leave the freshly published destination tile
+            // empty even if transferWithPermits was never entered.
+            if (inventory instanceof L1GroundInventory ground)
+                ground.retireEmptyTileAfterTransfer();
         }
     }
 
