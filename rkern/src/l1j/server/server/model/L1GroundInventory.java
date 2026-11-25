@@ -190,9 +190,16 @@ public class L1GroundInventory extends CInventory {
                     CIOThreadCallback.getInstance().completeWorldMutation(world,
                             () -> PickItem(item, receipt, before, amount),
                             failure -> {
-                                if (failure != null) _log.log(java.util.logging.Level.SEVERE,
-                                        "Committed ground pickup replay failed: " + item.getId(), failure);
+                                if (failure != null) {
+                                    item.freezeGroundPickup(receipt);
+                                    _log.log(java.util.logging.Level.SEVERE,
+                                            "Committed ground pickup replay failed: " + item.getId(), failure);
+                                }
                             });
+                } else if (receipt.isUncertainFailure()) {
+                    // Keep the item unavailable without retaining the entire
+                    // receipt, character, and session through its world object.
+                    item.freezeGroundPickup(receipt);
                 }
             });
             receipt.commitAfterInventoryRelease(afterCommitted);
