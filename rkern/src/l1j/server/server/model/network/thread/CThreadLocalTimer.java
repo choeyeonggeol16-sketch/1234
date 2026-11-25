@@ -131,7 +131,22 @@ public final class CThreadLocalTimer {
         final long window = (long) (size - 1) * tickMs;
         final long threshold = tickAtMs > Long.MAX_VALUE - window
                 ? Long.MAX_VALUE : tickAtMs + window;
-        while (distantSize != 0 && distant[0].dueMs <= threshold) {
+        // A cancelled far-future item timer needs no world event and
+        // need not occupy the heap until its original deadline. Limit the
+        // extra work per tick; live timers preserve the ordinary promotion path.
+        int staleBudget = 64;
+        while (distantSize != 0) {
+            final Node head = distant[0];
+            if (staleBudget > 0 && head.kind == KIND_ITEM) {
+                final Object object = L1World.getInstance().findObjectBySmartId(head.l0);
+                if (!(object instanceof L1ItemInstance item)
+                        || !item.isItemTimerCurrent(head.p0, head.p1)) {
+                    recycleNode(popDistant());
+                    staleBudget--;
+                    continue;
+                }
+            }
+            if (head.dueMs > threshold) break;
             Node node = popDistant();
             if (node.handle != null && node.handle.isCancelled()) {
                 recycleNode(node);
@@ -225,6 +240,8 @@ public final class CThreadLocalTimer {
 			int timerId,
 			int generation) {
 
+        if (closed || !owner.running)
+            throw new java.util.concurrent.RejectedExecutionException("Item timer wheel stopped");
 		final Node node =
 				obtainNode(delayMs);
 
@@ -314,11 +331,11 @@ public final class CThreadLocalTimer {
 					}
                 } else if (cur.kind == KIND_ITEM) {
                     final Object item = L1World.getInstance().findObjectBySmartId(cur.l0);
-                    if (item instanceof L1ItemInstance) {
+                    if (item instanceof L1ItemInstance live
+                            && live.isItemTimerCurrent(cur.p0, cur.p1)) {
                         // Saturation: keep the same timer node for next tick.
-                        // CWorld rechecks the registered object's identity.
-                        retryAction = !L1World.getInstance().AsyncItemTimer(
-                                (L1ItemInstance) item, cur.p0, cur.p1);
+                        // CWorld rechecks identity and the tile rechecks generation.
+                        retryAction = !L1World.getInstance().AsyncItemTimer(live, cur.p0, cur.p1);
                     }
 				} else {
                     retryAction = dispatch(owner, cur);
