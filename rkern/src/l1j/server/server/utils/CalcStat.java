@@ -9,28 +9,28 @@ public class CalcStat {
     // =========================
     // Public API (80 tables)
     // =========================
-    public static int 근거리대미지(int str) { return tableGet80(MELEE_DMG_OFF, str); }
-    public static int 근거리명중(int str)   { return tableGet80(MELEE_HIT_OFF, str); }
+    public static int 근거리대미지(int str) { return GetParamBonus(MELEE_DMG_OFF, str, LEN_80, 0); }
+    public static int 근거리명중(int str)   { return GetParamBonus(MELEE_HIT_OFF, str, LEN_80, 0); }
     public static int 근거리치명타(int str) { return stepCrit(str); }
 
-    public static int 원거리대미지(int dex) { return tableGet80(RANGE_DMG_OFF, dex); }
-    public static int 원거리명중(int dex)   { return tableGet80(RANGE_HIT_OFF, dex); }
+    public static int 원거리대미지(int dex) { return GetParamBonus(RANGE_DMG_OFF, dex, LEN_80, 0); }
+    public static int 원거리명중(int dex)   { return GetParamBonus(RANGE_HIT_OFF, dex, LEN_80, 0); }
     public static int 원거리치명타(int dex) { return stepCrit(dex); }
 
-    public static int 마법대미지(int intel) { return tableGet80(MAGIC_DMG_OFF, intel); }
+    public static int 마법대미지(int intel) { return GetParamBonus(MAGIC_DMG_OFF, intel, LEN_80, 0); }
     public static int 마법치명타(int intel) { return magicCrit(intel); }
 
     // =========================
     // Public API (extra tables)
     // =========================
-    public static int 원거리회피(int dex) { return tableGet80(RANGE_EVADE_OFF, dex); }
-    public static int 물리방어력(int dex) { return tableGet80(PHYS_DEF_OFF, dex); }
+    public static int 원거리회피(int dex) { return GetParamBonus(RANGE_EVADE_OFF, dex, LEN_80, 0); }
+    public static int 물리방어력(int dex) { return GetParamBonus(PHYS_DEF_OFF, dex, LEN_80, 0); }
 
     // 1~45 (기존 defaultOnErr=2 유지)
-    public static int 엠소모감소(int inte)    { return tableGet45(MP_REDUCE_OFF, inte, 2); }
-    public static int 엠회복틱(int wis)       { return tableGet45(MP_REGEN_TICK_OFF, wis, 2); }
-    public static int 엠피물약회복(int wis)   { return tableGet45(MP_POTION_TICK_OFF, wis, 2); }
-    public static int 피회복틱(int con)       { return tableGet45(HP_REGEN_TICK_OFF, con, 2); }
+    public static int 엠소모감소(int inte)    { return GetParamBonus(MP_REDUCE_OFF, inte, LEN_45, 2); }
+    public static int 엠회복틱(int wis)       { return GetParamBonus(MP_REGEN_TICK_OFF, wis, LEN_45, 2); }
+    public static int 엠피물약회복(int wis)   { return GetParamBonus(MP_POTION_TICK_OFF, wis, LEN_45, 2); }
+    public static int 피회복틱(int con)       { return GetParamBonus(HP_REGEN_TICK_OFF, con, LEN_45, 2); }
 
     // =========================
     // Formula APIs
@@ -72,27 +72,15 @@ public class CalcStat {
         return 1000 + (stat * 100);
     }
 
-    // =========================
-    // Core getters (safe)
-    // =========================
-    private static int tableGet80(int baseOffset, int stat) {
-        // 1~80 clamp
+    // Shared parameter-table lookup (CPCParamDB::GetParamBonus role).
+    // Each L1 table retains its own range and fallback.
+    private static int GetParamBonus(int baseOffset, int stat, int length, int defaultOnErr) {
         int idx = stat - 1;
         if (idx < 0) idx = 0;
-        else if (idx >= 80) idx = 79;
+        else if (idx >= length) idx = length - 1;
 
         int p = baseOffset + idx;
-        if (p < 0 || p >= DATA.length) return 0; // 안전 가드
-        return DATA[p];
-    }
-
-    private static int tableGet45(int baseOffset, int stat, int defaultOnErr) {
-        int idx = stat - 1;
-        if (idx < 0) idx = 0;
-        else if (idx >= 45) idx = 44;
-
-        int p = baseOffset + idx;
-        if (p < 0 || p >= DATA.length) return defaultOnErr; // 기존 try/catch 대체
+        if (p < 0 || p >= DATA.length) return defaultOnErr;
         return DATA[p];
     }
 
