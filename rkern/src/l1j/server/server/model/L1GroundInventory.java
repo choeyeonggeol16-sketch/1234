@@ -83,11 +83,36 @@ public class L1GroundInventory extends CInventory {
 
     @Override
     public void insertItem(L1ItemInstance item) {
+        publishGroundItem(item, false);
+    }
+
+    /** An already-owned ground item must survive a failed pickup even when
+     * the wheel has stopped. A new drop must instead fail admission.
+     * Called under this tile monitor before any empty-tile retirement.
+     */
+    void restoreAfterFailedTransfer(L1ItemInstance item) {
+        assert Thread.holdsLock(this);
+        _items.Push(item);
+        try {
+            publishGroundItem(item, true);
+        } catch (RuntimeException failure) {
+            _items.Pop(item);
+            throw failure;
+        }
+    }
+
+    private void publishGroundItem(L1ItemInstance item, boolean restoring) {
         if (item == null) return;
         if (DEBUG_GROUND_ITEM_TIMER) debug("SPAWN", item, "before OnSpawned");
         // Timer admission is part of insertion and shares its cleanup.
         try {
-            item.OnSpawned();
+            try {
+                item.OnSpawned();
+            } catch (java.util.concurrent.RejectedExecutionException unavailable) {
+                if (!restoring) throw unavailable;
+                _log.log(java.util.logging.Level.SEVERE,
+                        "Ground item restored without delete timer: " + item.getId(), unavailable);
+            }
             L1World.getInstance().addVisibleObject(item);
         } catch (RuntimeException | Error failure) {
             try { L1World.getInstance().removeVisibleObject(item); }
