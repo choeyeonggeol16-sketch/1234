@@ -136,14 +136,23 @@ public abstract class L1Item implements Serializable {
 		_material = material;
 	}
 
-	private int _weight;
+	private volatile int _weight;
+
+    // Templates normally become immutable after loading; rare in-place weight
+    // edits must also invalidate inventories using the existing template object.
+    private static final java.util.concurrent.atomic.AtomicLong WEIGHT_EPOCH =
+            new java.util.concurrent.atomic.AtomicLong();
+
+    public static long WeightEpoch() { return WEIGHT_EPOCH.get(); }
 
 	public int getWeight() {
 		return _weight;
 	}
 
 	public void setWeight(int weight) {
+        if (_weight == weight) return;
 		_weight = weight;
+        WEIGHT_EPOCH.incrementAndGet();
 	}
 
 	private int _gfxId;
