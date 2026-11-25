@@ -1,4 +1,4 @@
-name: RKern defense parameter source audit
+name: RKern attack parameter source audit
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: rkern/src
-      - name: Enumerate AC ER DG writers and base refresh callers
+      - name: Enumerate attack source readers and writers
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -26,6 +26,6 @@ jobs:
               s=p.read_text(encoding="utf-8")
               clean=lex.sub(lambda m:re.sub(r'[^\n]',' ',m.group()),s)
               for i,(a,b) in enumerate(zip(s.splitlines(),clean.splitlines()),1):
-                  if re.search(r'\b(?:setCharacterDG|setCharacterER|getStatER|getDefaultER|getEffectedER|setAc|resetBaseAc|getBaseAc|setSkillAc)\s*\(',b):
+                  if re.search(r'\b(?:getBaseDmgup|getBaseBowDmgup|getBaseHitup|getBaseBowHitup|getDmgupByArmor|addDmgupByArmor|getBowDmgupByArmor|addBowDmgupByArmor|getDmgRate|addDmgRate|getHitRate|addHitRate|getBowDmgRate|addBowDmgRate|getBowHitRate|addBowHitRate|getDmgup|getBowDmgup|getHitup|getBowHitup|addDmgup|addBowDmgup|addHitup|addBowHitup)\s*\(',b):
                       print(f"{p}:{i}: {a.strip()}")
           PY
