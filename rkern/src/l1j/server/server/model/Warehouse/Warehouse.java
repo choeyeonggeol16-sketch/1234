@@ -554,7 +554,11 @@ public abstract class Warehouse extends L1Object {
         final int destCount = destStack == null ? 0 : destStack.getCount();
         final int destCharge = destStack == null ? 0 : destStack.getChargeCount();
         if (countMerge && !destStack.IsAddableAmount(count)) return null;
-        if (chargeMerge && (long) destCharge + item.getChargeCount() > Integer.MAX_VALUE) return null;
+        if (chargeMerge && (destCharge < 0 || item.getChargeCount() < 0
+                || (long) destCharge + item.getChargeCount() > Integer.MAX_VALUE)) return null;
+        final int addedCount = chargeMerge ? 0 : count;
+        if ((long) pcInventory.GetItemAmount(item.getItemId()) + addedCount > CInventory.MAX_AMOUNT)
+            return null;
         final L1ItemInstance fee = feeAmount == 0 ? null : inventory.GetFirstItemByClassID(feeItemId);
         if (feeAmount != 0 && (fee == null || !fee.isStackable()
                 || fee.getCount() < feeAmount)) return null;
@@ -673,7 +677,8 @@ public abstract class Warehouse extends L1Object {
         synchronized (inventory) {
             synchronized (this) {
                 // Per-instance deadlines cannot be represented by a merged stack.
-                if (endTime != null && item != null && item.isStackable()
+                if (endTime != null && item != null
+                        && (item.isStackable() || chargeMergeItem(item.getItemId()))
                         && inventory.GetFirstItemByClassID(item.getItemId()) != null) return null;
                 return tradePreparedItemLocked(item, count, inventory, 0, 0, copyTime(endTime), onCommitted);
             }
