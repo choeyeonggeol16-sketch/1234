@@ -130,9 +130,9 @@ public class CUserInventory extends CInventory {
         if (original != null) {
             if (GetByServerID(original.getId()) != original)
                 throw new IllegalStateException("Economy source object changed");
-            removeItemCountCache(original.getItemId(), original.getCount());
             if (image == null) {
                 original.stopEquipmentTimer();
+                removeItemCountCache(original.getItemId(), original.getCount());
                 _items.Pop(original);
                 if (original.getEndTime() != null) {
                     l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
@@ -167,6 +167,9 @@ public class CUserInventory extends CInventory {
             final boolean restorePrimary = recalcEquipped && equipment.getSecondWeapon() != null
                     && equipment.getWeapon() == original;
             if (recalcEquipped) equipment.unequipItem(original);
+            // Keep the old row indexed while its old equipment effects retire.
+            // Reindex before new equipment and expiry callbacks can query it.
+            removeItemCountCache(oldTemplate, original.getCount());
             if (newTemplate) {
                 // A curse conversion changes the item template in place. Keep
                 // the equipped-template count index consistent with the item.
@@ -180,6 +183,7 @@ public class CUserInventory extends CInventory {
             }
             // Expiry remains below, after cancellation of the previous timer.
             original.CopyItemAttributesFrom(image, image.getCount(), image.getChargeCount(), true, false, false);
+            addItemCountCache(original.getItemId(), original.getCount());
             final boolean expiryChanged = !java.util.Objects.equals(
                     original.getEndTime(), image.getEndTime());
             if (expiryChanged && original.getEndTime() != null) {
@@ -202,7 +206,6 @@ public class CUserInventory extends CInventory {
                 _owner.setCurrentHp(_owner.getCurrentHp());
                 _owner.setCurrentMp(_owner.getCurrentMp());
             }
-            addItemCountCache(original.getItemId(), original.getCount());
             original.getLastStatus().updateAll();
             // Publish the worn stats while the receipt still owns the equipment gate.
             if (!newTemplate) {
