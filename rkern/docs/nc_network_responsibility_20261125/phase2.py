@@ -85,6 +85,8 @@ for p in source + tests:
         continue
     old = read(p)
     s = old
+    # Complete the first-phase cipher rename in production and live test fixtures.
+    s = sub(s, r"\bCPacketCryptor\b", "SocketSecureKey")
     # All old config type references, both qualified and simple.
     had_cfg = bool(re.search(r"\bCConnectionConfig\b", mask(s)))
     had_frame = bool(re.search(r"\bCIOFrame\b", mask(s)))
@@ -109,13 +111,13 @@ for p in source + tests:
         changed.append(str(p))
     for lit in lex.finditer(s):
         if lit.group().startswith('"'):
-            assert old_cfg_name not in lit.group() and old_frame_name not in lit.group(), ("reflection", str(p))
+            assert old_cfg_name not in lit.group() and old_frame_name not in lit.group() and "l1j.server.server.model.network.codec.CPacketCryptor" not in lit.group(), ("reflection", str(p))
 
 oldcfg.unlink()
 frame.unlink()
 for p in sorted(root.rglob("*.java")) + tests:
     s = mask(read(p))
-    assert not re.search(r"\bCConnectionConfig\b", s), str(p)
+    assert not re.search(r"\bCConnectionConfig\b|\bCPacketCryptor\b", s), str(p)
     assert not re.search(re.escape(old_frame_name) + r"\b", s), str(p)
     assert not re.search(r"\bCIOConfig\s*\.\s*(?:LOGIN_TIMEOUT_MS|MAC_LIMIT)\b", s), str(p)
 # The previous phase's deleted classes must have no live references.
