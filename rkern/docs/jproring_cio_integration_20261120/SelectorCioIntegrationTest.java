@@ -327,7 +327,7 @@ public final class SelectorCioIntegrationTest {
         var scheduler = CIOThreadCallback.getInstance();
         int owners = scheduler.bindNetworkIngress(config);
         var pool = new CIOBufferPool(4, 1, 1, 1, owners);
-        try (var listener = new l1j.server.server.model.network.core.server.Server(
+        try (var listener = new l1j.server.server.model.network.core.connection.CIOServer(
                 address, 4, owners, 16, pool, scheduler, config)) {
             int port = listener.localAddress().getPort();
             var held = pool.acquireSend(32);

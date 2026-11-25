@@ -45,7 +45,7 @@ public class Server {
         return uniqueInstance;
     }
 
-    private static volatile l1j.server.server.model.network.core.server.Server gameListener;
+    private static volatile l1j.server.server.model.network.core.connection.CIOServer gameListener;
 
     public static boolean isJavaNetworkTransport() {
         final var listener = gameListener;
@@ -99,7 +99,7 @@ public class Server {
             final int owners = scheduler.bindNetworkIngress(config);
             final CIOBufferPool pool = new CIOBufferPool(connectionCapacity,
                     sendSlots, largeRecvSlots, largeSlots, owners);
-            gameListener = new l1j.server.server.model.network.core.server.Server(address, connectionCapacity,
+            gameListener = new l1j.server.server.model.network.core.connection.CIOServer(address, connectionCapacity,
                     owners, backlog, pool, scheduler, config);
             System.out.println("네트워크 서버 연결이 완료되었습니다.");
             return true;
@@ -113,7 +113,7 @@ public class Server {
 
     /** One deadline across accept stop, Selector owner drain, and Java await. */
     public static void stopNewConnections() {
-        final l1j.server.server.model.network.core.server.Server listener;
+        final l1j.server.server.model.network.core.connection.CIOServer listener;
         final long deadline;
         synchronized (Server.class) {
             listener = gameListener;
@@ -135,7 +135,7 @@ public class Server {
     }
 
     public static void stopLoginServer() {
-        final l1j.server.server.model.network.core.server.Server listener;
+        final l1j.server.server.model.network.core.connection.CIOServer listener;
         final long recordedDeadline;
         synchronized (Server.class) {
             listener = gameListener;

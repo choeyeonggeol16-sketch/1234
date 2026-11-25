@@ -7,9 +7,9 @@ import l1j.server.server.model.network.buffer.CPacketReadBuffer;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 
 /**********************************
- * Network Server CPacketCryptor
+ * Network Server SocketSecureKey
  **********************************/
-public class CPacketCryptor {
+public class SocketSecureKey {
 
     private static final long U32_MASK = 0xFFFF_FFFFL;
     private static final int DK1_DELTA = 679411651;
@@ -21,7 +21,7 @@ public class CPacketCryptor {
 
     private final int[] _clntHash;
 
-    public CPacketCryptor() {
+    public SocketSecureKey() {
         _clntHash = new int[256];
     }
 

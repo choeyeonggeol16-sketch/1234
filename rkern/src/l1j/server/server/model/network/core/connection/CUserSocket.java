@@ -19,7 +19,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.utill.CConnectionState;
 import java.util.concurrent.locks.ReentrantLock;
 import l1j.server.server.model.network.buffer.CPacketReadBuffer;
-import l1j.server.server.model.network.codec.CPacketCryptor;
+import l1j.server.server.model.network.codec.SocketSecureKey;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
@@ -31,6 +31,8 @@ import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.ClientAutomationSession;
 import java.util.Collection;
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import l1j.server.server.Account;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.Controller.LoginController;
@@ -170,11 +172,11 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         state.active = true;
         return state;
     }
-    private volatile CPacketCryptor _cryptor;
+    private volatile SocketSecureKey _cryptor;
     private long deadlinePriorProgress,deadlineStalledSince;
     private volatile boolean _handshakePlainPending;
     public void SetKey(long seed) {
-        final CPacketCryptor cryptor = new CPacketCryptor();
+        final SocketSecureKey cryptor = new SocketSecureKey();
         cryptor.initKey(seed);
         _cryptor = cryptor;
         _handshakePlainPending = true;
@@ -188,7 +190,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
             _handshakePlainPending = false;
             return true;
         }
-        final CPacketCryptor cipher = _cryptor;
+        final SocketSecureKey cipher = _cryptor;
         if (cipher == null) return true;
         try {
             cipher.encrypt(buffer, offset, length);
@@ -205,7 +207,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
             frameOffset = Long.BYTES;
             frameCount--;
         }
-        final CPacketCryptor cipher = _cryptor;
+        final SocketSecureKey cipher = _cryptor;
         if (cipher == null) return true;
         try {
             cipher.encryptActionBurst(writer, frameOffset, frameCount);
@@ -217,7 +219,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     }
 
     public boolean decrypt(CPacketReadBuffer buffer, int offset, int length) {
-        final CPacketCryptor cipher = _cryptor;
+        final SocketSecureKey cipher = _cryptor;
         if (cipher == null) return true;
         try {
             cipher.decrypt(buffer, offset, length);
@@ -4902,4 +4904,23 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
 		secondpasswordfailurecount = 0;
 	}
 
+
+    /** One deferred close owns its captured session through final L1 cleanup. */
+    private static final class CUserSocketReleaseTask implements Runnable {
+        private final BooleanSupplier ownsSession;
+        private final Runnable logout, cleanup;
+        private static final AtomicIntegerFieldUpdater<CUserSocketReleaseTask> STARTED =
+                AtomicIntegerFieldUpdater.newUpdater(CUserSocketReleaseTask.class, "started");
+        private volatile int started;
+        public CUserSocketReleaseTask(BooleanSupplier ownsSession, Runnable logout, Runnable cleanup) {
+            this.ownsSession = Objects.requireNonNull(ownsSession);
+            this.logout = Objects.requireNonNull(logout);
+            this.cleanup = Objects.requireNonNull(cleanup);
+        }
+        @Override public void run() {
+            if (!STARTED.compareAndSet(this, 0, 1)) return;
+            try { if (ownsSession.getAsBoolean()) logout.run(); }
+            finally { cleanup.run(); }
+        }
+    }
 }
