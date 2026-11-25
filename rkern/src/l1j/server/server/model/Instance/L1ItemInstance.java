@@ -1645,21 +1645,26 @@ public class L1ItemInstance extends L1Object {
         final L1World world = L1World.getInstance();
         final L1GroundInventory ground = world.findGroundInventory(x, y, mapId);
         if (ground == null) return;
+        // Preserve the original visibility scan outside the tile monitor.
+        // Its result can only affect this exact generation after revalidation.
+        boolean deferForViewer = false;
+        if (generation != 0) {
+            if (world.findObject(getId()) != this || getItemId() == 40515) return;
+            if ("auto".equalsIgnoreCase(Config.ALT_ITEM_DELETION_TYPE)) {
+                if (L1HouseLocation.isInHouse(x, y, mapId)) return;
+                deferForViewer = !world.getVisiblePlayer(this, Config.ALT_ITEM_DELETION_RANGE).isEmpty();
+            }
+        }
         synchronized (ground) {
             if ((generation != 0 && generation != _groundDeleteTimerGeneration)
                     || getX() != x || getY() != y || getMapId() != mapId
                     || world != L1World.getInstance()
                     || world.findGroundInventory(x, y, mapId) != ground
                     || ground.GetByServerID(getId()) != this) return;
-            if (generation != 0) {
-                if (world.findObject(getId()) != this || getItemId() == 40515) return;
-                if ("auto".equalsIgnoreCase(Config.ALT_ITEM_DELETION_TYPE)) {
-                    if (L1HouseLocation.isInHouse(x, y, mapId)) return;
-                    if (!world.getVisiblePlayer(this, Config.ALT_ITEM_DELETION_RANGE).isEmpty()) {
-                        AddTimer(TIMER_GROUND_DELETE, groundDeleteDelayMs());
-                        return;
-                    }
-                }
+            if (generation != 0 && (world.findObject(getId()) != this || getItemId() == 40515)) return;
+            if (deferForViewer) {
+                AddTimer(TIMER_GROUND_DELETE, groundDeleteDelayMs());
+                return;
             }
             CancelTimer(TIMER_GROUND_DELETE);
             if (isGroundPickupPending() || isGroundDropUnsettled()) {
