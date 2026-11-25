@@ -257,18 +257,20 @@ public class CInventory extends L1Object {
 	private L1ItemInstance CreateOrAddItem(int id, int count, boolean withEnchant, boolean identified, int enchant) {
 		if (rejectPendingItemTransfer())
 			throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (count <= 0) return null;
+		if (count <= 0 || count > MAX_AMOUNT) return null;
 		final L1Item template = CObjectDB.GetItem(id);
 		if (template == null) return null;
+        if (this instanceof CUserInventory && (long) GetItemAmount(id) + count > MAX_AMOUNT) return null;
 		if (template.isStackable()) {
 			final L1ItemInstance item = new L1ItemInstance(template, count);
 			if (!withEnchant) item.setIdentified(identified);
-			if (findMergeItem(item) == null) {
-				item.setId(IdFactory.getInstance().nextId());
-				return registerCreatedItem(item);
-			}
-			return CreateOrAddItem(item);
+            // Initialize before matching. Allocate an ID only for a new row.
+			return AddItemToInventory(item, false, false, 0, true);
 		}
+        final int limit = this instanceof CUserInventory ? CUserInventory.MAX_SIZE : Config.MAX_NPC_ITEM;
+        // Charge-based objects can merge into an existing row; do not apply
+        // a per-instance slot limit to those legacy refill items.
+        if (count > limit || (!Warehouse.chargeMergeItem(id) && (long) getSize() + count > limit)) return null;
 		L1ItemInstance result = null;
 		for (int i = 0; i < count; i++) {
 			final L1ItemInstance item = new L1ItemInstance(template, 1);
@@ -360,20 +362,18 @@ public class CInventory extends L1Object {
 	}
 
 	private L1ItemInstance AddItemToInventory(L1ItemInstance item, boolean treasure, boolean explicitBless, int bless) {
+        return AddItemToInventory(item, treasure, explicitBless, bless, false);
+    }
+
+    private L1ItemInstance AddItemToInventory(L1ItemInstance item, boolean treasure, boolean explicitBless, int bless, boolean localNew) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (item == null || item.getCount() <= 0) {
-			return null;
-		}
+		if (item == null || item.getCount() <= 0 || item.getCount() > MAX_AMOUNT
+                || (!item.isStackable() && item.getCount() != 1)) return null;
+        CItemList.requireDetached(item);
 		int itemId = item.getItem().getItemId();
-		if (item.isStackable()) {
-			L1ItemInstance findItem = findMergeItem(item);
-			
-			if (findItem != null) {
-                changeStackCount(findItem, item.getCount());
-                return findItem;
-			}
-		}
+        if (this instanceof CUserInventory && !Warehouse.chargeMergeItem(itemId)
+                && (long) GetItemAmount(itemId) + item.getCount() > MAX_AMOUNT) return null;
 		if (!treasure && item.get_item_level() > 0) {
 			item.set_item_level(item.get_item_level());
 		}
@@ -417,7 +417,24 @@ public class CInventory extends L1Object {
 		} else {
 			item.setBless(item.getBless());
 		}
-		insertLinkedItem(item);
+        if (item.isStackable()) {
+            final L1ItemInstance target = findMergeItem(item);
+            if (target != null) {
+                changeStackCount(target, item.getCount());
+                return target;
+            }
+        }
+        if (localNew) {
+            item.setId(IdFactory.getInstance().nextId());
+            final L1World world = L1World.getInstance();
+            try {
+                world.storeObject(item);
+                insertLinkedItem(item);
+            } catch (RuntimeException failure) {
+                if (!_items.Have(item)) world.removeObject(item);
+                throw failure;
+            }
+        } else insertLinkedItem(item);
 		return item;
 	}
 
@@ -587,32 +604,18 @@ public class CInventory extends L1Object {
 	public synchronized L1ItemInstance storeTradeItem(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (item == null || item.getCount() <= 0) return null;
+		if (item == null || item.getCount() <= 0 || item.getCount() > MAX_AMOUNT
+                || (!item.isStackable() && item.getCount() != 1)) return null;
         CItemList.requireDetached(item);
+        if (this instanceof CUserInventory && !Warehouse.chargeMergeItem(item.getItemId())
+                && (long) GetItemAmount(item.getItemId()) + item.getCount() > MAX_AMOUNT) return null;
 		if (item.isStackable()) {	
 			L1ItemInstance findItem = findMergeItem(item);
 			
 			int itemId = item.getItem().getItemId();
 			if (findItem != null) {
-				final int before = findItem.getCount();
-				if (!findItem.AddAmount(item.getCount())) return null;
-				boolean submitted = false;
-				try {
-					persistTransferCount(findItem);
-					submitted = true;
-					updateItem(findItem);
-				} catch (RuntimeException e) {
-					findItem.setCount(before);
-					if (submitted) {
-						try {
-							persistTransferCount(findItem);
-						} catch (RuntimeException recovery) {
-							e.addSuppressed(recovery);
-						}
-					}
-					throw e;
-				}
-				addItemCountCache(itemId, item.getCount());
+                if (!findItem.IsAddableAmount(item.getCount())) return null;
+                changeStackCount(findItem, item.getCount());
 				findItem.setGiveItem(item.isGiveItem());
 				return findItem;
 			}
@@ -631,26 +634,10 @@ public class CInventory extends L1Object {
 		case 810007:
 
 			if (findItem != null) {
-				int chargeCount = item.getChargeCount();
-				final int before = findItem.getChargeCount();
-				if (chargeCount < 0 || before < 0 || (long) before + chargeCount > Integer.MAX_VALUE) return null;
-				findItem.setChargeCount(before + chargeCount);
-				boolean submitted = false;
-				try {
-					persistTransferCharge(findItem);
-					submitted = true;
-					updateItem(findItem);
-				} catch (RuntimeException e) {
-					findItem.setChargeCount(before);
-					if (submitted) {
-						try {
-							persistTransferCharge(findItem);
-						} catch (RuntimeException recovery) {
-							e.addSuppressed(recovery);
-						}
-					}
-					throw e;
-				}
+                final int chargeCount = item.getChargeCount();
+                if (chargeCount < 0 || findItem.getChargeCount() < 0
+                        || (long) findItem.getChargeCount() + chargeCount > Integer.MAX_VALUE) return null;
+                addStackCharge(findItem, chargeCount);
 				return findItem;
 			}
 			break;
@@ -1555,6 +1542,8 @@ public class CInventory extends L1Object {
                 && L1World.getInstance().findGroundInventory(inventory.getX(), inventory.getY(),
                         inventory.getMapId()) != inventory) return null;
         if (inventory instanceof CUserInventory) {
+            if (item.isStackable() && inventory.getSize() >= CUserInventory.MAX_SIZE
+                    && inventory.findMergeItem(item) == null) return null;
             final boolean chargeMerge = !item.isStackable() && Warehouse.chargeMergeItem(item.getItemId())
                     && inventory.GetFirstItemByClassID(item.getItemId()) != null;
             if ((long) inventory.GetItemAmount(item.getItemId()) + (chargeMerge ? 0 : count) > MAX_AMOUNT)
@@ -1710,6 +1699,8 @@ public class CInventory extends L1Object {
 		return null;
 	}
 	private L1ItemInstance findMergeItem(L1ItemInstance incoming) {
+        if (incoming.isStackable() && !CacheD.isWarehouseApplying())
+            return _items.GetMergeableStack(incoming, this instanceof L1GroundInventory);
         if (!(this instanceof L1GroundInventory)) return GetFirstItemByClassID(incoming.getItemId());
         for (L1ItemInstance candidate : _items) {
             if (candidate.getItemId() == incoming.getItemId() && candidate.SameGroundLootRights(incoming)) return candidate;
