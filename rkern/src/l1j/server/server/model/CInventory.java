@@ -213,7 +213,7 @@ public class CInventory extends L1Object {
 		}
 
 		L1ItemInstance itemExist = findMergeItem(item);
-		if (itemExist != null && ((long) itemExist.getCount() + count) > MAX_AMOUNT) {
+		if (itemExist != null && !itemExist.IsAddableAmount(count)) {
 			return AMOUNT_OVER;
 		}
 
@@ -302,7 +302,7 @@ public class CInventory extends L1Object {
     private void changeStackCount(L1ItemInstance item, int change) {
         final int before = item.getCount();
         final long after = (long) before + change;
-        if (after <= 0 || after > MAX_AMOUNT) throw new IllegalArgumentException("Invalid item count");
+        if (after <= 0 || !item.IsAddableAmount(change)) throw new IllegalArgumentException("Invalid item count");
         if (change > 0) addItemCountCache(item.getItemId(), change);
         else removeItemCountCache(item.getItemId(), -change);
         try {
@@ -786,8 +786,7 @@ public class CInventory extends L1Object {
 			int itemId = item.getItem().getItemId();
 			if (findItem != null) {
 				final int before = findItem.getCount();
-				if (before < 0 || (long) before + item.getCount() > MAX_AMOUNT) return null;
-				findItem.setCount(before + item.getCount());
+				if (!findItem.AddAmount(item.getCount())) return null;
 				boolean submitted = false;
 				try {
 					persistTransferCount(findItem);
@@ -1495,7 +1494,7 @@ public class CInventory extends L1Object {
         final int sourceCount = item.getCount();
         final L1ItemInstance destStack = item.isStackable() ? dest.findItemId(item.getItemId()) : null;
         final int destCount = destStack == null ? 0 : destStack.getCount();
-        if (destStack != null && (long) destCount + count > MAX_AMOUNT) return null;
+        if (destStack != null && !destStack.IsAddableAmount(count)) return null;
 
         final CacheD.WarehouseMove reserved;
         try { reserved = CacheD.beginWarehouseMove(pc.getId(), dest.transferOrderKey()); }
@@ -2255,7 +2254,7 @@ public class CInventory extends L1Object {
 			return WEIGHT_OVER;
 
 		L1ItemInstance itemExist = findItemId(item.getItemId());
-		if (itemExist != null && (itemExist.getCount() < 0 || (long) itemExist.getCount() + count > MAX_AMOUNT))
+		if (itemExist != null && !itemExist.IsAddableAmount(count))
 			return AMOUNT_OVER;
 		
 		return OK;
