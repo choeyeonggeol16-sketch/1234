@@ -1,0 +1,42 @@
+name: NC network CIOSocket ownership regression
+on:
+  push:
+    branches: ['rkern/nc-network-responsibility-20261125']
+    paths:
+      - '.github/workflows/nc-network-ciosocket-phase3.yml'
+      - 'rkern/src/l1j/server/server/model/network/core/connection/CIOSocket.java'
+      - 'rkern/src/l1j/server/server/model/network/core/connection/CUserSocket.java'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compile all Java 21 source and execute existing TCP regressions
+        working-directory: rkern
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 - <<'PY'
+          import importlib.util, os, subprocess
+          from pathlib import Path
+          fixture=Path("docs/jproring_cio_integration_20261120").resolve()
+          spec=importlib.util.spec_from_file_location("benchmark",fixture/"run_game_ab.py")
+          mod=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+          tmp=Path(os.environ["RUNNER_TEMP"])
+          classes=tmp/"nc-network-classes"
+          classes.mkdir()
+          cp=mod.classpath(classes,tmp/"nc-network-deps")
+          mod.compile_java(cp, classes, False)
+          tests=[fixture/"SelectorCioIntegrationTest.java",fixture/"CIOBufferPoolAffinityTest.java",
+                 fixture.parent/"jproring_p1_selector_20261120"/"SelectorFrameReaderTest.java"]
+          subprocess.run(["javac","--release","21","--enable-preview","-encoding","UTF-8","-cp",cp,"-d",str(classes),*map(str,tests)],check=True)
+          runtime=tmp/"nc-network-runtime"
+          runtime.mkdir()
+          for name in ["SelectorFrameReaderTest","SelectorTransportTest","l1j.server.server.model.network.core.connection.CIOBufferPoolAffinityTest","SelectorCioIntegrationTest"]:
+              subprocess.run(["java","--enable-preview","-XX:MaxDirectMemorySize=64m","-cp",cp,name],cwd=runtime,check=True)
+          PY

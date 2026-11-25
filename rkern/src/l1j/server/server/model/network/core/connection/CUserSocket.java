@@ -6,11 +6,9 @@ import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.Connection;
-import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.OwnerCommand;
 import l1j.server.server.model.network.core.broadcast.CSharedPacketFormat;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.net.InetSocketAddress;
 import java.nio.ByteOrder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,7 +17,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.utill.CConnectionState;
-import java.util.concurrent.locks.ReentrantLock;
 import l1j.server.server.model.network.buffer.CPacketReadBuffer;
 import l1j.server.server.model.network.codec.SocketSecureKey;
 import l1j.server.server.model.network.safe.CPacketFilter;
@@ -56,7 +53,7 @@ import l1j.server.server.model.network.core.session.DominationHybrid;
  * execution rule. READ framing retains its independent direct callback path;
  * game state remains subject to the session and creature ownership rules.
  */
-public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawEndpoint {
+public final class CUserSocket extends CIOSocket {
     private static final boolean[] SESSION_OPCODE = new boolean[256];
     static {
         SESSION_OPCODE[Opcodes.C_LOGIN & 0xFF] = true;
@@ -108,9 +105,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         default void onCleanupComplete(CUserSocket connection) {}
     }
 
-    private final Connection peer;
     private final CIOServer registry;
-    private final long id;
     // Transport identity is guarded by the CIOServer registry monitor.
     int transportAccount;
     long transportMac;
@@ -118,24 +113,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     boolean cleanupIpReserved; // shared IP registry monitor
     private volatile long loginDeadlineNs;
 
-    private static final OwnerCommand READ_PUMP = new OwnerCommand() {
-        @Override public void run(Connection peer) { ((CUserSocket) peer.rawEndpoint()).runReadPump(); }
-        @Override public void cancel(Connection peer) { ((CUserSocket) peer.rawEndpoint()).cancelReadPump(); }
-    };
-    private static final OwnerCommand ARM_WRITE = new OwnerCommand() {
-        @Override public void run(Connection peer) { ((CUserSocket) peer.rawEndpoint()).armQueuedWrite(); }
-        @Override public void cancel(Connection peer) { ((CUserSocket) peer.rawEndpoint()).cancelQueuedWrite(); }
-    };
-    private static final int SINGLE_WRITE = 1;
-    private static final int GATHER_WRITE = 2;
-    // The serializer keeps the active SEND lease alive while this handoff is pending.
-    private volatile int queuedTransportWrite;
-
-    long transportId() { return id; }
-    InetSocketAddress transportAddress() { return peer.remoteAddress(); }
-
-    private final CIOBufferPool _pool;
-    private final ReentrantLock _stateLock = new ReentrantLock();
     private static final Logger LOG = Logger.getLogger(CUserSocket.class.getName());
     // Diagnostics only; no new per-connection atomics or per-SEND allocation.
     public static final int REJECT_WIRE_BYTES = 1;
@@ -231,9 +208,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         }
     }
     private final boolean _gameSession;
-    private final String _remoteAddress;
-    private final int _affinityShard;
-    private volatile int _closing;
     private volatile int _disconnecting;
     // Progress is measured by completed positive WRITE bytes, not admissions.
     // The native network wheel performs the periodic deadline check.
@@ -253,12 +227,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         deadlinesConfigured = true;
         if (!requestTransportDeadline(loginMs == 0 ? 5000 : Math.min(loginMs, 5000)))
             throw new IllegalStateException("Network deadline admission failed");
-    }
-
-    private boolean requestTransportDeadline(long delayMs) {
-        if (!isOpen() || delayMs < 0 || delayMs > Integer.MAX_VALUE) return false;
-        if (peer.isOwnerThread()) return peer.scheduleRawDeadline(delayMs);
-        return peer.submit(connection -> connection.scheduleRawDeadline(delayMs), false);
     }
 
     @Override public void onRawDeadline() {
@@ -375,7 +343,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     private final int _maxQueuedFrames;
     // Volatile primitives avoid five standalone Atomic* objects per connection.
     // VarHandles preserve CAS/getAndAdd semantics when completion threads race.
-    private volatile int _closed;
     private volatile int _closeNotified;
 
     private static final int SOCKET_SLOTS = 512;
@@ -403,7 +370,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     private volatile Thread _socketOwner;
     // Owner-only scope: a single complete READ frame can reuse the otherwise
     // idle socket serializer. No additional ring slot or worker is allocated.
-    private boolean _readSocketOwnerActive;
     // Java NIO.2 may complete synchronously inside the write() invocation.
     // Such a callback must not retire its pooled ByteBuffer until write() returns.
     private volatile boolean _socketPosting;
@@ -425,7 +391,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     private static final int WRITE_FAILED = 2;
     private static final int GATHER_DONE = 3;
     private static final int GATHER_FAILED = 4;
-    private volatile int _readKick;
     // Defer automatic SEND burst flushing until the current READ
     // buffer pass ends, but only if that buffer holds multiple complete frames.
     // Forced flushSendBurst(), close and READ-pressure boundaries stay intact.
@@ -440,30 +405,23 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     // READ completion is consumed only by the existing per-socket READ pump.
     // 0=empty, 1=failure, >=2=successful completion (transferred bytes + 2).
     // This keeps _readPending and zero-completion handling off foreign I/O threads.
-    private volatile int _readEvent;
-    private static final VarHandle CLOSED, CLOSE_NOTIFIED, LIFECYCLE, TRANSPORT_WRITE, READ_KICK, READ_ACTIVE,
-            WRITE_EVENT, READ_EVENT, SOCKET_TICKET, SOCKET_PENDING, SOCKET_DRAINING,
+    private static final VarHandle CLOSE_NOTIFIED, LIFECYCLE,
+            WRITE_EVENT, SOCKET_TICKET, SOCKET_PENDING, SOCKET_DRAINING,
             SOCKET_START_PENDING,
-            DISCONNECTING, CLOSING, ON_DRAINED, PARTIAL_READ_STARTED;
+            DISCONNECTING, ON_DRAINED, PARTIAL_READ_STARTED;
     private static final VarHandle SOCKET_CALLBACK_SLOT = MethodHandles.arrayElementVarHandle(byte[].class);
     private static final VarHandle SOCKET_ARGUMENT_SLOT = MethodHandles.arrayElementVarHandle(long[].class);
     static {
         try {
             final MethodHandles.Lookup lookup = MethodHandles.lookup();
-            CLOSED = lookup.findVarHandle(CUserSocket.class, "_closed", int.class);
             CLOSE_NOTIFIED = lookup.findVarHandle(CUserSocket.class, "_closeNotified", int.class);
             LIFECYCLE = lookup.findVarHandle(CUserSocket.class, "socketLifecycle", int.class);
-            TRANSPORT_WRITE = lookup.findVarHandle(CUserSocket.class, "queuedTransportWrite", int.class);
             SOCKET_TICKET = lookup.findVarHandle(CUserSocket.class, "_socketTicket", long.class);
             SOCKET_PENDING = lookup.findVarHandle(CUserSocket.class, "_socketPending", int.class);
             SOCKET_DRAINING = lookup.findVarHandle(CUserSocket.class, "_socketDraining", int.class);
             SOCKET_START_PENDING = lookup.findVarHandle(CUserSocket.class, "_socketStartPending", int.class);
             WRITE_EVENT = lookup.findVarHandle(CUserSocket.class, "_writeEvent", long.class);
-            READ_KICK = lookup.findVarHandle(CUserSocket.class, "_readKick", int.class);
-            READ_EVENT = lookup.findVarHandle(CUserSocket.class, "_readEvent", int.class);
-            READ_ACTIVE = lookup.findVarHandle(CUserSocket.class, "_readActive", int.class);
             DISCONNECTING = lookup.findVarHandle(CUserSocket.class, "_disconnecting", int.class);
-            CLOSING = lookup.findVarHandle(CUserSocket.class, "_closing", int.class);
             ON_DRAINED = lookup.findVarHandle(CUserSocket.class, "_onDrained", Runnable.class);
             PARTIAL_READ_STARTED = lookup.findVarHandle(CUserSocket.class, "_partialReadStartedNs", long.class);
         } catch (ReflectiveOperationException e) {
@@ -681,7 +639,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     // wire sizes in admission and READ watermark decisions until commit/abort.
     private int _reservedWireBytes;
     private int _outstandingFrames;
-    private volatile boolean _sendReadPaused;
 
     /** Always invoked with this socket's state lock held. */
     private boolean canAdmitBytes(int count) {
@@ -759,7 +716,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     // Reserved producer slots for existing direct-frame serializers. A reservation
     // survives the serializer and is consumed atomically by commit or abort.
     private int _reservedDirect;
-    private volatile CIOBufferEx _writing;
     // State-lock-owned first Action lease: only while a P6-A SEND_ENQUEUE is
     // published but has not yet been accepted by its FIFO serializer callback.
     // Do not store a lease after commit: it may be recycled by the pool.
@@ -777,93 +733,19 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     // Medium S-packets share the same ordered wire batch when space permits.
     private static final int PACK_MAX_FRAME_BYTES = 2048;
     private CIOBufferEx[] _gatherFrames;
-    private ByteBuffer[] _gatherBuffers;
-    private int _gatherCount;
-    private int _gatherOffset;
     private int _zeroWriteCompletions;
-    private int _zeroReadCompletions;
 
     /* READ lease is released only after the last completion callback, never during a pending read. */
-    private volatile int _readActive;
-    private CIOBufferEx _reading;
-    private volatile boolean _readReleased;
-    private volatile boolean _readPending;
     // Only the READ pump touches this; preserves buffered frames if an ACK races pause.
-    private boolean _readYielded;
     private int _readOffset; // READ pump only, unconsumed prefix in the write-mode receive buffer
-    private boolean javaReadScheduled; // guarded by _stateLock
     // READ pump only. Do not add a ThreadLocal.get() to single-frame dispatch.
     private boolean _readPassBurstActive;
 
     // Native completion publishes into the existing READ pump, without a
     // JDK asynchronous channel or provider adapter.
-    private boolean isTransportReadPending() { return _readPending; }
-
-    private boolean isTransportWritePending() {
-        CIOBufferEx writing = _writing;
-        return writing != null && writing._ioPending;
-    }
-
-    @Override public void onRawRead(int bytes) { publishReadCompletion(bytes); }
-
-    private void publishReadCompletion(int bytes) {
-
-        final int event = bytes < 0 || bytes > CIOBufferPool.LARGE_BYTES
-                ? 1 : bytes + 2;
-        // A single READ is outstanding per socket. With an idle pump there
-        // cannot be a preceding unretired READ completion. Claim its existing
-        // ownership token and consume this event directly: no mailbox CAS,
-        // mailbox exchange, or second ownership atomic on the common path.
-        // If postRead() completed inline while the pump was active, use the
-        // old mailbox + kick path to trampoline without recursion.
-        if (READ_KICK.compareAndSet(this, 0, 1)) {
-            drainReadPump(1, event);
-            return;
-        }
-        if (!READ_EVENT.compareAndSet(this, 0, event)) {
-            // An already-published completion cannot be overwritten by a
-            // second callback; the first one must still release its READ lease.
-            close();
-            return;
-        }
-        kickRead();
-    }
-
     @Override public void onRawWrite(long bytes, boolean gather) {
         if (gather) publishWriteCompletion(GATHER_DONE, GATHER_FAILED, bytes);
         else publishWriteCompletion(WRITE_DONE, WRITE_FAILED, bytes);
-    }
-
-    private void submitTransportWrite(int kind) {
-        if (!isOpen()) {
-            onRawWrite(-1, kind == GATHER_WRITE);
-        } else if (peer.isOwnerThread()) {
-            armTransportWrite(kind);
-        } else {
-            if (!TRANSPORT_WRITE.compareAndSet(this, 0, kind))
-                throw new IllegalStateException("WRITE already queued");
-            if (!peer.submit(ARM_WRITE, false)) cancelQueuedWrite();
-        }
-    }
-
-    private void armQueuedWrite() {
-        int kind = (int) TRANSPORT_WRITE.getAndSet(this, 0);
-        if (kind != 0) armTransportWrite(kind);
-    }
-
-    private void cancelQueuedWrite() {
-        int kind = (int) TRANSPORT_WRITE.getAndSet(this, 0);
-        if (kind != 0) onRawWrite(-1, kind == GATHER_WRITE);
-    }
-
-    private void armTransportWrite(int kind) {
-        if (kind == GATHER_WRITE) {
-            if (!peer.writeRaw(_gatherBuffers, _gatherOffset, _gatherCount - _gatherOffset)) onRawWrite(-1, true);
-        } else {
-            ByteBuffer bytes = _writing.buffer();
-            if (!bytes.hasRemaining()) onRawWrite(0, false);
-            else if (!peer.writeRaw(bytes)) onRawWrite(-1, false);
-        }
     }
 
     /**
@@ -1078,17 +960,18 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
 
     CUserSocket(CIOServer registry, Connection peer, long id, CIOBufferPool pool,
             int maxQueuedFrames, Closed closedCallback, boolean gameSession) {
-        if (registry == null || peer == null || pool == null || maxQueuedFrames < 1)
-            throw new IllegalArgumentException("invalid game socket arguments");
-        this.peer = peer;
+        super(validateSocketArguments(registry, peer, pool, maxQueuedFrames), id, pool);
         this.registry = registry;
-        this.id = id;
-        _pool = pool;
-        _remoteAddress = peer.remoteAddress().getAddress().getHostAddress();
-        _affinityShard = peer.ownerIndex();
         _closedCallback = closedCallback;
         _maxQueuedFrames = maxQueuedFrames;
         _gameSession = gameSession;
+    }
+
+    private static Connection validateSocketArguments(CIOServer registry, Connection peer,
+            CIOBufferPool pool, int maxQueuedFrames) {
+        if (registry == null || peer == null || pool == null || maxQueuedFrames < 1)
+            throw new IllegalArgumentException("invalid game socket arguments");
+        return peer;
     }
 
     private static final int CLOSE_STARTED = 1, CLEANUP_COMPLETE = 2, SERVER_DRAIN_REPORTED = 4,
@@ -1141,9 +1024,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     }
 
     public CUserSocket client() { return _gameSession ? this : null; }
-
-    public String getRemoteAddress() { return _remoteAddress; }
-    public int affinityShard() { return _affinityShard; }
 
     public boolean isClientConnected() {
         return isOpen() && _closing == 0 && _disconnecting == 0;
@@ -1199,7 +1079,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         close();
         return false;
     }
-    public boolean isTransportOwnerThread() { return peer.isOwnerThread(); }
 
     public CAsyncSendConstBuffer.Source createConstBuffer(byte[] wire) {
         if (wire == null || wire.length < 3 || wire.length > 0xffff
@@ -2964,111 +2843,13 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         _pool.release(lease);
     }
 
-    /** Exactly one pending read per socket. */
-    public void startRead() {
-        try {
-            _stateLock.lock(); try {
-                if ((_closed != 0) || !READ_ACTIVE.compareAndSet(this, 0, 1)) return;
-                try {
-                    _reading = _pool.acquireRecv(_affinityShard);
-                } catch (RuntimeException | Error failure) {
-                    READ_ACTIVE.setVolatile(this, 0);
-                    close();
-                    throw failure;
-                }
-                if (_reading == null) {
-                    READ_ACTIVE.setVolatile(this, 0);
-                    close();
-                    return;
-                }
-            } finally { _stateLock.unlock(); }
-        } finally {
-            // close() may reenter under the state lock on pool failure.
-            if (_closed != 0) kickWrite();
-        }
-        kickRead();
-    }
-
-    /**
-     * Only one thread may touch the compacting READ ByteBuffer at a time.
-     * Synchronous completed() callbacks are trampolined without recursion.
-     * Cross-thread SEND acknowledgements may race with the NIO completion.
-     */
-    private void kickRead() {
-        if (!peer.isOwnerThread()) {
-            if (_closed == 0) scheduleJavaRead();
-            else {
-                finishReadIfClosed();
-                notifyClosedWhenReleased();
-            }
-            return;
-        }
-        if ((int) READ_KICK.getAndAdd(this, 1) != 0) return;
-        drainReadPump(1, 0);
-    }
-
-    /** Called with READ_KICK ownership; firstEvent is an unposted completion. */
-    private void drainReadPump(int missed, int firstEvent) {
-        do {
-            // The callback may be invoked inline, even before channel.read()
-            // returns. Only this pump retires an outstanding READ operation.
-            final int event;
-            if (firstEvent != 0) {
-                event = firstEvent;
-                firstEvent = 0;
-            } else {
-                event = (int) READ_EVENT.getAndSet(this, 0);
-            }
-            if (event != 0) {
-
-                _readPending = false;
-                if (event == 1 || _closed != 0) {
-                    close();
-                } else if (event == 2) {
-                    if (++_zeroReadCompletions >= 8) close();
-                } else {
-                    _zeroReadCompletions = 0;
-                }
-            }
-            if (_closed == 0 && _closing == 0 && !_readPending && !_sendReadPaused) {
-                try {
-                    // Only one short, fully buffered frame may borrow an idle
-                    // WRITE token. The READ pump still owns framing and read()
-                    // registration. Queued SEND reservations retain original FIFO.
-                    final boolean fused = tryOwnReadWritePass();
-                    boolean accepted;
-                    try {
-                        accepted = fused ? onReadSingleCompleteFrame() : OnRead();
-                    } finally {
-                        // Dispatch releases the borrowed SEND token before any
-                        // game handler executes. If decode/filtering exited before
-                        // dispatch, the READ pump must still release that token.
-                        if (fused && _readSocketOwnerActive)
-                            releaseFusedReadSendOwner();
-                    }
-                    if (!accepted) {
-                        close();
-                    } else if (_closed == 0 && !_sendReadPaused) {
-                        if (!_readYielded) postRead();
-                        else scheduleJavaRead();
-                    }
-                } catch (Throwable failure) {
-                    LOG.log(Level.SEVERE, "[CIO READ] dispatch failed remote=" + _remoteAddress, failure);
-                    close();
-                }
-            }
-            missed = ((int) READ_KICK.getAndAdd(this, -missed) - missed);
-        } while (missed != 0);
-        finishReadIfClosed();
-    }
-
     /**
      * Borrow the existing 512-slot serializer only for an uncontended,
      * complete small READ frame. A pending/unpublished producer reservation,
      * WRITE completion or SEND_START must execute in original FIFO order.
      * READ ownership remains with READ_KICK; this only joins the SEND pump.
      */
-    private boolean tryOwnReadWritePass() {
+    @Override final boolean tryOwnReadWritePass() {
         if (!READ_WRITE_OWNER_FUSION || _closed != 0 || _closing != 0
                 || _sendReadPaused || _readYielded || _reading == null || _readOffset != 0) return false;
         final ByteBuffer recv = _reading.buffer();
@@ -3099,39 +2880,12 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
 
 
 
-    private void postRead() {
-        if (_closed != 0 || _closing != 0) return;
-        final ByteBuffer recv = _reading.buffer();
-        if (!recv.hasRemaining()) {
-            close();
-            return;
-        }
-        // Set before the call: async I/O may invoke completed() synchronously.
-        _readPending = true;
-
-        try {
-            if (!peer.readRaw(recv)) onRawRead(-1);
-        } catch (Throwable t) {
-            _readPending = false;
-            close();
-        }
-    }
-
-    /** Release the READ lease on close only after the last completion. */
-    private void finishReadIfClosed() {
-        if ((_closed != 0) && !_readPending && _readKick == 0) {
-            _stateLock.lock(); try {
-                if (!_readPending && _readKick == 0) endRead();
-            } finally { _stateLock.unlock(); }
-        }
-    }
-
     /**
      * Called only after tryOwnReadWritePass() verified an entire, single small
      * frame and claimed the socket serializer. The ordinary decoder keeps all
      * partial/multi-frame, contention, close and backpressure cases.
      */
-    private boolean onReadSingleCompleteFrame() {
+    @Override final boolean onReadSingleCompleteFrame() {
         _readYielded = false;
         // CLOSE or a foreign SEND producer may change pressure after the
         // READ owner claim. Let the established loop handle those races.
@@ -3170,29 +2924,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         if (_partialReadStartedNs == 0L) _partialReadStartedNs = System.nanoTime();
     }
 
-    private void scheduleJavaRead() {
-        _stateLock.lock();
-        try {
-            if (_closed != 0 || javaReadScheduled) return;
-            javaReadScheduled = true;
-        } finally { _stateLock.unlock(); }
-        if (!peer.submit(READ_PUMP, true)) cancelReadPump();
-    }
-
-    private void clearJavaReadSchedule() {
-        _stateLock.lock();
-        try { javaReadScheduled = false; }
-        finally { _stateLock.unlock(); }
-    }
-
-    private void runReadPump() {
-        clearJavaReadSchedule();
-        kickRead();
-    }
-    private void cancelReadPump() {
-        clearJavaReadSchedule();
-        close();
-    }
     private boolean dispatchPlaintext(CPacketReadBuffer decoded) {
         final int opcode = decoded.readUnsignedByte();
         if (this.checkPacketRateLimit(System.currentTimeMillis())) return false;
@@ -3212,7 +2943,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         return inboundHandlerConnected();
     }
 
-    private boolean OnRead() {
+    @Override final boolean OnRead() {
         _readYielded = false;
         ByteBuffer recv = _reading.buffer();
         final int filled = recv.position() - _readOffset;
@@ -3330,37 +3061,6 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         }
     }
 
-    private void endRead() {
-        if (!READ_ACTIVE.compareAndSet(this, 1, 0)) return;
-        releaseReadWhenIdle();
-        notifyClosedWhenReleased();
-    }
-
-    private void releaseReadWhenIdle() {
-        Throwable releaseFailure = null;
-        _stateLock.lock();
-        try {
-            if (_readReleased || _readActive != 0) return;
-            final CIOBufferEx recv = _reading;
-            _reading = null;
-            try { if (recv != null) _pool.release(recv); }
-            catch (Throwable failure) { releaseFailure = failure; }
-            // CIOBufferEx.release() retires its owned slot even if a Native
-            // cleanup throws. Keeping _readReleased=false after clearing
-            // _reading would permanently block close-complete notification.
-            _readReleased = true;
-        } finally {
-            _stateLock.unlock();
-        }
-        if (releaseFailure != null) {
-            try { LOG.log(Level.WARNING,
-                    "[CIO READ] lease release failed remote=" + _remoteAddress,
-                    releaseFailure); }
-            catch (Throwable ignored) { /* must still close */ }
-            if (_closed == 0) close();
-        }
-    }
-
     private boolean onReadFrame(ByteBuffer wire, int bodyStart, int bodyLength) {
         if (_closing != 0) return _closed == 0 && _disconnecting == 0;
         if (!this.isConnected()) return false;
@@ -3417,7 +3117,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
      * Release using the existing drain/reacquire handshake BEFORE the handler;
      * the READ pump still owns its READ buffer and next-read registration.
      */
-    private void releaseFusedReadSendOwner() {
+    @Override final void releaseFusedReadSendOwner() {
         if (!_readSocketOwnerActive) return;
         if (_socketOwner != Thread.currentThread()
                 || (int) SOCKET_DRAINING.getVolatile(this) == 0)
@@ -3670,7 +3370,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     }
 
     /** SEND registration and next-WRITE selection, executed by the serializer. */
-    private void kickWrite() {
+    @Override final void kickWrite() {
         if (!COALESCE_SEND_START) {
             if (!serializeSocketCallback(SOCKET_SEND_START, 0L)) close();
             return;
@@ -3972,16 +3672,12 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         finally { _stateLock.unlock(); }
     }
 
-    public boolean isOpen() {
-        return _closed == 0 && peer.isOpen();
-    }
-
     /** Transport close callback is emitted after every in-flight I/O lease is released. */
     public boolean isCloseComplete() {
         return (_closeNotified != 0);
     }
 
-    private void notifyClosedWhenReleased() {
+    @Override final void notifyClosedWhenReleased() {
         if (_closed == 0 || (socketLifecycle & IO_DRAINED) == 0 || !_readReleased
                 || _socketDraining != 0 || _socketPending != 0
                 || _writeEvent != 0L) return;
