@@ -39,7 +39,7 @@ final class NpcExchangeCommands {
                 || !pc.getInventory().HaveUnequippedItemByClassIdEnchanted(GOLEM_RIGHT[i], 7, 1)
                 || !has(pc, 41246, 30000)) return "joegolem15";
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, 200201)) {
-            if (!debitEnchantWeapon(tx, pc, GOLEM_LEFT[i]) || !debitEnchantWeapon(tx, pc, GOLEM_RIGHT[i])
+            if (!debitEnchant(tx, pc, GOLEM_LEFT[i], 7) || !debitEnchant(tx, pc, GOLEM_RIGHT[i], 7)
                     || !debitLegacy(tx, pc, 41246, i == 0 ? 3000 : 30000)
                     || tx.grant(GOLEM_REWARD[i], 1) == null) return "joegolem15";
             tx.onFailure(() -> SC_NPCTalkReturn.send(pc, npcObjectId, "joegolem15"));
@@ -401,7 +401,7 @@ final class NpcExchangeCommands {
         L1Item def = CObjectDB.LoadItem().getTemplate(template);
         if (def == null || count <= 0) return false;
         if (def.isStackable() || count == 1) return debitLegacy(tx, pc, template, count);
-        L1ItemInstance[] items = pc.getInventory().GetItemListByClassID(template);
+        L1ItemInstance[] items = pc.getInventory().GetUnequippedItemListByClassID(template);
         if (items.length < count) return false;
         if (items.length > count) java.util.Arrays.sort(items, ENCHANT_ORDER);
         for (int i = 0; i < count; i++) if (!tx.debit(items[i], 1)) return false;
@@ -416,15 +416,6 @@ final class NpcExchangeCommands {
 
     private static boolean has(L1PcInstance pc, int itemId, int count) {
         return CObjectDB.LoadItem().getTemplate(itemId) != null && pc.getInventory().HaveItemByClassId(itemId, count);
-    }
-
-    /** Original consumeEnchantItem removes the whole first matching object. */
-    private static boolean debitEnchantWeapon(L1InventoryTransaction tx, L1PcInstance pc, int template) {
-        for (L1ItemInstance item : pc.getInventory().getItems()) {
-            if (item != null && !item.isEquipped() && item.getItemId() == template && item.getEnchantLevel() == 7)
-                return tx.debit(item, item.getCount());
-        }
-        return false;
     }
 
     /** Preserve legacy first stack / lowest-enchant single-item selection without temporary arrays. */

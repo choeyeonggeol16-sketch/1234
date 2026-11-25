@@ -662,77 +662,6 @@ public class CInventory extends L1Object {
 		return item;
 	}
 
-	public synchronized boolean 제작리스트1(int itemid, int count, int en) {
-        if (count <= 0) return false;
-        final L1Item template = CObjectDB.GetItem(itemid);
-        if (template == null) return false;
-        if (template.isStackable()) {
-            final L1ItemInstance item = GetFirstItemByClassID(itemid);
-            return item != null && item.getCount() >= count && item.getEnchantLevel() == en
-                    && DeleteItemAmount(item, count) == count;
-        }
-        return consumeExactEnchantInstances(itemid, en, count, false, 0, 0, 0);
-	}
-	public L1ItemInstance[] GetItemListByClassIDEnchanted(int id, int enchant) {
-		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
-		for (L1ItemInstance item : _items) {
-			if (item.getItemId() == id && item.getEnchantLevel() == enchant) {
-				itemList.add(item);
-			}
-		}
-		return itemList.toArray(new L1ItemInstance[] {});
-	}
-	
-	public synchronized boolean 제작리스트3(int itemid, int count, int en, int bless, int descid, int attr, int attr_en) {
-        final L1ItemInstance item = GetFirstItemByDescID(itemid);
-        if (item == null || count <= 0) return false;
-        if (attr == 2) attr_en += 5;
-        else if (attr == 3) attr_en += 10;
-        else if (attr == 4) attr_en += 15;
-        if (item.isStackable())
-            return item.getCount() >= count && item.getEnchantLevel() == en
-                    && item.getBless() == bless && item.getItem().getItemDescId() == descid
-                    && item.getAttrEnchantLevel() == attr_en && DeleteItemAmount(item, count) == count;
-        return consumeExactEnchantInstances(item.getItemId(), en, count, true, bless, descid, attr_en);
-	}
-
-	/** Exact enchant matches retain membership order: a stable sort by the
-	 * same enchant level cannot change the order of eligible rows. */
-	private boolean consumeExactEnchantInstances(int itemId, int enchant, int count,
-			boolean extra, int bless, int descId, int attrEnchant) {
-		if (count <= 0) return false;
-		final List<L1ItemInstance> rows = _items.snapshot();
-		int available = 0;
-		for (int i = 0, n = rows.size(); i < n; i++) {
-			if (matchesExactEnchant(rows.get(i), itemId, enchant, extra, bless, descId, attrEnchant)
-					&& ++available == count) break;
-		}
-		if (available < count) return false;
-		for (int i = 0, n = rows.size(); i < n; i++) {
-			final L1ItemInstance item = rows.get(i);
-			if (!matchesExactEnchant(item, itemId, enchant, extra, bless, descId, attrEnchant)) continue;
-			if (DeleteItemAmount(item, 1) != 1) return false;
-			if (--count == 0) return true;
-		}
-		return false;
-	}
-
-	private static boolean matchesExactEnchant(L1ItemInstance item, int itemId, int enchant,
-			boolean extra, int bless, int descId, int attrEnchant) {
-		return item.getItemId() == itemId && item.getEnchantLevel() == enchant
-				&& (!extra || (item.getBless() == bless && item.getItem().getItemDescId() == descId
-				&& item.getAttrEnchantLevel() == attrEnchant));
-	}
-
-	public synchronized boolean DeleteItemByDescIDEnchanted(int descId, int enchant, int count) {
-        if (count <= 0) return false;
-        final L1ItemInstance item = GetFirstItemByDescID(descId);
-        if (item == null) return false;
-        if (item.isStackable())
-            return item.getCount() >= count && DeleteItemAmount(item, count) == count;
-        final L1ItemInstance[] items = GetItemListByClassIDEnchanted(item.getItemId(), enchant);
-        return DeleteSelectedItems(items, count, false, false, 0);
-	}
 	public synchronized boolean DeleteItemInInventory(int itemid, int count) {
         if (count <= 0) return false;
         final L1Item template = CObjectDB.GetItem(itemid);
@@ -1846,87 +1775,35 @@ public class CInventory extends L1Object {
 		return false;
 	}
 
-	public boolean HaveUnequippedItemByClassIdEnchanted(int id, int enchant, int count) {
-		return HaveUnequippedItemByClassIdEnchantedInternal(id, enchant, count, false, 0);
-	}
-	
-	public boolean HaveUnequippedItemByClassIdEnchanted(int id, int enchant, int count,int descid) {
-		return HaveUnequippedItemByClassIdEnchantedInternal(id, enchant, count, true, descid);
-	}
+    /** NC CRecipeInfo::IsEnoughItem: count eligible, unequipped material amounts.
+     * XML and HTML recipes use quantities; the exact legacy equipment check
+     * counts one per nonstackable instance.
+     */
+    public long GetRecipeMaterialAmount(int classId) {
+        return GetRecipeMaterialAmount(classId, 0, false, false);
+    }
 
-	private boolean HaveUnequippedItemByClassIdEnchantedInternal(int id, int enchant, int count, boolean matchDescId, int descId) {
-		if (count <= 0) return false;
-		return hasEnchantAmount(_items.snapshot(), id, enchant, count, matchDescId, descId);
-	}
+    public long GetRecipeMaterialAmount(int classId, int enchant) {
+        return GetRecipeMaterialAmount(classId, enchant, true, false);
+    }
 
-	public boolean 제작리스트(int id, int enchant, int count) {
-		long num = 0;
-		for (L1ItemInstance item : _items) {
-			if (item.isEquipped()) {
-				continue;
-			}
-			if (item.getItemId() == id && item.getEnchantLevel() == enchant) {
-				num += item.getCount();
-				if (num >= count) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+    private long GetRecipeMaterialAmount(int classId, int enchant,
+            boolean matchEnchant, boolean countInstances) {
+        final List<L1ItemInstance> rows = _items.snapshot();
+        long total = 0L;
+        for (int i = 0, n = rows.size(); i < n; i++) {
+            final L1ItemInstance item = rows.get(i);
+            if (item == null || item.isEquipped() || item.getItemId() != classId
+                    || (matchEnchant && item.getEnchantLevel() != enchant)) continue;
+            final int count = item.getCount();
+            if (count > 0) total += countInstances && !item.isStackable() ? 1 : count;
+        }
+        return total;
+    }
 
-	public boolean consumeEnchantItem(int id, int enchant, int count) {
-		return consumeEnchantAmount(id, enchant, count, false, 0);
-	}
-
-	public boolean consumeEnchantItem(int id, int enchant, int count, int descid) {
-		return consumeEnchantAmount(id, enchant, count, true, descid);
-	}
-
-	/** Preflight the complete requested quantity before removing any row.
-	 * As with legacy consumeItem, persistence failures are handled by the
-	 * existing removal path; multi-row DB atomicity belongs to CacheD receipts.
-	 */
-	private synchronized boolean consumeEnchantAmount(int id, int enchant, int count,
-			boolean matchDescId, int descId) {
-		if (count <= 0) return false;
-		final List<L1ItemInstance> rows = _items.snapshot();
-		if (!hasEnchantAmount(rows, id, enchant, count, matchDescId, descId)) return false;
-		int remaining = count;
-		for (int i = 0, n = rows.size(); i < n; i++) {
-			final L1ItemInstance item = rows.get(i);
-			if (!matchesUnequippedEnchant(item, id, enchant, matchDescId, descId)) continue;
-			final int quantity = item.getCount();
-			if (quantity <= 0) continue;
-			final int take = Math.min(remaining, item.isStackable() ? quantity : 1);
-			if (DeleteItemAmount(item, take) != take) return false;
-			remaining -= take;
-			if (remaining == 0) return true;
-		}
-		return false;
-	}
-
-	private static boolean hasEnchantAmount(List<L1ItemInstance> rows, int id, int enchant, int count,
-			boolean matchDescId, int descId) {
-		if (count <= 0) return false;
-		for (int i = 0, n = rows.size(); i < n; i++) {
-			final L1ItemInstance item = rows.get(i);
-			if (!matchesUnequippedEnchant(item, id, enchant, matchDescId, descId)) continue;
-			final int quantity = item.getCount();
-			if (quantity <= 0) continue;
-			count -= Math.min(count, item.isStackable() ? quantity : 1);
-			if (count == 0) return true;
-		}
-		return false;
-	}
-
-	private static boolean matchesUnequippedEnchant(L1ItemInstance item, int id, int enchant,
-			boolean matchDescId, int descId) {
-		return !item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant
-				&& (!matchDescId || item.getItem().getItemDescId() == descId);
-	}
-
-	// ////////////////////////////////////
+    public boolean HaveUnequippedItemByClassIdEnchanted(int id, int enchant, int count) {
+        return count > 0 && GetRecipeMaterialAmount(id, enchant, true, true) >= count;
+    }
 
 	public boolean HaveUnequippedItemByClassId(int id, int count) {
 		if (count < 0) return false;

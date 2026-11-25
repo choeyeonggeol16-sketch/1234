@@ -108,26 +108,13 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
                 final long required = material.amount() * amount;
                 L1Item definition = templates.getTemplate(id);
                 if (definition == null) return false;
-                long available = 0;
-                for (L1ItemInstance item : inv.getItems()) {
-                    if (!item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant)
-                        available += item.getCount();
-                }
+                final long available = inv.GetRecipeMaterialAmount(id, enchant);
                 if (available < required) {
                     String materialName = rewardName(definition, enchant, 1);
                     SC_ServerMessage.send(pc, 337, materialName + "(" + (required - available) + ")");
                     return false;
                 }
-                int left = (int) required;
-                for (L1ItemInstance item : inv.getItems()) {
-                    if (left == 0) break;
-                    if (item.isEquipped() || item.getItemId() != id || item.getEnchantLevel() != enchant) continue;
-                    int take = Math.min(left, item.getCount());
-                    if (take <= 0) continue;
-                    if (!tx.debit(item, take)) return false;
-                    left -= take;
-                }
-                if (left != 0) return false;
+                if (!tx.DebitRecipeMaterial(id, enchant, (int) required)) return false;
             }
             // Preserve the existing conservative preflight; the receipt also
             // validates projected stack quantities, capacity and weight.
@@ -207,11 +194,7 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
             long required = material.amount();
             if (required <= 0 || required > CInventory.MAX_AMOUNT
                     || CObjectDB.GetItem(id) == null) return 0;
-            long available = 0;
-            for (L1ItemInstance item : inv.getItems()) {
-                if (!item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant)
-                    available += item.getCount();
-            }
+            final long available = inv.GetRecipeMaterialAmount(id, enchant);
             count = (int) Math.min(count, Math.min(available, CInventory.MAX_AMOUNT) / required);
         }
         for (L1ObjectAmount<Integer> reward : _items) {

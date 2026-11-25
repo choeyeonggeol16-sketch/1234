@@ -976,26 +976,6 @@ public class CUserInventory extends CInventory {
 		return penaltyItem;
 	}
 
-	public boolean checkEnchant(int id, int enchant) {
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getItemId() == id && item.getEnchantLevel() == enchant) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public boolean DeleteEnchant(int id, int enchant) {
-		for (L1ItemInstance item : _items) {
-			if (item.getItemId() == id && item.getEnchantLevel() == enchant) {
-				return DeleteItemAmount(item, 1) == 1;
-			}
-		}
-		return false;
-	}
-
 	public int getEnchantCount(int id) {// 인첸 레벨
 		int cnt = 0;
 		L1ItemInstance item = null;

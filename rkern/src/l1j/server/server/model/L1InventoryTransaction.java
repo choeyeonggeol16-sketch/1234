@@ -240,13 +240,24 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 || (template >= 41383 && template <= 41400);
     }
     public boolean debit(L1PcInstance pc,int templateId,int count) {
+        return debitMatchingMaterial(pc, templateId, 0, false, count);
+    }
+
+    /** Recipe material selection shares the prepared-row debit and owner gate. */
+    public boolean DebitRecipeMaterial(int templateId, int enchant, int count) {
+        return debitMatchingMaterial(primary, templateId, enchant, true, count);
+    }
+
+    private boolean debitMatchingMaterial(L1PcInstance pc, int templateId,
+            int enchant, boolean matchEnchant, int count) {
         open(); owns(pc);
         if (count <= 0 || requiresEntityDeletion(templateId)) return false;
         long available=0;
         L1ItemInstance first = null;
         int firstCount = 0;
         for (L1ItemInstance item : pc.getInventory().getItems()) {
-            if (item == null || item.isEquipped() || item.getItemId()!=templateId) continue;
+            if (item == null || item.isEquipped() || item.getItemId()!=templateId
+                    || (matchEnchant && item.getEnchantLevel() != enchant)) continue;
             Entry e=findEntry(item.getId());
             if (e != null && e.owner != pc) continue;
             int remaining = e == null ? item.getCount() : e.image.getCount();
@@ -261,11 +272,14 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         int left=count;
         for (L1ItemInstance item : pc.getInventory().getItems()) {
             if (left==0) break;
-            if (item == null || item.isEquipped() || item.getItemId()!=templateId) continue;
+            if (item == null || item.isEquipped() || item.getItemId()!=templateId
+                    || (matchEnchant && item.getEnchantLevel() != enchant)) continue;
             Entry e=findEntry(item.getId());
             if (e!=null && e.owner!=pc) continue;
-            int take=Math.min(left,e==null ? item.getCount() : e.image.getCount());
-            if (take>0 && !debit(pc,item,take)) throw new IllegalStateException("Prepared debit changed");
+            final int remaining = e == null ? item.getCount() : e.image.getCount();
+            if (remaining <= 0) continue;
+            final int take = Math.min(left, remaining);
+            if (!debit(pc,item,take)) throw new IllegalStateException("Prepared debit changed");
             left-=take;
         }
         return left==0;

@@ -49,7 +49,7 @@ final class NpcCraftCommands {
         for (int i = 0; i < materials.length; i++) {
             L1Item def = CObjectDB.LoadItem().getTemplate(materials[i]);
             if (def == null) { fail(pc, objid, failure, data); return; }
-            if (!pc.getInventory().HaveUnequippedItemByClassId(materials[i], counts[i])) {
+            if (pc.getInventory().GetRecipeMaterialAmount(materials[i]) < counts[i]) {
                 SC_ServerMessage.send(pc, 337, def.getName());
                 enough = false;
             }
