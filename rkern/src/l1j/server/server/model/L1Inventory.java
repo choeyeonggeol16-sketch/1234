@@ -1049,11 +1049,21 @@ public class L1Inventory extends L1Object {
 	}
 
 	public synchronized int removeItem(L1ItemInstance item, int count) {
+		return removeItemInternal(item, count, false, 0);
+	}
+	
+	public synchronized int removeItem(L1ItemInstance item, int count, int descid) {
+		return removeItemInternal(item, count, true, descid);
+	}
+
+	/** Single removal path; retain caller-held inventory monitor and persistence order. */
+	private int removeItemInternal(L1ItemInstance item, int count, boolean matchDescId, int descId) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		if (item == null || getItem(item.getId()) != item) {
 			return 0;
 		}
+		if (matchDescId && item.getItem().getItemDescId() != descId) return 0;
 		if (item.getCount() <= 0 || count <= 0) {
 			return 0;
 		}
@@ -1092,59 +1102,6 @@ public class L1Inventory extends L1Object {
 
 			// [디버그 로그]
 			//System.out.println(String.format("[아이템소모-일부] ID: %d, 소모수량: %d, 맵잔량: %d", itemId, count, _itemCountMap.getOrDefault(itemId, 0)));
-			
-			changeStackCount(item, -count);
-		}
-		return count;
-	}
-	
-	public synchronized int removeItem(L1ItemInstance item, int count, int descid) {
-        if (rejectPendingItemTransfer())
-            throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (item == null || getItem(item.getId()) != item) {
-			return 0;
-		}
-		if (item.getCount() <= 0 || count <= 0) {
-			return 0;
-		}
-		if (item.getItem().getItemDescId() != descid){
-			return 0;
-		}
-		if (item.getCount() < count) {
-			count = item.getCount();
-		}
-		if (item.getCount() == count) {
-			int itemId = item.getItem().getItemId();
-			if (itemId == 40314 || itemId == 40316) {
-                // PC pet record + collar row are one CacheD receipt.
-                if (!(this instanceof L1PcInventory))
-                    PetTable.getInstance().deletePet(item.getId());
-			} else if (itemId >= 49016 && itemId <= 49025) {
-                // PC inventory persistence deletes the letter and item in one receipt.
-                // Ground/other inventories have no character_items row to couple.
-                if (!(this instanceof L1PcInventory))
-                    LetterTable.getInstance().deleteLetter(item.getId());
-			} else if (itemId >= 41383 && itemId <= 41400) {
-				L1FurnitureInstance furniture = null;
-				for (L1Object l1object : L1World.getInstance().getObject()) {
-					if (l1object == null)
-						continue;
-					if (l1object instanceof L1FurnitureInstance) {
-						furniture = (L1FurnitureInstance) l1object;
-						if (furniture.getItemObjId() == item.getId()) {
-							FurnitureSpawnTable.getInstance().deleteFurniture(furniture);
-						}
-					}
-				}
-			}
-			deleteItem(item);
-			L1World.getInstance().removeObject(item);
-		} else {
-			
-			int itemId = item.getItemId();
-
-			// [디버그 로그]
-		//	System.out.println(String.format("[아이템소모-일부] ID: %d, 소모수량: %d, 맵잔량: %d", itemId, count, _itemCountMap.getOrDefault(itemId, 0)));
 			
 			changeStackCount(item, -count);
 		}
@@ -2143,33 +2100,20 @@ public class L1Inventory extends L1Object {
 	}
 
 	public boolean checkEnchantItem(int id, int enchant, int count) {
-		int num = 0;
-		for (L1ItemInstance item : _items) {
-			if (item.isEquipped()) {
-				continue;
-			}
-			if (item.getItemId() == id && item.getEnchantLevel() == enchant) {
-				num++;
-				if (num == count) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return checkEnchantItemInternal(id, enchant, count, false, 0);
 	}
 	
 	public boolean checkEnchantItem(int id, int enchant, int count,int descid) {
-		int num = 0;
-		for (L1ItemInstance item : _items) {
-			if (item.isEquipped()) {
-				continue;
-			}
-			if (item.getItemId() == id && item.getEnchantLevel() == enchant && item.getItem().getItemDescId() == descid) {
-				num++;
-				if (num == count) {
-					return true;
-				}
-			}
+		return checkEnchantItemInternal(id, enchant, count, true, descid);
+	}
+
+	private boolean checkEnchantItemInternal(int id, int enchant, int count, boolean matchDescId, int descId) {
+		if (count <= 0) return false;
+		final List<L1ItemInstance> rows = _items.snapshot();
+		for (int i = 0, n = rows.size(); i < n; i++) {
+			final L1ItemInstance item = rows.get(i);
+			if (!item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant
+					&& (!matchDescId || item.getItem().getItemDescId() == descId) && --count == 0) return true;
 		}
 		return false;
 	}
@@ -2219,10 +2163,8 @@ public class L1Inventory extends L1Object {
 	// ////////////////////////////////////
 
 	public boolean checkItemNotEquipped(int id, int count) {
-		if (count == 0) {
-			return true;
-		}
-		return count <= countItems(id);
+		if (count < 0) return false;
+		return count == 0 || count <= countItems(id);
 	}
 
 	public boolean checkItem(int[] ids) {

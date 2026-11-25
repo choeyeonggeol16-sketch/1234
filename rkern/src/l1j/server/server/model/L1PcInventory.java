@@ -747,6 +747,8 @@ public class L1PcInventory extends L1Inventory {
 	public synchronized void deleteItem(L1ItemInstance item) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
+        // Never submit a persistent deletion for another inventory's item.
+        if (item == null || !_items.contains(item)) return;
 		
 		try {
 			CharactersItemStorage.create().deleteItem(item);
@@ -1120,12 +1122,9 @@ public class L1PcInventory extends L1Inventory {
 	}
 
 	public boolean DeleteEnchant(int id, int enchant) {
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getItemId() == id && item.getEnchantLevel() == enchant) {
-				removeItem(item, 1);
-				return true;
+		for (L1ItemInstance item : _items) {
+			if (item.getItemId() == id && item.getEnchantLevel() == enchant) {
+				return removeItem(item, 1) == 1;
 			}
 		}
 		return false;
