@@ -7,6 +7,8 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DropItem;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.Warehouse.Warehouse;
+import l1j.server.server.storage.CacheD;
 
 public class L1GroundInventory extends CInventory {
 
@@ -109,6 +111,7 @@ public class L1GroundInventory extends CInventory {
 
     @Override
     public synchronized void Pop(L1ItemInstance item) {
+        if (item != null && item.isGroundPickupPending()) return;
         if (unlinkGroundItem(item)) finishGroundTransfer(item);
     }
 
@@ -140,19 +143,104 @@ public class L1GroundInventory extends CInventory {
         }
     }
 
-    @Override
-    public synchronized void clearItems() {
-        // Base clearItems only unregisters object IDs. Ground objects also own
-        // world visibility and their expiry timers.
-        for (L1ItemInstance item : getItems()) {
-            if (item == null) continue;
-            synchronized (item) {
+    /** Ordinary stackable direct pickups use the same durable owner receipt as
+     * other economy operations. Preserve special charge/entity and party paths. */
+    public static boolean supportsReceiptPickup(L1ItemInstance item) {
+        if (item == null || item.getItem() == null || !item.isStackable()) return false;
+        final int id = item.getItemId();
+        return !Warehouse.chargeMergeItem(id) && id != 40314 && id != 40316
+                && (id < 49016 || id > 49025) && (id < 41383 || id > 41400)
+                && id != 700024 && item.get_bless_level() == 0;
+    }
+
+    /** OFF RequestPickItem -> DB reply: reserve, prepare, commit, then publish. */
+    public synchronized boolean RequestPickItem(L1PcInstance owner, L1ItemInstance item,
+            int amount, Runnable afterCommitted) {
+        if (owner == null || !supportsReceiptPickup(item) || amount <= 0
+                || !_items.Have(item) || item.isGroundPickupPending()
+                || item.is_Not_PickUp_Item() || amount > item.getCount()
+                || L1World.getInstance().findGroundInventory(getX(), getY(), getMapId()) != this)
+            return false;
+        final L1World world = L1World.getInstance();
+        final int before = item.getCount();
+        final L1InventoryTransaction receipt;
+        try {
+            receipt = L1InventoryTransaction.begin(owner,
+                    CacheD.accountOrderKey("ground-pick:", owner.getId()));
+        } catch (IllegalStateException | java.util.concurrent.RejectedExecutionException busy) {
+            return false;
+        }
+        boolean submitted = false;
+        try (receipt) {
+            if (!item.reserveGroundPickup(receipt)) return false;
+            if (owner.getInventory().CheckAddableTransfer(item, amount) != OK) return false;
+            final L1ItemInstance image = amount == before ? item
+                    : Warehouse.allocateDetachedTransfer(item, amount);
+            if (receipt.grantCopy(owner, image, amount) == null) return false;
+
+            // Confirmed SQL rollback clears only the exact reservation. No
+            // world work, blocking or new persistence command on a DB worker.
+            receipt.onConfirmedRollback(() -> item.releaseGroundPickup(receipt));
+            receipt.beforeInventoryReplay(() -> PickItem(item, receipt, before, amount));
+            receipt.onTerminalFailure(() -> {
+                // A lost session cannot resurrect an already committed ground
+                // item. Complete its world removal on the existing CIO owner.
+                // An unresolved COMMIT keeps the token fenced, not pickable.
+                if (receipt.isDurablyCommitted() && item.hasGroundPickupReservation(receipt)) {
+                    CIOThreadCallback.getInstance().completeWorldMutation(world,
+                            () -> PickItem(item, receipt, before, amount),
+                            failure -> {
+                                if (failure != null) _log.log(java.util.logging.Level.SEVERE,
+                                        "Committed ground pickup replay failed: " + item.getId(), failure);
+                            });
+                }
+            });
+            receipt.commitAfterInventoryRelease(afterCommitted);
+            submitted = true;
+            return true;
+        } finally {
+            if (!submitted) item.releaseGroundPickup(receipt);
+        }
+    }
+
+    /** Commit reply, idempotent for the exact reservation even after owner logout. */
+    private synchronized void PickItem(L1ItemInstance item, L1InventoryTransaction receipt,
+            int before, int amount) {
+        if (!item.hasGroundPickupReservation(receipt)) return;
+        if (!receipt.isDurablyCommitted()) throw new IllegalStateException("Uncommitted pickup reply");
+        final L1World world = L1World.getInstance();
+        if (amount == before) {
+            // Retire the original ground identity before the full-count
+            // inventory image with that same ID is installed by the receipt.
+            if (_items.Have(item)) popForTransfer(item);
+            else {
                 item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
-                L1World.getInstance().removeVisibleObject(item);
+                world.removeVisibleObject(item);
+            }
+            world.removeObject(item);
+            finishGroundTransfer(item);
+        } else {
+            final int remaining = before - amount;
+            if (!_items.Have(item) || (item.getCount() != before && item.getCount() != remaining))
+                throw new IllegalStateException("Reserved ground pickup changed: " + item.getId());
+            item.setCount(remaining);
+            try { updateItem(item); }
+            catch (RuntimeException notice) {
+                _log.log(java.util.logging.Level.WARNING, "Committed ground remainder notice failed", notice);
             }
         }
-        super.clearItems();
-        L1World.getInstance().removeVisibleObject(this);
+        item.releaseGroundPickup(receipt);
+    }
+
+    @Override
+    public synchronized void clearItems() {
+        // A cleanup sweep cannot destroy a source reserved by a DB receipt.
+        // Keep its tile published until the exact committed/rollback reply.
+        for (L1ItemInstance item : getItems()) {
+            if (item == null || item.isGroundPickupPending()) continue;
+            if (unlinkGroundItem(item)) L1World.getInstance().removeObject(item);
+        }
+        finishGroundTransfer(null);
     }
 
     private static void debug(String event, L1ItemInstance item, String extra) {
