@@ -868,9 +868,6 @@ public class L1PcInstance extends L1Character {
 	
 	private int _weightReduction = 0;
 	private int _hasteItemEquipped = 0;
-	private int _damageReductionByArmor = 0;
-	private int _damageReductionIgnore = 0;
-	private int _DamageReduction = 0;
 	private int _DmgRate = 0; // 방어용 기구에 의한 근접무기 추타율
 	private int _HitRate = 0; // 방어용 기구에 의한 근접무기 명중율
 	private int _bowHitRate = 0; // 방어용 기구에 의한 활의 명중율
@@ -5807,45 +5804,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	public void setMonitor(boolean flag) {
 		_monitor = flag;
-	}
-
-	public int getDamageReductionByArmor() {
-		return _damageReductionByArmor + (short) (pumpedCarryArmorAndAccuracy >>> 16);
-	}
-
-	public void addDamageReductionByArmor(int i) {
-		_damageReductionByArmor += i;
-	}
-
-	public int getDamageReductionIgnore() {
-		return _damageReductionIgnore;
-	}
-
-	public void addDamageReductionIgnore(int i) {
-		_damageReductionIgnore += i;
-	}
-
-	private int _PVPMagicDamageReduction = 0;
-	private volatile int pumpedPvPMagicDamageReduction;
-
-	public void setPumpedPvPMagicDamageReduction(int value) {
-		if (pumpedPvPMagicDamageReduction != value) pumpedPvPMagicDamageReduction = value;
-	}
-
-	public int getPVPMagicDamageReduction() { // PVP마법대미지 감소
-		return _PVPMagicDamageReduction + pumpedPvPMagicDamageReduction;
-	}
-
-	public int addPVPMagicDamageReduction(int i) {
-		return _PVPMagicDamageReduction += i;
-	}
-
-	public int getDamageReduction() {
-		return _DamageReduction;
-	}
-
-	public void addDamageReduction(int i) {
-		_DamageReduction += i;
 	}
 
 	// Skill-derived bow hit/damage rates, separate from equipment and base values.

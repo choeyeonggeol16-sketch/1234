@@ -2012,6 +2012,48 @@ public class L1Character extends L1Object {
     public final int  GetHealDefence()        { return m_nHealDefence; }
 	// END direct resistance operations
 
+	private int m_nArmorDamageReduction;
+	private int m_nDamageReductionIgnore;
+	private int m_nDamageReduction;
+	public final int getDamageReductionByArmor() {
+		return m_nArmorDamageReduction + (short) (pumpedCarryArmorAndAccuracy >>> 16);
+	}
+
+	public final void addDamageReductionByArmor(int i) {
+		m_nArmorDamageReduction += i;
+	}
+
+	public final int getDamageReductionIgnore() {
+		return m_nDamageReductionIgnore;
+	}
+
+	public final void addDamageReductionIgnore(int i) {
+		m_nDamageReductionIgnore += i;
+	}
+
+	private int m_nPvpMagicDamageReduction;
+	private volatile int m_nSkillPvpMagicDamageReduction;
+
+	public final void setPumpedPvPMagicDamageReduction(int value) {
+		if (m_nSkillPvpMagicDamageReduction != value) m_nSkillPvpMagicDamageReduction = value;
+	}
+
+	public final int getPVPMagicDamageReduction() { // PVP마법대미지 감소
+		return m_nPvpMagicDamageReduction + m_nSkillPvpMagicDamageReduction;
+	}
+
+	public final int addPVPMagicDamageReduction(int i) {
+		return m_nPvpMagicDamageReduction += i;
+	}
+
+	public final int getDamageReduction() {
+		return m_nDamageReduction;
+	}
+
+	public final void addDamageReduction(int i) {
+		m_nDamageReduction += i;
+	}
+
 	// Direct defense operations.
 	public final int getAc() {
 		return m_nPDefend;
