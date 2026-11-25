@@ -15,12 +15,12 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.Account;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.utils.SQLUtil;
 
@@ -386,7 +386,7 @@ public static void broadcastGreen(String message) {
     private static int estimateFrameCapacity(int _constructorType, int _subCode, int _val1, int _val2, int _val3, int _val4, boolean _bool1, String _strVal1, String _strVal2, L1ItemInstance _item, L1PcInstance _pc, Object[] _objs, String[] _strs, List<BookmarkSlot> _bookmarks) {
         if ((_constructorType == 22 && _subCode == CLAN_WAREHOUSE_LIST)
                 || (_constructorType == 1 && _subCode == CALL_SOMETHING)) {
-            return CConnectionConfig.MAX_WIRE_PACKET_SIZE;
+            return CIOConfig.MAX_WIRE_PACKET_SIZE;
         }
         long size = (_constructorType == 7 ? 128L : 256L);
         if (_strVal1 != null) size += ((long) _strVal1.length() << 1) + 2;

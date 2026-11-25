@@ -8,7 +8,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.collection.CollectionSpell;
 import l1j.server.server.model.item.collection.loader.CollectionSpellLoader;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_InventoryIcon {

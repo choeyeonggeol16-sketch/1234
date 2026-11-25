@@ -10,8 +10,8 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
@@ -50,7 +50,7 @@ public final class SC_PremiumShopSellList {
         final byte[][] statuses = new byte[limit][];
         int count = 0;
         final int tailSize = premiumShopTailSize(npcId);
-        long capacity = CConnectionConfig.HEADER_SIZE + 7L;
+        long capacity = CIOConfig.HEADER_SIZE + 7L;
         for (int i = 0; i < limit; ++i) {
             final L1ShopItem shopItem = list.get(i);
             if (shopItem == null || shopItem.getItem() == null) continue;
@@ -77,7 +77,7 @@ public final class SC_PremiumShopSellList {
             if (status.length > 255 || count >= 65535) return false;
             final byte[] encodedName = name == null ? EMPTY : name.getBytes(MS949);
             capacity += 16L + encodedName.length + status.length;
-            if (capacity + tailSize > CConnectionConfig.MAX_WIRE_PACKET_SIZE) return false;
+            if (capacity + tailSize > CIOConfig.MAX_WIRE_PACKET_SIZE) return false;
             final int j = count << 2;
             values[j] = i;
             values[j + 1] = item.getGfxId();

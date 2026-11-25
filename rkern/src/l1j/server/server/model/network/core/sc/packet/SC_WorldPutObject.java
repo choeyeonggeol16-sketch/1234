@@ -20,9 +20,9 @@ import l1j.server.server.model.character.animation.loader.SpriteInformationLoade
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.world.instance.InstanceObject;
 import l1j.server.server.model.world.instance.InstanceSpace;
 import l1j.server.server.model.world.siege.War;
@@ -815,12 +815,12 @@ public final class SC_WorldPutObject {
         }
 
         final long reserveLong =
-                (long) CConnectionConfig.HEADER_SIZE
+                (long) CIOConfig.HEADER_SIZE
                         + 1L
                         + Short.BYTES
                         + body.length;
 
-        if (reserveLong > CConnectionConfig.MAX_WIRE_PACKET_SIZE) {
+        if (reserveLong > CIOConfig.MAX_WIRE_PACKET_SIZE) {
             return false;
         }
 
@@ -924,7 +924,7 @@ public final class SC_WorldPutObject {
         reserve += maxMs949Bytes(c);
         reserve += maxMs949Bytes(d);
 
-        if (reserve > CConnectionConfig.MAX_WIRE_PACKET_SIZE) {
+        if (reserve > CIOConfig.MAX_WIRE_PACKET_SIZE) {
             return -1;
         }
 
@@ -1621,7 +1621,7 @@ public final class SC_WorldPutObject {
             final CPacketWriteBuffer b=new CPacketWriteBuffer();
             b.armExternal(bytes,0,capacity);
             b.beginDirect();
-            b.position(CConnectionConfig.HEADER_SIZE);
+            b.position(CIOConfig.HEADER_SIZE);
             try {
                 writeHeader(b);
 
@@ -1771,7 +1771,7 @@ public final class SC_WorldPutObject {
             final CPacketWriteBuffer b=new CPacketWriteBuffer();
             b.armExternal(bytes,0,capacity);
             b.beginDirect();
-            b.position(CConnectionConfig.HEADER_SIZE);
+            b.position(CIOConfig.HEADER_SIZE);
             try {
                 writeHeader(b);
 
@@ -1887,7 +1887,7 @@ public final class SC_WorldPutObject {
             final CPacketWriteBuffer b=new CPacketWriteBuffer();
             b.armExternal(bytes,0,capacity);
             b.beginDirect();
-            b.position(CConnectionConfig.HEADER_SIZE);
+            b.position(CIOConfig.HEADER_SIZE);
             try {
                 writeHeader(b);
 

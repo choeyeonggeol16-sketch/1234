@@ -6,11 +6,11 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.Account;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
 import java.util.List;
 
@@ -275,8 +275,8 @@ public final class SC_Board {
 		final CUserSocket conn = client;
 		if (conn == null || !conn.isClientConnected()) return false;
 		final long capacity = frameLength();
-		if (capacity <= CConnectionConfig.HEADER_SIZE
-				|| capacity > CConnectionConfig.MAX_WIRE_PACKET_SIZE) return false;
+		if (capacity <= CIOConfig.HEADER_SIZE
+				|| capacity > CIOConfig.MAX_WIRE_PACKET_SIZE) return false;
 		final CIOFrame frame = conn.beginDirectFrame((int) capacity);
 		if (frame == null) return false;
 		boolean committed = false;
@@ -300,12 +300,12 @@ public final class SC_Board {
 			length = 1 + 1 + 4 + 4 + 1 + (_number == 0 ? 3 : 0);
 			for (BoardPostNode p : _posts)
 				length += 4 + bytesOf(p.name) + bytesOf(p.date) + bytesOf(p.title);
-			return CConnectionConfig.HEADER_SIZE + length;
+			return CIOConfig.HEADER_SIZE + length;
 		case 2:
 			length = 1 + 4 + bytesOf("maeno4") + 1 + 2;
 			for (BugRaceNode n : _bugRaceNodes)
 				length += bytesOf(n.name) + bytesOf(n.condition) + bytesOf(n.winRate);
-			return CConnectionConfig.HEADER_SIZE + length;
+			return CIOConfig.HEADER_SIZE + length;
 		case 3: {
 			String[] titles = {
 				"--------- 전      사", "--------- 군      주", "--------- 기      사",
@@ -314,18 +314,18 @@ public final class SC_Board {
 			};
 			length = 1 + 1 + 4 + 4 + 2 + 2;
 			for (String title : titles) length += 4 + bytesOf("") + bytesOf("") + bytesOf(title);
-			return CConnectionConfig.HEADER_SIZE + length;
+			return CIOConfig.HEADER_SIZE + length;
 		}
 		case 4:
 			length = 1 + 1 + 4 + 4 + 2 + 2;
 			length += 4 + bytesOf("정보 조회") + bytesOf("") + bytesOf("무기 인챈트 랭킹");
 			length += 4 + bytesOf("정보 조회") + bytesOf("") + bytesOf("방어구 인챈트 랭킹");
-			return CConnectionConfig.HEADER_SIZE + length + 6L * (4 + 3);
+			return CIOConfig.HEADER_SIZE + length + 6L * (4 + 3);
 		case 5:
 			length = 1 + 1 + 4 + 4 + 2 + 2;
 			length += 4 + bytesOf("수표감시") + bytesOf("") + bytesOf("1. 인벤 수표 조회");
 			length += 4 + bytesOf("수표감시") + bytesOf("") + bytesOf("2. 창고 수표 조회");
-			return CConnectionConfig.HEADER_SIZE + length + 6L * (4 + 3);
+			return CIOConfig.HEADER_SIZE + length + 6L * (4 + 3);
 		default:
 			return 0;
 		}

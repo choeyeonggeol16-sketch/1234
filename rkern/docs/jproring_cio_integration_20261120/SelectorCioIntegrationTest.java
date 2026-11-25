@@ -37,7 +37,7 @@ import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 
@@ -323,7 +323,7 @@ public final class SelectorCioIntegrationTest {
 
     private static void verifyHandshakeAdmissionRollback() throws Exception {
         var address = new java.net.InetSocketAddress("127.0.0.1", 0);
-        var config = new CConnectionConfig(address);
+        var config = new CIOConfig(address);
         var scheduler = CIOThreadCallback.getInstance();
         int owners = scheduler.bindNetworkIngress(config);
         var pool = new CIOBufferPool(4, 1, 1, 1, owners);

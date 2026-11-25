@@ -1,5 +1,7 @@
 package l1j.server.server.model.network.core.connection;
 
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
@@ -21,7 +23,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import l1j.server.server.model.network.buffer.CPacketReadBuffer;
 import l1j.server.server.model.network.codec.SocketSecureKey;
 import l1j.server.server.model.network.safe.CPacketFilter;
-import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.packet.CPacketHandler;
 import l1j.server.server.model.network.packet.IPacketWriter;
@@ -247,7 +248,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
     private volatile boolean deadlinesConfigured;
 
     public void configureTransportDeadlines(boolean loginTimeout) {
-        final int loginMs = loginTimeout ? CIOConfig.LOGIN_TIMEOUT_MS : 0;
+        final int loginMs = loginTimeout ? CIOConfig.loginTimeoutMs() : 0;
         if (loginMs > 0) loginDeadlineNs = System.nanoTime() + loginMs * 1_000_000L;
         deadlinesConfigured = true;
         if (!requestTransportDeadline(loginMs == 0 ? 5000 : Math.min(loginMs, 5000)))
@@ -3237,7 +3238,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
         recv.flip().position(_readOffset);
         final boolean javaTransport = true;
         final int frameBudget = javaTransport
-                ? Math.max(1, CConnectionConfig.MAX_PACKETS_PER_COMPLETION) : Integer.MAX_VALUE;
+                ? Math.max(1, CIOConfig.MAX_PACKETS_PER_COMPLETION) : Integer.MAX_VALUE;
         int completed = 0;
         // The READ pump owns framing and posts the next read only after the
         // current handler returns; fairness yields at complete frame boundaries.
@@ -3366,7 +3367,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
 
         // Preserve the empty-packet flood handling (wire length == 2).
         if (bodyLength == 0) {
-            if (this.incrementEmptyPacketCount() <= CConnectionConfig.PACKET_LIMIT_PER_SEC) {
+            if (this.incrementEmptyPacketCount() <= CIOConfig.PACKET_LIMIT_PER_SEC) {
                 return true;
             }
             this.disconnect();
@@ -4873,7 +4874,7 @@ public final class CUserSocket implements AutoCloseable, CSelectorTransport.RawE
 		}
 
 		_packetCount++;
-		return _packetCount > CConnectionConfig.PACKET_LIMIT_PER_SEC;
+		return _packetCount > CIOConfig.PACKET_LIMIT_PER_SEC;
 	}
 
 	// 2차 비번 인증 캐릭터 이름

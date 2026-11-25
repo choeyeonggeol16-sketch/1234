@@ -2,7 +2,7 @@ package l1j.server.server.model.network.packet;
 
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 
 public abstract class IPacketWriter<T extends CUserSocket> {
 
@@ -34,7 +34,7 @@ public abstract class IPacketWriter<T extends CUserSocket> {
         }
 
         buffer.reset(getClass());
-        buffer.position(CConnectionConfig.HEADER_SIZE);
+        buffer.position(CIOConfig.HEADER_SIZE);
 
         try {
             if (write(client, buffer)) {

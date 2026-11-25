@@ -11,7 +11,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
 public final class SC_ActionUI {
 

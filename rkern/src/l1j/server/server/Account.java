@@ -17,7 +17,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.tam.L1Tam;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
 import l1j.server.server.shared.ObjectWrapper;
 import l1j.server.server.storage.CacheD;
@@ -590,7 +590,7 @@ public class Account {
 					num = rs.getInt("cnt");
 				}
 			}
-			return num >= CConnectionConfig.NETWORK_ADDRESS2ACCOUNT;
+			return num >= CIOConfig.NETWORK_ADDRESS2ACCOUNT;
 		} catch (Exception e) {
 			_log.log(Level.SEVERE, "checkLoginIP error", e);
 		}

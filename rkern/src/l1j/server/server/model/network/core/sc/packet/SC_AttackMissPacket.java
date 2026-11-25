@@ -6,16 +6,16 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.config.CIOConfig;
 
 public final class SC_AttackMissPacket {
 
 	private static final int WIRE_SIZE_WITH_EXTRA =
-			CConnectionConfig.HEADER_SIZE + 18;
+			CIOConfig.HEADER_SIZE + 18;
 
 	private static final int WIRE_SIZE_NO_EXTRA =
-			CConnectionConfig.HEADER_SIZE + 17;
+			CIOConfig.HEADER_SIZE + 17;
 
 	private SC_AttackMissPacket() {
 	}

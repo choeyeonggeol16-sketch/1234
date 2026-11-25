@@ -25,7 +25,7 @@ import java.util.function.LongConsumer;
 
 import l1j.server.server.model.network.buffer.CPacketReadBuffer;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.codec.CPacketCryptor;
+import l1j.server.server.model.network.codec.SocketSecureKey;
 
 /** Bounded, standard-Java TCP transport. Each connection has one Selector owner for its entire lifetime. */
 public final class CSelectorTransport implements AutoCloseable {
@@ -255,7 +255,7 @@ public final class CSelectorTransport implements AutoCloseable {
         private CSelectorFrameReader reader;
         private CSelectorSendQueue send;
         private final CSelectorFrameReader.Handler dispatch;
-        private CPacketCryptor cipher;
+        private SocketSecureKey cipher;
         private boolean plaintextNext;
         private boolean inputPaused;
         private boolean sendPressure;
@@ -504,7 +504,7 @@ public final class CSelectorTransport implements AutoCloseable {
             requireFramed();
             if (closed || drainReason != null || cipher != null || !send.isEmpty() || send.isEncoding())
                 throw new IllegalStateException("Cipher must start before any pending send");
-            cipher = new CPacketCryptor();
+            cipher = new SocketSecureKey();
             cipher.initKey(seed);
             plaintextNext = firstOutboundPlaintext;
         }

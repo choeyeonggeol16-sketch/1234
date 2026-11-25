@@ -20,7 +20,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_CommonNews;
 import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.utils.GameUtils;
@@ -56,8 +56,8 @@ public final class CS_AuthLogin {
         final LoginController lc = LoginController.getInstance();
         final int count = lc.getIpCount(ip);
         if ((!Config.ALLOW_2PC && count > 0)
-                || (Config.ALLOW_2PC && count > CConnectionConfig.NETWORK_CLIENT_PERMISSION
-                    && !ip.equals(CConnectionConfig.NETWORK_ADDRESS2ACCOUNT))) {
+                || (Config.ALLOW_2PC && count > CIOConfig.NETWORK_CLIENT_PERMISSION
+                    && !ip.equals(CIOConfig.NETWORK_ADDRESS2ACCOUNT))) {
             try { processDuplication(client, accountName, ip); }
             catch (Exception e) { client.close(); }
             return;
@@ -119,7 +119,7 @@ public final class CS_AuthLogin {
         if (account == null) {
             result.missing = true;
             if (Config.AUTO_CREATE_ACCOUNTS) {
-                if (getAccountIpCount(ip) >= CConnectionConfig.NETWORK_ADDRESS2ACCOUNT)
+                if (getAccountIpCount(ip) >= CIOConfig.NETWORK_ADDRESS2ACCOUNT)
                     result.errorCode = 1;
                 else if (!GameUtils.isLetterOrDigitString(accountName, 5, 12))
                     result.errorCode = 2;
@@ -150,8 +150,8 @@ public final class CS_AuthLogin {
                 processDuplication(client, accountName, ip);
                 return false;
             }
-        } else if (count > CConnectionConfig.NETWORK_CLIENT_PERMISSION &&
-                !ip.equals(CConnectionConfig.NETWORK_ADDRESS2ACCOUNT)) {
+        } else if (count > CIOConfig.NETWORK_CLIENT_PERMISSION &&
+                !ip.equals(CIOConfig.NETWORK_ADDRESS2ACCOUNT)) {
 
             processDuplication(client, accountName, ip);
             return false;
@@ -360,11 +360,11 @@ public final class CS_AuthLogin {
         _log.info(String.format(
                 "계정생성 초과. 계정=%s 최대=%d",
                 accountName,
-                CConnectionConfig.NETWORK_ADDRESS2ACCOUNT));
+                CIOConfig.NETWORK_ADDRESS2ACCOUNT));
 
         SC_CommonNews.send(client, 
                         String.format(
                                 "더이상 계정을 생성 할 수 없습니다.(최대 %d개)",
-                                CConnectionConfig.NETWORK_ADDRESS2ACCOUNT));
+                                CIOConfig.NETWORK_ADDRESS2ACCOUNT));
     }
 }

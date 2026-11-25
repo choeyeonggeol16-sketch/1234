@@ -1,5 +1,7 @@
 package l1j.server.server.model.network.packethelper;
 
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -62,7 +64,7 @@ public class PacketFactory {
         if (socket == null || !socket.isConnected()) return false;
         final l1j.server.server.model.network.core.connection.CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
-        final l1j.server.server.model.network.core.connection.CIOFrame frame = connection.beginDirectFrame(8);
+        final l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame frame = connection.beginDirectFrame(8);
         if (frame == null) return false;
         boolean committed = false;
         try {
@@ -82,7 +84,7 @@ public class PacketFactory {
         if (socket == null || !socket.isConnected()) return false;
         final l1j.server.server.model.network.core.connection.CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
-        final l1j.server.server.model.network.core.connection.CIOFrame frame = connection.beginDirectFrame(8);
+        final l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame frame = connection.beginDirectFrame(8);
         if (frame == null) return false;
         boolean committed = false;
         try {

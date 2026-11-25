@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.codec.CPacketCryptor;
+import l1j.server.server.model.network.codec.SocketSecureKey;
 
 /** Owner-local FIFO. A slot stays owned until the last byte is accepted by the socket. */
 final class CSelectorSendQueue implements AutoCloseable {
@@ -30,7 +30,7 @@ final class CSelectorSendQueue implements AutoCloseable {
         this.maxFrames = maxFrames;
     }
 
-    boolean send(int maxPayloadBytes, CSelectorTransport.FrameEncoder encoder, CPacketCryptor cipher, boolean plaintext)
+    boolean send(int maxPayloadBytes, CSelectorTransport.FrameEncoder encoder, SocketSecureKey cipher, boolean plaintext)
             throws IOException {
         if (maxPayloadBytes < 1 || maxPayloadBytes > MAX_WIRE_BYTES - HEADER_BYTES)
             throw new IllegalArgumentException("Invalid outbound payload size");

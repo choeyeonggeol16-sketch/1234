@@ -15,7 +15,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.nio.charset.Charset;
-import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.network.thread.CIOThreadCallback;

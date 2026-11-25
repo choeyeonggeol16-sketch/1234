@@ -13,7 +13,7 @@ import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.templates.L1Item;
 

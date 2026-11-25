@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class ProtoWriter {

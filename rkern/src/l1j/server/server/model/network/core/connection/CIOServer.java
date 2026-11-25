@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 import l1j.server.server.model.network.core.config.CIOConfig;
-import l1j.server.server.model.network.utill.CConnectionConfig;
 import l1j.server.Config;
 import l1j.server.server.Controller.LoginController;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -69,7 +68,7 @@ public final class CIOServer implements AutoCloseable, CUserSocket.Closed {
     private int authenticated;
 
     public CIOServer(InetSocketAddress address, int maxConnections, int ioThreads, int backlog,
-            CIOBufferPool pool, CIOThreadCallback scheduler, CConnectionConfig config) throws IOException {
+            CIOBufferPool pool, CIOThreadCallback scheduler, CIOConfig config) throws IOException {
         if (address == null || pool == null || scheduler == null || config == null || maxConnections < 1
                 || ioThreads < 1 || backlog < 1) throw new IllegalArgumentException("invalid server configuration");
         this.pool = pool;
@@ -78,8 +77,8 @@ public final class CIOServer implements AutoCloseable, CUserSocket.Closed {
         this.preLoginTimeout = config.usePreLoginTimeout;
         if (maxOnline < 1) throw new IllegalStateException("invalid online limit");
         LoginController.getInstance().setMaxAllowedOnlinePlayers(maxOnline);
-        this.ipLimit = CConnectionConfig.NETWORK_CLIENT_PERMISSION;
-        this.macLimit = CIOConfig.MAC_LIMIT;
+        this.ipLimit = CIOConfig.NETWORK_CLIENT_PERMISSION;
+        this.macLimit = CIOConfig.macLimit();
         int owners = ioThreads;
         int capacityPerOwner = (int) ((maxConnections + (long) owners - 1) / owners);
         transport = CSelectorTransport.bindHosted(address,
@@ -277,7 +276,7 @@ public final class CIOServer implements AutoCloseable, CUserSocket.Closed {
             if (CIOThreadCallback.currentShardIndex() != peer.ownerIndex())
                 throw new IllegalStateException("game admission must execute on its CIO owner");
             socket = registry.register(peer, pool, this, !Config.shutdownCheck,
-                    CConnectionConfig.NETWORK_CLIENT_PERMISSION);
+                    CIOConfig.NETWORK_CLIENT_PERMISSION);
             if (socket == null) {
                 admitted.decrementAndGet();
                 peer.abort();

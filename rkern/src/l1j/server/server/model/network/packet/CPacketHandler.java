@@ -102,7 +102,7 @@ import l1j.server.server.model.network.core.cs.packet.CS_WhoParty;
 import l1j.server.server.model.network.core.cs.packet.CS_WhoPledge;
 import l1j.server.server.model.network.core.cs.packet.CS_Withdraw;
 import l1j.server.server.model.network.core.sc.packet.SC_GameTime;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.packets.Protocol.MainServer.Proto.CSProto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Dispatch.CS_ExtendedProto;
 import l1j.server.server.utils.GameUtils;
@@ -132,7 +132,7 @@ public final class CPacketHandler {
     private static final ThreadLocal<byte[]> FIXED_STRING_SCRATCH = ThreadLocal.withInitial(() -> new byte[4096]);
 
     private static final ThreadLocal<byte[]> STRING_SCRATCH = ThreadLocal.withInitial(
-            () -> new byte[CConnectionConfig.READ_BUFFER_SIZE]);
+            () -> new byte[CIOConfig.READ_BUFFER_SIZE]);
 
     static {
         HANDLERS[Opcodes.C_PLATE & 0xFF] = CPacketHandler::decodePlate;

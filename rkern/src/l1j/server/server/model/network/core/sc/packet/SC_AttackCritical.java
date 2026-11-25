@@ -8,8 +8,8 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOFrame;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.config.CIOConfig;
 
 public final class SC_AttackCritical {
 
@@ -17,10 +17,10 @@ public final class SC_AttackCritical {
 			new AtomicInteger(0);
 
 	private static final int WIRE_SIZE_MODE_1 =
-			CConnectionConfig.HEADER_SIZE + 24;
+			CIOConfig.HEADER_SIZE + 24;
 
 	private static final int WIRE_SIZE_MODE_2 =
-			CConnectionConfig.HEADER_SIZE + 32;
+			CIOConfig.HEADER_SIZE + 32;
 
 	private SC_AttackCritical() {
 	}

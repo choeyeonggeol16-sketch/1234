@@ -7,9 +7,9 @@ import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.network.buffer.CPacketWriteBuffer;
-import l1j.server.server.model.network.core.connection.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.world.instance.inn.InnHelper;
 
 public final class SC_DropItem {
@@ -23,7 +23,7 @@ public final class SC_DropItem {
 	 */
 	private static final int FIXED_PAYLOAD_BYTES = 43;
 	private static final int FIXED_WIRE_BYTES =
-			CConnectionConfig.HEADER_SIZE + FIXED_PAYLOAD_BYTES;
+			CIOConfig.HEADER_SIZE + FIXED_PAYLOAD_BYTES;
 
 	/*
 	 * Reused only when the visible ground name needs decoration.
@@ -136,7 +136,7 @@ public final class SC_DropItem {
     private static boolean fitsNativeGroundItemWire(String name) {
         final String text=name==null?"":name;
         final long reserve=(long)FIXED_WIRE_BYTES+((long)text.length()<<1);
-        if(reserve>CConnectionConfig.MAX_WIRE_PACKET_SIZE)return false;
+        if(reserve>CIOConfig.MAX_WIRE_PACKET_SIZE)return false;
         if(reserve<=16384L)return true;
         return (long)FIXED_WIRE_BYTES+text.getBytes(
                 java.nio.charset.Charset.forName("MS949")).length<=16384L;
@@ -164,7 +164,7 @@ public final class SC_DropItem {
 				(long) FIXED_WIRE_BYTES
 						+ ((long) itemName.length() << 1);
 
-		if (reserveLong > CConnectionConfig.MAX_WIRE_PACKET_SIZE) {
+		if (reserveLong > CIOConfig.MAX_WIRE_PACKET_SIZE) {
 			return false;
 		}
 

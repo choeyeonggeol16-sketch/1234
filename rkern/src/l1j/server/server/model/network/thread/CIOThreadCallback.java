@@ -36,7 +36,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
-import l1j.server.server.model.network.utill.CConnectionConfig;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.npc.ai.CNPCServer;
 import l1j.server.server.utils.GameUtils;
 
@@ -503,7 +503,7 @@ public final class CIOThreadCallback {
 	}
 
 	public synchronized int bindNetworkIngress(
-			CConnectionConfig config) {
+			CIOConfig config) {
 
 		if (config == null) {
 			throw new NullPointerException("config");
@@ -645,7 +645,7 @@ public final class CIOThreadCallback {
 		int capacity =
 				Math.max(
 						requested,
-						CConnectionConfig.MAX_PACKETS_PER_COMPLETION);
+						CIOConfig.MAX_PACKETS_PER_COMPLETION);
 
 		if (Integer.bitCount(capacity) == 1) {
 			return capacity;
