@@ -1,0 +1,148 @@
+name: Inventory lookup regression
+on: [push]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 6dc0e1d3f67429b249b4441a283ae1746b9cda7a
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile real list and extracted inventory queries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,shutil
+          src=Path('rkern/src/l1j/server/server')
+          root=Path('/tmp/lookup-test')
+          def put(path,text):
+              p=root/path
+              p.parent.mkdir(parents=True,exist_ok=True)
+              p.write_text(text)
+          p='l1j/server/server/'
+          put(p+'model/Instance/CItemList.java',(src/'model/Instance/CItemList.java').read_text(encoding='utf-8-sig'))
+          put(p+'model/L1Object.java','package l1j.server.server.model; public class L1Object { private final int id; public L1Object(int id){this.id=id;} public int getId(){return id;} }')
+          put(p+'model/L1World.java','package l1j.server.server.model; import java.util.*; public class L1World { private static final L1World I=new L1World(); private final Map<Integer,L1Object> m=new HashMap<>(); public static L1World getInstance(){return I;} public L1Object findObject(int id){return m.get(id);} public void storeObject(L1Object o){m.put(o.getId(),o);} public void removeObject(L1Object o){m.remove(o.getId(),o);} }')
+          put(p+'templates/L1Item.java','package l1j.server.server.templates; public record L1Item(int id,int desc,boolean stack) { public int getItemId(){return id;} public int getItemDescId(){return desc;} public boolean isStackable(){return stack;} }')
+          put(p+'datatables/CObjectDB.java','package l1j.server.server.datatables; import l1j.server.server.templates.L1Item; public class CObjectDB { public static L1Item GetItem(int id){ return id==10?new L1Item(10,100,true):id==20?new L1Item(20,200,false):id==30?new L1Item(30,200,false):null; } }')
+          put(p+'model/Instance/L1ItemInstance.java','''package l1j.server.server.model.Instance;
+          import l1j.server.server.model.L1Object;
+          import l1j.server.server.templates.L1Item;
+          import l1j.server.server.datatables.CObjectDB;
+          public class L1ItemInstance extends L1Object {
+              volatile CItemList inventoryLinkOwner;
+              L1ItemInstance inventoryPrev,inventoryNext;
+              private final L1Item item;
+              private final int count;
+              private boolean equipped;
+              public L1ItemInstance(int sid,int cid,int count,boolean equipped){super(sid);this.item=CObjectDB.GetItem(cid);this.count=count;this.equipped=equipped;}
+              public int getItemId(){return item.getItemId();}
+              public L1Item getItem(){return item;}
+              public int getCount(){return count;}
+              public boolean isEquipped(){return equipped;}
+              public void setEquipped(boolean b){equipped=b;}
+          }''')
+          def extract(text,sig):
+              a=text.index(sig)
+              b=text.index('{',a)
+              depth=1
+              for i in range(b+1,len(text)):
+                  if text[i]=='{':depth+=1
+                  elif text[i]=='}':
+                      depth-=1
+                      if depth==0:return text[a:i+1]
+              raise AssertionError(sig)
+          inv=(src/'model/CInventory.java').read_text(encoding='utf-8-sig')
+          wh=(src/'model/Warehouse/Warehouse.java').read_text(encoding='utf-8-sig')
+          sigs=['public L1ItemInstance GetFirstEquippedItemByClassID(int classId)',
+          'public L1ItemInstance GetFirstItemByClassID(int id)',
+          'public L1ItemInstance GetFirstItemByDescID(int descId)',
+          'public L1ItemInstance[] GetItemListByClassID(int id)',
+          'public L1ItemInstance[] GetItemListByClassID(int id, int descid)',
+          'public L1ItemInstance[] GetItemListByDescID(int descid)',
+          'public L1ItemInstance[] GetUnequippedItemListByClassID(int id)',
+          'public L1ItemInstance GetByServerID(int objectId)',
+          'public boolean HaveItemByClassId(int id)',
+          'public boolean HaveItemByClassId(int id, int count)',
+          'public boolean HaveItemByClassId(int[] ids)',
+          'public boolean HaveItemByClassId(int[] ids, int[] counts)',
+          'public int GetUnequippedItemAmount(int id)',
+          'public boolean HaveUnequippedItemByClassId(int id, int count)',
+          'public int GetItemAmount(int itemId)',
+          'public boolean HaveItemAmount(int itemId)',
+          'public boolean HaveItemAmount(int itemId, int count)',
+          'public boolean HaveAnyItemByClassId(int... itemIds)']
+          imports='import java.util.*; import l1j.server.server.model.Instance.*; import l1j.server.server.templates.L1Item; import l1j.server.server.datatables.CObjectDB;'
+          put('InventoryProbe.java',imports+'\npublic class InventoryProbe { public final CItemList _items=new CItemList();\n'+'\n'.join(extract(inv,s) for s in sigs)+'\n}')
+          put('WarehouseProbe.java',imports+'\npublic class WarehouseProbe { public final CItemList _items=new CItemList();\n'+'\n'.join(extract(wh,s) for s in ['public L1ItemInstance GetFirstItemByClassID(int id)','public boolean HaveItemByClassId(int id, int count)'])+'\n}')
+          print('EXTRACTED_METHODS',len(sigs)+2)
+          
+          PY
+          cat >/tmp/lookup-test/LookupTest.java <<'JAVA'
+          import java.util.*;
+          import l1j.server.server.model.*;
+          import l1j.server.server.model.Instance.*;
+          public class LookupTest {
+              static int checks;
+              static void ok(boolean v,String label){checks++;if(!v)throw new AssertionError(label);}
+              static void eq(Object a,Object b,String label){ok(Objects.equals(a,b),label+": "+a+" != "+b);}
+              public static void main(String[] args){
+                  InventoryProbe inv=new InventoryProbe(); WarehouseProbe wh=new WarehouseProbe();
+                  var world=L1World.getInstance();
+                  var free=new L1ItemInstance(1,20,1,false); var equipped=new L1ItemInstance(2,20,1,true);
+                  inv._items.Push(free);inv._items.Push(equipped);world.storeObject(free);world.storeObject(equipped);
+                  eq(inv.GetFirstItemByClassID(20),free,"class lookup keeps order");
+                  eq(inv.GetFirstEquippedItemByClassID(20),equipped,"equipped lookup skips unequipped first");
+                  inv._items.snapshot();
+                  eq(inv.GetFirstEquippedItemByClassID(20),equipped,"snapshot equipped lookup");
+                  equipped.setEquipped(false);eq(inv.GetFirstEquippedItemByClassID(20),null,"no equipped");
+                  equipped.setEquipped(true);eq(inv.GetUnequippedItemAmount(20),1,"nonstack unequipped quantity");
+                  ok(inv.HaveItemByClassId(20,2),"nonstack all");ok(!inv.HaveUnequippedItemByClassId(20,2),"nonstack free");
+                  ok(inv._items.Pop(equipped),"detach");eq(inv.GetByServerID(2),null,"reject foreign world object");
+                  wh._items.Push(equipped);eq(inv.GetByServerID(2),null,"foreign inventory");
+                  ok(wh.HaveItemByClassId(20,1),"warehouse equipped flag not quantity filter");
+                  ok(!wh.HaveItemByClassId(20,-1),"negative");ok(wh.HaveItemByClassId(999,0),"zero");ok(!wh.HaveItemByClassId(999,1),"unknown template");
+                  var stack=new L1ItemInstance(3,10,2_000_000_000,false);var stack2=new L1ItemInstance(4,10,2_000_000_000,false);
+                  inv._items.Push(stack);inv._items.Push(stack2);eq(inv.GetByServerID(3),stack,"unregistered fallback");
+                  eq(inv._items.GetItemAmount(10),4_000_000_000L,"64-bit accumulation");
+                  eq(inv.GetItemAmount(10),Integer.MAX_VALUE,"int saturation");
+                  ok(inv.HaveItemAmount(10,2_000_000_000),"amount query");ok(inv.HaveItemByClassId(10,2_000_000_000),"existing stack check");
+                  ok(!inv.HaveItemByClassId(10,-1),"negative inventory");ok(inv.HaveItemByClassId(999,0),"zero inventory");
+                  ok(!inv.HaveItemByClassId(999,1),"unknown inventory");
+                  eq(inv.GetItemListByDescID(200).length,1,"description query");eq(inv.GetItemListByClassID(20,200).length,1,"class+desc");
+                  ok(inv.HaveItemByClassId(new int[]{10,20},new int[]{1,1}),"multi check");ok(!inv.HaveItemByClassId(new int[]{10},new int[]{1,1}),"invalid multi");
+                  inv._items.clear();wh._items.clear();
+                  Random rng=new Random(5426);ArrayList<L1ItemInstance> model=new ArrayList<>();
+                  int next=100;
+                  for(int step=0;step<2000;step++){
+                      int op=rng.nextInt(5);
+                      if(op==0||model.isEmpty()){int cid=10*(1+rng.nextInt(3));var item=new L1ItemInstance(next++,cid,cid==10?1+rng.nextInt(100):1,rng.nextBoolean());model.add(item);inv._items.Push(item);if(rng.nextBoolean())world.storeObject(item);}
+                      else if(op==1){var item=model.remove(rng.nextInt(model.size()));ok(inv._items.Pop(item),"pop");eq(inv.GetByServerID(item.getId()),null,"detached ID");world.removeObject(item);}
+                      else if(op==2){var item=model.get(rng.nextInt(model.size()));item.setEquipped(!item.isEquipped());}
+                      else if(op==3)inv._items.snapshot();
+                      else {var item=model.get(rng.nextInt(model.size()));eq(inv.GetByServerID(item.getId()),item,"owned SID");}
+                      for(int cid:new int[]{10,20,30,999}){
+                          L1ItemInstance first=null,eqp=null;long total=0;int rows=0,unequipped=0;
+                          for(var item:model)if(item.getItemId()==cid){if(first==null)first=item;if(eqp==null&&item.isEquipped())eqp=item;total+=item.getCount();rows++;if(!item.isEquipped())unequipped++;}
+                          eq(inv.GetFirstItemByClassID(cid),first,"first");eq(inv.GetFirstEquippedItemByClassID(cid),eqp,"first equipped");
+                          eq(inv._items.IsEquippedByClassID(cid),eqp!=null,"has equipped");
+                          eq(inv._items.GetItemAmount(cid),total,"long amount");eq(inv.GetItemAmount(cid),(int)Math.min(Integer.MAX_VALUE,total),"int amount");
+                          eq(inv.GetItemListByClassID(cid).length,rows,"list");eq(inv.GetUnequippedItemListByClassID(cid).length,unequipped,"free list");
+                          eq(inv.GetUnequippedItemAmount(cid),cid==10?(first==null?0:first.getCount()):unequipped,"legacy free amount");
+                          int want=rng.nextInt(5);eq(inv.HaveItemByClassId(cid,want),want==0||(cid==10?first!=null&&first.getCount()>=want:rows>=want),"Have class");
+                      }
+                  }
+                  System.out.println("LOOKUP_ASSERTIONS "+checks+" PASS");
+              }
+          }
+          JAVA
+          find /tmp/lookup-test -name '*.java' > /tmp/lookup-sources.txt
+          javac --release 21 -d /tmp/lookup-classes @/tmp/lookup-sources.txt
+          java -cp /tmp/lookup-classes LookupTest
