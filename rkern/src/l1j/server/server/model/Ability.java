@@ -37,9 +37,9 @@ public class Ability {
 		character = null;
 	}
 	
-    Ability(L1Character owner.m_StatCha) {
-        this.owner = owner.m_StatCha;
-        this.character = owner.m_StatCha;
+    Ability(L1Character cha) {
+        this.owner = cha;
+        this.character = cha;
     }
 
 	public void init() {
