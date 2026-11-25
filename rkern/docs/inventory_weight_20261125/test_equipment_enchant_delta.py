@@ -19,9 +19,9 @@ assert "pc.add_melee_critical_rate(enchant * signed);" not in presenter.split("c
 harness = r'''
 import java.util.Arrays;
 public class EnchantAudit {
- enum ItemStat { MELEE_CRITICAL_RATE, FEAR_PLERCE, ABILITY_PLERCE, SPIRIT_PLERCE, EVASION, AC, MR, SP, CHARACTER_SP; void apply(L1PcInstance p,int v){p.stats[ordinal()]+=v;} }
+ enum ItemStat { MELEE_CRITICAL_RATE, FEAR_PLERCE, ABILITY_PLERCE, SPIRIT_PLERCE, EVASION, AC, MR, SP; void apply(L1PcInstance p,int v){p.stats[ordinal()]+=v;} }
  static final ItemStat[] STATS=ItemStat.values();
- static final ItemStat MELEE_CRITICAL_RATE=ItemStat.MELEE_CRITICAL_RATE, FEAR_PLERCE=ItemStat.FEAR_PLERCE, ABILITY_PLERCE=ItemStat.ABILITY_PLERCE, SPIRIT_PLERCE=ItemStat.SPIRIT_PLERCE, EVASION=ItemStat.EVASION, AC=ItemStat.AC, MR=ItemStat.MR, SP=ItemStat.SP, CHARACTER_SP=ItemStat.CHARACTER_SP;
+ static final ItemStat MELEE_CRITICAL_RATE=ItemStat.MELEE_CRITICAL_RATE, FEAR_PLERCE=ItemStat.FEAR_PLERCE, ABILITY_PLERCE=ItemStat.ABILITY_PLERCE, SPIRIT_PLERCE=ItemStat.SPIRIT_PLERCE, EVASION=ItemStat.EVASION, AC=ItemStat.AC, MR=ItemStat.MR, SP=ItemStat.SP;
  static class L1PcInstance {int[] stats=new int[STATS.length];int failed; int mask;int getTotalER(){return stats[EVASION.ordinal()];}}
  static class SC_PacketBox {static final int ER_UpDate=0;static void send(L1PcInstance p,int k,int n){if((p.mask&1)!=0)throw new IllegalStateException();}}
  static class SC_OwnCharAttrDef {static void send(L1PcInstance p){if((p.mask&2)!=0)throw new IllegalStateException();}}

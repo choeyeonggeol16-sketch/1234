@@ -95,8 +95,8 @@ public class L1Character extends L1Object {
 	byte m_OriginalStatCon, m_StatCon, m_AddedStatCon;
 	byte m_OriginalStatCha, m_StatCha, m_AddedStatCha;
 	volatile long m_SkillPrimaryStats;
-	int m_AbilitySp;
-	volatile int m_AbilitySkillSp;
+	int m_nStatSp;
+	volatile int m_nSkillSp;
 	// BEGIN shared resistance sources (CCreature)
 	private volatile boolean m_ResistanceDisposed;
 	int m_nOrgMDefend;
@@ -150,7 +150,6 @@ public class L1Character extends L1Object {
 	private int _bowHitup = 0;
 	private int _trueBowHitup = 0;
 
-	private int _sp = 0; // sp
 
 	private int _missile_critical_rate = 0;
 	private int _melee_critical_rate = 0;
@@ -1240,30 +1239,8 @@ public class L1Character extends L1Object {
 		}
 	}
 
-	public void addSp(int i) {
-		_sp += i;
-	}
-
-	public int getSp() {
-		return getTrueSp() + _sp;
-	}
-
-	public int getTrueSp() {
-		return getMagicLevel() + getMagicBonus();
-	}
-
 	public int getMagicLevel() {
 		return getLevel() / 4;
-	}
-
-	public int getMagicBonus() {
-		int i = GetTotalStatInt();
-		if (i <= 5) return -2;
-		else if (i <= 8) return -1;
-		else if (i <= 11) return 0;
-		else if (i <= 14) return 1;
-		else if (i <= 17) return 2;
-		else return i - 15;
 	}
 
 	private long _doppeltime = 0;
@@ -1492,15 +1469,15 @@ public class L1Character extends L1Object {
 	}
 
 	public final void SetSkillSp(int value) {
-		if (m_AbilitySkillSp != value) m_AbilitySkillSp = value;
+		if (m_nSkillSp != value) m_nSkillSp = value;
 	}
 
 	public final void AddStatSp(int i) {
-		m_AbilitySp += i;
+		m_nStatSp += i;
 	}
 
 	public final int GetStatSp() {
-		return GetStatBaseSp() + m_AbilitySp + m_AbilitySkillSp;
+		return GetStatBaseSp() + m_nStatSp + m_nSkillSp;
 	}
 
 	public final int GetStatBaseSp() {
@@ -2075,30 +2052,6 @@ public class L1Character extends L1Object {
 
 	public void setDesperadolv(int Desperadolv) {
 		_Desperadolv = Desperadolv;
-	}
-
-	private int _mr = 0;
-	private int _trueMr = 0;
-
-	public int getMr() {
-		if (hasSkillEffect(153) == true) {
-			return _mr / 2;
-		} else {
-			return _mr;
-		}
-	}
-
-	public int getTrueMr() {
-		return _trueMr;
-	}
-
-	public void addMr(int i) {
-		_trueMr += i;
-		if (_trueMr <= 0) {
-			_mr = 0;
-		} else {
-			_mr = _trueMr;
-		}
 	}
 
 	private int 락구간상승;

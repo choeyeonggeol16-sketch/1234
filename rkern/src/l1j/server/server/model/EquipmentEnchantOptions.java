@@ -115,8 +115,7 @@ public final class EquipmentEnchantOptions {
             try { SC_OwnCharAttrDef.send(pc); }
             catch (RuntimeException notice) { noticeFailed(pc, notice); }
         }
-        return changes[MR.ordinal()] != 0 || changes[SP.ordinal()] != 0
-                || changes[CHARACTER_SP.ordinal()] != 0;
+        return changes[MR.ordinal()] != 0 || changes[SP.ordinal()] != 0;
     }
 
     static int accessoryHeal(L1Item item, int enchant) {
@@ -531,24 +530,24 @@ public final class EquipmentEnchantOptions {
             case 7:
             case 8:
                 applyStat(pc, changes, DRAGON_SPELL_PLERCE, sign * 5);
-                applyStat(pc, changes, CHARACTER_SP, sign * 1);
+                applyStat(pc, changes, SP, sign * 1);
                 break;
             case 9:
                 applyStat(pc, changes, DRAGON_SPELL_PLERCE, sign * 5);
-                applyStat(pc, changes, CHARACTER_SP, sign * 2);
+                applyStat(pc, changes, SP, sign * 2);
                 break;
             case 10:
                 applyStat(pc, changes, DRAGON_SPELL_PLERCE, sign * 5);
-                applyStat(pc, changes, CHARACTER_SP, sign * 3);
+                applyStat(pc, changes, SP, sign * 3);
                 break;
             case 11:
                 applyStat(pc, changes, DRAGON_SPELL_PLERCE, sign * 5);
-                applyStat(pc, changes, CHARACTER_SP, sign * 4);
+                applyStat(pc, changes, SP, sign * 4);
                 break;
             default:
                 if (enchant > 11) {
                     applyStat(pc, changes, DRAGON_SPELL_PLERCE, sign * 5);
-                    applyStat(pc, changes, CHARACTER_SP, sign * 4);
+                    applyStat(pc, changes, SP, sign * 4);
                 }
                 break;
             }

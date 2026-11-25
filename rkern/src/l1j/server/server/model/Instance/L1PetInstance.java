@@ -843,7 +843,7 @@ public class L1PetInstance extends L1NpcInstance {
 		pet.AddStatBonusWis(petItem.getAddWis());
 		pet.addMaxHp(petItem.getAddHp());
 		pet.addMaxMp(petItem.getAddMp());
-		pet.addSp(petItem.getAddSp());
+		pet.AddStatSp(petItem.getAddSp());
 		pet.AddMDefend(petItem.getAddMr());
 
 		pet.setWeapon(weapon);
@@ -867,7 +867,7 @@ public class L1PetInstance extends L1NpcInstance {
 		pet.AddStatBonusWis(-petItem.getAddWis());
 		pet.addMaxHp(-petItem.getAddHp());
 		pet.addMaxMp(-petItem.getAddMp());
-		pet.addSp(-petItem.getAddSp());
+		pet.AddStatSp(-petItem.getAddSp());
 		pet.AddMDefend(-petItem.getAddMr());
 
 		pet.setWeapon(null);
@@ -890,7 +890,7 @@ public class L1PetInstance extends L1NpcInstance {
 		pet.AddStatBonusWis(petItem.getAddWis());
 		pet.addMaxHp(petItem.getAddHp());
 		pet.addMaxMp(petItem.getAddMp());
-		pet.addSp(petItem.getAddSp());
+		pet.AddStatSp(petItem.getAddSp());
 		pet.AddMDefend(petItem.getAddMr());
 
 		pet.setArmor(armor);
@@ -913,7 +913,7 @@ public class L1PetInstance extends L1NpcInstance {
 		pet.AddStatBonusWis(-petItem.getAddWis());
 		pet.addMaxHp(-petItem.getAddHp());
 		pet.addMaxMp(-petItem.getAddMp());
-		pet.addSp(-petItem.getAddSp());
+		pet.AddStatSp(-petItem.getAddSp());
 		pet.AddMDefend(-petItem.getAddMr());
 
 		pet.setArmor(null);

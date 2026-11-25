@@ -1138,7 +1138,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int sp = pc.getSp();
+		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (10 + enchant >= chance) {// 3
@@ -1284,7 +1284,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int sp = pc.getSp();
+		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (5 + enchant >= chance) {
@@ -1306,7 +1306,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int sp = pc.getSp();
+		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
@@ -1328,7 +1328,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int sp = pc.getSp();
+		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (15 + enchant >= chance) {
@@ -1346,7 +1346,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int sp = pc.getSp();
+		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
@@ -1367,7 +1367,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int sp = pc.getSp();
+		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (10 + enchant >= chance) {
@@ -1389,7 +1389,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int sp = pc.getSp();
+		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (20 + enchant >= chance && 5 <= chance) {

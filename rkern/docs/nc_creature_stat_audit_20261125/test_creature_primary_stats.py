@@ -14,6 +14,9 @@ methods=creature[creature.index("\t// CStats lane operations."):creature.index("
 assert "m_OriginalStatStr" in fields and "GetTotalStatCha" in methods
 assert not re.search(r"\bprivate\s+byte\s+(str|baseStr|addedStr)\b",ability)
 assert not (model/"Ability.java").exists()
+assert not re.search(r"\b(?:_sp|_mr|_trueMr|m_AbilitySp|m_AbilitySkillSp)\b",creature)
+for name in ("getSp","addSp","getTrueSp","getMr","addMr","getTrueMr","getMagicBonus"):
+    assert not re.search(r"public\s+(?:int|void)\s+"+name+r"\s*\(",creature), name
 for source in (root/"src").rglob("*.java"):
     code=source.read_text(encoding="utf-8",errors="replace")
     assert "SkillEffectContainer.SkillModifiers" not in code, str(source)

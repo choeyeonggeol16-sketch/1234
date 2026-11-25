@@ -56,7 +56,6 @@ public enum ItemStat {
     DMG_RED_IGNORE(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.addDamageReductionIgnore(v); } },
     MELEE_DAMAGE_UP(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.addDmgup(v); } },
     EVASION(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.addEffectedER(v); } },
-    CHARACTER_SP(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.addSp(v); } },
     MAGIC_CRITICAL_RATE(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.add_magic_critical_rate(v); } },
     MELEE_CRITICAL_RATE(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.add_melee_critical_rate(v); } },
     BOW_CRITICAL_RATE(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.add_missile_critical_rate(v); } },

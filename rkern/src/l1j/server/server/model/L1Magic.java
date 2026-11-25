@@ -436,50 +436,51 @@ public class L1Magic {
 		case MANA_DRAIN:
 		case FOG_OF_SLEEPING:
 			if (_calcType == PC_PC || _calcType == PC_NPC) {
-				if (skillId == 44 && _targetPc.getMr() >= 150) { // -- 캔슬
-					if (_targetPc.getMr() >= 200)
+				int cancellationMr;
+				if (_calcType == PC_PC && skillId == CANCELLATION && (cancellationMr = _targetPc.GetMDefendBySkill()) >= 150) { // -- 캔슬
+					if (cancellationMr >= 200)
 						probability = 0;
-					else if (_targetPc.getMr() >= 190)
+					else if (cancellationMr >= 190)
 						probability = 1;
-					else if (_targetPc.getMr() >= 188)
+					else if (cancellationMr >= 188)
 						probability = 1.2;
-					else if (_targetPc.getMr() >= 186)
+					else if (cancellationMr >= 186)
 						probability = 1.4;
-					else if (_targetPc.getMr() >= 184)
+					else if (cancellationMr >= 184)
 						probability = 1.6;
-					else if (_targetPc.getMr() >= 182)
+					else if (cancellationMr >= 182)
 						probability = 1.8;
-					else if (_targetPc.getMr() >= 180)
+					else if (cancellationMr >= 180)
 						probability = 2;
-					else if (_targetPc.getMr() >= 178)
+					else if (cancellationMr >= 178)
 						probability = 2.2;
-					else if (_targetPc.getMr() >= 176)
+					else if (cancellationMr >= 176)
 						probability = 2.4;
-					else if (_targetPc.getMr() >= 174)
+					else if (cancellationMr >= 174)
 						probability = 2.6;
-					else if (_targetPc.getMr() >= 172)
+					else if (cancellationMr >= 172)
 						probability = 2.8;
-					else if (_targetPc.getMr() >= 170)
+					else if (cancellationMr >= 170)
 						probability = 3;
-					else if (_targetPc.getMr() >= 168)
+					else if (cancellationMr >= 168)
 						probability = 3.2;
-					else if (_targetPc.getMr() >= 166)
+					else if (cancellationMr >= 166)
 						probability = 3.4;
-					else if (_targetPc.getMr() >= 164)
+					else if (cancellationMr >= 164)
 						probability = 3.6;
-					else if (_targetPc.getMr() >= 162)
+					else if (cancellationMr >= 162)
 						probability = 3.8;
-					else if (_targetPc.getMr() >= 160)
+					else if (cancellationMr >= 160)
 						probability = 4;
-					else if (_targetPc.getMr() >= 158)
+					else if (cancellationMr >= 158)
 						probability = 4.2;
-					else if (_targetPc.getMr() >= 156)
+					else if (cancellationMr >= 156)
 						probability = 4.4;
-					else if (_targetPc.getMr() >= 154)
+					else if (cancellationMr >= 154)
 						probability = 4.6;
-					else if (_targetPc.getMr() >= 152)
+					else if (cancellationMr >= 152)
 						probability = 4.8;
-					else if (_targetPc.getMr() >= 150)
+					else if (cancellationMr >= 150)
 						probability = 5;
 
 					// -- 캔슬이며, 상대방 마방이 150 이상이라면 probability =
@@ -2641,33 +2642,14 @@ public class L1Magic {
 	 */
 
 	public int calcMrDefense(int dmg) {
-		int PInt = 0;
-		int mrs = 0;
-		int attackPcLvSp = 0;
-		int targetPcLvMr = 0;
+		final L1Character attacker = (_calcType == PC_PC || _calcType == PC_NPC) ? _pc : _npc;
+		final L1Character defender = (_calcType == PC_PC || _calcType == NPC_PC) ? _targetPc : _targetNpc;
+		final int PInt = attacker.GetStatSp() * 2;
+		final int mrs = (int) (defender.GetMDefendBySkill() * 1.7D - 20);
+		final int attackPcLvSp = attacker.getLevel();
+		final int targetPcLvMr = defender.getLevel();
 		int ran1 = 0;
 		int mrset = 0;
-
-		if (_calcType == PC_PC || _calcType == PC_NPC) {
-			PInt = _pc.getSp() * 2;
-		} else if (_calcType == NPC_PC) {
-			PInt = _npc.getSp() * 2;
-		}
-		if (_calcType == PC_PC || _calcType == NPC_PC) {
-			mrs = (int) (_targetPc.getMr() * 1.7D - 20);
-		} else {
-			mrs = (int) (_targetNpc.getMr() * 1.7D - 20);
-		}
-		if (_calcType == PC_PC || _calcType == PC_NPC) {
-			attackPcLvSp = _pc.getLevel();
-		} else if (_calcType == NPC_PC) {
-			attackPcLvSp = _npc.getLevel();
-		}
-		if (_calcType == PC_PC || _calcType == NPC_PC) {
-			targetPcLvMr = _targetPc.getLevel();
-		} else {
-			targetPcLvMr = _targetNpc.getLevel();
-		}
 
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		ran1 = random.nextInt(15) + 1;

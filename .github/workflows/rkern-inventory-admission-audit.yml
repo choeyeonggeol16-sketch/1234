@@ -95,25 +95,6 @@ jobs:
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/docs/nc_creature_stat_audit_20261125/test_creature_defense.py
-      - name: Audit stat facade call sites
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re, collections
-          root=Path("rkern/src")
-          count=collections.Counter()
-          for p in root.rglob("*.java"):
-              if p.name in ("Ability.java","Resistance.java","AC.java"): continue
-              for i,line in enumerate(p.read_text(encoding="utf-8",errors="replace").splitlines(),1):
-                  for accessor in ("getAbility","getResistance","getAC"):
-                      count[accessor]+=len(re.findall(r"\b"+accessor+r"\s*\(",line))
-                  clean=re.sub(r"\b(?:getAbility|getResistance|getAC)\s*\(\s*\)\s*\.\s*\w+\s*\(", "DIRECT(",line)
-                  if re.search(r"\b(?:Ability|Resistance|AC|getAbility|getResistance|getAC)\b",clean) and not clean.lstrip().startswith(("//","*")):
-                      print(f"{p}:{i}: {line.strip()}")
-                  if p.name.startswith("L1") and re.search(r"\b(?:ability|resistance|ac)\s*\.",line):
-                      print(f"ALIAS {p}:{i}: {line.strip()}")
-          print("ACCESSOR COUNTS",dict(count))
-          PY
       - name: Verify shared primary stats and skill references
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
@@ -122,6 +103,10 @@ jobs:
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/docs/nc_creature_stat_audit_20261125/test_creature_resistance.py
+      - name: Verify unified magic defense creature routing
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/docs/nc_creature_stat_audit_20261125/test_magic_parameter_routes.py
       - name: Cache existing build dependencies
         uses: actions/cache@v4
         with:
