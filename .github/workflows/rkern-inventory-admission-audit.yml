@@ -115,6 +115,10 @@ jobs:
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/docs/nc_creature_stat_audit_20261125/test_physical_attack_sources.py
+      - name: Verify shared magic hit and critical sources
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/docs/nc_creature_stat_audit_20261125/test_magic_critical_sources.py
       - name: Cache existing build dependencies
         uses: actions/cache@v4
         with:

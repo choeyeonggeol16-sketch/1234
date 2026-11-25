@@ -715,7 +715,6 @@ public class L1PcInstance extends L1Character {
 	
 	private short _baseMaxHp = 0;
 	private int _baseMaxMp = 0;
-	private int _originalMagicHit = 0;
 
     // Level/class snapshot; STR/DEX/INT table values remain in CalcStat.
     private final PcBaseAbilityCache m_BaseParam = new PcBaseAbilityCache();
@@ -724,8 +723,6 @@ public class L1PcInstance extends L1Character {
         return m_BaseParam.ValidateBaseData(this);
     }
 
-	private int _baseMagicHitup = 0; // 베이스 스탯에 의한 마법 명중
-	private int _baseMagicCritical = 0; // 베이스 스탯에 의한 마법 치명타(%)
 	private int _baseMagicDmg = 0; // 베이스 스탯에 의한 마법 대미지
 	private int _baseMagicDecreaseMp = 0; // 베이스 스탯에 의한 마법 대미지
 
@@ -1727,8 +1724,6 @@ public class L1PcInstance extends L1Character {
 	public boolean is제로스() {
 		return _is제로스;
 	}
-
-
 
 
 	public void set기르타스(boolean flag) {
@@ -4187,46 +4182,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_baseMaxMp = i;
 	}
 
-	public int getOriginalMagicHit() {
-		return _originalMagicHit;
-	}
-
-
-
-
-
-
-
-
-
-
-	public void setBaseMagicHitUp(int i) {
-		_baseMagicHitup = i;
-	}
-
-	public void addBaseMagicHitUp(int i) {
-		_baseMagicHitup += i;
-	}
-
-	public int getBaseMagicHitUp() {
-		return _baseMagicHitup + (int) (pumpedCarryArmorAndAccuracy >>> 32);
-	}
-
-	public int getTotalMagicHitup() {
-		return getBaseAbility().get마법적중() + getBaseMagicHitUp() + getOriginalMagicHit();
-	}
-
-	public void setBaseMagicCritical(int i) {
-		_baseMagicCritical = i;
-	}
-
-	public int getBaseMagicCritical() {
-		return getBaseAbility().get마법치명타() + _baseMagicCritical;
-	}
-
-	public void addBaseMagicCritical(int i) {
-		_baseMagicCritical += i;
-	}
 
 	public void setBaseMagicDmg(int i) {
 		_baseMagicDmg = i;
@@ -5373,8 +5328,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return getBaseAbility().get매직레벨();
 	}
 
-	// Signed 16-bit carry limit and armor damage reduction, followed by base magic hit.
-	private volatile long pumpedCarryArmorAndAccuracy;
 
 	public void setPumpedCarryArmorAndAccuracy(long value, boolean notify) {
 		final long previous = pumpedCarryArmorAndAccuracy;

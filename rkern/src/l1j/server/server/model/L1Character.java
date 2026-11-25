@@ -69,7 +69,11 @@ public class L1Character extends L1Object {
 	private int _trueMaxMp = 0;
 	private int _lawful;
 	private int _karma;
-	private int _MagicHit;
+	private int m_nOrgMHit;
+	private int m_nAddedMHit;
+	private int m_nAddedMCriticalProb;
+	// Signed 16-bit carry limit and armor reduction; signed 32-bit base magic hit.
+	protected volatile long pumpedCarryArmorAndAccuracy;
 	// 상태
 	private int _heading; // ● 방향 0. 좌상 1. 상 2. 우상 3. 오른쪽 4. 우하 5. 하 6. 좌하 7. 좌
 	private int _moveSpeed; // ● 스피드 0. 통상 1. 헤이 파업 2. 슬로우
@@ -144,13 +148,13 @@ public class L1Character extends L1Object {
 	// Signed 16-bit values from low to high: melee hit, melee damage, ranged damage, ranged hit.
 	private volatile long m_SkillWeapon;
 	// Signed 16-bit ranged critical, magic critical, magic hit, and weapon hit rate.
-	private volatile long pumpedCombatRates;
+	private volatile long m_SkillCombatRates;
 	private int m_nOrgRangedHit;
 
 
-	private int _missile_critical_rate = 0;
-	private int _melee_critical_rate = 0;
-	private int _magic_critical_rate = 0;
+	private int m_nOrgRangedCriticalProb = 0;
+	private int m_nOrgMeleeCriticalProb = 0;
+	private int m_nOrgMCriticalProb = 0;
 	private int _summonre = 0;
 
 	private volatile SkillEffectContainer _skillEffects;
@@ -170,16 +174,40 @@ public class L1Character extends L1Object {
 		return false;
 	}
 
+	// Keep the two L1 magic channels separate: configured class/gear
+	// bonuses and direct combat modifiers have different formula consumers.
+	public final void addBaseMagicHitUp(int i) {
+		m_nAddedMHit += i;
+	}
+
+	public final int getBaseMagicHitUp() {
+		return m_nAddedMHit + (int) (pumpedCarryArmorAndAccuracy >>> 32);
+	}
+
+	public final int getTotalMagicHitup() {
+		final int base = this instanceof L1PcInstance pc ? pc.getBaseMagicHitByLevelClass() : 0;
+		return base + getBaseMagicHitUp();
+	}
+
+	public final void addBaseMagicCritical(int i) {
+		m_nAddedMCriticalProb += i;
+	}
+
+	public final int getBaseMagicCritical() {
+		final int base = this instanceof L1PcInstance pc ? pc.getBaseMagicCriByLevelClass() : 0;
+		return base + m_nAddedMCriticalProb;
+	}
+
 	public int getMagicHit() {
-		return _MagicHit + (short) (pumpedCombatRates >>> 32);
+		return m_nOrgMHit + (short) (m_SkillCombatRates >>> 32);
 	}
 
 	protected final int getPumpedWeaponHitRate() {
-		return (short) (pumpedCombatRates >>> 48);
+		return (short) (m_SkillCombatRates >>> 48);
 	}
 	
 	public void addMagicHit(int i) {
-		this._MagicHit += i;
+		this.m_nOrgMHit += i;
 	}
 
 	public void dispose() {
@@ -1094,7 +1122,7 @@ public class L1Character extends L1Object {
 		SetSkillElemental(elementalResistance);
 		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
 		if (m_SkillWeapon != weapon) m_SkillWeapon = weapon;
-		if (pumpedCombatRates != combatRates) pumpedCombatRates = combatRates;
+		if (m_SkillCombatRates != combatRates) m_SkillCombatRates = combatRates;
 		SetSkillSp(sp);
 	}
 
@@ -2231,24 +2259,18 @@ public class L1Character extends L1Object {
 		SC_ChangeShape.broadcastFast(this, getId(), poly, 0);
 	}
 
-	public void set_missile_critical_rate(int rate) {
-		_missile_critical_rate = rate;
-	}
 
 	public int add_missile_critical_rate(int rate) {
-		return _missile_critical_rate += rate;
+		return m_nOrgRangedCriticalProb += rate;
 	}
 
 	public int get_missile_critical_rate() {
-		return _missile_critical_rate + (short) pumpedCombatRates;
+		return m_nOrgRangedCriticalProb + (short) m_SkillCombatRates;
 	}
 
-	public void set_melee_critical_rate(int rate) {
-		_melee_critical_rate = rate;
-	}
 
 	public int get_melee_critical_rate() {
-		return _melee_critical_rate;
+		return m_nOrgMeleeCriticalProb;
 	}
 
 	public int get_final_burn_critical_rate() {
@@ -2268,19 +2290,16 @@ public class L1Character extends L1Object {
 	}
 	
 	public int add_melee_critical_rate(int rate) {
-		return _melee_critical_rate += rate;
+		return m_nOrgMeleeCriticalProb += rate;
 	}
 
-	public void set_magic_critical_rate(int rate) {
-		_magic_critical_rate = rate;
-	}
 
 	public int get_magic_critical_rate() {
-		return _magic_critical_rate + (short) (pumpedCombatRates >>> 16);
+		return m_nOrgMCriticalProb + (short) (m_SkillCombatRates >>> 16);
 	}
 
 	public int add_magic_critical_rate(int rate) {
-		return _magic_critical_rate += rate;
+		return m_nOrgMCriticalProb += rate;
 	}
 
 	public void send_effect(int effect_id) {
