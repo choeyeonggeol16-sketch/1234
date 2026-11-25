@@ -234,6 +234,21 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         e.image.setCount(e.image.getCount()-count);
         return true;
     }
+    /** Read the quantity still available in this receipt without staging another row. */
+    public int GetPreparedItemAmount(L1PcInstance pc, L1ItemInstance item) {
+        open(); owns(pc);
+        if (item == null || item.isEquipped() || requiresEntityDeletion(item.getItemId())) return 0;
+        final Entry e = findEntry(item.getId());
+        if (e != null) {
+            if (e.owner != pc || (e.original != item && e.image != item))
+                throw new IllegalStateException("Item owner/identity changed while preparing");
+            return Math.max(0, e.image.getCount());
+        }
+        if (pc.getInventory().GetByServerID(item.getId()) != item)
+            throw new IllegalStateException("Stale inventory object");
+        return Math.max(0, item.getCount());
+    }
+
     private static boolean requiresEntityDeletion(int template) {
         return template == 40314 || template == 40316
                 || (template >= 49016 && template <= 49025)
