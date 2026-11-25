@@ -14,52 +14,29 @@ public class Resistance {
     private static final int LIMIT_MIN_MR = 0;
     private static final int LIMIT_MAX_MR = 250;
 
-    private int baseMr 	= 0; // 기본 마법 방어
-    // Keep source totals intact. Clamp the effective value after combining them.
-    private int addedMr = 0; // 아이템이나 마법에 의해 추가된 마법 방어를 포함한 마법 방어
-    
-    private int fire  = 0; // 불 저항
-    private int water = 0; // 물 저항
-    private int wind  = 0; // 바람 저항 
-    private int earth = 0; // 땅 저항
-    
-    private int calcPcDefense = 0; //PVP 데미지 리덕
-    private int PVPweaponTotalDamage = 0; //PVP 추가 데미지
-    // 포우
-    private int _fouDmgUp = 0;
-    // 축복 소모 효율
-    private int calcAinPer = 0;
-
-    // 물약 관련 스탯 추가
-    private int potionRecAmt  = 0; // 물약회복량 
-    private int potionRecRate = 0; // 물약회복율 (%, +)
-    private int healDefence   = 0; // 악화방어 
-    
-    // Flat source lanes: keep full int totals; clamp only on effective reads.
-    private int m_nResistAbility, m_nResistSpirit, m_nResistDragon, m_nResistFear, m_nResistAll;
-    private int m_nPierceAbility, m_nPierceSpirit, m_nPierceDragon, m_nPierceFear, m_nPierceAll;
-    
+    // Compatibility facade: all stat sources belong to the creature.
+    private final L1Character owner;
     private L1Character character = null;
 
     public void dispose(){
         character = null;
     }
     
-    public Resistance() {}
-    public Resistance(L1Character cha) {
-        init();
+    Resistance(L1Character cha) {
+        owner = java.util.Objects.requireNonNull(cha);
         character = cha;
+        init();
     }
     
     public void init() {
-        baseMr = addedMr = 0;
-        fire = water = wind = earth = 0;
-        calcPcDefense =  PVPweaponTotalDamage = 0;
-        calcAinPer = 0;
-        _fouDmgUp = 0;
-        potionRecAmt = potionRecRate = healDefence = 0; // 초기화 시 함께 리셋
-        m_nResistAbility = m_nResistSpirit = m_nResistDragon = m_nResistFear = m_nResistAll = 0;
-        m_nPierceAbility = m_nPierceSpirit = m_nPierceDragon = m_nPierceFear = m_nPierceAll = 0;
+        owner.m_nOrgMDefend = owner.m_nAddedMDefend = 0;
+        owner.m_nFireResist = owner.m_nWaterResist = owner.m_nWindResist = owner.m_nEarthResist = 0;
+        owner.m_nPvpDamageReduction =  owner.m_nPvpDamage = 0;
+        owner.m_nAinEfficiency = 0;
+        owner.m_nFouDamage = 0;
+        owner.m_nPotionRecoveryAmount = owner.m_nPotionRecoveryRate = owner.m_nHealDefence = 0; // 초기화 시 함께 리셋
+        owner.m_nResistAbility = owner.m_nResistSpirit = owner.m_nResistDragon = owner.m_nResistFear = owner.m_nResistAll = 0;
+        owner.m_nPierceAbility = owner.m_nPierceSpirit = owner.m_nPierceDragon = owner.m_nPierceFear = owner.m_nPierceAll = 0;
     }
     
     private int checkMrRange(int i, final int MIN) {
@@ -72,32 +49,32 @@ public class Resistance {
     
     private int GetResistSource(eKind kind) {
         return switch (kind) {
-            case ABILITY -> m_nResistAbility;
-            case SPIRIT -> m_nResistSpirit;
-            case DRAGON_SPELL -> m_nResistDragon;
-            case FEAR -> m_nResistFear;
-            case ALL -> m_nResistAll;
+            case ABILITY -> owner.m_nResistAbility;
+            case SPIRIT -> owner.m_nResistSpirit;
+            case DRAGON_SPELL -> owner.m_nResistDragon;
+            case FEAR -> owner.m_nResistFear;
+            case ALL -> owner.m_nResistAll;
         };
     }
 
     private int GetPierceSource(eKind kind) {
         return switch (kind) {
-            case ABILITY -> m_nPierceAbility;
-            case SPIRIT -> m_nPierceSpirit;
-            case DRAGON_SPELL -> m_nPierceDragon;
-            case FEAR -> m_nPierceFear;
-            case ALL -> m_nPierceAll;
+            case ABILITY -> owner.m_nPierceAbility;
+            case SPIRIT -> owner.m_nPierceSpirit;
+            case DRAGON_SPELL -> owner.m_nPierceDragon;
+            case FEAR -> owner.m_nPierceFear;
+            case ALL -> owner.m_nPierceAll;
         };
     }
 
     public void addSpecialResistance(eKind kind, int value) {
         if (kind == null) return;
         switch (kind) {
-            case ABILITY -> m_nResistAbility += value;
-            case SPIRIT -> m_nResistSpirit += value;
-            case DRAGON_SPELL -> m_nResistDragon += value;
-            case FEAR -> m_nResistFear += value;
-            case ALL -> m_nResistAll += value;
+            case ABILITY -> owner.m_nResistAbility += value;
+            case SPIRIT -> owner.m_nResistSpirit += value;
+            case DRAGON_SPELL -> owner.m_nResistDragon += value;
+            case FEAR -> owner.m_nResistFear += value;
+            case ALL -> owner.m_nResistAll += value;
         }
         if (character instanceof L1PcInstance pc) {
             SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
@@ -107,22 +84,22 @@ public class Resistance {
     public int getSpecialResistance(eKind kind) {
         if (kind == null) return 0;
         final int shift = (kind.value() - 1) << 3;
-        final int bonus = (int) (skillSpecialResistance >>> shift) & 0xff;
+        final int bonus = (int) (owner.m_SkillSpecialResistance >>> shift) & 0xff;
         // Independent signed penalties must not wrap into an unsigned 255
         // or corrupt a neighboring byte of the positive resistance bitmap.
         final int penalty = kind.value() <= 4
-                ? (byte) (skillSpecialPenalty >>> shift) : 0;
+                ? (byte) (owner.m_nSkillSpecialPenalty >>> shift) : 0;
         return checkRange(GetResistSource(kind) + bonus + penalty);
     }
 
     public void addSpecialPierce(eKind kind, int value) {
         if (kind == null) return; 
         switch (kind) {
-            case ABILITY -> m_nPierceAbility += value;
-            case SPIRIT -> m_nPierceSpirit += value;
-            case DRAGON_SPELL -> m_nPierceDragon += value;
-            case FEAR -> m_nPierceFear += value;
-            case ALL -> m_nPierceAll += value;
+            case ABILITY -> owner.m_nPierceAbility += value;
+            case SPIRIT -> owner.m_nPierceSpirit += value;
+            case DRAGON_SPELL -> owner.m_nPierceDragon += value;
+            case FEAR -> owner.m_nPierceFear += value;
+            case ALL -> owner.m_nPierceAll += value;
         }
         if (character instanceof L1PcInstance pc) {
             SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
@@ -133,10 +110,10 @@ public class Resistance {
         if (kind == null) return 0; 
         final int value = kind.value();
         final int pumped = value <= 4
-                ? (skillSpecialPierce >>> ((value - 1) << 3)) & 0xff : 0;
+                ? (owner.m_nSkillSpecialPierce >>> ((value - 1) << 3)) & 0xff : 0;
         final int shared = switch (kind) {
-            case SPIRIT -> (int) ((skillSpecialResistance >>> 40) & 0xffL);
-            case ALL -> (int) ((skillSpecialResistance >>> 48) & 0xffL);
+            case SPIRIT -> (int) ((owner.m_SkillSpecialResistance >>> 40) & 0xffL);
+            case ALL -> (int) ((owner.m_SkillSpecialResistance >>> 48) & 0xffL);
             default -> 0;
         };
         return checkRange(GetPierceSource(kind) + pumped + shared);
@@ -151,28 +128,23 @@ public class Resistance {
         return effectedMr;
     }
 
-    public int getAddedMr() { return checkMrRange(addedMr, -baseMr); }
-    private volatile int skillMr;
+    public int getAddedMr() { return checkMrRange(owner.m_nAddedMDefend, -owner.m_nOrgMDefend); }
 
-    void setSkillMr(int value) { if (skillMr != value) skillMr = value; }
+    void setSkillMr(int value) { if (owner.m_nSkillMDefend != value) owner.m_nSkillMDefend = value; }
 
     public int getMr() {
         if(character == null || !character.isPassive(PassiveID.RESIST_ELEMENT.toInt()))
-            return checkMrRange(baseMr + addedMr + skillMr, LIMIT_MIN_MR);
-        return checkMrRange(baseMr + addedMr + skillMr + 5, LIMIT_MIN_MR);
+            return checkMrRange(owner.m_nOrgMDefend + owner.m_nAddedMDefend + owner.m_nSkillMDefend, LIMIT_MIN_MR);
+        return checkMrRange(owner.m_nOrgMDefend + owner.m_nAddedMDefend + owner.m_nSkillMDefend + 5, LIMIT_MIN_MR);
     }
-    public int getBaseMr() 		 { return baseMr; 										}
-    public void addMr(int i) { addedMr += i; }
-    public void setBaseMr(int i) { baseMr = checkMrRange(i, LIMIT_MIN_MR); 				}
+    public int getBaseMr() 		 { return owner.m_nOrgMDefend; 										}
+    public void addMr(int i) { owner.m_nAddedMDefend += i; }
+    public void setBaseMr(int i) { owner.m_nOrgMDefend = checkMrRange(i, LIMIT_MIN_MR); 				}
 
     // Signed 16-bit values, PvP damage in the low half and reduction in the high half.
-    private volatile int skillPvp;
     // Five resistance bytes, followed by spirit pierce and all-type pierce.
-    private volatile long skillSpecialResistance;
     // Four signed 8-bit penalties (ability/spirit/dragon/fear) from effects.
-    private volatile int skillSpecialPenalty;
     // Independent ability, spirit, dragon and fear pierce lanes.
-    private volatile int skillSpecialPierce;
 
     public void setSkillCombatModifiers(int pvp, long specialResistance, boolean notify) {
         setSkillCombatModifiers(pvp, specialResistance, 0, notify);
@@ -181,45 +153,44 @@ public class Resistance {
     public void setSkillCombatModifiers(int pvp, long specialResistance, int penalty, boolean notify) {
         // Older callers did not own the extra pierce channels. Preserve their
         // active sources; only the five-argument owner publication clears them.
-        setSkillCombatModifiers(pvp, specialResistance, penalty, skillSpecialPierce, notify);
+        setSkillCombatModifiers(pvp, specialResistance, penalty, owner.m_nSkillSpecialPierce, notify);
     }
 
     public void setSkillCombatModifiers(int pvp, long specialResistance, int penalty,
             int pierce, boolean notify) {
-        if (skillPvp != pvp) skillPvp = pvp;
-        if (skillSpecialResistance == specialResistance && skillSpecialPenalty == penalty
-                && skillSpecialPierce == pierce) return;
-        skillSpecialResistance = specialResistance;
-        skillSpecialPenalty = penalty;
-        skillSpecialPierce = pierce;
+        if (owner.m_nSkillPvp != pvp) owner.m_nSkillPvp = pvp;
+        if (owner.m_SkillSpecialResistance == specialResistance && owner.m_nSkillSpecialPenalty == penalty
+                && owner.m_nSkillSpecialPierce == pierce) return;
+        owner.m_SkillSpecialResistance = specialResistance;
+        owner.m_nSkillSpecialPenalty = penalty;
+        owner.m_nSkillSpecialPierce = pierce;
         if (notify && character instanceof L1PcInstance pc) SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
     }
 
-    public int getcalcPcDefense() { return checkRange(calcPcDefense + (skillPvp >> 16)); }
-    public int getPVPweaponTotalDamage() { return checkRange(PVPweaponTotalDamage + (short) skillPvp); }
+    public int getcalcPcDefense() { return checkRange(owner.m_nPvpDamageReduction + (owner.m_nSkillPvp >> 16)); }
+    public int getPVPweaponTotalDamage() { return checkRange(owner.m_nPvpDamage + (short) owner.m_nSkillPvp); }
     
-    // Signed 16-bit values, from least to most significant: water, wind, earth, fire.
-    private volatile long skillElemental;
+    // Signed 16-bit values, from least to most significant: owner.m_nWaterResist, owner.m_nWindResist, owner.m_nEarthResist, owner.m_nFireResist.
 
-    void setSkillElemental(long value) { if (skillElemental != value) skillElemental = value; }
+    void setSkillElemental(long value) { if (owner.m_SkillElemental != value) owner.m_SkillElemental = value; }
 
-    public int getFire()  { return increase_elemental_resist(checkRange(fire + (short) (skillElemental >>> 48))); }
-    public int getWater() { return increase_elemental_resist(checkRange(water + (short) skillElemental)); }
-    public int getWind()  { return increase_elemental_resist(checkRange(wind + (short) (skillElemental >>> 16))); }
-    public int getEarth() { return increase_elemental_resist(checkRange(earth + (short) (skillElemental >>> 32))); }
+    public int getFire()  { return increase_elemental_resist(checkRange(owner.m_nFireResist + (short) (owner.m_SkillElemental >>> 48))); }
+    public int getWater() { return increase_elemental_resist(checkRange(owner.m_nWaterResist + (short) owner.m_SkillElemental)); }
+    public int getWind()  { return increase_elemental_resist(checkRange(owner.m_nWindResist + (short) (owner.m_SkillElemental >>> 16))); }
+    public int getEarth() { return increase_elemental_resist(checkRange(owner.m_nEarthResist + (short) (owner.m_SkillElemental >>> 32))); }
 
     private int increase_elemental_resist(int source_resist) {
         return character == null || !character.isPassive(PassiveID.RESIST_ELEMENT.toInt()) ?
                 source_resist : source_resist + 5;
     }
     
-    public void addFire(int i) { fire += i; }
-    public void addWater(int i) { water += i; }
-    public void addWind(int i) { wind += i; }
-    public void addEarth(int i) { earth += i; }
+    public void addFire(int i) { owner.m_nFireResist += i; }
+    public void addWater(int i) { owner.m_nWaterResist += i; }
+    public void addWind(int i) { owner.m_nWindResist += i; }
+    public void addEarth(int i) { owner.m_nEarthResist += i; }
     
-    public void addcalcPcDefense(int i) { calcPcDefense += i; }
-    public void addPVPweaponTotalDamage(int i) { PVPweaponTotalDamage += i; }
+    public void addcalcPcDefense(int i) { owner.m_nPvpDamageReduction += i; }
+    public void addPVPweaponTotalDamage(int i) { owner.m_nPvpDamage += i; }
     
     public void addAllNaturalResistance(int i) {
         addFire(i);
@@ -239,35 +210,35 @@ public class Resistance {
     }
     
     public int getcalcAinPer() { 
-        return calcAinPer; 
+        return owner.m_nAinEfficiency; 
     }
 
     public void addcalcAinPer(int i) { 
-        calcAinPer = checkMrRange(calcAinPer + i, 0); 
+        owner.m_nAinEfficiency = checkMrRange(owner.m_nAinEfficiency + i, 0); 
     }
 
     public void setcalcAinPer(int i) { 
-        calcAinPer = checkMrRange(i, 0); 
+        owner.m_nAinEfficiency = checkMrRange(i, 0); 
     }
     
     // =====================================================
     // Fou
     // =====================================================
     public void addFouDmgUp(int v) {
-        _fouDmgUp += v;
-        if (_fouDmgUp < 0) _fouDmgUp = 0;
+        owner.m_nFouDamage += v;
+        if (owner.m_nFouDamage < 0) owner.m_nFouDamage = 0;
     }
 
     public int getFouDmgUp() {
-        return _fouDmgUp;
+        return owner.m_nFouDamage;
     }
 
-    public void addPotionRecAmt(int v)  { this.potionRecAmt += v; }
-    public int  getPotionRecAmt()        { return potionRecAmt; }
+    public void addPotionRecAmt(int v)  { owner.m_nPotionRecoveryAmount += v; }
+    public int  getPotionRecAmt()        { return owner.m_nPotionRecoveryAmount; }
 
-    public void addPotionRecRate(int v) { this.potionRecRate += v; }
-    public int  getPotionRecRate()      { return potionRecRate; }
+    public void addPotionRecRate(int v) { owner.m_nPotionRecoveryRate += v; }
+    public int  getPotionRecRate()      { return owner.m_nPotionRecoveryRate; }
 
-    public void addHealDefence(int v)   { this.healDefence += v; }
-    public int  getHealDefence()        { return healDefence; }
+    public void addHealDefence(int v)   { owner.m_nHealDefence += v; }
+    public int  getHealDefence()        { return owner.m_nHealDefence; }
 }

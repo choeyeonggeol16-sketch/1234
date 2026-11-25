@@ -92,6 +92,37 @@ public class L1Character extends L1Object implements AC {
 	volatile int m_AbilitySkillSp;
 	protected Ability ability = null; // compatibility access to CStats
 	protected Resistance resistance = null; // 저항 (마방, 불, 물, 바람, 땅, 스턴, 동빙, 슬립, 석화)
+	// BEGIN shared resistance sources (CCreature)
+	int m_nOrgMDefend;
+	int m_nAddedMDefend;
+	int m_nFireResist;
+	int m_nWaterResist;
+	int m_nWindResist;
+	int m_nEarthResist;
+	int m_nPvpDamageReduction;
+	int m_nPvpDamage;
+	int m_nFouDamage;
+	int m_nAinEfficiency;
+	int m_nPotionRecoveryAmount;
+	int m_nPotionRecoveryRate;
+	int m_nHealDefence;
+	int m_nResistAbility;
+	int m_nResistSpirit;
+	int m_nResistDragon;
+	int m_nResistFear;
+	int m_nResistAll;
+	int m_nPierceAbility;
+	int m_nPierceSpirit;
+	int m_nPierceDragon;
+	int m_nPierceFear;
+	int m_nPierceAll;
+	volatile int m_nSkillMDefend;
+	volatile int m_nSkillPvp;
+	volatile long m_SkillSpecialResistance;
+	volatile int m_nSkillSpecialPenalty;
+	volatile int m_nSkillSpecialPierce;
+	volatile long m_SkillElemental;
+	// END shared resistance sources
 	// NC-style defense parameters: source, skill modifier and effective AC.
 	private int m_nOrgPDefend;
 	private int m_nSkillPDefend;

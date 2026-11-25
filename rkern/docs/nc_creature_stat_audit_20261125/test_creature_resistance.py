@@ -14,7 +14,13 @@ with tempfile.TemporaryDirectory() as tmp:
     put(pkg+"LegacyResistance.java",legacy)
     put("l1j/server/server/utils/eKind.java",(root/"src/l1j/server/server/utils/eKind.java").read_text(encoding="utf-8"))
     put("l1j/server/server/utils/IntRange.java",(root/"src/l1j/server/server/utils/IntRange.java").read_text(encoding="utf-8"))
-    put(pkg+"L1Character.java","package l1j.server.server.model; public class L1Character { public boolean passive,erase; public boolean isPassive(int i){return passive;} public boolean hasSkillEffect(int i){return erase;} public void removeSkillEffect(int i){erase=false;} }")
+    creature = (root/"src"/pkg/"L1Character.java").read_text(encoding="utf-8")
+    fields = creature.split("// BEGIN shared resistance sources (CCreature)",1)[1].split("// END shared resistance sources",1)[0]
+    import re
+    assert not re.search(r"private\s+(?:volatile\s+)?(?:int|long)\s+(?:m_n|m_Skill)", (root/"src"/pkg/"Resistance.java").read_text(encoding="utf-8"))
+    for source in (root/"src").rglob("*.java"):
+        assert not re.search(r"\bnew\s+(?:l1j\.server\.server\.model\.)?Resistance\s*\(\s*\)", source.read_text(encoding="utf-8",errors="replace")), str(source)
+    put(pkg+"L1Character.java","package l1j.server.server.model; public class L1Character { "+fields+" public boolean passive,erase; public boolean isPassive(int i){return passive;} public boolean hasSkillEffect(int i){return erase;} public void removeSkillEffect(int i){erase=false;} }")
     put(pkg+"Instance/L1PcInstance.java","package l1j.server.server.model.Instance; public class L1PcInstance extends l1j.server.server.model.L1Character { public int notices; }")
     put(pkg+"character/skill/L1SkillId.java","package l1j.server.server.model.character.skill; public class L1SkillId { public static final int ERASE_MAGIC=153; }")
     put(pkg+"character/skill/passive/PassiveID.java","package l1j.server.server.model.character.skill.passive; public enum PassiveID { RESIST_ELEMENT; public int toInt(){return 1;} }")
@@ -49,8 +55,19 @@ public class Audit {
      for(eKind e:k)if(n.getSpecialResistance(e)!=o.getSpecialResistance(e)||n.getSpecialPierce(e)!=o.getSpecialPierce(e))throw new AssertionError("lane "+e+" at "+i);
      if(n.getSpecialResistance(null)!=0||n.getSpecialPierce(null)!=0||n.getMr()!=o.getMr()||n.getAddedMr()!=o.getAddedMr()||n.getBaseMr()!=o.getBaseMr()||n.getFire()!=o.getFire()||n.getWater()!=o.getWater()||n.getWind()!=o.getWind()||n.getEarth()!=o.getEarth()||a.notices!=b.notices)throw new AssertionError("source/notification "+i);
    }
-   Resistance standalone = new Resistance(); standalone.addSpecialResistance(eKind.ALL,20); if(standalone.getSpecialResistance(eKind.ALL)!=20)throw new AssertionError("standalone");
-   System.out.println("PASS 30000 resistance/MR transitions, notification parity and standalone");
+   L1Character npc=new L1Character(), npcOld=new L1Character();
+   Resistance nr=new Resistance(npc); LegacyResistance or=new LegacyResistance(npcOld);
+   for(eKind e:k){nr.addSpecialResistance(e,20);or.addSpecialResistance(e,20);nr.addSpecialPierce(e,-25);or.addSpecialPierce(e,-25);}
+   nr.setBaseMr(200);or.setBaseMr(200);nr.addMr(90);or.addMr(90);nr.setSkillMr(-70);or.setSkillMr(-70);
+   npc.passive=npcOld.passive=true;
+   if(nr.getMr()!=or.getMr()||npc.m_nOrgMDefend!=200)throw new AssertionError("NPC owner");
+   for(eKind e:k)if(nr.getSpecialResistance(e)!=or.getSpecialResistance(e)||nr.getSpecialPierce(e)!=or.getSpecialPierce(e))throw new AssertionError("NPC lane");
+   nr.dispose();or.dispose();
+   if(nr.getMr()!=or.getMr())throw new AssertionError("detached MR");
+   nr.init();or.init();
+   for(eKind e:k)if(nr.getSpecialResistance(e)!=or.getSpecialResistance(e)||nr.getSpecialPierce(e)!=or.getSpecialPierce(e))throw new AssertionError("detached reset");
+   if(a.m_nOrgMDefend!=n.getBaseMr())throw new AssertionError("owner storage");
+   System.out.println("PASS 30000 resistance/MR transitions, notification parity and NPC ownership/disposal");
  }
 }""")
     subprocess.run(["javac","-encoding","UTF-8","-d",str(d),*map(str,d.rglob("*.java"))],check=True)
