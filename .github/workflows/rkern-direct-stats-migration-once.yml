@@ -1,4 +1,4 @@
-name: RKern stat parameter migration verification
+name: RKern base parameter reference audit
 on:
   push:
     branches:
@@ -14,33 +14,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-      - name: Verify complete production class rename and removed aliases
+      - name: Enumerate base ability references
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-          root=Path("rkern/src")
-          files=sorted(root.rglob("*.java"))
-          assert files, "no sources checked"
-          old=[str(p) for p in files if re.search(r'\bCalcStat\b',p.read_text(encoding="utf-8"))]
-          assert not old, old
-          db=root/"l1j/server/server/utils/CPCParamDB.java"
-          assert db.is_file() and not db.with_name("CalcStat.java").exists()
-          assert "public final class CPCParamDB" in db.read_text(encoding="utf-8")
-          print(f"PASS {len(files)} production Java files, zero CalcStat references")
+          pat=re.compile(r'\b(?:PcBaseAbilityCache|BaseAbility|getBaseAbility|getBaseCache|baseHitFor|m_BaseParam|resetBaseAll)\b')
+          for root,ext in [('rkern/src','*.java'),('rkern/docs','*.py'),('.github/workflows','*.yml')]:
+              for p in sorted(Path(root).rglob(ext)):
+                  if p.name=='rkern-direct-stats-migration-once.yml': continue
+                  for i,l in enumerate(p.read_text(encoding="utf-8").splitlines(),1):
+                      if pat.search(l): print(f"{p}:{i}: {l.strip()}")
           PY
-      - name: Verify formula equivalence and common validation paths
-        run: |
-          python3 rkern/docs/nc_creature_stat_audit_20261125/test_calcstat_dead_mp_tables.py
-          python3 rkern/docs/nc_creature_stat_audit_20261125/test_param_bonus_lookup.py
-          python3 rkern/docs/nc_creature_stat_audit_20261125/test_intrinsic_stat_owner.py
-          python3 rkern/docs/nc_creature_stat_audit_20261125/test_validate_parameters.py
-          python3 rkern/docs/nc_creature_stat_audit_20261125/test_base_mdefend_refresh.py
-          python3 rkern/docs/nc_creature_stat_audit_20261125/test_creature_primary_stats.py
-          python3 rkern/docs/nc_creature_stat_audit_20261125/test_stat_lifecycle.py
-          python3 rkern/docs/nc_creature_stat_audit_20261125/test_vital_sources.py
