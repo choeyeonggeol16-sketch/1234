@@ -23,6 +23,62 @@ public final class TestNpcMakerLifecycle {
         if (!value) throw new AssertionError(message);
     }
 
+    private static void concurrentDecay() throws Exception {
+        try (var pool = java.util.concurrent.Executors.newFixedThreadPool(8)) {
+            for (int round = 0; round < 100; round++) {
+                Maker maker = new Maker(8);
+                maker.init();
+                long death = System.nanoTime() / 1_000_000L - 6000;
+                var gate = new java.util.concurrent.CountDownLatch(1);
+                var jobs = new java.util.ArrayList<java.util.concurrent.Future<Integer>>();
+                for (int thread = 0; thread < 8; thread++) {
+                    jobs.add(pool.submit(() -> {
+                        gate.await();
+                        int accepted = 0;
+                        for (int slot = 1; slot <= 8; slot++) {
+                            if (maker.npcMakerPublishDecay(slot, 1000 + slot, death)) accepted++;
+                        }
+                        return accepted;
+                    }));
+                }
+                gate.countDown();
+                int accepted = 0;
+                for (var job : jobs) accepted += job.get(5, java.util.concurrent.TimeUnit.SECONDS);
+                check(accepted == 8, "one accepted deletion per slot");
+                maker.npcMakerDrainDecayEvents();
+                check(maker.npcMakerActiveCount() == 0 && maker.npcMakerPendingCount() == 8, "concurrent deletion count");
+                maker.TimerExpired(CNpcMaker.TIMER_NPC_MAKER_WAKE, 0);
+                check(maker.attempts == 16 && maker.npcMakerActiveCount() == 8 && maker.npcMakerPendingCount() == 0, "exactly one respawn per slot");
+                maker.Retire();
+            }
+            for (int round = 0; round < 100; round++) {
+                Maker maker = new Maker(1);
+                maker.init();
+                check(maker.npcMakerPublishDecay(1, 123, System.nanoTime() / 1_000_000L - 6000), "retire race seed");
+                var gate = new java.util.concurrent.CountDownLatch(1);
+                var timer = pool.submit(() -> {
+                    gate.await();
+                    maker.TimerExpired(CNpcMaker.TIMER_NPC_MAKER_WAKE, 0);
+                    return null;
+                });
+                var retire = pool.submit(() -> {
+                    gate.await();
+                    maker.Retire();
+                    return null;
+                });
+                gate.countDown();
+                timer.get(5, java.util.concurrent.TimeUnit.SECONDS);
+                retire.get(5, java.util.concurrent.TimeUnit.SECONDS);
+                int attempts = maker.attempts;
+                check(attempts == 1 || attempts == 2, "retire race bounded creation");
+                check(maker.IsRetired() && maker.npcMakerActiveCount() == 0 && maker.npcMakerPendingCount() == 0, "retire race final state");
+                maker.TimerExpired(CNpcMaker.TIMER_NPC_MAKER_WAKE, 0);
+                check(maker.attempts == attempts, "no generation after retirement");
+            }
+        }
+        System.out.println("PASS 100 concurrent eight-producer deletion rounds (6400 attempts), 100 timer-retirement races");
+    }
+
     public static void main(String[] args) throws Exception {
         Maker maker = new Maker(3);
         maker.setId(77);
@@ -100,6 +156,7 @@ public final class TestNpcMakerLifecycle {
         }
         pos = definition.GenerateSpawnPos(rnd, 50, false, 0, 0);
         check((int)(pos >>> 32) == 33000 && (int)pos == 33100, "area fallback");
+        concurrentDecay();
         System.out.println("PASS Maker definition, quota, duplicate decay, deadline, retry, wake, retirement and position rules");
     }
 }
