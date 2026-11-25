@@ -1,0 +1,21 @@
+name: Recipe material reference audit
+on: [push]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find exact recipe call sites
+        run: |
+          python3 - <<'PY'
+          import pathlib,re
+          files=list(pathlib.Path('rkern/src').rglob('*.java'))
+          print('JAVA_FILES',len(files))
+          pat=re.compile(r'\b(?:제작리스트[13]?|consumeEnchantItem|HaveUnequippedItemByClassIdEnchanted|DeleteItemByDescIDEnchanted|GetItemListByClassIDEnchanted|DeleteEnchant|checkEnchant)\s*\(')
+          for p in files:
+            for i,line in enumerate(p.read_text(encoding='utf-8-sig').splitlines(),1):
+              if pat.search(line):
+                print('MATCH',str(p),i,line.strip())
+          PY
