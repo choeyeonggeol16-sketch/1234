@@ -4054,7 +4054,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 	}
 
 	private static void 보안버프(L1PcInstance gm) {
-		gm.getAC().addAc(-1);
+		gm.addAc(-1);
 		SC_PacketBox.send(gm, gm, SC_PacketBox.ICON_SECURITY_SERVICES);
 		SC_OwnCharStatus.send(gm);
 	}

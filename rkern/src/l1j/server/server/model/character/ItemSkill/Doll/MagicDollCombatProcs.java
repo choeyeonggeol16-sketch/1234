@@ -115,7 +115,7 @@ public final class MagicDollCombatProcs {
                 SC_PacketBox.send(pc, SC_PacketBox.UNLIMITED_ICON1, 55, false);
             }
         }
-        if ((proc == DEATH || proc == BLACK) && target.getResistance().getEffectedMrBySkill() <= rates.criticalMrMax()
+        if ((proc == DEATH || proc == BLACK) && target.GetMDefendBySkill() <= rates.criticalMrMax()
                 && ThreadLocalRandom.current().nextInt(100) < rates.criticalChance()) {
             bonus = (int) (((long) bonus * rates.criticalMultiplierPercent() + 50L) / 100L);
         }

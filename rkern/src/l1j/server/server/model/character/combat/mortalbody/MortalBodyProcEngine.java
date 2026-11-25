@@ -27,7 +27,7 @@ public final class MortalBodyProcEngine {
     /** src22: -(victim AC / 2), minimum 40, attacker immunity reduction. */
     public static int calcReflectDamage(L1Character attacker, L1Character defender) {
         if (attacker == null || defender == null) return 0;
-        int damage = -(defender.getAC().getAc() / 2);
+        int damage = -(defender.getAc() / 2);
         if (damage < MIN_DAMAGE) damage = MIN_DAMAGE;
         if (attacker instanceof L1PcInstance pc) {
             final double reduction = pc.getImmuneReduction();

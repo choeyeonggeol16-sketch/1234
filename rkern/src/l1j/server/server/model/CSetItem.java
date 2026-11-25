@@ -98,19 +98,19 @@ public final class CSetItem {
         ItemStat.MPR.apply(pc, sign * mpr);
         ItemStat.MR.apply(pc, sign * mr);
 
-        final Ability ability = pc.getAbility();
-        ability.addAddedStr((byte) (sign * str));
-        ability.addAddedDex((byte) (sign * dex));
-        ability.addAddedCon((byte) (sign * con));
-        ability.addAddedWis((byte) (sign * wis));
-        ability.addAddedCha((byte) (sign * cha));
-        ability.addAddedInt((byte) (sign * intelligence));
+        final var ability = pc;
+        ability.AddStatBonusStr((byte) (sign * str));
+        ability.AddStatBonusDex((byte) (sign * dex));
+        ability.AddStatBonusCon((byte) (sign * con));
+        ability.AddStatBonusWis((byte) (sign * wis));
+        ability.AddStatBonusCha((byte) (sign * cha));
+        ability.AddStatBonusInt((byte) (sign * intelligence));
 
-        final Resistance resistance = pc.getResistance();
-        resistance.addWater(sign * water);
-        resistance.addEarth(sign * earth);
-        resistance.addWind(sign * wind);
-        resistance.addFire(sign * fire);
+        final var resistance = pc;
+        resistance.AddWaterResist(sign * water);
+        resistance.AddEarthResist(sign * earth);
+        resistance.AddWindResist(sign * wind);
+        resistance.AddFireResist(sign * fire);
     }
 
     boolean isValid(L1EquipmentSlot slot) {

@@ -74,11 +74,11 @@ public class L1EquipmentSlot {
 		EquipmentEnchantOptions.applyNamedWeaponOptions(_owner, weapon.getItem(), enchant, 1, null);
 		/** 나이트발드의 양손검 기술적중 **/
 		if (itemId == 59 || itemId == 617 || itemId == 11121) {
-			_owner.getResistance().addSpecialPierce(eKind.ABILITY, 5);
+			_owner.AddSpecialPierce(eKind.ABILITY, 5);
 		}
 		/** 악몽의 장궁 정령 적중**/
 		if (itemId == 622 || itemId == 1136) {
-			_owner.getResistance().addSpecialPierce(eKind.SPIRIT, 3);
+			_owner.AddSpecialPierce(eKind.SPIRIT, 3);
 		}
 		/** 악마왕 도끼 **/
 		EquipmentEnchantOptions.applyDemonAxe(_owner, weapon.getItem(), enchant, 1, null);
@@ -86,7 +86,7 @@ public class L1EquipmentSlot {
 		EquipmentEnchantOptions.applyWeaponAccuracy(_owner, weapon.getItem(), enchant, 1, null);
 		/** 썸타는 도끼 공포적중+5 **/
 		if (itemId == 7000221) 
-			_owner.getResistance().addSpecialPierce(eKind.FEAR, 5);
+			_owner.AddSpecialPierce(eKind.FEAR, 5);
 
 		/** 썸타는 무기류 PVP 효과 부여 **/
 		EquipmentEnchantOptions.applyCourtshipWeaponPvp(_owner, weapon.getItem(), enchant, 1, null);
@@ -95,7 +95,7 @@ public class L1EquipmentSlot {
 	
 		int type = weapon.getItem().getType();
 		if ((type == 7 || type == 16 || type == 17) && (weapon.get_bless_level() != 0)) {
-			_owner.getAbility().addSp(weapon.get_bless_level());
+			_owner.AddStatSp(weapon.get_bless_level());
 			try { SC_SPMR.send(_owner); }
 			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
@@ -348,13 +348,13 @@ public class L1EquipmentSlot {
 		EquipmentEnchantOptions.applyHelmsAndDragonArmor(_owner, item, itemlvl, 1, null);
 		if (itemId == 20279) {
 
-			_owner.getResistance().addcalcPcDefense(2);
+			_owner.AddPvpDamageReduction(2);
 			
 
 			}
 		if (itemId == 20314) {
 
-			_owner.getResistance().addPVPweaponTotalDamage(2);
+			_owner.AddPvpDamage(2);
 			
 
 			}
@@ -387,17 +387,17 @@ public class L1EquipmentSlot {
 		EquipmentEnchantOptions.applyDemonAxe(_owner, weapon.getItem(), enchant, -1, null);
 		/** 나이트발드의 양손검 기술적중 **/
 		if (itemId == 59 || itemId == 617  || itemId == 11121) {
-			_owner.getResistance().addSpecialPierce(eKind.ABILITY, -5);
+			_owner.AddSpecialPierce(eKind.ABILITY, -5);
 		}
 		/** 악몽의 장궁 정령 적중**/
 		if (itemId == 622 || itemId == 1136) {
-			_owner.getResistance().addSpecialPierce(eKind.SPIRIT, -3);
+			_owner.AddSpecialPierce(eKind.SPIRIT, -3);
 		}
 		/** 태풍의도끼 공포적중+1 **/
 		EquipmentEnchantOptions.applyWeaponAccuracy(_owner, weapon.getItem(), enchant, -1, null);
 		/** 썸타는 도끼 공포적중+5 **/
 		if (itemId == 7000221) 
-			_owner.getResistance().addSpecialPierce(eKind.FEAR, -5);
+			_owner.AddSpecialPierce(eKind.FEAR, -5);
 		
 		/** 썸타는 무기류 PVP 효과 부여 **/
 		EquipmentEnchantOptions.applyCourtshipWeaponPvp(_owner, weapon.getItem(), enchant, -1, null);
@@ -458,7 +458,7 @@ public class L1EquipmentSlot {
 		}
 		
 		if ((type == 7 || type == 16 || type == 17) && (weapon.get_bless_level() != 0)) {
-			_owner.getAbility().addSp(-weapon.get_bless_level());
+			_owner.AddStatSp(-weapon.get_bless_level());
 			try { SC_SPMR.send(_owner); }
 			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
@@ -584,12 +584,12 @@ public class L1EquipmentSlot {
 		
 		if (itemId == 20279) {
 			
-			_owner.getResistance().addcalcPcDefense(-2);
+			_owner.AddPvpDamageReduction(-2);
 				
 			}
 		if (itemId == 20314) {
 
-			_owner.getResistance().addPVPweaponTotalDamage(-2);
+			_owner.AddPvpDamage(-2);
 			
 
 			}
@@ -689,16 +689,16 @@ public class L1EquipmentSlot {
 		ItemStat.BLESS_CONSUMO.apply(_owner, sign * item.get_addeinhasadper());
 		ItemStat.MAX_HP.apply(_owner, sign * item.get_addhp());
 		ItemStat.MAX_MP.apply(_owner, sign * item.get_addmp());
-		final Ability ability = _owner.getAbility();
-		ability.addAddedStr((byte) (sign * item.get_addstr()));
-		ability.addAddedCon((byte) (sign * item.get_addcon()));
-		ability.addAddedDex((byte) (sign * item.get_adddex()));
-		ability.addAddedInt((byte) (sign * item.get_addint()));
-		ability.addAddedWis((byte) (sign * item.get_addwis()));
+		final var ability = _owner;
+		ability.AddStatBonusStr((byte) (sign * item.get_addstr()));
+		ability.AddStatBonusCon((byte) (sign * item.get_addcon()));
+		ability.AddStatBonusDex((byte) (sign * item.get_adddex()));
+		ability.AddStatBonusInt((byte) (sign * item.get_addint()));
+		ability.AddStatBonusWis((byte) (sign * item.get_addwis()));
 		_owner.add_missile_critical_rate(sign * item.get_missile_critical_probability());
 		_owner.add_melee_critical_rate(sign * item.get_melee_critical_probability());
 		if (item.get_addwis() != 0) _owner.resetBaseMr();
-		ability.addAddedCha((byte) (sign * item.get_addcha()));
+		ability.AddStatBonusCha((byte) (sign * item.get_addcha()));
 
 		int magicResistance = equipment.getMr();
 		if (item.getItemId() == 20236 && _owner.isElf()) magicResistance += 5;
@@ -747,11 +747,11 @@ public class L1EquipmentSlot {
 	}
 
 	private int applyArmorVitalBonus(L1ItemInstance armor, L1Item item) {
-		final Ability ability = _owner.getAbility();
+		final var ability = _owner;
 		final int conBonus = item.get_addcon();
 		final int wisBonus = item.get_addwis();
-		final int hp = conBonus > 0 ? ability.getCon() / 2 * conBonus : 0;
-		final int mp = wisBonus > 0 ? ability.getWis() / 2 * wisBonus : 0;
+		final int hp = conBonus > 0 ? ability.GetStatCon() / 2 * conBonus : 0;
+		final int mp = wisBonus > 0 ? ability.GetStatWis() / 2 * wisBonus : 0;
 		final int classBonus = item.getItemId() == 800110 ? selectClassArmorBonus().ordinal() + 1 : 0;
 		if (hp == 0 && mp == 0 && classBonus == 0) return 0;
 
@@ -807,16 +807,16 @@ public class L1EquipmentSlot {
 
 	private ClassArmorBonus selectClassArmorBonus() {
 		if (_owner.isBlackwizard() || _owner.isWizard()) return ClassArmorBonus.MAGIC;
-		if (_owner.isElf() && _owner.getAbility().getBaseDex() >= 30) return ClassArmorBonus.BOW;
+		if (_owner.isElf() && _owner.GetOriginalStatDex() >= 30) return ClassArmorBonus.BOW;
 		return ClassArmorBonus.MELEE;
 	}
 
 	private void applyClassArmorBonus(int option, int sign) {
 		if (option == 0) return;
-		_owner.getAC().addAc(-8 * sign);
+		_owner.addAc(-8 * sign);
 		switch (CLASS_ARMOR_BONUSES[option - 1]) {
 		case MAGIC -> {
-			_owner.getAbility().addSp(2 * sign);
+			_owner.AddStatSp(2 * sign);
 			_owner.addBaseMagicHitUp(2 * sign);
 		}
 		case BOW -> {
@@ -829,7 +829,7 @@ public class L1EquipmentSlot {
 		}
 		}
 		_owner.addDamageReductionByArmor(2 * sign);
-		_owner.getResistance().addSpecialResistance(eKind.FEAR, 2 * sign);
+		_owner.AddSpecialResistance(eKind.FEAR, 2 * sign);
 	}
 
 	private void applyArmorDefense(L1ItemInstance armor, int enchant, int sign) {
@@ -1017,11 +1017,11 @@ public class L1EquipmentSlot {
 		ItemStat.BOW_DMG.apply(_owner, sign * item.getBowDmgRate());
 		ItemStat.DMG_RATE.apply(_owner, sign * item.getDmgRate());
 		_owner.addHitRate(sign * item.getHitRate());
-		final Resistance resistance = _owner.getResistance();
-		resistance.addEarth(sign * item.get_defense_earth());
-		resistance.addWind(sign * item.get_defense_wind());
-		resistance.addWater(sign * item.get_defense_water());
-		resistance.addFire(sign * item.get_defense_fire());
+		final var resistance = _owner;
+		resistance.AddEarthResist(sign * item.get_defense_earth());
+		resistance.AddWindResist(sign * item.get_defense_wind());
+		resistance.AddWaterResist(sign * item.get_defense_water());
+		resistance.AddFireResist(sign * item.get_defense_fire());
 		item.equipmentItem(_owner, sign > 0);
 		ItemStat.PVP_DMG_RED.apply(_owner, sign * item.get_regist_calcPcDefense());
 		ItemStat.PVP_DMG.apply(_owner, sign * item.get_regist_PVPweaponTotalDamage());

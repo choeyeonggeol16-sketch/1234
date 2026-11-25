@@ -29,7 +29,7 @@ final class NpcPetCommands {
         final L1PcInstance pc = client.getActiveChar();
         if (pc == null || PetTypeTable.getInstance().get(npcId) == null) return;
 
-        int charisma = pc.getAbility().getTotalCha();
+        int charisma = pc.GetTotalStatCha();
         if (pc.isElf()) charisma += 12;
         else if (pc.isCrown() || pc.isWizard() || pc.isDarkelf()
                 || pc.isDragonknight() || pc.isBlackwizard()) charisma += 6;

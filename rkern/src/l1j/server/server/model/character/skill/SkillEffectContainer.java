@@ -204,7 +204,7 @@ public final class SkillEffectContainer {
 		CCreatureSkillMod state = m_SkillMod;
 		if (state == null) {
 			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0L, 0L, 0, notify);
-			owner.getResistance().setSkillCombatModifiers(0, 0L, 0, 0, notify);
+			owner.SetSkillCombatModifiers(0, 0L, 0, 0, notify);
 			if (owner instanceof L1PcInstance pc) {
 				pc.setPumpedCarryArmorAndAccuracy(0, notify);
 				pc.setPumpedRegenAndWeaponRates(0);
@@ -226,7 +226,7 @@ public final class SkillEffectContainer {
 		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
 				state.effectivePrimaryStats(), elements, evasion, weapon, combatRates, state.sp, notify);
 		final int pvp = (state.pvpReduction << 16) | (state.pvpDamage & 0xffff);
-		owner.getResistance().setSkillCombatModifiers(pvp, state.specialResistance,
+		owner.SetSkillCombatModifiers(pvp, state.specialResistance,
 				state.specialPenalty, state.specialPierce, notify);
 		if (owner instanceof L1PcInstance pc) {
 			final long carryArmorAndAccuracy = ((long) state.baseMagicHit << 32)

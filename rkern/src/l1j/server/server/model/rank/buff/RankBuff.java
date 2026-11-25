@@ -185,40 +185,40 @@ public final class RankBuff {
             break;
         case 5:
             pc.addMaxHp(200 * sign);
-            pc.getAC().addAc(-1 * sign);
+            pc.addAc(-1 * sign);
             break;
         case 6:
             pc.addMaxHp(200 * sign);
-            pc.getAC().addAc(-2 * sign);
-            pc.getResistance().addcalcPcDefense(sign);
+            pc.addAc(-2 * sign);
+            pc.AddPvpDamageReduction(sign);
             break;
         case 7:
             pc.addMaxHp(200 * sign);
-            pc.getAC().addAc(-3 * sign);
-            pc.getResistance().addcalcPcDefense(sign);
+            pc.addAc(-3 * sign);
+            pc.AddPvpDamageReduction(sign);
             break;
         case 8:
             pc.addMaxHp(200 * sign);
-            pc.getAC().addAc(-3 * sign);
-            pc.getResistance().addcalcPcDefense(2 * sign);
+            pc.addAc(-3 * sign);
+            pc.AddPvpDamageReduction(2 * sign);
             break;
         case 9:
             pc.addMaxHp(200 * sign);
-            pc.getAC().addAc(-3 * sign);
-            pc.getResistance().addcalcPcDefense(2 * sign);
+            pc.addAc(-3 * sign);
+            pc.AddPvpDamageReduction(2 * sign);
             pc.addDmgupByArmor(sign);
             pc.addBowDmgupByArmor(sign);
             break;
         case 10:
         case 11:
             switch(classId){
-            case 2:         pc.getAbility().addAddedDex(sign); break;
-            case 3: case 6: pc.getAbility().addAddedInt(sign); break;
-            default:        pc.getAbility().addAddedStr(sign); break;
+            case 2:         pc.AddStatBonusDex(sign); break;
+            case 3: case 6: pc.AddStatBonusInt(sign); break;
+            default:        pc.AddStatBonusStr(sign); break;
             }
             pc.addMaxHp(200 * sign);
-            pc.getAC().addAc(-3 * sign);
-            pc.getResistance().addcalcPcDefense(2 * sign);
+            pc.addAc(-3 * sign);
+            pc.AddPvpDamageReduction(2 * sign);
             pc.addDmgupByArmor(sign);
             pc.addBowDmgupByArmor(sign);
             break;

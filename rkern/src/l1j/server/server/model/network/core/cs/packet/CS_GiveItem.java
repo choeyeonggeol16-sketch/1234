@@ -289,7 +289,7 @@ public final class CS_GiveItem {
             }
         }
 
-        int charisma = pc.getAbility().getTotalCha();
+        int charisma = pc.GetTotalStatCha();
 
         if (pc.isCrown()) {
             charisma += 6;

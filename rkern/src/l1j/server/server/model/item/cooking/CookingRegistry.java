@@ -96,17 +96,17 @@ public final class CookingRegistry {
             @Override void writePresent(ItemPresentOutStream os, int v) { os.writeMaxMP(v); }
         },
         AC(UPD_STATUS | UPD_STATUS2) {
-            @Override void apply(L1PcInstance pc, int v) { pc.getAC().addAc(v); }
+            @Override void apply(L1PcInstance pc, int v) { pc.addAc(v); }
             @Override void writePresent(ItemPresentOutStream os, int v) {
                 if (v != 0) os.writeAddAc(v < 0 ? -v : v);
             }
         },
         MR(UPD_SPMR) {
-            @Override void apply(L1PcInstance pc, int v) { pc.getResistance().addMr(v); }
+            @Override void apply(L1PcInstance pc, int v) { pc.AddMDefend(v); }
             @Override void writePresent(ItemPresentOutStream os, int v) { os.writeAddMR(v); }
         },
         ATTR_RESIS(UPD_ATTR) {
-            @Override void apply(L1PcInstance pc, int v) { pc.getResistance().addAllNaturalResistance(v); }
+            @Override void apply(L1PcInstance pc, int v) { pc.AddAllNaturalResistance(v); }
             @Override void writePresent(ItemPresentOutStream os, int v) {
                 os.writeRegistFire(v);
                 os.writeRegistWater(v);
@@ -115,7 +115,7 @@ public final class CookingRegistry {
             }
         },
         SP(UPD_SPMR) {
-            @Override void apply(L1PcInstance pc, int v) { pc.getAbility().addSp(v); }
+            @Override void apply(L1PcInstance pc, int v) { pc.AddStatSp(v); }
             @Override void writePresent(ItemPresentOutStream os, int v) { os.writeAddSP(v); }
         },
         DMG_RED(UPD_STATUS) {
@@ -123,15 +123,15 @@ public final class CookingRegistry {
             @Override void writePresent(ItemPresentOutStream os, int v) { os.writeDMGdown(v); }
         },
         PVP_DMG_RED(UPD_STATUS) {
-            @Override void apply(L1PcInstance pc, int v) { pc.getResistance().addcalcPcDefense(v); }
+            @Override void apply(L1PcInstance pc, int v) { pc.AddPvpDamageReduction(v); }
             @Override void writePresent(ItemPresentOutStream os, int v) { os.writePVPAddDMGdown(v); }
         },
         ALL_PIERCE(UPD_SPECIAL) {
-            @Override void apply(L1PcInstance pc, int v) { pc.getResistance().addSpecialPierce(eKind.ALL, v); }
+            @Override void apply(L1PcInstance pc, int v) { pc.AddSpecialPierce(eKind.ALL, v); }
             @Override void writePresent(ItemPresentOutStream os, int v) { os.writeaAll_pierce(v); }
         },
         ALL_RESIS(UPD_SPECIAL) {
-            @Override void apply(L1PcInstance pc, int v) { pc.getResistance().addSpecialResistance(eKind.ALL, v); }
+            @Override void apply(L1PcInstance pc, int v) { pc.AddSpecialResistance(eKind.ALL, v); }
             @Override void writePresent(ItemPresentOutStream os, int v) { os.writeaAll_resis(v); }
         };
 

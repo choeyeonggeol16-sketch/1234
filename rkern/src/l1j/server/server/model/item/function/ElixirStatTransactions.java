@@ -35,12 +35,12 @@ public final class ElixirStatTransactions {
         final int beforeStat;
         final String column;
         switch (type) {
-        case 0: beforeStat = pc.getAbility().getStr(); column = "Str"; break;
-        case 1: beforeStat = pc.getAbility().getCon(); column = "Con"; break;
-        case 2: beforeStat = pc.getAbility().getDex(); column = "Dex"; break;
-        case 3: beforeStat = pc.getAbility().getInt(); column = "Intel"; break;
-        case 4: beforeStat = pc.getAbility().getWis(); column = "Wis"; break;
-        case 5: beforeStat = pc.getAbility().getCha(); column = "Cha"; break;
+        case 0: beforeStat = pc.GetStatStr(); column = "Str"; break;
+        case 1: beforeStat = pc.GetStatCon(); column = "Con"; break;
+        case 2: beforeStat = pc.GetStatDex(); column = "Dex"; break;
+        case 3: beforeStat = pc.GetStatInt(); column = "Intel"; break;
+        case 4: beforeStat = pc.GetStatWis(); column = "Wis"; break;
+        case 5: beforeStat = pc.GetStatCha(); column = "Cha"; break;
         default: return;
         }
         if (beforeStat >= 45) {
@@ -76,23 +76,23 @@ public final class ElixirStatTransactions {
                 tx.commitAfterInventoryRelease(() -> {
                     final int liveStat;
                     switch (type) {
-                    case 0: liveStat = pc.getAbility().getStr(); break;
-                    case 1: liveStat = pc.getAbility().getCon(); break;
-                    case 2: liveStat = pc.getAbility().getDex(); break;
-                    case 3: liveStat = pc.getAbility().getInt(); break;
-                    case 4: liveStat = pc.getAbility().getWis(); break;
-                    default: liveStat = pc.getAbility().getCha(); break;
+                    case 0: liveStat = pc.GetStatStr(); break;
+                    case 1: liveStat = pc.GetStatCon(); break;
+                    case 2: liveStat = pc.GetStatDex(); break;
+                    case 3: liveStat = pc.GetStatInt(); break;
+                    case 4: liveStat = pc.GetStatWis(); break;
+                    default: liveStat = pc.GetStatCha(); break;
                     }
                     if (pc.getLevel() != level || pc.getElixirStats() != beforeCount
                             || liveStat != beforeStat)
                         throw new IllegalStateException("Elixir live stat changed before receipt apply");
                     switch (type) {
-                    case 0: pc.getAbility().addStr(1); break;
-                    case 1: pc.getAbility().addCon(1); break;
-                    case 2: pc.getAbility().addDex(1); pc.resetBaseAc(); break;
-                    case 3: pc.getAbility().addInt(1); break;
-                    case 4: pc.getAbility().addWis(1); pc.resetBaseMr(); break;
-                    case 5: pc.getAbility().addCha(1); break;
+                    case 0: pc.AddStatStr(1); break;
+                    case 1: pc.AddStatCon(1); break;
+                    case 2: pc.AddStatDex(1); pc.resetBaseAc(); break;
+                    case 3: pc.AddStatInt(1); break;
+                    case 4: pc.AddStatWis(1); pc.resetBaseMr(); break;
+                    case 5: pc.AddStatCha(1); break;
                     }
                     pc.setElixirStats(nextCount);
                     // Persist the committed stat before any client notification.

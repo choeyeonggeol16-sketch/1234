@@ -29,12 +29,12 @@ public final class SC_SPECIAL_RESISTANCE_NOTI extends ProtoPacket {
     @Override
     protected void body(ProtoWriter w) {
         for (eKind e : eKind.values()) {
-            final int v = _pc.getResistance().getSpecialResistance(e); 
+            final int v = _pc.GetSpecialResistance(e); 
             final eKind k = e;
             w.msg(1).enumV(1, k.value()).int32(2, v).end();
         }
         for (eKind e : eKind.values()) {
-            final int v = _pc.getResistance().getSpecialPierce(e);
+            final int v = _pc.GetSpecialPierce(e);
             final eKind k = e;
             w.msg(2).enumV(1, k.value()).int32(2, v).end();
         }
@@ -44,12 +44,12 @@ public final class SC_SPECIAL_RESISTANCE_NOTI extends ProtoPacket {
     /** Direct serialization with primitive presence bits; no message instance. */
     public static void writeFields(ProtoWriter w, L1PcInstance _pc) {
         for (eKind e : KINDS) {
-                final int v = _pc.getResistance().getSpecialResistance(e);
+                final int v = _pc.GetSpecialResistance(e);
                 final eKind k = e;
                 w.msg(1).enumV(1, k.value()).int32(2, v).end();
             }
             for (eKind e : KINDS) {
-                final int v = _pc.getResistance().getSpecialPierce(e);
+                final int v = _pc.GetSpecialPierce(e);
                 final eKind k = e;
                 w.msg(2).enumV(1, k.value()).int32(2, v).end();
             }

@@ -17,7 +17,6 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.model.Ability;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.CInventory;
@@ -223,10 +222,10 @@ public class L1CompanionInstance extends L1NpcInstance{
             master.sendPackets("펫에게 남아있는 엘릭서 갯수가 모자랍니다.");
             return;
         }
-        Ability ability = companion.getAbility();
-        if(ability.getAddedStr() + added_stats[0] > CompanionSettings.MAX_STAT ||
-                ability.getAddedCon() + added_stats[1] > CompanionSettings.MAX_STAT ||
-                ability.getAddedInt() + added_stats[2] > CompanionSettings.MAX_STAT
+        var ability = companion;
+        if(ability.GetAddedStatStr() + added_stats[0] > CompanionSettings.MAX_STAT ||
+                ability.GetAddedStatCon() + added_stats[1] > CompanionSettings.MAX_STAT ||
+                ability.GetAddedStatInt() + added_stats[2] > CompanionSettings.MAX_STAT
                 ){
             master.sendPackets(String.format("모든 스탯은 %d까지만 올릴 수 있습니다.", CompanionSettings.MAX_STAT));
             return;
@@ -235,9 +234,9 @@ public class L1CompanionInstance extends L1NpcInstance{
             master.sendPackets("아이템 정보를 찾을 수 없습니다.");
             return;
         }
-        ability.addAddedStr(added_stats[0]);
-        ability.addAddedCon(added_stats[1]);
-        ability.addAddedInt(added_stats[2]);
+        ability.AddStatBonusStr(added_stats[0]);
+        ability.AddStatBonusCon(added_stats[1]);
+        ability.AddStatBonusInt(added_stats[2]);
         companion.set_elixir_use_count(companion.get_elixir_use_count() + 1);
         companion.update_stats();
         companion.update_elixir_use_count();
@@ -374,9 +373,9 @@ public class L1CompanionInstance extends L1NpcInstance{
         companion.setCurrentMp(rs.getInt("current_mp"));
         companion.setLawful(rs.getInt("lawful"));
         companion.set_tier(rs.getInt("tier"));
-        companion.getAbility().addAddedStr(rs.getInt("str"));
-        companion.getAbility().addAddedCon(rs.getInt("con"));
-        companion.getAbility().addAddedInt(rs.getInt("intel"));
+        companion.AddStatBonusStr(rs.getInt("str"));
+        companion.AddStatBonusCon(rs.getInt("con"));
+        companion.AddStatBonusInt(rs.getInt("intel"));
         companion.set_elixir_use_count(rs.getInt("elixir_use_count"));
         companion.set_is_oblivion(rs.getInt("is_oblivion") != 0);
         companion.set_is_traning(rs.getInt("is_traning") != 0);
@@ -754,11 +753,11 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     public int get_remain_stats(){
         int level = getLevel();
-        Ability ability = getAbility();
+        var ability = this;
         int total_added_stats = 
-                ability.getAddedStr() + 
-                ability.getAddedCon() + 
-                ability.getAddedInt() -
+                ability.GetAddedStatStr() + 
+                ability.GetAddedStatCon() + 
+                ability.GetAddedStatInt() -
                 get_elixir_use_count();
         
         int added_stat = (Math.min(level, 50)) / 10;
@@ -915,10 +914,10 @@ public class L1CompanionInstance extends L1NpcInstance{
         
         m_master.sendPackets(String.format("펫 %s(이)를 망각시켰습니다.", getName()));
         set_is_oblivion(true);
-        Ability ability = getAbility();
-        ability.addAddedStr(-ability.getAddedStr());
-        ability.addAddedCon(-ability.getAddedCon());
-        ability.addAddedInt(-ability.getAddedInt());
+        var ability = this;
+        ability.AddStatBonusStr(-ability.GetAddedStatStr());
+        ability.AddStatBonusCon(-ability.GetAddedStatCon());
+        ability.AddStatBonusInt(-ability.GetAddedStatInt());
         oblivion_buffs();
         oblivion_skills();
         set_tier(1);		
@@ -933,10 +932,10 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(m_master == null)
             return;
         
-        Ability ability = getAbility();
-        ability.addAddedStr(-ability.getAddedStr());
-        ability.addAddedCon(-ability.getAddedCon());
-        ability.addAddedInt(-ability.getAddedInt());
+        var ability = this;
+        ability.AddStatBonusStr(-ability.GetAddedStatStr());
+        ability.AddStatBonusCon(-ability.GetAddedStatCon());
+        ability.AddStatBonusInt(-ability.GetAddedStatInt());
         update_stats();
         update_instance();
         SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_ALL);		
@@ -1367,7 +1366,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             if(gap > 0){
                 for(int i = gap - 1; i>=0; --i){
                     addMaxHp(GameRandom.next(m_stat_effect.get_add_min_hp(), m_stat_effect.get_add_max_hp()));
-                    addMaxMp(getAbility().getTotalWis() / 2);
+                    addMaxMp(GetTotalStatWis() / 2);
                 }
                 SC_SkillSound.broadcast(this, getId(), 6353);
                 SC_ServerMessage.send(m_master, 320, getName());
@@ -1462,8 +1461,8 @@ public class L1CompanionInstance extends L1NpcInstance{
     
     public void update_skill_effect(){
         if(m_skill_effect != null){
-            getAC().addAc(-m_skill_effect.get_ac());
-            getResistance().addMr(-m_skill_effect.get_mr());
+            addAc(-m_skill_effect.get_ac());
+            AddMDefend(-m_skill_effect.get_mr());
         }
         
         CompanionSkillEffect buff_effect = CompanionSkillEffect.newInstance();
@@ -1497,19 +1496,19 @@ public class L1CompanionInstance extends L1NpcInstance{
             .add_spell_dmg_add(cskInfo.get_spell_dmg_add());
         }
         m_skill_effect = buff_effect;
-        getAC().addAc(m_skill_effect.get_ac());
-        getResistance().addMr(m_skill_effect.get_mr());
+        addAc(m_skill_effect.get_ac());
+        AddMDefend(m_skill_effect.get_mr());
     }
     
     public void update_stats(){
         if(m_stat_effect != null){
-            getAC().addAc(-m_stat_effect.get_ac());
-            getResistance().addMr(-m_stat_effect.get_mr());
+            addAc(-m_stat_effect.get_ac());
+            AddMDefend(-m_stat_effect.get_mr());
         }
-        Ability ability = getAbility();
-        m_stat_effect = CompanionStatEffect.createInstance(ability.getTotalStr(), ability.getTotalCon(), ability.getTotalInt());
-        getAC().addAc(m_stat_effect.get_ac());
-        getResistance().addMr(m_stat_effect.get_mr());
+        var ability = this;
+        m_stat_effect = CompanionStatEffect.createInstance(ability.GetTotalStatStr(), ability.GetTotalStatCon(), ability.GetTotalStatInt());
+        addAc(m_stat_effect.get_ac());
+        AddMDefend(m_stat_effect.get_mr());
     }
     
     private void oblivion_buffs(){
@@ -1562,11 +1561,11 @@ public class L1CompanionInstance extends L1NpcInstance{
         Updator.exec("update companion_instance set elixir_use_count=?, str=?, con=?, intel=? where control_object_id=?", new Handler(){
             @Override
             public void handle(PreparedStatement pstm) throws Exception {
-                Ability ability = getAbility();
+                var ability = L1CompanionInstance.this;
                 pstm.setInt(1, get_elixir_use_count());
-                pstm.setInt(2, ability.getAddedStr());
-                pstm.setInt(3, ability.getAddedCon());
-                pstm.setInt(4, ability.getAddedInt());
+                pstm.setInt(2, ability.GetAddedStatStr());
+                pstm.setInt(3, ability.GetAddedStatCon());
+                pstm.setInt(4, ability.GetAddedStatInt());
                 pstm.setInt(5, get_control_object_id());
             }
         });
@@ -1658,9 +1657,9 @@ public class L1CompanionInstance extends L1NpcInstance{
                         pstm.setInt(++idx, getMaxMp());
                         pstm.setInt(++idx, getLawful());
                         pstm.setInt(++idx, get_tier());
-                        pstm.setInt(++idx, getAbility().getAddedStr());
-                        pstm.setInt(++idx, getAbility().getAddedCon());
-                        pstm.setInt(++idx, getAbility().getAddedInt());
+                        pstm.setInt(++idx, GetAddedStatStr());
+                        pstm.setInt(++idx, GetAddedStatCon());
+                        pstm.setInt(++idx, GetAddedStatInt());
                         pstm.setInt(++idx, get_elixir_use_count());
                         pstm.setInt(++idx, get_is_oblivion() ? 1 : 0);
                         pstm.setInt(++idx, get_is_traning() ? 1 : 0);
@@ -1678,9 +1677,9 @@ public class L1CompanionInstance extends L1NpcInstance{
                         pstm.setInt(++idx, getMaxMp());
                         pstm.setInt(++idx, getLawful());
                         pstm.setInt(++idx, get_tier());
-                        pstm.setInt(++idx, getAbility().getAddedStr());
-                        pstm.setInt(++idx, getAbility().getAddedCon());
-                        pstm.setInt(++idx, getAbility().getAddedInt());
+                        pstm.setInt(++idx, GetAddedStatStr());
+                        pstm.setInt(++idx, GetAddedStatCon());
+                        pstm.setInt(++idx, GetAddedStatInt());
                         pstm.setInt(++idx, get_elixir_use_count());
                         pstm.setInt(++idx, get_is_oblivion() ? 1 : 0);
                         pstm.setInt(++idx, get_is_traning() ? 1 : 0);

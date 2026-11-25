@@ -114,8 +114,8 @@ final class EternityItemEffect {
                         L1SkillUse.cast(pc, L1SkillId.보조버프, pc.getId(), pc.getX(), pc.getY(), null, 0, L1SkillUse.TYPE_SPELLSC);
                         int aa1 = _random.nextInt(150) + 1;
                         int mrs = (int)(member.getMr() * 1.7 - 20);
-                        int dmg = (pc.getAbility().getSp() * Config.이터니티배율) + aa1;
-                        dmg = (int)calcMrDefense(member.getResistance().getEffectedMrBySkill(), dmg);
+                        int dmg = (pc.GetStatSp() * Config.이터니티배율) + aa1;
+                        dmg = (int)calcMrDefense(member.GetMDefendBySkill(), dmg);
                         if (dmg < 200) {
                             dmg = 200;
                         }
@@ -153,8 +153,8 @@ final class EternityItemEffect {
                         L1SkillUse.cast(pc, L1SkillId.보조버프, pc.getId(), pc.getX(), pc.getY(), null, 0, L1SkillUse.TYPE_SPELLSC);
                         int aa1 = _random.nextInt(150) + 1;
                         int mrs = (int)(member.getMr() * 1.7 - 20);
-                        int dmg = (pc.getAbility().getSp() * Config.이터니티배율) + aa1;
-                        dmg = (int)calcMrDefense(member.getResistance().getEffectedMrBySkill(), dmg);
+                        int dmg = (pc.GetStatSp() * Config.이터니티배율) + aa1;
+                        dmg = (int)calcMrDefense(member.GetMDefendBySkill(), dmg);
                         if (dmg < 200) {
                             dmg = 200;
                         }
@@ -226,8 +226,8 @@ final class EternityItemEffect {
                     L1SkillUse.cast(pc, L1SkillId.보조버프, pc.getId(), pc.getX(), pc.getY(), null, 0, L1SkillUse.TYPE_SPELLSC);
                     int aa1 = _random.nextInt(150) + 1;
                     int mrs = (int)(member1.getMr() * 1.7 - 20);
-                    int dmg = (pc.getAbility().getSp() * Config.이터니티배율) + aa1;
-                    dmg = (int)calcMrDefense(member1.getResistance().getEffectedMrBySkill(), dmg);
+                    int dmg = (pc.GetStatSp() * Config.이터니티배율) + aa1;
+                    dmg = (int)calcMrDefense(member1.GetMDefendBySkill(), dmg);
                     if (dmg < 200) {
                         dmg = 200;
                     }

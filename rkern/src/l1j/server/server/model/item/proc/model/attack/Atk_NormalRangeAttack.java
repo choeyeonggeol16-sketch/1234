@@ -24,8 +24,7 @@ public class Atk_NormalRangeAttack extends ItemSkillModel{
 		dmg = calcEnchant(t_item, dmg);	
 		dmg = calcAttr(defender, dmg);
 		dmg = calcStat(attacker, dmg);
-		dmg = calcMrDefense(defender.getResistance()
-				.getEffectedMrBySkill(), dmg);
+		dmg = calcMrDefense(defender.GetMDefendBySkill(), dmg);
 		if(dmg > max_val) 		dmg = max_val;
 		else if(dmg < min_val) 	dmg = min_val;
 

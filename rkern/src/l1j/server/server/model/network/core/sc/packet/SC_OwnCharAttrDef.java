@@ -12,10 +12,10 @@ public final class SC_OwnCharAttrDef {
     public static boolean send(L1PcInstance pc) {
         int ac = 0, fire = 0, water = 0, wind = 0, earth = 0, dg = 0, er = 0;
         if (pc != null) {
-            try { if (pc.getAC() != null) ac = pc.getAC().getAc(); } catch (Throwable ignored) {}
-            try { if (pc.getResistance() != null) {
-                fire = pc.getResistance().getFire(); water = pc.getResistance().getWater();
-                wind = pc.getResistance().getWind(); earth = pc.getResistance().getEarth();
+            try { if (true) ac = pc.getAc(); } catch (Throwable ignored) {}
+            try { if (pc.IsResistanceActive()) {
+                fire = pc.GetFireResist(); water = pc.GetWaterResist();
+                wind = pc.GetWindResist(); earth = pc.GetEarthResist();
             } } catch (Throwable ignored) {}
             try { dg = pc.getDg(); } catch (Throwable ignored) {}
             try { er = pc.getTotalER(); } catch (Throwable ignored) {}

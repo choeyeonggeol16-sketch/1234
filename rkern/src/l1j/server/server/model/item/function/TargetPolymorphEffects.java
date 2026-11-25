@@ -93,7 +93,7 @@ final class TargetPolymorphEffects {
 			return;
 		}
 		if (attacker.getId() != cha.getId() && !isSameClan) {
-			int probability = 3 * (attacker.getLevel() - cha.getLevel()) - cha.getResistance().getEffectedMrBySkill();
+			int probability = 3 * (attacker.getLevel() - cha.getLevel()) - cha.GetMDefendBySkill();
 			int rnd = _random.nextInt(100) + 1;
 			if (rnd > probability) {
 				SC_ServerMessage.send(attacker, 280);

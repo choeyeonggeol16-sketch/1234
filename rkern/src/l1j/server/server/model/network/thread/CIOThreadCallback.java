@@ -2334,23 +2334,23 @@ public final class CIOThreadCallback {
 
 		// ── AC ──
 		if (ACvalue != pc.LawfulAC) {
-			if (pc.LawfulAC != 0) pc.getAC().addAc(pc.LawfulAC * -1);
+			if (pc.LawfulAC != 0) pc.addAc(pc.LawfulAC * -1);
 			pc.LawfulAC = ACvalue;
-			if (ACvalue != 0) pc.getAC().addAc(ACvalue);
+			if (ACvalue != 0) pc.addAc(ACvalue);
 			SC_OwnCharStatus.send(pc);
 		}
 		// ── MR ──
 		if (MRvalue != pc.LawfulMR) {
-			if (pc.LawfulMR != 0) pc.getResistance().addMr(pc.LawfulMR * -1);
+			if (pc.LawfulMR != 0) pc.AddMDefend(pc.LawfulMR * -1);
 			pc.LawfulMR = MRvalue;
-			if (MRvalue != 0) pc.getResistance().addMr(MRvalue);
+			if (MRvalue != 0) pc.AddMDefend(MRvalue);
 			SC_SPMR.send(pc);
 		}
 		// ── SP ──
 		if (SPvalue != pc.LawfulSP) {
-			if (pc.LawfulSP != 0) pc.getAbility().addSp(pc.LawfulSP * -1);
+			if (pc.LawfulSP != 0) pc.AddStatSp(pc.LawfulSP * -1);
 			pc.LawfulSP = SPvalue;
-			if (SPvalue != 0) pc.getAbility().addSp(SPvalue);
+			if (SPvalue != 0) pc.AddStatSp(SPvalue);
 			SC_SPMR.send(pc);
 		}
 		// ── AT (공격력) ──

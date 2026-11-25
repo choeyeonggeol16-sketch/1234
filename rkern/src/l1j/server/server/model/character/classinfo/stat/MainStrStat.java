@@ -6,7 +6,7 @@ public class MainStrStat implements ClassMainStat{
 
 	@Override
 	public void addStat(L1PcInstance pc, int i) {
-		pc.getAbility().addAddedStr(i);
+		pc.AddStatBonusStr(i);
 	}
 
 }

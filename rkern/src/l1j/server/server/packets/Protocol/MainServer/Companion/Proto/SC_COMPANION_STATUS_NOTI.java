@@ -1,6 +1,5 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
-import l1j.server.server.model.Ability;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
@@ -134,13 +133,13 @@ public final class SC_COMPANION_STATUS_NOTI extends ProtoPacket {
             { notiWire_bit |= 128L; notiWire_hp = (companionInstance.getCurrentHp()); }
         }
         if ((updateFlag & CompanionUpdateFlag.UPDATE_STATS) == CompanionUpdateFlag.UPDATE_STATS) {
-            Ability ability = companionInstance.getAbility();
-            { notiWire_bit |= 256L; notiWire_baseStr = (ability.getStr()); }
-            { notiWire_bit |= 512L; notiWire_baseCon = (ability.getCon()); }
-            { notiWire_bit |= 1024L; notiWire_baseInt = (ability.getInt()); }
-            { notiWire_bit |= 2048L; notiWire_bonusStr = (ability.getAddedStr()); }
-            { notiWire_bit |= 4096L; notiWire_bonusCon = (ability.getAddedCon()); }
-            { notiWire_bit |= 8192L; notiWire_bonusInt = (ability.getAddedInt()); }
+            var ability = companionInstance;
+            { notiWire_bit |= 256L; notiWire_baseStr = (ability.GetStatStr()); }
+            { notiWire_bit |= 512L; notiWire_baseCon = (ability.GetStatCon()); }
+            { notiWire_bit |= 1024L; notiWire_baseInt = (ability.GetStatInt()); }
+            { notiWire_bit |= 2048L; notiWire_bonusStr = (ability.GetAddedStatStr()); }
+            { notiWire_bit |= 4096L; notiWire_bonusCon = (ability.GetAddedStatCon()); }
+            { notiWire_bit |= 8192L; notiWire_bonusInt = (ability.GetAddedStatInt()); }
             { notiWire_bit |= 16384L; notiWire_elixirUseCount = (companionInstance.get_elixir_use_count()); }
             { notiWire_bit |= 32768L; notiWire_remainStats = (companionInstance.get_remain_stats()); }
             { notiWire_bit |= 65536L; notiWire_tempStr = 0; }
@@ -152,10 +151,10 @@ public final class SC_COMPANION_STATUS_NOTI extends ProtoPacket {
             { notiWire_bit |= 1048576L; notiWire_friendShipMarble = (companionInstance.get_friend_ship_marble()); }
         }
         if ((updateFlag & CompanionUpdateFlag.UPDATE_AC) == CompanionUpdateFlag.UPDATE_AC) {
-            { notiWire_bit |= 536870912L; notiWire_ac = (companionInstance.getAC().getAc()); }
+            { notiWire_bit |= 536870912L; notiWire_ac = (companionInstance.getAc()); }
         }
         if ((updateFlag & CompanionUpdateFlag.UPDATE_MR) == CompanionUpdateFlag.UPDATE_MR) {
-            { notiWire_bit |= 1073741824L; notiWire_mr = (companionInstance.getResistance().getEffectedMrBySkill()); }
+            { notiWire_bit |= 1073741824L; notiWire_mr = (companionInstance.GetMDefendBySkill()); }
         }
         if ((updateFlag & CompanionUpdateFlag.UPDATE_DELAY_REDUCE) == CompanionUpdateFlag.UPDATE_DELAY_REDUCE) {
             { notiWire_bit |= 4294967296L; notiWire_attackdelayReduce = (companionInstance.get_attackdelay_reduce()); }

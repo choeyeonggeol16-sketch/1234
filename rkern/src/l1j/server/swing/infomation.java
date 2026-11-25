@@ -226,9 +226,9 @@ public class infomation extends javax.swing.JFrame {
 
         mp2.setText(Integer.toString(pc.getMaxMp()));
 
-        ac2.setText(Integer.toString(pc.getAC().getAc()));
+        ac2.setText(Integer.toString(pc.getAc()));
 
-        jLabel16.setText(Integer.toString(pc.getResistance().getMr()));
+        jLabel16.setText(Integer.toString(pc.GetMDefend()));
 
         jLabel17.setFont(new java.awt.Font("굴림", 1, 12));
         jLabel17.setForeground(new java.awt.Color(0, 153, 51));
@@ -258,17 +258,17 @@ public class infomation extends javax.swing.JFrame {
         jLabel23.setForeground(new java.awt.Color(0, 0, 255));
         jLabel23.setText("카리스마 : ");
 
-        jLabel24.setText(Integer.toString(pc.getAbility().getStr()));
+        jLabel24.setText(Integer.toString(pc.GetStatStr()));
 
-        jLabel25.setText(Integer.toString(pc.getAbility().getDex()));
+        jLabel25.setText(Integer.toString(pc.GetStatDex()));
 
-        jLabel26.setText(Integer.toString(pc.getAbility().getCon()));
+        jLabel26.setText(Integer.toString(pc.GetStatCon()));
 
-        jLabel27.setText(Integer.toString(pc.getAbility().getWis()));
+        jLabel27.setText(Integer.toString(pc.GetStatWis()));
 
-        jLabel28.setText(Integer.toString(pc.getAbility().getInt()));
+        jLabel28.setText(Integer.toString(pc.GetStatInt()));
 
-        jLabel29.setText(Integer.toString(pc.getAbility().getCha()));
+        jLabel29.setText(Integer.toString(pc.GetStatCha()));
 
         jLabel2.setFont(new java.awt.Font("굴림", 1, 12)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 0, 0));		

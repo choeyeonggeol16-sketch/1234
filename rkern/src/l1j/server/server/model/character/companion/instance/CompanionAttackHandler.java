@@ -64,7 +64,7 @@ public final class CompanionAttackHandler {
 		hit += attacker.get_melee_hit();
 
 		if(target instanceof L1PcInstance){
-			hit += (target.getAC().getAc() * 0.01);	
+			hit += (target.getAc() * 0.01);	
 		}
 		
 		double target_dodge = target.getDg();
@@ -115,31 +115,31 @@ public final class CompanionAttackHandler {
 			dmg += heal;
 		}
 		if(sInfo.get_spell_dmg_add() > 0){
-			double mr_reduction = ((double)target.getResistance().getMrAfterEraseRemove() * CompanionSettings.REDUCTION_BY_MR);
+			double mr_reduction = ((double)target.GetMDefendAndConsumeErase() * CompanionSettings.REDUCTION_BY_MR);
 			dmg += (Math.max(1, sInfo.get_spell_dmg_add() - mr_reduction));
 		}
 		if(sInfo.get_spell_dmg_multi() > 0){
-			double mr_reduction = ((double)target.getResistance().getMrAfterEraseRemove() * CompanionSettings.REDUCTION_BY_MR);
+			double mr_reduction = ((double)target.GetMDefendAndConsumeErase() * CompanionSettings.REDUCTION_BY_MR);
 			dmg += (Math.max(1, sInfo.get_spell_dmg_add() - mr_reduction));			
 		}
 		if(sInfo.get_fire_elemental_dmg() > 0){
-			double elemental_reduction = ((double)target.getResistance().getFire() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+			double elemental_reduction = ((double)target.GetFireResist() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
 			dmg += (Math.max(1, sInfo.get_fire_elemental_dmg() - elemental_reduction));						
 		}
 		if(sInfo.get_water_elemental_dmg() > 0){
-			double elemental_reduction = ((double)target.getResistance().getWater() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+			double elemental_reduction = ((double)target.GetWaterResist() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
 			dmg += (Math.max(1, sInfo.get_water_elemental_dmg() - elemental_reduction));									
 		}
 		if(sInfo.get_air_elemental_dmg() > 0){
-			double elemental_reduction = ((double)target.getResistance().getWind() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+			double elemental_reduction = ((double)target.GetWindResist() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
 			dmg += (Math.max(1, sInfo.get_air_elemental_dmg() - elemental_reduction));									
 		}
 		if(sInfo.get_earth_elemental_dmg() > 0){
-			double elemental_reduction = ((double)target.getResistance().getEarth() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+			double elemental_reduction = ((double)target.GetEarthResist() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
 			dmg += (Math.max(1, sInfo.get_earth_elemental_dmg() - elemental_reduction));									
 		}
 		if(sInfo.get_light_elemental_dmg() > 0){
-			double elemental_reduction = ((double)target.getResistance().getWind() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
+			double elemental_reduction = ((double)target.GetWindResist() * CompanionSettings.REDUCTION_BY_ELEMENTAL);
 			dmg += (Math.max(1, sInfo.get_light_elemental_dmg() - elemental_reduction));									
 		}
 
@@ -207,7 +207,7 @@ public final class CompanionAttackHandler {
 		}
 		// 전사스킬 : 아머가드 - 캐릭의 AC/10의 데미지감소 효과를 얻는다.
 		if (target.getPassive(PassiveID.ARMOR_GUARD.toInt()) != null) {
-			reduction += (target.getAC().getAc() / 10);
+			reduction += (target.getAc() / 10);
 		}
 
 		if (target.hasSkillEffect(REDUCTION_ARMOR)) {

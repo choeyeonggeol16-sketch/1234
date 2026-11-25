@@ -15,7 +15,7 @@ public final class SC_Dexup {
 
     public static boolean send(CUserSocket client, L1PcInstance actor, int type, int time) {
         if (actor == null) return false;
-        final int totalDex = actor.getAbility() == null ? 0 : actor.getAbility().getTotalDex();
+        final int totalDex = actor.GetTotalStatDex();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
@@ -43,14 +43,14 @@ public final class SC_Dexup {
     public static void broadcast(L1Character anchor, L1PcInstance actor, int type, int time) {
         if(anchor==null)return;
         if(actor == null)return;
-        final int dex=actor.getAbility()==null?0:actor.getAbility().getTotalDex();
+        final int dex=actor.GetTotalStatDex();
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_DEXUP, Opcodes.S_MAGE_DEXTERITY, time, dex, type, 0, false, -1, null);
     }
 
     public static void broadcastFast(L1Character anchor, L1PcInstance actor, int type, int time) {
         if(anchor==null)return;
         if(actor == null)return;
-        final int dex=actor.getAbility()==null?0:actor.getAbility().getTotalDex();
+        final int dex=actor.GetTotalStatDex();
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_DEXUP, Opcodes.S_MAGE_DEXTERITY, time, dex, type, 0, true, -1, null);
     }
 

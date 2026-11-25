@@ -47,8 +47,8 @@ final class PotentialSkillConsumable {
                     pc.setCurrentMp(pc.getCurrentMp() - 30);
                     int addHp = (int)Math.round(pc.getMaxHp() * 0.2);
                     int addMp = (int)Math.round(pc.getMaxMp() * 0.2);
-                    int addMR = (int)Math.round(pc.getResistance().getMr() * 0.2);
-                    int addSP = (int)Math.round(pc.getAbility().getSp() * 0.2);
+                    int addMR = (int)Math.round(pc.GetMDefend() * 0.2);
+                    int addSP = (int)Math.round(pc.GetStatSp() * 0.2);
                     int addDG = (int)Math.round(pc.getDg() * 0.2);
                     int addER = (int)Math.round(pc.getTotalER() * 0.2);
                     pc.applyPotentialModifierFromOwner(addHp, addMp, addMR, addSP, addER, addDG);

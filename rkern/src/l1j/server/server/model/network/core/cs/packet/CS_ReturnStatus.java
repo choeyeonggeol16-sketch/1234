@@ -119,14 +119,14 @@ public final class CS_ReturnStatus {
 		rst.upMp = 0;
 		rst.ac = 10;
 
-		pc.getAbility().init();
+		pc.ResetPrimaryStats();
 
-		pc.getAbility().setBaseStr(str);
-		pc.getAbility().setBaseInt(intel);
-		pc.getAbility().setBaseWis(wis);
-		pc.getAbility().setBaseDex(dex);
-		pc.getAbility().setBaseCon(con);
-		pc.getAbility().setBaseCha(cha);
+		pc.SetOriginalStatStr(str);
+		pc.SetOriginalStatInt(intel);
+		pc.SetOriginalStatWis(wis);
+		pc.SetOriginalStatDex(dex);
+		pc.SetOriginalStatCon(con);
+		pc.SetOriginalStatCha(cha);
 
 		rst.baseHp = getInitHp(pc);
 		rst.baseMp = getInitMp(pc, rst.basewis);
@@ -286,19 +286,19 @@ public final class CS_ReturnStatus {
 			return;
 		}
 
-		final int addStr = str - pc.getAbility().getStr();
-		final int addInt = intel - pc.getAbility().getInt();
-		final int addWis = wis - pc.getAbility().getWis();
-		final int addDex = dex - pc.getAbility().getDex();
-		final int addCon = con - pc.getAbility().getCon();
-		final int addCha = cha - pc.getAbility().getCha();
+		final int addStr = str - pc.GetStatStr();
+		final int addInt = intel - pc.GetStatInt();
+		final int addWis = wis - pc.GetStatWis();
+		final int addDex = dex - pc.GetStatDex();
+		final int addCon = con - pc.GetStatCon();
+		final int addCha = cha - pc.GetStatCha();
 
-		pc.getAbility().addStr((byte) addStr);
-		pc.getAbility().addInt((byte) addInt);
-		pc.getAbility().addWis((byte) addWis);
-		pc.getAbility().addDex((byte) addDex);
-		pc.getAbility().addCon((byte) addCon);
-		pc.getAbility().addCha((byte) addCha);
+		pc.AddStatStr((byte) addStr);
+		pc.AddStatInt((byte) addInt);
+		pc.AddStatWis((byte) addWis);
+		pc.AddStatDex((byte) addDex);
+		pc.AddStatCon((byte) addCon);
+		pc.AddStatCha((byte) addCha);
 
 		if (pc.getLevel() >= BONUS_LEVEL_START) {
 			pc.setBonusStats(pc.getLevel() - BONUS_LEVEL_BASE);
@@ -307,7 +307,7 @@ public final class CS_ReturnStatus {
 		}
 
 		pc.resetBaseAc();
-		pc.getAC().setAc(pc.getBaseAc());
+		pc.setAc(pc.getBaseAc());
 
 		pc.setExp(pc.getReturnStat());
 
@@ -366,20 +366,20 @@ public final class CS_ReturnStatus {
 
 			pc.start_teleport(33430, 32810, 4, pc.getHeading(), 169, true, false);
 
-			pc.getAbility().init();
-			pc.getAbility().setBaseStr(pc.rst.basestr);
-			pc.getAbility().setBaseInt(pc.rst.baseint);
-			pc.getAbility().setBaseWis(pc.rst.basewis);
-			pc.getAbility().setBaseDex(pc.rst.basedex);
-			pc.getAbility().setBaseCon(pc.rst.basecon);
-			pc.getAbility().setBaseCha(pc.rst.basecha);
+			pc.ResetPrimaryStats();
+			pc.SetOriginalStatStr(pc.rst.basestr);
+			pc.SetOriginalStatInt(pc.rst.baseint);
+			pc.SetOriginalStatWis(pc.rst.basewis);
+			pc.SetOriginalStatDex(pc.rst.basedex);
+			pc.SetOriginalStatCon(pc.rst.basecon);
+			pc.SetOriginalStatCha(pc.rst.basecha);
 
-			pc.getAbility().addStr((byte) pc.rst.str);
-			pc.getAbility().addInt((byte) pc.rst.Int);
-			pc.getAbility().addWis((byte) pc.rst.wis);
-			pc.getAbility().addDex((byte) pc.rst.dex);
-			pc.getAbility().addCon((byte) pc.rst.con);
-			pc.getAbility().addCha((byte) pc.rst.cha);
+			pc.AddStatStr((byte) pc.rst.str);
+			pc.AddStatInt((byte) pc.rst.Int);
+			pc.AddStatWis((byte) pc.rst.wis);
+			pc.AddStatDex((byte) pc.rst.dex);
+			pc.AddStatCon((byte) pc.rst.con);
+			pc.AddStatCha((byte) pc.rst.cha);
 
             // Permanent allocations can open the 25/35/45 max-HP/MP bonus.
             // Fill and notify only after those final maxima are available.
@@ -389,7 +389,7 @@ public final class CS_ReturnStatus {
             SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
 
 			pc.resetBaseAc();
-			pc.getAC().setAc(pc.getBaseAc());
+			pc.setAc(pc.getBaseAc());
 
 			SC_SPMR.send(pc);
 			SC_OwnCharStatus2.send(pc);

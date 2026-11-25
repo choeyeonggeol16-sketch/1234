@@ -12,7 +12,7 @@ import l1j.server.server.utils.eKind;
 public enum DollOption {
 
     AC(true, TooltipKind.AC) {
-        @Override public void apply(L1PcInstance p, int v) { p.getAC().addAc(-v); }
+        @Override public void apply(L1PcInstance p, int v) { p.addAc(-v); }
     },
     MAX_HP(true, TooltipKind.MAX_HP) {
         @Override public void apply(L1PcInstance p, int v) { p.addMaxHp(v); }
@@ -24,7 +24,7 @@ public enum DollOption {
         @Override public void apply(L1PcInstance p, int v) { p.addDamageReductionByArmor(v); }
     },
     PC_DEFENSE(true, TooltipKind.DMG_DOWN) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addcalcPcDefense(v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddPvpDamageReduction(v); }
     },
     MELEE_DMG(true, TooltipKind.MELEE_DMG) {
         @Override public void apply(L1PcInstance p, int v) { p.addDmgup(v); }
@@ -39,7 +39,7 @@ public enum DollOption {
         @Override public void apply(L1PcInstance p, int v) { p.addBowHitup(v); }
     },
     SP(true, TooltipKind.SP) {
-        @Override public void apply(L1PcInstance p, int v) { p.getAbility().addSp(v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddStatSp(v); }
     },
     MAGIC_HIT(true, TooltipKind.MAGIC_HIT) {
         @Override public void apply(L1PcInstance p, int v) { p.addBaseMagicHitUp(v); }
@@ -48,49 +48,49 @@ public enum DollOption {
         @Override public void apply(L1PcInstance p, int v) { p.add_melee_critical_rate(v); }
     },
     ABILITY_RESIS(true, TooltipKind.ABILITY_RESIS) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.ABILITY, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.ABILITY, v); }
     },
     SPIRIT_RESIS(true, TooltipKind.NONE) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.SPIRIT, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.SPIRIT, v); }
     },
     DRAGON_RESIS(true, TooltipKind.NONE) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.DRAGON_SPELL, v); }
     },
     FEAR_RESIS(true, TooltipKind.FEAR_RESIS) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.FEAR, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.FEAR, v); }
     },
     ALL_RESIS(true, TooltipKind.ALL_RESIS) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.ALL, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.ALL, v); }
     },
     ABILITY_PIERCE(true, TooltipKind.ABILITY_PIERCE) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.ABILITY, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.ABILITY, v); }
     },
     SPIRIT_PIERCE(true, TooltipKind.SPIRIT_PIERCE) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.SPIRIT, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.SPIRIT, v); }
     },
     DRAGON_PIERCE(true, TooltipKind.DRAGON_PIERCE) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.DRAGON_SPELL, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.DRAGON_SPELL, v); }
     },
     FEAR_PIERCE(true, TooltipKind.FEAR_PIERCE) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.FEAR, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.FEAR, v); }
     },
     ALL_PIERCE(true, TooltipKind.ALL_PIERCE) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.ALL, v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.ALL, v); }
     },
     PVP_DMG(true, TooltipKind.PVP_DMG) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addPVPweaponTotalDamage(v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddPvpDamage(v); }
     },
     PVP_DMG_RED(true, TooltipKind.PVP_DMG_RED) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addcalcPcDefense(v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddPvpDamageReduction(v); }
     },
     BLESS_RATE(true, TooltipKind.BLESS_RATE) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addcalcAinPer(v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddAinEfficiency(v); }
     },
     WEIGHT_REDUCTION(true, TooltipKind.WEIGHT_X50) {
         @Override public void apply(L1PcInstance p, int v) { p.addWeightReduction(v); }
     },
     FOU_DMG(true, TooltipKind.FOUSLAYER) {
-        @Override public void apply(L1PcInstance p, int v) { p.getResistance().addFouDmgUp(v); }
+        @Override public void apply(L1PcInstance p, int v) { p.AddFouDmgUp(v); }
     },
     // query / proc / meta
     EXP_RATE(false, TooltipKind.EXP),

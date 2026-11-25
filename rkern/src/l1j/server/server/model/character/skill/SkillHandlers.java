@@ -1518,7 +1518,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 		final int chance = su.hdRandom().nextInt(100) + 1;
 
-		final int dark  = (int) (10 + (pc.getLevel() * 0.8) + (pc.getAbility().getTotalWis() - 6) * 1.2);
+		final int dark  = (int) (10 + (pc.getLevel() * 0.8) + (pc.GetTotalStatWis() - 6) * 1.2);
 		final int brave = (int) (dark / 2.1);
 		final int wise  = (int) (brave / 2.0);
 		final int kayser= (int) (wise / 1.9);
@@ -1646,7 +1646,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 		int cha = 0;
 		try {
-			cha = pc.getAbility().getTotalCha();
+			cha = pc.GetTotalStatCha();
 			if (pc.isElf()) cha += 12;
 			else if (pc.isWizard()) cha += 6;
 		} catch (Throwable t) {
@@ -1973,7 +1973,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 		L1Character user = su.hdUser();
 		L1PcInstance pc = su.hdPlayer();
-		int drainMana = chance + (user.getAbility().getTotalInt() / 2);
+		int drainMana = chance + (user.GetTotalStatInt() / 2);
 
 		if (cha.getCurrentMp() < drainMana) {
 			drainMana = cha.getCurrentMp();
@@ -2000,7 +2000,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 				L1ItemInstance weapon = pc.getWeapon();
 				if (weapon != null) {
 					L1Character user = su.hdUser();
-					int weaponDamage = su.hdRandom().nextInt(user.getAbility().getTotalInt() / 3) + 1;
+					int weaponDamage = su.hdRandom().nextInt(user.GetTotalStatInt() / 3) + 1;
 					SC_ServerMessage.send(pc, 268, weapon.getLogName());
 					pc.getInventory().receiveDamage(weapon, weaponDamage);
 				}

@@ -220,7 +220,7 @@ public final class CRegenController {
         if (pc.hasSkillEffect(L1SkillId.ABSOLUTE_BARRIER)) return;
 
         int baseMpr = CalcStat.naturalMpRegen(pc.getLevel(),
-                pc.getAbility().getTotalWis(), pc.getAbility().getWis());
+                pc.GetTotalStatWis(), pc.GetStatWis());
 
         if (pc.hasSkillEffect(L1SkillId.STATUS_BLUE_POTION2)) baseMpr += 1;
         else if (pc.hasSkillEffect(L1SkillId.STATUS_BLUE_POTION)) baseMpr += 2;
@@ -256,7 +256,7 @@ public final class CRegenController {
         if (pc.get_food() < 40) return;
 
         int mpr = CalcStat.naturalRegenAfterWeight(baseMpr + itemMpr,
-                isOverWeight(pc), pc.getAbility().getWis());
+                isOverWeight(pc), pc.GetStatWis());
         int newMp = pc.getCurrentMp() + mpr;
         if (newMp > pc.getMaxMp()) newMp = pc.getMaxMp();
         pc.setCurrentMp(newMp);
@@ -269,12 +269,12 @@ public final class CRegenController {
         if (pc.getCurrentHp() >= pc.getMaxHp() && !isUnderwater(pc)) return;
 
         int maxBonus = 1;
-        if (pc.getLevel() > 11 && pc.getAbility().getTotalCon() >= 14) {
-            maxBonus = pc.getAbility().getTotalCon() - 12;
-            if (pc.getAbility().getTotalCon() > 25) maxBonus = 14;
+        if (pc.getLevel() > 11 && pc.GetTotalStatCon() >= 14) {
+            maxBonus = pc.GetTotalStatCon() - 12;
+            if (pc.GetTotalStatCon() > 25) maxBonus = 14;
         }
 
-        int basebonus = CalcStat.피회복틱(pc.getAbility().getCon());
+        int basebonus = CalcStat.피회복틱(pc.GetStatCon());
         int equipHpr = pc.getHpr();
 
         int bonus = ThreadLocalRandom.current().nextInt(maxBonus) + 1;
@@ -305,7 +305,7 @@ public final class CRegenController {
 
         int normalHpr = bonus + equipHpr + basebonus;
         int recovered = CalcStat.naturalRegenAfterWeight(normalHpr,
-                isOverWeight(pc), pc.getAbility().getCon());
+                isOverWeight(pc), pc.GetStatCon());
         int newHp = pc.getCurrentHp() + recovered;
         if (newHp < 1) newHp = 1;
 

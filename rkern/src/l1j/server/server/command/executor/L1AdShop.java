@@ -91,18 +91,18 @@ public class L1AdShop implements L1CommandExecutor {
 		newPc.setStatus(0);
 		newPc.addBaseMaxMp((short)2);
 		newPc.setCurrentMp(2);		
-		newPc.getAbility().setBaseStr(16);
-		newPc.getAbility().setStr(16);
-		newPc.getAbility().setBaseCon(16);
-		newPc.getAbility().setCon(16);
-		newPc.getAbility().setBaseDex(11);
-		newPc.getAbility().setDex(11);
-		newPc.getAbility().setBaseCha(13);
-		newPc.getAbility().setCha(13);
-		newPc.getAbility().setBaseInt(12);
-		newPc.getAbility().setInt(12);
-		newPc.getAbility().setBaseWis(11);
-		newPc.getAbility().setWis(11);
+		newPc.SetOriginalStatStr(16);
+		newPc.SetStatStr(16);
+		newPc.SetOriginalStatCon(16);
+		newPc.SetStatCon(16);
+		newPc.SetOriginalStatDex(11);
+		newPc.SetStatDex(11);
+		newPc.SetOriginalStatCha(13);
+		newPc.SetStatCha(13);
+		newPc.SetOriginalStatInt(12);
+		newPc.SetStatInt(12);
+		newPc.SetOriginalStatWis(11);
+		newPc.SetStatWis(11);
 		
 		int klass = 0;		
 		if (sex == 0) {

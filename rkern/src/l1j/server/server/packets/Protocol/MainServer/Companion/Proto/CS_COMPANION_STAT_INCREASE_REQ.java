@@ -1,6 +1,5 @@
 package l1j.server.server.packets.Protocol.MainServer.Companion.Proto;
 
-import l1j.server.server.model.Ability;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.companion.CompanionSettings;
@@ -62,15 +61,15 @@ public final class CS_COMPANION_STAT_INCREASE_REQ {
                         pc.getName(), companion.getName(), companion.getId(), remainStats, addedTotal));
                 return;
             }
-            Ability ability = companion.getAbility();
-            if (!valid_max_stat(pc, companion, ability.getTotalStr(), ability.getStr(), str, "힘") ||
-                !valid_max_stat(pc, companion, ability.getTotalCon(), ability.getCon(), con, "콘") ||
-                !valid_max_stat(pc, companion, ability.getTotalInt(), ability.getInt(), in, "인트"))
+            var ability = companion;
+            if (!valid_max_stat(pc, companion, ability.GetTotalStatStr(), ability.GetStatStr(), str, "힘") ||
+                !valid_max_stat(pc, companion, ability.GetTotalStatCon(), ability.GetStatCon(), con, "콘") ||
+                !valid_max_stat(pc, companion, ability.GetTotalStatInt(), ability.GetStatInt(), in, "인트"))
                 return;
 
-            ability.addAddedStr(str);
-            ability.addAddedCon(con);
-            ability.addAddedInt(in);
+            ability.AddStatBonusStr(str);
+            ability.AddStatBonusCon(con);
+            ability.AddStatBonusInt(in);
             companion.update_stats();
             SC_COMPANION_STATUS_NOTI.send(pc, companion, CompanionUpdateFlag.UPDATE_ALL);
         } catch (Exception e) {

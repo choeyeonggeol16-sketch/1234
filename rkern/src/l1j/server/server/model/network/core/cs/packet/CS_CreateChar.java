@@ -86,19 +86,19 @@ public final class CS_CreateChar {
 		pc.setName(name);
 		pc.setType(type);
 		pc.set_sex(sex);
-		pc.getAbility().setBaseStr((byte) baseStr);
-		pc.getAbility().setBaseDex((byte) baseDex);
-		pc.getAbility().setBaseCon((byte) baseCon);
-		pc.getAbility().setBaseWis((byte) baseWis);
-		pc.getAbility().setBaseCha((byte) baseCha);
-		pc.getAbility().setBaseInt((byte) baseInt);
+		pc.SetOriginalStatStr((byte) baseStr);
+		pc.SetOriginalStatDex((byte) baseDex);
+		pc.SetOriginalStatCon((byte) baseCon);
+		pc.SetOriginalStatWis((byte) baseWis);
+		pc.SetOriginalStatCha((byte) baseCha);
+		pc.SetOriginalStatInt((byte) baseInt);
 
-		int statusAmount = pc.getAbility().getAmount();
+		int statusAmount = pc.GetStatAmount();
 
 		if (baseStr < 3 || baseDex < 3 || baseCon < 3 || baseWis < 3 || baseCha < 3 || baseInt < 3
-                || pc.getAbility().getBaseStr() > 20 || pc.getAbility().getBaseDex() > 20 || pc.getAbility().getBaseCon() > 20
-				|| pc.getAbility().getBaseWis() > 20 || pc.getAbility().getBaseCha() > 20
-				|| pc.getAbility().getBaseInt() > 20 || statusAmount != 75) {
+                || pc.GetOriginalStatStr() > 20 || pc.GetOriginalStatDex() > 20 || pc.GetOriginalStatCon() > 20
+				|| pc.GetOriginalStatWis() > 20 || pc.GetOriginalStatCha() > 20
+				|| pc.GetOriginalStatInt() > 20 || statusAmount != 75) {
 			SC_CharCreateStatus.send(client, SC_CharCreateStatus.REASON_WRONG_AMOUNT);
 			return;
 		}
@@ -239,7 +239,7 @@ public final class CS_CreateChar {
 		}
 
         init_hp = l1j.server.server.utils.CalcStat.initialHp(pc.getType());
-        init_mp = l1j.server.server.utils.CalcStat.initialMp(pc.getType(), pc.getAbility().getBaseWis());
+        init_mp = l1j.server.server.utils.CalcStat.initialMp(pc.getType(), pc.GetOriginalStatWis());
 
 		if (Config.캐릭터시작점) {
 			pc.setX(START_LOC_X[startPosType][startPos]);

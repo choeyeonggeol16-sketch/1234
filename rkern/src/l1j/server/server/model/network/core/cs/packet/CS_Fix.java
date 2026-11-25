@@ -102,8 +102,7 @@ public final class CS_Fix {
         }
 
         int charisma =
-                pc.getAbility()
-                        .getTotalCha();
+                pc.GetTotalStatCha();
 
         if (pc.isElf()) {
 

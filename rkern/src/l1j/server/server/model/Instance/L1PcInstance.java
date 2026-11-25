@@ -1816,25 +1816,25 @@ public class L1PcInstance extends L1Character {
 	public void 레벨버프() {
 		if (this.getLevel() == 90) {
 			this.addMaxHp(100);
-			this.getResistance().addPVPweaponTotalDamage(1);
+			this.AddPvpDamage(1);
 			SC_SystemMessage.send(this, "\\aH[90레벨버프] : HP+100, PVP데미지+1");
 			SC_InventoryIcon.iconNewUnLimit(this, L1SkillId.lv90, 2242, true);
 		} else if (this.getLevel() == 91) { 
 			SC_InventoryIcon.icoEnd(this, L1SkillId.lv90);
 			this.addMaxHp(150);
-			this.getResistance().addPVPweaponTotalDamage(2);
+			this.AddPvpDamage(2);
 			SC_SystemMessage.send(this, "\\aH[91레벨버프] : HP+150, PVP데미지+2");
 			SC_InventoryIcon.iconNewUnLimit(this, L1SkillId.lv91, 2243, true);
 		} else if (this.getLevel() == 92) {
 			SC_InventoryIcon.icoEnd(this, L1SkillId.lv91);
 			this.addMaxHp(200);
-			this.getResistance().addPVPweaponTotalDamage(3);
+			this.AddPvpDamage(3);
 			SC_SystemMessage.send(this, "\\aH[92레벨버프] : HP+200, PVP데미지+3");		
 			SC_InventoryIcon.iconNewUnLimit(this, L1SkillId.lv92, 2244, true);
 		} else if (this.getLevel() >= 93) {
 			SC_InventoryIcon.icoEnd(this, L1SkillId.lv92);
 			this.addMaxHp(300);
-			this.getResistance().addPVPweaponTotalDamage(5);
+			this.AddPvpDamage(5);
 			SC_SystemMessage.send(this, "\\aH[93레벨버프] : HP+300, PVP데미지+5");
 			SC_InventoryIcon.iconNewUnLimit(this, L1SkillId.lv93, 2245, true);
 		}
@@ -2588,7 +2588,7 @@ public class L1PcInstance extends L1Character {
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout dead state failed: " + getId(), e); }
             try { setNetConnection(null); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout client reference failed: " + getId(), e); }
-            try { getAC().addAc(1); }
+            try { addAc(1); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout AC cleanup failed: " + getId(), e); }
             try { dispose(); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout dispose failed: " + getId(), e); }
@@ -3083,7 +3083,7 @@ public class L1PcInstance extends L1Character {
 	public void receiveDamage(L1Character attacker, int damage, int attr) {
 		if (damage == 0)
 			return;
-		int player_mr = getResistance().getEffectedMrBySkill();
+		int player_mr = GetMDefendBySkill();
 		int rnd = java.util.concurrent.ThreadLocalRandom.current().nextInt(100) + 1;
 		if (player_mr >= rnd) {
 			damage /= 2;
@@ -4617,7 +4617,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	public int getMaxWeight() {
 		try {
-			_maxweight = CalcStat.최대소지무게(getAbility().getTotalStr(), getAbility().getTotalCon());
+			_maxweight = CalcStat.최대소지무게(GetTotalStatStr(), GetTotalStatCon());
 			_maxweight += getWeightReduction();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -4990,8 +4990,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
                 addBaseMaxMp(hpMpGrowth.mp(earnedLevel));
             } else {
                 int oldHp = getBaseMaxHp(), oldMp = getBaseMaxMp();
-                addBaseMaxHp(CalcStat.increaseHp(getType(), getAbility().getCon()));
-                addBaseMaxMp(CalcStat.increaseMp(getType(), getAbility().getWis()));
+                addBaseMaxHp(CalcStat.increaseHp(getType(), GetStatCon()));
+                addBaseMaxMp(CalcStat.increaseMp(getType(), GetStatWis()));
                 hpMpGrowth.record(earnedLevel, getBaseMaxHp() - oldHp, getBaseMaxMp() - oldMp);
             }
             level = target;
@@ -5098,7 +5098,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			SC_PacketBox.send(this, SC_PacketBox.GREEN_MESSAGE, "Lv.81 반지개방이 가능해졌습니다.");
 		}
 
-		if (getLevel() >= 51 && getLevel() - 50 > getBonusStats() && getAbility().getAmount() < 210) {
+		if (getLevel() >= 51 && getLevel() - 50 > getBonusStats() && GetStatAmount() < 210) {
 			int upstat = (getLevel() - 50) - (getBonusStats());
 			String s = Integer.toString(upstat);
 			SC_MessageYN.send(this, 479, s);
@@ -5494,7 +5494,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
    }
 	
 	public void resetBaseAc() {
-		int newAc = CalcStat.물리방어력(getAbility().getTotalDex());
+		int newAc = CalcStat.물리방어력(GetTotalStatDex());
 		final int div = getBaseAcLevelDiv();
 		if (div > 0) {
 			newAc -= getLevel() / div;
@@ -5512,7 +5512,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	public void resetBaseMr() {
 		int newMr = 0;
-		newMr += CalcStat.마법방어(getType(), getAbility().getTotalWis());
+		newMr += CalcStat.마법방어(getType(), GetTotalStatWis());
 		newMr += getLevel() / 2;
 		SC_SPMR.send(this);
 	}
@@ -5587,7 +5587,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public void LoadCheckStatus() {
-		int totalS = getAbility().getAmount();
+		int totalS = GetStatAmount();
 		int bonusS = getHighLevel() - 50;
 		if (bonusS < 0) {
 			bonusS = 0;
@@ -5635,7 +5635,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public void CheckStatus() {
-		int totalS = getAbility().getAmount();
+		int totalS = GetStatAmount();
 		int bonusS = getLevel() - 50;
 		if (bonusS < 0) {
 			bonusS = 0;
@@ -7006,12 +7006,12 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	        // 스탯 수치 추출
 	        int currentStatVal;
 	        switch (stat) {
-	        case "str": currentStatVal = getAbility().getStr(); break;
-	        case "dex": currentStatVal = getAbility().getDex(); break;
-	        case "con": currentStatVal = getAbility().getCon(); break;
-	        case "int": currentStatVal = getAbility().getInt(); break;
-	        case "wis": currentStatVal = getAbility().getWis(); break;
-	        case "cha": currentStatVal = getAbility().getCha(); break;
+	        case "str": currentStatVal = GetStatStr(); break;
+	        case "dex": currentStatVal = GetStatDex(); break;
+	        case "con": currentStatVal = GetStatCon(); break;
+	        case "int": currentStatVal = GetStatInt(); break;
+	        case "wis": currentStatVal = GetStatWis(); break;
+	        case "cha": currentStatVal = GetStatCha(); break;
 	        default: throw new Exception(statName);
 	        }
 
@@ -7023,20 +7023,20 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	        switch (stat) {
 	        case "str":
-	        	getAbility().addStr((byte) 1);
+	        	AddStatStr((byte) 1);
 	        	isWeightUpdated = true;
 	        	break;
 	        case "dex":
-	        	getAbility().addDex((byte) 1);
+	        	AddStatDex((byte) 1);
 	        	resetBaseAc();
 	        	break;
 	        case "con":
-	        	getAbility().addCon((byte) 1);
+	        	AddStatCon((byte) 1);
 	        	isWeightUpdated = true;
 	        	break;
-	        case "int": getAbility().addInt((byte) 1); break;
-	        case "wis": getAbility().addWis((byte) 1); break;
-	        case "cha": getAbility().addCha((byte) 1); break;
+	        case "int": AddStatInt((byte) 1); break;
+	        case "wis": AddStatWis((byte) 1); break;
+	        case "cha": AddStatCha((byte) 1); break;
 	        }
 	        setBonusStats(bonusStats + 1);
 	    }
@@ -7050,8 +7050,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	    int remainingStats = (getLevel() - 50) - getBonusStats();
 	    if (getLevel() >= 51 && remainingStats > 0) {
-	        int totalStats = getAbility().getStr() + getAbility().getDex() + getAbility().getCon()
-	                       + getAbility().getInt() + getAbility().getWis() + getAbility().getCha();
+	        int totalStats = GetStatStr() + GetStatDex() + GetStatCon()
+	                       + GetStatInt() + GetStatWis() + GetStatCha();
 	        if (totalStats < 150) {
 	            SC_MessageYN.send(this, 479, String.valueOf(remainingStats));
 	        }

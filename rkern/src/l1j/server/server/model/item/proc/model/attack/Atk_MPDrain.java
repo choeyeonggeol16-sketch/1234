@@ -40,7 +40,7 @@ public class Atk_MPDrain extends ItemSkillModel{
 			*/
 			//마력의 단검 마방 60이상일 때 무의미
 			if(defender instanceof L1PcInstance){
-			if(defender.getResistance().getEffectedMrBySkill() >= 60){
+			if(defender.GetMDefendBySkill() >= 60){
 				return 0D;
 			}
 			}

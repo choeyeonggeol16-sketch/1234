@@ -57,12 +57,12 @@ public abstract class ItemSkillModel {
 		if(s_prob != 0){
 			int stat = 0;
 			switch(s_prob){
-			case 1:	stat = c.getAbility().getTotalStr(); break;
-			case 2:	stat = c.getAbility().getTotalDex(); break;
-			case 3:	stat = c.getAbility().getTotalCon(); break;
-			case 4:	stat = c.getAbility().getTotalWis(); break;
-			case 5:	stat = c.getAbility().getTotalInt(); break;
-			case 6:	stat = c.getAbility().getTotalCha(); break;
+			case 1:	stat = c.GetTotalStatStr(); break;
+			case 2:	stat = c.GetTotalStatDex(); break;
+			case 3:	stat = c.GetTotalStatCon(); break;
+			case 4:	stat = c.GetTotalStatWis(); break;
+			case 5:	stat = c.GetTotalStatInt(); break;
+			case 6:	stat = c.GetTotalStatCha(); break;
 			}
 			
 			prob += (prob * (stat * s_weight));
@@ -81,12 +81,12 @@ public abstract class ItemSkillModel {
 	
 	
 			switch(stat_val){
-			case 1:	stat = c.getAbility().getTotalStr(); break;
-			case 2:	stat = c.getAbility().getTotalDex(); break;
-			case 3:	stat = c.getAbility().getTotalCon(); break;
-			case 4:	stat = c.getAbility().getTotalWis(); break;
-			case 5:	stat = c.getAbility().getTotalInt(); break;
-			case 6:	stat = c.getAbility().getTotalCha(); break;
+			case 1:	stat = c.GetTotalStatStr(); break;
+			case 2:	stat = c.GetTotalStatDex(); break;
+			case 3:	stat = c.GetTotalStatCon(); break;
+			case 4:	stat = c.GetTotalStatWis(); break;
+			case 5:	stat = c.GetTotalStatInt(); break;
+			case 6:	stat = c.GetTotalStatCha(); break;
 
 			}
 			
@@ -165,19 +165,19 @@ public abstract class ItemSkillModel {
 	
 	protected double calcAttr(L1Character defender, double pure_dmg){
 		double dmg = pure_dmg;
-		if(defender.getResistance() != null){
+		if(defender.IsResistanceActive()){
 			switch(attr_type){
 			case L1Skills.ATTR_EARTH:
-				dmg = GameUtils.getAttrDamage(dmg, defender.getResistance().getEarth());
+				dmg = GameUtils.getAttrDamage(dmg, defender.GetEarthResist());
 				break;
 			case L1Skills.ATTR_FIRE:
-				dmg = GameUtils.getAttrDamage(dmg, defender.getResistance().getFire());
+				dmg = GameUtils.getAttrDamage(dmg, defender.GetFireResist());
 				break;
 			case L1Skills.ATTR_WATER:
-				dmg = GameUtils.getAttrDamage(dmg, defender.getResistance().getWater());
+				dmg = GameUtils.getAttrDamage(dmg, defender.GetWaterResist());
 				break;
 			case L1Skills.ATTR_WIND:
-				dmg = GameUtils.getAttrDamage(dmg, defender.getResistance().getWind());
+				dmg = GameUtils.getAttrDamage(dmg, defender.GetWindResist());
 				break;
 			}
 		}

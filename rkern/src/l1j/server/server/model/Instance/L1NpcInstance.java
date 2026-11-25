@@ -415,7 +415,7 @@ public class L1NpcInstance extends L1Character {
         SetStatDex(cap127(template.get_dex() + bonus));
         SetStatInt(cap127(template.get_int() + bonus));
         SetStatWis(cap127(template.get_wis() + bonus));
-        resistance.setBaseMr(cap127(template.get_mr() + bonus));
+        SetOrgMDefend(cap127(template.get_mr() + bonus));
         if (bonus != 0) {
             addHitup(bonus * 2);
             addDmgup(bonus * 2);

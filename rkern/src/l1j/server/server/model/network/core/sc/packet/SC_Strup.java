@@ -14,8 +14,8 @@ public final class SC_Strup {
     private SC_Strup() {}
 
     public static boolean send(CUserSocket client, L1PcInstance actor, int type, int time) {
-        if (actor == null || actor.getAbility() == null || actor.getInventory() == null) return false;
-        final int totalStr = actor.getAbility().getTotalStr();
+        if (actor == null || actor.getInventory() == null) return false;
+        final int totalStr = actor.GetTotalStatStr();
         final int weight100 = actor.getInventory().getWeight100();
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
@@ -44,16 +44,16 @@ public final class SC_Strup {
 
     public static void broadcast(L1Character anchor, L1PcInstance actor, int type, int time) {
         if(anchor==null)return;
-        if(actor == null || actor.getAbility()==null || actor.getInventory()==null)return;
-        final int totalStr=actor.getAbility().getTotalStr();
+        if(actor == null || actor.getInventory()==null)return;
+        final int totalStr=actor.GetTotalStatStr();
         final int weight100=actor.getInventory().getWeight100();
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_STRUP, Opcodes.S_MAGE_STRENGTH, time, totalStr, weight100, type, false, -1, null);
     }
 
     public static void broadcastFast(L1Character anchor, L1PcInstance actor, int type, int time) {
         if(anchor==null)return;
-        if(actor == null || actor.getAbility()==null || actor.getInventory()==null)return;
-        final int totalStr=actor.getAbility().getTotalStr();
+        if(actor == null || actor.getInventory()==null)return;
+        final int totalStr=actor.GetTotalStatStr();
         final int weight100=actor.getInventory().getWeight100();
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_STRUP, Opcodes.S_MAGE_STRENGTH, time, totalStr, weight100, type, true, -1, null);
     }

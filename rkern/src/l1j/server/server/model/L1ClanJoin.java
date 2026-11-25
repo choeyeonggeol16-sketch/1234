@@ -508,9 +508,9 @@ public class L1ClanJoin {
 			int maxMember = 0;
 			int charisma = 0;
 			if (pc.getId() != clan.getLeaderId())
-				charisma = pc.getAbility().getTotalCha();
+				charisma = pc.GetTotalStatCha();
 			else
-				charisma = pc.getAbility().getCha();
+				charisma = pc.GetStatCha();
 
 			boolean lv45quest = pc.getQuest().isEnd(CQuestSystem.QUEST_LEVEL45);
 			if (pc.getLevel() >= 50) {

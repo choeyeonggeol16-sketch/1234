@@ -34,7 +34,7 @@ final class ClassGiftRewardTransactions {
             classReward = 600209;
             break;
         case 2:
-            classReward = pc.getAbility().getStr() < 40 ? 600210 : 600209;
+            classReward = pc.GetStatStr() < 40 ? 600210 : 600209;
             break;
         case 3: case 6:
             classReward = 600211;

@@ -220,12 +220,12 @@ final class NpcGameEventActions {
         final int skill = large ? L1SkillId.COMA_B : L1SkillId.COMA_A;
         pc.removeSkillEffect(large ? L1SkillId.COMA_A : L1SkillId.COMA_B);
         if (!pc.hasSkillEffect(skill)) {
-            if (large) pc.getAbility().addSp(1);
-            pc.getAbility().addAddedCon(large ? 3 : 1);
-            pc.getAbility().addAddedDex(5);
-            pc.getAbility().addAddedStr(5);
+            if (large) pc.AddStatSp(1);
+            pc.AddStatBonusCon(large ? 3 : 1);
+            pc.AddStatBonusDex(5);
+            pc.AddStatBonusStr(5);
             pc.addHitRate(large ? 5 : 3);
-            pc.getAC().addAc(large ? -8 : -3);
+            pc.addAc(large ? -8 : -3);
             SC_OwnCharStatus.send(pc);
             if (large) SC_SPMR.send(pc);
         }

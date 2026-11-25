@@ -89,13 +89,13 @@ final class BlazeStunItemEffect {
                     int 랜덤 = _random.nextInt(100) + 1;
                     int 렙차 = pc.getLevel() - member.getLevel();
                     int 기본확률 = Config.ngsdefault;
-                    int 적중 = pc.getResistance().getSpecialPierce(eKind.ABILITY) + pc.getResistance().getSpecialPierce(eKind.ALL);
-                    int 내성 = member.getResistance().getSpecialResistance(eKind.ABILITY) + member.getResistance().getSpecialResistance(eKind.ALL);
+                    int 적중 = pc.GetSpecialPierce(eKind.ABILITY) + pc.GetSpecialPierce(eKind.ALL);
+                    int 내성 = member.GetSpecialResistance(eKind.ABILITY) + member.GetSpecialResistance(eKind.ALL);
                     int stunpoint = 0;
                     int 양렙차 = (렙차 * Config.ngslvpoint);
                     int 음렙차 = (렙차 * Config.ngslvpoint);
                     int aa1 = random.nextInt(100) + 1;
-                    int aa = member.getAC().getAc() / 2;
+                    int aa = member.getAc() / 2;
                     int probability = 0;
                     int dmg = (pc.getLevel() / 3 * Config.엘븐스트라이크배율) + aa1;
                     if (적중 > 0) {

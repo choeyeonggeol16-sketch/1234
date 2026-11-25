@@ -45,7 +45,14 @@ import l1j.server.server.shared.L1Type;
 import l1j.server.server.types.Point;
 import l1j.server.server.utils.CalcStat;
 import l1j.server.server.utils.IntRange;
-public class L1Character extends L1Object implements AC {
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+import l1j.server.server.model.network.core.sc.packet.SC_Weight;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CHAR_STAT;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPECIAL_RESISTANCE_NOTI;
+import l1j.server.server.utils.eKind;
+public class L1Character extends L1Object {
 	private static final long serialVersionUID = 1L;
 	// 캐릭터 기본
 	private String _name;
@@ -90,9 +97,8 @@ public class L1Character extends L1Object implements AC {
 	volatile long m_SkillPrimaryStats;
 	int m_AbilitySp;
 	volatile int m_AbilitySkillSp;
-	protected Ability ability = null; // compatibility access to CStats
-	protected Resistance resistance = null; // 저항 (마방, 불, 물, 바람, 땅, 스턴, 동빙, 슬립, 석화)
 	// BEGIN shared resistance sources (CCreature)
+	private volatile boolean m_ResistanceDisposed;
 	int m_nOrgMDefend;
 	int m_nAddedMDefend;
 	int m_nFireResist;
@@ -127,8 +133,6 @@ public class L1Character extends L1Object implements AC {
 	private int m_nOrgPDefend;
 	private int m_nSkillPDefend;
 	private volatile int m_nPDefend;
-	// Transitional typed alias for existing callers; no allocated AC object.
-	protected final AC ac = this;
 	
 	private int _status;
 	private int _Desperadolv = 0;
@@ -193,10 +197,7 @@ public class L1Character extends L1Object implements AC {
 		final CKnownObjectContainer known = KNOWN_CONTAINER.getAndSet(this, CKnownObjectContainer.CLOSED);
 		if (known != null && known != CKnownObjectContainer.CLOSED) known.close();
 
-		if (resistance != null) {
-			resistance.dispose();
-			resistance = null;
-		}
+		m_ResistanceDisposed = true;
 
 		if (light != null) {
 			light.dispose();
@@ -208,8 +209,6 @@ public class L1Character extends L1Object implements AC {
 
 	public L1Character() {
 		_level = 1;
-		ability = new Ability(this);
-		resistance = new Resistance(this);
 		light = new Light(this);
 	}
 
@@ -523,13 +522,13 @@ public class L1Character extends L1Object implements AC {
 
 	public int getStatER() {
 		int er = 0;
-		er = (getAbility().getTotalDex() - 8) / 2;
+		er = (GetTotalStatDex() - 8) / 2;
 		return er;
 	}
 
 	public int getDefaultER() {
 		int er = 0;
-		int BaseEr = CalcStat.원거리회피(getAbility().getTotalDex());
+		int BaseEr = CalcStat.원거리회피(GetTotalStatDex());
 		er += BaseEr;
 		return er;
 	}
@@ -1110,21 +1109,21 @@ public class L1Character extends L1Object implements AC {
             }
 		}
 		setSkillAc(ac, notify);
-		getResistance().setSkillMr(mr);
-		getAbility().setSkillPrimaryStats(primaryStats, notify);
-		getResistance().setSkillElemental(elementalResistance);
+		SetSkillMDefend(mr);
+		SetSkillPrimaryStats(primaryStats, notify);
+		SetSkillElemental(elementalResistance);
 		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
 		if (pumpedWeapon != weapon) pumpedWeapon = weapon;
 		if (pumpedCombatRates != combatRates) pumpedCombatRates = combatRates;
-		getAbility().setSkillSp(sp);
+		SetSkillSp(sp);
 	}
 
 	public int getMaxHp() {
 		final int delta = (int) pumpedHpMp;
 		int maxhp = delta == 0 ? _maxHp : Math.clamp((long) _trueMaxHp + delta, 1, 10_000_000);
-		if (getAbility() == null) return maxhp;
+
         if (this instanceof L1PcInstance)
-            maxhp += CalcStat.pureHpMpBonus(getAbility().getCon());
+            maxhp += CalcStat.pureHpMpBonus(GetStatCon());
 		return maxhp;
 	}
 
@@ -1149,8 +1148,8 @@ public class L1Character extends L1Object implements AC {
 	public int getMaxMp() {
 		final int delta = (int) (pumpedHpMp >>> 32);
 		int maxmp = delta == 0 ? _maxMp : Math.clamp((long) _trueMaxMp + delta, 0, 10_000_000);
-		if (getAbility() == null) return maxmp;
-        int wis = this instanceof L1PcInstance ? getAbility().getWis() : getAbility().getTotalWis();
+
+        int wis = this instanceof L1PcInstance ? GetStatWis() : GetTotalStatWis();
         maxmp += CalcStat.pureHpMpBonus(wis);
 		return maxmp;
 	}
@@ -1258,7 +1257,7 @@ public class L1Character extends L1Object implements AC {
 	}
 
 	public int getMagicBonus() {
-		int i = getAbility().getTotalInt();
+		int i = GetTotalStatInt();
 		if (i <= 5) return -2;
 		else if (i <= 8) return -1;
 		else if (i <= 11) return 0;
@@ -1411,77 +1410,648 @@ public class L1Character extends L1Object implements AC {
 		return light;
 	}
 
-	public Ability getAbility() {
-		return ability;
-	}
-
-	public Resistance getResistance() {
-		return resistance;
-	}
-
 	// CStats lane operations. No new object, array or temporary allocation.
 	final byte ValidateStat(int value, int minimum) {
 		return (byte) IntRange.ensure(value, minimum, 127);
 	}
-	final byte GetStatStr() { return m_StatStr; }
-	final byte GetOriginalStatStr() { return m_OriginalStatStr; }
-	protected final void SetStatStr(int value) { m_StatStr = ValidateStat(value, m_OriginalStatStr); }
-	final byte GetAddedStatStr() { return ValidateStat(m_AddedStatStr + (byte) (m_SkillPrimaryStats >>> 0), -128); }
+	public final byte GetStatStr() { return m_StatStr; }
+	public final byte GetOriginalStatStr() { return m_OriginalStatStr; }
+	public final void SetStatStr(int value) { m_StatStr = ValidateStat(value, m_OriginalStatStr); }
+	public final byte GetAddedStatStr() { return ValidateStat(m_AddedStatStr + (byte) (m_SkillPrimaryStats >>> 0), -128); }
 	final void AddAddedStatStr(int value) { m_AddedStatStr = ValidateStat(m_AddedStatStr + value, -128); }
-	final byte GetTotalStatStr() { return ValidateStat(GetStatStr() + GetAddedStatStr(), 0); }
-	final byte GetStatDex() { return m_StatDex; }
-	final byte GetOriginalStatDex() { return m_OriginalStatDex; }
-	protected final void SetStatDex(int value) { m_StatDex = ValidateStat(value, m_OriginalStatDex); }
-	final byte GetAddedStatDex() { return ValidateStat(m_AddedStatDex + (byte) (m_SkillPrimaryStats >>> 8), -128); }
+	public final byte GetTotalStatStr() { return ValidateStat(GetStatStr() + GetAddedStatStr(), 0); }
+	public final byte GetStatDex() { return m_StatDex; }
+	public final byte GetOriginalStatDex() { return m_OriginalStatDex; }
+	public final void SetStatDex(int value) { m_StatDex = ValidateStat(value, m_OriginalStatDex); }
+	public final byte GetAddedStatDex() { return ValidateStat(m_AddedStatDex + (byte) (m_SkillPrimaryStats >>> 8), -128); }
 	final void AddAddedStatDex(int value) { m_AddedStatDex = ValidateStat(m_AddedStatDex + value, -128); }
-	final byte GetTotalStatDex() { return ValidateStat(GetStatDex() + GetAddedStatDex(), 0); }
-	final byte GetStatInt() { return m_StatInt; }
-	final byte GetOriginalStatInt() { return m_OriginalStatInt; }
-	protected final void SetStatInt(int value) { m_StatInt = ValidateStat(value, m_OriginalStatInt); }
-	final byte GetAddedStatInt() { return ValidateStat(m_AddedStatInt + (byte) (m_SkillPrimaryStats >>> 16), -128); }
+	public final byte GetTotalStatDex() { return ValidateStat(GetStatDex() + GetAddedStatDex(), 0); }
+	public final byte GetStatInt() { return m_StatInt; }
+	public final byte GetOriginalStatInt() { return m_OriginalStatInt; }
+	public final void SetStatInt(int value) { m_StatInt = ValidateStat(value, m_OriginalStatInt); }
+	public final byte GetAddedStatInt() { return ValidateStat(m_AddedStatInt + (byte) (m_SkillPrimaryStats >>> 16), -128); }
 	final void AddAddedStatInt(int value) { m_AddedStatInt = ValidateStat(m_AddedStatInt + value, -128); }
-	final byte GetTotalStatInt() { return ValidateStat(GetStatInt() + GetAddedStatInt(), 0); }
-	final byte GetStatWis() { return m_StatWis; }
-	final byte GetOriginalStatWis() { return m_OriginalStatWis; }
-	protected final void SetStatWis(int value) { m_StatWis = ValidateStat(value, m_OriginalStatWis); }
-	final byte GetAddedStatWis() { return ValidateStat(m_AddedStatWis + (byte) (m_SkillPrimaryStats >>> 24), -128); }
+	public final byte GetTotalStatInt() { return ValidateStat(GetStatInt() + GetAddedStatInt(), 0); }
+	public final byte GetStatWis() { return m_StatWis; }
+	public final byte GetOriginalStatWis() { return m_OriginalStatWis; }
+	public final void SetStatWis(int value) { m_StatWis = ValidateStat(value, m_OriginalStatWis); }
+	public final byte GetAddedStatWis() { return ValidateStat(m_AddedStatWis + (byte) (m_SkillPrimaryStats >>> 24), -128); }
 	final void AddAddedStatWis(int value) { m_AddedStatWis = ValidateStat(m_AddedStatWis + value, -128); }
-	final byte GetTotalStatWis() { return ValidateStat(GetStatWis() + GetAddedStatWis(), 0); }
-	final byte GetStatCon() { return m_StatCon; }
-	final byte GetOriginalStatCon() { return m_OriginalStatCon; }
-	protected final void SetStatCon(int value) { m_StatCon = ValidateStat(value, m_OriginalStatCon); }
-	final byte GetAddedStatCon() { return ValidateStat(m_AddedStatCon + (byte) (m_SkillPrimaryStats >>> 32), -128); }
+	public final byte GetTotalStatWis() { return ValidateStat(GetStatWis() + GetAddedStatWis(), 0); }
+	public final byte GetStatCon() { return m_StatCon; }
+	public final byte GetOriginalStatCon() { return m_OriginalStatCon; }
+	public final void SetStatCon(int value) { m_StatCon = ValidateStat(value, m_OriginalStatCon); }
+	public final byte GetAddedStatCon() { return ValidateStat(m_AddedStatCon + (byte) (m_SkillPrimaryStats >>> 32), -128); }
 	final void AddAddedStatCon(int value) { m_AddedStatCon = ValidateStat(m_AddedStatCon + value, -128); }
-	final byte GetTotalStatCon() { return ValidateStat(GetStatCon() + GetAddedStatCon(), 0); }
-	final byte GetStatCha() { return m_StatCha; }
-	final byte GetOriginalStatCha() { return m_OriginalStatCha; }
-	protected final void SetStatCha(int value) { m_StatCha = ValidateStat(value, m_OriginalStatCha); }
-	final byte GetAddedStatCha() { return ValidateStat(m_AddedStatCha + (byte) (m_SkillPrimaryStats >>> 40), -128); }
+	public final byte GetTotalStatCon() { return ValidateStat(GetStatCon() + GetAddedStatCon(), 0); }
+	public final byte GetStatCha() { return m_StatCha; }
+	public final byte GetOriginalStatCha() { return m_OriginalStatCha; }
+	public final void SetStatCha(int value) { m_StatCha = ValidateStat(value, m_OriginalStatCha); }
+	public final byte GetAddedStatCha() { return ValidateStat(m_AddedStatCha + (byte) (m_SkillPrimaryStats >>> 40), -128); }
 	final void AddAddedStatCha(int value) { m_AddedStatCha = ValidateStat(m_AddedStatCha + value, -128); }
-	final byte GetTotalStatCha() { return ValidateStat(GetStatCha() + GetAddedStatCha(), 0); }
+	public final byte GetTotalStatCha() { return ValidateStat(GetStatCha() + GetAddedStatCha(), 0); }
 
-	/** Compatibility access; defense state is owned by this creature. */
-	public AC getAC() {
-		return this;
+	// BEGIN direct primary-stat operations
+	public final void SetSkillPrimaryStats(long value, boolean notify) {
+		final long changed = m_SkillPrimaryStats ^ value;
+		if (changed == 0) return;
+		m_SkillPrimaryStats = value;
+		if (!notify) return;
+		if ((changed & 0x000000ff) != 0) NotifyStatBonusStr();
+		if ((changed & 0x0000ff00) != 0) NotifyStatBonusDex();
+		if ((changed & 0xff00000000L) != 0) NotifyStatBonusCon();
+		if ((changed & 0x00ff0000) != 0) NotifyStatBonusInt();
+		if ((changed & 0xff000000L) != 0) NotifyStatBonusWis();
 	}
 
-	@Override
+	public final void ResetPrimaryStats() {
+		m_StatStr = m_OriginalStatStr = m_AddedStatStr = 0;
+		m_StatDex = m_OriginalStatDex = m_AddedStatDex = 0;
+		m_StatCon = m_OriginalStatCon = m_AddedStatCon = 0;
+		m_StatInt = m_OriginalStatInt = m_AddedStatInt = 0;
+		m_StatWis = m_OriginalStatWis = m_AddedStatWis = 0;
+		m_StatCha = m_OriginalStatCha = m_AddedStatCha = 0;
+	}
+
+	private byte CheckStatRange(int i) {
+		if (i == 0)
+			return 0;
+		return CheckStatRange(i, 0);
+	}
+
+	private byte CheckStatRange(int i, int base) {
+		return (byte) IntRange.ensure(i, 0 + base, 127);
+	}
+
+	public final int GetOriginalStatAmount() {
+		return m_OriginalStatStr + m_OriginalStatCon + m_OriginalStatDex + m_OriginalStatCha + m_OriginalStatInt + m_OriginalStatWis;
+	}
+
+	public final int GetStatAmount() {
+		return m_StatStr + m_StatCon + m_StatDex + m_StatCha + m_StatInt + m_StatWis;
+	}
+
+	public final void SetSkillSp(int value) {
+		if (m_AbilitySkillSp != value) m_AbilitySkillSp = value;
+	}
+
+	public final void AddStatSp(int i) {
+		m_AbilitySp += i;
+	}
+
+	public final int GetStatSp() {
+		return GetStatBaseSp() + m_AbilitySp + m_AbilitySkillSp;
+	}
+
+	public final int GetStatBaseSp() {
+		return GetStatMagicLevel() + GetStatMagicBonus();
+	}
+
+	public final int GetStatMagicLevel() {
+		if (this instanceof L1PcInstance)
+			return ((L1PcInstance) this).getMagicLevel();
+		return this.getLevel() / 4;
+	}
+
+	public final int GetStatMagicBonus() {
+		int i = GetTotalStatInt();
+		final int classType = (this instanceof L1PcInstance)
+                ? ((L1PcInstance) this).getType() : 0;
+        return CalcStat.마법보너스(classType, i);
+		/*
+		 * if (i <= 5) return -2; else if (i <= 8) return -1; else if (i <= 11)
+		 * return 0; else if (i <= 14) return 1; else if (i <= 17) return 2;
+		 * else if (i <= 24) return i - 15; else if (i <= 35) return 10; else if
+		 * (i <= 42) return 11; else if (i <= 49) return 12; else if (i <= 50)
+		 * return 13; else return i - 25;
+		 */
+	}
+
+	public final void AddStatStr(int i) {
+		SetStatStr(GetStatStr() + i);
+		if (this instanceof L1PcInstance) {
+            L1PcInstance pc = (L1PcInstance) this;
+            if (pc.getNetConnection() != null) {
+                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);// 현재순수스탯
+                SC_Weight.send(pc);
+                SC_CHAR_STAT.sendCreate(pc, pc, 2, SC_CHAR_STAT.Stat_Str);
+                SC_OwnCharStatus2.send(pc);
+            }
+        }
+	}
+
+	public final void AddOriginalStatStr(int i) {
+		SetOriginalStatStr(GetOriginalStatStr() + i);
+	}
+
+	public final void SetOriginalStatStr(int i) {
+		byte newBaseStr = CheckStatRange(i);
+		AddStatStr(newBaseStr - m_OriginalStatStr);
+		m_OriginalStatStr = newBaseStr;
+	}
+
+	public final void AddStatBonusStr(int i) {
+		AddAddedStatStr(i);
+		NotifyStatBonusStr();
+	}
+
+	private void NotifyStatBonusStr() {
+		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Str);
+		SC_Weight.send(pc);
+	}
+
+	public final void AddStatCon(int i) {
+		SetStatCon(GetStatCon() + i);
+		if (this instanceof L1PcInstance) {
+            L1PcInstance pc = (L1PcInstance) this;
+            if (pc.getNetConnection() != null) {
+                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);
+            	SC_Weight.send(pc);
+                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Con);
+            }
+        }
+	}
+
+	public final void AddOriginalStatCon(int i) {
+		SetOriginalStatCon(GetOriginalStatCon() + i);
+	}
+
+	public final void SetOriginalStatCon(int i) {
+		byte newBaseCon = CheckStatRange(i);
+		AddStatCon(newBaseCon - m_OriginalStatCon);
+		m_OriginalStatCon = newBaseCon;
+	}
+
+	public final void AddStatBonusCon(int i) {
+		AddAddedStatCon(i);
+		NotifyStatBonusCon();
+	}
+
+	private void NotifyStatBonusCon() {
+		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Con);
+		SC_Weight.send(pc);
+	}
+
+	public final void AddStatDex(int i) {
+		SetStatDex(GetStatDex() + i);
+		if (this instanceof L1PcInstance) {
+            L1PcInstance pc = (L1PcInstance) this;
+            if (pc.getNetConnection() != null) {
+                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);// 현재순수스탯
+                SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Dex);
+                SC_OwnCharStatus2.send(pc);
+                SC_OwnCharAttrDef.send(pc);
+
+            }
+        }
+	}
+
+	public final void AddOriginalStatDex(int i) {
+		SetOriginalStatDex(GetOriginalStatDex() + i);
+	}
+
+	public final void SetOriginalStatDex(int i) {
+		byte newBaseDex = CheckStatRange(i);
+		AddStatDex(newBaseDex - m_OriginalStatDex);
+		m_OriginalStatDex = newBaseDex;
+	}
+
+	public final void AddStatBonusDex(int i) {
+		AddAddedStatDex(i);
+		NotifyStatBonusDex();
+	}
+
+	private void NotifyStatBonusDex() {
+		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Dex);
+		SC_OwnCharAttrDef.send(pc);
+	}
+
+	public final void AddStatCha(int i) {
+		SetStatCha(GetStatCha() + i);
+	}
+
+	public final void AddOriginalStatCha(int i) {
+		SetOriginalStatCha(GetOriginalStatCha() + i);
+	}
+
+	public final void SetOriginalStatCha(int i) {
+		byte newBaseCha = CheckStatRange(i);
+		AddStatCha(newBaseCha - m_OriginalStatCha);
+		m_OriginalStatCha = newBaseCha;
+	}
+
+	public final void AddStatBonusCha(int i) {
+		AddAddedStatCha(i);
+	}
+
+	public final void AddStatInt(int i) {
+		SetStatInt(GetStatInt() + i);
+		 if (this instanceof L1PcInstance) {
+	            L1PcInstance pc = (L1PcInstance) this;
+	            if (pc.getNetConnection() != null) {
+	                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);// 현재순수스탯
+	                SC_SPMR.send(pc);
+	                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Int);
+
+	            }
+	        }
+	}
+
+	public final void AddOriginalStatInt(int i) {
+		SetOriginalStatInt(GetOriginalStatInt() + i);
+	}
+
+	public final void SetOriginalStatInt(int i) {
+		byte newBaseInt = CheckStatRange(i);
+		AddStatInt(newBaseInt - m_OriginalStatInt);
+		m_OriginalStatInt = newBaseInt;
+	}
+
+	public final void AddStatBonusInt(int i) {
+		AddAddedStatInt(i);
+		NotifyStatBonusInt();
+	}
+
+	private void NotifyStatBonusInt() {
+		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		SC_SPMR.send(pc);
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Int);
+	}
+
+	public final void AddStatWis(int i) {
+		SetStatWis(GetStatWis() + i);
+		 if (this instanceof L1PcInstance) {
+	            L1PcInstance pc = (L1PcInstance) this;
+	            if (pc.getNetConnection() != null) {
+	                pc.resetBaseMr();
+	                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Wis);
+	                SC_SPMR.send(pc);
+	                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);// 현재순수스탯
+	            }
+	        }
+	}
+
+	public final void AddOriginalStatWis(int i) {
+		SetOriginalStatWis(GetOriginalStatWis() + i);
+	}
+
+	public final void SetOriginalStatWis(int i) {
+		byte newBaseWis = CheckStatRange(i);
+		AddStatWis(newBaseWis - m_OriginalStatWis);
+		m_OriginalStatWis = newBaseWis;
+	}
+
+	public final void AddStatBonusWis(int i) {
+		AddAddedStatWis(i);
+		NotifyStatBonusWis();
+	}
+
+	private void NotifyStatBonusWis() {
+		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		pc.resetBaseMr();
+		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Wis);
+		SC_SPMR.send(pc);
+	}
+
+	public final int[] GetOriginalStatDiff(int[] value) {
+		int[] returnValue = new int[6];
+		returnValue[0] = GetOriginalStatStr() - value[0];
+		returnValue[1] = GetOriginalStatDex() - value[1];
+		returnValue[2] = GetOriginalStatCon() - value[2];
+		returnValue[3] = GetOriginalStatWis() - value[3];
+		returnValue[4] = GetOriginalStatCha() - value[4];
+		returnValue[5] = GetOriginalStatInt() - value[5];
+
+		return returnValue;
+	}
+
+	public final int[] GetMinStat(final int classId) {
+		int[] minabllity = new int[6];
+		// int minStr, minDex, minCon, minWis, minCha, minInt, remainStats;
+		switch (classId) {
+		case L1PcInstance.CLASSID_PRINCE:
+		case L1PcInstance.CLASSID_PRINCESS:
+			minabllity[0] = 13;
+			minabllity[1] = 9;
+			minabllity[2] = 11;
+			minabllity[3] = 11;
+			minabllity[4] = 13;
+			minabllity[5] = 9;
+			break;
+		case L1PcInstance.CLASSID_KNIGHT_MALE:
+		case L1PcInstance.CLASSID_KNIGHT_FEMALE:
+			minabllity[0] = 16;
+			minabllity[1] = 12;
+			minabllity[2] = 16;
+			minabllity[3] = 9;
+			minabllity[4] = 10;
+			minabllity[5] = 8;
+			break;
+		case L1PcInstance.CLASSID_WIZARD_MALE:
+		case L1PcInstance.CLASSID_WIZARD_FEMALE:
+			minabllity[0] = 8;
+			minabllity[1] = 7;
+			minabllity[2] = 12;
+			minabllity[3] = 14;
+			minabllity[4] = 8;
+			minabllity[5] = 14;
+			break;
+		case L1PcInstance.CLASSID_ELF_MALE:
+		case L1PcInstance.CLASSID_ELF_FEMALE:
+			minabllity[0] = 10;
+			minabllity[1] = 12;
+			minabllity[2] = 12;
+			minabllity[3] = 12;
+			minabllity[4] = 9;
+			minabllity[5] = 12;
+			break;
+		case L1PcInstance.CLASSID_DARK_ELF_MALE:
+		case L1PcInstance.CLASSID_DARK_ELF_FEMALE:
+			minabllity[0] = 15;
+			minabllity[1] = 12;
+			minabllity[2] = 12;
+			minabllity[3] = 10;
+			minabllity[4] = 8;
+			minabllity[5] = 11;
+			break;
+		case L1PcInstance.CLASSID_DRAGONKNIGHT_MALE:
+		case L1PcInstance.CLASSID_DRAGONKNIGHT_FEMALE:
+			minabllity[0] = 13;
+			minabllity[1] = 11;
+			minabllity[2] = 14;
+			minabllity[3] = 10;
+			minabllity[4] = 8;
+			minabllity[5] = 10;
+			break;
+		case L1PcInstance.CLASSID_BLACKWIZARD_MALE:
+		case L1PcInstance.CLASSID_BLACKWIZARD_FEMALE:
+			minabllity[0] = 9;
+			minabllity[1] = 10;
+			minabllity[2] = 12;
+			minabllity[3] = 14;
+			minabllity[4] = 8;
+			minabllity[5] = 12;
+			break;
+		case L1PcInstance.CLASSID_전사_MALE:
+		case L1PcInstance.CLASSID_전사_FEMALE:
+			minabllity[0] = 16;
+			minabllity[1] = 13;
+			minabllity[2] = 16;
+			minabllity[3] = 7;
+			minabllity[4] = 9;
+			minabllity[5] = 10;
+			break;
+		default:
+
+		}
+		minabllity = GetOriginalStatDiff(minabllity);
+		/*
+		 * for(int i =0 ; i<minabllity.length; i++){ System.out.println(minabllity[i]); }
+		 */
+		return minabllity;
+	}
+	// END direct primary-stat operations
+
+	// BEGIN direct resistance operations
+	public final boolean IsResistanceActive() { return !m_ResistanceDisposed; }
+    public final void ResetResistanceStats() {
+        m_nOrgMDefend = m_nAddedMDefend = 0;
+        m_nFireResist = m_nWaterResist = m_nWindResist = m_nEarthResist = 0;
+        m_nPvpDamageReduction =  m_nPvpDamage = 0;
+        m_nAinEfficiency = 0;
+        m_nFouDamage = 0;
+        m_nPotionRecoveryAmount = m_nPotionRecoveryRate = m_nHealDefence = 0; // 초기화 시 함께 리셋
+        m_nResistAbility = m_nResistSpirit = m_nResistDragon = m_nResistFear = m_nResistAll = 0;
+        m_nPierceAbility = m_nPierceSpirit = m_nPierceDragon = m_nPierceFear = m_nPierceAll = 0;
+    }
+
+    private int CheckMDefendRange(int i, final int MIN) {
+        return IntRange.ensure(i, MIN, 250);
+    }
+
+    private byte CheckResistanceRange(int i) {
+        return (byte)IntRange.ensure(i, -128, 127);
+    }
+
+    private int GetResistSource(eKind kind) {
+        return switch (kind) {
+            case ABILITY -> m_nResistAbility;
+            case SPIRIT -> m_nResistSpirit;
+            case DRAGON_SPELL -> m_nResistDragon;
+            case FEAR -> m_nResistFear;
+            case ALL -> m_nResistAll;
+        };
+    }
+
+    private int GetPierceSource(eKind kind) {
+        return switch (kind) {
+            case ABILITY -> m_nPierceAbility;
+            case SPIRIT -> m_nPierceSpirit;
+            case DRAGON_SPELL -> m_nPierceDragon;
+            case FEAR -> m_nPierceFear;
+            case ALL -> m_nPierceAll;
+        };
+    }
+
+    public final void AddSpecialResistance(eKind kind, int value) {
+        if (kind == null) return;
+        switch (kind) {
+            case ABILITY -> m_nResistAbility += value;
+            case SPIRIT -> m_nResistSpirit += value;
+            case DRAGON_SPELL -> m_nResistDragon += value;
+            case FEAR -> m_nResistFear += value;
+            case ALL -> m_nResistAll += value;
+        }
+        if (!m_ResistanceDisposed && this instanceof L1PcInstance pc) {
+            SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
+        }
+    }
+
+    public final int GetSpecialResistance(eKind kind) {
+        if (kind == null) return 0;
+        final int shift = (kind.value() - 1) << 3;
+        final int bonus = (int) (m_SkillSpecialResistance >>> shift) & 0xff;
+        // Independent signed penalties must not wrap into an unsigned 255
+        // or corrupt a neighboring byte of the positive resistance bitmap.
+        final int penalty = kind.value() <= 4
+                ? (byte) (m_nSkillSpecialPenalty >>> shift) : 0;
+        return CheckResistanceRange(GetResistSource(kind) + bonus + penalty);
+    }
+
+    public final void AddSpecialPierce(eKind kind, int value) {
+        if (kind == null) return;
+        switch (kind) {
+            case ABILITY -> m_nPierceAbility += value;
+            case SPIRIT -> m_nPierceSpirit += value;
+            case DRAGON_SPELL -> m_nPierceDragon += value;
+            case FEAR -> m_nPierceFear += value;
+            case ALL -> m_nPierceAll += value;
+        }
+        if (!m_ResistanceDisposed && this instanceof L1PcInstance pc) {
+            SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
+        }
+    }
+
+    public final int GetSpecialPierce(eKind kind) {
+        if (kind == null) return 0;
+        final int value = kind.value();
+        final int pumped = value <= 4
+                ? (m_nSkillSpecialPierce >>> ((value - 1) << 3)) & 0xff : 0;
+        final int shared = switch (kind) {
+            case SPIRIT -> (int) ((m_SkillSpecialResistance >>> 40) & 0xffL);
+            case ALL -> (int) ((m_SkillSpecialResistance >>> 48) & 0xffL);
+            default -> 0;
+        };
+        return CheckResistanceRange(GetPierceSource(kind) + pumped + shared);
+    }
+
+    public final int GetMDefendBySkill() {
+        int effectedMr = GetMDefend();
+
+        if (this.hasSkillEffect(L1SkillId.ERASE_MAGIC))
+            effectedMr /= 2; // 25% 원본4
+
+        return effectedMr;
+    }
+
+    public final int GetAddedMDefend() { return CheckMDefendRange(m_nAddedMDefend, -m_nOrgMDefend); }
+
+    public final void SetSkillMDefend(int value) { if (m_nSkillMDefend != value) m_nSkillMDefend = value; }
+
+    public final int GetMDefend() {
+        if(m_ResistanceDisposed || !this.isPassive(PassiveID.RESIST_ELEMENT.toInt()))
+            return CheckMDefendRange(m_nOrgMDefend + m_nAddedMDefend + m_nSkillMDefend, 0);
+        return CheckMDefendRange(m_nOrgMDefend + m_nAddedMDefend + m_nSkillMDefend + 5, 0);
+    }
+
+    public final int GetOrgMDefend() 		 { return m_nOrgMDefend; 										}
+
+    public final void AddMDefend(int i) { m_nAddedMDefend += i; }
+
+    public final void SetOrgMDefend(int i) { m_nOrgMDefend = CheckMDefendRange(i, 0); 				}
+
+    public final void SetSkillCombatModifiers(int pvp, long specialResistance, boolean notify) {
+        SetSkillCombatModifiers(pvp, specialResistance, 0, notify);
+    }
+
+    public final void SetSkillCombatModifiers(int pvp, long specialResistance, int penalty, boolean notify) {
+        // Older callers did not own the extra pierce channels. Preserve their
+        // active sources; only the five-argument owner publication clears them.
+        SetSkillCombatModifiers(pvp, specialResistance, penalty, m_nSkillSpecialPierce, notify);
+    }
+
+    public final void SetSkillCombatModifiers(int pvp, long specialResistance, int penalty,
+            int pierce, boolean notify) {
+        if (m_nSkillPvp != pvp) m_nSkillPvp = pvp;
+        if (m_SkillSpecialResistance == specialResistance && m_nSkillSpecialPenalty == penalty
+                && m_nSkillSpecialPierce == pierce) return;
+        m_SkillSpecialResistance = specialResistance;
+        m_nSkillSpecialPenalty = penalty;
+        m_nSkillSpecialPierce = pierce;
+        if (notify && !m_ResistanceDisposed && this instanceof L1PcInstance pc) SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
+    }
+
+    public final int GetPvpDamageReduction() { return CheckResistanceRange(m_nPvpDamageReduction + (m_nSkillPvp >> 16)); }
+
+    public final int GetPvpDamage() { return CheckResistanceRange(m_nPvpDamage + (short) m_nSkillPvp); }
+
+    public final void SetSkillElemental(long value) { if (m_SkillElemental != value) m_SkillElemental = value; }
+
+    public final int GetFireResist()  { return IncreaseElementalResistance(CheckResistanceRange(m_nFireResist + (short) (m_SkillElemental >>> 48))); }
+
+    public final int GetWaterResist() { return IncreaseElementalResistance(CheckResistanceRange(m_nWaterResist + (short) m_SkillElemental)); }
+
+    public final int GetWindResist()  { return IncreaseElementalResistance(CheckResistanceRange(m_nWindResist + (short) (m_SkillElemental >>> 16))); }
+
+    public final int GetEarthResist() { return IncreaseElementalResistance(CheckResistanceRange(m_nEarthResist + (short) (m_SkillElemental >>> 32))); }
+
+    private int IncreaseElementalResistance(int source_resist) {
+        return m_ResistanceDisposed || !this.isPassive(PassiveID.RESIST_ELEMENT.toInt()) ?
+                source_resist : source_resist + 5;
+    }
+
+    public final void AddFireResist(int i) { m_nFireResist += i; }
+
+    public final void AddWaterResist(int i) { m_nWaterResist += i; }
+
+    public final void AddWindResist(int i) { m_nWindResist += i; }
+
+    public final void AddEarthResist(int i) { m_nEarthResist += i; }
+
+    public final void AddPvpDamageReduction(int i) { m_nPvpDamageReduction += i; }
+
+    public final void AddPvpDamage(int i) { m_nPvpDamage += i; }
+
+    public final void AddAllNaturalResistance(int i) {
+        AddFireResist(i);
+        AddWaterResist(i);
+        AddWindResist(i);
+        AddEarthResist(i);
+    }
+
+    public final int GetMDefendAndConsumeErase(){
+        int effectedMr = GetMDefend();
+        if (this.hasSkillEffect(L1SkillId.ERASE_MAGIC)){
+            this.removeSkillEffect(L1SkillId.ERASE_MAGIC);
+            if (!m_ResistanceDisposed && this instanceof L1PcInstance) SC_PacketBox.send(((L1PcInstance) this), SC_PacketBox.UNLIMITED_ICON1, 55, false);
+            effectedMr /= 2; // 25%
+        }
+        return effectedMr;
+    }
+
+    public final int GetAinEfficiency() {
+        return m_nAinEfficiency;
+    }
+
+    public final void AddAinEfficiency(int i) {
+        m_nAinEfficiency = CheckMDefendRange(m_nAinEfficiency + i, 0);
+    }
+
+    public final void SetAinEfficiency(int i) {
+        m_nAinEfficiency = CheckMDefendRange(i, 0);
+    }
+
+    public final void AddFouDmgUp(int v) {
+        m_nFouDamage += v;
+        if (m_nFouDamage < 0) m_nFouDamage = 0;
+    }
+
+    public final int GetFouDmgUp() {
+        return m_nFouDamage;
+    }
+
+    public final void AddPotionRecAmt(int v)  { m_nPotionRecoveryAmount += v; }
+
+    public final int  GetPotionRecAmt()        { return m_nPotionRecoveryAmount; }
+
+    public final void AddPotionRecRate(int v) { m_nPotionRecoveryRate += v; }
+
+    public final int  GetPotionRecRate()      { return m_nPotionRecoveryRate; }
+
+    public final void AddHealDefence(int v)   { m_nHealDefence += v; }
+
+    public final int  GetHealDefence()        { return m_nHealDefence; }
+	// END direct resistance operations
+
+	// Direct defense operations.
 	public final int getAc() {
 		return m_nPDefend;
 	}
 
-	@Override
 	public final void addAc(int i) {
 		setAc(m_nOrgPDefend + i);
 	}
 
-	@Override
 	public final void setAc(int i) {
 		m_nOrgPDefend = i;
 		ValidatePDefend(true);
 	}
 
-	@Override
 	public final void setSkillAc(int value, boolean notify) {
 		if (m_nSkillPDefend == value) return;
 		m_nSkillPDefend = value;

@@ -371,7 +371,7 @@ public final class TamFruitUseService {
                         SC_NewCreateItem.sendBuffOrder(pc, SC_NewCreateItem.버프창, 0, ICON1[s], ICON2[s]);
                     } catch (Throwable ignore) {}
 
-                    try { if (pc.getAC() != null) pc.getAC().addAc(s); } catch (Throwable ignore) {}
+                    try { pc.addAc(s); } catch (Throwable ignore) {}
 
                     try {
                         int dr = DR_BY_STAGE[s];
@@ -394,7 +394,7 @@ public final class TamFruitUseService {
         try { pc.setSkillEffect(TAM_SKILLS[stage], timerMillis(remainSec)); } catch (Throwable ignore) {}
 
         // AC 적용
-        try { if (pc.getAC() != null) pc.getAC().addAc(-stage); } catch (Throwable ignore) {}
+        try { pc.addAc(-stage); } catch (Throwable ignore) {}
 
         // DR 적용(3~5단)
         try {
@@ -414,7 +414,7 @@ public final class TamFruitUseService {
         // handler. clearAllTamEffects cannot see that ID to undo its stats.
         for (int stage = 1; stage <= MAX_STAGE; stage++) {
             if (TAM_SKILLS[stage] != skillId) continue;
-            if (pc.getAC() != null) pc.getAC().addAc(stage);
+            pc.addAc(stage);
             int dr = DR_BY_STAGE[stage];
             if (dr != 0) pc.addDamageReductionByArmor(-dr);
             try {

@@ -98,14 +98,14 @@ final class DemolitionItemEffect {
                     int probability = 0;
                     attackLevel = pc.getLevel();
                     defenseLevel = member.getLevel();
-                    int shockStunPoint = pc.getResistance().getSpecialPierce(eKind.FEAR) + pc.getResistance().getSpecialPierce(eKind.ALL);
+                    int shockStunPoint = pc.GetSpecialPierce(eKind.FEAR) + pc.GetSpecialPierce(eKind.ALL);
                     final int 데몰리션시간 = DurationChoiceItems.demolition(random);
                     if (shockStunPoint > 0) {
                         attackLevel += Math.round(((double)shockStunPoint * (double)Config.STUNHIT_TO_LEVEL11));
                     }
                     probability = (int)+Config.데페기본확률 + ((attackLevel - defenseLevel) * 2);
                     probability += pc.getImpactUp();
-                    int resistance = (member.getResistance().getSpecialResistance(eKind.FEAR) + member.getResistance().getSpecialResistance(eKind.ALL)) / Config.내성배율;
+                    int resistance = (member.GetSpecialResistance(eKind.FEAR) + member.GetSpecialResistance(eKind.ALL)) / Config.내성배율;
                     if (resistance > 0) {
                         probability -= resistance;
                     }

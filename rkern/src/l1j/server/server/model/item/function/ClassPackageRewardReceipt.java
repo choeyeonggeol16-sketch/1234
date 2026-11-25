@@ -28,7 +28,7 @@ final class ClassPackageRewardReceipt {
             classItem = 600209;
             break;
         case 2:
-            classItem = pc.getAbility().getBaseDex() >= 18 ? 600210 : 600209;
+            classItem = pc.GetOriginalStatDex() >= 18 ? 600210 : 600209;
             break;
         case 3: case 6:
             classItem = 600211;

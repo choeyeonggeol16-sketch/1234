@@ -115,11 +115,11 @@ public final class SC_CHAR_STAT extends ProtoPacket {
 		int v4 = 0, v5 = 0, v6 = 0;
 
 		if (pc != null) {
-			final int str   = pc.getAbility().getTotalStr();
-			final int intel = pc.getAbility().getTotalInt();
-			final int wis   = pc.getAbility().getTotalWis();
-			final int dex   = pc.getAbility().getTotalDex();
-			final int con   = pc.getAbility().getTotalCon();
+			final int str   = pc.GetTotalStatStr();
+			final int intel = pc.GetTotalStatInt();
+			final int wis   = pc.GetTotalStatWis();
+			final int dex   = pc.GetTotalStatDex();
+			final int con   = pc.GetTotalStatCon();
 			final int type  = pc.getType();
 
 			switch (statType) {
@@ -139,11 +139,11 @@ public final class SC_CHAR_STAT extends ProtoPacket {
 				break;
 
 			case Stat_Wis:
-				v1 = CalcStat.naturalMpRegen(0, wis, pc.getAbility().getWis());
+				v1 = CalcStat.naturalMpRegen(0, wis, pc.GetStatWis());
 				v2 = CalcStat.엠피물약회복(wis);
 				v3 = CalcStat.마법방어(type, wis);
-				v4 = CalcStat.MinincreaseMp(type, pc.getAbility().getWis());
-				v5 = CalcStat.MaxincreaseMp(type, pc.getAbility().getWis());
+				v4 = CalcStat.MinincreaseMp(type, pc.GetStatWis());
+				v5 = CalcStat.MaxincreaseMp(type, pc.GetStatWis());
 				v6 = getHpMpValue(pc, false);
 				break;
 
@@ -159,7 +159,7 @@ public final class SC_CHAR_STAT extends ProtoPacket {
 				v1 = CalcStat.피회복틱(con);
 				v2 = (int) CalcStat.물약회복증가(con);
 				v3 = CalcStat.최대소지무게(str, con);
-				v4 = CalcStat.PureHp(type, pc.getAbility().getCon());
+				v4 = CalcStat.PureHp(type, pc.GetStatCon());
 				v6 = getHpMpValue(pc, true);
 				break;
 
@@ -189,12 +189,12 @@ public final class SC_CHAR_STAT extends ProtoPacket {
 				MODE_STAT_REFRESH,
 				code,
 				0,
-				pc.getAbility().getStr(),
-				pc.getAbility().getInt(),
-				pc.getAbility().getWis(),
-				pc.getAbility().getDex(),
-				pc.getAbility().getCon(),
-				pc.getAbility().getCha()
+				pc.GetStatStr(),
+				pc.GetStatInt(),
+				pc.GetStatWis(),
+				pc.GetStatDex(),
+				pc.GetStatCon(),
+				pc.GetStatCha()
 		);
 	}
 
@@ -707,11 +707,11 @@ public final class SC_CHAR_STAT extends ProtoPacket {
                 int v4 = 0, v5 = 0, v6 = 0;
 
                 if (pc != null) {
-                    final int str   = pc.getAbility().getTotalStr();
-                    final int intel = pc.getAbility().getTotalInt();
-                    final int wis   = pc.getAbility().getTotalWis();
-                    final int dex   = pc.getAbility().getTotalDex();
-                    final int con   = pc.getAbility().getTotalCon();
+                    final int str   = pc.GetTotalStatStr();
+                    final int intel = pc.GetTotalStatInt();
+                    final int wis   = pc.GetTotalStatWis();
+                    final int dex   = pc.GetTotalStatDex();
+                    final int con   = pc.GetTotalStatCon();
                     final int type  = pc.getType();
 
                     switch (statType) {
@@ -731,11 +731,11 @@ public final class SC_CHAR_STAT extends ProtoPacket {
                         break;
 
                     case Stat_Wis:
-                        v1 = CalcStat.naturalMpRegen(0, wis, pc.getAbility().getWis());
+                        v1 = CalcStat.naturalMpRegen(0, wis, pc.GetStatWis());
                         v2 = CalcStat.엠피물약회복(wis);
                         v3 = CalcStat.마법방어(type, wis);
-                        v4 = CalcStat.MinincreaseMp(type, pc.getAbility().getWis());
-                        v5 = CalcStat.MaxincreaseMp(type, pc.getAbility().getWis());
+                        v4 = CalcStat.MinincreaseMp(type, pc.GetStatWis());
+                        v5 = CalcStat.MaxincreaseMp(type, pc.GetStatWis());
                         v6 = getHpMpValue(pc, false);
                         break;
 
@@ -751,7 +751,7 @@ public final class SC_CHAR_STAT extends ProtoPacket {
                         v1 = CalcStat.피회복틱(con);
                         v2 = (int) CalcStat.물약회복증가(con);
                         v3 = CalcStat.최대소지무게(str, con);
-                        v4 = CalcStat.PureHp(type, pc.getAbility().getCon());
+                        v4 = CalcStat.PureHp(type, pc.GetStatCon());
                         v6 = getHpMpValue(pc, true);
                         break;
 
@@ -773,9 +773,9 @@ public final class SC_CHAR_STAT extends ProtoPacket {
                 }
 
                 return sendCtor(
-                        protoRecipient, MODE_STAT_REFRESH, code, 0, pc.getAbility().getStr(), pc.getAbility().getInt(),
-                        pc.getAbility().getWis(), pc.getAbility().getDex(), pc.getAbility().getCon(),
-                        pc.getAbility().getCha());
+                        protoRecipient, MODE_STAT_REFRESH, code, 0, pc.GetStatStr(), pc.GetStatInt(),
+                        pc.GetStatWis(), pc.GetStatDex(), pc.GetStatCon(),
+                        pc.GetStatCha());
     }
 
     public static boolean sendCreate(L1PcInstance protoRecipient, L1PcInstance pc, int code) {

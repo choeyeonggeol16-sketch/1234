@@ -81,7 +81,7 @@ public final class SkillGfxHelper {
         if (skillId == L1SkillId.UNCANNY_DODGE) {
             if (!(target instanceof L1PcInstance)) return;
             final L1PcInstance pc = (L1PcInstance) target;
-            if (pc.getAC().getAc() <= -100) castgfx = 11766;
+            if (pc.getAc() <= -100) castgfx = 11766;
         } else {
             if (castgfx != skill.getCastGfx()) return;
         }
@@ -165,7 +165,7 @@ public final class SkillGfxHelper {
             // UNCANNY_DODGE 사운드
             if (skillId == L1SkillId.UNCANNY_DODGE && target instanceof L1PcInstance) {
                 final L1PcInstance pc = (L1PcInstance) target;
-                final int snd = (pc.getAC().getAc() <= -100) ? 11766 : 11765;
+                final int snd = (pc.getAc() <= -100) ? 11766 : 11765;
                 final long ss = SC_SkillSound.pack(pc.getId(), snd, 19);
                 SC_SkillSound.sendPacked(pc, ss);
                 SC_SkillSound.broadcastFastPacked(pc, ss);

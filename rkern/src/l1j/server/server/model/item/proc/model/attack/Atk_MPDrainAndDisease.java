@@ -49,7 +49,7 @@ public class Atk_MPDrainAndDisease  extends ItemSkillModel{
 			defender.removeSkillEffect(L1SkillId.DISEASE);
 		
 		defender.addHitup(-6);
-		defender.getAC().setAc(12);
+		defender.setAc(12);
 		if(defender instanceof L1PcInstance)
 			SC_OwnCharAttrDef.send((L1PcInstance)defender);
 		defender.setSkillEffect(L1SkillId.DISEASE, 64000);

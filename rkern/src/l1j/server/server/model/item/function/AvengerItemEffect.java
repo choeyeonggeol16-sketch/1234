@@ -40,7 +40,7 @@ final class AvengerItemEffect {
                     L1PcInstance member = (L1PcInstance)target;
                     if (member.getMapId() != pc.getMapId() || member.isDead() || member.get_teleport()) return false;
                     int aa1 = random.nextInt(100) + 1;
-                    int aa = member.getAC().getAc() / 2;
+                    int aa = member.getAc() / 2;
                     int dmg = (pc.getLevel() / 3 * Config.어벤저배율) + aa1;
                     if (pc.getId() == member.getId()) {
                         SC_SystemMessage.send(pc, "\\aH자기 자신에게는 사용할 수 없습니다");

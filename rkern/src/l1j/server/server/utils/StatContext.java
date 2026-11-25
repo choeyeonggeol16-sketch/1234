@@ -1,7 +1,6 @@
 package l1j.server.server.utils;
 
 import java.util.Arrays;
-import l1j.server.server.model.Ability;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public class StatContext {
@@ -29,15 +28,15 @@ public class StatContext {
     public boolean resolve(L1PcInstance pc) {
         if (pc == null) return false;
         
-        Ability ability = pc.getAbility();
+        var ability = pc;
         
         int[] currentStats = {
-            ability.getStr() + ability.getAddedStr(),
-            ability.getInt() + ability.getAddedInt(),
-            ability.getWis() + ability.getAddedWis(),
-            ability.getDex() + ability.getAddedDex(),
-            ability.getCon() + ability.getAddedCon(),
-            ability.getCha() + ability.getAddedCha()
+            ability.GetStatStr() + ability.GetAddedStatStr(),
+            ability.GetStatInt() + ability.GetAddedStatInt(),
+            ability.GetStatWis() + ability.GetAddedStatWis(),
+            ability.GetStatDex() + ability.GetAddedStatDex(),
+            ability.GetStatCon() + ability.GetAddedStatCon(),
+            ability.GetStatCha() + ability.GetAddedStatCha()
         };
 
         this.targetType = 0;
@@ -50,12 +49,12 @@ public class StatContext {
         }
 
         if (pc.getReturnStat() != 0) {
-            ability.setStr((byte) (this.stats[0] - ability.getAddedStr()));
-            ability.setInt((byte) (this.stats[1] - ability.getAddedInt()));
-            ability.setWis((byte) (this.stats[2] - ability.getAddedWis()));
-            ability.setDex((byte) (this.stats[3] - ability.getAddedDex()));
-            ability.setCon((byte) (this.stats[4] - ability.getAddedCon()));
-            ability.setCha((byte) (this.stats[5] - ability.getAddedCha()));
+            ability.SetStatStr((byte) (this.stats[0] - ability.GetAddedStatStr()));
+            ability.SetStatInt((byte) (this.stats[1] - ability.GetAddedStatInt()));
+            ability.SetStatWis((byte) (this.stats[2] - ability.GetAddedStatWis()));
+            ability.SetStatDex((byte) (this.stats[3] - ability.GetAddedStatDex()));
+            ability.SetStatCon((byte) (this.stats[4] - ability.GetAddedStatCon()));
+            ability.SetStatCha((byte) (this.stats[5] - ability.GetAddedStatCha()));
             return true;
         }
 

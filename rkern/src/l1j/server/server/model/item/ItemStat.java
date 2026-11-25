@@ -16,7 +16,7 @@ import l1j.server.server.utils.eKind;
  */
 public enum ItemStat {
 
-    AC         (2,  WType.AC)     { @Override public void apply(L1PcInstance p, int v) { p.getAC().addAc(v); } },
+    AC         (2,  WType.AC)     { @Override public void apply(L1PcInstance p, int v) { p.addAc(v); } },
     MAX_HP     (14, WType.H)      { @Override public void apply(L1PcInstance p, int v) { p.addMaxHp(v); } },
     MAX_MP     (32, WType.H)      { @Override public void apply(L1PcInstance p, int v) { p.addMaxMp(v); } },
     DMG_RED    (63, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.addDamageReductionByArmor(v); } },
@@ -24,33 +24,33 @@ public enum ItemStat {
     DMG_RATE   (47, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.addDmgRate(v); } },
     BOW_DMG    (35, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.addBowDmgRate(v); } },
     MPR        (38, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.addMpr(v); } },
-    SP         (17, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.getAbility().addSp(v); } },
+    SP         (17, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.AddStatSp(v); } },
     WEIGHT     (68, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.addWeightReduction(v); } },
-    MR         (15, WType.H)      { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addMr(v); } },
+    MR         (15, WType.H)      { @Override public void apply(L1PcInstance p, int v) { p.AddMDefend(v); } },
     BOW_HIT    (24, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.addBowHitup(v); } },
 	MAGIC_HIT  (40, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.addBaseMagicHitUp(v); } },
-	PVP_DMG    (59, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addPVPweaponTotalDamage(v); } },
-	PVP_DMG_RED    (60, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addcalcPcDefense(v); } },
+	PVP_DMG    (59, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.AddPvpDamage(v); } },
+	PVP_DMG_RED    (60, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.AddPvpDamageReduction(v); } },
 	
 	
-	PVP_MAGIC_DMG_RED   (135, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addcalcPcDefense(v); } },
+	PVP_MAGIC_DMG_RED   (135, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.AddPvpDamageReduction(v); } },
 
 	BLESS_CONSUMO(116, WType.H)     { @Override public void apply(L1PcInstance p, int v) { p.addEinhasadBlessper(v); } },	
 	
-	ABILITY_RESIS(117, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.ABILITY, v); } },	
-	SPIRIT_RESIS (118, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.SPIRIT, v); } },	
-	DRAGON_SPELL_RESIS (119, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, v); } },	
-	FEAR_RESIS (120, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.FEAR, v); } },	
-	ALL_RESIS  (121, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialResistance(eKind.ALL, v); } },
+	ABILITY_RESIS(117, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.ABILITY, v); } },	
+	SPIRIT_RESIS (118, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.SPIRIT, v); } },	
+	DRAGON_SPELL_RESIS (119, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.DRAGON_SPELL, v); } },	
+	FEAR_RESIS (120, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.FEAR, v); } },	
+	ALL_RESIS  (121, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialResistance(eKind.ALL, v); } },
 	
-	ABILITY_PLERCE (122, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.ABILITY, v); } },	
-	SPIRIT_PLERCE (123, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.SPIRIT, v); } },	
-	DRAGON_SPELL_PLERCE (124, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.DRAGON_SPELL, v); } },
-	FEAR_PLERCE (125, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.FEAR, v); } },
-	ALL_PLERCE (126, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addSpecialPierce(eKind.ALL, v); } },
+	ABILITY_PLERCE (122, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.ABILITY, v); } },	
+	SPIRIT_PLERCE (123, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.SPIRIT, v); } },	
+	DRAGON_SPELL_PLERCE (124, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.DRAGON_SPELL, v); } },
+	FEAR_PLERCE (125, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.FEAR, v); } },
+	ALL_PLERCE (126, WType.B)     { @Override public void apply(L1PcInstance p, int v) { p.AddSpecialPierce(eKind.ALL, v); } },
 	EXP_RATE (36, WType.B)     { @Override public void apply(L1PcInstance p, int v) {  } },
 	
-    POTION_AMT (65,  WType.POTION) { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addPotionRecAmt(v); p.getResistance().addPotionRecRate(v);} },
+    POTION_AMT (65,  WType.POTION) { @Override public void apply(L1PcInstance p, int v) { p.AddPotionRecAmt(v); p.AddPotionRecRate(v);} },
     BASE_MAGIC_CRITICAL(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.addBaseMagicCritical(v); } },
     BOW_DAMAGE_UP(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.addBowDmgup(v); } },
     DMG_RED_IGNORE(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.addDamageReductionIgnore(v); } },
@@ -60,9 +60,9 @@ public enum ItemStat {
     MAGIC_CRITICAL_RATE(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.add_magic_critical_rate(v); } },
     MELEE_CRITICAL_RATE(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.add_melee_critical_rate(v); } },
     BOW_CRITICAL_RATE(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.add_missile_critical_rate(v); } },
-    CHARISMA(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.getAbility().addCha(v); } },
+    CHARISMA(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.AddStatCha(v); } },
     MAGIC_DODGE(0, WType.NONE) { @Override public void apply(L1PcInstance p, int v) { p.addMagicDodgeProbability(v); } },
-    HEAL_DEF   (96,  WType.HEAL)   { @Override public void apply(L1PcInstance p, int v) { p.getResistance().addHealDefence(v); } };
+    HEAL_DEF   (96,  WType.HEAL)   { @Override public void apply(L1PcInstance p, int v) { p.AddHealDefence(v); } };
 
 
 	public enum WType { NONE, B, H, AC, POTION, HEAL, HELPER }

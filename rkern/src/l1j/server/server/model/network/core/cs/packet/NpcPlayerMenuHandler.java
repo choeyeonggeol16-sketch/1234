@@ -90,7 +90,7 @@ final class NpcPlayerMenuHandler {
 			SC_CloseList.send(pc, pc.getId());
 			return;
 		}
-		int charisma = pc.getAbility().getTotalCha() + 6 - petcost;
+		int charisma = pc.GetTotalStatCha() + 6 - petcost;
 		int summoncount = 0;
 		if (levelrange <= 52) {
 			summoncount = charisma / summoncost;
@@ -120,7 +120,7 @@ final class NpcPlayerMenuHandler {
 		for (int cnt = 0; cnt < summoncount; cnt++) {
 			summon = new L1SummonInstance(npcTemp, pc);
 			if (summonid == 810850 || summonid == 810849 || summonid == 810848) {
-				summon.setPetcost(pc.getAbility().getTotalCha() + 7);
+				summon.setPetcost(pc.GetTotalStatCha() + 7);
 			} else {
 				if (levelrange <= 52) {
 					summon.setPetcost(summoncost);

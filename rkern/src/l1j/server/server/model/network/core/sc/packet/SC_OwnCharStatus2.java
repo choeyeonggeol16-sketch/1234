@@ -12,13 +12,13 @@ public final class SC_OwnCharStatus2 {
     public static boolean send(L1PcInstance pc) {
         if (pc == null) return false;
         int str = 0, intel = 0, wis = 0, dex = 0, con = 0, cha = 0;
-        if (pc.getAbility() != null) {
-            str = pc.getAbility().getTotalStr();
-            intel = pc.getAbility().getTotalInt();
-            wis = pc.getAbility().getTotalWis();
-            dex = pc.getAbility().getTotalDex();
-            con = pc.getAbility().getTotalCon();
-            cha = pc.getAbility().getTotalCha();
+        {
+            str = pc.GetTotalStatStr();
+            intel = pc.GetTotalStatInt();
+            wis = pc.GetTotalStatWis();
+            dex = pc.GetTotalStatDex();
+            con = pc.GetTotalStatCon();
+            cha = pc.GetTotalStatCha();
         }
         final int weight = pc.getInventory() != null ? pc.getInventory().getWeight100() : 0;
         return send(pc.getNetConnection(), str, intel, wis, dex, con, cha, weight);

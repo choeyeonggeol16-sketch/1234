@@ -47,7 +47,7 @@ public final class WeakExposeHelper {
         // =====================================================
         final int token = pc.getMultiHitToken();
         if (pc.fouIsActive(token)) {
-            final int base = pc.getResistance().getFouDmgUp();
+            final int base = pc.GetFouDmgUp();
             final int add  = pc.fouConsumeAddThisHit(token);
 
             if (pc.fouIsFinished(token)) {

@@ -7,10 +7,10 @@ import tempfile
 root = Path(__file__).resolve().parents[2]
 model = root / "src/l1j/server/server/model"
 creature = (model / "L1Character.java").read_text(encoding="utf-8")
-ac = (model / "AC.java").read_text(encoding="utf-8")
-assert "extends L1Object implements AC" in creature
+assert not (model / "AC.java").exists()
+assert "extends L1Object implements AC" not in creature
 assert "new AC(" not in creature
-assert "protected final AC ac = this;" in creature
+assert "protected final AC ac = this;" not in creature
 # Catch residual allocations outside the inspected PC/NPC source paths.
 for source in (root / "src").rglob("*.java"):
     assert not re.search(r"\bnew\s+(?:l1j\.server\.server\.model\.)?AC\s*\(", source.read_text(encoding="utf-8", errors="replace")), str(source)
@@ -26,15 +26,14 @@ def method(signature):
     return creature[start:end]
 
 methods = "\n".join(method(s) for s in (
-    "public AC getAC()", "public final int getAc()", "public final void addAc(",
+    "public final int getAc()", "public final void addAc(",
     "public final void setAc(", "public final void setSkillAc(", "private void ValidatePDefend(",
 ))
 fields = "\n".join(re.search(r"[^\n]*\b" + n + r"\s*;", creature).group(0)
                    for n in ("m_nOrgPDefend", "m_nSkillPDefend", "m_nPDefend"))
 stub = """
-class L1Character implements AC {
+class L1Character {
     """ + fields + """
-    protected final AC ac = this;
     int dg, er, packets;
     public boolean setCharacterDG(int n) {int old=dg; dg=n; return old!=n;}
     public boolean setCharacterER(int n) {int old=er; er=n; return old!=n;}
@@ -66,7 +65,7 @@ public class DefenseAudit {
     }
     static void check(OldAC old,L1Character c){
         if(old.value!=c.getAc()||old.dg!=c.dg||old.er!=c.er||old.packets!=c.packets
-                ||c.getAC()!=c||c.ac!=c)throw new AssertionError();
+                )throw new AssertionError();
     }
     public static void main(String[] args){
         int count=0;
@@ -84,8 +83,8 @@ public class DefenseAudit {
             for(int i=0;i<100000;i++){
                 int value=rnd.nextInt();boolean notify=rnd.nextBoolean();
                 switch(rnd.nextInt(3)){
-                    case 0 -> {old.setAc(value);c.getAC().setAc(value);}
-                    case 1 -> {old.addAc(value);c.getAC().addAc(value);}
+                    case 0 -> {old.setAc(value);c.setAc(value);}
+                    case 1 -> {old.addAc(value);c.addAc(value);}
                     default -> {old.setSkillAc(value,notify);c.setSkillAc(value,notify);}
                 }
                 check(old,c);count++;
@@ -97,7 +96,6 @@ public class DefenseAudit {
 """
 with tempfile.TemporaryDirectory() as d:
     work=Path(d)
-    (work / "AC.java").write_text(ac.replace("package l1j.server.server.model;", ""), encoding="utf-8")
     (work / "DefenseAudit.java").write_text(stub+test, encoding="utf-8")
-    subprocess.run(["javac", "-encoding", "UTF-8", "AC.java", "DefenseAudit.java"], cwd=d, check=True, timeout=60)
+    subprocess.run(["javac", "-encoding", "UTF-8", "DefenseAudit.java"], cwd=d, check=True, timeout=60)
     subprocess.run(["java", "-ea", "-cp", d, "DefenseAudit"], cwd=d, check=True, timeout=60)

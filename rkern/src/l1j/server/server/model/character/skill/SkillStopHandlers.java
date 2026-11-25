@@ -1315,7 +1315,7 @@ public final class SkillStopHandlers {
 	private static StopResult offStatusIgnition(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getResistance().addFire(-30);
+			pc.AddFireResist(-30);
 			SC_OwnCharAttrDef.send(pc);
 		}
 		return StopResult.HANDLED;
@@ -1324,7 +1324,7 @@ public final class SkillStopHandlers {
 	private static StopResult offStatusQuake(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getResistance().addEarth(-30);
+			pc.AddEarthResist(-30);
 			SC_OwnCharAttrDef.send(pc);
 		}
 		return StopResult.HANDLED;
@@ -1333,7 +1333,7 @@ public final class SkillStopHandlers {
 	private static StopResult offStatusShock(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getResistance().addWind(-30);
+			pc.AddWindResist(-30);
 			SC_OwnCharAttrDef.send(pc);
 		}
 		return StopResult.HANDLED;

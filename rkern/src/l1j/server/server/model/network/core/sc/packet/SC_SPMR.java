@@ -10,12 +10,12 @@ public final class SC_SPMR {
     private SC_SPMR() {}
 
     public static boolean send(L1PcInstance pc) {
-        if (pc == null || pc.getAbility() == null || pc.getResistance() == null) return false;
-        int sp = pc.getAbility().getSp() - pc.getAbility().getTrueSp();
+        if (pc == null || !pc.IsResistanceActive()) return false;
+        int sp = pc.GetStatSp() - pc.GetStatBaseSp();
         if (pc.hasSkillEffect(l1j.server.server.model.character.skill.L1SkillId.STATUS_WISDOM_POTION)) sp -= 2;
         if (sp < -128) sp = -128;
         if (sp > 300) sp = 300;
-        final int mr = pc.getResistance().getMr() - pc.getResistance().getBaseMr();
+        final int mr = pc.GetMDefend() - pc.GetOrgMDefend();
         return sendRaw(pc.getNetConnection(), sp, mr);
     }
     private static boolean sendRaw(CUserSocket client, int sp, int mr) {

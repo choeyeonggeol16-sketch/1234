@@ -86,40 +86,40 @@ public class L1CardCollection {
     // --- 실제 능력치 부여 로직 ---
     private static void applyUniqueBonus(L1PcInstance pc) {
         pc.setBcol_y(1);
-        pc.addDmgup(10); pc.addBowDmgup(10); pc.getAbility().addSp(10);
+        pc.addDmgup(10); pc.addBowDmgup(10); pc.AddStatSp(10);
         pc.addDamageReduction(15);
         pc.addHitup(5); pc.addBowHitup(5); pc.addMagicHit(5);
         pc.addMaxHp(200); pc.addMaxMp(100);
-        pc.getResistance().addMr(10);
+        pc.AddMDefend(10);
         pc.add_melee_critical_rate(10); pc.add_magic_critical_rate(10); pc.add_missile_critical_rate(10);
     }
 
     private static void applyMythBonus(L1PcInstance pc) {
         pc.setBcol_m(1);
-        pc.addDmgup(8); pc.addBowDmgup(8); pc.getAbility().addSp(8);
+        pc.addDmgup(8); pc.addBowDmgup(8); pc.AddStatSp(8);
         pc.addDamageReduction(10);
         pc.addHitup(3); pc.addBowHitup(3); pc.addMagicHit(3);
         pc.addMaxHp(200); pc.addMaxMp(100);
-        pc.getResistance().addMr(8);
+        pc.AddMDefend(8);
         pc.add_melee_critical_rate(5); pc.add_magic_critical_rate(5); pc.add_missile_critical_rate(5);
     }
 
     private static void applyLegendBonus(L1PcInstance pc) {
         pc.setBcol_l(1);
-        pc.addDmgup(5); pc.addBowDmgup(5); pc.getAbility().addSp(5);
+        pc.addDmgup(5); pc.addBowDmgup(5); pc.AddStatSp(5);
         pc.addDamageReduction(10);
         pc.addHitup(2); pc.addBowHitup(2); pc.addMagicHit(2);
         pc.addMaxHp(100); pc.addMaxMp(50);
-        pc.getResistance().addMr(5);
+        pc.AddMDefend(5);
         pc.add_melee_critical_rate(5); pc.add_magic_critical_rate(5); pc.add_missile_critical_rate(5);
     }
 
     private static void applyHeroBonus(L1PcInstance pc) {
         pc.setBcol_h(1);
-        pc.addDmgup(3); pc.addBowDmgup(3); pc.getAbility().addSp(3);
+        pc.addDmgup(3); pc.addBowDmgup(3); pc.AddStatSp(3);
         pc.addDamageReduction(5);
         pc.addHitup(2); pc.addBowHitup(2); pc.addMagicHit(2);
-        pc.getResistance().addMr(3);
+        pc.AddMDefend(3);
         pc.add_melee_critical_rate(5); pc.add_magic_critical_rate(5); pc.add_missile_critical_rate(5);
     }
 

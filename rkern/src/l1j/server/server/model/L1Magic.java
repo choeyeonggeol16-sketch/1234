@@ -122,9 +122,9 @@ public class L1Magic {
 	private int getSpellPower() {
 		int spellPower = 0;
 		if (_calcType == PC_PC || _calcType == PC_NPC) {
-			spellPower = _pc.getAbility().getSp();
+			spellPower = _pc.GetStatSp();
 		} else if (_calcType == NPC_PC || _calcType == NPC_NPC) {
-			spellPower = _npc.getAbility().getSp();
+			spellPower = _npc.GetStatSp();
 		}
 		return spellPower;
 	}
@@ -132,9 +132,9 @@ public class L1Magic {
 	private int getMagicLevel() {
 		int magicLevel = 0;
 		if (_calcType == PC_PC || _calcType == PC_NPC) {
-			magicLevel = _pc.getAbility().getMagicLevel();
+			magicLevel = _pc.GetStatMagicLevel();
 		} else if (_calcType == NPC_PC || _calcType == NPC_NPC) {
-			magicLevel = _npc.getAbility().getMagicLevel();
+			magicLevel = _npc.GetStatMagicLevel();
 		}
 		return magicLevel;
 	}
@@ -151,9 +151,9 @@ public class L1Magic {
 	private int getMagicBonus() {
 		int magicBonus = 0;
 		if (_calcType == PC_PC || _calcType == PC_NPC) {
-			magicBonus = _pc.getAbility().getMagicBonus();
+			magicBonus = _pc.GetStatMagicBonus();
 		} else if (_calcType == NPC_PC || _calcType == NPC_NPC) {
-			magicBonus = _npc.getAbility().getMagicBonus();
+			magicBonus = _npc.GetStatMagicBonus();
 		}
 		return magicBonus;
 	}
@@ -171,9 +171,9 @@ public class L1Magic {
 	private int getTargetMr() {
 		int mr = 0;
 		if (_calcType == PC_PC || _calcType == NPC_PC) {
-			mr = _targetPc.getResistance().getEffectedMrBySkill();
+			mr = _targetPc.GetMDefendBySkill();
 		} else {
-			mr = _targetNpc.getResistance().getEffectedMrBySkill();
+			mr = _targetNpc.GetMDefendBySkill();
 		}
 		return mr;
 	}
@@ -486,9 +486,9 @@ public class L1Magic {
 					// CommonUtil.random(1, 5); //-- 확률 조정 바람 1 ~ 5
 				} else {
 					if (_calcType == PC_PC) {
-						rnd += CommonUtil.random(_targetPc.getResistance().getEffectedMrBySkill() + 1);
+						rnd += CommonUtil.random(_targetPc.GetMDefendBySkill() + 1);
 					} else if (_calcType == PC_NPC) {
-						rnd += CommonUtil.random(_targetNpc.getResistance().getEffectedMrBySkill() + 1);
+						rnd += CommonUtil.random(_targetNpc.GetMDefendBySkill() + 1);
 					}
 				}
 			}
@@ -689,19 +689,19 @@ public class L1Magic {
 
 		if (_calcType == PC_PC || _calcType == PC_NPC) {
 			attackLevel = _pc.getLevel();
-			attackInt = _pc.getAbility().getTotalInt();
+			attackInt = _pc.GetTotalStatInt();
 		} else {
 			attackLevel = _npc.getLevel();
-			attackInt = _npc.getAbility().getTotalInt();
+			attackInt = _npc.GetTotalStatInt();
 		}
 
 		if (_calcType == PC_PC || _calcType == NPC_PC) {
 			defenseLevel = _targetPc.getLevel();
-			defenseMr = _targetPc.getResistance().getEffectedMrBySkill();
+			defenseMr = _targetPc.GetMDefendBySkill();
 		} else {
 			if (_targetNpc != null) {
 				defenseLevel = _targetNpc.getLevel();
-				defenseMr = _targetNpc.getResistance().getEffectedMrBySkill();
+				defenseMr = _targetNpc.GetMDefendBySkill();
 				if (skillId == RETURN_TO_NATURE) {
 					if (_targetNpc instanceof L1SummonInstance) {
 						L1SummonInstance summon = (L1SummonInstance) _targetNpc;
@@ -716,7 +716,7 @@ public class L1Magic {
 		case AREA_OF_SILENCE:
 		case ERASE_MAGIC:
 		case ELEMENTAL_FALL_DOWN: {
-			int ERASEMAGICPoint = attacker.getResistance().getSpecialPierce(eKind.SPIRIT) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int ERASEMAGICPoint = attacker.GetSpecialPierce(eKind.SPIRIT) + attacker.GetSpecialPierce(eKind.ALL);
 			/*
 			if (ERASEMAGICPoint > 0) {
 				attackLevel += Math.round(((double) ERASEMAGICPoint / (double) Config.Erase_MagicT));
@@ -750,7 +750,7 @@ public class L1Magic {
 		/** 어스바인드 **/
 		/** 동레벨일경우 35% 레벨아래당 2% 성공확률 증가, 레벨높을때 3% 성공확률 감소 **/
 		case EARTH_BIND: {
-			int EARTHBINDPoint = attacker.getResistance().getSpecialPierce(eKind.SPIRIT) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int EARTHBINDPoint = attacker.GetSpecialPierce(eKind.SPIRIT) + attacker.GetSpecialPierce(eKind.ALL);
 			/*
 			if (EARTHBINDPoint > 0) {
 				attackLevel += Math.round(((double) EARTHBINDPoint * (double) Config.EARTH_BINDT));
@@ -788,7 +788,7 @@ public class L1Magic {
 		/** 스트라이커게일 **/
 		/** 레벨아래당 2% 성공확률 증가, 레벨높을때 3% 성공확률 감소 **/
 		case STRIKER_GALE: {
-			int STRIKERGALEPoint = attacker.getResistance().getSpecialPierce(eKind.SPIRIT) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int STRIKERGALEPoint = attacker.GetSpecialPierce(eKind.SPIRIT) + attacker.GetSpecialPierce(eKind.ALL);
 			/*
 			if (STRIKERGALEPoint > 0) {
 				attackLevel += Math.round(((double) STRIKERGALEPoint * (double) Config.STRIKER_GALET));
@@ -826,7 +826,7 @@ public class L1Magic {
 		/** 폴루토워터 **/
 		/** 레벨아래당 2% 성공확률 증가, 레벨높을때 3% 성공확률 감소 **/
 		case POLLUTE_WATER: {
-			int POLLUTEWATERPoint = attacker.getResistance().getSpecialPierce(eKind.SPIRIT) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int POLLUTEWATERPoint = attacker.GetSpecialPierce(eKind.SPIRIT) + attacker.GetSpecialPierce(eKind.ALL);
 			/*
 			if (POLLUTEWATERPoint > 0) {
 				attackLevel += Math.round(((double) POLLUTEWATERPoint * (double) Config.POLLUTE_WATERT));
@@ -862,7 +862,7 @@ public class L1Magic {
 			/** 윈드세클 **/
 			/** 동레벨일경우 30% 레벨아래당 2% 성공확률 증가, 레벨높을때 3% 성공확률 감소 **/
 		case WIND_SHACKLE: {
-			int WINDSHACKLEPoint = attacker.getResistance().getSpecialPierce(eKind.SPIRIT) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int WINDSHACKLEPoint = attacker.GetSpecialPierce(eKind.SPIRIT) + attacker.GetSpecialPierce(eKind.ALL);
 			if (WINDSHACKLEPoint > 0) {
 				attackLevel += Math.round(((double) WINDSHACKLEPoint / (double) Config.WIND_SHACKLET));
 			}
@@ -949,7 +949,7 @@ public class L1Magic {
 
 			break;
 		case THUNDER_GRAB:
-			int THUNDERGRABPoint = attacker.getResistance().getSpecialPierce(eKind.DRAGON_SPELL) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int THUNDERGRABPoint = attacker.GetSpecialPierce(eKind.DRAGON_SPELL) + attacker.GetSpecialPierce(eKind.ALL);
 			/*
 			if (THUNDERGRABPoint > 0) {
 				attackLevel += Math.round((double) THUNDERGRABPoint);
@@ -994,7 +994,7 @@ public class L1Magic {
 //			// System.out.println(String.format(", 최종(%d)", probability));
 //			break;
 		case GUARD_BREAK:
-			int GUARDBREAKPoint = attacker.getResistance().getSpecialPierce(eKind.DRAGON_SPELL) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int GUARDBREAKPoint = attacker.GetSpecialPierce(eKind.DRAGON_SPELL) + attacker.GetSpecialPierce(eKind.ALL);
 			/*
 			if (GUARDBREAKPoint > 0) {
 				attackLevel += Math.round(((double) GUARDBREAKPoint * (double) Config.GUARD_BREAKT));
@@ -1026,7 +1026,7 @@ public class L1Magic {
 			}
 			break;
 		case DESPERADO:
-			int horroPoint = attacker.getResistance().getSpecialPierce(eKind.FEAR) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int horroPoint = attacker.GetSpecialPierce(eKind.FEAR) + attacker.GetSpecialPierce(eKind.ALL);
 			int levelpdss = (attackLevel - defenseLevel)*Config.ngslvpoint;
 			int stunpoints = 0;
 			if (horroPoint > 0) {
@@ -1046,7 +1046,7 @@ public class L1Magic {
 			}
 			break;
 		case POWERRIP:
-			int POWERRIPPoint = attacker.getResistance().getSpecialPierce(eKind.FEAR) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int POWERRIPPoint = attacker.GetSpecialPierce(eKind.FEAR) + attacker.GetSpecialPierce(eKind.ALL);
 			
 			/*
 			if (POWERRIPPoint > 0) {
@@ -1095,7 +1095,7 @@ public class L1Magic {
 //		}
 //			break;
 		case FEAR: // 피어 본섭 22% ~ 42% 베이스 스텟에 의한
-			int FEARPoint = attacker.getResistance().getSpecialPierce(eKind.DRAGON_SPELL) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int FEARPoint = attacker.GetSpecialPierce(eKind.DRAGON_SPELL) + attacker.GetSpecialPierce(eKind.ALL);
 			if (FEARPoint > 0) {
 				attackLevel += Math.round(((double) FEARPoint / (double) Config.FEAR_T));
 			}
@@ -1108,7 +1108,7 @@ public class L1Magic {
 			}
 			break;
 		case HORROR_OF_DEATH: // 인트빨 본섭화
-			int HORROROFDEATHPoint = attacker.getResistance().getSpecialPierce(eKind.DRAGON_SPELL) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int HORROROFDEATHPoint = attacker.GetSpecialPierce(eKind.DRAGON_SPELL) + attacker.GetSpecialPierce(eKind.ALL);
 			if (HORROROFDEATHPoint > 0) {
 				attackLevel += Math.round(((double) HORROROFDEATHPoint / (double) Config.HORROR_OF_DEATHT));
 			}
@@ -1124,7 +1124,7 @@ public class L1Magic {
 		// 컨퓨젼, 판타즘 본섭 30%
 		case CONFUSION:
 		case PHANTASM:
-			int CONFUSION_PHANTASMPoint = attacker.getResistance().getSpecialPierce(eKind.DRAGON_SPELL) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int CONFUSION_PHANTASMPoint = attacker.GetSpecialPierce(eKind.DRAGON_SPELL) + attacker.GetSpecialPierce(eKind.ALL);
 			if (CONFUSION_PHANTASMPoint > 0) {
 				attackLevel += Math.round(((double) CONFUSION_PHANTASMPoint / (double) Config.CONFUSION_PHANTASMT));
 			}
@@ -1156,7 +1156,7 @@ public class L1Magic {
 		case BONE_BREAK:
 		
 			
-			int boneBreakPoint = attacker.getResistance().getSpecialPierce(eKind.DRAGON_SPELL) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int boneBreakPoint = attacker.GetSpecialPierce(eKind.DRAGON_SPELL) + attacker.GetSpecialPierce(eKind.ALL);
 			if (boneBreakPoint > 0) {
 				attackLevel += Math.round(((double) boneBreakPoint * (double) Config.STUNHIT_TO_LEVELL));
 			}
@@ -1185,7 +1185,7 @@ public class L1Magic {
 			break;
 		case EMPIRE:
 		{
-			int shockStunPoint = attacker.getResistance().getSpecialPierce(eKind.ABILITY) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int shockStunPoint = attacker.GetSpecialPierce(eKind.ABILITY) + attacker.GetSpecialPierce(eKind.ALL);
 			
 			
 			int levelp = (attackLevel - defenseLevel)*Config.ngmlvpoint;
@@ -1209,7 +1209,7 @@ public class L1Magic {
 		}
 			break;
 		case SHOCK_STUN:// 쇼크스턴
-			int shockStunPoint = attacker.getResistance().getSpecialPierce(eKind.ABILITY) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int shockStunPoint = attacker.GetSpecialPierce(eKind.ABILITY) + attacker.GetSpecialPierce(eKind.ALL);
 			
 			int levelp = (attackLevel - defenseLevel)*Config.ngslvpoint;
 			int stunpoint = 0;
@@ -1371,7 +1371,7 @@ public class L1Magic {
 			probability += _pc.getImpactUp();
 
 			// 용언/정령 관통(Special Pierce) 보너스 반영
-			int dragonSpellPoint = attacker.getResistance().getSpecialPierce(eKind.SPIRIT) + attacker.getResistance().getSpecialPierce(eKind.ALL);
+			int dragonSpellPoint = attacker.GetSpecialPierce(eKind.SPIRIT) + attacker.GetSpecialPierce(eKind.ALL);
 			if (dragonSpellPoint > 0) {
 			    probability += (int) Math.round(dragonSpellPoint * Config.아머곱연산확률);
 			}
@@ -1468,7 +1468,7 @@ public class L1Magic {
 		default:
 			break;
 		}
-		int resistance = (receiver.getResistance().getSpecialResistance(kind) + receiver.getResistance().getSpecialResistance(eKind.ALL)) / Config.내성배율;
+		int resistance = (receiver.GetSpecialResistance(kind) + receiver.GetSpecialResistance(eKind.ALL)) / Config.내성배율;
 		if (resistance > 0) {
 			probability -= resistance;
 		}
@@ -2432,7 +2432,7 @@ public class L1Magic {
         // Snapshot once: a concurrent defender buff/class change cannot turn a
         // validated MR branch into an invalid Math.pow call later in this hit.
         formulaDefenderType = _targetPc.getType();
-        formulaDefenderWis = _targetPc.getAbility().getTotalWis();
+        formulaDefenderWis = _targetPc.GetTotalStatWis();
         formulaEffectiveMr = effectiveMagicMr();
         return SpellDamageFormula.supports(formulaDefenderType,
                 formulaDefenderWis, formulaEffectiveMr);
@@ -2440,10 +2440,10 @@ public class L1Magic {
 
     private int targetElementResist(int attr) {
         return switch (attr) {
-        case L1Skills.ATTR_EARTH -> _targetPc.getResistance().getEarth();
-        case L1Skills.ATTR_FIRE -> _targetPc.getResistance().getFire();
-        case L1Skills.ATTR_WATER -> _targetPc.getResistance().getWater();
-        case L1Skills.ATTR_WIND -> _targetPc.getResistance().getWind();
+        case L1Skills.ATTR_EARTH -> _targetPc.GetEarthResist();
+        case L1Skills.ATTR_FIRE -> _targetPc.GetFireResist();
+        case L1Skills.ATTR_WATER -> _targetPc.GetWaterResist();
+        case L1Skills.ATTR_WIND -> _targetPc.GetWindResist();
         default -> 0;
         };
     }
@@ -2480,7 +2480,7 @@ public class L1Magic {
         boolean critical = false;
 
 		if (_calcType == PC_PC || _calcType == PC_NPC) {
-			int propCritical = CalcStat.마법치명타(_pc.ability.getTotalInt());
+			int propCritical = CalcStat.마법치명타(_pc.GetTotalStatInt());
 			switch (skillId) {
 			// 6레벨 이하 광역마법 제외한 공격마법
 			case ENERGY_BOLT:
@@ -2518,9 +2518,9 @@ public class L1Magic {
 
         if (formula2016) {
             final L1Character caster = _pc != null ? _pc : _npc;
-            final Ability stats = caster.getAbility();
-            final int a100 = SpellDamageFormula.coefficientA100(stats.getTotalInt(),
-                    stats.getSp(), stats.getTrueSp(), targetElementResist(l1skills.getAttr()));
+            final var stats = caster;
+            final int a100 = SpellDamageFormula.coefficientA100(stats.GetTotalStatInt(),
+                    stats.GetStatSp(), stats.GetStatBaseSp(), targetElementResist(l1skills.getAttr()));
             final int b100 = SpellDamageFormula.coefficientB100(formulaDefenderType,
                     formulaDefenderWis, formulaEffectiveMr);
             int md = _pc == null ? 0 : _pc.getBaseMagicDmg();
@@ -2602,7 +2602,7 @@ public class L1Magic {
 		if (_calcType == PC_PC || _calcType == PC_NPC) {
 
 			int a = 0;
-			int b = _pc.getAbility().getTotalInt();
+			int b = _pc.GetTotalStatInt();
 			int c = ThreadLocalRandom.current().nextInt(dice);
 			int d = ThreadLocalRandom.current().nextInt(10);
 			if(b< 8){

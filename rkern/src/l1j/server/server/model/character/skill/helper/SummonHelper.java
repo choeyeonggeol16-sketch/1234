@@ -67,7 +67,7 @@ public final class SummonHelper {
         if (summonId == 0 || minLv == 0 || chaReq == 0) return false;
 
         // 카리 체크
-        if (pc.getAbility().getTotalCha() < chaReq) {
+        if (pc.GetTotalStatCha() < chaReq) {
             SC_SystemMessage.send(pc, "카리스마가 부족합니다.");
             return false;
         }

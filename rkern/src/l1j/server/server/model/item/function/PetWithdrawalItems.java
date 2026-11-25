@@ -99,7 +99,7 @@ public final class PetWithdrawalItems {
 				petCost += ((L1NpcInstance) pet).getPetcost();
 			}
 		}
-		int charisma = pc.getAbility().getTotalCha();
+		int charisma = pc.GetTotalStatCha();
 		if (pc.isCrown()) { // CROWN
 			charisma += 6;
 		} else if (pc.isElf()) { // ELF

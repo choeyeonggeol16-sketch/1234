@@ -121,7 +121,7 @@ public final class CGeneralAction extends CNewAction {
             int dmg = 0;
 
             if (!GameUtils.isCounterMagic(target)) {
-                dmg = 60 - (target.getResistance().getMrAfterEraseRemove() / 10);
+                dmg = 60 - (target.GetMDefendAndConsumeErase() / 10);
                 dmg = (int) (dmg * damageRevision);
                 dmg += GameRandom.next(5);
             }

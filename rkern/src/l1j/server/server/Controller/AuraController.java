@@ -203,12 +203,12 @@ public final class AuraController implements Runnable {
         pc.setSkillEffect(L1SkillId.BRAVE_AVATAR_1ST, -1);
         SC_InventoryIcon.iconNewUnLimit(pc, L1SkillId.아우라, 3432, true);
 
-        pc.getResistance().addMr(10);
-        pc.getResistance().addSpecialResistance(eKind.ALL, 2);
+        pc.AddMDefend(10);
+        pc.AddSpecialResistance(eKind.ALL, 2);
 
-        pc.getAbility().addAddedStr((byte) 1);
-        pc.getAbility().addAddedDex((byte) 1);
-        pc.getAbility().addAddedInt((byte) 1);
+        pc.AddStatBonusStr((byte) 1);
+        pc.AddStatBonusDex((byte) 1);
+        pc.AddStatBonusInt((byte) 1);
 
         pc.resetBaseMr();
         pc.setPbavatar(true);
@@ -251,12 +251,12 @@ public final class AuraController implements Runnable {
         // 이미 꺼진 상태면 아무 것도 하지 않음
         if (!changed && !pc.getPbavatar()) return;
 
-        pc.getResistance().addMr(-10);
-        pc.getResistance().addSpecialResistance(eKind.ALL, -2);
+        pc.AddMDefend(-10);
+        pc.AddSpecialResistance(eKind.ALL, -2);
 
-        pc.getAbility().addAddedStr((byte) -1);
-        pc.getAbility().addAddedDex((byte) -1);
-        pc.getAbility().addAddedInt((byte) -1);
+        pc.AddStatBonusStr((byte) -1);
+        pc.AddStatBonusDex((byte) -1);
+        pc.AddStatBonusInt((byte) -1);
 
         pc.setPbavatar(false);
 

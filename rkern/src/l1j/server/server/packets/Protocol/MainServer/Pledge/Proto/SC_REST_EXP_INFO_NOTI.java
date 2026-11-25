@@ -54,8 +54,8 @@ public final class SC_REST_EXP_INFO_NOTI extends ProtoPacket {
         if (pc.getEinhasadBlessper() >= 0) {
             effect += pc.getEinhasadBlessper();
         }
-        if (pc.getResistance().getcalcAinPer() != 0) {
-            effect += pc.getResistance().getcalcAinPer();
+        if (pc.GetAinEfficiency() != 0) {
+            effect += pc.GetAinEfficiency();
         }
         return effect;
     }

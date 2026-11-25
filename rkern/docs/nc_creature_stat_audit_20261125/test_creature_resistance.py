@@ -10,17 +10,17 @@ with tempfile.TemporaryDirectory() as tmp:
         f = d/path
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(content, encoding="utf-8")
-    put(pkg+"Resistance.java",(root/"src"/pkg/"Resistance.java").read_text(encoding="utf-8"))
     put(pkg+"LegacyResistance.java",legacy)
     put("l1j/server/server/utils/eKind.java",(root/"src/l1j/server/server/utils/eKind.java").read_text(encoding="utf-8"))
     put("l1j/server/server/utils/IntRange.java",(root/"src/l1j/server/server/utils/IntRange.java").read_text(encoding="utf-8"))
     creature = (root/"src"/pkg/"L1Character.java").read_text(encoding="utf-8")
     fields = creature.split("// BEGIN shared resistance sources (CCreature)",1)[1].split("// END shared resistance sources",1)[0]
     import re
-    assert not re.search(r"private\s+(?:volatile\s+)?(?:int|long)\s+(?:m_n|m_Skill)", (root/"src"/pkg/"Resistance.java").read_text(encoding="utf-8"))
+    assert not (root/"src"/pkg/"Resistance.java").exists()
     for source in (root/"src").rglob("*.java"):
         assert not re.search(r"\bnew\s+(?:l1j\.server\.server\.model\.)?Resistance\s*\(\s*\)", source.read_text(encoding="utf-8",errors="replace")), str(source)
-    put(pkg+"L1Character.java","package l1j.server.server.model; public class L1Character { "+fields+" public boolean passive,erase; public boolean isPassive(int i){return passive;} public boolean hasSkillEffect(int i){return erase;} public void removeSkillEffect(int i){erase=false;} }")
+    operations=creature.split("// BEGIN direct resistance operations",1)[1].split("// END direct resistance operations",1)[0]
+    put(pkg+"L1Character.java","package l1j.server.server.model; import l1j.server.server.model.Instance.L1PcInstance; import l1j.server.server.model.character.skill.L1SkillId; import l1j.server.server.model.character.skill.passive.PassiveID; import l1j.server.server.model.network.core.sc.packet.SC_PacketBox; import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPECIAL_RESISTANCE_NOTI; import l1j.server.server.utils.IntRange; import l1j.server.server.utils.eKind; public class L1Character { "+fields+" public boolean passive,erase; public void dispose(){m_ResistanceDisposed=true;} public boolean isPassive(int i){return passive;} public boolean hasSkillEffect(int i){return erase;} public void removeSkillEffect(int i){erase=false;} "+operations+"}")
     put(pkg+"Instance/L1PcInstance.java","package l1j.server.server.model.Instance; public class L1PcInstance extends l1j.server.server.model.L1Character { public int notices; }")
     put(pkg+"character/skill/L1SkillId.java","package l1j.server.server.model.character.skill; public class L1SkillId { public static final int ERASE_MAGIC=153; }")
     put(pkg+"character/skill/passive/PassiveID.java","package l1j.server.server.model.character.skill.passive; public enum PassiveID { RESIST_ELEMENT; public int toInt(){return 1;} }")
@@ -34,39 +34,39 @@ public class Audit {
  public static void main(String[] args) {
    Random rng = new Random(513);
    L1PcInstance a = new L1PcInstance(), b = new L1PcInstance();
-   Resistance n = new Resistance(a); LegacyResistance o = new LegacyResistance(b);
+   L1Character n = a; LegacyResistance o = new LegacyResistance(b);
    eKind[] k = eKind.values();
    for(int i=0;i<30000;i++){
      eKind kind = i%13==0?null:k[rng.nextInt(k.length)];
      int value=rng.nextInt(801)-400;
      switch(i%11){
-       case 0 -> {n.addSpecialResistance(kind,value);o.addSpecialResistance(kind,value);}
-       case 1 -> {n.addSpecialPierce(kind,value);o.addSpecialPierce(kind,value);}
-       case 2 -> {int p=rng.nextInt(),q=rng.nextInt(),z=rng.nextInt();long r=rng.nextLong();n.setSkillCombatModifiers(p,r,q,z,true);o.setSkillCombatModifiers(p,r,q,z,true);}
-       case 3 -> {n.addMr(value);o.addMr(value);}
-       case 4 -> {n.setBaseMr(value);o.setBaseMr(value);}
-       case 5 -> {n.setSkillMr(value);o.setSkillMr(value);}
-       case 6 -> {n.addAllNaturalResistance(value);o.addAllNaturalResistance(value);}
-       case 7 -> {long r=rng.nextLong();n.setSkillElemental(r);o.setSkillElemental(r);}
+       case 0 -> {n.AddSpecialResistance(kind,value);o.addSpecialResistance(kind,value);}
+       case 1 -> {n.AddSpecialPierce(kind,value);o.addSpecialPierce(kind,value);}
+       case 2 -> {int p=rng.nextInt(),q=rng.nextInt(),z=rng.nextInt();long r=rng.nextLong();n.SetSkillCombatModifiers(p,r,q,z,true);o.setSkillCombatModifiers(p,r,q,z,true);}
+       case 3 -> {n.AddMDefend(value);o.addMr(value);}
+       case 4 -> {n.SetOrgMDefend(value);o.setBaseMr(value);}
+       case 5 -> {n.SetSkillMDefend(value);o.setSkillMr(value);}
+       case 6 -> {n.AddAllNaturalResistance(value);o.addAllNaturalResistance(value);}
+       case 7 -> {long r=rng.nextLong();n.SetSkillElemental(r);o.setSkillElemental(r);}
        case 8 -> {a.passive=b.passive=!a.passive;}
-       case 9 -> {if(i%99==9){n.init();o.init();}}
-       case 10 -> {a.erase=b.erase=true;if(n.getMrAfterEraseRemove()!=o.getMrAfterEraseRemove())throw new AssertionError("erase");}
+       case 9 -> {if(i%99==9){n.ResetResistanceStats();o.init();}}
+       case 10 -> {a.erase=b.erase=true;if(n.GetMDefendAndConsumeErase()!=o.getMrAfterEraseRemove())throw new AssertionError("erase");}
      }
-     for(eKind e:k)if(n.getSpecialResistance(e)!=o.getSpecialResistance(e)||n.getSpecialPierce(e)!=o.getSpecialPierce(e))throw new AssertionError("lane "+e+" at "+i);
-     if(n.getSpecialResistance(null)!=0||n.getSpecialPierce(null)!=0||n.getMr()!=o.getMr()||n.getAddedMr()!=o.getAddedMr()||n.getBaseMr()!=o.getBaseMr()||n.getFire()!=o.getFire()||n.getWater()!=o.getWater()||n.getWind()!=o.getWind()||n.getEarth()!=o.getEarth()||a.notices!=b.notices)throw new AssertionError("source/notification "+i);
+     for(eKind e:k)if(n.GetSpecialResistance(e)!=o.getSpecialResistance(e)||n.GetSpecialPierce(e)!=o.getSpecialPierce(e))throw new AssertionError("lane "+e+" at "+i);
+     if(n.GetSpecialResistance(null)!=0||n.GetSpecialPierce(null)!=0||n.GetMDefend()!=o.getMr()||n.GetAddedMDefend()!=o.getAddedMr()||n.GetOrgMDefend()!=o.getBaseMr()||n.GetFireResist()!=o.getFire()||n.GetWaterResist()!=o.getWater()||n.GetWindResist()!=o.getWind()||n.GetEarthResist()!=o.getEarth()||a.notices!=b.notices)throw new AssertionError("source/notification "+i);
    }
    L1Character npc=new L1Character(), npcOld=new L1Character();
-   Resistance nr=new Resistance(npc); LegacyResistance or=new LegacyResistance(npcOld);
-   for(eKind e:k){nr.addSpecialResistance(e,20);or.addSpecialResistance(e,20);nr.addSpecialPierce(e,-25);or.addSpecialPierce(e,-25);}
-   nr.setBaseMr(200);or.setBaseMr(200);nr.addMr(90);or.addMr(90);nr.setSkillMr(-70);or.setSkillMr(-70);
+   L1Character nr=npc; LegacyResistance or=new LegacyResistance(npcOld);
+   for(eKind e:k){nr.AddSpecialResistance(e,20);or.addSpecialResistance(e,20);nr.AddSpecialPierce(e,-25);or.addSpecialPierce(e,-25);}
+   nr.SetOrgMDefend(200);or.setBaseMr(200);nr.AddMDefend(90);or.addMr(90);nr.SetSkillMDefend(-70);or.setSkillMr(-70);
    npc.passive=npcOld.passive=true;
-   if(nr.getMr()!=or.getMr()||npc.m_nOrgMDefend!=200)throw new AssertionError("NPC owner");
-   for(eKind e:k)if(nr.getSpecialResistance(e)!=or.getSpecialResistance(e)||nr.getSpecialPierce(e)!=or.getSpecialPierce(e))throw new AssertionError("NPC lane");
+   if(nr.GetMDefend()!=or.getMr()||npc.m_nOrgMDefend!=200)throw new AssertionError("NPC owner");
+   for(eKind e:k)if(nr.GetSpecialResistance(e)!=or.getSpecialResistance(e)||nr.GetSpecialPierce(e)!=or.getSpecialPierce(e))throw new AssertionError("NPC lane");
    nr.dispose();or.dispose();
-   if(nr.getMr()!=or.getMr())throw new AssertionError("detached MR");
-   nr.init();or.init();
-   for(eKind e:k)if(nr.getSpecialResistance(e)!=or.getSpecialResistance(e)||nr.getSpecialPierce(e)!=or.getSpecialPierce(e))throw new AssertionError("detached reset");
-   if(((L1Character)a).m_nOrgMDefend!=n.getBaseMr())throw new AssertionError("owner storage");
+   if(nr.GetMDefend()!=or.getMr())throw new AssertionError("detached MR");
+   nr.ResetResistanceStats();or.init();
+   for(eKind e:k)if(nr.GetSpecialResistance(e)!=or.getSpecialResistance(e)||nr.GetSpecialPierce(e)!=or.getSpecialPierce(e))throw new AssertionError("detached reset");
+   if(((L1Character)a).m_nOrgMDefend!=n.GetOrgMDefend())throw new AssertionError("owner storage");
    System.out.println("PASS 30000 resistance/MR transitions, notification parity and NPC ownership/disposal");
  }
 }""")

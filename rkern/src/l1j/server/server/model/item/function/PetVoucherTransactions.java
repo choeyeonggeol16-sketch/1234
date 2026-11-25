@@ -36,7 +36,7 @@ public final class PetVoucherTransactions {
                 l1j.server.server.datatables.CObjectDB.LoadNPC().getTemplate(npcId);
         if (template == null || PetTypeTable.getInstance().get(npcId) == null) return;
 
-        int charisma = pc.getAbility().getTotalCha();
+        int charisma = pc.GetTotalStatCha();
         int petCost = 0;
         for (L1NpcInstance pet : pc.getPetList().values()) petCost += pet.getPetcost();
         if (pc.isElf()) charisma += 12;

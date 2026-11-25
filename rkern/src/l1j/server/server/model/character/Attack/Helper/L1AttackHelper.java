@@ -101,11 +101,11 @@ public final class L1AttackHelper {
 
 		if (isRanged) {
 			baseHit = pc.getBaseBowHitByLevelClass();
-			statHit = CalcStat.원거리명중(pc.getAbility().getTotalDex());
+			statHit = CalcStat.원거리명중(pc.GetTotalStatDex());
 			miscHit = (long) pc.getBowHitup() + pc.getBowHitRate();
 		} else {
 			baseHit = pc.getBaseMeleeHitByLevelClass();
-			statHit = CalcStat.근거리명중(pc.getAbility().getTotalStr());
+			statHit = CalcStat.근거리명중(pc.GetTotalStatStr());
 			miscHit = (long) pc.getHitup() + pc.getHitRate();
 		}
 
@@ -124,11 +124,11 @@ public final class L1AttackHelper {
 
 		final int baseHit = npc.getLevel();	   
 		if (isRanged) {
-			final int statHit = CalcStat.원거리명중(npc.getAbility().getTotalDex());
+			final int statHit = CalcStat.원거리명중(npc.GetTotalStatDex());
 			final int miscHit = npc.getBowHitup();
 			return baseHit + statHit + miscHit;
 		} else {
-			final int statHit = CalcStat.근거리명중(npc.getAbility().getTotalStr());
+			final int statHit = CalcStat.근거리명중(npc.GetTotalStatStr());
 			final int miscHit = npc.getHitup();
 			return baseHit + statHit + miscHit; 
 		}

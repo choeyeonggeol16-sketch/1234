@@ -101,7 +101,7 @@ final class ElvenStrikeItemEffect {
                     int 양렙차 = 기본확률 + (렙차 * Config.엘븐스트라이크양);
                     int 음렙차 = 기본확률 + (렙차 * Config.엘븐스트라이크음);
                     int aa1 = random.nextInt(100) + 1;
-                    int aa = member.getAC().getAc() / 2;
+                    int aa = member.getAc() / 2;
                     int dmg = (pc.getLevel() / 3 * Config.엘븐스트라이크배율) + aa1;
                     final int 엘븐스트라이크시간 = DurationChoiceItems.elven(random);
                     // Existing short inventory gate: a failed debit must not apply a skill.
@@ -212,7 +212,7 @@ final class ElvenStrikeItemEffect {
                     int 음렙차 = 기본확률 + (렙차 * Config.엘븐스트라이크음);
                     int aa1 = random.nextInt(100) + 1;
                     int 몬스터 = random.nextInt(100) + 1;
-                    int aa = member1.getAC().getAc() / 2;
+                    int aa = member1.getAc() / 2;
                     int dmg = (pc.getLevel() / 3 * Config.엘븐스트라이크배율) + aa1;
                     final int 엘븐스트라이크시간 = DurationChoiceItems.elven(random);
                     // Existing short inventory gate: a failed debit must not apply a skill.

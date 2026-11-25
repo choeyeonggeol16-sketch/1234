@@ -28,12 +28,12 @@ public class CheckInitStat{
 			return true;
 		}
 		
-		int str = pc.getAbility().getBaseStr();
-		int dex = pc.getAbility().getBaseDex();
-		int cha = pc.getAbility().getBaseCha();
-		int con = pc.getAbility().getBaseCon();
-		int intel = pc.getAbility().getBaseInt();
-		int wis = pc.getAbility().getBaseWis();
+		int str = pc.GetOriginalStatStr();
+		int dex = pc.GetOriginalStatDex();
+		int cha = pc.GetOriginalStatCha();
+		int con = pc.GetOriginalStatCon();
+		int intel = pc.GetOriginalStatInt();
+		int wis = pc.GetOriginalStatWis();
 		int basestr = 0;
 		int basedex = 0;
 		int basecon = 0;

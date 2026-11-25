@@ -59,14 +59,14 @@ final class DollPotentialRemoval {
 
 		if(pc.hasSkillEffect(L1SkillId.ac5)) {
 			pc.removeSkillEffect(L1SkillId.ac5);
-			pc.getAC().addAc(5);
+			pc.addAc(5);
             sendEnd(pc, L1SkillId.ac5);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.mr15)) {
 			pc.removeSkillEffect(L1SkillId.mr15);
-			pc.getResistance().addMr(-15);
+			pc.AddMDefend(-15);
             sendEnd(pc, L1SkillId.mr15);
 			SC_OwnCharAttrDef.send(pc);
 			SC_SPMR.send(pc);
@@ -80,10 +80,10 @@ final class DollPotentialRemoval {
 
 		if(pc.hasSkillEffect(L1SkillId.모든속성저항20)) {
 			pc.removeSkillEffect(L1SkillId.모든속성저항20);
-			pc.getResistance().addEarth(-20);
-			pc.getResistance().addWind(-20);
-			pc.getResistance().addWater(-20);
-			pc.getResistance().addFire(-20);
+			pc.AddEarthResist(-20);
+			pc.AddWindResist(-20);
+			pc.AddWaterResist(-20);
+			pc.AddFireResist(-20);
             sendEnd(pc, L1SkillId.모든속성저항20);
 			SC_OwnCharAttrDef.send(pc);
 		}
@@ -93,35 +93,35 @@ final class DollPotentialRemoval {
     private static void removeAttributes(L1PcInstance pc) {
 		if(pc.hasSkillEffect(L1SkillId.힘3)) {
 			pc.removeSkillEffect(L1SkillId.힘3);
-			pc.getAbility().addAddedStr((byte) -3);
+			pc.AddStatBonusStr((byte) -3);
             sendEnd(pc, L1SkillId.힘3);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.덱3)) {
 			pc.removeSkillEffect(L1SkillId.덱3);
-			pc.getAbility().addAddedDex((byte) -3);
+			pc.AddStatBonusDex((byte) -3);
             sendEnd(pc, L1SkillId.덱3);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.콘3)) {
 			pc.removeSkillEffect(L1SkillId.콘3);
-			pc.getAbility().addAddedCon((byte) -3);
+			pc.AddStatBonusCon((byte) -3);
             sendEnd(pc, L1SkillId.콘3);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.위즈3)) {
 			pc.removeSkillEffect(L1SkillId.위즈3);
-			pc.getAbility().addAddedWis((byte) -3);
+			pc.AddStatBonusWis((byte) -3);
             sendEnd(pc, L1SkillId.위즈3);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.인트3)) {
 			pc.removeSkillEffect(L1SkillId.인트3);
-			pc.getAbility().addAddedInt((byte) -3);
+			pc.AddStatBonusInt((byte) -3);
             sendEnd(pc, L1SkillId.인트3);
 			SC_OwnCharAttrDef.send(pc);
 		}
@@ -131,7 +131,7 @@ final class DollPotentialRemoval {
     private static void removeCombat(L1PcInstance pc) {
 		if(pc.hasSkillEffect(L1SkillId.pvp대미지7)) {
 			pc.removeSkillEffect(L1SkillId.pvp대미지7);
-			pc.getResistance().addPVPweaponTotalDamage(-7);
+			pc.AddPvpDamage(-7);
             sendEnd(pc, L1SkillId.pvp대미지7);
 			SC_OwnCharAttrDef.send(pc);
 		}
@@ -173,7 +173,7 @@ final class DollPotentialRemoval {
 
 		if(pc.hasSkillEffect(L1SkillId.sp5)) {
 			pc.removeSkillEffect(L1SkillId.sp5);
-			pc.getAbility().addSp(-5);
+			pc.AddStatSp(-5);
             sendEnd(pc, L1SkillId.sp5);
 			SC_OwnCharAttrDef.send(pc);
 		}
@@ -190,70 +190,70 @@ final class DollPotentialRemoval {
     private static void removeResistances(L1PcInstance pc) {
 		if(pc.hasSkillEffect(L1SkillId.기술내성8)) {
 			pc.removeSkillEffect(L1SkillId.기술내성8);
-			pc.getResistance().addSpecialResistance(eKind.ABILITY, -8);
+			pc.AddSpecialResistance(eKind.ABILITY, -8);
             sendEnd(pc, L1SkillId.기술내성8);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.정령내성8)) {
 			pc.removeSkillEffect(L1SkillId.정령내성8);
-			pc.getResistance().addSpecialResistance(eKind.SPIRIT, -8);
+			pc.AddSpecialResistance(eKind.SPIRIT, -8);
             sendEnd(pc, L1SkillId.정령내성8);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.용언내성3)) {
 			pc.removeSkillEffect(L1SkillId.용언내성3);
-			pc.getResistance().addSpecialResistance(eKind.DRAGON_SPELL, -3);
+			pc.AddSpecialResistance(eKind.DRAGON_SPELL, -3);
             sendEnd(pc, L1SkillId.용언내성3);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.공포내성3)) {
 			pc.removeSkillEffect(L1SkillId.공포내성3);
-			pc.getResistance().addSpecialResistance(eKind.FEAR, -3);
+			pc.AddSpecialResistance(eKind.FEAR, -3);
             sendEnd(pc, L1SkillId.공포내성3);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.모든내성3)) {
 			pc.removeSkillEffect(L1SkillId.모든내성3);
-			pc.getResistance().addSpecialResistance(eKind.ALL, -3);
+			pc.AddSpecialResistance(eKind.ALL, -3);
             sendEnd(pc, L1SkillId.모든내성3);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.정령적중5)) {
 			pc.removeSkillEffect(L1SkillId.정령적중5);
-			pc.getResistance().addSpecialPierce(eKind.SPIRIT, -5);
+			pc.AddSpecialPierce(eKind.SPIRIT, -5);
             sendEnd(pc, L1SkillId.정령적중5);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.용언적중5)) {
 			pc.removeSkillEffect(L1SkillId.용언적중5);
-			pc.getResistance().addSpecialPierce(eKind.DRAGON_SPELL, -5);
+			pc.AddSpecialPierce(eKind.DRAGON_SPELL, -5);
             sendEnd(pc, L1SkillId.용언적중5);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.공포적중5)) {
 			pc.removeSkillEffect(L1SkillId.공포적중5);
-			pc.getResistance().addSpecialPierce(eKind.FEAR, -5);
+			pc.AddSpecialPierce(eKind.FEAR, -5);
             sendEnd(pc, L1SkillId.공포적중5);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.기술적중5)) {
 			pc.removeSkillEffect(L1SkillId.기술적중5);
-			pc.getResistance().addSpecialPierce(eKind.ABILITY, -5);
+			pc.AddSpecialPierce(eKind.ABILITY, -5);
             sendEnd(pc, L1SkillId.기술적중5);
 			SC_OwnCharAttrDef.send(pc);
 		}
 
 		if(pc.hasSkillEffect(L1SkillId.모든적중3)) {
 			pc.removeSkillEffect(L1SkillId.모든적중3);
-			pc.getResistance().addSpecialPierce(eKind.ALL, -3);
+			pc.AddSpecialPierce(eKind.ALL, -3);
             sendEnd(pc, L1SkillId.모든적중3);
 			SC_OwnCharAttrDef.send(pc);
 		}

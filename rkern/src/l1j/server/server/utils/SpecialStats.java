@@ -30,11 +30,11 @@ public final class SpecialStats {
     public void equipTo(L1PcInstance pc, int sign) {
         for (eKind k : eKind.values()) {
             int v = _resist[k.value()];
-            if (v != 0) pc.getResistance().addSpecialResistance(k, v * sign);
+            if (v != 0) pc.AddSpecialResistance(k, v * sign);
         }
         for (eKind k : eKind.values()) {
             int v = _pierce[k.value()];
-            if (v != 0) pc.getResistance().addSpecialPierce(k, v * sign);
+            if (v != 0) pc.AddSpecialPierce(k, v * sign);
         }
     }
 

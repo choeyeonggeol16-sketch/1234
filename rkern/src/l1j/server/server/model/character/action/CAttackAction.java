@@ -1039,8 +1039,8 @@ public final class CAttackAction extends CNewAction {
 				_weaponAttrLevel = weapon.getAttrEnchantLevel();
 			}
             _statusDamage = (_weaponType == 20 || _weaponType == 62)
-                    ? CalcStat.원거리대미지(_pc.getAbility().getTotalDex())
-                    : CalcStat.근거리대미지(_pc.getAbility().getTotalStr());
+                    ? CalcStat.원거리대미지(_pc.GetTotalStatDex())
+                    : CalcStat.근거리대미지(_pc.GetTotalStatStr());
 		} else if (attacker instanceof L1NpcInstance) {
 			_npc = (L1NpcInstance) attacker;
 			if (target instanceof L1PcInstance) {
@@ -1207,7 +1207,7 @@ public final class CAttackAction extends CNewAction {
         _hitRate = L1AttackHelper.calcPcHitH(_pc, isRanged, wpnHit, wpnEnchant, loss);
         
         // ===== AC / DG / ER  =====
-        final int acDef = HitEvasionModel.defenseAc(_targetPc.getAC().getAc());
+        final int acDef = HitEvasionModel.defenseAc(_targetPc.getAc());
         final int dg = _targetPc.getDg();
         final int er = _targetPc.getTotalER();
 
@@ -1244,7 +1244,7 @@ public final class CAttackAction extends CNewAction {
 		_hitRate = L1AttackHelper.calcPcHitH(_pc, isRanged, wpnHit, wpnEnchant, loss);
 		
 		// ===== AC =====
-        final int acDef = HitEvasionModel.defenseAc(_targetNpc.getAC().getAc());
+        final int acDef = HitEvasionModel.defenseAc(_targetNpc.getAc());
 	    
 		// ===== 최종 명중률 =====
 		final double hitChance = HitEvasionModel.calcHitChance(
@@ -1270,7 +1270,7 @@ public final class CAttackAction extends CNewAction {
 		_hitRate = L1AttackHelper.calcNpcHitH(_npc, isRanged);
 		
 		  // ===== AC / DG / ER  =====
-        final int acDef = HitEvasionModel.defenseAc(_targetPc.getAC().getAc());
+        final int acDef = HitEvasionModel.defenseAc(_targetPc.getAc());
         final int dg = _targetPc.getDg();
         final int er = _targetPc.getTotalER();
 
@@ -1300,7 +1300,7 @@ public final class CAttackAction extends CNewAction {
 		_hitRate = L1AttackHelper.calcNpcHitH(_npc, isRanged);
 		
 		  // ===== AC  =====
-        final int acDef = HitEvasionModel.defenseAc(_targetNpc.getAC().getAc());
+        final int acDef = HitEvasionModel.defenseAc(_targetNpc.getAc());
 
         // ===== 최종 명중률 =====
         final double hitChance = HitEvasionModel.calcHitChance(
@@ -1383,7 +1383,7 @@ public final class CAttackAction extends CNewAction {
 	    // PvP polymorph bonus is already owned by current target receiveDamage.
 
 	    // PVP weapon bonus
-	    final int pvpWpn = _pc.getResistance().getPVPweaponTotalDamage();
+	    final int pvpWpn = _pc.GetPvpDamage();
 	    if (pvpWpn != 0) dmg += pvpWpn;
 
         // All attack additions have been assembled. Armor Break owns one
@@ -1392,7 +1392,7 @@ public final class CAttackAction extends CNewAction {
                 L1AttackHelper.isRangedByType1(_weaponType), dmg);
 
 	    // PVP defense reduction
-	    final int pvpDef = _targetPc.getResistance().getcalcPcDefense();
+	    final int pvpDef = _targetPc.GetPvpDamageReduction();
 	    if (pvpDef != 0) dmg -= pvpDef;
 	    
 		 // 용 갑옷 처리 
@@ -1491,8 +1491,8 @@ public final class CAttackAction extends CNewAction {
 	/** Shared NPC physical base roll for PC and NPC targets. */
 	private int rollNpcBaseDamage(boolean rangedNpc) {
 		int status;
-		if (rangedNpc) status = CalcStat.원거리대미지(_npc.getAbility().getTotalDex());
-		else           status = CalcStat.근거리대미지(_npc.getAbility().getTotalStr());
+		if (rangedNpc) status = CalcStat.원거리대미지(_npc.GetTotalStatDex());
+		else           status = CalcStat.근거리대미지(_npc.GetTotalStatStr());
 
 		int dmg = status + ThreadLocalRandom.current().nextInt(Math.max(1, _npc.getLevel() / 2)) + 1;
 		dmg += _npc.getDmgup();
@@ -1578,14 +1578,14 @@ public final class CAttackAction extends CNewAction {
         final int dice = keylinkDice(displayedDamage, rng);
 
         // SP already includes MagicLevel + MagicBonus: subtract both once.
-        final int bonusSp = _pc.getAbility().getSp() - _pc.getAbility().getTrueSp();
-        final int intSp = _pc.getAbility().getTotalInt() + bonusSp;
+        final int bonusSp = _pc.GetStatSp() - _pc.GetStatBaseSp();
+        final int intSp = _pc.GetTotalStatInt() + bonusSp;
         final double a = Math.max(0.0,
                 Math.floor((1.0 + (3.0 / 32.0) * (intSp - 12)) * 100.0) / 100.0);
         int scaled = (int) Math.floor(dice * a);
 
         // Keylink magic critical is 1.25x, not the spell critical's 1.5x.
-        int critChance = CalcStat.마법치명타(_pc.getAbility().getTotalInt())
+        int critChance = CalcStat.마법치명타(_pc.GetTotalStatInt())
                 + (int) (_pc.getBaseMagicCritical() * Config.CHARACTER_MAGICCRI_RATE);
         if (_pc.hasSkillEffect(L1SkillId.LIND_MAAN)
                 || _pc.hasSkillEffect(L1SkillId.SHAPE_MAAN)
@@ -1602,10 +1602,10 @@ public final class CAttackAction extends CNewAction {
                 + _weaponAddDmg; // original weapon bonus + weapon_damage DB snapshot
         final int beforeMr = Math.max(0, scaled + _weaponEnchant + magicBonus);
         final int mh = _pc.getTotalMagicHitup();
-        final int mrMinusMh = target.getResistance().getEffectedMrBySkill() - mh;
+        final int mrMinusMh = target.GetMDefendBySkill() - mh;
         final int defenderType = target instanceof L1PcInstance defender ? defender.getType() : -1;
         final double b = keylinkMrMultiplier(mrMinusMh, defenderType,
-                target.getAbility().getTotalWis());
+                target.GetTotalStatWis());
 
         int damage = (int) Math.floor(beforeMr * b);
         // The element enchant is applied after MR and filtered by element resist.

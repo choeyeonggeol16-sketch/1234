@@ -202,10 +202,10 @@ public class L1HealingPotion {
 		}
 
 		//  물약 회복률(%)
-		int addHealHpPer = pc.getResistance().getPotionRecRate();
+		int addHealHpPer = pc.GetPotionRecRate();
 
 		// 추가 물약 회복량
-		int addHealHp = pc.getResistance().getPotionRecAmt(); 
+		int addHealHp = pc.GetPotionRecAmt(); 
 		
 		addHealHpPer = Math.min(100, addHealHpPer);
 
@@ -216,7 +216,7 @@ public class L1HealingPotion {
 			
 			int 데페공격자레벨 = pc.Desperadolevel;
 			
-			int 회복악화방어 = pc.getResistance().getHealDefence(); 
+			int 회복악화방어 = pc.GetHealDefence(); 
 
 			double 저하율 = ((100.0 - 데페공격자레벨) + 회복악화방어) / 100.0;
 

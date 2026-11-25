@@ -88,10 +88,10 @@ public final class L1WeaponAttrEnchantHelper {
 
 		int getPcResist(L1PcInstance pc) {
 			switch (this) {
-			case FIRE:  return pc.getResistance().getFire();
-			case WATER: return pc.getResistance().getWater();
-			case WIND:  return pc.getResistance().getWind();
-			case EARTH: return pc.getResistance().getEarth();
+			case FIRE:  return pc.GetFireResist();
+			case WATER: return pc.GetWaterResist();
+			case WIND:  return pc.GetWindResist();
+			case EARTH: return pc.GetEarthResist();
 			default:    return 0;
 			}
 		}
@@ -108,10 +108,10 @@ public final class L1WeaponAttrEnchantHelper {
 
 		int getNpcResist(L1NpcInstance npc) {
 			switch (this) {
-			case FIRE:  return npc.getResistance().getFire();
-			case WATER: return npc.getResistance().getWater();
-			case WIND:  return npc.getResistance().getWind();
-			case EARTH: return npc.getResistance().getEarth();
+			case FIRE:  return npc.GetFireResist();
+			case WATER: return npc.GetWaterResist();
+			case WIND:  return npc.GetWindResist();
+			case EARTH: return npc.GetEarthResist();
 			default:    return 0;
 			}
 		}

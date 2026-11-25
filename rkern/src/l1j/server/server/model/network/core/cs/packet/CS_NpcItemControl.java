@@ -65,7 +65,7 @@ public final class CS_NpcItemControl {
 		 */
 		if ((itemId >= 40749 && itemId <= 40752) || (itemId >= 40756 && itemId <= 40758)) {
 			pet.usePetWeapon(pc, pet, item);
-			SC_PacketBox.send(pc, SC_PacketBox.SOMETHING2, data, pet.getId(), pet.getAC().getAc());
+			SC_PacketBox.send(pc, SC_PacketBox.SOMETHING2, data, pet.getId(), pet.getAc());
 			return;
 		}
 
@@ -74,7 +74,7 @@ public final class CS_NpcItemControl {
 		 */
 		if (itemId >= 40761 && itemId <= 40766) {
 			pet.usePetArmor(pc, pet, item);
-			SC_PacketBox.send(pc, SC_PacketBox.SOMETHING2, data, pet.getId(), pet.getAC().getAc());
+			SC_PacketBox.send(pc, SC_PacketBox.SOMETHING2, data, pet.getId(), pet.getAc());
 			return;
 		}
 

@@ -405,7 +405,7 @@ public final class CS_EnterWorld {
             return true;
         }
         // 방어구 버그
-        if (pc.getAC().getAc() < -Config.ACLEVEL) {
+        if (pc.getAc() < -Config.ACLEVEL) {
             banLoginAccountAsync(pc.getAccountName(), SC_LoginResult.BANNED_REASON_HACK);
             client.close();
             _log.info("방어구버그 압류: " + pc.getName());
@@ -427,9 +427,9 @@ public final class CS_EnterWorld {
         // 스탯 버그 (레벨별 상한)
         if (!pc.isGm()) {
             final int cap = (pc.getLevel() >= 90 || pc.getHighLevel() >= 90) ? 50 : 45;
-            if (pc.getAbility().getCon() > cap || pc.getAbility().getStr() > cap
-                    || pc.getAbility().getDex() > cap || pc.getAbility().getCha() > cap
-                    || pc.getAbility().getInt() > cap || pc.getAbility().getWis() > cap) {
+            if (pc.GetStatCon() > cap || pc.GetStatStr() > cap
+                    || pc.GetStatDex() > cap || pc.GetStatCha() > cap
+                    || pc.GetStatInt() > cap || pc.GetStatWis() > cap) {
                 스텟초기화(pc);
                  client.close();
                 _log.info("스탯버그 초기화: " + pc.getName());
@@ -588,7 +588,7 @@ public final class CS_EnterWorld {
 
         // 미분배 스탯 안내
         if (pc.getLevel() >= 51 && pc.getLevel() - 50 > pc.getBonusStats()
-                && pc.getAbility().getAmount() < 150) {
+                && pc.GetStatAmount() < 150) {
             SC_MessageYN.send(pc, 479, Integer.toString((pc.getLevel() - 50) - pc.getBonusStats()));
         }
         // 귀환 스탯 리셋 대기
@@ -1033,7 +1033,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 	}
 
 	private static void 보안버프(L1PcInstance pc) {
-		pc.getAC().addAc(-1);
+		pc.addAc(-1);
 		SC_PacketBox.send(pc, pc, SC_PacketBox.ICON_SECURITY_SERVICES);
 		SC_OwnCharStatus.send(pc);
 	}

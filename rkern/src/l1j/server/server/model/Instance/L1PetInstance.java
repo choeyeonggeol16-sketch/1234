@@ -629,15 +629,15 @@ public class L1PetInstance extends L1NpcInstance {
 
 		setHitByWeapon(petItem.getHitModifier());
 		setDamageByWeapon(petItem.getDamageModifier());
-		getAbility().addAddedStr(petItem.getAddStr());
-		getAbility().addAddedCon(petItem.getAddCon());
-		getAbility().addAddedDex(petItem.getAddDex());
-		getAbility().addAddedInt(petItem.getAddInt());
-		getAbility().addAddedWis(petItem.getAddWis());
+		AddStatBonusStr(petItem.getAddStr());
+		AddStatBonusCon(petItem.getAddCon());
+		AddStatBonusDex(petItem.getAddDex());
+		AddStatBonusInt(petItem.getAddInt());
+		AddStatBonusWis(petItem.getAddWis());
 		addMaxHp(petItem.getAddHp());
 		addMaxMp(petItem.getAddMp());
-		getAbility().addSp(petItem.getAddSp());
-		getResistance().addMr(petItem.getAddMr());
+		AddStatSp(petItem.getAddSp());
+		AddMDefend(petItem.getAddMr());
 
 		setWeapon(weapon);
 		weapon.setEquipped(true);
@@ -649,16 +649,16 @@ public class L1PetInstance extends L1NpcInstance {
 
 		if (petItem == null) { return; }
 
-		getAC().addAc(petItem.getAddAc());
-		getAbility().addAddedStr(petItem.getAddStr());
-		getAbility().addAddedCon(petItem.getAddCon());
-		getAbility().addAddedDex(petItem.getAddDex());
-		getAbility().addAddedInt(petItem.getAddInt());
-		getAbility().addAddedWis(petItem.getAddWis());
+		addAc(petItem.getAddAc());
+		AddStatBonusStr(petItem.getAddStr());
+		AddStatBonusCon(petItem.getAddCon());
+		AddStatBonusDex(petItem.getAddDex());
+		AddStatBonusInt(petItem.getAddInt());
+		AddStatBonusWis(petItem.getAddWis());
 		addMaxHp(petItem.getAddHp());
 		addMaxMp(petItem.getAddMp());
-		getAbility().addSp(petItem.getAddSp());
-		getResistance().addMr(petItem.getAddMr());
+		AddStatSp(petItem.getAddSp());
+		AddMDefend(petItem.getAddMr());
 
 		setArmor(armor);
 		armor.setEquipped(true);
@@ -672,15 +672,15 @@ public class L1PetInstance extends L1NpcInstance {
 
 		setHitByWeapon(0);
 		setDamageByWeapon(0);
-		getAbility().addAddedStr(-petItem.getAddStr());
-		getAbility().addAddedCon(-petItem.getAddCon());
-		getAbility().addAddedDex(-petItem.getAddDex());
-		getAbility().addAddedInt(-petItem.getAddInt());
-		getAbility().addAddedWis(-petItem.getAddWis());
+		AddStatBonusStr(-petItem.getAddStr());
+		AddStatBonusCon(-petItem.getAddCon());
+		AddStatBonusDex(-petItem.getAddDex());
+		AddStatBonusInt(-petItem.getAddInt());
+		AddStatBonusWis(-petItem.getAddWis());
 		addMaxHp(-petItem.getAddHp());
 		addMaxMp(-petItem.getAddMp());
-		getAbility().addSp(-petItem.getAddSp());
-		getResistance().addMr(-petItem.getAddMr());
+		AddStatSp(-petItem.getAddSp());
+		AddMDefend(-petItem.getAddMr());
 
 		setWeapon(null);
 		weapon.setEquipped(false);
@@ -692,16 +692,16 @@ public class L1PetInstance extends L1NpcInstance {
 
 		if (petItem == null) { return; }
 
-		getAC().addAc(-petItem.getAddAc());
-		getAbility().addAddedStr(-petItem.getAddStr());
-		getAbility().addAddedCon(-petItem.getAddCon());
-		getAbility().addAddedDex(-petItem.getAddDex());
-		getAbility().addAddedInt(-petItem.getAddInt());
-		getAbility().addAddedWis(-petItem.getAddWis());
+		addAc(-petItem.getAddAc());
+		AddStatBonusStr(-petItem.getAddStr());
+		AddStatBonusCon(-petItem.getAddCon());
+		AddStatBonusDex(-petItem.getAddDex());
+		AddStatBonusInt(-petItem.getAddInt());
+		AddStatBonusWis(-petItem.getAddWis());
 		addMaxHp(-petItem.getAddHp());
 		addMaxMp(-petItem.getAddMp());
-		getAbility().addSp(-petItem.getAddSp());
-		getResistance().addMr(-petItem.getAddMr());
+		AddStatSp(-petItem.getAddSp());
+		AddMDefend(-petItem.getAddMr());
 
 		setArmor(null);
 		armor.setEquipped(false);
@@ -836,15 +836,15 @@ public class L1PetInstance extends L1NpcInstance {
 
 		pet.setHitByWeapon(petItem.getHitModifier());
 		pet.setDamageByWeapon(petItem.getDamageModifier());
-		pet.getAbility().addAddedStr(petItem.getAddStr());
-		pet.getAbility().addAddedCon(petItem.getAddCon());
-		pet.getAbility().addAddedDex(petItem.getAddDex());
-		pet.getAbility().addAddedInt(petItem.getAddInt());
-		pet.getAbility().addAddedWis(petItem.getAddWis());
+		pet.AddStatBonusStr(petItem.getAddStr());
+		pet.AddStatBonusCon(petItem.getAddCon());
+		pet.AddStatBonusDex(petItem.getAddDex());
+		pet.AddStatBonusInt(petItem.getAddInt());
+		pet.AddStatBonusWis(petItem.getAddWis());
 		pet.addMaxHp(petItem.getAddHp());
 		pet.addMaxMp(petItem.getAddMp());
 		pet.addSp(petItem.getAddSp());
-		pet.getResistance().addMr(petItem.getAddMr());
+		pet.AddMDefend(petItem.getAddMr());
 
 		pet.setWeapon(weapon);
 		weapon.setEquipped(true);
@@ -860,15 +860,15 @@ public class L1PetInstance extends L1NpcInstance {
 
 		pet.setHitByWeapon(0);
 		pet.setDamageByWeapon(0);
-		pet.getAbility().addAddedStr(-petItem.getAddStr());
-		pet.getAbility().addAddedCon(-petItem.getAddCon());
-		pet.getAbility().addAddedDex(-petItem.getAddDex());
-		pet.getAbility().addAddedInt(-petItem.getAddInt());
-		pet.getAbility().addAddedWis(-petItem.getAddWis());
+		pet.AddStatBonusStr(-petItem.getAddStr());
+		pet.AddStatBonusCon(-petItem.getAddCon());
+		pet.AddStatBonusDex(-petItem.getAddDex());
+		pet.AddStatBonusInt(-petItem.getAddInt());
+		pet.AddStatBonusWis(-petItem.getAddWis());
 		pet.addMaxHp(-petItem.getAddHp());
 		pet.addMaxMp(-petItem.getAddMp());
 		pet.addSp(-petItem.getAddSp());
-		pet.getResistance().addMr(-petItem.getAddMr());
+		pet.AddMDefend(-petItem.getAddMr());
 
 		pet.setWeapon(null);
 		weapon.setEquipped(false);
@@ -882,16 +882,16 @@ public class L1PetInstance extends L1NpcInstance {
 			return;
 		}
 
-		pet.getAC().addAc(petItem.getAddAc());
-		pet.getAbility().addAddedStr(petItem.getAddStr());
-		pet.getAbility().addAddedCon(petItem.getAddCon());
-		pet.getAbility().addAddedDex(petItem.getAddDex());
-		pet.getAbility().addAddedInt(petItem.getAddInt());
-		pet.getAbility().addAddedWis(petItem.getAddWis());
+		pet.addAc(petItem.getAddAc());
+		pet.AddStatBonusStr(petItem.getAddStr());
+		pet.AddStatBonusCon(petItem.getAddCon());
+		pet.AddStatBonusDex(petItem.getAddDex());
+		pet.AddStatBonusInt(petItem.getAddInt());
+		pet.AddStatBonusWis(petItem.getAddWis());
 		pet.addMaxHp(petItem.getAddHp());
 		pet.addMaxMp(petItem.getAddMp());
 		pet.addSp(petItem.getAddSp());
-		pet.getResistance().addMr(petItem.getAddMr());
+		pet.AddMDefend(petItem.getAddMr());
 
 		pet.setArmor(armor);
 		armor.setEquipped(true);
@@ -905,16 +905,16 @@ public class L1PetInstance extends L1NpcInstance {
 			return;
 		}
 
-		pet.getAC().addAc(-petItem.getAddAc());
-		pet.getAbility().addAddedStr(-petItem.getAddStr());
-		pet.getAbility().addAddedCon(-petItem.getAddCon());
-		pet.getAbility().addAddedDex(-petItem.getAddDex());
-		pet.getAbility().addAddedInt(-petItem.getAddInt());
-		pet.getAbility().addAddedWis(-petItem.getAddWis());
+		pet.addAc(-petItem.getAddAc());
+		pet.AddStatBonusStr(-petItem.getAddStr());
+		pet.AddStatBonusCon(-petItem.getAddCon());
+		pet.AddStatBonusDex(-petItem.getAddDex());
+		pet.AddStatBonusInt(-petItem.getAddInt());
+		pet.AddStatBonusWis(-petItem.getAddWis());
 		pet.addMaxHp(-petItem.getAddHp());
 		pet.addMaxMp(-petItem.getAddMp());
 		pet.addSp(-petItem.getAddSp());
-		pet.getResistance().addMr(-petItem.getAddMr());
+		pet.AddMDefend(-petItem.getAddMr());
 
 		pet.setArmor(null);
 		armor.setEquipped(false);

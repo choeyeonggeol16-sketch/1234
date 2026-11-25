@@ -63,9 +63,9 @@ public class L1Status implements L1CommandExecutor {
 
 			// -- not use DB --
 			if (param.equalsIgnoreCase("방어")) {
-				target.getAC().addAc((byte) (value - target.getAC().getAc()));
+				target.addAc((byte) (value - target.getAc()));
 			} else if (param.equalsIgnoreCase("마방")) {
-				target.getResistance().addMr((short) (value - target.getResistance().getMr()));
+				target.AddMDefend((short) (value - target.GetMDefend()));
 			} else if (param.equalsIgnoreCase("공성")) {
 				target.addHitup((short) (value - target.getHitup()));
 			} else if (param.equalsIgnoreCase("대미지")) {
@@ -99,17 +99,17 @@ public class L1Status implements L1CommandExecutor {
 						SC_SystemMessage.send(target, "GM번호가 일치하지 않습니다.");
 					}
 				} else if (param.equalsIgnoreCase("힘")) {
-					target.getAbility().setStr((byte)value);
+					target.SetStatStr((byte)value);
 				} else if (param.equalsIgnoreCase("콘")) {
-					target.getAbility().setCon((byte)value);
+					target.SetStatCon((byte)value);
 				} else if (param.equalsIgnoreCase("덱스")) {
-					target.getAbility().setDex((byte)value);
+					target.SetStatDex((byte)value);
 				} else if (param.equalsIgnoreCase("인트")) {
-					target.getAbility().setInt((byte)value);
+					target.SetStatInt((byte)value);
 				} else if (param.equalsIgnoreCase("위즈")) {
-					target.getAbility().setWis((byte)value);
+					target.SetStatWis((byte)value);
 				} else if (param.equalsIgnoreCase("카리")) {
-					target.getAbility().setCha((byte)value);
+					target.SetStatCha((byte)value);
 				} else {
 					SC_SystemMessage.send(pc, "스테이터스 " + param + " (은)는 불명합니다. ");
 					return;

@@ -23,7 +23,7 @@ public final class SC_PetInventory {
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final int petId = pet == null ? 0 : pet.getId();
-        final int ac = pet == null || pet.getAC() == null ? 0 : pet.getAC().getAc();
+        final int ac = pet == null ? 0 : pet.getAc();
         final List<L1ItemInstance> items = pet == null || pet.getInventory() == null ? null : pet.getInventory().getItems();
         final int maxCount = items == null ? 0 : items.size();
         final int[] fields = new int[maxCount * 5];

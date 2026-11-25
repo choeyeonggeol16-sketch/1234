@@ -401,9 +401,9 @@ public class GameUtils {
 	}
 
 	public static boolean isMagicSuccess(L1Character attacker, L1Character target, int default_ratio, int defenseMr) {
-		int hit = attacker.getAbility().getMagicBonus()
-				+ attacker.getAbility().getMagicLevel();
-		hit += (attacker.getAbility().getTotalInt()) + default_ratio;
+		int hit = attacker.GetStatMagicBonus()
+				+ attacker.GetStatMagicLevel();
+		hit += (attacker.GetTotalStatInt()) + default_ratio;
 		int mr = defenseMr;
 		double pMr = 0;
 
@@ -464,25 +464,25 @@ public class GameUtils {
 	}
 
 	public static boolean isMagicSuccess(L1Character attacker, L1Character target, int default_ratio) {
-		return isMagicSuccess(attacker, target, default_ratio, target.getResistance().getMrAfterEraseRemove());
+		return isMagicSuccess(attacker, target, default_ratio, target.GetMDefendAndConsumeErase());
 	}
 
 	public static int getMagicDamage(L1Character attacker, L1Character target, int pure) {
-		double dmg = pure * (attacker.getAbility().getSp() * MCS_DYCSPELL_SPADDER);
-		dmg += attacker.getAbility().getMagicBonus();
-		dmg += (attacker.getAbility().getTotalInt() * MCS_DYCSPELL_INTADDER);
+		double dmg = pure * (attacker.GetStatSp() * MCS_DYCSPELL_SPADDER);
+		dmg += attacker.GetStatMagicBonus();
+		dmg += (attacker.GetTotalStatInt() * MCS_DYCSPELL_INTADDER);
 
-		dmg = getMagicDamage((int) dmg, target.getResistance().getMrAfterEraseRemove());
+		dmg = getMagicDamage((int) dmg, target.GetMDefendAndConsumeErase());
 		return (int) dmg;
 	}
 
 	public static int getMagicDamage(L1Character attacker, L1Character target, int min, int max) {
 		int result = 0;
 		try{
-			int intel = attacker.getAbility().getTotalInt();
+			int intel = attacker.GetTotalStatInt();
 			int pure = _rnd.nextInt(max - min) + min;
 			double dmg = pure + (intel * MCS_STSSPELL_STATADDER);
-			result = getMagicDamage(dmg, target.getResistance().getMrAfterEraseRemove());
+			result = getMagicDamage(dmg, target.GetMDefendAndConsumeErase());
 		}catch(Exception e){
 			System.out.println(String.format("%s -> %s GameUtils.getMagicDamage()", attacker.getName(), target.getName()));
 		}

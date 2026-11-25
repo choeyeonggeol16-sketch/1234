@@ -242,8 +242,8 @@ public class L1WeaponSkill {
 		}
 		KiringkuDamage += value;
 
-		int spByItem = pc.getAbility().getSp() - pc.getAbility().getTrueSp();
-		charaIntelligence = pc.getAbility().getTotalInt() + spByItem - 12;
+		int spByItem = pc.GetStatSp() - pc.GetStatBaseSp();
+		charaIntelligence = pc.GetTotalStatInt() + spByItem - 12;
 		if (charaIntelligence < 1) {
 			charaIntelligence = 1;
 		}
@@ -252,16 +252,16 @@ public class L1WeaponSkill {
 		KiringkuDamage *= KiringkuCoefficientA;
 
 		double Mrfloor = 0;
-		if (cha.getResistance().getEffectedMrBySkill() <= 100) {
-			Mrfloor = Math.floor((cha.getResistance().getEffectedMrBySkill() - pc.getTotalMagicHitup()) / 2);
-		} else if (cha.getResistance().getEffectedMrBySkill() >= 100) {
-			Mrfloor = Math.floor((cha.getResistance().getEffectedMrBySkill() - pc.getTotalMagicHitup()) / 10);
+		if (cha.GetMDefendBySkill() <= 100) {
+			Mrfloor = Math.floor((cha.GetMDefendBySkill() - pc.getTotalMagicHitup()) / 2);
+		} else if (cha.GetMDefendBySkill() >= 100) {
+			Mrfloor = Math.floor((cha.GetMDefendBySkill() - pc.getTotalMagicHitup()) / 10);
 		}
 
 		double KiringkuCoefficientB = 0;
-		if (cha.getResistance().getEffectedMrBySkill() <= 100) {
+		if (cha.GetMDefendBySkill() <= 100) {
 			KiringkuCoefficientB = 1 - 0.01 * Mrfloor;
-		} else if (cha.getResistance().getEffectedMrBySkill() > 100) {
+		} else if (cha.GetMDefendBySkill() > 100) {
 			KiringkuCoefficientB = 0.6 - 0.01 * Mrfloor;
 		}
 
@@ -357,7 +357,7 @@ public class L1WeaponSkill {
 		if (7 >= chance) {
 			if (!cha.hasSkillEffect(56)) {
 				cha.addDmgup(-6);
-				cha.getAC().addAc(12);
+				cha.addAc(12);
 				if (cha instanceof L1PcInstance) {
 					L1PcInstance target = (L1PcInstance) cha;
 					SC_OwnCharAttrDef.send(target);
@@ -917,7 +917,7 @@ public class L1WeaponSkill {
 		
 		// 가져온 소스의 자체 확률 및 데미지 계산 공식 적용
 		if (7 + enchant >= chance) {
-			int Str = pc.getAbility().getTotalStr();
+			int Str = pc.GetTotalStatStr();
 			int div = (int) ((Str / 10) * 10);
 			int min = 160 + div;
 			int max = 420 + div;
@@ -978,7 +978,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (2 + enchant >= chance) {
 			dmg = _random.nextInt(intel / 2) + (intel);
@@ -995,7 +995,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (1 + enchant >= chance) {
 			dmg = _random.nextInt(intel / 2) + (intel * 2);
@@ -1012,7 +1012,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (2 + enchant >= chance) {
 			dmg = _random.nextInt(intel / 2) + (intel * 2);
@@ -1029,7 +1029,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (2 + enchant >= chance) {
 			dmg = _random.nextInt(intel / 2) + (intel);
@@ -1046,7 +1046,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int dex = pc.getAbility().getTotalDex();
+		int dex = pc.GetTotalStatDex();
 		int chance = _random.nextInt(100) + 1;
 		if (1 + enchant >= chance) {
 			dmg = _random.nextInt(dex) + (dex);
@@ -1061,7 +1061,7 @@ public class L1WeaponSkill {
 
 	public static double getMoonBowDamage(L1PcInstance pc, L1Character cha, int enchant) {
 		double dmg = 0;
-		int dex = pc.getAbility().getTotalDex();
+		int dex = pc.GetTotalStatDex();
 		int chance = _random.nextInt(100) + 1;
 		if (1 + enchant >= chance) {
 			dmg = _random.nextInt(dex) + (dex);
@@ -1084,7 +1084,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (1 + enchant >= chance) {
 			dmg = _random.nextInt(intel) + (intel * 2);
@@ -1101,7 +1101,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (2 + enchant >= chance) {
 			dmg = _random.nextInt(intel) + 20 + (intel * 2);
@@ -1118,7 +1118,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (6 + enchant >= chance) {// 3
 			dmg = _random.nextInt(intel / 2) + (intel * 1.2);
@@ -1139,7 +1139,7 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int sp = pc.getSp();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (10 + enchant >= chance) {// 3
 			dmg = _random.nextInt(enchant * 2 + 5) + ((sp + intel) * 4); // 공식변경
@@ -1161,7 +1161,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int Str = pc.getAbility().getTotalStr();
+		int Str = pc.GetTotalStatStr();
 		int chance = _random.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
 			int div = (int)((Str / 10) * 1.5);
@@ -1182,7 +1182,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int dex = pc.getAbility().getTotalDex();
+		int dex = pc.GetTotalStatDex();
 		int chance = _random.nextInt(100) + 1;
 		if (4 + enchant >= chance) {
 			int div = (int)((dex / 10) * 1.2);
@@ -1203,7 +1203,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int Str = pc.getAbility().getTotalStr();
+		int Str = pc.GetTotalStatStr();
 		int chance = _random.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
 			int div = (int)((Str / 10) * 1.2);
@@ -1224,7 +1224,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int Str = pc.getAbility().getTotalStr();
+		int Str = pc.GetTotalStatStr();
 		int chance = _random.nextInt(100) + 1;
 		if (3 + enchant >= chance) {
 			int div = (int)((Str / 10) * 1.2);
@@ -1245,7 +1245,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int Str = pc.getAbility().getTotalStr();
+		int Str = pc.GetTotalStatStr();
 		int chance = _random.nextInt(100) + 1;
 		if (5 + enchant >= chance) {// 찬스
 			dmg = _random.nextInt(Str) + (Str);
@@ -1264,7 +1264,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (3 + enchant >= chance) {
 			dmg = _random.nextInt(intel / 2) + (intel * 3);
@@ -1285,7 +1285,7 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int sp = pc.getSp();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (5 + enchant >= chance) {
 			int div = (int)((intel+(sp) / 10) * 1.2);
@@ -1307,7 +1307,7 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int sp = pc.getSp();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
 			int div = (int)((intel+(sp) / 10) * 1.2);
@@ -1329,7 +1329,7 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int sp = pc.getSp();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (15 + enchant >= chance) {
 			dmg = _random.nextInt(enchant * 2 + 3) + ((sp + intel) * 3); // 리뉴얼로상향
@@ -1347,7 +1347,7 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int sp = pc.getSp();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
 			int div = (int)((intel+(sp) / 10) * 2.8);
@@ -1368,7 +1368,7 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int sp = pc.getSp();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (10 + enchant >= chance) {
 			int div = (int)((intel+(sp) / 10) * 2.8);
@@ -1390,7 +1390,7 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int sp = pc.getSp();
-		int intel = pc.getAbility().getTotalInt();
+		int intel = pc.GetTotalStatInt();
 		int chance = _random.nextInt(100) + 1;
 		if (20 + enchant >= chance && 5 <= chance) {
 			dmg = _random.nextInt(sp + intel) + ((sp + intel) * 4.5);
@@ -1425,7 +1425,7 @@ public class L1WeaponSkill {
 
 		int ran1 = 0; // 랜덤 수치 적용
 		int mrset = 0; // 엠알에서 랜덤 수치를 뺀값
-		int mrs = cha.getResistance().getEffectedMrBySkill();
+		int mrs = cha.GetMDefendBySkill();
 		ran1 = _random.nextInt(5) + 1;
 		mrset = mrs - ran1;
 		double calMr = 0.00D;
@@ -1438,13 +1438,13 @@ public class L1WeaponSkill {
 
 		int resist = 0;
 		if (attr == L1Skills.ATTR_EARTH) {
-			resist = cha.getResistance().getEarth();
+			resist = cha.GetEarthResist();
 		} else if (attr == L1Skills.ATTR_FIRE) {
-			resist = cha.getResistance().getFire();
+			resist = cha.GetFireResist();
 		} else if (attr == L1Skills.ATTR_WATER) {
-			resist = cha.getResistance().getWater();
+			resist = cha.GetWaterResist();
 		} else if (attr == L1Skills.ATTR_WIND) {
-			resist = cha.getResistance().getWind();
+			resist = cha.GetWindResist();
 		}
         resist = Math.min(100, resist);
 		int resistFloor = (int) (0.32 * Math.abs(resist));

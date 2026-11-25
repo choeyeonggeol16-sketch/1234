@@ -99,14 +99,14 @@ public class L1Describe2 implements L1CommandExecutor {
 			}	
 		
 			
-			int aa = target.getResistance().getcalcPcDefense();
+			int aa = target.GetPvpDamageReduction();
 			
-SC_SystemMessage.send(pc, "\\aDBASE:(S: " + target.getAbility().getBaseStr() + " / " + "D: " + target.getAbility().getBaseDex() + " / " 
-                        + "C: " + target.getAbility().getBaseCon() + " / " + "I: " + target.getAbility().getBaseInt() + " / " 
-                        + "W: " + target.getAbility().getBaseWis() + " / " + "C: " + target.getAbility().getBaseCha() + ')');
-SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.getAbility().getTotalStr() + " / " + "D: " + target.getAbility().getTotalDex() + " / "
-						+ "C: " + target.getAbility().getTotalCon() + " / " + "I: " + target.getAbility().getTotalInt() + " / "
-						+ "W: " + target.getAbility().getTotalWis() + " / " + "C: " + target.getAbility().getTotalCha() + ')');
+SC_SystemMessage.send(pc, "\\aDBASE:(S: " + target.GetOriginalStatStr() + " / " + "D: " + target.GetOriginalStatDex() + " / " 
+                        + "C: " + target.GetOriginalStatCon() + " / " + "I: " + target.GetOriginalStatInt() + " / " 
+                        + "W: " + target.GetOriginalStatWis() + " / " + "C: " + target.GetOriginalStatCha() + ')');
+SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "D: " + target.GetTotalStatDex() + " / "
+						+ "C: " + target.GetTotalStatCon() + " / " + "I: " + target.GetTotalStatInt() + " / "
+						+ "W: " + target.GetTotalStatWis() + " / " + "C: " + target.GetTotalStatCha() + ')');
 			SC_SystemMessage.send(pc, "\\aD--------------------------------------------------");
 		} catch (Exception e) {
 			SC_ChatPacket.sendDirect(pc, pc, ".유저정보 [캐릭명] 으로 입력.");

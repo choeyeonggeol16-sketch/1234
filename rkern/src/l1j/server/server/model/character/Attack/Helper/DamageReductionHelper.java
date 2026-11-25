@@ -82,7 +82,7 @@ public final class DamageReductionHelper {
         // 3) ARMOR_GUARD (AC 기반 DR)
         // =========================================================
         if (targetPc.getPassive(PassiveID.ARMOR_GUARD.toInt()) != null) {
-            final int ac = targetPc.getAC().getAc();
+            final int ac = targetPc.getAc();
             final int armorGuardDr = (ac < 0) ? (-ac) / 10 : 0;
             if (armorGuardDr != 0) {
                 out -= armorGuardDr;

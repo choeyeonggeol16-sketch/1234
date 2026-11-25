@@ -54,32 +54,32 @@ short initHp = 0;
 			short initMp = 0;
 			if (pc.isCrown()) {
 				initHp = 14;
-				int wis = pc.getAbility() != null ? pc.getAbility().getBaseWis() : 12;
+				int wis = pc.GetOriginalStatWis();
 				if (wis == 11) initMp = 2;
 				else if (wis >= 12 && wis <= 15) initMp = 3;
 				else if (wis >= 16 && wis <= 18) initMp = 4;
 				else initMp = 2;
 			} else if (pc.isKnight()) {
 				initHp = 16;
-				int wis = pc.getAbility() != null ? pc.getAbility().getBaseWis() : 10;
+				int wis = pc.GetOriginalStatWis();
 				if (wis >= 9 && wis <= 11) initMp = 1;
 				else if (wis == 12 || wis == 13) initMp = 2;
 				else initMp = 1;
 			} else if (pc.isElf()) {
 				initHp = 15;
-				int wis = pc.getAbility() != null ? pc.getAbility().getBaseWis() : 12;
+				int wis = pc.GetOriginalStatWis();
 				if (wis >= 12 && wis <= 15) initMp = 4;
 				else if (wis >= 16 && wis <= 18) initMp = 6;
 				else initMp = 4;
 			} else if (pc.isWizard()) {
 				initHp = 12;
-				int wis = pc.getAbility() != null ? pc.getAbility().getBaseWis() : 12;
+				int wis = pc.GetOriginalStatWis();
 				if (wis >= 12 && wis <= 15) initMp = 6;
 				else if (wis >= 16 && wis <= 18) initMp = 8;
 				else initMp = 6;
 			} else if (pc.isDarkelf()) {
 				initHp = 12;
-				int wis = pc.getAbility() != null ? pc.getAbility().getBaseWis() : 10;
+				int wis = pc.GetOriginalStatWis();
 				if (wis == 10 || wis == 11) initMp = 3;
 				else if (wis >= 12 && wis <= 15) initMp = 4;
 				else if (wis >= 16 && wis <= 18) initMp = 6;
@@ -89,13 +89,13 @@ short initHp = 0;
 				initMp = 2;
 			} else if (pc.isBlackwizard()) {
 				initHp = 14;
-				int wis = pc.getAbility() != null ? pc.getAbility().getBaseWis() : 10;
+				int wis = pc.GetOriginalStatWis();
 				if (wis >= 10 && wis <= 15) initMp = 5;
 				else if (wis >= 16 && wis <= 18) initMp = 6;
 				else initMp = 5;
 			} else if (pc.isWarrior()) {
 				initHp = 16;
-				int wis = pc.getAbility() != null ? pc.getAbility().getBaseWis() : 10;
+				int wis = pc.GetOriginalStatWis();
 				if (wis >= 9 && wis <= 11) initMp = 1;
 				else if (wis == 12 || wis == 13) initMp = 2;
 				else initMp = 1;
@@ -129,8 +129,8 @@ short initHp = 0;
                     break;
                 case LOGIN: {
                     int first = 0, second = 0, third = 0;
-                    if (pc.getAbility() != null) {
-                        int[] stat = pc.getAbility().getMinStat(pc.getClassId());
+                    {
+                        int[] stat = pc.GetMinStat(pc.getClassId());
                         if (stat != null && stat.length >= 6) {
                             first = stat[0] + stat[5] * 16;
                             second = stat[3] + stat[1] * 16;

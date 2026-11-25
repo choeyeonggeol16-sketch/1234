@@ -40,7 +40,7 @@ final class QuestRepairScrollUse {
             UseDurableRepair(pc, item, repairTarget, () -> {
                 try {
                     if (equippedArmor) {
-                        pc.getAC().addAc(-1);
+                        pc.addAc(-1);
                         try {
                             SC_OwnCharAttrDef.send(pc);
                         } catch (RuntimeException packetFailure) {

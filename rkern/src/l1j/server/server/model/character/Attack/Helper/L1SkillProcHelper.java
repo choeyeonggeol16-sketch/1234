@@ -229,12 +229,12 @@ public final class L1SkillProcHelper {
 
 		if (ranged) {
 			final int baseCri = pc.getBaseBowCriByLevelClass();
-			final int statCri = CalcStat.원거리치명타(pc.getAbility().getTotalDex());
+			final int statCri = CalcStat.원거리치명타(pc.GetTotalStatDex());
 			final int miscCri = pc.get_missile_critical_rate();
 			chance = baseCri + statCri + miscCri;
 		} else {
 			final int baseCri = pc.getBaseMeleeCriByLevelClass(); 
-			final int statCri = CalcStat.근거리치명타(pc.getAbility().getTotalStr());
+			final int statCri = CalcStat.근거리치명타(pc.GetTotalStatStr());
 			final int miscCri = pc.get_melee_critical_rate();
 			chance = baseCri + statCri + miscCri;
 
