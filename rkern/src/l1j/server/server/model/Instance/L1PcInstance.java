@@ -87,7 +87,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.character.skill.passive.PassiveInfo;
-import l1j.server.server.model.character.slot.SlotChangeManager;
+import l1j.server.server.model.character.slot.SwapSlotItems;
 import l1j.server.server.model.classes.L1ClassFeature;
 import l1j.server.server.model.gametime.L1GameTimeCarrier;
 import l1j.server.server.model.item.Card.L1CardCollection;
@@ -7548,7 +7548,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public int getSpeedHackAnchorY() { return _speedHackAnchorY; }
 	public void setSpeedHackAnchorY(int y) { _speedHackAnchorY = y; }
 	
-	private final SlotChangeManager _slotChange = new SlotChangeManager(this);
+	private final SwapSlotItems _slotChange = new SwapSlotItems(this);
 	public int getSlotNumber() {
 		return _slotChange.getSlotNumber();
 	}
@@ -7562,7 +7562,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return _slotChange.getSlotItems(slotNum);
 	}
 	public void getChangeSlot(int slotNum) {
-		_slotChange.SwapSlotItems(slotNum);
+		_slotChange.applySlot(slotNum);
 	}
 
 	public void clearSlotChange() {

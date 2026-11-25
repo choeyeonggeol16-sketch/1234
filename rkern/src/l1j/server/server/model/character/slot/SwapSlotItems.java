@@ -17,7 +17,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 /**
  * SlotChange 관리 전용.
  */
-public final class SlotChangeManager {
+public final class SwapSlotItems {
 
     private static final int SLOT0 = 0;
     private static final int SLOT1 = 1;
@@ -42,10 +42,10 @@ public final class SlotChangeManager {
     private L1ItemInstance[] plannedBuffer = EMPTY_ITEMS;
     private L1ItemInstance[] originalBuffer = EMPTY_ITEMS;
 
-    /** SwapSlotItems 중첩 실행 방지  */
+    /** applySlot 중첩 실행 방지  */
     private boolean swapping = false;
 
-    public SlotChangeManager(L1PcInstance owner) {
+    public SwapSlotItems(L1PcInstance owner) {
         this.owner = owner;
     }
 
@@ -91,19 +91,19 @@ public final class SlotChangeManager {
         return getList(slotNum);
     }
 
-    public void SwapSlotItems(int slotNum) {
+    public void applySlot(int slotNum) {
         final IntIdList desired = getList(slotNum);
         if (desired == null) return;
         final CUserInventory inventory = owner.getInventory();
         if (!inventory.tryBeginEquipmentChange()) return;
         try {
-            if (!swapping) SwapSlotItems(slotNum, desired, inventory);
+            if (!swapping) applySlot(slotNum, desired, inventory);
         } finally {
             inventory.endEquipmentChange();
         }
     }
 
-    private void SwapSlotItems(int slotNum, IntIdList desired, CUserInventory inventory) {
+    private void applySlot(int slotNum, IntIdList desired, CUserInventory inventory) {
         final int spriteId = owner.getCurrentSpriteId();
         final L1ItemInstance originalPrimary = owner.getWeapon();
         int unequipCount = 0, equipCount = 0, plannedCount = 0, originalCount = 0;
@@ -297,7 +297,7 @@ public final class SlotChangeManager {
             try {
                 owner.UnequipItem(item);
             } catch (RuntimeException failure) {
-                java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                java.util.logging.Logger.getLogger(SwapSlotItems.class.getName())
                         .log(java.util.logging.Level.SEVERE, "Preset rollback remove failed", failure);
             }
         }
@@ -307,7 +307,7 @@ public final class SlotChangeManager {
             try {
                 owner.EquipItem(originalPrimary);
             } catch (RuntimeException failure) {
-                java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                java.util.logging.Logger.getLogger(SwapSlotItems.class.getName())
                         .log(java.util.logging.Level.SEVERE, "Preset rollback primary failed", failure);
             }
         }
@@ -317,11 +317,11 @@ public final class SlotChangeManager {
             try {
                 owner.EquipItem(item);
                 if (!item.isEquipped()) {
-                    java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                    java.util.logging.Logger.getLogger(SwapSlotItems.class.getName())
                             .severe("Preset rollback restore refused: item=" + item.getId());
                 }
             } catch (RuntimeException failure) {
-                java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                java.util.logging.Logger.getLogger(SwapSlotItems.class.getName())
                         .log(java.util.logging.Level.SEVERE, "Preset rollback restore failed", failure);
             }
         }
