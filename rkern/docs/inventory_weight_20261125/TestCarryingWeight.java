@@ -257,7 +257,30 @@ public final class TestCarryingWeight {
         }
         System.out.println("PASS detached reward images and strict warehouse snapshot admission");
     }
+    private static void checkPreparedRowIdentity() {
+        L1EtcItem t = template(123, 1000);
+        int[] ids = {-1, 0, 123, 124};
+        int[] amounts = {-1, 0, 1, CInventory.MAX_AMOUNT, Integer.MAX_VALUE};
+        for (int row : ids) for (int actual : ids) for (int amount : amounts)
+            for (boolean beforeEquipped : new boolean[]{false, true})
+                for (boolean equipped : new boolean[]{false, true})
+                    for (boolean sameOwner : new boolean[]{false, true}) {
+                        L1ItemInstance image = new L1ItemInstance(t, amount);
+                        image.setId(actual);
+                        image.setEquipped(equipped);
+                        boolean accepted = true;
+                        try {
+                            L1InventoryTransaction.ValidatePreparedRow(row, image, beforeEquipped, sameOwner);
+                        } catch (IllegalStateException expected) { accepted = false; }
+                        boolean expected = row > 0 && row == actual && amount >= 0
+                                && amount <= CInventory.MAX_AMOUNT && beforeEquipped == equipped
+                                && (!beforeEquipped || (sameOwner && amount > 0));
+                        check(expected ? 1 : 0, accepted ? 1 : 0);
+                    }
+        System.out.println("PASS prepared row identity, count and equipment guards");
+    }
     public static void main(String[] args) throws Exception {
+        checkPreparedRowIdentity();
         checkDetachedRewardCopy();
         checkDeleteAmount();
         checkLinkedSearch();
