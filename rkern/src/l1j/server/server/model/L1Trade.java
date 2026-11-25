@@ -2,6 +2,11 @@ package l1j.server.server.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import l1j.server.server.datatables.NoTradable;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1DollInstance;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -63,17 +68,45 @@ public class L1Trade {
         final L1PcInstance from,to;final L1ItemInstance item;final int amount;
         Offered(L1PcInstance from,L1PcInstance to,L1ItemInstance item){this.from=from;this.to=to;this.item=item;amount=item.getCount();}
     }
+    /** Revalidate live restrictions after both inventory gates are reserved. */
+    private static boolean canTransferOffer(L1PcInstance from,L1ItemInstance source) {
+        if(source==null || source.getItem()==null || source.isEquipped()
+                || !source.getItem().isTradable() || source.getBless()>=128 || characterToken(source)
+                || (!from.isGm() && NoTradable.getInstance().isNoTradable(source.getItemId()))
+                || !CompanionInstanceCache.is_companion_oblivion(source.getId())) return false;
+        for(Object value:from.getPetList().values())
+            if(value instanceof L1PetInstance pet && pet.getItemObjId()==source.getId()) return false;
+        for(Object value:from.getDollList().values())
+            if(value instanceof L1DollInstance doll && doll.getItemObjId()==source.getId()) return false;
+        return true;
+    }
+
+    private static boolean matchesOffer(L1ItemInstance source,L1ItemInstance offer) {
+        return source!=null && offer!=null && source.getId()==offer.getId()
+                && source.getItemId()==offer.getItemId() && offer.getCount()>0
+                && source.getCount()>=offer.getCount() && (source.isStackable() || offer.getCount()==1)
+                && source.getEnchantLevel()==offer.getEnchantLevel() && source.getBless()==offer.getBless()
+                && source.getChargeCount()==offer.getChargeCount()
+                && source.getAttrEnchantLevel()==offer.getAttrEnchantLevel()
+                && source.getSpecialEnchant()==offer.getSpecialEnchant()
+                && source.isPackage()==offer.isPackage()
+                && source.isIdentified()==offer.isIdentified()
+                && source.get_durability()==offer.get_durability()
+                && source.getRemainingTime()==offer.getRemainingTime()
+                && source.get_bless_level()==offer.get_bless_level()
+                && source.get_bless_level2()==offer.get_bless_level2()
+                && source.get_item_level()==offer.get_item_level()
+                && source.getKeyId()==offer.getKeyId()
+                && Objects.equals(source.getLastUsed(),offer.getLastUsed())
+                && Objects.equals(source.getEndTime(),offer.getEndTime())
+                && Objects.equals(source.getHotel_Town(),offer.getHotel_Town());
+    }
+
     private static void plan(L1InventoryTransaction tx,L1PcInstance from,L1PcInstance to,List<Offered> logs) {
         for(L1ItemInstance offer:from.getTradeWindowInventory().getItems()) {
             L1ItemInstance source=from.getInventory().GetByServerID(offer.getId());
-            if(source==null || source.getItemId()!=offer.getItemId() || source.getCount()<offer.getCount()
-                    || offer.getCount()<=0 || source.isEquipped() || characterToken(source)
-                    || source.getEnchantLevel()!=offer.getEnchantLevel() || source.getBless()!=offer.getBless()
-                    || source.getChargeCount()!=offer.getChargeCount() || source.getAttrEnchantLevel()!=offer.getAttrEnchantLevel()
-                    || source.getSpecialEnchant()!=offer.getSpecialEnchant()
-                    || source.isPackage()!=offer.isPackage()
-                    || !java.util.Objects.equals(source.getEndTime(),offer.getEndTime()))
-                throw new IllegalStateException("Trade offer preimage changed");
+            if(!canTransferOffer(from,source) || !matchesOffer(source,offer))
+                throw new IllegalStateException("Trade offer preimage or eligibility changed");
             tx.transfer(from,source,offer.getCount(),to);
             logs.add(new Offered(from,to,offer));
         }
@@ -87,6 +120,9 @@ public class L1Trade {
                 || !player.getTradeOk() || !partner.getTradeOk() || partner.isItemTransferBusy())return false;
         if(player.getTradeWindowInventory().getSize()==0 && partner.getTradeWindowInventory().getSize()==0){TradeCancel(player);return false;}
         try(L1InventoryTransaction tx=L1InventoryTransaction.beginTrade(player,partner)) {
+            if(player.getTradeID()!=partner.getId() || partner.getTradeID()!=player.getId()
+                    || !player.getTradeOk() || !partner.getTradeOk())
+                throw new IllegalStateException("Trade relation changed during admission");
             List<Offered> logs=new ArrayList<>();
             plan(tx,player,partner,logs);plan(tx,partner,player,logs);
             if(logs.isEmpty()){TradeCancel(player);return false;}
