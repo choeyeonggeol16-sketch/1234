@@ -203,8 +203,8 @@ public class L1Shop {
 		
 		
 		
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 2000;// 구매 무게
-		if ((currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 3000))// 맥스
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 2000L;// 구매 무게
+		if ((currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 3000L))// 맥스
 																					// 무게에
 																					// 따른
 		{
@@ -265,13 +265,13 @@ public class L1Shop {
         int price=orderList.getTotalPrice(), castleId=L1CastleLocation.getCastleIdByNpcid(_npcId);
         int castleTax=calc.calcCastleTaxPrice(price), nationalTax=calc.calcNationalTaxPrice(price);
         if(castleId==L1CastleLocation.ADEN_CASTLE_ID || castleId==L1CastleLocation.DIAD_CASTLE_ID) {
-            castleTax+=nationalTax;nationalTax=0;
+            castleTax=Math.addExact(castleTax,nationalTax);nationalTax=0;
         }
         java.util.Map<Integer,Integer> taxes=new java.util.TreeMap<>();
-        if(castleId!=0 && castleTax>0) taxes.merge(castleId,castleTax,Integer::sum);
-        if(castleId!=0 && nationalTax>0) taxes.merge(L1CastleLocation.ADEN_CASTLE_ID,nationalTax,Integer::sum);
+        if(castleId!=0 && castleTax>0) taxes.merge(castleId,castleTax,Math::addExact);
+        if(castleId!=0 && nationalTax>0) taxes.merge(L1CastleLocation.ADEN_CASTLE_ID,nationalTax,Math::addExact);
         int diadTax=calc.calcDiadTaxPrice(price);
-        if(diadTax>0)taxes.merge(L1CastleLocation.DIAD_CASTLE_ID,diadTax,Integer::sum);
+        if(diadTax>0)taxes.merge(L1CastleLocation.DIAD_CASTLE_ID,diadTax,Math::addExact);
         for(java.util.Map.Entry<Integer,Integer> tax:taxes.entrySet()) {
             final CastleWar war=CastleWarBusiness.getInstance().get(tax.getKey());
             if(war==null)throw new IllegalStateException("Tax castle missing");
@@ -817,7 +817,7 @@ public class L1Shop {
 		grantPrepared(inv, 400254, ccc);
 	//}
 	}	
-		if (itemExist != null && (itemExist.getCount() + totalPrice) > 1900000000) {
+		if (itemExist != null && ((long) itemExist.getCount() + totalPrice) > 1900000000L) {
 			removePrepared(inv, itemExist, 1900000000);
 			grantPrepared(inv, 400254, 19);
 			shopMessage(inv.getOwner(), "\\fR19억을 초과하여 1억수표 19장으로 변환되었습니다.");
@@ -956,7 +956,7 @@ public class L1Shop {
         } catch(RuntimeException failure) {SC_SystemMessage.send(pc,"상점 거래를 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.");}
     }
     public void buyItems(L1ShopSellOrderList orderList) {
-        if(_npcId == 7320055 || orderList==null || orderList.getPc()==null || orderList.getList().isEmpty())return;
+        if(_npcId == 7320055 || orderList==null || orderList.getPc()==null || orderList.getList().isEmpty() || orderList.BugOk()!=0)return;
         L1PcInstance pc=orderList.getPc();
         try(L1InventoryTransaction tx=L1InventoryTransaction.begin(pc,CacheD.accountOrderKey("npc-sale:"+_npcId))) {
             ShopPreparation batch=new ShopPreparation(tx);SHOP_PREPARATION.set(batch);
@@ -1031,8 +1031,8 @@ public class L1Shop {
 			return false;
 		}
 		// 중량 체크
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1088,8 +1088,8 @@ public class L1Shop {
 			SC_ServerMessage.send(pc, 189);
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1258,8 +1258,8 @@ public class L1Shop {
 			SC_ChatPacket.sendDirect(pc, pc, "베리가 부족합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1441,8 +1441,8 @@ public class L1Shop {
 		} else {
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1484,8 +1484,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "종이학이 부족 합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1523,8 +1523,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "LFC종이학이 부족 합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1561,8 +1561,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "\\f2미리보기 입니다. 구매는 (메티스)에게 문의 바랍니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1599,8 +1599,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "여의주가 부족 합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1659,8 +1659,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "구입: 콜로세움 코인가 부족 합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1699,8 +1699,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "루돌프의 종 이 부족 합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1822,8 +1822,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "구입: 판도라의 증서가 부족 합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1861,8 +1861,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "군터의 인장이 부족 합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1901,8 +1901,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "하딘의 가넷이 부족 합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1941,8 +1941,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "오림의 가넷이 부족 합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -1989,8 +1989,8 @@ public class L1Shop {
 			return false;
 		}
 		
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -2147,8 +2147,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "\\aA[GM]: \\aG추가 구입은 \\aA'메티스'\\aG 문의주세요.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			// 아이템이 너무 무거워, 더 이상 가질 수 없습니다.
 			SC_ServerMessage.send(pc, 82);
 			return false;
@@ -2184,8 +2184,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "\\aA[GM]: \\aG추가 구입은 \\aA'메티스'\\aG 문의주세요.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			// 아이템이 너무 무거워, 더 이상 가질 수 없습니다.
 			SC_ServerMessage.send(pc, 82);
 			return false;
@@ -2221,8 +2221,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "\\aA[GM]: \\aG추가 구입은 \\aA'메티스'\\aG 문의주세요.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			// 아이템이 너무 무거워, 더 이상 가질 수 없습니다.
 			SC_ServerMessage.send(pc, 82);
 			return false;
@@ -2273,8 +2273,8 @@ public class L1Shop {
 			SC_SystemMessage.send(pc, "장비코인이 부족합니다.");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			// 아이템이 너무 무거워, 더 이상 가질 수 없습니다.
 			SC_ServerMessage.send(pc, 82);
 			return false;
@@ -2315,8 +2315,8 @@ public class L1Shop {
 			SC_ServerMessage.send(pc, 337, "$10196");
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -2356,8 +2356,8 @@ public class L1Shop {
 
 			return false;
 		}
-		int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-		if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+		if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
 			SC_ServerMessage.send(pc, 82);
 			return false;
 		}
@@ -2402,8 +2402,8 @@ public class L1Shop {
         }
 
         // 중량 체크
-        int currentWeight = pc.getInventory().GetCarryingWeight() * 1000;
-        if (currentWeight + orderList.getTotalWeight() > pc.getMaxWeight() * 1000) {
+        long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;
+        if (currentWeight + orderList.getTotalWeightLong() > pc.getMaxWeight() * 1000L) {
             SC_ServerMessage.send(pc, 82);
             return false;
         }
