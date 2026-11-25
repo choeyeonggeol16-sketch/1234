@@ -81,7 +81,10 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         }
     }
 
-    @Override public synchronized boolean add(L1ItemInstance item) {
+    @Override public boolean add(L1ItemInstance item) { return Push(item); }
+
+    // OFF CInventory::Push; keep L1's existing append/selection order.
+    public synchronized boolean Push(L1ItemInstance item) {
         claim(item);
         appendClaimed(item);
         return true;
@@ -117,8 +120,12 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         OWNER.setVolatile(item, null);
     }
 
-    @Override public synchronized boolean remove(Object value) {
-        if (!(value instanceof L1ItemInstance item) || item.inventoryLinkOwner != this) return false;
+    @Override public boolean remove(Object value) {
+        return value instanceof L1ItemInstance item && Pop(item);
+    }
+
+    public synchronized boolean Pop(L1ItemInstance item) {
+        if (item == null || item.inventoryLinkOwner != this) return false;
         unlink(item);
         return true;
     }
@@ -151,8 +158,12 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         synchronized (this) { return size; }
     }
 
-    @Override public synchronized boolean contains(Object value) {
-        return value instanceof L1ItemInstance item && item.inventoryLinkOwner == this;
+    @Override public boolean contains(Object value) {
+        return value instanceof L1ItemInstance item && Have(item);
+    }
+
+    public synchronized boolean Have(L1ItemInstance item) {
+        return item != null && item.inventoryLinkOwner == this;
     }
 
     @Override public synchronized int indexOf(Object value) {
@@ -186,13 +197,13 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         return item;
     }
 
-    public L1ItemInstance GetByIndex(int objectId) {
+    public L1ItemInstance GetByServerID(int objectId) {
         // World registration can lag list publication during receipt replay.
         // Use the global index for registered objects, but the list remains
         // authoritative if registration has not happened yet.
         final L1Object object = L1World.getInstance().findObject(objectId);
         if (object instanceof L1ItemInstance item
-                && item.getId() == objectId && contains(item)) return item;
+                && item.getId() == objectId && Have(item)) return item;
         // Identity lookup is used by mutation paths. Unlike snapshot iteration,
         // it must not accept a detached row from a racing old snapshot.
         synchronized (this) {
@@ -253,7 +264,12 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     }
 
     public int GetItemCountByClassID(int classId) {
-        int total = 0;
+        return (int) Math.min(Integer.MAX_VALUE, GetItemAmount(classId));
+    }
+
+    /** OFF uses a 64-bit accumulator; preserve L1's quantity semantics. */
+    public long GetItemAmount(int classId) {
+        long total = 0;
         final List<L1ItemInstance> rows = snapshot;
         if (rows != null) {
             for (int i = 0, n = rows.size(); i < n; i++) {

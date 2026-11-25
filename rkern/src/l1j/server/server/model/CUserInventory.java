@@ -141,7 +141,7 @@ public class CUserInventory extends CInventory {
             removeItemCountCache(original.getItemId(), original.getCount());
             if (image == null) {
                 original.stopEquipmentTimer();
-                _items.remove(original);
+                _items.Pop(original);
                 if (original.getEndTime() != null) {
                     l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
                             .getInstance().cancelItem(_owner, original);
@@ -246,7 +246,7 @@ public class CUserInventory extends CInventory {
                 throw new IllegalStateException("Economy destination object exists");
             image._cha = _owner;
             image.getLastStatus().updateAll();
-            _items.add(image);
+            _items.Push(image);
             addItemCountCache(image.getItemId(), image.getCount());
             L1World.getInstance().storeObject(image);
             try { SC_ADD_INVENTORY_NOTI.sendItem(_owner, image, false, _owner.getId()); }
@@ -497,7 +497,7 @@ public class CUserInventory extends CInventory {
                     throw new IllegalStateException("Stored item amount overflow: " + itemId);
                 }
                 item._cha = _owner;
-                _items.add(item);
+                _items.Push(item);
                 if (itemId == 900075) {
                     SC_Ability.send(_owner, 2, true);
                     SC_Ability.send(_owner, 7, true);
@@ -748,7 +748,7 @@ public class CUserInventory extends CInventory {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
         // Never submit a persistent deletion for another inventory's item.
-        if (item == null || !_items.contains(item)) return;
+        if (item == null || !_items.Have(item)) return;
 		
 		try {
 			CharactersItemStorage.create().deleteItem(item);
@@ -769,7 +769,7 @@ public class CUserInventory extends CInventory {
 	//	System.out.println(String.format("[아이템삭제] ID: %d, 삭제수량: %d, 맵잔량: %d", itemId, amount, _itemCountMap.getOrDefault(itemId, 0)));
 		
 		SC_DeleteInventoryItem.send(_owner, item);
-		_items.remove(item);
+		_items.Pop(item);
         if (item.getEndTime() != null) {
             l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
                     .getInstance().cancelItem(_owner, item);

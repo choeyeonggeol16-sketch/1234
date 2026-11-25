@@ -509,14 +509,14 @@ public abstract class Warehouse extends L1Object {
 		}
         final int oldX = item.getX(), oldY = item.getY();
         final short oldMap = item.getMapId();
-        _items.add(item);
+        _items.Push(item);
         try {
             item.setX(getX());
             item.setY(getY());
             item.setMap(getMapId());
             insertItem(item);
         } catch (RuntimeException e) {
-            _items.remove(item);
+            _items.Pop(item);
             item.setX(oldX);
             item.setY(oldY);
             item.setMap(oldMap);
@@ -782,7 +782,7 @@ public abstract class Warehouse extends L1Object {
 		// Destination refused the item. Restore the source's in-memory
 		// ownership/count rather than silently consuming it.
 		if (carryItem == item) {
-			_items.add(item);
+			_items.Push(item);
 			insertItem(item);
 		} else {
 			item.setCount(item.getCount() + count);
@@ -815,7 +815,7 @@ public abstract class Warehouse extends L1Object {
                     item.setCount(originalCount);
                     item._cha = null;
                     insertItem(item);
-                    _items.add(item);
+                    _items.Push(item);
                 } else if (item.getCount() != originalCount) {
                     item.setCount(originalCount);
                     updateItem(item);
@@ -975,15 +975,15 @@ public abstract class Warehouse extends L1Object {
 	}
 
 	public L1ItemInstance getItem(int objectId) {
-		return _items.GetByIndex(objectId);
+		return _items.GetByServerID(objectId);
 	}
 	
 	public synchronized void removeItem(L1ItemInstance item) {
         assertWarehouseActive();
-        if (item == null || !_items.contains(item)) return;
+        if (item == null || !_items.Have(item)) return;
         // Preserve in-memory ownership if admission to CacheD is rejected.
         deleteItem(item);
-        _items.remove(item);
+        _items.Pop(item);
 	}
 
 	public List<L1ItemInstance> getItems() {

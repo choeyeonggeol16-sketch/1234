@@ -288,11 +288,11 @@ public class CInventory extends L1Object {
 
 	/** Only the four existing registration paths use this rollback contract. */
 	private void insertLinkedItem(L1ItemInstance item) {
-		_items.add(item);
+		_items.Push(item);
 		try {
 			insertItem(item);
 		} catch (RuntimeException failure) {
-			_items.remove(item);
+			_items.Pop(item);
 			throw failure;
 		}
 	}
@@ -1068,7 +1068,7 @@ public class CInventory extends L1Object {
 	}
 
 	public synchronized void deleteItem(L1ItemInstance item) {
-		_items.remove(item);
+		_items.Pop(item);
 	}
 
     /**
@@ -1106,13 +1106,13 @@ public class CInventory extends L1Object {
         } else if (getItem(fee.getId()) == null) {
             CItemList.requireDetached(fee);
             final int previousCount = fee.getCount();
-            _items.add(fee);
+            _items.Push(fee);
             try {
                 fee.setCount(original);
                 insertItem(fee);
             } catch (RuntimeException e) {
                 fee.setCount(previousCount);
-                _items.remove(fee);
+                _items.Pop(fee);
                 throw e;
             }
             L1World.getInstance().storeObject(fee);
@@ -1700,7 +1700,7 @@ public class CInventory extends L1Object {
 		// The warehouse rejected the transfer after the source was changed.
 		// Restore the source rather than completing a one-sided move.
 		if (carryItem == item) {
-			_items.add(item);
+			_items.Push(item);
 			insertItem(item);
 		} else {
 			item.setCount(item.getCount() + count);
@@ -1722,7 +1722,7 @@ public class CInventory extends L1Object {
                 }
                 if (getItem(item.getId()) != item) {
                     item.setCount(originalCount);
-                    _items.add(item);
+                    _items.Push(item);
                     insertItem(item);
                 } else if (item.getCount() != originalCount) {
                     int delta = originalCount - item.getCount();
@@ -1867,7 +1867,7 @@ public class CInventory extends L1Object {
 
 		// destination 저장 실패 시 source를 복구한다.
 		if (carryItem == item) {
-			_items.add(item);
+			_items.Push(item);
 			insertItem(item);
 		} else {
 			item.setCount(item.getCount() + count);
@@ -2028,7 +2028,7 @@ public class CInventory extends L1Object {
 	}
 	
 	public L1ItemInstance getItem(int objectId) {
-		return _items.GetByIndex(objectId);
+		return _items.GetByServerID(objectId);
 	}
 
 	public boolean checkItem(int id) {
@@ -2071,14 +2071,13 @@ public class CInventory extends L1Object {
 		final List<L1ItemInstance> rows = _items.snapshot();
 		for (int i = 0, n = rows.size(); i < n; i++) {
 			final L1ItemInstance item = rows.get(i);
-			if (!item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant
-					&& (!matchDescId || item.getItem().getItemDescId() == descId) && --count == 0) return true;
+			if (matchesUnequippedEnchant(item, id, enchant, matchDescId, descId) && --count == 0) return true;
 		}
 		return false;
 	}
 
 	public boolean 제작리스트(int id, int enchant, int count) {
-		int num = 0;
+		long num = 0;
 		for (L1ItemInstance item : _items) {
 			if (item.isEquipped()) {
 				continue;
@@ -2094,29 +2093,49 @@ public class CInventory extends L1Object {
 	}
 
 	public boolean consumeEnchantItem(int id, int enchant, int count) {
-		for (L1ItemInstance item : _items) {
-			if (item.isEquipped()) {
-				continue;
-			}
-			if (item.getItemId() == id && item.getEnchantLevel() == enchant) {
-				removeItem(item);
-				return true;
-			}
+		return consumeEnchantAmount(id, enchant, count, false, 0);
+	}
+
+	public boolean consumeEnchantItem(int id, int enchant, int count, int descid) {
+		return consumeEnchantAmount(id, enchant, count, true, descid);
+	}
+
+	/** Preflight the complete requested quantity before removing any row.
+	 * As with legacy consumeItem, persistence failures are handled by the
+	 * existing removal path; multi-row DB atomicity belongs to CacheD receipts.
+	 */
+	private synchronized boolean consumeEnchantAmount(int id, int enchant, int count,
+			boolean matchDescId, int descId) {
+		if (count <= 0) return false;
+		final List<L1ItemInstance> rows = _items.snapshot();
+		int remaining = count;
+		for (int i = 0, n = rows.size(); i < n; i++) {
+			final L1ItemInstance item = rows.get(i);
+			if (!matchesUnequippedEnchant(item, id, enchant, matchDescId, descId)) continue;
+			final int quantity = item.getCount();
+			if (quantity <= 0) continue;
+			remaining -= Math.min(remaining, item.isStackable() ? quantity : 1);
+			if (remaining == 0) break;
+		}
+		if (remaining != 0) return false;
+		remaining = count;
+		for (int i = 0, n = rows.size(); i < n; i++) {
+			final L1ItemInstance item = rows.get(i);
+			if (!matchesUnequippedEnchant(item, id, enchant, matchDescId, descId)) continue;
+			final int quantity = item.getCount();
+			if (quantity <= 0) continue;
+			final int take = Math.min(remaining, item.isStackable() ? quantity : 1);
+			if (removeItem(item, take) != take) return false;
+			remaining -= take;
+			if (remaining == 0) return true;
 		}
 		return false;
 	}
 
-	public boolean consumeEnchantItem(int id, int enchant, int count, int descid) {
-		for (L1ItemInstance item : _items) {
-			if (item.isEquipped()) {
-				continue;
-			}
-			if (item.getItemId() == id && item.getEnchantLevel() == enchant && item.getItem().getItemDescId() == descid) {
-				removeItem(item);
-				return true;
-			}
-		}
-		return false;
+	private static boolean matchesUnequippedEnchant(L1ItemInstance item, int id, int enchant,
+			boolean matchDescId, int descId) {
+		return !item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant
+				&& (!matchDescId || item.getItem().getItemDescId() == descId);
 	}
 
 	// ////////////////////////////////////
