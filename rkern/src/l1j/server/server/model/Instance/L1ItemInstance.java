@@ -36,6 +36,23 @@ public class L1ItemInstance extends L1Object {
 	transient volatile CItemList inventoryLinkOwner;
 	transient L1ItemInstance inventoryPrev, inventoryNext;
 
+    // Only a PC-origin ground transfer sets this source row. The existing
+    // CacheD item lane remains the authority until its admitted write settles.
+    private transient volatile int groundDropSourceId;
+
+    public void markGroundDropSource(int sourceId) { groundDropSourceId = sourceId; }
+
+    public boolean isGroundDropUnsettled() {
+        final int sourceId = groundDropSourceId;
+        if (sourceId == 0) return false;
+        if (l1j.server.server.storage.CacheD.getInstance().isItemPersistencePending(sourceId))
+            return true;
+        // Caller holds the owning ground monitor (or is the timer checking
+        // under that monitor); a later drop cannot replace this source here.
+        groundDropSourceId = 0;
+        return false;
+    }
+
     private transient volatile Object groundPickupReservation;
     private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater<L1ItemInstance,Object>
             GROUND_PICKUP_RESERVATION = java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater(
@@ -1410,7 +1427,7 @@ public class L1ItemInstance extends L1Object {
 		if (ground == null) return;
 		synchronized (ground) {
             if (ground.GetByServerID(getId()) != this) return;
-            if (isGroundPickupPending()) {
+            if (isGroundPickupPending() || isGroundDropUnsettled()) {
                 // The receipt owns the item until it is committed or rolled back.
                 AddTimer(TIMER_GROUND_DELETE, groundDeleteDelayMs());
                 return;
