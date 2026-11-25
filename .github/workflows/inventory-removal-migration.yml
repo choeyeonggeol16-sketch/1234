@@ -1,0 +1,140 @@
+name: Inventory debit caller migration
+on: [push]
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rkern/nc-inventory-lookup-20261125
+          fetch-depth: 1
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Migrate removal APIs and verify source references
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "1ed60eb917809deb5ec456f7511f192c9dd98967"
+          python3 - <<'PY'
+          import pathlib,re,collections
+          root=pathlib.Path('rkern/src')
+          files=list(root.rglob('*.java'));assert len(files)==1824
+          lex=re.compile(r'//[^\r\n]*|/\*[\s\S]*?\*/|"""[\s\S]*?"""|"(?:\\.|[^"\\\r\n])*"|\'(?:\\.|[^\'\\\r\n])*\'|[A-Za-z_$][A-Za-z0-9_$]*|::|[^\s]')
+          mapping={'consumeItem':'DeleteItemInInventory','consumeItem2':'DeleteItemByDescID','ConsumeItemDescId':'DeleteItemByDescIDEnchanted','removeItem':'DeleteItemAmount','removeItemInternal':'DeleteItemAmountInternal','findAndRemoveItemId':'DeleteAllItemsByClassID'}
+          changes=[];counts=collections.Counter();kept=collections.Counter()
+          for p in files:
+              raw=p.read_bytes();s=raw.decode('utf-8-sig')
+              original=s
+              ts=[m for m in lex.finditer(s) if not m.group().startswith(('//','/*','"',"'" ))]
+              edits=[]
+              for i,t in enumerate(ts):
+                  n=t.group()
+                  if n not in mapping and n!='deleteItem':continue
+                  nxt=ts[i+1].group() if i+1<len(ts) else ''
+                  prv=ts[i-1].group() if i else ''
+                  if nxt!='(' and prv!='::':continue
+                  recv=ts[i-2].group() if prv=='.' else ''
+                  if n=='consumeItem' and p.name=='LobbyCreator.java' and prv!='.':
+                      kept['lobby helper']+=1;continue
+                  if n=='removeItem' and p.name=='Warehouse.java' and prv=='void':
+                      kept['warehouse remove']+=1;continue
+                  dest=mapping.get(n)
+                  if n=='deleteItem':
+                      # Inventory Pop detaches membership; storage/warehouse deleteItem
+                      # is a persistence hook, not the same operation.
+                      if p.name in ('CInventory.java','CUserInventory.java','L1GroundInventory.java','L1DwarfForPackageInventory.java') and prv!='.':
+                          dest='Pop'
+                      elif p.name=='Warehouse.java' and recv=='inventory':
+                          dest='Pop'
+                      elif recv in ('groundInventory','pickupGInven') or (recv==')' and i>=4 and ts[i-4].group()=='getInventory'):
+                          # getInventory() is CInventory or its subtype.
+                          dest='Pop'
+                      else:
+                          kept['storage/warehouse delete']+=1;continue
+                      # Admin cleanup is destruction, not a transfer.
+                      if p.name in ('L1DescIdArmor.java','L1DescIdWeapon.java'):
+                          dest='DeleteItemAmount'
+                  edits.append((t.start(),t.end(),dest));counts[n]+=1
+              for a,b,d in reversed(edits):s=s[:a]+d+s[b:]
+              if p.name=='CInventory.java':
+                  # These callers explicitly destroy rank-buff items, not transfer them.
+                  a=s.index('\tpublic void DeleteAllItemsByClassID(int id)')
+                  b=s.index('\n\tprivate static int _instanceType',a)
+                  before=s[a:b]
+                  assert before.count('Pop(item);')==2,before
+                  s=s[:a]+'''    /** Remove matching inventory items, then unregister their world identities.
+               * Unlike Pop, this is final destruction rather than transfer.
+               */
+              public synchronized void DeleteAllItemsByClassID(int id) {
+                  for (L1ItemInstance item : _items) {
+                      if (item != null && item.getItemId() == id && _items.Have(item)) {
+                          Pop(item);
+                          L1World.getInstance().removeObject(item);
+                      }
+                  }
+              }
+          
+              public synchronized void DeleteAllItemsByClassID(int[] ids) {
+                  if (ids == null) return;
+                  for (L1ItemInstance item : _items) {
+                      if (item == null || !_items.Have(item)) continue;
+                      for (int id : ids) {
+                          if (item.getItemId() == id) {
+                              Pop(item);
+                              L1World.getInstance().removeObject(item);
+                              break;
+                          }
+                      }
+                  }
+              }
+          '''+s[b:]
+                  a='public synchronized void Pop(L1ItemInstance item) {'
+                  assert s.count(a)==1
+                  s=s.replace(a,'/** Detach an inventory row. The transfer or destruction caller owns world identity. */\n\t'+a)
+              if s!=original:
+                  p.write_bytes((b'\xef\xbb\xbf' if bom else b'')+s.encode('utf-8'));changes.append(str(p))
+          print('RENAMED',dict(counts),'FILES',len(changes),'PRESERVED',dict(kept))
+          assert counts['consumeItem']>=195 and counts['removeItem']>=90 and counts['deleteItem']>=14,counts
+          for p in files:
+              ts=[m.group() for m in lex.finditer(p.read_text(encoding='utf-8-sig')) if not m.group().startswith(('//','/*','"',"'" ))]
+              for i,n in enumerate(ts[:-1]):
+                  if ts[i+1]!='(' and (i==0 or ts[i-1]!='::'):continue
+                  if n=='consumeItem' and p.name=='LobbyCreator.java' and ts[i-1]!='.':continue
+                  if n=='removeItem' and p.name=='Warehouse.java' and ts[i-1]=='void':continue
+                  assert n not in mapping,(str(p),n)
+                  if n=='deleteItem':
+                      recv=ts[i-2] if ts[i-1]=='.' else ''
+                      assert not (recv in ('groundInventory','pickupGInven') or (recv==')' and i>=4 and ts[i-4]=='getInventory') or (p.name in ('CInventory.java','CUserInventory.java','L1GroundInventory.java','L1DwarfForPackageInventory.java') and ts[i-1]!='.')),(str(p),n)
+          pathlib.Path('/tmp/delete-files.txt').write_text('\n'.join(changes)+'\n')
+          print('REFERENCE_SCAN_OK')
+          
+          PY
+          cat >/tmp/ParseInventory.java <<'JAVA'
+          import javax.tools.*;
+          import com.sun.source.util.JavacTask;
+          import java.util.*;
+          import java.nio.file.*;
+          public class ParseInventory {
+           public static void main(String[] args)throws Exception{
+             var paths=Files.readAllLines(Path.of(args[0]));var c=ToolProvider.getSystemJavaCompiler();var d=new DiagnosticCollector<JavaFileObject>();
+             try(var f=c.getStandardFileManager(d,null,java.nio.charset.StandardCharsets.UTF_8)){
+               var t=(JavacTask)c.getTask(null,f,d,List.of("-proc:none","--release","21"),null,f.getJavaFileObjectsFromStrings(paths));
+               int n=0;for(var u:t.parse())n++;
+               long errors=d.getDiagnostics().stream().filter(x->x.getKind()==Diagnostic.Kind.ERROR).count();
+               System.out.println("PARSE_FILES "+n+" ERRORS "+errors);
+               if(errors!=0||n!=paths.size()){d.getDiagnostics().forEach(System.out::println);System.exit(1);}
+             }
+           }
+          }
+          JAVA
+          java /tmp/ParseInventory.java /tmp/delete-files.txt
+          git diff --stat
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- rkern/src
+          git commit -m 'refactor(inventory): migrate deletion callers and separate Pop from final destruction'
+          git push origin HEAD:refs/heads/rkern/nc-inventory-lookup-20261125
