@@ -1547,6 +1547,9 @@ public class CInventory extends L1Object {
 			return null;
 		}
         // A pickup may retire the tile between lookup and lock acquisition.
+        if (this instanceof L1GroundInventory
+                && L1World.getInstance().findGroundInventory(getX(), getY(), getMapId()) != this)
+            return null;
         if (inventory instanceof L1GroundInventory
                 && L1World.getInstance().findGroundInventory(inventory.getX(), inventory.getY(),
                         inventory.getMapId()) != inventory) return null;
@@ -1562,9 +1565,13 @@ public class CInventory extends L1Object {
 			return null;
 		}
 
+        final int oldX = item.getX(), oldY = item.getY();
+        final short oldMap = item.getMapId();
 		L1ItemInstance carryItem;
 		if (count == item.getCount()) {
-			Pop(item);
+            if (this instanceof L1GroundInventory ground) {
+                if (!ground.popForTransfer(item)) return null;
+            } else Pop(item);
 			carryItem = item;
 		} else {
             // Use the existing transfer snapshot so split items retain all
@@ -1597,6 +1604,9 @@ public class CInventory extends L1Object {
             if (inventory instanceof CUserInventory) {
                 stored.setItemOwner(null);
             }
+            if (inventory instanceof L1GroundInventory) stored._cha = null;
+            if (carryItem == item && this instanceof L1GroundInventory ground)
+                ground.finishGroundTransfer(item);
             // Merged carry has no inventory owner; retire its world ID.
             if (stored != carryItem) L1World.getInstance().removeObject(carryItem);
 			return stored;
@@ -1604,8 +1614,10 @@ public class CInventory extends L1Object {
 
 		// destination 저장 실패 시 source를 복구한다.
 		if (carryItem == item) {
-			_items.Push(item);
-			insertItem(item);
+            item.setX(oldX);
+            item.setY(oldY);
+            item.setMap(oldMap);
+            insertLinkedItem(item);
 		} else {
             try {
                 changeStackCount(item, count);
