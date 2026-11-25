@@ -820,21 +820,29 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         // pair. Never try to schedule a dead socket's owner/session timer.
         L1PcInstance coordinator=primary;
         CIOThreadCallback.getInstance().completeWarehouseMove(coordinator,owners.stamp(coordinator),()->{
-            for (int i=0;i<owners.size();i++) {
-                if (!owners.current(owners.get(i)))
-                    throw new IllegalStateException("Stale economy completion participant");
-            }
             if (owners.size() == 1) {
-                synchronized (owners.monitor(coordinator)) { action.run(); }
+                synchronized (owners.monitor(coordinator)) { runCurrentOwners(action); }
             } else if (owners.size() == 2) {
                 synchronized (owners.monitor(owners.get(0))) {
-                    synchronized (owners.monitor(owners.get(1))) { action.run(); }
+                    synchronized (owners.monitor(owners.get(1))) { runCurrentOwners(action); }
                 }
             } else withOwnersLocked(0, action);
         },done);
     }
+
+    /** Session identity must be checked after the existing owner monitors
+     * are acquired, not before potentially waiting for logout or a swap.
+     */
+    private void runCurrentOwners(Runnable action) {
+        for (int i = 0; i < owners.size(); i++) {
+            if (!owners.current(owners.get(i)))
+                throw new IllegalStateException("Stale economy completion participant");
+        }
+        action.run();
+    }
+
     private void withOwnersLocked(int index, Runnable action) {
-        if (index == owners.size()) { action.run(); return; }
+        if (index == owners.size()) { runCurrentOwners(action); return; }
         synchronized (owners.monitor(owners.get(index))) {
             withOwnersLocked(index + 1, action);
         }
