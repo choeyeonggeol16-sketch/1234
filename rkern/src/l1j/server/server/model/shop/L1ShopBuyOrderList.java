@@ -71,7 +71,8 @@ public class L1ShopBuyOrderList {
         }
 
         // 세금 포함 가격(여기도 long으로 안전하게)
-        final long taxedUnit = (long) _taxCalc.layTax((int) clampToInt(unitPriceL));
+        final long taxedUnit = _taxCalc.layTaxLong((int) unitPriceL);
+        if (taxedUnit <= 0L) { bugok = 1; return; }
         final long addPriceTaxed;
         try {
             addPriceTaxed = Math.multiplyExact(taxedUnit, (long) count);
@@ -96,7 +97,7 @@ public class L1ShopBuyOrderList {
         _totalWeight = safeAdd(_totalWeight, addWeight);
 
         // 총액 한도 방어
-        if (_totalPrice < 0L || _totalPrice > (long) Integer.MAX_VALUE * 4L) {
+        if (_totalWeight < 0L || _totalPrice < 0L || _totalPrice > MAX_ADENA) {
             bugok = 1;
             return;
         }
@@ -135,7 +136,7 @@ public class L1ShopBuyOrderList {
     private long safeUnitPrice(L1ShopItem shopItem) {
         // Config 배율 적용
         double raw = shopItem.getPrice() * Config.RATE_SHOP_SELLING_PRICE;
-        if (raw <= 0) return -1L;
+        if (!Double.isFinite(raw) || raw <= 0) return -1L;
         // double -> long 변환 시 과대값 방어
         long v = (long) raw;
         return v;
@@ -181,6 +182,10 @@ public class L1ShopBuyOrderList {
 
     public int getTotalWeight() {
         return clampToInt(_totalWeight);
+    }
+
+    public long getTotalWeightLong() {
+        return _totalWeight;
     }
 
     public int getTotalPrice() {
