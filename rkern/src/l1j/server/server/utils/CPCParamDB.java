@@ -443,4 +443,158 @@ public final class CPCParamDB {
         if (con <= 64) return 44;
         return 45;
     }
+
+    // CPCParamDB: class/level base parameters shared by all players.
+    // Keep original L1 divisors, including unsupported-type and unusual-level behavior.
+    public static final int BASE_PATTACK = 0;
+    public static final int BASE_RANGED_PATTACK = 1;
+    public static final int BASE_MATTACK = 2;
+    public static final int BASE_PHIT = 3;
+    public static final int BASE_RANGED_PHIT = 4;
+    public static final int BASE_MHIT = 5;
+    public static final int BASE_PCRITICAL = 6;
+    public static final int BASE_RANGED_PCRITICAL = 7;
+    public static final int BASE_MCRITICAL = 8;
+    public static final int BASE_PVP_DR = 9;
+    public static final int BASE_MAGIC_LEVEL = 10;
+    private static final int BASE_PARAM_COUNT = 11;
+    private static final int BASE_LEVEL_COUNT = 128;
+    private static final int BASE_CLASS_COUNT = 8;
+    // ---------------- NO-IF tables ----------------
+
+    private static final int MAX_TYPE = 16;
+
+    private static final int[] HIT_DIV       = new int[MAX_TYPE + 1];
+    private static final int[] BOW_HIT_DIV   = new int[MAX_TYPE + 1];
+    private static final int[] MAGIC_HIT_DIV = new int[MAX_TYPE + 1];
+
+    private static final int[] DMG_DIV       = new int[MAX_TYPE + 1];
+    private static final int[] BOW_DMG_DIV   = new int[MAX_TYPE + 1];
+    private static final int[] MAGIC_DMG_DIV = new int[MAX_TYPE + 1];
+
+    private static final int[] CRI_DIV       = new int[MAX_TYPE + 1];
+    private static final int[] BOW_CRI_DIV   = new int[MAX_TYPE + 1];
+    private static final int[] MAGIC_CRI_DIV = new int[MAX_TYPE + 1];
+
+    private static final double[] PVP_DR_DIV = new double[MAX_TYPE + 1];
+
+    private static final int[] MAGIC_LV_DIV  = new int[MAX_TYPE + 1];
+    private static final int[] MAGIC_LV_CAP  = new int[MAX_TYPE + 1];
+
+    static {
+        // 0 군주 1 기사 2 요정 3 마법사 4 다크 5 용기사 6 환술 7 전사
+        final int CROWN=0, KNIGHT=1, ELF=2, WIZ=3, DARK=4, DK=5, ILL=6, WAR=7;
+
+        setHit(CROWN, 4, 6, 20);
+        setHit(KNIGHT,3, 6,100);
+        setHit(WAR,   3, 6,100);
+        setHit(ELF,   5, 3, 16);
+        setHit(DARK,  3, 4, 24);
+        setHit(DK,    4, 7, 18);
+        setHit(ILL,   5, 8, 12);
+        setHit(WIZ,   0, 0,  8);
+
+        setDmg(CROWN,30,40,40);
+        setDmg(KNIGHT,10,40,40);
+        setDmg(ELF,  30,10,30);
+        setDmg(WIZ,  40,80,10);
+        setDmg(DARK, 10,20,40);
+        setDmg(DK,   10,40,40);
+        setDmg(ILL,  10,40,25);
+        setDmg(WAR,  10,40,40);
+
+        setCri(CROWN,20,30,80);
+        setCri(KNIGHT,20,40,100);
+        setCri(ELF,  24,16,30);
+        setCri(WIZ,  30,50, 2);
+        setCri(DARK, 10,20,30);
+        setCri(DK,   20,40,70);
+        setCri(ILL,  30,50,20);
+        setCri(WAR,   20,40,100);
+
+        setPvpDr(CROWN,4.0);
+        setPvpDr(KNIGHT,2.0);
+        setPvpDr(WAR,3.0);
+        setPvpDr(ELF,4.0);
+        setPvpDr(DARK,3.0);
+        setPvpDr(DK,3.0);
+        setPvpDr(ILL,3.0);
+        setPvpDr(WIZ,4.0);
+
+        setMagicLevel(CROWN, 15, 2);
+        setMagicLevel(KNIGHT,50, 1);
+        setMagicLevel(ELF,   12, 7);
+        setMagicLevel(WIZ,   6, 15);
+        setMagicLevel(DARK,  15, 2);
+        setMagicLevel(DK,    10, 4);
+        setMagicLevel(ILL,   8, 11);
+        setMagicLevel(WAR,   50, 1);
+    }
+
+    private static void setHit(int type, int hitDiv, int bowDiv, int magicDiv) {
+        HIT_DIV[type]=hitDiv; BOW_HIT_DIV[type]=bowDiv; MAGIC_HIT_DIV[type]=magicDiv;
+    }
+    private static void setDmg(int type, int dmgDiv, int bowDiv, int magicDiv) {
+        DMG_DIV[type]=dmgDiv; BOW_DMG_DIV[type]=bowDiv; MAGIC_DMG_DIV[type]=magicDiv;
+    }
+    private static void setCri(int type, int criDiv, int bowDiv, int magicDiv) {
+        CRI_DIV[type]=criDiv; BOW_CRI_DIV[type]=bowDiv; MAGIC_CRI_DIV[type]=magicDiv;
+    }
+    private static void setPvpDr(int type, double div) {
+        PVP_DR_DIV[type]=div;
+    }
+    private static void setMagicLevel(int type, int div, int cap) {
+        MAGIC_LV_DIV[type] = div;
+        MAGIC_LV_CAP[type] = cap;
+    }
+
+
+    // Immutable packed short rows, one per (class, level); no per-creature cache objects.
+    private static final short[] BASE_PARAM = BuildBaseParam();
+
+    private static short[] BuildBaseParam() {
+        final short[] data = new short[BASE_CLASS_COUNT * BASE_LEVEL_COUNT * BASE_PARAM_COUNT];
+        for (int t = 0; t < BASE_CLASS_COUNT; t++)
+            for (int l = 0; l < BASE_LEVEL_COUNT; l++)
+                for (int f = 0; f < BASE_PARAM_COUNT; f++)
+                    data[(t * BASE_LEVEL_COUNT + l) * BASE_PARAM_COUNT + f] =
+                            (short) ComputeBaseParam(f, t, l);
+        return data;
+    }
+
+    public static int GetBaseParam(int field, int type, int level) {
+        if (field < 0 || field >= BASE_PARAM_COUNT) throw new IllegalArgumentException("base parameter");
+        if (type >= 0 && type < BASE_CLASS_COUNT && level >= 0 && level < BASE_LEVEL_COUNT)
+            return BASE_PARAM[(type * BASE_LEVEL_COUNT + level) * BASE_PARAM_COUNT + field];
+        return ComputeBaseParam(field, type, level);
+    }
+
+    private static int BaseDiv(int level, int div) { return div == 0 ? 0 : level / div; }
+    private static int BaseTable(int[] data, int type) {
+        return type >= 0 && type < data.length ? data[type] : 0;
+    }
+
+    private static int ComputeBaseParam(int field, int type, int level) {
+        switch (field) {
+            case BASE_PATTACK: return BaseDiv(level, BaseTable(DMG_DIV, type));
+            case BASE_RANGED_PATTACK: return BaseDiv(level, BaseTable(BOW_DMG_DIV, type));
+            case BASE_MATTACK: return BaseDiv(level, BaseTable(MAGIC_DMG_DIV, type));
+            case BASE_PHIT: return level + BaseDiv(level, BaseTable(HIT_DIV, type));
+            case BASE_RANGED_PHIT: return level + BaseDiv(level, BaseTable(BOW_HIT_DIV, type));
+            case BASE_MHIT: return BaseDiv(level, BaseTable(MAGIC_HIT_DIV, type));
+            case BASE_PCRITICAL: return BaseDiv(level > 50 ? level - 50 : 0, BaseTable(CRI_DIV, type));
+            case BASE_RANGED_PCRITICAL: return BaseDiv(level > 50 ? level - 50 : 0, BaseTable(BOW_CRI_DIV, type));
+            case BASE_MCRITICAL: return BaseDiv(level > 50 ? level - 50 : 0, BaseTable(MAGIC_CRI_DIV, type));
+            case BASE_PVP_DR: {
+                final int lv = level - 60;
+                final double div = type < 0 || type >= PVP_DR_DIV.length ? 0.0 : PVP_DR_DIV[type];
+                return lv <= 0 || div == 0.0 ? 0 : (int) Math.floor(lv / div);
+            }
+            case BASE_MAGIC_LEVEL: {
+                final int div = BaseTable(MAGIC_LV_DIV, type), cap = BaseTable(MAGIC_LV_CAP, type);
+                return div <= 0 || cap <= 0 ? 0 : Math.min(level / div, cap);
+            }
+            default: throw new IllegalArgumentException("base parameter");
+        }
+    }
 }

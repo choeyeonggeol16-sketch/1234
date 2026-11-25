@@ -538,6 +538,24 @@ public class L1Character extends L1Object {
 
 	// Intrinsic L1 stat contributions, shared by PC and NPC. Equipment,
 	// class/level, target-dependent effects and random rolls remain with their owners.
+	// Class/level parameters are immutable shared rows in CPCParamDB.
+	// NPCs retain their template-owned values; they do not receive PC class bonuses.
+	private int GetBaseParam(int field) {
+		return this instanceof L1PcInstance pc
+				? CPCParamDB.GetBaseParam(field, pc.getType(), getLevel()) : 0;
+	}
+	public final int getBaseMeleeDmgByLevelClass() { return GetBaseParam(CPCParamDB.BASE_PATTACK); }
+	public final int getBaseBowDmgByLevelClass() { return GetBaseParam(CPCParamDB.BASE_RANGED_PATTACK); }
+	public final int getBaseMagicDmgByLevelClass() { return GetBaseParam(CPCParamDB.BASE_MATTACK); }
+	public final int getBaseMeleeHitByLevelClass() { return GetBaseParam(CPCParamDB.BASE_PHIT); }
+	public final int getBaseBowHitByLevelClass() { return GetBaseParam(CPCParamDB.BASE_RANGED_PHIT); }
+	public final int getBaseMagicHitByLevelClass() { return GetBaseParam(CPCParamDB.BASE_MHIT); }
+	public final int getBaseMeleeCriByLevelClass() { return GetBaseParam(CPCParamDB.BASE_PCRITICAL); }
+	public final int getBaseBowCriByLevelClass() { return GetBaseParam(CPCParamDB.BASE_RANGED_PCRITICAL); }
+	public final int getBaseMagicCriByLevelClass() { return GetBaseParam(CPCParamDB.BASE_MCRITICAL); }
+	public final int getBasePvpDrByLevelClass() { return GetBaseParam(CPCParamDB.BASE_PVP_DR); }
+	public final int getBaseMLByLevelClass() { return GetBaseParam(CPCParamDB.BASE_MAGIC_LEVEL); }
+
 	public final int GetStatPAttack(boolean ranged) {
 		return ranged ? CPCParamDB.원거리대미지(GetTotalStatDex())
 				: CPCParamDB.근거리대미지(GetTotalStatStr());

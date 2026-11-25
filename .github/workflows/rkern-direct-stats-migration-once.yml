@@ -1,4 +1,4 @@
-name: RKern base parameter reference audit
+name: RKern base parameter migration verification
 on:
   push:
     branches:
@@ -14,15 +14,25 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Enumerate base ability references
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify no legacy cache or reset references
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-          pat=re.compile(r'\b(?:PcBaseAbilityCache|BaseAbility|getBaseAbility|getBaseCache|baseHitFor|m_BaseParam|resetBaseAll)\b')
-          for root,ext in [('rkern/src','*.java'),('rkern/docs','*.py'),('.github/workflows','*.yml')]:
-              for p in sorted(Path(root).rglob(ext)):
-                  if p.name=='rkern-direct-stats-migration-once.yml': continue
-                  for i,l in enumerate(p.read_text(encoding="utf-8").splitlines(),1):
-                      if pat.search(l): print(f"{p}:{i}: {l.strip()}")
+          fs=list(Path('rkern/src').rglob('*.java'))
+          assert fs
+          pat=re.compile(r'\b(?:PcBaseAbilityCache|BaseAbility|getBaseAbility|getBaseCache|m_BaseParam|resetBaseAll|CalcStat)\b')
+          bad=[str(p) for p in fs if pat.search(p.read_text(encoding='utf-8'))]
+          assert not bad,bad
+          print(f"PASS {len(fs)} Java files, zero legacy base-cache references")
           PY
+      - name: Verify parameter tables and stat regressions
+        run: |
+          for t in test_base_parameters test_calcstat_dead_mp_tables test_param_bonus_lookup test_intrinsic_stat_owner test_validate_parameters test_base_mdefend_refresh test_creature_primary_stats test_stat_lifecycle test_vital_sources; do
+            python3 "rkern/docs/nc_creature_stat_audit_20261125/$t.py"
+          done

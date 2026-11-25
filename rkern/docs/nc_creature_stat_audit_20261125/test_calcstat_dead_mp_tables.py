@@ -28,6 +28,7 @@ public class GrowthAudit {
         for(Method m:CPCParamDB.class.getDeclaredMethods()){
             if(!Modifier.isPublic(m.getModifiers())||!Modifier.isStatic(m.getModifiers()))continue;
             Class<?>[] params=m.getParameterTypes();
+            if(m.getName().equals("GetBaseParam"))continue; // covered by test_base_parameters.py
             Method baseline=OldCalcStat.class.getMethod(m.getName(),params);
             if(m.getName().equals("increaseHp")||m.getName().equals("increaseMp")){
                 for(int t:types)for(int v=-128;v<=127;v++){

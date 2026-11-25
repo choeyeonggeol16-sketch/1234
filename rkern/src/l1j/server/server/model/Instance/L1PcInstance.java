@@ -70,7 +70,6 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.ReportDeley;
 import l1j.server.server.model.character.CYieldLock;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
-import l1j.server.server.model.character.Utill.PcBaseAbilityCache;
 import l1j.server.server.model.character.action.CCreatureController;
 import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
@@ -713,13 +712,6 @@ public class L1PcInstance extends L1Character {
 	private int _magicadd;
 
 	
-
-    // Level/class snapshot; STR/DEX/INT table values remain in CPCParamDB.
-    private final PcBaseAbilityCache m_BaseParam = new PcBaseAbilityCache();
-
-    public PcBaseAbilityCache.BaseAbility getBaseAbility() {
-        return m_BaseParam.ValidateBaseData(this);
-    }
 
 	private int _baseMagicDmg = 0; // 베이스 스탯에 의한 마법 대미지
 	private int _baseMagicDecreaseMp = 0; // 베이스 스탯에 의한 마법 대미지
@@ -2144,7 +2136,6 @@ public class L1PcInstance extends L1Character {
 
 	public void setType(int i) {
 		_type = i;
-        m_BaseParam.invalidate();
         ValidateParameters(VB_MDEFEND);
 	}
 
@@ -3344,7 +3335,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 			}
             // Victim-owned PVP base reduction, exactly once for physical and magic hits.
             if (!unarmedPhysical && damage > 0) {
-                damage = Math.max(0, damage - getBaseAbility().getPVP대미지리덕션());
+                damage = Math.max(0, damage - getBasePvpDrByLevelClass());
             }
 		}
 
@@ -4126,7 +4117,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public int getBaseMagicDmg() {
-		return getBaseAbility().get마법대미지() + _baseMagicDmg;
+		return getBaseMagicDmgByLevelClass() + _baseMagicDmg;
 	}
 
 	public void setBaseMagicDecreaseMp(int i) {
@@ -5026,7 +5017,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 		SC_REST_EXP_INFO_NOTI.send(this);
 
-		resetBaseAll();
 		resetBaseAc();
 		resetBaseMr();
 
@@ -5263,7 +5253,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	@Override
 	public int getMagicLevel() {
-		return getBaseAbility().get매직레벨();
+		return getBaseMLByLevelClass();
 	}
 
 
@@ -5316,60 +5306,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 	
 
-	public PcBaseAbilityCache getBaseCache() {
-		m_BaseParam.refresh(this);
-		return m_BaseParam;
-	}
-	/** 베이스 근거리대미지(클래스/레벨) */
-	public int getBaseMeleeDmgByLevelClass() {
-	    return getBaseAbility().get근거리대미지();
-	}
-	/** 베이스 원거리대미지(클래스/레벨) */
-	public int getBaseBowDmgByLevelClass() {
-	    return getBaseAbility().get원거리대미지();
-	}
-	/** 베이스 마법대미지(클래스/레벨) */
-	public int getBaseMagicDmgByLevelClass() {
-	    return getBaseAbility().get마법대미지();
-	}
-	/** 베이스 근거리명중(클래스/레벨) */
-	public int getBaseMeleeHitByLevelClass() {
-	    return getBaseAbility().get근거리명중률();
-	}
-	/** 베이스 원거리명중(클래스/레벨) */
-	public int getBaseBowHitByLevelClass() {
-	    return getBaseAbility().get원거리명중률();
-	}
-	/** 베이스 마법적중(클래스/레벨) */
-	public int getBaseMagicHitByLevelClass() {
-	    return getBaseAbility().get마법적중();
-	}
-	/** 베이스 근거리치명(클래스/레벨) */
-	public int getBaseMeleeCriByLevelClass() {
-	    return getBaseAbility().get근거리치명률();
-	}
-	/** 베이스 원거리치명(클래스/레벨) */
-	public int getBaseBowCriByLevelClass() {
-	    return getBaseAbility().get원거리치명률();
-	}
-	/** 베이스 마법치명(클래스/레벨) */
-	public int getBaseMagicCriByLevelClass() {
-	    return getBaseAbility().get마법치명타();
-	}
-	/** 베이스 PVP DR(클래스/레벨) */
-	public int getBasePvpDrByLevelClass() {
-	    return getBaseAbility().getPVP대미지리덕션();
-	}
-	/** 베이스 매직레벨(클래스/레벨) */
-	public int getBaseMLByLevelClass() {
-	    return getBaseAbility().get매직레벨();
-	}
-	
-    public void resetBaseAll() {
-   	 m_BaseParam.invalidate();
-   	 m_BaseParam.refresh(this);
-   }
-	
 	public final void RefreshBasePDefend() {
 		int base = GetStatPDefend();
 		final int div = getBaseAcLevelDiv();
@@ -5405,7 +5341,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public void refresh() {
 		CheckChangeExp();
 		resetLevel();
-		resetBaseAll();
 		resetBaseMr();
 		resetBaseAc();	
 	}

@@ -38,12 +38,10 @@ class L1Character {
 }
 class L1PcInstance extends L1Character {
   int _type, packets;
-  BaseParam m_BaseParam=new BaseParam();
   int getType(){return _type;}
   void RefreshBasePDefend(){}
   """+pcmethods+"""
 }
-class BaseParam {void invalidate(){}}
 class SC_SPMR {static void send(L1PcInstance p){p.packets++;}}
 class IntRange {static int ensure(int n,int lo,int hi){return Math.max(lo,Math.min(hi,n));}}
 enum PassiveID {RESIST_ELEMENT; int toInt(){return 0;}}
