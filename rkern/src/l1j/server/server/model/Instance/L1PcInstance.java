@@ -792,16 +792,33 @@ public class L1PcInstance extends L1Character {
     private static final AtomicIntegerFieldUpdater<L1PcInstance> ITEM_TRANSFER_BUSY =
             AtomicIntegerFieldUpdater.newUpdater(L1PcInstance.class, "itemTransferBusy");
 
+    /** Low bit is the existing busy gate; high bits identify its acquisition.
+     * Zero is the failed-admission token. No extra per-PC field or lock.
+     */
+    public int tryReserveItemTransfer() {
+        final int state = itemTransferBusy;
+        if ((state & 1) != 0) return 0;
+        final int token = state | 1;
+        return ITEM_TRANSFER_BUSY.compareAndSet(this, state, token) ? token : 0;
+    }
+
     public boolean tryBeginItemTransfer() {
-        return ITEM_TRANSFER_BUSY.compareAndSet(this, 0, 1);
+        return tryReserveItemTransfer() != 0;
+    }
+
+    /** Release only the exact asynchronous reservation, even across a session change. */
+    public void endItemTransfer(int token) {
+        if ((token & 1) != 0)
+            ITEM_TRANSFER_BUSY.compareAndSet(this, token, token + 1);
     }
 
     public void endItemTransfer() {
-        ITEM_TRANSFER_BUSY.set(this, 0);
+        final int token = itemTransferBusy;
+        endItemTransfer(token);
     }
 
     public boolean isItemTransferBusy() {
-        return itemTransferBusy != 0;
+        return (itemTransferBusy & 1) != 0;
     }
 
 	private volatile int tradeResolutionBusy;
