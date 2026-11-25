@@ -1,0 +1,192 @@
+name: Inventory lookup migration
+on: [push]
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rkern/nc-inventory-lookup-20261125
+          fetch-depth: 1
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Migrate production lookup API
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "cd9c22f95068fe9cdcd17d54338f5878060ea347"
+          cat >/tmp/lookup.py <<'PY'
+          import pathlib,re,collections,subprocess
+          root=pathlib.Path('rkern/src')
+          files=list(root.rglob('*.java'))
+          assert len(files)==1824, len(files)
+          mapping={
+           'checkItem':'HaveItemByClassId','checkAddItem':'CheckAddable',
+           'findItemId':'GetFirstItemByClassID','findItemsId':'GetItemListByClassID',
+           'findItemsId_HighEnchant':'GetItemListByClassIDEnchanted',
+           'findItemDescId':'GetFirstItemByDescID','findEquippedItemId':'GetFirstEquippedItemByClassID',
+           'getEquippedItem':'GetFirstEquippedItemByClassID',
+           'findItemObjId':'GetByServerID','getItemCountDirect':'GetItemAmount',
+           'hasItemDirect':'HaveItemAmount','hasItemAnyDirect':'HaveAnyItemByClassId',
+           'countItems':'GetUnequippedItemAmount','checkItemNotEquipped':'HaveUnequippedItemByClassId',
+           'checkEnchantItem':'HaveUnequippedItemByClassIdEnchanted',
+           'checkEnchantItemInternal':'HaveUnequippedItemByClassIdEnchantedInternal',
+           'checkEquipped':'IsEquippedByClassID','isEquippedDirect':'IsEquippedByClassIDCached',
+           'checkAddItemToWarehouse':'CheckAddableToWarehouse',
+           'checkAddAdena':'CheckAddableAdena','findItemsIdNotEquipped':'GetUnequippedItemListByClassID'
+          }
+          # Mask Java comments, strings and character literals. Leave Unicode source bytes intact.
+          lex=re.compile(r'//[^\r\n]*|/\*[\s\S]*?\*/|"""[\s\S]*?"""|"(?:\\.|[^"\\\r\n])*"|\'(?:\\.|[^\'\\\r\n])*\'|[A-Za-z_$][A-Za-z0-9_$]*|::|[^\s]')
+          counts=collections.Counter()
+          changes=[]
+          arg_receivers=collections.Counter()
+          def remove_method(s,name):
+              hits=list(re.finditer(r'(?m)^[ \t]*public [^\r\n;{}]*\b'+name+r'\s*\([^;\r\n]*\)\s*\{[^\r\n]*',s))
+              assert len(hits)==1,(name,len(hits))
+              a=hits[0].start(); b=s.index('{',a); depth=0
+              for t in lex.finditer(s,b):
+                  tok=t.group()
+                  if tok=='{': depth+=1
+                  elif tok=='}':
+                      depth-=1
+                      if depth==0:
+                          e=t.end()
+                          if s[e:e+1]=='\n': e+=1
+                          return s[:a]+s[e:]
+              raise AssertionError(name)
+          def replace_once(s,a,b):
+              assert s.count(a)==1,(a[:90],s.count(a))
+              return s.replace(a,b,1)
+          for p in files:
+              raw=p.read_bytes()
+              s=raw.decode('utf-8-sig')
+              bom=raw.startswith(b'\xef\xbb\xbf')
+              crlf='\r\n' in s
+              if crlf:s=s.replace('\r\n','\n')
+              old=s
+              name=p.name
+              if name=='CUserInventory.java':
+                  for n in ('getItemEquippend','getEquippedItem','checkEquippedItem','checkItemCount','findItemObjId'):
+                      s=remove_method(s,n)
+              if name=='CInventory.java':
+                  s=remove_method(s,'findEquippedItemId')
+                  # Put the equipped lookup on the same authoritative membership list.
+                  anchor='\tpublic L1ItemInstance findItemDescId(int descId) {'
+                  s=replace_once(s,anchor,'\tpublic L1ItemInstance GetFirstEquippedItemByClassID(int classId) {\n\t\treturn _items.GetFirstEquippedItemByClassID(classId);\n\t}\n\n'+anchor)
+                  # Description ID is not a class ID. Remove the unused discriminator.
+                  s=replace_once(s,'findItemsId(int descid, boolean flag)','GetItemListByDescID(int descid)')
+                  s=replace_once(s,'findItemsId(descid, true)','GetItemListByDescID(descid)')
+              if name=='CItemList.java':
+                  s=replace_once(s,'public boolean IsEquippedByClassID(int classId) {','public boolean IsEquippedByClassID(int classId) {\n        return GetFirstEquippedItemByClassID(classId) != null;\n    }\n\n    public L1ItemInstance GetFirstEquippedItemByClassID(int classId) {')
+                  a=s.index('public L1ItemInstance GetFirstEquippedItemByClassID(int classId) {')
+                  b=s.index('private List<L1ItemInstance> snapshotLocked()',a)
+                  body=s[a:b]
+                  assert body.count('return true;')==2 and body.count('return false;')==2
+                  s=s[:a]+body.replace('return true;','return item;').replace('return false;','return null;')+s[b:]
+              tokens=[m for m in lex.finditer(s) if not m.group().startswith(('//','/*','"',"'" ))]
+              edits=[]
+              for i,t in enumerate(tokens):
+                  n=t.group()
+                  if n not in mapping and n not in ('getItem','getWeight'):continue
+                  nxt=tokens[i+1].group() if i+1<len(tokens) else ''
+                  prv=tokens[i-1].group() if i else ''
+                  if nxt!='(' and prv!='::':continue
+                  dest=mapping.get(n)
+                  if n=='findItemId' and name=='CObjectDB.java':continue
+                  if n=='getItem':
+                      # The only argument-taking getItem overloads in the production
+                      # sources are inventory/warehouse server-ID lookups.
+                      if nxt!='(' or i+2>=len(tokens) or tokens[i+2].group()==')':continue
+                      dest='GetByServerID'
+                      recv=tokens[i-2].group() if prv=='.' and i>=2 else '<implicit>'
+                      arg_receivers[recv]+=1
+                  if n=='getWeight':
+                      if nxt!='(' or i+2>=len(tokens) or tokens[i+2].group()!=')':continue
+                      recv=tokens[i-2].group() if prv=='.' and i>=2 else '<implicit>'
+                      is_inventory=(recv in ('inv','pickupInven') or
+                                    (recv==')' and i>=4 and tokens[i-4].group()=='getInventory') or
+                                    (prv!='.' and name in ('CInventory.java','CUserInventory.java')))
+                      if not is_inventory:continue
+                      dest='GetCarryingWeight'
+                  if dest is None:continue
+                  edits.append((t.start(),t.end(),dest))
+                  counts[n]+=1
+              for a,b,d in reversed(edits):s=s[:a]+d+s[b:]
+              if name=='Warehouse.java':
+                  a=s.index('\tpublic boolean HaveItemByClassId(int id, int count) {')
+                  b=s.index('\n\tpublic int getSize()',a)
+                  s=s[:a]+'''	public boolean HaveItemByClassId(int id, int count) {
+          		if (count < 0) return false;
+          		if (count == 0) return true;
+          		final L1Item template = CObjectDB.GetItem(id);
+          		if (template == null) return false;
+          		if (template.isStackable()) {
+          			final L1ItemInstance item = GetFirstItemByClassID(id);
+          			return item != null && item.getCount() >= count;
+          		}
+          		return _items.HasInstancesByClassID(id, count);
+          	}
+          '''+s[b:]
+                  # Warehouse uses the existing template type if it is already imported.
+                  if 'import l1j.server.server.templates.L1Item;' not in s:
+                      s=replace_once(s,'import l1j.server.server.model.Instance.L1ItemInstance;','import l1j.server.server.model.Instance.L1ItemInstance;\nimport l1j.server.server.templates.L1Item;')
+              if s!=old:
+                  p.write_bytes((b'\xef\xbb\xbf' if bom else b'')+(s.replace('\n','\r\n') if crlf else s).encode('utf-8'))
+                  changes.append(str(p))
+          print('RENAME_COUNTS',dict(counts))
+          print('SERVER_ID_RECEIVERS',dict(arg_receivers))
+          print('CHANGED_FILES',len(changes))
+          assert counts['checkItem']>=770,counts
+          assert counts['getItem']>=150,counts
+          assert counts['getWeight']>=30,counts
+          assert counts['findItemId']>=60,counts
+          # All formerly ambiguous no-argument template reads remain unchanged.
+          for p in files:
+              s=p.read_text(encoding='utf-8-sig')
+              ts=[m.group() for m in lex.finditer(s) if not m.group().startswith(('//','/*','"',"'" ))]
+              for i,n in enumerate(ts[:-1]):
+                  if ts[i+1]!='(':continue
+                  if n=='findItemId' and p.name=='CObjectDB.java':continue
+                  if n in mapping:raise AssertionError((str(p),n))
+                  if n=='getItem' and ts[i+2]!=')':raise AssertionError((str(p),n))
+                  if n in ('getItemEquippend','checkEquippedItem','checkItemCount'):raise AssertionError((str(p),n))
+          pathlib.Path('/tmp/lookup-changed.txt').write_text('\n'.join(changes)+'\n')
+          print('REFERENCE_SCAN_OK')
+          
+          PY
+          python3 /tmp/lookup.py
+          cat >/tmp/ParseLookup.java <<'JAVA'
+          import javax.tools.*;
+          import com.sun.source.util.JavacTask;
+          import java.nio.file.*;
+          import java.util.*;
+          public class ParseLookup {
+            public static void main(String[] args) throws Exception {
+              var files=Files.readAllLines(Path.of(args[0]));
+              var compiler=ToolProvider.getSystemJavaCompiler();
+              var diagnostics=new DiagnosticCollector<JavaFileObject>();
+              try(var fm=compiler.getStandardFileManager(diagnostics,null,java.nio.charset.StandardCharsets.UTF_8)) {
+                var units=fm.getJavaFileObjectsFromStrings(files);
+                var task=(JavacTask)compiler.getTask(null,fm,diagnostics,List.of("-proc:none","--release","21"),null,units);
+                int n=0; for(var u:task.parse()) n++;
+                long errors=diagnostics.getDiagnostics().stream().filter(d->d.getKind()==Diagnostic.Kind.ERROR).count();
+                System.out.println("PARSE_FILES "+n+" ERRORS "+errors);
+                diagnostics.getDiagnostics().stream().filter(d->d.getKind()==Diagnostic.Kind.ERROR).forEach(System.out::println);
+                if(errors!=0 || n!=files.size()) System.exit(1);
+              }
+            }
+          }
+          JAVA
+          java /tmp/ParseLookup.java /tmp/lookup-changed.txt
+          git diff --stat
+          git status --short
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- rkern/src
+          git commit -m 'refactor(inventory): migrate OFF lookup API and remove duplicate queries'
+          git push origin HEAD:refs/heads/rkern/nc-inventory-lookup-20261125
+          git rev-parse HEAD
