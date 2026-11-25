@@ -32,6 +32,15 @@ final class CItemCountTable implements Serializable {
         return value == 0 ? fallback : value;
     }
 
+    /** Count equipped instances, not distinct template IDs. */
+    synchronized long countAll() {
+        long count = 0;
+        if (rows != null) {
+            for (long row : rows) count += (int) row;
+        }
+        return count;
+    }
+
     synchronized void put(int key, int count) { putLocked(key, count); }
 
     synchronized void add(int key, int amount) {

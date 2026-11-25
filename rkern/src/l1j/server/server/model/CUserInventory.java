@@ -863,6 +863,11 @@ public class CUserInventory extends CInventory {
     }
 
 
+    /** Compare applied slots with the equipped-instance index under the item gate. */
+    public long GetEquippedObjectCount() {
+        return _equippedCountMap.countAll();
+    }
+
 	/** Update only the inventory's equipped-template index, under the existing item gate. */
 	public void SetEquippedCount(int itemId, boolean equipped) {
 		if (equipped) _equippedCountMap.add(itemId, 1);
