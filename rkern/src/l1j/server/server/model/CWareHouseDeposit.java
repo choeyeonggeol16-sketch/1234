@@ -42,9 +42,8 @@ final class CWareHouseDeposit {
                 for (int i = 0; i < size; i++) {
                     final L1ItemInstance item = ownerInventory.GetByServerID(ids[i]);
                     final int count = counts[i];
-                    if (item == null || item.getId() != ids[i] || item.getCount() <= 0
-                            || count <= 0 || count > item.getCount() || item.isEquipped()
-                            || (!item.isStackable() && count != 1)) return false;
+                    if (item == null || item.getId() != ids[i] || !item.IsTransferableAmount(count))
+                        return false;
                     for (int j = 0; j < i; j++) if (ids[j] == ids[i]) return false;
                     sources[i] = item;
                     sourceCounts[i] = item.getCount();
@@ -251,13 +250,7 @@ final class CWareHouseDeposit {
 			return null;
 		}
 
-		if (item.getCount() <= 0 || count <= 0 || count > item.getCount()) {
-			return null;
-		}
-		if (item.isEquipped()) {
-			return null;
-		}
-        if (!item.isStackable() && count != 1) return null;
+        if (!item.IsTransferableAmount(count)) return null;
 		if (inventory.CheckAddableToWarehouse(item, count) != CInventory.OK) {
 			return null;
 		}
@@ -293,9 +286,6 @@ final class CWareHouseDeposit {
 			carryItem = move.replayCarry(item.getId());
             if (carryItem == null)
                 throw new IllegalStateException("Warehouse transfer missing committed item ID");
-			if (carryItem == null) {
-				return null;
-			}
 
 			carryItem.setCount(count);
 			carryItem.setEnchantLevel(item.getEnchantLevel());
