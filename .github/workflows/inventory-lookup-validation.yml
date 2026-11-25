@@ -1,0 +1,139 @@
+name: Inventory lookup regression
+on:
+  push:
+    branches: ['rkern/inventory-lookup-validation-20261125']
+    paths: ['.github/workflows/inventory-lookup-validation.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile actual intrusive list and run isolated regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          git diff --check cd8ba4881f37ddd244a93cfaf69cba565ac88c19 a8e46a174d1c31e50f4f56b0e90cc19585c42985
+          mkdir -p "$RUNNER_TEMP/inventory-test"
+          cd "$RUNNER_TEMP/inventory-test"
+          mkdir -p l1j/server/server/model/Instance
+          cp "$GITHUB_WORKSPACE/rkern/src/l1j/server/server/model/Instance/CItemList.java" l1j/server/server/model/Instance/
+          cat > l1j/server/server/model/L1Object.java <<'JAVA'
+          package l1j.server.server.model;
+          public class L1Object {}
+          JAVA
+          cat > l1j/server/server/model/L1World.java <<'JAVA'
+          package l1j.server.server.model;
+          public final class L1World {
+              private static final L1World INSTANCE=new L1World();
+              public static L1World getInstance(){return INSTANCE;}
+              public L1Object indexed;
+              public L1Object findObject(int id){return indexed;}
+          }
+          JAVA
+          cat > l1j/server/server/model/Instance/L1ItemInstance.java <<'JAVA'
+          package l1j.server.server.model.Instance;
+          import l1j.server.server.model.L1Object;
+          public final class L1ItemInstance extends L1Object {
+              volatile CItemList inventoryLinkOwner;
+              L1ItemInstance inventoryPrev, inventoryNext;
+              final int id, classId, count;
+              boolean equipped;
+              public L1ItemInstance(int id,int classId,int count,boolean equipped){
+                  this.id=id;this.classId=classId;this.count=count;this.equipped=equipped;
+              }
+              public int getId(){return id;}
+              public int getItemId(){return classId;}
+              public L1ItemInstance getItem(){return this;}
+              public int getCount(){return count;}
+              public boolean isEquipped(){return equipped;}
+          }
+          JAVA
+          cat > Test.java <<'JAVA'
+          import java.lang.reflect.Field;
+          import java.util.*;
+          import l1j.server.server.model.L1World;
+          import l1j.server.server.model.Instance.*;
+          public class Test {
+              static void ok(boolean condition){if(!condition)throw new AssertionError();}
+              public static void main(String[] args) throws Exception {
+                  CItemList a=new CItemList(), b=new CItemList();
+                  L1ItemInstance x=new L1ItemInstance(101,7,5,false);
+                  L1ItemInstance y=new L1ItemInstance(102,7,1,true);
+                  L1ItemInstance z=new L1ItemInstance(103,8,1,false);
+                  a.add(x);a.add(y);a.add(z);
+                  ok(a.CountUnequippedInstancesByClassID(7)==1);
+                  ok(a.CountUnequippedInstancesByClassID(999)==0);
+                  ok(a.GetItemCountByClassID(7)==6);
+                  ok(a.IsEquippedByClassID(7));
+                  ok(a.GetByIndex(101)==x);
+                  List<L1ItemInstance> old=a.snapshot();
+                  ok(a.CountUnequippedInstancesByClassID(7)==1);
+                  ok(a.GetByIndex(102)==y);
+                  L1World.getInstance().indexed=x;
+                  ok(a.GetByIndex(101)==x);
+                  ok(b.GetByIndex(101)==null);
+                  ok(a.remove(x));b.add(x);
+                  ok(a.GetByIndex(101)==null);
+                  ok(b.GetByIndex(101)==x);
+                  ok(a.CountUnequippedInstancesByClassID(7)==0);
+                  // Inject a retained pre-removal snapshot to exercise the
+                  // identity lookup path independently of snapshot invalidation.
+                  Field f=CItemList.class.getDeclaredField("snapshot");
+                  f.setAccessible(true);
+                  f.set(a,old);
+                  ok(a.GetByIndex(101)==null);
+                  ok(old.get(0)==x);
+                  f.set(a,null);
+                  a.clear();b.clear();
+                  ok(a.GetByIndex(102)==null);
+                  ok(b.GetByIndex(101)==null);
+                  ok(a.CountUnequippedInstancesByClassID(7)==0);
+                  Random random=new Random(73);
+                  for(int iteration=0;iteration<500;iteration++){
+                      CItemList list=new CItemList();
+                      ArrayList<L1ItemInstance> expected=new ArrayList<>();
+                      for(int i=0;i<random.nextInt(80);i++){
+                          L1ItemInstance row=new L1ItemInstance(i+1000,random.nextInt(9),random.nextInt(30)+1,random.nextBoolean());
+                          list.add(row);expected.add(row);
+                      }
+                      if((iteration&1)==0) list.snapshot();
+                      for(int id=0;id<9;id++){
+                          int count=0,quantity=0;
+                          for(L1ItemInstance row:expected)if(row.getItemId()==id){
+                              if(!row.isEquipped())count++;
+                              quantity+=row.getCount();
+                          }
+                          ok(list.CountUnequippedInstancesByClassID(id)==count);
+                          ok(list.GetItemCountByClassID(id)==quantity);
+                      }
+                      for(L1ItemInstance row:expected)ok(list.GetByIndex(row.getId())==row);
+                      list.clear();
+                  }
+                  System.out.println("INTRUSIVE_LOOKUP_AND_COUNT_REGRESSIONS_OK");
+              }
+          }
+          JAVA
+          javac --release 21 -d classes $(find l1j -name '*.java') Test.java
+          java -cp classes Test
+      - name: Full Java 21 compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 - <<'PY'
+          import importlib.util, pathlib, os
+          p=pathlib.Path('rkern/docs/jproring_cio_integration_20261120/run_game_ab.py').resolve()
+          spec=importlib.util.spec_from_file_location('bench',p)
+          bench=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(bench)
+          work=pathlib.Path(os.environ['RUNNER_TEMP'])/'inventory-full-compile'
+          classes=work/'classes'
+          classes.mkdir(parents=True)
+          cp=bench.classpath(classes,work/'deps')
+          bench.compile_java(cp,classes,False)
+          print('JAVA21_FULL_COMPILE_OK')
+          PY
