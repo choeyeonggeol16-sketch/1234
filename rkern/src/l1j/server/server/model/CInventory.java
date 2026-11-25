@@ -480,38 +480,39 @@ public class CInventory extends L1Object {
 		return item;
 	}
 
-	public synchronized boolean DeleteItemInInventory(int itemid, int count) {
-        if (count <= 0) return false;
-        final L1Item template = CObjectDB.GetItem(itemid);
-        if (template == null) return false;
-        if (template.isStackable()) {
-            final L1ItemInstance item = GetFirstItemByClassID(itemid);
-            return item != null && item.getCount() >= count && DeleteItemAmount(item, count) == count;
-        }
-        final L1ItemInstance[] items = GetItemListByClassID(itemid);
-        return DeleteSelectedItems(items, count, true, false, 0);
-	}
-	
-	public synchronized boolean DeleteItemByDescID(int descid, int count) {
+    public synchronized boolean DeleteItemInInventory(int itemid, int count) {
+        return DeleteItemsByClassID(itemid, count, false, 0);
+    }
+
+    public synchronized boolean DeleteItemByDescID(int descid, int count) {
         if (count <= 0) return false;
         final L1ItemInstance[] items = GetItemListByDescID(descid);
-        return DeleteSelectedItems(items, count, true, false, 0);
-	}
-	
-	public synchronized boolean DeleteItemInInventory(int itemid, int count, int descid) {
+        return DeleteSelectedItems(items, count, false, 0);
+    }
+
+    public synchronized boolean DeleteItemInInventory(int itemid, int count, int descid) {
+        return DeleteItemsByClassID(itemid, count, true, descid);
+    }
+
+    /** Shared class-ID deletion; keep the legacy first-stack and desc-ID rules. */
+    private boolean DeleteItemsByClassID(int itemid, int count, boolean matchDescId, int descid) {
         if (count <= 0) return false;
         final L1Item template = CObjectDB.GetItem(itemid);
         if (template == null) return false;
         if (template.isStackable()) {
             final L1ItemInstance item = GetFirstItemByClassID(itemid);
-            return item != null && item.getCount() >= count
-                    && item.getItem().getItemDescId() == descid
-                    && DeleteItemAmount(item, count, descid) == count;
+            if (item == null || item.getCount() < count) return false;
+            if (matchDescId) {
+                return item.getItem().getItemDescId() == descid
+                        && DeleteItemAmount(item, count, descid) == count;
+            }
+            return DeleteItemAmount(item, count) == count;
         }
-        final L1ItemInstance[] items = GetItemListByClassID(itemid, descid);
-        return DeleteSelectedItems(items, count, true, true, descid);
-	}
-	
+        final L1ItemInstance[] items = matchDescId
+                ? GetItemListByClassID(itemid, descid) : GetItemListByClassID(itemid);
+        return DeleteSelectedItems(items, count, matchDescId, descid);
+    }
+
 	public synchronized boolean DeleteItemInInventory(int itemid) {
         final L1ItemInstance item = GetFirstItemByClassID(itemid);
         if (item == null || item.getCount() <= 0) return false;
@@ -527,9 +528,9 @@ public class CInventory extends L1Object {
      * This is a sequential removal path, not a multi-row CacheD receipt.
      */
     private boolean DeleteSelectedItems(L1ItemInstance[] items, int count,
-            boolean preferLowEnchant, boolean matchDescId, int descId) {
+            boolean matchDescId, int descId) {
         if (count <= 0 || items.length < count) return false;
-        if (preferLowEnchant && items.length > count) Arrays.sort(items, ITEM_ENCHANT_ORDER);
+        if (items.length > count) Arrays.sort(items, ITEM_ENCHANT_ORDER);
         for (int i = 0; i < count; i++) {
             final L1ItemInstance item = items[i];
             if (DeleteItemAmountInternal(item, 1, matchDescId, descId) != 1) return false;
@@ -570,13 +571,10 @@ public class CInventory extends L1Object {
 		}
 		if (this instanceof L1GroundInventory && (item.isGroundPickupPending() || item.isGroundDropUnsettled())) return 0;
 		if (matchDescId && item.getItem().getItemDescId() != descId) return 0;
-		if (item.getCount() <= 0 || count <= 0) {
-			return 0;
-		}
-		if (item.getCount() < count) {
-			count = item.getCount();
-		}
-		if (item.getCount() == count) {
+        final int available = item.getCount();
+        if (available <= 0 || count <= 0) return 0;
+        count = Math.min(available, count);
+        if (available == count) {
 			int itemId = item.getItem().getItemId();
 			if (itemId == 40314 || itemId == 40316) {
                 // PC pet record + collar row are one CacheD receipt.
@@ -638,14 +636,15 @@ public class CInventory extends L1Object {
     /** Only for restoring a fee when WarehouseMove SQL was NOT submitted. */
     public synchronized void restoreWarehouseFee(L1ItemInstance fee, int original) {
         if (fee == null || original <= 0) throw new IllegalArgumentException("Invalid fee rollback");
-        if (GetByServerID(fee.getId()) == fee) {
+        final L1ItemInstance owned = GetByServerID(fee.getId());
+        if (owned == fee) {
             final int now = fee.getCount();
             if (now > original) throw new IllegalStateException("Fee changed during rollback");
             fee.setCount(original);
             addItemCountCache(fee.getItemId(), original - now);
             persistTransferCount(fee);
             updateItem(fee);
-        } else if (GetByServerID(fee.getId()) == null) {
+        } else if (owned == null) {
             CItemList.requireDetached(fee);
             final int previousCount = fee.getCount();
             _items.Push(fee);
