@@ -380,7 +380,7 @@ public class CInventory extends L1Object {
 		item.setX(getX());
 		item.setY(getY());
 		item.setMap(getMapId());
-		final int chargeCount = item.GetInitialChargeCount();
+		final int chargeCount = item.GetInitialChargeCount(itemId);
 		if (!treasure && Warehouse.chargeMergeItem(itemId)) {
 			L1ItemInstance findItem = findMergeItem(item);
 			if (findItem != null) {
