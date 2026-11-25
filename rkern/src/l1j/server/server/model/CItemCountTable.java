@@ -49,6 +49,12 @@ final class CItemCountTable implements Serializable {
 
     synchronized void remove(int key) { putLocked(key, 0); }
 
+    /** Drop the packed backing storage when its owning inventory is retired. */
+    synchronized void clear() {
+        rows = null;
+        size = 0;
+    }
+
     private void putLocked(int key, int count) {
         if (count < 0 || count > CInventory.MAX_AMOUNT)
             throw new IllegalArgumentException("Invalid inventory count: " + key);
