@@ -2191,6 +2191,7 @@ public class L1PcInstance extends L1Character {
 	public void setType(int i) {
 		_type = i;
         m_BaseParam.invalidate();
+        RefreshBaseMDefend();
 	}
 
 	public short getAccessLevel() {
@@ -5510,10 +5511,12 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	    return 0;
 	}
 
+	public final void RefreshBaseMDefend() {
+		SetOrgMDefend(CalcStat.마법방어(getType(), GetTotalStatWis()) + getLevel() / 2);
+	}
+
 	public void resetBaseMr() {
-		int newMr = 0;
-		newMr += CalcStat.마법방어(getType(), GetTotalStatWis());
-		newMr += getLevel() / 2;
+		RefreshBaseMDefend();
 		SC_SPMR.send(this);
 	}
 

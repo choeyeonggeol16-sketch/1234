@@ -1086,6 +1086,7 @@ public class L1Character extends L1Object {
 
 	public synchronized void setLevel(long level) {
 		_level = (int) level;
+		if (this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
 	}
 
 	private volatile long pumpedHpMp;
@@ -1411,9 +1412,15 @@ public class L1Character extends L1Object {
 	public final byte GetTotalStatInt() { return ValidateStat(GetStatInt() + GetAddedStatInt(), 0); }
 	public final byte GetStatWis() { return m_StatWis; }
 	public final byte GetOriginalStatWis() { return m_OriginalStatWis; }
-	public final void SetStatWis(int value) { m_StatWis = ValidateStat(value, m_OriginalStatWis); }
+	public final void SetStatWis(int value) {
+		m_StatWis = ValidateStat(value, m_OriginalStatWis);
+		if (this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
+	}
 	public final byte GetAddedStatWis() { return ValidateStat(m_AddedStatWis + (byte) (m_SkillPrimaryStats >>> 24), -128); }
-	final void AddAddedStatWis(int value) { m_AddedStatWis = ValidateStat(m_AddedStatWis + value, -128); }
+	final void AddAddedStatWis(int value) {
+		m_AddedStatWis = ValidateStat(m_AddedStatWis + value, -128);
+		if (this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
+	}
 	public final byte GetTotalStatWis() { return ValidateStat(GetStatWis() + GetAddedStatWis(), 0); }
 	public final byte GetStatCon() { return m_StatCon; }
 	public final byte GetOriginalStatCon() { return m_OriginalStatCon; }
@@ -1433,6 +1440,7 @@ public class L1Character extends L1Object {
 		final long changed = m_SkillPrimaryStats ^ value;
 		if (changed == 0) return;
 		m_SkillPrimaryStats = value;
+		if ((changed & 0xff000000L) != 0 && this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
 		if (!notify) return;
 		if ((changed & 0x000000ff) != 0) NotifyStatBonusStr();
 		if ((changed & 0x0000ff00) != 0) NotifyStatBonusDex();
@@ -1448,6 +1456,7 @@ public class L1Character extends L1Object {
 		m_StatInt = m_OriginalStatInt = m_AddedStatInt = 0;
 		m_StatWis = m_OriginalStatWis = m_AddedStatWis = 0;
 		m_StatCha = m_OriginalStatCha = m_AddedStatCha = 0;
+		if (this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
 	}
 
 	private byte CheckStatRange(int i) {

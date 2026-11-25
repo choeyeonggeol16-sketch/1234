@@ -107,6 +107,10 @@ jobs:
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/docs/nc_creature_stat_audit_20261125/test_magic_parameter_routes.py
+      - name: Verify base magic defense refresh
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/docs/nc_creature_stat_audit_20261125/test_base_mdefend_refresh.py
       - name: Cache existing build dependencies
         uses: actions/cache@v4
         with:
