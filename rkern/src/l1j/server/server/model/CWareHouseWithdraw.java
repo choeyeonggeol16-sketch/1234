@@ -51,9 +51,8 @@ final class CWareHouseWithdraw {
                 for (int i = 0; i < size; i++) {
                     final L1ItemInstance item = source.GetByServerID(ids[i]);
                     final int count = counts[i];
-                    if (item == null || item.getId() != ids[i] || item.getCount() <= 0
-                            || count <= 0 || count > item.getCount() || item.isEquipped()
-                            || (!item.isStackable() && count != 1)) return false;
+                    if (item == null || item.getId() != ids[i] || !item.IsTransferableAmount(count))
+                        return false;
                     for (int j = 0; j < i; j++) if (ids[j] == ids[i]) return false;
                     sources[i] = item;
                     sourceCounts[i] = item.getCount();
