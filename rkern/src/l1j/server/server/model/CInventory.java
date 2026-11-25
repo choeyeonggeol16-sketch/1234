@@ -915,7 +915,9 @@ public class CInventory extends L1Object {
                 item.setX(oldX);
                 item.setY(oldY);
                 item.setMap(oldMap);
-                insertLinkedItem(item);
+                if (this instanceof L1GroundInventory ground)
+                    ground.restoreAfterFailedTransfer(item);
+                else insertLinkedItem(item);
             } else {
                 try {
                     changeStackCount(item, count);
