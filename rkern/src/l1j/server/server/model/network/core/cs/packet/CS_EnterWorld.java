@@ -531,10 +531,13 @@ public final class CS_EnterWorld {
         pc.startObjectAutoUpdate();
         pc.beginGameTimeCarrier();
         clampHpMp(pc);
-        CharacterTable.getInstance().restoreInventoryFromSnapshots(pc, data.items, data.warehouseItems);
+        final List<L1ItemInstance> loadedEquipment = CharacterTable.getInstance()
+                .restoreInventoryFromSnapshots(pc, data.items, data.warehouseItems);
         data.warehouseItems = null;
+        data.items = null;
         sendItemPacketChunked(pc);
-        loadItems(pc, true, null);
+        pc.RestoreEquippedItems(loadedEquipment);
+        RankUserLoader.getInstance().onUser(pc);
 
         SC_PacketBox.send(pc, SC_PacketBox.INIT_DODGE, 0x0000);
         SC_PacketBox.send(pc, SC_PacketBox.DODGE, 0);
@@ -714,16 +717,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         });
 
 
-        pc.getInventory().resetSlotTracking();
-    	for (L1ItemInstance item : pc.getInventory().getItems()) {
-    	    if (item != null && item.isEquipped()) {
-    	        try {
-    	            pc.getInventory().updateEquipmentWindow(item);
-    	        } catch (Exception e) {
-    	            e.printStackTrace();
-    	        }
-    	    }
-    	}
+        pc.getInventory().sendEquipmentWindow();
 
         // 이벤트 맵 만료 아이템 정리
         if (pc.getInventory().HaveItemAmount(810006)) pc.getInventory().DeleteItemInInventory(810006);
@@ -950,16 +944,6 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
             }
         }
         return items;
-    }
-
-    private static void loadItems(L1PcInstance pc, boolean sendOption,
-                                  List<L1ItemInstance> loadedItems) {
-        if (sendOption) {
-            pc.RestoreEquippedItems();
-            RankUserLoader.getInstance().onUser(pc);
-        } else {
-            CharacterTable.getInstance().restoreInventory(pc, loadedItems);
-        }
     }
 
 	private static void safetyzone(L1PcInstance pc) {

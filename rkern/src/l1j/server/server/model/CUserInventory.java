@@ -376,6 +376,39 @@ public class CUserInventory extends CInventory {
         if (displayedAccessories != null) Arrays.fill(displayedAccessories, 0);
     }
 
+    /** Rebuild the login equipment window from applied slots, not inventory rows. */
+    public void sendEquipmentWindow() {
+        if (!tryBeginEquipmentChange())
+            throw new IllegalStateException("Equipment window restore busy: " + _owner.getId());
+        try {
+            final L1EquipmentSlot slots = _owner.getEquipSlot();
+            final List<L1ItemInstance> armors = slots.getArmors();
+            final L1ItemInstance[] selected = new L1ItemInstance[armors.size() + slots.getWeaponCount()];
+            int count = 0;
+            final L1ItemInstance primary = slots.getWeapon();
+            final L1ItemInstance secondary = slots.getSecondWeapon();
+            if (primary != null) selected[count++] = primary;
+            if (secondary != null) selected[count++] = secondary;
+            for (int i = 0, n = armors.size(); i < n; i++) selected[count++] = armors.get(i);
+            if (count != selected.length || GetEquippedObjectCount() != count
+                    || !SortSelectedByInventoryOrder(selected, count))
+                throw new IllegalStateException("Equipment slot restore mismatch: " + _owner.getId());
+            for (int i = 0; i < count; i++) {
+                final L1ItemInstance item = selected[i];
+                if (!item.isEquipped() || GetRegisteredItemByServerID(item.getId()) != item
+                        || (i > 0 && selected[i - 1] == item))
+                    throw new IllegalStateException("Invalid applied equipment: " + item.getId());
+            }
+            resetSlotTracking();
+            for (int i = 0; i < count; i++) {
+                try { updateEquipmentWindow(selected[i]); }
+                catch (RuntimeException notice) { receiptNoticeFailed("restore-equipment-window", notice); }
+            }
+        } finally {
+            endEquipmentChange();
+        }
+    }
+
 	public int getWeight100() {
 		return calcWeight100(GetCarryingWeight());
 	}
@@ -462,6 +495,11 @@ public class CUserInventory extends CInventory {
     }
 
     public synchronized void loadItems(List<L1ItemInstance> loadedItems) {
+        loadItems(loadedItems, null);
+    }
+
+    /** Collect only persisted equipment while installing the login snapshot. */
+    public synchronized void loadItems(List<L1ItemInstance> loadedItems, List<L1ItemInstance> loadedEquipment) {
         if (loadedItems == null) throw new IllegalArgumentException("loadedItems");
         try {
             // Restore exactly what was committed to the DB. The previous path
@@ -499,6 +537,7 @@ public class CUserInventory extends CInventory {
                     }
                     throw failure;
                 }
+                if (loadedEquipment != null && item.isEquipped()) loadedEquipment.add(item);
                 if (itemId == 900075) {
                     _owner.setPolyRingMaster(true);
                     try { SC_Ability.send(_owner, 2, true); }

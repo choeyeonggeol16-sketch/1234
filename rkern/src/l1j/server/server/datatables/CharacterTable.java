@@ -201,8 +201,12 @@ public class CharacterTable {
         }
     }
 
-    public void restoreInventoryFromSnapshots(L1PcInstance pc, List<L1ItemInstance> loadedItems,
+    public List<L1ItemInstance> restoreInventoryFromSnapshots(L1PcInstance pc, List<L1ItemInstance> loadedItems,
                                   List<List<L1ItemInstance>> warehouseItems) {
+        if (loadedItems == null) {
+            throw new IllegalStateException("Missing character inventory snapshot: " + pc.getName());
+        }
+        final ArrayList<L1ItemInstance> loadedEquipment = new ArrayList<>(16);
         if (warehouseItems == null || warehouseItems.size() != 5) {
             throw new IllegalStateException("Missing warehouse snapshots: " + pc.getName());
         }
@@ -212,14 +216,14 @@ public class CharacterTable {
                 if (items == null) throw new IllegalStateException("Incomplete warehouse snapshots: " + pc.getName());
             }
             warehouseLease = pc.beginWarehouseCacheLease();
-            if (loadedItems == null) pc.getInventory().loadItems();
-            else pc.getInventory().loadItems(loadedItems);
+            pc.getInventory().loadItems(loadedItems, loadedEquipment);
             WarehouseManager manager = WarehouseManager.getInstance();
             manager.bindPrivateWarehouse(pc.getAccountName(), warehouseLease).installLoadedSnapshot(warehouseItems.get(0));
             manager.bindElfWarehouse(pc.getAccountName(), warehouseLease).installLoadedSnapshot(warehouseItems.get(1));
             pc.getDwarfForPackageInventory().installLoadedSnapshot(warehouseItems.get(2));
             manager.bindSupplementaryService(pc.getAccountName(), warehouseLease).installLoadedSnapshot(warehouseItems.get(3));
             manager.bindSpecialWarehouse(pc.getName(), warehouseLease).installLoadedSnapshot(warehouseItems.get(4));
+            return loadedEquipment;
         } catch (SQLException e) {
             throw new IllegalStateException("Warehouse restore failed: " + pc.getName(), e);
         } finally {

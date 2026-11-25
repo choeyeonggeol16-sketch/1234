@@ -4279,17 +4279,25 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	private long equipmentTimeVisible;
 
-	/** Restore persisted equipment using the same character execution path as live equips. */
-	public void RestoreEquippedItems() {
+	/** Restore only the persisted equipment selected during inventory installation. */
+	public void RestoreEquippedItems(List<L1ItemInstance> loadedEquipment) {
+		final CUserInventory inv = getInventory();
+		if (!inv.tryBeginEquipmentChange())
+			throw new IllegalStateException("Equipment restore busy: " + getId());
 		try {
-			for (L1ItemInstance item : getInventory().getItems()) {
-				if (item.isEquipped()) {
-					item.setEquipped(false);
-					EquipItem(item, true, false);
+			for (int i = 0, n = loadedEquipment.size(); i < n; i++) {
+				final L1ItemInstance item = loadedEquipment.get(i);
+				if (!item.isEquipped() || inv.GetRegisteredItemByServerID(item.getId()) != item) continue;
+				item.setEquipped(false);
+				final L1Item template = item.getItem();
+				if (template == null || (template.getType2() != 1 && template.getType2() != 2)) {
+					_log.warning("Invalid persisted equipment: " + item.getId());
+					continue;
 				}
+				EquipItem(item, true, false);
 			}
-		} catch (Exception failure) {
-			_log.log(Level.SEVERE, "Equipment restore failed: " + getId(), failure);
+		} finally {
+			inv.endEquipmentChange();
 		}
 	}
 
