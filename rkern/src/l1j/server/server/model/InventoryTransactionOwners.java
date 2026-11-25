@@ -178,7 +178,7 @@ final class InventoryTransactionOwners {
         if (session == null) return pc != primary && pc.isPrivateShop()
                 && captureSession(pc) == null
                 && L1World.getInstance().findObject(pc.getId()) == pc;
-        return session.isConnected() && session.getActiveChar() == pc && pc.getNetConnection() == session;
+        return pc.isItemTransferSession(session, stamp);
     }
 
     void release() {
@@ -198,12 +198,6 @@ final class InventoryTransactionOwners {
     }
 
     private void quarantine(L1PcInstance pc, CUserSocket session, int stamp) {
-        if (session == null || !current(pc, session, stamp)) return;
-        l1j.server.server.model.network.thread.CIOThreadCallback.getInstance()
-                .completeSession(session, () -> {
-                    synchronized (session) {
-                        if (current(pc, session, stamp)) session.kick();
-                    }
-                });
+        pc.quarantineItemTransferSession(session, stamp);
     }
 }
