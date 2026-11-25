@@ -1286,7 +1286,7 @@ public class CInventory extends L1Object {
         for (L1ItemInstance item : _items) {
             if (item != null && item.getItemId() == id && _items.Have(item)) {
                 Pop(item);
-                L1World.getInstance().removeObject(item);
+                if (!_items.Have(item)) L1World.getInstance().removeObject(item);
             }
         }
     }
@@ -1298,7 +1298,7 @@ public class CInventory extends L1Object {
             for (int id : ids) {
                 if (item.getItemId() == id) {
                     Pop(item);
-                    L1World.getInstance().removeObject(item);
+                    if (!_items.Have(item)) L1World.getInstance().removeObject(item);
                     break;
                 }
             }
