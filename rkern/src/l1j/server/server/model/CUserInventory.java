@@ -159,6 +159,7 @@ public class CUserInventory extends CInventory {
             // Preserve an existing object's identity for timers/equipment refs.
             final int oldTemplate = original.getItemId();
             final int oldEnchant = original.getEnchantLevel();
+            final int oldAttrEnchant = original.getAttrEnchantLevel();
             final int oldDurability = original.get_durability();
             final boolean newTemplate = oldTemplate != image.getItemId();
             final boolean recalcEquipped = newTemplate && original.isEquipped();
@@ -227,12 +228,10 @@ public class CUserInventory extends CInventory {
                     catch (RuntimeException failure) { receiptNoticeFailed("enchant-sp-mr", failure); }
                 }
             }
-            try { SC_ItemStatus.send(_owner, original); }
-            catch (RuntimeException failure) { receiptNoticeFailed("item-status", failure); }
-            try { SC_ItemName.send(_owner, original); }
-            catch (RuntimeException failure) { receiptNoticeFailed("item-name", failure); }
-            try { SC_ItemColor.send(_owner, original); }
-            catch (RuntimeException failure) { receiptNoticeFailed("item-color", failure); }
+            original.setLastWeight(original.getWeight());
+            SetInventoryChanged(original, true, true, true,
+                    oldEnchant != original.getEnchantLevel()
+                            || oldAttrEnchant != original.getAttrEnchantLevel(), false);
         } else {
             if (image == null || GetByServerID(image.getId()) != null)
                 throw new IllegalStateException("Economy destination object exists");
@@ -677,15 +676,41 @@ public class CUserInventory extends CInventory {
 			}
 		}
 
-		if (sendStatus)  SC_ItemStatus.send(_owner, item);
-		if (sendName)    SC_ItemName.send(_owner, item);
-		if (sendColor)   SC_ItemColor.send(_owner, item);
-		if (sendEnchant) SC_PacketBox.send(_owner, SC_PacketBox.ITEM_ENCHANT_UPDATE, item);
+        // A template conversion can reduce the item's weight to zero.
+        // The resulting total must still be published in that case.
+        SetInventoryChanged(item, sendStatus, sendName, sendColor, sendEnchant,
+                sendWeight && ((column & COL_ITEMID) != 0 || item.getItem().getWeight() != 0));
+    }
 
-		if (sendWeight && item.getItem().getWeight() != 0) {
-			SC_Weight.send(_owner);
-		}
-	}
+    /**
+     * Single output path for ordinary and receipt-confirmed item changes.
+     * OFF SetInventoryChanged records the change kind; L1 sends its existing
+     * protocol-specific frames immediately at the established owner boundary.
+     * No delayed item reference, collection, or second execution lane.
+     */
+    private void SetInventoryChanged(L1ItemInstance item, boolean status, boolean name,
+            boolean color, boolean enchant, boolean weight) {
+        if (status) {
+            try { SC_ItemStatus.send(_owner, item); }
+            catch (RuntimeException failure) { receiptNoticeFailed("item-status", failure); }
+        }
+        if (name) {
+            try { SC_ItemName.send(_owner, item); }
+            catch (RuntimeException failure) { receiptNoticeFailed("item-name", failure); }
+        }
+        if (color) {
+            try { SC_ItemColor.send(_owner, item); }
+            catch (RuntimeException failure) { receiptNoticeFailed("item-color", failure); }
+        }
+        if (enchant) {
+            try { SC_PacketBox.send(_owner, SC_PacketBox.ITEM_ENCHANT_UPDATE, item); }
+            catch (RuntimeException failure) { receiptNoticeFailed("item-enchant", failure); }
+        }
+        if (weight) {
+            try { SC_Weight.send(_owner); }
+            catch (RuntimeException failure) { receiptNoticeFailed("weight", failure); }
+        }
+    }
 
 	/**
 	 * 목록내의 아이템 상태를 DB에 보존한다.
