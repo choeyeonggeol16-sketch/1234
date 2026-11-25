@@ -10,7 +10,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.item.L1ItemId;
@@ -97,7 +97,7 @@ final class PlayerShopTransactions {
                     transfer.count += count;
                     debit.count += count;
                     total += (long) debit.expected.price * count;
-                    if (total <= 0 || total > L1Inventory.MAX_AMOUNT) return;
+                    if (total <= 0 || total > CInventory.MAX_AMOUNT) return;
                 }
                 final L1ItemInstance adena = buyer.getInventory().findItemId(L1ItemId.ADENA);
                 if (adena == null || adena.getCount() < total) {
@@ -156,7 +156,7 @@ final class PlayerShopTransactions {
         if (!canTransfer(seller, item, listing, count, System.currentTimeMillis())
                 || count > item.getCount()) return;
         final long total = (long) listing.price * count;
-        if (total > L1Inventory.MAX_AMOUNT) return;
+        if (total > CInventory.MAX_AMOUNT) return;
         final L1ItemInstance adena = buyer.getInventory().findItemId(L1ItemId.ADENA);
         if (adena == null || adena.getCount() < total) {
             SC_ServerMessage.send(buyer, 189);

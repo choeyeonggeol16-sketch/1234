@@ -10,7 +10,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
@@ -96,7 +96,7 @@ final class CallAdvanceItemEffect {
                         pc.setSkillEffect(L1SkillId.어드밴스대기, Config.어드밴스대기 * 1000);
                         L1SkillUse.cast(pc, L1SkillId.보조버프, pc.getId(), pc.getX(), pc.getY(), null, 0, L1SkillUse.TYPE_SPELLSC);
                         pc.setCurrentMp(pc.getCurrentMp() - 20);
-                        pc.getInventory().updateItem(item, L1PcInventory.COL_CHARGE_COUNT);
+                        pc.getInventory().updateItem(item, CUserInventory.COL_CHARGE_COUNT);
                         return true;
                     } else {
                         SC_SystemMessage.send(pc, "타겟이 올바르지않습니다.");

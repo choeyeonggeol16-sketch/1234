@@ -3,7 +3,7 @@ package l1j.server.server.model.item.function;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.SkillCheck;
 import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.storage.CacheD;
@@ -53,7 +53,7 @@ final class SkillBookLearning {
         final int playerId = pc.getId();
         try {
             if (book.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(book, L1PcInventory.COL_SAVE_ALL);
+                pc.getInventory().saveItem(book, CUserInventory.COL_SAVE_ALL);
             try (L1InventoryTransaction tx = User.CheckAndSetPendingUseETCItem(pc,
                     CacheD.accountOrderKey("item-use:", playerId))) {
             if (!tx.debit(book, 1) || pc.isSkillMastery(skillId)) return;

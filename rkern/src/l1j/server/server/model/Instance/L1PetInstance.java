@@ -11,7 +11,7 @@ import l1j.server.server.datatables.PetItemTable;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.PetTypeTable;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -312,7 +312,7 @@ public class L1PetInstance extends L1NpcInstance {
 	}
 
 	public void collect() {
-		L1Inventory targetInventory = _petMaster.getInventory();
+		CInventory targetInventory = _petMaster.getInventory();
 		List<L1ItemInstance> items = _inventory.getItems();
 		int size = _inventory.getSize();
 		L1ItemInstance item = null;
@@ -322,7 +322,7 @@ public class L1PetInstance extends L1NpcInstance {
 				continue;
 			}
 			if (_petMaster.getInventory().checkAddItem( 
-					item, item.getCount()) == L1Inventory.OK) {
+					item, item.getCount()) == CInventory.OK) {
 				_inventory.tradeItem(item, item.getCount(), targetInventory);
 				SC_ServerMessage.send(_petMaster, 143, getName(), item
 						.getLogName()); 
@@ -342,7 +342,7 @@ public class L1PetInstance extends L1NpcInstance {
 	}
 
 	public void dropItem() {
-		L1Inventory targetInventory = null;
+		CInventory targetInventory = null;
 		List<L1ItemInstance> items = _inventory.getItems();
 		if(items == null || items.size() <= 0)
 			return;

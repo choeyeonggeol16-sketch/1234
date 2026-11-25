@@ -54,7 +54,7 @@ class Inventory {
  L1ItemInstance getItem(int id){return items.get(id);}
  void saveItem(L1ItemInstance it,int flags){saved++;if(failSave)throw new IllegalStateException("dirty save failed");}
 }
-class L1PcInventory {static final int COL_SAVE_ALL=0x7fff;}
+class CUserInventory {static final int COL_SAVE_ALL=0x7fff;}
 class GameMap { boolean recall=true;boolean isRecallPets(){return recall;} }
 class L1PcInstance {
  final Inventory inv=new Inventory();final GameMap map=new GameMap();

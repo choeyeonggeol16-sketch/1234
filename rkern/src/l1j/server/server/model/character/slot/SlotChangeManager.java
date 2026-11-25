@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.RandomAccess;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -92,7 +92,7 @@ public final class SlotChangeManager {
     public void applySlot(int slotNum) {
         final IntIdList desired = getList(slotNum);
         if (desired == null) return;
-        final L1PcInventory inventory = owner.getInventory();
+        final CUserInventory inventory = owner.getInventory();
         if (!inventory.tryBeginEquipmentChange()) return;
         try {
             if (!swapping) applySlot(slotNum, desired, inventory);
@@ -101,7 +101,7 @@ public final class SlotChangeManager {
         }
     }
 
-    private void applySlot(int slotNum, IntIdList desired, L1PcInventory inventory) {
+    private void applySlot(int slotNum, IntIdList desired, CUserInventory inventory) {
         final int spriteId = owner.getCurrentSpriteId();
         final L1ItemInstance originalPrimary = owner.getWeapon();
         int unequipCount = 0, equipCount = 0, plannedCount = 0, originalCount = 0;
@@ -178,7 +178,7 @@ public final class SlotChangeManager {
         }
     }
 
-    private void restoreEquipment(L1PcInventory inventory, int originalCount,
+    private void restoreEquipment(CUserInventory inventory, int originalCount,
             int equipCount, L1ItemInstance originalPrimary) {
         // Runtime rejection after preflight: restore the original worn image
         // using normal inventory persistence, without a separate DB transaction.
@@ -222,7 +222,7 @@ public final class SlotChangeManager {
         return Arrays.copyOf(buffer, Math.min(MAX_BUFFER, Math.max(4, buffer.length * 2)));
     }
 
-    private boolean canEquipNow(L1PcInventory inventory, L1ItemInstance item) {
+    private boolean canEquipNow(CUserInventory inventory, L1ItemInstance item) {
         if (item.getItem().getType2() == 2) return EquipRules.canEquipArmor(owner, inventory, item).ok;
         if (item.getItem().getType2() != 1) return true;
         if (!EquipRules.canEquipWeaponBasic(owner, inventory, item).ok) return false;

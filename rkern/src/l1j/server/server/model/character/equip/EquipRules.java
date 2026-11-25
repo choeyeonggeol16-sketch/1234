@@ -7,7 +7,7 @@ import java.util.List;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1EquipmentSlot;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.templates.L1Item;
 
@@ -33,7 +33,7 @@ public final class EquipRules {
     // =========================
     // ARMOR RULES
     // =========================
-    public static EquipResult canEquipArmor(L1PcInstance pc, L1PcInventory inv, L1ItemInstance armor) {
+    public static EquipResult canEquipArmor(L1PcInstance pc, CUserInventory inv, L1ItemInstance armor) {
         if (pc == null || inv == null || armor == null || armor.getItem() == null)
             return EquipResult.fail(null);
         final L1EquipmentSlot slot = pc.getEquipSlot();
@@ -44,7 +44,7 @@ public final class EquipRules {
     /** Preflight against the full future equipment set, not the current set.
      * Called before a preset unequips a single piece of gear.
      */
-    public static boolean canEquipPreset(L1PcInstance pc, L1PcInventory inv,
+    public static boolean canEquipPreset(L1PcInstance pc, CUserInventory inv,
             L1ItemInstance[] planned, int count) {
         if (pc == null || inv == null || planned == null || count < 0 || count > planned.length)
             return false;
@@ -88,7 +88,7 @@ public final class EquipRules {
         return true;
     }
 
-    private static EquipResult checkArmor(L1PcInstance pc, L1PcInventory inv,
+    private static EquipResult checkArmor(L1PcInstance pc, CUserInventory inv,
             L1ItemInstance armor, List<L1ItemInstance> worn,
             L1ItemInstance[] planned, int plannedCount,
             int weaponCount, L1ItemInstance primaryWeapon) {
@@ -162,7 +162,7 @@ public final class EquipRules {
     // =========================
     // WEAPON RULES
     // =========================
-    public static EquipResult canEquipWeaponBasic(L1PcInstance pc, L1PcInventory inv, L1ItemInstance weapon) {
+    public static EquipResult canEquipWeaponBasic(L1PcInstance pc, CUserInventory inv, L1ItemInstance weapon) {
         if (pc == null || inv == null || weapon == null || weapon.getItem() == null) return EquipResult.fail(null);
 
         if (!L1PolyMorph.isEquipableWeapon(pc.getCurrentSpriteId(), weapon.getItem().getType())) {
@@ -178,7 +178,7 @@ public final class EquipRules {
     }
 
     // 슬레이어 + 한손도끼 조건일 때 “2번째 무기” 가능 여부
-    public static EquipResult canEquipAsSecondWeaponSlayer(L1PcInstance pc, L1PcInventory inv, L1ItemInstance current, L1ItemInstance next) {
+    public static EquipResult canEquipAsSecondWeaponSlayer(L1PcInstance pc, CUserInventory inv, L1ItemInstance current, L1ItemInstance next) {
         if (pc == null || inv == null || current == null || next == null) return EquipResult.fail(null);
 
         final L1EquipmentSlot slot = pc.getEquipSlot();

@@ -16,9 +16,9 @@ with tempfile.TemporaryDirectory(prefix='rk_enchant_') as tmp:
  public Item getItem(){return data;} public String getName(){return "TEST";} public String getLogName(){return "TEST";}
  public int getEnchantLevel(){return lv;} public void setEnchantLevel(int n){lv=n;} public boolean isIdentified(){return identified;} public boolean isEquipped(){return equipped;} public int getCount(){return count;}
  }''')
- add('l1j/server/server/model/L1PcInventory.java','''package l1j.server.server.model;
+ add('l1j/server/server/model/CUserInventory.java','''package l1j.server.server.model;
  import l1j.server.server.model.Instance.L1ItemInstance;
- public class L1PcInventory { public static final int COL_ENCHANTLVL=4;
+ public class CUserInventory { public static final int COL_ENCHANTLVL=4;
  public int saves,updates,removes; public int packetFailMode=0; public boolean saveFails;
  public void saveItem(L1ItemInstance x,int col) {saves++;if(saveFails) throw new IllegalStateException("DB admission failed");}
  public void updateItem(L1ItemInstance x,int col){updates++;if(packetFailMode==1)throw new RuntimeException("packet failure");if(packetFailMode==2)throw new IllegalStateException("Item mutation refused while CacheD transfer pending");}
@@ -26,8 +26,8 @@ with tempfile.TemporaryDirectory(prefix='rk_enchant_') as tmp:
  public void setEquipped(L1ItemInstance x,boolean v){x.equipped=v;}
  }''')
  add('l1j/server/server/model/Instance/L1PcInstance.java','''package l1j.server.server.model.Instance;
- import l1j.server.server.model.L1PcInventory;
- public class L1PcInstance {public L1PcInventory inv=new L1PcInventory(); public L1PcInventory getInventory(){return inv;}
+ import l1j.server.server.model.CUserInventory;
+ public class L1PcInstance {public CUserInventory inv=new CUserInventory(); public CUserInventory getInventory(){return inv;}
  public final AC ac=new AC(); public final Resistance res=new Resistance();
  public AC getAC(){return ac;}public Resistance getResistance(){return res;}
  public static class AC {public int val;public void addAc(int i){val+=i;}}

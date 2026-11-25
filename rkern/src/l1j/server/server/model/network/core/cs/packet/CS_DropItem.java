@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.L1GroundInventory;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.item.L1ItemId;
@@ -118,7 +118,7 @@ public final class CS_DropItem {
             return false;
         }
 
-        if (objectId <= 0 || count <= 0 || count > L1Inventory.MAX_AMOUNT) {
+        if (objectId <= 0 || count <= 0 || count > CInventory.MAX_AMOUNT) {
             return false;
         }
 
@@ -144,7 +144,7 @@ public final class CS_DropItem {
             return false;
         }
 
-        final L1Inventory inventory = pc.getInventory();
+        final CInventory inventory = pc.getInventory();
         final L1ItemInstance item = inventory.getItem(objectId);
 
         /*
@@ -282,7 +282,7 @@ public final class CS_DropItem {
         /*
          * 실제 소유권 이전.
          *
-         * 강화된 L1Inventory.tradeItem()이 내부에서 exact object ownership을
+         * 강화된 CInventory.tradeItem()이 내부에서 exact object ownership을
          * 다시 검증하고, 실패하면 null을 반환한다.
          */
         final L1ItemInstance moved =

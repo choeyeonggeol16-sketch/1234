@@ -28,7 +28,7 @@ import l1j.server.server.shared.L1Type;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
 
-public class L1Inventory extends L1Object {
+public class CInventory extends L1Object {
 	private static final long serialVersionUID = 1L;
 
 	protected final CItemList _items = new CItemList();
@@ -42,11 +42,11 @@ public class L1Inventory extends L1Object {
 	public static final int WAREHOUSE_TYPE_PERSONAL = 0;
 	public static final int WAREHOUSE_TYPE_CLAN = 1;
 
-	public L1Inventory() {
+	public CInventory() {
 	}
 	
 	/**
-	 * PC 인벤토리는 L1PcInventory에서 캐시를 사용한다.
+	 * PC 인벤토리는 CUserInventory에서 캐시를 사용한다.
 	 * 일반/NPC 인벤토리는 별도 ConcurrentHashMap을 만들지 않고 필요 시 목록에서 계산한다.
 	 */
 	public int getItemCountDirect(int itemId) {
@@ -758,8 +758,8 @@ public class L1Inventory extends L1Object {
 	}
 
     protected final boolean rejectPendingItemTransfer() {
-        if (!(this instanceof L1PcInventory)) return false;
-        final L1PcInventory inventory = (L1PcInventory) this;
+        if (!(this instanceof CUserInventory)) return false;
+        final CUserInventory inventory = (CUserInventory) this;
         if (!inventory.getOwner().isItemTransferBusy()) return false;
         // A synchronous equipment scope holds the same CAS reservation, so a
         // persistent transfer cannot start. Its permit belongs to one thread;
@@ -1033,12 +1033,12 @@ public class L1Inventory extends L1Object {
 			int itemId = item.getItem().getItemId();
 			if (itemId == 40314 || itemId == 40316) {
                 // PC pet record + collar row are one CacheD receipt.
-                if (!(this instanceof L1PcInventory))
+                if (!(this instanceof CUserInventory))
                     PetTable.getInstance().deletePet(item.getId());
 			} else if (itemId >= 49016 && itemId <= 49025) {
                 // PC inventory persistence deletes the letter and item in one receipt.
                 // Ground/other inventories have no character_items row to couple.
-                if (!(this instanceof L1PcInventory))
+                if (!(this instanceof CUserInventory))
                     LetterTable.getInstance().deleteLetter(item.getId());
 			} else if (itemId >= 41383 && itemId <= 41400) {
 				L1FurnitureInstance furniture = null;
@@ -1126,14 +1126,14 @@ public class L1Inventory extends L1Object {
      */
     public synchronized boolean tradeWarehouseDepositBatch(int[] ids, int[] counts,
             Warehouse dest, Runnable onCommitted) {
-        if (!(this instanceof L1PcInventory) || ids == null || counts == null
+        if (!(this instanceof CUserInventory) || ids == null || counts == null
                 || ids.length <= 1 || ids.length != counts.length || ids.length > 100
                 || dest == null || !(dest instanceof l1j.server.server.model.Warehouse.PrivateWarehouse
                     || dest instanceof l1j.server.server.model.Warehouse.ClanWarehouse
                     || dest instanceof l1j.server.server.model.Warehouse.ElfWarehouse)
                 || rejectPendingItemTransfer()) return false;
         final l1j.server.server.model.Instance.L1PcInstance pc =
-                ((L1PcInventory) this).getOwner();
+                ((CUserInventory) this).getOwner();
         final CUserSocket session = pc.getNetConnection();
         if (session == null || !session.isConnected() || !pc.tryBeginItemTransfer()) return false;
         boolean submitted = false;
@@ -1214,7 +1214,7 @@ public class L1Inventory extends L1Object {
                     move.commit(() -> CIOThreadCallback.getInstance().completeWarehouseMove(pc,
                             stamp, () -> {
                         synchronized (session) {
-                            synchronized (L1Inventory.this) {
+                            synchronized (CInventory.this) {
                                 synchronized (dest) {
                                     if (!session.isConnected() || pc.getSessionStamp() != stamp
                                             || pc.getNetConnection() != session)
@@ -1243,14 +1243,14 @@ public class L1Inventory extends L1Object {
                                     if (onCommitted != null) {
                                         try { onCommitted.run(); }
                                         catch (RuntimeException auditFailure) {
-                                            java.util.logging.Logger.getLogger(L1Inventory.class.getName())
+                                            java.util.logging.Logger.getLogger(CInventory.class.getName())
                                                     .log(java.util.logging.Level.WARNING,
                                                          "Committed warehouse deposit audit dispatch failed", auditFailure);
                                         }
                                     }
                                     try { pc.getLight().turnOnOffLight(); }
                                     catch (RuntimeException lightFailure) {
-                                        java.util.logging.Logger.getLogger(L1Inventory.class.getName())
+                                        java.util.logging.Logger.getLogger(CInventory.class.getName())
                                                 .log(java.util.logging.Level.WARNING,
                                                      "Warehouse batch light refresh failed", lightFailure);
                                     }
@@ -1271,7 +1271,7 @@ public class L1Inventory extends L1Object {
     public synchronized boolean tradeWarehouseWithdrawalBatch(int[] ids, int[] counts,
             Warehouse source, int feeItemId, int feeEach, java.sql.Timestamp[] deadlines,
             Runnable onCommitted) {
-        if (!(this instanceof L1PcInventory) || ids == null || counts == null
+        if (!(this instanceof CUserInventory) || ids == null || counts == null
                 || ids.length <= 1 || ids.length > 100 || ids.length != counts.length
                 || source == null || (deadlines != null && (deadlines.length != ids.length
                         || !(source instanceof l1j.server.server.model.Warehouse.SupplementaryService)))
@@ -1279,7 +1279,7 @@ public class L1Inventory extends L1Object {
                 || (feeItemId == 0) != (feeEach == 0) || feeEach < 0
                 || rejectPendingItemTransfer()) return false;
         final l1j.server.server.model.Instance.L1PcInstance pc =
-                ((L1PcInventory) this).getOwner();
+                ((CUserInventory) this).getOwner();
         final CUserSocket session = pc.getNetConnection();
         if (session == null || !session.isConnected() || !pc.tryBeginItemTransfer()) return false;
         boolean submitted = false;
@@ -1329,11 +1329,11 @@ public class L1Inventory extends L1Object {
                         }
                     }
                     group[i] = g;
-                    if (!stackable && slots >= L1PcInventory.MAX_SIZE) return false;
+                    if (!stackable && slots >= CUserInventory.MAX_SIZE) return false;
                     if (g == i) {
                         destinations[i] = stackable || mergeCharge ? findItemId(item.getItemId()) : null;
                         destCounts[i] = destinations[i] == null ? 0 : destinations[i].getCount();
-                        if (destinations[i] == null && ++slots > L1PcInventory.MAX_SIZE) return false;
+                        if (destinations[i] == null && ++slots > CUserInventory.MAX_SIZE) return false;
                         if (fee != null && destinations[i] == fee) feeGroup = i;
                     }
                     if (deadlines != null && deadlines[i] != null
@@ -1422,7 +1422,7 @@ public class L1Inventory extends L1Object {
                     move.commit(() -> CIOThreadCallback.getInstance().completeWarehouseMove(pc,
                             stamp, () -> {
                         synchronized (session) {
-                            synchronized (L1Inventory.this) {
+                            synchronized (CInventory.this) {
                                 synchronized (source) {
                                     if (!session.isConnected() || pc.getSessionStamp() != stamp
                                             || pc.getNetConnection() != session)
@@ -1446,9 +1446,9 @@ public class L1Inventory extends L1Object {
                                         for (int i = 0; i < size; i++) {
                                             final L1ItemInstance result = deadlines != null && deadlines[i] != null
                                                     ? source.tradeSupplementaryItem(sources[i], counts[i],
-                                                            L1Inventory.this, deadlines[i], null)
+                                                            CInventory.this, deadlines[i], null)
                                                     : source.tradeItem(sources[i], counts[i],
-                                                            L1Inventory.this, feeItemId, feeEach);
+                                                            CInventory.this, feeItemId, feeEach);
                                             if (result == null)
                                                 throw new IllegalStateException("Withdrawal replay failed id=" + ids[i]);
                                             if (move.replayCarry(ids[i]) == result)
@@ -1462,7 +1462,7 @@ public class L1Inventory extends L1Object {
                                     if (onCommitted != null) {
                                         try { onCommitted.run(); }
                                         catch (RuntimeException auditFailure) {
-                                            java.util.logging.Logger.getLogger(L1Inventory.class.getName())
+                                            java.util.logging.Logger.getLogger(CInventory.class.getName())
                                                     .log(java.util.logging.Level.WARNING,
                                                             "Committed warehouse withdrawal audit failed", auditFailure);
                                         }
@@ -1482,8 +1482,8 @@ public class L1Inventory extends L1Object {
 
     private L1ItemInstance prepareWarehouseDeposit(L1ItemInstance item, int count, Warehouse dest,
             Runnable onCommitted) {
-        if (!(this instanceof L1PcInventory)) return null;
-        final L1PcInventory pcInventory = (L1PcInventory) this;
+        if (!(this instanceof CUserInventory)) return null;
+        final CUserInventory pcInventory = (CUserInventory) this;
         final l1j.server.server.model.Instance.L1PcInstance pc = pcInventory.getOwner();
         final CUserSocket session = pc.getNetConnection();
         if (session == null || !session.isConnected()) return null;
@@ -1523,7 +1523,7 @@ public class L1Inventory extends L1Object {
                     sessionStamp, () -> {
                 // RECV packet handling uses this same session monitor.
                 synchronized (session) {
-                    synchronized (L1Inventory.this) {
+                    synchronized (CInventory.this) {
                         synchronized (dest) {
                             if (!session.isConnected() || pc.getSessionStamp() != sessionStamp
                                     || pc.getNetConnection() != session || getItem(item.getId()) != item
@@ -1544,7 +1544,7 @@ public class L1Inventory extends L1Object {
                     pc.endItemTransfer();
                     try { pc.getLight().turnOnOffLight(); }
                     catch (RuntimeException lightFailure) {
-                        java.util.logging.Logger.getLogger(L1Inventory.class.getName())
+                        java.util.logging.Logger.getLogger(CInventory.class.getName())
                                 .log(java.util.logging.Level.WARNING, "Warehouse light refresh failed", lightFailure);
                     }
                     if (onCommitted != null) onCommitted.run();
@@ -1577,7 +1577,7 @@ public class L1Inventory extends L1Object {
         }
     }
 
-	public L1ItemInstance tradeItem(int objectId, int count, L1Inventory inventory) {
+	public L1ItemInstance tradeItem(int objectId, int count, CInventory inventory) {
 		L1ItemInstance item = getItem(objectId);
 		return tradeItem(item, count, inventory);
 	}
@@ -1623,7 +1623,7 @@ public class L1Inventory extends L1Object {
 			return null;
 		}
         if (!item.isStackable() && count != 1) return null;
-		if (inventory.checkAddItemToWarehouse(item, count) != L1Inventory.OK) {
+		if (inventory.checkAddItemToWarehouse(item, count) != CInventory.OK) {
 			return null;
 		}
 
@@ -1633,15 +1633,15 @@ public class L1Inventory extends L1Object {
 
         // Warehouse transfers must reserve BOTH DB owner lanes and persist
         // source and destination rows in the same JDBC transaction.
-        if (!(this instanceof L1PcInventory)) return null;
-        final int characterId = ((L1PcInventory) this).getOwner().getId();
+        if (!(this instanceof CUserInventory)) return null;
+        final int characterId = ((CUserInventory) this).getOwner().getId();
         final CacheD.WarehouseMove reservation;
         try { reservation = CacheD.beginWarehouseMove(characterId, inventory.transferOrderKey()); }
         catch (java.util.concurrent.RejectedExecutionException busy) { return null; }
         try (CacheD.WarehouseMove move = reservation) {
         // If the SQL transaction fails, do not let the game client continue
         // mutating memory that is no longer known to match the authoritative DB.
-        final CUserSocket session = ((L1PcInventory) this).getOwner().getNetConnection();
+        final CUserSocket session = ((CUserInventory) this).getOwner().getNetConnection();
         if (session != null) move.onFailure(() ->
                 CIOThreadCallback.getInstance().completeSession(session, session::kick));
         move.expectOriginal(item);
@@ -1752,10 +1752,10 @@ public class L1Inventory extends L1Object {
      */
     private static final Object ITEM_TRANSFER_TIE_LOCK = new Object();
 
-    public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory) {
+    public L1ItemInstance tradeItem(L1ItemInstance item, int count, CInventory inventory) {
         if (item == null || inventory == null || inventory == this) return null;
 
-        final L1Inventory first;
+        final CInventory first;
         if (this instanceof L1GroundInventory && !(inventory instanceof L1GroundInventory)) {
             first = this;
         } else if (inventory instanceof L1GroundInventory && !(this instanceof L1GroundInventory)) {
@@ -1775,7 +1775,7 @@ public class L1Inventory extends L1Object {
             first = sourceOrder < targetOrder ? this : inventory;
         }
 
-        final L1Inventory second = first == this ? inventory : this;
+        final CInventory second = first == this ? inventory : this;
         synchronized (first) {
             synchronized (second) {
                 return tradeItemLocked(item, count, inventory);
@@ -1784,7 +1784,7 @@ public class L1Inventory extends L1Object {
     }
 
     /** Both owner monitors must be held before any ownership/count mutation. */
-    private L1ItemInstance tradeItemLocked(L1ItemInstance item, int count, L1Inventory inventory) {
+    private L1ItemInstance tradeItemLocked(L1ItemInstance item, int count, CInventory inventory) {
         if (rejectPendingItemTransfer())
             throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
 		if (item == null || inventory == null || inventory == this) {
@@ -1859,7 +1859,7 @@ public class L1Inventory extends L1Object {
 		    if (!(inventory instanceof L1GroundInventory) && carryItem.GetContributeData() != null) {
                 carryItem.SetContributeData(null);
             }
-            if (inventory instanceof L1PcInventory) {
+            if (inventory instanceof CUserInventory) {
                 stored.setItemOwner(null);
             }
 			return stored;
@@ -1946,7 +1946,7 @@ public class L1Inventory extends L1Object {
 	}
 
 	protected void updateDurability(L1ItemInstance item, int previousDurability) {
-		updateItem(item, L1PcInventory.COL_DURABILITY);
+		updateItem(item, CUserInventory.COL_DURABILITY);
 	}
 
 	public L1ItemInstance findEquippedItemId(int id) {

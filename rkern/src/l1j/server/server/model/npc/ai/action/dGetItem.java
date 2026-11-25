@@ -9,7 +9,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
  * Native dGetItem sends the pickup request to L2Server (0x17) and later
  * removes the exact GET_ITEM desire and publishes GetItemFinished (0x3c).
  * L1 already owns the pickup request and transaction in CGetItemAction /
- * L1Inventory.tradeItem; the CIO owner receives the transfer result
+ * CInventory.tradeItem; the CIO owner receives the transfer result
  * synchronously and completes the same captured item without a second
  * event queue, worker, item allocation or speculative DB mutation.
  */

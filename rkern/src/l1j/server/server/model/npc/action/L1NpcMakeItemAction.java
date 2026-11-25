@@ -35,9 +35,9 @@ import org.w3c.dom.NodeList;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1ObjectAmount;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -98,13 +98,13 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
     private boolean submit(L1PcInstance pc, L1NpcInstance npc, int amount,
             String name, Consumer<L1NpcHtml> completion, Runnable failure) {
         if (amount <= 0 || amount >= 1000 || (!_isAmountInputable && amount != 1)) return false;
-        final L1PcInventory inv = pc.getInventory();
+        final CUserInventory inv = pc.getInventory();
         final String npcName = npc.getNpcTemplate().get_name();
         final CObjectDB.ItemData templates = CObjectDB.LoadItem();
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcTemplate().get_npcId())) {
             for (Material material : _materials) {
                 final int id = material.itemId(), enchant = material.enchant();
-                if (material.amount() <= 0 || material.amount() > L1Inventory.MAX_AMOUNT / amount) return false;
+                if (material.amount() <= 0 || material.amount() > CInventory.MAX_AMOUNT / amount) return false;
                 final long required = material.amount() * amount;
                 L1Item definition = templates.getTemplate(id);
                 if (definition == null) return false;
@@ -194,29 +194,29 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
     }
 
     private static boolean validExpandedAmount(int unit, int amount) {
-        return unit > 0 && amount > 0 && (long) unit * amount <= L1Inventory.MAX_AMOUNT;
+        return unit > 0 && amount > 0 && (long) unit * amount <= CInventory.MAX_AMOUNT;
     }
 
     /** Bound the quantity prompt and direct packet requests using the same exact
      * enchant/unequipped requirements, including repeated material entries. */
-    private int countNumOfMaterials(L1PcInventory inv) {
+    private int countNumOfMaterials(CUserInventory inv) {
         int count = 999;
         for (Material material : _materials) {
             int id = material.itemId();
             int enchant = material.enchant();
             long required = material.amount();
-            if (required <= 0 || required > L1Inventory.MAX_AMOUNT
+            if (required <= 0 || required > CInventory.MAX_AMOUNT
                     || CObjectDB.GetItem(id) == null) return 0;
             long available = 0;
             for (L1ItemInstance item : inv.getItems()) {
                 if (!item.isEquipped() && item.getItemId() == id && item.getEnchantLevel() == enchant)
                     available += item.getCount();
             }
-            count = (int) Math.min(count, Math.min(available, L1Inventory.MAX_AMOUNT) / required);
+            count = (int) Math.min(count, Math.min(available, CInventory.MAX_AMOUNT) / required);
         }
         for (L1ObjectAmount<Integer> reward : _items) {
             if (reward.getAmount() <= 0 || CObjectDB.GetItem(reward.getObject()) == null) return 0;
-            count = Math.min(count, L1Inventory.MAX_AMOUNT / reward.getAmount());
+            count = Math.min(count, CInventory.MAX_AMOUNT / reward.getAmount());
         }
         return count;
     }

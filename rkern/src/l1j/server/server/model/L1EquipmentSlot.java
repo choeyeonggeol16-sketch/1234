@@ -617,7 +617,7 @@ public class L1EquipmentSlot {
 		// The last charge can still activate the set's polymorph on this equip.
 		if (type == 2 && item.getItemId() == 20383 && equipment.getChargeCount() != 0) {
 			equipment.setChargeCount(equipment.getChargeCount() - 1);
-			_owner.getInventory().updateItem(equipment, L1PcInventory.COL_CHARGE_COUNT);
+			_owner.getInventory().updateItem(equipment, CUserInventory.COL_CHARGE_COUNT);
 		}
 	}
 

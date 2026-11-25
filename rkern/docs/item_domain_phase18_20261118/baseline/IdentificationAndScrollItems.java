@@ -8,7 +8,7 @@ import static l1j.server.server.model.item.function.SpecialEnchantScrolls.isOwne
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.network.core.sc.packet.SC_IdentifyDesc;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -27,7 +27,7 @@ final class IdentificationAndScrollItems {
             int safe_enchant = targetItem.getItem().get_safeenchant();
             if (!targetItem.isIdentified()) {
                 targetItem.setIdentified(true);
-                pc.getInventory().updateItem(targetItem, L1PcInventory.COL_IS_ID);
+                pc.getInventory().updateItem(targetItem, CUserInventory.COL_IS_ID);
             }
             SC_IdentifyDesc.send(pc, targetItem);
 

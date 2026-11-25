@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.treasure.L1TreasureChest;
@@ -50,7 +50,7 @@ public class MapCleaner implements Runnable{
 			if(obj.instanceOf(L1Type.L1TYPE_NPC)){
 				((L1NpcInstance) obj).deleteMe();
 			}else if(obj.instanceOf(L1Type.L1TYPE_INVENTORY)){
-				((L1Inventory) obj).clearItems();
+				((CInventory) obj).clearItems();
 			}
 		}
 	}
@@ -70,7 +70,7 @@ public class MapCleaner implements Runnable{
 			if(obj.instanceOf(L1Type.L1TYPE_NPC)){
 				((L1NpcInstance) obj).deleteMe();
 			}else if(obj.instanceOf(L1Type.L1TYPE_INVENTORY)){
-				((L1Inventory) obj).clearItems();
+				((CInventory) obj).clearItems();
 			}else if(obj.instanceOf(L1Type.L1TYPE_LIFT)){
 				((L1LiftGateInstance)obj).dispose();
 			}else if(obj.instanceOf(L1Type.L1TYPE_TREASURE_CHEST)){

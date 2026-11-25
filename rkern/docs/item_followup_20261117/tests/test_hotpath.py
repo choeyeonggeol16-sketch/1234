@@ -23,9 +23,9 @@ public class L1ItemInstance {
  public int getChargeCount(){return charge;} public void setChargeCount(int n){charge=n;chargesWritten++;}
  public void setLastUsed(Timestamp n){used=n;}
 }''',
-'l1j/server/server/model/L1PcInventory':'''package l1j.server.server.model;
+'l1j/server/server/model/CUserInventory':'''package l1j.server.server.model;
 import l1j.server.server.model.Instance.L1ItemInstance;
-public class L1PcInventory {
+public class CUserInventory {
  public static final int COL_CHARGE_COUNT=4,COL_DELAY_EFFECT=8;
  public int arrowId,stingId,finds,scans,updates,saves,removes,arrowGets,stingGets;
  public L1ItemInstance arrow,sting,target;
@@ -39,8 +39,8 @@ public class L1PcInventory {
  public void saveItem(L1ItemInstance i,int col){saves++;}
 }''',
 'l1j/server/server/model/Instance/L1PcInstance':'''package l1j.server.server.model.Instance;
-import l1j.server.server.model.L1PcInventory;
-public class L1PcInstance {public final L1PcInventory inv=new L1PcInventory(); public L1ItemInstance weapon; public L1PcInventory getInventory(){return inv;} public L1ItemInstance getWeapon(){return weapon;}}''',
+import l1j.server.server.model.CUserInventory;
+public class L1PcInstance {public final CUserInventory inv=new CUserInventory(); public L1ItemInstance weapon; public CUserInventory getInventory(){return inv;} public L1ItemInstance getWeapon(){return weapon;}}''',
 'l1j/server/server/model/L1ItemDelay':'''package l1j.server.server.model;
 import l1j.server.server.model.Instance.*;
 public class L1ItemDelay {public static int calls;public static void onItemUse(L1PcInstance p,L1ItemInstance i){calls++;}}''',

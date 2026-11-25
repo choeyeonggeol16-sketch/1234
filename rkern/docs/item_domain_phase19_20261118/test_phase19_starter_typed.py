@@ -34,13 +34,13 @@ public class L1ItemInstance {
  public void setIdentified(boolean b){identified=b;}
  public String getLogName(){return "i"+id+":"+count+":"+enchant+":"+attr+":"+identified;}
 }'''
-files['l1j/server/server/model/L1Inventory.java']='package l1j.server.server.model;public class L1Inventory{public static final int OK=0;}'
-files['l1j/server/server/model/L1PcInventory.java']='package l1j.server.server.model;public class L1PcInventory{public static final int COL_BLESS=1;}'
+files['l1j/server/server/model/CInventory.java']='package l1j.server.server.model;public class CInventory{public static final int OK=0;}'
+files['l1j/server/server/model/CUserInventory.java']='package l1j.server.server.model;public class CUserInventory{public static final int COL_BLESS=1;}'
 files['l1j/server/server/datatables/ItemTable.java']='''package l1j.server.server.datatables;
 import l1j.server.server.model.Instance.L1ItemInstance;
 public class ItemTable{public static ItemTable getInstance(){return new ItemTable();}public L1ItemInstance createItem(int id){return new L1ItemInstance(id);}}'''
 files[I+'L1PcInstance.java']='''package l1j.server.server.model.Instance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 public class L1PcInstance {
  public final StringBuilder events=new StringBuilder();
  public void log(String s){events.append(s).append(';');}
@@ -54,7 +54,7 @@ public class L1PcInstance {
  public class Inventory{
   public boolean checkItem(int id,int n){log("CHECK:"+id+":"+n);return hasItem;}
   public void consumeItem(int id,int n){consumed+=n;log("CONSUME:"+id+":"+n);}
-  public int checkAddItem(L1ItemInstance item,int n){log("ADD_CHECK:"+item.getLogName());return capacity==0?L1Inventory.OK:1;}
+  public int checkAddItem(L1ItemInstance item,int n){log("ADD_CHECK:"+item.getLogName());return capacity==0?CInventory.OK:1;}
   public void storeItem(L1ItemInstance item){log("STORE:"+item.getLogName());}
   public void updateItem(L1ItemInstance item,int col){log("UPDATE:"+item.getLogName()+":"+col);}
   public void saveItem(L1ItemInstance item,int col){log("SAVE:"+item.getLogName()+":"+col);}

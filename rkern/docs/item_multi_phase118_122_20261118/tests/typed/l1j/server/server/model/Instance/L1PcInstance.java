@@ -8,8 +8,8 @@ public class L1PcInstance {
  public int getLevel(){return level;}
  public int getMapId(){return mapId;}
  public void sendPackets(String s){lastNotice=s;}
- private final l1j.server.server.model.L1PcInventory inventory=new l1j.server.server.model.L1PcInventory();
- public l1j.server.server.model.L1PcInventory getInventory(){return inventory;}
+ private final l1j.server.server.model.CUserInventory inventory=new l1j.server.server.model.CUserInventory();
+ public l1j.server.server.model.CUserInventory getInventory(){return inventory;}
  public int delayCount;
  public boolean hasSkillEffect(int id) {return decay && (id==71 || id==l1j.server.server.model.character.skill.L1SkillId.DECAY_POTION) || buffs.containsKey(id);}
  public int getSkillEffectTimeSec(int id) {return buffs.getOrDefault(id,0)/1000;}

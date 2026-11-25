@@ -10,12 +10,12 @@ class PacketCandidate {
 				item.setEnchantLevel(EnchantLevel);
 				item.setAttrEnchantLevel(attr);
 				item.setIdentified(true);
-				if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+				if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
 					L1ItemInstance stored = pc.getInventory().storeItem(item);
 					if (stored == null) return false;
 					stored.setBless(Bless);
-					pc.getInventory().updateItem(stored, L1PcInventory.COL_BLESS);
-					pc.getInventory().saveItem(stored, L1PcInventory.COL_BLESS);
+					pc.getInventory().updateItem(stored, CUserInventory.COL_BLESS);
+					pc.getInventory().saveItem(stored, CUserInventory.COL_BLESS);
 				} else { // 가질 수 없는 경우는 지면에 떨어뜨리는 처리의 캔슬은 하지 않는다(부정 방지)
 					SC_ServerMessage.send(pc, 82);
 					// 무게 게이지가 부족하거나 인벤토리가 꽉차서 더 들 수 없습니다.
@@ -41,7 +41,7 @@ class PacketCandidate {
 				item.setCount(count);
 				item.setEnchantLevel(EnchantLevel);
 				item.setIdentified(true);
-				if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+				if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
 					if (pc.getInventory().storeItem(item) == null) return false;
 				} else {
 					SC_ServerMessage.send(pc, 82);

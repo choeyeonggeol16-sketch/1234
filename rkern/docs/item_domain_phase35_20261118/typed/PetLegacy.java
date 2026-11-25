@@ -13,7 +13,7 @@ static final int[] PET_MATCH_MAPID={1};
 			L1ItemInstance item = ItemTable.getInstance().createItem(41309);
 			int count = 3;
 			if (item != null) {
-				if (pc.getInventory().checkAddItem(item, count) == L1Inventory
+				if (pc.getInventory().checkAddItem(item, count) == CInventory
 						.OK) {
 					item.setCount(count);
 					pc.getInventory().storeItem(item);
@@ -34,7 +34,7 @@ static final int[] PET_MATCH_MAPID={1};
 			L1ItemInstance item = ItemTable.getInstance().createItem(41309);
 			int count = 1;
 			if (item != null) {
-				if (pc.getInventory().checkAddItem(item, count) == L1Inventory
+				if (pc.getInventory().checkAddItem(item, count) == CInventory
 						.OK) {
 					item.setCount(count);
 					pc.getInventory().storeItem(item);

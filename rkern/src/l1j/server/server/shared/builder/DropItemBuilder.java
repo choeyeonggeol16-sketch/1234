@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import java.util.Random;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.map.L1Map;
@@ -70,7 +70,7 @@ public class DropItemBuilder {
 				item.setEnchantLevel(_rnd.nextInt(_max_enchant + 1 - _min_enchant) + _min_enchant);
 			item.setCount(_min == _max ? _min : _rnd.nextInt(_max - _min + 1) + _min);
 			item.setIdentified(true);
-			L1Inventory inv = L1World.getInstance().getInventory(x, y, (short)m.getId());
+			CInventory inv = L1World.getInstance().getInventory(x, y, (short)m.getId());
 			inv.storeItem(item);
 		}catch(Exception e){
 			e.printStackTrace();

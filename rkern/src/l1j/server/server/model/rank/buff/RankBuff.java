@@ -3,7 +3,7 @@ package l1j.server.server.model.rank.buff;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
@@ -267,7 +267,7 @@ public final class RankBuff {
         final L1ItemInstance item = CObjectDB.LoadItem().createItem(itemId);
         if (item == null) return;
         try {
-            if (pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK
+            if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK
                     && !pc.getInventory().checkItem(itemId)) {
                 pc.getInventory().storeItem(item);
             }

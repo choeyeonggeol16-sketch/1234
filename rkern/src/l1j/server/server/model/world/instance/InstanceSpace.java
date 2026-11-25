@@ -11,7 +11,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.map.L1Map;
@@ -123,7 +123,7 @@ public class InstanceSpace {
 			Collection<L1ItemInstance> items 			= L1World.getInstance().getAllItem();
 			L1ItemInstance[] 				itemArray 	= items.toArray(new L1ItemInstance[items.size()]);
 			L1ItemInstance 				item			= null;
-			L1Inventory						inv				=	 null;
+			CInventory						inv				=	 null;
 			for(int i=0; i<itemArray.length; i++){
 				item = itemArray[i];
 				if(item == null)

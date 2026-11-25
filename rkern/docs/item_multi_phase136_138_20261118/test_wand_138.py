@@ -41,13 +41,13 @@ with tempfile.TemporaryDirectory(prefix='rkern138wand_') as temp:
             static class L1ItemInstance {int id=1,charges;L1ItemInstance(int x){charges=x;}
                 int getId(){return id;} int getChargeCount(){return charges;}
                 void setChargeCount(int x){charges=x;}}
-            static class L1PcInventory {static final int COL_CHARGE_COUNT=1;
+            static class CUserInventory {static final int COL_CHARGE_COUNT=1;
                 L1ItemInstance item;int removes,updates;
                 L1ItemInstance getItem(int id){return item;}
                 void removeItem(L1ItemInstance it){removes++;item=null;}
                 void updateItem(L1ItemInstance it,int column){updates++;}}
-            static class L1PcInstance {L1PcInventory inv=new L1PcInventory();
-                L1PcInventory getInventory(){return inv;}
+            static class L1PcInstance {CUserInventory inv=new CUserInventory();
+                CUserInventory getInventory(){return inv;}
                 int getMapId(){return 4;}int getX(){return 123;}int getY(){return 321;}}
             static class IdFactory {static IdFactory getInstance(){return new IdFactory();}
                 int nextId(){return 100;}}

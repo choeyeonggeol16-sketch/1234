@@ -21,11 +21,11 @@ import l1j.server.server.model.CParty;
 import l1j.server.server.model.character.Item.Drop.CContributeData;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1EffectSpawn;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1NpcTalkData;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -211,7 +211,7 @@ public class L1MonsterInstance extends L1NpcInstance {
         if (item == null || isDestroyed() || isDead()) return;
         final int before = item.getCount();
         RefineItem();
-        final L1Inventory inventory = getInventory();
+        final CInventory inventory = getInventory();
         if (inventory == null) return;
         inventory.shuffle();
         if (inventory.getItem(item.getId()) == item) {
@@ -695,7 +695,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     }
 
     @Override
-    public synchronized void setInventory(L1Inventory inventory) {
+    public synchronized void setInventory(CInventory inventory) {
         if (_pendingPartyDrop != null && inventory != getInventory()) {
             throw new IllegalStateException("Party drop owns the NPC inventory");
         }
@@ -840,7 +840,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         CParty party;
         L1PcInstance[] members;
         L1Location origin;
-        L1Inventory source;
+        CInventory source;
         boolean claimed; // guarded by NPC monitor
         boolean routed; // only the claimed dispatcher may run the initial drop
         boolean retryArmed; // guarded by NPC monitor
@@ -977,7 +977,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 
     /** Only transfer exact items still linked to the retained corpse inventory. */
     private boolean RecoverPartyDrop(DeathSettlement job) {
-        final L1Inventory source = job.source;
+        final CInventory source = job.source;
         if (source.getItems().isEmpty()) return true;
         final L1World world = L1World.getInstance();
         for (L1ItemInstance item : source.getItems()) {
@@ -1371,10 +1371,10 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 		if (item != null) {
 			item.setCount(count);
 			item.setBless(Bless);
-			if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+			if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
 				pc.getInventory().storeItem(item);
-				pc.getInventory().updateItem(item, L1PcInventory.COL_BLESS);
-				pc.getInventory().saveItem(item, L1PcInventory.COL_BLESS);
+				pc.getInventory().updateItem(item, CUserInventory.COL_BLESS);
+				pc.getInventory().saveItem(item, CUserInventory.COL_BLESS);
 			} else { // 가질 수 없는 경우는 지면에 떨어뜨리는 처리의 캔슬은 하지 않는다(부정 방지)
 				L1World.getInstance().getInventory(pc.getX(), pc.getY(), pc.getMapId()).storeItem(item);
 			}

@@ -15,7 +15,7 @@ code+='''
 class Resistance {int getSpecialPierce(eKind k){return 0;}int getSpecialResistance(eKind k){return 0;}}
 enum eKind{FEAR,ALL}
 class L1Party{}
-class L1PcInventory {static final int COL_CHARGE_COUNT=1;}
+class CUserInventory {static final int COL_CHARGE_COUNT=1;}
 class L1Location {int getX(){return 1;}int getY(){return 1;}int getMapId(){return 4;}}
 class L1Teleport {static L1Teleport getInstance(){return new L1Teleport();}L1Location 소환텔레포트(L1PcInstance p,int d){return new L1Location();}}
 class SC_DoActionGFX {static void send(Object o,int a,int b){}static void broadcast(L1PcInstance p,int a){}}

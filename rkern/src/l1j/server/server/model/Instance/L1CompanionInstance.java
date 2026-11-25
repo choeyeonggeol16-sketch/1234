@@ -20,9 +20,9 @@ import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Ability;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1GroundInventory;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.CAttackAction;
@@ -989,10 +989,10 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     
     private void do_drain_items(){
-        L1PcInventory master_inventory = m_master.getInventory();
+        CUserInventory master_inventory = m_master.getInventory();
         List<L1ItemInstance> items = _inventory.getItems();
         for(L1ItemInstance item : items){
-            if(master_inventory.checkAddItem(item, item.getCount()) == L1Inventory.OK){
+            if(master_inventory.checkAddItem(item, item.getCount()) == CInventory.OK){
                 _inventory.tradeItem(item,  item.getCount(), master_inventory);
                 SC_ServerMessage.send(m_master, 143, getName(), item.getLogName());
             }else{
@@ -1001,7 +1001,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         }
     }
     
-    private L1Inventory find_drop_inventory(){
+    private CInventory find_drop_inventory(){
         if(m_master != null){
             return m_master.getInventory();
         }
@@ -1021,7 +1021,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(items == null || items.size() <= 0)
             return;
 
-        L1Inventory target_inventory = find_drop_inventory();		
+        CInventory target_inventory = find_drop_inventory();		
         if(target_inventory == null){
             CharactersItemStorage storage = CharactersItemStorage.create();
             for(L1ItemInstance item : items){
@@ -1295,8 +1295,8 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(item == null || item.getItem() == null || m_master == null)
             return;
         
-        L1PcInventory master_inventory = m_master.getInventory();
-        if(master_inventory.checkAddItem(item, item.getCount()) == L1Inventory.OK){
+        CUserInventory master_inventory = m_master.getInventory();
+        if(master_inventory.checkAddItem(item, item.getCount()) == CInventory.OK){
             _inventory.tradeItem(item,  item.getCount(), master_inventory);
             SC_ServerMessage.send(m_master, 143, getName(), item.getLogName());
         }else{

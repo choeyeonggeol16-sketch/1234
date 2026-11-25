@@ -12,7 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -85,7 +85,7 @@ final class MoneyBoxTransactions {
             min = Config.불멸가호아덴2;
             max = Config.불멸가호아덴22;
         } else return;
-        if (min <= 0 || max < min || max > L1Inventory.MAX_AMOUNT) {
+        if (min <= 0 || max < min || max > CInventory.MAX_AMOUNT) {
             SC_SystemMessage.send(pc, "불멸의 가호 보상 설정을 확인해 주세요.");
             return;
         }

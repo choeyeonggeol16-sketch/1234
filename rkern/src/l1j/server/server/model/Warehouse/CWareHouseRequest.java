@@ -6,7 +6,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_Result;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
@@ -152,8 +152,8 @@ public final class CWareHouseRequest {
     private static int selectedCount(L1PcInstance pc, L1ItemInstance item, int requested) {
         if (item == null) return 0;
         final int available = item.getCount();
-        if (requested <= 0 || requested > L1Inventory.MAX_AMOUNT || available <= 0
-                || available > L1Inventory.MAX_AMOUNT || (!item.isStackable() && requested != 1)) {
+        if (requested <= 0 || requested > CInventory.MAX_AMOUNT || available <= 0
+                || available > CInventory.MAX_AMOUNT || (!item.isStackable() && requested != 1)) {
             SC_Disconnect.send(pc);
             return 0;
         }

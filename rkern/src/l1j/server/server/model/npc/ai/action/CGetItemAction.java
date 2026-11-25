@@ -1,7 +1,7 @@
 package l1j.server.server.model.npc.ai.action;
 
 import l1j.server.server.model.L1GroundInventory;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -113,7 +113,7 @@ public final class CGetItemAction {
      */
     static void searchItemFromAir(final L1NpcInstance npc) {
         if (!canSearchFromAir(npc)) return;
-        final L1Inventory inventory = npc.getInventory();
+        final CInventory inventory = npc.getInventory();
         if (inventory == null) return;
         L1ItemInstance found = null;
         int nearest = AIR_FOOD_RADIUS + 1;
@@ -126,7 +126,7 @@ public final class CGetItemAction {
                         || item.getMapId() != npc.getMapId() || item.getCount() <= 0) continue;
                 final int distance = chebyshev(npc.getX(), npc.getY(), item.getX(), item.getY());
                 if (distance >= nearest || distance > AIR_FOOD_RADIUS
-                        || inventory.checkAddItem(item, item.getCount()) != L1Inventory.OK
+                        || inventory.checkAddItem(item, item.getCount()) != CInventory.OK
                         || ground.getItem(item.getId()) != item) continue;
                 found = item;
                 nearest = distance;
@@ -222,7 +222,7 @@ public final class CGetItemAction {
 
         CGetItemAction.itemSearchCooldown(creature, SEARCH_COOLDOWN_TICKS);
 
-        final L1Inventory inventory = creature.getInventory();
+        final CInventory inventory = creature.getInventory();
         if (inventory == null) {
             return;
         }
@@ -267,7 +267,7 @@ public final class CGetItemAction {
 
                 if (inventory.checkAddItem(
                         item,
-                        item.getCount()) != L1Inventory.OK) {
+                        item.getCount()) != CInventory.OK) {
                     continue;
                 }
 
@@ -411,7 +411,7 @@ public final class CGetItemAction {
             return;
         }
 
-        final L1Inventory groundInventory =
+        final CInventory groundInventory =
                 L1World.getInstance().findGroundInventory(
                         targetItem.getX(),
                         targetItem.getY(),
@@ -425,7 +425,7 @@ public final class CGetItemAction {
             return;
         }
 
-        final L1Inventory destination = creature.getInventory();
+        final CInventory destination = creature.getInventory();
         if (destination == null) {
             dGetItem.GetItemFinished(creature, targetItem, null);
             return;
@@ -512,7 +512,7 @@ public final class CGetItemAction {
             return false;
         }
 
-        final L1Inventory groundInventory =
+        final CInventory groundInventory =
                 L1World.getInstance().findGroundInventory(
                         item.getX(),
                         item.getY(),

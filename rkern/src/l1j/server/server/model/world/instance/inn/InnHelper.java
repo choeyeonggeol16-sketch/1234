@@ -9,7 +9,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.buffer.Assemble;
@@ -70,7 +70,7 @@ public class InnHelper {
         final int index = hall ? 1 : 0;
         if (_mInfo == null || _mInfo.length <= index || _mInfo[index] == null) return;
         final InnMapInfo info = _mInfo[index];
-        final L1Inventory inv = pc.getInventory();
+        final CInventory inv = pc.getInventory();
         if (inv.checkItem(INN_KEYID)) {
             sendNormal(pc, npc.getId(), hall ? "inn15" : "inn5");
             return;

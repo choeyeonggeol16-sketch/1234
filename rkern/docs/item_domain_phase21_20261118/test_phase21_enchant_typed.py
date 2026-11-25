@@ -8,8 +8,8 @@ ENV=dict(os.environ,LANG='C.UTF-8',LC_ALL='C.UTF-8')
 PKG='l1j/server/server/model/item/function/'
 STUBS={
  'l1j/server/Config.java':'''package l1j.server;public class Config {public static boolean MASTERENCHANTMESS;public static int LOGGING_WEAPON_ENCHANT=1, LOGGING_ARMOR_ENCHANT=1;}''',
- 'l1j/server/server/model/L1PcInventory.java':'''package l1j.server.server.model;import l1j.server.server.model.Instance.*;import l1j.server.server.model.item.function.Log;
-public class L1PcInventory {public static final int COL_ENCHANTLVL=8;public void setEquipped(L1ItemInstance item,boolean b){Log.s.append("equip:").append(b).append(';');}
+ 'l1j/server/server/model/CUserInventory.java':'''package l1j.server.server.model;import l1j.server.server.model.Instance.*;import l1j.server.server.model.item.function.Log;
+public class CUserInventory {public static final int COL_ENCHANTLVL=8;public void setEquipped(L1ItemInstance item,boolean b){Log.s.append("equip:").append(b).append(';');}
 public void updateItem(L1ItemInstance item,int col){Log.s.append("update:").append(col).append(';');}
 public void saveItem(L1ItemInstance item,int col){Log.s.append("saveitem:").append(col).append(';');}
 public void removeItem(L1ItemInstance item,int c){Log.s.append("remove:").append(c).append(';');}}
@@ -20,9 +20,9 @@ public int getId(){return id;} public int getEnchantLevel(){return level;}public
 public String getName(){return name;}public boolean isIdentified(){return identified;}public boolean isEquipped(){return equipped;} public int getCount(){return count;}
 public Template getItem(){return new Template();}public class Template {public int getType2(){return type2;}public int getItemId(){return id;}public int getType(){return type;}public int get_safeenchant(){return safe;}}}
 ''',
- 'l1j/server/server/model/Instance/L1PcInstance.java':'''package l1j.server.server.model.Instance;import l1j.server.server.model.L1PcInventory;import l1j.server.server.model.item.function.Log;
-public class L1PcInstance {public final L1PcInventory inventory=new L1PcInventory();public final AC ac=new AC();public final Resist resist=new Resist();
-public L1PcInventory getInventory(){return inventory;}public void saveInventory(){Log.s.append("saveinv;");}
+ 'l1j/server/server/model/Instance/L1PcInstance.java':'''package l1j.server.server.model.Instance;import l1j.server.server.model.CUserInventory;import l1j.server.server.model.item.function.Log;
+public class L1PcInstance {public final CUserInventory inventory=new CUserInventory();public final AC ac=new AC();public final Resist resist=new Resist();
+public CUserInventory getInventory(){return inventory;}public void saveInventory(){Log.s.append("saveinv;");}
 public AC getAC(){return ac;}public Resist getResistance(){return resist;}
 public class AC{public void addAc(int n){Log.s.append("ac:").append(n).append(';');}}
 public class Resist{public void addMr(int n){Log.s.append("mr:").append(n).append(';');}}}

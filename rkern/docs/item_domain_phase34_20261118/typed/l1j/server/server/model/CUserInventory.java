@@ -2,12 +2,12 @@ package l1j.server.server.model;
 import java.util.*;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
-public class L1PcInventory {
+public class CUserInventory {
  public boolean reject, throwCheck,throwStore,returnNull, lateOwnership;
  public int checkCalls,storeCalls,checkOwnedCalls;
  public final Map<Integer,L1ItemInstance> owned=new HashMap<>();
  public int checkAddItem(L1ItemInstance item,int count){checkCalls++;if(throwCheck)throw new IllegalStateException("check fail");return reject?1:OK;}
- private static final int OK=L1Inventory.OK;
+ private static final int OK=CInventory.OK;
  public boolean checkItem(int id){checkOwnedCalls++;for(var item:owned.values())if(item.getItem().itemId==id)return true;return false;}
  public L1ItemInstance getItem(int id){return owned.get(id);}
  public L1ItemInstance storeItem(L1ItemInstance item){storeCalls++;

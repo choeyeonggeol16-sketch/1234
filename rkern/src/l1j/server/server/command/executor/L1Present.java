@@ -6,8 +6,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.logging.Logger;
 
 import l1j.server.server.datatables.CharacterTable;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -76,7 +76,7 @@ public class L1Present implements L1CommandExecutor {
 					L1ItemInstance item = CObjectDB.CreateItem(itemid);
 					item.setEnchantLevel(0);
 					item.setCount(count);
-					if (target.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+					if (target.getInventory().checkAddItem(item, count) == CInventory.OK) {
 						target.getInventory().storeItem(item);
 					//	target.sendPackets(new S_GMHtml("선물: "+target.getName()+"" , ""+item.getLogName()+" 를(을) 획득함 인벤토리 확인."));
 						target.sendPackets("\\f:선물: " + item.getLogName() + " " + count + "개 획득 인벤토리 확인하세요");
@@ -94,12 +94,12 @@ public class L1Present implements L1CommandExecutor {
 						if (bless == 129) {
 							item.setBless(bless);
 						}
-						//if (target.getInventory().checkAddItem(item, 1) == L1Inventory.OK) {
+						//if (target.getInventory().checkAddItem(item, 1) == CInventory.OK) {
 						target.getInventory().storeItem(item);
 						if (bless == 129) {
 							item.setBless(bless);
-							target.getInventory().updateItem(item, L1PcInventory.COL_BLESS);
-							target.getInventory().saveItem(item, L1PcInventory.COL_BLESS);
+							target.getInventory().updateItem(item, CUserInventory.COL_BLESS);
+							target.getInventory().saveItem(item, CUserInventory.COL_BLESS);
 						}
 						//	} else {
 						//		break;

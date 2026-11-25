@@ -26,10 +26,10 @@ put('l1j/server/server/model/Instance/L1ItemInstance.java', '''
   public int getRecordingColumns(){return dirty;}
  }
 ''')
-put('l1j/server/server/model/L1PcInventory.java', '''
+put('l1j/server/server/model/CUserInventory.java', '''
  package l1j.server.server.model;
  import l1j.server.server.model.Instance.L1ItemInstance;
- public class L1PcInventory {
+ public class CUserInventory {
   public static final int COL_SAVE_ALL=0xFFFF;
   public L1ItemInstance current;
   public int itemSaves=0, removes=0;
@@ -41,13 +41,13 @@ put('l1j/server/server/model/L1PcInventory.java', '''
 put('l1j/server/server/model/Instance/L1PcInstance.java', '''
  package l1j.server.server.model.Instance;
  import java.sql.Timestamp;
- import l1j.server.server.model.L1PcInventory;
+ import l1j.server.server.model.CUserInventory;
  public class L1PcInstance {
   public int mark=60, saveCalls=0, skillMs=0, rank=1;
   public boolean failSave=false,failSkill=false,top=true;
   public Timestamp lastBless;
-  public L1PcInventory inventory=new L1PcInventory();
-  public L1PcInventory getInventory(){return inventory;}
+  public CUserInventory inventory=new CUserInventory();
+  public CUserInventory getInventory(){return inventory;}
   public int getId(){return 2001;}
   public int getMark_count(){return mark;}
   public void setMark_count(int v){mark=v;}

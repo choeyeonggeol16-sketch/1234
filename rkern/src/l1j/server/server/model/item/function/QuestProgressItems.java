@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -37,7 +37,7 @@ final class QuestProgressItems {
             // preimage-checked receipt. No JDBC executes on the CIO owner.
             CacheD.getInstance().saveCharacter(new CharacterSnapshot(pc));
             if (item.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(item, L1PcInventory.COL_SAVE_ALL);
+                pc.getInventory().saveItem(item, CUserInventory.COL_SAVE_ALL);
             try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, item.getId())) {
                 if (!tx.debit(item, 1)) return ItemActionResult.COMPLETE;
                 tx.requireTables("characters");

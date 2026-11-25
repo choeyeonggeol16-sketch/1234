@@ -5,7 +5,7 @@ public class TestPhase37 {
  static void eq(boolean v,String why){checks++;if(!v)throw new AssertionError(why);}
  static R run(boolean candidate,boolean sealed,int id,int count,boolean existing,int fail){
   Trace.events.clear();L1World.getInstance().all.clear();ItemTable.next=1000;
-  L1PcInstance pc=new L1PcInstance();L1PcInventory inv=pc.inventory;
+  L1PcInstance pc=new L1PcInstance();CUserInventory inv=pc.inventory;
   if(existing){L1ItemInstance it=ItemTable.getInstance().createItem(id);it.count=9;inv.owned.put(it.id,it);}
   inv.reject=fail==1;inv.failCheck=fail==2;inv.failStore=fail==3;inv.storeNull=fail==4;inv.failUpdate=fail==5;inv.failSave=fail==6;
   boolean result=false;String error="";

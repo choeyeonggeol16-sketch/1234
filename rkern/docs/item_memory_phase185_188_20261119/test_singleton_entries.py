@@ -60,17 +60,17 @@ public final class TestEntryMemory {
     b.blessLevel=a.blessLevel;b.blessLevel2=a.blessLevel2;b.level=a.level;
     b.pack=a.pack;b.expiry=a.expiry;b.last=a.last;b.hotel=a.hotel;return b;
   }
-  static class L1Inventory {static final int MAX_AMOUNT=1000000;}
-  static class L1PcInventory {
+  static class CInventory {static final int MAX_AMOUNT=1000000;}
+  static class CUserInventory {
     static final int MAX_SIZE=128;
     final ArrayList<L1ItemInstance> list=new ArrayList<>();
     Collection<L1ItemInstance> getItems(){return list;}
     L1ItemInstance getItem(int id){for(var i:list)if(i.id==id)return i;return null;}
   }
   static class L1PcInstance {
-    final int id; final L1PcInventory inventory = new L1PcInventory();
+    final int id; final CUserInventory inventory = new CUserInventory();
     L1PcInstance(int id){this.id=id;}
-    L1PcInventory getInventory(){return inventory;}
+    CUserInventory getInventory(){return inventory;}
     int getId(){return id;}
   }
   static class L1Item {

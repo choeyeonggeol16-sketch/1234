@@ -43,7 +43,7 @@ public class L1Trade {
                 if(characterToken(source)) {unsupportedCharacterTrade(player);return;}
                 L1ItemInstance previous=player.getTradeWindowInventory().getItem(itemId);
                 long offered=(long)amount+(previous==null?0:previous.getCount());
-                if(offered>source.getCount() || offered>L1Inventory.MAX_AMOUNT)return;
+                if(offered>source.getCount() || offered>CInventory.MAX_AMOUNT)return;
                 // Preserve distinct persistent IDs even for equal templates.
                 L1ItemInstance offer=Warehouse.transferCopy(source,source.getId(),(int)offered,source.getChargeCount());
                 if(previous!=null)player.getTradeWindowInventory()._items.remove(previous);

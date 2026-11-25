@@ -3,7 +3,7 @@ package l1j.server.server.command.executor;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.StringTokenizer;
 
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -62,7 +62,7 @@ public class L1CreateItem implements L1CommandExecutor {
 					if (isId == 1) {
 						item.setIdentified(true);
 					}
-					if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+					if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
 						pc.getInventory().storeItem(item);
 						SC_SystemMessage.send(pc, "\\fY아이템:[\\aA"+item.getLogName()+"\\fY] 아이템ID:[\\aA"+itemid+"\\fY] 인챈트:[\\aA"+enchant+"\\fY] \\aG생성");;
 					}
@@ -76,7 +76,7 @@ public class L1CreateItem implements L1CommandExecutor {
 						if (isId == 1) {
 							item.setIdentified(true);
 						}
-						if (pc.getInventory(). checkAddItem(item, 1) == L1Inventory.OK) {
+						if (pc.getInventory(). checkAddItem(item, 1) == CInventory.OK) {
 							pc.getInventory(). storeItem(item);
 						} else {
 							break;

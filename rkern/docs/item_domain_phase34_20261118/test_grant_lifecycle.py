@@ -80,23 +80,23 @@ public class L1ItemInstance {
  public void setIdentified(boolean b){identified=b;}public boolean isIdentified(){return identified;}
 }''')
 write(Path('l1j/server/server/model/Instance/L1PcInstance.java'),'''package l1j.server.server.model.Instance;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 public class L1PcInstance {
- public final L1PcInventory inv=new L1PcInventory();
- public L1PcInventory getInventory(){return inv;}
+ public final CUserInventory inv=new CUserInventory();
+ public CUserInventory getInventory(){return inv;}
 }''')
-write(Path('l1j/server/server/model/L1Inventory.java'),'''package l1j.server.server.model;
-public class L1Inventory {public static final int OK=0;}''')
-write(Path('l1j/server/server/model/L1PcInventory.java'),'''package l1j.server.server.model;
+write(Path('l1j/server/server/model/CInventory.java'),'''package l1j.server.server.model;
+public class CInventory {public static final int OK=0;}''')
+write(Path('l1j/server/server/model/CUserInventory.java'),'''package l1j.server.server.model;
 import java.util.*;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
-public class L1PcInventory {
+public class CUserInventory {
  public boolean reject, throwCheck,throwStore,returnNull, lateOwnership;
  public int checkCalls,storeCalls,checkOwnedCalls;
  public final Map<Integer,L1ItemInstance> owned=new HashMap<>();
  public int checkAddItem(L1ItemInstance item,int count){checkCalls++;if(throwCheck)throw new IllegalStateException("check fail");return reject?1:OK;}
- private static final int OK=L1Inventory.OK;
+ private static final int OK=CInventory.OK;
  public boolean checkItem(int id){checkOwnedCalls++;for(var item:owned.values())if(item.getItem().itemId==id)return true;return false;}
  public L1ItemInstance getItem(int id){return owned.get(id);}
  public L1ItemInstance storeItem(L1ItemInstance item){storeCalls++;

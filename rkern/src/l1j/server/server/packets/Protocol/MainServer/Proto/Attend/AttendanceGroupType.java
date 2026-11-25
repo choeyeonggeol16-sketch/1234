@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto.Attend;
 
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_BONUS_GROUP_INFO;
@@ -61,9 +61,9 @@ public enum AttendanceGroupType{
     
     public void doReward(L1PcInstance pc, int index){
         AttendanceBonusGroup bGroup = _gInfo.get_bonusGroup().get(index);
-        L1Inventory inv = pc.getInventory();
+        CInventory inv = pc.getInventory();
         for(AttendanceBonusInfo bInfo : bGroup.get_bonuses()){
-            if(inv.checkAddItem(bInfo.get_itemId(), bInfo.get_itemCount()) == L1Inventory.OK)
+            if(inv.checkAddItem(bInfo.get_itemId(), bInfo.get_itemCount()) == CInventory.OK)
                 inv.storeItem(bInfo.get_itemId(), bInfo.get_itemCount());
         }
     }

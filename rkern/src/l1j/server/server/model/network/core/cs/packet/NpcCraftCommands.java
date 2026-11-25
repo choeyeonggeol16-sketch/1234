@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -163,7 +163,7 @@ final class NpcCraftCommands {
             }
             counts[index] = item.getCount();
             final long reward = (long) counts[index] * TOTEM_PRICE[materials[index] - 40131];
-            if (counts[index] <= 0 || reward > L1Inventory.MAX_AMOUNT) {
+            if (counts[index] <= 0 || reward > CInventory.MAX_AMOUNT) {
                 fail(pc, objid, null, null);
                 return;
             }
@@ -176,7 +176,7 @@ final class NpcCraftCommands {
     private static boolean validRecipe(int[] ids, int[] counts) {
         if (ids == null || counts == null || ids.length == 0 || ids.length != counts.length) return false;
         for (int i = 0; i < ids.length; i++) {
-            if (ids[i] <= 0 || counts[i] <= 0 || counts[i] > L1Inventory.MAX_AMOUNT) return false;
+            if (ids[i] <= 0 || counts[i] <= 0 || counts[i] > CInventory.MAX_AMOUNT) return false;
         }
         return true;
     }

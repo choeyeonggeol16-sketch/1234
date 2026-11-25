@@ -1,7 +1,7 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.Config;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.network.core.session.CIOClient;
@@ -149,10 +149,10 @@ final class EnchantmentOutcomeEffects {
 		int newEnchantLvl = item.getEnchantLevel() + i;
 		int safe_enchant = item.getItem().get_safeenchant();
 		item.setEnchantLevel(newEnchantLvl);
-		client.getActiveChar().getInventory().updateItem(item, L1PcInventory.COL_ENCHANTLVL);
+		client.getActiveChar().getInventory().updateItem(item, CUserInventory.COL_ENCHANTLVL);
 		pc.saveInventory();
 		if (newEnchantLvl > safe_enchant) {
-			client.getActiveChar().getInventory().saveItem(item, L1PcInventory.COL_ENCHANTLVL);
+			client.getActiveChar().getInventory().saveItem(item, CUserInventory.COL_ENCHANTLVL);
 			pc.saveInventory();
 			/** 로그파일저장 **/
 			LoggerInstance.getInstance().addEnchant(pc, item, true);
@@ -268,7 +268,7 @@ final class EnchantmentOutcomeEffects {
 			SC_ServerMessage.send(pc, 1310);
 			pc.getInventory().setEquipped(item, false);
 			item.setEnchantLevel(0);
-			pc.getInventory().updateItem(item, L1PcInventory.COL_ENCHANTLVL);
+			pc.getInventory().updateItem(item, CUserInventory.COL_ENCHANTLVL);
 			pc.saveInventory();
 			if (itemType == 1) {
 			} else if (itemType == 2) {

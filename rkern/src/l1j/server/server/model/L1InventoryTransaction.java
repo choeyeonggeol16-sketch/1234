@@ -435,9 +435,9 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
     private L1ItemInstance grantCopyPrepared(L1PcInstance pc,L1ItemInstance image,int count,boolean fresh) {
         open(); owns(pc);
-        if (image==null || count<=0 || count>L1Inventory.MAX_AMOUNT) return null;
+        if (image==null || count<=0 || count>CInventory.MAX_AMOUNT) return null;
         if (!image.isStackable() && count!=1) {
-            if (count > L1PcInventory.MAX_SIZE) return null;
+            if (count > CUserInventory.MAX_SIZE) return null;
             L1ItemInstance last=null;
             for (int i=0;i<count;i++) {
                 L1ItemInstance single=copy(image);single.setCount(1);
@@ -456,7 +456,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 Entry e = entryAt(index);
                 if (e.owner==pc && e.image.getCount()>0 && mergeable(e.image,prepared)) {
                     long total=(long)e.image.getCount()+count;
-                    if (total>L1Inventory.MAX_AMOUNT) return null;
+                    if (total>CInventory.MAX_AMOUNT) return null;
                     e.image.setCount((int)total);
                     return e.image;
                 }
@@ -465,7 +465,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 if (findEntry(item.getId()) != null || !mergeable(item,prepared)) continue;
                 Entry e=entry(pc,item);
                 long total=(long)e.image.getCount()+count;
-                if (total>L1Inventory.MAX_AMOUNT) return null;
+                if (total>CInventory.MAX_AMOUNT) return null;
                 e.image.setCount((int)total);
                 return e.image;
             }
@@ -819,7 +819,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 addProjectedAmount(totals,e.image.getItemId(),e.image.getCount());
             }
             long scaled=(long)(weight/Math.max(1.0,Config.RATE_WEIGHT_LIMIT));
-            if(slots>L1PcInventory.MAX_SIZE || scaled>Integer.MAX_VALUE
+            if(slots>CUserInventory.MAX_SIZE || scaled>Integer.MAX_VALUE
                     || (scaled*100>=240L*Math.max(1,pc.getMaxWeight())))
                 throw new IllegalStateException("Projected inventory capacity exceeded");
         }
@@ -838,7 +838,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         return true;
     }
     private static void addProjectedAmount(TIntLongHashMap totals, int itemId, int count) {
-        if (totals.adjustOrPutValue(itemId, count, count) > L1Inventory.MAX_AMOUNT)
+        if (totals.adjustOrPutValue(itemId, count, count) > CInventory.MAX_AMOUNT)
             throw new IllegalStateException("Inventory quantity limit");
     }
     private static long weight(L1ItemInstance item) {

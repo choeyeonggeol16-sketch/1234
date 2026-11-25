@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanWareHouseHistory;
@@ -45,7 +45,7 @@ public final class CWareHouseWithdraw {
     static void Request(L1PcInstance pc, int kind, Warehouse warehouse, int feeItem, int feeEach,
             L1ItemInstance item, int count, Timestamp deadline) {
         final var inventory = pc.getInventory();
-        if (inventory.checkAddItem(item, count) != L1Inventory.OK) {
+        if (inventory.checkAddItem(item, count) != CInventory.OK) {
             SC_ServerMessage.send(pc, 270);
             return;
         }

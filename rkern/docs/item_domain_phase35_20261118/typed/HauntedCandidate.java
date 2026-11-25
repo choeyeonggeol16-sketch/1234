@@ -14,7 +14,7 @@ void npcBroadcast(String s){Trace.events.add("broadcast:"+s);}
 
 		if (item != null) {
 			try {
-				if (pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK) {
+				if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK) {
 					item.setCount(1);
 					if (pc.getInventory().storeItem(item) != null) {
 						SC_ServerMessage.send(pc, 403, item.getLogName());

@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1ItemDelay;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 
 /** Legacy normal-return charge, last-used and item-delay tail. Early exits never call this. */
 final class ItemActionCompletion {
@@ -20,8 +20,8 @@ final class ItemActionCompletion {
             L1ItemInstance live = pc.getInventory().getItem(input.getId());
             if (live == input) {
                 live.setLastUsed(new Timestamp(System.currentTimeMillis()));
-                pc.getInventory().updateItem(live, L1PcInventory.COL_DELAY_EFFECT);
-                pc.getInventory().saveItem(live, L1PcInventory.COL_DELAY_EFFECT);
+                pc.getInventory().updateItem(live, CUserInventory.COL_DELAY_EFFECT);
+                pc.getInventory().saveItem(live, CUserInventory.COL_DELAY_EFFECT);
             }
         }
         L1ItemDelay.onItemUse(pc, input);
@@ -42,14 +42,14 @@ final class ItemActionCompletion {
                     pc.getInventory().removeItem(item, 1);
                 } else {
                     item.setLastUsed(new Timestamp(System.currentTimeMillis()));
-                    pc.getInventory().updateItem(item, L1PcInventory.COL_CHARGE_COUNT);
-                    pc.getInventory().saveItem(item, L1PcInventory.COL_CHARGE_COUNT);
+                    pc.getInventory().updateItem(item, CUserInventory.COL_CHARGE_COUNT);
+                    pc.getInventory().saveItem(item, CUserInventory.COL_CHARGE_COUNT);
                 }
             } else {
                 Timestamp ts = new Timestamp(System.currentTimeMillis());
                 item.setLastUsed(ts);
-                pc.getInventory().updateItem(item, L1PcInventory.COL_DELAY_EFFECT);
-                pc.getInventory().saveItem(item, L1PcInventory.COL_DELAY_EFFECT);
+                pc.getInventory().updateItem(item, CUserInventory.COL_DELAY_EFFECT);
+                pc.getInventory().saveItem(item, CUserInventory.COL_DELAY_EFFECT);
             }
         }
         L1ItemDelay.onItemUse(pc, item);

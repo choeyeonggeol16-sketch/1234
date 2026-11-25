@@ -7,7 +7,7 @@ import l1j.server.Config;
 import l1j.server.server.datatables.AlchemyProbability;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -153,7 +153,7 @@ public final class CS_ALCHEMY_MAKE_REQ {
 
             MakeResult result = selectResult(alchemy, pc, alchemyId, inputs, filledSlots);
             int addCode = pc.getInventory().checkAddItem(result.template, 1);
-            if (addCode != L1Inventory.OK) {
+            if (addCode != CInventory.OK) {
                 doNotAllowInventory(pc, addCode);
                 return;
             }
@@ -266,7 +266,7 @@ public final class CS_ALCHEMY_MAKE_REQ {
     }
 
     private static void doNotAllowInventory(L1PcInstance pc, int addCode) {
-        (addCode == L1Inventory.WEIGHT_OVER
+        (addCode == CInventory.WEIGHT_OVER
                 ? SC_ALCHEMY_MAKE_ACK.ResultCode.RC_ERROR_WEIGHT_OVER
                 : SC_ALCHEMY_MAKE_ACK.ResultCode.RC_ERROR_INVEN_OVER).sendCachedMessage(pc);
     }

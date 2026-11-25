@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 /** L1 digest policy, dispatched by the existing NPC object timer. */
@@ -42,7 +42,7 @@ public final class CItemDigest {
     public synchronized void Add(final L1ItemInstance item, final int acquiredCount,
             final int digestSeconds) {
         if (item == null || acquiredCount <= 0 || digestSeconds <= 0 || !live()) return;
-        final L1Inventory inventory = npc.getInventory();
+        final CInventory inventory = npc.getInventory();
         if (inventory == null) return;
         final int current;
         synchronized (inventory) {
@@ -129,7 +129,7 @@ public final class CItemDigest {
     public synchronized void TimerExpired(final int timerGeneration) {
         if (timerGeneration != generation || armedDeadline == 0L) return;
         armedDeadline = 0L;
-        final L1Inventory inventory = npc.getInventory();
+        final CInventory inventory = npc.getInventory();
         if (!live() || inventory == null) {
             Clear();
             return;

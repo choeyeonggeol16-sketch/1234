@@ -26,7 +26,7 @@
 //import l1j.server.server.IdFactory;
 //import l1j.server.server.datatables.NpcTable;
 //import l1j.server.server.datatables.TrapTable;
-//import l1j.server.server.model.L1Inventory;
+//import l1j.server.server.model.CInventory;
 //import l1j.server.server.model.L1Location;
 //import l1j.server.server.model.L1Object;
 //import l1j.server.server.model.L1OrimQuest;
@@ -841,7 +841,7 @@
 //										for (L1Object obj : L1World.getInstance().getVisiblePoint(
 //												new L1Location(32741, 32860, _mapId), 15)) {
 //											if (obj instanceof L1ItemInstance) {
-//												L1Inventory groundInventory = L1World.getInstance().getInventory(
+//												CInventory groundInventory = L1World.getInstance().getInventory(
 //														obj.getX(), obj.getY(), obj.getMapId());
 //												groundInventory.deleteItem((L1ItemInstance) obj);
 //												L1World.getInstance().removeVisibleObject(obj);
@@ -1507,7 +1507,7 @@
 //						L1World.getInstance().removeVisibleObject(obj);
 //						L1World.getInstance().removeObject(obj);
 //					} else if (obj instanceof L1ItemInstance) {
-//						final L1Inventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(),
+//						final CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(),
 //								obj.getMapId());
 //						groundInventory.deleteItem((L1ItemInstance) obj);
 //						L1World.getInstance().removeVisibleObject(obj);

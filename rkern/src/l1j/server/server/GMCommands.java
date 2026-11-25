@@ -51,7 +51,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanRanking;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1NeigeSaveChar;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1PolyMorph;
@@ -1075,7 +1075,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 					item.setEnchantLevel(0);
 					item.setCount(count);
 					item.setIdentified(true);
-					if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+					if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
 						pc.getInventory().storeItem(item);
 						SC_SystemMessage.send(pc, "\\fY아이템:[\\aA" + item.getLogName() + "\\fY] 아이템ID:[\\aA"
 								+ itemid + "\\fY] 인챈트:[\\aA" + enchant + "\\fY] \\aG생성");
@@ -1089,7 +1089,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 						item.setEnchantLevel(enchant);
 						item.setAttrEnchantLevel(attrenchant);
 						item.setIdentified(true);
-						if (pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK) {
+						if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK) {
 							pc.getInventory().storeItem(item);
 						} else {
 							break;
@@ -1976,7 +1976,7 @@ for (L1PcInstance target : player) {
 									item.setCount(count);
 									item.setEnchantLevel(enchant);
 									if (item != null) {
-										if (target.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+										if (target.getInventory().checkAddItem(item, count) == CInventory.OK) {
 											target.getInventory().storeItem(item);
 										}
 									}
@@ -2592,7 +2592,7 @@ for (L1PcInstance target : player) {
 					item.setCount(count);
 					item.setEnchantLevel(enchant);
 					if (item != null) {
-						if (target.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+						if (target.getInventory().checkAddItem(item, count) == CInventory.OK) {
 							target.getInventory().storeItem(item);
 						}
 					}

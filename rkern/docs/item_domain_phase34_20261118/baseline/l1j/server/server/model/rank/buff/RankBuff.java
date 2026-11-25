@@ -3,7 +3,7 @@ package l1j.server.server.model.rank.buff;
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.rank.loader.RankLoadManager;
@@ -261,7 +261,7 @@ public final class RankBuff {
 
     private static void giveProtectionItem(L1PcInstance pc){
         L1ItemInstance item = ItemTable.getInstance().createItem(RankLoadManager.MRK_TOPPROTECTION_ID);
-        if(pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK
+        if(pc.getInventory().checkAddItem(item, 1) == CInventory.OK
                 && !pc.getInventory().checkItem(RankLoadManager.MRK_TOPPROTECTION_ID))
             pc.getInventory().storeItem(item);
     }

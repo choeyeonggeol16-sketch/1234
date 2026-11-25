@@ -16,7 +16,7 @@ import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1IntRegistry;
 import l1j.server.server.model.LocalWorldMap;
@@ -31,7 +31,7 @@ import l1j.server.server.templates.L1EtcItem;
 /**
  * NC dGetItem/GetItemFinished regression against production classes.
  * No MySQL, network, DB writes or synthetic inventory transactions.
- * CacheD's existing locked transfer stays in L1Inventory.tradeItem.
+ * CacheD's existing locked transfer stays in CInventory.tradeItem.
  */
 public final class TestNpcGetItem {
     private TestNpcGetItem() {
@@ -265,7 +265,7 @@ public final class TestNpcGetItem {
         Config.RATE_WEIGHT_LIMIT = Config.RATE_WEIGHT_LIMIT_PET = 1.0;
         singleton.set(null, world);
         try {
-            field(L1NpcInstance.class, "_inventory").set(npc, new L1Inventory());
+            field(L1NpcInstance.class, "_inventory").set(npc, new CInventory());
             npc._targetItem = null;
             npc._itemSearchCooldown = 0;
             npc.setPickupItem(true);
@@ -280,7 +280,7 @@ public final class TestNpcGetItem {
                 loc.set(ground, new L1Location(x, y, map));
                 ground.setClusterMapId(-1); ground.setClusterPos(-1, -1);
                 final CItemList items = new CItemList();
-                field(L1Inventory.class, "_items").set(ground, items);
+                field(CInventory.class, "_items").set(ground, items);
                 final L1ItemInstance item = instance(unsafe, L1ItemInstance.class);
                 item.setId(971100 + dx);
                 item.setItem(template); item.setCount(1);

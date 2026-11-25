@@ -10,7 +10,7 @@ import java.util.List;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.DoorSpawnTable;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
@@ -684,7 +684,7 @@ public class Hadin implements Runnable {
 				continue;
 			if(ob instanceof L1ItemInstance){
 				L1ItemInstance obj = (L1ItemInstance)ob;
-				L1Inventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
+				CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
 				groundInventory.removeItem(obj);
 			}else if(ob instanceof L1NpcInstance){
 				L1NpcInstance npc = (L1NpcInstance)ob;

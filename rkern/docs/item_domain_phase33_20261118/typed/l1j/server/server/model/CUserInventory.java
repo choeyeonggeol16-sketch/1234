@@ -2,7 +2,7 @@ package l1j.server.server.model;
 import java.util.HashMap;
 import java.util.Map;
 import l1j.server.server.model.Instance.L1ItemInstance;
-public class L1PcInventory {
+public class CUserInventory {
  public static final int COL_BLESS=1;
  public int reject=0;public boolean failCheck=false,failStore=false,returnNull=false,stack=false;
  public int saveCalls,updateCalls; public int checkCalls,storeCalls;

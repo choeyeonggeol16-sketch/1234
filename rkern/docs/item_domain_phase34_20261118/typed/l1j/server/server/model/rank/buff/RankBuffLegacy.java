@@ -7,7 +7,7 @@ public final class RankBuffLegacy {
 public static void run(L1PcInstance pc) { giveProtectionItem(pc); }
     private static void giveProtectionItem(L1PcInstance pc){
         L1ItemInstance item = ItemTable.getInstance().createItem(RankLoadManager.MRK_TOPPROTECTION_ID);
-        if(pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK
+        if(pc.getInventory().checkAddItem(item, 1) == CInventory.OK
                 && !pc.getInventory().checkItem(RankLoadManager.MRK_TOPPROTECTION_ID))
             pc.getInventory().storeItem(item);
     }

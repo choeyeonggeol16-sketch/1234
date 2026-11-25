@@ -30,8 +30,8 @@ code=r'''import java.util.*;
 import gnu.trove.map.hash.TIntLongHashMap;
 
 public final class TestCapacity {
-    static class L1Inventory { static final int MAX_AMOUNT = 160; }
-    static class L1PcInventory { static final int MAX_SIZE = 40; ArrayList<L1ItemInstance> items = new ArrayList<>(); int visits;
+    static class CInventory { static final int MAX_AMOUNT = 160; }
+    static class CUserInventory { static final int MAX_SIZE = 40; ArrayList<L1ItemInstance> items = new ArrayList<>(); int visits;
        Collection<L1ItemInstance> getItems(){ visits++; return items; }
        L1ItemInstance getItem(int id) { for(var i:items)if(i.id==id)return i;return null; }
     }
@@ -44,9 +44,9 @@ public final class TestCapacity {
        Def getItem(){return definition;}
        L1ItemInstance dup(){return new L1ItemInstance(id,itemId,count,definition.weight);}
     }
-    static class L1PcInstance { final int id; final L1PcInventory inv = new L1PcInventory(); int maxWeight;
+    static class L1PcInstance { final int id; final CUserInventory inv = new CUserInventory(); int maxWeight;
        L1PcInstance(int id,int maxWeight){this.id=id;this.maxWeight=maxWeight;}
-       L1PcInventory getInventory(){return inv;} int getMaxWeight(){return maxWeight;}
+       CUserInventory getInventory(){return inv;} int getMaxWeight(){return maxWeight;}
     }
     static class Owners { final L1PcInstance[] pcs; Owners(L1PcInstance... a){pcs=a;}
         int size(){return pcs.length;} L1PcInstance get(int i){return pcs[i];} }
@@ -72,9 +72,9 @@ public final class TestCapacity {
       HashMap<Integer,Long> totals=new HashMap<>();
       for(var pc:c.owners.pcs){
         long w=0; for(var it:pc.inv.items){ totals.merge(it.itemId,(long)it.count,Long::sum); w+=weight(it); }
-        if(pc.inv.items.size()>L1PcInventory.MAX_SIZE || w*100>=240L*pc.maxWeight)return false;
+        if(pc.inv.items.size()>CUserInventory.MAX_SIZE || w*100>=240L*pc.maxWeight)return false;
       }
-      for (var v:totals.values()) if (v>L1Inventory.MAX_AMOUNT) return false;
+      for (var v:totals.values()) if (v>CInventory.MAX_AMOUNT) return false;
       return true;
     }
     static void tests(){

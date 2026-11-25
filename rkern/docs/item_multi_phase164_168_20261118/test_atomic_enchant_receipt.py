@@ -30,17 +30,17 @@ with tempfile.TemporaryDirectory() as tmp:
  public int getRecordingColumns(){return dirty;}public Item getItem(){return item;}public void setEnchantLevel(int lv){this.lv=lv;}
  public static class Item{public int type2=2;public int getType2(){return type2;}}
  }''')
- add('l1j/server/server/model/L1PcInventory.java','''package l1j.server.server.model;
+ add('l1j/server/server/model/CUserInventory.java','''package l1j.server.server.model;
  import l1j.server.server.model.Instance.*;
- public class L1PcInventory {public static final int COL_SAVE_ALL=255;
+ public class CUserInventory {public static final int COL_SAVE_ALL=255;
  public L1ItemInstance scroll,target; public int saves;public boolean failSave;
  public L1ItemInstance getItem(int id){return id==1?scroll:id==2?target:null;}
  public void saveItem(L1ItemInstance item,int flags){saves++;if(failSave)throw new IllegalStateException("save unavailable");item.dirty=0;}
  }''')
  add('l1j/server/server/model/Instance/L1PcInstance.java','''package l1j.server.server.model.Instance;
- import l1j.server.server.model.L1PcInventory;
- public class L1PcInstance {public L1PcInventory inv=new L1PcInventory();public int getId(){return 42;}
- public L1PcInventory getInventory(){return inv;}}
+ import l1j.server.server.model.CUserInventory;
+ public class L1PcInstance {public CUserInventory inv=new CUserInventory();public int getId(){return 42;}
+ public CUserInventory getInventory(){return inv;}}
  ''')
  add('l1j/server/server/model/network/core/session/CIOClient.java','''package l1j.server.server.model.network.core.session;public class CIOClient {}''')
  add('l1j/server/server/storage/CacheD.java','''package l1j.server.server.storage;public class CacheD {public static int accountOrderKey(String s,int id){return id;}}''')
@@ -95,7 +95,7 @@ with tempfile.TemporaryDirectory() as tmp:
  ''')
  add('l1j/server/server/model/item/function/ItemReceiptOperations.java','''package l1j.server.server.model.item.function;
  import l1j.server.server.model.Instance.*;
- import l1j.server.server.model.L1PcInventory;
+ import l1j.server.server.model.CUserInventory;
  import l1j.server.server.model.network.core.session.CIOClient;
  import l1j.server.server.model.network.core.cs.packet.User;
  import l1j.server.server.model.network.core.cs.packet.CDB;

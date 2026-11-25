@@ -33,7 +33,7 @@ public final class L1PendingCredit {
         Credit(String id,int amount){this.id=id;this.amount=amount;}
     }
     public static CTransaction.Mutation prepare(int characterId,int amount,String reason) {
-        if(characterId<=0 || amount<=0 || amount>L1Inventory.MAX_AMOUNT)
+        if(characterId<=0 || amount<=0 || amount>CInventory.MAX_AMOUNT)
             throw new IllegalArgumentException("Credit identity/amount");
         final String id=UUID.randomUUID().toString();
         return con->{
@@ -121,7 +121,7 @@ public final class L1PendingCredit {
                 }}
             }
             for(Credit credit:credits) {
-                if(total+credit.amount>L1Inventory.MAX_AMOUNT)continue; // credit remains durable at the cap
+                if(total+credit.amount>CInventory.MAX_AMOUNT)continue; // credit remains durable at the cap
                 if(stack==0) {
                     L1ItemInstance item=new L1ItemInstance(CObjectDB.GetItem(40308),credit.amount);
                     item.setId(IdFactory.getInstance().nextId());item.setIdentified(true);

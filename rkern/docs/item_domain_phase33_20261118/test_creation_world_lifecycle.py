@@ -28,8 +28,8 @@ write('l1j/server/server/model/item/function/ItemCreationBaseline.java',f'''pack
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 final class ItemCreationBaseline {{\n{chr(10).join(methods)}\n}}''')
 base=(sourcebase/'SealedEquipmentRewards.java').read_text()
@@ -38,8 +38,8 @@ write('l1j/server/server/model/item/function/SealedEquipmentBaseline.java',f'''p
 import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 final class SealedEquipmentBaseline {{\n{method_txt}\n}}''')
 # minimal typed fakes for compile and assertions
@@ -57,18 +57,18 @@ public final class L1ItemInstance {
     public String getLogName(){return "#"+template+" x"+count+" e"+enchant+" b"+bless;}
 }''')
 write('l1j/server/server/model/Instance/L1PcInstance.java','''package l1j.server.server.model.Instance;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 public class L1PcInstance {
- private final L1PcInventory inventory=new L1PcInventory();
- public L1PcInventory getInventory(){return inventory;}
+ private final CUserInventory inventory=new CUserInventory();
+ public CUserInventory getInventory(){return inventory;}
 }''')
-write('l1j/server/server/model/L1Inventory.java','''package l1j.server.server.model;
-public class L1Inventory {public static final int OK=0;}''')
-write('l1j/server/server/model/L1PcInventory.java','''package l1j.server.server.model;
+write('l1j/server/server/model/CInventory.java','''package l1j.server.server.model;
+public class CInventory {public static final int OK=0;}''')
+write('l1j/server/server/model/CUserInventory.java','''package l1j.server.server.model;
 import java.util.HashMap;
 import java.util.Map;
 import l1j.server.server.model.Instance.L1ItemInstance;
-public class L1PcInventory {
+public class CUserInventory {
  public static final int COL_BLESS=1;
  public int reject=0;public boolean failCheck=false,failStore=false,returnNull=false,stack=false;
  public int saveCalls,updateCalls; public int checkCalls,storeCalls;

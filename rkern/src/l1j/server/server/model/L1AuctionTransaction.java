@@ -62,7 +62,7 @@ public final class L1AuctionTransaction {
         } catch(RuntimeException failure){SC_SystemMessage.send(pc,"입찰을 완료하지 못했습니다. 잔액을 확인해 주세요.");}
     }
     public static void list(L1PcInstance pc,L1House house,int price) {
-        if(pc==null || house==null || price<=0 || price>L1Inventory.MAX_AMOUNT || pc.getClan()==null
+        if(pc==null || house==null || price<=0 || price>CInventory.MAX_AMOUNT || pc.getClan()==null
                 || pc.getClan().getLeaderId()!=pc.getId() || pc.getClan().getHouseId()!=house.getHouseId() || house.isOnSale())return;
         L1AuctionBoard board=boardFor(house,price);board.setOldOwner(pc.getName());board.setOldOwnerId(pc.getId());
         try(L1InventoryTransaction tx=L1InventoryTransaction.begin(pc,ORDER_KEY)) {

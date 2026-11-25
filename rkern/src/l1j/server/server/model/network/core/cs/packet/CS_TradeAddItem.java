@@ -5,7 +5,7 @@ import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Trade;
 import l1j.server.server.model.L1World;
@@ -246,7 +246,7 @@ public final class CS_TradeAddItem {
                 .checkAddItem(
                         item,
                         itemCount)
-                != L1Inventory.OK) {
+                != CInventory.OK) {
 
             SC_ServerMessage.send(tradingPartner, 270);
 

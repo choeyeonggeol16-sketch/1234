@@ -6,7 +6,7 @@ final class L1Location {
  L1Location randomLocation(int radius,boolean b){return new L1Location(x,y);}
  int getX(){return x;}int getY(){return y;}
 }
-class L1Inventory {static final int OK=0;}
+class CInventory {static final int OK=0;}
 final class L1World {
  static final L1World INSTANCE=new L1World();static L1World getInstance(){return INSTANCE;}
  final Map<Integer,L1ItemInstance> world=new HashMap<>();final L1GroundInventory ground=new L1GroundInventory();
@@ -14,7 +14,7 @@ final class L1World {
  L1GroundInventory getInventory(int x,int y,short m){return ground;}
  void reset(){world.clear();ground.reset();}
 }
-final class L1GroundInventory extends L1Inventory {
+final class L1GroundInventory extends CInventory {
  boolean reject,failCheck,failStore,returnNull;int checkCalls,storeCalls;final Map<Integer,L1ItemInstance> owned=new LinkedHashMap<>();
  void reset(){reject=failCheck=failStore=returnNull=false;checkCalls=storeCalls=0;owned.clear();}
  int checkAddItem(L1ItemInstance it,int count){checkCalls++;if(failCheck)throw new IllegalStateException("check");return reject?1:OK;}

@@ -17,7 +17,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
@@ -163,7 +163,7 @@ public class DropTable {
 
 	private static final long MAX_STACKABLE = 2_000_000_000L;
 	
-	public void setDrop(L1NpcInstance npc, L1Inventory inventory) {
+	public void setDrop(L1NpcInstance npc, CInventory inventory) {
 		if (Config.STANDBY_SERVER) return;
 		if (npc == null || inventory == null) return;
 

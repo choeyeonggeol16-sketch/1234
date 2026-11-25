@@ -1,6 +1,6 @@
 import java.util.*;
-class L1Inventory {static final int OK=0;}
-class L1PcInventory extends L1Inventory {
+class CInventory {static final int OK=0;}
+class CUserInventory extends CInventory {
  static final int COL_BLESS=9;
  final Map<Integer,L1ItemInstance> owned=new LinkedHashMap<>();
  int checks,stores,updates,saves; boolean reject,failCheck,failStore,storeNull,failUpdate,failSave;
@@ -19,7 +19,7 @@ class L1ItemInstance {final int id,itemId;int count=1,enchant,attr,bless;boolean
  void setEnchantLevel(int v){enchant=v;}void setAttrEnchantLevel(int v){attr=v;}void setBless(int v){bless=v;}
  String getLogName(){return itemId+"*"+count+" +"+enchant;}
 }
-class L1PcInstance {final L1PcInventory inventory=new L1PcInventory();L1PcInventory getInventory(){return inventory;}}
+class L1PcInstance {final CUserInventory inventory=new CUserInventory();CUserInventory getInventory(){return inventory;}}
 class L1World {static final L1World INSTANCE=new L1World();static L1World getInstance(){return INSTANCE;}final Map<Integer,L1ItemInstance> all=new HashMap<>();
  void storeObject(L1ItemInstance item){all.put(item.id,item);}void removeObject(L1ItemInstance item){all.remove(item.id,item);}}
 class ItemTable {static final ItemTable INSTANCE=new ItemTable();static ItemTable getInstance(){return INSTANCE;}static int next=1000;

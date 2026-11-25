@@ -9,7 +9,7 @@ import static l1j.server.server.model.item.function.SpecialEnchantScrolls.isOwne
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -33,7 +33,7 @@ final class EngagementRingItemUse {
                             && partner.getPartnerId() == pc.getId()) {
                         partner_stat = true;
                         item.setChargeCount(item.getChargeCount() - 1);
-                        pc.getInventory().updateItem(item, L1PcInventory.COL_CHARGE_COUNT);
+                        pc.getInventory().updateItem(item, CUserInventory.COL_CHARGE_COUNT);
                     }
                 }
             } else {

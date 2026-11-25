@@ -15,7 +15,7 @@ static final int[] PET_MATCH_MAPID={1};
 		final L1ItemInstance medal = ItemTable.getInstance().createItem(41309);
 		if (medal != null) {
 			try {
-				if (pc.getInventory().checkAddItem(medal, count) == L1Inventory.OK) {
+				if (pc.getInventory().checkAddItem(medal, count) == CInventory.OK) {
 					medal.setCount(count);
 					if (pc.getInventory().storeItem(medal) != null) {
 						SC_ServerMessage.send(pc, 403, medal.getLogName());

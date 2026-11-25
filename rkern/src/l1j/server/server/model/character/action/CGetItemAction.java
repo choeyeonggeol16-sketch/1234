@@ -10,10 +10,10 @@ import l1j.server.server.GameServer;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
@@ -31,8 +31,8 @@ public final class CGetItemAction extends CNewAction {
     private static final long MAX_STACKABLE = 2_000_000_000L;
 
     private L1ItemInstance pickupItem;
-    private L1PcInventory pickupInven;
-    private L1Inventory pickupGInven;
+    private CUserInventory pickupInven;
+    private CInventory pickupGInven;
     private long effectiveAmount;
 
     CGetItemAction(CCreatureController controller) {
@@ -260,7 +260,7 @@ public final class CGetItemAction extends CNewAction {
 
         return pickupInven.checkAddItem(
                 pickupItem,
-                (int) effectiveAmount) == L1Inventory.OK;
+                (int) effectiveAmount) == CInventory.OK;
     }
 
     private boolean handlePartyDistribution(

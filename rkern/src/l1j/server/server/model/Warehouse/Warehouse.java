@@ -20,7 +20,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.monitor.Logger.WarehouseType;
 import l1j.server.server.model.L1DwarfForPackageInventory;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -496,7 +496,7 @@ public abstract class Warehouse extends L1Object {
 			L1ItemInstance findItem = findItemId(item.getItem().getItemId());
 			if (findItem != null) {
 				final int before = findItem.getCount();
-				if (before < 0 || (long) before + item.getCount() > L1Inventory.MAX_AMOUNT) return null;
+				if (before < 0 || (long) before + item.getCount() > CInventory.MAX_AMOUNT) return null;
 				findItem.setCount(before + item.getCount());
 				try {
 					updateItem(findItem);
@@ -536,10 +536,10 @@ public abstract class Warehouse extends L1Object {
     }
 
     private L1ItemInstance prepareWarehouseWithdrawal(L1ItemInstance item, int count,
-            L1Inventory inventory, int feeItemId, int feeAmount, Timestamp withdrawalEndTime,
+            CInventory inventory, int feeItemId, int feeAmount, Timestamp withdrawalEndTime,
             Runnable onCommitted) {
-        final l1j.server.server.model.L1PcInventory pcInventory =
-                (l1j.server.server.model.L1PcInventory) inventory;
+        final l1j.server.server.model.CUserInventory pcInventory =
+                (l1j.server.server.model.CUserInventory) inventory;
         final l1j.server.server.model.Instance.L1PcInstance pc = pcInventory.getOwner();
         final CUserSocket session = pc.getNetConnection();
         if (session == null || !session.isConnected()) return null;
@@ -554,7 +554,7 @@ public abstract class Warehouse extends L1Object {
                 && destStack != null;
         final int destCount = destStack == null ? 0 : destStack.getCount();
         final int destCharge = destStack == null ? 0 : destStack.getChargeCount();
-        if (countMerge && (long) destCount + count > L1Inventory.MAX_AMOUNT) return null;
+        if (countMerge && (long) destCount + count > CInventory.MAX_AMOUNT) return null;
         if (chargeMerge && (long) destCharge + item.getChargeCount() > Integer.MAX_VALUE) return null;
         final L1ItemInstance fee = feeAmount == 0 ? null : inventory.findItemId(feeItemId);
         if (feeAmount != 0 && (fee == null || !fee.isStackable()
@@ -643,16 +643,16 @@ public abstract class Warehouse extends L1Object {
         }
     }
 
-    public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory) {
+    public L1ItemInstance tradeItem(L1ItemInstance item, int count, CInventory inventory) {
         return tradeItem(item, count, inventory, 0, 0, null);
     }
 
-    public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory,
+    public L1ItemInstance tradeItem(L1ItemInstance item, int count, CInventory inventory,
             int feeItemId, int feeAmount) {
         return tradeItem(item, count, inventory, feeItemId, feeAmount, null);
     }
 
-    public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory inventory,
+    public L1ItemInstance tradeItem(L1ItemInstance item, int count, CInventory inventory,
             int feeItemId, int feeAmount, Runnable onCommitted) {
         if (inventory == null) return null;
         synchronized (inventory) {
@@ -664,12 +664,12 @@ public abstract class Warehouse extends L1Object {
 
     /** Supplementary timed items acquire their deadline in the committed character row. */
     public L1ItemInstance tradeSupplementaryItem(L1ItemInstance item, int count,
-            L1Inventory inventory, Timestamp endTime) {
+            CInventory inventory, Timestamp endTime) {
         return tradeSupplementaryItem(item, count, inventory, endTime, null);
     }
 
     public L1ItemInstance tradeSupplementaryItem(L1ItemInstance item, int count,
-            L1Inventory inventory, Timestamp endTime, Runnable onCommitted) {
+            CInventory inventory, Timestamp endTime, Runnable onCommitted) {
         if (!(this instanceof SupplementaryService) || inventory == null) return null;
         synchronized (inventory) {
             synchronized (this) {
@@ -683,7 +683,7 @@ public abstract class Warehouse extends L1Object {
 
     // All transfers use inventory -> warehouse. Callers must hold both monitors.
     private L1ItemInstance tradePreparedItemLocked(L1ItemInstance item, int count,
-            L1Inventory inventory, int feeItemId, int feeAmount, Timestamp withdrawalEndTime,
+            CInventory inventory, int feeItemId, int feeAmount, Timestamp withdrawalEndTime,
             Runnable onCommitted) {
         assert Thread.holdsLock(inventory) && Thread.holdsLock(this);
         assertWarehouseActive();
@@ -693,10 +693,10 @@ public abstract class Warehouse extends L1Object {
 		if (item.getCount() <= 0 || count <= 0 || count > item.getCount()) return null;
 		if (item.isEquipped()) return null;
         if (!item.isStackable() && count != 1) return null;
-		if (inventory.checkAddItem(item, count) != L1Inventory.OK) return null;
+		if (inventory.checkAddItem(item, count) != CInventory.OK) return null;
 		
-        if (!(inventory instanceof l1j.server.server.model.L1PcInventory)) return null;
-        final int characterId = ((l1j.server.server.model.L1PcInventory) inventory)
+        if (!(inventory instanceof l1j.server.server.model.CUserInventory)) return null;
+        final int characterId = ((l1j.server.server.model.CUserInventory) inventory)
                 .getOwner().getId();
         if (!CacheD.isWarehouseApplying())
             return prepareWarehouseWithdrawal(item, count, inventory, feeItemId, feeAmount,
@@ -705,7 +705,7 @@ public abstract class Warehouse extends L1Object {
         try { reservation = CacheD.beginWarehouseMove(characterId, transferOrderKey()); }
         catch (java.util.concurrent.RejectedExecutionException busy) { return null; }
         try (CacheD.WarehouseMove move = reservation) {
-        final CUserSocket session = ((l1j.server.server.model.L1PcInventory) inventory)
+        final CUserSocket session = ((l1j.server.server.model.CUserInventory) inventory)
                 .getOwner().getNetConnection();
         if (session != null) move.onFailure(() ->
                 CIOThreadCallback.getInstance().completeSession(session, session::kick));

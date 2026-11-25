@@ -4,7 +4,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.animation.EActionCodes;
@@ -159,7 +159,7 @@ public final class CGeneralAction extends CNewAction {
         } else {
             owner.getInventory().updateItem(
                     item,
-                    L1PcInventory.COL_CHARGE_COUNT);
+                    CUserInventory.COL_CHARGE_COUNT);
         }
     }
 

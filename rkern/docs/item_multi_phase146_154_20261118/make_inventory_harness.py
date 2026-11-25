@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 ROOT=Path(sys.argv[1]); OUT=Path(sys.argv[2]); OUT.mkdir(parents=True,exist_ok=True)
-p=ROOT/'src/l1j/server/server/model/L1PcInventory.java' 
+p=ROOT/'src/l1j/server/server/model/CUserInventory.java' 
 s=p.read_text()
 a=s.index('    void applyEconomyImage(')
 openb=s.index('{',a)
@@ -22,15 +22,15 @@ public class ReplayHarness {
     static L1ItemInstance item(int id,int template,int count,int ench) {
         L1ItemInstance x=new L1ItemInstance(id,template,count);x.ench=ench;return x;
     }
-    static L1PcInventory initial(L1ItemInstance x) {
-        L1PcInventory inv=new L1PcInventory();
+    static CUserInventory initial(L1ItemInstance x) {
+        CUserInventory inv=new CUserInventory();
         inv._items.add(x);inv.addItemCountCache(x.getItemId(),x.getCount());
         L1World.getInstance().storeObject(x);return inv;
     }
     static void clear() {Notice.clear();L1World.getInstance().objects.clear();}
     static void testUpdate(String failed) {
         clear();L1ItemInstance original=item(10,20,4,0);
-        L1PcInventory inv=initial(original);L1ItemInstance image=item(10,20,2,1);
+        CUserInventory inv=initial(original);L1ItemInstance image=item(10,20,2,1);
         Notice.fail=failed;inv.applyEconomyImage(original,image);
         check(original.getCount()==2,"update not applied: "+failed);
         check(inv.getItem(10)==original,"object identity changed");
@@ -40,7 +40,7 @@ public class ReplayHarness {
     }
     static void testDelete(String failed) {
         clear();L1ItemInstance original=item(11,900075,1,0);
-        L1PcInventory inv=initial(original); inv._owner.poly=true;
+        CUserInventory inv=initial(original); inv._owner.poly=true;
         Notice.fail=failed;inv.applyEconomyImage(original,null);
         check(inv.getItem(11)==null,"delete not applied: "+failed);
         check(!inv._owner.poly,"ability state not reset: "+failed);
@@ -49,7 +49,7 @@ public class ReplayHarness {
         if (!failed.equals("weight"))check(Notice.sent.contains("weight"),"weight omitted on delete");
     }
     static void testGrant(String failed) {
-        clear();L1PcInventory inv=new L1PcInventory();
+        clear();CUserInventory inv=new CUserInventory();
         L1ItemInstance image=item(12,900075,1,2);
         Notice.fail=failed;inv.applyEconomyImage(null,image);
         check(inv.getItem(12)==image,"grant not applied: "+failed);
@@ -61,7 +61,7 @@ public class ReplayHarness {
         for(String name:new String[]{"item-status","item-name","item-color","weight"})testUpdate(name);
         for(String name:new String[]{"delete","ability-off-2","ability-off-7","weight"})testDelete(name);
         for(String name:new String[]{"item-added","ability-on-2","ability-on-7","new-item-status","new-item-enchant","weight"})testGrant(name);
-        clear();L1PcInventory inv=new L1PcInventory();
+        clear();CUserInventory inv=new CUserInventory();
         try {inv.applyEconomyImage(item(5,2,1,0),null);throw new AssertionError("stale object accepted");}
         catch (IllegalStateException correct) {tests++;}
         l1j.server.server.storage.CacheD.applying=false;
@@ -76,8 +76,8 @@ class Notice {
  static void clear(){fail="";sent.clear();}
  static void send(String name){sent.add(name);if(name.equals(fail))throw new IllegalStateException("injected packet failure: "+name);}
 }
-class L1PcInventory {
- static final Logger RECEIPT_NOTICE_LOG=Logger.getLogger(L1PcInventory.class.getName());
+class CUserInventory {
+ static final Logger RECEIPT_NOTICE_LOG=Logger.getLogger(CUserInventory.class.getName());
  static void receiptNoticeFailed(String name,RuntimeException failure){}
  final L1PcInstance _owner=new L1PcInstance();
  final List<L1ItemInstance> _items=new ArrayList<>();

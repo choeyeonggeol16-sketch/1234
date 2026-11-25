@@ -2,7 +2,7 @@ package l1j.server.server.model.character.skill.core;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.skill.passive.PassiveID;
@@ -59,7 +59,7 @@ public enum SkillConsumeService {
 			}
 
 			// 장비 반감
-			final L1PcInventory inv = pc.getInventory();
+			final CUserInventory inv = pc.getInventory();
 			if (inv != null) {
 				if ((su.hdSkillId() == L1SkillId.PHYSICAL_ENCHANT_DEX || su.hdSkillId() == L1SkillId.HASTE) && inv.isEquippedDirect(20013)) {
 					mpConsume >>= 1;
@@ -119,7 +119,7 @@ public enum SkillConsumeService {
 
 		if (itemConsume == 0) return true;
 
-		final L1PcInventory inv = pc.getInventory();
+		final CUserInventory inv = pc.getInventory();
 		if (inv == null) return false;
 
 		// 82레벨 미만 대체(초보자) 아이템 로직 적용
@@ -163,7 +163,7 @@ public enum SkillConsumeService {
 		// 요구 아이템이 없거나, AI(자동사냥) 상태면 아이템 차감을 하지 않음
 		if (itemConsume == 0) return;
 
-		final L1PcInventory inv = pc.getInventory();
+		final CUserInventory inv = pc.getInventory();
 		if (inv == null) return;
 
 		// 82레벨 미만 대체(초보자) 아이템 로직 적용
@@ -172,7 +172,7 @@ public enum SkillConsumeService {
 		inv.consumeItem(actualItemId, itemConsumeCount);
 	}
 
-	private int getActualConsumeItemId(L1PcInstance pc, L1PcInventory inv, int originalItemId, int count) {
+	private int getActualConsumeItemId(L1PcInstance pc, CUserInventory inv, int originalItemId, int count) {
 		// 82레벨 이상은 대체 아이템 혜택을 받지 못함
 		if (pc.getLevel() >= 82) {
 			return originalItemId;

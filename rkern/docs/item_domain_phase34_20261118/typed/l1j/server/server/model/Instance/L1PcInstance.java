@@ -1,6 +1,6 @@
 package l1j.server.server.model.Instance;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 public class L1PcInstance {
- public final L1PcInventory inv=new L1PcInventory();
- public L1PcInventory getInventory(){return inv;}
+ public final CUserInventory inv=new CUserInventory();
+ public CUserInventory getInventory(){return inv;}
 }

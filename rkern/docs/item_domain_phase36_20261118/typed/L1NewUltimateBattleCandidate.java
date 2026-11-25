@@ -18,7 +18,7 @@ public final class L1NewUltimateBattleCandidate {
 				item.setCount(stackCount);
 				ground = L1World.getInstance().getInventory(loc.getX(), loc.getY(), _mapId);
 				try {
-					if (ground.checkAddItem(item, stackCount) == L1Inventory.OK) {
+					if (ground.checkAddItem(item, stackCount) == CInventory.OK) {
 						ground.storeItem(item);
 					}
 				} finally {
@@ -35,7 +35,7 @@ public final class L1NewUltimateBattleCandidate {
 					item.setEnchantLevel(0);
 					ground = L1World.getInstance().getInventory(loc.getX(), loc.getY(), _mapId);
 					try {
-						if (ground.checkAddItem(item, stackCount) == L1Inventory.OK) {
+						if (ground.checkAddItem(item, stackCount) == CInventory.OK) {
 							ground.storeItem(item);
 						}
 					} finally {

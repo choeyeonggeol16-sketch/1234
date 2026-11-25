@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -53,9 +53,9 @@ public final class ItemTransactionActions {
             // Their CacheD updates then commit ahead of the receipt's preimage
             // SELECT; this does not run SQL on the CIO/game thread.
             if (first.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(first, L1PcInventory.COL_SAVE_ALL);
+                pc.getInventory().saveItem(first, CUserInventory.COL_SAVE_ALL);
             if (second != null && second.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(second, L1PcInventory.COL_SAVE_ALL);
+                pc.getInventory().saveItem(second, CUserInventory.COL_SAVE_ALL);
         } catch (RuntimeException failure) {
             CreatureItemActions.ITEM_USE2_LOG.log(Level.WARNING,
                     "Item preimage persistence admission failed: " + pc.getId(), failure);

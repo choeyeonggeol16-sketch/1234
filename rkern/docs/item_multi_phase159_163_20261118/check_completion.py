@@ -15,9 +15,9 @@ with tempfile.TemporaryDirectory() as t:
  public int getChargeCount(){return charge;}public void setChargeCount(int c){charge=c;}
  public Timestamp getLastUsed(){return used;}public void setLastUsed(Timestamp t){used=t;}}
  ''')
- add('l1j/server/server/model/L1PcInventory.java','''package l1j.server.server.model;
+ add('l1j/server/server/model/CUserInventory.java','''package l1j.server.server.model;
  import l1j.server.server.model.Instance.L1ItemInstance;
- public class L1PcInventory {public static final int COL_CHARGE_COUNT=32,COL_DELAY_EFFECT=256;
+ public class CUserInventory {public static final int COL_CHARGE_COUNT=32,COL_DELAY_EFFECT=256;
  public int saves,updates,removes,lastMask,lastUpdateMask;public boolean saveFail,packetFail,gateFail;
  public final StringBuilder trace=new StringBuilder();public L1ItemInstance item;
  public L1ItemInstance getItem(int id){return item!=null&&item.getId()==id?item:null;}
@@ -26,8 +26,8 @@ with tempfile.TemporaryDirectory() as t:
  public void removeItem(L1ItemInstance i,int count){removes++;trace.append('R');i.count-=count;}
  }''')
  add('l1j/server/server/model/Instance/L1PcInstance.java','''package l1j.server.server.model.Instance;
- import l1j.server.server.model.L1PcInventory;
- public class L1PcInstance {public final L1PcInventory inv=new L1PcInventory();public L1PcInventory getInventory(){return inv;}}''')
+ import l1j.server.server.model.CUserInventory;
+ public class L1PcInstance {public final CUserInventory inv=new CUserInventory();public CUserInventory getInventory(){return inv;}}''')
  add('l1j/server/server/model/L1ItemDelay.java','''package l1j.server.server.model;
  import l1j.server.server.model.Instance.*;
  public class L1ItemDelay {public static int calls;public static void onItemUse(L1PcInstance p,L1ItemInstance i){calls++;p.inv.trace.append('D');}}''')
@@ -43,8 +43,8 @@ with tempfile.TemporaryDirectory() as t:
  L1PcInstance p=new L1PcInstance();L1ItemInstance i=new L1ItemInstance();p.inv.item=i;p.inv.packetFail=packetFail;
  ItemActionCompletion.finish(new ItemActionContext(p,i,410008,true));
  ok(i.charge==3);ok(i.used!=null);ok(p.inv.saves==1);ok(p.inv.updates==1);
- ok(p.inv.lastMask==(L1PcInventory.COL_CHARGE_COUNT|L1PcInventory.COL_DELAY_EFFECT));
- ok(p.inv.lastUpdateMask==L1PcInventory.COL_CHARGE_COUNT);ok(p.inv.trace.toString().equals("SUD"));
+ ok(p.inv.lastMask==(CUserInventory.COL_CHARGE_COUNT|CUserInventory.COL_DELAY_EFFECT));
+ ok(p.inv.lastUpdateMask==CUserInventory.COL_CHARGE_COUNT);ok(p.inv.trace.toString().equals("SUD"));
  }
  static void failCharge(){
  L1PcInstance p=new L1PcInstance();L1ItemInstance i=new L1ItemInstance();p.inv.item=i;p.inv.saveFail=true;

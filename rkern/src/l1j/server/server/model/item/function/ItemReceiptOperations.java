@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
@@ -38,9 +38,9 @@ public final class ItemReceiptOperations {
         try {
             // Flush older dirty values in FIFO order before preimage SQL checks.
             if (scroll.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(scroll, L1PcInventory.COL_SAVE_ALL);
+                pc.getInventory().saveItem(scroll, CUserInventory.COL_SAVE_ALL);
             if (target.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(target, L1PcInventory.COL_SAVE_ALL);
+                pc.getInventory().saveItem(target, CUserInventory.COL_SAVE_ALL);
         } catch (RuntimeException failure) {
             ITEM_USE2_LOG.log(java.util.logging.Level.WARNING,
                     "Enchant preimage save refused: " + pc.getId(), failure);

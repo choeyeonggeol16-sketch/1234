@@ -24,7 +24,7 @@ public final class MarketCheck {
 
     static final class Config { static boolean STANDBY_SERVER; static int PC_SHOP = 80; }
     static final class NpcActionRange { static int get() { return 6; } }
-    static final class L1Inventory { static int MAX_AMOUNT = 2_000_000_000; }
+    static final class CInventory { static int MAX_AMOUNT = 2_000_000_000; }
     static final class L1ItemId { static int ADENA = 40308; }
     static final class CompanionInstanceCache {
         static boolean is_companion_oblivion(int id) { return id != 701; }

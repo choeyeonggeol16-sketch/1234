@@ -12,7 +12,7 @@ public static void run(L1PcInstance pc) { giveProtectionItem(pc); }
         final L1ItemInstance item = ItemTable.getInstance().createItem(itemId);
         if (item == null) return;
         try {
-            if (pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK
+            if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK
                     && !pc.getInventory().checkItem(itemId)) {
                 pc.getInventory().storeItem(item);
             }

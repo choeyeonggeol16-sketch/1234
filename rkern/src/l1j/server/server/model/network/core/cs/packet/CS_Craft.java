@@ -29,7 +29,7 @@ import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
@@ -192,7 +192,7 @@ public final class CS_Craft {
 		if (pc == null || (slot != 0 && slot != 1)
                 || (equipType != 16 && equipType != 8)) return;
         if (pc.getTradeID() != 0 || pc.isTradeResolving()) return;
-        final L1PcInventory inventory = pc.getInventory();
+        final CUserInventory inventory = pc.getInventory();
         if (!inventory.tryBeginEquipmentChange()) {
             SC_SystemMessage.send(pc, "아이템 처리 중입니다. 잠시 후 다시 시도하세요.");
             return;

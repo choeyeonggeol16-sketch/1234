@@ -1,7 +1,7 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.server.datatables.CObjectDB;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -35,7 +35,7 @@ final class ItemCreationItems {
                 item.setEnchantLevel(enchantLevel);
                 item.setIdentified(true);
             }
-            if (pc.getInventory().checkAddItem(item, count) != L1Inventory.OK) {
+            if (pc.getInventory().checkAddItem(item, count) != CInventory.OK) {
                 SC_ServerMessage.send(pc, 82);
                 return false;
             }

@@ -71,7 +71,7 @@ public class Beginner {
 							try {
 								item.setCount(count);
 								item.setEnchantLevel(enchant);
-								if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+								if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
 									if (pc.getInventory().storeItem(item) != null) {
 										SC_ServerMessage.send(pc, 403, item.getLogName() + "(ID:" + itemId + ")");
 									}
@@ -91,7 +91,7 @@ public class Beginner {
 							if (item != null) {
 								try {
 									item.setEnchantLevel(enchant);
-									if (pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK) {
+									if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK) {
 										if (pc.getInventory().storeItem(item) != null) {
 											SC_ServerMessage.send(pc, 403, item.getLogName() + "(ID:" + itemId + ")");
 										}

@@ -8,7 +8,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_DropItem;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
-public class L1GroundInventory extends L1Inventory {
+public class L1GroundInventory extends CInventory {
 
     private static final long serialVersionUID = 1L;
 

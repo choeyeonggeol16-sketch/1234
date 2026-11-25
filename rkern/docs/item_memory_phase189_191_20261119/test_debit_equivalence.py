@@ -33,15 +33,15 @@ public final class DebitCheck {
   int getId(){return id;}int getItemId(){return itemId;}int getCount(){return count;}void setCount(int n){count=n;}
   boolean isEquipped(){return equipped;}
  }
- static final class L1PcInventory {
+ static final class CUserInventory {
   final ArrayList<L1ItemInstance> all=new ArrayList<>(); int getItemCalls,iterCalls;
   L1ItemInstance getItem(int id){getItemCalls++;for(var i:all)if(i.id==id)return i;return null;}
   Collection<L1ItemInstance> getItems(){iterCalls++;return all;}
  }
  static final class L1PcInstance {
-  final int id;L1PcInventory inv=new L1PcInventory();
+  final int id;CUserInventory inv=new CUserInventory();
   L1PcInstance(int i){id=i;}
-  L1PcInventory getInventory(){return inv;}
+  CUserInventory getInventory(){return inv;}
   int getId(){return id;}
  }
  static final class ItemSnapshot {static ItemSnapshot capture(L1ItemInstance a,int owner){snapshots++;return new ItemSnapshot();}}

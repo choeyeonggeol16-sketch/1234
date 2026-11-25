@@ -32,11 +32,11 @@ import l1j.server.server.storage.CharactersItemStorage;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.templates.L1Item;
 
-public class L1PcInventory extends L1Inventory {
+public class CUserInventory extends CInventory {
     // A durable receipt has already committed when these inventory notices are sent.
     // Never turn an output exception into a partial in-memory replay/quarantine.
     private static final java.util.logging.Logger RECEIPT_NOTICE_LOG =
-            java.util.logging.Logger.getLogger(L1PcInventory.class.getName());
+            java.util.logging.Logger.getLogger(CUserInventory.class.getName());
 
     private static void receiptNoticeFailed(String notice, RuntimeException failure) {
         RECEIPT_NOTICE_LOG.log(java.util.logging.Level.WARNING,
@@ -114,7 +114,7 @@ public class L1PcInventory extends L1Inventory {
 	private long timeVisible = 0;
 	private long timeVisibleDelay = 3000;
 
-	public L1PcInventory(L1PcInstance owner) {
+	public CUserInventory(L1PcInstance owner) {
 		_owner = owner;
 		_arrowId = 0;
 		_stingId = 0;
@@ -291,7 +291,7 @@ public class L1PcInventory extends L1Inventory {
                 });
             });
         } catch (RuntimeException rejected) {
-            java.util.logging.Logger.getLogger(L1PcInventory.class.getName()).log(
+            java.util.logging.Logger.getLogger(CUserInventory.class.getName()).log(
                     java.util.logging.Level.WARNING, "Committed bookmark display could not be queued", rejected);
         }
     }
@@ -737,7 +737,7 @@ public class L1PcInventory extends L1Inventory {
 		try {
 			l1j.server.server.storage.CacheD.getInstance().saveItem(item, mask);
 		} catch (RuntimeException e) {
-			java.util.logging.Logger.getLogger(L1PcInventory.class.getName())
+			java.util.logging.Logger.getLogger(CUserInventory.class.getName())
 				.log(java.util.logging.Level.SEVERE, "CacheD inventory dirty submission failed: item=" + item.getId(), e);
 			throw e;
 		}

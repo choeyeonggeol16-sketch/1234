@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import sun.misc.Unsafe;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.L1Object;
@@ -44,9 +44,9 @@ public final class TestNpcLifecycleRaces {
     }
 
     // Only the transfer outcome is injected: no DB, item creation or socket.
-    static final class RefusingInventory extends L1Inventory {
+    static final class RefusingInventory extends CInventory {
         int attempts;
-        @Override public L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory target) {
+        @Override public L1ItemInstance tradeItem(L1ItemInstance item, int count, CInventory target) {
             attempts++;
             return null;
         }

@@ -20,7 +20,7 @@ public final class MerchantLimitCheck {
         if (!success) throw new AssertionError("check " + checks);
     }
     static final class Config { static double RATE_SHOP_SELLING_PRICE = 1.0; }
-    static final class L1PcInventory { static int MAX_SIZE = 180; }
+    static final class CUserInventory { static int MAX_SIZE = 180; }
     static final class L1PcInstance {}
     record Item(boolean isStackable, int getWeight) {}
     record L1ShopItem(Item getItem, int getPackCount, int getPrice) {}

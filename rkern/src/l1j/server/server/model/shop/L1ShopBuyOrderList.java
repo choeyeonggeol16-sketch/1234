@@ -5,7 +5,7 @@ import java.util.List;
 
 import l1j.server.Config;
 import l1j.server.server.model.L1TaxCalculator;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1ShopItem;
 
@@ -118,7 +118,7 @@ public class L1ShopBuyOrderList {
         }
         
         // 호환 모드: 기존처럼 1개씩 쪼개서 넣기
-        if (giveCountL + nonStackableCount > L1PcInventory.MAX_SIZE) {
+        if (giveCountL + nonStackableCount > CUserInventory.MAX_SIZE) {
             bugok = 1;
             return;
         }

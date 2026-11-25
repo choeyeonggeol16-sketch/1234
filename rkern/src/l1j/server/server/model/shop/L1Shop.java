@@ -17,10 +17,10 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1TaxCalculator;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.L1ItemId;
@@ -173,7 +173,7 @@ public class L1Shop {
 		return (int) (item.getPrice() * Config.RATE_SHOP_PURCHASING_PRICE / item.getPackCount());
 	}
 
-	public List<L1AssessedItem> assessItems(L1PcInventory inv) {
+	public List<L1AssessedItem> assessItems(CUserInventory inv) {
 		List<L1AssessedItem> result = new ArrayList<L1AssessedItem>();
 		for (L1ShopItem item : _purchasingItems) {
 			for (L1ItemInstance targetItem : inv.findItemsId(item.getItemId())) {
@@ -290,7 +290,7 @@ public class L1Shop {
         }
     }
 
-	private void sellItems(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sellItems(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, L1ItemId.ADENA, orderList.getTotalPriceTaxIncluded())) {
 			throw new IllegalStateException("구입에 필요한 아데나를 소비 할 수 없습니다.");
 		}
@@ -766,7 +766,7 @@ public class L1Shop {
 
 	private void prepareBuyItems(L1ShopSellOrderList orderList) {
 		if (_npcId == 7320055) return;
-		L1PcInventory inv = orderList.getPc().getInventory();
+		CUserInventory inv = orderList.getPc().getInventory();
         
         // Validate the complete order before removing any item. In particular,
         // widening AFTER an int multiplication does not detect price overflow.
@@ -873,26 +873,26 @@ public class L1Shop {
     private static void afterShop(Runnable action) { prepared().after.add(action); }
     private static void afterShopState(Runnable action) { prepared().state.add(action); }
     private static void shopMessage(L1PcInstance pc,String message) { afterShop(() -> SC_SystemMessage.send(pc,message)); }
-    private static boolean debitPrepared(L1Inventory inventory,int template,int count) {
+    private static boolean debitPrepared(CInventory inventory,int template,int count) {
         return prepared().tx.debit(template,count);
     }
-    private static int removePrepared(L1Inventory inventory,L1ItemInstance item,int count) {
+    private static int removePrepared(CInventory inventory,L1ItemInstance item,int count) {
         if(!prepared().tx.debit(item,count))throw new IllegalStateException("NPC sale quantity changed");
         return count;
     }
-    private static L1ItemInstance grantPrepared(L1Inventory inventory,L1ItemInstance item) {
+    private static L1ItemInstance grantPrepared(CInventory inventory,L1ItemInstance item) {
         L1ItemInstance result=prepared().tx.grant(item);
         if(result==null)throw new IllegalStateException("NPC grant capacity/configuration");
         prepared().grants++;
         return result;
     }
-    private static L1ItemInstance grantPrepared(L1Inventory inventory,int template,int count) {
+    private static L1ItemInstance grantPrepared(CInventory inventory,int template,int count) {
         L1ItemInstance result=prepared().tx.grant(template,count);
         if(result==null)throw new IllegalStateException("NPC grant capacity/configuration");
         prepared().grants++;
         return result;
     }
-    private static L1ItemInstance grantPrepared(L1Inventory inventory,int template,int count,boolean identified) {
+    private static L1ItemInstance grantPrepared(CInventory inventory,int template,int count,boolean identified) {
         L1ItemInstance item=detachedShopItem(template);item.setCount(count);item.setIdentified(identified);
         return grantPrepared(inventory,item);
     }
@@ -975,7 +975,7 @@ public class L1Shop {
 
 
 	/** 깃털 상점관련 **/
-	private void sellPremiumItems(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sellPremiumItems(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 41159, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 픽시의 깃털을 소비할 수 없었습니다.");
 		}
@@ -1061,7 +1061,7 @@ public class L1Shop {
 		return true;
 	}
 
-	private void sellMarkItems1(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sellMarkItems1(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 3000032, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 징표를 소비할 수 없습니다.");
 
@@ -1116,7 +1116,7 @@ public class L1Shop {
 		return true;
 	}
 
-	private synchronized void NpcShopSellItems_for_locked(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private synchronized void NpcShopSellItems_for_locked(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		int sellings_price = orderList.getTotalPrice();
 		if(inv.countItems(L1ItemId.ADENA) < sellings_price){
 			throw new IllegalStateException("구입에 필요한 아데나를 소비 할 수 없습니다.");
@@ -1170,7 +1170,7 @@ public class L1Shop {
 		}
 	}
 	
-	private void NpcShopSellItems(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void NpcShopSellItems(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if(Config.IS_SELLINGS_SHOP_LOCK){
 			NpcShopSellItems_for_locked(inv, orderList);
 			return;
@@ -1231,7 +1231,7 @@ public class L1Shop {
 	
 	
 
-	private void sellMarkItems(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sellMarkItems(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 410093, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 만월의정기를 소비할 수 없습니다.");
 		} // 신묘년
@@ -1286,7 +1286,7 @@ public class L1Shop {
 		return true;
 	}
 
-	private void sell_cert1(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_cert1(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 3000156, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 종이학을 소비할 수 없습니다.");
 		} // 종이학
@@ -1328,7 +1328,7 @@ public class L1Shop {
 		}
 	}
 
-	private void sell_cert2(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_cert2(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 3000180, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 여의주을 소비할 수 없습니다.");
 		} // 여의주
@@ -1389,7 +1389,7 @@ public class L1Shop {
 		}
 	}
 
-	private void sell_Colosseum(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_Colosseum(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 710, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 콜로세움 코인를 소비할 수 없습니다.");
 		}
@@ -1626,7 +1626,7 @@ public class L1Shop {
 		}
 		return true;
 	}	
-	private void sell_cert5(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_cert5(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 3000156, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 종이학을 소비할 수 없습니다.");
 		}
@@ -1727,7 +1727,7 @@ public class L1Shop {
 		return true;
 	}
 
-	private void sell_cert(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_cert(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 90738, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 판도라의 증서 를 소비할 수 없습니다.");
 		}
@@ -1741,7 +1741,7 @@ public class L1Shop {
 			grantPrepared(inv, item);
 		}
 	}
-	private void sell_certRNS(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_certRNS(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 3000367, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 군터의 인장 를 소비할 수 없습니다.");
 		}
@@ -1755,7 +1755,7 @@ public class L1Shop {
 			grantPrepared(inv, item);
 		}
 	}
-	private void sell_Hardin1(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_Hardin1(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 3000520, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 하딘의 가넷 을 소비할 수 없습니다.");
 		} // 하딘의 가넷
@@ -1769,7 +1769,7 @@ public class L1Shop {
 			grantPrepared(inv, item);
 		}
 	}
-	private void sell_cert3(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_cert3(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 3000246, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 오림의 가넷 을 소비할 수 없습니다.");
 		} // 오림의 가넷
@@ -1789,7 +1789,7 @@ public class L1Shop {
 			grantPrepared(inv, item);
 		}
 	}
-	private void sell_cert6(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_cert6(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 400254, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 아데나 수표(1억) 를 소비할 수 없습니다.");
 //			throw new IllegalStateException("구입에 필요한 아데나를 소비할 수 없습니다.");
@@ -2022,7 +2022,7 @@ public class L1Shop {
 		return true;
 	}
 
-	private void sellMarkItems2(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sellMarkItems2(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 41302, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 베리를 소비할 수 없습니다.");
 		} // 행베리
@@ -2051,7 +2051,7 @@ public class L1Shop {
 				() -> SC_SystemMessage.send(pc, "TAM은 한번에 '900'만개 이상 사용할 수 없습니다."));
 	}
 
-	private void 탐상인2(L1PcInstance pc, L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void 탐상인2(L1PcInstance pc, CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (orderList.getTotalPrice() > pc.getAccount().getTamPoint()) {
 			throw new IllegalStateException("구입에 필요한 TAM을 소비할 수 없습니다.");
 		}
@@ -2068,7 +2068,7 @@ public class L1Shop {
 		}
 	}
 
-	private void sellCashItems1(L1PcInstance pc, L1PcInventory inv, L1ShopBuyOrderList orderList, int npcId) {
+	private void sellCashItems1(L1PcInstance pc, CUserInventory inv, L1ShopBuyOrderList orderList, int npcId) {
 		if (!debitPrepared(inv, npcId - 5299999, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 안전코인을 소비할 수 없었습니다.");
 		}
@@ -2086,7 +2086,7 @@ public class L1Shop {
 		}
 	}
 
-	private void sellCashItems2(L1PcInstance pc, L1PcInventory inv, L1ShopBuyOrderList orderList, int npcId) {
+	private void sellCashItems2(L1PcInstance pc, CUserInventory inv, L1ShopBuyOrderList orderList, int npcId) {
 		if (!debitPrepared(inv, npcId - 5299999, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 안전코인을 소비할 수 없었습니다.");
 		}
@@ -2104,7 +2104,7 @@ public class L1Shop {
 		}
 	}
 
-	private void sellCashItems3(L1PcInstance pc, L1PcInventory inv, L1ShopBuyOrderList orderList, int npcId) {
+	private void sellCashItems3(L1PcInstance pc, CUserInventory inv, L1ShopBuyOrderList orderList, int npcId) {
 		if (!debitPrepared(inv, npcId - 5299999, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 안전코인을 소비할 수 없었습니다.");
 		}
@@ -2122,7 +2122,7 @@ public class L1Shop {
 		}
 	}
 
-	private void sellCashItems4(L1PcInstance pc, L1PcInventory inv, L1ShopBuyOrderList orderList, int npcId) {
+	private void sellCashItems4(L1PcInstance pc, CUserInventory inv, L1ShopBuyOrderList orderList, int npcId) {
 		if (!debitPrepared(inv, 747, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 장비 코인을 소비할 수 없었습니다.");
 		}
@@ -2250,7 +2250,7 @@ public class L1Shop {
 		}
 		return true;
 	}
-	private void sell_cert4(L1PcInventory inv, L1ShopBuyOrderList orderList) {
+	private void sell_cert4(CUserInventory inv, L1ShopBuyOrderList orderList) {
 		if (!debitPrepared(inv, 812, orderList.getTotalPrice())) {
 			throw new IllegalStateException("구입에 필요한 루돌프의 종 을 소비할 수 없습니다.");
 		}

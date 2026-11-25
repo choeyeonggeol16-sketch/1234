@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -63,7 +63,7 @@ public final class CS_Fix {
         if (!(object instanceof L1NpcInstance npc) || npc.getMapId() != pc.getMapId()
                 || Math.abs(pc.getX() - npc.getX()) > 3 || Math.abs(pc.getY() - npc.getY()) > 3) return;
 
-        final L1PcInventory inventory = pc.getInventory();
+        final CUserInventory inventory = pc.getInventory();
         if (!inventory.tryBeginEquipmentChange()) return;
         try {
             final L1ItemInstance item = inventory.getItem(itemObjectId);

@@ -755,7 +755,7 @@ public class L1Character extends L1Object {
 		return glanceCheck(target.getX(), target.getY()) && target.glanceCheck(getX(), getY());
 	}
 
-	public L1Inventory getInventory() {
+	public CInventory getInventory() {
 		return null;
 	}
 

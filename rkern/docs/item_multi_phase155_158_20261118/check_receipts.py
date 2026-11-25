@@ -12,12 +12,12 @@ with tempfile.TemporaryDirectory(prefix='rk_receipt_') as tmp:
  public int id,count=1,recordingColumns;public L1ItemInstance(int id){this.id=id;}public int getId(){return id;}public int getRecordingColumns(){return recordingColumns;}
  }''')
  add('l1j/server/server/model/Instance/L1PcInstance.java','''package l1j.server.server.model.Instance;
- import l1j.server.server.model.L1PcInventory;
- public class L1PcInstance {public L1PcInventory inv=new L1PcInventory();public int getId(){return 123;}public L1PcInventory getInventory(){return inv;}}
+ import l1j.server.server.model.CUserInventory;
+ public class L1PcInstance {public CUserInventory inv=new CUserInventory();public int getId(){return 123;}public CUserInventory getInventory(){return inv;}}
  ''')
- add('l1j/server/server/model/L1PcInventory.java','''package l1j.server.server.model;
+ add('l1j/server/server/model/CUserInventory.java','''package l1j.server.server.model;
  import java.util.*;import l1j.server.server.model.Instance.*;
- public class L1PcInventory {public static final int COL_SAVE_ALL=32768;
+ public class CUserInventory {public static final int COL_SAVE_ALL=32768;
  public Map<Integer,L1ItemInstance> items=new HashMap<>();public int saved;
  public L1ItemInstance getItem(int id){return items.get(id);}public void saveItem(L1ItemInstance x,int col){saved++;}}
  ''')

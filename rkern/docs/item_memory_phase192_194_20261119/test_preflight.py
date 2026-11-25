@@ -46,9 +46,9 @@ public final class PreflightCheck {
   boolean isStackable(){return stackable;}L1Item getItem(){return item;}
   int get_bless_level(){return 0;} void setBless(int i){}
  }
- static final class L1Inventory {static final int MAX_AMOUNT=2000000000;}
- static final class L1PcInventory {static final int MAX_SIZE=200;final ArrayList<L1ItemInstance> rows=new ArrayList<>(); L1ItemInstance getItem(int id){for(var item:rows)if(item.id==id)return item;return null;} Collection<L1ItemInstance> getItems(){return rows;}}
- static final class L1PcInstance {final int id;final L1PcInventory inventory=new L1PcInventory();L1PcInstance(int id){this.id=id;}int getId(){return id;} L1PcInventory getInventory(){return inventory;}}
+ static final class CInventory {static final int MAX_AMOUNT=2000000000;}
+ static final class CUserInventory {static final int MAX_SIZE=200;final ArrayList<L1ItemInstance> rows=new ArrayList<>(); L1ItemInstance getItem(int id){for(var item:rows)if(item.id==id)return item;return null;} Collection<L1ItemInstance> getItems(){return rows;}}
+ static final class L1PcInstance {final int id;final CUserInventory inventory=new CUserInventory();L1PcInstance(int id){this.id=id;}int getId(){return id;} CUserInventory getInventory(){return inventory;}}
  static final class ItemSnapshot {static ItemSnapshot capture(L1ItemInstance item,int owner){snapshots++;return new ItemSnapshot();}}
  static L1ItemInstance copy(L1ItemInstance item){copies++;return new L1ItemInstance(item.id,item.tpl,item.count,item.enchant,item.equipped,item.stackable,item.item.type2);}
  static boolean mergeable(L1ItemInstance a,L1ItemInstance b){return a.stackable&&b.stackable&&a.tpl==b.tpl&&a.enchant==b.enchant;}

@@ -28,10 +28,10 @@ with tempfile.TemporaryDirectory(prefix='rkern_item136_') as temp:
         public class Config { public static boolean MASTERENCHANTMESS=true;
             public static int LOGGING_WEAPON_ENCHANT=0, LOGGING_ARMOR_ENCHANT=0; }
     ''')
-    put(src,'l1j/server/server/model/L1PcInventory.java','''
+    put(src,'l1j/server/server/model/CUserInventory.java','''
         package l1j.server.server.model;
         import l1j.server.server.model.Instance.*;
-        public class L1PcInventory {
+        public class CUserInventory {
             public static final int COL_ENCHANTLVL=1;
             public int updated, saved, removed, equippedCalls;
             public boolean throwUpdate=false;
@@ -58,11 +58,11 @@ with tempfile.TemporaryDirectory(prefix='rkern_item136_') as temp:
     ''')
     put(src,'l1j/server/server/model/Instance/L1PcInstance.java','''
         package l1j.server.server.model.Instance;
-        import l1j.server.server.model.L1PcInventory;
+        import l1j.server.server.model.CUserInventory;
         public class L1PcInstance {
-            public final L1PcInventory inv=new L1PcInventory();
+            public final CUserInventory inv=new CUserInventory();
             public final AC ac=new AC(); public final RES res=new RES(); public int saved;
-            public L1PcInventory getInventory(){return inv;} public AC getAC(){return ac;}
+            public CUserInventory getInventory(){return inv;} public AC getAC(){return ac;}
             public RES getResistance(){return res;} public void saveInventory(){saved++;}
             public static class AC {public int delta; public void addAc(int x){delta+=x;}}
             public static class RES {public int delta;public void addMr(int x){delta+=x;}}

@@ -1,7 +1,7 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.Config;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -19,7 +19,7 @@ final class EnchantmentOutcomeEffects {
 
     private static void sendEnchantUpdate(L1PcInstance pc, L1ItemInstance item) {
         try {
-            pc.getInventory().updateItem(item, L1PcInventory.COL_ENCHANTLVL);
+            pc.getInventory().updateItem(item, CUserInventory.COL_ENCHANTLVL);
         } catch (RuntimeException notificationFailure) {
             // updateItem() also rejects an in-flight CacheD inventory gate.
             // That is a game-state failure, not a harmless packet exception.
@@ -179,7 +179,7 @@ final class EnchantmentOutcomeEffects {
             item.setEnchantLevel(newEnchantLvl);
             // Legacy non-receipt callers retain their original save path.
             try {
-                pc.getInventory().saveItem(item, L1PcInventory.COL_ENCHANTLVL);
+                pc.getInventory().saveItem(item, CUserInventory.COL_ENCHANTLVL);
             } catch (RuntimeException submissionFailure) {
                 item.setEnchantLevel(oldEnchantLvl);
                 throw submissionFailure;
@@ -305,7 +305,7 @@ final class EnchantmentOutcomeEffects {
 
 			pc.getInventory().setEquipped(item, false);
 			item.setEnchantLevel(0);
-            pc.getInventory().saveItem(item, L1PcInventory.COL_ENCHANTLVL);
+            pc.getInventory().saveItem(item, CUserInventory.COL_ENCHANTLVL);
             sendEnchantUpdate(pc, item);
             try {
                 SC_ServerMessage.send(pc, 1310);

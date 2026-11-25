@@ -3,7 +3,7 @@ package l1j.server.server.model.Warehouse;
 import l1j.server.server.datatables.NoShopAndWare;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.network.core.cs.packet.CS_PersonalShop;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -46,7 +46,7 @@ final class CWareHouseDeposit {
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "현재 소환 된 인형은 맡길수가 없습니다.");
             return false;
         }
-        if (warehouse.checkAddItemToWarehouse(item, count) == L1Inventory.SIZE_OVER) {
+        if (warehouse.checkAddItemToWarehouse(item, count) == CInventory.SIZE_OVER) {
             SC_ServerMessage.send(pc, 75);
             return false;
         }

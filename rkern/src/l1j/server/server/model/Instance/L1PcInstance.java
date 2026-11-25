@@ -52,12 +52,12 @@ import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.L1EquipmentSlot;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1GroundInventory;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Karma;
 import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.quest.CQuestSystem;
@@ -926,9 +926,9 @@ public class L1PcInstance extends L1Character {
 	private int _currentWeapon; // 로봇 관련
 	private final L1Karma _karma = new L1Karma();
 	private int karmaReceiptRevision;
-	private final L1PcInventory _inventory;
+	private final CUserInventory _inventory;
 	private final L1DwarfForPackageInventory _dwarfForPackage;
-	private final L1Inventory _tradewindow;
+	private final CInventory _tradewindow;
 
 	private L1ItemInstance _weapon;
 	private L1ItemInstance _secondweapon;
@@ -1110,9 +1110,9 @@ public class L1PcInstance extends L1Character {
 		_regenController = new CRegenController(this);
 		_accessLevel = 0;
 		_currentWeapon = 0;
-		_inventory = new L1PcInventory(this);
+		_inventory = new CUserInventory(this);
 		_dwarfForPackage = new L1DwarfForPackageInventory(this);
-		_tradewindow = new L1Inventory();
+		_tradewindow = new CInventory();
 		userBookmark = new CUserBookmark();
 		_quest = new CQuestSystem(this);
 		_equipSlot = new L1EquipmentSlot(this);
@@ -2112,7 +2112,7 @@ public class L1PcInstance extends L1Character {
 	}
 
 	@Override
-	public L1PcInventory getInventory() {
+	public CUserInventory getInventory() {
 		return _inventory;
 	}
 
@@ -2120,7 +2120,7 @@ public class L1PcInstance extends L1Character {
 		return _dwarfForPackage;
 	}
 
-	public L1Inventory getTradeWindowInventory() {
+	public CInventory getTradeWindowInventory() {
 		return _tradewindow;
 	}
 
@@ -4399,7 +4399,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			return;
 		for (L1ItemInstance item : getInventory().getItems()) {
 			if (item != null)
-				getInventory().saveItem(item, item.getRecordingColumns() != 0 ? L1PcInventory.COL_SAVE_ALL : 0);
+				getInventory().saveItem(item, item.getRecordingColumns() != 0 ? CUserInventory.COL_SAVE_ALL : 0);
 		}
 	}
 
@@ -6369,8 +6369,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			item.setIdentified(true);
 			pc.getInventory().storeItem(item);
 			item.setBless(Bless);
-			pc.getInventory().updateItem(item, L1PcInventory.COL_BLESS);
-			pc.getInventory().saveItem(item, L1PcInventory.COL_BLESS);
+			pc.getInventory().updateItem(item, CUserInventory.COL_BLESS);
+			pc.getInventory().saveItem(item, CUserInventory.COL_BLESS);
 			return true;
 		} else {
 			return false;

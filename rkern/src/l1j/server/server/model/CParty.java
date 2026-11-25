@@ -421,13 +421,13 @@ for (L1PcInstance member : getMembers()) {
         return CheckRouteCond(origin, snap, member);
     }
 
-    public boolean Route(L1NpcInstance npc, L1Inventory source, L1ItemInstance item,
+    public boolean Route(L1NpcInstance npc, CInventory source, L1ItemInstance item,
             CContributeData snap, L1PcInstance primaryOwner) {
         return npc != null && Route(npc.getLocation(), source, item, snap, primaryOwner, null);
     }
 
     /** Queued drops retain the original party, roster and death position. */
-    public boolean Route(L1Location origin, L1Inventory source, L1ItemInstance item,
+    public boolean Route(L1Location origin, CInventory source, L1ItemInstance item,
             CContributeData snap, L1PcInstance primaryOwner, L1PcInstance[] admittedMembers) {
         if (!Config.PARTY_LOOT_ENABLE || primaryOwner == null || primaryOwner.getParty() != this
                 || origin == null || source == null || item == null) return false;
@@ -451,7 +451,7 @@ for (L1PcInstance member : getMembers()) {
         return true;
     }
 
-    private void RouteAdena(CWorld world, L1Location origin, L1Inventory source, L1ItemInstance item,
+    private void RouteAdena(CWorld world, L1Location origin, CInventory source, L1ItemInstance item,
             CContributeData snap, L1PcInstance[] members, int size, String tag) {
         final int winnerIndex = java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
         final long total = item.getCount();
@@ -476,7 +476,7 @@ for (L1PcInstance member : getMembers()) {
         RecoverRemainder(world, origin, source, item);
     }
 
-    private void RouteItem(CWorld world, L1Location origin, L1Inventory source, L1ItemInstance item,
+    private void RouteItem(CWorld world, L1Location origin, CInventory source, L1ItemInstance item,
             CContributeData snap, L1PcInstance[] members, int size, String tag) {
         final int mode = Config.PARTY_LOOT_MODE;
         // The previous general mode already chose a random eligible winner.
@@ -506,7 +506,7 @@ for (L1PcInstance member : getMembers()) {
         RecoverRemainder(world, origin, source, item);
     }
 
-    private void RecoverRemainder(CWorld world, L1Location origin, L1Inventory source, L1ItemInstance item) {
+    private void RecoverRemainder(CWorld world, L1Location origin, CInventory source, L1ItemInstance item) {
         if (source.getItem(item.getId()) != item || item.getCount() <= 0) return;
         if (!world.RecoverDropRemainder(origin, source, item)) {
             _log.warning("Party drop ground recovery rejected: item=" + item.getId()

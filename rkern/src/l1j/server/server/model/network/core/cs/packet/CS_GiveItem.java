@@ -8,9 +8,9 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -52,8 +52,8 @@ public final class CS_GiveItem {
         }
 
         final L1NpcInstance target = (L1NpcInstance) object;
-        final L1Inventory targetInv = target.getInventory();
-        final L1Inventory inv = pc.getInventory();
+        final CInventory targetInv = target.getInventory();
+        final CInventory inv = pc.getInventory();
 
         // 서버 좌표 기준: 같은 맵 + 인접 1칸 이내만 아이템 주기 허용.
         if (target.isDead()
@@ -178,7 +178,7 @@ public final class CS_GiveItem {
         }
 
         if (!pc.isGm()
-                && targetInv.checkAddItem(item, count) != L1Inventory.OK) {
+                && targetInv.checkAddItem(item, count) != CInventory.OK) {
 
             SC_ServerMessage.send(pc, 942);
             return;
@@ -305,7 +305,7 @@ public final class CS_GiveItem {
 
         charisma -= petcost;
 
-        final L1PcInventory inv = pc.getInventory();
+        final CUserInventory inv = pc.getInventory();
         final String npcname =
                 target.getNpcTemplate().get_name();
 
@@ -339,7 +339,7 @@ public final class CS_GiveItem {
             return;
         }
 
-        final L1PcInventory inv = pc.getInventory();
+        final CUserInventory inv = pc.getInventory();
         final L1PetInstance pet = (L1PetInstance) target;
         final L1ItemInstance petamu =
                 inv.getItem(pet.getItemObjId());

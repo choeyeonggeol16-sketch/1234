@@ -33,11 +33,11 @@ put('l1j/server/server/model/Instance/L1ItemInstance.java','''
   }
  }
 ''')
-put('l1j/server/server/model/L1PcInventory.java','''
+put('l1j/server/server/model/CUserInventory.java','''
  package l1j.server.server.model;
  import java.util.*;
  import l1j.server.server.model.Instance.L1ItemInstance;
- public class L1PcInventory {
+ public class CUserInventory {
   public static final int COL_SAVE_ALL=65535;
   public Map<Integer,L1ItemInstance> items=new HashMap<>(); public int saves;
   public boolean failSave;
@@ -47,10 +47,10 @@ put('l1j/server/server/model/L1PcInventory.java','''
 ''')
 put('l1j/server/server/model/Instance/L1PcInstance.java','''
  package l1j.server.server.model.Instance;
- import l1j.server.server.model.L1PcInventory;
+ import l1j.server.server.model.CUserInventory;
  public class L1PcInstance {
-  final L1PcInventory inv=new L1PcInventory();
-  public L1PcInventory getInventory(){return inv;}
+  final CUserInventory inv=new CUserInventory();
+  public CUserInventory getInventory(){return inv;}
   public int getId(){return 123;}
  }
 ''')

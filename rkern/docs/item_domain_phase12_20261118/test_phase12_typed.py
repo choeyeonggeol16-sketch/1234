@@ -26,28 +26,28 @@ public final class L1ItemInstance {
  public void setEnchantLevel(int v){ench=v;}public boolean isEquipped(){return equipped;}
  public int getCount(){return count;}
 }'''
-files['l1j/server/server/model/L1PcInventory.java']='''package l1j.server.server.model;
+files['l1j/server/server/model/CUserInventory.java']='''package l1j.server.server.model;
 import l1j.server.server.model.Instance.*;
-public class L1PcInventory {
+public class CUserInventory {
  public static final int COL_ENCHANTLVL=5;private L1PcInstance pc;
- public L1PcInventory(L1PcInstance pc){this.pc=pc;}
+ public CUserInventory(L1PcInstance pc){this.pc=pc;}
  public void removeItem(L1ItemInstance i,int n){pc.add("remove:"+n);}
  public void setEquipped(L1ItemInstance i,boolean v){pc.add("equipped:"+v);}
  public void updateItem(L1ItemInstance i,int col){pc.add("update:"+col);}
  public void saveItem(L1ItemInstance i,int col){pc.add("saveItem:"+col);}
 }'''
 files[I+'L1PcInstance.java']='''package l1j.server.server.model.Instance;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 public final class L1PcInstance {
  public StringBuilder log=new StringBuilder();public int lvl=80,hp=100,id=42,attr=1,role=0;public boolean gm=false,skill=false;
- public L1PcInventory inv=new L1PcInventory(this);public AC ac=new AC();public Resist resist=new Resist();
+ public CUserInventory inv=new CUserInventory(this);public AC ac=new AC();public Resist resist=new Resist();
  public void add(String t){log.append(t).append('|');}
  public int getLevel(){return lvl;}public int getId(){return id;}public int getElfAttr(){return attr;}
  public boolean isGm(){return gm;}public boolean isKnight(){return role==1;}
  public boolean isWarrior(){return role==2;}public boolean isCrown(){return role==3;}
  public boolean isDarkelf(){return role==4;}public boolean isElf(){return role==5;}
  public boolean isWizard(){return role==6;}public boolean isSkillMastery(int n){return skill;}
- public L1PcInventory getInventory(){return inv;}public void saveInventory(){add("saveInventory");}
+ public CUserInventory getInventory(){return inv;}public void saveInventory(){add("saveInventory");}
  public AC getAC(){return ac;}public Resist getResistance(){return resist;}
  public int getCurrentHp(){return hp;}public void setCurrentHp(int n){hp=n;add("hp:"+n);}
  public void death(Object o,boolean b){add("death");}

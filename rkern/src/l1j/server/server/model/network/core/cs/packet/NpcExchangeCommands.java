@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -486,16 +486,16 @@ final class NpcExchangeCommands {
     }
 
     static boolean createNewItem(L1PcInstance pc, String npcName, int item_id, int count, int enchant) {
-        if (count <= 0 || count > L1Inventory.MAX_AMOUNT) return false;
+        if (count <= 0 || count > CInventory.MAX_AMOUNT) return false;
         final L1ItemInstance item = CObjectDB.LoadItem().createItem(item_id);
         if (item == null) return false;
         final L1World world = L1World.getInstance();
-        L1Inventory destination = null;
+        CInventory destination = null;
         L1ItemInstance stored = null;
         try {
             item.setCount(count);
             item.setEnchantLevel(enchant);
-            destination = pc.getInventory().checkAddItem(item, count) == L1Inventory.OK
+            destination = pc.getInventory().checkAddItem(item, count) == CInventory.OK
                     ? pc.getInventory() : world.getInventory(pc.getX(), pc.getY(), pc.getMapId());
             stored = destination.storeItem(item);
             if (stored == null) return false;

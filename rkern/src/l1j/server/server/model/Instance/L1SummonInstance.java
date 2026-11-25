@@ -12,7 +12,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.DropTable;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -262,7 +262,7 @@ public class L1SummonInstance extends L1NpcInstance {
             final L1Character master = _master;
             // A later retry may run after the owner's old session was removed.
             // Never write into a retired PC inventory: use ground settlement.
-            final L1Inventory masterInventory = master instanceof L1PcInstance pc
+            final CInventory masterInventory = master instanceof L1PcInstance pc
                     && L1World.getInstance().getPlayer(pc.getName()) == pc
                     ? pc.getInventory() : null;
             while (!_inventory.getItems().isEmpty()) {
@@ -271,7 +271,7 @@ public class L1SummonInstance extends L1NpcInstance {
                 final int count = item.getCount();
                 if (count <= 0) return;
                 if (masterInventory != null
-                        && masterInventory.checkAddItem(item, count) == L1Inventory.OK
+                        && masterInventory.checkAddItem(item, count) == CInventory.OK
                         && _inventory.tradeItem(item, count, masterInventory) != null) {
                     if (master instanceof L1PcInstance pc) {
                         try {
@@ -281,7 +281,7 @@ public class L1SummonInstance extends L1NpcInstance {
                         }
                     }
                 } else {
-                    final L1Inventory ground = L1World.getInstance().getInventory(getX(), getY(), getMapId());
+                    final CInventory ground = L1World.getInstance().getInventory(getX(), getY(), getMapId());
                     if (_inventory.tradeItem(item, count, ground) == null) return;
                 }
                 // This is a full-stack transfer. A reported success that did
@@ -321,11 +321,11 @@ public class L1SummonInstance extends L1NpcInstance {
         if (_destroyed || isDead() || isDeathProcessing()) return;
 		_isReturnToNature = true;
 		if (!_tamed) {
-			L1Inventory targetInventory = _master.getInventory();
+			CInventory targetInventory = _master.getInventory();
 			List<L1ItemInstance> items = _inventory.getItems();
 			for (L1ItemInstance item : items) {
 				if(item == null) continue;
-				if (_master.getInventory().checkAddItem( item, item.getCount()) == L1Inventory.OK) {
+				if (_master.getInventory().checkAddItem( item, item.getCount()) == CInventory.OK) {
 					_inventory.tradeItem(item, item.getCount(), targetInventory);
 					SC_ServerMessage.send(((L1PcInstance) _master), 143, getName(), item.getLogName());
 				} else {

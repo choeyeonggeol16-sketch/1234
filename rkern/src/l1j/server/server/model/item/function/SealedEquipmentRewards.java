@@ -1,8 +1,8 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.server.datatables.CObjectDB;
-import l1j.server.server.model.L1Inventory;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -22,14 +22,14 @@ public final class SealedEquipmentRewards {
             item.setEnchantLevel(enchantLevel);
             item.setAttrEnchantLevel(attr);
             item.setIdentified(true); // Original operation sets identified twice.
-            if (pc.getInventory().checkAddItem(item, count) != L1Inventory.OK) {
+            if (pc.getInventory().checkAddItem(item, count) != CInventory.OK) {
                 SC_ServerMessage.send(pc, 82);
                 return false;
             }
             pc.getInventory().storeItem(item);
             item.setBless(bless);
-            pc.getInventory().updateItem(item, L1PcInventory.COL_BLESS);
-            pc.getInventory().saveItem(item, L1PcInventory.COL_BLESS);
+            pc.getInventory().updateItem(item, CUserInventory.COL_BLESS);
+            pc.getInventory().saveItem(item, CUserInventory.COL_BLESS);
             SC_ServerMessage.send(pc, 403, item.getLogName());
             return true;
         } finally {

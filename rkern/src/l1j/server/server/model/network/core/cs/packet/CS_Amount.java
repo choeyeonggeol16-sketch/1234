@@ -6,7 +6,7 @@ import l1j.server.server.model.Instance.L1AuctionBoardInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1AuctionTransaction;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -18,7 +18,7 @@ public final class CS_Amount {
     private CS_Amount() {}
 
     public static void handle(CUserSocket client, int objectId, int amount, String actionName) {
-        if (client == null || actionName == null || amount <= 0 || amount > L1Inventory.MAX_AMOUNT) return;
+        if (client == null || actionName == null || amount <= 0 || amount > CInventory.MAX_AMOUNT) return;
         final L1PcInstance pc = client.getActiveChar();
         if (!HtmlCmdHandler.canInteractWithNpc(client, pc)) return;
         final L1Object object = L1World.getInstance().findObject(objectId);

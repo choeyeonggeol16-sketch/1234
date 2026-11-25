@@ -8,7 +8,7 @@ package l1j.server.swing;
 import l1j.server.server.datatables.CObjectDB;
 import javax.swing.JOptionPane;
 
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -137,7 +137,7 @@ public class Give extends javax.swing.JFrame {
 					item.setEnchantLevel(enchant);
 					item.setCount(count);					
 					item.setIdentified(true);
-					if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+					if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
 						pc.getInventory().storeItem(item);												
 						if(item.getItem().getType2() == 1 || item.getItem().getType2() == 2){
 							SC_SystemMessage.send(pc, "운영자가 +"+ enchant + " " + temp.getName() + " 을(를) 생성해 주었습니다.");
@@ -152,7 +152,7 @@ public class Give extends javax.swing.JFrame {
 						for (createCount = 0; createCount < count; createCount++) {
 							item1 = CObjectDB.LoadItem().createItem(itemid);
 							item1.setEnchantLevel(enchant);
-							if (pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK) {
+							if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK) {
 								pc.getInventory().storeItem(item);
 							} else
 								break;

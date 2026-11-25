@@ -3,7 +3,7 @@ package l1j.server.server.model.character.equip;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1EquipmentSlot;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 public final class EquipService {
@@ -13,7 +13,7 @@ public final class EquipService {
     public static void useArmor(L1PcInstance pc, L1ItemInstance armor) {
         if (pc == null || armor == null || armor.getItem() == null) return;
 
-        final L1PcInventory inv = pc.getInventory();
+        final CUserInventory inv = pc.getInventory();
         if (!inv.tryBeginEquipmentChange()) return;
         try {
             if (armor.isEquipped()) {
@@ -34,7 +34,7 @@ public final class EquipService {
     public static void useWeapon(L1PcInstance pc, L1ItemInstance weapon) {
         if (pc == null || weapon == null || weapon.getItem() == null) return;
 
-        final L1PcInventory inv = pc.getInventory();
+        final CUserInventory inv = pc.getInventory();
         if (!inv.tryBeginEquipmentChange()) return;
         try {
             useWeapon(pc, inv, weapon);
@@ -43,7 +43,7 @@ public final class EquipService {
         }
     }
 
-    private static void useWeapon(L1PcInstance pc, L1PcInventory inv, L1ItemInstance weapon) {
+    private static void useWeapon(L1PcInstance pc, CUserInventory inv, L1ItemInstance weapon) {
         final L1EquipmentSlot slot = pc.getEquipSlot();
         final L1ItemInstance current = slot.getWeapon();
 
@@ -98,7 +98,7 @@ public final class EquipService {
         }
     }
 
-    private static void equipWeapon(L1PcInstance pc, L1PcInventory inv, L1ItemInstance weapon, boolean secondSlot) {
+    private static void equipWeapon(L1PcInstance pc, CUserInventory inv, L1ItemInstance weapon, boolean secondSlot) {
         if (weapon.getItemId() == 200002) {
             SC_ServerMessage.send(pc, 149, weapon.getLogName());
         }

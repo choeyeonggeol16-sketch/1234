@@ -40,7 +40,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -59,7 +59,7 @@ public final class DogFightEnhancementItems {
 			((DogFightInstance)target).set_attackdelay_reduce(((DogFightInstance)target).get_attackdelay_reduce() + Config.투견공속);
 			SC_ChatPacket.sendDirect(pc, pc, "해당 투견의 [공격력: 최소범위 +"+Config.투견최소랜덤데미지+" / 최대범위 +"+Config.투견최대랜덤데미지+"] [공속: "+Config.투견공속+"] 증가하였습니다");
 			
-			pc.getInventory().updateItem(item, L1PcInventory.COL_CHARGE_COUNT);
+			pc.getInventory().updateItem(item, CUserInventory.COL_CHARGE_COUNT);
 		} else {
 			SC_ChatPacket.sendDirect(pc, pc, "투견에만 사용가능합니다.");
 		}

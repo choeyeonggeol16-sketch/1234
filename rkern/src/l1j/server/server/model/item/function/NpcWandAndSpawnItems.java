@@ -44,7 +44,7 @@ import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
@@ -75,7 +75,7 @@ public final class NpcWandAndSpawnItems {
             // Retire previous legacy dirty-column saves ahead of the receipt's
             // DB preimage SELECT, not after reserving the economy owner lane.
             if (item.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(item, L1PcInventory.COL_SAVE_ALL);
+                pc.getInventory().saveItem(item, CUserInventory.COL_SAVE_ALL);
         } catch (RuntimeException saveFailure) {
             java.util.logging.Logger.getLogger(NpcWandAndSpawnItems.class.getName())
                     .log(java.util.logging.Level.WARNING, "NPC wand prior state flush failed", saveFailure);

@@ -185,7 +185,7 @@ public class L1DwarfForPackageInventory extends Warehouse {
 
     private static void present(ArrayList<String> accounts, int itemId, int enchant, int count) throws SQLException {
         L1Item template = CObjectDB.GetItem(itemId);
-        if (template == null || count <= 0 || count > L1Inventory.MAX_AMOUNT)
+        if (template == null || count <= 0 || count > CInventory.MAX_AMOUNT)
             throw new IllegalArgumentException("Invalid package item or count");
         final String sql = "INSERT INTO character_package_warehouse "
                 + "(id,account_name,item_id,item_name,count,is_equipped,enchantlvl,is_id,durability,charge_count,remaining_time) "

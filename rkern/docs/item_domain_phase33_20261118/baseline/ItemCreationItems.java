@@ -12,9 +12,9 @@ import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.RealTimeClock;
@@ -34,7 +34,7 @@ public static boolean createNewItem(L1PcInstance pc, int item_id, int count) {
     L1ItemInstance item = ItemTable.getInstance().createItem(item_id);
     if (item != null) {
         item.setCount(count);
-        if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+        if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
             pc.getInventory().storeItem(item);
         } else {
             SC_ServerMessage.send(pc, 82);
@@ -52,7 +52,7 @@ static boolean createGMItem(L1PcInstance pc, int item_id, int count) {
     if (item != null) {
         item.setCount(count);
         item.setIdentified(true);
-        if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+        if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
             pc.getInventory().storeItem(item);
         } else {
             SC_ServerMessage.send(pc, 82);
@@ -71,7 +71,7 @@ static boolean createNewItem2(L1PcInstance pc, int item_id, int count, int Encha
         item.setCount(count);
         item.setEnchantLevel(EnchantLevel);
         item.setIdentified(true);
-        if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+        if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
             pc.getInventory().storeItem(item);
         } else {
             SC_ServerMessage.send(pc, 82);

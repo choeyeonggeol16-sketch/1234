@@ -9,7 +9,7 @@ inv=root/'docs/phase88_audit/CURRENT_AST_SEND_LOOPS.tsv'
 output=root/'docs/phase89_audit/CLASSIFIED_567_LOOP_SITES.tsv'
 rows=list(csv.reader(open(inv,encoding='utf-8'),delimiter='\t'))
 NATIVE=['CSharedBroadcast','CAsyncSendConstBufferExceptSelf','shared.send','source.send','broadcast.send','actionFrame.send','removeFrame.send','frame.send','sendRecipient','sendWrittenTo','sendSharedAttrs']
-PERSONAL_ROOTS=('/GMCommands.java','/UserCommands.java','/command/executor/','/model/item/','/model/L1Inventory.java','/model/L1PcInventory.java','/datatables/','/swing/','/network/core/cs/packet/CS_Result.java','/network/core/cs/packet/CS_NpcAction.java')
+PERSONAL_ROOTS=('/GMCommands.java','/UserCommands.java','/command/executor/','/model/item/','/model/CInventory.java','/model/CUserInventory.java','/datatables/','/swing/','/network/core/cs/packet/CS_Result.java','/network/core/cs/packet/CS_NpcAction.java')
 NETWORK=('/model/network/core/connection/CUserSocket.java','/model/network/core/session/CIOClient.java','/model/network/thread/CThreadLocalTimer.java')
 BROADCAST_METHODS=['.broadcast','broadcastEndWar','broadcastServerMessage','send_caster_message','send_messenger_message','sendRoundMessage']
 out=[]

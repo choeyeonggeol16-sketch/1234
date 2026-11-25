@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.item.L1ItemId;

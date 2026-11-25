@@ -11,7 +11,7 @@ import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
@@ -57,7 +57,7 @@ final class TargetPolymorphWands {
                     }
                     try {
                         if (item.getRecordingColumns() != 0)
-                            pc.getInventory().saveItem(item, L1PcInventory.COL_SAVE_ALL);
+                            pc.getInventory().saveItem(item, CUserInventory.COL_SAVE_ALL);
                         try (l1j.server.server.model.L1InventoryTransaction tx =
                                 l1j.server.server.model.network.core.cs.packet.User.CheckAndSetPendingUseETCItem(pc,
                                 l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {

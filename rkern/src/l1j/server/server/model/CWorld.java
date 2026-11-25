@@ -575,13 +575,13 @@ public final class CWorld {
     static final int PICK_GROUND = 2;
 
     /** Validate ownership before a party route; tradeItem revalidates under both inventory monitors. */
-    boolean PickItemCond(L1Inventory source, L1ItemInstance item, int count) {
+    boolean PickItemCond(CInventory source, L1ItemInstance item, int count) {
         return source != null && item != null && count > 0
                 && source.getItem(item.getId()) == item && count <= item.getCount();
     }
 
     /** Existing ordered inventory monitors remain authoritative for each transfer. */
-    int PickItem(L1Location origin, L1Inventory source, L1ItemInstance item, int count,
+    int PickItem(L1Location origin, CInventory source, L1ItemInstance item, int count,
             L1PcInstance recipient) {
         if (origin == null || !PickItemCond(source, item, count)) return PICK_REJECTED;
         if (recipient != null) {
@@ -613,16 +613,16 @@ public final class CWorld {
      * ticket: completion belongs to the outer NPC settlement.
      * Caller holds the recipient's existing logout/save lifecycle monitor.
      */
-    private boolean DoAsyncAddItemToInventory(L1Inventory source, L1ItemInstance item, int count,
+    private boolean DoAsyncAddItemToInventory(CInventory source, L1ItemInstance item, int count,
             L1PcInstance recipient) {
-        final L1Inventory dest = recipient.getInventory();
+        final CInventory dest = recipient.getInventory();
         final L1ItemInstance adena = item.getItemId() == l1j.server.server.model.item.L1ItemId.ADENA
                 ? dest.findItemId(item.getItemId()) : null;
         return (adena == null || (long) adena.getCount() + count <= 2_000_000_000L)
                 && source.tradeItem(item, count, dest) != null;
     }
 
-    private boolean DropAtTile(L1Inventory source, L1ItemInstance item, int count,
+    private boolean DropAtTile(CInventory source, L1ItemInstance item, int count,
             int x, int y, short map) {
         if (!PickItemCond(source, item, count)) return false;
         final L1GroundInventory ground = getGroundInventory(x, y, map);
@@ -637,7 +637,7 @@ public final class CWorld {
     // Legacy nearest-passable order, precomputed instead of allocating a BFS per item.
     private static final byte[] DROP_OFFSETS = { 0, 0, 0, -1, 1, -1, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1, -1, 0, -2, 1, -2, -1, -2, 2, -2, 2, -1, 2, 0, 2, 1, 2, 2, 1, 2, 0, 2, -1, 2, -2, 2, -2, 1, -2, 0, -2, -1, -2, -2, 0, -3, 1, -3, -1, -3, 2, -3, -2, -3, 3, -3, 3, -2, 3, -1, 3, 0, 3, 1, 3, 2, 3, 3, 2, 3, 1, 3, 0, 3, -1, 3, -2, 3, -3, 3, -3, 2, -3, 1, -3, 0, -3, -1, -3, -2, -3, -3 };
 
-    boolean PutItem(L1Location origin, L1Inventory source, L1ItemInstance item) {
+    boolean PutItem(L1Location origin, CInventory source, L1ItemInstance item) {
         if (origin == null || !PickItemCond(source, item, item.getCount())) return false;
         final int x = origin.getX(), y = origin.getY();
         final short map = (short) origin.getMapId();
@@ -650,7 +650,7 @@ public final class CWorld {
     }
 
     /** Try the corpse tile and nearby passable tiles, without changing stack caps. */
-    boolean RecoverDropRemainder(L1Location origin, L1Inventory source, L1ItemInstance item) {
+    boolean RecoverDropRemainder(L1Location origin, CInventory source, L1ItemInstance item) {
         if (source.getItem(item.getId()) != item || item.getCount() <= 0) return true;
         final int x = origin.getX(), y = origin.getY();
         final short map = (short) origin.getMapId();

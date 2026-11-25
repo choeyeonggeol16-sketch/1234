@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 
 root = Path(__file__).resolve().parents[2] / "src/l1j/server/server/model"
-source = (root / "L1Inventory.java").read_text(encoding="utf-8")
+source = (root / "CInventory.java").read_text(encoding="utf-8")
 method = source[source.index("    /** Persist selected private, clan or elf warehouse deposits"):
                 source.index("    private L1ItemInstance prepareWarehouseDeposit")]
 method = method.replace("l1j.server.server.model.Instance.", "").replace("l1j.server.server.model.Warehouse.", "")
@@ -58,7 +58,7 @@ public final class WarehouseCheck {
         void setEndTime(Timestamp end) { deadline = end; }
     }
 
-    static class L1Inventory {
+    static class CInventory {
         static final int MAX_AMOUNT = 2_000_000_000;
         final Map<Integer, L1ItemInstance> rows = new HashMap<>();
         L1ItemInstance tradeItem(L1ItemInstance item, int count, Warehouse dest) {
@@ -73,7 +73,7 @@ public final class WarehouseCheck {
             else merged.count += carry.count;
             return merged == null ? carry : merged;
         }
-        boolean rejectPendingItemTransfer() { return ((L1PcInventory)this).owner.busy; }
+        boolean rejectPendingItemTransfer() { return ((CUserInventory)this).owner.busy; }
         L1ItemInstance getItem(int id) { return rows.get(id); }
         L1ItemInstance findItemId(int id) {
             for (L1ItemInstance row : rows.values()) if (row.type == id) return row;
@@ -84,7 +84,7 @@ public final class WarehouseCheck {
 ''' + method + r'''
     }
 
-    static final class L1PcInventory extends L1Inventory {
+    static final class CUserInventory extends CInventory {
         static final int MAX_SIZE = 180;
         final L1PcInstance owner = new L1PcInstance();
         L1PcInstance getOwner() { return owner; }
@@ -148,13 +148,13 @@ public final class WarehouseCheck {
         static L1ItemInstance characterTransferCopy(L1ItemInstance source, int id, int count, int charge) {
             return transferCopy(source, id, count, charge);
         }
-        L1ItemInstance tradeSupplementaryItem(L1ItemInstance item, int count, L1Inventory dest,
+        L1ItemInstance tradeSupplementaryItem(L1ItemInstance item, int count, CInventory dest,
                 Timestamp deadline, Runnable committed) {
             L1ItemInstance applied = tradeItem(item, count, dest, 0, 0);
             applied.deadline = deadline;
             return applied;
         }
-        L1ItemInstance tradeItem(L1ItemInstance item, int count, L1Inventory dest, int feeItem, int feeEach) {
+        L1ItemInstance tradeItem(L1ItemInstance item, int count, CInventory dest, int feeItem, int feeEach) {
             L1ItemInstance result;
             if (count == item.count) {
                 rows.remove(item.id);
@@ -221,7 +221,7 @@ public final class WarehouseCheck {
     }
 
     static void checkCharges(boolean existing) {
-        var inv = new L1PcInventory();
+        var inv = new CUserInventory();
         var vault = new Warehouse();
         add(vault.rows, 1, 40006, 1, 11, false);
         add(vault.rows, 2, 40006, 1, 22, false);
@@ -239,7 +239,7 @@ public final class WarehouseCheck {
     }
 
     static void checkDeposit() {
-        var inv = new L1PcInventory();
+        var inv = new CUserInventory();
         var vault = new PrivateWarehouse();
         add(vault.rows, 99, 5100, 40, 0, true);
         add(inv.rows, 1, 5100, 5, 0, true);
@@ -262,7 +262,7 @@ public final class WarehouseCheck {
         checkCharges(false);
         checkCharges(true);
 
-        var inv = new L1PcInventory();
+        var inv = new CUserInventory();
         var vault = new Warehouse();
         var wallet = add(inv.rows, 9, L1ItemId.ADENA, 100, 0, true);
         add(vault.rows, 1, L1ItemId.ADENA, 500, 0, true);

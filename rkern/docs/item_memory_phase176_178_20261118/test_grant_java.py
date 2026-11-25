@@ -28,9 +28,9 @@ public class TestGrant {
     static IdFactory getInstance(){return factory;} int nextId(){return ++index;} }
  static class ItemTable {static final ItemTable it=new ItemTable();static ItemTable getInstance(){return it;}
     L1Item getTemplate(int id){return id<=0?null:new L1Item(id,id%2==1);}}
- static class L1Inventory {static final int MAX_AMOUNT=100000;}
- static class L1PcInventory {static final int MAX_SIZE=30;final ArrayList<L1ItemInstance> items=new ArrayList<>(); Collection<L1ItemInstance> getItems(){return items;}}
- static class L1PcInstance {final L1PcInventory inv=new L1PcInventory();L1PcInventory getInventory(){return inv;}}
+ static class CInventory {static final int MAX_AMOUNT=100000;}
+ static class CUserInventory {static final int MAX_SIZE=30;final ArrayList<L1ItemInstance> items=new ArrayList<>(); Collection<L1ItemInstance> getItems(){return items;}}
+ static class L1PcInstance {final CUserInventory inv=new CUserInventory();CUserInventory getInventory(){return inv;}}
  static class L1Item {final int id;final boolean stack;L1Item(int id,boolean stack){this.id=id;this.stack=stack;}int getBless(){return 0;}}
  static class L1ItemInstance {
   final L1Item item; int id,count,bless;boolean identified,equipped;int x;

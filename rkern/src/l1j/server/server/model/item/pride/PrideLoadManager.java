@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.combat.statistics.Kda;
 import l1j.server.server.model.item.L1ItemId;
@@ -131,7 +131,7 @@ public class PrideLoadManager {
 		PrideInfo pInfo = PrideInfo.newInstance(item.getId(), target.getId(), target.getName());
 		put_pride(pInfo);
 		
-		L1Inventory inv = L1World.getInstance().getInventory(target.getX(), target.getY(), target.getMapId());
+		CInventory inv = L1World.getInstance().getInventory(target.getX(), target.getY(), target.getMapId());
 		inv.storeTradeItem(item);
 	}
 	

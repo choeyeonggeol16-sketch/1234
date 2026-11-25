@@ -21,7 +21,7 @@ import l1j.server.server.model.character.Item.Drop.CContributeData;
 import l1j.server.server.datatables.NpcChatTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1HateList;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1MobGroupInfo;
 import l1j.server.server.model.npc.ai.action.CSkillAction2;
 import l1j.server.server.model.npc.ai.TimerData;
@@ -144,7 +144,7 @@ public class L1NpcInstance extends L1Character {
     public L1HateList _hateList = new L1HateList();
     public L1HateList _dropHateList = new L1HateList();
     
-	protected L1Inventory _inventory = new L1Inventory();
+	protected CInventory _inventory = new CInventory();
 	
 	public volatile L1Character _target = null;
     public L1PcInstance _master = null;
@@ -1190,7 +1190,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     @Override
-	public L1Inventory getInventory() {
+	public CInventory getInventory() {
 		return _inventory;
 	}
 
@@ -1199,7 +1199,7 @@ public class L1NpcInstance extends L1Character {
     public final void DropItemOnDying(CContributeData contribute, L1PcInstance lastAttacker,
             CParty admittedParty, L1PcInstance[] admittedMembers, L1Location origin) {
         if (Config.STANDBY_SERVER || lastAttacker == null || origin == null) return;
-        final L1Inventory source = getInventory();
+        final CInventory source = getInventory();
         if (source == null) return;
         final L1World world = L1World.getInstance();
         final var log = java.util.logging.Logger.getLogger(L1NpcInstance.class.getName());
@@ -1257,7 +1257,7 @@ public class L1NpcInstance extends L1Character {
         catch (RuntimeException failure) { return false; }
     }
 
-    private static void DropItemToUser(L1World world, L1Location origin, L1Inventory source,
+    private static void DropItemToUser(L1World world, L1Location origin, CInventory source,
             L1ItemInstance item, CContributeData contribute, L1PcInstance primary,
             CParty admittedParty, L1PcInstance[] admittedMembers) {
         if (admittedParty != null) {
@@ -1269,7 +1269,7 @@ public class L1NpcInstance extends L1Character {
         world.PickNpcDrop(origin, source, item, primary);
     }
 
-    public void setInventory(L1Inventory inventory) {
+    public void setInventory(CInventory inventory) {
 		_inventory = inventory;
     }
 
@@ -1358,7 +1358,7 @@ public class L1NpcInstance extends L1Character {
             }
         }
         cancelDigestItems();
-        L1Inventory inv = _inventory;
+        CInventory inv = _inventory;
         if (inv != null) {
             inv.clearItems();
         }
@@ -2577,7 +2577,7 @@ public class L1NpcInstance extends L1Character {
         }
 
         cancelDigestItems();
-        L1Inventory inv = _inventory;
+        CInventory inv = _inventory;
         if (inv != null) {
             inv.clearItems();
         }

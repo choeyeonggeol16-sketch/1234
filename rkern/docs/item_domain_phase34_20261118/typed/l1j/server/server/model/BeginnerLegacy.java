@@ -40,7 +40,7 @@ private String getJobActivationCode(L1PcInstance pc) { return "C"; }
 						if (item != null) {
 							item.setCount(count);
 							item.setEnchantLevel(enchant);
-							if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+							if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
 								pc.getInventory().storeItem(item);
 								SC_ServerMessage.send(pc, 403, item.getLogName() + "(ID:" + itemId + ")");
 							}
@@ -51,7 +51,7 @@ private String getJobActivationCode(L1PcInstance pc) { return "C"; }
 							L1ItemInstance item = ItemTable.getInstance().createItem(itemId);
 							if (item != null) {
 								item.setEnchantLevel(enchant);
-								if (pc.getInventory().checkAddItem(item, 1) == L1Inventory.OK) {
+								if (pc.getInventory().checkAddItem(item, 1) == CInventory.OK) {
 									pc.getInventory().storeItem(item);
 									SC_ServerMessage.send(pc, 403, item.getLogName() + "(ID:" + itemId + ")");
 								} else {

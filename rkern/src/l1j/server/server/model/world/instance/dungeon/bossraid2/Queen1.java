@@ -16,7 +16,7 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DoorInstance;
@@ -278,7 +278,7 @@ public class Queen1 implements Runnable {
 				continue;
 			if (ob instanceof L1ItemInstance) {
 				L1ItemInstance obj = (L1ItemInstance) ob;
-				L1Inventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(),
+				CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(),
 						obj.getMapId());
 				groundInventory.removeItem(obj);
 			} else if (ob instanceof L1NpcInstance) {

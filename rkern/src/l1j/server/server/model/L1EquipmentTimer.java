@@ -113,7 +113,7 @@ public final class L1EquipmentTimer implements Runnable {
             return;
         }
         synchronized (session) {
-            final L1PcInventory inventory = pc.getInventory();
+            final CUserInventory inventory = pc.getInventory();
             if (!active || !session.isConnected() || pc.isLogoutStarted() || pc.getSessionStamp() != sessionStamp) {
                 cancel();
                 return;
@@ -131,7 +131,7 @@ public final class L1EquipmentTimer implements Runnable {
                 final int remaining = item.getRemainingTime();
                 if (remaining > 1) {
                     item.setRemainingTime(remaining - 1);
-                    inventory.updateItem(item, L1PcInventory.COL_REMAINING_TIME);
+                    inventory.updateItem(item, CUserInventory.COL_REMAINING_TIME);
                     try {
                         scheduleNext();
                     } catch (RejectedExecutionException unavailable) {

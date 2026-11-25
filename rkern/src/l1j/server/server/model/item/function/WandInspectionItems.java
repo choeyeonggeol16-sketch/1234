@@ -40,7 +40,7 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -66,7 +66,7 @@ public final class WandInspectionItems {
 //			
 //			(new SC_ChatPacket(pc,"번호 : (" + npc.getNpcId() + "-" + targetId + ") // " + "이름 : (" + npc.getName() + ")")).send(pc);
 //			(new SC_ChatPacket(pc, "위치 : " + "(x:" + npc.getX() + "), (y:" + npc.getY() + "), (" + "Map:"+ npc.getMapId() + ") // GfxId : (" + npc.getCurrentSpriteId() + ")")).send(pc);
-			pc.getInventory().updateItem(item, L1PcInventory.COL_CHARGE_COUNT);
+			pc.getInventory().updateItem(item, CUserInventory.COL_CHARGE_COUNT);
 		}
 	}
 

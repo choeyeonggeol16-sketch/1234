@@ -312,7 +312,7 @@ for (L1PcInstance pc : getMembersArray()) {
 				ground = L1World.getInstance().getInventory(loc.getX(),
 						loc.getY(), _mapId);
 				try {
-					if (ground.checkAddItem(item, stackCount) == L1Inventory.OK) {
+					if (ground.checkAddItem(item, stackCount) == CInventory.OK) {
 						ground.storeItem(item);
 					}
 				} finally {
@@ -330,7 +330,7 @@ for (L1PcInstance pc : getMembersArray()) {
 					ground = L1World.getInstance().getInventory(loc.getX(),
 							loc.getY(), _mapId);
 					try {
-						if (ground.checkAddItem(item, stackCount) == L1Inventory.OK) {
+						if (ground.checkAddItem(item, stackCount) == CInventory.OK) {
 							ground.storeItem(item);
 						}
 					} finally {
@@ -347,7 +347,7 @@ for (L1PcInstance pc : getMembersArray()) {
 
 	private void clearColosseum() {
 		L1MonsterInstance mob = null;
-		L1Inventory inventory = null;
+		CInventory inventory = null;
 		for (Object obj : L1World.getInstance().getVisibleObjects(_mapId)
 				.values()) {
 			if (obj instanceof L1MonsterInstance) {
@@ -359,8 +359,8 @@ for (L1PcInstance pc : getMembersArray()) {
 					mob.deleteMe();
 
 				}
-			} else if (obj instanceof L1Inventory) {
-				inventory = (L1Inventory) obj;
+			} else if (obj instanceof CInventory) {
+				inventory = (CInventory) obj;
 				inventory.clearItems();
 			}
 		}

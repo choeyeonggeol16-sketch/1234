@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import l1j.server.Config;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -251,7 +251,7 @@ public class L1HealingPotion {
 		if (getRemove() > 0) {
 			if (chargeCount > 0) {
 				item.setChargeCount(chargeCount - getRemove());
-				pc.getInventory().updateItem(item, L1PcInventory.COL_CHARGE_COUNT);
+				pc.getInventory().updateItem(item, CUserInventory.COL_CHARGE_COUNT);
 			} else {
 				pc.getInventory().removeItem(item, getRemove());
 			}

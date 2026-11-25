@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1ItemDelay;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 
 /** Legacy normal-return charge, last-used and item-delay tail. Early exits never call this. */
 final class ItemActionCompletion {
@@ -39,12 +39,12 @@ final class ItemActionCompletion {
                 final Timestamp oldLastUsed = live.getLastUsed();
                 live.setLastUsed(new Timestamp(System.currentTimeMillis()));
                 try {
-                    pc.getInventory().saveItem(live, L1PcInventory.COL_DELAY_EFFECT);
+                    pc.getInventory().saveItem(live, CUserInventory.COL_DELAY_EFFECT);
                 } catch (RuntimeException submissionFailure) {
                     live.setLastUsed(oldLastUsed);
                     throw submissionFailure;
                 }
-                notifyItemState(pc, live, L1PcInventory.COL_DELAY_EFFECT);
+                notifyItemState(pc, live, CUserInventory.COL_DELAY_EFFECT);
             }
         }
         L1ItemDelay.onItemUse(pc, input);
@@ -73,24 +73,24 @@ final class ItemActionCompletion {
                         // Both fields changed. Persisting just the charge count
                         // silently lost the updated last-use timestamp.
                         pc.getInventory().saveItem(item,
-                                L1PcInventory.COL_CHARGE_COUNT | L1PcInventory.COL_DELAY_EFFECT);
+                                CUserInventory.COL_CHARGE_COUNT | CUserInventory.COL_DELAY_EFFECT);
                     } catch (RuntimeException submissionFailure) {
                         item.setChargeCount(chargeCount);
                         item.setLastUsed(oldLastUsed);
                         throw submissionFailure;
                     }
-                    notifyItemState(pc, item, L1PcInventory.COL_CHARGE_COUNT);
+                    notifyItemState(pc, item, CUserInventory.COL_CHARGE_COUNT);
                 }
             } else {
                 final Timestamp oldLastUsed = item.getLastUsed();
                 item.setLastUsed(new Timestamp(System.currentTimeMillis()));
                 try {
-                    pc.getInventory().saveItem(item, L1PcInventory.COL_DELAY_EFFECT);
+                    pc.getInventory().saveItem(item, CUserInventory.COL_DELAY_EFFECT);
                 } catch (RuntimeException submissionFailure) {
                     item.setLastUsed(oldLastUsed);
                     throw submissionFailure;
                 }
-                notifyItemState(pc, item, L1PcInventory.COL_DELAY_EFFECT);
+                notifyItemState(pc, item, CUserInventory.COL_DELAY_EFFECT);
             }
         }
         L1ItemDelay.onItemUse(pc, item);

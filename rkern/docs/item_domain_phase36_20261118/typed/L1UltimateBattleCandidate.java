@@ -20,7 +20,7 @@ public final class L1UltimateBattleCandidate {
 				ground = L1World.getInstance().getInventory(loc.getX(),
 						loc.getY(), _mapId);
 				try {
-					if (ground.checkAddItem(item, stackCount) == L1Inventory.OK) {
+					if (ground.checkAddItem(item, stackCount) == CInventory.OK) {
 						ground.storeItem(item);
 					}
 				} finally {
@@ -38,7 +38,7 @@ public final class L1UltimateBattleCandidate {
 					ground = L1World.getInstance().getInventory(loc.getX(),
 							loc.getY(), _mapId);
 					try {
-						if (ground.checkAddItem(item, stackCount) == L1Inventory.OK) {
+						if (ground.checkAddItem(item, stackCount) == CInventory.OK) {
 							ground.storeItem(item);
 						}
 					} finally {

@@ -1,6 +1,6 @@
 package l1j.server.server.model.npc.ai;
 
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 
@@ -35,7 +35,7 @@ public final class CItemRefine {
         }
     }
 
-    private static void Refine(final L1NpcInstance npc, final L1Inventory inventory,
+    private static void Refine(final L1NpcInstance npc, final CInventory inventory,
             final int[] recipes, final int offset, final int end) {
         final int resultId = recipes[offset];
         if (inventory.hasItemDirect(resultId)) return;

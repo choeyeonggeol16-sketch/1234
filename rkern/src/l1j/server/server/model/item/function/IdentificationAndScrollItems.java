@@ -1,6 +1,6 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.cs.packet.CDB;
@@ -43,9 +43,9 @@ final class IdentificationAndScrollItems {
             // Flush earlier pending saves before the receipt's DB preimages.
             // This only enqueues CacheD work; it performs no JDBC on the CIO owner.
             if (scroll.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(scroll, L1PcInventory.COL_SAVE_ALL);
+                pc.getInventory().saveItem(scroll, CUserInventory.COL_SAVE_ALL);
             if (target.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(target, L1PcInventory.COL_SAVE_ALL);
+                pc.getInventory().saveItem(target, CUserInventory.COL_SAVE_ALL);
             try (l1j.server.server.model.L1InventoryTransaction tx =
                     User.CheckAndSetPendingUseETCItem(pc, CacheD.accountOrderKey("item-use:", pc.getId()))) {
                 if (!tx.debit(scroll, 1)) return ItemActionResult.COMPLETE;

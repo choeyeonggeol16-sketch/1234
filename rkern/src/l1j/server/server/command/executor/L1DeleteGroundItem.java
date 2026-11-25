@@ -5,7 +5,7 @@ import java.util.StringTokenizer;
 import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.datatables.PetTable;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
@@ -29,7 +29,7 @@ public class L1DeleteGroundItem implements L1CommandExecutor {
 		StringTokenizer st = new StringTokenizer(arg);
 		String type = st.nextToken();
 		if(type.equalsIgnoreCase("전체")){
-			L1Inventory groundInventory= null;
+			CInventory groundInventory= null;
 			LetterTable lettertable = null;
 			L1FurnitureInstance furniture = null;
 			for (L1Object l1object : L1World.getInstance().getObject()) {
@@ -62,7 +62,7 @@ public class L1DeleteGroundItem implements L1CommandExecutor {
 					}
 			}
 		}else if(type.equalsIgnoreCase("맵")){
-			L1Inventory groundInventory= null;
+			CInventory groundInventory= null;
 			LetterTable lettertable = null;
 			L1FurnitureInstance furniture = null;
 			for (L1Object l1object : L1World.getInstance().getObject()) {

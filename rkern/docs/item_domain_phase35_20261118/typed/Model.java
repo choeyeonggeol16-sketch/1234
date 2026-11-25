@@ -1,7 +1,7 @@
 import java.util.*;
 final class TestRng {static long seed;}
 final class Trace {static final List<String> events=new ArrayList<>(); static void clear(){events.clear();}}
-final class L1Inventory {static final int OK=0;}
+final class CInventory {static final int OK=0;}
 final class L1World {
  static final L1World INSTANCE=new L1World();
  final Map<Integer,L1ItemInstance> objects=new HashMap<>();
@@ -22,10 +22,10 @@ final class ItemTable {
  static ItemTable getInstance(){return INSTANCE;}
  L1ItemInstance createItem(int id){if(id<=0)return null;L1ItemInstance it=new L1ItemInstance(next++,id);L1World.getInstance().storeObject(it);created++;return it;}
 }
-final class L1PcInventory {
+final class CUserInventory {
  boolean reject,failCheck,failStore,returnNull;
  int checks,stores; final Map<Integer,L1ItemInstance> byId=new HashMap<>();
- int checkAddItem(L1ItemInstance it,int count){checks++;if(failCheck)throw new IllegalStateException("check");return reject?1:L1Inventory.OK;}
+ int checkAddItem(L1ItemInstance it,int count){checks++;if(failCheck)throw new IllegalStateException("check");return reject?1:CInventory.OK;}
  L1ItemInstance getItem(int id){return byId.get(id);}
  void addExisting(L1ItemInstance it){byId.put(it.id,it);L1World.getInstance().storeObject(it);}
  L1ItemInstance storeItem(L1ItemInstance it){stores++;if(failStore)throw new IllegalStateException("store");if(returnNull)return null;
@@ -37,7 +37,7 @@ final class L1PcInventory {
   L1ItemInstance it=ItemTable.getInstance().createItem(id);it.count=count;byId.put(it.id,it);return it;
  }
 }
-final class L1PcInstance {final L1PcInventory inv=new L1PcInventory();L1PcInventory getInventory(){return inv;}int getMapId(){return 1;}String getName(){return "player";}}
+final class L1PcInstance {final CUserInventory inv=new CUserInventory();CUserInventory getInventory(){return inv;}int getMapId(){return 1;}String getName(){return "player";}}
 final class SC_ServerMessage {
  static void send(L1PcInstance pc,int code,String... values){Trace.events.add("message:"+code+":"+Arrays.toString(values));}
 }

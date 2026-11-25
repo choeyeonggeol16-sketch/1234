@@ -6,9 +6,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -102,12 +102,12 @@ final class NpcExperienceCommands {
 				item.setEnchantLevel(EnchantLevel);
 				item.setAttrEnchantLevel(attr);
 				item.setIdentified(true);
-				if (pc.getInventory().checkAddItem(item, count) == L1Inventory.OK) {
+				if (pc.getInventory().checkAddItem(item, count) == CInventory.OK) {
 					L1ItemInstance stored = pc.getInventory().storeItem(item);
 					if (stored == null) return false;
 					stored.setBless(Bless);
-					pc.getInventory().updateItem(stored, L1PcInventory.COL_BLESS);
-					pc.getInventory().saveItem(stored, L1PcInventory.COL_BLESS);
+					pc.getInventory().updateItem(stored, CUserInventory.COL_BLESS);
+					pc.getInventory().saveItem(stored, CUserInventory.COL_BLESS);
 				} else { // 가질 수 없는 경우는 지면에 떨어뜨리는 처리의 캔슬은 하지 않는다(부정 방지)
 					SC_ServerMessage.send(pc, 82);
 					// 무게 게이지가 부족하거나 인벤토리가 꽉차서 더 들 수 없습니다.

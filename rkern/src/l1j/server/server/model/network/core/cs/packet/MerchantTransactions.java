@@ -8,7 +8,7 @@ import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightH
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Inventory;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
@@ -121,7 +121,7 @@ final class MerchantTransactions {
         for (int i = 0; i < size; i++) {
             final int id = CS_Result.param1(first, rest, i);
             final int count = (int) CS_Result.param2D(first, rest, i);
-            if (count <= 0 || count > L1Inventory.MAX_AMOUNT || repeated(first, rest, i, id)) return;
+            if (count <= 0 || count > CInventory.MAX_AMOUNT || repeated(first, rest, i, id)) return;
             final var item = pc.getInventory().getItem(id);
             if (item == null || item.isEquipped()) return;
             if (!dynamic && npcId >= 6100000 && npcId <= 6100035 && !item.isPackage()) {

@@ -12,7 +12,7 @@ def make(root,source):
  method=data[start:end].rstrip()
  body='''package l1j.server.server.model.item.function;
 public final class IdentifyTest {
- static final class L1PcInventory { static final int COL_IS_ID=12; }
+ static final class CUserInventory { static final int COL_IS_ID=12; }
  enum ItemActionResult { COMPLETE, STOP }
  static final class Item {final int type,safe,mpr,hpr;Item(int t,int s,int m,int h){type=t;safe=s;mpr=m;hpr=h;}int get_addmpr(){return mpr;}int get_addhpr(){return hpr;}int get_safeenchant(){return safe;}int getType2(){return type;}}
  static final class L1ItemInstance {
