@@ -267,7 +267,23 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public void setCount(int count) {
-		_count = count;
+        for (;;) {
+            final CItemList list = inventoryLinkOwner;
+            if (list == null) {
+                _count = count;
+                final CItemList linked = inventoryLinkOwner;
+                if (linked != null) linked.invalidateCarryingWeight();
+                return;
+            }
+            synchronized (list) {
+                if (inventoryLinkOwner != list) continue;
+                if (_count == count) return;
+                final int before = list.weightBeforeChange(this);
+                _count = count;
+                list.weightChanged(this, before);
+                return;
+            }
+        }
 	}
 
 	/** OFF-style quantity validation; callers retain the inventory/warehouse lock. */
@@ -293,7 +309,7 @@ public class L1ItemInstance extends L1Object {
 		final int before = _count;
 		final long after = (long) before + amount;
 		if (before < 0 || after < 0 || after > CInventory.MAX_AMOUNT) return false;
-		_count = (int) after;
+		setCount((int) after);
 		return true;
 	}
 
@@ -310,8 +326,25 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public void setItem(L1Item item) {
-		_item = item;
-		_itemId = item.getItemId();
+        final int id = item.getItemId();
+        for (;;) {
+            final CItemList list = inventoryLinkOwner;
+            if (list == null) {
+                _item = item;
+                _itemId = id;
+                final CItemList linked = inventoryLinkOwner;
+                if (linked != null) linked.invalidateCarryingWeight();
+                return;
+            }
+            synchronized (list) {
+                if (inventoryLinkOwner != list) continue;
+                final int before = list.weightBeforeChange(this);
+                _item = item;
+                _itemId = id;
+                list.weightChanged(this, before);
+                return;
+            }
+        }
 	}
 
 	public int getItemId() {
