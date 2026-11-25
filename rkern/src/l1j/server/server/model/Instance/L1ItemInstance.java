@@ -452,6 +452,40 @@ public class L1ItemInstance extends L1Object {
         return classId == 20383 ? 50 : getItem().getMaxChargeCount();
     }
 
+    public static Timestamp CopyTimestamp(Timestamp time) {
+        if (time == null) return null;
+        Timestamp copy = new Timestamp(time.getTime());
+        copy.setNanos(time.getNanos());
+        return copy;
+    }
+
+    /**
+     * Copy the shared persistent item attributes, not owner, identity, template,
+     * equipment state, key ID or inventory membership.
+     * A detached SQL image clones last-used time; live replay retains the
+     * existing timestamp reference policy. Expiry is optional because PC
+     * replay must cancel the old timer before changing it.
+     */
+    public final void CopyItemAttributesFrom(L1ItemInstance source, int count, int charge,
+            boolean copyPackage, boolean copyExpiry, boolean snapshotLastUsed) {
+        setCount(count);
+        setEnchantLevel(source.getEnchantLevel());
+        setIdentified(source.isIdentified());
+        set_durability(source.get_durability());
+        setChargeCount(charge);
+        setRemainingTime(source.getRemainingTime());
+        setLastUsed(snapshotLastUsed ? CopyTimestamp(source.getLastUsed()) : source.getLastUsed());
+        setBless(source.getBless());
+        setAttrEnchantLevel(source.getAttrEnchantLevel());
+        setSpecialEnchant(source.getSpecialEnchant());
+        if (copyPackage) setPackage(source.isPackage());
+        set_bless_level(source.get_bless_level());
+        set_bless_level2(source.get_bless_level2());
+        if (copyExpiry) setEndTime(source.getEndTime());
+        set_item_level(source.get_item_level());
+        setHotel_Town(source.getHotel_Town());
+    }
+
 	public int getChargeCount() {
 		return _chargeCount;
 	}
