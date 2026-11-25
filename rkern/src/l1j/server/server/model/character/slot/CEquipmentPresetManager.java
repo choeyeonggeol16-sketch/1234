@@ -15,9 +15,9 @@ import l1j.server.server.model.character.equip.EquipRules;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 /**
- * SlotChange 관리 전용.
+ * L1 equipment preset management; OFF-style C-class and method naming.
  */
-public final class SlotChangeManager {
+public final class CEquipmentPresetManager {
 
     private static final int SLOT0 = 0;
     private static final int SLOT1 = 1;
@@ -42,23 +42,23 @@ public final class SlotChangeManager {
     private L1ItemInstance[] plannedBuffer = EMPTY_ITEMS;
     private L1ItemInstance[] originalBuffer = EMPTY_ITEMS;
 
-    /** applySlot 중첩 실행 방지  */
+    /** SwapEquipmentPreset 중첩 실행 방지  */
     private boolean swapping = false;
 
-    public SlotChangeManager(L1PcInstance owner) {
+    public CEquipmentPresetManager(L1PcInstance owner) {
         this.owner = owner;
     }
 
-    public int getSlotNumber() {
+    public int GetSlotNumber() {
         return slotNumber;
     }
 
-    public void setSlotNumber(int i) {
+    public void SetSlotNumber(int i) {
         this.slotNumber = i;
     }
 
-    public void addSlotItem(int slotNum, int itemObjId, boolean snapshotEquipped) {
-        final IntIdList list = getList(slotNum);
+    public void AddSlotItem(int slotNum, int itemObjId, boolean snapshotEquipped) {
+        final IntIdList list = GetSlotList(slotNum);
         if (list == null) return;
 
         if (snapshotEquipped) {
@@ -76,7 +76,7 @@ public final class SlotChangeManager {
     }
 
     /** 유효하지 않은 슬롯이면 빈 리스트 반환  */
-    public List<Integer> getSlotItems(int slotNum) {
+    public List<Integer> GetSlotItems(int slotNum) {
     	switch (slotNum) {
     	case SLOT0: return slot0View;
     	case SLOT1: return slot1View;
@@ -87,23 +87,23 @@ public final class SlotChangeManager {
     /**
      * 내부 리스트 직접 노출용.
      */
-    public IntIdList getSlotRaw(int slotNum) {
-        return getList(slotNum);
+    public IntIdList GetSlotRaw(int slotNum) {
+        return GetSlotList(slotNum);
     }
 
-    public void applySlot(int slotNum) {
-        final IntIdList desired = getList(slotNum);
+    public void SwapEquipmentPreset(int slotNum) {
+        final IntIdList desired = GetSlotList(slotNum);
         if (desired == null) return;
         final CUserInventory inventory = owner.getInventory();
         if (!inventory.tryBeginEquipmentChange()) return;
         try {
-            if (!swapping) applySlot(slotNum, desired, inventory);
+            if (!swapping) SwapEquipmentPreset(slotNum, desired, inventory);
         } finally {
             inventory.endEquipmentChange();
         }
     }
 
-    private void applySlot(int slotNum, IntIdList desired, CUserInventory inventory) {
+    private void SwapEquipmentPreset(int slotNum, IntIdList desired, CUserInventory inventory) {
         final int spriteId = owner.getCurrentSpriteId();
         final L1ItemInstance originalPrimary = owner.getWeapon();
         int unequipCount = 0, equipCount = 0, plannedCount = 0, originalCount = 0;
@@ -113,7 +113,7 @@ public final class SlotChangeManager {
         try {
             desired.sortUnique();
             // Use applied equipment slots and requested object IDs directly.
-            final int counts = planFromSlots(desired, inventory, spriteId);
+            final int counts = BuildSlotPlan(desired, inventory, spriteId);
             if (counts >= 0) {
                 originalCount = (counts >>> 18) & COUNT_MASK;
                 plannedCount = (counts >>> 12) & COUNT_MASK;
@@ -121,11 +121,11 @@ public final class SlotChangeManager {
                 unequipCount = counts & COUNT_MASK;
                 direct = true;
             } else {
-                clearPlan();
+                ClearPlan();
                 for (L1ItemInstance item : inventory.getItems()) {
                     if (item == null || item.getItem() == null) continue;
                     final boolean equipped = item.isEquipped();
-                    final boolean wanted = desired.contains(item.getId()) && canEquipWithPoly(item, spriteId);
+                    final boolean wanted = desired.contains(item.getId()) && CanEquipWithPoly(item, spriteId);
                     if (equipped) {
                         if (originalCount == MAX_BUFFER) return;
                         if (originalCount == originalBuffer.length) originalBuffer = grow(originalBuffer);
@@ -174,7 +174,7 @@ public final class SlotChangeManager {
             }
             for (int i = 0; i < equipCount; i++) {
                 final L1ItemInstance item = equipBuffer[i];
-                if (inventory.GetByServerID(item.getId()) != item || !canEquipNow(inventory, item)) return;
+                if (inventory.GetByServerID(item.getId()) != item || !CanEquipNow(inventory, item)) return;
                 owner.EquipItem(item);
                 if (!item.isEquipped()) return;
             }
@@ -187,8 +187,8 @@ public final class SlotChangeManager {
         } finally {
             try {
                 if (mutated && !completed) {
-                    if (direct && originalCount > 1) orderOriginal(inventory, originalCount);
-                    restoreEquipment(inventory, originalCount, equipCount, originalPrimary);
+                    if (direct && originalCount > 1) OrderOriginalEquipment(inventory, originalCount);
+                    RestoreEquipment(inventory, originalCount, equipCount, originalPrimary);
                 }
             } finally {
                 try {
@@ -197,7 +197,7 @@ public final class SlotChangeManager {
                         if (item != null && !item.isEquipped()) item.stopEquipmentTimer();
                     }
                 } finally {
-                    clearPlan();
+                    ClearPlan();
                     swapping = false;
                 }
             }
@@ -210,7 +210,7 @@ public final class SlotChangeManager {
      * order changes dual weapon positions, accessory windows and effects.
      * The inventory gate protects both paths. No per-request plan object.
      */
-    private int planFromSlots(IntIdList desired, CUserInventory inventory, int spriteId) {
+    private int BuildSlotPlan(IntIdList desired, CUserInventory inventory, int spriteId) {
         if (desired.size() > MAX_BUFFER) return -1;
         final L1EquipmentSlot slots = owner.getEquipSlot();
         final List<L1ItemInstance> armors = slots.getArmors();
@@ -222,7 +222,7 @@ public final class SlotChangeManager {
             if (item == null || item.getItem() == null || !item.isEquipped()
                     || original == MAX_BUFFER
                     || inventory.GetByServerID(item.getId()) != item
-                    || containsIdentity(originalBuffer, original, item)) return -1;
+                    || ContainsIdentity(originalBuffer, original, item)) return -1;
             if (original == originalBuffer.length) originalBuffer = grow(originalBuffer);
             originalBuffer[original++] = item;
         }
@@ -231,17 +231,17 @@ public final class SlotChangeManager {
         int removed = 0;
         for (int i = 0; i < original; i++) {
             final L1ItemInstance item = originalBuffer[i];
-            if ((!desired.contains(item.getId()) || !canEquipWithPoly(item, spriteId))
+            if ((!desired.contains(item.getId()) || !CanEquipWithPoly(item, spriteId))
                     && ++removed > 1) return -1;
         }
         for (int i = 0, n = desired.size(); i < n; i++) {
             final L1ItemInstance item = inventory.GetByServerID(desired.get(i));
-            if (item == null || item.getItem() == null || !canEquipWithPoly(item, spriteId)) continue;
+            if (item == null || item.getItem() == null || !CanEquipWithPoly(item, spriteId)) continue;
             if (item.getItem().getType2() == 1 && ++weapons > 1) return -1;
             if (planned == plannedBuffer.length) plannedBuffer = grow(plannedBuffer);
             plannedBuffer[planned++] = item;
             if (item.isEquipped()) {
-                if (!containsIdentity(originalBuffer, original, item)) return -1;
+                if (!ContainsIdentity(originalBuffer, original, item)) return -1;
             } else {
                 if (equip != 0) return -1;
                 if (equipBuffer.length == 0) equipBuffer = grow(equipBuffer);
@@ -250,7 +250,7 @@ public final class SlotChangeManager {
         }
         for (int i = 0; i < original; i++) {
             final L1ItemInstance item = originalBuffer[i];
-            if (containsIdentity(plannedBuffer, planned, item)) continue;
+            if (ContainsIdentity(plannedBuffer, planned, item)) continue;
             if (unequip != 0) return -1;
             if (unequipBuffer.length == 0) unequipBuffer = grow(unequipBuffer);
             unequipBuffer[unequip++] = item;
@@ -258,7 +258,7 @@ public final class SlotChangeManager {
         return (original << 18) | (planned << 12) | (equip << 6) | unequip;
     }
 
-    private static boolean containsIdentity(L1ItemInstance[] items, int count, L1ItemInstance item) {
+    private static boolean ContainsIdentity(L1ItemInstance[] items, int count, L1ItemInstance item) {
         for (int i = 0; i < count; i++) {
             if (items[i] == item) return true;
         }
@@ -267,7 +267,7 @@ public final class SlotChangeManager {
 
     // Recovery can need more than the single changed item (e.g. polymorph
     // side effects). Restore surviving original rows in legacy inventory order.
-    private void orderOriginal(CUserInventory inventory, int count) {
+    private void OrderOriginalEquipment(CUserInventory inventory, int count) {
         int next = 0;
         for (L1ItemInstance item : inventory.getItems()) {
             for (int i = next; i < count; i++) {
@@ -280,14 +280,14 @@ public final class SlotChangeManager {
         }
     }
 
-    private void clearPlan() {
+    private void ClearPlan() {
         Arrays.fill(unequipBuffer, null);
         Arrays.fill(equipBuffer, null);
         Arrays.fill(plannedBuffer, null);
         Arrays.fill(originalBuffer, null);
     }
 
-    private void restoreEquipment(CUserInventory inventory, int originalCount,
+    private void RestoreEquipment(CUserInventory inventory, int originalCount,
             int equipCount, L1ItemInstance originalPrimary) {
         // Runtime rejection after preflight: restore the original worn image
         // using normal inventory persistence, without a separate DB transaction.
@@ -297,7 +297,7 @@ public final class SlotChangeManager {
             try {
                 owner.UnequipItem(item);
             } catch (RuntimeException failure) {
-                java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                java.util.logging.Logger.getLogger(CEquipmentPresetManager.class.getName())
                         .log(java.util.logging.Level.SEVERE, "Preset rollback remove failed", failure);
             }
         }
@@ -307,7 +307,7 @@ public final class SlotChangeManager {
             try {
                 owner.EquipItem(originalPrimary);
             } catch (RuntimeException failure) {
-                java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                java.util.logging.Logger.getLogger(CEquipmentPresetManager.class.getName())
                         .log(java.util.logging.Level.SEVERE, "Preset rollback primary failed", failure);
             }
         }
@@ -317,11 +317,11 @@ public final class SlotChangeManager {
             try {
                 owner.EquipItem(item);
                 if (!item.isEquipped()) {
-                    java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                    java.util.logging.Logger.getLogger(CEquipmentPresetManager.class.getName())
                             .severe("Preset rollback restore refused: item=" + item.getId());
                 }
             } catch (RuntimeException failure) {
-                java.util.logging.Logger.getLogger(SlotChangeManager.class.getName())
+                java.util.logging.Logger.getLogger(CEquipmentPresetManager.class.getName())
                         .log(java.util.logging.Level.SEVERE, "Preset rollback restore failed", failure);
             }
         }
@@ -331,7 +331,7 @@ public final class SlotChangeManager {
         return Arrays.copyOf(buffer, Math.min(MAX_BUFFER, Math.max(4, buffer.length * 2)));
     }
 
-    private boolean canEquipNow(CUserInventory inventory, L1ItemInstance item) {
+    private boolean CanEquipNow(CUserInventory inventory, L1ItemInstance item) {
         if (item.getItem().getType2() == 2) return EquipRules.canEquipArmor(owner, inventory, item).ok;
         if (item.getItem().getType2() != 1) return true;
         if (!EquipRules.canEquipWeaponBasic(owner, inventory, item).ok) return false;
@@ -340,7 +340,7 @@ public final class SlotChangeManager {
     }
 
     /** 변신 상태에서 장착 가능 여부 (무기/방어구 모두 체크) */
-    private static boolean canEquipWithPoly(L1ItemInstance item, int spriteId) {
+    private static boolean CanEquipWithPoly(L1ItemInstance item, int spriteId) {
     	if (item.getItem() == null) return true;
     	final int type2 = item.getItem().getType2();
     	switch (type2) {
@@ -353,7 +353,7 @@ public final class SlotChangeManager {
     	}
     }
 
-    private IntIdList getList(int slotNum) {
+    private IntIdList GetSlotList(int slotNum) {
         if (slotNum == SLOT0) return slot0;
         if (slotNum == SLOT1) return slot1;
         return null;
@@ -421,7 +421,7 @@ public final class SlotChangeManager {
         @Override public int size() { return src.size(); }
     }
     
-    public void clear() {
+    public void Clear() {
         if (slot0 != null) slot0.clear();
         if (slot1 != null) slot1.clear();
         
