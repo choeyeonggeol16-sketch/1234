@@ -6,6 +6,10 @@ on:
       - rkern/pc-unused-autohunt-20261123
     paths:
       - 'rkern/src/l1j/server/server/model/npc/ai/**'
+      - 'rkern/src/l1j/server/server/model/CNpc*.java'
+      - 'rkern/src/l1j/server/server/model/L1Spawn.java'
+      - 'rkern/src/l1j/server/server/datatables/CNpcMakerDB.java'
+      - 'rkern/src/l1j/server/server/datatables/SpawnTable.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1NpcInstance.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1PetInstance.java'
       - 'rkern/src/l1j/server/server/model/Instance/L1SummonInstance.java'
@@ -198,8 +202,9 @@ jobs:
           pledge_reply = root / "docs/pledge_native_port_20261124/TestPledgeReplyChecker.java"
           party_roster = root / "docs/pledge_native_port_20261124/TestPartyRoster.java"
           objectdb_types = root / "docs/pledge_native_port_20261124/TestObjectDBTypes.java"
-          sources += [regression, launcher, bookmark, pledge, pledge_reply, party_roster, objectdb_types]
-          print(f"Production Java sources: {len(sources) - 14}", flush=True)
+          spawn_maker = root / "docs/npc_ai_native_port_20261123/TestNpcMakerLifecycle.java"
+          sources += [regression, launcher, bookmark, pledge, pledge_reply, party_roster, objectdb_types, spawn_maker]
+          print(f"Production Java sources: {len(sources) - 15}", flush=True)
           args = work / "sources.txt"
           args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
           subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8",
@@ -221,6 +226,7 @@ jobs:
               "l1j.server.server.model.TestPledgeReplyChecker",
               "l1j.server.server.model.TestPartyRoster",
               "l1j.server.server.model.TestObjectDBTypes",
+              "l1j.server.server.model.TestNpcMakerLifecycle",
           ]
           failures = []
           for name in tests:
@@ -245,7 +251,7 @@ jobs:
                   failures.append(name)
           if failures:
               raise SystemExit("Failed NPC suites: " + ", ".join(failures))
-          print("PASS all 13 independent NPC, bookmark, pledge, party and ObjectDB suites", flush=True)
+          print("PASS all 14 independent NPC, bookmark, pledge, party, ObjectDB and Maker suites", flush=True)
           print("Remaining bookmark call sites:", flush=True)
           subprocess.run(["git", "grep", "-nE", "BookmarkSlot\\.(InsertSlot|Load|SaveItemSlot|DeleteItemSlots|WriteSlots)|CItemBookmark\\.SaveSlot|\\._bookmarks|\\._speedbookmarks|handleSkillTeleport\\(", "--", "rkern/src"], check=False)
           PY
