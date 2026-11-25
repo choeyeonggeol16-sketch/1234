@@ -108,18 +108,34 @@ public class L1GroundInventory extends CInventory {
 
     @Override
     public synchronized void Pop(L1ItemInstance item) {
-        if (item == null) return;
+        if (unlinkGroundItem(item)) finishGroundTransfer(item);
+    }
+
+    // A failed pickup must be able to restore the last item into the same tile.
+    // Caller already holds the ground monitor for the entire transfer.
+    boolean popForTransfer(L1ItemInstance item) {
+        assert Thread.holdsLock(this);
+        return unlinkGroundItem(item);
+    }
+
+    private boolean unlinkGroundItem(L1ItemInstance item) {
+        if (item == null) return false;
         // Ground lock must precede item lock (pickup holds ground before transfer).
         synchronized (item) {
-            if (!_items.Pop(item)) return;
+            if (!_items.Pop(item)) return false;
             item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
             // World leave publishes the item itself to User::OutOfSight.
             L1World.getInstance().removeVisibleObject(item);
-            if (_items.isEmpty()) {
-                L1World.getInstance().removeVisibleObject(this);
-                if (DEBUG_GROUND_ITEM_TIMER)
-                    debug("GROUND-EMPTY", item, "inventory removed from visible world");
-            }
+            return true;
+        }
+    }
+
+    void finishGroundTransfer(L1ItemInstance item) {
+        assert Thread.holdsLock(this);
+        if (_items.isEmpty()) {
+            L1World.getInstance().removeVisibleObject(this);
+            if (DEBUG_GROUND_ITEM_TIMER)
+                debug("GROUND-EMPTY", item, "inventory removed from visible world");
         }
     }
 
