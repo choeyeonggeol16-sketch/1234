@@ -200,7 +200,6 @@ public class L1ItemInstance extends L1Object {
 		_count = 1;
 		_enchantLevel = 0;
 		_specialEnchant = 0;
-		_bookmarks = new ArrayList<CItemBookmark>();
 	}
 
 	public L1ItemInstance(L1Item item, int count) {
@@ -1006,14 +1005,15 @@ public class L1ItemInstance extends L1Object {
 		_Hotel_Town = name;
 	}
 
-	public ArrayList<CItemBookmark> _bookmarks;
+	private ArrayList<CItemBookmark> _bookmarks;
 
-	public ArrayList<CItemBookmark> getBookMark() {
+	public synchronized ArrayList<CItemBookmark> getBookMark() {
+        if (_bookmarks == null) _bookmarks = new ArrayList<CItemBookmark>();
 		return _bookmarks;
 	}
 
-	public void addBookMark(CItemBookmark list) {
-		_bookmarks.add(list);
+	public synchronized void addBookMark(CItemBookmark list) {
+		getBookMark().add(list);
 	}
 
 	public byte[] getStatusBytes(L1PcInstance pc) {
