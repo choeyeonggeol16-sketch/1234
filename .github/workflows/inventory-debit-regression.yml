@@ -1,0 +1,172 @@
+name: Inventory debit behavior regression
+on: [push]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 1ed60eb917809deb5ec456f7511f192c9dd98967
+          fetch-depth: 2
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compare original and consolidated deletion paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "deadab93bea094537a5ef876ee9089c2d5130714"
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          path='rkern/src/l1j/server/server/model/CInventory.java'
+          before=subprocess.check_output(['git','show','HEAD^:'+path]).decode('utf-8-sig')
+          after=Path(path).read_text(encoding='utf-8-sig')
+          def extract(s,sig):
+              a=s.index(sig); b=s.index('{',a);d=1
+              for i in range(b+1,len(s)):
+                  if s[i]=='{':d+=1
+                  elif s[i]=='}':
+                      d-=1
+                      if d==0:return s[a:i+1]
+              raise AssertionError(sig)
+          sigs=['public synchronized boolean consumeItem(int itemid, int count)',
+                'public synchronized boolean consumeItem2(int descid, int count)',
+                'public synchronized boolean consumeItem(int itemid, int count, int descid)',
+                'public synchronized boolean ConsumeItemDescId(int descId, int enchant, int count)',
+                'public synchronized boolean consumeItem(int itemid)',
+                'public synchronized int removeItem(L1ItemInstance item, int count)',
+                'public synchronized int removeItem(L1ItemInstance item, int count, int descid)',
+                'private int removeItemInternal(',
+                'private void changeStackCount(',
+                'public synchronized void deleteItem(L1ItemInstance item)']
+          root=Path('/tmp/delete-regression');root.mkdir(exist_ok=True)
+          stubs='''
+          class L1Object {}
+          class L1Item {
+           final int id,desc; final boolean stack;
+           L1Item(int id,int desc,boolean stack){this.id=id;this.desc=desc;this.stack=stack;}
+           int getItemId(){return id;} int getItemDescId(){return desc;} boolean isStackable(){return stack;}
+          }
+          class CObjectDB {
+           static L1Item GetItem(int id){
+             return switch(id){case 10->new L1Item(10,100,true);case 20->new L1Item(20,200,false);
+                case 21->new L1Item(21,200,false);case 40314,40316,49016,49025,41383->new L1Item(id,id,false);default->null;};
+           }
+          }
+          class L1ItemInstance extends L1Object {
+           final int id,enchant; final L1Item item; int count;
+           L1ItemInstance(int id,int cid,int count,int enchant){this.id=id;this.item=CObjectDB.GetItem(cid);this.count=count;this.enchant=enchant;}
+           int getId(){return id;} int getItemId(){return item.id;} L1Item getItem(){return item;} int getCount(){return count;}
+           int getEnchantLevel(){return enchant;} boolean isStackable(){return item.stack;}
+           void setCount(int count){this.count=count;}
+           boolean IsAddableAmount(int change){long c=(long)count+change;return c>=0&&c<=2_000_000_000L;}
+          }
+          class ItemList extends ArrayList<L1ItemInstance>{
+           boolean Pop(L1ItemInstance item){return remove(item);}
+          }
+          class L1FurnitureInstance extends L1Object {
+           final int item;L1FurnitureInstance(int id){item=id;}int getItemObjId(){return item;}
+          }
+          class L1World {
+           static final L1World INSTANCE=new L1World();
+           final ArrayList<L1Object> objects=new ArrayList<>();final ArrayList<Integer> removed=new ArrayList<>();
+           static L1World getInstance(){return INSTANCE;} Iterable<L1Object> getObject(){return new ArrayList<>(objects);}
+           void removeObject(L1ItemInstance item){removed.add(item.id);objects.remove(item);}
+           void reset(){objects.clear();removed.clear();}
+          }
+          class PetTable {static final PetTable I=new PetTable();int calls;static PetTable getInstance(){return I;}void deletePet(int i){calls++;}}
+          class LetterTable {static final LetterTable I=new LetterTable();int calls;static LetterTable getInstance(){return I;}void deleteLetter(int i){calls++;}}
+          class FurnitureSpawnTable {static final FurnitureSpawnTable I=new FurnitureSpawnTable();int calls;static FurnitureSpawnTable getInstance(){return I;}void deleteFurniture(L1FurnitureInstance f){calls++;}}
+          '''
+          probe='''
+           final ItemList _items=new ItemList();
+           boolean pending,reject;int cache,updates;
+           boolean rejectPendingItemTransfer(){return pending;}
+           L1ItemInstance GetByServerID(int id){for(var i:_items)if(i.id==id)return i;return null;}
+           L1ItemInstance GetFirstItemByClassID(int cid){for(var i:_items)if(i.item.id==cid)return i;return null;}
+           L1ItemInstance GetFirstItemByDescID(int desc){for(var i:_items)if(i.item.desc==desc)return i;return null;}
+           L1ItemInstance[] GetItemListByClassID(int cid){return _items.stream().filter(i->i.item.id==cid).toArray(L1ItemInstance[]::new);}
+           L1ItemInstance[] GetItemListByClassID(int cid,int desc){return _items.stream().filter(i->i.item.id==cid&&i.item.desc==desc).toArray(L1ItemInstance[]::new);}
+           L1ItemInstance[] GetItemListByDescID(int desc){return _items.stream().filter(i->i.item.desc==desc).toArray(L1ItemInstance[]::new);}
+           L1ItemInstance[] GetItemListByClassIDEnchanted(int cid,int enchant){return _items.stream().filter(i->i.item.id==cid&&i.enchant==enchant).toArray(L1ItemInstance[]::new);}
+           void addItemCountCache(int id,int count){cache+=count;}
+           void removeItemCountCache(int id,int count){cache-=count;}
+           void updateItem(L1ItemInstance item){if(reject)throw new IllegalStateException("admission rejected");updates++;}
+           void add(L1ItemInstance item){_items.add(item);cache+=item.count;L1World.I.objects.add(item);}
+          '''
+          # Stubs mirror only interfaces used by extracted methods. Exact production bodies are retained.
+          probe=probe.replace('L1World.I.objects','L1World.INSTANCE.objects')
+          test='''
+          class CUserInventory extends CInventory {}
+          public class Regression {
+           static int checks;
+           static void check(boolean v,String label){checks++;if(!v)throw new AssertionError(label);}
+           static String state(CInventory i){
+             StringBuilder s=new StringBuilder();
+             for(var x:i._items)s.append(x.id).append(":").append(x.count).append(",");
+             return s+"|"+i.cache+"|"+i.updates+"|"+L1World.INSTANCE.removed+"|"+PetTable.I.calls+"|"+LetterTable.I.calls+"|"+FurnitureSpawnTable.I.calls;
+           }
+           static void reset(){L1World.INSTANCE.reset();PetTable.I.calls=LetterTable.I.calls=FurnitureSpawnTable.I.calls=0;}
+           public static void main(String[] args){
+             Random r=new Random(7521);
+             for(int k=0;k<10000;k++){
+               reset(); CInventory i=(k%2==0)?new CInventory():new CUserInventory();
+               int n=r.nextInt(18);for(int j=0;j<n;j++){int cid=new int[]{10,20,21}[r.nextInt(3)];i.add(new L1ItemInstance(j+1,cid,cid==10?1+r.nextInt(50):1,r.nextInt(20)-5));}
+               int mode=r.nextInt(8),count=r.nextInt(23)-2,cid=new int[]{10,20,21,999}[r.nextInt(4)],desc=new int[]{100,200,999}[r.nextInt(3)];
+               i.pending=k%17==0;i.reject=k%19==0;
+               Object result;
+               try{
+                 result=switch(mode){
+                   case 0->i.consumeItem(cid,count);case 1->i.consumeItem2(desc,count);case 2->i.consumeItem(cid,count,desc);
+                   case 3->i.ConsumeItemDescId(desc,5,count);case 4->i.consumeItem(cid);
+                   case 5->i.removeItem(i.GetByServerID(1),count);
+                   case 6->i.removeItem(i.GetByServerID(1),count,desc);
+                   default->i.removeItem(new L1ItemInstance(1,20,1,0),count);
+                 };
+               }catch(RuntimeException e){result=e.getClass().getName();}
+               System.out.println(result+"|"+state(i));
+             }
+             reset(); CInventory i=new CInventory();
+             var a=new L1ItemInstance(1,20,1,9);var b=new L1ItemInstance(2,20,1,1);var c=new L1ItemInstance(3,20,1,1);
+             i.add(a);i.add(b);i.add(c);
+             check(i.consumeItem(20,1),"selection");check(i.GetByServerID(2)==null&&i.GetByServerID(3)==c,"stable tie");check(L1World.INSTANCE.removed.equals(List.of(2)),"world removal");
+             reset();i=new CInventory();a=new L1ItemInstance(1,10,12,0);i.add(a);
+             i.reject=true;try{i.removeItem(a,4);throw new AssertionError("missing rejection");}catch(IllegalStateException expected){}
+             check(a.count==12&&i.cache==12,"count rollback");i.reject=false;
+             check(i.removeItem(a,4)==4&&a.count==8&&i.cache==8,"partial debit");
+             check(i.removeItem(a,999)==8&&i.GetByServerID(1)==null,"clamp and delete");
+             for(int id:new int[]{40314,40316,49016,49025,41383})for(boolean pc:new boolean[]{false,true}){
+               reset();i=pc?new CUserInventory():new CInventory();a=new L1ItemInstance(1,id,1,0);i.add(a);
+               L1World.INSTANCE.objects.add(new L1FurnitureInstance(1));check(i.removeItem(a,1)==1,"special full delete");
+               check(PetTable.I.calls==(!pc&&(id==40314||id==40316)?1:0),"pet record");
+               check(LetterTable.I.calls==(!pc&&(id==49016||id==49025)?1:0),"letter");
+               check(FurnitureSpawnTable.I.calls==(id==41383?1:0),"furniture");
+             }
+             System.out.println("BOUNDARY_ASSERTIONS "+checks);
+           }
+          }
+          '''
+          for label,s in [('before',before),('after',after)]:
+              methods=[extract(s,x) for x in sigs]
+              if label=='before':
+                  methods += [extract(s,'private void extracted('),extract(s,'public class DataComparator')]
+              else:
+                  a=s.index('private static final java.util.Comparator<L1ItemInstance> ITEM_ENCHANT_ORDER')
+                  b=s.index(';',a)
+                  methods += [s[a:b+1],extract(s,'private boolean DeleteSelectedItems(')]
+              folder=root/label;folder.mkdir(exist_ok=True)
+              (folder/'Regression.java').write_text('import java.util.*;\n'+stubs+'class CInventory {\n'+probe+'\n'+'\n'.join(methods)+'\n}\n'+test)
+          print('SOURCE_METHODS',len(sigs)*2+4)
+          
+          PY
+          for version in before after; do
+            javac --release 21 -d "/tmp/delete-regression/$version" "/tmp/delete-regression/$version/Regression.java"
+            java -cp "/tmp/delete-regression/$version" Regression >"/tmp/delete-regression/$version.txt"
+          done
+          cmp /tmp/delete-regression/before.txt /tmp/delete-regression/after.txt
+          tail -1 /tmp/delete-regression/after.txt
+          echo 'RANDOM_SCENARIOS 10000 MATCH'
