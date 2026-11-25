@@ -448,8 +448,8 @@ public class L1ItemInstance extends L1Object {
 	}
 
     /** Initial charge for a newly created row, not an existing transfer. */
-    public int GetInitialChargeCount() {
-        return getItemId() == 20383 ? 50 : getItem().getMaxChargeCount();
+    public int GetInitialChargeCount(int classId) {
+        return classId == 20383 ? 50 : getItem().getMaxChargeCount();
     }
 
 	public int getChargeCount() {
