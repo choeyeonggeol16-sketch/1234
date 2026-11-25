@@ -388,9 +388,8 @@ public final class PcInventoryExpiryScheduler {
         final L1PcInstance pc = task.pc;
         final L1ItemInstance item = task.item;
         if (scheduled.get(item.getId()) != task) return false;
-        if (pc.isLogoutStarted() || pc.getSessionStamp() != task.sessionStamp
-                || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()
-                || pc.getNetConnection().getActiveChar() != pc
+        final var session = pc.getNetConnection();
+        if (!pc.isItemTransferSession(session, task.sessionStamp)
                 || pc.getInventory().GetByServerID(item.getId()) != item
                 || item.getEndTime() == null) {
             removeTask(task);
