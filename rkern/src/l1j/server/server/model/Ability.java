@@ -17,37 +17,10 @@ public class Ability {
 	private static final int LIMIT_MIN = 0;
 	private static final int LIMIT_MAX = 127;
 
-	private byte str = 0; // 베이스 힘 + 레벨업 또는 엘릭서로 인해 상승한 힘
-	private byte baseStr = 0; // 베이스 힘
-	private byte addedStr = 0; // 마법 또는 아이템으로 상승한 힘
-
-	private byte con = 0;
-	private byte baseCon = 0;
-	private byte addedCon = 0;
-
-	private byte dex = 0;
-	private byte baseDex = 0;
-	private byte addedDex = 0;
-
-	private byte cha = 0;
-	private byte baseCha = 0;
-	private byte addedCha = 0;
-
-	private byte intel = 0;
-	private byte baseInt = 0;
-	private byte addedInt = 0;
-
-	private byte wis = 0;
-	private byte baseWis = 0;
-	private byte addedWis = 0;
-
-	// Signed bytes from least to most significant: STR, DEX, INT, WIS, CON, CHA.
-	private volatile long skillPrimaryStats;
-
 	void setSkillPrimaryStats(long value, boolean notify) {
-		final long changed = skillPrimaryStats ^ value;
+		final long changed = owner.m_SkillPrimaryStats ^ value;
 		if (changed == 0) return;
-		skillPrimaryStats = value;
+		owner.m_SkillPrimaryStats = value;
 		if (!notify) return;
 		if ((changed & 0x000000ff) != 0) notifyAddedStr();
 		if ((changed & 0x0000ff00) != 0) notifyAddedDex();
@@ -56,23 +29,26 @@ public class Ability {
 		if ((changed & 0xff000000L) != 0) notifyAddedWis();
 	}
 
+	// Existing facade retains its owner; detach only suppresses notifications as before.
+	private final L1Character owner;
 	private L1Character character;
 	
 	public void dispose(){
 		character = null;
 	}
 	
-    Ability(L1Character cha) {
-        this.character = cha;
+    Ability(L1Character owner.m_StatCha) {
+        this.owner = owner.m_StatCha;
+        this.character = owner.m_StatCha;
     }
 
 	public void init() {
-		str = baseStr = addedStr = 0;
-		dex = baseDex = addedDex = 0;
-		con = baseCon = addedCon = 0;
-		intel = baseInt = addedInt = 0;
-		wis = baseWis = addedWis = 0;
-		cha = baseCha = addedCha = 0;
+		owner.m_StatStr = owner.m_OriginalStatStr = owner.m_AddedStatStr = 0;
+		owner.m_StatDex = owner.m_OriginalStatDex = owner.m_AddedStatDex = 0;
+		owner.m_StatCon = owner.m_OriginalStatCon = owner.m_AddedStatCon = 0;
+		owner.m_StatInt = owner.m_OriginalStatInt = owner.m_AddedStatInt = 0;
+		owner.m_StatWis = owner.m_OriginalStatWis = owner.m_AddedStatWis = 0;
+		owner.m_StatCha = owner.m_OriginalStatCha = owner.m_AddedStatCha = 0;
 	}
 
 	private byte checkRange(int i) {
@@ -86,26 +62,24 @@ public class Ability {
 	}
 
 	public int getBaseAmount() {
-		return baseStr + baseCon + baseDex + baseCha + baseInt + baseWis;
+		return owner.m_OriginalStatStr + owner.m_OriginalStatCon + owner.m_OriginalStatDex + owner.m_OriginalStatCha + owner.m_OriginalStatInt + owner.m_OriginalStatWis;
 	}
 
 	public int getAmount() {
-		return str + con + dex + cha + intel + wis;
+		return owner.m_StatStr + owner.m_StatCon + owner.m_StatDex + owner.m_StatCha + owner.m_StatInt + owner.m_StatWis;
 	}
 
-	private int sp; // sp
-	private volatile int skillSp;
 
 	void setSkillSp(int value) {
-		if (skillSp != value) skillSp = value;
+		if (owner.m_AbilitySkillSp != value) owner.m_AbilitySkillSp = value;
 	}
 
 	public void addSp(int i) {
-		sp += i;
+		owner.m_AbilitySp += i;
 	}
 
 	public int getSp() {
-		return getTrueSp() + sp + skillSp;
+		return getTrueSp() + owner.m_AbilitySp + owner.m_AbilitySkillSp;
 	}
 	
 	public int getTrueSp() {
@@ -113,7 +87,7 @@ public class Ability {
 	}
 
 	public byte getStr() {
-		return str;
+		return owner.GetStatStr();
 	}
 
 	public int getMagicLevel() {
@@ -137,7 +111,7 @@ public class Ability {
 	}
 	
 	public void setStr(int i) {
-		str = checkRange(i, baseStr);
+		owner.SetStatStr(i);
 	}
 
 	public void addStr(int i) {
@@ -154,7 +128,7 @@ public class Ability {
 	}
 
 	public byte getBaseStr() {
-		return baseStr;
+		return owner.GetOriginalStatStr();
 	}
 
 	public void addBaseStr(int i) {
@@ -163,16 +137,16 @@ public class Ability {
 
 	public void setBaseStr(int i) {
 		byte newBaseStr = checkRange(i);
-		addStr(newBaseStr - baseStr);
-		baseStr = newBaseStr;
+		addStr(newBaseStr - owner.m_OriginalStatStr);
+		owner.m_OriginalStatStr = newBaseStr;
 	}
 
 	public byte getAddedStr() {
-		return checkRange(addedStr + (byte) skillPrimaryStats, LIMIT_MINUS_MIN);
+		return owner.GetAddedStatStr();
 	}
 
 	public void addAddedStr(int i) {
-		addedStr = checkRange(addedStr + i, LIMIT_MINUS_MIN);
+		owner.AddAddedStatStr(i);
 		notifyAddedStr();
 	}
 
@@ -183,15 +157,15 @@ public class Ability {
 	}
 
 	public byte getTotalStr() {
-		return checkRange(getStr() + getAddedStr());
+		return owner.GetTotalStatStr();
 	}
 
 	public byte getCon() {
-		return con;
+		return owner.GetStatCon();
 	}
 
 	public void setCon(int i) {
-		con = checkRange(i, baseCon);
+		owner.SetStatCon(i);
 	}
 
 	public void addCon(int i) {
@@ -207,7 +181,7 @@ public class Ability {
 	}
 
 	public byte getBaseCon() {
-		return baseCon;
+		return owner.GetOriginalStatCon();
 	}
 
 	public void addBaseCon(int i) {
@@ -216,16 +190,16 @@ public class Ability {
 
 	public void setBaseCon(int i) {
 		byte newBaseCon = checkRange(i);
-		addCon(newBaseCon - baseCon);
-		baseCon = newBaseCon;
+		addCon(newBaseCon - owner.m_OriginalStatCon);
+		owner.m_OriginalStatCon = newBaseCon;
 	}
 
 	public byte getAddedCon() {
-		return checkRange(addedCon + (byte) (skillPrimaryStats >>> 32), LIMIT_MINUS_MIN);
+		return owner.GetAddedStatCon();
 	}
 
 	public void addAddedCon(int i) {
-		addedCon = checkRange(addedCon + i, LIMIT_MINUS_MIN);
+		owner.AddAddedStatCon(i);
 		notifyAddedCon();
 	}
 
@@ -236,15 +210,15 @@ public class Ability {
 	}
 
 	public byte getTotalCon() {
-		return checkRange(getCon() + getAddedCon());
+		return owner.GetTotalStatCon();
 	}
 
 	public byte getDex() {
-		return dex;
+		return owner.GetStatDex();
 	}
 
 	public void setDex(int i) {
-		dex = checkRange(i, baseDex);
+		owner.SetStatDex(i);
 	}
 
 	public void addDex(int i) {
@@ -263,7 +237,7 @@ public class Ability {
 	}
 
 	public byte getBaseDex() {
-		return baseDex;
+		return owner.GetOriginalStatDex();
 	}
 
 	public void addBaseDex(int i) {
@@ -272,16 +246,16 @@ public class Ability {
 
 	public void setBaseDex(int i) {
 		byte newBaseDex = checkRange(i);
-		addDex(newBaseDex - baseDex);
-		baseDex = newBaseDex;
+		addDex(newBaseDex - owner.m_OriginalStatDex);
+		owner.m_OriginalStatDex = newBaseDex;
 	}
 
 	public byte getAddedDex() {
-		return checkRange(addedDex + (byte) (skillPrimaryStats >>> 8), LIMIT_MINUS_MIN);
+		return owner.GetAddedStatDex();
 	}
 
 	public void addAddedDex(int i) {
-		addedDex = checkRange(addedDex + i, LIMIT_MINUS_MIN);
+		owner.AddAddedStatDex(i);
 		notifyAddedDex();
 	}
 
@@ -293,15 +267,15 @@ public class Ability {
 	}
 
 	public byte getTotalDex() {
-		return checkRange(getDex() + getAddedDex());
+		return owner.GetTotalStatDex();
 	}
 
 	public byte getCha() {
-		return cha;
+		return owner.GetStatCha();
 	}
 
 	public void setCha(int i) {
-		cha = checkRange(i, baseCha);
+		owner.SetStatCha(i);
 	}
 
 	public void addCha(int i) {
@@ -309,7 +283,7 @@ public class Ability {
 	}
 
 	public byte getBaseCha() {
-		return baseCha;
+		return owner.GetOriginalStatCha();
 	}
 
 	public void addBaseCha(int i) {
@@ -318,28 +292,28 @@ public class Ability {
 
 	public void setBaseCha(int i) {
 		byte newBaseCha = checkRange(i);
-		addCha(newBaseCha - baseCha);
-		baseCha = newBaseCha;
+		addCha(newBaseCha - owner.m_OriginalStatCha);
+		owner.m_OriginalStatCha = newBaseCha;
 	}
 
 	public byte getAddedCha() {
-		return checkRange(addedCha + (byte) (skillPrimaryStats >>> 40), LIMIT_MINUS_MIN);
+		return owner.GetAddedStatCha();
 	}
 
 	public void addAddedCha(int i) {
-		addedCha = checkRange(addedCha + i, LIMIT_MINUS_MIN);
+		owner.AddAddedStatCha(i);
 	}
 
 	public byte getTotalCha() {
-		return checkRange(getCha() + getAddedCha());
+		return owner.GetTotalStatCha();
 	}
 
 	public byte getInt() {
-		return intel;
+		return owner.GetStatInt();
 	}
 
 	public void setInt(int i) {
-		intel = checkRange(i, baseInt);
+		owner.SetStatInt(i);
 	}
 
 	public void addInt(int i) {
@@ -356,7 +330,7 @@ public class Ability {
 	}
 
 	public byte getBaseInt() {
-		return baseInt;
+		return owner.GetOriginalStatInt();
 	}
 
 	public void addBaseInt(int i) {
@@ -365,16 +339,16 @@ public class Ability {
 
 	public void setBaseInt(int i) {
 		byte newBaseInt = checkRange(i);
-		addInt(newBaseInt - baseInt);
-		baseInt = newBaseInt;
+		addInt(newBaseInt - owner.m_OriginalStatInt);
+		owner.m_OriginalStatInt = newBaseInt;
 	}
 
 	public byte getAddedInt() {
-		return checkRange(addedInt + (byte) (skillPrimaryStats >>> 16), LIMIT_MINUS_MIN);
+		return owner.GetAddedStatInt();
 	}
 
 	public void addAddedInt(int i) {
-		addedInt = checkRange(addedInt + i, LIMIT_MINUS_MIN);
+		owner.AddAddedStatInt(i);
 		notifyAddedInt();
 	}
 
@@ -385,15 +359,15 @@ public class Ability {
 	}
 
 	public byte getTotalInt() {
-		return checkRange(getInt() + getAddedInt());
+		return owner.GetTotalStatInt();
 	}
 
 	public byte getWis() {
-		return wis;
+		return owner.GetStatWis();
 	}
 
 	public void setWis(int i) {
-		wis = checkRange(i, baseWis);
+		owner.SetStatWis(i);
 	}
 
 	public void addWis(int i) {
@@ -410,7 +384,7 @@ public class Ability {
 	}
 
 	public byte getBaseWis() {
-		return baseWis;
+		return owner.GetOriginalStatWis();
 	}
 
 	public void addBaseWis(int i) {
@@ -419,16 +393,16 @@ public class Ability {
 
 	public void setBaseWis(int i) {
 		byte newBaseWis = checkRange(i);
-		addWis(newBaseWis - baseWis);
-		baseWis = newBaseWis;
+		addWis(newBaseWis - owner.m_OriginalStatWis);
+		owner.m_OriginalStatWis = newBaseWis;
 	}
 
 	public byte getAddedWis() {
-		return checkRange(addedWis + (byte) (skillPrimaryStats >>> 24), LIMIT_MINUS_MIN);
+		return owner.GetAddedStatWis();
 	}
 
 	public void addAddedWis(int i) {
-		addedWis = checkRange(addedWis + i, LIMIT_MINUS_MIN);
+		owner.AddAddedStatWis(i);
 		notifyAddedWis();
 	}
 
@@ -440,7 +414,7 @@ public class Ability {
 	}
 
 	public byte getTotalWis() {
-		return checkRange(getWis() + getAddedWis());
+		return owner.GetTotalStatWis();
 	}
 
 	public int[] getBaseStatDiff(int[] value) {
