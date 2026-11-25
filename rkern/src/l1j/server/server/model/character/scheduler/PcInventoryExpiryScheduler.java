@@ -331,7 +331,7 @@ public final class PcInventoryExpiryScheduler {
             return;
         }
         if (item.getEndTime().getTime() > now) {
-            scheduleItem(pc, item);
+            rescheduleChangedDeadline(task, now);
             return;
         }
         // These items require more than a delete. Use one durable CacheD
@@ -343,10 +343,16 @@ public final class PcInventoryExpiryScheduler {
             processAtomicSpecialExpiry(task);
             return;
         }
+        final var inventory = pc.getInventory();
+        if (!inventory.tryBeginEquipmentChange()) {
+            retryExpiry(task, 2000L);
+            return;
+        }
         try {
+            if (!validateExpiryUnderReservation(task)) return;
             // Ordinary expiry has no extra durable reward. Contract/key cases
             // take the atomic receipt path above.
-            if (pc.getInventory().DeleteItemAmount(item) <= 0) {
+            if (inventory.DeleteItemAmount(item) <= 0) {
                 throw new IllegalStateException("Expiry debit was not accepted: " + item.getId());
             }
             handleSpecialItems(pc, item);
@@ -361,7 +367,41 @@ public final class PcInventoryExpiryScheduler {
                 // The debit was already applied; never retry a post-debit reward.
                 removeTask(task);
             }
+        } finally {
+            inventory.endEquipmentChange();
         }
+    }
+
+    /** A taken task is no longer in the heap, even if its wall-clock
+     * deadline became future again without changing the stored timestamp.
+     */
+    private void rescheduleChangedDeadline(ExpiryTask task, long now) {
+        final java.sql.Timestamp expiry = task.item.getEndTime();
+        if (expiry == null) { removeTask(task); return; }
+        if (expiry.getTime() == task.endTime)
+            retryExpiry(task, Math.max(1000L, expiry.getTime() - now));
+        else scheduleItem(task.pc, task.item);
+    }
+
+    /** Revalidate after acquiring the same reservation as equipment/receipts. */
+    private boolean validateExpiryUnderReservation(ExpiryTask task) {
+        final L1PcInstance pc = task.pc;
+        final L1ItemInstance item = task.item;
+        if (scheduled.get(item.getId()) != task) return false;
+        if (pc.isLogoutStarted() || pc.getSessionStamp() != task.sessionStamp
+                || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()
+                || pc.getNetConnection().getActiveChar() != pc
+                || pc.getInventory().GetByServerID(item.getId()) != item
+                || item.getEndTime() == null) {
+            removeTask(task);
+            return false;
+        }
+        final long now = System.currentTimeMillis();
+        if (item.getEndTime().getTime() > now) {
+            rescheduleChangedDeadline(task, now);
+            return false;
+        }
+        return true;
     }
 
     private void processAtomicSpecialExpiry(ExpiryTask task) {
@@ -369,9 +409,7 @@ public final class PcInventoryExpiryScheduler {
         final L1ItemInstance item = task.item;
         final int template = item.getItemId();
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, item.getId())) {
-            if (scheduled.get(item.getId()) != task
-                    || pc.isLogoutStarted()
-                    || pc.getInventory().GetByServerID(item.getId()) != item) return;
+            if (!validateExpiryUnderReservation(task)) return;
             if (!tx.debit(item, item.getCount()))
                 throw new IllegalStateException("Expired special item cannot be debited: " + item.getId());
             if (template == L1ItemId.MERIN_CONTRACT || template == L1ItemId.KILLTON_CONTRACT) {
