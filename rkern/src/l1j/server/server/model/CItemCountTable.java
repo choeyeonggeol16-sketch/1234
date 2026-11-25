@@ -35,10 +35,14 @@ final class CItemCountTable implements Serializable {
     synchronized void put(int key, int count) { putLocked(key, count); }
 
     synchronized void add(int key, int amount) {
-        putLocked(key, getLocked(key) + amount);
+        final long next = (long) getLocked(key) + amount;
+        if (amount < 0 || next < 0 || next > CInventory.MAX_AMOUNT)
+            throw new IllegalArgumentException("Inventory count overflow: " + key);
+        putLocked(key, (int) next);
     }
 
     synchronized void subtract(int key, int amount) {
+        if (amount < 0) throw new IllegalArgumentException("Negative inventory decrement");
         final int remaining = getLocked(key) - amount;
         putLocked(key, remaining > 0 ? remaining : 0);
     }
@@ -46,6 +50,8 @@ final class CItemCountTable implements Serializable {
     synchronized void remove(int key) { putLocked(key, 0); }
 
     private void putLocked(int key, int count) {
+        if (count < 0 || count > CInventory.MAX_AMOUNT)
+            throw new IllegalArgumentException("Invalid inventory count: " + key);
         if (rows == null) {
             if (count == 0) return;
             rows = new long[8];
