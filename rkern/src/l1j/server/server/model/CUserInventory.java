@@ -178,21 +178,8 @@ public class CUserInventory extends CInventory {
                 original.setItem(image.getItem());
                 original.set_main_set_armor(false);
             }
-            original.setCount(image.getCount());
-            original.setEnchantLevel(image.getEnchantLevel());
-            original.setIdentified(image.isIdentified());
-            original.set_durability(image.get_durability());
-            original.setChargeCount(image.getChargeCount());
-            original.setRemainingTime(image.getRemainingTime());
-            original.setLastUsed(image.getLastUsed());
-            original.setBless(image.getBless());
-            original.setAttrEnchantLevel(image.getAttrEnchantLevel());
-            original.setSpecialEnchant(image.getSpecialEnchant());
-            original.setPackage(image.isPackage());
-            original.set_bless_level(image.get_bless_level());
-            original.set_bless_level2(image.get_bless_level2());
-            original.set_item_level(image.get_item_level());
-            original.setHotel_Town(image.getHotel_Town());
+            // Expiry remains below, after cancellation of the previous timer.
+            original.CopyItemAttributesFrom(image, image.getCount(), image.getChargeCount(), true, false, false);
             final boolean expiryChanged = !java.util.Objects.equals(
                     original.getEndTime(), image.getEndTime());
             if (expiryChanged && original.getEndTime() != null) {
