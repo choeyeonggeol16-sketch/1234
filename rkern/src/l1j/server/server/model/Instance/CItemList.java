@@ -369,6 +369,74 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         }
     }
 
+    private static final L1ItemInstance[] NO_ITEMS = new L1ItemInstance[0];
+
+    public synchronized L1ItemInstance GetFirstItemByDescID(int descId) {
+        for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+            if (item.getItem().getItemDescId() == descId) return item;
+        return null;
+    }
+
+    public L1ItemInstance[] GetItemListByClassID(int classId) {
+        return SelectItems(classId, 0, true, false, false);
+    }
+
+    public L1ItemInstance[] GetItemListByDescID(int descId) {
+        return SelectItems(0, descId, false, true, false);
+    }
+
+    public L1ItemInstance[] GetItemListByClassID(int classId, int descId) {
+        return SelectItems(classId, descId, true, true, false);
+    }
+
+    public L1ItemInstance[] GetUnequippedItemListByClassID(int classId) {
+        return SelectItems(classId, 0, true, false, true);
+    }
+
+    /** OFF-style linked selection, preserving append order. No iterator,
+     * snapshot construction or ArrayList; a single match needs one result array.
+     * Evaluate mutable predicates only once, not in a count/fill double pass.
+     */
+    private synchronized L1ItemInstance[] SelectItems(int classId, int descId,
+            boolean matchClass, boolean matchDesc, boolean unequipped) {
+        L1ItemInstance firstMatch = null;
+        L1ItemInstance[] result = null;
+        int count = 0;
+        for (L1ItemInstance item = first; item != null; item = item.inventoryNext) {
+            if ((matchClass && item.getItemId() != classId)
+                    || (matchDesc && item.getItem().getItemDescId() != descId)
+                    || (unequipped && item.isEquipped())) continue;
+            if (count == 0) {
+                firstMatch = item;
+            } else {
+                if (result == null) {
+                    result = new L1ItemInstance[Math.min(size, 4)];
+                    result[0] = firstMatch;
+                } else if (count == result.length) {
+                    result = Arrays.copyOf(result, (int) Math.min((long) size, 2L * count));
+                }
+                result[count] = item;
+            }
+            count++;
+        }
+        if (count == 0) return NO_ITEMS;
+        if (count == 1) return new L1ItemInstance[] { firstMatch };
+        return count == result.length ? result : Arrays.copyOf(result, count);
+    }
+
+    /** Recipe quantity query uses the existing list monitor and no temporary rows. */
+    public synchronized long GetRecipeMaterialAmount(int classId, int enchant,
+            boolean matchEnchant, boolean countInstances) {
+        long total = 0L;
+        for (L1ItemInstance item = first; item != null; item = item.inventoryNext) {
+            if (item.isEquipped() || item.getItemId() != classId
+                    || (matchEnchant && item.getEnchantLevel() != enchant)) continue;
+            final int count = item.getCount();
+            if (count > 0) total += countInstances && !item.isStackable() ? 1 : count;
+        }
+        return total;
+    }
+
     private List<L1ItemInstance> snapshotLocked() {
         if (snapshot == null) {
             if (size == 0) return snapshot = Collections.emptyList();
