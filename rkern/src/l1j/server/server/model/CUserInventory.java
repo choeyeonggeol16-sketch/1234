@@ -864,6 +864,14 @@ public class CUserInventory extends CInventory {
 
 
     /** Compare applied slots with the equipped-instance index under the item gate. */
+    public L1ItemInstance GetRegisteredItemByServerID(int objectId) {
+        return _items.GetRegisteredItemByServerID(objectId);
+    }
+
+    public boolean SortSelectedByInventoryOrder(L1ItemInstance[] selected, int count) {
+        return _items.SortSelectedByInventoryOrder(selected, count);
+    }
+
     public long GetEquippedObjectCount() {
         return _equippedCountMap.countAll();
     }

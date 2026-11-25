@@ -36,6 +36,7 @@ public class L1ItemInstance extends L1Object {
 	// Intrusive list membership; only CItemList may modify these links.
 	transient volatile CItemList inventoryLinkOwner;
 	transient L1ItemInstance inventoryPrev, inventoryNext;
+	transient int inventoryOrder;
 
     // Only a PC-origin ground transfer sets this source row. The existing
     // CacheD item lane remains the authority until its admitted write settles.

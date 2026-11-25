@@ -38,6 +38,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     }
     private transient L1ItemInstance first, last;
     private transient int size;
+    private transient int nextInventoryOrder;
     private transient volatile List<L1ItemInstance> snapshot;
 
     // OFF CInventory::GetCarryingWeight caches the aggregate. Store the raw
@@ -97,6 +98,13 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     }
 
     private void appendClaimed(L1ItemInstance item) {
+        // Rebase only on integer exhaustion, never on a preset request.
+        if (nextInventoryOrder == Integer.MAX_VALUE) {
+            nextInventoryOrder = 0;
+            for (L1ItemInstance row = first; row != null; row = row.inventoryNext)
+                row.inventoryOrder = nextInventoryOrder++;
+        }
+        item.inventoryOrder = nextInventoryOrder++;
         item.inventoryPrev = last;
         item.inventoryNext = null;
         if (last == null) first = item;
@@ -195,6 +203,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         L1ItemInstance item = first;
         first = last = null;
         size = 0;
+        nextInventoryOrder = 0;
         snapshot = null;
         carryingWeight = -1L;
         while (item != null) {
@@ -249,6 +258,32 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         L1ItemInstance item = last;
         for (int i = size - 1; i > index; i--) item = item.inventoryPrev;
         return item;
+    }
+
+    /** Registered online item only: no linked-list fallback on stale preset IDs. */
+    public L1ItemInstance GetRegisteredItemByServerID(int objectId) {
+        final L1Object object = L1World.getInstance().findObject(objectId);
+        return object instanceof L1ItemInstance item && item.getId() == objectId
+                && Have(item) ? item : null;
+    }
+
+    /** Sort only the caller's selected rows, in the existing append/shuffle
+     * order. The monitor protects membership and order, with no callbacks. */
+    public synchronized boolean SortSelectedByInventoryOrder(L1ItemInstance[] selected, int count) {
+        if (count < 0 || count > selected.length) return false;
+        for (int i = 0; i < count; i++) {
+            if (selected[i] == null || selected[i].inventoryLinkOwner != this) return false;
+        }
+        for (int i = 1; i < count; i++) {
+            final L1ItemInstance item = selected[i];
+            int j = i;
+            while (j > 0 && selected[j - 1].inventoryOrder > item.inventoryOrder) {
+                selected[j] = selected[j - 1];
+                j--;
+            }
+            selected[j] = item;
+        }
+        return true;
     }
 
     public L1ItemInstance GetByServerID(int objectId) {
@@ -474,10 +509,12 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
             final L1ItemInstance tmp = rows[i]; rows[i] = rows[j]; rows[j] = tmp;
         }
         for (int i = 0; i < rows.length; i++) {
+            rows[i].inventoryOrder = i;
             rows[i].inventoryPrev = i == 0 ? null : rows[i - 1];
             rows[i].inventoryNext = i == rows.length - 1 ? null : rows[i + 1];
         }
         first = rows[0]; last = rows[rows.length - 1]; snapshot = null;
+        nextInventoryOrder = rows.length;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
