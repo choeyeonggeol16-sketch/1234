@@ -835,13 +835,6 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         result.setCount(item.getCount());result.setEquipped(item.isEquipped());return result;
     }
     private static boolean mergeable(L1ItemInstance a,L1ItemInstance b) {
-        return a.isStackable() && b.isStackable() && a.getItemId()==b.getItemId()
-                && a.getEnchantLevel()==b.getEnchantLevel() && a.getBless()==b.getBless()
-                && a.getAttrEnchantLevel()==b.getAttrEnchantLevel() && a.getSpecialEnchant()==b.getSpecialEnchant()
-                && a.getChargeCount()==b.getChargeCount() && a.getRemainingTime()==b.getRemainingTime()
-                && a.get_bless_level()==b.get_bless_level() && a.get_bless_level2()==b.get_bless_level2()
-                && a.get_item_level()==b.get_item_level() && a.isPackage()==b.isPackage()
-                && Objects.equals(a.getEndTime(),b.getEndTime()) && Objects.equals(a.getLastUsed(),b.getLastUsed())
-                && Objects.equals(a.getHotel_Town(),b.getHotel_Town());
+        return L1ItemInstance.CanMergeStack(a,b);
     }
 }
