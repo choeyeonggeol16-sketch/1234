@@ -28,6 +28,7 @@ jobs:
           changes=[];counts=collections.Counter();kept=collections.Counter()
           for p in files:
               raw=p.read_bytes();s=raw.decode('utf-8-sig')
+              bom=raw.startswith(b'\xef\xbb\xbf')
               original=s
               ts=[m for m in lex.finditer(s) if not m.group().startswith(('//','/*','"',"'" ))]
               edits=[]
