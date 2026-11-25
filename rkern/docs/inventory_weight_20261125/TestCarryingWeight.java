@@ -147,7 +147,68 @@ public final class TestCarryingWeight {
         check(7, src.getCount()); check(9, src.getChargeCount());
         System.out.println("PASS persistent item copy and timestamp policy");
     }
+    private static void checkSearchRows(L1ItemInstance[] actual, ArrayList<L1ItemInstance> expected) {
+        check(expected.size(), actual.length);
+        for (int i = 0; i < actual.length; i++) check(1, actual[i] == expected.get(i) ? 1 : 0);
+    }
+    private static void checkLinkedSearch() {
+        CInventory inv = new CInventory();
+        Random random = new Random(20261125L);
+        for (int n : new int[]{0, 1, 2, 3, 4, 5, 8, 9, 16, 17, 180}) {
+            inv._items.clear();
+            for (int j = 0; j < n; j++) {
+                L1EtcItem t = template(100 + random.nextInt(3), 0);
+                t.setItemDescId(200 + random.nextInt(3));
+                t.set_stackable(random.nextBoolean());
+                L1ItemInstance item = new L1ItemInstance(t, random.nextInt(5));
+                item.setEquipped(random.nextBoolean());
+                item.setEnchantLevel(random.nextInt(3));
+                inv._items.Push(item);
+            }
+            for (int id = 99; id <= 103; id++) {
+                ArrayList<L1ItemInstance> byClass = new ArrayList<>();
+                ArrayList<L1ItemInstance> unequipped = new ArrayList<>();
+                long total = 0;
+                for (L1ItemInstance item : inv._items.snapshot()) {
+                    if (item.getItemId() != id) continue;
+                    byClass.add(item);
+                    if (!item.isEquipped()) {
+                        unequipped.add(item);
+                        if (item.getCount() > 0) total += item.getCount();
+                    }
+                }
+                checkSearchRows(inv.GetItemListByClassID(id), byClass);
+                checkSearchRows(inv.GetUnequippedItemListByClassID(id), unequipped);
+                check(total, inv.GetRecipeMaterialAmount(id));
+                for (int desc = 199; desc <= 203; desc++) {
+                    ArrayList<L1ItemInstance> byDesc = new ArrayList<>();
+                    ArrayList<L1ItemInstance> both = new ArrayList<>();
+                    for (L1ItemInstance item : inv._items.snapshot()) {
+                        if (item.getItem().getItemDescId() != desc) continue;
+                        byDesc.add(item);
+                        if (item.getItemId() == id) both.add(item);
+                    }
+                    checkSearchRows(inv.GetItemListByDescID(desc), byDesc);
+                    checkSearchRows(inv.GetItemListByClassID(id, desc), both);
+                    check(1, inv.GetFirstItemByDescID(desc) == (byDesc.isEmpty() ? null : byDesc.get(0)) ? 1 : 0);
+                }
+                for (int enchant = 0; enchant < 3; enchant++) {
+                    long quantity = 0, instances = 0;
+                    for (L1ItemInstance item : unequipped) {
+                        if (item.getEnchantLevel() != enchant || item.getCount() <= 0) continue;
+                        quantity += item.getCount();
+                        instances += item.isStackable() ? item.getCount() : 1;
+                    }
+                    check(quantity, inv.GetRecipeMaterialAmount(id, enchant));
+                    check(instances, inv._items.GetRecipeMaterialAmount(id, enchant, true, true));
+                }
+            }
+        }
+        inv._items.clear();
+        System.out.println("PASS linked selection, order and recipe quantity regression");
+    }
     public static void main(String[] args) throws Exception {
+        checkLinkedSearch();
         checkItemCopyAttributes();
         checkChargeClassification();
         checkTransferAdmission();
