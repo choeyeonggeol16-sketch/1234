@@ -927,7 +927,9 @@ public class L1EquipmentSlot {
 		final ItemEffectRegistry.Def definition = ItemEffectRegistry.get(itemId);
 		final boolean registered = definition != null
 				&& definition.addEnchantDelta(_owner.getType(), oldEnchant, enchant, changes);
-		return EquipmentEnchantOptions.applyDelta(_owner, changes) || registered;
+		final boolean statChanged = EquipmentEnchantOptions.applyDelta(_owner, changes);
+		ItemBonusHooks.onEnchantChanged(_owner, equipment);
+		return statChanged || registered;
 	}
 
 	private void refreshAccessoryHeal() {
