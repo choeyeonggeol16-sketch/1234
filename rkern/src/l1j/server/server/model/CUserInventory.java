@@ -415,6 +415,16 @@ public class CUserInventory extends CInventory {
 	}
 
 	public int CheckAddable(L1ItemInstance item, int count, boolean message) {
+        return CheckAddable(item, count, message, false);
+    }
+
+    /** Ordinary transfer uses the exact compatible stack, not a template-only row.
+     * The existing warehouse prepare/replay admission policy is unchanged. */
+    int CheckAddableTransfer(L1ItemInstance item, int count) {
+        return CheckAddable(item, count, true, true);
+    }
+
+    private int CheckAddable(L1ItemInstance item, int count, boolean message, boolean transfer) {
 		if (item == null) {
 			return -1;
 		}
@@ -423,7 +433,10 @@ public class CUserInventory extends CInventory {
 			return AMOUNT_OVER;
 		}
 
-		if (getSize() > MAX_SIZE || (getSize() == MAX_SIZE && (!item.isStackable() || !HaveItemByClassId(item.getItem().getItemId())))) {
+        final L1ItemInstance itemExist = transfer && item.isStackable()
+                ? findMergeItem(item) : GetFirstItemByClassID(item.getItemId());
+		if (getSize() > MAX_SIZE || (getSize() == MAX_SIZE && (!item.isStackable()
+                || (transfer ? itemExist == null : !HaveItemByClassId(item.getItem().getItemId()))))) {
 			if (message) {
 				sendOverMessage(263);
 			}
@@ -438,7 +451,6 @@ public class CUserInventory extends CInventory {
 			return WEIGHT_OVER;
 		}
 
-		L1ItemInstance itemExist = GetFirstItemByClassID(item.getItemId());
 		if (itemExist != null && (itemExist.getCount() < 0 || (long) itemExist.getCount() + count > 1_800_000_000L)) {
 			SC_ServerMessage.send(getOwner(), 166, "소지하고 있는 아데나", "2,000,000,000을 초과하고 있습니다.");
 			return AMOUNT_OVER;
