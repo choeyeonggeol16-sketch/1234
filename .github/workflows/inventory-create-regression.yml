@@ -1,0 +1,137 @@
+name: Inventory creation regression
+on: [push]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f34a19d24915bbad912564eae08493cb8d9f8a9f
+          fetch-depth: 2
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compare actual old and new reward method behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "6dc0e1d3f67429b249b4441a283ae1746b9cda7a"
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,subprocess,collections
+          root=Path('rkern/src'); files=list(root.rglob('*.java'))
+          names=r'\b(storeItem|storeItemTrea|storeTradeItem)\s*\('
+          rec=collections.Counter()
+          for p in files:
+              for i,l in enumerate(p.read_text(encoding='utf-8-sig').splitlines(),1):
+                  if l.lstrip().startswith(('//','*','/*')):continue
+                  for m in re.finditer(names,l):
+                      pre=l[:m.start()].rstrip()
+                      if re.search(r'\b(?:public|protected|private|abstract|default)\b[^;={}]*$',pre) and not pre.endswith('.'):
+                          print('DECL',str(p)+':'+str(i),l.strip())
+                      else:
+                          recv=re.search(r'([\w.]+(?:\([^()]*\))?)\s*\.$',pre)
+                          rec[(m[1],recv[1] if recv else '<implicit>')]+=1
+          print('JAVA_FILES',len(files))
+          for (k,r),n in rec.most_common():print('CALL',k,n,r)
+          path='rkern/src/l1j/server/server/model/CInventory.java'
+          before=subprocess.check_output(['git','show','HEAD^:'+path]).decode('utf-8-sig')
+          after=Path(path).read_text(encoding='utf-8-sig')
+          def extract(s,sig):
+              a=s.index(sig); b=s.index('{',a);d=1
+              for i in range(b+1,len(s)):
+                  if s[i]=='{':d+=1
+                  elif s[i]=='}':
+                      d-=1
+                      if d==0:return s[a:i+1]
+              raise AssertionError(sig)
+          old=['public synchronized L1ItemInstance storeItemTrea(L1ItemInstance item)','public synchronized L1ItemInstance storeItem(L1ItemInstance item)','public synchronized L1ItemInstance storeItem(L1ItemInstance item, int bless)']
+          new=old+['private L1ItemInstance AddItemToInventory(','private void SetOrdinaryItemDeleteTime(']
+          p=Path('/tmp/create-test');p.mkdir(exist_ok=True)
+          common='''
+          class L1ItemId { static final int KILLTON_CONTRACT=810001, MERIN_CONTRACT=810002, DRAGON_KEY=810003; }
+          class Config { static final int 영웅유물=600; }
+          class L1Item {
+           final int id, charge, type2, type, fuel, time, bless;
+           final boolean stack;
+           L1Item(int id,boolean stack,int charge,int type2,int type,int fuel,int time,int bless){this.id=id;this.stack=stack;this.charge=charge;this.type2=type2;this.type=type;this.fuel=fuel;this.time=time;this.bless=bless;}
+           int getItemId(){return id;} int getMaxChargeCount(){return charge;} int getType2(){return type2;} int getType(){return type;} int getLightFuel(){return fuel;} int getMaxUseTime(){return time;} int getBless(){return bless;}
+          }
+          class L1ItemInstance {
+           final L1Item item;
+           int count,x,y,map,charge,remaining,bless=12,level=3,blessLevel=5,expiry=-1,expiryKind=0; boolean identified;
+           L1ItemInstance(L1Item item,int count){this.item=item;this.count=count;}
+           L1Item getItem(){return item;} int getCount(){return count;} boolean isStackable(){return item.stack;}
+           int get_item_level(){return level;} void set_item_level(int x){level=x;} int get_bless_level(){return blessLevel;} void set_bless_level(int x){blessLevel=x;}
+           void setX(int x){this.x=x;} void setY(int x){y=x;} void setMap(int x){map=x;} void setChargeCount(int x){charge=x;}
+           int getBless(){return bless;} void setBless(int x){bless=x;} void setRemainingTime(int x){remaining=x;} void setIdentified(boolean x){identified=x;}
+           String state(){return count+","+x+","+y+","+map+","+charge+","+remaining+","+bless+","+level+","+blessLevel+","+expiry+","+expiryKind+","+identified;}
+          }
+          class Probe {
+           boolean pending, reject; int merges,charges,inserts; L1ItemInstance existing;
+           boolean rejectPendingItemTransfer(){return pending;} int getX(){return 100;}int getY(){return 101;}int getMapId(){return 4;}
+           L1ItemInstance findMergeItem(L1ItemInstance i){return existing;}
+           void changeStackCount(L1ItemInstance item,int c){if(reject)throw new IllegalStateException("rejected");item.count+=c;merges++;}
+           void addStackCharge(L1ItemInstance item,int c){if(reject)throw new IllegalStateException("rejected");item.charge+=c;charges++;}
+           void insertLinkedItem(L1ItemInstance item){if(reject)throw new IllegalStateException("rejected");inserts++;}
+           void SetDeleteTime(L1ItemInstance item,int min){item.expiry=min;item.expiryKind=1;}
+           void SetDeleteTime1(L1ItemInstance item,int min){item.expiry=min;item.expiryKind=2;}
+          }
+          '''
+          def fixture(s,sigs,cls):
+              methods='\n'.join(extract(s,sig) for sig in sigs)
+              methods=methods.replace('java.util.concurrent.ThreadLocalRandom.current().nextInt(5)','3')
+              return 'class '+cls+' extends Probe {\n'+methods+'\n}\n'
+          (p/'CreateTest.java').write_text('import java.util.*;\n'+common+fixture(before,old,'Old')+fixture(after,new,'New')+'''
+          public class CreateTest {
+           static int n;
+           static void eq(Object x,Object y,String context){n++;if(!Objects.equals(x,y))throw new AssertionError(context+" "+x+" != "+y);}
+           static String run(Probe p,L1ItemInstance i,int mode,int bless){
+             try {
+               L1ItemInstance v;
+               if(p instanceof Old o) v=mode==0?o.storeItem(i):mode==1?o.storeItem(i,bless):o.storeItemTrea(i);
+               else {New o=(New)p;v=mode==0?o.storeItem(i):mode==1?o.storeItem(i,bless):o.storeItemTrea(i);}
+               return v==null?"null":v==i?"input":"existing";
+             }catch(RuntimeException e){return e.getClass().getName();}
+           }
+           public static void main(String[] args){
+             int[] ids={0,20383,40006,40007,40008,140006,140008,41401,810006,810007,3000048,810001,810002,80500,555000,555001,555002,555003,100036,500210,810003,490012,490013,490014,40312,30022,30023,30024,30025,22328,22329,22330,22331,22332,22333,22334,22335,1126,1127,1128,1129,1130,1131,1132,1133,20282,7,105,120,156,174,224,203012,3000213,45453,45451,45452,41922,41923,41924,41925,3000209,775,774,773,772,3000214,210095,2100950,2100951,2100952,2100953,7000137,7000138,7000139,7000140,7000141,7000142,7000143,7000144,505001,505002,505003,505004,505005,505006,505007,505008,999999};
+             for(int id:ids)for(int mode=0;mode<3;mode++)for(boolean stack:new boolean[]{false,true})for(boolean light:new boolean[]{false,true})for(boolean merge:new boolean[]{false,true})for(boolean reject:new boolean[]{false,true})for(boolean pending:new boolean[]{false,true})for(int count:new int[]{-1,0,1,7}){
+               L1Item def=new L1Item(id,stack,20,light?0:1,light?2:1,95,180,3);
+               L1ItemInstance a=new L1ItemInstance(def,count),b=new L1ItemInstance(def,count);
+               Old o=new Old();New p=new New();o.reject=p.reject=reject;o.pending=p.pending=pending;
+               if(merge){o.existing=new L1ItemInstance(def,10);p.existing=new L1ItemInstance(def,10);}
+               String ctx=id+"/"+mode+"/"+stack+"/"+light+"/"+merge+"/"+reject+"/"+pending+"/"+count;
+               eq(run(o,a,mode,7),run(p,b,mode,7),ctx);
+               eq(a.state(),b.state(),ctx);eq(o.merges,p.merges,ctx);eq(o.charges,p.charges,ctx);eq(o.inserts,p.inserts,ctx);
+               if(merge)eq(o.existing.state(),p.existing.state(),ctx);
+             }
+             New p=new New();eq(p.storeItem(null),null,"null guard");eq(p.storeItemTrea(null),null,"null treasure guard");eq(p.storeItem(null,2),null,"null bless guard");
+             System.out.println("CREATE_ASSERTIONS "+n+" PASS");
+           }
+          }
+          ''')
+          print('SOURCE_METHODS',len(old)+len(new))
+          
+          PY
+          javac --release 21 /tmp/create-test/CreateTest.java
+          java -cp /tmp/create-test CreateTest
+          cat >/tmp/ParseInventory.java <<'JAVA'
+          import javax.tools.*;
+          import com.sun.source.util.JavacTask;
+          import java.util.*;
+          public class ParseInventory {
+            public static void main(String[] args)throws Exception{
+              var c=ToolProvider.getSystemJavaCompiler();var d=new DiagnosticCollector<JavaFileObject>();
+              try(var f=c.getStandardFileManager(d,null,java.nio.charset.StandardCharsets.UTF_8)){
+                var t=(JavacTask)c.getTask(null,f,d,List.of("-proc:none","--release","21"),null,f.getJavaFileObjects(args));
+                t.parse();long n=d.getDiagnostics().stream().filter(x->x.getKind()==Diagnostic.Kind.ERROR).count();
+                System.out.println("PARSE_ERRORS "+n);if(n!=0){d.getDiagnostics().forEach(System.out::println);System.exit(1);}
+              }
+            }
+          }
+          JAVA
+          java /tmp/ParseInventory.java rkern/src/l1j/server/server/model/CInventory.java
