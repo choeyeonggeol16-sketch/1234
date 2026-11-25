@@ -802,6 +802,31 @@ public class L1PcInstance extends L1Character {
         return ITEM_TRANSFER_BUSY.compareAndSet(this, state, token) ? token : 0;
     }
 
+    /** Durable online transfer admission captures both socket and character epoch. */
+    public boolean isItemTransferSession(CUserSocket session, int stamp) {
+        return session != null && !isLogoutStarted() && getSessionStamp() == stamp
+                && getNetConnection() == session && session.getActiveChar() == this
+                && session.isConnected();
+    }
+
+    public int tryReserveItemTransfer(CUserSocket session, int stamp) {
+        if (!isItemTransferSession(session, stamp)) return 0;
+        final int token = tryReserveItemTransfer();
+        if (token != 0 && !isItemTransferSession(session, stamp)) {
+            endItemTransfer(token);
+            return 0;
+        }
+        return token;
+    }
+
+    /** Failure callback for an old receipt must never kick a replacement character. */
+    public void quarantineItemTransferSession(CUserSocket session, int stamp) {
+        if (!isItemTransferSession(session, stamp)) return;
+        CIOThreadCallback.getInstance().completeSession(session, () -> {
+            if (isItemTransferSession(session, stamp)) session.kick();
+        });
+    }
+
     public boolean tryBeginItemTransfer() {
         return tryReserveItemTransfer() != 0;
     }
