@@ -1125,11 +1125,8 @@ public class CInventory extends L1Object {
 	}
 
 	public L1ItemInstance GetFirstItemByDescID(int descId) {
-		for (L1ItemInstance item : _items) {
-			if (item.getItem().getItemDescId() == descId) return item;
-		}
-		return null;
-	}
+        return _items.GetFirstItemByDescID(descId);
+    }
 	protected final L1ItemInstance findMergeItem(L1ItemInstance incoming) {
         final boolean ground = this instanceof L1GroundInventory;
         if (!ground) {
@@ -1155,56 +1152,22 @@ public class CInventory extends L1Object {
 		return _items.GetFirstItemByClassID(id);
 	}
 
-	public L1ItemInstance[] GetItemListByClassID(int id) {
-		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
-		for (L1ItemInstance item : _items) {
-			if (item == null)
-				continue;
-			if (item.getItemId() == id) {
-				itemList.add(item);
-			}
-		}
-		return itemList.toArray(new L1ItemInstance[] {});
-	}
-	
-	public L1ItemInstance[] GetItemListByDescID(int descid) {
-		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
-		for (L1ItemInstance item : _items) {
-			if (item == null)
-				continue;
-			if (item.getItem().getItemDescId() == descid) {
-				itemList.add(item);
-			}
-		}
-		return itemList.toArray(new L1ItemInstance[] {});
-	}
-	
-	public L1ItemInstance[] GetItemListByClassID(int id, int descid) {
-		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
-		for (L1ItemInstance item : _items) {
-			if (item == null)
-				continue;
-			if (item.getItemId() == id && item.getItem().getItemDescId() == descid) {
-				itemList.add(item);
-			}
-		}
-		return itemList.toArray(new L1ItemInstance[] {});
-	}
+    public L1ItemInstance[] GetItemListByClassID(int id) {
+        return _items.GetItemListByClassID(id);
+    }
 
-	public L1ItemInstance[] GetUnequippedItemListByClassID(int id) {
-		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
-		for (L1ItemInstance item : _items) {
-			if (item == null)
-				continue;
-			if (item.getItemId() == id) {
-				if (!item.isEquipped()) {
-					itemList.add(item);
-				}
-			}
-		}
-		return itemList.toArray(new L1ItemInstance[] {});
-	}
-	
+    public L1ItemInstance[] GetItemListByDescID(int descid) {
+        return _items.GetItemListByDescID(descid);
+    }
+
+    public L1ItemInstance[] GetItemListByClassID(int id, int descid) {
+        return _items.GetItemListByClassID(id, descid);
+    }
+
+    public L1ItemInstance[] GetUnequippedItemListByClassID(int id) {
+        return _items.GetUnequippedItemListByClassID(id);
+    }
+
 	public L1ItemInstance GetByServerID(int objectId) {
 		return _items.GetByServerID(objectId);
 	}
@@ -1250,16 +1213,7 @@ public class CInventory extends L1Object {
 
     private long GetRecipeMaterialAmount(int classId, int enchant,
             boolean matchEnchant, boolean countInstances) {
-        final List<L1ItemInstance> rows = _items.snapshot();
-        long total = 0L;
-        for (int i = 0, n = rows.size(); i < n; i++) {
-            final L1ItemInstance item = rows.get(i);
-            if (item == null || item.isEquipped() || item.getItemId() != classId
-                    || (matchEnchant && item.getEnchantLevel() != enchant)) continue;
-            final int count = item.getCount();
-            if (count > 0) total += countInstances && !item.isStackable() ? 1 : count;
-        }
-        return total;
+        return _items.GetRecipeMaterialAmount(classId, enchant, matchEnchant, countInstances);
     }
 
     public boolean HaveUnequippedItemByClassIdEnchanted(int id, int enchant, int count) {
