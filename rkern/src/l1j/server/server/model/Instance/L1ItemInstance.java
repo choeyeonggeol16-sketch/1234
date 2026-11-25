@@ -272,6 +272,18 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	/** OFF-style quantity validation; callers retain the inventory/warehouse lock. */
+    public static boolean CanMergeStack(L1ItemInstance a,L1ItemInstance b) {
+        return a != null && b != null && !a.isEquipped() && !b.isEquipped() && a.isStackable() && b.isStackable() && a.getItemId()==b.getItemId()
+                && a.isIdentified()==b.isIdentified() && a.get_durability()==b.get_durability()
+                && a.getKeyId()==b.getKeyId() && a.getEnchantLevel()==b.getEnchantLevel() && a.getBless()==b.getBless()
+                && a.getAttrEnchantLevel()==b.getAttrEnchantLevel() && a.getSpecialEnchant()==b.getSpecialEnchant()
+                && a.getChargeCount()==b.getChargeCount() && a.getRemainingTime()==b.getRemainingTime()
+                && a.get_bless_level()==b.get_bless_level() && a.get_bless_level2()==b.get_bless_level2()
+                && a.get_item_level()==b.get_item_level() && a.isPackage()==b.isPackage()
+                && java.util.Objects.equals(a.getEndTime(),b.getEndTime()) && java.util.Objects.equals(a.getLastUsed(),b.getLastUsed())
+                && java.util.Objects.equals(a.getHotel_Town(),b.getHotel_Town());
+    }
+
 	public boolean IsAddableAmount(int amount) {
 		final int before = _count;
 		final long after = (long) before + amount;
