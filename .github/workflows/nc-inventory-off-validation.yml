@@ -1,0 +1,244 @@
+name: Inventory lookup regression
+on:
+  push:
+    branches: ['rkern/nc-inventory-off-validation-20261125']
+    paths: ['.github/workflows/nc-inventory-off-validation.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compile actual intrusive list and run isolated regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          git diff --check a063e1141803687b9115dfb66c34fc197a2bb53a be55a35f702923d2dd91b38fd076daa139282296
+          mkdir -p "$RUNNER_TEMP/inventory-test"
+          cd "$RUNNER_TEMP/inventory-test"
+          mkdir -p l1j/server/server/model/Instance
+          cp "$GITHUB_WORKSPACE/rkern/src/l1j/server/server/model/Instance/CItemList.java" l1j/server/server/model/Instance/
+          cat > l1j/server/server/model/L1Object.java <<'JAVA'
+          package l1j.server.server.model;
+          public class L1Object {}
+          JAVA
+          cat > l1j/server/server/model/L1World.java <<'JAVA'
+          package l1j.server.server.model;
+          public final class L1World {
+              private static final L1World INSTANCE=new L1World();
+              public static L1World getInstance(){return INSTANCE;}
+              public L1Object indexed;
+              public L1Object findObject(int id){return indexed;}
+          }
+          JAVA
+          cat > l1j/server/server/model/Instance/L1ItemInstance.java <<'JAVA'
+          package l1j.server.server.model.Instance;
+          import l1j.server.server.model.L1Object;
+          public final class L1ItemInstance extends L1Object {
+              volatile CItemList inventoryLinkOwner;
+              L1ItemInstance inventoryPrev, inventoryNext;
+              final int id, classId, count;
+              boolean equipped;
+              public L1ItemInstance(int id,int classId,int count,boolean equipped){
+                  this.id=id;this.classId=classId;this.count=count;this.equipped=equipped;
+              }
+              public int getId(){return id;}
+              public int getItemId(){return classId;}
+              public L1ItemInstance getItem(){return this;}
+              public int getCount(){return count;}
+              public boolean isEquipped(){return equipped;}
+          }
+          JAVA
+          cat > Test.java <<'JAVA'
+          import java.lang.reflect.Field;
+          import java.util.*;
+          import l1j.server.server.model.L1World;
+          import l1j.server.server.model.Instance.*;
+          public class Test {
+              static void ok(boolean condition){if(!condition)throw new AssertionError();}
+              public static void main(String[] args) throws Exception {
+                  CItemList a=new CItemList(), b=new CItemList();
+                  L1ItemInstance x=new L1ItemInstance(101,7,5,false);
+                  L1ItemInstance y=new L1ItemInstance(102,7,1,true);
+                  L1ItemInstance z=new L1ItemInstance(103,8,1,false);
+                  ok(a.Push(x));ok(a.Push(y));ok(a.Push(z));ok(a.Have(x)&&!b.Have(x));
+                  ok(a.CountUnequippedInstancesByClassID(7)==1);
+                  ok(a.CountUnequippedInstancesByClassID(999)==0);
+                  ok(a.GetItemCountByClassID(7)==6);
+                  ok(a.IsEquippedByClassID(7));
+                  ok(a.GetByServerID(101)==x);
+                  List<L1ItemInstance> old=a.snapshot();
+                  ok(a.CountUnequippedInstancesByClassID(7)==1);
+                  ok(a.GetByServerID(102)==y);
+                  L1World.getInstance().indexed=x;
+                  ok(a.GetByServerID(101)==x);
+                  ok(b.GetByServerID(101)==null);
+                  ok(a.Pop(x));ok(!a.Pop(x));ok(b.Push(x));
+                  ok(a.GetByServerID(101)==null);
+                  ok(b.GetByServerID(101)==x);
+                  ok(a.CountUnequippedInstancesByClassID(7)==0);
+                  // Inject a retained pre-removal snapshot to exercise the
+                  // identity lookup path independently of snapshot invalidation.
+                  Field f=CItemList.class.getDeclaredField("snapshot");
+                  f.setAccessible(true);
+                  f.set(a,old);
+                  ok(a.GetByServerID(101)==null);
+                  ok(old.get(0)==x);
+                  f.set(a,null);
+                  a.clear();b.clear();
+                  ok(a.GetByServerID(102)==null);
+                  ok(b.GetByServerID(101)==null);
+                  ok(a.CountUnequippedInstancesByClassID(7)==0);
+                  Random random=new Random(73);
+                  for(int iteration=0;iteration<500;iteration++){
+                      CItemList list=new CItemList();
+                      ArrayList<L1ItemInstance> expected=new ArrayList<>();
+                      for(int i=0;i<random.nextInt(80);i++){
+                          L1ItemInstance row=new L1ItemInstance(i+1000,random.nextInt(9),random.nextInt(30)+1,random.nextBoolean());
+                          list.add(row);expected.add(row);
+                      }
+                      if((iteration&1)==0) list.snapshot();
+                      for(int id=0;id<9;id++){
+                          int count=0,quantity=0;
+                          for(L1ItemInstance row:expected)if(row.getItemId()==id){
+                              if(!row.isEquipped())count++;
+                              quantity+=row.getCount();
+                          }
+                          ok(list.CountUnequippedInstancesByClassID(id)==count);
+                          ok(list.GetItemCountByClassID(id)==quantity);
+                      }
+                      for(L1ItemInstance row:expected)ok(list.GetByServerID(row.getId())==row);
+                      list.clear();
+                  }
+                  CItemList big=new CItemList();
+                  big.Push(new L1ItemInstance(9991,5,2000000000,false));
+                  big.Push(new L1ItemInstance(9992,5,2000000000,false));
+                  ok(big.GetItemAmount(5)==4000000000L);
+                  ok(big.GetItemCountByClassID(5)==Integer.MAX_VALUE);
+                  System.out.println("INTRUSIVE_LOOKUP_AND_COUNT_REGRESSIONS_OK");
+              }
+          }
+          JAVA
+          javac --release 21 -d classes $(find l1j -name '*.java') Test.java
+          java -cp classes Test
+      - name: Full Java 21 compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 - <<'PY'
+          import importlib.util, pathlib, os, subprocess
+          p=pathlib.Path('rkern/docs/jproring_cio_integration_20261120/run_game_ab.py').resolve()
+          spec=importlib.util.spec_from_file_location('bench',p)
+          bench=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(bench)
+          work=pathlib.Path(os.environ['RUNNER_TEMP'])/'inventory-full-compile'
+          classes=work/'classes'
+          classes.mkdir(parents=True)
+          cp=bench.classpath(classes,work/'deps')
+          bench.compile_java(cp,classes,False)
+          print('JAVA21_FULL_COMPILE_OK')
+          # Verify renamed production methods against typed mock collaborators.
+          # Extract exact method bodies, so this does not require a database.
+          root=pathlib.Path('rkern/src/l1j/server/server/model')
+          inv=(root/'CInventory.java').read_text()
+          pc=(root/'CUserInventory.java').read_text()
+          def extract(source,signature):
+              start=source.index(signature)
+              i=source.index('{',start)
+              depth=1;j=i+1
+              while depth:
+                  depth+=(source[j]=='{')-(source[j]=='}')
+                  j+=1
+              return source[start:j]
+          test=work/'InventoryCoreTest.java'
+          methods='\n'.join(extract(inv,s) for s in (
+              'public synchronized int removeItem(L1ItemInstance item, int count)',
+              'public synchronized int removeItem(L1ItemInstance item, int count, int descid)',
+              'private int removeItemInternal(',
+              'public boolean checkItemNotEquipped(',
+              'public boolean checkEnchantItem(int id, int enchant, int count)',
+              'public boolean checkEnchantItem(int id, int enchant, int count,int descid)',
+              'private boolean checkEnchantItemInternal(',
+              'private boolean consumeExactEnchantInstances(',
+              'private static boolean matchesExactEnchant(',
+              'public boolean consumeEnchantItem(int id, int enchant, int count)',
+              'public boolean consumeEnchantItem(int id, int enchant, int count, int descid)',
+              'private synchronized boolean consumeEnchantAmount(',
+              'private static boolean matchesUnequippedEnchant('))
+          test.write_text('''
+          import java.util.*;
+          public class InventoryCoreTest {
+              static class L1Object {}
+              static class L1ItemInstance extends L1Object {
+                  int id=11, classId=7, count=4, enchant=3, descId=70; boolean equipped, stackable;
+                  int getId(){return id;} int getCount(){return count;} int getItemId(){return classId;}
+                  L1ItemInstance getItem(){return this;} int getItemDescId(){return descId;}
+                  int getEnchantLevel(){return enchant;} boolean isEquipped(){return equipped;} boolean isStackable(){return stackable;}
+                  int getBless(){return 0;} int getAttrEnchantLevel(){return 0;}
+              }
+              static class L1FurnitureInstance extends L1Object {int getItemObjId(){return 0;}}
+              static class PetTable {static PetTable getInstance(){return new PetTable();} void deletePet(int id){}}
+              static class LetterTable {static LetterTable getInstance(){return new LetterTable();} void deleteLetter(int id){}}
+              static class FurnitureSpawnTable {static FurnitureSpawnTable getInstance(){return new FurnitureSpawnTable();} void deleteFurniture(L1FurnitureInstance f){}}
+              static class L1World {static L1World getInstance(){return new L1World();} List<L1Object> getObject(){return List.of();} void removeObject(L1Object item){}}
+              static class Rows extends ArrayList<L1ItemInstance> {List<L1ItemInstance> snapshot(){return new ArrayList<>(this);}}
+              static class CInventory {
+                  Rows _items=new Rows(); boolean busy;
+                  boolean rejectPendingItemTransfer(){return busy;}
+                  L1ItemInstance getItem(int id){for(var r:_items)if(r.id==id)return r;return null;}
+                  void deleteItem(L1ItemInstance item){_items.remove(item);}
+                  void changeStackCount(L1ItemInstance item,int change){item.count+=change;}
+                  int countItems(int id){return 3;}
+          '''+methods+'''
+              }
+              static class CUserInventory extends CInventory {}
+              static void ok(boolean b){if(!b)throw new AssertionError();}
+              public static void main(String[] args){
+                  CInventory inv=new CInventory();L1ItemInstance a=new L1ItemInstance();inv._items.add(a);
+                  ok(inv.removeItem(a,1,71)==0 && a.count==4);
+                  ok(inv.removeItem(a,1,70)==1 && a.count==3);
+                  ok(inv.removeItem(a,1)==1 && a.count==2);
+                  ok(inv.removeItem(new L1ItemInstance(),1)==0 && a.count==2);
+                  ok(inv.checkEnchantItem(7,3,1,70));
+                  ok(!inv.checkEnchantItem(7,3,1,71));
+                  ok(!inv.checkEnchantItem(7,3,2));
+                  a.equipped=true;ok(!inv.checkEnchantItem(7,3,1));a.equipped=false;
+                  ok(!inv.checkItemNotEquipped(7,-1));
+                  ok(inv.checkItemNotEquipped(7,0)&&inv.checkItemNotEquipped(7,3));
+                  inv.busy=true;try{inv.removeItem(a,1);throw new AssertionError();}catch(IllegalStateException expected){}
+                  inv.busy=false;ok(inv.removeItem(a,9,70)==2 && inv._items.isEmpty());
+                  L1ItemInstance low=new L1ItemInstance();low.id=21;low.enchant=0;
+                  L1ItemInstance first=new L1ItemInstance();first.id=22;first.count=1;
+                  L1ItemInstance second=new L1ItemInstance();second.id=23;second.count=1;
+                  inv._items.add(low);inv._items.add(first);inv._items.add(second);
+                  ok(!inv.consumeExactEnchantInstances(7,3,3,false,0,0,0)&&inv._items.size()==3);
+                  ok(!inv.consumeExactEnchantInstances(7,3,1,true,0,71,0)&&inv._items.size()==3);
+                  ok(inv.consumeExactEnchantInstances(7,3,1,true,0,70,0)&&inv._items.size()==2);
+                  ok(inv._items.get(0)==low&&inv._items.get(1)==second);
+                  ok(inv.consumeExactEnchantInstances(7,3,1,false,0,0,0)&&inv._items.size()==1);
+                  inv._items.clear();
+                  L1ItemInstance stack=new L1ItemInstance();stack.id=31;stack.stackable=true;stack.count=5;
+                  L1ItemInstance equipped=new L1ItemInstance();equipped.id=32;equipped.equipped=true;equipped.count=1;
+                  inv._items.add(stack);inv._items.add(equipped);
+                  ok(!inv.consumeEnchantItem(7,3,6)&&stack.count==5);
+                  ok(!inv.consumeEnchantItem(7,3,1,71)&&stack.count==5);
+                  ok(inv.consumeEnchantItem(7,3,2,70)&&stack.count==3);
+                  ok(inv.consumeEnchantItem(7,3,3)&&inv._items.size()==1&&inv._items.get(0)==equipped);
+                  ok(!inv.consumeEnchantItem(7,3,0));
+                  L1ItemInstance one=new L1ItemInstance();one.id=33;one.count=1;
+                  L1ItemInstance two=new L1ItemInstance();two.id=34;two.count=1;
+                  inv._items.add(one);inv._items.add(two);
+                  ok(inv.consumeEnchantItem(7,3,2)&&inv._items.size()==1);
+                  System.out.println("INVENTORY_CORE_REGRESSION_OK");
+              }
+          }
+          ''')
+          subprocess.run(['javac','--release','21','-d',str(work),str(test)],check=True)
+          subprocess.run(['java','-cp',str(work),'InventoryCoreTest'],check=True)
+          PY
