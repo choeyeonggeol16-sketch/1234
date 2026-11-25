@@ -18,6 +18,7 @@ on:
       - rkern/nc-inventory-commit-audit-20261125
       - rkern/nc-ground-timer-audit-20261125
       - rkern/nc-ground-timer-admission-20261125
+      - rkern/nc-ground-tile-retirement-20261125
   workflow_dispatch:
 permissions:
   contents: read
@@ -57,6 +58,10 @@ jobs:
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/docs/inventory_weight_20261125/test_ground_timer_admission.py
+      - name: Verify ground tile retirement
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/docs/inventory_weight_20261125/test_ground_tile_retirement.py
       - name: Cache existing build dependencies
         uses: actions/cache@v4
         with:
