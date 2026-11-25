@@ -47,7 +47,7 @@ assert "private static final class TransportSettings" in new_cfg
 assert "public CIOConfig(SocketAddress" in new_cfg
 assert new_cfg.count('new ConfigReader("config/Network.ini")') == 1
 assert new_cfg.count('Path.of(System.getProperty("ctransport.config"') == 1
-write(cfg, new_cfg)
+write(cfg, "\n".join(line.rstrip() for line in new_cfg.split("\n")))
 
 original_frame = read(frame)
 frame_body = original_frame[original_frame.index("/**"):]
