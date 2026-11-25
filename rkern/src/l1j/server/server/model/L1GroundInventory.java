@@ -111,7 +111,7 @@ public class L1GroundInventory extends CInventory {
 
     @Override
     public synchronized void Pop(L1ItemInstance item) {
-        if (item != null && item.isGroundPickupPending()) return;
+        if (item != null && (item.isGroundPickupPending() || item.isGroundDropUnsettled())) return;
         if (unlinkGroundItem(item)) finishGroundTransfer(item);
     }
 
@@ -157,7 +157,7 @@ public class L1GroundInventory extends CInventory {
     public synchronized boolean RequestPickItem(L1PcInstance owner, L1ItemInstance item,
             int amount, Runnable afterCommitted) {
         if (owner == null || !supportsReceiptPickup(item) || amount <= 0
-                || !_items.Have(item) || item.isGroundPickupPending()
+                || !_items.Have(item) || item.isGroundPickupPending() || item.isGroundDropUnsettled()
                 || item.is_Not_PickUp_Item() || amount > item.getCount()
                 || L1World.getInstance().findGroundInventory(getX(), getY(), getMapId()) != this)
             return false;
@@ -229,6 +229,7 @@ public class L1GroundInventory extends CInventory {
                 _log.log(java.util.logging.Level.WARNING, "Committed ground remainder notice failed", notice);
             }
         }
+        item.setGiveItem(false);
         item.releaseGroundPickup(receipt);
     }
 
@@ -237,7 +238,7 @@ public class L1GroundInventory extends CInventory {
         // A cleanup sweep cannot destroy a source reserved by a DB receipt.
         // Keep its tile published until the exact committed/rollback reply.
         for (L1ItemInstance item : getItems()) {
-            if (item == null || item.isGroundPickupPending()) continue;
+            if (item == null || item.isGroundPickupPending() || item.isGroundDropUnsettled()) continue;
             if (unlinkGroundItem(item)) L1World.getInstance().removeObject(item);
         }
         finishGroundTransfer(null);
