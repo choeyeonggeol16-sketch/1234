@@ -203,8 +203,9 @@ public class CInventory extends L1Object {
 			return SIZE_OVER;
 		}
 
-		int weight = getWeight() + item.getItem().getWeight() * count / 1000 + 1;
-		if (weight < 0 || (item.getItem().getWeight() * count / 1000) < 0) {
+		final long addedWeight = (long) item.getItem().getWeight() * count / 1000L;
+		final long weight = getWeight() + addedWeight + 1L;
+		if (weight < 0 || weight > Integer.MAX_VALUE || addedWeight < 0) {
 			return WEIGHT_OVER;
 		}
 		if (weight > (MAX_WEIGHT * Config.RATE_WEIGHT_LIMIT_PET)) {
@@ -2068,12 +2069,7 @@ public class CInventory extends L1Object {
 
 	private boolean checkEnchantItemInternal(int id, int enchant, int count, boolean matchDescId, int descId) {
 		if (count <= 0) return false;
-		final List<L1ItemInstance> rows = _items.snapshot();
-		for (int i = 0, n = rows.size(); i < n; i++) {
-			final L1ItemInstance item = rows.get(i);
-			if (matchesUnequippedEnchant(item, id, enchant, matchDescId, descId) && --count == 0) return true;
-		}
-		return false;
+		return hasEnchantAmount(_items.snapshot(), id, enchant, count, matchDescId, descId);
 	}
 
 	public boolean 제작리스트(int id, int enchant, int count) {
@@ -2108,17 +2104,8 @@ public class CInventory extends L1Object {
 			boolean matchDescId, int descId) {
 		if (count <= 0) return false;
 		final List<L1ItemInstance> rows = _items.snapshot();
+		if (!hasEnchantAmount(rows, id, enchant, count, matchDescId, descId)) return false;
 		int remaining = count;
-		for (int i = 0, n = rows.size(); i < n; i++) {
-			final L1ItemInstance item = rows.get(i);
-			if (!matchesUnequippedEnchant(item, id, enchant, matchDescId, descId)) continue;
-			final int quantity = item.getCount();
-			if (quantity <= 0) continue;
-			remaining -= Math.min(remaining, item.isStackable() ? quantity : 1);
-			if (remaining == 0) break;
-		}
-		if (remaining != 0) return false;
-		remaining = count;
 		for (int i = 0, n = rows.size(); i < n; i++) {
 			final L1ItemInstance item = rows.get(i);
 			if (!matchesUnequippedEnchant(item, id, enchant, matchDescId, descId)) continue;
@@ -2128,6 +2115,20 @@ public class CInventory extends L1Object {
 			if (removeItem(item, take) != take) return false;
 			remaining -= take;
 			if (remaining == 0) return true;
+		}
+		return false;
+	}
+
+	private static boolean hasEnchantAmount(List<L1ItemInstance> rows, int id, int enchant, int count,
+			boolean matchDescId, int descId) {
+		if (count <= 0) return false;
+		for (int i = 0, n = rows.size(); i < n; i++) {
+			final L1ItemInstance item = rows.get(i);
+			if (!matchesUnequippedEnchant(item, id, enchant, matchDescId, descId)) continue;
+			final int quantity = item.getCount();
+			if (quantity <= 0) continue;
+			count -= Math.min(count, item.isStackable() ? quantity : 1);
+			if (count == 0) return true;
 		}
 		return false;
 	}
@@ -2248,12 +2249,13 @@ public class CInventory extends L1Object {
 		if (getSize() > 180 || (getSize() == 180 && (!item.isStackable() || !checkItem(item.getItemId()))))
 			return SIZE_OVER;
 
-		int weight = getWeight() + item.getWeight() * count / 1000 + 1;
-		if (weight < 0 || (item.getWeight() * count / 1000) < 0)
+		final long addedWeight = (long) item.getWeight() * count / 1000L;
+		final long weight = getWeight() + addedWeight + 1L;
+		if (weight < 0 || weight > Integer.MAX_VALUE || addedWeight < 0)
 			return WEIGHT_OVER;
 
 		L1ItemInstance itemExist = findItemId(item.getItemId());
-		if (itemExist != null && ((itemExist.getCount() + count) < 0 || (itemExist.getCount() + count) > MAX_AMOUNT))
+		if (itemExist != null && (itemExist.getCount() < 0 || (long) itemExist.getCount() + count > MAX_AMOUNT))
 			return AMOUNT_OVER;
 		
 		return OK;
