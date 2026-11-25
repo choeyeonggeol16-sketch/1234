@@ -107,7 +107,48 @@ public final class TestCarryingWeight {
         check(0, item.getChargeCount());
         System.out.println("PASS refill classification and new item charge initialization");
     }
+    private static void checkItemCopyAttributes() {
+        L1EtcItem t = template(123, 1000);
+        L1ItemInstance src = new L1ItemInstance(t, 7);
+        src.setId(10); src.setEquipped(true); src.setEnchantLevel(4);
+        src.setIdentified(true); src.set_durability(17); src.setChargeCount(9);
+        src.setRemainingTime(11); src.setBless(2); src.setAttrEnchantLevel(6);
+        src.setSpecialEnchant(0x12345678); src.setPackage(true);
+        src.set_bless_level(3); src.set_bless_level2(4); src.set_item_level(5);
+        src.setHotel_Town("test-town"); src.setKeyId(77);
+        java.sql.Timestamp used = java.sql.Timestamp.valueOf("2026-01-02 03:04:05.123456789");
+        java.sql.Timestamp expiry = java.sql.Timestamp.valueOf("2027-01-02 03:04:05.987654321");
+        src.setLastUsed(used); src.setEndTime(expiry);
+        for (int mode = 0; mode < 8; mode++) {
+            boolean pack = (mode & 1) != 0, end = (mode & 2) != 0, snapshot = (mode & 4) != 0;
+            L1ItemInstance dst = new L1ItemInstance(t, 1);
+            dst.setId(11); dst.setKeyId(88);
+            java.sql.Timestamp oldEnd = new java.sql.Timestamp(123);
+            dst.setEndTime(oldEnd);
+            dst.CopyItemAttributesFrom(src, 3, 12, pack, end, snapshot);
+            check(3, dst.getCount()); check(12, dst.getChargeCount());
+            check(4, dst.getEnchantLevel()); check(1, dst.isIdentified() ? 1 : 0);
+            check(17, dst.get_durability()); check(11, dst.getRemainingTime());
+            check(2, dst.getBless()); check(6, dst.getAttrEnchantLevel());
+            check(0x12345678, dst.getSpecialEnchant()); check(pack ? 1 : 0, dst.isPackage() ? 1 : 0);
+            check(3, dst.get_bless_level()); check(4, dst.get_bless_level2());
+            check(5, dst.get_item_level()); check(1, "test-town".equals(dst.getHotel_Town()) ? 1 : 0);
+            check(1, used.equals(dst.getLastUsed()) ? 1 : 0);
+            check(snapshot ? 0 : 1, dst.getLastUsed() == used ? 1 : 0);
+            check(1, dst.getEndTime() == (end ? expiry : oldEnd) ? 1 : 0);
+            check(11, dst.getId()); check(88, dst.getKeyId()); check(0, dst.isEquipped() ? 1 : 0);
+        }
+        L1ItemInstance detached = l1j.server.server.model.Warehouse.Warehouse.transferCopy(src, 12, 2, 8);
+        check(12, detached.getId()); check(2, detached.getCount()); check(8, detached.getChargeCount());
+        check(77, detached.getKeyId()); check(0, detached.isEquipped() ? 1 : 0);
+        check(1, expiry.equals(detached.getEndTime()) && expiry != detached.getEndTime() ? 1 : 0);
+        check(1, used.equals(detached.getLastUsed()) && used != detached.getLastUsed() ? 1 : 0);
+        check(1, L1ItemInstance.CopyTimestamp(null) == null ? 1 : 0);
+        check(7, src.getCount()); check(9, src.getChargeCount());
+        System.out.println("PASS persistent item copy and timestamp policy");
+    }
     public static void main(String[] args) throws Exception {
+        checkItemCopyAttributes();
         checkChargeClassification();
         checkTransferAdmission();
         checkWarehouseDispatch();
