@@ -32,7 +32,7 @@ public class L1GroundInventory extends CInventory {
                 || !viewer.canSeeObject(item)) return false;
         final L1GroundInventory ground = L1World.getInstance().findGroundInventory(
                 item.getX(), item.getY(), item.getMapId());
-        return ground != null && ground._items.contains(item);
+        return ground != null && ground._items.Have(item);
     }
 
     private static boolean ready(L1PcInstance viewer, int epoch) {
@@ -101,7 +101,7 @@ public class L1GroundInventory extends CInventory {
         // Serialize the state snapshot against world leave on the same item
         // monitor already used by CWorld. This is not a controller event.
         synchronized (item) {
-            if (item.getClusterMapId() < 0 || !_items.contains(item)) return;
+            if (item.getClusterMapId() < 0 || !_items.Have(item)) return;
             SC_DropItem.broadcast(item, true);
         }
     }
@@ -111,7 +111,7 @@ public class L1GroundInventory extends CInventory {
         if (item == null) return;
         // Ground lock must precede item lock (pickup holds ground before transfer).
         synchronized (item) {
-            if (!_items.remove(item)) return;
+            if (!_items.Pop(item)) return;
             item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
             // World leave publishes the item itself to User::OutOfSight.
             L1World.getInstance().removeVisibleObject(item);
