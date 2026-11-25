@@ -13,6 +13,7 @@ import l1j.server.server.model.L1EquipmentTimer;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.CInventory;
 import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.assembly.CItemAssembler;
@@ -268,6 +269,21 @@ public class L1ItemInstance extends L1Object {
 
 	public void setCount(int count) {
 		_count = count;
+	}
+
+	/** OFF-style quantity validation; callers retain the inventory/warehouse lock. */
+	public boolean IsAddableAmount(int amount) {
+		final int before = _count;
+		final long after = (long) before + amount;
+		return before >= 0 && after >= 0 && after <= CInventory.MAX_AMOUNT;
+	}
+
+	public boolean AddAmount(int amount) {
+		final int before = _count;
+		final long after = (long) before + amount;
+		if (before < 0 || after < 0 || after > CInventory.MAX_AMOUNT) return false;
+		_count = (int) after;
+		return true;
 	}
 
 	public boolean isEquipped() {
