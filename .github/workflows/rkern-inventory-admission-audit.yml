@@ -99,6 +99,10 @@ jobs:
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/docs/nc_creature_stat_audit_20261125/test_creature_primary_stats.py
+      - name: Verify flat resistance sources and notifications
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/docs/nc_creature_stat_audit_20261125/test_creature_resistance.py
       - name: Cache existing build dependencies
         uses: actions/cache@v4
         with:

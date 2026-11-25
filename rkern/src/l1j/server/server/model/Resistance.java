@@ -35,10 +35,9 @@ public class Resistance {
     private int potionRecRate = 0; // 물약회복율 (%, +)
     private int healDefence   = 0; // 악화방어 
     
-    // ═══ 특수 저항/관통 — SpecialKind 기반 primitive 배열 
-    // 인덱스 = SpecialKind.value() (1~5 사용, 0 미사용)
-    private final int[] _specialResist = new int[6];
-    private final int[] _specialPierce = new int[6];
+    // Flat source lanes: keep full int totals; clamp only on effective reads.
+    private int m_nResistAbility, m_nResistSpirit, m_nResistDragon, m_nResistFear, m_nResistAll;
+    private int m_nPierceAbility, m_nPierceSpirit, m_nPierceDragon, m_nPierceFear, m_nPierceAll;
     
     private L1Character character = null;
 
@@ -59,8 +58,8 @@ public class Resistance {
         calcAinPer = 0;
         _fouDmgUp = 0;
         potionRecAmt = potionRecRate = healDefence = 0; // 초기화 시 함께 리셋
-        for (int i = 0; i < _specialResist.length; i++) { _specialResist[i] = 0; }
-        for (int i = 0; i < _specialPierce.length; i++) { _specialPierce[i] = 0; }
+        m_nResistAbility = m_nResistSpirit = m_nResistDragon = m_nResistFear = m_nResistAll = 0;
+        m_nPierceAbility = m_nPierceSpirit = m_nPierceDragon = m_nPierceFear = m_nPierceAll = 0;
     }
     
     private int checkMrRange(int i, final int MIN) {
@@ -71,9 +70,35 @@ public class Resistance {
         return (byte)IntRange.ensure(i, LIMIT_MIN, LIMIT_MAX);
     }
     
+    private int GetResistSource(eKind kind) {
+        return switch (kind) {
+            case ABILITY -> m_nResistAbility;
+            case SPIRIT -> m_nResistSpirit;
+            case DRAGON_SPELL -> m_nResistDragon;
+            case FEAR -> m_nResistFear;
+            case ALL -> m_nResistAll;
+        };
+    }
+
+    private int GetPierceSource(eKind kind) {
+        return switch (kind) {
+            case ABILITY -> m_nPierceAbility;
+            case SPIRIT -> m_nPierceSpirit;
+            case DRAGON_SPELL -> m_nPierceDragon;
+            case FEAR -> m_nPierceFear;
+            case ALL -> m_nPierceAll;
+        };
+    }
+
     public void addSpecialResistance(eKind kind, int value) {
         if (kind == null) return;
-        _specialResist[kind.value()] += value;
+        switch (kind) {
+            case ABILITY -> m_nResistAbility += value;
+            case SPIRIT -> m_nResistSpirit += value;
+            case DRAGON_SPELL -> m_nResistDragon += value;
+            case FEAR -> m_nResistFear += value;
+            case ALL -> m_nResistAll += value;
+        }
         if (character instanceof L1PcInstance pc) {
             SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
         }
@@ -87,12 +112,18 @@ public class Resistance {
         // or corrupt a neighboring byte of the positive resistance bitmap.
         final int penalty = kind.value() <= 4
                 ? (byte) (skillSpecialPenalty >>> shift) : 0;
-        return checkRange(_specialResist[kind.value()] + bonus + penalty);
+        return checkRange(GetResistSource(kind) + bonus + penalty);
     }
 
     public void addSpecialPierce(eKind kind, int value) {
         if (kind == null) return; 
-        _specialPierce[kind.value()] += value;
+        switch (kind) {
+            case ABILITY -> m_nPierceAbility += value;
+            case SPIRIT -> m_nPierceSpirit += value;
+            case DRAGON_SPELL -> m_nPierceDragon += value;
+            case FEAR -> m_nPierceFear += value;
+            case ALL -> m_nPierceAll += value;
+        }
         if (character instanceof L1PcInstance pc) {
             SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
         }
@@ -108,7 +139,7 @@ public class Resistance {
             case ALL -> (int) ((skillSpecialResistance >>> 48) & 0xffL);
             default -> 0;
         };
-        return checkRange(_specialPierce[value] + pumped + shared);
+        return checkRange(GetPierceSource(kind) + pumped + shared);
     }
 
     public int getEffectedMrBySkill() {

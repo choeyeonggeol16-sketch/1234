@@ -2265,7 +2265,7 @@ public class L1PcInstance extends L1Character {
 			remove_companion();
 		} catch (Exception e) {
 		}
-		if (!(noPlayerCK || noPlayerck2 || pc != null)) {
+		if (!(noPlayerCK || noPlayerck2 || noPlayerRobot)) {
 
 			SwingUtilities.invokeLater(() -> {
 				try {
