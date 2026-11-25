@@ -1,0 +1,65 @@
+name: RKern inventory admission and compilation
+on:
+  push:
+    branches:
+      - rkern/inventory-drop-admission-20261125
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            rkern/src
+            rkern/docs/jproring_cio_integration_20261120
+      - name: Check bookmark field references
+        run: |
+          if grep -RnE '\b_bookmarks\b' rkern/src --include='*.java' --exclude=L1ItemInstance.java; then
+            echo 'Unexpected direct item bookmark field reference'
+            exit 1
+          fi
+      - name: Cache existing build dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/rkern-skill-deps
+          key: rkern-skill-jars-v1
+      - name: Compile production Java 21
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          java -version
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+          import subprocess
+          import time
+          import urllib.error
+          root = Path("rkern").resolve()
+          work = Path(os.environ["RUNNER_TEMP"]) / "inventory-admission"
+          classes = work / "classes"
+          classes.mkdir(parents=True, exist_ok=True)
+          spec = importlib.util.spec_from_file_location("helper", root / "docs/jproring_cio_integration_20261120/run_game_ab.py")
+          helper = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(helper)
+          for attempt in range(6):
+              try:
+                  cp = helper.classpath(classes, Path.home() / ".cache/rkern-skill-deps")
+                  break
+              except urllib.error.HTTPError as exc:
+                  if exc.code not in (429, 500, 502, 503, 504) or attempt == 5:
+                      raise
+                  time.sleep(min(4 * (attempt + 1), 20))
+          sources = sorted((root / "src").rglob("*.java"))
+          args = work / "sources.txt"
+          args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
+          print("Production Java files:", len(sources), flush=True)
+          subprocess.run(["javac", "-J-Xmx2g", "-encoding", "UTF-8", "-source", "21",
+                          "-target", "21", "--enable-preview", "-cp", cp, "-d", str(classes),
+                          "@" + str(args)], check=True, timeout=300)
+          print("PASS full production Java 21 compile", flush=True)
+          PY
