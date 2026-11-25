@@ -496,8 +496,7 @@ public abstract class Warehouse extends L1Object {
 			L1ItemInstance findItem = findItemId(item.getItem().getItemId());
 			if (findItem != null) {
 				final int before = findItem.getCount();
-				if (before < 0 || (long) before + item.getCount() > CInventory.MAX_AMOUNT) return null;
-				findItem.setCount(before + item.getCount());
+				if (!findItem.AddAmount(item.getCount())) return null;
 				try {
 					updateItem(findItem);
 				} catch (RuntimeException e) {
@@ -554,7 +553,7 @@ public abstract class Warehouse extends L1Object {
                 && destStack != null;
         final int destCount = destStack == null ? 0 : destStack.getCount();
         final int destCharge = destStack == null ? 0 : destStack.getChargeCount();
-        if (countMerge && (long) destCount + count > CInventory.MAX_AMOUNT) return null;
+        if (countMerge && !destStack.IsAddableAmount(count)) return null;
         if (chargeMerge && (long) destCharge + item.getChargeCount() > Integer.MAX_VALUE) return null;
         final L1ItemInstance fee = feeAmount == 0 ? null : inventory.findItemId(feeItemId);
         if (feeAmount != 0 && (fee == null || !fee.isStackable()
