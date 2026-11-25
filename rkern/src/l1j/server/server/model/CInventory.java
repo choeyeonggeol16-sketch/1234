@@ -265,7 +265,7 @@ public class CInventory extends L1Object {
 			if (!withEnchant) item.setIdentified(identified);
 			if (findMergeItem(item) == null) {
 				item.setId(IdFactory.getInstance().nextId());
-				L1World.getInstance().storeObject(item);
+				return registerCreatedItem(item);
 			}
 			return storeItem(item);
 		}
@@ -280,11 +280,26 @@ public class CInventory extends L1Object {
 				item.setIdentified(identified);
 				item.setId(IdFactory.getInstance().nextId());
 			}
-			L1World.getInstance().storeObject(item);
-			storeItem(item);
-			result = item;
+			result = registerCreatedItem(item);
 		}
 		return result;
+	}
+
+	/** The newly allocated object belongs to this creation path until insertion succeeds. */
+	private L1ItemInstance registerCreatedItem(L1ItemInstance item) {
+		final L1World world = L1World.getInstance();
+		try {
+			world.storeObject(item);
+			final L1ItemInstance stored = storeItem(item);
+			if (stored != item && !_items.Have(item)) world.removeObject(item);
+			return stored;
+		} catch (RuntimeException failure) {
+			if (!_items.Have(item)) {
+				try { world.removeObject(item); }
+				catch (RuntimeException cleanup) { failure.addSuppressed(cleanup); }
+			}
+			throw failure;
+		}
 	}
 
 	/** Only the four existing registration paths use this rollback contract. */
