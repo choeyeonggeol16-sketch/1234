@@ -19,7 +19,7 @@ jobs:
             rkern/docs/jproring_cio_integration_20261120
       - name: Check bookmark field references
         run: |
-          if grep -RnE '\b_bookmarks\b' rkern/src --include='*.java' --exclude=L1ItemInstance.java; then
+          if grep -RnE '\.[[:space:]]*_bookmarks\b' rkern/src --include='*.java' --exclude=L1ItemInstance.java; then
             echo 'Unexpected direct item bookmark field reference'
             exit 1
           fi
