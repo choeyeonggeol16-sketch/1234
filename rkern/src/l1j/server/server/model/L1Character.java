@@ -1131,22 +1131,13 @@ public class L1Character extends L1Object {
 			long primaryStats, long elementalResistance, int evasion, long weapon, long combatRates, int sp, boolean notify) {
 		final long previous = m_SkillHPMP;
 		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
-		if (previous != updated) {
-			m_SkillHPMP = updated;
-			if ((int) previous != hp) clampCurrentHp();
-			if ((int) (previous >>> 32) != mp) {
-                if (this instanceof l1j.server.server.model.Instance.L1NpcInstance) {
-                    synchronized (this) {
-                        _currentMp = Math.min(_currentMp, getMaxMp());
-                    }
-                } else {
-                    _currentMp = Math.min(_currentMp, getMaxMp());
-                }
-            }
-		}
+		if (previous != updated) m_SkillHPMP = updated;
+		// Publish both HP/MP and WIS sources before applying the final limits.
 		setSkillAc(ac, notify);
 		SetSkillMDefend(mr);
 		SetSkillPrimaryStats(primaryStats, notify);
+		if ((int) previous != hp) clampCurrentHp();
+		if ((int) (previous >>> 32) != mp) clampCurrentMp();
 		SetSkillElemental(elementalResistance);
 		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
 		if (m_SkillWeapon != weapon) m_SkillWeapon = weapon;
@@ -1235,7 +1226,17 @@ public class L1Character extends L1Object {
 
 	private void ValidateMaxMP() {
 		m_nMaxMP = IntRange.ensure(m_nBaseMP + m_nAddedMP, 0, 10_000_000);
-		_currentMp = Math.min(_currentMp, getMaxMp());
+		clampCurrentMp();
+	}
+
+	private void clampCurrentMp() {
+		if (this instanceof L1NpcInstance) {
+			synchronized (this) {
+				_currentMp = Math.min(_currentMp, getMaxMp());
+			}
+		} else {
+			_currentMp = Math.min(_currentMp, getMaxMp());
+		}
 	}
 
 	public void healHp(int pt) {
@@ -1461,18 +1462,30 @@ public class L1Character extends L1Object {
 	public final byte GetStatWis() { return m_StatWis; }
 	public final byte GetOriginalStatWis() { return m_OriginalStatWis; }
 	public final void SetStatWis(int value) {
+		final int previous = this instanceof L1PcInstance ? GetStatWis() : GetTotalStatWis();
 		m_StatWis = ValidateStat(value, m_OriginalStatWis);
-		if (this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
+		if (this instanceof L1PcInstance pc) {
+			pc.RefreshBaseMDefend();
+			if (GetStatWis() < previous) clampCurrentMp();
+		} else if (GetTotalStatWis() < previous) {
+			clampCurrentMp();
+		}
 	}
 	public final byte GetAddedStatWis() { return ValidateStat(m_AddedStatWis + (byte) (m_SkillPrimaryStats >>> 24), -128); }
 	final void AddAddedStatWis(int value) {
+		final int previous = GetTotalStatWis();
 		m_AddedStatWis = ValidateStat(m_AddedStatWis + value, -128);
 		if (this instanceof L1PcInstance pc) pc.RefreshBaseMDefend();
+		else if (GetTotalStatWis() < previous) clampCurrentMp();
 	}
 	public final byte GetTotalStatWis() { return ValidateStat(GetStatWis() + GetAddedStatWis(), 0); }
 	public final byte GetStatCon() { return m_StatCon; }
 	public final byte GetOriginalStatCon() { return m_OriginalStatCon; }
-	public final void SetStatCon(int value) { m_StatCon = ValidateStat(value, m_OriginalStatCon); }
+	public final void SetStatCon(int value) {
+		final byte previous = m_StatCon;
+		m_StatCon = ValidateStat(value, m_OriginalStatCon);
+		if (m_StatCon < previous && this instanceof L1PcInstance) clampCurrentHp();
+	}
 	public final byte GetAddedStatCon() { return ValidateStat(m_AddedStatCon + (byte) (m_SkillPrimaryStats >>> 32), -128); }
 	final void AddAddedStatCon(int value) { m_AddedStatCon = ValidateStat(m_AddedStatCon + value, -128); }
 	public final byte GetTotalStatCon() { return ValidateStat(GetStatCon() + GetAddedStatCon(), 0); }
@@ -1487,7 +1500,9 @@ public class L1Character extends L1Object {
 	public final void SetSkillPrimaryStats(long value, boolean notify) {
 		final long changed = m_SkillPrimaryStats ^ value;
 		if (changed == 0) return;
+		final int previousWis = GetTotalStatWis();
 		m_SkillPrimaryStats = value;
+		if (!(this instanceof L1PcInstance) && (changed & 0xff000000L) != 0 && GetTotalStatWis() < previousWis) clampCurrentMp();
 		if (this instanceof L1PcInstance pc) {
 			if ((changed & 0xff000000L) != 0) pc.RefreshBaseMDefend();
 			if ((changed & 0x0000ff00L) != 0) pc.RefreshBasePDefend();
@@ -1500,13 +1515,17 @@ public class L1Character extends L1Object {
 		if ((changed & 0xff000000L) != 0) NotifyStatBonusWis();
 	}
 
+	// Stat redistribution resets permanent allocations only; equipment and
+	// skill sources remain owned by their original apply/remove paths.
 	public final void ResetPrimaryStats() {
-		m_StatStr = m_OriginalStatStr = m_AddedStatStr = 0;
-		m_StatDex = m_OriginalStatDex = m_AddedStatDex = 0;
-		m_StatCon = m_OriginalStatCon = m_AddedStatCon = 0;
-		m_StatInt = m_OriginalStatInt = m_AddedStatInt = 0;
-		m_StatWis = m_OriginalStatWis = m_AddedStatWis = 0;
-		m_StatCha = m_OriginalStatCha = m_AddedStatCha = 0;
+		m_StatStr = m_OriginalStatStr = 0;
+		m_StatDex = m_OriginalStatDex = 0;
+		m_StatCon = m_OriginalStatCon = 0;
+		m_StatInt = m_OriginalStatInt = 0;
+		m_StatWis = m_OriginalStatWis = 0;
+		m_StatCha = m_OriginalStatCha = 0;
+		clampCurrentHp();
+		clampCurrentMp();
 		if (this instanceof L1PcInstance pc) {
 			pc.RefreshBaseMDefend();
 			pc.RefreshBasePDefend();
@@ -1585,9 +1604,10 @@ public class L1Character extends L1Object {
 	}
 
 	public final void SetOriginalStatStr(int i) {
-		byte newBaseStr = CheckStatRange(i);
-		AddStatStr(newBaseStr - m_OriginalStatStr);
-		m_OriginalStatStr = newBaseStr;
+		final byte newBase = CheckStatRange(i);
+		final int delta = newBase - m_OriginalStatStr;
+		m_OriginalStatStr = newBase;
+		AddStatStr(delta);
 	}
 
 	public final void AddStatBonusStr(int i) {
@@ -1618,9 +1638,10 @@ public class L1Character extends L1Object {
 	}
 
 	public final void SetOriginalStatCon(int i) {
-		byte newBaseCon = CheckStatRange(i);
-		AddStatCon(newBaseCon - m_OriginalStatCon);
-		m_OriginalStatCon = newBaseCon;
+		final byte newBase = CheckStatRange(i);
+		final int delta = newBase - m_OriginalStatCon;
+		m_OriginalStatCon = newBase;
+		AddStatCon(delta);
 	}
 
 	public final void AddStatBonusCon(int i) {
@@ -1654,9 +1675,10 @@ public class L1Character extends L1Object {
 	}
 
 	public final void SetOriginalStatDex(int i) {
-		byte newBaseDex = CheckStatRange(i);
-		AddStatDex(newBaseDex - m_OriginalStatDex);
-		m_OriginalStatDex = newBaseDex;
+		final byte newBase = CheckStatRange(i);
+		final int delta = newBase - m_OriginalStatDex;
+		m_OriginalStatDex = newBase;
+		AddStatDex(delta);
 	}
 
 	public final void AddStatBonusDex(int i) {
@@ -1680,9 +1702,10 @@ public class L1Character extends L1Object {
 	}
 
 	public final void SetOriginalStatCha(int i) {
-		byte newBaseCha = CheckStatRange(i);
-		AddStatCha(newBaseCha - m_OriginalStatCha);
-		m_OriginalStatCha = newBaseCha;
+		final byte newBase = CheckStatRange(i);
+		final int delta = newBase - m_OriginalStatCha;
+		m_OriginalStatCha = newBase;
+		AddStatCha(delta);
 	}
 
 	public final void AddStatBonusCha(int i) {
@@ -1707,9 +1730,10 @@ public class L1Character extends L1Object {
 	}
 
 	public final void SetOriginalStatInt(int i) {
-		byte newBaseInt = CheckStatRange(i);
-		AddStatInt(newBaseInt - m_OriginalStatInt);
-		m_OriginalStatInt = newBaseInt;
+		final byte newBase = CheckStatRange(i);
+		final int delta = newBase - m_OriginalStatInt;
+		m_OriginalStatInt = newBase;
+		AddStatInt(delta);
 	}
 
 	public final void AddStatBonusInt(int i) {
@@ -1728,7 +1752,6 @@ public class L1Character extends L1Object {
 		 if (this instanceof L1PcInstance) {
 	            L1PcInstance pc = (L1PcInstance) this;
 	            if (pc.getNetConnection() != null) {
-	                pc.resetBaseMr();
 	                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Wis);
 	                SC_SPMR.send(pc);
 	                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);// 현재순수스탯
@@ -1741,9 +1764,10 @@ public class L1Character extends L1Object {
 	}
 
 	public final void SetOriginalStatWis(int i) {
-		byte newBaseWis = CheckStatRange(i);
-		AddStatWis(newBaseWis - m_OriginalStatWis);
-		m_OriginalStatWis = newBaseWis;
+		final byte newBase = CheckStatRange(i);
+		final int delta = newBase - m_OriginalStatWis;
+		m_OriginalStatWis = newBase;
+		AddStatWis(delta);
 	}
 
 	public final void AddStatBonusWis(int i) {
@@ -1753,7 +1777,6 @@ public class L1Character extends L1Object {
 
 	private void NotifyStatBonusWis() {
 		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
-		pc.resetBaseMr();
 		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Wis);
 		SC_SPMR.send(pc);
 	}

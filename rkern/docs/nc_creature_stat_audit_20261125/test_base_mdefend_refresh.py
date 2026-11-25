@@ -31,6 +31,7 @@ calcMethods=method(calc,"public static int 마법방어(")
 stub="""
 class L1Character {
   int _level=1; int getLevel(){return _level;} boolean passive;
+  private void clampCurrentHp(){} private void clampCurrentMp(){}
   boolean isPassive(int id){return passive;}
   void NotifyStatBonusStr(){} void NotifyStatBonusDex(){} void NotifyStatBonusInt(){} void NotifyStatBonusCon(){} void NotifyStatBonusWis(){}
   """+fields+res+methods+"""

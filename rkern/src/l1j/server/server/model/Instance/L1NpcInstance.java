@@ -114,6 +114,7 @@ public class L1NpcInstance extends L1Character {
     private static final int[] DIR_DY = {-1, -1, 0, 1, 1, 1, 0, -1};
 
     private L1Npc _npcTemplate;
+    private int m_nTemplateAttackBonus;
     private CNpcMaker _spawn;
 
     private int _spawnNumber;
@@ -416,10 +417,7 @@ public class L1NpcInstance extends L1Character {
         SetStatInt(cap127(template.get_int() + bonus));
         SetStatWis(cap127(template.get_wis() + bonus));
         SetOrgMDefend(cap127(template.get_mr() + bonus));
-        if (bonus != 0) {
-            addHitup(bonus * 2);
-            addDmgup(bonus * 2);
-        }
+        SetTemplateAttackBonus(bonus * 2);
         int hp = template.get_hp();
         if (template.get_randomhp() != 0) {
             hp = (int) (hp + calcRandomVal(hp, template.get_randomhp(), rate));
@@ -453,6 +451,15 @@ public class L1NpcInstance extends L1Character {
         setLightSize(template.getLightSize());
 
         CSkillAction2.resetRuntime(this);
+    }
+
+    // Replace only the template's own contribution; other modifiers survive.
+    private void SetTemplateAttackBonus(int value) {
+        final int delta = value - m_nTemplateAttackBonus;
+        if (delta == 0) return;
+        m_nTemplateAttackBonus = value;
+        addHitup(delta);
+        addDmgup(delta);
     }
 
     private static byte cap127(int v) {

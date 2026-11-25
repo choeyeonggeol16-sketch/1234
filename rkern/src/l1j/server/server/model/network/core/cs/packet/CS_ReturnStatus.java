@@ -307,7 +307,6 @@ public final class CS_ReturnStatus {
 		}
 
 		pc.resetBaseAc();
-		pc.setAc(pc.GetBasePDefend());
 
 		pc.setExp(pc.getReturnStat());
 
@@ -389,7 +388,6 @@ public final class CS_ReturnStatus {
             SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
 
 			pc.resetBaseAc();
-			pc.setAc(pc.GetBasePDefend());
 
 			SC_SPMR.send(pc);
 			SC_OwnCharStatus2.send(pc);
