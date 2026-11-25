@@ -28,7 +28,7 @@ def method(signature):
 methods = "\n".join(method(s) for s in (
     "public final int getAc()", "public final void addAc(",
     "public final void setAc(", "public final void setSkillAc(", "private void ValidatePDefend(",
-    "public final int GetBasePDefend(", "protected final void SetBasePDefend(", "private static int GetPDefendEvasion(",
+    "public final int GetBasePDefend(", "protected final void SetBasePDefend(", "protected final void InitPDefend(", "private static int GetPDefendEvasion(",
 ))
 fields = "\n".join(re.search(r"[^\n]*\b" + n + r"\s*;", creature).group(0)
                    for n in ("m_nBasePDefend", "m_nAddedPDefend", "m_nSkillPDefend", "m_nPDefend"))
@@ -98,11 +98,12 @@ public class DefenseAudit {
             for(int i=0;i<20000;i++){
                 int v=rng.nextInt(1200)-600;
                 boolean notify=rng.nextBoolean();
-                switch(i%4){
+                switch(i%5){
                     case 0 -> {c.SetBasePDefend(v,false);old.source+=v-base;base=v;old.update(false);}
                     case 1 -> {c.addAc(v);old.addAc(v);}
                     case 2 -> {c.setSkillAc(v,notify);old.setSkillAc(v,notify);}
                     case 3 -> {c.setAc(v);old.setAc(v);}
+                    case 4 -> {c.InitPDefend(v);old.source=v;base=v;old.update(false);}
                 }
                 check(old,c);
                 if(c.GetBasePDefend()!=base)throw new AssertionError("base lost");

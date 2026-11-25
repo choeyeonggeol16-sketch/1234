@@ -2043,6 +2043,12 @@ public class L1Character extends L1Object {
 
 	public final int GetBasePDefend() { return m_nBasePDefend; }
 
+	protected final void InitPDefend(int value) {
+		m_nBasePDefend = value;
+		m_nAddedPDefend = 0;
+		ValidatePDefend(false);
+	}
+
 	protected final void SetBasePDefend(int value, boolean notify) {
 		if (m_nBasePDefend == value) return;
 		m_nBasePDefend = value;
