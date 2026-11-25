@@ -1,0 +1,37 @@
+name: Inventory removal call-site audit
+on: [push]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan production removal references
+        run: |
+          python3 - <<'PY'
+          import pathlib,re,collections
+          root=pathlib.Path('rkern/src')
+          names='consumeItem consumeItem2 ConsumeItemDescId removeItem deleteItem DataComparator extracted DeleteEnchant findAndRemoveItemId'.split()
+          pattern=re.compile(r'\b('+'|'.join(names)+r')\s*(?:\(|::)')
+          counts=collections.defaultdict(collections.Counter)
+          decls=collections.defaultdict(list)
+          examples=collections.defaultdict(dict)
+          for p in root.rglob('*.java'):
+              for i,line in enumerate(p.read_text(encoding='utf-8-sig').splitlines(),1):
+                  if line.lstrip().startswith(('//','*','/*')):continue
+                  for m in pattern.finditer(line):
+                      n=m[1];pre=line[:m.start()].rstrip()
+                      if re.search(r'\b(?:public|private|protected|abstract|static|final|synchronized|default)\b[^;={}]*$',pre) and not pre.endswith('.'):
+                          decls[n].append(f'{p}:{i}: {line.strip()}')
+                          continue
+                      q=re.search(r'([\w.]+(?:\([^()]*\))?)\s*\.$',pre)
+                      r=q[1] if q else '<implicit>' if not pre.endswith('.') else pre[-70:]
+                      counts[n][r]+=1
+                      examples[n].setdefault(r,f'{p.name}:{i}: {line.strip()[:190]}')
+          for n in names:
+              print('METHOD',n,'CALLS',sum(counts[n].values()))
+              for d in decls[n]:print('DECL',d)
+              for r,c in counts[n].most_common():print('RECV',c,r,examples[n][r])
+          
+          PY
