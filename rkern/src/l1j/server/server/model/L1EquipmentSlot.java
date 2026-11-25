@@ -29,6 +29,14 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.utils.eKind;
 public class L1EquipmentSlot {
+    private static final java.util.logging.Logger NOTICE_LOG =
+            java.util.logging.Logger.getLogger(L1EquipmentSlot.class.getName());
+
+    private void equipmentNoticeFailed(RuntimeException notice) {
+        NOTICE_LOG.log(java.util.logging.Level.WARNING,
+                "Equipment notice failed: " + _owner.getId(), notice);
+    }
+
 
 	private final L1PcInstance _owner;
 	private static final List<CSetItem> EMPTY_ACTIVE_SETS = List.of();
@@ -88,7 +96,8 @@ public class L1EquipmentSlot {
 		int type = weapon.getItem().getType();
 		if ((type == 7 || type == 16 || type == 17) && (weapon.get_bless_level() != 0)) {
 			_owner.getAbility().addSp(weapon.get_bless_level());
-			SC_SPMR.send(_owner);
+			try { SC_SPMR.send(_owner); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 
 		if (itemId == 203003) { // 데스나이트의 불검:진
@@ -233,10 +242,12 @@ public class L1EquipmentSlot {
 			 
 				 int n = _owner.getSkillEffectTimeSec(L1SkillId.할파스의신의) / 60;
 			 if (n > 0) {
-				 SC_InventoryIcon.icoNew(_owner, L1SkillId.할파스의신의, 3942, _owner.getSkillEffectTimeSec(L1SkillId.할파스의신의), true);
+				 try { SC_InventoryIcon.icoNew(_owner, L1SkillId.할파스의신의, 3942, _owner.getSkillEffectTimeSec(L1SkillId.할파스의신의), true); }
+				 catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 				 
 			 }else {
-				 SC_InventoryIcon.iconNewUnLimit(_owner, L1SkillId.할파스의신의1, 3943, true);
+				 try { SC_InventoryIcon.iconNewUnLimit(_owner, L1SkillId.할파스의신의1, 3943, true); }
+				 catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		 }
 			 }
 		applyArmorBlessBonus(armor, 1);
@@ -276,31 +287,36 @@ public class L1EquipmentSlot {
 
 		if (itemId == 900022) {
 			if (_owner.getMapId() >= 1708 && _owner.getMapId() <= 1712) {
-				SC_SkillSound.send(_owner, _owner.getId(), 11101);
-				SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, true);
+				try { SC_SkillSound.send(_owner, _owner.getId(), 11101); }
+				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+				try { SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, true); }
+				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 			}
 		}
 
-		if (itemId == 20077 || itemId == 20062 || itemId == 120077) {
-			if (_owner.hasSkillEffect(L1SkillId.DESPERADO)) {
-				return;
-			}
+		if ((itemId == 20077 || itemId == 20062 || itemId == 120077)
+				&& !_owner.hasSkillEffect(L1SkillId.DESPERADO)) {
 			_owner.invisibleItem();
 		}
 		if (itemId == 20288 || itemId == 900111) {
-		    SC_Ability.send(_owner, 1, true);		    
+		    try { SC_Ability.send(_owner, 1, true); }
+		    catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		if (itemId == 20281) {
-			SC_Ability.send(_owner, 2, true);
+			try { SC_Ability.send(_owner, 2, true); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		if (itemId == 20036) {
-			SC_Ability.send(_owner, 3, true);
+			try { SC_Ability.send(_owner, 3, true); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		if (itemId == 20284) {
-			SC_Ability.send(_owner, 5, true);
+			try { SC_Ability.send(_owner, 5, true); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		if (itemId == 20207) {
-			SC_SkillIconBlessOfEva.send(_owner, _owner.getId(), -1);
+			try { SC_SkillIconBlessOfEva.send(_owner, _owner.getId(), -1); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 
 		applyElixirRuneBonus(itemId, 1);
@@ -427,7 +443,8 @@ public class L1EquipmentSlot {
 		
 		if (_owner.hasSkillEffect(L1SkillId.할파스)) {
 			_owner.removeSkillEffect(L1SkillId.할파스);
-			SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스);
+			try { SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		
 		
@@ -442,7 +459,8 @@ public class L1EquipmentSlot {
 		
 		if ((type == 7 || type == 16 || type == 17) && (weapon.get_bless_level() != 0)) {
 			_owner.getAbility().addSp(-weapon.get_bless_level());
-			SC_SPMR.send(_owner);
+			try { SC_SPMR.send(_owner); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		
 	    removeWeaponFromSlots(weapon);	
@@ -458,9 +476,11 @@ public class L1EquipmentSlot {
 		if (itemId == 123111 || itemId == 123112 || itemId == 123113) {
 			
 			
-				 SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의1);
+				 try { SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의1); }
+				 catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 			
-				 SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의);
+				 try { SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의); }
+				 catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 			 
 		}
 		
@@ -499,7 +519,8 @@ public class L1EquipmentSlot {
 		validateSetItem(itemId, false, false, false);
 
 		if (itemId == 900022) {
-			SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, false);
+			try { SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, false); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		
 		if (itemId == 20077 || itemId == 20062 || itemId == 120077) {
@@ -507,10 +528,12 @@ public class L1EquipmentSlot {
 		
 		}
 		if (itemId == 20288 || itemId == 900111) {
-		    SC_Ability.send(_owner, 1, false);
+		    try { SC_Ability.send(_owner, 1, false); }
+		    catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		if (itemId == 20281) {
-			SC_Ability.send(_owner, 2, false);
+			try { SC_Ability.send(_owner, 2, false); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		/*if (itemId == 900075) {
 			RAbility.send(_owner, 7, false);
@@ -518,10 +541,12 @@ public class L1EquipmentSlot {
 			_owner.setPolyRingMaster(false);
 		}*/
 		if (itemId == 20036) {
-			SC_Ability.send(_owner, 3, false);
+			try { SC_Ability.send(_owner, 3, false); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		if (itemId == 20284) {
-			SC_Ability.send(_owner, 5, false);
+			try { SC_Ability.send(_owner, 5, false); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		if (itemId == 20207) refreshEvaAfterRemoval(armor);
 //		if (itemId == 22200 || itemId == 22201 || itemId == 22202 || itemId == 22203) {// 파푸리온 갑옷
@@ -591,8 +616,10 @@ public class L1EquipmentSlot {
 			_owner.removeHasteSkillEffect();
 			if (_owner.getMoveSpeed() != 1) {
 				_owner.setMoveSpeed(1);
-				SC_SkillHaste.send(_owner, _owner.getId(), 1, -1);
-				SC_SkillHaste.broadcast(_owner, _owner.getId(), 1, 0);
+				try { SC_SkillHaste.send(_owner, _owner.getId(), 1, -1); }
+				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+				try { SC_SkillHaste.broadcast(_owner, _owner.getId(), 1, 0); }
+				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 			}
 		}
 		if (item.getItemId() == 20383 && _owner.hasSkillEffect(L1SkillId.STATUS_BRAVE)) {
@@ -605,14 +632,16 @@ public class L1EquipmentSlot {
 			validateSetItem(item.getItemId(), true, false, false);
 		} else if (type == 2) {
 			setArmor(equipment);
-			SC_SPMR.send(_owner);
+			try { SC_SPMR.send(_owner); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		onEquipItem(equipment, item);
 		// A set polymorph can synchronously unequip gear. Complete this item's
 		// own options and callbacks before exposing that transition.
 		if (equipment.isEquipped()
 				&& validateSetItem(item.getItemId(), true, type == 2 && item.getType() == 9, true)) {
-			SC_SPMR.send(_owner);
+			try { SC_SPMR.send(_owner); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		// The last charge can still activate the set's polymorph on this equip.
 		if (type == 2 && item.getItemId() == 20383 && equipment.getChargeCount() != 0) {
@@ -636,8 +665,10 @@ public class L1EquipmentSlot {
 			if (_owner.getHasteItemEquipped() == 0 && _owner.getMoveSpeed() == 1
 					&& MovementSpeedEffects.activeHaste(_owner, 0) == 0) {
 				_owner.setMoveSpeed(0);
-				SC_SkillHaste.send(_owner, _owner.getId(), 0, 0);
-				SC_SkillHaste.broadcast(_owner, _owner.getId(), 0, 0);
+				try { SC_SkillHaste.send(_owner, _owner.getId(), 0, 0); }
+				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+				try { SC_SkillHaste.broadcast(_owner, _owner.getId(), 0, 0); }
+				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 			}
 		}
 		retireMagicHelmSpells(equipment);
@@ -673,11 +704,13 @@ public class L1EquipmentSlot {
 		if (item.getItemId() == 20236 && _owner.isElf()) magicResistance += 5;
 		if (magicResistance != 0) {
 			ItemStat.MR.apply(_owner, sign * magicResistance);
-			SC_SPMR.send(_owner);
+			try { SC_SPMR.send(_owner); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		if (item.get_addsp() != 0) {
 			ItemStat.SP.apply(_owner, sign * item.get_addsp());
-			SC_SPMR.send(_owner);
+			try { SC_SPMR.send(_owner); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 	}
 
@@ -803,7 +836,10 @@ public class L1EquipmentSlot {
 		final L1Item item = armor.getItem();
 		if (item.getType() == 30) return;
 		ItemStat.AC.apply(_owner, sign * armorDefense(armor, enchant));
-		if (!isRoomteece(item.getItemId())) SC_OwnCharAttrDef.send(_owner);
+		if (!isRoomteece(item.getItemId())) {
+			try { SC_OwnCharAttrDef.send(_owner); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+		}
 	}
 
 	boolean applyArmorDurabilityChange(L1ItemInstance armor, int previousDurability) {
@@ -1029,9 +1065,10 @@ public class L1EquipmentSlot {
 	private void showMagicHelmSpells(L1ItemInstance item) {
 		final long spells = magicHelmSpells(item.getItemId());
 		if (spells == 0L) return;
-		SC_AddSkill.send(_owner, spellMask(spells, 0), spellMask(spells, 1), spellMask(spells, 2),
+		try { SC_AddSkill.send(_owner, spellMask(spells, 0), spellMask(spells, 1), spellMask(spells, 2),
 				spellMask(spells, 3), spellMask(spells, 4), spellMask(spells, 5), spellMask(spells, 6),
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); }
+		catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 	}
 
 	private void retireMagicHelmSpells(L1ItemInstance removed) {
@@ -1047,9 +1084,10 @@ public class L1EquipmentSlot {
 			final long spell = Long.lowestOneBit(spells);
 			spells ^= spell;
 			if (learned.spellCheck(_owner.getId(), Long.numberOfTrailingZeros(spell) + 1)) continue;
-			SC_DelSkill.send(_owner, spellMask(spell, 0), spellMask(spell, 1), spellMask(spell, 2),
+			try { SC_DelSkill.send(_owner, spellMask(spell, 0), spellMask(spell, 1), spellMask(spell, 2),
 					spellMask(spell, 3), spellMask(spell, 4), spellMask(spell, 5), spellMask(spell, 6),
-					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 	}
 
@@ -1077,7 +1115,8 @@ public class L1EquipmentSlot {
 				set.applyEffects(_owner, 1);
 				if (polymorph) applySetPolymorph(set);
 				if (activeSets.contains(set) && set.grantsEva) {
-					SC_SkillIconBlessOfEva.send(_owner, _owner.getId(), -1);
+					try { SC_SkillIconBlessOfEva.send(_owner, _owner.getId(), -1); }
+					catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 				}
 				changed = true;
 			} else if (!equipping && activeIndex >= 0 && !set.isValid(this)) {
@@ -1125,7 +1164,8 @@ public class L1EquipmentSlot {
 	private void updateSetItemDisplay(L1ItemInstance item, boolean show) {
 		if (item.get_main_set_armor() == show) return;
 		item.set_main_set_armor(show);
-		SC_ItemStatus.send(_owner, item);
+		try { SC_ItemStatus.send(_owner, item); }
+		catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 	}
 
 	private void applySetPolymorph(CSetItem set) {
@@ -1177,6 +1217,7 @@ public class L1EquipmentSlot {
 		if (hasEvaEquipment(removed)) return;
 		final int skill = L1SkillId.STATUS_UNDERWATER_BREATH;
 		final int remaining = _owner.hasSkillEffect(skill) ? _owner.getSkillEffectTimeSec(skill) : 0;
-		SC_SkillIconBlessOfEva.send(_owner, _owner.getId(), remaining);
+		try { SC_SkillIconBlessOfEva.send(_owner, _owner.getId(), remaining); }
+		catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 	}
 }
