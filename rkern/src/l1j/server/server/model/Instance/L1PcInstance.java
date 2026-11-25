@@ -713,8 +713,6 @@ public class L1PcInstance extends L1Character {
 	private int _magicadd;
 
 	
-	private short _baseMaxHp = 0;
-	private int _baseMaxMp = 0;
 
     // Level/class snapshot; STR/DEX/INT table values remain in CalcStat.
     private final PcBaseAbilityCache m_BaseParam = new PcBaseAbilityCache();
@@ -740,10 +738,6 @@ public class L1PcInstance extends L1Character {
 	private int _clanRank;
 	private byte _sex;
 	private int _returnstat;
-	private short _hpr = 0;
-	private short _trueHpr = 0;
-	private short _mpr = 0;
-	private short _trueMpr = 0;
 
 	private int _advenHp;
 	private int _advenMp;
@@ -1610,33 +1604,6 @@ public class L1PcInstance extends L1Character {
         } finally {
             unlockMastery();
         }
-	}
-
-	// Signed 16-bit HP regen, MP regen, weapon damage rate, and Impact probability.
-	private volatile long pumpedRegenAndWeaponRates;
-
-	public void setPumpedRegenAndWeaponRates(long value) {
-		if (pumpedRegenAndWeaponRates != value) pumpedRegenAndWeaponRates = value;
-	}
-
-	public short getHpr() {
-		final int bonus = (short) pumpedRegenAndWeaponRates;
-		return bonus == 0 ? _hpr : (short) Math.max(0, _trueHpr + bonus);
-	}
-
-	public void addHpr(int i) {
-		_trueHpr += i;
-		_hpr = (short) Math.max(0, _trueHpr);
-	}
-
-	public short getMpr() {
-		final int bonus = (short) (pumpedRegenAndWeaponRates >>> 16);
-		return bonus == 0 ? _mpr : (short) Math.max(0, _trueMpr + bonus);
-	}
-
-	public void addMpr(int i) {
-		_trueMpr += i;
-		_mpr = (short) Math.max(0, _trueMpr);
 	}
 
 	public void setHomnam(boolean flag) {
@@ -4153,32 +4120,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public void setAccountName(String s) {
 		_accountName = s;
 	}
-
-	public short getBaseMaxHp() {
-		return _baseMaxHp;
-	}
-
-	public void addBaseMaxHp(short i) {
-        final int next = Math.max(1, Math.min(32767, (int) _baseMaxHp + i));
-        addMaxHp(next - _baseMaxHp);
-        _baseMaxHp = (short) next;
-    }
-
-	public int getBaseMaxMp() {
-		return _baseMaxMp;
-	}
-
-	public void addBaseMaxMp(int i) {
-		i += _baseMaxMp;
-		if (i >= 32767) {
-			i = 32767;
-		} else if (i < 0) {
-			i = 0;
-		}
-		addMaxMp(i - _baseMaxMp);
-		_baseMaxMp = i;
-	}
-
 
 	public void setBaseMagicDmg(int i) {
 		_baseMagicDmg = i;

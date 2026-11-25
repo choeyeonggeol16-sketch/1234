@@ -63,10 +63,13 @@ public class L1Character extends L1Object {
     private static final AtomicIntegerFieldUpdater<L1Character> CURRENT_HP =
             AtomicIntegerFieldUpdater.newUpdater(L1Character.class, "_currentHp");
 	private volatile int _currentMp;
-	private int _maxHp = 0;
-	private int _trueMaxHp = 0;
-	private int _maxMp = 0;
-	private int _trueMaxMp = 0;
+	// Common creature base, non-skill additions and cached effective limits.
+	private int m_nBaseHP;
+	private int m_nAddedHP;
+	private int m_nMaxHP;
+	private int m_nBaseMP;
+	private int m_nAddedMP;
+	private int m_nMaxMP;
 	private int _lawful;
 	private int _karma;
 	private int m_nOrgMHit;
@@ -1097,14 +1100,39 @@ public class L1Character extends L1Object {
 		}
 	}
 
-	private volatile long pumpedHpMp;
+	private short m_sOrgHPRegen;
+	private short m_sOrgMPRegen;
+	// Signed 16-bit HP regen, MP regen, weapon damage rate, Impact probability.
+	protected volatile long pumpedRegenAndWeaponRates;
+
+	public final void setPumpedRegenAndWeaponRates(long value) {
+		if (pumpedRegenAndWeaponRates != value) pumpedRegenAndWeaponRates = value;
+	}
+
+	public final short getHpr() {
+		return (short) Math.max(0, m_sOrgHPRegen + (short) pumpedRegenAndWeaponRates);
+	}
+
+	public final void addHpr(int i) {
+		m_sOrgHPRegen += i;
+	}
+
+	public final short getMpr() {
+		return (short) Math.max(0, m_sOrgMPRegen + (short) (pumpedRegenAndWeaponRates >>> 16));
+	}
+
+	public final void addMpr(int i) {
+		m_sOrgMPRegen += i;
+	}
+
+	private volatile long m_SkillHPMP;
 
 	public void setPumpedSkillModifiers(int hp, int mp, int ac, int mr,
 			long primaryStats, long elementalResistance, int evasion, long weapon, long combatRates, int sp, boolean notify) {
-		final long previous = pumpedHpMp;
+		final long previous = m_SkillHPMP;
 		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
 		if (previous != updated) {
-			pumpedHpMp = updated;
+			m_SkillHPMP = updated;
 			if ((int) previous != hp) clampCurrentHp();
 			if ((int) (previous >>> 32) != mp) {
                 if (this instanceof l1j.server.server.model.Instance.L1NpcInstance) {
@@ -1127,21 +1155,40 @@ public class L1Character extends L1Object {
 	}
 
 	public int getMaxHp() {
-		final int delta = (int) pumpedHpMp;
-		int maxhp = delta == 0 ? _maxHp : Math.clamp((long) _trueMaxHp + delta, 1, 10_000_000);
+		final int delta = (int) m_SkillHPMP;
+		int maxhp = delta == 0 ? m_nMaxHP : Math.clamp((long) (m_nBaseHP + m_nAddedHP) + delta, 1, 10_000_000);
 
         if (this instanceof L1PcInstance)
             maxhp += CalcStat.pureHpMpBonus(GetStatCon());
 		return maxhp;
 	}
 
+	public final int getBaseMaxHp() {
+		return m_nBaseHP;
+	}
+
+	public final void addBaseMaxHp(short i) {
+		m_nBaseHP = Math.max(1, Math.min(32767, m_nBaseHP + i));
+		ValidateMaxHP();
+	}
+
 	public void addMaxHp(int i) {
-		setMaxHp(_trueMaxHp + i);
+		m_nAddedHP += i;
+		ValidateMaxHP();
 	}
 
 	public void setMaxHp(int hp) {
-		_trueMaxHp = hp;
-		_maxHp = (int) IntRange.ensure(_trueMaxHp, 1, 10000000);
+		if (this instanceof L1PcInstance) {
+			m_nAddedHP = hp - m_nBaseHP;
+		} else {
+			m_nBaseHP = hp;
+			m_nAddedHP = 0;
+		}
+		ValidateMaxHP();
+	}
+
+	private void ValidateMaxHP() {
+		m_nMaxHP = IntRange.ensure(m_nBaseHP + m_nAddedHP, 1, 10_000_000);
 		clampCurrentHp();
 	}
 
@@ -1154,22 +1201,41 @@ public class L1Character extends L1Object {
 	}
 
 	public int getMaxMp() {
-		final int delta = (int) (pumpedHpMp >>> 32);
-		int maxmp = delta == 0 ? _maxMp : Math.clamp((long) _trueMaxMp + delta, 0, 10_000_000);
+		final int delta = (int) (m_SkillHPMP >>> 32);
+		int maxmp = delta == 0 ? m_nMaxMP : Math.clamp((long) (m_nBaseMP + m_nAddedMP) + delta, 0, 10_000_000);
 
         int wis = this instanceof L1PcInstance ? GetStatWis() : GetTotalStatWis();
         maxmp += CalcStat.pureHpMpBonus(wis);
 		return maxmp;
 	}
 
+	public final int getBaseMaxMp() {
+		return m_nBaseMP;
+	}
+
+	public final void addBaseMaxMp(int i) {
+		m_nBaseMP = Math.clamp(m_nBaseMP + i, 0, 32767);
+		ValidateMaxMP();
+	}
+
 	public void setMaxMp(int mp) {
-		_trueMaxMp = mp;
-		_maxMp = (int) IntRange.ensure(_trueMaxMp, 0, 10000000);
-		_currentMp = Math.min(_currentMp, getMaxMp());
+		if (this instanceof L1PcInstance) {
+			m_nAddedMP = mp - m_nBaseMP;
+		} else {
+			m_nBaseMP = mp;
+			m_nAddedMP = 0;
+		}
+		ValidateMaxMP();
 	}
 
 	public void addMaxMp(int i) {
-		setMaxMp(_trueMaxMp + i);
+		m_nAddedMP += i;
+		ValidateMaxMP();
+	}
+
+	private void ValidateMaxMP() {
+		m_nMaxMP = IntRange.ensure(m_nBaseMP + m_nAddedMP, 0, 10_000_000);
+		_currentMp = Math.min(_currentMp, getMaxMp());
 	}
 
 	public void healHp(int pt) {

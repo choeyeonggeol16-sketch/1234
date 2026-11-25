@@ -2112,6 +2112,11 @@ public class L1NpcInstance extends L1Character {
         super.setMaxMp(mp);
     }
 
+    @Override
+    public synchronized void addMaxMp(int delta) {
+        super.addMaxMp(delta);
+    }
+
     public final synchronized void changeNpcMp(long delta) {
         if (_destroyed || isDead() || (delta < 0 && dMoveTo.isReturningHome(this))) return;
         final long next = (long) getCurrentMp() + delta;
