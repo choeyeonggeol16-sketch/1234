@@ -241,37 +241,7 @@ public class L1Inventory extends L1Object {
 	}
 
 	public synchronized L1ItemInstance storeItem(int id, int count, int enchant) {
-        if (rejectPendingItemTransfer())
-            throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (count <= 0) {
-			return null;
-		}
-		L1Item temp = CObjectDB.GetItem(id);
-		if (temp == null) {
-			return null;
-		}
-
-		if (temp.isStackable()) {
-			L1ItemInstance item = new L1ItemInstance(temp, count);
-			if (findMergeItem(item) == null) {
-				item.setId(IdFactory.getInstance().nextId());
-				L1World.getInstance().storeObject(item);
-			}
-			return storeItem(item);
-		}
-
-		L1ItemInstance result = null;
-		L1ItemInstance item = null;
-		for (int i = 0; i < count; i++) {
-			item = new L1ItemInstance(temp, 1);
-			item.setId(IdFactory.getInstance().nextId());
-			item.setEnchantLevel(enchant);
-			item.setIdentified(true);
-			L1World.getInstance().storeObject(item);
-			storeItem(item);
-			result = item;
-		}
-		return result;
+		return storeTemplateItem(id, count, true, true, enchant);
 	}
 
 	public L1ItemInstance storeItem(int id, int count) {
@@ -279,38 +249,52 @@ public class L1Inventory extends L1Object {
 	}
 	
 	public synchronized L1ItemInstance storeItem(int id, int count, boolean isIden) {
-        if (rejectPendingItemTransfer())
-            throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
-		if (count <= 0) {
-			return null;
-		}
-		L1Item temp = CObjectDB.GetItem(id);
-		if (temp == null) {
-			return null;
-		}
+		return storeTemplateItem(id, count, false, isIden, 0);
+	}
 
-		if (temp.isStackable()) {
-			L1ItemInstance item = new L1ItemInstance(temp, count);
-			item.setIdentified(isIden);
+	/** Preserve legacy constructor, identification and enchant ordering for each overload. */
+	private L1ItemInstance storeTemplateItem(int id, int count, boolean withEnchant, boolean identified, int enchant) {
+		if (rejectPendingItemTransfer())
+			throw new IllegalStateException("Item mutation refused while CacheD transfer pending");
+		if (count <= 0) return null;
+		final L1Item template = CObjectDB.GetItem(id);
+		if (template == null) return null;
+		if (template.isStackable()) {
+			final L1ItemInstance item = new L1ItemInstance(template, count);
+			if (!withEnchant) item.setIdentified(identified);
 			if (findMergeItem(item) == null) {
 				item.setId(IdFactory.getInstance().nextId());
 				L1World.getInstance().storeObject(item);
 			}
-
 			return storeItem(item);
 		}
-
 		L1ItemInstance result = null;
-		L1ItemInstance item = null;
 		for (int i = 0; i < count; i++) {
-			item = new L1ItemInstance(temp, 1);
-			item.setIdentified(isIden);
-			item.setId(IdFactory.getInstance().nextId());
+			final L1ItemInstance item = new L1ItemInstance(template, 1);
+			if (withEnchant) {
+				item.setId(IdFactory.getInstance().nextId());
+				item.setEnchantLevel(enchant);
+				item.setIdentified(true);
+			} else {
+				item.setIdentified(identified);
+				item.setId(IdFactory.getInstance().nextId());
+			}
 			L1World.getInstance().storeObject(item);
 			storeItem(item);
 			result = item;
 		}
 		return result;
+	}
+
+	/** Only the four existing registration paths use this rollback contract. */
+	private void insertLinkedItem(L1ItemInstance item) {
+		_items.add(item);
+		try {
+			insertItem(item);
+		} catch (RuntimeException failure) {
+			_items.remove(item);
+			throw failure;
+		}
 	}
 	
     /** Revert item and count cache together if persistence admission fails. */
@@ -393,13 +377,7 @@ public class L1Inventory extends L1Object {
 		int bless = item.getBless();
 		item.setBless(bless);
 
-		_items.add(item);
-		try {
-			insertItem(item);
-		} catch (RuntimeException e) {
-			_items.remove(item);
-			throw e;
-		}
+		insertLinkedItem(item);
 		return item;
 	}
 	
@@ -582,13 +560,7 @@ public class L1Inventory extends L1Object {
 		item.setIdentified(true);
 		item.set_bless_level(item.get_bless_level());
 		item.set_item_level(item.get_item_level());
-		_items.add(item);
-		try {
-			insertItem(item);
-		} catch (RuntimeException e) {
-			_items.remove(item);
-			throw e;
-		}
+		insertLinkedItem(item);
 		return item;
 	}
 
@@ -769,13 +741,7 @@ public class L1Inventory extends L1Object {
 		item.setIdentified(true);
 		item.set_bless_level(item.get_bless_level());
 		item.set_item_level(item.get_item_level());
-		_items.add(item);
-		try {
-			insertItem(item);
-		} catch (RuntimeException e) {
-			_items.remove(item);
-			throw e;
-		}
+		insertLinkedItem(item);
 		return item;
 	}
 	
@@ -883,13 +849,7 @@ public class L1Inventory extends L1Object {
 		item.setX(getX());
 		item.setY(getY());
 		item.setMap(getMapId());
-		_items.add(item);
-		try {
-			insertItem(item);
-		} catch (RuntimeException e) {
-			_items.remove(item);
-			throw e;
-		}
+		insertLinkedItem(item);
 
 		return item;
 	}
@@ -903,19 +863,7 @@ public class L1Inventory extends L1Object {
             return item != null && item.getCount() >= count && item.getEnchantLevel() == en
                     && removeItem(item, count) == count;
         }
-        final L1ItemInstance[] items = findItemsId(itemid);
-        if (items.length < count) return false;
-        if (items.length > count) extracted(items, new DataComparator());
-        int eligible = 0;
-        for (L1ItemInstance item : items) if (item.getEnchantLevel() == en) ++eligible;
-        if (eligible < count) return false;
-        int removed = 0;
-        for (L1ItemInstance item : items) {
-            if (item.getEnchantLevel() != en) continue;
-            if (removeItem(item, 1) != 1) return false;
-            if (++removed == count) return true;
-        }
-        return false;
+        return consumeExactEnchantInstances(itemid, en, count, false, 0, 0, 0);
 	}
 	public L1ItemInstance[] findItemsId_HighEnchant(int id, int enchant) {
 		ArrayList<L1ItemInstance> itemList = new ArrayList<L1ItemInstance>();
@@ -937,24 +885,35 @@ public class L1Inventory extends L1Object {
             return item.getCount() >= count && item.getEnchantLevel() == en
                     && item.getBless() == bless && item.getItem().getItemDescId() == descid
                     && item.getAttrEnchantLevel() == attr_en && removeItem(item, count) == count;
-        final L1ItemInstance[] items = findItemsId_HighEnchant(item.getItemId(), en);
-        if (items.length < count) return false;
-        if (items.length > count) extracted(items, new DataComparator());
-        int eligible = 0;
-        for (L1ItemInstance candidate : items)
-            if (candidate.getEnchantLevel() == en && candidate.getBless() == bless
-                    && candidate.getItem().getItemDescId() == descid
-                    && candidate.getAttrEnchantLevel() == attr_en) ++eligible;
-        if (eligible < count) return false;
-        int removed = 0;
-        for (L1ItemInstance candidate : items) {
-            if (candidate.getEnchantLevel() != en || candidate.getBless() != bless
-                    || candidate.getItem().getItemDescId() != descid
-                    || candidate.getAttrEnchantLevel() != attr_en) continue;
-            if (removeItem(candidate, 1) != 1) return false;
-            if (++removed == count) return true;
-        }
-        return false;
+        return consumeExactEnchantInstances(item.getItemId(), en, count, true, bless, descid, attr_en);
+	}
+
+	/** Exact enchant matches retain membership order: a stable sort by the
+	 * same enchant level cannot change the order of eligible rows. */
+	private boolean consumeExactEnchantInstances(int itemId, int enchant, int count,
+			boolean extra, int bless, int descId, int attrEnchant) {
+		if (count <= 0) return false;
+		final List<L1ItemInstance> rows = _items.snapshot();
+		int available = 0;
+		for (int i = 0, n = rows.size(); i < n; i++) {
+			if (matchesExactEnchant(rows.get(i), itemId, enchant, extra, bless, descId, attrEnchant)
+					&& ++available == count) break;
+		}
+		if (available < count) return false;
+		for (int i = 0, n = rows.size(); i < n; i++) {
+			final L1ItemInstance item = rows.get(i);
+			if (!matchesExactEnchant(item, itemId, enchant, extra, bless, descId, attrEnchant)) continue;
+			if (removeItem(item, 1) != 1) return false;
+			if (--count == 0) return true;
+		}
+		return false;
+	}
+
+	private static boolean matchesExactEnchant(L1ItemInstance item, int itemId, int enchant,
+			boolean extra, int bless, int descId, int attrEnchant) {
+		return item.getItemId() == itemId && item.getEnchantLevel() == enchant
+				&& (!extra || (item.getBless() == bless && item.getItem().getItemDescId() == descId
+				&& item.getAttrEnchantLevel() == attrEnchant));
 	}
 
 	public synchronized boolean ConsumeItemDescId(int descId, int enchant, int count) {
