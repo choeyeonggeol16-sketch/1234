@@ -40,7 +40,6 @@ import l1j.server.server.datatables.ClanBuffTable;
 import l1j.server.server.datatables.ClanBuffTable.ClanBuff;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.PolyTable;
-import l1j.server.server.model.Ability;
 import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Getback;
@@ -2184,7 +2183,6 @@ public class L1PcInstance extends L1Character {
 		_currentWeapon = i;
 	}
 
-	private Ability pc;
 
 	public int getType() {
 		return _type;
@@ -5637,7 +5635,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public void CheckStatus() {
-		int totalS = ability.getAmount();
+		int totalS = getAbility().getAmount();
 		int bonusS = getLevel() - 50;
 		if (bonusS < 0) {
 			bonusS = 0;
