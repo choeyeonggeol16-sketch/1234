@@ -486,6 +486,19 @@ public class L1ItemInstance extends L1Object {
         setHotel_Town(source.getHotel_Town());
     }
 
+    /** Detached image only; a new reward may still have an unassigned ID.
+     * Callers publishing or persisting a row must validate/reserve its ID.
+     */
+    public final L1ItemInstance CopyDetachedImage(int id, int count, int charge) {
+        L1ItemInstance result = new L1ItemInstance();
+        result.setId(id);
+        result.setItem(getItem());
+        result.CopyItemAttributesFrom(this, count, charge, true, false, true);
+        result.setKeyId(getKeyId());
+        result.setEndTime(CopyTimestamp(getEndTime()));
+        return result;
+    }
+
 	public int getChargeCount() {
 		return _chargeCount;
 	}
