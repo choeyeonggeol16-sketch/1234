@@ -82,10 +82,11 @@ public class SpawnTable {
 					spawnDat.setLocY1(rs.getInt("locy1"));
 					spawnDat.setLocX2(rs.getInt("locx2"));
 					spawnDat.setLocY2(rs.getInt("locy2"));
-					spawnDat.setHeading(0);
+					spawnDat.setHeading(rs.getInt("heading"));
 					spawnDat.setMinRespawnDelay(rs.getInt("min_respawn_delay"));
 					spawnDat.setMaxRespawnDelay(rs.getInt("max_respawn_delay"));
 					spawnDat.setMapId(rs.getShort("mapid"));
+					spawnDat.setRespawnScreen(rs.getBoolean("respawn_screen"));
 					spawnDat.setMovementDistance(rs.getInt("movement_distance"));
 					spawnDat.setRest(rs.getBoolean("rest"));
 					spawnDat.setName(template1.get_name());

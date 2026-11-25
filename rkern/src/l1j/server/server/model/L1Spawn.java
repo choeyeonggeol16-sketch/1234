@@ -414,7 +414,6 @@ public class L1Spawn {
                 return false;
             }
 
-            mob.setId(objectId == 0 ? IdFactory.getInstance().nextId() : objectId);
             mob.setHeading((_heading >= 0 && _heading <= 7) ? _heading : 0);
 
             final int npcId = mob.getNpcTemplate().get_npcId();
@@ -465,18 +464,26 @@ public class L1Spawn {
                 mob.setY(newlocy);
                 mob.setHomeY(newlocy);
 
-                if (TileOccupancyNpc.getInstance().getOccupier(mapId, newlocx, newlocy) != 0
-                        || TileOccupancy.getInstance().getOccupier(mapId, newlocx, newlocy) != 0) {
+                final short spawnMapId = mob.getMapId();
+                if (TileOccupancyNpc.getInstance().getOccupier(spawnMapId, newlocx, newlocy) != 0
+                        || TileOccupancy.getInstance().getOccupier(spawnMapId, newlocx, newlocy) != 0) {
                     tryCount++;
                     continue;
                 }
 
-                if (!canSpawnHere(mob, mapId, newlocx, newlocy)) {
+                if (!canSpawnHere(mob, newlocx, newlocy)) {
                     tryCount++;
                     continue;
                 }
                 break;
             }
+
+            // A failed monster position search must not publish an invalid world object.
+            // Fixed non-monster NPCs retain their existing placement behavior.
+            if (tryCount > 50 && mob instanceof L1MonsterInstance) {
+                return false;
+            }
+            mob.setId(objectId == 0 ? IdFactory.getInstance().nextId() : objectId);
 
             if (mob instanceof L1MonsterInstance) {
                 ((L1MonsterInstance) mob).initHide();
@@ -486,7 +493,8 @@ public class L1Spawn {
             mob.setRespawn(true);
             mob.setSpawnNumber(spawnNumber);
 
-            if (_initSpawn && _spawnHomePoint && _homeX != null && spawnNumber < _homeX.length) {
+            if (_spawnHomePoint && _homeX != null && spawnNumber > 0 && spawnNumber < _homeX.length
+                    && (_initSpawn || _homeX[spawnNumber] == 0)) {
                 _homeX[spawnNumber] = mob.getX();
                 _homeY[spawnNumber] = mob.getY();
             }
@@ -540,7 +548,7 @@ public class L1Spawn {
      * 스폰 위치 유효성 검사.
      * 몬스터는 맵 경계/통행 가능 여부 검사, NPC류는 제한 없이 통과.
      */
-    private boolean canSpawnHere(L1NpcInstance mob, short mapId, int x, int y) {
+    private boolean canSpawnHere(L1NpcInstance mob, int x, int y) {
         if (mob == null) {
             return false;
         }
@@ -761,17 +769,17 @@ public class L1Spawn {
     public final long npcMakerStep(final long nowMs) {
         long currentNow = nowMs;
         int processed = 0;
+        int scanFrom = 1;
 
         while (processed < MAKER_STEP_BUDGET) {
             int spawnNumber = 0;
             int objectId = 0;
-            long next = Long.MAX_VALUE;
 
             if (_spawnSlotState == null) {
                 return -1L;
             }
 
-            for (int i = 1; i <= _maximumCount; i++) {
+            for (int i = scanFrom; i <= _maximumCount; i++) {
                 if (_spawnSlotState[i] != SLOT_WAIT_RESPAWN) {
                     continue;
                 }
@@ -780,6 +788,7 @@ public class L1Spawn {
 
                 if (deadline <= currentNow) {
                     spawnNumber = i;
+                    scanFrom = i + 1;
                     objectId = _respawnObjectId[i];
 
                     SLOT_STATE_HANDLE.setRelease(
@@ -789,13 +798,10 @@ public class L1Spawn {
                     break;
                 }
 
-                if (deadline < next) {
-                    next = deadline;
-                }
             }
 
             if (spawnNumber == 0) {
-                return next == Long.MAX_VALUE ? -1L : next;
+                break;
             }
 
             boolean spawned = false;
