@@ -20,10 +20,11 @@ final class InventoryTransactionOwners {
     private final L1PcInstance first, second;
     private final CUserSocket firstSession, secondSession;
     private final int firstStamp, secondStamp;
+    private final int firstToken, secondToken;
     // Only party transactions allocate these arrays. One/two-owner hot paths remain flat.
     private final L1PcInstance[] additional;
     private final CUserSocket[] additionalSessions;
-    private final int[] additionalStamps;
+    private final int[] additionalStamps, additionalTokens;
     private volatile int reserved;
 
     InventoryTransactionOwners(L1PcInstance primary, L1PcInstance other, boolean trade) {
@@ -32,20 +33,23 @@ final class InventoryTransactionOwners {
         first = ordered ? primary : other;
         second = ordered ? other : primary;
 
-        CUserSocket firstConnection = admit(first, trade);
-        int firstIdentity = first.getSessionStamp();
+        final int firstIdentity = first.getSessionStamp();
+        final CUserSocket firstConnection = captureSession(first);
+        final int acquiredFirst = admit(first, trade, firstConnection, firstIdentity);
         CUserSocket secondConnection = null;
-        int secondIdentity = 0;
+        int secondIdentity = 0, acquiredSecond = 0;
         try {
             if (second != null) {
-                secondConnection = admit(second, trade);
                 secondIdentity = second.getSessionStamp();
+                secondConnection = captureSession(second);
+                acquiredSecond = admit(second, trade, secondConnection, secondIdentity);
             }
-        } catch (RuntimeException failure) {
-            // Only the reservation acquired by this constructor is released.
-            if (first.getSessionStamp() == firstIdentity) first.endItemTransfer();
+        } catch (RuntimeException | Error failure) {
+            first.endItemTransfer(acquiredFirst);
             throw failure;
         }
+        firstToken = acquiredFirst;
+        secondToken = acquiredSecond;
         firstSession = firstConnection;
         secondSession = secondConnection;
         firstStamp = firstIdentity;
@@ -53,6 +57,7 @@ final class InventoryTransactionOwners {
         additional = null;
         additionalSessions = null;
         additionalStamps = null;
+        additionalTokens = null;
         reserved = 1;
     }
 
@@ -77,42 +82,55 @@ final class InventoryTransactionOwners {
         additional = Arrays.copyOfRange(sorted, 2, sorted.length);
         additionalSessions = new CUserSocket[additional.length];
         additionalStamps = new int[additional.length];
+        additionalTokens = new int[additional.length];
         CUserSocket[] sessions = new CUserSocket[sorted.length];
         int[] stamps = new int[sorted.length];
+        int[] tokens = new int[sorted.length];
         int taken = 0;
         try {
             for (int i = 0; i < sorted.length; i++) {
-                sessions[i] = admit(sorted[i], false);
                 stamps[i] = sorted[i].getSessionStamp();
+                sessions[i] = captureSession(sorted[i]);
+                tokens[i] = admit(sorted[i], false, sessions[i], stamps[i]);
                 taken++;
             }
         } catch (RuntimeException | Error failure) {
             for (int i = 0; i < taken; i++)
-                if (sorted[i].getSessionStamp() == stamps[i])
-                    sorted[i].endItemTransfer();
+                sorted[i].endItemTransfer(tokens[i]);
             throw failure;
         }
         firstSession = sessions[0];
         secondSession = sessions[1];
         firstStamp = stamps[0];
         secondStamp = stamps[1];
+        firstToken = tokens[0];
+        secondToken = tokens[1];
         for (int i = 0; i < additional.length; i++) {
             additionalSessions[i] = sessions[i + 2];
             additionalStamps[i] = stamps[i + 2];
+            additionalTokens[i] = tokens[i + 2];
         }
         reserved = 1;
     }
 
-    private CUserSocket admit(L1PcInstance pc, boolean trade) {
-        CUserSocket session = pc.getNetConnection();
-        boolean connected = session != null && session.isConnected() && session.getActiveChar() == pc;
-        boolean market = !trade && pc != primary && pc.isPrivateShop()
-                && L1World.getInstance().findObject(pc.getId()) == pc;
-        if ((!connected && !market)
-                || (!trade && (pc.getTradeID() != 0 || pc.isTradeResolving()))
-                || !pc.tryBeginItemTransfer())
+    private static CUserSocket captureSession(L1PcInstance pc) {
+        final CUserSocket session = pc.getNetConnection();
+        return session != null && session.isConnected() && session.getActiveChar() == pc
+                ? session : null;
+    }
+
+    private int admit(L1PcInstance pc, boolean trade, CUserSocket session, int stamp) {
+        if ((trade && session == null) || !current(pc, session, stamp)
+                || (!trade && (pc.getTradeID() != 0 || pc.isTradeResolving())))
             throw new IllegalStateException("Inventory owner unavailable or busy");
-        return connected ? session : null;
+        final int token = pc.tryReserveItemTransfer();
+        if (token == 0) throw new IllegalStateException("Inventory owner unavailable or busy");
+        if (!current(pc, session, stamp)
+                || (!trade && (pc.getTradeID() != 0 || pc.isTradeResolving()))) {
+            pc.endItemTransfer(token);
+            throw new IllegalStateException("Inventory owner changed during admission");
+        }
+        return token;
     }
 
     int size() { return second == null ? 1 : 2 + (additional == null ? 0 : additional.length); }
@@ -152,26 +170,40 @@ final class InventoryTransactionOwners {
     }
 
     boolean current(L1PcInstance pc) {
-        if (pc.getSessionStamp() != stamp(pc)) return false;
-        CUserSocket session = session(pc);
+        return current(pc, session(pc), stamp(pc));
+    }
+
+    private boolean current(L1PcInstance pc, CUserSocket session, int stamp) {
+        if (pc.isLogoutStarted() || pc.getSessionStamp() != stamp) return false;
         if (session == null) return pc != primary && pc.isPrivateShop()
+                && captureSession(pc) == null
                 && L1World.getInstance().findObject(pc.getId()) == pc;
         return session.isConnected() && session.getActiveChar() == pc && pc.getNetConnection() == session;
     }
 
     void release() {
         if (RESERVED.getAndSet(this, 0) == 0) return;
-        if (first.getSessionStamp() == firstStamp) first.endItemTransfer();
-        if (second != null && second.getSessionStamp() == secondStamp) second.endItemTransfer();
+        first.endItemTransfer(firstToken);
+        if (second != null) second.endItemTransfer(secondToken);
         if (additional != null) for (int i = 0; i < additional.length; i++)
-            if (additional[i].getSessionStamp() == additionalStamps[i])
-                additional[i].endItemTransfer();
+            additional[i].endItemTransfer(additionalTokens[i]);
     }
 
     void quarantine() {
-        if (firstSession != null && firstSession.isConnected()) firstSession.kick();
-        if (secondSession != null && secondSession.isConnected()) secondSession.kick();
-        if (additionalSessions != null) for (CUserSocket session : additionalSessions)
-            if (session != null && session.isConnected()) session.kick();
+        // Never kick a socket that has since changed its active character.
+        quarantine(first, firstSession, firstStamp);
+        if (second != null) quarantine(second, secondSession, secondStamp);
+        if (additional != null) for (int i = 0; i < additional.length; i++)
+            quarantine(additional[i], additionalSessions[i], additionalStamps[i]);
+    }
+
+    private void quarantine(L1PcInstance pc, CUserSocket session, int stamp) {
+        if (session == null || !current(pc, session, stamp)) return;
+        l1j.server.server.model.network.thread.CIOThreadCallback.getInstance()
+                .completeSession(session, () -> {
+                    synchronized (session) {
+                        if (current(pc, session, stamp)) session.kick();
+                    }
+                });
     }
 }
