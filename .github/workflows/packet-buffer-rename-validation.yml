@@ -1,0 +1,94 @@
+name: Validate packet buffer class rename
+on:
+  push:
+    branches: ['rkern/packet-buffer-rename-validation-20261125']
+    paths: ['.github/workflows/packet-buffer-rename-validation.yml']
+permissions:
+  contents: write
+jobs:
+  rename:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Rename only, validate and publish fast-forward
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          BASE=3892dce1e8294c3193ae7bc716da88379622461e
+          TARGET=refs/heads/rkern/nc-network-responsibility-20261125
+          test "$(git ls-remote origin "$TARGET" | cut -f1)" = "$BASE"
+          git checkout --detach "$BASE"
+          python3 - <<'PY'
+          import pathlib, re, subprocess
+          mapping = {b'CPacketWriteBuffer': b'Assemble', b'CPacketReadBuffer': b'Disassemble'}
+          pattern = re.compile(rb'\b(?:CPacketWriteBuffer|CPacketReadBuffer)\b')
+          def convert(data):
+              return pattern.sub(lambda m: mapping[m.group()], data)
+          paths = subprocess.check_output(['git','ls-files','-z','--','rkern/src','rkern/docs','.github/workflows']).decode().split('\0')
+          changed = {}
+          destinations = set()
+          suffixes = {'.java','.py','.sh','.ps1','.cmd','.bat','.yml','.yaml','.xml','.gradle','.kts','.properties','.groovy'}
+          for name in filter(None, paths):
+              p = pathlib.Path(name)
+              if not p.is_file() or p.suffix.lower() not in suffixes:
+                  continue
+              old = p.read_bytes()
+              new = convert(old)
+              dest = p.with_name(convert(p.name.encode()).decode())
+              if new == old and dest == p:
+                  continue
+              if dest != p and dest.exists():
+                  raise RuntimeError(f'collision: {dest}')
+              if dest in destinations:
+                  raise RuntimeError(f'duplicate destination: {dest}')
+              destinations.add(dest)
+              changed[p] = (dest, new)
+          root = pathlib.Path('rkern/src/l1j/server/server/model/network/buffer')
+          for old, new in mapping.items():
+              assert changed[root / (old.decode()+'.java')][0] == root / (new.decode()+'.java')
+          for p, (dest, new) in changed.items():
+              dest.write_bytes(new)
+              if dest != p: p.unlink()
+          for p, (dest, new) in changed.items():
+              assert dest.read_bytes() == new
+              original = subprocess.check_output(['git','show','HEAD:'+str(p)])
+              assert convert(original) == dest.read_bytes()
+              if dest != p: assert not p.exists()
+          for p in pathlib.Path('rkern/src').rglob('*.java'):
+              assert not pattern.search(p.read_bytes()), str(p)
+              assert not pattern.search(p.name.encode()), str(p)
+          print('PURE_IDENTIFIER_RENAME_OK', len(changed), 'files')
+          PY
+          git add -A -- rkern/src rkern/docs .github/workflows
+          git diff --cached --stat
+          git diff --cached --check
+          python3 - <<'PY'
+          import importlib.util, pathlib, os, subprocess
+          p = pathlib.Path('rkern/docs/jproring_cio_integration_20261120/run_game_ab.py').resolve()
+          spec = importlib.util.spec_from_file_location('bench', p)
+          bench = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(bench)
+          work = pathlib.Path(os.environ['RUNNER_TEMP']) / 'packet-rename'
+          classes = work / 'classes'
+          classes.mkdir(parents=True)
+          cp = bench.classpath(classes, work/'deps')
+          bench.compile_java(cp, classes, False)
+          print('JAVA21_FULL_COMPILE_OK')
+          tests = p.parent
+          subprocess.run(['javac','--release','21','--enable-preview','-encoding','UTF-8','-cp',cp,'-d',str(classes),str(tests/'SelectorCioIntegrationTest.java'),str(tests/'CIOBufferPoolAffinityTest.java')],check=True)
+          runtime = work/'runtime'
+          runtime.mkdir()
+          for test in ('SelectorCioIntegrationTest','l1j.server.server.model.network.core.connection.CIOBufferPoolAffinityTest'):
+              subprocess.run(['java','--enable-preview','-XX:MaxDirectMemorySize=64m','-cp',cp,test],cwd=runtime,check=True)
+          print('TCP_AND_POOL_REGRESSIONS_OK')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'refactor(network): rename packet buffers to Assemble and Disassemble'
+          test "$(git ls-remote origin "$TARGET" | cut -f1)" = "$BASE"
+          git push origin "HEAD:$TARGET"
+          git rev-parse HEAD
