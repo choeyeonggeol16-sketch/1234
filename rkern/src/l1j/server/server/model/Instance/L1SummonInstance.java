@@ -135,10 +135,10 @@ public class L1SummonInstance extends L1NpcInstance {
 				}
 			}
 			L1Npc template = CObjectDB.GetNPC(npcId);
-			setting_template(template);
+			CopyFrom(template);
 		} else { 
 
-			setting_template(target.getNpcTemplate());
+			CopyFrom(target.getNpcTemplate());
 			setCurrentHp(target.getCurrentHp());
 			setCurrentMp(target.getCurrentMp());
 		}

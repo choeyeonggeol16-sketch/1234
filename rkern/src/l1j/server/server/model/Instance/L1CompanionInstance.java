@@ -437,7 +437,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         L1Npc npc = CObjectDB.GetNPC(cInfo.get_npc_id());
         if(npc == null)
             throw new IllegalArgumentException(String.format("MJCompanionInstance::set_class_info()... found companion npc template...class name %s, npc id : %d ", cInfo.get_class_name(), cInfo.get_npc_id()));
-        setting_template(npc);
+        CopyFrom(npc);
     }
     public CompanionClassInfo get_class_info(){
         return m_class_info;

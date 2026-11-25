@@ -3,9 +3,12 @@ on:
   push:
     branches:
       - rkern/nc-creature-stats-core-20261125
+      - rkern/nc-npc-prototype-copy-20261125
     paths:
       - '.github/workflows/rkern-direct-stats-migration-once.yml'
       - 'rkern/docs/nc_creature_stat_audit_20261125/TestCreatureLifecycle.java'
+      - 'rkern/src/l1j/server/server/model/L1Character.java'
+      - 'rkern/src/l1j/server/server/model/Instance/**'
 permissions:
   contents: read
 jobs:

@@ -151,7 +151,7 @@ public class L1PetInstance extends L1NpcInstance {
 				target.getNpcTemplate().get_npcId());
 
 		setId(objectId);
-		setting_template(target.getNpcTemplate());
+		CopyFrom(target.getNpcTemplate());
 		setCurrentHp(target.getCurrentHp());
 		setCurrentMp(target.getCurrentMp());
 		setExp(750);

@@ -2229,6 +2229,19 @@ public class L1Character extends L1Object {
 
 	public final int GetBasePDefend() { return m_nBasePDefend; }
 
+	// Copy resolved NPC prototype parameters into the existing creature-owned fields.
+	// The ordinary setters retain their validation and modifier semantics.
+	protected final void CopyBaseParameters(int ac, int str, int con, int dex,
+			int intelligence, int wis, int mr) {
+		InitPDefend(ac);
+		SetStatStr(str);
+		SetStatCon(con);
+		SetStatDex(dex);
+		SetStatInt(intelligence);
+		SetStatWis(wis);
+		SetOrgMDefend(mr);
+	}
+
 	protected final void InitPDefend(int value) {
 		m_nBasePDefend = value;
 		m_nAddedPDefend = 0;

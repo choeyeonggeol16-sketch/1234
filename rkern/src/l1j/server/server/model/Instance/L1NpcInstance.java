@@ -358,7 +358,7 @@ public class L1NpcInstance extends L1Character {
 
         if (template != null) {
             _specialAction = CNpcSpecialAction.GetActionId(template.get_npcId());
-            setting_template(template);
+            CopyFrom(template);
         } else {
             _specialAction = CNpcSpecialAction.NONE;
         }
@@ -387,7 +387,9 @@ public class L1NpcInstance extends L1Character {
         return rate * (ranval - seed);
     }
 
-    protected void setting_template(L1Npc template) {
+    // NPC prototype data is shared; only per-creature values are copied.
+    // Also used for morphs and the deferred pet/summon/companion construction.
+    protected final void CopyFrom(L1Npc template) {
         _npcTemplate = template;
         double rate = 0;
         double diff = 0;
@@ -409,14 +411,11 @@ public class L1NpcInstance extends L1Character {
         if (template.get_randomac() != 0) {
             ac = (int) (ac + calcRandomVal(ac, template.get_randomac(), rate));
         }
-        InitPDefend(ac);
         int bonus = template.get_randomlevel() == 0 ? 0 : (int) diff;
-        SetStatStr(cap127(template.get_str() + bonus));
-        SetStatCon(cap127(template.get_con() + bonus));
-        SetStatDex(cap127(template.get_dex() + bonus));
-        SetStatInt(cap127(template.get_int() + bonus));
-        SetStatWis(cap127(template.get_wis() + bonus));
-        SetOrgMDefend(cap127(template.get_mr() + bonus));
+        CopyBaseParameters(ac, cap127(template.get_str() + bonus),
+                cap127(template.get_con() + bonus), cap127(template.get_dex() + bonus),
+                cap127(template.get_int() + bonus), cap127(template.get_wis() + bonus),
+                cap127(template.get_mr() + bonus));
         SetTemplateAttackBonus(bonus * 2);
         int hp = template.get_hp();
         if (template.get_randomhp() != 0) {
@@ -431,6 +430,11 @@ public class L1NpcInstance extends L1Character {
         }
         setMaxMp(mp);
         setCurrentMp(mp);
+        SetDefaultParameters(template, randomlevel, rate);
+    }
+
+    // Initialize the NPC-specific defaults after the common creature parameters.
+    private void SetDefaultParameters(L1Npc template, int randomlevel, double rate) {
         setAgro(template.is_agro());
         setAgrocoi(template.is_agrocoi());
         setAgrososc(template.is_agrososc());
@@ -2203,7 +2207,7 @@ public class L1NpcInstance extends L1Character {
         }
         L1Npc npcTemplate = CObjectDB.GetNPC(transformId);
         StopRegeneration();
-        setting_template(npcTemplate);
+        CopyFrom(npcTemplate);
         StartRegeneration();
         sendShape(getCurrentSpriteId());
         for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(this)) {

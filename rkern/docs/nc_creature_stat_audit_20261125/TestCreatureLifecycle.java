@@ -5,6 +5,7 @@ import java.util.Arrays;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.templates.L1Npc;
 import l1j.server.server.model.character.skill.SkillEffectContainer;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.ItemStat;
@@ -59,6 +60,55 @@ public final class TestCreatureLifecycle {
     }
     private static void compare(int[] a,int[] b,String context){
         for(int i=0;i<a.length;i++)eq(a[i],b[i],context+" field "+i);
+    }
+    private static final class DeferredNpc extends L1NpcInstance {
+        DeferredNpc() { super(null); }
+        void apply(L1Npc t) { CopyFrom(t); }
+    }
+    private static L1Npc prototype(int id,int level,int hp,int mp,int ac,int mr) {
+        L1Npc t=new L1Npc();
+        t.set_npcId(id);t.set_name("prototype");t.set_nameid("prototype");
+        t.set_level(level);t.set_hp(hp);t.set_mp(mp);t.set_ac(ac);t.set_mr(mr);
+        t.set_str((byte)20);t.set_con((byte)18);t.set_dex((byte)16);
+        t.set_int((byte)14);t.set_wis((byte)12);
+        t.set_agro(true);t.set_agrocoi(true);t.set_exp(123);
+        return t;
+    }
+    private static void verifyNpcCopy() {
+        L1Npc t=prototype(900001,40,1000,200,-25,60);
+        L1NpcInstance a=new L1NpcInstance(t), b=new L1NpcInstance(t);
+        yes(a.getNpcTemplate()==t && b.getNpcTemplate()==t,"shared prototype");
+        eq(40,a.getLevel(),"copied level");eq(-25,a.GetBasePDefend(),"copied AC");
+        eq(60,a.GetOrgMDefend(),"copied MR");eq(20,a.GetStatStr(),"copied STR");
+        eq(18,a.GetStatCon(),"copied CON");eq(16,a.GetStatDex(),"copied DEX");
+        eq(14,a.GetStatInt(),"copied INT");eq(12,a.GetStatWis(),"copied WIS");
+        eq(1000,a.getCurrentHp(),"initial HP");eq(200,a.getCurrentMp(),"initial MP");
+        yes(a.isAgro() && a.isAgrocoi(),"copied NPC flags");
+        a.setCurrentHp(123);a.setCurrentMp(45);a.SetStatStr(30);
+        eq(1000,b.getCurrentHp(),"independent HP");eq(200,b.getCurrentMp(),"independent MP");
+        eq(20,b.GetStatStr(),"independent STR");eq(20,t.get_str(),"unchanged template");
+        DeferredNpc n=new DeferredNpc();
+        n.apply(t);eq(1000,n.getCurrentHp(),"deferred construction");
+        int hit=n.getHitup(),dmg=n.getDmgup();
+        n.addHitup(3);n.addDmgup(4);
+        L1Npc r=prototype(900002,50,2000,300,-35,70);
+        r.set_randomlevel(51);
+        for(int i=0;i<20;i++){
+            n.apply(r);
+            yes(n.getLevel()>=50 && n.getLevel()<=51,"random level");
+            eq(21,n.GetStatStr(),"random template bonus");
+            eq(hit+5,n.getHitup(),"template hit not accumulated");
+            eq(dmg+6,n.getDmgup(),"template damage not accumulated");
+            eq(2000,n.getCurrentHp(),"replacement HP");
+            eq(300,n.getCurrentMp(),"replacement MP");
+        }
+        n.apply(t);
+        eq(hit+3,n.getHitup(),"non-template hit retained");
+        eq(dmg+4,n.getDmgup(),"non-template damage retained");
+        yes(n.getNpcTemplate()==t,"replacement prototype");
+        eq(40,n.getLevel(),"replacement level");
+        eq(20,n.GetStatStr(),"replacement STR");
+        System.out.println("PASS NPC prototype sharing, per-instance state, deferred creation and repeated replacement");
     }
     public static void main(String[] args)throws Exception{
         for(int t=0;t<8;t++){
@@ -121,6 +171,7 @@ public final class TestCreatureLifecycle {
         n.SetStatWis(10);eq(n.getMaxMp(),n.getCurrentMp(),"NPC WIS MP clamp");
         for(int l=1;l<=99;l++){n.setLevel(l);eq(-40,n.getAc(),"NPC template AC");eq(80,n.GetOrgMDefend(),"NPC template MR");eq(0,n.getBaseMeleeDmgByLevelClass(),"NPC class isolation");}
         System.out.println("PASS actual NPC template isolation and vital clamp");
+        verifyNpcCopy();
         System.out.println("PASS "+checks+" production object lifecycle assertions");
     }
 }
