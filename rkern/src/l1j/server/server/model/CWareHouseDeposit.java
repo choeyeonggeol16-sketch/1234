@@ -287,22 +287,8 @@ final class CWareHouseDeposit {
             if (carryItem == null)
                 throw new IllegalStateException("Warehouse transfer missing committed item ID");
 
-			carryItem.setCount(count);
-			carryItem.setEnchantLevel(item.getEnchantLevel());
-			carryItem.setIdentified(item.isIdentified());
-			carryItem.set_durability(item.get_durability());
-			carryItem.setChargeCount(item.getChargeCount());
-			carryItem.setRemainingTime(item.getRemainingTime());
-			carryItem.setLastUsed(item.getLastUsed());
-			carryItem.setBless(item.getBless());
-			carryItem.setAttrEnchantLevel(item.getAttrEnchantLevel());
-			carryItem.setSpecialEnchant(item.getSpecialEnchant());
-			carryItem.set_bless_level(item.get_bless_level());
-            carryItem.set_bless_level2(item.get_bless_level2());
-			/**특수 인챈트 시스템**/
-			carryItem.set_item_level(item.get_item_level());
-			/**여관 리뉴얼**/
-			carryItem.setHotel_Town(item.getHotel_Town());
+            // Deposit replay keeps package and expiry from the prepared carry.
+            carryItem.CopyItemAttributesFrom(item, count, item.getChargeCount(), false, false, false);
 
 			ownerInventory.removeItemCountCache(item.getItemId(), count);
 			item.setCount(item.getCount() - count);
