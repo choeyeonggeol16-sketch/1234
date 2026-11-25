@@ -82,13 +82,19 @@ public final class CTransaction {
     private static boolean resolveConfirmedCommit(String txId, String kind,
                                                    int firstOwner, int secondOwner,
                                                    OutcomeUnknownException uncertain) {
+        boolean confirmed = false;
         try (Connection verify = DatabaseFactory.getInstance().getConnection()) {
-            if (hasReceipt(verify, txId, kind, firstOwner, secondOwner, false)) {
-                LOG.log(Level.WARNING, "Recovered confirmed CacheD COMMIT using receipt {0}", txId);
-                return true;
-            }
+            confirmed = hasReceipt(verify, txId, kind, firstOwner, secondOwner, false);
         } catch (SQLException | RuntimeException verificationFailure) {
-            uncertain.addSuppressed(verificationFailure);
+            if (confirmed) {
+                // Closing the verification connection cannot undo a receipt
+                // that was already read from committed storage.
+                LOG.log(Level.WARNING, "Confirmed receipt connection close failed", verificationFailure);
+            } else uncertain.addSuppressed(verificationFailure);
+        }
+        if (confirmed) {
+            LOG.log(Level.WARNING, "Recovered confirmed CacheD COMMIT using receipt {0}", txId);
+            return true;
         }
         LOG.log(Level.SEVERE, "CacheD transaction result unresolved, owner frozen; receipt=" + txId,
                 uncertain);
@@ -253,13 +259,23 @@ public final class CTransaction {
             throw new SQLException("Invalid durable transaction ID");
         boolean committed = false;
         boolean commitAttempted = false;
+        boolean resetSafe = false;
         try (Connection con = DatabaseFactory.getInstance().getConnection()) {
             final boolean autoCommit = con.getAutoCommit();
             con.setAutoCommit(false);
             try {
                 if (hasReceipt(con, txId, kind, firstOwner, secondOwner, true)) {
-                    // Identical job already committed (e.g. manual retry after unknown result).
-                    con.rollback();
+                    // The matching durable receipt proves the original commit.
+                    // The current connection owns only the receipt read lock.
+                    committed = true;
+                    try {
+                        con.rollback();
+                        resetSafe = true;
+                    } catch (SQLException | RuntimeException cleanup) {
+                        // Do not restore auto-commit after a failed rollback.
+                        // Connection close/pool cleanup owns this read-only scope.
+                        LOG.log(Level.WARNING, "Confirmed receipt rollback cleanup failed", cleanup);
+                    }
                     return;
                 }
                 for (Mutation operation : operations) operation.apply(con);
@@ -267,6 +283,7 @@ public final class CTransaction {
                 commitAttempted = true;
                 con.commit();
                 committed = true;
+                resetSafe = true;
             } catch (SQLException | RuntimeException | Error failure) {
                 if (commitAttempted)
                     throw new OutcomeUnknownException("COMMIT response uncertain receipt=" + txId, failure);
@@ -277,7 +294,7 @@ public final class CTransaction {
                 }
                 throw failure;
             } finally {
-                if (committed) try { con.setAutoCommit(autoCommit); }
+                if (resetSafe) try { con.setAutoCommit(autoCommit); }
                 catch (SQLException | RuntimeException reset) {
                     LOG.log(Level.WARNING, "Committed connection reset failed", reset);
                 }
