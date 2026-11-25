@@ -5,6 +5,7 @@ on:
       - rkern/nc-inventory-carrying-weight-20261125
       - rkern/nc-ground-pick-receipt-20261125
       - rkern/nc-inventory-change-notice-20261125
+      - rkern/nc-inventory-responsibility-20261125
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,6 +25,12 @@ jobs:
         run: |
           if grep -RnE '\.[[:space:]]*_bookmarks\b' rkern/src --include='*.java' --exclude=L1ItemInstance.java; then
             echo 'Unexpected direct item bookmark field reference'
+            exit 1
+          fi
+      - name: Check item initialization ownership
+        run: |
+          if grep -Rn 'CInventory.InitializeNewItemLifetimeAndFuel' rkern/src --include='*.java'; then
+            echo 'Stale inventory initialization reference'
             exit 1
           fi
       - name: Cache existing build dependencies
