@@ -15,7 +15,7 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: rkern/src
-      - name: Enumerate reset restore and stat mutation consumers
+      - name: Enumerate all CalcStat references in the active source tree
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -26,6 +26,6 @@ jobs:
               s=p.read_text(encoding="utf-8")
               clean=lex.sub(lambda m:re.sub(r'[^\n]',' ',m.group()),s)
               for i,(a,b) in enumerate(zip(s.splitlines(),clean.splitlines()),1):
-                  if re.search(r'\b(?:ResetPrimaryStats|ResetResistanceStats|setReturnStat|setAc|SetOriginalStatStr|SetOriginalStatDex|SetOriginalStatCon|SetOriginalStatInt|SetOriginalStatWis|SetOriginalStatCha|validateSkillMod|restoreInventory|restoreEquipped|setting_template)\s*\(',b):
+                  if re.search(r'\bCalcStat\b',b):
                       print(f"{p}:{i}: {a.strip()}")
           PY
