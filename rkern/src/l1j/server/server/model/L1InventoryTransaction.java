@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.CItemList;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Warehouse.Warehouse;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -322,6 +323,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 || (!image.isStackable() && image.getCount()>CUserInventory.MAX_SIZE)) return null;
         // A grant is a NEW persistent row, never an already published world item.
         // Transferring an owned item must use transfer() with its preimage check.
+        CItemList.requireDetached(image);
         if (image.getId() > 0 && L1World.getInstance().findObject(image.getId()) != null)
             throw new IllegalStateException("Reward must be a detached item: " + image.getId());
         L1ItemInstance prepared=copy(image);initializeNewGrant(prepared);
@@ -860,8 +862,11 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         if(!submitted)releaseGates();
     }
     static L1ItemInstance copy(L1ItemInstance item) {
-        L1ItemInstance result=Warehouse.transferCopy(item,item.getId(),Math.max(1,item.getCount()),item.getChargeCount());
-        result.setCount(item.getCount());result.setEquipped(item.isEquipped());return result;
+        // A prepared new reward may not have its ID yet; grantCopyPrepared
+        // reserves one only if a separate row is actually needed.
+        L1ItemInstance result = item.CopyDetachedImage(item.getId(), item.getCount(), item.getChargeCount());
+        result.setEquipped(item.isEquipped());
+        return result;
     }
     private static boolean mergeable(L1ItemInstance a,L1ItemInstance b) {
         return L1ItemInstance.CanMergeStack(a,b);
