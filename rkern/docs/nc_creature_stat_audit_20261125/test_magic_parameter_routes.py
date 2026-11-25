@@ -49,7 +49,7 @@ public class MagicAudit {
          if(mode==1||mode==3)a._targetPc=dst;else a._targetNpc=dst;
          for(int i=0;i<50;i++){
            int result=a.calcMrDefense(1000);
-           if(result<0||result>1000)throw new AssertionError(result);
+           if(result<10||result>1050)throw new AssertionError(result);
          }
          if(src.spReads!=50||dst.mrReads!=50||src.levelReads!=50||dst.levelReads!=50)throw new AssertionError("wrong creature");
          count+=50;
