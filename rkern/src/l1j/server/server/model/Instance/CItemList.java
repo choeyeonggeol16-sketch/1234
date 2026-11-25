@@ -51,14 +51,17 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         final long cachedEpoch = weightEpoch;
         final long cached = carryingWeight;
         if (cached >= 0 && cachedEpoch == epoch) return cached;
-        return ValidateCarringWeight();
+        return refreshCarryingWeight(false);
     }
 
+    /** Explicit OFF-style validation; rebuild even if the cached value is clean. */
+    public long ValidateCarringWeight() { return refreshCarryingWeight(true); }
+
     /** Rebuild on membership or template-generation changes; no snapshot. */
-    public synchronized long ValidateCarringWeight() {
+    private synchronized long refreshCarryingWeight(boolean force) {
         for (;;) {
             final long epoch = L1Item.WeightEpoch();
-            if (carryingWeight >= 0 && weightEpoch == epoch) return carryingWeight;
+            if (!force && carryingWeight >= 0 && weightEpoch == epoch) return carryingWeight;
             long sum = 0;
             for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
                 sum += item.getWeight();
