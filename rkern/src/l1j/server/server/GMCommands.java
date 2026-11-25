@@ -10,6 +10,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +34,7 @@ import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.command.L1Commands;
+import l1j.server.server.command.executor.L1CommandExecutor;
 import l1j.server.server.command.executor.L1AllBuff;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
 import l1j.server.server.datatables.AccountSettlementTable;
@@ -245,202 +251,324 @@ public class GMCommands {
 		/** 파일로그저장 **/
 		LoggerInstance.getInstance().addCommand(gm.getName() + ": " + cmd + " " + param);
 
-		switch (cmd) {
-		case "투견":
+		final L1CommandExecutor handler = builderCmdMap.get(cmd);
+		if (handler == null) {
+			SC_SystemMessage.send(gm, "[Command] 커멘드 " + cmd + " 는 존재하지 않습니다. ");
+			return;
+		}
+		handler.execute(gm, cmd, param);
+
+	}
+
+	// OFF BuilderCmdHandler: command name -> direct handler, registered once.
+	private final Map<String, L1CommandExecutor> builderCmdMap = loadBuilderCmdHandler();
+
+	private Map<String, L1CommandExecutor> loadBuilderCmdHandler() {
+		final Map<String, L1CommandExecutor> loaded = new LinkedHashMap<>(160);
+		loaded.put("투견", (gm, cmd, param) -> {
 			DogFightCommandExecutor.do_execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "펫":
+
+
+		});
+		loaded.put("펫", (gm, cmd, param) -> {
 			CompanionCommandExecutor.exec(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "결투":
+
+
+		});
+		loaded.put("결투", (gm, cmd, param) -> {
 			test_lfc(gm, param);
-			break;
-		case "인형박스":
+
+
+		});
+		loaded.put("인형박스", (gm, cmd, param) -> {
 			AlchemyProbabilityBox.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "도움말":
-			showHelp(gm);
-			break;
-		case "혈맹정보":
+
+
+		});
+		loaded.put("도움말", (gm, cmd, param) -> {
+			showHelp(gm, param);
+
+
+		});
+		loaded.put("혈맹정보", (gm, cmd, param) -> {
 			searchclaner(gm, param);
-			break;
-		case "유저도움말":
+
+
+		});
+		loaded.put("유저도움말", (gm, cmd, param) -> {
 			SC_ShowHelp.send(gm, 1);
-			break;
-		case "케릭검사":
+
+
+		});
+		loaded.put("케릭검사", (gm, cmd, param) -> {
 			chainfo(gm, param);
-			break;
+
 //		case "자동트리":
 //			gm.isAutoTreeple = true;
 //			break;
-		case "케릭삭제":
+
+		});
+		loaded.put("케릭삭제", (gm, cmd, param) -> {
 			standBy77(gm, param);
-			break;
 
-		case "기운축복":
+
+		});
+		loaded.put("기운축복", (gm, cmd, param) -> {
 			Blessleaf(gm, param);
-			break;
-		case "무기인챈성공":
-			EnchantWeaponSuccess(gm, param);
-			break;
-		case "방어인챈성공":
-			EnchantArmorSuccess(gm, param);
-			break;
-		case "계정검사":
-			AccountCheck(gm, param);
-			break;
-		case "계정확인":
-			AccountCheck1(gm, param);
-			break;
-		case "보스":
-			addEventBoss(gm, param);
-			break;
-		case "혈맹포인트":
-			혈맹포인트(gm);
-			break;
-		case "던전타이머":
-			DungeonTimeLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "저주":
-			CurseCharacter(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "저주초기화":
 
+
+		});
+		loaded.put("무기인챈성공", (gm, cmd, param) -> {
+			EnchantWeaponSuccess(gm, param);
+
+
+		});
+		loaded.put("방어인챈성공", (gm, cmd, param) -> {
+			EnchantArmorSuccess(gm, param);
+
+
+		});
+		loaded.put("계정검사", (gm, cmd, param) -> {
+			AccountCheck(gm, param);
+
+
+		});
+		loaded.put("계정확인", (gm, cmd, param) -> {
+			AccountCheck1(gm, param);
+
+
+		});
+		loaded.put("보스", (gm, cmd, param) -> {
+			addEventBoss(gm, param);
+
+
+		});
+		loaded.put("혈맹포인트", (gm, cmd, param) -> {
+			혈맹포인트(gm);
+
+
+		});
+		loaded.put("던전타이머", (gm, cmd, param) -> {
+			DungeonTimeLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
+
+
+		});
+		loaded.put("저주", (gm, cmd, param) -> {
+			CurseCharacter(new CommandArgs().setOwner(gm).setParam(param));
+
+
+		});
+		loaded.put("저주초기화", (gm, cmd, param) -> {
 			CurseInitializeCharacter(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "인챈트시스템":
+
+
+		});
+		loaded.put("인챈트시스템", (gm, cmd, param) -> {
 			ItemEnchantSystemLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "캡챠":
+
+
+		});
+		loaded.put("캡챠", (gm, cmd, param) -> {
 			CaptchaLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "캐릭터상태":
+
+
+		});
+		loaded.put("캐릭터상태", (gm, cmd, param) -> {
 			setCharacterInstanceStatus(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "배틀시스템":
+
+
+		});
+		loaded.put("배틀시스템", (gm, cmd, param) -> {
 			CombatLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "북시스템":
+
+
+		});
+		loaded.put("북시스템", (gm, cmd, param) -> {
 			BQSLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "출석체크":
+
+
+		});
+		loaded.put("출석체크", (gm, cmd, param) -> {
 			AttendanceLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
-		case "강제리스":
+
+
+		});
+		loaded.put("강제리스", (gm, cmd, param) -> {
 			강제리스(gm, param);
-			break;
-		case "표기셋팅":
+
+
+		});
+		loaded.put("표기셋팅", (gm, cmd, param) -> {
 			setPresentationCode(gm, param);
-			break;
-		case "마법회피율":
+
+
+		});
+		loaded.put("마법회피율", (gm, cmd, param) -> {
 			findMagicDodge(gm, param);
-			break;
-		case "오브젝트리스트":
+
+
+		});
+		loaded.put("오브젝트리스트", (gm, cmd, param) -> {
 			showObjectList(gm, param);
-			break;
-	    case "오토선물":
+
+
+		});
+		loaded.put("오토선물", (gm, cmd, param) -> {
 			if(gm.getAccessLevel() != Config.SUB_GMCODE && gm.getAccessLevel() == Config.GMCODE) {
 	          autoAllPresent(gm, param);
 			} else {
 				gm.sendPackets("\\aA■ 부운영자의 권한으로 사용할 수 없습니다. ■");
 			}
-			break;
-		case "보호모드":
-			setProtectionMode(gm, param);
-			break;
-		case "전체채팅":
-			전체채팅(gm, param);
-			break;
-		case "채팅차단":
-			일반채팅(gm, param);
-			break;
-		case "넷세이프":
-			CPacketFilter.commands(gm, param);
-			break;
-		case "킬차트":
-			KdaLoadManager.commands(gm, param);
-			break;
-		case "커맨드":
-			SC_ShowCmd.sendText(gm, "cmd.");
-			break;
-		case "워리스트":
-			showWarList(gm);
-			break;
-		case "캐릭압류":
-			setCharBlock(gm, param);
-			break;
-		case "캐릭압류해제":
-			setCharBlockDelete(gm, param);
-			break;
-		case "/":
-			showNextEffect(gm);
-			break;
-		case "이펙":
-			showEffectInit(gm, param);
-			break;
-		case "혈마크":
-			clanMark(gm, param);
-			break;
-	
-		case "인스턴스":
-			InstanceLoadManager.commands(gm, param);
-			break;
-		case "레이드":
-			RaidLoadManager.commands(gm, param);
-			break;
-		case "구슬":
-			CollectionLoadManager.commands(gm, param);
-			break;
-		case "구슬조회":
-			L1NeigeSaveChar.commands(gm, param);
-			break;
-		case "가라":
-			nocall(gm, param);
-			break;
-		case "랭킹시스템":
-			RankLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
-			break;
 
-		case "혈맹랭킹갱신":
+
+		});
+		loaded.put("보호모드", (gm, cmd, param) -> {
+			setProtectionMode(gm, param);
+
+
+		});
+		loaded.put("전체채팅", (gm, cmd, param) -> {
+			전체채팅(gm, param);
+
+
+		});
+		loaded.put("채팅차단", (gm, cmd, param) -> {
+			일반채팅(gm, param);
+
+
+		});
+		loaded.put("넷세이프", (gm, cmd, param) -> {
+			CPacketFilter.commands(gm, param);
+
+
+		});
+		loaded.put("킬차트", (gm, cmd, param) -> {
+			KdaLoadManager.commands(gm, param);
+
+
+		});
+		loaded.put("커맨드", (gm, cmd, param) -> {
+			SC_ShowCmd.sendText(gm, "cmd.");
+
+
+		});
+		loaded.put("워리스트", (gm, cmd, param) -> {
+			showWarList(gm);
+
+
+		});
+		loaded.put("캐릭압류", (gm, cmd, param) -> {
+			setCharBlock(gm, param);
+
+
+		});
+		loaded.put("캐릭압류해제", (gm, cmd, param) -> {
+			setCharBlockDelete(gm, param);
+
+
+		});
+		loaded.put("/", (gm, cmd, param) -> {
+			showNextEffect(gm);
+
+
+		});
+		loaded.put("이펙", (gm, cmd, param) -> {
+			showEffectInit(gm, param);
+
+
+		});
+		loaded.put("혈마크", (gm, cmd, param) -> {
+			clanMark(gm, param);
+
+
+		});
+		loaded.put("인스턴스", (gm, cmd, param) -> {
+			InstanceLoadManager.commands(gm, param);
+
+
+		});
+		loaded.put("레이드", (gm, cmd, param) -> {
+			RaidLoadManager.commands(gm, param);
+
+
+		});
+		loaded.put("구슬", (gm, cmd, param) -> {
+			CollectionLoadManager.commands(gm, param);
+
+
+		});
+		loaded.put("구슬조회", (gm, cmd, param) -> {
+			L1NeigeSaveChar.commands(gm, param);
+
+
+		});
+		loaded.put("가라", (gm, cmd, param) -> {
+			nocall(gm, param);
+
+
+		});
+		loaded.put("랭킹시스템", (gm, cmd, param) -> {
+			RankLoadManager.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
+
+
+		});
+		loaded.put("혈맹랭킹갱신", (gm, cmd, param) -> {
 			L1ClanRanking.getInstance().gmcommand();
 			gm.sendPackets("\\aA■ 혈맹레이드 랭킹이 갱신 되었습니다 ■");
-			break;
-		case "아이템":
+
+
+		});
+		loaded.put("아이템", (gm, cmd, param) -> {
 			if(gm.getAccessLevel() != Config.SUB_GMCODE && gm.getAccessLevel() == Config.GMCODE) {
 			execute(gm, param, param);
 		
 			} else {
 				gm.sendPackets("\\aA■ 부운영자의 권한으로 사용할 수 없습니다. ■");
 			}
-			break;
-		case "아데나":
+
+
+		});
+		loaded.put("아데나", (gm, cmd, param) -> {
 			execute1(gm, param, param);
-			break;
-		case "이벤트":
+
+
+		});
+		loaded.put("이벤트", (gm, cmd, param) -> {
 			Event(gm, param);
-			break;
-		case "이벤트상점":
+
+
+		});
+		loaded.put("이벤트상점", (gm, cmd, param) -> {
 			BossController.handleShopAlarmCommand(gm, param);
-			break;
+
 //		case "테스팅":
 //			gm.sendPackets(new RActionUI(RActionUI.EVENT_SYSTEM, 45752, true));
 //			break;
 
-		case "잠재력조회":
+		});
+		loaded.put("잠재력조회", (gm, cmd, param) -> {
 			아아(gm, param);
-			break;
-		case "주변밴":
+
+
+		});
+		loaded.put("주변밴", (gm, cmd, param) -> {
 			LargeAreaBan(gm, param);
-			break;
-		case "광역밴":
+
+
+		});
+		loaded.put("광역밴", (gm, cmd, param) -> {
 			LargeAreaIPBan(gm, param);
-			break;
-		case "아지트지급":
+
+
+		});
+		loaded.put("아지트지급", (gm, cmd, param) -> {
 			GiveHouse(gm, param);
-			break;
-		case "공성시작":
+
+
+		});
+		loaded.put("공성시작", (gm, cmd, param) -> {
 			castleWarStart(gm, param);
-			break;
+
 //		case "수배테스트":
 //			hunt(gm, param);
 //			break;
@@ -448,142 +576,222 @@ public class GMCommands {
 //			vipsetting(gm, param);
 //			break;
 
-		case "공성종료":
+		});
+		loaded.put("공성종료", (gm, cmd, param) -> {
 			castleWarExit(gm, param);
-			break;
+
 //		case "메세지테스트":
 //			gm.sendPackets(new S_TestPacket(S_TestPacket.a));
 //			gm.sendPackets(new S_UserCommands20(1, gm));
 //			break;
-		case "서버저장":
+
+		});
+		loaded.put("서버저장", (gm, cmd, param) -> {
 			serversave(gm);
-			break;
-		case "전체선물":
+
+
+		});
+		loaded.put("전체선물", (gm, cmd, param) -> {
 			allpresent(gm, param);
-			break;
-		case "압류해제":
+
+
+		});
+		loaded.put("압류해제", (gm, cmd, param) -> {
 			accountdel(gm, param);
-			break;
-		case "경험치복구":
+
+
+		});
+		loaded.put("경험치복구", (gm, cmd, param) -> {
 			returnEXP(gm, param);
-			break;
-		case "오토루팅":
+
+
+		});
+		loaded.put("오토루팅", (gm, cmd, param) -> {
 			autoloot(gm, param);
-			break;
-		case "페널티":
+
+
+		});
+		loaded.put("페널티", (gm, cmd, param) -> {
 			ExpTable.expPenaltyReLoad();
 			gm.sendPackets("■ 페널티 리로드 완료 ■");
-			break;
-		case "잠재력":
+
+
+		});
+		loaded.put("잠재력", (gm, cmd, param) -> {
 			잠재력활성화(gm, param);
-			break;
-		case "밸런스":
+
+
+		});
+		loaded.put("밸런스", (gm, cmd, param) -> {
 			CharacterBalance(gm, param);
-			break;
-		case "라이트":
+
+
+		});
+		loaded.put("라이트", (gm, cmd, param) -> {
 			maphack(gm, param);
-			break;
-		case "오픈대기":
+
+
+		});
+		loaded.put("오픈대기", (gm, cmd, param) -> {
 			standBy(gm, param);
-			break;
-		case "스텟":
+
+
+		});
+		loaded.put("스텟", (gm, cmd, param) -> {
 			fullstat(gm, param);
-			break;
-		case "상점검사":
+
+
+		});
+		loaded.put("상점검사", (gm, cmd, param) -> {
 			상점검사(gm);
-			break;
-		case "이팩트":
+
+
+		});
+		loaded.put("이팩트", (gm, cmd, param) -> {
 			effect(gm, param);
-			break;
-		case "유저인벤삭제":
+
+
+		});
+		loaded.put("유저인벤삭제", (gm, cmd, param) -> {
 			targetInventoryDelete(gm, param);
-			break;
-		case "계정추가":
+
+
+		});
+		loaded.put("계정추가", (gm, cmd, param) -> {
 			addaccount(gm, param);
-			break;
+
 //		case "\uB9E4\uC785\uC800\uC7A5":
 //			addaccount1\u0028\u0067\u006D\u002C\u0070\u0061\u0072\u0061\u006D\u0029\u003B
 //			break;
 //		case "\uB9E4\uC785\uC9C0\uAE09":
 //			\u006D\u0065\u0065\u0070\u0035\u0035\u0028\u0067\u006D\u002C\u0070\u0061\u0072\u0061\u006D\u0029\u003B
 //			break;
-		case "전체소환":
+
+		});
+		loaded.put("전체소환", (gm, cmd, param) -> {
 			allrecall(gm);
-			break;
-		case "맵인원":
+
+
+		});
+		loaded.put("맵인원", (gm, cmd, param) -> {
 			mapwho(gm, param);
-			break;
-		case "코마지급":
+
+
+		});
+		loaded.put("코마지급", (gm, cmd, param) -> {
 			SpecialEventHandler.getInstance().doGiveEventStaff();
-			break;
-		case "보스소환주문서지급":
+
+
+		});
+		loaded.put("보스소환주문서지급", (gm, cmd, param) -> {
 			SpecialEventHandler.getInstance().doGiveEventStaff2();
-			break;
-		case "토파즈지급":
+
+
+		});
+		loaded.put("토파즈지급", (gm, cmd, param) -> {
 			SpecialEventHandler.getInstance().doGiveEventStaff1();
-			break;
-		case "압류목록":
+
+
+		});
+		loaded.put("압류목록", (gm, cmd, param) -> {
 			search_banned(gm);
-			break;
-		case "암호변경":
+
+
+		});
+		loaded.put("암호변경", (gm, cmd, param) -> {
 			changePassword(gm, param);
-			break;
-		case "마을":
+
+
+		});
+		loaded.put("마을", (gm, cmd, param) -> {
 			unprison(gm, param);
-			break;
-		case "채금해제":
+
+
+		});
+		loaded.put("채금해제", (gm, cmd, param) -> {
 			chatx(gm, param);
-			break;
-		case "텔렉":
-		case ".":
+
+
+		});
+		loaded.put("텔렉", (gm, cmd, param) -> {
 			tell(gm);
-			break;
-		case "검색":
+
+
+		});
+		loaded.put(".", loaded.get("텔렉"));
+		loaded.put("검색", (gm, cmd, param) -> {
 			searchDatabase(gm, param);
-			break;
-		case "킬삭제":
+
+
+		});
+		loaded.put("킬삭제", (gm, cmd, param) -> {
 		킬삭제(gm, param);
-		break;
-		case "킬증가":
+
+
+		});
+		loaded.put("킬증가", (gm, cmd, param) -> {
 			킬증가(gm, param);
-			break;
-		case "데스삭제":
+
+
+		});
+		loaded.put("데스삭제", (gm, cmd, param) -> {
 			데스삭제(gm, param);
-			break;
-		case "데스증가":
+
+
+		});
+		loaded.put("데스증가", (gm, cmd, param) -> {
 			데스증가(gm, param);
-			break;
-		
-		case "피케이":
+
+
+		});
+		loaded.put("피케이", (gm, cmd, param) -> {
 			Pvp(gm, param);
-			break;
-		case "계정":
+
+
+		});
+		loaded.put("계정", (gm, cmd, param) -> {
 			account_Cha(gm, param);
-			break;
-		case "렙작":
+
+
+		});
+		loaded.put("렙작", (gm, cmd, param) -> {
 			levelup2(gm, param);
-			break;
-		case "상점추방":
+
+
+		});
+		loaded.put("상점추방", (gm, cmd, param) -> {
 			ShopKick(gm, param);
-			break;
-		case "감옥":
+
+
+		});
+		loaded.put("감옥", (gm, cmd, param) -> {
 			hold(gm, param);
-			break;
-		case "인벤삭제":
+
+
+		});
+		loaded.put("인벤삭제", (gm, cmd, param) -> {
 			InventoryDelete(gm, param);
-			break;
-		case "아지트리로드":
+
+
+		});
+		loaded.put("아지트리로드", (gm, cmd, param) -> {
 			reloadHouse(gm, param);
-			break;
-		case "혈맹포인트선물":
+
+
+		});
+		loaded.put("혈맹포인트선물", (gm, cmd, param) -> {
 			혈맹포인트선물(gm, param);
-			break;
-		case "혈맹포인트삭제": 
+
+
+		});
+		loaded.put("혈맹포인트삭제", (gm, cmd, param) -> {
 			혈맹포인트삭제(gm, param);
-			break;
-		case "혈맹포인트조회":
+
+
+		});
+		loaded.put("혈맹포인트조회", (gm, cmd, param) -> {
 			혈맹포인트조회(gm, param);
-			break;
+
 //		case "공속체크":
 //			gm.AttackSpeedCheck2 = 1;
 //			gm.sendPackets("\\fY허수아비를 10회공격해주세요.");
@@ -596,24 +804,36 @@ public class GMCommands {
 //			gm.magicSpeedCheck = 1;
 //			gm.sendPackets("\\fY원하는마법을 10회사용해주세요.");
 //			break;
-		case "이미지삭제":
+
+		});
+		loaded.put("이미지삭제", (gm, cmd, param) -> {
 			this.get_delete_gfx(gm);
-			break;
-		case "버경확인":
+
+
+		});
+		loaded.put("버경확인", (gm, cmd, param) -> {
 			bug_race_check(gm);
-			break;
-		case "버경조작":
+
+
+		});
+		loaded.put("버경조작", (gm, cmd, param) -> {
 			bug_race_rate(gm, param);
-			break;
-		case "보스알림":
+
+
+		});
+		loaded.put("보스알림", (gm, cmd, param) -> {
 			spawnNotifyOnOff(gm, param);
-			break;
-		case "타입":
+
+
+		});
+		loaded.put("타입", (gm, cmd, param) -> {
 			int type = Integer.parseInt(param);
 			gm.sendPackets("\\aA요리타입 : " + type);
 			SC_PacketBox.send(gm, 53, type, 1800);
-			break;
-		case "전체버프":
+
+
+		});
+		loaded.put("전체버프", (gm, cmd, param) -> {
 			try {
 				StringTokenizer st = new StringTokenizer(param);
 				String status = st.nextToken();
@@ -623,8 +843,10 @@ public class GMCommands {
 				SC_ChatPacket.sendDirect(gm, gm, " 1:풀업 2:축복  3:흑사 4:코마");
 				SC_ChatPacket.sendDirect(gm, gm, "----------------------------------------------------");
 			}
-			break;
-		case "리로드몬스폰":
+
+
+		});
+		loaded.put("리로드몬스폰", (gm, cmd, param) -> {
 			try {
 				StringTokenizer st = new StringTokenizer(param);
 				int mapid = Integer.parseInt(st.nextToken());
@@ -637,8 +859,10 @@ public class GMCommands {
 				gm.sendPackets(".리로드몬스폰 (맵아이디)");
 			}
 
-			break;
-		case "성혈조작":
+
+
+		});
+		loaded.put("성혈조작", (gm, cmd, param) -> {
 			try {
 				StringTokenizer st = new StringTokenizer(param);
 				String name = st.nextToken();
@@ -657,8 +881,10 @@ public class GMCommands {
 				gm.sendPackets(".성혈조작 [혈이름] [성번호] 입력");
 				gm.sendPackets("켄트1,오크2,윈다3,기란4,하이5,웰던6,아덴7,디아드8");
 			}
-			break;
-		case "상점리로드":
+
+
+		});
+		loaded.put("상점리로드", (gm, cmd, param) -> {
 			try {
 				int npcid = Integer.parseInt(param);
 				L1Npc npc = CObjectDB.GetNPC(npcid);
@@ -667,8 +893,10 @@ public class GMCommands {
 			} catch (Exception e) {
 				gm.sendPackets(".상점리로드 엔피씨ID");
 			}
-			break;
-		case "혈가입":
+
+
+		});
+		loaded.put("혈가입", (gm, cmd, param) -> {
 			try {
 				StringTokenizer st = new StringTokenizer(param);
 				String name = st.nextToken();
@@ -715,8 +943,10 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			} catch (Exception e) {
 				gm.sendPackets(".혈가입 [캐릭명] [혈맹이름] 입력");
 			}
-			break;
-		case "혈탈퇴":
+
+
+		});
+		loaded.put("혈탈퇴", (gm, cmd, param) -> {
 			try {
 				StringTokenizer tokenizer = new StringTokenizer(param);
 				String pcName = tokenizer.nextToken();
@@ -736,13 +966,11 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			} catch (Exception e) {
 				gm.sendPackets(".혈탈퇴 [캐릭명] 입력");
 			}
-			break;
 
-		default:
-			SC_SystemMessage.send(gm, "[Command] 커멘드 " + cmd + " 는 존재하지 않습니다. ");
-			break;
-		}
 
+		});
+		loaded.put("h", (gm, cmd, param) -> showHelp(gm, param));
+		return Collections.unmodifiableMap(loaded);
 	}
 
 
@@ -842,51 +1070,42 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		return _rnd.nextInt(max - min + 1) + min;
 	}
 	// TODO GM 커멘드 추가
-	private void showHelp(L1PcInstance gm) {
-		SC_ChatPacket.sendDirect(gm, gm, "\\aA---------------- [\\aGGM\\aA] \\aG[\\aGCOMMANDS\\aA] ---------------");
-		SC_ChatPacket.sendDirect(gm, gm, "[기본]:.귀환.출두.소환.위치.누구.마을.감옥.가라.답장", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "[설정]:.무인.변신.레벨.피케이.리로드.혈탈퇴.오토루팅", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .드랍불가 .창고불가 .교환불가.오토루팅.전체정리", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .오픈대기.편지삭제.인벤삭제.공성시간.공성시작", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "			          .공성종료.성혈조작.압류해제.압류목록.아지트지급", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "			          .밸런스.상점리로드.혈맹경험치.데드락", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "			          .정리.포트변경.상점검사", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "[계정]:.셋팅.정보.계정.암호변경.계정압류.영구추방", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "          .아이피추방.광역추방.계정정보.계정추가.페널티", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "          .경험치복구.퀴즈변경.밴아이피.상점추방.유저인벤삭제", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "          .캐릭압류 .캐릭압류해제", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "[검사]:.이동.추방.조회.감시.검색.채금.공개채금.채금해제", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "[서버]:.스폰.배치.몬스터.아이템.전체선물.랭킹갱신", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "[버프]:.버프.소생.속도.렙선물.전체버프.통합버프", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .개인버프.인벤이미지", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .이미지.서먼.아이콘.이미지.이펙트.렙작", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "[기타]:.피바.투명.서버저장.파티소환", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .악마왕 .영자상점(1~3)", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .기운축복", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          룬스톤카배 .룬스톤디스 .룬스톤데페", 1);
-		//(new SC_ChatPacket(gm, "	          진데스데불 진데스론론 .진데스포효 .진데스섬체", 1)).send(gm);
-		//(new SC_ChatPacket(gm, "	          진데스커검 .진데스태풍 .진데스악몽 .진데스나발", 1)).send(gm);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .아머작업 .카배작업 .계정검사", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          데몬작업 .데스작업 .타락작업", 1);
-		//(new SC_ChatPacket(gm, "	          .이벤트.노딜.계좌.버프아이콘 .케릭검사", 1)).send(gm);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹밴.주변밴.광역밴", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .아이템삭제 .아지트리로드", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .데스크,데방,데무 .텔렉", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .레이드 .인스턴스 .랭킹시스템 .잠수모드 .잠수해제", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .킬차트 .넷세이프", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .보호모드 .네트워크  .좌표", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .오브젝트리스트 .리로드몬스폰(사용법있음) ", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .배틀시스템 .캡챠(오토방지) .캐릭터상태", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .인챈트시스템(tb_enchanties..)", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .저주 .저주초기화 .던전타이머", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹정보", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .푸쉬시스템 .혈마크 .계정확인 .보스", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .무기인챈성공 .방어인챈성공 .인형박스", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .엔피씨다운 .전체채팅", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .혈맹포인트조회 .혈맹포인트삭제 .혈맹포인트선물", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .킬증가 .킬삭제 .데스증가 .데스삭제 .잠재력조회", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "	          .맵인원 .서버초기화", 1);
-		SC_ChatPacket.sendDirect(gm, gm, "\\aA------------------ [\\aGGM\\aA] \\aG[\\aGEND\\aA] -------------------");
+	private void showHelp(L1PcInstance gm, String filter) {
+		final int access = gm.getAccessLevel();
+		final boolean full = access == Config.GMCODE;
+		final boolean sub = access == Config.SUB_GMCODE;
+		if (!full && !sub) return;
+		String keyword = filter == null ? "" : filter.trim().toLowerCase(Locale.ROOT);
+		if (keyword.startsWith(".")) keyword = keyword.substring(1);
+		final Set<String> names = new LinkedHashSet<>();
+		for (L1Command definition : L1Commands.availableCommandList(Integer.MAX_VALUE)) {
+			if (definition.isExecutable() && (access == definition.getLevel() || sub)) {
+				names.add(definition.getName());
+			}
+		}
+		for (String name : builderCmdMap.keySet()) {
+			final L1Command definition = L1Commands.get(name);
+			if (definition != null && access != definition.getLevel() && !sub) continue;
+			if (sub && ("아이템".equals(name) || "오토선물".equals(name))) continue;
+			names.add(name);
+		}
+		SC_SystemMessage.send(gm, "[GM] 명령어 목록 (.h 검색어)");
+		final StringBuilder line = new StringBuilder(96);
+		int count = 0;
+		int columns = 0;
+		for (String name : names) {
+			if (!name.toLowerCase(Locale.ROOT).contains(keyword)) continue;
+			if (columns != 0) line.append("  ");
+			line.append('.').append(name);
+			count++;
+			if (++columns == 6) {
+				SC_SystemMessage.send(gm, line.toString());
+				line.setLength(0);
+				columns = 0;
+			}
+		}
+		if (columns != 0) SC_SystemMessage.send(gm, line.toString());
+		SC_SystemMessage.send(gm, "[GM] " + count + "개 명령어");
 	}
 
 

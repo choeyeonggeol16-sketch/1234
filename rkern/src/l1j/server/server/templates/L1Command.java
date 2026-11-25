@@ -18,15 +18,35 @@
  */
 package l1j.server.server.templates;
 
+import java.util.function.Supplier;
+import l1j.server.server.command.executor.L1CommandExecutor;
+import l1j.server.server.model.Instance.L1PcInstance;
+
 public class L1Command {
 	private final String _name;
 	private final int _level;
 	private final String _executorClassName;
+	private final Supplier<L1CommandExecutor> _factory;
 
 	public L1Command(String name, int level, String executorClassName) {
+		this(name, level, executorClassName, null);
+	}
+
+	public L1Command(String name, int level, String executorClassName, Supplier<L1CommandExecutor> factory) {
 		_name = name;
 		_level = level;
 		_executorClassName = executorClassName;
+		_factory = factory;
+	}
+
+	public boolean isExecutable() {
+		return _factory != null;
+	}
+
+	public boolean execute(L1PcInstance pc, String name, String arg) {
+		if (_factory == null) return false;
+		_factory.get().execute(pc, name, arg);
+		return true;
 	}
 
 	public String getName() {
