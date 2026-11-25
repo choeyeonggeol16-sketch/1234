@@ -724,11 +724,10 @@ public class L1PcInstance extends L1Character {
 	private int _baseBowHitup = 0;
 
     // Level/class snapshot; STR/DEX/INT table values remain in CalcStat.
-    private final PcBaseAbilityCache _pcBaseAbilityCache = new PcBaseAbilityCache();
+    private final PcBaseAbilityCache m_BaseParam = new PcBaseAbilityCache();
 
     public PcBaseAbilityCache.BaseAbility getBaseAbility() {
-        _pcBaseAbilityCache.refresh(this);
-        return _pcBaseAbilityCache.get();
+        return m_BaseParam.ValidateBaseData(this);
     }
 
 	private int _baseMagicHitup = 0; // 베이스 스탯에 의한 마법 명중
@@ -2193,7 +2192,7 @@ public class L1PcInstance extends L1Character {
 
 	public void setType(int i) {
 		_type = i;
-        _pcBaseAbilityCache.invalidate();
+        m_BaseParam.invalidate();
 	}
 
 	public short getAccessLevel() {
@@ -5441,59 +5440,59 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_tamTime = time;
 	}
 	
-	private final PcBaseAbilityCache _baseCache = new PcBaseAbilityCache();
 
 	public PcBaseAbilityCache getBaseCache() {
-		return _baseCache;
+		m_BaseParam.refresh(this);
+		return m_BaseParam;
 	}
 	/** 베이스 근거리대미지(클래스/레벨) */
 	public int getBaseMeleeDmgByLevelClass() {
-	    return _baseCache.get().get근거리대미지();
+	    return getBaseAbility().get근거리대미지();
 	}
 	/** 베이스 원거리대미지(클래스/레벨) */
 	public int getBaseBowDmgByLevelClass() {
-	    return _baseCache.get().get원거리대미지();
+	    return getBaseAbility().get원거리대미지();
 	}
 	/** 베이스 마법대미지(클래스/레벨) */
 	public int getBaseMagicDmgByLevelClass() {
-	    return _baseCache.get().get마법대미지();
+	    return getBaseAbility().get마법대미지();
 	}
 	/** 베이스 근거리명중(클래스/레벨) */
 	public int getBaseMeleeHitByLevelClass() {
-	    return _baseCache.get().get근거리명중률();
+	    return getBaseAbility().get근거리명중률();
 	}
 	/** 베이스 원거리명중(클래스/레벨) */
 	public int getBaseBowHitByLevelClass() {
-	    return _baseCache.get().get원거리명중률();
+	    return getBaseAbility().get원거리명중률();
 	}
 	/** 베이스 마법적중(클래스/레벨) */
 	public int getBaseMagicHitByLevelClass() {
-	    return _baseCache.get().get마법적중();
+	    return getBaseAbility().get마법적중();
 	}
 	/** 베이스 근거리치명(클래스/레벨) */
 	public int getBaseMeleeCriByLevelClass() {
-	    return _baseCache.get().get근거리치명률();
+	    return getBaseAbility().get근거리치명률();
 	}
 	/** 베이스 원거리치명(클래스/레벨) */
 	public int getBaseBowCriByLevelClass() {
-	    return _baseCache.get().get원거리치명률();
+	    return getBaseAbility().get원거리치명률();
 	}
 	/** 베이스 마법치명(클래스/레벨) */
 	public int getBaseMagicCriByLevelClass() {
-	    return _baseCache.get().get마법치명타();
+	    return getBaseAbility().get마법치명타();
 	}
 	/** 베이스 PVP DR(클래스/레벨) */
 	public int getBasePvpDrByLevelClass() {
-	    return _baseCache.get().getPVP대미지리덕션();
+	    return getBaseAbility().getPVP대미지리덕션();
 	}
 	/** 베이스 매직레벨(클래스/레벨) */
 	public int getBaseMLByLevelClass() {
-	    return _baseCache.get().get매직레벨();
+	    return getBaseAbility().get매직레벨();
 	}
 	
     public void resetBaseAll() {
-   	 _baseCache.invalidate();
-   	 _baseCache.refresh(this);
+   	 m_BaseParam.invalidate();
+   	 m_BaseParam.refresh(this);
    }
 	
 	public void resetBaseAc() {
