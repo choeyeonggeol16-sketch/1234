@@ -1,38 +1,29 @@
 package l1j.server.server.command;
 
 import java.util.Objects;
-import java.util.function.Supplier;
 import l1j.server.server.command.executor.L1CommandExecutor;
-import l1j.server.server.templates.L1Command;
+import l1j.server.server.model.Instance.L1PcInstance;
 
-/** OFF command entry adapted to RKern's existing permission policy. */
-public final class BuilderCmdPairType extends L1Command {
+/** Immutable Builder command entry: name, permission policy and direct execution function. */
+public final class BuilderCmdPairType {
+    private final String name;
+    private final int requiredBuilderLevel;
     private final boolean legacy;
-    private L1CommandExecutor direct;
+    private final L1CommandExecutor function;
 
-    private BuilderCmdPairType(String name, int level, String executorClassName,
-                               Supplier<L1CommandExecutor> factory, boolean legacy) {
-        super(name, level, executorClassName, factory);
+    public BuilderCmdPairType(String name, int requiredBuilderLevel, boolean legacy,
+                              L1CommandExecutor function) {
+        this.name = Objects.requireNonNull(name);
+        this.requiredBuilderLevel = requiredBuilderLevel;
         this.legacy = legacy;
+        this.function = Objects.requireNonNull(function);
     }
 
-    public static BuilderCmdPairType legacy(String name, int level, String executorClassName,
-                                           Supplier<L1CommandExecutor> factory) {
-        return new BuilderCmdPairType(name, level, executorClassName, factory, true);
-    }
-
-    public static BuilderCmdPairType direct(String name, L1CommandExecutor handler) {
-        BuilderCmdPairType entry = new BuilderCmdPairType(name, 0, "", null, false);
-        entry.bindDirect(handler);
-        return entry;
-    }
-
+    public String getName() { return name; }
+    public int getLevel() { return requiredBuilderLevel; }
     public boolean isLegacy() { return legacy; }
-    public L1CommandExecutor directHandler() { return direct; }
 
-    /** Only during startup registration. */
-    public void bindDirect(L1CommandExecutor handler) {
-        if (direct != null) throw new IllegalStateException("Duplicate builder command: " + getName());
-        direct = Objects.requireNonNull(handler);
+    public void execute(L1PcInstance pc, String command, String arguments) {
+        function.execute(pc, command, arguments);
     }
 }

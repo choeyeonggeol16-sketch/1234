@@ -16,7 +16,7 @@ import l1j.server.server.Account;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.LoginController;
-import l1j.server.server.GMCommands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.SkillCheck;
 import l1j.server.server.datatables.CharacterSlotItemTable;
 import l1j.server.server.datatables.CharacterTable;
@@ -263,7 +263,7 @@ public final class CS_EnterWorld {
         data.mailCount = CheckMail(data.pc);
         data.excludes = readExcludeList(data.pc.getId());
         data.slotItems = CharacterSlotItemTable.getInstance().loadCharSlots(data.pc.getId());
-        data.blocked = GMCommands.isCharacterBlock(charName);
+        data.blocked = BuilderCmdHandler.isCharacterBlock(charName);
         data.passiveIds = PassiveUserLoader.readIds(data.pc.getId());
         data.dungeonProgress = DungeonTimeProgressLoader.readSnapshot(data.pc.getId(), data.pc.getAccountName());
         data.nBuffRows = readNBuffSnapshot(data.pc.getId(), sessionAccount.getAccountId());

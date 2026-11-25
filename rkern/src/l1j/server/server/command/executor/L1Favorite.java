@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import l1j.server.server.GMCommands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -84,7 +84,7 @@ public class L1Favorite implements L1CommandExecutor {
 					cmd.append(st.nextToken() + " ");
 				}
 				SC_SystemMessage.send(pc, cmd + " 를 실행합니다. ");
-				GMCommands.getInstance().handleCommands(pc, cmd.toString());
+				BuilderCmdHandler.getInstance().BuilderCmd2Handler(pc, cmd.toString());
 			}
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, cmdName + " 셋팅 [커멘드명] " + "| " + cmdName + " 보기 | " + cmdName

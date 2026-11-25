@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,8 +33,88 @@ import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.command.BuilderCmdPairType;
-import l1j.server.server.command.L1Commands;
 import l1j.server.server.command.executor.L1CommandExecutor;
+import l1j.server.server.command.executor.L1Patrol;
+import l1j.server.server.command.executor.L1CheckCharacter;
+import l1j.server.server.command.executor.L1Search1;
+import l1j.server.server.command.executor.L1AccountBanKick;
+import l1j.server.server.command.executor.L1CheckPassword;
+import l1j.server.server.command.executor.L1ToSpawn;
+import l1j.server.server.command.executor.L1ChatNG2;
+import l1j.server.server.command.executor.L1AttackLog;
+import l1j.server.server.command.executor.L1RessBuff;
+import l1j.server.server.command.executor.L1RangeKick;
+import l1j.server.server.command.executor.L1GMRoom;
+import l1j.server.server.command.executor.L1ChangeWeather;
+import l1j.server.server.command.executor.L1Who;
+import l1j.server.server.command.executor.L1LetterCommand;
+import l1j.server.server.command.executor.L1DescIdWeapon;
+import l1j.server.server.command.executor.L1DescIdArmor;
+import l1j.server.server.command.executor.L1DescId;
+import l1j.server.server.command.executor.L1DatabaseInit;
+import l1j.server.server.command.executor.L1Level;
+import l1j.server.server.command.executor.L1LevelPresent;
+import l1j.server.server.command.executor.L1SpawnRobot;
+import l1j.server.server.command.executor.L1Reload;
+import l1j.server.server.command.executor.L1ReloadTrap;
+import l1j.server.server.command.executor.L1ResetTrap;
+import l1j.server.server.command.executor.L1ServerMessage;
+import l1j.server.server.command.executor.L1SpawnCmd;
+import l1j.server.server.command.executor.L1FakeCharacter;
+import l1j.server.server.command.executor.L1InsertSpawn;
+import l1j.server.server.command.executor.L1BanIp;
+import l1j.server.server.command.executor.L1Buff;
+import l1j.server.server.command.executor.L1BuffIcon;
+import l1j.server.server.command.executor.L1Poly;
+import l1j.server.server.command.executor.L1Visible;
+import l1j.server.server.command.executor.L1Summon;
+import l1j.server.server.command.executor.L1Present;
+import l1j.server.server.command.executor.L1GMQuestion;
+import l1j.server.server.command.executor.L1CreateItemSet;
+import l1j.server.server.command.executor.L1ImPactGfxid1;
+import l1j.server.server.command.executor.L1ImPactGfxid;
+import l1j.server.server.command.executor.L1Status;
+import l1j.server.server.command.executor.L1Ress;
+import l1j.server.server.command.executor.L1Recall;
+import l1j.server.server.command.executor.L1Speed;
+import l1j.server.server.command.executor.L1ShowTrap;
+import l1j.server.server.command.executor.L1Thread;
+import l1j.server.server.command.executor.L1Burf;
+import l1j.server.server.command.executor.L1AddSkill;
+import l1j.server.server.command.executor.L1SkillIcon;
+import l1j.server.server.command.executor.L1EventSpawn;
+import l1j.server.server.command.executor.L1Favorite;
+import l1j.server.server.command.executor.L1ItemDelete;
+import l1j.server.server.command.executor.L1SKick;
+import l1j.server.server.command.executor.L1Action;
+import l1j.server.server.command.executor.L1Echo;
+import l1j.server.server.command.executor.L1NpcDown;
+import l1j.server.server.command.executor.L1PowerKick;
+import l1j.server.server.command.executor.L1NpcShopSwitch;
+import l1j.server.server.command.executor.L1Loc;
+import l1j.server.server.command.executor.L1Move;
+import l1j.server.server.command.executor.L1ServerName;
+import l1j.server.server.command.executor.L1GfxId;
+import l1j.server.server.command.executor.L1SkillEffect;
+import l1j.server.server.command.executor.L1InvGfxId;
+import l1j.server.server.command.executor.L1AdShop;
+import l1j.server.server.command.executor.L1Clear;
+import l1j.server.server.command.executor.L1Describe;
+import l1j.server.server.command.executor.L1QueryCharacter;
+import l1j.server.server.command.executor.L1Shutdown;
+import l1j.server.server.command.executor.L1GM;
+import l1j.server.server.command.executor.L1Search;
+import l1j.server.server.command.executor.L1ChatNG;
+import l1j.server.server.command.executor.L1Chat;
+import l1j.server.server.command.executor.L1DeleteGroundItem;
+import l1j.server.server.command.executor.L1Kick;
+import l1j.server.server.command.executor.L1ToPC;
+import l1j.server.server.command.executor.L1Kill;
+import l1j.server.server.command.executor.L1Invisible;
+import l1j.server.server.command.executor.L1PartyRecall;
+import l1j.server.server.command.executor.L1RemoveLetter;
+import l1j.server.server.command.executor.L1HpBar;
+import l1j.server.server.command.executor.L1HomeTown;
 import l1j.server.server.command.executor.L1AllBuff;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
 import l1j.server.server.datatables.AccountSettlementTable;
@@ -116,7 +197,6 @@ import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 import l1j.server.server.storage.sql.handler.Handler;
 import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.templates.L1BoardPost;
-import l1j.server.server.templates.L1Command;
 import l1j.server.server.templates.L1House;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1Npc;
@@ -127,7 +207,7 @@ import l1j.server.server.utils.L1QueryUtil;
 import l1j.server.server.utils.L1SpawnUtil;
 import l1j.server.server.utils.SQLUtil;
 import l1j.server.server.utils.ServerMessage;
-public class BuilderCmdHandler {
+public final class BuilderCmdHandler {
  
 	private static Logger _log = Logger.getLogger(BuilderCmdHandler.class.getName());
 
@@ -135,7 +215,7 @@ public class BuilderCmdHandler {
 	public List<L1MonsterInstance> fieldbosslist = new ArrayList<L1MonsterInstance>();
 
 
-	BuilderCmdHandler() {}
+	private BuilderCmdHandler() {}
 
 	private static final class Holder {
 		private static final BuilderCmdHandler INSTANCE = new BuilderCmdHandler();
@@ -151,23 +231,6 @@ public class BuilderCmdHandler {
 
 	public boolean Stop = true;
 
-	private boolean executeDatabaseCommandWithoutPermission(L1PcInstance pc, String name, String arg) {
-		try {
-			L1Command command = L1Commands.get(name);
-			if (command == null) {
-				return false;
-			}
-			
-			if (!L1Commands.execute(pc, command, name, arg)) {
-				return false;
-			}
-			return true;
-		} catch (Exception e) {
-			_log.log(Level.SEVERE, "error gm command", e);
-		}
-		return false;
-
-	}
 
 	public void handleCommandsWithoutPermission(L1PcInstance gm, String cmdLine) {
 		if (gm.getNetConnection() == null || gm.getNetConnection().getAccount() == null
@@ -177,6 +240,7 @@ public class BuilderCmdHandler {
 
 		StringTokenizer token = new StringTokenizer(cmdLine);
 		// 최초의 공백까지가 커맨드, 그 이후는 공백을 단락으로 한 파라미터로서 취급한다
+		if (!token.hasMoreTokens()) return;
 		String cmd = token.nextToken();
 		String param = "";
 		while (token.hasMoreTokens()) {
@@ -184,8 +248,14 @@ public class BuilderCmdHandler {
 		}
 		param = param.trim();
 
-		// 데이타베이스화 된 커멘드
-		executeDatabaseCommandWithoutPermission(gm, cmd, param);
+		// Preserve the existing account-5048 route, limited to its original commands.
+		final BuilderCmdPairType entry = findBuilderCommand(cmd);
+		if (entry == null || !entry.isLegacy()) return;
+		try {
+			entry.execute(gm, entry.getName(), param);
+		} catch (RuntimeException failure) {
+			_log.log(Level.SEVERE, "Builder command failed: " + entry.getName(), failure);
+		}
 	}
 	
 	private static void test_lfc(L1PcInstance gm, String param){
@@ -201,11 +271,6 @@ public class BuilderCmdHandler {
 		SurveySystemLoader.getInstance().registerSurvey(pc,String.format("%s님이 결투를 신청했습니다.", gm.getName()), bp.getId() + 1000, SurveyFactory.createLFCSurvey(), 30 * 1000);
 	}
 	
-	/** Existing callers keep the same entry point; packets call BuilderCmd2Handler. */
-	public void handleCommands(L1PcInstance gm, String cmdLine) {
-		BuilderCmd2Handler(gm, cmdLine);
-	}
-
 	public void BuilderCmd2Handler(L1PcInstance gm, String cmdLine) {
 		if (gm == null || cmdLine == null) return;
 		final StringTokenizer tokens = new StringTokenizer(cmdLine);
@@ -226,7 +291,7 @@ public class BuilderCmdHandler {
 			SC_ServerMessage.send(gm, 74, "커맨드 " + cmd);
 			return;
 		}
-		if (entry == null || (!entry.isExecutable() && entry.directHandler() == null)) {
+		if (entry == null) {
 			SC_SystemMessage.send(gm, "[Command] 커멘드 " + cmd + " 는 존재하지 않습니다. ");
 			return;
 		}
@@ -242,11 +307,7 @@ public class BuilderCmdHandler {
 		try {
 			LoggerInstance.getInstance().addCommand(gm.getName() + ": " + canonical + " "
 					+ (privateArguments ? "[REDACTED]" : param));
-			if (entry.isExecutable()) {
-				entry.execute(gm, canonical, param);
-			} else {
-				entry.directHandler().execute(gm, canonical, param);
-			}
+			entry.execute(gm, canonical, param);
 		} catch (RuntimeException failure) {
 			// Never run the second handler after an attempted command.
 			if (privateArguments) {
@@ -261,8 +322,7 @@ public class BuilderCmdHandler {
 	private static boolean hasBuilderPermission(int access, BuilderCmdPairType entry) {
 		final boolean general = access == Config.GMCODE || access == Config.SUB_GMCODE;
 		if (entry == null || !entry.isLegacy()) return general;
-		if (access != entry.getLevel() && access != Config.SUB_GMCODE) return false;
-		return entry.isExecutable() || general;
+		return access == entry.getLevel() || access == Config.SUB_GMCODE;
 	}
 
 	private static boolean isFullOnly(BuilderCmdPairType entry) {
@@ -275,7 +335,88 @@ public class BuilderCmdHandler {
 
 	private Map<String, BuilderCmdPairType> createBuilderCmdMap() {
 		final Map<String, BuilderCmdPairType> loaded = new LinkedHashMap<>(256);
-		L1Commands.registerBuilderCommands(loaded);
+		registerExisting(loaded, "감시", L1Patrol::getInstance);
+		registerExisting(loaded, "개인버프", L1AllBuff::getInstance);
+		registerExisting(loaded, "검사", L1CheckCharacter::getInstance);
+		registerExisting(loaded, "검색", L1Search1::getInstance);
+		registerExisting(loaded, "계정압류", L1AccountBanKick::getInstance);
+		registerExisting(loaded, "계정정보", L1CheckPassword::getInstance);
+		registerExisting(loaded, "고스폰", L1ToSpawn::getInstance);
+		registerExisting(loaded, "공개채금", L1ChatNG2::getInstance);
+		registerExisting(loaded, "공격로그", L1AttackLog::getInstance);
+		registerExisting(loaded, "광역버프", L1RessBuff::getInstance);
+		registerExisting(loaded, "광역추방", L1RangeKick::getInstance);
+		registerExisting(loaded, "귀환", L1GMRoom::getInstance);
+		registerExisting(loaded, "날씨", L1ChangeWeather::getInstance);
+		registerExisting(loaded, "누구", L1Who::getInstance);
+		registerExisting(loaded, "답장", L1LetterCommand::getInstance);
+		registerExisting(loaded, "데무", L1DescIdWeapon::getInstance);
+		registerExisting(loaded, "데방", L1DescIdArmor::getInstance);
+		registerExisting(loaded, "데스크", L1DescId::getInstance);
+		registerExisting(loaded, "디비초기화", L1DatabaseInit::getInstance);
+		registerExisting(loaded, "레벨", L1Level::getInstance);
+		registerExisting(loaded, "렙선물", L1LevelPresent::getInstance);
+		registerExisting(loaded, "로보트", L1SpawnRobot::getInstance);
+		registerExisting(loaded, "리로드", L1Reload::getInstance);
+		registerExisting(loaded, "리로드트랩", L1ReloadTrap::getInstance);
+		registerExisting(loaded, "리셋트랩", L1ResetTrap::getInstance);
+		registerExisting(loaded, "메세지", L1ServerMessage::getInstance);
+		registerExisting(loaded, "몬스터", L1SpawnCmd::getInstance);
+		registerExisting(loaded, "무인", L1FakeCharacter::getInstance);
+		registerExisting(loaded, "배치", L1InsertSpawn::getInstance);
+		registerExisting(loaded, "밴아이피", L1BanIp::getInstance);
+		registerExisting(loaded, "버프", L1Buff::getInstance);
+		registerExisting(loaded, "버프아이콘", L1BuffIcon::getInstance);
+		registerExisting(loaded, "변신", L1Poly::getInstance);
+		registerExisting(loaded, "불투명", L1Visible::getInstance);
+		registerExisting(loaded, "서먼", L1Summon::getInstance);
+		registerExisting(loaded, "선물", L1Present::getInstance);
+		registerExisting(loaded, "설문", L1GMQuestion::getInstance);
+		registerExisting(loaded, "세트아이템", L1CreateItemSet::getInstance);
+		registerExisting(loaded, "셀엔피씨", L1ImPactGfxid1::getInstance);
+		registerExisting(loaded, "셀이펙트", L1ImPactGfxid::getInstance);
+		registerExisting(loaded, "셋팅", L1Status::getInstance);
+		registerExisting(loaded, "소생", L1Ress::getInstance);
+		registerExisting(loaded, "소환", L1Recall::getInstance);
+		registerExisting(loaded, "속도", L1Speed::getInstance);
+		registerExisting(loaded, "쇼트랩", L1ShowTrap::getInstance);
+		registerExisting(loaded, "스레드", L1Thread::getInstance);
+		registerExisting(loaded, "스킬", L1Burf::getInstance);
+		registerExisting(loaded, "스킬마스터", L1AddSkill::getInstance);
+		registerExisting(loaded, "스킬아이콘", L1SkillIcon::getInstance);
+		registerExisting(loaded, "스폰이벤트", L1EventSpawn::getInstance);
+		registerExisting(loaded, "실행", L1Favorite::getInstance);
+		registerExisting(loaded, "아이템삭제", L1ItemDelete::getInstance);
+		registerExisting(loaded, "아이피추방", L1SKick::getInstance);
+		registerExisting(loaded, "액션", L1Action::getInstance);
+		registerExisting(loaded, "에코", L1Echo::getInstance);
+		registerExisting(loaded, "엔피씨다운", L1NpcDown::getInstance);
+		registerExisting(loaded, "영구추방", L1PowerKick::getInstance);
+		registerExisting(loaded, "영자상점1", L1NpcShopSwitch::getInstance);
+		registerExisting(loaded, "위치", L1Loc::getInstance);
+		registerExisting(loaded, "이동", L1Move::getInstance);
+		registerExisting(loaded, "이름", L1ServerName::getInstance);
+		registerExisting(loaded, "이미지", L1GfxId::getInstance);
+		registerExisting(loaded, "이펙트", L1SkillEffect::getInstance);
+		registerExisting(loaded, "인벤이미지", L1InvGfxId::getInstance);
+		registerExisting(loaded, "장사", L1AdShop::getInstance);
+		registerExisting(loaded, "정리", L1Clear::getInstance);
+		registerExisting(loaded, "정보", L1Describe::getInstance);
+		registerExisting(loaded, "조회", L1QueryCharacter::getInstance);
+		registerExisting(loaded, "종료", L1Shutdown::getInstance);
+		registerExisting(loaded, "지엠", L1GM::getInstance);
+		registerExisting(loaded, "찾기", L1Search::getInstance);
+		registerExisting(loaded, "채금", L1ChatNG::getInstance);
+		registerExisting(loaded, "채팅", L1Chat::getInstance);
+		registerExisting(loaded, "청소", L1DeleteGroundItem::getInstance);
+		registerExisting(loaded, "추방", L1Kick::getInstance);
+		registerExisting(loaded, "출두", L1ToPC::getInstance);
+		registerExisting(loaded, "킬", L1Kill::getInstance);
+		registerExisting(loaded, "투명", L1Invisible::getInstance);
+		registerExisting(loaded, "파티소환", L1PartyRecall::getInstance);
+		registerExisting(loaded, "편지삭제", L1RemoveLetter::getInstance);
+		registerExisting(loaded, "피바", L1HpBar::getInstance);
+		registerExisting(loaded, "홈타운", L1HomeTown::getInstance);
 		registerDirect(loaded, "투견", (gm, cmd, param) -> {
 			DogFightCommandExecutor.do_execute(new CommandArgs().setOwner(gm).setParam(param));
 
@@ -729,12 +870,7 @@ public class BuilderCmdHandler {
 
 
 		});
-		registerDirect(loaded, ".", loaded.get("텔렉").directHandler());
-		registerDirect(loaded, "검색", (gm, cmd, param) -> {
-			searchDatabase(gm, param);
-
-
-		});
+		AddBuilderCmdAlias(loaded, "텔렉", ".");
 		registerDirect(loaded, "킬삭제", (gm, cmd, param) -> {
 		킬삭제(gm, param);
 
@@ -989,16 +1125,25 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		return Collections.unmodifiableMap(loaded);
 	}
 
+	private static void registerExisting(Map<String, BuilderCmdPairType> loaded, String name,
+			Supplier<L1CommandExecutor> factory) {
+		registerBuilderCommand(loaded, new BuilderCmdPairType(name, 9999, true,
+				(gm, cmd, param) -> factory.get().execute(gm, cmd, param)));
+	}
+
 	private static void registerDirect(Map<String, BuilderCmdPairType> loaded, String name, L1CommandExecutor handler) {
-		final BuilderCmdPairType entry = loaded.get(name);
-		if (entry == null) loaded.put(name, BuilderCmdPairType.direct(name, handler));
-		else entry.bindDirect(handler);
+		registerBuilderCommand(loaded, new BuilderCmdPairType(name, 0, false, handler));
+	}
+
+	private static void registerBuilderCommand(Map<String, BuilderCmdPairType> loaded, BuilderCmdPairType entry) {
+		if (loaded.putIfAbsent(entry.getName(), entry) != null) {
+			throw new IllegalStateException("Duplicate builder command: " + entry.getName());
+		}
 	}
 
 	private static void AddBuilderCmdAlias(Map<String, BuilderCmdPairType> loaded, String command, String alias) {
 		final BuilderCmdPairType entry = loaded.get(command);
-		if (entry == null || (!entry.isExecutable() && entry.directHandler() == null)
-				|| loaded.putIfAbsent(alias, entry) != null) {
+		if (entry == null || loaded.putIfAbsent(alias, entry) != null) {
 			throw new IllegalStateException("Invalid builder alias: " + alias);
 		}
 	}
@@ -1010,22 +1155,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		final BuilderCmdPairType normalized = builderCmdMap.get(name.toLowerCase(Locale.ROOT));
 		return normalized != null && normalized.isLegacy() ? normalized : null;
 	}
-
-	public L1Command getLegacyCommand(String name) {
-		final BuilderCmdPairType entry = findBuilderCommand(name);
-		return entry != null && entry.isLegacy() ? entry : null;
-	}
-
-	public List<L1Command> availableLegacyCommands(int accessLevel) {
-		final List<L1Command> result = new ArrayList<>();
-		for (Map.Entry<String, BuilderCmdPairType> registered : builderCmdMap.entrySet()) {
-			final BuilderCmdPairType entry = registered.getValue();
-			if (entry.isLegacy() && registered.getKey().equals(entry.getName().toLowerCase(Locale.ROOT))
-					&& entry.getLevel() <= accessLevel) result.add(entry);
-		}
-		return result;
-	}
-
 
 	private void bug_race_rate(L1PcInstance pc, String s) {
 		try {
@@ -1137,7 +1266,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			final String name = registered.getKey();
 			final BuilderCmdPairType entry = registered.getValue();
 			if (!hasBuilderPermission(access, entry)) continue;
-			if (!entry.isExecutable() && entry.directHandler() == null) continue;
 			if (isFullOnly(entry) && (access != Config.GMCODE || access == Config.SUB_GMCODE)) continue;
 			if (!name.contains(keyword) && !entry.getName().toLowerCase(Locale.ROOT).contains(keyword)) continue;
 			if (columns != 0) line.append("  ");
@@ -1153,20 +1281,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		SC_SystemMessage.send(gm, "[GM] " + count + "개 명령어");
 	}
 
-
-	private void searchDatabase(L1PcInstance gm, String param) {
-		try {
-			StringTokenizer tok = new StringTokenizer(param);
-			int type = Integer.parseInt(tok.nextToken());
-			String name = tok.nextToken();
-			searchObject(gm, type, "%" + name + "%");
-		} catch (Exception e) {
-			gm.sendPackets(".검색 [0~5] [name]을 입력 해주세요.");
-			gm.sendPackets("0=잡템, 1=무기, 2=갑옷, 3=엔피시, 4=변신, 5=엔피시(gfxid)");
-		}
-	}
-
-    
 
 	private void autoloot(L1PcInstance gm, String param) {
 		try {

@@ -38,8 +38,8 @@ import l1j.server.server.model.L1Location;
 import l1j.server.server.templates.L1ItemSetItem;
 import l1j.server.server.utils.IterableElementList;
 
-public class GMCommandsConfig {
-	private static Logger _log = Logger.getLogger(GMCommandsConfig.class
+public class BuilderCmdConfig {
+	private static Logger _log = Logger.getLogger(BuilderCmdConfig.class
 			.getName());
 
 	private interface ConfigLoader {
@@ -109,7 +109,7 @@ public class GMCommandsConfig {
 
 	private static HashMap<String, ConfigLoader> _loaders = new HashMap<String, ConfigLoader>();
 	static {
-		GMCommandsConfig instance = new GMCommandsConfig();
+		BuilderCmdConfig instance = new BuilderCmdConfig();
 		_loaders.put("roomlist", instance.new RoomLoader());
 		_loaders.put("itemsetlist", instance.new ItemSetLoader());
 	}

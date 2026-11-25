@@ -9,11 +9,7 @@ import l1j.server.server.model.world.instance.dungeon.time.progress.DungeonTimeP
 /**
  * [19fix-1] .던전 명령 - 던전 이용시간 표시.
  *
- * 원래 UserCommands/GMCommands 의 switch 에 case "던전" 으로 연결할 예정이었으나
- * 두 클래스는 src 와 SGmall.jar 가 불일치(jar 에만 존재하는 멤버 다수)하여
- * src 컴파일 클래스 주입이 금지됨. 본 클래스는 신규 클래스이므로 jar 주입이 안전하며,
- * 메인이 jar 내 UserCommands.handleCommands / GMCommands 스위치에
- * DungeonTimeCommand.showDungeonTime(pc) 호출(INVOKESTATIC)만 바이트코드로 연결하면 된다.
+ * CS_Craft의 일반 채팅 명령 분기에서 호출한다.
  *
  * 로직은 SC_USER_PLAY_INFO_NOTI.send() (17~39행)와 동일:
  * DungeonTimeInformationLoader.get_enumerator() 순회, is_presentation 만 표시,

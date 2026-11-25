@@ -246,7 +246,7 @@ public class GameServer {
 		GetBackRestartTable.getInstance();
 		DoorSpawnTable.getInstance();
 		NpcActionTable.load();
-		GMCommandsConfig.load();
+		BuilderCmdConfig.load();
 		Getback.loadGetBack();
 		PetTypeTable.load();
 		L1TreasureBox.load();

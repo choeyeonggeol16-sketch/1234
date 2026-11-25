@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JTextField;
 
-import l1j.server.server.GMCommands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.model.Instance.L1ManagerInstance;
 
 @SuppressWarnings("serial")
@@ -87,7 +87,7 @@ public class ManagerCommands extends javax.swing.JFrame {
 			return;
 		}
 		try{
-			GMCommands.getInstance().handleCommands(_mngr, s);
+			BuilderCmdHandler.getInstance().BuilderCmd2Handler(_mngr, s);
 		}catch(Exception e){
 			e.printStackTrace();
 		}finally{

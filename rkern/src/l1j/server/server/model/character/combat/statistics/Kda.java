@@ -10,7 +10,7 @@ import java.util.TimeZone;
 
 import l1j.server.Config;
 import l1j.server.server.model.item.pride.PrideLoadManager;
-import l1j.server.server.GMCommands;
+import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.MapsTable;
@@ -120,7 +120,7 @@ public class Kda {
 //			return;
 //		}
 		
-		if(GMCommands.IS_PROTECTION){
+		if(BuilderCmdHandler.IS_PROTECTION){
 			onProtection(victim);
 			return;
 		}

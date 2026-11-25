@@ -1,4 +1,4 @@
-name: Builder command reference audit
+name: Builder command migration compile
 on:
   push:
     branches:
@@ -6,14 +6,50 @@ on:
 permissions:
   contents: read
 jobs:
-  references:
+  verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-          sparse-checkout: rkern/src
-      - name: Find all legacy command symbols
+          sparse-checkout: |
+            rkern/src
+            rkern/docs/jproring_cio_integration_20261120
+      - name: Assert obsolete command classes and references removed
         run: |
-          git grep -n -w -E 'GMCommands|L1Commands|L1Command|L1CommandHelp|GMCommandsConfig' -- rkern/src || true
+          if git grep -n -w -E 'GMCommands|L1Commands|L1Command|L1CommandHelp|GMCommandsConfig' -- rkern/src | grep -v 'GMCommands.xml'; then
+            exit 1
+          fi
+          git grep -n 'BuilderCmd2Handler(' -- rkern/src
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/rkern-skill-deps
+          key: rkern-skill-jars-v1
+      - name: Compile Java 21
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 - <<'PY'
+          import importlib.util, os, subprocess, time, urllib.error
+          from pathlib import Path
+          root = Path("rkern").resolve()
+          work = Path(os.environ["RUNNER_TEMP"]) / "builder-compile"
+          classes = work / "classes"
+          classes.mkdir(parents=True, exist_ok=True)
+          spec = importlib.util.spec_from_file_location("helper", root / "docs/jproring_cio_integration_20261120/run_game_ab.py")
+          helper = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(helper)
+          for attempt in range(5):
+              try:
+                  cp = helper.classpath(classes, Path.home() / ".cache/rkern-skill-deps")
+                  break
+              except urllib.error.HTTPError as e:
+                  if e.code not in (429, 500, 502, 503, 504) or attempt == 4: raise
+                  time.sleep(4 * (attempt + 1))
+          sources = sorted((root / "src").rglob("*.java"))
+          args = work / "sources.txt"
+          args.write_text("".join('"' + str(p) + '"\n' for p in sources), encoding="utf-8")
+          print("Production sources:", len(sources), flush=True)
+          subprocess.run(["javac","-J-Xmx2g","-encoding","UTF-8","-source","21","-target","21","--enable-preview","-cp",cp,"-d",str(classes),"@"+str(args)],check=True,timeout=300)
+          print("PASS Java 21 compile",flush=True)
+          PY

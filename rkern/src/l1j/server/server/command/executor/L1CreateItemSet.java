@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import l1j.server.server.GMCommandsConfig;
+import l1j.server.server.BuilderCmdConfig;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -23,7 +23,7 @@ public class L1CreateItemSet implements L1CommandExecutor {
 	public void execute(L1PcInstance pc, String cmdName, String arg) {
 		try {
 			String name = new StringTokenizer(arg). nextToken();
-			List<L1ItemSetItem> list = GMCommandsConfig.ITEM_SETS.get(name);
+			List<L1ItemSetItem> list = BuilderCmdConfig.ITEM_SETS.get(name);
 			if (list == null) {
 				SC_SystemMessage.send(pc, name + "은 없습니다.");
 				return;

@@ -20,7 +20,7 @@ package l1j.server.server.command.executor;
 
 import java.util.logging.Logger;
 
-import l1j.server.server.GMCommandsConfig;
+import l1j.server.server.BuilderCmdConfig;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -230,7 +230,7 @@ public class L1GMRoom implements L1CommandExecutor {
 			} else if (i == 70) {
 					pc.start_teleport(32764, 32815, 5554, 5, 169, false, false);
 			} else {
-				L1Location loc = GMCommandsConfig.ROOMS.get(arg.toLowerCase());
+				L1Location loc = BuilderCmdConfig.ROOMS.get(arg.toLowerCase());
 				if (loc == null) {
 					SC_SystemMessage.send(pc, "\\f:==================<귀환 장소>===================");
 					SC_SystemMessage.send(pc, "\\aA1.gm룸 2.기란 3.은말 4.오렌 5.웰던 6.글루딘 7.숨계");
