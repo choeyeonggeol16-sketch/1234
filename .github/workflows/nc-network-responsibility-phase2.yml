@@ -1,0 +1,55 @@
+name: NC network responsibility phase 2
+on:
+  push:
+    branches: ['rkern/nc-network-responsibility-20261125']
+    paths:
+      - '.github/workflows/nc-network-responsibility-phase2.yml'
+      - 'rkern/docs/nc_network_responsibility_20261125/phase2.py'
+permissions:
+  contents: write
+jobs:
+  refactor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check isolated baseline and refactor all source references
+        run: |
+          test "$GITHUB_REF" = "refs/heads/rkern/nc-network-responsibility-20261125"
+          test "$(git rev-parse HEAD:rkern/src)" = "20f1465ce505a506eab9dcdf6be02fa042260d2b"
+          python3 rkern/docs/nc_network_responsibility_20261125/phase2.py
+          git diff --check
+          git diff --exit-code -- rkern/src/l1j/server/server/model/network/core/broadcast
+          git diff --stat
+      - name: Compile full JDK 21 source and existing TCP regression tests
+        working-directory: rkern
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 - <<'PY'
+          import importlib.util, os, subprocess
+          from pathlib import Path
+          fixture=Path("docs/jproring_cio_integration_20261120").resolve()
+          spec=importlib.util.spec_from_file_location("benchmark",fixture/"run_game_ab.py")
+          mod=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+          tmp=Path(os.environ["RUNNER_TEMP"])
+          classes=tmp/"nc-network-classes"
+          classes.mkdir()
+          cp=mod.classpath(classes,tmp/"nc-network-deps")
+          mod.compile_java(cp, classes, False)
+          tests=[fixture/"SelectorCioIntegrationTest.java",fixture/"CIOBufferPoolAffinityTest.java",
+                 fixture.parent/"jproring_p1_selector_20261120"/"SelectorFrameReaderTest.java"]
+          subprocess.run(["javac","--release","21","--enable-preview","-encoding","UTF-8","-cp",cp,"-d",str(classes),*map(str,tests)],check=True)
+          runtime=tmp/"nc-network-runtime"
+          runtime.mkdir()
+          for name in ["SelectorFrameReaderTest","SelectorTransportTest","l1j.server.server.model.network.core.connection.CIOBufferPoolAffinityTest","SelectorCioIntegrationTest"]:
+              subprocess.run(["java","--enable-preview","-XX:MaxDirectMemorySize=64m","-cp",cp,name],cwd=runtime,check=True)
+          PY
+      - name: Publish only validated source changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- rkern/src rkern/docs/jproring_*
+          git diff --cached --check
+          git commit -m "Merge CIO configuration and nest SEND frame after full Java 21 and TCP regressions"
+          git push origin HEAD:refs/heads/rkern/nc-network-responsibility-20261125
