@@ -111,6 +111,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     private Runnable confirmedRollbackAction;
     private Runnable beforeInventoryReplay;
     private volatile boolean durableCommitted;
+    private volatile boolean uncertainFailure;
     private int sqlCount;
 
     public static L1InventoryTransaction begin(L1PcInstance pc, int resourceKey) {
@@ -567,6 +568,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
 
     boolean isDurablyCommitted() { return durableCommitted; }
+    boolean isUncertainFailure() { return uncertainFailure; }
 
     public void onTerminalFailure(Runnable callback) {
         open();
@@ -808,9 +810,10 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
 
     private void sqlFailed(Throwable failure) {
+        uncertainFailure = unknown(failure);
         try { notifyTerminalFailure(); }
         catch (RuntimeException callbackFailure) { failure.addSuppressed(callbackFailure); }
-        if (unknown(failure)) {
+        if (uncertainFailure) {
             // Quarantine the still-connected participants even if the original
             // coordinator has already disappeared and CIO cannot admit replay.
             if (!owners.current(primary)) quarantine(failure);
