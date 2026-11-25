@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 
 import l1j.server.server.BadNamesList;
 import l1j.server.server.Opcodes;
-import l1j.server.server.UserCommands;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
@@ -127,9 +126,7 @@ public final class SC_ChangeCharName {
 //				pc.getInventory().consumeItem(408991, 1);
 //			}
 
-			// 7. 후속 연동 데이터 정리 (친구, 편지, 맵 오프셋 등)
-			UserCommands.buddys(pc);
-			UserCommands.편지삭제(pc);
+			// 7. 맵 오프셋 정리. 삭제된 명령의 친구/편지 일괄 삭제는 호출하지 않는다.
 			CopyMapObservable.getInstance().resetPosition(pc);
 			RaidSpace.getInstance().getBackPc(pc);
 
@@ -187,8 +184,13 @@ public final class SC_ChangeCharName {
 			}
 		}
 
-		// 특수문자/알파벳 혼용 규칙 검증
-		return UserCommands.isAlphaNumeric(name);
+		// Preserve the legacy supported-character requirement without command dependencies.
+		for (int i = 0; i < name.length(); i++) {
+			char ch = name.charAt(i);
+			if ((ch >= 'A' && ch <= 'z') || (ch >= '0' && ch <= '9')
+					|| (ch >= 44032 && ch <= 55203)) return true;
+		}
+		return false;
 	}
 
 }

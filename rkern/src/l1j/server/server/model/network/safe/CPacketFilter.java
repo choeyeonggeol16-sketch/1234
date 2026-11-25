@@ -291,7 +291,6 @@ public class CPacketFilter {
 			Opcodes.C_EXTENDED_PROTOBUF,
 			Opcodes.C_BUY_SPELL,
 			Opcodes.C_QUIT,
-			Opcodes.C_MATCH_MAKING,
 			Opcodes.C_FAR_ATTACK,
 			Opcodes.C_CHANGE_CASTLE_SECURITY,
 			Opcodes.C_DEAD_RESTART,

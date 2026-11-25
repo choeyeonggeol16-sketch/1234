@@ -714,7 +714,6 @@ public final class CPacketHandler {
         if (attrcode == 622) {
             switch (msgIdx) {
             case CS_Attr.MSGCODE_622_KDINIT:
-            case CS_Attr.MSGCODE_622_Lawful:
             case CS_Attr.MSGCODE_622_Name:
             case CS_Attr.MSGCODE_622_Card2:
             case CS_Attr.MSGCODE_622_Card3:

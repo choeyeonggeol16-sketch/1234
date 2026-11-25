@@ -369,8 +369,6 @@ public class Kda {
 	private void setLawful(L1PcInstance killer, L1PcInstance victim){
 		int kLaw = killer.getLawful();
 		int vLaw = victim.getLawful(); 
-		//킬 라우풀 중지하기 Neige
-		if(killer.getLawfulStop() != 1 && !killer.hasSkillEffect(L1SkillId.라우풀고정)){
 		if(vLaw >= 0 && !victim.isPinkName()){
 			if(kLaw < 30000){
 				killer.set_PKcount(killer.get_PKcount() + 1);
@@ -384,7 +382,6 @@ public class Kda {
 			killer.send_lawful();
 		}else
 			victim.setPinkName(false);
-		}
 	}
 	
 	public static int calculate_lawful(L1PcInstance killer){ //라우풀 변화량 Neige

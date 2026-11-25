@@ -4,7 +4,6 @@ package l1j.server.server.model.network.core.cs.packet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.UserCommands;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
@@ -99,7 +98,7 @@ public final class CS_CharSelect {
 
         try {
             if (pc.isPrivateShop() && pc.isPrivateReady()) {
-                UserCommands.privateShop(pc);
+                detachPrivateShop(pc, client);
                 return;
             }
 
@@ -118,5 +117,28 @@ public final class CS_CharSelect {
             LOGGER.log(Level.SEVERE, "restartProcess 처리 중 예외 발생: " + pc.getName(), e);
         }
 
+    }
+    /** Preserve the existing offline-shop restart path without the deleted command. */
+    private static void detachPrivateShop(L1PcInstance pc, CUserSocket client) {
+        for (L1PcInstance target : L1World.getInstance().getAllPlayers3()) {
+            if (target.getId() != pc.getId()
+                    && target.getAccountName().equalsIgnoreCase(pc.getAccountName())
+                    && target.isPrivateShop()) {
+                pc.sendPackets("\\f3이미 당신의 보조 캐릭터가 무인상점 상태입니다.");
+                pc.sendPackets("\\f3상점을 종료하시길 바랍니다.");
+                return;
+            }
+        }
+        pc.setNetConnection(null);
+        client.setConnectionState(CConnectionState.OUT_GAME);
+        pc.set무인상점(true);
+        try {
+            pc.save();
+            pc.saveInventory();
+        } catch (Exception failure) {
+            LOGGER.log(Level.WARNING, "Offline shop save failed", failure);
+        }
+        client.setActiveChar(null);
+        SC_Unknown2.send(client, 1);
     }
 }

@@ -16,7 +16,6 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.GMCommands;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.datatables.LetterTable.Letter;
@@ -171,11 +170,6 @@ public final class CS_Mail {
                     || session.getActiveChar()!=target) return;
             SC_LetterList.sendWritten(target,letter.type==0 ? 80 : 81,letter.id,
                     SC_LetterList.TYPE_RECEIVE,letter.sender,(String)letter.subject);
-            if (letter.type==0 && target.isGm() && GMCommands._sleepingMessage!=null
-                    && !GMCommands._sleepingMessage.isEmpty()) {
-                writePrivateMail(target,letter.sender,GMCommands._sleepingTitle,
-                        GMCommands._sleepingMessage,letter.code);
-            }
         },failure->{if(failure!=null)LOG.log(Level.FINE,"Mail recipient notification expired",failure);});
     }
 

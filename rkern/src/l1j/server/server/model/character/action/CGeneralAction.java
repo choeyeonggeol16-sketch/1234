@@ -1,6 +1,5 @@
 package l1j.server.server.model.character.action;
 
-import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
@@ -184,10 +183,7 @@ public final class CGeneralAction extends CNewAction {
                     tY,
                     EActionCodes.wand.toInt());
 
-            final int num =
-                    Config.흑단무빙 == 1
-                            ? EActionCodes.wand.toInt()
-                            : 96;
+            final int num = EActionCodes.wand.toInt();
 
             if (owner.getCurrentSpriteId() >= 15000) {
                 SC_DoActionGFX.send(
@@ -220,10 +216,7 @@ public final class CGeneralAction extends CNewAction {
         SC_EffectLocation.broadcastPacked(owner, s);
 
         if (owner.getCurrentSpriteId() >= 15000) {
-            final int num =
-                    Config.흑단무빙 == 1
-                            ? actionId
-                            : 96;
+            final int num = actionId;
 
             SC_DoActionGFX.send(
                     owner.getNetConnection(),
