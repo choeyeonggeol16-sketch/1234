@@ -11,6 +11,7 @@ on:
       - rkern/nc-inventory-merge-dedup-20261125
       - rkern/nc-item-copy-dedup-20261125
       - rkern/nc-inventory-search-20261125
+      - rkern/nc-inventory-delete-dedup-20261125
   workflow_dispatch:
 permissions:
   contents: read
