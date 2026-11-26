@@ -19,8 +19,8 @@ public final class CTradeManager {
     public boolean CreateTrade(L1PcInstance requester, L1PcInstance replier) {
         final CTrade trade = attach(requester, replier);
         if (trade == null) return false;
-        final Timeout timeout = new Timeout(trade.GetID(), requester.getNetConnection().affinityShard());
         try {
+            final Timeout timeout = new Timeout(trade.GetID(), trade.TimerShard());
             if (!CIOThreadCallback.getInstance().scheduleNetworkTimeout(timeout.shard, timeout, CTrade.TIMEOUT_MS)) {
                 trade.Canceled(requester);
                 return false;
@@ -39,6 +39,7 @@ public final class CTradeManager {
         final int as = first.getSessionStamp(), bs = second.getSessionStamp();
         if (a == null || b == null || first.isDead() || second.isDead() || first.isGhost() || second.isGhost()
                 || first.isPrivateShop() || second.isPrivateShop() || first.getMapId() != second.getMapId()
+                || first.getAccountName() == null || second.getAccountName() == null
                 || first.getAccountName().equalsIgnoreCase(second.getAccountName())) return null;
         // Exclude a racing non-trade receipt before publishing either PC's trade.
         // These are the existing short CAS item gates, not an additional per-PC lock.

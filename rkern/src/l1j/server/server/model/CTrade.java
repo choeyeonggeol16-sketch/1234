@@ -53,6 +53,7 @@ public final class CTrade {
     public boolean IsEnded() { return state == ENDED; }
     L1PcInstance first() { return first; }
     L1PcInstance second() { return second; }
+    int TimerShard() { return firstSocket.affinityShard(); }
 
     private boolean member(L1PcInstance pc) { return pc == first || pc == second; }
     private boolean attached() { return first.GetTrade() == this && second.GetTrade() == this; }
@@ -160,10 +161,14 @@ public final class CTrade {
             return;
         }
         final L1ItemInstance source = player.getInventory().GetByServerID(objectId);
-        if (source == null || source.getItem() == null || source.getCount() <= 0
+        if (source == null || source.getId() != objectId || source.getItem() == null || source.getCount() <= 0
                 || (!source.isStackable() && requestedCount != 1)) return;
         if (characterToken(source)) {
-            SC_SystemMessage.send(player, "캐릭터 거래는 안전한 계정 이전 처리가 준비될 때까지 이용할 수 없습니다.");
+            if (player.getLevel() >= 70 && source.getItemId() == L1ItemId.LOW_CHARACTER_TRADE)
+                SC_SystemMessage.send(player, "70레벨 이상은 상급 캐릭터 교환주문서를 사용하셔야 합니다.");
+            else if (player.getLevel() < 70 && source.getItemId() == L1ItemId.HIGH_CHARACTER_TRADE)
+                SC_SystemMessage.send(player, "70레벨 미만은 하급 캐릭터 교환주문서를 사용하셔야 합니다.");
+            else SC_SystemMessage.send(player, "캐릭터 거래는 안전한 계정 이전 처리가 준비될 때까지 이용할 수 없습니다.");
             return;
         }
         if (!canTransferOffer(player, source)) {
@@ -255,7 +260,14 @@ public final class CTrade {
                 throw new IllegalStateException("Trade relation changed during admission");
             plan(tx, first, second, firstItems);
             plan(tx, second, first, secondItems);
+            final ArrayList<L1ItemInstance> rollbackFirst = firstItems, rollbackSecond = secondItems;
             tx.onTerminalFailure(this::terminalFailure);
+            tx.onFailure(() -> {
+                // Confirmed rollback only. Never send an old exchange result
+                // into a new window; unknown outcomes use CacheD quarantine.
+                if (first.GetTrade() == null && liveFirst()) resync(first, rollbackFirst);
+                if (second.GetTrade() == null && liveSecond()) resync(second, rollbackSecond);
+            });
             tx.commit(this::Done);
         } catch (RuntimeException failure) {
             LOG.log(Level.WARNING, "Trade not admitted", failure);
@@ -278,11 +290,13 @@ public final class CTrade {
         try {
             logItems(first, second, firstItems);
             logItems(second, first, secondItems);
+        } finally { close(true, false); }
+        try {
             if (liveFirst()) first.getLight().turnOnOffLight();
             if (liveSecond()) second.getLight().turnOnOffLight();
         } catch (RuntimeException failure) {
             LOG.log(Level.WARNING, "Committed trade light refresh failed", failure);
-        } finally { close(true, false); }
+        }
     }
     /** Rollback or uncertain COMMIT: retire registry even if owner replay is rejected.
      * No item mutation here. CacheD retains its quarantine/owner-gate responsibility.
@@ -312,18 +326,19 @@ public final class CTrade {
         if (state == ENDED) return;
         state = ENDED;
         try {
-            if (liveFirst()) {
-                if (resync) resync(first, firstItems);
-                SC_TradeStatus.send(firstSocket, success ? 0 : 1);
-            }
-        } catch (RuntimeException failure) { LOG.fine("Trade result send expired"); }
-        try {
-            if (liveSecond()) {
-                if (resync) resync(second, secondItems);
-                SC_TradeStatus.send(secondSocket, success ? 0 : 1);
-            }
-        } catch (RuntimeException failure) { LOG.fine("Trade result send expired"); }
-        finally {
+            try {
+                if (liveFirst()) {
+                    if (resync && !first.isItemTransferBusy()) resync(first, firstItems);
+                    SC_TradeStatus.send(firstSocket, success ? 0 : 1);
+                }
+            } catch (RuntimeException failure) { LOG.fine("Trade result send expired"); }
+            try {
+                if (liveSecond()) {
+                    if (resync && !second.isItemTransferBusy()) resync(second, secondItems);
+                    SC_TradeStatus.send(secondSocket, success ? 0 : 1);
+                }
+            } catch (RuntimeException failure) { LOG.fine("Trade result send expired"); }
+        } finally {
             firstItems = null; secondItems = null;
             CTradeManager.getInstance().DeleteTrade(this);
         }
