@@ -16,6 +16,7 @@ jobs:
           sparse-checkout: |
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
+            rkern/tests/trade_lifecycle
       - name: Assert obsolete command classes and references removed
         run: |
           git grep -n 'BuilderCmd2Handler(' -- rkern/src
@@ -107,3 +108,8 @@ jobs:
           subprocess.run(["java","--enable-preview","-cp",cp+os.pathsep+str(classes),"BuilderPermissionTest"],check=True)
 
           PY
+      - name: Trade lifecycle regression
+        if: ${{ !cancelled() }}
+        run: |
+          export PATH="$JAVA_HOME_21_X64/bin:$PATH"
+          python3 rkern/tests/trade_lifecycle/test_trade_lifecycle.py
