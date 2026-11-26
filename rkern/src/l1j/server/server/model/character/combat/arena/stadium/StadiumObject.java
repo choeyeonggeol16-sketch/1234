@@ -1,7 +1,7 @@
 package l1j.server.server.model.character.combat.arena.stadium;
 
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import java.util.Collection;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.packet.CServerPacket;
@@ -26,7 +26,7 @@ public class StadiumObject {
     
     public void execute(){
         StadiumManager.getInstance().regist(this);
-        TaskLane.INSTANCE.startEvent(new Runnable(){
+        CInstanceEvents.start(new Runnable(){
             @Override
             public void run(){
                 try{

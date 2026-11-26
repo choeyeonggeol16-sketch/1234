@@ -1,5 +1,7 @@
 package l1j.server.server;
 
+import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import java.util.Collection;
 
 import l1j.server.Config;
@@ -465,7 +467,8 @@ public class GameServer {
     private int resourceShutdownStatus;
 
     public void shutdown() {
-        if (CIOThreadCallback.currentShardIndex() >= 0 || TaskLane.isWorkerThread()) {
+        if (CIOThreadCallback.currentShardIndex() >= 0 || TaskLane.isWorkerThread()
+                || CInstanceEvents.isEventThread()) {
             shutdownWithCountdown(0);
             return;
         }
@@ -518,7 +521,12 @@ public class GameServer {
             RealTimeClock.stop();
             // Let accepted off-owner work finish before removing the world, its
             // owner threads, or the database that those callbacks may still use.
+            CInstanceEvents.stop();
+            CServerTimer.stopOwnerSignals();
             TaskLane.stopAll();
+            while (!CInstanceEvents.awaitTermination(30L, java.util.concurrent.TimeUnit.SECONDS)) {
+                System.err.println("[Instance] Waiting for running events to finish");
+            }
             while (!TaskLane.awaitAll(30L, java.util.concurrent.TimeUnit.SECONDS)) {
                 System.err.println("[TaskLane] Waiting for accepted work to finish");
             }

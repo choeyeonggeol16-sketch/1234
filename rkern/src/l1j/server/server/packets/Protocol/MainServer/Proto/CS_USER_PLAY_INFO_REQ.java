@@ -1,6 +1,5 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -20,18 +19,28 @@ public final class CS_USER_PLAY_INFO_REQ {
         if (!pc.isPrivateReady() && pc.isPrivateShop() && pc.isAutoClanjoin()) {
             pc.setPrivateReady(true);
             final int shopVersion = pc.getPrivateShopVersion();
-            if (TaskLane.SESSION.schedule(() ->
-                    CIOThreadCallback.getInstance().completeSession(client, () -> {
-                        if (client.getActiveChar() != pc || pc.getPrivateShopVersion() != shopVersion) return;
-                        if (!pc.tryBeginItemTransfer()) {
-                            pc.setPrivateReady(false);
-                            return;
-                        }
-                        try { pc.setPrivateShop(false); }
-                        finally { pc.endItemTransfer(); }
-                    }), 10000L) == null) pc.setPrivateReady(false);
+            final int stamp = pc.getSessionStamp();
+            CIOThreadCallback.getInstance().completeSession(client, 10_000L, () -> {
+                if (pc.getPrivateShopVersion() != shopVersion) return;
+                final int token = pc.tryReserveItemTransfer(client, stamp);
+                if (token == 0) {
+                    clearPendingShop(pc, client, stamp, shopVersion);
+                    return;
+                }
+                try { pc.setPrivateShop(false); }
+                finally { pc.endItemTransfer(token); }
+            }, failure -> {
+                if (failure != null) clearPendingShop(pc, client, stamp, shopVersion);
+            });
         }
 
         SC_USER_PLAY_INFO_NOTI.send(pc);
+    }
+
+    private static void clearPendingShop(L1PcInstance pc, CUserSocket client, int stamp, int shopVersion) {
+        if (pc.getNetConnection() == client && pc.getSessionStamp() == stamp
+                && pc.getPrivateShopVersion() == shopVersion) {
+            pc.setPrivateReady(false);
+        }
     }
 }

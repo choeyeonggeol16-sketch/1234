@@ -1,4 +1,5 @@
 package l1j.server.server.model.world.instance.dungeon.hadin;
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.model.network.core.sc.packet.SC_Door;
 
 import java.util.ArrayList;
@@ -8,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
@@ -648,7 +648,7 @@ public class Hadin implements Runnable {
 	}
 
 	public void Start(){
-		TaskLane.INSTANCE.startEvent(this);
+		CInstanceEvents.start(this);
 	}
 
 	private void Sleep(int time) throws InterruptedException {

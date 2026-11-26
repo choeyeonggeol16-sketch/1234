@@ -2,16 +2,15 @@ package l1j.server.server.model.character.effect.action.realize;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -31,11 +30,12 @@ import l1j.server.server.utils.GameUtils;
  * Every damage/packet step runs on that owner, never on a timer or I/O thread.
  * At most one live cast/timer is retained per NPC (including queued casts).
  */
-public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
+public class OnEffectThread {
     private static final Logger LOG = Logger.getLogger(OnEffectThread.class.getName());
     private static final int MAX_STEP_BUDGET = 512;
     private static final int MAX_PERIMETER_STEPS_PER_TICK = 4;
     private static final long MAX_CAST_NS = 60_000_000_000L;
+    private static final AtomicInteger GENERATIONS = new AtomicInteger();
     private static final ConcurrentHashMap<Integer, OnEffectThread> ACTIVE = new ConcurrentHashMap<>();
     // Passive, allocation-free-per-tick accounting for dense-effect owner load.
     private static final long SLOW_TICK_NS = 10_000_000L;
@@ -61,7 +61,7 @@ public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
     protected final L1NpcInstance owner;
     protected ArrayList<L1PcInstance> players;
     private final AtomicBoolean finished = new AtomicBoolean();
-    private volatile CServerTimer next;
+    private final EffectTimer timer;
     private volatile long deadlineNanos;
     private int steps;
     private int admissionRetries;
@@ -73,6 +73,7 @@ public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
     public OnEffectThread(EffectModel model, L1NpcInstance owner) {
         this.model = model;
         this.owner = owner;
+        this.timer = new EffectTimer(owner == null ? 0 : owner.getId(), nextGeneration());
     }
 
     /** Called by the NPC action owner, before any delayed work is submitted. */
@@ -91,25 +92,48 @@ public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
         return true;
     }
 
-    /** Timer callback: expired casts must be released even if owner admission never succeeds. */
-    @Override
-    public final void run() {
-        if (finished.get()) return;
-        if (isExpired()) {
-            finish();
-            return;
+    private static int nextGeneration() {
+        int next;
+        do {
+            next = GENERATIONS.incrementAndGet();
+        } while (next == 0);
+        return next;
+    }
+
+    private record EffectTimer(int npcId, int generation) implements CIOThreadCallback.WheelTask {
+        private OnEffectThread activeCast() {
+            final OnEffectThread cast = ACTIVE.get(npcId);
+            return cast != null && cast.timer.generation == generation ? cast : null;
         }
-        if (!CNPCServer.getInstance().postNpcWheelTask(owner, this)) {
-            if (!CNPCServer.getInstance().isRunning() || isExpired()) {
-                finish();
-                return;
-            }
-            // Saturated NPC event pool: one outstanding timer, bounded retry
-            // with backoff rather than 50 admissions/second per waiting cast.
+
+        @Override public boolean isCancelled() {
+            return activeCast() == null;
+        }
+
+        @Override public void run() {
+            final OnEffectThread cast = activeCast();
+            if (cast != null) cast.publishOwnerTick();
+        }
+
+        @Override public void runOnNpc(L1NpcInstance npc) {
+            final OnEffectThread cast = activeCast();
+            if (cast != null) cast.runOnNpc(npc);
+        }
+    }
+
+    /** Expire and retry independently of NPC owner admission. */
+    private void publishOwnerTick() {
+        if (finished.get()) return;
+        final CNPCServer npcs = CNPCServer.getInstance();
+        if (isExpired() || owner.isDestroyed() || L1World.getInstance().smartIdOf(owner) == 0L) {
+            finish();
+        } else if (npcs.postNpcWheelTask(owner, timer)) {
+            admissionRetries = 0;
+        } else if (!npcs.isRunning() || isExpired()) {
+            finish();
+        } else {
             final long retryMs = 20L << Math.min(++admissionRetries, 4);
             schedule(Math.min(retryMs, 500L));
-        } else {
-            admissionRetries = 0;
         }
     }
 
@@ -117,8 +141,7 @@ public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
         return System.nanoTime() - deadlineNanos >= 0L;
     }
 
-    @Override
-    public final void runOnNpc(L1NpcInstance npc) {
+    private void runOnNpc(L1NpcInstance npc) {
         if (finished.get() || npc != owner) return;
         if (owner.isDead() || owner.isDestroyed() || isExpired()
                 || ++steps > MAX_STEP_BUDGET) {
@@ -221,28 +244,22 @@ public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
             delayMs = Math.min(delayMs,
                     Math.max(1L, TimeUnit.NANOSECONDS.toMillis(remainingNs)));
         }
-        final CServerTimer future = TaskLane.WORLD.schedule(this, delayMs);
-        if (future == null) {
+        if (!CNPCServer.getInstance().isRunning() || !CIOThreadCallback.getInstance()
+                .scheduleCharacterEffectTick(owner, timer, delayMs)) {
             finish();
             return false;
         }
-        next = future;
-        if (finished.get()) future.cancel();
         return !finished.get();
     }
 
     private synchronized void finish() {
         if (!finished.compareAndSet(false, true)) return;
-        final CServerTimer future = next;
-        if (future != null) future.cancel();
         players = null;
         ACTIVE.remove(owner.getId(), this);
         owner.endCast();
     }
 
-    @Override public final boolean isCancelled() { return finished.get(); }
-
-    /** Delete/dispose must drop pending timers immediately, even for distant deadlines. */
+    /** Clear the cast; the owner wheel only retains its numeric token. */
     public static void cancelNpc(L1NpcInstance npc) {
         if (npc == null) return;
         final OnEffectThread task = ACTIVE.get(npc.getId());

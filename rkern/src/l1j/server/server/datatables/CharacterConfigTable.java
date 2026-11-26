@@ -25,7 +25,7 @@ public class CharacterConfigTable {
 	/**
 	 * 캐릭터 설정을 저장하거나 업데이트 
 	 */
-	public void storeCharacterConfig(int objectId, int length, byte[] data) {
+	public void storeCharacterConfig(int objectId, int length, byte[] data) throws SQLException {
 		String sql = "INSERT INTO character_config (object_id, length, data) VALUES (?, ?, ?) "
 				   + "ON DUPLICATE KEY UPDATE length = VALUES(length), data = VALUES(data)";
 
@@ -37,8 +37,6 @@ public class CharacterConfigTable {
 			pstm.setBytes(3, data);
 			pstm.executeUpdate();
 
-		} catch (SQLException e) {
-			_log.log(Level.SEVERE, "CharacterConfigTable store error - objectId: " + objectId, e);
 		}
 	}
 

@@ -2,9 +2,9 @@ package l1j.server.server.model.character.survey;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+import l1j.server.server.model.network.thread.CServerTimer;
 
 
 public class SurveySystemLoader {
@@ -33,13 +33,14 @@ public class SurveySystemLoader {
 	
 	public boolean registerSurvey(L1PcInstance receiver, String message, int num, InterfaceSurvey survey, long remainMillis){
 		if (_surveys.putIfAbsent(num, survey) != null) return false;
+		final Runnable expire = () -> _surveys.remove(num, survey);
 		try {
-			if (TaskLane.SESSION.schedule(() -> _surveys.remove(num, survey), remainMillis) == null) {
-				_surveys.remove(num, survey);
+			if (CServerTimer.onceSignal(expire, remainMillis, expire) == null) {
+				expire.run();
 				return false;
 			}
 		} catch (RuntimeException | Error failure) {
-			_surveys.remove(num, survey);
+			expire.run();
 			throw failure;
 		}
 		SC_MessageYN.send(receiver, num, 622, message);

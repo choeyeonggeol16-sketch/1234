@@ -1,5 +1,6 @@
 package l1j.server.server.model.character.combat.arena;
 
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -616,7 +617,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     }
     
     protected void execute_traps(){
-        TaskLane.INSTANCE.startEvent(new Runnable(){
+        CInstanceEvents.start(new Runnable(){
             @Override
             public void run(){
                 int sec = (int) _combat_info.get_play_seconds();

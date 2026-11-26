@@ -4,7 +4,6 @@ import l1j.server.server.model.quest.CQuestSystem;
 
 import l1j.server.server.model.character.action.CAttackAction;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.task.TaskLane;
@@ -22,13 +21,11 @@ import l1j.server.server.templates.L1Npc;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
 public class L1PeopleInstance extends L1NpcInstance {
 	private static final long serialVersionUID = 1L;
-	private AtomicInteger _restCallCount;
 	/**
 	 * @param template
 	 */
 	public L1PeopleInstance(L1Npc template) {
 		super(template);
-		_restCallCount = new AtomicInteger(0);
 	}
 
 	@Override
@@ -89,11 +86,7 @@ public class L1PeopleInstance extends L1NpcInstance {
 			}
 			SC_ChangeHeading.broadcast(this);
 
-			if (_restCallCount.getAndIncrement() == 0) {
-				setRest(true);
-			}
-
-			TaskLane.WORLD.scheduleRequired(new RestMonitor(), REST_MILLISEC);
+			pauseForDialog();
 		}
 
 		L1Object obj = L1World.getInstance().findObject(objid);
@@ -122,8 +115,6 @@ public class L1PeopleInstance extends L1NpcInstance {
 			}
 		}
 	}
-
-	private static final long REST_MILLISEC = 10000;
 
 	@Override
 	public void receiveDamage(L1Character attacker, int damage) {
@@ -177,13 +168,4 @@ public class L1PeopleInstance extends L1NpcInstance {
         }
     }
 
-	class RestMonitor implements Runnable {
-		@Override
-		public void run() {
-			if (_restCallCount.decrementAndGet() == 0) {
-				setRest(false);
-			}
-		}
-
-	}
 }

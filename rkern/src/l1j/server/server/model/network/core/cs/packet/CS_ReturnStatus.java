@@ -5,12 +5,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 
 import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
-import l1j.server.server.task.TaskLane;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.storage.CacheD;
-import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.L1ReturnStatTemp;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -338,8 +334,8 @@ public final class CS_ReturnStatus {
 
 		pc.completeStatResetGrowth(pc.rst.hpMpGrowth);
 		pc.setReturnStat(0);
-		saveAsync(pc);
 		pc.rst = null;
+		saveCharacterState(pc);
 	}
 
 	// =========================================================
@@ -406,8 +402,8 @@ public final class CS_ReturnStatus {
 
 			pc.completeStatResetGrowth(pc.rst.hpMpGrowth);
 			pc.setReturnStat(0);
-			saveAsync(pc);
 			pc.rst = null;
+			saveCharacterState(pc);
 
 		} catch (Throwable ignored) {
 			/* 기존 semantics 유지 */
@@ -541,29 +537,13 @@ public final class CS_ReturnStatus {
 		}
 	}
 
-    private static void saveAsync(L1PcInstance pc) {
+    private static void saveCharacterState(L1PcInstance pc) {
         try {
-            TaskLane.PERSISTENCE.execute(() -> {
-                try {
-                    pc.save();
-                } catch (Exception e) {
-                    Logger.getLogger(CS_ReturnStatus.class.getName())
-                            .log(Level.SEVERE, "Stat reset save failed", e);
-                    SC_SystemMessage.send(pc, "능력치 저장에 실패했습니다. 다시 접속하기 전에 관리자에게 문의해 주세요.");
-                }
-            });
-        } catch (RejectedExecutionException rejected) {
-            // The stat reset has already changed the character. Preserve the
-            // essential immutable character snapshot without executing JDBC
-            // on the NIO.2 completion worker. Auxiliary autoset persistence
-            // remains on the normal background save path.
-            try {
-                CacheD.getInstance().saveCharacter(new CharacterSnapshot(pc));
-            } catch (RuntimeException failure) {
-                Logger.getLogger(CS_ReturnStatus.class.getName())
-                        .log(Level.SEVERE, "Stat reset CacheD fallback admission failed", failure);
-                SC_SystemMessage.send(pc, "능력치 저장에 실패했습니다. 재접속 전에 관리자에게 문의해 주세요.");
-            }
+            pc.save();
+        } catch (RuntimeException failure) {
+            Logger.getLogger(CS_ReturnStatus.class.getName())
+                    .log(Level.SEVERE, "Stat reset save admission failed", failure);
+            SC_SystemMessage.send(pc, "능력치 저장에 실패했습니다. 다시 접속하기 전에 관리자에게 문의해 주세요.");
         }
     }
 

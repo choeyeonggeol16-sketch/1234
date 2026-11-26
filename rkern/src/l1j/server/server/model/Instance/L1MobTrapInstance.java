@@ -3,9 +3,9 @@ package l1j.server.server.model.Instance;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.IntRange;
 import l1j.server.server.utils.L1SpawnUtil;
@@ -21,7 +21,9 @@ public class L1MobTrapInstance extends L1NpcInstance {
 	}
 
 	private static final int TRAP_TICK_MS = 500;
+	private static final int TIMER_TRAP_TICK = 0x54524150;
 	private boolean AIStart;
+	private int trapGeneration;
 
 	/** 유저가 트랩을 발견시 **/
 	@Override
@@ -37,37 +39,40 @@ public class L1MobTrapInstance extends L1NpcInstance {
 	private synchronized void startTrapAI() {
 		if (AIStart || isDestroyed()) return;
 		AIStart = true;
-		// A trap must not hold an instant-pool worker sleeping indefinitely.
-		// The existing scheduled executor is bounded and reports admission failure.
-		if (TaskLane.WORLD.schedule(new TrapAITick(), TRAP_TICK_MS) == null) {
+		if (++trapGeneration == 0) ++trapGeneration;
+		scheduleTrapTick();
+	}
+
+	private void scheduleTrapTick() {
+		if (!CIOThreadCallback.getInstance().tryScheduleNpcTimer(
+				this, TIMER_TRAP_TICK, trapGeneration, TRAP_TICK_MS)) {
 			AIStart = false;
 			_log.warning("Trap AI schedule rejected npc=" + getId());
 		}
 	}
 
-	private final class TrapAITick implements Runnable {
-		@Override
-		public void run() {
-			synchronized (L1MobTrapInstance.this) {
-				if (!AIStart || isDestroyed()) {
-					AIStart = false;
-					return;
-				}
+	@Override
+	public void TimerExpired(int timerId, int generation) {
+		if (timerId != TIMER_TRAP_TICK) {
+			super.TimerExpired(timerId, generation);
+			return;
+		}
+		synchronized (this) {
+			if (generation != trapGeneration || !AIStart) return;
+			if (isDestroyed()) {
+				AIStart = false;
+				return;
 			}
-			boolean finished = true;
-			try {
-				finished = onTrapAi();
-			} catch (RuntimeException e) {
-				_log.log(Level.WARNING, "Trap AI failed npc=" + getId(), e);
-			}
-			synchronized (L1MobTrapInstance.this) {
-				if (finished || isDestroyed()) {
-					AIStart = false;
-				} else if (TaskLane.WORLD.schedule(this, TRAP_TICK_MS) == null) {
-					AIStart = false;
-					_log.warning("Trap AI re-schedule rejected npc=" + getId());
-				}
-			}
+		}
+		boolean finished = true;
+		try {
+			finished = onTrapAi();
+		} catch (RuntimeException e) {
+			_log.log(Level.WARNING, "Trap AI failed npc=" + getId(), e);
+		}
+		synchronized (this) {
+			if (finished || isDestroyed()) AIStart = false;
+			else scheduleTrapTick();
 		}
 	}
 

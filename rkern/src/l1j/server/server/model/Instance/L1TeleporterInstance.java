@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.L1World;
@@ -19,6 +18,8 @@ import l1j.server.server.templates.L1Npc;
 public class L1TeleporterInstance extends L1NpcInstance {
 
 	private static final long serialVersionUID = 1L;
+	private static final long TELEPORT_DELAY_NANOS = 900_000_000_000L;
+	private volatile long teleportDelayedUntil;
 	
 	public L1TeleporterInstance(L1Npc template) {
 		super(template);
@@ -99,7 +100,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 					htmlid = "ramuda2";
 				} else if (quest.get_step(CQuestSystem.QUEST_LEVEL50) == 1) { // 디가르딘 동의가 끝난 상태
 					if (player.isCrown()) { // 군주
-						if (_isNowDely) { // 텔레포트 지연중
+						if (isTeleportDelayed()) { // 텔레포트 지연중
 							htmlid = "ramuda4";
 						} else {
 							htmlid = "ramudap1";
@@ -414,11 +415,11 @@ public class L1TeleporterInstance extends L1NpcInstance {
 				htmlid = "dilongn";
 			}
 		} else if (npcid == 50043) { // Lambda
-			if (_isNowDely) { // 텔레포트 지연중
+			if (isTeleportDelayed()) { // 텔레포트 지연중
 				isTeleport = false;
 			}
 		} else if (npcid == 50625) { // 고대인(Lv50 퀘스트 고대의 공간 2 F)
-			if (_isNowDely) { // 텔레포트 지연중
+			if (isTeleportDelayed()) { // 텔레포트 지연중
 				isTeleport = false;
 			}
 		}
@@ -474,14 +475,12 @@ public class L1TeleporterInstance extends L1NpcInstance {
 						elf.start_teleport(32878, 32980, 2000, 6, 169, true, false);
 						wiz.start_teleport(32876, 33003, 2000, 0, 169, true, false);
 						
-						TeleportDelyTimer timer = new TeleportDelyTimer();
-						// A rejected 15-minute release must not lock the portal forever.
-						_isNowDely = TaskLane.WORLD.schedule(timer, 900000) != null;
+						final long deadline = System.nanoTime() + TELEPORT_DELAY_NANOS;
+						teleportDelayedUntil = deadline == 0L ? 1L : deadline;
 					}
 				} else if (action.equalsIgnoreCase("teleport barlog_la")) { // 고대인(Lv50 퀘스트 고대의 공간 2 F)
 					player.start_teleport(32755, 32844, 2002, 5, 169, true, false);
-					TeleportDelyTimer timer = new TeleportDelyTimer();
-					TaskLane.WORLD.execute(timer);
+					teleportDelayedUntil = 0L;
 				}			
 
 			} catch (Exception e) {
@@ -492,18 +491,10 @@ public class L1TeleporterInstance extends L1NpcInstance {
 		}
 	}
 
-	class TeleportDelyTimer implements Runnable {
-
-		public TeleportDelyTimer() {
-
-		}
-
-		public void run() {
-			_isNowDely = false;
-		}
+	private boolean isTeleportDelayed() {
+		final long deadline = teleportDelayedUntil;
+		return deadline != 0L && System.nanoTime() - deadline < 0L;
 	}
-
-	private volatile boolean _isNowDely = false;
 
 	private static Logger _log = Logger.getLogger(l1j.server.server.model.Instance.L1TeleporterInstance.class.getName());
 

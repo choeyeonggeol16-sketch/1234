@@ -6,6 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import l1j.server.Config;
@@ -29,6 +30,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
 import l1j.server.server.model.character.animation.EActionCodes;
+import l1j.server.server.model.character.effect.action.realize.OnEffectThread;
 import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
@@ -127,7 +129,11 @@ public class L1NpcInstance extends L1Character {
 
     private int _drainedMana = 0;
 
-    private boolean _rest = false;
+    private static final long REST_INDEFINITELY = Long.MIN_VALUE;
+    private static final long DIALOG_REST_NANOS = 10_000_000_000L;
+    private static final AtomicLongFieldUpdater<L1NpcInstance> REST_UNTIL =
+            AtomicLongFieldUpdater.newUpdater(L1NpcInstance.class, "_restUntilNanos");
+    private volatile long _restUntilNanos;
     private boolean _isResurrect;
 
     public int _randomMoveDistance = 0;
@@ -156,6 +162,7 @@ public class L1NpcInstance extends L1Character {
     // deadline. The existing NPC monitor protects list updates.
     private volatile TimerData _npcChatTimers;
     private static final int TIMER_CORPSE_DELETE = 0x434F5250;
+    private static final int TIMER_EXPLOSION_NOTICE = 0x4558504C;
     public static final int TIMER_TIMED_DELETE = 0x54444C54;
     private int _corpseTimerGeneration;
     private int _corpseQueuedGeneration;
@@ -493,6 +500,10 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void TimerExpired(int timerId, int generation) {
+        if (timerId == TIMER_EXPLOSION_NOTICE) {
+            tickExplosionTime(generation);
+            return;
+        }
         if (timerId != TIMER_TIMED_DELETE || _destroyed || _timedDeleteGeneration != generation) {
             return;
         }
@@ -1328,7 +1339,7 @@ public class L1NpcInstance extends L1Character {
         cancelDigestItems();
         _itemDigest = null;
         CloseNpcEvents();
-        l1j.server.server.model.character.effect.action.realize.OnEffectThread.cancelNpc(this);
+        OnEffectThread.cancelNpc(this);
         _mobGroupInfo = null;
         _inventory = null;
 
@@ -1341,7 +1352,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void deleteMe() {
-        l1j.server.server.model.character.effect.action.realize.OnEffectThread.cancelNpc(this);
+        OnEffectThread.cancelNpc(this);
         synchronized (this) {
             if (_destroyed) {
                 return;
@@ -2195,12 +2206,27 @@ public class L1NpcInstance extends L1Character {
         }
     }
 
-    public void setRest(boolean _rest) {
-        this._rest = _rest;
+    public void setRest(boolean resting) {
+        _restUntilNanos = resting ? REST_INDEFINITELY : 0L;
+    }
+
+    protected final void pauseForDialog() {
+        long previous;
+        long deadline;
+        do {
+            previous = _restUntilNanos;
+            deadline = System.nanoTime() + DIALOG_REST_NANOS;
+            if (deadline == 0L || deadline == REST_INDEFINITELY) ++deadline;
+        } while (!REST_UNTIL.compareAndSet(this, previous, deadline));
     }
 
     public boolean isRest() {
-        return _rest;
+        for (;;) {
+            final long deadline = _restUntilNanos;
+            if (deadline == 0L) return false;
+            if (deadline == REST_INDEFINITELY || System.nanoTime() - deadline < 0L) return true;
+            if (REST_UNTIL.compareAndSet(this, deadline, 0L)) return false;
+        }
     }
 
     public boolean isResurrect() {
@@ -2601,7 +2627,9 @@ public class L1NpcInstance extends L1Character {
         _isPassObject = b;
     }
 
-    private long _explosion_remain_time;
+    private volatile long _explosion_remain_time;
+    private int explosionTimerGeneration;
+    private boolean explosionNoticeSent;
 
     public long getExplosionTime() {
         return _explosion_remain_time;
@@ -2611,37 +2639,34 @@ public class L1NpcInstance extends L1Character {
         _explosion_remain_time = l;
     }
 
-    public void startExplosionTime(long l) {
+    public synchronized void startExplosionTime(long l) {
+        int generation = explosionTimerGeneration + 1;
+        if (generation == 0) generation = 1;
+        if (!CIOThreadCallback.getInstance().tryScheduleNpcTimer(
+                this, TIMER_EXPLOSION_NOTICE, generation, 1000L)) {
+            throw new RejectedExecutionException("Explosion timer unavailable: " + getId());
+        }
+        explosionTimerGeneration = generation;
+        explosionNoticeSent = false;
         setExplosionTime(l);
-        TaskLane.WORLD.scheduleRequired(new ExplosionCounter(this), 1000);
     }
 
-    public class ExplosionCounter implements Runnable {
-        private L1NpcInstance _npc;
-        private boolean _isSending;
-
-        public ExplosionCounter(L1NpcInstance npc) {
-            _npc = npc;
-            _isSending = false;
-        }
-
-        @Override
-        public void run() {
-            try {
-                _explosion_remain_time -= 1000;
-                if (!_isSending && _explosion_remain_time <= 30000) {
-                    _isSending = true;
-                    SC_ExplosionNoti.broadcast(_npc, _npc.getId(), _explosion_remain_time);
-                }
-            } catch (Exception e) {
-
-            } finally {
-                if (_explosion_remain_time <= 0 || isDead())
-                    _explosion_remain_time = 0;
-                else
-                    TaskLane.WORLD.scheduleRequired(this, 1000);
+    private void tickExplosionTime(int generation) {
+        final long remaining;
+        final boolean sendNotice;
+        synchronized (this) {
+            if (_destroyed || explosionTimerGeneration != generation) return;
+            remaining = _explosion_remain_time - 1000L;
+            sendNotice = !explosionNoticeSent && remaining <= 30_000L;
+            explosionNoticeSent |= sendNotice;
+            if (remaining > 0L && !isDead() && CIOThreadCallback.getInstance()
+                    .tryScheduleNpcTimer(this, TIMER_EXPLOSION_NOTICE, generation, 1000L)) {
+                setExplosionTime(remaining);
+            } else {
+                setExplosionTime(0L);
             }
         }
+        if (sendNotice) SC_ExplosionNoti.broadcast(this, getId(), remaining);
     }
 
     private String _shopName;

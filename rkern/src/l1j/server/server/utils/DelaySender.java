@@ -1,34 +1,38 @@
 package l1j.server.server.utils;
 
-import l1j.server.server.task.TaskLane;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public final class DelaySender implements Runnable {
-    private L1PcInstance pc;
-    private String message;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+
+public final class DelaySender {
+    private static final Logger LOG = Logger.getLogger(DelaySender.class.getName());
+
+    private DelaySender() {
+    }
 
     public static void sendGreen(L1PcInstance pc, String message, long delay) {
         if (pc == null) return;
         if (delay <= 0L) {
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, message);
-        } else {
-            TaskLane.SESSION.scheduleRequired(new DelaySender(pc, message), delay);
+            return;
         }
-    }
 
-    private DelaySender(L1PcInstance pc, String message) {
-        this.pc = pc;
-        this.message = message;
-    }
-
-    @Override
-    public void run() {
-        try {
-            if (pc != null) SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, message);
-        } finally {
-            pc = null;
-            message = null;
-        }
+        final CUserSocket session = pc.getNetConnection();
+        if (session == null || !session.isConnected() || session.getActiveChar() != pc) return;
+        final int sessionStamp = pc.getSessionStamp();
+        final boolean accepted = CIOThreadCallback.getInstance().completeOnShard(session.affinityShard(), delay, () -> {
+            if (session.isConnected() && session.getActiveChar() == pc
+                    && pc.getNetConnection() == session && pc.getSessionStamp() == sessionStamp)
+                SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, message);
+        }, failure -> {
+            if (failure != null)
+                LOG.log(Level.WARNING, "Delayed green message failed", failure);
+        });
+        if (!accepted && session.isConnected()) throw new RejectedExecutionException("Green message timer unavailable");
     }
 }

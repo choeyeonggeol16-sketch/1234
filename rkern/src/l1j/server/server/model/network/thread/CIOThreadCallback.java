@@ -296,6 +296,12 @@ public final class CIOThreadCallback {
      */
     public boolean completeOnShard(int shardIndex, Runnable action,
             java.util.function.Consumer<Throwable> completion) {
+        return completeOnShard(shardIndex, 0L, action, completion);
+    }
+
+    /** Positive delay always uses the owner wheel, including same-shard callers. */
+    public boolean completeOnShard(int shardIndex, long delayMs, Runnable action,
+            java.util.function.Consumer<Throwable> completion) {
         java.util.Objects.requireNonNull(completion, "completion");
         final AtomicBoolean resolved = new AtomicBoolean();
         final java.util.function.Consumer<Throwable> finish = failure -> {
@@ -305,7 +311,7 @@ public final class CIOThreadCallback {
                 LOGGER.log(Level.SEVERE, "CIO terminal callback failed", callbackFailure);
             }
         };
-        if (action == null || shardIndex < 0 || shardIndex >= shardCount) {
+        if (action == null || delayMs < 0L || shardIndex < 0 || shardIndex >= shardCount) {
             finish.accept(new IllegalStateException("Invalid CIO completion owner"));
             return false;
         }
@@ -329,11 +335,11 @@ public final class CIOThreadCallback {
             }
             @Override public boolean isCancelled() { return handle.isCancelled(); }
         };
-        if (currentShardIndex() == owner.idx) {
+        if (delayMs == 0L && currentShardIndex() == owner.idx) {
             task.run();
             return true;
         }
-        if (!owner.admitTimer(TimerOp.RAW_TIMER, 0, 1L, task, handle, null)) {
+        if (!owner.admitTimer(TimerOp.RAW_TIMER, 0, Math.max(1L, delayMs), task, handle, null)) {
             handle.cancel();
             return false;
         }
@@ -394,6 +400,12 @@ public final class CIOThreadCallback {
      */
     public boolean completeSession(CUserSocket client, Runnable action,
             java.util.function.Consumer<Throwable> completion) {
+        return completeSession(client, 0L, action, completion);
+    }
+
+    /** Capture the session at admission, even when the action runs on a later tick. */
+    public boolean completeSession(CUserSocket client, long delayMs, Runnable action,
+            java.util.function.Consumer<Throwable> completion) {
         java.util.Objects.requireNonNull(completion, "completion");
         if (client == null || action == null || !client.isConnected()) {
             completion.accept(new IllegalStateException("Session completion unavailable"));
@@ -405,7 +417,7 @@ public final class CIOThreadCallback {
         final int stamp = actor == null ? 0 : actor.getSessionStamp();
         final var state = client.getConnectionState();
         final L1World world = L1World.getInstance();
-        return completeOnShard(shardIndex, () -> {
+        return completeOnShard(shardIndex, delayMs, () -> {
             synchronized (client) {
                 if (world != L1World.getInstance() || !client.isConnected() || client.getAccount() != account
                         || client.getActiveChar() != actor || client.getConnectionState() != state
@@ -2920,7 +2932,11 @@ public final class CIOThreadCallback {
 	 * 30~60분짜리 summon/doll timer가 NPC reference를 오래 잡고 있지 않도록
 	 * wheel에는 smartId + timerId + generation만 저장한다.
 	 */
-	public void scheduleNpcTimer(
+	public void scheduleNpcTimer(L1NpcInstance npc, int timerId, int generation, long delayMs) {
+		tryScheduleNpcTimer(npc, timerId, generation, delayMs);
+	}
+
+	public boolean tryScheduleNpcTimer(
 			L1NpcInstance npc,
 			int timerId,
 			int generation,
@@ -2931,7 +2947,7 @@ public final class CIOThreadCallback {
 				|| timerId <= 0
 				|| generation == 0
 				|| delayMs <= 0L) {
-			return;
+			return false;
 		}
 
 		final long smartId =
@@ -2939,14 +2955,14 @@ public final class CIOThreadCallback {
 						.smartIdOf(npc);
 
 		if (smartId == 0L) {
-			return;
+			return false;
 		}
 
 		final CIOThread owner =
 				npcOwner(npc);
 
-		if (owner == null) {
-			return;
+		if (owner == null || !owner.running) {
+			return false;
 		}
 
 		if (currentShardIndex() == owner.idx) {
@@ -2955,10 +2971,10 @@ public final class CIOThreadCallback {
 					smartId,
 					timerId,
 					generation);
-			return;
+			return true;
 		}
 
-		owner.admitTimer(
+		return owner.admitTimer(
 				TimerOp.NPC_TIMER,
 				(int) smartId,
 				delayMs,

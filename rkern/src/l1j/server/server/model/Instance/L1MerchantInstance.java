@@ -9,10 +9,8 @@ import static l1j.server.server.model.character.skill.L1SkillId.FULL_HEAL;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.HASTE;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.Config;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
@@ -69,7 +67,6 @@ public class L1MerchantInstance extends L1NpcInstance {
 
 	public L1MerchantInstance(L1Npc template) {
 		super(template);
-		_restCallCount = new AtomicInteger(0);
 	}
 
 	@Override
@@ -143,11 +140,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 			}
 			SC_ChangeHeading.broadcast(this);
 
-			if (_restCallCount.getAndIncrement() == 0) {
-				setRest(true);
-			}
-
-			TaskLane.WORLD.scheduleRequired(new RestMonitor(), REST_MILLISEC);
+			pauseForDialog();
 		}
 
 
@@ -2630,17 +2623,4 @@ public class L1MerchantInstance extends L1NpcInstance {
 		return htmlid;
 	}
 
-	private static final long REST_MILLISEC = 10000;
-
-	private AtomicInteger _restCallCount;
-
-	public class RestMonitor implements Runnable {
-		@Override
-		public void run() {
-			if (_restCallCount.decrementAndGet() == 0) {
-				setRest(false);
-			}
-		}
-
-	}
 }

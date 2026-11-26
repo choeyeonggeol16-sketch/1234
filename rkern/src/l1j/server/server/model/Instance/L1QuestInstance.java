@@ -21,9 +21,7 @@ package l1j.server.server.model.Instance;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.character.action.CAttackAction;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.quest.CQuestSystem;
 
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -47,7 +45,6 @@ public class L1QuestInstance extends L1NpcInstance {
 
 	public L1QuestInstance(L1Npc template) {
 		super(template);
-		_restCallCount = new AtomicInteger(0);
 	}
 
 	@Override
@@ -128,13 +125,7 @@ public class L1QuestInstance extends L1NpcInstance {
 			}
 		}
 
-		// 얘 좀 구린듯. interlockedIncrement하는데 compare&Swap이라니. 어차피 intel 기준 lock
-		// xadd 한번만 콜해주면 되는데.-_-
-		if (_restCallCount.getAndIncrement() == 0) {
-			setRest(true);
-		}
-
-		TaskLane.WORLD.scheduleRequired(new RestMonitor(), REST_MILLISEC);
+		pauseForDialog();
 	}
 
     @Override
@@ -176,16 +167,4 @@ public class L1QuestInstance extends L1NpcInstance {
         }
     }
 
-	private static final long REST_MILLISEC = 10000;
-
-	private AtomicInteger _restCallCount;
-
-	public class RestMonitor implements Runnable {
-		@Override
-		public void run() {
-			if (_restCallCount.decrementAndGet() == 0) {
-				setRest(false);
-			}
-		}
-	}
 }

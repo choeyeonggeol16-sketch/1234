@@ -1,5 +1,6 @@
 package l1j.server.server.model.character.combat.arena.games;
 
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -281,7 +282,7 @@ public class BattleTournamentObserver extends CombatObserver{
 						}
 						_areas[team_id][round_id].do_complete();
 						_areas[team_id][round_id + 1].do_ready();
-						TaskLane.INSTANCE.startEvent(new Runnable(){
+						CInstanceEvents.start(new Runnable(){
 							@Override
 							public void run(){
 								try{
@@ -345,7 +346,7 @@ public class BattleTournamentObserver extends CombatObserver{
 		super.on_running();
 		_areas[0][0].do_ready();
 		_areas[1][0].do_ready();
-		TaskLane.INSTANCE.startEvent(new Runnable(){
+		CInstanceEvents.start(new Runnable(){
 			@Override
 			public void run(){
 				try{

@@ -2,11 +2,13 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.Shutdown;
 import l1j.server.server.task.TaskLane;
 
@@ -43,6 +45,79 @@ public final class TaskLaneLifecycleRegression {
         }
     }
 
+    private static void instanceEvents(AtomicInteger unexpected) throws Exception {
+        final Runnable mustNotRun = unexpected::incrementAndGet;
+        final CountDownLatch started = new CountDownLatch(1);
+        final CountDownLatch interrupted = new CountDownLatch(1);
+        final CountDownLatch finishInterruptedEvent = new CountDownLatch(1);
+
+        boolean stopped = false;
+        try {
+            CInstanceEvents.schedule(() -> {
+                check(CInstanceEvents.isEventThread() && CIOThreadCallback.currentShardIndex() < 0,
+                        "Delayed event runs under its dedicated owner");
+                try {
+                    CInstanceEvents.awaitTermination(10L, TimeUnit.MILLISECONDS);
+                    throw new AssertionError("Event owner attempted to await itself");
+                } catch (IllegalStateException expected) {
+                } catch (InterruptedException failure) {
+                    Thread.currentThread().interrupt();
+                    throw new AssertionError(failure);
+                }
+            }, 1L).get(5L, TimeUnit.SECONDS);
+            check(CInstanceEvents.awaitTermination(5L, TimeUnit.SECONDS), "Completed event released its slot");
+
+            final Future<?> cancelledDeadline = CInstanceEvents.schedule(mustNotRun, 60_000L);
+            check(cancelledDeadline.cancel(false), "Pending event deadline can be cancelled");
+            final Future<?> event = CInstanceEvents.start(() -> {
+                if (!CInstanceEvents.isEventThread() || CIOThreadCallback.currentShardIndex() >= 0)
+                    unexpected.incrementAndGet();
+                started.countDown();
+                try {
+                    Thread.sleep(60_000L);
+                } catch (InterruptedException stop) {
+                    interrupted.countDown();
+                    await(finishInterruptedEvent);
+                }
+            });
+            await(started);
+            check(event.cancel(false), "Logical event cancellation succeeds");
+            check(interrupted.getCount() == 1L, "Logical cancellation does not interrupt the event");
+            check(CInstanceEvents.pendingEvents() == 1, "A live event still owns its slot");
+            final Future<?> pendingEvent = CInstanceEvents.schedule(mustNotRun, 60_000L);
+
+            final CountDownLatch cioTicks = new CountDownLatch(2);
+            final CServerTimer signal = CServerTimer.fixedDelaySignal(() -> {
+                if (CIOThreadCallback.currentShardIndex() != 0) unexpected.incrementAndGet();
+                cioTicks.countDown();
+            }, 1L, 50L);
+            check(signal != null, "Direct CIO signal was admitted");
+            try {
+                await(cioTicks);
+                check(interrupted.getCount() == 1L, "Sleeping event did not block the CIO timer");
+            } finally {
+                signal.cancel();
+            }
+
+            CInstanceEvents.stop();
+            stopped = true;
+            await(interrupted);
+            check(cancelledDeadline.isCancelled() && pendingEvent.isCancelled(), "Stop cancels pending event deadlines");
+            check(!CInstanceEvents.awaitTermination(10L, TimeUnit.MILLISECONDS),
+                    "Termination waits for the interrupted event body to exit");
+            try {
+                CInstanceEvents.start(mustNotRun);
+                throw new AssertionError("Stopped event owner admitted new work");
+            } catch (RejectedExecutionException expected) {
+            }
+        } finally {
+            finishInterruptedEvent.countDown();
+            if (!stopped) CInstanceEvents.stop();
+            check(CInstanceEvents.awaitTermination(5L, TimeUnit.SECONDS), "Instance events did not terminate");
+        }
+        check(CInstanceEvents.pendingEvents() == 0, "Instance event owner still retains work");
+    }
+
     public static void main(String[] args) throws Exception {
         final CIOThreadCallback cio = CIOThreadCallback.getInstance();
         final AtomicInteger unexpected = new AtomicInteger();
@@ -51,10 +126,9 @@ public final class TaskLaneLifecycleRegression {
         final Runnable mustNotRun = unexpected::incrementAndGet;
         final CountDownLatch allowDrain = new CountDownLatch(1);
         final CountDownLatch draining = new CountDownLatch(1);
-        final CountDownLatch eventStarted = new CountDownLatch(1);
-        final CountDownLatch interrupted = new CountDownLatch(1);
         try {
             replaceCountdown();
+            instanceEvents(unexpected);
             final int before = TaskLane.SESSION.pendingTimers();
             final ArrayList<CServerTimer> timers = new ArrayList<>(4096);
             for (int i = 0; i < 4096; i++) {
@@ -76,15 +150,6 @@ public final class TaskLaneLifecycleRegression {
             }, 1) != null, "Separate timer and callback ownership");
             await(ranOnOwner);
 
-            final Future<?> event = TaskLane.INSTANCE.startEvent(() -> {
-                eventStarted.countDown();
-                try { Thread.sleep(60_000); }
-                catch (InterruptedException stop) { interrupted.countDown(); }
-            });
-            await(eventStarted);
-            check(event.cancel(false), "Logical cancellation succeeds");
-            check(TaskLane.INSTANCE.pendingWork() == 1, "A live event still owns its slot");
-            final Future<?> pendingEvent = TaskLane.INSTANCE.scheduleBlocking(mustNotRun, 60_000);
             for (int i = 0; i < 512; i++) TaskLane.WORLD.execute(executed::incrementAndGet);
             TaskLane.PERSISTENCE.execute(() -> {
                 try {
@@ -121,8 +186,6 @@ public final class TaskLaneLifecycleRegression {
             check(!TaskLane.PERSISTENCE.tryExecute(mustNotRun), "Closed lane rejects new work");
             check(TaskLane.WORLD.schedule(mustNotRun, 1) == null, "Closed lane rejects deadlines");
             check(!TaskLane.awaitAll(10, TimeUnit.MILLISECONDS), "Shutdown accounts for live callback body");
-            await(interrupted);
-            check(pendingEvent.isCancelled(), "Pending event cancelled on shutdown");
             allowDrain.countDown();
             for (Thread producer : producers) {
                 producer.join(3000);
@@ -141,6 +204,7 @@ public final class TaskLaneLifecycleRegression {
             check(lane.pendingTimers() == 0, lane + " still retains timers");
         }
         check(ManagementFactory.getThreadMXBean().findDeadlockedThreads() == null, "JVM deadlock");
-        System.out.println("PASS 4096 distant cancellations, 2048 stop races, 512 accepted jobs and zero retained work");
+        System.out.println("PASS instance event lifecycle, direct CIO signals, 4096 distant cancellations, "
+                + "2048 stop races, 512 accepted jobs and zero retained work");
     }
 }

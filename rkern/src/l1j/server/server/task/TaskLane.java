@@ -1,18 +1,11 @@
 package l1j.server.server.task;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +20,6 @@ public enum TaskLane {
 
     private static final Logger LOG = Logger.getLogger(TaskLane.class.getName());
     private static final ThreadLocal<TaskLane> CURRENT = new ThreadLocal<>();
-    private static final int MAX_BLOCKING_EVENTS = 256;
 
     private final ThreadFactory threads;
     private final int parallelism;
@@ -35,7 +27,6 @@ public enum TaskLane {
     private final int timerLimit;
     private final Semaphore timers;
     private final ArrayDeque<Runnable> ready = new ArrayDeque<>();
-    private final Set<BlockingEvent> events = new HashSet<>();
     private int active;
     private volatile boolean closed;
 
@@ -126,101 +117,12 @@ public enum TaskLane {
 
     public void releaseTimer() { timers.release(); }
 
-    /** A sleeping event owns its own virtual thread and can be interrupted on stop. */
-    public Future<?> scheduleBlocking(Runnable task, long delayMs) {
-        final BlockingEvent event = new BlockingEvent(Objects.requireNonNull(task));
-        synchronized (this) {
-            if (closed || events.size() >= MAX_BLOCKING_EVENTS)
-                throw new RejectedExecutionException(name() + " blocking event unavailable");
-            events.add(event);
-        }
-        try {
-            if (delayMs <= 0) {
-                event.launch();
-                return event;
-            }
-            event.deadline = CServerTimer.onceSignal(this, event::launch, delayMs, () -> event.cancel(false));
-            if (event.deadline == null) throw new RejectedExecutionException(name() + " event timer unavailable");
-            if (event.isCancelled()) event.deadline.cancel();
-            return event;
-        } catch (RuntimeException | Error failure) {
-            event.cancel(false);
-            throw failure;
-        }
-    }
-
-    public Future<?> startEvent(Runnable task) { return scheduleBlocking(task, 0L); }
-
-    private final class BlockingEvent extends FutureTask<Void> {
-        // Reserved, running, retired. Future cancellation does not retire running work.
-        private final AtomicInteger state = new AtomicInteger();
-        private volatile CServerTimer deadline;
-        private volatile Thread eventThread;
-
-        BlockingEvent(Runnable task) { super(task, null); }
-
-        void launch() {
-            if (closed || isCancelled()) {
-                cancel(false);
-                return;
-            }
-            try {
-                Thread.ofVirtual().name("RKern-BlockingEvent").inheritInheritableThreadLocals(false).start(this);
-            } catch (RuntimeException | Error failure) {
-                cancel(false);
-                throw failure;
-            }
-        }
-
-        @Override public void run() {
-            if (!state.compareAndSet(0, 1)) return;
-            eventThread = Thread.currentThread();
-            CURRENT.set(TaskLane.this);
-            try {
-                super.run();
-                if (state() == Future.State.FAILED) LOG.log(Level.SEVERE, "Blocking event failed", exceptionNow());
-            } finally {
-                CURRENT.remove();
-                eventThread = null;
-                if (state.compareAndSet(1, 2)) retire();
-            }
-        }
-
-        @Override protected void done() {
-            if (state.compareAndSet(0, 2)) retire();
-        }
-
-        @Override public boolean cancel(boolean interrupt) {
-            final boolean cancelled = super.cancel(interrupt);
-            if (!cancelled && interrupt) {
-                // A prior cancel(false) marks the Future cancelled while its
-                // body can still be asleep. Shutdown must interrupt that body.
-                final Thread running = eventThread;
-                if (running != null) running.interrupt();
-            }
-            final CServerTimer timer = deadline;
-            if (timer != null) timer.cancel();
-            return cancelled;
-        }
-
-        private void retire() {
-            synchronized (TaskLane.this) {
-                events.remove(this);
-                TaskLane.this.notifyAll();
-            }
-        }
-    }
-
     public static void stopAll() {
-        final List<BlockingEvent> pending = new ArrayList<>();
         for (TaskLane lane : values()) {
             synchronized (lane) {
                 lane.closed = true;
-                pending.addAll(lane.events);
             }
         }
-        // Future cancellation can retire an event. Do not call it under a lane monitor.
-        for (BlockingEvent event : pending) event.cancel(true);
     }
 
     public static boolean awaitAll(long timeout, TimeUnit unit) throws InterruptedException {
@@ -229,7 +131,7 @@ public enum TaskLane {
         final long budget = unit.toNanos(timeout);
         for (TaskLane lane : values()) {
             synchronized (lane) {
-                while (lane.active != 0 || !lane.events.isEmpty()) {
+                while (lane.active != 0) {
                     final long remaining = budget - (System.nanoTime() - start);
                     if (remaining <= 0) return false;
                     TimeUnit.NANOSECONDS.timedWait(lane, remaining);
@@ -241,6 +143,6 @@ public enum TaskLane {
 
     public static boolean isWorkerThread() { return CURRENT.get() != null; }
 
-    public synchronized int pendingWork() { return active + ready.size() + events.size(); }
+    public synchronized int pendingWork() { return active + ready.size(); }
     public int pendingTimers() { return timerLimit - timers.availablePermits(); }
 }

@@ -2,14 +2,17 @@ package l1j.server.server.model.network.thread;
 
 import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import l1j.server.server.task.TaskLane;
 
-/** A server deadline on the existing CIO wheel, with off-CIO execution by its owner. */
+/** A server deadline on the existing CIO wheel. */
 public final class CServerTimer implements CIOThreadCallback.WheelTask {
     private static final long RETRY_MS = 50L;
+    private static final Semaphore OWNER_SIGNALS = new Semaphore(65_536);
+    private static volatile boolean ownerSignalsClosed;
     private static final long MAX_DELAY_MS = TimeUnit.DAYS.toMillis(36_500L);
     private static final AtomicReferenceFieldUpdater<CServerTimer, Runnable> ACTION =
             AtomicReferenceFieldUpdater.newUpdater(CServerTimer.class, Runnable.class, "action");
@@ -18,7 +21,7 @@ public final class CServerTimer implements CIOThreadCallback.WheelTask {
     private final TaskLane lane;
     private final int shard;
     private final Runnable worker;
-    private final Runnable onDiscard;
+    private Runnable onDiscard;
     private final long intervalMs;
     private final boolean fixedRate;
     private long deadlineMs;
@@ -27,19 +30,19 @@ public final class CServerTimer implements CIOThreadCallback.WheelTask {
     int distantIndex = -1;
 
     private CServerTimer(TaskLane lane, int shard, Runnable action, long delayMs, long intervalMs,
-            boolean fixedRate, boolean signalOnly, Runnable onDiscard) {
+            boolean fixedRate, Runnable onDiscard) {
         this.action = action;
         this.intervalMs = intervalMs;
         this.fixedRate = fixedRate;
         this.lane = lane;
         this.shard = shard;
-        this.worker = signalOnly ? null : this::TimerExpired;
+        this.worker = lane == null ? null : this::TimerExpired;
         this.onDiscard = onDiscard;
         this.deadlineMs = nowMs() + delayMs;
     }
 
     public static CServerTimer once(Runnable action, long delayMs) {
-        return register(TaskLane.WORLD, 0, action, delayMs, 0L, false, false, null);
+        return register(TaskLane.WORLD, 0, action, delayMs, 0L, false, null);
     }
 
     public static CServerTimer once(TaskLane lane, Runnable action, long delayMs) {
@@ -47,12 +50,17 @@ public final class CServerTimer implements CIOThreadCallback.WheelTask {
     }
 
     public static CServerTimer onceOnShard(TaskLane lane, int shard, Runnable action, long delayMs) {
-        return register(lane, Math.max(0, shard), action, delayMs, 0L, false, false, null);
+        return register(Objects.requireNonNull(lane), Math.max(0, shard), action, delayMs, 0L, false, null);
     }
 
-    /** Only for nonblocking publication of an interruptible instance event. */
-    public static CServerTimer onceSignal(TaskLane lane, Runnable signal, long delayMs, Runnable onDiscard) {
-        return register(lane, Math.max(0, CIOThreadCallback.currentShardIndex()), signal, delayMs, 0L, false, true, onDiscard);
+    /** Runs a bounded, nonblocking signal on an existing CIO owner. */
+    public static CServerTimer onceSignal(Runnable signal, long delayMs, Runnable onDiscard) {
+        return register(null, Math.max(0, CIOThreadCallback.currentShardIndex()),
+                signal, delayMs, 0L, false, onDiscard);
+    }
+
+    public static void stopOwnerSignals() {
+        ownerSignalsClosed = true;
     }
 
     public static CServerTimer onceRequired(Runnable action, long delayMs) {
@@ -62,72 +70,93 @@ public final class CServerTimer implements CIOThreadCallback.WheelTask {
     }
 
     public static CServerTimer fixedRate(Runnable action, long delayMs, long intervalMs) {
-        return register(TaskLane.WORLD, 0, action, delayMs, intervalMs, true, false, null);
+        return register(TaskLane.WORLD, 0, action, delayMs, intervalMs, true, null);
     }
 
     public static CServerTimer fixedRate(TaskLane lane, Runnable action, long delayMs, long intervalMs) {
-        return register(lane, Math.max(0, CIOThreadCallback.currentShardIndex()), action,
-                delayMs, intervalMs, true, false, null);
+        return register(Objects.requireNonNull(lane), Math.max(0, CIOThreadCallback.currentShardIndex()), action,
+                delayMs, intervalMs, true, null);
     }
 
     public static CServerTimer fixedDelay(Runnable action, long delayMs, long intervalMs) {
-        return register(TaskLane.WORLD, 0, action, delayMs, intervalMs, false, false, null);
+        return register(TaskLane.WORLD, 0, action, delayMs, intervalMs, false, null);
     }
 
     /** Only for bounded, nonblocking work publication. The signal must not run SQL or world callbacks. */
     public static CServerTimer fixedRateSignal(Runnable signal, long delayMs, long intervalMs) {
-        return register(TaskLane.WORLD, 0, signal, delayMs, intervalMs, true, true, null);
+        return register(null, 0, signal, delayMs, intervalMs, true, null);
     }
 
     /** Only for bounded, nonblocking work publication. */
     public static CServerTimer fixedDelaySignal(Runnable signal, long delayMs, long intervalMs) {
-        return register(TaskLane.WORLD, 0, signal, delayMs, intervalMs, false, true, null);
+        return register(null, 0, signal, delayMs, intervalMs, false, null);
     }
 
     private static CServerTimer register(TaskLane lane, int shard, Runnable action, long delayMs, long intervalMs,
-            boolean fixedRate, boolean signalOnly, Runnable onDiscard) {
+            boolean fixedRate, Runnable onDiscard) {
         Objects.requireNonNull(action);
         final long delay = Math.clamp(delayMs, 1L, MAX_DELAY_MS);
         final long interval = Math.clamp(intervalMs, 0L, MAX_DELAY_MS);
-        if (lane.isClosed() || shard >= CIOThreadCallback.getInstance().shardCount() || !lane.reserveTimer()) return null;
+        if (shard >= CIOThreadCallback.getInstance().shardCount() || !reserveTimer(lane)) return null;
         CServerTimer timer = null;
         try {
-            timer = new CServerTimer(lane, shard, action, delay, interval, fixedRate, signalOnly, onDiscard);
+            timer = new CServerTimer(lane, shard, action, delay, interval, fixedRate, onDiscard);
             return timer.AddTimer(delay) ? timer : null;
         } catch (RuntimeException | Error failure) {
-            if (timer == null) lane.releaseTimer();
+            if (timer == null) releaseTimer(lane);
             else timer.discard();
             throw failure;
         }
     }
 
+    private static boolean reserveTimer(TaskLane lane) {
+        if (lane != null) return lane.reserveTimer();
+        if (ownerSignalsClosed || !OWNER_SIGNALS.tryAcquire()) return false;
+        if (!ownerSignalsClosed) return true;
+        OWNER_SIGNALS.release();
+        return false;
+    }
+
+    private static void releaseTimer(TaskLane lane) {
+        if (lane == null) OWNER_SIGNALS.release();
+        else lane.releaseTimer();
+    }
+
+    private boolean isExecutionClosed() {
+        return lane == null ? ownerSignalsClosed : lane.isClosed();
+    }
+
     private boolean AddTimer(long delayMs) {
-        if (!lane.isClosed() && CIOThreadCallback.getInstance().scheduleServerTimer(shard, this, delayMs)) return true;
+        if (!isExecutionClosed() && CIOThreadCallback.getInstance().scheduleServerTimer(shard, this, delayMs)) return true;
         discard();
         return false;
     }
 
     public boolean cancel() {
         if (!releaseAction()) return false;
+        onDiscard = null;
         CIOThreadCallback.getInstance().cancelDistantServerTimer(shard, this);
         return true;
     }
 
     private boolean releaseAction() {
         if (ACTION.getAndSet(this, null) == null) return false;
-        lane.releaseTimer();
+        releaseTimer(lane);
         return true;
     }
 
     void discard() {
-        if (releaseAction() && onDiscard != null) onDiscard.run();
+        if (!releaseAction()) return;
+        final Runnable cleanup = onDiscard;
+        onDiscard = null;
+        if (cleanup != null) cleanup.run();
     }
 
     @Override public boolean isCancelled() { return action == null; }
 
     @Override public void run() {
         if (isCancelled()) return;
-        if (lane.isClosed()) {
+        if (isExecutionClosed()) {
             discard();
             return;
         }
@@ -153,7 +182,7 @@ public final class CServerTimer implements CIOThreadCallback.WheelTask {
             throw failure;
         }
         if (intervalMs == 0L) {
-            releaseAction();
+            if (releaseAction()) onDiscard = null;
             return;
         }
         final long now = nowMs();

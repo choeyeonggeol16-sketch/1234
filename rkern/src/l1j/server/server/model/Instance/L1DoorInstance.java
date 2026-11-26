@@ -1,11 +1,12 @@
 package l1j.server.server.model.Instance;
 
+import java.util.concurrent.RejectedExecutionException;
+
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.network.core.sc.packet.SC_Door;
 
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
@@ -14,6 +15,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.templates.L1Npc;
 
 public class L1DoorInstance extends L1NpcInstance {
@@ -21,12 +23,14 @@ public class L1DoorInstance extends L1NpcInstance {
 	private static final long serialVersionUID = 1L;
 	public static final int PASS = 0;
 	public static final int NOT_PASS = 1;
+	private static final int TIMER_AUTO_CLOSE = 0x444F4F52;
+	private static final int AUTO_CLOSE_GENERATION = 1;
 	
 	private int _doorId = 0;
 	private int _direction = 0;
 	private int _leftEdgeLocation = 0;
 	private int _rightEdgeLocation = 0;
-	private int _openStatus = ActionCodes.ACTION_Close;
+	private volatile int _openStatus = ActionCodes.ACTION_Close;
 	private int _passable = NOT_PASS;
 	private int _keeperId = 0;
 	private int _autostatus = 0;
@@ -197,13 +201,19 @@ public class L1DoorInstance extends L1NpcInstance {
         }
     }
 
-	class DoorTimer implements Runnable {
-		@Override
-		public void run() {
-			if (_destroyed) { // 이미 파기되어 있지 않은가 체크
-				return;
-			}
-			close();
+	@Override
+	public void TimerExpired(int timerId, int generation) {
+		if (timerId != TIMER_AUTO_CLOSE) {
+			super.TimerExpired(timerId, generation);
+			return;
+		}
+		if (!_destroyed && generation == AUTO_CLOSE_GENERATION) close();
+	}
+
+	private void scheduleAutoClose(long delayMs) {
+		if (!CIOThreadCallback.getInstance().tryScheduleNpcTimer(
+				this, TIMER_AUTO_CLOSE, AUTO_CLOSE_GENERATION, delayMs)) {
+			throw new RejectedExecutionException("Door auto-close timer unavailable: " + getId());
 		}
 	}
 
@@ -261,17 +271,17 @@ public class L1DoorInstance extends L1NpcInstance {
 			return;
 		}
 		if (getOpenStatus() == ActionCodes.ACTION_Close) {
-			isPassibleDoor(true);//하딘 시스템
 			if (this.getDoorId() == 113 || this.getDoorId() == 125){					
-				TaskLane.WORLD.scheduleRequired(new DoorTimer(), 5000);
+				scheduleAutoClose(5000L);
 			}
 			// 말하는 섬 던전 2층 보스문 시간 5분
 			if (this.getDoorId() >= 4100 && this.getDoorId() <= 4111){
-				TaskLane.WORLD.scheduleRequired(new DoorTimer(), 300000);
+				scheduleAutoClose(300000L);
 			}
 			if (this.getDoorId() >= 8001 && this.getDoorId() <= 8010) {
-				TaskLane.WORLD.scheduleRequired(new DoorTimer(), 1800000);
+				scheduleAutoClose(1800000L);
 			}
+			isPassibleDoor(true);//하딘 시스템
 			SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Open);
 			setOpenStatus(ActionCodes.ACTION_Open);
 			setPassable(L1DoorInstance.PASS);

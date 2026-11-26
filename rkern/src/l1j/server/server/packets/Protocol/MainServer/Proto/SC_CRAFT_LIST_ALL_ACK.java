@@ -11,11 +11,10 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.Craft;
 import l1j.server.server.shared.arrangement.ArrangeParsee;
 import l1j.server.server.shared.arrangement.ArrangeParseeFactory;
@@ -183,12 +182,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
 
         final long sendId = SEND_SEQUENCE.incrementAndGet();
 
-        // The scheduler returns null on a full/shutting-down queue. Never
-        // leave the per-connection sending flag set for a task that cannot run.
-        if (!TaskLane.SESSION.tryExecute(() -> sendNextChunk(pc, client, caches, sendId, 0, 0L))) {
-            client.endCraftListSend();
-            _log.warning("[CRAFT ADMISSION] initial chunk rejected id=" + sendId);
-        }
+        scheduleNextChunk(pc, client, caches, sendId, pc.getSessionStamp(), 0, 0L);
     }
 
     // ------------------------------------------------------------------
@@ -200,10 +194,11 @@ public final class SC_CRAFT_LIST_ALL_ACK {
             final CUserSocket client, 
             final ArrayList<byte[]> caches, 
             final long sendId, 
+            final int stamp,
             final int index, 
             final long sentBytes) {
 
-        if (!client.isConnected() || client.getActiveChar() != pc || pc.getNetConnection() != client) {
+        if (!client.isCurrentCharacter(pc) || pc.getSessionStamp() != stamp) {
             client.endCraftListSend();
             return;
         }
@@ -216,7 +211,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
         final byte[] bytes = caches.get(index);
 
         if (bytes == null || bytes.length == 0) {
-            scheduleNextChunk(pc, client, caches, sendId, index + 1, sentBytes);
+            scheduleNextChunk(pc, client, caches, sendId, stamp, index + 1, sentBytes);
             return;
         }
 
@@ -256,7 +251,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
          * 소켓 drain 후 다음 청크.
          */
         final boolean registered = client.whenWriteDrained(
-                () -> scheduleNextChunk(pc, client, caches, sendId, nextIndex, nextSentBytes));
+                () -> scheduleNextChunk(pc, client, caches, sendId, stamp, nextIndex, nextSentBytes));
 
         if (!registered) {
             client.endCraftListSend();
@@ -272,23 +267,24 @@ public final class SC_CRAFT_LIST_ALL_ACK {
             final CUserSocket client, 
             final ArrayList<byte[]> caches, 
             final long sendId, 
+            final int stamp,
             final int index, 
             final long sentBytes) {
 
-        if (!client.isConnected()) {
+        if (!client.isCurrentCharacter(pc) || pc.getSessionStamp() != stamp) {
             client.endCraftListSend();
             return;
         }
 
-        // whenWriteDrained already fired. If this delayed admission fails,
-        // there will be no more callbacks to clear the sending flag.
-        if (CServerTimer.onceOnShard(TaskLane.SESSION, client.affinityShard(),
-                () -> sendNextChunk(pc, client, caches, sendId, index, sentBytes),
-                CRAFT_CHUNK_DELAY_MS) == null) {
-            client.endCraftListSend();
-            _log.warning("[CRAFT ADMISSION] continuation rejected id=" + sendId
-                    + " index=" + index);
-        }
+        final long delayMs = index == 0 ? 0L : CRAFT_CHUNK_DELAY_MS;
+        CIOThreadCallback.getInstance().completeSession(client, delayMs,
+                () -> sendNextChunk(pc, client, caches, sendId, stamp, index, sentBytes), failure -> {
+                    if (failure != null) {
+                        client.endCraftListSend();
+                        _log.log(Level.WARNING, "[CRAFT ADMISSION] chunk cancelled id="
+                                + sendId + " index=" + index, failure);
+                    }
+                });
     }
 
     // ------------------------------------------------------------------

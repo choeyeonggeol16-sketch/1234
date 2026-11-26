@@ -62,7 +62,7 @@ public final class PathFinder {
      * hand-off. Fixed primitive workspace belongs to the existing per-owner
      * AstarProvider PathFinder; no per-search nodes, queue or worker allocation.
      */
-    private static final int BODY_ROUTE_RADIUS = 32;
+    private static final int BODY_ROUTE_RADIUS = 20;
     private static final int BODY_ROUTE_LOCAL_RADIUS = 12;
     private static final int BODY_ROUTE_SIDE = BODY_ROUTE_RADIUS * 2 + 1;
     private static final int BODY_ROUTE_CELLS = BODY_ROUTE_SIDE * BODY_ROUTE_SIDE;

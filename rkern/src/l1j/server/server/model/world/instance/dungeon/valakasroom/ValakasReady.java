@@ -1,10 +1,10 @@
 package l1j.server.server.model.world.instance.dungeon.valakasroom;
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 
 import java.util.ArrayList;
 
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -150,7 +150,7 @@ public class ValakasReady implements Runnable {
 	}
 
 	public void Start(){
-		TaskLane.INSTANCE.startEvent(this);
+		CInstanceEvents.start(this);
 	}
 
 

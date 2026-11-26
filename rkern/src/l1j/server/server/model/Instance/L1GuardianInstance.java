@@ -3,11 +3,9 @@ package l1j.server.server.model.Instance;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.item.drop.CContributeData;
 import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
@@ -39,7 +37,6 @@ public class L1GuardianInstance extends L1NpcInstance {
 	 */
 	public L1GuardianInstance(L1Npc template) {
 		super(template);
-		_restCallCount = new AtomicInteger(0);
 	}
 
 	/**
@@ -191,12 +188,7 @@ public class L1GuardianInstance extends L1NpcInstance {
 				SC_NPCTalkReturn.send(player, talking, objid, 1);
 			}
 			
-			if( _restCallCount.getAndIncrement() == 0 )
-			{
-				setRest(true);
-			}
-
-			TaskLane.WORLD.scheduleRequired(new RestMonitor(), REST_MILLISEC);
+			pauseForDialog();
 		}
 	}
 
@@ -326,17 +318,4 @@ public class L1GuardianInstance extends L1NpcInstance {
 	public void doFinalAction(L1PcInstance player) {
 	}
 
-	private static final long REST_MILLISEC = 10000;
-
-	private AtomicInteger _restCallCount;
-
-	public class RestMonitor implements Runnable {
-		@Override
-		public void run() {
-			if( _restCallCount.decrementAndGet() == 0 )
-			{
-				setRest(false);
-			}
-		}
-	}
 }

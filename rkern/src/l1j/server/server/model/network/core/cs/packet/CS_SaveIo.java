@@ -1,10 +1,12 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import java.sql.SQLException;
+
 import l1j.server.Config;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.CharacterConfigTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.storage.CacheD;
 
 public final class CS_SaveIo {
 
@@ -44,21 +46,14 @@ public final class CS_SaveIo {
             return;
         }
 
-        final int objectId =
-                pc.getId();
-
-        TaskLane.PERSISTENCE.execute(() -> {
-
-                    try {
-                        CharacterConfigTable
-                                .getInstance()
-                                .storeCharacterConfig(
-                                        objectId,
-                                        length,
-                                        data);
-
-                    } catch (Exception ignored) {
-                    }
-                });
+        final int objectId = pc.getId();
+        final byte[] payload = data.clone();
+        CacheD.getInstance().submitDbJobOrdered(objectId, () -> {
+            try {
+                CharacterConfigTable.getInstance().storeCharacterConfig(objectId, length, payload);
+            } catch (SQLException failure) {
+                throw new IllegalStateException("Character config save failed: " + objectId, failure);
+            }
+        });
     }
 }

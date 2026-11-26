@@ -1,14 +1,15 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
 import l1j.server.Config;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -270,17 +271,11 @@ for (L1PcInstance clanPc :
 
         SC_CharTitle.broadcast(pc, objectId, broadcastTitle);
 
- 
-        TaskLane.PERSISTENCE.execute(() -> {
-
-                    try {
-
-                        pc.save();
-
-                    } catch (Exception e) {
-
-                        e.printStackTrace();
-                    }
-                });
+        try {
+            pc.save();
+        } catch (RuntimeException failure) {
+            Logger.getLogger(CS_Title.class.getName())
+                    .log(Level.WARNING, "Character title save admission failed: " + objectId, failure);
+        }
     }
 }
