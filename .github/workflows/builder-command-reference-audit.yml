@@ -22,6 +22,9 @@ jobs:
             exit 1
           fi
           git grep -n 'BuilderCmd2Handler(' -- rkern/src
+          if git grep -n -w -E 'L1Search1|L1Reload|L1Buff|L1Summon|L1Shutdown|L1Search|L1ItemDelete|L1QueryCharacter|L1PartyRecall' -- rkern/src; then
+            exit 1
+          fi
           if git grep -n -w -E 'L1Poly|L1Present|L1Status|L1SKick|L1NpcShopSwitch|L1HomeTown|L1Favorite|L1EventSpawn' -- rkern/src; then
             exit 1
           fi

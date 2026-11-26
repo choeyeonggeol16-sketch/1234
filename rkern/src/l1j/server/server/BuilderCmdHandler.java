@@ -34,23 +34,14 @@ import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.command.BuilderCmdPairType;
 import l1j.server.server.command.executor.L1CommandExecutor;
-import l1j.server.server.command.executor.L1Search1;
 import l1j.server.server.command.executor.L1LetterCommand;
 import l1j.server.server.command.executor.L1LevelPresent;
-import l1j.server.server.command.executor.L1Reload;
-import l1j.server.server.command.executor.L1Buff;
-import l1j.server.server.command.executor.L1Summon;
 import l1j.server.server.command.executor.L1ImPactGfxid1;
 import l1j.server.server.command.executor.L1ImPactGfxid;
 import l1j.server.server.command.executor.L1Burf;
-import l1j.server.server.command.executor.L1ItemDelete;
 import l1j.server.server.command.executor.L1PowerKick;
 import l1j.server.server.command.executor.L1SkillEffect;
 import l1j.server.server.command.executor.L1AdShop;
-import l1j.server.server.command.executor.L1QueryCharacter;
-import l1j.server.server.command.executor.L1Shutdown;
-import l1j.server.server.command.executor.L1Search;
-import l1j.server.server.command.executor.L1PartyRecall;
 import l1j.server.server.command.executor.L1RemoveLetter;
 import l1j.server.server.command.executor.L1HpBar;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
@@ -195,6 +186,71 @@ import l1j.server.server.GameServer;
 import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.Controller.HomeTownTimeController;
 
+import l1j.server.server.model.network.core.sc.packet.SC_ShopSellList2;
+import l1j.server.server.storage.CacheD;
+import gnu.trove.map.TIntObjectMap;
+import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
+import l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig;
+import l1j.server.server.model.character.Attack.Helper.KeylinkBalanceConfig;
+import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig;
+import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019;
+import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightTicketIdManager;
+import l1j.server.server.model.character.animation.NpcSpeedData;
+import l1j.server.server.model.character.animation.SprBoundary;
+import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.action.listener.ActionListenerLinkageLoader;
+import l1j.server.server.model.character.action.listener.ActionListenerLoader;
+import l1j.server.server.model.item.teleport.designated.DesignatedTeleportLoader;
+import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
+import l1j.server.server.model.character.experience.amplifier.ExpAmplifierLoader;
+import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
+import l1j.server.server.model.item.proc.ItemSkillModelLoader;
+import l1j.server.server.model.world.instance.raid.loader.RaidCompensatorLoader;
+import l1j.server.server.task.automation.ServerMacroLoader;
+import l1j.server.server.task.calendar.MinuteScheduler;
+import l1j.server.server.model.item.pride.PrideLoadManager;
+import l1j.server.server.Announcecycle;
+import l1j.server.server.datatables.AccessoryEnchantInformationTable;
+import l1j.server.server.datatables.AdenShopTable;
+import l1j.server.server.datatables.AlchemyProbability;
+import l1j.server.server.datatables.ArmorEnchantInformationTable;
+import l1j.server.server.datatables.ArmorEnchantList;
+import l1j.server.server.datatables.CharactersGiftItemTable;
+import l1j.server.server.datatables.CraftProbability;
+import l1j.server.server.datatables.DoorSpawnTable;
+import l1j.server.server.datatables.DropItemTable;
+import l1j.server.server.datatables.DropTable;
+import l1j.server.server.datatables.GetBackRestartTable;
+import l1j.server.server.datatables.IncreaseEinhasadMap;
+import l1j.server.server.datatables.NpcMarkTable;
+import l1j.server.server.datatables.MobSkillTable;
+import l1j.server.server.datatables.MonsterParalyzeDelay;
+import l1j.server.server.datatables.NPCTalkDataTable;
+import l1j.server.server.datatables.NoDropItem;
+import l1j.server.server.datatables.NoShopAndWare;
+import l1j.server.server.datatables.NpcCashShopSpawnTable;
+import l1j.server.server.datatables.NpcChatTable;
+import l1j.server.server.datatables.PolyTable;
+import l1j.server.server.datatables.ResolventTable;
+import l1j.server.server.datatables.UBTable;
+import l1j.server.server.datatables.UserProtectMonsterTable;
+import l1j.server.server.datatables.WeaponAddDamage;
+import l1j.server.server.datatables.WeaponEnchantInformationTable;
+import l1j.server.server.datatables.WeaponEnchantList;
+import l1j.server.server.datatables.WeaponSkillTable;
+import l1j.server.server.model.Beginner;
+import l1j.server.server.model.Dungeon;
+import l1j.server.server.model.Getback;
+import l1j.server.server.model.item.L1TreasureBox;
+import l1j.server.server.model.item.function.L1HealingPotion;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ALCHEMY_DESIGN_ACK;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftLoader;
+import l1j.server.server.templates.L1RaceTicket;
+import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.CParty;
+
 public final class BuilderCmdHandler {
  
 	private static Logger _log = Logger.getLogger(BuilderCmdHandler.class.getName());
@@ -326,7 +382,7 @@ public final class BuilderCmdHandler {
 		registerLegacy(loaded, "감시", BuilderCmdHandler::BuilderCmd_patrol);
 		registerLegacy(loaded, "개인버프", BuilderCmdHandler::BuilderCmd_all_buff);
 		registerLegacy(loaded, "검사", BuilderCmdHandler::BuilderCmd_check_character);
-		registerExisting(loaded, "검색", L1Search1::getInstance);
+		registerLegacy(loaded, "검색", BuilderCmdHandler::BuilderCmd_search_shop);
 		registerLegacy(loaded, "계정압류", BuilderCmdHandler::BuilderCmd_account_ban_kick);
 		registerLegacy(loaded, "계정정보", BuilderCmdHandler::BuilderCmd_check_account);
 		registerLegacy(loaded, "고스폰", BuilderCmdHandler::BuilderCmd_to_spawn);
@@ -345,7 +401,7 @@ public final class BuilderCmdHandler {
 		registerLegacy(loaded, "레벨", BuilderCmdHandler::BuilderCmd_level);
 		registerExisting(loaded, "렙선물", L1LevelPresent::getInstance);
 		registerLegacy(loaded, "로보트", BuilderCmdHandler::BuilderCmd_spawn_robot);
-		registerExisting(loaded, "리로드", L1Reload::getInstance);
+		registerLegacy(loaded, "리로드", BuilderCmdHandler::BuilderCmd_reload_tables);
 		registerLegacy(loaded, "리로드트랩", BuilderCmdHandler::BuilderCmd_reload_trap);
 		registerLegacy(loaded, "리셋트랩", BuilderCmdHandler::BuilderCmd_reset_trap);
 		registerLegacy(loaded, "메세지", BuilderCmdHandler::BuilderCmd_server_message);
@@ -353,11 +409,11 @@ public final class BuilderCmdHandler {
 		registerLegacy(loaded, "무인", BuilderCmdHandler::BuilderCmd_fake_character);
 		registerLegacy(loaded, "배치", BuilderCmdHandler::BuilderCmd_insert_spawn);
 		registerLegacy(loaded, "밴아이피", BuilderCmdHandler::BuilderCmd_ban_ip);
-		registerExisting(loaded, "버프", L1Buff::getInstance);
+		registerLegacy(loaded, "버프", BuilderCmdHandler::BuilderCmd_buff_by_id);
 		registerLegacy(loaded, "버프아이콘", BuilderCmdHandler::BuilderCmd_buff_icon);
 		registerLegacy(loaded, "변신", BuilderCmdHandler::BuilderCmd_poly);
 		registerLegacy(loaded, "불투명", BuilderCmdHandler::BuilderCmd_visible);
-		registerExisting(loaded, "서먼", L1Summon::getInstance);
+		registerLegacy(loaded, "서먼", BuilderCmdHandler::BuilderCmd_summon_servitor);
 		registerLegacy(loaded, "선물", BuilderCmdHandler::BuilderCmd_give_present);
 		registerLegacy(loaded, "설문", BuilderCmdHandler::BuilderCmd_gm_question);
 		registerLegacy(loaded, "세트아이템", BuilderCmdHandler::BuilderCmd_summon_set_item);
@@ -374,7 +430,7 @@ public final class BuilderCmdHandler {
 		registerLegacy(loaded, "스킬아이콘", BuilderCmdHandler::BuilderCmd_skill_icon);
 		registerLegacy(loaded, "스폰이벤트", BuilderCmdHandler::BuilderCmd_event_spawn);
 		registerLegacy(loaded, "실행", BuilderCmdHandler::BuilderCmd_favorite);
-		registerExisting(loaded, "아이템삭제", L1ItemDelete::getInstance);
+		registerLegacy(loaded, "아이템삭제", BuilderCmdHandler::BuilderCmd_delete_items);
 		registerLegacy(loaded, "아이피추방", BuilderCmdHandler::BuilderCmd_ip_kick);
 		registerLegacy(loaded, "액션", BuilderCmdHandler::BuilderCmd_action);
 		registerLegacy(loaded, "에코", BuilderCmdHandler::BuilderCmd_echo);
@@ -390,10 +446,10 @@ public final class BuilderCmdHandler {
 		registerExisting(loaded, "장사", L1AdShop::getInstance);
 		registerLegacy(loaded, "정리", BuilderCmdHandler::BuilderCmd_clear);
 		registerLegacy(loaded, "정보", BuilderCmdHandler::BuilderCmd_describe);
-		registerExisting(loaded, "조회", L1QueryCharacter::getInstance);
-		registerExisting(loaded, "종료", L1Shutdown::getInstance);
+		registerLegacy(loaded, "조회", BuilderCmdHandler::BuilderCmd_query_character);
+		registerLegacy(loaded, "종료", BuilderCmdHandler::BuilderCmd_shutdown_server);
 		registerLegacy(loaded, "지엠", BuilderCmdHandler::BuilderCmd_toggle_gm);
-		registerExisting(loaded, "찾기", L1Search::getInstance);
+		registerLegacy(loaded, "찾기", BuilderCmdHandler::BuilderCmd_find_object);
 		registerLegacy(loaded, "채금", BuilderCmdHandler::BuilderCmd_chat_ban);
 		registerLegacy(loaded, "채팅", BuilderCmdHandler::BuilderCmd_world_chat);
 		registerLegacy(loaded, "청소", BuilderCmdHandler::BuilderCmd_delete_ground_item);
@@ -401,7 +457,7 @@ public final class BuilderCmdHandler {
 		registerLegacy(loaded, "출두", BuilderCmdHandler::BuilderCmd_to_pc);
 		registerLegacy(loaded, "킬", BuilderCmdHandler::BuilderCmd_kill);
 		registerLegacy(loaded, "투명", BuilderCmdHandler::BuilderCmd_invisible);
-		registerExisting(loaded, "파티소환", L1PartyRecall::getInstance);
+		registerLegacy(loaded, "파티소환", BuilderCmdHandler::BuilderCmd_party_recall);
 		registerExisting(loaded, "편지삭제", L1RemoveLetter::getInstance);
 		registerExisting(loaded, "피바", L1HpBar::getInstance);
 		registerLegacy(loaded, "홈타운", BuilderCmdHandler::BuilderCmd_home_town);
@@ -7307,6 +7363,1165 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+    private static final int BUILDER_SEARCH_SHOP_KEY = 0x3fffff08;
+    private static final String[] BUILDER_SEARCH_QUERIES = {
+            "SELECT item_id, name, name_id FROM etcitem WHERE name LIKE ?",
+            "SELECT item_id, name, name_id FROM weapon WHERE name LIKE ?",
+            "SELECT item_id, name, name_id FROM armor WHERE name LIKE ?",
+            "SELECT npcid, name, note FROM npc WHERE name LIKE ?",
+            "SELECT polyid, name, id FROM polymorphs WHERE name LIKE ?",
+            "SELECT gfxid, name, note FROM npc WHERE name LIKE ?"
+    };
+
+
+
+	private static void BuilderCmd_search_shop(L1PcInstance pc, String cmdName, String arg) {
+        if (pc == null || arg == null) return;
+        final int type;
+        final String pattern;
+        try {
+            StringTokenizer tok = new StringTokenizer(arg);
+            type = Integer.parseInt(tok.nextToken());
+            pattern = "%" + tok.nextToken() + "%";
+            if (type < 0 || type >= BUILDER_SEARCH_QUERIES.length) {
+                throw new IllegalArgumentException("Invalid item search category");
+            }
+        } catch (RuntimeException e) {
+            SC_SystemMessage.send(pc, ".검색 [0~5] [name]을 입력 해주세요.");
+            SC_SystemMessage.send(pc, "0=잡템, 1=무기, 2=갑옷, 3=엔피시, 4=변신, 5=엔피시(gfxid)");
+            return;
+        }
+
+        final CUserSocket owner = pc.getNetConnection();
+        if (owner == null || !owner.isConnected() || owner.getActiveChar() != pc) return;
+        try {
+            CacheD.getInstance().submitDbJobOrdered(BUILDER_SEARCH_SHOP_KEY, pc.getId(), () -> {
+                final ArrayList<String> messages = new ArrayList<>();
+                boolean success = false;
+                try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+                    boolean oldAutoCommit = con.getAutoCommit();
+                    try {
+                        con.setAutoCommit(false);
+                        try (PreparedStatement clear = con.prepareStatement(
+                                "DELETE FROM shop WHERE npc_id=8")) {
+                            clear.executeUpdate();
+                        }
+                        try (PreparedStatement query = con.prepareStatement(BUILDER_SEARCH_QUERIES[type]);
+                             PreparedStatement insert = con.prepareStatement(
+                                    "INSERT INTO shop SET npc_id=?,item_id=?,order_id=?,selling_price=?,pack_count=?,purchasing_price=?,enchant=?,time_limit=?")) {
+                            query.setString(1, pattern);
+                            try (ResultSet rs = query.executeQuery()) {
+                                while (rs.next()) {
+                                    String itemId = rs.getString(1);
+                                    String itemName = rs.getString(2);
+                                    String description = rs.getString(3);
+                                    messages.add("[" + itemId + "]--[" + itemName + "]--" + description);
+                                    insert.setInt(1, 8);
+                                    insert.setString(2, itemId);
+                                    insert.setInt(3, 0);
+                                    insert.setInt(4, 1);
+                                    insert.setInt(5, 0);
+                                    insert.setInt(6, -1);
+                                    insert.setInt(7, 0);
+                                    insert.setString(8, "false");
+                                    insert.addBatch();
+                                }
+                            }
+                            insert.executeBatch();
+                        }
+                        con.commit();
+                        success = true;
+                    } catch (Exception e) {
+                        try { con.rollback(); } catch (Exception rollbackFailure) {
+                            e.addSuppressed(rollbackFailure);
+                        }
+                        throw e;
+                    } finally {
+                        try { con.setAutoCommit(oldAutoCommit); }
+                        catch (Exception e) { _log.log(Level.WARNING, "Search transaction restore failed", e); }
+                    }
+                } catch (Exception e) {
+                    _log.log(Level.WARNING, "GM item search failed", e);
+                }
+                if (success) {
+                    try {
+                        ShopTable.reload();
+                    } catch (RuntimeException e) {
+                        success = false;
+                        _log.log(Level.WARNING, "GM item search shop reload failed", e);
+                    }
+                }
+                final boolean completed = success;
+                if (!CIOThreadCallback.getInstance().completeSessionReply(owner, () -> {
+                    if (!owner.isConnected() || owner.getActiveChar() != pc
+                            || pc.getNetConnection() != owner) return;
+                    if (!completed) {
+                        SC_SystemMessage.send(pc, "검색 상점 갱신에 실패했습니다.");
+                        return;
+                    }
+                    for (int i = 0, size = messages.size(); i < size; i++) {
+                        SC_SystemMessage.send(pc, messages.get(i));
+                    }
+                    SC_SystemMessage.send(pc, "총 [" + messages.size() + "]개 검색이 되었습니다.");
+                    SC_ShopSellList2.send(pc);
+                })) {
+                    _log.fine("GM item search response discarded: player disconnected");
+                }
+            });
+        } catch (RuntimeException e) {
+            _log.log(Level.WARNING, "GM item search CacheD submission failed", e);
+            SC_SystemMessage.send(pc, "검색 요청을 처리할 수 없습니다.");
+        }
+    }
+
+	private static void BuilderCmd_reload_tables(L1PcInstance gm, String cmdName, String arg) {		
+        if (arg != null && arg.trim().equalsIgnoreCase("pss")) {
+            try {
+                PssConfig.Settings updated = PssConfig.reload();
+                PlaySupport2019.refreshForReload();
+                SC_SystemMessage.send(gm, "PSS 설정 적용: 하루 " + (updated.dailySeconds() / 60)
+                        + "분, 매일 " + updated.resetTimeText()
+                        + "(한국 시간) 초기화. 실행 중인 PSS는 계속 유지됩니다.");
+            } catch (java.io.IOException | IllegalArgumentException e) {
+                SC_SystemMessage.send(gm, "PSS 설정 로딩 실패: " + e.getMessage());
+            }
+            return;
+        }
+        if (arg != null && (arg.trim().equalsIgnoreCase("인형발동")
+                || arg.trim().equalsIgnoreCase("인형확률"))) {
+            try {
+                MagicDollCombatConfig.reload();
+                SC_SystemMessage.send(gm, "마법인형 발동 설정 적용 완료 (MagicDollProc.properties)");
+            } catch (java.io.IOException | IllegalArgumentException ex) {
+                SC_SystemMessage.send(gm, "마법인형 발동 설정 리로드 실패: " + ex.getMessage()
+                        + " (이전 설정 유지)");
+            }
+            return;
+        }
+        if (arg != null && (arg.trim().equalsIgnoreCase("키링크밸런스")
+                || arg.trim().equalsIgnoreCase("키링크"))) {
+            try {
+                KeylinkBalanceConfig.reload();
+                SC_SystemMessage.send(gm, "키링크 방어자 직업 계수 8종 적용 완료 (KeylinkBalance.properties)");
+            } catch (java.io.IOException | IllegalArgumentException ex) {
+                SC_SystemMessage.send(gm, "키링크 밸런스 리로드 실패: " + ex.getMessage()
+                        + " (이전 설정 유지)");
+            }
+            return;
+        }
+        if (arg != null && arg.trim().equalsIgnoreCase("스킬확률")) {
+            try {
+                AttackSkillChanceConfig.reload();
+                SC_SystemMessage.send(gm, "스킬 발동 확률 설정 적용 완료 (SkillChance.properties)");
+            } catch (java.io.IOException | IllegalArgumentException ex) {
+                SC_SystemMessage.send(gm, "스킬 발동 확률 리로드 실패: " + ex.getMessage()
+                        + " (이전 설정 유지)");
+            }
+            return;
+        }
+		if (arg.equalsIgnoreCase("몹드랍")) {
+			DropTable.reload();
+			gm.sendPackets("droplist 테이블이 리로드 되었습니다.");	
+	//	} else if (arg.equalsIgnoreCase("오림주문서")) {	
+		//	L1OrimScrollEnchant.reload();
+		//	gm.sendPackets("오림 장신구 강화주문서 정보가 리로드 되었습니다.");
+ 
+		} else if (arg.equalsIgnoreCase("창고이용")) {
+			NoShopAndWare.getInstance().reload();;
+			gm.sendPackets("NoShopAndWare 테이블이 리로드 되었습니다.");	
+		}else if (arg.equalsIgnoreCase("노드랍")) {
+				NoDropItem.getInstance().reload();;
+				gm.sendPackets("nodropitem 테이블이 리로드 되었습니다.");	
+		}else if(arg.equalsIgnoreCase("낚시경험치")){
+			FishingExpInfo.do_load();
+			gm.sendPackets("fishing_exp_info 테이블이 리로드 되었습니다.");
+		}else if(arg.equalsIgnoreCase("변신레벨")){
+			SprBoundary.do_load();
+			gm.sendPackets("spr_boundary 테이블이 리로드 되었습니다.");
+		}else if(arg.equalsIgnoreCase("엔피씨속도")){
+			NpcSpeedData.do_load();
+			for(L1NpcInstance npc : L1World.getInstance().getAllNpc())
+				NpcSpeedData.install_npc(npc);
+			gm.sendPackets("npc_speed_data  테이블이 리로드 되었습니다.");
+
+		} else if (arg.equalsIgnoreCase("무한대전")) {
+			 UBTable.reload();
+			gm.sendPackets("ub_settings/ub_manager_npc_id/ub_times/spawnlist_ub/ub_rank 테이블이 리로드 되었습니다.");
+		 } else if (arg.equalsIgnoreCase("겟백")) {
+			 Getback.loadGetBack();
+			gm.sendPackets("getback 테이블이 리로드 되었습니다.");
+		 } else if (arg.equalsIgnoreCase("겟백리스타트")) {
+			 GetBackRestartTable.reload();
+				gm.sendPackets("getback_restart 테이블이 리로드 되었습니다.");
+		 } else if (arg.equalsIgnoreCase("용드랍")) {
+			 RaidCompensatorLoader.reload();
+			gm.sendPackets("tb_mjraid_compensators 테이블이 리로드 되었습니다.");	
+		 } else if(arg.equalsIgnoreCase("버경")){
+			BugRaceController.load_config();
+			gm.sendPackets("bug_race.properties가 리로드 되었습니다.");	
+		} else if(arg.equalsIgnoreCase("커스시간")){
+			MonsterParalyzeDelay.reload();
+			gm.sendPackets("monster_paralyze 테이블이 리로드 되었습니다.");				
+		}else if(arg.equalsIgnoreCase("자존심")){
+			PrideLoadManager.reload();
+			gm.sendPackets("pride_items 테이블/price_system.properties이 리로드 되었습니다.");			
+		} else if(arg.equalsIgnoreCase("맵아인")){
+			IncreaseEinhasadMap.reload();
+			gm.sendPackets("tb_increase_einhasad_map 테이블이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("패시브스킬")){
+			PassiveLoader.reload();
+			gm.sendPackets("passive_book_mapped 테이블이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("텔주문서")){
+			DesignatedTeleportLoader.reload();
+			gm.sendPackets("tb_designate_teleport_scroll 테이블이 리로드되었습니다.");
+		} else if(arg.equalsIgnoreCase("액션리스너")){
+			MinuteScheduler.getInstance().clear_action_listener();
+			ActionListenerLoader.getInstance().updateNpcActionListener();
+			ActionListenerLinkageLoader.reload();
+			gm.sendPackets("액션 리스너가 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("자동공지")){
+			Announcecycle.getInstance().reloadAnnouncecycle();
+			gm.sendPackets("Announcecycle이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("제작확률")){
+			CraftProbability.reload();
+			gm.sendPackets("craft_probability 테이블이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("인형확률")){
+			AlchemyProbability.reload();
+			gm.sendPackets("tb_alchemy_probability 테이블이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("제작인형컨픽")){
+			Config.loadCraftConfig();
+			gm.sendPackets("제작/인형 컨픽이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("크레프트인포")){
+		    CraftLoader.load();
+		    SC_CRAFT_LIST_ALL_ACK.buildCaches(); 
+			gm.sendPackets("craftinfo.dat가 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("인형인포")){
+			SC_ALCHEMY_DESIGN_ACK.load(); 
+			gm.sendPackets("alchemyinfo.dat가 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("제작엔피씨")){
+			SC_CRAFT_LIST_ALL_ACK.buildNpcCaches();
+			gm.sendPackets("craftlist 테이블이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("아이템스킬")){
+			ItemSkillModelLoader.reload();
+			gm.sendPackets("tb_itemskill_model 테이블이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("매크로")){
+			ServerMacroLoader.reload();			
+			gm.sendPackets("tb_ServerMacro 테이블이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("아인증폭")){
+			ExpAmplifierLoader.reload();
+			gm.sendPackets("ExpAmplifierLoader 테이블이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("확")){
+			ExpAmplifierLoader.reload();
+			gm.sendPackets("ExpAmplifierLoader 테이블이 리로드 되었습니다.");
+		} else if(arg.equalsIgnoreCase("엔피씨마크")){
+			NpcMarkTable.reload();
+			gm.sendPackets("NpcMark 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("엔피씨액션")) { 
+			NPCTalkDataTable.reload();
+			gm.sendPackets("NpcAction 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("엔피씨")) {
+			CObjectDB.ReloadNPC();
+			gm.sendPackets("NpcTable/npc_born 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("템드랍아이템")) {
+			DropItemTable.reload();
+			gm.sendPackets("drop_item 테이블이 리로드 되었습니다.");
+//		} else if (arg.equalsIgnoreCase("용해제2")) {
+//			ResolventTable1.reload();
+//			gm.sendPackets("resolvent1 테이블이 리로드 최신화되었습니다.");
+		} else if (arg.equalsIgnoreCase("변신")) {
+			PolyTable.reload();
+			gm.sendPackets("polymorphs 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("용해제1")) {
+			ResolventTable.reload();
+			gm.sendPackets("resolvent 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("박스")) {
+			if(L1TreasureBox.load())
+				gm.sendPackets("TreasureBox.xml 파일이 리로드 되었습니다.");
+			else{
+				String s = "TreasureBox에 오류가 발견되었습니다.";
+				gm.sendPackets(s);
+				System.out.println(s);
+			}
+		} else if (arg.equalsIgnoreCase("물약회복")) {
+			L1HealingPotion.reload();
+			gm.sendPackets("HealingPotion.xml 파일이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("컨피그")) {			
+			Config.load();
+			gm.sendPackets("config 폴더에 파일이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("스킬")) {
+			SkillsTable.reload();
+			gm.sendPackets("Skill 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("몹스킬")) {
+			MobSkillTable.reload();
+			gm.sendPackets("mobskill 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("엔피씨액션")) { 
+			NPCTalkDataTable.reload();
+			gm.sendPackets("NpcAction 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("무기스킬")) {
+			WeaponSkillTable.reload();
+			gm.sendPackets("WeaponSkill 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("영자상점")) {
+			NpcShopManager.getInstance().reloadAndApply();
+			gm.sendPackets("영자상점 테이블이 리로드 되었습니다.");	
+		}else if (arg.equalsIgnoreCase("레벨퀘스트")) {
+			CharactersGiftItemTable.reload();
+			gm.sendPackets("characters_levelup_item 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("밴아이피")) {
+			IpTable.getInstance();
+			IpTable.reload();
+			gm.sendPackets("banIp 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("아이템")){
+			CObjectDB.ReloadItem();
+			gm.sendPackets("아이템 정보가 리로드 되었습니다.");
+			TIntObjectMap<L1Item> items = CObjectDB.LoadItem().getAllTemplates();
+			HashMap<Integer, L1RaceTicket> map = BugRaceController.getInstance().getAllTemplates();
+			for(L1RaceTicket t : map.values()){
+				if(t != null)
+					items.put(t.getItemId(), t);
+			}
+			DogFightTicketIdManager.getInstance().update_item_template();
+		} else if (arg.equalsIgnoreCase("상점")){
+			ShopTable.reload();
+			gm.sendPackets("shop 테이블이 리로드 되었습니다.");	
+		} else if (arg.equalsIgnoreCase("웨폰데미지")
+                || arg.equalsIgnoreCase("웨폰대미지")) {
+            if (WeaponAddDamage.reload()) {
+                final WeaponAddDamage loaded = WeaponAddDamage.getInstance();
+                gm.sendPackets("weapon_damage 전체 리로드 완료: " + loaded.getEntryCount()
+                        + "개 / 명중 보정 " + loaded.getNonZeroHitCount()
+                        + "개 / 데미지 보정 " + loaded.getNonZeroDamageCount() + "개");
+            } else {
+                gm.sendPackets("weapon_damage 리로드 실패: 기존 설정 유지 (서버 로그 확인)");
+            }
+		} else if (arg.equalsIgnoreCase("클랜데이터")){
+			ClanTable.reload();
+			CastleWarBusiness.getInstance().reload();
+			gm.sendPackets("리로드: clan_data 테이블이 리로드 되었습니다.");		
+		} else if (arg.equalsIgnoreCase("공성")){
+			CastleWarBusiness.getInstance().reload();
+			gm.sendPackets("리로드: castle 테이블이 리로드 되었습니다.");		
+		} else if (arg.equalsIgnoreCase("스폰리스트")){
+			
+			gm.sendPackets("[.엔피씨다운 몬스터 배치or삭제]를 이용하시길 바랍니다.");	
+//		} else if (arg.equalsIgnoreCase("엔스폰리스트")){
+//			NpcSpawnTable.getInstance().reload();
+//			gm.sendPackets("리로드: spawnlist_npc 테이블 리로드 되었습니다.");	
+		} else if (arg.equalsIgnoreCase("엔스폰리스트")){
+			
+			gm.sendPackets("[.엔피씨다운 엔피씨 배치or삭제]를 이용하시길 바랍니다.");	
+		} else if (arg.equalsIgnoreCase("엔캐샵스폰리스트")){
+			NpcCashShopSpawnTable.reload();
+			gm.sendPackets("리로드: spawnlist_npc_cash_shop 테이블이 리로드 되었습니다.");	
+		} else if (arg.equalsIgnoreCase("엔피씨채팅")){
+			NpcChatTable.reload();
+			gm.sendPackets("리로드: npcchat 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("던전")){
+			Dungeon.reload();
+			gm.sendPackets("리로드: dungeon 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("문")){
+			DoorSpawnTable.reload();
+			gm.sendPackets("리로드: spawnlist_door 테이블이 리로드 되었습니다.");
+//		} else if (arg.equalsIgnoreCase("맵")){
+//			MapsTable.reload();
+//			gm.sendPackets("리로드: mapids 테이블이 리로드 되었습니다.");
+//		} else if (arg.equalsIgnoreCase("벨런스")){
+//			gm.sendPackets("리로드: character_balance 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("비기너")){
+		//} else if (arg.equalsIgnoreCase("신규지급템")){
+			Beginner.reload();
+			gm.sendPackets("리로드: beginner 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("오토드랍")){
+			AutoLoot.reload();
+			gm.sendPackets("리로드: autoloot 테이블이 리로드 되었습니다.");
+		} else if (arg.equalsIgnoreCase("아머인챈트")){
+			ArmorEnchantList.reload();
+			gm.sendPackets("리로드: armor_enchant_list 테이블이 리로드 되었습니다");
+		} else if (arg.equalsIgnoreCase("웨폰인챈트")){
+			WeaponEnchantList.reload();
+			gm.sendPackets("리로드: weapon_enchant_list 테이블이 리로드 되었습니다");
+		} else if (arg.equalsIgnoreCase("엔샵")){
+			AdenShopTable.reload();
+			gm.sendPackets("리로드: shop_aden 테이블이 리로드 되었습니다");
+		} else if(arg.equalsIgnoreCase("방어구인챈정보")) {
+			ArmorEnchantInformationTable.reload();
+			gm.sendPackets("리로드: armor_enchant_list 테이블이 리로드 되었습니다");
+		} else if(arg.equalsIgnoreCase("무기인챈정보")) {
+			WeaponEnchantInformationTable.reload();
+			gm.sendPackets("리로드: weapon_enchant_list 테이블이 리로드 되었습니다");
+		} else if(arg.equalsIgnoreCase("악세인챈정보")) {
+			AccessoryEnchantInformationTable.reload();
+			gm.sendPackets("리로드: accessory_enchant_list 테이블이 리로드 되었습니다");
+		} else if(arg.equalsIgnoreCase("세트아이템")) {
+			CObjectDB.ReloadSetItem();
+			gm.sendPackets("리로드: armor_set 테이블이 리로드 되었습니다");
+//		} else if (arg.equalsIgnoreCase("이벤트알람")) {
+//			try {
+//				L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f:보스알람시간이 재정비되었습니다." ));
+//				L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f:리스 후 보스알람시간표기가 리로드됩니다." ));
+//				
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+		} else if (arg.equalsIgnoreCase("보스스폰")) {
+			if (BossController.reload()) {
+				gm.sendPackets("리로드: spawnlist_boss_hot 테이블이 리로드 되었습니다");
+			} else {
+				gm.sendPackets("리로드 실패: 보스 스폰 DB 오류. 기존 예약을 유지합니다.");
+			}
+		} else if (arg.equalsIgnoreCase("답장")) {
+			L1LetterCommand.reload();
+			gm.sendPackets("리로드: letter_command 테이블이 리로드 되었습니다");
+		} else if(arg.equalsIgnoreCase("마법딜")){			
+			SpriteInformationLoader.getInstance().reloadSpellDelayInformation();
+			gm.sendPackets("리로드: MagicDelay 테이블이 리로드 되었습니다");	
+		} else if(arg.equalsIgnoreCase("광역마법")){
+			EffectModelLoader.reload();
+			gm.sendPackets("리로드: EffectModel 테이블이 리로드 되었습니다.");	
+		} else if(arg.equalsIgnoreCase("신규보호몬스터")){
+			UserProtectMonsterTable.getInstance().reload();
+			gm.sendPackets("신규보호몬스터 테이블이 리로드 되었습니다.");
+		} else {
+			gm.sendPackets("---------------리로드 목록을 보여드립니다-------------");
+			gm.sendPackets("몹드랍.템드랍아이템.변신.상점.박스.스킬.몹스킬");
+			gm.sendPackets("아이템.용해제1~2.무기스킬.레벨퀘스트");
+			gm.sendPackets("컨피그.물약회복.밴아이피.용해제아덴.이벤트알람");
+			gm.sendPackets("엔피씨.엔피씨액션.클랜데이터.공성.보스스폰");
+			gm.sendPackets("스폰리스트.엔스폰리스트.엔피씨채팅.무기인챈트");
+			gm.sendPackets("엔캐샵스폰리스트.던전.맵.신규지급템.답장");
+			gm.sendPackets("오토드랍.엔샵 .매크로 .악세인챈정보");
+			gm.sendPackets("세트아이템.로봇.제작엔피씨.자동공지.북시스템");
+			gm.sendPackets("맵아인");
+			gm.sendPackets("마법딜 .광역마법 .엔피씨마크 .아인증폭 .노드랍");
+			gm.sendPackets("아이템스킬 .크레프트인포 .인형인포 .제작인형컨픽");
+			gm.sendPackets("액션리스너 .제작확률 .인형확률 .엔피씨다운");
+			gm.sendPackets("텔주문서 .푸쉬시스템 .참시스템");
+			gm.sendPackets("신규보호몬스터 .자존심 .커스시간 .버경 .회복률");
+			gm.sendPackets("아머클래스 .엔피씨속도 .낚시경험치");
+			gm.sendPackets("보너스아이템");
+			gm.sendPackets("영자상점 .영자상점물품 .무기인챈정보 .방어구인챈정보");
+			gm.sendPackets("악세인챈정보 .웨폰데미지 .스킬확률 .키링크밸런스");
+		}		
+	}
+
+	private static void BuilderCmd_buff_by_id(
+			L1PcInstance pc,
+			String cmdName,
+			String arg) {
+
+		try {
+			final StringTokenizer tok =
+					new StringTokenizer(arg);
+
+			String targetType =
+					tok.nextToken();
+
+			final boolean selfOnly =
+					"나".equals(targetType);
+
+			final Collection<L1PcInstance> players;
+
+			final String skillToken;
+
+			if (selfOnly) {
+				players = null;
+				skillToken = tok.nextToken();
+
+			} else if ("전체".equals(targetType)) {
+				players =
+						L1World.getInstance()
+								.getAllPlayers();
+
+				skillToken = tok.nextToken();
+
+			} else {
+				players =
+						L1World.getInstance()
+								.getVisiblePlayer(pc);
+
+				skillToken = targetType;
+			}
+
+			final int skillId =
+					Integer.parseInt(skillToken);
+
+			final int time =
+					tok.hasMoreTokens()
+							? Integer.parseInt(tok.nextToken())
+							: 0;
+
+			final L1Skills skill =
+					SkillsTable.getInstance()
+							.getTemplate(skillId);
+
+			if (skill == null) {
+				SC_SystemMessage.send(pc, "존재하지 않는 스킬입니다.");
+
+				return;
+			}
+
+			final String skillTarget =
+					skill.getTarget();
+
+			if (!"buff".equals(skillTarget)
+					&& !"none".equals(skillTarget)) {
+
+				SC_SystemMessage.send(pc, "버프계의 스킬이 아닙니다. ");
+
+				return;
+			}
+
+			/*
+			 * "나"는 Collection 만들 필요 없음.
+			 */
+			if (selfOnly) {
+				BuilderCastBuff(
+						pc,
+						skillId,
+						time);
+
+				return;
+			}
+
+			if (players == null || players.isEmpty()) {
+				return;
+			}
+
+			for (L1PcInstance target : players) {
+				if (target == null) {
+					continue;
+				}
+
+				BuilderCastBuff(
+						target,
+						skillId,
+						time);
+			}
+
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName
+							+ " [전체, 나] [스킬아이디] [시간] 라고 입력해 주세요. ");
+		}
+	}
+
+
+	private static void BuilderCastBuff(
+			L1PcInstance target,
+			int skillId,
+			int time) {
+
+		L1SkillUse.cast(
+				target,
+				skillId,
+				target.getId(),
+				target.getX(),
+				target.getY(),
+				null,
+				time,
+				L1SkillUse.TYPE_GMBUFF);
+	}
+
+	private static void BuilderCmd_summon_servitor(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer tok = new StringTokenizer(arg);
+			String nameid = tok.nextToken();
+			int npcid = 0;
+			try {
+				npcid = Integer.parseInt(nameid);
+			} catch (NumberFormatException e) {
+				npcid = CObjectDB.LoadNPC(). findNpcIdByNameWithoutSpace(
+						nameid);
+				if (npcid == 0) {
+					SC_SystemMessage.send(pc, "해당 NPC가 발견되지 않습니다. ");
+					return;
+				}
+			}
+			int count = 1;
+			if (tok.hasMoreTokens()) {
+				count = Integer.parseInt(tok.nextToken());
+			}
+			L1Npc npc = CObjectDB.GetNPC(npcid);
+			L1SummonInstance summonInst = null;
+			for (int i = 0; i < count; i++) {
+				summonInst = new L1SummonInstance(npc, pc);
+				summonInst.setPetcost(0);
+			}
+			nameid = CObjectDB.GetNPC(npcid). get_name();
+			SC_SystemMessage.send(pc, nameid + "(ID:" + npcid + ") ("
+					+ count + ")를 소환했습니다. ");
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName
+					+ " [npcid or name] [서먼수] 라고 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_shutdown_server(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			if (arg.equalsIgnoreCase("지금")) {
+				GameServer.getInstance(). shutdownWithCountdown(0);
+				return;
+			}
+
+			if (arg.equalsIgnoreCase("취소")) {
+				GameServer.getInstance(). abortShutdown();
+				return;
+			}
+			
+			int sec = Math.max(5, Integer.parseInt(arg));
+			GameServer.getInstance(). shutdownWithCountdown(sec);
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, ".종료 [대기초, 지금, 취소] 라고 입력해 주세요.");
+		}
+	}
+
+	private static void BuilderCmd_find_object(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			String type = "";
+			String name = "";
+			String add = "";
+			boolean simpleS = true;
+			int itCount = 0;
+			while (st.hasMoreTokens()) {
+				if (itCount == 1) {
+					add = "%";
+				}
+				String tempVar = st.nextToken();
+				if (itCount == 0
+						&& (tempVar.equals("갑옷") || tempVar.equals("무기")
+								|| tempVar.equals("etc")
+								|| tempVar.equals("변신") || tempVar
+									.equals("NPC"))) {
+					simpleS = false;
+					type = tempVar;
+				} else {
+					name = name + add + tempVar;
+				}
+				itCount++;
+			}
+			if (simpleS == false) {
+				BuilderFindObject(pc, type, name);
+			} else {
+				BuilderFindObject(pc, name);
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, ".find [갑옷,무기,etc,변신,NPC] 를 입력 해주세요");
+		}
+	}
+
+	private static void BuilderFindObject(L1PcInstance pc, String type, String name) {
+		String str1 = null;
+		String str2 = null;
+		int bless = 0;
+		int count = 0;
+		Connection con = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		try {
+			con = DatabaseFactory.getInstance().getConnection();
+			boolean error = false;
+
+			SC_SystemMessage.send(pc, " ");
+
+			if (type.equals("갑옷")) {
+				statement = con
+						.prepareStatement("SELECT item_id,name,bless FROM armor WHERE name Like '%"
+								+ name + "%'");
+			} else if (type.equals("무기")) {
+				statement = con
+						.prepareStatement("SELECT item_id,name,bless FROM weapon WHERE name Like '%"
+								+ name + "%'");
+			} else if (type.equals("etc")) {
+				statement = con
+						.prepareStatement("SELECT item_id,name,bless FROM etcitem WHERE name Like '%"
+								+ name + "%'");
+			} else if (type.equals("변신")) {
+				statement = con
+						.prepareStatement("SELECT polyid,name FROM polymorphs WHERE name Like '%"
+								+ name + "%'");
+			} else if (type.equals("NPC")) {
+				statement = con
+						.prepareStatement("SELECT npcid,name FROM npc WHERE name Like '%"
+								+ name + "%'");
+			} else {
+				error = true;
+				SC_SystemMessage.send(pc, ".find [갑옷,무기,etc,변신,NPC] 를 입력 해주세요.");
+			}
+			String blessed = null;
+			if (error == false) {
+				rs = statement.executeQuery();
+				SC_SystemMessage.send(pc, "라인에 검색 하는 '"
+						+ name.replace("%", " ") + " ' 는" + type + "이름...");
+				while (rs.next()) {
+					str1 = rs.getString(1);
+					str2 = rs.getString(2);
+					if (type.equals("갑옷") || type.equals("무기")
+							|| type.equals("etc")) {
+						bless = rs.getInt(3);
+						if (bless == 1) {
+							blessed = "";
+						} else if (bless == 0) {
+							blessed = "\\fR";
+						} else {
+							blessed = "\\fY";
+						}
+						SC_SystemMessage.send(pc, blessed + "번호: "
+								+ str1 + ", " + str2);
+					} else {
+						SC_SystemMessage.send(pc, "번호: " + str1 + ", "
+								+ str2);
+					}
+					count++;
+				}
+				SC_SystemMessage.send(pc, "찾기 " + count + " 라인에 항목"
+						+ type + "타입。");
+			}
+		} catch (Exception e) {
+		} finally {
+			SQLUtil.close(rs, statement, con);
+		}
+	}
+
+	private static void BuilderFindObject(L1PcInstance pc, String name) {
+		String str1 = null;
+		String str2 = null;
+		int bless = 0;
+		String blessed = null;
+		Connection con = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		int count1 = 0;
+		int count2 = 0;
+		int count3 = 0;
+		int count4 = 0;
+		int count5 = 0;
+		try {
+			con = DatabaseFactory.getInstance().getConnection();
+
+			SC_SystemMessage.send(pc, " ");
+			SC_SystemMessage.send(pc, "라인에서 검색 한 개체 이름: '"
+					+ name.replace("%", " ") + "'");
+
+			statement = con
+					.prepareStatement("SELECT item_id,name,bless FROM armor WHERE name Like '%"
+							+ name + "%'");
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				if (count1 == 0) {
+					SC_SystemMessage.send(pc, "갑옷:");
+				}
+				str1 = rs.getString(1);
+				str2 = rs.getString(2);
+				bless = rs.getInt(3);
+				if (bless == 1) {
+					blessed = "";
+				} else if (bless == 0) {
+					blessed = "\\fR";
+				} else {
+					blessed = "\\fY";
+				}
+				SC_SystemMessage.send(pc, blessed + "번호: " + str1
+						+ ", " + str2);
+				count1++;
+			}
+		} catch (Exception e) {
+		} finally {
+			SQLUtil.close(rs);
+			SQLUtil.close(statement);
+		}
+		try {
+			statement = con
+					.prepareStatement("SELECT item_id,name,bless FROM weapon WHERE name Like '%"
+							+ name + "%'");
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				if (count2 == 0) {
+					SC_SystemMessage.send(pc, "무기:");
+				}
+				str1 = rs.getString(1);
+				str2 = rs.getString(2);
+				bless = rs.getInt(3);
+				if (bless == 1) {
+					blessed = "";
+				} else if (bless == 0) {
+					blessed = "\\fR";
+				} else {
+					blessed = "\\fY";
+				}
+				SC_SystemMessage.send(pc, blessed + "번호: " + str1
+						+ ", " + str2);
+				count2++;
+			}
+		} catch (Exception e) {
+		} finally {
+			SQLUtil.close(rs);
+			SQLUtil.close(statement);
+		}
+		try {
+			statement = con
+					.prepareStatement("SELECT item_id,name,bless FROM etcitem WHERE name Like '%"
+							+ name + "%'");
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				if (count3 == 0) {
+					SC_SystemMessage.send(pc, "etc:");
+				}
+				str1 = rs.getString(1);
+				str2 = rs.getString(2);
+				bless = rs.getInt(3);
+				if (bless == 1) {
+					blessed = "";
+				} else if (bless == 0) {
+					blessed = "\\fR";
+				} else {
+					blessed = "\\fY";
+				}
+				SC_SystemMessage.send(pc, blessed + "번호: " + str1
+						+ ", " + str2);
+				count3++;
+			}
+		} catch (Exception e) {
+		} finally {
+			SQLUtil.close(rs);
+			SQLUtil.close(statement);
+		}
+		try {
+			statement = con
+					.prepareStatement("SELECT polyid,name FROM polymorphs WHERE name Like '%"
+							+ name + "%'");
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				if (count4 == 0) {
+					SC_SystemMessage.send(pc, "변신:");
+				}
+				str1 = rs.getString(1);
+				str2 = rs.getString(2);
+				SC_SystemMessage.send(pc, "번호: " + str1 + ", " + str2);
+				count4++;
+			}
+		} catch (Exception e) {
+		} finally {
+			SQLUtil.close(rs);
+			SQLUtil.close(statement);
+		}
+		try {
+			statement = con
+					.prepareStatement("SELECT npcid,name FROM npc WHERE name Like '%"
+							+ name + "%'");
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				if (count5 == 0) {
+					SC_SystemMessage.send(pc, "NPC:");
+				}
+				str1 = rs.getString(1);
+				str2 = rs.getString(2);
+				SC_SystemMessage.send(pc, "번호: " + str1 + ", " + str2);
+				count5++;
+			}
+		} catch (Exception e) {
+		} finally {
+			SQLUtil.close(rs, statement, con);
+		}
+
+		try {
+			SC_SystemMessage.send(pc, "검색 결과:");
+			String found = "";
+			if (count1 > 0) {
+				found += "갑옷: " + count1 + "、";
+			}
+			if (count2 > 0) {
+				found += "무기: " + count2 + "、";
+			}
+			if (count3 > 0) {
+				found += "etc: " + count3 + "、";
+			}
+			if (count4 > 0) {
+				found += "변신: " + count4 + "、";
+			}
+			if (count5 > 0) {
+				found += "NPC: " + count5 + "。";
+			}
+			if (found.length() > 0) {
+				found = found.substring(0, found.length() - 1) + "。";
+			} else {
+				found = " 0 개의 항목을 발견";
+			}
+			SC_SystemMessage.send(pc, found);
+		} catch (Exception e) {
+		}
+	}
+
+	private static void BuilderCmd_delete_items(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer tok = new StringTokenizer(arg);
+			String type = tok.nextToken();				
+			WarehouseManager wareHouse = WarehouseManager.getInstance();
+			if(type.equalsIgnoreCase("전체")) {				
+				try {	
+					int itemId = Integer.parseInt(tok.nextToken());
+					ArrayList<String> accounts = BuilderDeleteItems_loadAccount();
+					String name;
+					for(int i = 0; i < accounts.size(); i++) {
+						name = accounts.get(i);	
+						BuilderDeleteItems_deleteWareHouse(wareHouse, name, itemId);//창고 삭제
+					}
+
+					for(L1PcInstance players : L1World.getInstance().getAllPlayers()) {
+						players.getInventory().DeleteItemInInventory(itemId);
+						SC_SystemMessage.send(pc, "전체유저의 템번호 ["+itemId+"]를 삭제하였습니다.");
+						
+					}
+					Warehouse _clanWarehouse;
+					L1ItemInstance clanItem;
+					for(L1Clan clans : L1World.getInstance().getAllClans()) {
+						_clanWarehouse = wareHouse.getClanItems(clans.getClanName());
+						clanItem = _clanWarehouse.GetFirstItemByClassID(itemId);
+						if(clanItem != null) {
+							_clanWarehouse.deleteItem(clanItem);
+						}
+					}
+				}catch(Exception e) {
+					SC_SystemMessage.send(pc, cmdName + " [전체] [아이템 번호] 으로 입력해 주세요. ");
+				}
+			}else if(type.equalsIgnoreCase("케릭")){
+				try {
+					String name = tok.nextToken();					
+					int itemId = Integer.parseInt(tok.nextToken());
+					
+					L1PcInstance target = L1World.getInstance().getPlayer(name);
+					if(target == null) {
+						SC_SystemMessage.send(pc, target + "님은 현재 접속중이 아닙니다.");
+						return;
+					}
+					String accountName = target.getAccountName();					
+					BuilderDeleteItems_deleteWareHouse(wareHouse, accountName, itemId);
+					
+					BuilderDeleteItems_loadAccountCharacter(accountName, itemId);
+					
+					L1PcInstance player = L1World.getInstance().getPlayer(name);
+					if(player != null) {
+						player.getInventory().DeleteItemInInventory(itemId);
+						SC_SystemMessage.send(pc, player.getName()+"님의 템번호 ["+itemId+"]를 삭제하였습니다.");
+						
+					}
+				}catch(Exception e) {
+					SC_SystemMessage.send(pc, cmdName + " [케릭] [케릭터명] [아이템 번호] 으로 입력해 주세요");
+				}
+			}
+		}catch(Exception e) {
+			SC_SystemMessage.send(pc, "\\aD" + cmdName + " [전체] [아이템 번호] 으로 입력해 주세요. ");
+			SC_SystemMessage.send(pc, "\\aD" + cmdName + "[케릭]  [케릭터명] [아이템 번호] 으로 입력해 주세요");
+		}
+	}
+
+	private static void BuilderDeleteItems_deleteWareHouse(WarehouseManager wareHouse, String accountName, int itemId) {
+		//계정창고 아이템 삭제..
+		Warehouse _privateWarehouse = null;
+		Warehouse _elfWarehouse = null;				
+		Warehouse _supplementaryService = null;
+
+		L1ItemInstance itemPrivate;
+		L1ItemInstance itemElf;
+		L1ItemInstance itemSupple;				
+
+		_privateWarehouse = wareHouse.getPrivateItems(accountName);
+		_elfWarehouse =  wareHouse.getElfItems(accountName);
+		_supplementaryService =  wareHouse.getSupplementaryItems(accountName);					
+		itemPrivate = _privateWarehouse.GetFirstItemByClassID(itemId);
+		itemElf = _elfWarehouse.GetFirstItemByClassID(itemId);
+		itemSupple = _supplementaryService.GetFirstItemByClassID(itemId);	
+		if(itemPrivate != null) {
+			_privateWarehouse.deleteItem(itemPrivate);
+		}
+		if(itemElf != null) {
+			_elfWarehouse.deleteItem(itemElf);
+		}
+		if(itemSupple != null) {
+			_supplementaryService.deleteItem(itemSupple);
+		}
+	}
+	
+	private static ArrayList<String> BuilderDeleteItems_loadAccountCharacter(String accountName, int itemId) {
+		ArrayList<String> _list = new ArrayList<String>();
+		Connection con = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		try {
+			con = DatabaseFactory.getInstance().getConnection();
+			pstm = con.prepareStatement("SELECT * FROM characters WHERE account_name = ? AND OnlineStatus = 0");
+			pstm.setString(1, accountName);
+			rs = pstm.executeQuery();
+			while(rs.next()) {
+				BuilderDeleteItems_deleteCharacterDB(rs.getInt("objid"), itemId );
+			}
+		}catch(SQLException e) {
+
+		}finally {
+			SQLUtil.close(rs, pstm, con);
+		}
+		return _list;
+	}
+	
+	private static void BuilderDeleteItems_deleteCharacterDB(int char_id, int itemId) {
+		Connection con = null;
+		PreparedStatement pstm = null;
+		try {
+			con = DatabaseFactory.getInstance().getConnection();
+			pstm = con.prepareStatement("DELETE  FROM character_items WHERE char_id = ? AND item_id = ? ");
+			pstm.setInt(1, char_id);
+			pstm.setInt(2, itemId);
+			pstm.execute();
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}finally {
+			SQLUtil.close(pstm, con);
+		}
+	}
+	
+	private static ArrayList<String> BuilderDeleteItems_loadAccount() {
+		ArrayList<String> _list = new ArrayList<String>();
+		Connection con = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		try {
+			con = DatabaseFactory.getInstance().getConnection();
+			pstm = con.prepareStatement("SELECT * FROM accounts");
+			rs = pstm.executeQuery();
+			while(rs.next()) {
+				_list.add(rs.getString("login"));
+			}
+		}catch(SQLException e) {
+
+		}finally {
+			SQLUtil.close(rs, pstm, con);
+		}
+		return _list;
+	}
+
+	static private String BuilderQueryCClass( String ip )
+	{
+		return ip.substring(0, ip.lastIndexOf('.'));
+	}
+
+
+
+	private static void BuilderCmd_query_character(L1PcInstance pc, String cmdName, String arg) {
+		try
+		{
+			L1PcInstance target = L1World.getInstance(). getPlayer(arg);
+
+			if (target != null) {
+				long totalAdena = 0;
+				CUserSocket client = target.getNetConnection();
+				
+				if (client == null)
+				{
+					SC_SystemMessage.send(pc, "접속중이지 않은 캐릭터에 대해 조회할 수 없습니다.");
+					return;
+				}
+				
+				String cClass = BuilderQueryCClass(client.getIp());
+
+				Collection<L1PcInstance> pcs = L1World.getInstance().getAllPlayers();
+
+				for (L1PcInstance otherPc : pcs) {
+					
+					if (otherPc.getNetConnection() != null)
+					{
+						String otherPcIp = otherPc.getNetConnection().getIp();
+						
+						if(cClass.equals(BuilderQueryCClass(otherPcIp)))
+						{
+							totalAdena += BuilderQueryPrintInfo(pc, otherPc, otherPcIp);
+						}
+					}
+				}
+				
+				SC_SystemMessage.send(pc, "모든 계정내의 아데나 총합계는 [" + totalAdena + "] 입니다.");
+				
+			} else {
+				SC_SystemMessage.send(pc, "그러한 이름의 캐릭터는 월드내에는 존재하지 않습니다. ");
+			}
+			
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " [캐릭터명] 으로 입력해 주세요. ");
+		}
+	}
+	
+	private static long BuilderQueryPrintInfo(L1PcInstance master, L1PcInstance pc, String ip)
+	{
+		Connection conn = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		long storageAdena = 0;
+		long characterAdena = 0;
+		try {
+
+			conn = DatabaseFactory.getInstance().getConnection();
+			pstm = conn.prepareStatement("select ifnull(sum(count), 0) as 'adena' from character_warehouse where item_id = 40308 and account_name = ?");
+			pstm.setString(1, pc.getAccountName());
+			rs = pstm.executeQuery();
+			if (rs.next()) {
+				storageAdena = rs.getInt("adena");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			SQLUtil.close(rs);
+			SQLUtil.close(pstm);
+			SQLUtil.close(conn);
+		}
+		
+		try {
+
+			conn = DatabaseFactory.getInstance().getConnection();
+			pstm = conn.prepareStatement("select ifnull(sum(count), 0) as 'adena' from character_items where item_id = 40308 and char_id IN (select objid FROM characters WHERE account_name = ?)");
+			pstm.setString(1, pc.getAccountName());
+			rs = pstm.executeQuery();
+			if (rs.next()) {
+				characterAdena = rs.getInt("adena");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			SQLUtil.close(rs);
+			SQLUtil.close(pstm);
+			SQLUtil.close(conn);
+		}
+	
+		SC_SystemMessage.send(master, ip + "에서 [" + pc.getName() + "]가 현재 접속중이며 계정 창고 아데나는 [" + storageAdena + "] 캐릭 내 아데나 총 합은 [" + characterAdena + "] 입니다.");
+		
+		return storageAdena + characterAdena;
+	}
+
+	private static void BuilderCmd_party_recall(L1PcInstance pc, String cmdName, String arg) {
+		L1PcInstance target = L1World.getInstance(). getPlayer(arg);
+
+		if (target != null) {
+			CParty party = target.getParty();
+			if (party != null) {
+				int x = pc.getX();
+				int y = pc.getY() + 2;
+				short map = pc.getMapId();
+				L1PcInstance[] players = party.getMembers();
+				try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+       SC_SystemMessage.nativeWriter("메티스님께서 소환하였습니다."),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+for (L1PcInstance pc2 : players) {
+					try {
+						pc2.start_teleport(x, y, map, 5, 169, true, false);
+						l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc2);
+					} catch (Exception e) {
+						_log.log(Level.SEVERE, "", e);
+					}
+				}
+}
+			} else {
+				SC_SystemMessage.send(pc, "파티 멤버가 아닙니다. ");
+			}
+		} else {
+			SC_SystemMessage.send(pc, "그러한 캐릭터는 없습니다. ");
 		}
 	}
 }
