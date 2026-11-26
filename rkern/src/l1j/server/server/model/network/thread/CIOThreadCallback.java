@@ -409,8 +409,8 @@ public final class CIOThreadCallback {
 		return CIOShardContext.currentShardIndex();
 	}
 
-    /** Timed equipment fallback when the bounded scheduler refuses admission.
-     * Use this character's existing owner wheel; no extra worker or queue.
+    /** Timed equipment uses this character's existing owner wheel.
+     * No extra scheduler, worker or queue.
      */
     public boolean scheduleEquipmentTick(L1PcInstance pc, int expectedSession,
             WheelTask task, long delayMs) {

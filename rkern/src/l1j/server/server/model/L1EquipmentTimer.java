@@ -18,28 +18,20 @@
  */
 package l1j.server.server.model;
 
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.function.Consumer;
 
-import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
-public final class L1EquipmentTimer implements Runnable {
+public final class L1EquipmentTimer implements Runnable, CIOThreadCallback.WheelTask {
     private static final long TICK_MILLIS = 1_000L;
 
     private final L1PcInstance pc;
     private final L1ItemInstance item;
     private final int sessionStamp;
-    private final Runnable ownerTick = this::tickOnOwner;
-    private final Consumer<Throwable> ownerCompletion = this::onOwnerCompletion;
-
     private volatile boolean active = true;
-    private ScheduledFuture<?> pendingTick;
-    private CIOThreadCallback.WheelTask wheelFallback;
     private boolean wheelPending;
 
     public L1EquipmentTimer(L1PcInstance pc, L1ItemInstance item) {
@@ -52,40 +44,21 @@ public final class L1EquipmentTimer implements Runnable {
         return active;
     }
 
-    /** Prefer the bounded scheduler. During saturation, use the existing
-     * character-owner CIO wheel so a worn timed item cannot lose its tick.
-     */
+    @Override
+    public boolean isCancelled() {
+        return !active;
+    }
+
+    /** One deadline on the existing owner wheel; no ScheduledFuture or handoff. */
     public void scheduleNext() {
         try {
             synchronized (this) {
-                if (!active || pendingTick != null || wheelPending) return;
-                try {
-                    pendingTick = ThreadPool.getInstance().scheduleRequired(this, TICK_MILLIS);
-                    return;
-                } catch (RuntimeException refused) {
-                    if (wheelFallback == null) {
-                        wheelFallback = new CIOThreadCallback.WheelTask() {
-                            @Override public void run() {
-                                synchronized (L1EquipmentTimer.this) {
-                                    wheelPending = false;
-                                    if (!active) return;
-                                }
-                                tickOnOwner();
-                            }
-                            @Override public boolean isCancelled() { return !active; }
-                        };
-                    }
-                    try {
-                        if (CIOThreadCallback.getInstance().scheduleEquipmentTick(
-                                pc, sessionStamp, wheelFallback, TICK_MILLIS)) {
-                            wheelPending = true;
-                            return;
-                        }
-                    } catch (RuntimeException fallbackFailure) {
-                        refused.addSuppressed(fallbackFailure);
-                    }
-                    throw new RejectedExecutionException("Timed equipment tick admission failed", refused);
+                if (!active || wheelPending) return;
+                if (!CIOThreadCallback.getInstance().scheduleEquipmentTick(
+                        pc, sessionStamp, this, TICK_MILLIS)) {
+                    throw new RejectedExecutionException("Timed equipment tick admission failed");
                 }
+                wheelPending = true;
             }
         } catch (RuntimeException rejected) {
             cancel();
@@ -96,14 +69,11 @@ public final class L1EquipmentTimer implements Runnable {
     @Override
     public void run() {
         synchronized (this) {
-            pendingTick = null;
-            if (!active) return;
+            if (!active || !wheelPending) return;
+            wheelPending = false;
         }
-        CIOThreadCallback.getInstance().completeWarehouseMove(pc, sessionStamp, ownerTick, ownerCompletion);
-    }
-
-    private void onOwnerCompletion(Throwable failure) {
-        if (failure != null) cancel();
+        // Never hold the timer monitor while acquiring the session monitor.
+        tickOnOwner();
     }
 
     private void tickOnOwner() {
@@ -135,7 +105,7 @@ public final class L1EquipmentTimer implements Runnable {
                     try {
                         scheduleNext();
                     } catch (RejectedExecutionException unavailable) {
-                        // Stop timed bonuses if both schedulers are unavailable.
+                        // Stop timed bonuses if the owner wheel is unavailable.
                         // Preserve the remaining seconds for a later re-equip.
                         pc.UnequipItem(item);
                     }
@@ -150,13 +120,10 @@ public final class L1EquipmentTimer implements Runnable {
     }
 
     public void cancel() {
-        final ScheduledFuture<?> pending;
         synchronized (this) {
             active = false;
-            pending = pendingTick;
-            pendingTick = null;
+            wheelPending = false;
         }
-        if (pending != null) pending.cancel(false);
         item.clearEquipmentTimer(this);
     }
 }
