@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -32,8 +33,6 @@ import l1j.server.server.model.character.combat.arena.dogfight.DogFightCommandEx
 import l1j.server.server.model.npc.spawn.boss.BossController;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
-import l1j.server.server.command.BuilderCmdPairType;
-import l1j.server.server.command.BuilderCmdPairType.BuilderCmdFunction;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
 import l1j.server.server.datatables.AccountSettlementTable;
 import l1j.server.server.datatables.AutoLoot;
@@ -341,6 +340,30 @@ public final class BuilderCmdHandler {
 				"기운축복", "종료", "검사", "케릭검사", "조회", "셋팅", "스텟", "렙작", "레벨", "캐릭터상태", "서버저장", "리로드", "성혈조작", "아지트지급", "혈맹포인트선물", "혈맹포인트삭제" -> true;
 			default -> false;
 		};
+	}
+
+	@FunctionalInterface
+	private interface BuilderCmdFunction {
+		void execute(L1PcInstance pc, String command, String arguments);
+	}
+
+	private record BuilderCmdPairType(String name, boolean levelRestricted, BuilderCmdFunction function) {
+		private BuilderCmdPairType {
+			Objects.requireNonNull(name);
+			Objects.requireNonNull(function);
+		}
+
+		private String getName() {
+			return name;
+		}
+
+		private boolean isLevelRestricted() {
+			return levelRestricted;
+		}
+
+		private void execute(L1PcInstance pc, String command, String arguments) {
+			function.execute(pc, command, arguments);
+		}
 	}
 
 	// OFF BuilderCmdHandler: command name -> direct handler, registered once.
@@ -1071,11 +1094,11 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 	}
 
 	private static void registerLevelCommand(Map<String, BuilderCmdPairType> loaded, String name, BuilderCmdFunction handler) {
-		registerBuilderCommand(loaded, new BuilderCmdPairType(name, Config.GMCODE, true, handler));
+		registerBuilderCommand(loaded, new BuilderCmdPairType(name, true, handler));
 	}
 
 	private static void registerDirect(Map<String, BuilderCmdPairType> loaded, String name, BuilderCmdFunction handler) {
-		registerBuilderCommand(loaded, new BuilderCmdPairType(name, 0, false, handler));
+		registerBuilderCommand(loaded, new BuilderCmdPairType(name, false, handler));
 	}
 
 	private static void registerBuilderCommand(Map<String, BuilderCmdPairType> loaded, BuilderCmdPairType entry) {
