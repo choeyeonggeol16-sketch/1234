@@ -72,30 +72,64 @@ public final class EquipmentEnchantOptions {
 
     private static void collect(L1PcInstance pc, L1Item item, int enchant, int sign, int[] changes) {
         if (item.getType2() == 1) {
-            applyMeditationStaff(pc, item, enchant, sign, changes);
-            applyNamedWeaponOptions(pc, item, enchant, sign, changes);
-            applyDemonAxe(pc, item, enchant, sign, changes);
-            applyWeaponAccuracy(pc, item, enchant, sign, changes);
-            applyCourtshipWeaponPvp(pc, item, enchant, sign, changes);
+            applyWeaponOptions(pc, item, enchant, sign, changes);
         } else if (item.getType2() == 2) {
-            applyEnhancedWard(pc, item, enchant, sign, changes);
-            applyWards(pc, item, enchant, sign, changes);
-            applyMagicClothing(pc, item, enchant, sign, changes);
-            applyArmorDefenseOptions(pc, item, enchant, sign, changes);
-            applyGuardersAndSanctuaryArmor(pc, item, enchant, sign, changes);
-            applyVitalityGreaves(pc, item, enchant, sign, changes);
-            applyUnicornGreaves(pc, item, enchant, sign, changes);
-            applyMamboHat(pc, item, enchant, sign, changes);
-            applyShouldersAndCloak(pc, item, enchant, sign, changes);
-            applyBadges(pc, item, enchant, sign, changes);
-            applyWingsAndAccessory(pc, item, enchant, sign, changes);
-            applyCrimsonArmor(pc, item, enchant, sign, changes);
-            applyVampireCloak(pc, item, enchant, sign, changes);
-            applyIrisBoots(pc, item, enchant, sign, changes);
-            applyMagicAndRareArmor(pc, item, enchant, sign, changes);
-            applyHelmsAndDragonArmor(pc, item, enchant, sign, changes);
-            applyAccessoryOptions(pc, item, enchant, sign, changes);
+            applyArmorPrimaryOptions(pc, item, enchant, sign, changes);
+            applyArmorSlotOptions(pc, item, enchant, sign, changes);
         }
+    }
+
+    static void applyWeaponOptions(L1PcInstance pc, L1Item item, int enchant, int sign, int[] changes) {
+        final int itemId = item.getItemId();
+        applyMeditationStaff(pc, item, enchant, sign, changes);
+        switch (itemId) {
+            case 14061, 14012, 2202013, 2202014, 14086 -> applyStat(pc, changes, DMG_RED, sign);
+            case 14134, 2202012 -> applyStat(pc, changes, DMG_RED, 2 * sign);
+            default -> { }
+        }
+        applyNamedWeaponOptions(pc, item, enchant, sign, changes);
+        switch (itemId) {
+            case 59, 617, 11121 -> applyStat(pc, changes, ABILITY_PLERCE, 5 * sign);
+            case 622, 1136 -> applyStat(pc, changes, SPIRIT_PLERCE, 3 * sign);
+            default -> { }
+        }
+        applyDemonAxe(pc, item, enchant, sign, changes);
+        applyWeaponAccuracy(pc, item, enchant, sign, changes);
+        if (itemId == 7000221) applyStat(pc, changes, FEAR_PLERCE, 5 * sign);
+        applyCourtshipWeaponPvp(pc, item, enchant, sign, changes);
+    }
+
+    static void applyArmorPrimaryOptions(L1PcInstance pc, L1Item item, int enchant, int sign, int[] changes) {
+        applyEnhancedWard(pc, item, enchant, sign, changes);
+        applyWards(pc, item, enchant, sign, changes);
+        switch (item.getItemId()) {
+            case 30184 -> applyStat(pc, changes, HIT, 2 * sign);
+            case 20272, 222342 -> applyStat(pc, changes, BOW_HIT, 3 * sign);
+            default -> { }
+        }
+        applyMagicClothing(pc, item, enchant, sign, changes);
+        applyArmorDefenseOptions(pc, item, enchant, sign, changes);
+    }
+
+    static void applyArmorSlotOptions(L1PcInstance pc, L1Item item, int enchant, int sign, int[] changes) {
+        applyGuardersAndSanctuaryArmor(pc, item, enchant, sign, changes);
+        applyVitalityGreaves(pc, item, enchant, sign, changes);
+        applyUnicornGreaves(pc, item, enchant, sign, changes);
+        applyMamboHat(pc, item, enchant, sign, changes);
+        applyShouldersAndCloak(pc, item, enchant, sign, changes);
+        applyBadges(pc, item, enchant, sign, changes);
+        applyWingsAndAccessory(pc, item, enchant, sign, changes);
+        applyCrimsonArmor(pc, item, enchant, sign, changes);
+        applyVampireCloak(pc, item, enchant, sign, changes);
+        applyIrisBoots(pc, item, enchant, sign, changes);
+        applyMagicAndRareArmor(pc, item, enchant, sign, changes);
+        applyHelmsAndDragonArmor(pc, item, enchant, sign, changes);
+        switch (item.getItemId()) {
+            case 20279 -> applyStat(pc, changes, PVP_DMG_RED, 2 * sign);
+            case 20314 -> applyStat(pc, changes, PVP_DMG, 2 * sign);
+            default -> { }
+        }
+        applyAccessoryOptions(pc, item, enchant, sign, changes);
     }
 
     static void applyStat(L1PcInstance pc, int[] changes, ItemStat stat, int value) {

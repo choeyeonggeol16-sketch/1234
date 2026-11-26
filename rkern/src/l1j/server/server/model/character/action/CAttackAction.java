@@ -18,6 +18,7 @@ import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1GuardianInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.item.EquipmentBlessing;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ScarecrowInstance;
@@ -842,19 +843,7 @@ public final class CAttackAction extends CNewAction {
 	private L1ItemInstance weapon = null;
 
 	// 전사 쌍수
-	private L1ItemInstance Sweapon = null;// 세컨웨폰
-	private int _SweaponId = 0;
-	private int _SweaponType = 0;
-	private int _SweaponType1 = 0;
-	private int _SweaponAddHit = 0;
-	private int _SweaponAddDmg = 0;
-	private int _SweaponSmall = 0;
-	private int _SweaponLarge = 0;
-	private int _SweaponRange = 1;
-	private int _SweaponBless = 1;
-	private int _SweaponEnchant = 0;
-	private int _SweaponMaterial = 0;
-	private int _SweaponAttrEnchantLevel = 0;
+    private boolean dualWield;
 
 	private int _weaponId = 0;
 
@@ -867,6 +856,7 @@ public final class CAttackAction extends CNewAction {
 	private int _weaponAddHit = 0;
 
 	private int _weaponAddDmg = 0;
+    private int weaponQuality;
 
 	private int _weaponSmall = 0;
 
@@ -876,7 +866,6 @@ public final class CAttackAction extends CNewAction {
 
 	private int _weaponEnchant = 0;
 
-	private int _weapon_bless_level = 0;
 
 	private int _weaponMaterial = 0;
 
@@ -936,7 +925,7 @@ public final class CAttackAction extends CNewAction {
         _targetPc = null;
         _targetNpc = null;
         weapon = null;
-        Sweapon = null;
+        dualWield = false;
         _arrow = null;
         _sting = null;
         _targetId = _targetX = _targetY = 0;
@@ -945,15 +934,10 @@ public final class CAttackAction extends CNewAction {
         _edoryuDouble = _doubleBreak = _burning = _cycloneProc = false;
         _crash = _fury = _burningSlashProc = false;
         _damage = _effex = _attckGrfxId = _attckActId = 0;
-        _SweaponId = _SweaponType = _SweaponType1 = 0;
-        _SweaponAddHit = _SweaponAddDmg = 0;
-        _SweaponSmall = _SweaponLarge = 0;
-        _SweaponRange = _SweaponBless = 1;
-        _SweaponEnchant = _SweaponMaterial = _SweaponAttrEnchantLevel = 0;
         _weaponId = _weaponType = _weaponType2 = 0;
-        _weaponAddHit = _weaponAddDmg = _weaponSmall = _weaponLarge = 0;
+        _weaponAddHit = _weaponAddDmg = _weaponSmall = _weaponLarge = weaponQuality = 0;
         _weaponBless = 1;
-        _weaponEnchant = _weapon_bless_level = _weaponMaterial = 0;
+        _weaponEnchant = _weaponMaterial = 0;
         _weaponDoubleDmgChance = _weaponAttrLevel = _attackType = 0;
         _leverage = 10;
     }
@@ -972,31 +956,12 @@ public final class CAttackAction extends CNewAction {
 			// 무기 정보의 취득
             final L1ItemInstance left = _pc.getWeapon();
             final L1ItemInstance right = _pc.getSecondWeapon();
-            if (L1AttackHelper.isSlayerDualAxe(_pc, left, right)) {
+            dualWield = L1AttackHelper.isSlayerDualAxe(_pc, left, right);
+            weapon = left;
+            if (dualWield) {
                 final L1ItemInstance picked = _pc.getWeaponSwap();
-                weapon = (picked == left || picked == right) ? picked : left;
-                Sweapon = (weapon == left) ? right : left;
-            } else {
-                weapon = left;
-                Sweapon = null;
+                if (picked == right) weapon = right;
             }
-			if (Sweapon != null) {
-				_SweaponId = Sweapon.getItem().getItemId();
-				_SweaponType = Sweapon.getItem().getType1();
-
-				final long weaponBonus = WeaponAddDamage.getInstance().getBonusPacked(_weaponId);
-				_SweaponAddHit = Sweapon.getItem().getHitModifier() + (int) (weaponBonus >> 32);
-				_SweaponAddDmg = Sweapon.getItem().getDmgModifier() + (int) weaponBonus;
-
-				_SweaponType1 = Sweapon.getItem().getType();
-				_SweaponSmall = Sweapon.getItem().getDmgSmall();
-				_SweaponLarge = Sweapon.getItem().getDmgLarge();
-				_SweaponBless = Sweapon.getItem().getBless();
-				_SweaponEnchant = Sweapon.getEnchantLevel(); // src22: durability applied by final formula
-				// 마이너스
-				_SweaponMaterial = Sweapon.getItem().getMaterial();
-				_SweaponAttrEnchantLevel = Sweapon.getAttrEnchantLevel();
-			}
 			if (weapon != null) {
 				_weaponId = weapon.getItem().getItemId();
 				_weaponType = weapon.getItem().getType1();
@@ -1005,14 +970,15 @@ public final class CAttackAction extends CNewAction {
                 // One immutable memory lookup for both values; no SQL/new per hit.
                 final long weaponBonus = WeaponAddDamage.getInstance().getBonusPacked(_weaponId);
                 _weaponAddHit = weapon.getItem().getHitModifier() + (int) (weaponBonus >> 32);
-                _weaponAddDmg = weapon.getItem().getDmgModifier() + (int) weaponBonus;
+                _weaponAddDmg = weapon.getItem().getDmgModifier() + (int) weaponBonus
+                        + EquipmentBlessing.weaponDamage(weapon);
+                weaponQuality = weapon.get_bless_level2();
 
 
 				_weaponSmall = weapon.getItem().getDmgSmall();
 				_weaponLarge = weapon.getItem().getDmgLarge();
 				_weaponBless = weapon.getItem().getBless();
                 _weaponEnchant = _weaponType == 0 ? 0 : weapon.getEnchantLevel();
-				_weapon_bless_level = weapon.get_bless_level();
 				_weaponMaterial = weapon.getItem().getMaterial();
 				if (_weaponType == 20) { // 아로의 취득
 					_arrow = _pc.getInventory().getArrow();
@@ -1587,7 +1553,8 @@ public final class CAttackAction extends CNewAction {
         final int magicBonus = _pc.getBaseMagicDmg()
                 + weapon.getItem().getMagicDmgModifier()
                 + _weaponAddDmg; // original weapon bonus + weapon_damage DB snapshot
-        final int beforeMr = Math.max(0, scaled + _weaponEnchant + magicBonus);
+        final int beforeMr = EquipmentBlessing.applyWeaponQuality(
+                Math.max(0, scaled + _weaponEnchant + magicBonus), weaponQuality);
         final int mh = _pc.getTotalMagicHitup();
         final int mrMinusMh = target.GetMDefendBySkill() - mh;
         final int defenderType = target instanceof L1PcInstance defender ? defender.getType() : -1;
@@ -1755,6 +1722,7 @@ public final class CAttackAction extends CNewAction {
         int dmg = L1DamageCalcHelper.calcDamage(A_min, A_max, B, C, E, F, G, H,
                 loss, weaponAttr, critMode, _doubleBreak, false, forceMaxRandom, weapon != null
         		);   
+        dmg = EquipmentBlessing.applyWeaponQuality(dmg, weaponQuality);
 
         // 일루션 아바타, 큐브아바타 데미지 +10처리
         dmg = L1AttackHelper.applyAvatarPhysicalAtkPlus10(_pc, dmg);
@@ -1967,9 +1935,9 @@ public final class CAttackAction extends CNewAction {
         // send only the animation here (never multiply the damage twice).
         if (_isCritical || _edoryuDouble) {
             SC_AttackCritical.send(_pc.getNetConnection(), _pc, _targetId,
-                    _weaponType2 == 17 ? 91 : _weaponType, Sweapon != null);
+                    _weaponType2 == 17 ? 91 : _weaponType, dualWield);
             SC_AttackCritical.broadcast(_pc, _targetId,
-                    _weaponType2 == 17 ? 91 : _weaponType, Sweapon != null);
+                    _weaponType2 == 17 ? 91 : _weaponType, dualWield);
             return;
         }
         SC_AttackPacket.send(_pc.getNetConnection(), _pc, _targetId, ActionCodes.ACTION_Attack, _attackType);

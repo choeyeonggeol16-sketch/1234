@@ -222,7 +222,7 @@ public final class CUserEquipment {
         SC_CharVisualUpdate.broadcastFastPacked(pc, visual);
     }
 
-    private static boolean isInvisibilityGear(int itemId) {
+    static boolean isInvisibilityGear(int itemId) {
         return itemId == 20077 || itemId == 20062 || itemId == 120077;
     }
 

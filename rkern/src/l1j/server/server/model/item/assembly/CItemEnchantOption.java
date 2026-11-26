@@ -6,6 +6,7 @@ import l1j.server.Config;
 import l1j.server.server.ThreadPool; //CrockController
 import l1j.server.server.model.inventory.EquipmentEnchantOptions;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.item.EquipmentBlessing;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.L1EquipmentSlot;
 import l1j.server.server.model.inventory.L1EquipmentSlot.ClassArmorBonus;
@@ -934,6 +935,21 @@ public final class CItemEnchantOption {
 
     /** Weapon and armor attribute/enchant rendering in original L1 packet order.
      * Existing specialized option values are preserved while definitions are consolidated. */
+    private static void writeBlessingOptions(L1ItemInstance item, ItemPresentOutStream out) {
+        final String blessing = EquipmentBlessing.blessingDescription(item);
+        if (blessing != null) {
+            out.writeC(39);
+            out.writeS(blessing);
+        }
+        final int quality = item.get_bless_level2();
+        if (quality != 0) {
+            out.writeC(39);
+            out.writeS("품질: " + quality);
+            out.writeC(39);
+            out.writeS(EquipmentBlessing.qualityEffectDescription(item));
+        }
+    }
+
     static void AssembleEquipmentItem(L1ItemInstance item, ItemPresentOutStream os,
                                       int itemType2, int itemId, int itemgrade) throws Exception { // weapon | armor
 
@@ -6013,119 +6029,7 @@ public final class CItemEnchantOption {
 				}
 
 
-				if (item.getItem().getType2() == 1 && item.get_bless_level() != 0) {//sgmall
-					int type = item.getItem().getType();
-					if (item.getItem().getType2() == 1 ) { 
-					if (type == 7 || type == 16 || type == 17) {
-						os.writeC(39);
-						os.writeS("축복" + item.get_bless_level() + "단: SP +" + item.get_bless_level());
-					} else {
-						os.writeC(39);
-						os.writeS("축복" + item.get_bless_level() + "단: DMG +" + item.get_bless_level());
-					}
-					} 
-					if (item.getItem().getType2() == 2 ) { 
-						if (item.get_bless_level() == 1) {
-							os.writeC(39); 
-							os.writeS("\\aL최대HP : 30");
-						} else if (item.get_bless_level() == 2) {
-							os.writeC(39);
-							os.writeS("\\aL최대HP : 20");
-						} else if (item.get_bless_level() == 3) {
-							os.writeC(39);
-							os.writeS("\\aL최대HP : 10");
-						} else if (item.get_bless_level() == 4) {
-							os.writeC(39);
-							os.writeS("\\aL최대HP : 30");
-						} else if (item.get_bless_level() == 5) {
-							os.writeC(39);
-							os.writeS("\\aL최대HP : 40");
-						} else if (item.get_bless_level() == 6) {
-							os.writeC(39);
-							os.writeS("\\aL최대HP : 50");
-						} else if (item.get_bless_level() == 7) {
-							os.writeC(39);
-							os.writeS("\\aL리덕션 : +1");
-						} else if (item.get_bless_level() == 8) {
-							os.writeC(39);
-							os.writeS("\\aL리덕션 : +2");
-						} else if (item.get_bless_level() == 10) {
-							os.writeC(39);
-							os.writeS("\\aL기술적중 : +1");
-						} else if (item.get_bless_level() == 11) {
-							os.writeC(39);
-							os.writeS("\\aL공포적중 : +1");
-						} else if (item.get_bless_level() == 12) {
-							os.writeC(39);
-							os.writeS("\\aL용언적중 : +1");
-						} else if (item.get_bless_level() == 13) {
-							os.writeC(39);
-							os.writeS("\\aL정령적중 : +1");
-						} else if (item.get_bless_level() == 14) {
-							os.writeC(39);
-							os.writeS("\\aL마법적중 : +1");
-						} else if (item.get_bless_level() == 15) {
-							os.writeC(39);
-							os.writeS("\\aL기술내성 : +1");
-						} else if (item.get_bless_level() == 16) {
-							os.writeC(39);
-							os.writeS("\\aL공포내성 : +1");
-						} else if (item.get_bless_level() == 17) {
-							os.writeC(39);
-							os.writeS("\\aL용언내성 : +1");
-						} else if (item.get_bless_level() == 18) {
-							os.writeC(39);
-							os.writeS("\\aL정령내성 : +1");
-						} else if (item.get_bless_level() == 19) {
-							os.writeC(39);
-							os.writeS("\\aL근거리대미지 : +1");
-						} else if (item.get_bless_level() == 20) {
-							os.writeC(39);
-							os.writeS("\\aL원거리대미지 : +1");
-						} else if (item.get_bless_level() == 21) {
-							os.writeC(39);
-							os.writeS("\\aL근거리명중 : +1");
-						} else if (item.get_bless_level() == 22) {
-							os.writeC(39);
-							os.writeS("\\aL원거리명중 : +1");
-						} else if (item.get_bless_level() == 23) {
-							os.writeC(39);
-							os.writeS("\\aL리덕션 : +1");
-						} else if (item.get_bless_level() == 24) {
-							os.writeC(39);
-							os.writeS("\\aL추가방어력 : +1");
-						} else if (item.get_bless_level() == 25) {
-							os.writeC(39);
-							os.writeS("\\aLMR : +3");
-						} else if (item.get_bless_level() == 26) {
-							os.writeC(39);
-							os.writeS("\\aLSP : +1");
-						}
-					}
-				}
-				if (item.get_bless_level2() != 0) {
-					int level = item.get_bless_level2();
-					double dmg = (level *1.0)/10; 
-					int type = item.getItem().getType();
-					if (item.getItem().getType2() == 1 ) { 						
-					if (type == 7 || type == 16 || type == 17) {						
-						os.writeC(39);
-						os.writeS("품질: " + item.get_bless_level2());
-						os.writeC(39);
-						os.writeS("추댐: "+ dmg +"%");
-					} else {
-						os.writeC(39);
-						os.writeS("품질: " + item.get_bless_level2());
-						os.writeC(39);
-						os.writeS("추댐: "+ dmg +"%");
-					}
-					} else {
-						os.writeC(39);
-						os.writeS("품질: " + item.get_bless_level2());
-						os.writeC(39);
-						os.writeS("추가HP: "+ item.get_bless_level2());
-					}
-				}
+				writeBlessingOptions(item, os);
 				/** 특수 인챈트 시스템 **/
 
 				if (item.getItemId() == 20100 || item.getItemId() == 20099 || item.getItemId() == 20150 || item.getItemId() == 22258

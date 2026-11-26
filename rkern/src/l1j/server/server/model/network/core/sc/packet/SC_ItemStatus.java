@@ -2,6 +2,7 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.item.assembly.CItemAssembler;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -22,7 +23,7 @@ public final class SC_ItemStatus {
         final String rawName = item == null ? null : item.getViewName();
         final String name = rawName == null ? "" : rawName;
         final long count = item == null ? 0 : item.getCount();
-        final byte[] status = item != null && item.isIdentified() ? item.getStatusBytes() : null;
+        final byte[] status = CItemAssembler.AssembleLegacyStatus(item, connection.getActiveChar());
         final CIOFrame frame = connection.beginDirectFrame(13 + (name.length() << 1) + (status == null ? 0 : status.length));
         if (frame == null) return false;
         boolean committed = false;

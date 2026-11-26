@@ -26,7 +26,7 @@ public final class CItemAssembler {
 
     private static byte[] assembleCustom(L1ItemInstance item) {
         try {
-            return ItemPresentatorFactory.do_presentation(item);
+            return CCustomWeaponOptions.assemble(item);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -35,5 +35,15 @@ public final class CItemAssembler {
 
     public static byte[] AssembleItemForPc(L1ItemInstance item, L1PcInstance pc) {
         return CItem.AssembleItemForPc(item, pc);
+    }
+
+    /** Legacy packets carry the tooltip length in a single unsigned byte. */
+    public static byte[] AssembleLegacyStatus(L1ItemInstance item, L1PcInstance pc) {
+        if (item == null || !item.isIdentified()) return null;
+        final byte[] full = AssembleImpl(item);
+        if (full.length <= 255) return full;
+        if (pc == null) return null;
+        final byte[] compact = AssembleItemForPc(item, pc);
+        return compact.length <= 255 ? compact : null;
     }
 }

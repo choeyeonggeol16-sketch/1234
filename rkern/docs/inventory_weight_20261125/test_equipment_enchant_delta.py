@@ -14,8 +14,8 @@ b = source.index("        if (itemId == 61", a)
 methods += "\n static void option(L1PcInstance pc,int itemId,int enchant,int sign,int[] changes){\n" + source[a:b] + "\n }\n"
 slot = (model / "inventory/L1EquipmentSlot.java").read_text(encoding="utf-8")
 assert "ItemBonusHooks.onEnchantChanged(_owner, equipment);" in slot
-presenter = (model / "item/assembly/ItemPresentatorFactory.java").read_text(encoding="utf-8")
-assert "pc.add_melee_critical_rate(enchant * signed);" not in presenter.split("case 123999:")[1]
+presenter = (model / "item/assembly/CCustomWeaponOptions.java").read_text(encoding="utf-8")
+assert "L1PcInstance" not in presenter
 harness = r'''
 import java.util.Arrays;
 public class EnchantAudit {

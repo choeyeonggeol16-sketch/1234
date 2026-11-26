@@ -2,6 +2,7 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.item.assembly.CItemAssembler;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -22,8 +23,7 @@ public final class SC_TradeAddItem {
         final int gfxId = item == null || item.getItem() == null ? 0 : item.getItem().getGfxId();
         final boolean identified = item == null || item.isIdentified();
         final int bless = item == null ? 1 : item.getBless();
-        final byte[] raw = item == null ? null : item.getStatusBytes();
-        final byte[] status = raw;
+        final byte[] status = CItemAssembler.AssembleLegacyStatus(item, connection.getActiveChar());
         final CIOFrame frame = connection.beginDirectFrame(11 + (actualName.length() << 1) + (identified && status != null ? status.length : 0));
         if (frame == null) return false;
         boolean committed = false;

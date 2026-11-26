@@ -2,7 +2,6 @@ package l1j.server.server.model.inventory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Arrays;
 import java.util.List;
 
 import l1j.server.server.datatables.SkillsTable;
@@ -12,10 +11,10 @@ import l1j.server.server.model.character.skill.BraveSpeedEffects;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.MovementSpeedEffects;
 import l1j.server.server.model.character.skill.passive.PassiveID;
+import l1j.server.server.model.item.EquipmentBlessing;
 import l1j.server.server.model.item.ItemEffectRegistry;
 import l1j.server.server.model.item.ItemStat;
 import l1j.server.server.model.item.function.ItemBonusHooks;
-import l1j.server.server.model.item.assembly.ItemPresentatorFactory;
 import l1j.server.server.model.network.core.sc.packet.SC_Ability;
 import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_DelSkill;
@@ -229,54 +228,19 @@ public class L1EquipmentSlot {
         }
     }
 
-	private void setWeapon(L1ItemInstance weapon) {// 무기류
-		//L1Item item = weapon.getItem(); //무기테이블
-		int itemId = weapon.getItem().getItemId();
-		int enchant = weapon.getEnchantLevel();
-		
-		EquipmentEnchantOptions.applyMeditationStaff(_owner, weapon.getItem(), enchant, 1, null);
+	private void setWeapon(L1ItemInstance weapon) {
+        EquipmentEnchantOptions.applyWeaponOptions(_owner, weapon.getItem(), weapon.getEnchantLevel(), 1, null);
+        addWeaponToSlots(weapon);
+        applyWeaponBlessBonus(weapon, 1);
+    }
 
-		if(itemId == 14061 || itemId == 14012 || itemId == 2202013 || itemId == 2202014 || itemId == 14086) {
-			_owner.addDamageReductionByArmor(1);
-		}
-		if(itemId == 14134 || itemId == 2202012 ) {
-			_owner.addDamageReductionByArmor(2);
-		}
-		EquipmentEnchantOptions.applyNamedWeaponOptions(_owner, weapon.getItem(), enchant, 1, null);
-		/** 나이트발드의 양손검 기술적중 **/
-		if (itemId == 59 || itemId == 617 || itemId == 11121) {
-			_owner.AddSpecialPierce(eKind.ABILITY, 5);
-		}
-		/** 악몽의 장궁 정령 적중**/
-		if (itemId == 622 || itemId == 1136) {
-			_owner.AddSpecialPierce(eKind.SPIRIT, 3);
-		}
-		/** 악마왕 도끼 **/
-		EquipmentEnchantOptions.applyDemonAxe(_owner, weapon.getItem(), enchant, 1, null);
-		/** 태풍의도끼 공포적중+1 **/
-		EquipmentEnchantOptions.applyWeaponAccuracy(_owner, weapon.getItem(), enchant, 1, null);
-		/** 썸타는 도끼 공포적중+5 **/
-		if (itemId == 7000221) 
-			_owner.AddSpecialPierce(eKind.FEAR, 5);
-
-		/** 썸타는 무기류 PVP 효과 부여 **/
-		EquipmentEnchantOptions.applyCourtshipWeaponPvp(_owner, weapon.getItem(), enchant, 1, null);
-
-		addWeaponToSlots(weapon);
-	
-		int type = weapon.getItem().getType();
-		if ((type == 7 || type == 16 || type == 17) && (weapon.get_bless_level() != 0)) {
-			_owner.AddStatSp(weapon.get_bless_level());
-			try { SC_SPMR.send(_owner); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-
-		if (itemId == 203003) { // 데스나이트의 불검:진
-			L1PolyMorph.doPoly(_owner, 12232, 0, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
-		}
-	}
-	
-	
+    private void applyWeaponBlessBonus(L1ItemInstance weapon, int sign) {
+        final int sp = EquipmentBlessing.weaponSp(weapon);
+        if (sp == 0) return;
+        ItemStat.SP.apply(_owner, sp * sign);
+        try { SC_SPMR.send(_owner); }
+        catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+    }
 
 	public boolean canUseSecondWeaponBySlayer(final L1ItemInstance left, final L1ItemInstance right) {
 	    if (_owner == null || left == null || right == null) return false;
@@ -400,210 +364,58 @@ public class L1EquipmentSlot {
 				|| itemId >= 900124 && itemId <= 900130;
 	}
 
-	private void setArmor(L1ItemInstance armor) {	
-		L1Item item = armor.getItem();
-		int itemlvl = armor.getEnchantLevel();
-		int itemtype = armor.getItem().getType();
-		int itemId = armor.getItem().getItemId();
-		
-		
-			if (itemId == 123111 || itemId == 123112 || itemId == 123113) {
-			
-			
-			 
-				 int n = _owner.getSkillEffectTimeSec(L1SkillId.할파스의신의) / 60;
-			 if (n > 0) {
-				 try { SC_InventoryIcon.icoNew(_owner, L1SkillId.할파스의신의, 3942, _owner.getSkillEffectTimeSec(L1SkillId.할파스의신의), true); }
-				 catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-				 
-			 }else {
-				 try { SC_InventoryIcon.iconNewUnLimit(_owner, L1SkillId.할파스의신의1, 3943, true); }
-				 catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		 }
-			 }
-		applyArmorBlessBonus(armor, 1);
+    private void setArmor(L1ItemInstance armor) {
+        final L1Item item = armor.getItem();
+        final int itemId = item.getItemId();
+        final int enchant = armor.getEnchantLevel();
 
-		final int classBonus = applyArmorVitalBonus(armor, item);
+        if (isHalphasArmor(itemId)) {
+            final int seconds = _owner.getSkillEffectTimeSec(L1SkillId.할파스의신의);
+            try {
+                if (seconds >= 60) SC_InventoryIcon.icoNew(_owner, L1SkillId.할파스의신의, 3942, seconds, true);
+                else SC_InventoryIcon.iconNewUnLimit(_owner, L1SkillId.할파스의신의1, 3943, true);
+            } catch (RuntimeException notice) {
+                equipmentNoticeFailed(notice);
+            }
+        }
+        EquipmentBlessing.applyArmor(_owner, armor, 1);
+        final int classBonus = applyArmorVitalBonus(armor, item);
+        if (itemId == 900111) _owner.setSkillEffect(L1SkillId.TELEPORT_RULER, -1);
+        applyArmorStats(armor, item, enchant, classBonus, 1);
+        _armors.add(armor);
+        validateSetItem(itemId, true, item.getType() == 9, false);
 
-		if(itemId == 900111){	
-			_owner.setSkillEffect(L1SkillId.TELEPORT_RULER, -1);
-		}
-		
-		applyArmorEnchantDodge(armorEnchantDodge(itemId, itemlvl));
-		
-		
-		
-		EquipmentEnchantOptions.applyEnhancedWard(_owner, item, itemlvl, 1, null);
-		EquipmentEnchantOptions.applyWards(_owner, item, itemlvl, 1, null);
-		//착용
-		if (itemId == 30184) {
-			_owner.addHitup(2);
-		}
-		if (itemId == 20272 || itemId == 222342) {
-			_owner.addBowHitup(3);
-		}
-		applyClassArmorBonus(classBonus, 1);
-		EquipmentEnchantOptions.applyMagicClothing(_owner, item, itemlvl, 1, null);
-		
-		
-		EquipmentEnchantOptions.applyArmorDefenseOptions(_owner, item, itemlvl, 1, null);
-		
-		applyArmorDefense(armor, itemlvl, 1);
-		applyArmorEnchantCasting(itemId, 0, itemlvl, null);
+        if (itemId == 900022 && _owner.getMapId() >= 1708 && _owner.getMapId() <= 1712) {
+            try { SC_SkillSound.send(_owner, _owner.getId(), 11101); }
+            catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+            try { SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, true); }
+            catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+        }
+        if (CUserEquipment.isInvisibilityGear(itemId) && !_owner.hasSkillEffect(L1SkillId.DESPERADO)) {
+            _owner.invisibleItem();
+        }
+        sendArmorAbility(armor, true);
+        if (itemId == 20207) {
+            try { SC_SkillIconBlessOfEva.send(_owner, _owner.getId(), -1); }
+            catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+        }
 
-		applyArmorStatBonus(item, 1);
-		_armors.add(armor);
-
-		validateSetItem(itemId, true, itemtype == 9, false);
-
-		if (itemId == 900022) {
-			if (_owner.getMapId() >= 1708 && _owner.getMapId() <= 1712) {
-				try { SC_SkillSound.send(_owner, _owner.getId(), 11101); }
-				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-				try { SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, true); }
-				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-			}
-		}
-
-		if ((itemId == 20077 || itemId == 20062 || itemId == 120077)
-				&& !_owner.hasSkillEffect(L1SkillId.DESPERADO)) {
-			_owner.invisibleItem();
-		}
-		if (itemId == 20288 || itemId == 900111) {
-		    try { SC_Ability.send(_owner, 1, true); }
-		    catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (itemId == 20281) {
-			try { SC_Ability.send(_owner, 2, true); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (itemId == 20036) {
-			try { SC_Ability.send(_owner, 3, true); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (itemId == 20284) {
-			try { SC_Ability.send(_owner, 5, true); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (itemId == 20207) {
-			try { SC_SkillIconBlessOfEva.send(_owner, _owner.getId(), -1); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-
-		applyElixirRuneBonus(itemId, 1);
-		
-		/** 화령의 가더 **/
-		EquipmentEnchantOptions.applyGuardersAndSanctuaryArmor(_owner, item, itemlvl, 1, null);
-
-		/** 체력의 각반 **/
-		EquipmentEnchantOptions.applyVitalityGreaves(_owner, item, itemlvl, 1, null);
-		/** 유니콘의 완력 각반 **/
-		EquipmentEnchantOptions.applyUnicornGreaves(_owner, item, itemlvl, 1, null);
-		/** 맘보 모자 **/
-		EquipmentEnchantOptions.applyMamboHat(_owner, item, itemlvl, 1, null);
-		/** 예언자의 견갑 **/
-		EquipmentEnchantOptions.applyShouldersAndCloak(_owner, item, itemlvl, 1, null);
-		/** 커츠의 투사 휘장 **/
-		EquipmentEnchantOptions.applyBadges(_owner, item, itemlvl, 1, null);	
-		/** 거대여왕 개미의 금빛,은빛 날개 **/
-		EquipmentEnchantOptions.applyWingsAndAccessory(_owner, item, itemlvl, 1, null);
-
-		EquipmentEnchantOptions.applyCrimsonArmor(_owner, item, itemlvl, 1, null);
-		/** 뱀파이어의 망토 **/
-		EquipmentEnchantOptions.applyVampireCloak(_owner, item, itemlvl, 1, null);
-		/** 아이리스의 부츠 **/
-		EquipmentEnchantOptions.applyIrisBoots(_owner, item, itemlvl, 1, null);
-		/** 대마법사의 모자 **/
-		EquipmentEnchantOptions.applyMagicAndRareArmor(_owner, item, itemlvl, 1, null);
-		/** 흑기사의 면갑 대미지감소 **/
-		EquipmentEnchantOptions.applyHelmsAndDragonArmor(_owner, item, itemlvl, 1, null);
-		if (itemId == 20279) {
-
-			_owner.AddPvpDamageReduction(2);
-			
-
-			}
-		if (itemId == 20314) {
-
-			_owner.AddPvpDamage(2);
-			
-
-			}
-		
-		
-		/** 머미로드의 왕관 **/
-		EquipmentEnchantOptions.applyAccessoryOptions(_owner, item, itemlvl, 1, null);
-		if (EquipmentEnchantOptions.accessoryHeal(item, itemlvl) != 0) refreshAccessoryHeal();
-	}
+        applyArmorSlotOptions(item, enchant, 1);
+    }
 
 	public ArrayList<L1ItemInstance> getArmors() {
 		return _armors;
 	}
 
 	private void removeWeapon(L1ItemInstance weapon) {
-	    if (weapon == null || weapon.getItem() == null) return;
-	    
-		int type = weapon.getItem().getType();
-		int itemId = weapon.getItem().getItemId();
-		int enchant = weapon.getEnchantLevel();
-		EquipmentEnchantOptions.applyMeditationStaff(_owner, weapon.getItem(), enchant, -1, null);
-		if(itemId == 14061 || itemId == 14012 || itemId == 2202013 || itemId == 2202014 || itemId == 14086) {
-			_owner.addDamageReductionByArmor(-1);
-		}
-		if(itemId == 14134 || itemId == 2202012 ) {
-			_owner.addDamageReductionByArmor(-2);
-		}
-		EquipmentEnchantOptions.applyNamedWeaponOptions(_owner, weapon.getItem(), enchant, -1, null);
-		/** 악마왕 도끼 **/
-		EquipmentEnchantOptions.applyDemonAxe(_owner, weapon.getItem(), enchant, -1, null);
-		/** 나이트발드의 양손검 기술적중 **/
-		if (itemId == 59 || itemId == 617  || itemId == 11121) {
-			_owner.AddSpecialPierce(eKind.ABILITY, -5);
-		}
-		/** 악몽의 장궁 정령 적중**/
-		if (itemId == 622 || itemId == 1136) {
-			_owner.AddSpecialPierce(eKind.SPIRIT, -3);
-		}
-		/** 태풍의도끼 공포적중+1 **/
-		EquipmentEnchantOptions.applyWeaponAccuracy(_owner, weapon.getItem(), enchant, -1, null);
-		/** 썸타는 도끼 공포적중+5 **/
-		if (itemId == 7000221) 
-			_owner.AddSpecialPierce(eKind.FEAR, -5);
-		
-		/** 썸타는 무기류 PVP 효과 부여 **/
-		EquipmentEnchantOptions.applyCourtshipWeaponPvp(_owner, weapon.getItem(), enchant, -1, null);
-   
-		if (_owner.hasSkillEffect(L1SkillId.이뮨투함블레이드)) {
-			if (_owner.getType() == 0 || _owner.getType() == 1) {
-				if (type == 1 || type == 3)
-			_owner.removeSkillEffect(L1SkillId.이뮨투함블레이드);
-			}
-			if (_owner.getType() == 2 ) {
-				if (type == 4 || type == 13)
-			_owner.removeSkillEffect(L1SkillId.이뮨투함블레이드);
-			}
-			if (_owner.getType() == 3 ) {
-				if (type == 7 || type == 16 || type == 1)
-			_owner.removeSkillEffect(L1SkillId.이뮨투함블레이드);
-			}
-			if (_owner.getType() == 4 ) {
-				if (type == 12 || type == 11 )
-			_owner.removeSkillEffect(L1SkillId.이뮨투함블레이드);
-			}
-			if (_owner.getType() == 5 ) {
-				if (type == 1 || type == 3 || type == 18)
-			_owner.removeSkillEffect(L1SkillId.이뮨투함블레이드);
-			}
-			if (_owner.getType() == 6 ) {
-				if (type == 17)
-			_owner.removeSkillEffect(L1SkillId.이뮨투함블레이드);
-			}
-			if (_owner.getType() == 7 ) {
-				if (type == 6 || type == 15)
-			_owner.removeSkillEffect(L1SkillId.이뮨투함블레이드);
-			}
-		}
-		
+        final L1Item item = weapon.getItem();
+        final int type = item.getType();
+        EquipmentEnchantOptions.applyWeaponOptions(_owner, item, weapon.getEnchantLevel(), -1, null);
+
+        if (_owner.hasSkillEffect(L1SkillId.이뮨투함블레이드) && suppliesWeaponImmunity(_owner.getType(), type)) {
+            _owner.removeSkillEffect(L1SkillId.이뮨투함블레이드);
+        }
+
 		if (_owner.hasSkillEffect(L1SkillId.INFERNO)) {
 			_owner.removeSkillEffect(L1SkillId.INFERNO);
 		}
@@ -619,157 +431,100 @@ public class L1EquipmentSlot {
 		}
 		
 		
-		if (getWeaponCount() == 1)
-			_owner.setCurrentWeapon(getWeapon().getItem().getType1());
-		else
-			_owner.setCurrentWeapon(0);
+        if (item.getItemId() == 203003 && _owner.getCurrentSpriteId() == 12232 && polymorphSet == null) {
+            L1PolyMorph.undoPoly(_owner);
+        }
+        applyWeaponBlessBonus(weapon, -1);
+        removeWeaponFromSlots(weapon);
+    }
 
-		if (itemId == 203003) { // 데스나이트의 불검:진
-			L1PolyMorph.undoPoly(_owner);
-		}
-		
-		if ((type == 7 || type == 16 || type == 17) && (weapon.get_bless_level() != 0)) {
-			_owner.AddStatSp(-weapon.get_bless_level());
-			try { SC_SPMR.send(_owner); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		
-	    removeWeaponFromSlots(weapon);	
-	}
+    private static boolean suppliesWeaponImmunity(int playerClass, int weaponType) {
+        return switch (playerClass) {
+            case 0, 1 -> weaponType == 1 || weaponType == 3;
+            case 2 -> weaponType == 4 || weaponType == 13;
+            case 3 -> weaponType == 7 || weaponType == 16 || weaponType == 1;
+            case 4 -> weaponType == 12 || weaponType == 11;
+            case 5 -> weaponType == 1 || weaponType == 3 || weaponType == 18;
+            case 6 -> weaponType == 17;
+            case 7 -> weaponType == 6 || weaponType == 15;
+            default -> false;
+        };
+    }
 
-	private void removeArmor(L1ItemInstance armor) {
-		L1Item item = armor.getItem();
-		int itemId = armor.getItem().getItemId();
-		int itemlvl = armor.getEnchantLevel();
-		int itemtype = armor.getItem().getType();
-		
-		
-		if (itemId == 123111 || itemId == 123112 || itemId == 123113) {
-			
-			
-				 try { SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의1); }
-				 catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-			
-				 try { SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의); }
-				 catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-			 
-		}
-		
-		final int classBonus = removeArmorVitalBonus(armor.getId());
+    private void removeArmor(L1ItemInstance armor) {
+        final L1Item item = armor.getItem();
+        final int itemId = item.getItemId();
+        final int enchant = armor.getEnchantLevel();
 
-		if(itemId == 900111){
-			_owner.removeSkillEffect(L1SkillId.TELEPORT_RULER); 
-		}
-		
-	
-		applyArmorBlessBonus(armor, -1);
+        if (isHalphasArmor(itemId)) {
+            try { SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의1); }
+            catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+            try { SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의); }
+            catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+        }
+        final int classBonus = removeArmorVitalBonus(armor.getId());
+        if (itemId == 900111) _owner.removeSkillEffect(L1SkillId.TELEPORT_RULER);
+        final boolean blessingChangedSpMr = EquipmentBlessing.applyArmor(_owner, armor, -1);
+        applyArmorStats(armor, item, enchant, classBonus, -1);
+        validateSetItem(itemId, false, false, false);
 
-		applyArmorEnchantDodge(-armorEnchantDodge(itemId, armor.getEnchantLevel()));
+        if (itemId == 900022) {
+            try { SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, false); }
+            catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+        }
+        if (CUserEquipment.isInvisibilityGear(itemId)) _owner.delInvis();
+        sendArmorAbility(armor, false);
+        if (itemId == 20207) refreshEvaAfterRemoval(armor);
 
-		EquipmentEnchantOptions.applyWards(_owner, item, itemlvl, -1, null);
-		//착용 해제
-		if (itemId == 30184) {
-			_owner.addHitup(-2);
-		}
-		if (itemId == 20272 || itemId == 222342) {
-			_owner.addBowHitup(-3);
-		}
-		applyClassArmorBonus(classBonus, -1);
-		EquipmentEnchantOptions.applyMagicClothing(_owner, item, itemlvl, -1, null);
-		EquipmentEnchantOptions.applyEnhancedWard(_owner, item, itemlvl, -1, null);
-		
-	
-		EquipmentEnchantOptions.applyArmorDefenseOptions(_owner, item, itemlvl, -1, null);
-			
-		
-		
-		applyArmorDefense(armor, armor.getEnchantLevel(), -1);
-		applyArmorEnchantCasting(itemId, itemlvl, 0, null);
+        _armors.remove(armor);
+        applyArmorSlotOptions(item, enchant, -1);
+        if (blessingChangedSpMr) {
+            try { SC_SPMR.send(_owner); }
+            catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+        }
+    }
 
-		applyArmorStatBonus(item, -1);
-		validateSetItem(itemId, false, false, false);
+    private void applyArmorStats(L1ItemInstance armor, L1Item item, int enchant, int classBonus, int sign) {
+        applyArmorEnchantDodge(sign * armorEnchantDodge(item.getItemId(), enchant));
+        applyClassArmorBonus(classBonus, sign);
+        EquipmentEnchantOptions.applyArmorPrimaryOptions(_owner, item, enchant, sign, null);
+        applyArmorDefense(armor, enchant, sign);
+        applyArmorEnchantCasting(item.getItemId(), sign > 0 ? 0 : enchant, sign > 0 ? enchant : 0, null);
+        applyArmorStatBonus(item, sign);
+    }
 
-		if (itemId == 900022) {
-			try { SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, false); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		
-		if (itemId == 20077 || itemId == 20062 || itemId == 120077) {
-			_owner.delInvis();
-		
-		}
-		if (itemId == 20288 || itemId == 900111) {
-		    try { SC_Ability.send(_owner, 1, false); }
-		    catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (itemId == 20281) {
-			try { SC_Ability.send(_owner, 2, false); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		/*if (itemId == 900075) {
-			RAbility.send(_owner, 7, false);
-			RAbility.send(_owner, 2, false);
-			_owner.setPolyRingMaster(false);
-		}*/
-		if (itemId == 20036) {
-			try { SC_Ability.send(_owner, 3, false); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (itemId == 20284) {
-			try { SC_Ability.send(_owner, 5, false); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (itemId == 20207) refreshEvaAfterRemoval(armor);
-//		if (itemId == 22200 || itemId == 22201 || itemId == 22202 || itemId == 22203) {// 파푸리온 갑옷
-//			_owner.stopPapuBlessing();
-//		}else if(itemId >= 22208 && itemId <= 22211 || itemId == 922208)
-//			_owner.stopValaBlessing();
+    private void applyArmorSlotOptions(L1Item item, int enchant, int sign) {
+        applyElixirRuneBonus(item.getItemId(), sign);
+        EquipmentEnchantOptions.applyArmorSlotOptions(_owner, item, enchant, sign, null);
+        if (EquipmentEnchantOptions.accessoryHeal(item, enchant) != 0) refreshAccessoryHeal();
+    }
 
-		applyElixirRuneBonus(itemId, -1);
-		
-		/** 화령의 가더 **/
-		EquipmentEnchantOptions.applyGuardersAndSanctuaryArmor(_owner, item, itemlvl, -1, null);
-		/** 유니콘의 완력 각반 **/
-		EquipmentEnchantOptions.applyUnicornGreaves(_owner, item, itemlvl, -1, null);
-		/** 체력의 각반 **/
-		EquipmentEnchantOptions.applyVitalityGreaves(_owner, item, itemlvl, -1, null);
-		/** 예언자의 견갑 **/
-		EquipmentEnchantOptions.applyShouldersAndCloak(_owner, item, itemlvl, -1, null);
-		/** 맘보 모자 **/
-		EquipmentEnchantOptions.applyMamboHat(_owner, item, itemlvl, -1, null);
-		/** 커츠의 투사 휘장 **/
-		EquipmentEnchantOptions.applyBadges(_owner, item, itemlvl, -1, null);	
-		/** 대마법사의 모자 **/
-		EquipmentEnchantOptions.applyMagicAndRareArmor(_owner, item, itemlvl, -1, null);
-		/** 거대여왕 개미의 금빛,은빛 날개 **/
-		EquipmentEnchantOptions.applyWingsAndAccessory(_owner, item, itemlvl, -1, null);
-		/** 뱀파이어의 망토 **/
-		EquipmentEnchantOptions.applyVampireCloak(_owner, item, itemlvl, -1, null);
-	
-		
-		EquipmentEnchantOptions.applyCrimsonArmor(_owner, item, itemlvl, -1, null);
-		/** 아이리스의 부츠 **/
-		EquipmentEnchantOptions.applyIrisBoots(_owner, item, itemlvl, -1, null);
-		/** 흑기사의 면갑 대미지감소 **/
-		EquipmentEnchantOptions.applyHelmsAndDragonArmor(_owner, item, itemlvl, -1, null);
-		
-		if (itemId == 20279) {
-			
-			_owner.AddPvpDamageReduction(-2);
-				
-			}
-		if (itemId == 20314) {
+    private static boolean isHalphasArmor(int itemId) {
+        return itemId == 123111 || itemId == 123112 || itemId == 123113;
+    }
 
-			_owner.AddPvpDamage(-2);
-			
+    private static int armorAbility(int itemId) {
+        return switch (itemId) {
+            case 20288, 900111 -> 1;
+            case 20281 -> 2;
+            case 20036 -> 3;
+            case 20284 -> 5;
+            default -> 0;
+        };
+    }
 
-			}
-		
-		/** 머미로드의 왕관 **/
-		EquipmentEnchantOptions.applyAccessoryOptions(_owner, item, itemlvl, -1, null);
-		_armors.remove(armor);
-		if (EquipmentEnchantOptions.accessoryHeal(item, itemlvl) != 0) refreshAccessoryHeal();
-	}
+    private void sendArmorAbility(L1ItemInstance changed, boolean equipped) {
+        final int ability = armorAbility(changed.getItemId());
+        if (ability == 0) return;
+        if (!equipped) {
+            for (int i = 0; i < _armors.size(); i++) {
+                final L1ItemInstance other = _armors.get(i);
+                if (other != changed && other.isEquipped() && armorAbility(other.getItemId()) == ability) return;
+            }
+        }
+        try { SC_Ability.send(_owner, ability, equipped); }
+        catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+    }
 
 	// Inventory owns the equipped flag and persistence. This stage owns slot and effect changes.
 	void equipItem(L1ItemInstance equipment) {
@@ -807,6 +562,9 @@ public class L1EquipmentSlot {
 			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		onEquipmentChanged(equipment, item, true);
+        if (type == 1 && item.getItemId() == 203003 && equipment.isEquipped()) {
+            L1PolyMorph.doPoly(_owner, 12232, 0, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
+        }
 		// A set polymorph can synchronously unequip gear. Complete this item's
 		// own options and callbacks before exposing that transition.
 		if (equipment.isEquipped()
@@ -860,16 +618,29 @@ public class L1EquipmentSlot {
 		ItemStat.BLESS_CONSUMO.apply(_owner, sign * item.get_addeinhasadper());
 		ItemStat.MAX_HP.apply(_owner, sign * item.get_addhp());
 		ItemStat.MAX_MP.apply(_owner, sign * item.get_addmp());
-		final var ability = _owner;
-		ability.AddStatBonusStr((byte) (sign * item.get_addstr()));
-		ability.AddStatBonusCon((byte) (sign * item.get_addcon()));
-		ability.AddStatBonusDex((byte) (sign * item.get_adddex()));
-		ability.AddStatBonusInt((byte) (sign * item.get_addint()));
-		ability.AddStatBonusWis((byte) (sign * item.get_addwis()));
+		if (item.get_addstr() != 0) {
+			try { _owner.AddStatBonusStr((byte) (sign * item.get_addstr())); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+		}
+		if (item.get_addcon() != 0) {
+			try { _owner.AddStatBonusCon((byte) (sign * item.get_addcon())); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+		}
+		if (item.get_adddex() != 0) {
+			try { _owner.AddStatBonusDex((byte) (sign * item.get_adddex())); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+		}
+		if (item.get_addint() != 0) {
+			try { _owner.AddStatBonusInt((byte) (sign * item.get_addint())); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+		}
+		if (item.get_addwis() != 0) {
+			try { _owner.AddStatBonusWis((byte) (sign * item.get_addwis())); }
+			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+		}
 		_owner.add_missile_critical_rate(sign * item.get_missile_critical_probability());
 		_owner.add_melee_critical_rate(sign * item.get_melee_critical_probability());
-		if (item.get_addwis() != 0) _owner.resetBaseMr();
-		ability.AddStatBonusCha((byte) (sign * item.get_addcha()));
+		_owner.AddStatBonusCha((byte) (sign * item.get_addcha()));
 
 		int magicResistance = equipment.getMr();
 		if (item.getItemId() == 20236 && _owner.isElf()) magicResistance += 5;
@@ -882,38 +653,6 @@ public class L1EquipmentSlot {
 			ItemStat.SP.apply(_owner, sign * item.get_addsp());
 			try { SC_SPMR.send(_owner); }
 			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-	}
-
-	private void applyArmorBlessBonus(L1ItemInstance armor, int sign) {
-		final int extraHp = armor.get_bless_level2();
-		if (extraHp > 0) ItemStat.MAX_HP.apply(_owner, sign * extraHp);
-
-		switch (armor.get_bless_level()) {
-		case 1, 4 -> ItemStat.MAX_HP.apply(_owner, sign * 30);
-		case 2 -> ItemStat.MAX_HP.apply(_owner, sign * 20);
-		case 3 -> ItemStat.MAX_HP.apply(_owner, sign * 10);
-		case 5 -> ItemStat.MAX_HP.apply(_owner, sign * 40);
-		case 6 -> ItemStat.MAX_HP.apply(_owner, sign * 50);
-		case 7, 23 -> ItemStat.DMG_RED.apply(_owner, sign);
-		case 8 -> ItemStat.DMG_RED.apply(_owner, sign * 2);
-		case 10 -> ItemStat.ABILITY_PLERCE.apply(_owner, sign);
-		case 11 -> ItemStat.FEAR_PLERCE.apply(_owner, sign);
-		case 12 -> ItemStat.DRAGON_SPELL_PLERCE.apply(_owner, sign);
-		case 13 -> ItemStat.SPIRIT_PLERCE.apply(_owner, sign);
-		case 14 -> ItemStat.MAGIC_HIT.apply(_owner, sign);
-		case 15 -> ItemStat.ABILITY_RESIS.apply(_owner, sign);
-		case 16 -> ItemStat.FEAR_RESIS.apply(_owner, sign);
-		case 17 -> ItemStat.DRAGON_SPELL_RESIS.apply(_owner, sign);
-		case 18 -> ItemStat.SPIRIT_RESIS.apply(_owner, sign);
-		case 19 -> ItemStat.DMG_RATE.apply(_owner, sign);
-		case 20 -> ItemStat.BOW_DMG.apply(_owner, sign);
-		case 21 -> ItemStat.HIT.apply(_owner, sign);
-		case 22 -> ItemStat.BOW_HIT.apply(_owner, sign);
-		case 24 -> ItemStat.AC.apply(_owner, -sign);
-		case 25 -> ItemStat.MR.apply(_owner, sign * 3);
-		case 26 -> ItemStat.SP.apply(_owner, sign);
-		default -> { }
 		}
 	}
 
@@ -1202,7 +941,6 @@ public class L1EquipmentSlot {
     private void onEquipmentChanged(L1ItemInstance equipment, L1Item item, boolean equipped) {
         applyRegisteredStatBonus(equipment, item, equipped ? 1 : -1);
         ItemBonusHooks.onEquipChanged(_owner, equipment, equipped);
-        ItemPresentatorFactory.applyEquipment(_owner, equipment, equipped);
     }
 
 	private void applyRegisteredStatBonus(L1ItemInstance equipment, L1Item item, int sign) {

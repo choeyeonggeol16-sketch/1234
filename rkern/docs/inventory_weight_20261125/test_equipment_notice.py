@@ -5,7 +5,7 @@ import tempfile
 root = Path(__file__).resolve().parents[2]
 source = (root / "src/l1j/server/server/model/inventory/L1EquipmentSlot.java").read_text(encoding="utf-8")
 a = source.index("private void applyStatBonus(")
-b = source.index("private void applyArmorBlessBonus(", a)
+b = source.index("private int applyArmorVitalBonus(", a)
 method = source[a:b]
 harness = r'''
 public class EquipmentAudit {
