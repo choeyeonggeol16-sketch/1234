@@ -340,7 +340,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
                 continue;
             }
 
-            final int price = shopItem.getPrice();
+            final int price = shop.getAssessedPrice(shopItem);
             if (price < 0) {
                 continue;
             }

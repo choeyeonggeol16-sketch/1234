@@ -62,6 +62,7 @@ public class L1Shop {
 	private final int _npcId;
 	private final List<L1ShopItem> _sellingItems;
 	private final List<L1ShopItem> _purchasingItems;
+    private final List<L1ShopItem> buybackSaleOffers;
 
 	private static final HashMap<Integer, Integer> _checkbox_rules;
 	static{
@@ -85,6 +86,7 @@ public class L1Shop {
 		_npcId = npcId;
 		_sellingItems = sellingItems;
 		_purchasingItems = purchasingItems;
+        buybackSaleOffers = captureBuybackSaleOffers();
 	}
 
 	public int getNpcId() {
@@ -145,7 +147,7 @@ public class L1Shop {
 
 	private L1ShopItem getPurchasingItem(int itemId, int enchant) {
 		for (L1ShopItem shopItem : _purchasingItems) {
-			if (shopItem.getItemId() == itemId && shopItem.getEnchant() == enchant) {
+			if (shopItem != null && shopItem.getItemId() == itemId && shopItem.getEnchant() == enchant) {
 				return shopItem;
 			}
 		}
@@ -162,26 +164,80 @@ public class L1Shop {
 	}
 
 	public L1AssessedItem assessItem(L1ItemInstance item) {
-		L1ShopItem shopItem = getPurchasingItem(item.getItemId(), item.getEnchantLevel());
-		if (shopItem == null) {
-			return null;
-		}
-		return new L1AssessedItem(item.getId(), getAssessedPrice(shopItem));
+		final int price = assessOwnedUnitPrice(item);
+		return price < 0 ? null : new L1AssessedItem(item.getId(), price);
 	}
 
-	private int getAssessedPrice(L1ShopItem item) {
-		return (int) (item.getPrice() * Config.RATE_SHOP_PURCHASING_PRICE / item.getPackCount());
-	}
+    /** NPC buyback quote per item, shared by both list formats and settlement. */
+    public int getAssessedPrice(L1ShopItem item) {
+        if (item == null) return -1;
+        return assessBuybackOffer(getPurchasingItem(item.getItemId(), item.getEnchant()));
+    }
+
+    private int assessOwnedUnitPrice(L1ItemInstance item) {
+        if (!isPurchaseableItem(item)) return -1;
+        return assessBuybackOffer(getPurchasingItem(item.getItemId(), item.getEnchantLevel()));
+    }
+
+    private int assessBuybackOffer(L1ShopItem item) {
+        if (item == null || item.getPrice() <= 0 || item.getPackCount() <= 0) return -1;
+        double price = item.getPrice() * Config.RATE_SHOP_PURCHASING_PRICE / item.getPackCount();
+        if (!Double.isFinite(price) || price <= 0D) return -1;
+        for (L1ShopItem offer : buybackSaleOffers) {
+            if (offer.getItemId() != item.getItemId() || offer.getEnchant() != item.getEnchant()) continue;
+            final long packagePrice = L1ShopBuyOrderList.sellingPackagePrice(offer);
+            if (packagePrice > 0) {
+                // Compare untaxed units in the same currency, even while the sale stock is exhausted.
+                price = Math.min(price, packagePrice / Math.max(1, offer.getPackCount()));
+            }
+        }
+        // A zero quote cannot settle without taking the item for free.
+        final long wholePrice = (long) price;
+        return wholePrice > 0 && wholePrice <= 2_000_000_000L ? (int) wholePrice : -1;
+    }
+
+    private List<L1ShopItem> captureBuybackSaleOffers() {
+        if (_sellingItems.isEmpty() || _purchasingItems.isEmpty() || !hasComparableBuybackCurrency())
+            return List.of();
+        final List<L1ShopItem> offers = new ArrayList<>();
+        for (L1ShopItem offer : _sellingItems) {
+            if (offer != null && offer.getItem() != null && offer.getPrice() > 0
+                    && getPurchasingItem(offer.getItemId(), offer.getEnchant()) != null) offers.add(offer);
+        }
+        // Stock changes can remove catalog rows without changing the configured buyback ceiling.
+        return List.copyOf(offers);
+    }
+
+    private boolean hasComparableBuybackCurrency() {
+        // See prepareSellItems and prepareBuyItems for the actual checkout currencies.
+        if ((_npcId >= 5000001 && _npcId <= 5000004) || (_npcId >= 5000006 && _npcId <= 5000018)
+                || (_npcId >= 66110 && _npcId <= 66120)) return false;
+        return switch (_npcId) {
+            case 2, 3, 4, 5, 224, 519, 520, 521, 523, 2998, 2999, 5072, 5073,
+                 70017, 70035, 70041, 70042, 91245, 200005, 200060, 200061, 200062, 200063,
+                 900047, 900107, 5000000, 6200010, 7200002, 7310101, 7310113, 7310119,
+                 7310120, 7310124, 7310126, 7310128, 7310200, 7310201, 7310202,
+                 7320124, 7320222, 7320223, 7320250, 8500140, 460000360, 460000361 -> false;
+            default -> true;
+        };
+    }
 
 	public List<L1AssessedItem> assessItems(CUserInventory inv) {
 		List<L1AssessedItem> result = new ArrayList<L1AssessedItem>();
 		for (L1ShopItem item : _purchasingItems) {
-			for (L1ItemInstance targetItem : inv.GetItemListByClassID(item.getItemId())) {
+			if (item == null) {
+				continue;
+			}
+			final var owned = inv.GetItemListByClassID(item.getItemId());
+			if (owned.length == 0) continue;
+			final int price = getAssessedPrice(item);
+			if (price < 0) continue;
+			for (L1ItemInstance targetItem : owned) {
 				if (!isPurchaseableItem(targetItem)) {
 					continue;
 				}
 				if (item.getEnchant() == targetItem.getEnchantLevel()) { // 인챈트가 같은 아이템만
-					result.add(new L1AssessedItem(targetItem.getId(), getAssessedPrice(item)));
+					result.add(new L1AssessedItem(targetItem.getId(), price));
 				}
 			}
 		}
@@ -774,11 +830,12 @@ public class L1Shop {
         HashMap<Integer, Integer> requested = new HashMap<Integer, Integer>();
         for (L1ShopSellOrder order : orderList.getList()) {
             L1ItemInstance offered = inv.GetByServerID(order.getItem().getTargetId());
-            if (!isPurchaseableItem(offered) || order.getCount() <= 0) return;
+            final int price = assessOwnedUnitPrice(offered);
+            if (price <= 0 || price != order.getItem().getAssessedPrice() || order.getCount() <= 0) return;
             final long quantity = (long) requested.getOrDefault(offered.getId(), 0) + order.getCount();
             if (quantity > offered.getCount() || (!offered.isStackable() && quantity != 1)) return;
             requested.put(offered.getId(), (int) quantity);
-            final long linePrice = (long) order.getItem().getAssessedPrice() * order.getCount();
+            final long linePrice = (long) price * order.getCount();
             if (linePrice < 0 || (projectedTotal += linePrice) > 2000000000L) return;
         }
 		int totalPrice = 0;

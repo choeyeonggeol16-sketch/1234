@@ -79,8 +79,7 @@ public final class CWareHouseRequest {
                         if (!client.CanUseWarehouse(pc, objectId, kind)
                                 || !client.OwnsPledgeWarehouse(pc, vault)) return;
                         try {
-                            if (pc.getClan() != membership
-                                    || !CWareHouseWithdraw.CheckPledgeUser(pc, vault)) return;
+                            if (pc.getClan() != membership) return;
                             RequestItems(pc, kind, size, first, rest, vault);
                         } finally {
                             // Submission establishes the CacheD pending-apply fence before
@@ -95,6 +94,7 @@ public final class CWareHouseRequest {
         synchronized (client) {
             // Recheck at admission, not only before loading the warehouse reference.
             if (!client.CanUseWarehouse(pc, objectId, kind)) return;
+            if (clan && (pc.getClan() != membership || !((ClanWarehouse) warehouse).HasPledgeMember(pc))) return;
             RequestItems(pc, kind, size, first, rest, warehouse);
         }
     }
