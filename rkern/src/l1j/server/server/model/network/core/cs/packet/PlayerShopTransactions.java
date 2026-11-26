@@ -27,7 +27,10 @@ final class PlayerShopTransactions {
     private PlayerShopTransactions() {}
 
     static boolean canReach(L1PcInstance customer, L1PcInstance shop) {
-        return customer != shop && shop.isPrivateShop() && !customer.isGhost() && !customer.isDead()
+        return customer != shop && customer.getId() != shop.getId()
+                && User.CanUsePrivateStore(customer) && shop.isPrivateShop()
+                && !shop.isDead() && !shop.isGhost() && !shop.get_teleport() && !shop.isLogoutStarted()
+                && shop.GetTrade() == null && !l1j.server.server.model.CTrade.HasPendingTradeBlocker(shop)
                 && customer.getMapId() == shop.getMapId()
                 && Math.abs((long) customer.getX() - shop.getX()) <= 12
                 && Math.abs((long) customer.getY() - shop.getY()) <= 12;
@@ -35,7 +38,7 @@ final class PlayerShopTransactions {
 
     static void execute(L1PcInstance customer, L1PcInstance shop, boolean purchase,
             int size, long first, byte[] rest) {
-        if (size <= 0 || !canReach(customer, shop) || !canTrade(customer)) return;
+        if (size <= 0 || size > 255 || !canReach(customer, shop) || !canTrade(customer)) return;
         if (customer.getAccountName().equalsIgnoreCase(shop.getAccountName())) {
             SC_SystemMessage.send(customer, "한 계정 내 무인상점은 이용할 수 없습니다.");
             return;
@@ -108,6 +111,7 @@ final class PlayerShopTransactions {
                     if (tx.transfer(seller, transfer.item, transfer.count, buyer) == null) return;
                 }
                 if (tx.transfer(buyer, adena, (int) total, seller) == null) return;
+                if (!canReach(customer, shop) || !view.matches(shop, purchase)) return;
                 tx.requireTables("character_shop");
                 final int shopId = shop.getId();
                 final int[] listingIds = debits.keySet().toIntArray();
@@ -164,6 +168,7 @@ final class PlayerShopTransactions {
         }
         if (tx.transfer(seller, item, count, buyer) == null
                 || tx.transfer(buyer, adena, (int) total, seller) == null) return;
+        if (!canReach(customer, shop) || !view.matches(shop, purchase)) return;
         final DynamicShopItem expected = DynamicShopStorage.copyListing(listing);
         final int shopId = shop.getId();
         tx.requireTables("character_shop");
@@ -229,7 +234,8 @@ final class PlayerShopTransactions {
                 && item.getEnchantLevel() == listing.enchant && item.getAttrEnchantLevel() == listing.attr
                 && (item.isStackable() || count == 1)
                 && CompanionInstanceCache.is_companion_oblivion(item.getId())
-                && !CS_PersonalShop.isPetItem(seller, item.getId()) && !CS_PersonalShop.isDollItem(seller, item.getId());
+                && item.getItemId() != L1ItemId.ADENA
+                && !User.IsCompanionItem(seller, item.getId()) && !User.IsDollItem(seller, item.getId());
     }
 
     private static void sendFailure(L1PcInstance customer) {

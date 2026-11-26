@@ -1,5 +1,25 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import java.util.ArrayList;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import l1j.server.server.ActionCodes;
+import l1j.server.server.Controller.FishingTimeController;
+import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
+import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
+import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
+import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
+import l1j.server.server.model.CTrade;
+import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.datatables.LetterTable;
 import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1InventoryTransaction;
@@ -208,6 +228,465 @@ public final class User {
     private static void UseItem(CUserSocket client, L1PcInstance pc, L1ItemInstance item,
             int itemObjectId, int targetId, int x, int y, String name, int skillId) {
         ExtendedItemActions.use(client, pc, item, itemObjectId, targetId, x, y, name, skillId);
+    }
+
+
+    private static final Logger PRIVATE_STORE_LOG = Logger.getLogger(User.class.getName());
+
+    private static final int MAX_SHOP_ITEMS = 7;
+
+    private static final byte[] EMPTY_CHAT = new byte[0];
+
+    private static final int[] RUNE_ARMOR_IDS = {
+            22232, 22233, 22234, 22235,
+            22236, 22237, 22238, 22239,
+            22240, 22241, 22242, 22243,
+            22244, 22245, 22246, 22247,
+            22248, 22249
+    };
+
+
+    /** The L1 client submits both store lists in one packet. The OFF User
+     * admission and list-set/quit roles are kept without inventing a manage packet. */
+    static void OnPrivateStorePacket(CUserSocket client, int type, byte[] data) {
+        if (client == null || (type != 0 && type != 1)) return;
+        final L1PcInstance pc = client.getActiveChar();
+        if (pc == null) return;
+        final int stamp = pc.getSessionStamp();
+        final int token = pc.tryReserveItemTransfer(client, stamp);
+        if (token == 0) return;
+        try {
+            if (type == 1) {
+                // A close must remain possible even after death, morph or map change.
+                if (pc.isPrivateShop()) QuitPrivateStore(pc);
+                return;
+            }
+            if (!CanOpenPrivateStore(pc)) return;
+            SetPrivateStoreList(pc, client, stamp, data);
+        } finally {
+            pc.endItemTransfer(token);
+        }
+    }
+
+    private static boolean CanOpenPrivateStore(L1PcInstance pc) {
+        if (pc.isDead() || pc.isGhost() || pc.get_teleport() || pc.isLogoutStarted()
+                || pc.GetTrade() != null || CTrade.HasPendingTradeBlocker(pc)) return false;
+        if (pc.isInvisble()) {
+            SC_ServerMessage.send(pc, 755);
+            return false;
+        }
+        if (pc.getMapId() != 800) {
+            if (pc.isFishing()) stopFishing(pc);
+            else SC_SystemMessage.send(pc, "개인상점은 시장에서만 열 수 있습니다.");
+            return false;
+        }
+        if (pc.isFishing()) return false;
+        if (hasEquippedRune(pc)) {
+            SC_ChatPacket.sendDirect(pc, pc, "룬을 착용하셨다면 해제하시기 바랍니다.");
+            return false;
+        }
+        if (pc.getCurrentSpriteId() != pc.getClassId() && !pc.isPrivateShop()
+                && pc.getSkillEffectTimeSec(L1SkillId.SHAPE_CHANGE) <= 0) {
+            SC_SystemMessage.send(pc, "변신 아이템을 해제하세요.");
+            return false;
+        }
+        return true;
+    }
+
+    static boolean CanUsePrivateStore(L1PcInstance customer) {
+        return customer != null && !customer.isDead() && !customer.isGhost()
+                && !customer.get_teleport() && !customer.isLogoutStarted()
+                && !customer.isPrivateShop() && !customer.isFishing()
+                && customer.GetTrade() == null && !CTrade.HasPendingTradeBlocker(customer);
+    }
+
+    static void PrivateStoreBuy(L1PcInstance customer, L1PcInstance shop,
+            boolean purchase, int size, long first, byte[] rest) {
+        PlayerShopTransactions.execute(customer, shop, purchase, size, first, rest);
+    }
+
+    // =========================================================
+    // OPEN
+    // =========================================================
+
+    private static void SetPrivateStoreList(L1PcInstance pc, CUserSocket session, int stamp, byte[] data) {
+
+        if (data == null || data.length < 4) {
+            return;
+        }
+
+        int cursor = 0;
+
+        /*
+         * H sellCount
+         */
+        if (!has(data, cursor, 2)) {
+            return;
+        }
+
+        final int sellCount = readH(data, cursor);
+        cursor += 2;
+
+        if (sellCount > MAX_SHOP_ITEMS) {
+            sendMaxItems(pc);
+            return;
+        }
+
+        final int sellBytes = sellCount * 12;
+
+        if (!has(data, cursor, sellBytes)) {
+            return;
+        }
+
+        boolean tradable = true;
+        final ArrayList<DynamicShopItem> sells = sellCount == 0 ? null : new ArrayList<>(sellCount);
+
+        for (int i = 0; i < sellCount; i++) {
+            final int objectId = readD(data, cursor);
+            final int price = readD(data, cursor + 4);
+            int count = readD(data, cursor + 8);
+
+            cursor += 12;
+
+            final L1ItemInstance item = pc.getInventory().GetByServerID(objectId);
+
+            if (price <= 0 || item == null || objectId <= 0 || objectId != item.getId() || item.isEquipped()
+                    || item.getItemId() == L1ItemId.ADENA || (long) price * count > CInventory.MAX_AMOUNT
+                    || (!item.isStackable() && count != 1) || item.getCount() < count || count <= 0
+                    || containsListing(sells, objectId)) {
+                SC_Disconnect.send(pc);
+                return;
+            }
+
+            if (item.getBless() >= 128) {
+                SC_ServerMessage.send(pc, 210, item.getItem().getName());
+                return;
+            }
+
+            if (!item.getItem().isTradable()) {
+                tradable = false;
+                sendNotTradable(pc, item);
+            }
+
+            if (!CompanionInstanceCache.is_companion_oblivion(item.getId())) {
+                sendNotTradable(pc, item);
+                return;
+            }
+
+            if (IsCompanionItem(pc, item.getId())) {
+                tradable = false;
+                sendNotTradable(pc, item);
+            }
+
+            if (IsDollItem(pc, item.getId())) {
+                tradable = false;
+                sendNotTradable(pc, item);
+            }
+
+            sells.add(DynamicShopItem.create(item, count, price, false));
+        }
+
+        
+        if (!has(data, cursor, 2)) {
+            return;
+        }
+
+        final int buyCount = readH(data, cursor);
+        cursor += 2;
+
+        if (buyCount > MAX_SHOP_ITEMS) {
+            sendMaxItems(pc);
+            return;
+        }
+
+        final int buyBytes = buyCount * 12;
+
+        if (!has(data, cursor, buyBytes)) {
+            return;
+        }
+
+        final ArrayList<DynamicShopItem> buys = buyCount == 0 ? null : new ArrayList<>(buyCount);
+        for (int i = 0; i < buyCount; i++) {
+            final int objectId = readD(data, cursor);
+            final int price = readD(data, cursor + 4);
+            int count = readD(data, cursor + 8);
+
+            cursor += 12;
+
+            final L1ItemInstance item = pc.getInventory().GetByServerID(objectId);
+
+            if (price <= 0 || item == null || objectId <= 0 || objectId != item.getId()
+                    || item.getItemId() == L1ItemId.ADENA || item.getBless() >= 128
+                    || (long) price * count > CInventory.MAX_AMOUNT || (!item.isStackable() && count != 1) || count <= 0 || item.getCount() <= 0
+                    || containsListing(sells, objectId) || containsListing(buys, objectId)) {
+                SC_Disconnect.send(pc);
+                return;
+            }
+
+            if (count > item.getCount()) {
+                count = item.getCount();
+            }
+
+            if (!item.getItem().isTradable()) {
+                tradable = false;
+                sendNotTradable(pc, item);
+            }
+
+            if (!CompanionInstanceCache.is_companion_oblivion(item.getId())) {
+                sendNotTradable(pc, item);
+                return;
+            }
+
+            if (IsCompanionItem(pc, item.getId())) {
+                tradable = false;
+                sendNotTradable(pc, item);
+            }
+
+            if (IsDollItem(pc, item.getId())) {
+                tradable = false;
+                sendNotTradable(pc, item);
+            }
+
+            buys.add(DynamicShopItem.create(item, count, price, true));
+        }
+
+        if (!tradable || (sellCount == 0 && buyCount == 0)) return;
+
+        final int chatLength = data.length - cursor;
+        final byte[] chat;
+
+        if (chatLength <= 0) {
+            chat = EMPTY_CHAT;
+        } else {
+            chat = new byte[chatLength];
+            System.arraycopy(data, cursor, chat, 0, chatLength);
+        }
+
+        if (!pc.isItemTransferSession(session, stamp) || !CanOpenPrivateStore(pc)) return;
+        if (!PublishPrivateStoreList(pc, sells, buys, chat)) return;
+        final CUserSocket client = session;
+
+        if (client != null && client.getAccount() != null) {
+            SC_PacketBox.send(pc, SC_PacketBox.상점개설횟수, client.getAccount().Shop_open_count);
+        }
+
+        SC_DoActionShop.send(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
+        SC_DoActionShop.broadcast(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
+
+        final int poly = resolveShopPoly(chat);
+
+        pc.상점변신 = poly;
+        pc.setCurrentSprite(poly);
+
+        SC_ChangeShape.send(pc, pc.getId(), poly, 70);
+        SC_ChangeShape.broadcast(pc, pc.getId(), poly, 70);
+
+        final long visual = SC_CharVisualUpdate.pack(pc);
+        SC_CharVisualUpdate.sendPacked(pc, visual);
+        SC_CharVisualUpdate.broadcastPacked(pc, visual);
+
+        SC_WorldPutObject.broadcastPc(pc);
+        pc.curePoison();
+    }
+
+    // =========================================================
+    // CLOSE
+    // =========================================================
+
+    private static void QuitPrivateStore(L1PcInstance pc) {
+        if (!RemovePrivateStoreList(pc)) return;
+        pc.상점변신 = 0;
+        sendIdle(pc);
+        L1PolyMorph.undoPolyPrivateShop(pc);
+    }
+
+    private static boolean PublishPrivateStoreList(L1PcInstance pc, ArrayList<DynamicShopItem> sells,
+            ArrayList<DynamicShopItem> buys, byte[] chat) {
+        try {
+            DynamicShopStorage.replacePlayerListings(pc, sells, buys);
+            pc.setSellings(sells);
+            pc.setPurchasings(buys);
+            pc.setShopChat(chat);
+            pc.setPrivateShop(true);
+            return true;
+        } catch (RejectedExecutionException rejected) {
+            PRIVATE_STORE_LOG.log(Level.WARNING, "Private shop listing admission rejected", rejected);
+            SC_SystemMessage.send(pc, "잠시 후 개인상점을 다시 열어 주세요.");
+            return false;
+        }
+    }
+
+    private static boolean RemovePrivateStoreList(L1PcInstance pc) {
+        try {
+            DynamicShopStorage.deleteProcess(pc);
+            pc.setPrivateShop(false);
+            return true;
+        } catch (RejectedExecutionException rejected) {
+            SC_SystemMessage.send(pc, "잠시 후 개인상점을 다시 닫아 주세요.");
+            return false;
+        }
+    }
+
+    private static boolean containsListing(ArrayList<DynamicShopItem> list, int objectId) {
+        if (list == null) return false;
+        for (int i = 0; i < list.size(); i++)
+            if (list.get(i).objId == objectId) return true;
+        return false;
+    }
+
+    // =========================================================
+    // VALIDATION
+    // =========================================================
+
+    private static boolean hasEquippedRune(L1PcInstance pc) {
+
+        for (int i = 0; i < RUNE_ARMOR_IDS.length; i++) {
+            if (pc.getInventory().isEquippedAny(RUNE_ARMOR_IDS[i])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static boolean IsCompanionItem(L1PcInstance pc, int itemObjectId) {
+        final var companion = pc.get_companion();
+        return companion != null && companion.get_control_object_id() == itemObjectId;
+    }
+
+    static boolean IsDollItem(L1PcInstance pc, int itemObjectId) {
+
+        for (Object value : pc.getDollList().values()) {
+            if (value instanceof L1DollInstance) {
+                final L1DollInstance doll = (L1DollInstance) value;
+
+                if (doll.getItemObjId() == itemObjectId) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // =========================================================
+    // CHAT -> POLY (상점 스킨 변신)
+    // =========================================================
+
+    private static int resolveShopPoly(byte[] chat) {
+
+        if (containsAscii(chat, "tradezone1")) {
+            return 11479;
+        }
+        if (containsAscii(chat, "tradezone2")) {
+            return 11483;
+        }
+        if (containsAscii(chat, "tradezone3")) {
+            return 11480;
+        }
+        if (containsAscii(chat, "tradezone4")) {
+            return 11485;
+        }
+        if (containsAscii(chat, "tradezone5")) {
+            return 11482;
+        }
+        if (containsAscii(chat, "tradezone6")) {
+            return 11486;
+        }
+        if (containsAscii(chat, "tradezone7")) {
+            return 11481;
+        }
+        if (containsAscii(chat, "tradezone8")) {
+            return 11484;
+        }
+        return 0;
+    }
+
+    private static boolean containsAscii(byte[] data, String target) {
+
+        if (data == null) {
+            return false;
+        }
+
+        final int targetLength = target.length();
+        final int last = data.length - targetLength;
+
+        if (last < 0) {
+            return false;
+        }
+
+        for (int i = 0; i <= last; i++) {
+            int j = 0;
+
+            while (j < targetLength && (data[i + j] & 0xFF) == target.charAt(j)) {
+                j++;
+            }
+
+            if (j == targetLength) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // =========================================================
+    // WIRE (네트워크 버퍼 읽기)
+    // =========================================================
+
+    private static boolean has(byte[] data, int offset, int length) {
+        return offset >= 0 && length >= 0 && offset <= data.length - length;
+    }
+
+    private static int readH(byte[] data, int offset) {
+        return (data[offset] & 0xFF) | ((data[offset + 1] & 0xFF) << 8);
+    }
+
+    private static int readD(byte[] data, int offset) {
+        return (data[offset] & 0xFF)
+                | ((data[offset + 1] & 0xFF) << 8)
+                | ((data[offset + 2] & 0xFF) << 16)
+                | ((data[offset + 3] & 0xFF) << 24);
+    }
+
+    // =========================================================
+    // COMMON (공통 유틸리티)
+    // =========================================================
+
+    private static void stopFishing(L1PcInstance pc) {
+
+        try {
+            pc.setFishing(false);
+            pc.setFishingTime(0);
+            pc.setFishingReady(false);
+
+            final long visual = SC_CharVisualUpdate.pack(pc);
+
+            SC_CharVisualUpdate.sendPacked(pc, visual);
+            SC_CharVisualUpdate.broadcastPacked(pc, visual);
+
+            FishingTimeController.getInstance().removeMember(pc);
+
+            SC_ServerMessage.send(pc, 2120);
+
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void sendNotTradable(L1PcInstance pc, L1ItemInstance item) {
+        SC_ServerMessage.send(pc, 166, item.getItem().getName(), "거래 불가능합니다.");
+    }
+
+    private static void sendMaxItems(L1PcInstance pc) {
+        SC_ChatPacket.sendDirect(pc, pc, "물품 등록은 " + MAX_SHOP_ITEMS + "개까지만 가능합니다.");
+    }
+
+    private static void sendIdle(L1PcInstance pc) {
+        SC_DoActionGFX.send(
+                pc.getNetConnection(),
+                pc.getId(),
+                ActionCodes.ACTION_Idle);
+        SC_DoActionGFX.broadcast(pc, ActionCodes.ACTION_Idle);
     }
 
 }

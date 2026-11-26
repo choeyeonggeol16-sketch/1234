@@ -169,6 +169,12 @@ public final class CS_Result {
             return;
         }
 
+        if (isPrivateShop) {
+            if (size > 0 && (resultType == 0 || resultType == 1))
+                User.PrivateStoreBuy(pc, (L1PcInstance) findObject, resultType == 1, size, packed0, params);
+            return;
+        }
+
 		// 아이템 교환 로직 (1 ~ 20)
 		if (processChangeItems(pc, size, packed0, params)) {
 			return;
@@ -178,8 +184,6 @@ public final class CS_Result {
         if (npcImpl.equalsIgnoreCase("L1Merchant") || isPrivateNpcShop) {
             MerchantTransactions.execute(client, pc, resultType == 0, isPrivateNpcShop,
                     npcObjectId, npcId, npcName, size, packed0, params);
-        } else if (isPrivateShop) {
-            PlayerShopTransactions.execute(pc, (L1PcInstance) findObject, resultType == 1, size, packed0, params);
         }
     }
 
