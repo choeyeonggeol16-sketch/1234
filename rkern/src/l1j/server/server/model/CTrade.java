@@ -59,10 +59,38 @@ public final class CTrade {
     private boolean attached() { return first.GetTrade() == this && second.GetTrade() == this; }
     private boolean liveFirst() { return first.isItemTransferSession(firstSocket, firstStamp); }
     private boolean liveSecond() { return second.isItemTransferSession(secondSocket, secondStamp); }
+    /** OFF rechecks pending item operations on both participants before opening trade.
+     * Preserve the existing L1 change-ticket restrictions at every lifecycle boundary. */
+    public static boolean HasPendingTradeBlocker(L1PcInstance pc) {
+
+        return pc.getIsChangeItem()
+                || pc.getIsChangeItem1()
+                || pc.getIsChangeItem2()
+                || pc.getIsChangeItem3()
+                || pc.getIsChangeItem4()
+                || pc.getIsChangeItem5()
+                || pc.getIsChangeItem6()
+                || pc.getIsChangeItem7()
+                || pc.getIsChangeItem8()
+                || pc.getIsChangeItem9()
+                || pc.getIsChangeItem10()
+                || pc.getIsChangeItem11()
+                || pc.getIsChangeItem12()
+                || pc.getIsChangeItem13()
+                || pc.getIsChangeItem14()
+                || pc.getIsChangeItem15()
+                || pc.getIsChangeItem16()
+                || pc.getIsChangeItem17()
+                || pc.getIsChangeItem18()
+                || pc.getIsChangeItem19()
+                || pc.getIsChangeItem20();
+    }
+
     private boolean validPair() {
         return attached() && liveFirst() && liveSecond()
                 && !first.isDead() && !second.isDead() && !first.isGhost() && !second.isGhost()
                 && !first.isPrivateShop() && !second.isPrivateShop()
+                && !HasPendingTradeBlocker(first) && !HasPendingTradeBlocker(second)
                 && first.getMapId() == second.getMapId()
                 && Math.abs((long) first.getX() - second.getX()) <= 1
                 && Math.abs((long) first.getY() - second.getY()) <= 1;
@@ -151,7 +179,7 @@ public final class CTrade {
 
 
     public synchronized void RequestAddItems(L1PcInstance player, int objectId, int requestedCount) {
-        if (!member(player) || state != STARTED || requestedCount <= 0) return;
+        if (!member(player) || state != STARTED || objectId <= 0 || requestedCount <= 0) return;
         if (!validPair() || expired()) { close(false, true); return; }
         if (busy()) return;
         final L1PcInstance partner = player == first ? second : first;
@@ -189,7 +217,11 @@ public final class CTrade {
                 if (item.getId() == objectId) { previous = item; break; }
             }
         }
-        if (previous != null && !matchesOffer(source, previous)) { close(false, true); return; }
+        // A non-stackable persistent row may appear only once, even if its live count is corrupt.
+        if (previous != null && (!source.isStackable() || !matchesOffer(source, previous))) {
+            close(false, true);
+            return;
+        }
         long offered = (long) amount + (previous == null ? 0 : previous.getCount());
         if (offered > source.getCount() || offered > CInventory.MAX_AMOUNT) return;
         if (partner.getInventory().CheckAddableTransfer(source, (int) offered) != CInventory.OK) {

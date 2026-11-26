@@ -65,7 +65,28 @@ stub(M+".Instance", "L1PcInstance", """
 public class L1PcInstance {
     private final int id; private volatile CTrade trade;
     public volatile int stamp=1, x=10, y=10, map=4;
-    public volatile boolean dead, ghost, shop, logout;
+    public volatile boolean dead, ghost, shop, logout, changeItem;
+    public boolean getIsChangeItem(){return changeItem;}
+    public boolean getIsChangeItem1(){return false;}
+    public boolean getIsChangeItem2(){return false;}
+    public boolean getIsChangeItem3(){return false;}
+    public boolean getIsChangeItem4(){return false;}
+    public boolean getIsChangeItem5(){return false;}
+    public boolean getIsChangeItem6(){return false;}
+    public boolean getIsChangeItem7(){return false;}
+    public boolean getIsChangeItem8(){return false;}
+    public boolean getIsChangeItem9(){return false;}
+    public boolean getIsChangeItem10(){return false;}
+    public boolean getIsChangeItem11(){return false;}
+    public boolean getIsChangeItem12(){return false;}
+    public boolean getIsChangeItem13(){return false;}
+    public boolean getIsChangeItem14(){return false;}
+    public boolean getIsChangeItem15(){return false;}
+    public boolean getIsChangeItem16(){return false;}
+    public boolean getIsChangeItem17(){return false;}
+    public boolean getIsChangeItem18(){return false;}
+    public boolean getIsChangeItem19(){return false;}
+    public boolean getIsChangeItem20(){return false;}
     public String account;
     public final CUserSocket socket=new CUserSocket();
     public final CUserInventory inv=new CUserInventory();
@@ -277,6 +298,22 @@ public class TradeLifecycleTest {
         t.RequestAddItems(a,v.id,2);t.RequestAddItems(b,w.id,3);t.PressDone(a);t.PressDone(b);
         L1InventoryTransaction.complete(1);retired(t,a,b);
         check(v.count==7&&w.count==5&&a.inv.items.get(w.id).count==3&&b.inv.items.get(v.id).count==2,"different stackable classes exchange");
+        a=pc();b=pc();t=open(a,b);v=item(a,2);v.stack=false;
+        t.RequestAddItems(a,v.id,1);t.RequestAddItems(a,v.id,1);retired(t,a,b);
+        check(v.count==2,"duplicate nonstack offer cancelled without mutation");
+        a=pc();b=pc();a.changeItem=true;check(!MGR.CreateTrade(a,b),"pending item change blocks request");
+        check(a.GetTrade()==null&&b.GetTrade()==null,"pending change request cleanup");
+        a=pc();b=pc();t=request(a,b);b.changeItem=true;t.Request(b,t.GetID(),1);retired(t,a,b);
+        check(b.socket.starts==0,"pending change blocks acceptance");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);b.changeItem=true;t.RequestAddItems(a,v.id,2);retired(t,a,b);
+        check(v.count==9&&a.socket.adds==0,"pending change blocks item addition");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);t.RequestAddItems(a,v.id,2);t.PressDone(a);
+        b.changeItem=true;int beforePendingChange=L1InventoryTransaction.submitted;t.PressDone(b);retired(t,a,b);
+        check(v.count==9&&L1InventoryTransaction.submitted==beforePendingChange,"pending change blocks final confirmation");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);t.RequestAddItems(a,v.id,2);
+        final L1PcInstance pendingChange=b;L1InventoryTransaction.planHook=()->pendingChange.changeItem=true;
+        try{t.PressDone(a);t.PressDone(b);}finally{L1InventoryTransaction.planHook=null;}
+        retired(t,a,b);check(v.count==9&&L1InventoryTransaction.pending==null,"pending change during planning");
         for(int round=0;round<100;round++){
             final L1PcInstance x=pc(),y=pc(),z=pc();
             Thread left=new Thread(()->MGR.CreateTrade(x,y)),right=new Thread(()->MGR.CreateTrade(x,z));

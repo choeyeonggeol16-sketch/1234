@@ -2,6 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CTradeManager;
+import l1j.server.server.model.CTrade;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -41,7 +42,7 @@ public final class CS_AskExchange {
             return;
         }
 
-        if (hasAnyChangeItem(player)) {
+        if (CTrade.HasPendingTradeBlocker(player)) {
 
             player.sendPackets(
                     "변경권을 사용 중이거나 취소하셨으므로 리스 후에 교환 가능합니다.");
@@ -100,7 +101,7 @@ public final class CS_AskExchange {
             return;
         }
 
-        if (hasAnyChangeItem(target)) {
+        if (CTrade.HasPendingTradeBlocker(target)) {
 
             player.sendPackets(
                     "상대방이 변경권을 사용 중이거나 취소하셨으므로 상대방이 리스 후에 교환 가능합니다.");
@@ -120,29 +121,4 @@ public final class CS_AskExchange {
             SC_SystemMessage.send(player, "상대방이 거래를 처리 중입니다. 잠시 후 다시 시도해 주세요.");
     }
 
-    private static boolean hasAnyChangeItem(
-            L1PcInstance pc) {
-
-        return pc.getIsChangeItem()
-                || pc.getIsChangeItem1()
-                || pc.getIsChangeItem2()
-                || pc.getIsChangeItem3()
-                || pc.getIsChangeItem4()
-                || pc.getIsChangeItem5()
-                || pc.getIsChangeItem6()
-                || pc.getIsChangeItem7()
-                || pc.getIsChangeItem8()
-                || pc.getIsChangeItem9()
-                || pc.getIsChangeItem10()
-                || pc.getIsChangeItem11()
-                || pc.getIsChangeItem12()
-                || pc.getIsChangeItem13()
-                || pc.getIsChangeItem14()
-                || pc.getIsChangeItem15()
-                || pc.getIsChangeItem16()
-                || pc.getIsChangeItem17()
-                || pc.getIsChangeItem18()
-                || pc.getIsChangeItem19()
-                || pc.getIsChangeItem20();
-    }
 }
