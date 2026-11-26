@@ -23,7 +23,9 @@ public class CUserInventory extends CInventory {
     public final java.util.HashMap<Integer,L1ItemInstance> items=new java.util.HashMap<>();
     public boolean full;
     public L1ItemInstance GetByServerID(int id){return items.get(id);}
-    public int CheckAddable(L1ItemInstance item,int count){return full ? -1 : OK;}
+    public int maxIncoming=Integer.MAX_VALUE;
+    public int CheckAddable(L1ItemInstance item,int count){return full || count>maxIncoming ? -1 : OK;}
+    public int CheckAddableTransfer(L1ItemInstance item,int count){return CheckAddable(item,count);}
 }
 """, f"import {M}.Instance.L1ItemInstance;")
 stub(M+".Instance", "L1ItemInstance", """
@@ -124,6 +126,7 @@ public class L1InventoryTransaction implements AutoCloseable {
     public static volatile L1InventoryTransaction pending;
     public static int submitted;
     public static boolean reject, failPlan;
+    public static Runnable planHook;
     final L1PcInstance a,b;
     final int at,bt;
     boolean committed;
@@ -140,7 +143,7 @@ public class L1InventoryTransaction implements AutoCloseable {
     }
     public L1ItemInstance transfer(L1PcInstance from,L1ItemInstance item,int n,L1PcInstance to){
         if(failPlan)throw new IllegalStateException("plan failure");
-        moves.add(new Move(item,n,from,to));return item;
+        moves.add(new Move(item,n,from,to));if(planHook!=null)planHook.run();return item;
     }
     public void onTerminalFailure(Runnable r){terminal=r;}
     public void onFailure(Runnable r){rollback=r;}
@@ -248,6 +251,32 @@ public class TradeLifecycleTest {
         a=pc();b=pc();t=open(a,b);v=item(a,9);b.socket.failAdd=true;t.RequestAddItems(a,v.id,2);retired(t,a,b);
         a=pc();b=pc();t=open(a,b);v=item(a,9);v.equipped=true;t.RequestAddItems(a,v.id,2);
         check(a.socket.adds==0,"equipped item rejected");t.Canceled(a);retired(t,a,b);
+        a=pc();b=pc();t=open(a,b);v=item(a,9);
+        t.RequestAddItems(a,v.id,10);t.RequestAddItems(a,v.id,Integer.MAX_VALUE);
+        check(a.socket.adds==0&&v.count==9,"excessive request is not clamped");
+        b.inv.maxIncoming=5;t.RequestAddItems(a,v.id,3);t.RequestAddItems(a,v.id,3);
+        check(a.socket.adds==1,"cumulative offer capacity checked");
+        t.Canceled(a);retired(t,a,b);
+        a=pc();b=pc();t=open(a,b);v=item(a,9);
+        L1ItemInstance w=item(b,8);
+        t.RequestAddItems(a,v.id,2);t.RequestAddItems(b,w.id,3);
+        int beforeOpposing=L1InventoryTransaction.submitted;
+        t.PressDone(a);t.PressDone(b);retired(t,a,b);
+        check(L1InventoryTransaction.submitted==beforeOpposing&&v.count==9&&w.count==8,"opposing stackable class rejected");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);
+        b.inv.items.put(v.id,v.copy(9));t.RequestAddItems(a,v.id,2);retired(t,a,b);
+        check(v.count==9&&L1InventoryTransaction.pending==null,"duplicate durable ID rejected on offer");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);t.RequestAddItems(a,v.id,2);
+        b.inv.items.put(v.id,v.copy(9));t.PressDone(a);t.PressDone(b);retired(t,a,b);
+        check(v.count==9&&L1InventoryTransaction.pending==null,"duplicate durable ID rejected on commit");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);t.RequestAddItems(a,v.id,2);
+        final L1PcInstance moving=b;L1InventoryTransaction.planHook=()->moving.x=20;
+        try{t.PressDone(a);t.PressDone(b);}finally{L1InventoryTransaction.planHook=null;}
+        retired(t,a,b);check(v.count==9&&L1InventoryTransaction.pending==null,"position invalidated during planning");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);w=new L1ItemInstance(++ids,502,8);b.inv.items.put(w.id,w);
+        t.RequestAddItems(a,v.id,2);t.RequestAddItems(b,w.id,3);t.PressDone(a);t.PressDone(b);
+        L1InventoryTransaction.complete(1);retired(t,a,b);
+        check(v.count==7&&w.count==5&&a.inv.items.get(w.id).count==3&&b.inv.items.get(v.id).count==2,"different stackable classes exchange");
         for(int round=0;round<100;round++){
             final L1PcInstance x=pc(),y=pc(),z=pc();
             Thread left=new Thread(()->MGR.CreateTrade(x,y)),right=new Thread(()->MGR.CreateTrade(x,z));

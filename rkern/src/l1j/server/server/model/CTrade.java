@@ -176,8 +176,11 @@ public final class CTrade {
             else SC_ServerMessage.send(player, 210, source.getItem().getName());
             return;
         }
-        int amount = Math.min(requestedCount, source.getCount());
-        if (amount > CInventory.MAX_AMOUNT) return;
+        // OFF rejects excessive quantities; never silently turn them into a full-stack offer.
+        if (requestedCount > source.getCount() || requestedCount > CInventory.MAX_AMOUNT) return;
+        final int amount = requestedCount;
+        // L1 object IDs are the durable item row IDs. Reject contradictory ownership.
+        if (partner.getInventory().GetByServerID(objectId) != null) { close(false, true); return; }
         ArrayList<L1ItemInstance> items = player == first ? firstItems : secondItems;
         L1ItemInstance previous = null;
         if (items != null) {
@@ -189,7 +192,7 @@ public final class CTrade {
         if (previous != null && !matchesOffer(source, previous)) { close(false, true); return; }
         long offered = (long) amount + (previous == null ? 0 : previous.getCount());
         if (offered > source.getCount() || offered > CInventory.MAX_AMOUNT) return;
-        if (partner.getInventory().CheckAddable(source, amount) != CInventory.OK) {
+        if (partner.getInventory().CheckAddableTransfer(source, (int) offered) != CInventory.OK) {
             SC_ServerMessage.send(partner, 270); SC_ServerMessage.send(player, 271); return;
         }
         final L1ItemInstance image;
@@ -224,13 +227,29 @@ public final class CTrade {
         for (int i = 0, size = items.size(); i < size; i++) {
             L1ItemInstance offer = items.get(i);
             L1ItemInstance source = from.getInventory().GetByServerID(offer.getId());
-            if (!canTransferOffer(from, source) || !matchesOffer(source, offer))
+            if (to.getInventory().GetByServerID(offer.getId()) != null
+                    || !canTransferOffer(from, source) || !matchesOffer(source, offer))
                 throw new IllegalStateException("Trade offer preimage or eligibility changed");
             if (tx.transfer(from, source, offer.getCount(), to) == null)
                 throw new IllegalStateException("Trade transfer rejected");
         }
     }
     private static boolean empty(ArrayList<L1ItemInstance> items) { return items == null || items.isEmpty(); }
+
+    /** OFF PressDone rejects exchanging the same stackable class in both directions.
+     * Avoid intermediate merge/debit of the other participant's offered row. */
+    private boolean hasOpposingStackableClass() {
+        if (firstItems == null || secondItems == null) return false;
+        for (int i = 0; i < firstItems.size(); i++) {
+            L1ItemInstance a = firstItems.get(i);
+            if (!a.isStackable()) continue;
+            for (int j = 0; j < secondItems.size(); j++) {
+                L1ItemInstance b = secondItems.get(j);
+                if (b.isStackable() && a.getItemId() == b.getItemId()) return true;
+            }
+        }
+        return false;
+    }
 
     // Called only by the existing inventory transaction admission path.
     boolean ReadyForCommit(L1PcInstance a, L1PcInstance b) {
@@ -250,6 +269,13 @@ public final class CTrade {
             touch();
             if (doneMask != 3) return;
             if (empty(firstItems) && empty(secondItems)) { close(false, true); return; }
+            if (hasOpposingStackableClass()) {
+                try {
+                    SC_SystemMessage.send(first, "같은 종류의 중첩 아이템은 서로 동시에 교환할 수 없습니다.");
+                    SC_SystemMessage.send(second, "같은 종류의 중첩 아이템은 서로 동시에 교환할 수 없습니다.");
+                } finally { close(false, true); }
+                return;
+            }
             state = COMMITTING;
             partner = player == first ? second : first;
         }
@@ -260,6 +286,9 @@ public final class CTrade {
                 throw new IllegalStateException("Trade relation changed during admission");
             plan(tx, first, second, firstItems);
             plan(tx, second, first, secondItems);
+            // Planning can take time. Reject invalidated participants before submitting SQL.
+            if (!ReadyForCommit(player, partner) || !validPair())
+                throw new IllegalStateException("Trade relation changed during planning");
             final ArrayList<L1ItemInstance> rollbackFirst = firstItems, rollbackSecond = secondItems;
             tx.onTerminalFailure(this::terminalFailure);
             tx.onFailure(() -> {
