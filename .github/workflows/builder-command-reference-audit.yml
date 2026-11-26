@@ -94,11 +94,13 @@ jobs:
                   Config.GMCODE=9000;
                   if(!(Boolean)check.invoke(null,9000,ordinary) || (Boolean)check.invoke(null,9999,ordinary))
                       throw new AssertionError("configured GM level");
-                  System.out.println("PASS Builder permission policy (54 checks)");
+                  Config.GMCODE=0; Config.SUB_GMCODE=0;
+                  if((Boolean)check.invoke(null,0,ordinary))throw new AssertionError("zero configured access");
+                  System.out.println("PASS Builder permission policy (55 checks)");
               }
           }
           """, encoding="utf-8")
-          subprocess.run(["javac","-encoding","UTF-8","-cp",cp+os.pathsep+str(classes),"-d",str(classes),str(test)],check=True)
+          subprocess.run(["javac","-encoding","UTF-8","--enable-preview","--release","21","-cp",cp+os.pathsep+str(classes),"-d",str(classes),str(test)],check=True)
           subprocess.run(["java","--enable-preview","-cp",cp+os.pathsep+str(classes),"BuilderPermissionTest"],check=True)
 
           PY

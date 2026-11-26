@@ -332,7 +332,7 @@ public final class BuilderCmdHandler {
 	}
 
 	private static boolean hasBuilderPermission(int access, BuilderCmdPairType entry) {
-		if (access != Config.GMCODE && access != Config.SUB_GMCODE) return false;
+		if (access <= 0 || (access != Config.GMCODE && access != Config.SUB_GMCODE)) return false;
 		return entry == null || !isFullOnly(entry) || (access == Config.GMCODE && access != Config.SUB_GMCODE);
 	}
 
@@ -8131,7 +8131,7 @@ for (L1PcInstance pc2 : players) {
 	}
 
 	private static boolean builderFullAccess(L1PcInstance gm) {
-		return gm != null && gm.getAccessLevel() == Config.GMCODE && gm.getAccessLevel() != Config.SUB_GMCODE;
+		return gm != null && gm.getAccessLevel() > 0 && gm.getAccessLevel() == Config.GMCODE && gm.getAccessLevel() != Config.SUB_GMCODE;
 	}
 	private static boolean builderLive(L1PcInstance pc, CUserSocket socket, int stamp) {
 		return pc != null && socket != null && pc.getSessionStamp() == stamp && pc.getNetConnection() == socket
