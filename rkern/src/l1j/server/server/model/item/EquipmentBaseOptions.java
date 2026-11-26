@@ -1,8 +1,5 @@
 package l1j.server.server.model.item;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 /** Supplies base option values while the weapon and armor templates are loaded. */
@@ -45,41 +42,47 @@ public final class EquipmentBaseOptions {
             this.magicName = magicName;
         }
 
-        public int integer(ResultSet db, Field field) throws SQLException {
-            return values == null ? db.getInt(field.name()) : values[field.ordinal()];
+        public int integer(Field field) {
+            return values[field.ordinal()];
         }
 
-        public byte signedByte(ResultSet db, Field field) throws SQLException {
-            return values == null ? db.getByte(field.name()) : (byte) values[field.ordinal()];
+        public byte signedByte(Field field) {
+            return (byte) integer(field);
         }
 
-        public boolean bool(ResultSet db, Field field) throws SQLException {
-            return values == null ? db.getBoolean(field.name()) : values[field.ordinal()] != 0;
+        public boolean bool(Field field) {
+            return integer(field) != 0;
         }
 
-        public String magicName(ResultSet db) throws SQLException {
-            return values == null ? db.getString(Field.Magic_name.name()) : magicName;
+        public String magicName() {
+            return magicName;
         }
     }
 
-    private static final Row DATABASE = new Row(null, null);
     private static final int FIELD_COUNT = Field.values().length;
     private final TIntObjectHashMap<Row> weapons = new TIntObjectHashMap<>(600);
     private final TIntObjectHashMap<Row> armors = new TIntObjectHashMap<>(1250);
+    private final String source;
 
-    private EquipmentBaseOptions() {}
+    private EquipmentBaseOptions(String source) {
+        this.source = source;
+    }
 
     public static EquipmentBaseOptions load() {
         return ItemScript.load("equipment-base.txt", "rkern.equipment.base", (source, reader) -> {
-            final EquipmentBaseOptions definitions = new EquipmentBaseOptions();
+            final EquipmentBaseOptions definitions = new EquipmentBaseOptions(source);
             ItemScript.readRows(source, reader, definitions::add);
             return definitions;
         });
     }
 
-    public Row row(boolean weapon, int itemId) {
+    public Row requireRow(boolean weapon, int itemId) {
         final Row entry = (weapon ? weapons : armors).get(itemId);
-        return entry != null ? entry : DATABASE;
+        if (entry == null) {
+            throw new IllegalStateException(source + " is missing " + (weapon ? "weapon" : "armor")
+                    + " item " + itemId);
+        }
+        return entry;
     }
 
     private void add(String[] row) {

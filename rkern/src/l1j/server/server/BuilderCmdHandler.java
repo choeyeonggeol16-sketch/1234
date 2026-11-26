@@ -6700,8 +6700,14 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			IpTable.reload();
 			gm.sendPackets("banIp 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("아이템")){
-			CObjectDB.ReloadItem();
-			gm.sendPackets("아이템 정보가 리로드 되었습니다.");
+            try {
+                CObjectDB.ReloadItem();
+            } catch (IllegalStateException failure) {
+                final String message = "아이템 리로드 실패: " + failure.getMessage();
+                gm.sendPackets(message);
+                System.err.println(message);
+                return;
+            }
 			TIntObjectMap<L1Item> items = CObjectDB.LoadItem().getAllTemplates();
 			HashMap<Integer, L1RaceTicket> map = BugRaceController.getInstance().getAllTemplates();
 			for(L1RaceTicket t : map.values()){
@@ -6709,6 +6715,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 					items.put(t.getItemId(), t);
 			}
 			DogFightTicketIdManager.getInstance().update_item_template();
+			gm.sendPackets("아이템 정보와 장비 기본 옵션을 리로드했습니다.");
 		} else if (arg.equalsIgnoreCase("상점")){
 			ShopTable.reload();
 			gm.sendPackets("shop 테이블이 리로드 되었습니다.");	

@@ -1,3 +1,4 @@
 # Base equipment options in UTF-8. Fields are separated by tabs.
 # Add a weapon or armor row with its item ID and key=value fields.
-# Numeric fields omitted from a listed row are zero. Unlisted IDs use the database.
+# Every weapon and armor ID in the database requires a row in this file.
+# Numeric fields omitted from a listed row are zero.
