@@ -61,31 +61,8 @@ public class Kda {
 		death 	= 0;
 		SC_SystemMessage.send(owner, _kdaMessages[KDAM_INIT]);
 	}
-	
-	public synchronized void 킬삭제(L1PcInstance owner, int aa){
-        if (CacheD.getInstance().hasPendingOwnerApply(objid))
-            throw new IllegalStateException("K/D row has a pending economy replay");
-		kill 	= owner.getKDA().kill - aa;
-		
-		//SC_SystemMessage.send(owner, _kdaMessages[KDAM_INIT]);
-	}
-	public synchronized void 킬증가(L1PcInstance owner, int aa){
-		kill 	= owner.getKDA().kill + aa;
-		
-		//SC_SystemMessage.send(owner, _kdaMessages[KDAM_INIT]);
-	}
-	public synchronized void 데스삭제(L1PcInstance owner, int aa){
-        if (CacheD.getInstance().hasPendingOwnerApply(objid))
-            throw new IllegalStateException("K/D row has a pending economy replay");
-		death 	= owner.getKDA().death - aa;
-		
-		//SC_SystemMessage.send(owner, _kdaMessages[KDAM_INIT]);
-	}
-	public synchronized void 데스증가(L1PcInstance owner, int aa){
-		death 	= owner.getKDA().death + aa;
-		
-		//SC_SystemMessage.send(owner, _kdaMessages[KDAM_INIT]);
-	}
+
+
 	public synchronized void 올삭제(L1PcInstance owner){
         if (CacheD.getInstance().hasPendingOwnerApply(objid))
             throw new IllegalStateException("K/D row has a pending economy replay");

@@ -27,7 +27,6 @@ import javolution.util.FastTable;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightCommandExecutor;
-import l1j.server.SpecialEventHandler;
 import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
@@ -88,7 +87,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Restart;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_ShowCmd;
 import l1j.server.server.model.network.core.sc.packet.SC_ShowHelp;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -385,7 +383,6 @@ public final class BuilderCmdHandler {
 		registerLevelCommand(loaded, "계정정보", BuilderCmdHandler::BuilderCmd_check_account);
 		registerLevelCommand(loaded, "고스폰", BuilderCmdHandler::BuilderCmd_to_spawn);
 		registerLevelCommand(loaded, "공개채금", BuilderCmdHandler::BuilderCmd_public_chat_ban);
-		registerLevelCommand(loaded, "공격로그", BuilderCmdHandler::BuilderCmd_attack_log);
 		registerLevelCommand(loaded, "광역버프", BuilderCmdHandler::BuilderCmd_range_buff);
 		registerLevelCommand(loaded, "광역추방", BuilderCmdHandler::BuilderCmd_range_kick);
 		registerLevelCommand(loaded, "귀환", BuilderCmdHandler::BuilderCmd_gm_room);
@@ -398,7 +395,6 @@ public final class BuilderCmdHandler {
 		registerLevelCommand(loaded, "디비초기화", BuilderCmdHandler::BuilderCmd_database_init);
 		registerLevelCommand(loaded, "레벨", BuilderCmdHandler::BuilderCmd_level);
 		registerLevelCommand(loaded, "렙선물", BuilderCmdHandler::BuilderCmd_level_present);
-		registerLevelCommand(loaded, "로보트", BuilderCmdHandler::BuilderCmd_spawn_robot);
 		registerLevelCommand(loaded, "리로드", BuilderCmdHandler::BuilderCmd_reload_tables);
 		registerLevelCommand(loaded, "리로드트랩", BuilderCmdHandler::BuilderCmd_reload_trap);
 		registerLevelCommand(loaded, "리셋트랩", BuilderCmdHandler::BuilderCmd_reset_trap);
@@ -476,11 +472,6 @@ public final class BuilderCmdHandler {
 		});
 		registerDirect(loaded, "인형박스", (gm, cmd, param) -> {
 			AlchemyProbabilityBox.getInstance().execute(new CommandArgs().setOwner(gm).setParam(param));
-
-
-		});
-		registerDirect(loaded, "도움말", (gm, cmd, param) -> {
-			showHelp(gm, param);
 
 
 		});
@@ -638,11 +629,6 @@ public final class BuilderCmdHandler {
 		});
 		registerDirect(loaded, "킬차트", (gm, cmd, param) -> {
 			KdaLoadManager.commands(gm, param);
-
-
-		});
-		registerDirect(loaded, "커맨드", (gm, cmd, param) -> {
-			SC_ShowCmd.sendText(gm, "cmd.");
 
 
 		});
@@ -872,21 +858,6 @@ public final class BuilderCmdHandler {
 
 
 		});
-		registerDirect(loaded, "코마지급", (gm, cmd, param) -> {
-			SpecialEventHandler.getInstance().doGiveEventStaff();
-
-
-		});
-		registerDirect(loaded, "보스소환주문서지급", (gm, cmd, param) -> {
-			SpecialEventHandler.getInstance().doGiveEventStaff2();
-
-
-		});
-		registerDirect(loaded, "토파즈지급", (gm, cmd, param) -> {
-			SpecialEventHandler.getInstance().doGiveEventStaff1();
-
-
-		});
 		registerDirect(loaded, "압류목록", (gm, cmd, param) -> {
 			search_banned(gm);
 
@@ -913,26 +884,6 @@ public final class BuilderCmdHandler {
 
 		});
 		AddBuilderCmdAlias(loaded, "텔렉", ".");
-		registerDirect(loaded, "킬삭제", (gm, cmd, param) -> {
-		킬삭제(gm, param);
-
-
-		});
-		registerDirect(loaded, "킬증가", (gm, cmd, param) -> {
-			킬증가(gm, param);
-
-
-		});
-		registerDirect(loaded, "데스삭제", (gm, cmd, param) -> {
-			데스삭제(gm, param);
-
-
-		});
-		registerDirect(loaded, "데스증가", (gm, cmd, param) -> {
-			데스증가(gm, param);
-
-
-		});
 		registerDirect(loaded, "피케이", (gm, cmd, param) -> {
 			Pvp(gm, param);
 
@@ -3090,138 +3041,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 
-	
-	
-	
-	
-	private void 킬삭제(L1PcInstance gm, String param) {
-		// TODO 자동 생성된 메소드 스텁
-		float win = 0;
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String 이름 = st.nextToken();
-			int id = Integer.parseInt(st.nextToken());
-			L1PcInstance 유저 = L1World.getInstance().getPlayer(이름);
-			
-			win = 유저.getKDA().kill;
-			if (이름 != null) {
-				
-					if (win < id) {
-						gm.sendPackets("감소시키려고 하는 킬포인트보다 유저의 킬포인트가 적습니다");
-						return;
-					}
-				유저.getKDA().킬삭제(유저, id);
-				KdaLoader.getInstance().store();
-				
-				
-				gm.sendPackets(유저.getName() + "님의 킬포인트 [" + id + "] 감소시켰습니다.");
-				SC_PacketBox.send(유저, SC_PacketBox.GREEN_MESSAGE,"당신의 킬포인트를 운영자님께서 ["+id+"] 감소시켰습니다.");
-				
-			} else
-				gm.sendPackets("존재하지 않는 유저 입니다.");
-		} catch (Exception e) {
-			gm.sendPackets(".킬삭제 캐릭명 포인트값");
-			gm.sendPackets("\\f:[킬데스 관련 명령어]");
-			gm.sendPackets("\\f:.킬삭제 .킬증가 .데스삭제 .데스증가");
-		}
-	}
-	
-	private void 킬증가(L1PcInstance gm, String param) {
-		// TODO 자동 생성된 메소드 스텁
-		float win = 0;
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String 이름 = st.nextToken();
-			int id = Integer.parseInt(st.nextToken());
-			L1PcInstance 유저 = L1World.getInstance().getPlayer(이름);
-			
-			win = 유저.getKDA().kill;
-			if (이름 != null) {
-				
-//					if (win < id) {
-//						gm.sendPackets("감소시키려고 하는 킬포인트보다 유저의 킬포인트가 적습니다");
-//						return;
-//					}
-				유저.getKDA().킬증가(유저, id);
-				KdaLoader.getInstance().store();
-				
-				
-				gm.sendPackets(유저.getName() + "님의 킬포인트 [" + id + "] 증가시켰습니다.");
-				SC_PacketBox.send(유저, SC_PacketBox.GREEN_MESSAGE,"당신의 킬포인트를 운영자님께서 ["+id+"] 증가시켰습니다.");
-				
-			} else
-				gm.sendPackets("존재하지 않는 유저 입니다.");
-		} catch (Exception e) {
-			gm.sendPackets(".킬증가 캐릭명 포인트값");
-			gm.sendPackets("\\f:[킬데스 관련 명령어]");
-			gm.sendPackets("\\f:.킬삭제 .킬증가 .데스삭제 .데스증가");
-		}
-	}
-	
-	
-	private void 데스삭제(L1PcInstance gm, String param) {
-		// TODO 자동 생성된 메소드 스텁
-		float win = 0;
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String 이름 = st.nextToken();
-			int id = Integer.parseInt(st.nextToken());
-			L1PcInstance 유저 = L1World.getInstance().getPlayer(이름);
-			
-			win = 유저.getKDA().death;
-			if (이름 != null) {
-				
-					if (win < id) {
-						gm.sendPackets("감소시키려고 하는 데스포인트보다 유저의 데스포인트가 적습니다");
-						return;
-					}
-				유저.getKDA().데스삭제(유저, id);
-				KdaLoader.getInstance().store();
-				
-				
-				gm.sendPackets(유저.getName() + "님의 데스포인트 [" + id + "] 감소시켰습니다.");
-				SC_PacketBox.send(유저, SC_PacketBox.GREEN_MESSAGE,"당신의 데스포인트를 운영자님께서 ["+id+"] 감소시켰습니다.");
-				
-			} else
-				gm.sendPackets("존재하지 않는 유저 입니다.");
-		} catch (Exception e) {
-			gm.sendPackets(".데스삭제 캐릭명 포인트값");
-			gm.sendPackets("\\f:[킬데스 관련 명령어]");
-			gm.sendPackets("\\f:.킬삭제 .킬증가 .데스삭제 .데스증가");
-		}
-	}
-	
-	private void 데스증가(L1PcInstance gm, String param) {
-		// TODO 자동 생성된 메소드 스텁
-		float win = 0;
-		try {
-			StringTokenizer st = new StringTokenizer(param);
-			String 이름 = st.nextToken();
-			int id = Integer.parseInt(st.nextToken());
-			L1PcInstance 유저 = L1World.getInstance().getPlayer(이름);
-			
-			win = 유저.getKDA().death;
-			if (이름 != null) {
-				
-//					if (win < id) {
-//						gm.sendPackets("감소시키려고 하는 킬포인트보다 유저의 킬포인트가 적습니다");
-//						return;
-//					}
-				유저.getKDA().데스증가(유저, id);
-				KdaLoader.getInstance().store();
-				
-				
-				gm.sendPackets(유저.getName() + "님의 데스포인트 [" + id + "] 증가시켰습니다.");
-				SC_PacketBox.send(유저, SC_PacketBox.GREEN_MESSAGE,"당신의 데스포인트를 운영자님께서 ["+id+"] 증가시켰습니다.");
-				
-			} else
-				gm.sendPackets("존재하지 않는 유저 입니다.");
-		} catch (Exception e) {
-			gm.sendPackets(".데스증가 캐릭명 포인트값");
-			gm.sendPackets("\\f:[킬데스 관련 명령어]");
-			gm.sendPackets("\\f:.킬삭제 .킬증가 .데스삭제 .데스증가");
-		}
-	}
+
 	
 	
 	
@@ -4729,9 +4549,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		}
 	}
 
-	private static void BuilderCmd_attack_log(L1PcInstance pc, String cmdName, String poby) {
-		// Original command is disabled; keep its registered behavior unchanged.
-	}
+
 
 	private static void BuilderCmd_gm_room(L1PcInstance pc, String cmdName, String arg) {
 		try {
@@ -6520,8 +6338,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 				ip.rangeBanIp(target.getNetConnection().getHostname());
 				SC_SystemMessage.send(pc, target.getName() + "[" + pc.getNetConnection() + "] 를 광역추방 했습니다.");						
 				L1World.getInstance().removeObject(target);
-				BuilderDuplicateKick(target.getNetConnection().getIp(), target, reason);
-				
+
 				/*target.getNetConnection().kick();
 				target.getNetConnection().close();
 				target.logout();	
@@ -6669,13 +6486,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 		}
 	}
 
-	private static void BuilderCmd_spawn_robot(L1PcInstance pc, String cmdName, String arg) {
-		try {
-			SC_SystemMessage.send(pc, "비어 있음");
-		} catch (Exception e) {
-			SC_SystemMessage.send(pc, cmdName + " [타입 : 0.제자리, 1.움직임]");
-		}		
-	}
+
 
 	private static void BuilderSpawnError(L1PcInstance pc, String cmdName) {
 		String errorMsg = cmdName + " npcid|name [수] [범위] 라고 입력해 주세요. ";
@@ -8821,14 +8632,14 @@ for (L1PcInstance pc2 : players) {
 					SC_SystemMessage.send(pc, " 이미등록된 아이피 : " + target.getNetConnection().getIp());
 				SC_SystemMessage.send(pc, (new StringBuilder()).append(target.getName()).append(" 를 영구 추방 했습니다. ").toString());
 				
-				BuilderDuplicateKick(target.getNetConnection().getIp(), target, reason);
+
 			} else {
 				String name = BuilderPowerKickLoadCharacter(sname);
 				if (name != null) {
 					Account.ban(name, reason);
 					String nc = Account.checkIP(name);
 					if (nc != null){
-						BuilderDuplicateKick(nc, null, reason);
+
 						if(!iptable.isBannedIp(nc))
 							iptable.banIp(nc);
 						else
@@ -8844,33 +8655,7 @@ for (L1PcInstance pc2 : players) {
 		}
 	}
 
-	public static void BuilderDuplicateKick(String addr, L1PcInstance target, int reason){
-		try{
-//			Collection<GameClient> cList = MJNSHandler.getClients();
-//			if(target != null){
-//				MJRankUserLoader.getInstance().banUser(target);
-//				target.getNetConnection().kick();
-//				target.logout();	
-//			}
-//			if(cList != null){
-//				for(GameClient clnt : cList){
-//					if(clnt == null)
-//						continue;
-//					if(clnt.getIp().equalsIgnoreCase(addr)){
-//						L1PcInstance tt = clnt.getActiveChar();
-//						if(tt != null){
-//							MJRankUserLoader.getInstance().banUser(tt);
-//						}
-//						if(clnt.getAccountName() != null && !clnt.getAccountName().equalsIgnoreCase(""))
-//							Account.ban(clnt.getAccountName(), reason);
-//						clnt.kick();
-//					}
-//				}
-//			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
+
 	
 	private static String BuilderPowerKickLoadCharacter(String charName) {
 		Connection con = null;
