@@ -15,7 +15,7 @@ import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.Item.Drop.CContributeData;
+import l1j.server.server.model.item.drop.CContributeData;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.item.L1ItemId;

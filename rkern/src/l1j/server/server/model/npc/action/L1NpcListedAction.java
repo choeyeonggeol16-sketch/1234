@@ -27,7 +27,7 @@ import org.w3c.dom.Element;
 
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.npc.L1NpcHtml;
+import l1j.server.server.model.npc.dialog.L1NpcHtml;
 
 public class L1NpcListedAction extends L1NpcXmlAction {
 	private static final Logger LOG = Logger.getLogger(L1NpcListedAction.class.getName());

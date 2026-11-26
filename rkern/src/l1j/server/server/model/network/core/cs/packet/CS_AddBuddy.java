@@ -25,7 +25,7 @@ public final class CS_AddBuddy {
         }
         if (character.getId() == pc.getId()) return;
         CFriendsDb.getInstance().EstablishFriendship(pc.getId(), character.getId(), character.getName(), result -> {
-            if (!client.isConnected() || client.getActiveChar() != pc || pc.getNetConnection() != client) return;
+            if (!client.isCurrentCharacter(pc)) return;
             if (result == CFriendsDb.DUPLICATE) SC_ServerMessage.send(pc, 1052, charName);
             else if (result == CFriendsDb.FAILED) SC_SystemMessage.send(pc, "친구 등록에 실패했습니다.");
         });

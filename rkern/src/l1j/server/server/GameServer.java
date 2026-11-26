@@ -32,8 +32,8 @@ import l1j.server.server.datatables.ClanBuffTable;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.CraftProbability;
 import l1j.server.server.datatables.DoorSpawnTable;
-import l1j.server.server.datatables.DropItemTable;
-import l1j.server.server.datatables.DropTable;
+import l1j.server.server.model.item.drop.DropItemTable;
+import l1j.server.server.model.item.drop.DropTable;
 import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.datatables.GetBackRestartTable;
 import l1j.server.server.model.world.residence.HouseTable;
@@ -43,12 +43,12 @@ import l1j.server.server.datatables.KeyTable;
 import l1j.server.server.datatables.LightSpawnTable;
 import l1j.server.server.datatables.MapUserTeleportTable;
 import l1j.server.server.datatables.MapsTable;
-import l1j.server.server.datatables.MobGroupTable;
+import l1j.server.server.model.npc.spawn.group.MobGroupTable;
 import l1j.server.server.datatables.MobSkillTable;
 import l1j.server.server.datatables.MonsterParalyzeDelay;
-import l1j.server.server.datatables.NPCTalkDataTable;
+import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.datatables.NpcActionTable;
-import l1j.server.server.datatables.NpcCashShopSpawnTable;
+import l1j.server.server.model.shop.NpcCashShopSpawnTable;
 import l1j.server.server.model.npc.chat.NpcChatTable;
 import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.datatables.NpcSpawnTable;
@@ -56,7 +56,7 @@ import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.RaceTable;
 import l1j.server.server.datatables.ReportTable;
 import l1j.server.server.datatables.ResolventTable;
-import l1j.server.server.datatables.ShopTable;
+import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.datatables.CNpcMakerDB;
 import l1j.server.server.datatables.UBSpawnTable;
@@ -107,11 +107,11 @@ import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.CNPCServer;
-import l1j.server.server.model.npc.shop.NpcShopManager;
+import l1j.server.server.model.shop.NpcShopManager;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
-import l1j.server.server.model.trap.L1WorldTraps;
+import l1j.server.server.model.world.trap.L1WorldTraps;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
 import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
 import l1j.server.server.model.world.instance.loader.InstanceLoadManager;
@@ -196,11 +196,6 @@ public class GameServer {
 		ArmorEnchantList.getInstance(); // 방어구 인챈 정보 리스트
 		WeaponEnchantList.getInstance(); // 무기 인챈 정보 리스트
 
-
-		// 정령의 돌 타임 컨트롤러
-//		if (Config.ELEMENTAL_STONE_AMOUNT > 0) {
-//			ElementalStoneGenerator elementalStoneGenerator = ElementalStoneGenerator.getInstance();
-//		}
 		/** 로그파일저장 **/
 		LoggerInstance.getInstance();
 

@@ -28,7 +28,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
-import l1j.server.server.model.trap.L1Trap;
+import l1j.server.server.model.world.trap.L1Trap;
 import l1j.server.server.model.network.core.sc.packet.SC_Trap;
 import l1j.server.server.types.Point;
 

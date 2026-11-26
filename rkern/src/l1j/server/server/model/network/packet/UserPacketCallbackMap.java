@@ -392,19 +392,8 @@ public final class UserPacketCallbackMap {
 
     private UserPacketCallbackMap() {}
 
-    public static boolean isFastOpcode(int opcode) {
-        return opcode >= 0 && opcode < 256 && gPacketTableFromClient[opcode] != DummyUserPacket;
-    }
-
     public static boolean isDirectOpcode(int opcode) {
         return opcode >= 0 && opcode < 256 && DIRECT_OPCODE[opcode];
-    }
-
-    /** Opcodes able to enter/leave a session or dispatch a stateful subprotocol.
-     * These remain synchronized with state-changing CacheD completions.
-     */
-    public static boolean isSessionOpcode(int opcode) {
-        return l1j.server.server.model.network.core.connection.CUserSocket.isSessionOpcode(opcode);
     }
 
     // ------------------------------------------------------------------

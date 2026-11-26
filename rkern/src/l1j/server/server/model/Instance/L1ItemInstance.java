@@ -1569,11 +1569,11 @@ public class L1ItemInstance extends L1Object {
 		return Math.max(delayMs, 60_000L);
 	}
 	
-	private transient volatile l1j.server.server.model.character.Item.Drop.CContributeData _contributeData;
+	private transient volatile l1j.server.server.model.item.drop.CContributeData _contributeData;
 
-    public l1j.server.server.model.character.Item.Drop.CContributeData GetContributeData() { return _contributeData; }
+    public l1j.server.server.model.item.drop.CContributeData GetContributeData() { return _contributeData; }
 
-    public void SetContributeData(l1j.server.server.model.character.Item.Drop.CContributeData data) {
+    public void SetContributeData(l1j.server.server.model.item.drop.CContributeData data) {
         _itemOwner = null;
         _itemOwnerUntilNs = 0L;
         _contributeData = data;

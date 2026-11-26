@@ -41,7 +41,7 @@ import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.npc.L1NpcHtml;
+import l1j.server.server.model.npc.dialog.L1NpcHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.quest.CQuestSystem;

@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 
-import l1j.server.server.datatables.ShopTable;
+import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.inventory.warehouse.CWareHouseRequest;

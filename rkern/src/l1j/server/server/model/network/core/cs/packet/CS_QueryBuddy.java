@@ -13,10 +13,10 @@ public final class CS_QueryBuddy {
         final L1PcInstance pc = client.getActiveChar();
         if (pc == null) return;
         CFriendsDb.getInstance().MakeFriendList(pc.getId(), buddy -> {
-            if (client.isConnected() && client.getActiveChar() == pc && pc.getNetConnection() == client)
+            if (client.isCurrentCharacter(pc))
                 SC_Buddy.send(client, buddy);
         }, () -> {
-            if (client.isConnected() && client.getActiveChar() == pc && pc.getNetConnection() == client)
+            if (client.isCurrentCharacter(pc))
                 SC_SystemMessage.send(pc, "친구 목록을 불러오지 못했습니다.");
         });
     }

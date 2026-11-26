@@ -143,7 +143,6 @@ public class L1Character extends L1Object {
 	private volatile int m_nPDefend;
 	
 	private int _status;
-	private int _Desperadolv = 0;
 	// 대미지
 	private int m_nOrgMeleeDamage;
 	private int m_nOrgRangedDamage;
@@ -685,16 +684,6 @@ public class L1Character extends L1Object {
 		poisonParalyzed = paralyzed;
 	}
 
-	private boolean _thunderGrab;
-
-	public boolean isThunderGrab() {
-		return _thunderGrab;
-	}
-
-	public void setThunderGrab(boolean thunderGrab) {
-		_thunderGrab = thunderGrab;
-	}
-
 	public L1Paralysis getParalysis() {
 		return _paralysis;
 	}
@@ -707,10 +696,6 @@ public class L1Character extends L1Object {
 	/** A late timer must never clear a newer paralysis lifetime. */
 	public boolean clearParalysisIfSame(L1Paralysis effect) {
 		return effect != null && PARALYSIS.compareAndSet(this, effect, null);
-	}
-
-	public void setParalaysis(L1Paralysis p) {
-		_paralysis = p;
 	}
 
 	public void cureParalaysis() {
@@ -1080,14 +1065,6 @@ public class L1Character extends L1Object {
 		CKnownObjectContainer.releasePlayers(players);
 	}
 
-	public L1Object[] knownObjectsSnapshot() {
-		final CKnownObjectContainer known = knownContainer(false);
-		return known == null ? CKnownObjectContainer.CLOSED.objectsSnapshot() : known.objectsSnapshot();
-	}
-	public L1PcInstance[] knownPlayersSnapshot() {
-		final CKnownObjectContainer known = knownContainer(false);
-		return known == null ? CKnownObjectContainer.CLOSED.playersSnapshot() : known.playersSnapshot();
-	}
 	public void addKnownObject(L1Object obj) {
 		if (obj == null) return;
 		knownContainer(true).add(obj);
@@ -1306,16 +1283,6 @@ public class L1Character extends L1Object {
 		return getLevel() / 4;
 	}
 
-	private long _doppeltime = 0;
-
-	public long getDoppelTime() {
-		return _doppeltime;
-	}
-
-	public void setDoppelTime(long l) {
-		_doppeltime = l;
-	}
-
 	public boolean isDead() {
 		return _isDead;
 	}
@@ -1336,16 +1303,6 @@ public class L1Character extends L1Object {
 
 	public void set_monCount(int i) {
 		_monCount = i;
-	}
-
-	private int _waponexp;
-
-	public int get_waponexp() {
-		return _waponexp;
-	}
-
-	public void set_waponexp(int i) {
-		_waponexp = i;
 	}
 
 	public void setStatus(int i) {
@@ -1426,16 +1383,6 @@ public class L1Character extends L1Object {
 		_kda = kda;
 	}
 
-	private long _skilldelay2;
-
-	public long getSkilldelay2() {
-		return _skilldelay2;
-	}
-
-	public void setSkilldelay2(long skilldelay2) {
-		_skilldelay2 = skilldelay2;
-	}
-
 	private int _buffnoch;
 
 	public int getBuffnoch() {
@@ -1456,9 +1403,9 @@ public class L1Character extends L1Object {
 
 	public final boolean refreshLight() {
 		if (disposed) return false;
-		final int radius = CharacterLight.calculate(this);
+		final int radius = CLight.calculate(this);
 		if (disposed) return false;
-		CharacterLight.send(this, radius);
+		CLight.send(this, radius);
 		lightRadius = radius;
 		return true;
 	}
@@ -2253,24 +2200,6 @@ public class L1Character extends L1Object {
 		}
 	}
 
-	public int getDesperadolv() {
-		return _Desperadolv;
-	}
-
-	public void setDesperadolv(int Desperadolv) {
-		_Desperadolv = Desperadolv;
-	}
-
-	private int 락구간상승;
-
-	public int get락구간상승() {
-		return 락구간상승;
-	}
-
-	public void set락구간상승(int i) {
-		락구간상승 = i;
-	}
-
 	public void sendPetCtrlMenu(L1NpcInstance npc, boolean type) {
 		if (npc instanceof L1SummonInstance) {
 			L1SummonInstance summon = (L1SummonInstance) npc;
@@ -2520,7 +2449,6 @@ public class L1Character extends L1Object {
 	}
 
 	private int _focus_wave_level;
-	private int _last_focusing_target;
 
 	public void set_focus_wave_level(int focus_wave_level) {
 		_focus_wave_level = focus_wave_level;
@@ -2538,14 +2466,6 @@ public class L1Character extends L1Object {
 		return --_focus_wave_level;
 	}
 
-	public void set_last_focusing_target(int last_focusing_target) {
-		_last_focusing_target = last_focusing_target;
-	}
-
-	public int get_last_focusing_target() {
-		return _last_focusing_target;
-	}
-
 	private static final int[] _elf_skill_braves = new int[] { 
 		L1SkillId.DANCING_BLADES, L1SkillId.SAND_STORM, L1SkillId.HURRICANE, L1SkillId.FOCUS_WAVE, 
 	};
@@ -2559,16 +2479,6 @@ public class L1Character extends L1Object {
 		}
 	}
 
-	private boolean _isbonusAdena;
-
-	public boolean isBonusAdenaItem() {
-		return _isbonusAdena;
-	}
-
-	public void setBounusAdenaItem(boolean flag) {
-		_isbonusAdena = flag;
-	}
-	
 	public boolean isHaste() {
 		return (hasSkillEffect(L1SkillId.STATUS_HASTE) || hasSkillEffect(L1SkillId.HASTE)
 				|| hasSkillEffect(L1SkillId.GREATER_HASTE) || getMoveSpeed() == 1);
@@ -2634,13 +2544,5 @@ public class L1Character extends L1Object {
 	            return true;
 	        }
 	    }
-	}
-
-
-	/**
-	 * 현재 토마호크 활성 여부.
-	 */
-	public boolean hasTomahawkState() {
-	    return (U_TOMAHAWK_STATE.get(this) & 1L) != 0L;
 	}
 }

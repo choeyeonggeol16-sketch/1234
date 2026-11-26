@@ -11,7 +11,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.Attack.Helper.L1WeaponAttrEnchantHelper;
+import l1j.server.server.model.character.combat.attack.L1WeaponAttrEnchantHelper;
 import l1j.server.server.model.item.ItemScript;
 import l1j.server.server.model.item.cooking.CookingRegistry;
 import l1j.server.server.model.item.function.CashScrollPotionEffects;

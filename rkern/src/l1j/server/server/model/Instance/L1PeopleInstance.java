@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.task.TaskLane;
-import l1j.server.server.datatables.NPCTalkDataTable;
+import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1NpcTalkData;
+import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;

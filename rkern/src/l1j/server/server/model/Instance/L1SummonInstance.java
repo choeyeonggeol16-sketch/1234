@@ -10,7 +10,7 @@ import l1j.server.server.task.TaskLane;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
-import l1j.server.server.datatables.DropTable;
+import l1j.server.server.model.item.drop.DropTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1World;
@@ -24,7 +24,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.CNpcItemUse;
-import l1j.server.server.model.npc.ai.action.dFollow;
 import l1j.server.server.model.npc.ai.action.dPetDefault;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
 import l1j.server.server.shared.L1Type;

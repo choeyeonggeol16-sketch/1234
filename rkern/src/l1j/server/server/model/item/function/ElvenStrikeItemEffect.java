@@ -1,7 +1,5 @@
 package l1j.server.server.model.item.function;
 
-import static l1j.server.server.model.character.skill.L1SkillId.EARTH_BIND;
-import static l1j.server.server.model.character.skill.L1SkillId.SHOCK_STUN;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
@@ -20,7 +18,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.world.effect.L1EffectSpawn;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.character.Attack.Helper.L1AttackHelper;
+import l1j.server.server.model.character.combat.attack.L1AttackHelper;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;

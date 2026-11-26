@@ -1,58 +1,21 @@
 package l1j.server.server.model.item.function;
 
 
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 
-import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
-import static l1j.server.server.model.character.skill.L1SkillId.CURSE_BLIND;
-import static l1j.server.server.model.character.skill.L1SkillId.DANCING_BLADES;
-import static l1j.server.server.model.character.skill.L1SkillId.DARKNESS;
 import static l1j.server.server.model.character.skill.L1SkillId.DECAY_POTION;
-import static l1j.server.server.model.character.skill.L1SkillId.EXP_POTION;
-import static l1j.server.server.model.character.skill.L1SkillId.FOCUS_WAVE;
-import static l1j.server.server.model.character.skill.L1SkillId.GREATER_HASTE;
-import static l1j.server.server.model.character.skill.L1SkillId.HASTE;
-import static l1j.server.server.model.character.skill.L1SkillId.HOLY_WALK;
-import static l1j.server.server.model.character.skill.L1SkillId.HURRICANE;
-import static l1j.server.server.model.character.skill.L1SkillId.LINDBIOR_SPIRIT_EFFECT;
-import static l1j.server.server.model.character.skill.L1SkillId.MOVING_ACCELERATION;
-import static l1j.server.server.model.character.skill.L1SkillId.SAND_STORM;
-import static l1j.server.server.model.character.skill.L1SkillId.SLOW;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_BLUE_POTION;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_BLUE_POTION2;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_BRAVE;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL2;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL3;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL4;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL5;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROLL6;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_ELFBRAVE;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FLOATING_EYE;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FRUIT;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HASTE;
-import static l1j.server.server.model.character.skill.L1SkillId.STATUS_UNDERWATER_BREATH;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_WISDOM_POTION;
 
-import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.item.L1ItemId;
 
 
-import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
 
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
-import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconWisdomPotion;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillIconBlessOfEva;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
-import l1j.server.server.model.network.core.sc.packet.SC_CurseBlind;
 
 
 
@@ -124,7 +87,7 @@ final class ManaPotionEffects {
 			return; // An unknown item must not create a permanent (zero-time) buff.
 		}
 		cancelAbsoluteBarrier(pc); // 앱솔루트 해제
-		// The two blue-potion variants are mutually exclusive, as in BluePotion.
+		// The two blue-potion variants are mutually exclusive.
 		// Remove the previous timer before publishing the replacement icon.
 		if (pc.hasSkillEffect(STATUS_BLUE_POTION)) pc.removeSkillEffect(STATUS_BLUE_POTION);
 		if (pc.hasSkillEffect(STATUS_BLUE_POTION2)) pc.removeSkillEffect(STATUS_BLUE_POTION2);

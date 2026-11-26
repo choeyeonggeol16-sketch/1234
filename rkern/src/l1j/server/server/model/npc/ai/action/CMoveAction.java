@@ -3,7 +3,7 @@ package l1j.server.server.model.npc.ai.action;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1MobGroupInfo;
+import l1j.server.server.model.npc.spawn.group.L1MobGroupInfo;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.ai.core.PathFinder;

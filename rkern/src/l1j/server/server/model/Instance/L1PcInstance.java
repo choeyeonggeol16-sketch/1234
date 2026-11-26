@@ -6632,20 +6632,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		SC_ActionUI2.send(this, SC_ActionUI2.MAGICEVASION, _magicDodgeProb);
 	}
 
-	private int _temporaryItemObjectId = -1;
-
-	public int getTemporaryItemObjectId() {
-		return _temporaryItemObjectId;
-	}
-
-	public void setTemporaryItemObjectId(int i) {
-		_temporaryItemObjectId = i;
-	}
-
-	public void clearTemporaryItemObjectId() {
-		_temporaryItemObjectId = -1;
-	}
-
 	private static int _instanceType = -1;
 
 	@Override

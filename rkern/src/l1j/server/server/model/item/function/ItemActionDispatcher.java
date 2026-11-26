@@ -55,7 +55,6 @@ final class ItemActionDispatcher {
         int teleportBookSlot = use.teleportBookSlot();
         int storedItemObjectId = use.storedItemObjectId();
         return switch(itemId) {
-            case 700085, 700086 -> AnnouncementItemUse.handleRequestAnnouncement(use);
             case 42656, 90736, 90735, 3000245, 3000244, 3000242, 90737, 6012,
                     6016 -> { UseDurableChargedBox(pc, item); yield ItemActionResult.STOP; }
             case 41922, 41923, 41924, 41925 -> CombatBuffConsumables.handleCastGmBuff(use);

@@ -14,7 +14,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.trap.L1WorldTraps;
+import l1j.server.server.model.world.trap.L1WorldTraps;
 import l1j.server.server.templates.L1Skills;
 
 public final class SkillUseHelper {

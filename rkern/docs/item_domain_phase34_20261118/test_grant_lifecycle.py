@@ -51,7 +51,8 @@ race_imports='''import l1j.server.server.model.Instance.*;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.datatables.ItemTable;'''
 for stage,source in [('Legacy',ORIG),('Candidate',SRC)]:
- s=(source/'trap/L1PetRaceTrap.java').read_text('utf-8')
+ trap_dir = 'world/trap' if stage == 'Candidate' else 'trap'
+ s=(source/trap_dir/'L1PetRaceTrap.java').read_text('utf-8')
  pos=s.index('if(random.nextInt() < 33)');o=s.index('{',pos);lvl=1;i=o+1
  while lvl:
   if s[i]=='{':lvl+=1

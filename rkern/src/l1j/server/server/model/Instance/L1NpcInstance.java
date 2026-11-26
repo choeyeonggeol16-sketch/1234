@@ -11,17 +11,17 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import l1j.server.Config;
 import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.MapsTable;
-import l1j.server.server.datatables.DropTable;
+import l1j.server.server.model.item.drop.DropTable;
 import l1j.server.server.datatables.AutoLoot;
 import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1Location;
-import l1j.server.server.model.character.Item.Drop.CContributeData;
+import l1j.server.server.model.item.drop.CContributeData;
 import l1j.server.server.model.npc.chat.NpcChatTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1HateList;
 import l1j.server.server.model.inventory.CInventory;
-import l1j.server.server.model.L1MobGroupInfo;
+import l1j.server.server.model.npc.spawn.group.L1MobGroupInfo;
 import l1j.server.server.model.npc.ai.action.CSkillAction2;
 import l1j.server.server.model.npc.ai.TimerData;
 import l1j.server.server.model.CNpcMaker;
@@ -2438,25 +2438,7 @@ public class L1NpcInstance extends L1Character {
     private String yn_msg;
 
     private int boss_onoff;
-    private String subnpc;
     private int boss_effect;
-    private String subtitle;
-
-    public String getSubTitle() {
-        return subtitle;
-    }
-
-    public void setSubTitle(String s) {
-        subtitle = s;
-    }
-
-    public String getSubNpc() {
-        return subnpc;
-    }
-
-    public void setSubNpc(String s) {
-        subnpc = s;
-    }
 
     public int get_boss_onoff() {
         return boss_onoff;

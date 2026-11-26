@@ -1255,7 +1255,6 @@ public final class Config {
 	public static int SPAWN_HOME_POINT_RANGE;
 	public static int SPAWN_HOME_POINT_COUNT;
 	public static int SPAWN_HOME_POINT_DELAY;
-	public static int ELEMENTAL_STONE_AMOUNT;
 	public static int HOUSE_TAX_INTERVAL;
 	public static int MAX_DOLL_COUNT;
 	public static boolean RETURN_TO_NATURE;
@@ -2281,7 +2280,6 @@ public final class Config {
 			SPAWN_HOME_POINT_COUNT = Integer.parseInt(altSettings.getProperty("SpawnHomePointCount", "2"));
 			SPAWN_HOME_POINT_DELAY = Integer.parseInt(altSettings.getProperty("SpawnHomePointDelay", "100"));
 			SPAWN_HOME_POINT_RANGE = Integer.parseInt(altSettings.getProperty("SpawnHomePointRange", "8"));
-			ELEMENTAL_STONE_AMOUNT = Integer.parseInt(altSettings.getProperty("ElementalStoneAmount", "300"));
 			HOUSE_TAX_INTERVAL = Integer.parseInt(altSettings.getProperty("HouseTaxInterval", "10"));
 			MAX_DOLL_COUNT = Integer.parseInt(altSettings.getProperty("MaxDollCount", "1"));
 			RETURN_TO_NATURE = Boolean.parseBoolean(altSettings.getProperty("ReturnToNature", "false"));
@@ -3637,17 +3635,4 @@ public final class Config {
 
 	public final static int etc_treasurebox = 16;
 	
-	private static int[] parseArray(String s) {
-	    if (s == null || s.isEmpty()) return new int[0];
-	    String[] parts = s.split(",");
-	    int[] array = new int[parts.length];
-	    for (int i = 0; i < parts.length; i++) {
-	        try {
-	            array[i] = Integer.parseInt(parts[i].trim());
-	        } catch (NumberFormatException e) {
-	            array[i] = 0;
-	        }
-	    }
-	    return array;
-	}
 }

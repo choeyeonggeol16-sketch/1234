@@ -24,7 +24,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.npc.L1NpcHtml;
+import l1j.server.server.model.npc.dialog.L1NpcHtml;
 
 public interface L1NpcAction {
 

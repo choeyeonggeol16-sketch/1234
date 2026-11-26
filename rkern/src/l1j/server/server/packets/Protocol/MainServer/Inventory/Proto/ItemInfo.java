@@ -181,12 +181,7 @@ public final class ItemInfo {
         if (elementalEnchantType != null)   w.int32(16, elementalEnchantType);
         if (elementalEnchantValue != null)  w.int32(17, elementalEnchantValue);
         if (description != null)            w.bytes(18, description);
-        if (extraDescription != null) {  
-        	   w.bytes(19, extraDescription); 
-//        	  System.out.println("[ITEMINFO] itemId=" + (nameId != null ? nameId : -1)
-//        		        + " extraLen=" + extraDescription.length
-//        		        + " first16=" + hexHead(extraDescription, 16));
-        }
+        if (extraDescription != null)       w.bytes(19, extraDescription);
         if (leftTimeForPreNotify != null)   w.int32(20, leftTimeForPreNotify);
         if (companionCard != null) {
             w.msg(21);
@@ -200,13 +195,6 @@ public final class ItemInfo {
         if (isIdentified != null)           w.bool(26, isIdentified);
     }
     
-    private static String hexHead(byte[] b, int n) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < Math.min(b.length, n); i++)
-            sb.append(String.format("%02X ", b[i]));
-        return sb.toString();
-    }
-
     // ── 중첩 서브메시지 ──
 
     public static final class CompanionCard {

@@ -1,9 +1,9 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1NpcTalkData;
+import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.npc.L1NpcHtml;
+import l1j.server.server.model.npc.dialog.L1NpcHtml;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;

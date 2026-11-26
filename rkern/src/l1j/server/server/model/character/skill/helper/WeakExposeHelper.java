@@ -5,7 +5,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.character.Attack.Helper.AttackSkillChanceConfig;
+import l1j.server.server.model.character.combat.attack.AttackSkillChanceConfig;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.item.L1ItemId;

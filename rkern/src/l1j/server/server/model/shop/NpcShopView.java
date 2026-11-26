@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import l1j.server.Config;
-import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -13,7 +12,6 @@ import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightH
 import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightHistoryInfo;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.templates.L1ShopItem;
 
 /** A server-issued NPC shop list, scoped to one character session. */

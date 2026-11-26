@@ -12,8 +12,7 @@ public final class CS_RemoveBuddy {
         final L1PcInstance pc = client.getActiveChar();
         if (pc == null) return;
         CFriendsDb.getInstance().BreakFriendship(pc.getId(), charName, result -> {
-            if (result == CFriendsDb.FAILED && client.isConnected()
-                    && client.getActiveChar() == pc && pc.getNetConnection() == client)
+            if (result == CFriendsDb.FAILED && client.isCurrentCharacter(pc))
                 SC_SystemMessage.send(pc, "친구 삭제에 실패했습니다.");
         });
     }

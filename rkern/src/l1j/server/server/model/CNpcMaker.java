@@ -1,5 +1,6 @@
 package l1j.server.server.model;
 
+import l1j.server.server.model.npc.spawn.group.L1MobGroupSpawn;
 import l1j.server.server.datatables.CObjectDB;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;

@@ -4,7 +4,7 @@ import java.util.List;
 
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightSettings;
 import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightHistory;
-import l1j.server.server.datatables.ShopTable;
+import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;

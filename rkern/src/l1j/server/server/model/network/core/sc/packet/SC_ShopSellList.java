@@ -8,7 +8,7 @@ import java.util.List;
 
 import l1j.server.Config;
 import l1j.server.server.Opcodes;
-import l1j.server.server.datatables.ShopTable;
+import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1TaxCalculator;
 import l1j.server.server.model.L1World;

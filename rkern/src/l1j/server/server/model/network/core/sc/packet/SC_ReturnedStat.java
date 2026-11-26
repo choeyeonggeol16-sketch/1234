@@ -214,25 +214,6 @@ short initHp = 0;
         return sendSimple(pc, 0x3c, objId, emblemId, 0, false, 3);
     }
 
-    /** Same S_VOICE_CHAT/0x3c body as sendEmblem, framed exactly once.
-     * Native SEND still encrypts separately for each socket's rolling key.
-     */
-    private static byte[] emblemWire(int objectId, int emblemId) {
-        final byte[] wire = new byte[12];
-        wire[0] = 12;
-        wire[2] = (byte) Opcodes.S_VOICE_CHAT;
-        wire[3] = 0x3c;
-        wire[4] = (byte) objectId;
-        wire[5] = (byte) (objectId >>> 8);
-        wire[6] = (byte) (objectId >>> 16);
-        wire[7] = (byte) (objectId >>> 24);
-        wire[8] = (byte) emblemId;
-        wire[9] = (byte) (emblemId >>> 8);
-        wire[10] = (byte) (emblemId >>> 16);
-        wire[11] = (byte) (emblemId >>> 24);
-        return wire;
-    }
-
     public static void broadcastEmblem(L1Character source, int objId, int emblemId) {
         if (source == null) return;
         CSharedBroadcast.sendWrittenRecipientsBestEffort(

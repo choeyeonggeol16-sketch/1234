@@ -68,9 +68,6 @@ public final class CUserSocket extends CSocket {
     public static boolean isSessionOpcode(int opcode) {
         return (opcode & ~255) == 0 && SESSION_OPCODE[opcode];
     }
-    static boolean sessionOwner(int opcode, boolean ready) {
-        return !ready || isSessionOpcode(opcode);
-    }
     static boolean allowed(int opcode, CConnectionState state, boolean hasAccount,
                            boolean hasCharacter, boolean ready) {
         if (opcode < 0 || opcode > 255 || state == null || state == CConnectionState.DISCONNECTED) return false;
@@ -3123,13 +3120,18 @@ public final class CUserSocket extends CSocket {
         return _gameSessionReady;
     }
 
+    public boolean isCurrentCharacter(L1PcInstance pc) {
+        return pc != null && isConnected() && getActiveChar() == pc
+                && pc.getNetConnection() == this;
+    }
+
     public boolean ownsReadyGameSession() {
         if (!_gameSessionReady || getConnectionState() != CConnectionState.IN_GAME
-                || !isConnected() || getAccount() == null) {
+                || getAccount() == null) {
             return false;
         }
         final L1PcInstance pc = getActiveChar();
-        return pc != null && pc.getNetConnection() == this && !pc.isLogoutStarted();
+        return isCurrentCharacter(pc) && !pc.isLogoutStarted();
     }
 
     public void publishGameSessionReady(L1PcInstance pc) {

@@ -19,9 +19,9 @@
 package l1j.server.server.model.Instance;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.datatables.NPCTalkDataTable;
+import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1NpcTalkData;
+import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;

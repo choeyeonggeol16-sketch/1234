@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.npc.shop.NpcShopManager;
+import l1j.server.server.model.shop.NpcShopManager;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
 

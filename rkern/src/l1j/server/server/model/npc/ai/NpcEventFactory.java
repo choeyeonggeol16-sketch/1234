@@ -15,7 +15,7 @@ import l1j.server.server.model.Instance.L1ScarecrowInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1MobGroupInfo;
+import l1j.server.server.model.npc.spawn.group.L1MobGroupInfo;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.skill.L1SkillId;

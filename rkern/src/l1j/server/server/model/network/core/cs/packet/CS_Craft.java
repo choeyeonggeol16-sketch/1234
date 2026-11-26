@@ -27,14 +27,11 @@ import l1j.server.server.model.rank.L1ClanRanking;
 import l1j.server.server.model.rank.L1ClanRanking.RankData;
 import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.character.survey.SurveyFactory;
-import l1j.server.server.model.character.survey.SurveySystemLoader;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -50,7 +47,6 @@ import l1j.server.server.monitor.Logger.ChatType;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CHAR_STAT;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SLOT_CHANGE;
-import l1j.server.server.shared.L1Type;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1CharName;
 import l1j.server.server.utils.StatContext;
@@ -514,10 +510,6 @@ public final class CS_Craft {
 				}
 			}
 
-			if (handleMegaphone(pc, chatText)) {
-				return;
-			}
-
 			if (handleGambling(pc, chatText)) {
 				return;
 			}
@@ -710,40 +702,6 @@ public final class CS_Craft {
 
 		UserCommands.getInstance().handleCommands(pc, tcmd);
 		return true;
-	}
-
-	private static boolean handleMegaphone(L1PcInstance pc, String chatText) {
-		final int temporaryItemObjectId = pc.getTemporaryItemObjectId();
-
-		if (temporaryItemObjectId <= 0) {
-			return false;
-		}
-
-		final L1Object obj = L1World.getInstance().findObject(temporaryItemObjectId);
-
-		if (obj != null && obj.instanceOf(L1Type.L1TYPE_ITEMINSTANCE)) {
-			final L1ItemInstance item = (L1ItemInstance) obj;
-			final int itemId = item.getItemId();
-
-			if (itemId == 700085 || itemId == 700086) {
-				if (SurveyFactory.isMegaphoneSpeaking) {
-					pc.sendPackets("이미 확성기 메시지가 재생되고 있습니다. 잠시 후 다시 이용해주세요.");
-					pc.clearTemporaryItemObjectId();
-					return true;
-				}
-
-				SurveySystemLoader.getInstance().registerSurvey(pc,
-						String.format("입력하신 문자가 : \"%s\"입니다. 이대로 전송하시겠습니까?", chatText),
-						temporaryItemObjectId,
-						SurveyFactory.createMegaphoneSurvey(temporaryItemObjectId, chatText, itemId == 700085 ? 20 : 40),
-						10000L);
-
-				pc.clearTemporaryItemObjectId();
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private static boolean handleGambling(L1PcInstance pc, String chatText) {

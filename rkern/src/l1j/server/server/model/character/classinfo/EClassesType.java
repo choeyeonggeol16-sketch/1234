@@ -3,21 +3,18 @@ package l1j.server.server.model.character.classinfo;
 import java.util.HashMap;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.classinfo.stat.ClassMainStat;
-import l1j.server.server.model.character.classinfo.stat.MainDexStat;
-import l1j.server.server.model.character.classinfo.stat.MainIntStat;
-import l1j.server.server.model.character.classinfo.stat.MainStrStat;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.shared.GameRandom;
+
 public enum EClassesType {
-	PRINCE(0, 	new MainStrStat()),
-	KNIGHT(1, 	new MainStrStat()),
-	ELF(2, 		new MainDexStat()),
-	WIZARD(3, 	new MainIntStat()),
-	DARKELF(4, 	new MainStrStat()),
-	DKNIGHT(5, 	new MainStrStat()),
-	WITCH(6, 	new MainIntStat()),
-	WARRIOR(7, 	new MainStrStat());
+	PRINCE(0),
+	KNIGHT(1),
+	ELF(2),
+	WIZARD(3),
+	DARKELF(4),
+	DKNIGHT(5),
+	WITCH(6),
+	WARRIOR(7);
 	
 	private static final HashMap<Integer, EClassesType> _gfxToClass;
 	static{
@@ -40,20 +37,23 @@ public enum EClassesType {
 		_gfxToClass.put(L1PcInstance.CLASSID_전사_FEMALE, 						WARRIOR);
 	}
 	
-	private int 			_type;
-	private ClassMainStat _mstat;
-	EClassesType(int type, ClassMainStat mstat){
-		_type 	= type;
-		_mstat	= mstat;
+	private final int _type;
+
+	EClassesType(int type) {
+		_type = type;
 	}
 	
 	public int toInt(){
 		return _type;
 	}
 	
-	public void addBunusStat(L1PcInstance pc, int i){
-		_mstat.addStat(pc, i);
-		if(pc.getNetConnection() != null) {
+	public void addBunusStat(L1PcInstance pc, int i) {
+		switch (this) {
+			case PRINCE, KNIGHT, DARKELF, DKNIGHT, WARRIOR -> pc.AddStatBonusStr(i);
+			case ELF -> pc.AddStatBonusDex(i);
+			case WIZARD, WITCH -> pc.AddStatBonusInt(i);
+		}
+		if (pc.getNetConnection() != null) {
 			SC_OwnCharStatus.send(pc);
 		}
 	}

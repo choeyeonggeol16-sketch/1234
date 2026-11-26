@@ -2,16 +2,12 @@ package l1j.server.server.model.world.instance.raid.loader;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Properties;
 
 import l1j.server.server.task.TaskLane;
@@ -32,7 +28,6 @@ public class RaidLoadManager {
 	}
 	
 	private static final String 			_fileName 	= "./config/mjraid.properties";
-	private static final SimpleDateFormat 	_dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
 	private static Properties _settings;
 	private RaidLoadManager(){
 		
@@ -339,23 +334,6 @@ public class RaidLoadManager {
 	
 	
 
-	@SuppressWarnings("unused")
-	private static void storeConfig(){
-		try {
-			if(_settings != null){
-				OutputStream os = new FileOutputStream(_fileName);
-				Timestamp ts = new Timestamp(System.currentTimeMillis());
-				storeSystemConfig(_settings);
-				storeComboConfig(_settings);
-				storeSpawnConfig(_settings);
-				storeSkillConfig(_settings);
-				_settings.store(os, _dateFormat.format(ts));
-				os.close();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
 	private static void loadConfig(){
 		String column = "";
@@ -618,205 +596,10 @@ public class RaidLoadManager {
 	}
 	
 	/** 시스템 설정 **/
-	private static void storeSystemConfig(Properties settings){
-		String column = "";
-		try{
-			
-			column	= "ThreadClock";
-			settings.setProperty(column, String.valueOf(MRS_THREAD_CLOCK));
-			
-			column	= "MessageDelay";
-			settings.setProperty(column, String.valueOf(MRS_MESSAGE_DELAY));
-			
-			column	= "ErrorBackMapId";
-			settings.setProperty(column, String.valueOf(MRS_ERRBACK_MAPID));
-			
-			column	= "ErrorBackX";
-			settings.setProperty(column, String.valueOf(MRS_ERRBACK_X));
-			
-			column	= "ErrorBackY";
-			settings.setProperty(column, String.valueOf(MRS_ERRBACK_Y));
-			
-			column	= "BossSpawnDelay";
-			settings.setProperty(column, String.valueOf(MRS_BOSSSPAWN_DELAY));
-			
-			column	= "CopyMap_Start_Id";
-			settings.setProperty(column, String.valueOf(MRS_COPYMAP_START_ID));
-			
-			column	= "CopyMap_Size";
-			settings.setProperty(column, String.valueOf(MRS_COPYMAP_SIZE));
-			
-			column	= "RaidSuccessDelay";
-			settings.setProperty(column, String.valueOf(MRS_RAID_DELAY));
-			
-			column	= "RaidBossSpeedRate";
-			settings.setProperty(column, String.valueOf(MRS_RAID_BOSS_SPEEDRATE));
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
 	
 	/** 콤보 설정 **/
-	private static void storeComboConfig(Properties settings){
-		String column = "";
-		try{
-			column	= "BossComboDelay";
-			settings.setProperty(column, String.valueOf(MRS_CB_DELAY));
-			
-			column	= "BossComboCount";
-			settings.setProperty(column, String.valueOf(MRS_CB_COUNT));
-
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
 	
 	/** 스폰 설정 **/
-	private static void storeSpawnConfig(Properties settings){
-		String column = "";
-		try{
-			
-			column	= "PoisonCloudNpcId";
-			settings.setProperty(column, String.valueOf(MRS_SP_POISONCLOUD_ID));
-			
-			column	= "PoisonCloudTime";
-			settings.setProperty(column, String.valueOf(MRS_SP_POISONCLOUD_TIME));
-			
-			column	= "FafuProductGenTime";
-			settings.setProperty(column, String.valueOf(MRS_SP_PRODUCT_TIME));
-			
-			column	= "FafuProductDestTime";
-			settings.setProperty(column, String.valueOf(MRS_SP_PRODUCT_DESTTIME));
-			
-			column	= "Fafu5ColorPearlId";
-			settings.setProperty(column, String.valueOf(MRS_SP_5COLOR_PEARL_ID));
-			
-			column	= "FafuMyst5ColorPearlId";
-			settings.setProperty(column, String.valueOf(MRS_SP_MYST_5COLOR_PEARL_ID));
-			
-			column	= "FafuTornarId";
-			settings.setProperty(column, String.valueOf(MRS_SP_TORNAR_ID));
-			
-			column	= "FafuSael1Id";
-			settings.setProperty(column, String.valueOf(MRS_SP_SAEL1_ID));
-			
-			column	= "FafuSael2Id";
-			settings.setProperty(column, String.valueOf(MRS_SP_SAEL2_ID));
-			
-			column	= "ValakasReadyTime";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_READY_TIME));
-			
-			column	= "ValakasGroundFireType";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_GROUNDFIRE_IS_POSSPAWN));
-			
-			column	= "ValakasGroundFireNum";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_GROUNDFIRE_NUM));
-			
-			column	= "ValakasGroundFireRange";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_GROUNDFIRE_RANGE));
-			
-			column	= "ValakasDustRainId";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_DUSTRAIN_ID));
-			
-			column	= "ValakasEyeId";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_EYE_ID));
-			
-			column	= "ValakasAbsoluteBlade";
-			settings.setProperty(column, String.valueOf(MRS_BS_VALA_ABSOLUTEBLADE));
-			
-			column	= "ValakasImmuneBlade";
-			settings.setProperty(column, String.valueOf(MRS_BS_VALA_IMMUNEBLADE));
-			
-			column	= "ValakasProductGenTime";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_PRODUCT_TIME));
-			
-			column	= "ValakasProductDestTime";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_PRODUCT_DESTTIME));
-			
-			column	= "ValakasMpAbsorbId";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_MPABSORB_ID));
-				
-			column	= "ValakasHpAbsorbId";					
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_HPABSORB_ID));
-			
-			column	= "ValakasMpAbsorbNum";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_MPABSORB_NUM));
-				
-			column	= "ValakasHpAbsorbNum";					
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_HPABSORB_NUM));
-			
-			column	= "ValakasAbsorbRange";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_ABSORB_RANGE));
-			
-			column	= "ValakasAbsorbMPDrain";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_ABSORB_MPDRAIN));
-			
-			column	= "ValakasAbsorbHPDrain";
-			settings.setProperty(column, String.valueOf(MRS_SP_VALAKAS_ABSORB_HPDRAIN));
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
 	
 	/** 보스 스킬 **/
-	private static void storeSkillConfig(Properties settings){
-		String column = "";
-		try{
-			column	= "BossSkillUseRate";
-			settings.setProperty(column, String.valueOf(MRS_BS_USE_RATE));
-			
-			column	= "BossSkillMinRate";
-			settings.setProperty(column, String.valueOf(MRS_BS_MIN_RATE));
-			
-			column	= "BossSkillMaxRate";
-			settings.setProperty(column, String.valueOf(MRS_BS_MAX_RATE));
-			
-			column	= "BossSkillSpellRate";
-			settings.setProperty(column, String.valueOf(MRS_BS_SPELL_RATE));
-			
-			column	= "BossStunTimeMin";
-			settings.setProperty(column, String.valueOf(MRS_BS_STUN_MIN));
-			
-			column	= "BossStunTimeMax";
-			settings.setProperty(column, String.valueOf(MRS_BS_STUN_MAX));
-			
-			column	= "BossStunEffectId";
-			settings.setProperty(column, String.valueOf(MRS_BS_STUN_EFFECTID));
-			
-			column	= "BossParalysisPosionDelay";
-			settings.setProperty(column, String.valueOf(MRS_BS_PAL_POISON_DELAY));
-			
-			column	= "BossParalysisPosionTime";
-			settings.setProperty(column, String.valueOf(MRS_BS_PAL_POISON_TIME));
-			
-			column	= "BossDeathHealId";
-			settings.setProperty(column, String.valueOf(MRS_BS_DEATHHEAL_ID));
-			
-			column	= "BossDeathHealTime";
-			settings.setProperty(column, String.valueOf(MRS_BS_DEATHHEAL_TIME));
-			
-			column	= "BossDeathPotionId";
-			settings.setProperty(column, String.valueOf(MRS_BS_DEATHPOTION_ID));
-			
-			column	= "BossDeathPotionTime";
-			settings.setProperty(column, String.valueOf(MRS_BS_DEATHPOTION_TIME));
-			
-			column	= "BossReduceHealId";
-			settings.setProperty(column, String.valueOf(MRS_BS_REDUCEHEAL_ID));
-			
-			column	= "BossReduceHealTime";
-			settings.setProperty(column, String.valueOf(MRS_BS_REDUCEHEAL_TIME));
-			
-			column	= "RindFlyMaxTime";
-			settings.setProperty(column, String.valueOf(MRS_BS_RINDFLY_MAX));
-			
-			column	= "RindFlyMinTime";
-			settings.setProperty(column, String.valueOf(MRS_BS_RINDFLY_MIN));
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
 }

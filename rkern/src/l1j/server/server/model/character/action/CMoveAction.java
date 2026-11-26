@@ -15,7 +15,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_MoveChar;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.trap.L1WorldTraps;
+import l1j.server.server.model.world.trap.L1WorldTraps;
 import l1j.server.server.model.world.instance.inn.InnRoom;
 import l1j.server.server.model.world.instance.inn.loader.InnMapInfoLoader;
 import l1j.server.server.model.world.siege.CastleWarBusiness;

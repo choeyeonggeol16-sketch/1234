@@ -1,6 +1,6 @@
 package l1j.server.server.model.npc.ai.action;
 
-import l1j.server.server.model.L1MobGroupInfo;
+import l1j.server.server.model.npc.spawn.group.L1MobGroupInfo;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;

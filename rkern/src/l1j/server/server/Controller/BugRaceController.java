@@ -28,7 +28,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.datatables.RaceTable;
-import l1j.server.server.datatables.ShopTable;
+import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;

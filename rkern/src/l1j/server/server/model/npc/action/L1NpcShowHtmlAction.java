@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
 
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.npc.L1NpcHtml;
+import l1j.server.server.model.npc.dialog.L1NpcHtml;
 import l1j.server.server.utils.IterableElementList;
 
 public class L1NpcShowHtmlAction extends L1NpcXmlAction {

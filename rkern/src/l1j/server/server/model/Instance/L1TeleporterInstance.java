@@ -9,10 +9,10 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import l1j.server.server.task.TaskLane;
-import l1j.server.server.datatables.NPCTalkDataTable;
-import l1j.server.server.model.L1NpcTalkData;
+import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
+import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.npc.L1NpcHtml;
+import l1j.server.server.model.npc.dialog.L1NpcHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.templates.L1Npc;
 
