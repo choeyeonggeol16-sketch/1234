@@ -17,9 +17,21 @@ jobs:
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
             rkern/tests/trade_lifecycle
-      - name: Audit legacy pet database references
+      - name: Assert retired pet database dependencies removed
         run: |
-          git grep -n -i -E '\b(PetTable|PetItemTable|PetTypeTable|L1Pet|L1PetItem|L1PetType|pets|petitem|pettypes|deletePetCollarSnapshot)\b' -- rkern/src | grep -iE 'PetTable|PetItemTable|PetTypeTable|\bL1Pet(Item|Type)?\b|deletePetCollarSnapshot|[[:space:]](FROM|INTO|UPDATE|JOIN|TABLE)[[:space:]]+(pets|petitem|pettypes)\b|"pets"|"petitem"|"pettypes"' || true
+          for cls in PetTable PetItemTable PetTypeTable L1Pet L1PetItem L1PetType; do
+            if find rkern/src -name "$cls.java" -print -quit | grep -q .; then exit 1; fi
+          done
+          status=0
+          if matches=$(git grep -n -w -E 'PetTable|PetItemTable|PetTypeTable|L1Pet|L1PetItem|L1PetType|deletePetCollarSnapshot' -- rkern/src); then
+            matches=$(printf '%s\n' "$matches" | grep -vE '^rkern/src/l1j/server/server/datatables/CObjectDB.java:[0-9]+:.*"L1Pet".*NPC_CONTEXT_REQUIRED;' || true)
+            if [ -n "$matches" ]; then printf '%s\n' "$matches"; status=1; fi
+          else
+            result=$?
+            if [ "$result" -ne 1 ]; then exit "$result"; fi
+          fi
+          if git grep -n -i -E '(FROM|INTO|UPDATE|JOIN|TABLE)[[:space:]]+`?(pets|petitem|pettypes)`?([^[:alnum:]_]|$)|"(pets|petitem|pettypes)"' -- rkern/src | grep -vE 'CObjectDB.java:.*"petitem"'; then status=1; fi
+          exit "$status"
       - name: Audit legacy pet instance references
         run: |
           # The only surviving name is a rejected legacy DB discriminator, not a Java type.

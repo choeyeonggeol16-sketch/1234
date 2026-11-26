@@ -251,10 +251,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 || count != item.getCount() || findEntry(item.getId()) != null) return false;
         final int id = item.getId();
         final int template = item.getItemId();
-        if (template == 40314 || template == 40316) {
-            requireTables("character_items", "pets");
-            sql(con -> l1j.server.server.datatables.PetTable.deletePetRow(con, id));
-        } else if (template >= 49016 && template <= 49025) {
+        if (template >= 49016 && template <= 49025) {
             final String receiver = primary.getName();
             requireTables("character_items", "letter", "characters");
             sql(con -> l1j.server.server.datatables.LetterTable.deleteOwnedItemLetter(con, id, receiver));
@@ -292,8 +289,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
 
     private static boolean requiresEntityDeletion(int template) {
-        return template == 40314 || template == 40316
-                || (template >= 49016 && template <= 49025)
+        return (template >= 49016 && template <= 49025)
                 || (template >= 41383 && template <= 41400);
     }
     public boolean debit(L1PcInstance pc,int templateId,int count) {

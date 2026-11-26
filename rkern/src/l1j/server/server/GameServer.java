@@ -54,8 +54,6 @@ import l1j.server.server.datatables.NpcCashShopSpawnTable;
 import l1j.server.server.datatables.NpcChatTable;
 import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.datatables.NpcSpawnTable;
-import l1j.server.server.datatables.PetTable;
-import l1j.server.server.datatables.PetTypeTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.RaceTable;
 import l1j.server.server.datatables.ReportTable;
@@ -237,7 +235,6 @@ public class GameServer {
 		IpTable.getInstance();
 		MapsTable.getInstance();
 		UBSpawnTable.getInstance();
-		PetTable.getInstance();
 		ClanTable.getInstance();
 		ClanBuffTable.getInstance();
 		ClanTable.getInstance().createTutorialClan();
@@ -248,7 +245,6 @@ public class GameServer {
 		NpcActionTable.load();
 		BuilderCmdConfig.load();
 		Getback.loadGetBack();
-		PetTypeTable.load();
 		L1TreasureBox.load();
 		L1HealingPotion.load();
 		DominanceDataLoader.getInstance();

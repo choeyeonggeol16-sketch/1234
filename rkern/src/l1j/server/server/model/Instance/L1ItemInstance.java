@@ -8,7 +8,6 @@ import l1j.server.Config;
 import l1j.server.server.model.item.pride.PrideInfo;
 import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.server.ThreadPool; //CrockController
-import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1EquipmentTimer;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.L1HouseLocation;
@@ -27,7 +26,6 @@ import l1j.server.server.model.world.instance.inn.InnHelper;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.CItemBookmark;
-import l1j.server.server.templates.L1Pet;
 import l1j.server.server.utils.BytesOutputStream;
 import l1j.server.server.utils.ItemPresentOutStream;
 
@@ -952,17 +950,6 @@ public class L1ItemInstance extends L1Object {
 		int itemType2 = getItem().getType2();
 		int itemId = getItem().getItemId();
 
-		if (itemId == 40314 || itemId == 40316) {
-			L1Pet pet = PetTable.getInstance().getTemplate(getId());
-			if (pet != null) {
-				name.append("[Lv.");
-				name.append(pet.get_level());
-				name.append(" ");
-				name.append(pet.get_name());
-				name.append("]HP");
-				name.append(pet.get_hp());
-			}
-		}
 
 		if (getItem().getType2() == 0 && getItem().getType() == 2) { // light
 			if (isNowLighting()) {

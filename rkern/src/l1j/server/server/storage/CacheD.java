@@ -58,7 +58,7 @@ public final class CacheD {
         final boolean delete;
         final int ownerId;
         final int previousOwnerId;
-        final int auxiliaryTemplateId; // 40314/40316 pet or 49016..49025 letter item
+        final int auxiliaryTemplateId; // 49016..49025 letter item
         final int mailboxKey;          // second FIFO owner only for physical letters
         final String mailReceiver;
         final String auxiliaryReceiptId;
@@ -1756,7 +1756,6 @@ public final class CacheD {
             final ItemSnapshot snapshot = delete ? ItemSnapshot.captureId(item, resolvedOwner)
                     : ItemSnapshot.capture(item, ownerId);
             final int templateId = item.getItemId();
-            final boolean pet = delete && (templateId == 40314 || templateId == 40316);
             final boolean letterItem = delete && templateId >= 49016 && templateId <= 49025;
             final String mailReceiver;
             final int mailboxKey;
@@ -1770,7 +1769,7 @@ public final class CacheD {
                 mailboxKey = 0;
             }
             final ItemCommand command = new ItemCommand(snapshot, delete, resolvedOwner, previousOwner,
-                    pet || letterItem ? templateId : 0, mailboxKey, mailReceiver);
+                    letterItem ? templateId : 0, mailboxKey, mailReceiver);
             // Publish the latest logical owner immediately. Subsequent item
             // dirty snapshots must not accidentally use the previous owner
             // while the UPDATE/DELETE is still queued for an SQL worker.
@@ -2108,17 +2107,6 @@ public final class CacheD {
                                     con -> MySqlCharactersItemStorage.deleteLetterItemSnapshot(
                                             con, itemSnapshot.id, command.ownerId, command.auxiliaryTemplateId)
                                 });
-                    } else if (command.delete && command.auxiliaryTemplateId != 0) {
-                        // Pet and collar rows commit or roll back together.
-                        CTransaction.persistEconomy(command.auxiliaryReceiptId, command.ownerId, 0,
-                                new CTransaction.Mutation[]{
-                                    con -> CTransaction.requireTransactionalTables(con, "character_items", "pets"),
-                                    con -> l1j.server.server.datatables.PetTable.deletePetRow(con, itemSnapshot.id),
-                                    con -> MySqlCharactersItemStorage.deletePetCollarSnapshot(con,
-                                            itemSnapshot.id, command.ownerId, command.auxiliaryTemplateId)
-                                });
-                        l1j.server.server.datatables.PetTable.getInstance()
-                                .forgetCommittedPet(itemSnapshot.id);
                     } else if (command.delete) {
                         MySqlCharactersItemStorage.deleteSnapshot(itemSnapshot);
                     } else {

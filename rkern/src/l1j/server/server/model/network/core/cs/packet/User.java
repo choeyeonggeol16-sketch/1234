@@ -1,7 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.datatables.LetterTable;
-import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -106,7 +105,6 @@ public final class User {
         try (receipt) {
             final L1ItemInstance[] items = new L1ItemInstance[length];
             final int[] amounts = new int[length];
-            boolean legacyCollar = false;
             for (int i = 0; i < length; i++) {
                 final int id = length == 1 ? objectId : pairs[i << 1];
                 final int requested = length == 1 ? count : pairs[(i << 1) + 1];
@@ -119,13 +117,7 @@ public final class User {
                 if (!receipt.StageDestroyItem(item, amount)) return;
                 items[i] = item;
                 amounts[i] = amount;
-                legacyCollar |= item.getItemId() == 40314 || item.getItemId() == 40316;
             }
-            if (legacyCollar) receipt.onDurableCommit(() -> {
-                for (L1ItemInstance item : items)
-                    if (item.getItemId() == 40314 || item.getItemId() == 40316)
-                        PetTable.getInstance().forgetCommittedPet(item.getId());
-            });
             receipt.onFailure(() -> SC_SystemMessage.send(pc, "아이템 삭제에 실패했습니다."));
             receipt.commit(() -> DestroyItemReturn(pc, items, amounts));
         } catch (IllegalStateException | java.util.concurrent.RejectedExecutionException unavailable) {

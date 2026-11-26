@@ -12,7 +12,6 @@ import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.datatables.LetterTable;
-import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Warehouse.Warehouse;
@@ -576,11 +575,7 @@ public class CInventory extends L1Object {
         count = Math.min(available, count);
         if (available == count) {
 			int itemId = item.getItem().getItemId();
-			if (itemId == 40314 || itemId == 40316) {
-                // PC pet record + collar row are one CacheD receipt.
-                if (!(this instanceof CUserInventory))
-                    PetTable.getInstance().deletePet(item.getId());
-			} else if (itemId >= 49016 && itemId <= 49025) {
+			if (itemId >= 49016 && itemId <= 49025) {
                 // PC inventory persistence deletes the letter and item in one receipt.
                 // Ground/other inventories have no character_items row to couple.
                 if (!(this instanceof CUserInventory))

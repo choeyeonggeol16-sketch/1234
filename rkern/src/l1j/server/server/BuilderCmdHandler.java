@@ -156,7 +156,6 @@ import l1j.server.server.model.Instance.L1MerchantInstance;
 import l1j.server.server.utils.eKind;
 import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.datatables.LetterTable;
-import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
 
 import java.util.HashMap;
@@ -5474,9 +5473,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 				//	if (0 == players.size()) {
 						groundInventory = L1World.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
 						int itemId = l1iteminstance.getItem(). getItemId();
-						if (itemId == 40314 || itemId == 40316) { // 펫의 아뮤렛트
-							PetTable.getInstance().deletePet(l1iteminstance.getId());
-						} else if (itemId >= 49016 && itemId <= 49025) { // 편지지
+						if (itemId >= 49016 && itemId <= 49025) { // 편지지
 							lettertable = new LetterTable();
 							lettertable.deleteLetter(l1iteminstance.getId());
 						} else if (itemId >= 41383 && itemId <= 41400) { // 가구
@@ -5506,9 +5503,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 				
 							groundInventory = L1World.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
 							int itemId = l1iteminstance.getItem(). getItemId();
-							if (itemId == 40314 || itemId == 40316) { // 펫의 아뮤렛트
-								PetTable.getInstance().deletePet(l1iteminstance.getId());
-							} else if (itemId >= 49016 && itemId <= 49025) { // 편지지
+							if (itemId >= 49016 && itemId <= 49025) { // 편지지
 								lettertable = new LetterTable();
 								lettertable.deleteLetter(l1iteminstance.getId());
 							} else if (itemId >= 41383 && itemId <= 41400) { // 가구

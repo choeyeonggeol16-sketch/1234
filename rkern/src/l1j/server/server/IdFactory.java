@@ -46,7 +46,6 @@ public class IdFactory {
 				+ "SELECT objid AS id FROM characters UNION ALL "
 				+ "SELECT clan_id AS id FROM clan_data UNION ALL "
 				+ "SELECT id FROM clan_warehouse UNION ALL "
-				+ "SELECT objid AS id FROM pets UNION ALL "
 				+ "SELECT object_id AS id FROM companion_instance"
 				+ " UNION ALL SELECT item_object_id AS id FROM letter"
 				+ ") t";

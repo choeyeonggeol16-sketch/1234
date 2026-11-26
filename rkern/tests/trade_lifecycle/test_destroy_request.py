@@ -110,12 +110,6 @@ import l1j.server.server.monitor.LoggerInstance;""")
         write(M+".network.core.sc.packet", name, f"""public class {name} {{
             public static void send(L1PcInstance pc,{typ}){{pc.messages++;}}
         }}""", f"import {M}.Instance.L1PcInstance;")
-    write("l1j.server.server.datatables", "PetTable", """public class PetTable {
-        public static int deletes,forgotten; private static final PetTable INSTANCE=new PetTable();
-        public static void deletePetRow(java.sql.Connection c,int id){deletes++;}
-        public static PetTable getInstance(){return INSTANCE;}
-        public void forgetCommittedPet(int id){forgotten++;}
-    }""")
     write("l1j.server.server.datatables", "LetterTable", """public class LetterTable {
         public static int deletes; public static int mailboxOrderKey(String name){return 100;}
         public static void deleteOwnedItemLetter(java.sql.Connection c,int id,String name){
@@ -247,12 +241,12 @@ import l1j.server.server.monitor.LoggerInstance;""")
             check(!pc.inv.rows.containsKey(1)&&b.count==3&&LoggerInstance.logged==3&&LoggerInstance.amounts==12,"atomic success and zero count");
             add(pc,3,40314,1);add(pc,4,49016,1);
             CS_DestroyItem.handle(sock,2,0,0,new int[]{3,1,4,1});
-            check(PetTable.deletes==0&&PetTable.forgotten==0&&LetterTable.deletes==0,"aux before commit");
+            check(LetterTable.deletes==0,"aux before commit");
             L1InventoryTransaction.complete(false);
-            check(pc.inv.rows.containsKey(3)&&pc.inv.rows.containsKey(4)&&PetTable.forgotten==0,"aux rollback");
+            check(pc.inv.rows.containsKey(3)&&pc.inv.rows.containsKey(4)&&LetterTable.deletes==0,"aux rollback");
             CS_DestroyItem.handle(sock,2,0,0,new int[]{3,1,4,1});
             L1InventoryTransaction.complete(true);
-            check(PetTable.deletes==1&&PetTable.forgotten==1&&LetterTable.deletes==1
+            check(LetterTable.deletes==1
                 &&!pc.inv.rows.containsKey(3)&&!pc.inv.rows.containsKey(4),"linked deletion in receipt");
             add(pc,5,41383,1);L1FurnitureInstance f=new L1FurnitureInstance();f.id=5;
             L1World.INSTANCE.objects.add(f);

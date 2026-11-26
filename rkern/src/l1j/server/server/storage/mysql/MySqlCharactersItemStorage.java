@@ -360,21 +360,6 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
         }
     }
 
-    /** Require collar object ID, owner ID and item template to still match. */
-    public static void deletePetCollarSnapshot(Connection con, int objectId,
-                                               int ownerId, int templateId) throws SQLException {
-        if (objectId <= 0 || ownerId <= 0 || (templateId != 40314 && templateId != 40316))
-            throw new SQLException("Invalid pet collar delete");
-        try (PreparedStatement ps = con.prepareStatement(
-                "DELETE FROM character_items WHERE id=? AND char_id=? AND item_id=?")) {
-            ps.setInt(1, objectId);
-            ps.setInt(2, ownerId);
-            ps.setInt(3, templateId);
-            if (ps.executeUpdate() != 1)
-                throw new SQLException("Pet collar owner/type changed: " + objectId);
-        }
-    }
-
     public static void deleteTradeSnapshot(Connection con, int itemId,
                                            int previousOwner) throws SQLException {
         if (itemId <= 0 || previousOwner <= 0)

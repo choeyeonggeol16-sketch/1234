@@ -14,7 +14,6 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.BossMonsterSpawnList;
 import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -63,7 +62,6 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
 import l1j.server.server.templates.L1Boss;
 import l1j.server.server.templates.L1Npc;
-import l1j.server.server.templates.L1Pet;
 public final class CS_Attr {
 
 	public static final int MSGCODE_622_BOSS 				= 1;

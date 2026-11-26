@@ -11,7 +11,6 @@ import java.util.Collection;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
-import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1HouseLocation;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -28,7 +27,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Npc;
-import l1j.server.server.templates.L1Pet;
 import l1j.server.server.types.Point;
 
 

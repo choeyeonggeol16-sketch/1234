@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import javax.swing.ImageIcon;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
@@ -20,7 +19,6 @@ import l1j.server.server.model.Warehouse.ClanWarehouse;
 import l1j.server.server.model.Warehouse.PrivateWarehouse;
 import l1j.server.server.model.Warehouse.WarehouseManager;
 import l1j.server.server.templates.L1Npc;
-import l1j.server.server.templates.L1Pet;
 import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.SQLUtil;
 
@@ -31,10 +29,8 @@ public class infomation extends javax.swing.JFrame {
 	private ImageIcon king_e;
 	
 	private L1PcInstance pc;
-	private ArrayList<L1ItemInstance> pet;
     /** Creates new form NewJFrame */
     public infomation(L1PcInstance pcc) {
-    	pet = new ArrayList<L1ItemInstance>();		
 		pc = pcc;
         initComponents();	
         this.setSize(274, this.getHeight()); // 274
@@ -111,8 +107,6 @@ public class infomation extends javax.swing.JFrame {
         jTable2 = new javax.swing.JTable();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable3 = new javax.swing.JTable();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        jTable4 = new javax.swing.JTable();
 
         jMenuItem1.setText("자세히보기");
         jMenuItem1.setToolTipText("정보창을 늘리고 줄일수 있습니다.");
@@ -599,9 +593,6 @@ public class infomation extends javax.swing.JFrame {
 		int p = -1;
 			for (Object itemObject : pc.getInventory().getItems()) {
 			L1ItemInstance itemf = (L1ItemInstance) itemObject;	
-			if(itemf.getItem().getItemId() == 40314 || itemf.getItem().getItemId() == 40316){
-				pet.add(itemf);
-			}
 		    layta[++p][0] = itemf.getName();			
 			layta[p][1] = itemf.getEnchantLevel();
 			if(itemf.getItem().getBless() == 0){layta[p][2] = true;
@@ -646,9 +637,6 @@ public class infomation extends javax.swing.JFrame {
 	
 		for (Object itemObjectr : warehouse.getItems()) {
 			L1ItemInstance itemm = (L1ItemInstance) itemObjectr;	
-			if(itemm.getItem().getItemId() == 40314 || itemm.getItem().getItemId() == 40316){
-				pet.add(itemm);
-			}
 		layta2[++pp][0] = itemm.getName();
 		layta2[pp][1] = itemm.getEnchantLevel();
 		if(itemm.getItem().getBless() == 0){layta2[pp][2] = true;
@@ -685,53 +673,6 @@ public class infomation extends javax.swing.JFrame {
         jTable3.getColumnModel().getColumn(3).setResizable(false);
 
         jTabbedPane1.addTab("창고", jScrollPane3);
-        Object[][] layta4 = new 	Object[100][4];
-        int lj = -1;
-        for(int i =0; i< pet.size();i++){
-        	L1ItemInstance itemv = pet.get(i);
-        	L1Pet pett = PetTable.getInstance().getTemplate(itemv.getId());
-        	if(pett != null){
-        	layta4[++lj][0] = pett.get_name();
-        	L1Npc l1npc = CObjectDB.GetNPC(pett.get_npcid());
-        	layta4[lj][1] = l1npc.get_name();        	
-        	layta4[lj][2] = pett.get_level();
-        	layta4[lj][3] = pett.get_exp();
-        	}
-        }
-        
-        
-
-        jTable4.setModel(new javax.swing.table.DefaultTableModel(layta4,          
-            new String [] {
-                "이름", "종류", "레벨", "경험치"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.Long.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jTable4.getTableHeader().setReorderingAllowed(false);
-        jScrollPane4.setViewportView(jTable4);
-        jTable4.getColumnModel().getColumn(0).setResizable(false);
-		jTable4.getColumnModel().getColumn(0).setPreferredWidth(200);
-        jTable4.getColumnModel().getColumn(1).setResizable(false);
-		jTable4.getColumnModel().getColumn(1).setPreferredWidth(150);
-        jTable4.getColumnModel().getColumn(2).setResizable(false);
-        jTable4.getColumnModel().getColumn(3).setResizable(false);
-		jTable4.getColumnModel().getColumn(3).setPreferredWidth(120);
-
-        jTabbedPane1.addTab("펫", jScrollPane4);
 
         javax.swing.GroupLayout jInternalFrame1Layout = new javax.swing.GroupLayout(jInternalFrame1.getContentPane());
         jInternalFrame1.getContentPane().setLayout(jInternalFrame1Layout);
@@ -908,13 +849,11 @@ private String mesod(String id) {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
     private javax.swing.JTable jTable3;
-    private javax.swing.JTable jTable4;
     private javax.swing.JTable jTable5;
     private javax.swing.JLayeredPane layout1;
     private javax.swing.JLabel level;
