@@ -1,6 +1,17 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.datatables.LetterTable;
+import l1j.server.server.datatables.PetTable;
+import l1j.server.server.model.CInventory;
+import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.Instance.L1CompanionInstance;
+import l1j.server.server.model.Instance.L1DollInstance;
+import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
+import l1j.server.server.monitor.Logger.ItemActionType;
+import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.function.ExtendedItemActions;
@@ -26,6 +37,108 @@ public final class User {
     static void OnUseItemPacket(CUserSocket client, int itemObjid, int targetId,
             int x, int y, String name, int skillId) {
         OnUseItemPacket0(client, itemObjid, targetId, x, y, name, skillId);
+    }
+
+    /** OFF DestroyItem -> User::OnDestroyItemPacket. L1 keeps its multi-item wire format. */
+    static void OnDestroyItemPacket(CUserSocket client, int length, int objectId, int count, int[] pairs) {
+        if (client == null || length <= 0 || length > 100) return;
+        final L1PcInstance pc = client.getActiveChar();
+        if (pc == null || pc.isDead() || pc.isGhost() || pc.get_teleport()
+                || pc.isPrivateShop() || pc.isLogoutStarted()
+                || pc.isItemTransferBusy() || pc.GetTrade() != null) return;
+
+        if (length == 1) {
+            if (objectId <= 0 || count < 0) return;
+        } else {
+            if (pairs == null || pairs.length != (length << 1)) return;
+            // A row may appear only once in one destroy request. No partial batch.
+            for (int i = 0; i < pairs.length; i += 2) {
+                if (pairs[i] <= 0 || pairs[i + 1] < 0) return;
+                for (int j = 0; j < i; j += 2)
+                    if (pairs[j] == pairs[i]) return;
+            }
+        }
+        RequestDestroyItem(pc, length, objectId, count, pairs);
+    }
+
+    private static boolean CanDestroyItem(L1PcInstance pc, L1ItemInstance item) {
+        if (item == null || item.getItem() == null || item.getCount() <= 0) return false;
+        if (item.isEquipped() || (!pc.isGm() && item.getItem().isCantDelete())) {
+            SC_ServerMessage.send(pc, 125);
+            return false;
+        }
+        final L1CompanionInstance companion = pc.get_companion();
+        if ((!pc.isGm() && item.getBless() >= 128)
+                || !CompanionInstanceCache.is_companion_oblivion(item.getId())
+                || (companion != null && companion.get_control_object_id() == item.getId())) {
+            SC_ServerMessage.send(pc, 210, item.getItem().getName());
+            return false;
+        }
+        for (Object value : pc.getDollList().values()) {
+            if (value instanceof L1DollInstance doll && doll.getItemObjId() == item.getId()) {
+                SC_ServerMessage.send(pc, 210, item.getItem().getName());
+                return false;
+            }
+        }
+        // Deployed furniture owns a live world object. Require retrieval first;
+        // the receipt also checks the persisted placement under the SQL lock.
+        if (item.getItemId() >= 41383 && item.getItemId() <= 41400) {
+            for (L1Object object : L1World.getInstance().getObject()) {
+                if (object instanceof L1FurnitureInstance furniture
+                        && furniture.getItemObjId() == item.getId()) {
+                    SC_SystemMessage.send(pc, "설치된 가구를 회수한 뒤 삭제해 주세요.");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Prepare all deletions under one owner gate; nothing visible changes before COMMIT.
+     * The existing mailbox lane also orders physical letter deletion against mail operations. */
+    private static void RequestDestroyItem(L1PcInstance pc, int length, int objectId, int count, int[] pairs) {
+        final L1InventoryTransaction receipt;
+        try {
+            receipt = L1InventoryTransaction.begin(pc, LetterTable.mailboxOrderKey(pc.getName()));
+        } catch (IllegalStateException | java.util.concurrent.RejectedExecutionException unavailable) {
+            return;
+        }
+        try (receipt) {
+            final L1ItemInstance[] items = new L1ItemInstance[length];
+            final int[] amounts = new int[length];
+            boolean legacyCollar = false;
+            for (int i = 0; i < length; i++) {
+                final int id = length == 1 ? objectId : pairs[i << 1];
+                final int requested = length == 1 ? count : pairs[(i << 1) + 1];
+                final L1ItemInstance item = pc.getInventory().GetByServerID(id);
+                if (!CanDestroyItem(pc, item)) return;
+                // The L1 client uses zero to request deletion of the entire stack.
+                final int amount = requested == 0 ? item.getCount() : requested;
+                if (amount <= 0 || amount > item.getCount() || amount > CInventory.MAX_AMOUNT
+                        || (!item.isStackable() && amount != 1)) return;
+                if (!receipt.StageDestroyItem(item, amount)) return;
+                items[i] = item;
+                amounts[i] = amount;
+                legacyCollar |= item.getItemId() == 40314 || item.getItemId() == 40316;
+            }
+            if (legacyCollar) receipt.onDurableCommit(() -> {
+                for (L1ItemInstance item : items)
+                    if (item.getItemId() == 40314 || item.getItemId() == 40316)
+                        PetTable.getInstance().forgetCommittedPet(item.getId());
+            });
+            receipt.onFailure(() -> SC_SystemMessage.send(pc, "아이템 삭제에 실패했습니다."));
+            receipt.commit(() -> DestroyItemReturn(pc, items, amounts));
+        } catch (IllegalStateException | java.util.concurrent.RejectedExecutionException unavailable) {
+            SC_SystemMessage.send(pc, "아이템 삭제에 실패했습니다.");
+        }
+    }
+
+    /** Only the confirmed CacheD/CIO reply may report successful deletion.
+     * L1InventoryTransaction has already applied counts/removal and inventory packets. */
+    private static void DestroyItemReturn(L1PcInstance pc, L1ItemInstance[] items, int[] amounts) {
+        for (int i = 0; i < items.length; i++)
+            LoggerInstance.getInstance().addItemAction(ItemActionType.Delete, pc, items[i], amounts[i]);
+        pc.getLight().turnOnOffLight();
     }
 
     // L1 adaptation of reference server pending admission: the existing inventory transaction

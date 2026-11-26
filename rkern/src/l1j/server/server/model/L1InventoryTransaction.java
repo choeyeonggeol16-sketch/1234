@@ -239,6 +239,43 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         e.image.setCount(e.image.getCount()-count);
         return true;
     }
+    /**
+     * Explicit client destruction only. Ordinary material debits still refuse linked
+     * entities. Caller reserves the character's mailbox lane for physical letters.
+     */
+    public boolean StageDestroyItem(L1ItemInstance item, int count) {
+        if (item == null || count <= 0 || item.isEquipped()) return false;
+        if (!requiresEntityDeletion(item.getItemId())) return debit(item, count);
+        open();
+        if (primary.getInventory().GetByServerID(item.getId()) != item
+                || count != item.getCount() || findEntry(item.getId()) != null) return false;
+        final int id = item.getId();
+        final int template = item.getItemId();
+        if (template == 40314 || template == 40316) {
+            requireTables("character_items", "pets");
+            sql(con -> l1j.server.server.datatables.PetTable.deletePetRow(con, id));
+        } else if (template >= 49016 && template <= 49025) {
+            final String receiver = primary.getName();
+            requireTables("character_items", "letter", "characters");
+            sql(con -> l1j.server.server.datatables.LetterTable.deleteOwnedItemLetter(con, id, receiver));
+        } else {
+            requireTables("character_items", "spawnlist_furniture");
+            sql(con -> {
+                try (java.sql.PreparedStatement ps = con.prepareStatement(
+                        "SELECT item_obj_id FROM spawnlist_furniture WHERE item_obj_id=? FOR UPDATE")) {
+                    ps.setInt(1, id);
+                    try (java.sql.ResultSet rows = ps.executeQuery()) {
+                        if (rows.next()) throw new java.sql.SQLException("Furniture still deployed: " + id);
+                    }
+                }
+            });
+        }
+        // The normal receipt verifies the exact character item preimage and
+        // deletes its row in the same transaction as the linked-row work.
+        entry(primary, item).image.setCount(0);
+        return true;
+    }
+
     /** Read the quantity still available in this receipt without staging another row. */
     public int GetPreparedItemAmount(L1PcInstance pc, L1ItemInstance item) {
         open(); owns(pc);
