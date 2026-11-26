@@ -36,19 +36,22 @@ public class IdFactory {
 	}
 
 	private void loadState() {
-		String sql = "SELECT max(id)+1 AS nextid FROM ("
-				+ "SELECT id FROM character_items UNION ALL "
-				+ "SELECT id FROM character_teleport UNION ALL "
-				+ "SELECT id FROM character_warehouse UNION ALL "
-				+ "SELECT id FROM character_elf_warehouse UNION ALL "
-                + "SELECT id FROM character_special_warehouse UNION ALL "
-                + "SELECT id FROM character_supplementary_service UNION ALL "
-				+ "SELECT objid AS id FROM characters UNION ALL "
-				+ "SELECT clan_id AS id FROM clan_data UNION ALL "
-				+ "SELECT id FROM clan_warehouse UNION ALL "
-				+ "SELECT object_id AS id FROM companion_instance"
-				+ " UNION ALL SELECT item_object_id AS id FROM letter"
-				+ ") t";
+        // Select one indexed high-water mark per source before combining tables.
+        // Package gifts reserve persistent IDs even before anyone withdraws them.
+        String sql = "SELECT MAX(id)+1 AS nextid FROM ("
+                + "SELECT MAX(id) AS id FROM character_items UNION ALL "
+                + "SELECT MAX(id) AS id FROM character_teleport UNION ALL "
+                + "SELECT MAX(id) AS id FROM character_warehouse UNION ALL "
+                + "SELECT MAX(id) AS id FROM character_elf_warehouse UNION ALL "
+                + "SELECT MAX(id) AS id FROM character_special_warehouse UNION ALL "
+                + "SELECT MAX(id) AS id FROM character_supplementary_service UNION ALL "
+                + "SELECT MAX(id) AS id FROM character_package_warehouse UNION ALL "
+                + "SELECT MAX(objid) AS id FROM characters UNION ALL "
+                + "SELECT MAX(clan_id) AS id FROM clan_data UNION ALL "
+                + "SELECT MAX(id) AS id FROM clan_warehouse UNION ALL "
+                + "SELECT MAX(object_id) AS id FROM companion_instance UNION ALL "
+                + "SELECT MAX(item_object_id) AS id FROM letter"
+                + ") t";
 
 		try (Connection con = DatabaseFactory.getInstance().getConnection();
 			 PreparedStatement pstm = con.prepareStatement(sql);

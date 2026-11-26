@@ -59,6 +59,7 @@ public class L1DwarfForPackageInventory extends Warehouse {
 
     /** Read detached items only; no warehouse/world mutation or JDBC writes. */
     public static java.util.List<L1ItemInstance> readDetachedSnapshot(ResultSet rows) throws SQLException {
+        final WarehouseOptionColumns optionColumns = WarehouseOptionColumns.read(rows);
         List<L1ItemInstance> loaded = new ArrayList<>();
         while (rows.next()) {
             int id = rows.getInt("id");
@@ -76,8 +77,9 @@ public class L1DwarfForPackageInventory extends Warehouse {
             item.setBless(template.getBless());
             item.setAttrEnchantLevel(rows.getInt("attr_enchantlvl"));
             item.setSpecialEnchant(rows.getInt("special_enchant"));
-            item.set_bless_level(rows.getInt("bless_level"));
-            item.set_item_level(rows.getInt("item_level"));
+            item.set_bless_level(optionColumns.readBlessingLevel(rows));
+            item.set_bless_level2(optionColumns.readBlessingQuality(rows));
+            item.set_item_level(optionColumns.readItemLevel(rows));
             item.setHotel_Town(rows.getString("Hotel_Town"));
             item.setEndTime(rows.getTimestamp("end_time"));
             loaded.add(item);

@@ -1,3 +1,9 @@
+# 최신 RKern DB 적용 안내
+
+새 설치와 기존 DB 업데이트 순서는 [DB 설치와 업데이트](database/README.md)를 참고하세요.
+
+---
+
 ## 2026-11-11 — aden.zip 네트워크 코어 검토 보고서
 
 [**상세 보고서 읽기**](reports/aden_network_review_20261111/REPORT_KO.md) · [보고서·재현 로그 다운로드](downloads/aden_network_review_20261111.zip) · [개선 목록 CSV](reports/aden_network_review_20261111/findings.csv)

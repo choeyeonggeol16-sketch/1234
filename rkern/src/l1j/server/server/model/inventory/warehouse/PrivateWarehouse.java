@@ -59,6 +59,7 @@ public class PrivateWarehouse extends Warehouse {
 
     /** Read detached items only; no warehouse/world mutation or JDBC writes. */
     public static java.util.List<L1ItemInstance> readDetachedSnapshot(ResultSet rs) throws SQLException {
+        final WarehouseOptionColumns optionColumns = WarehouseOptionColumns.read(rs);
 			java.util.ArrayList<L1ItemInstance> loaded = new java.util.ArrayList<>();
 			L1ItemInstance item = null;
 			L1Item itemTemplate = null;
@@ -84,6 +85,7 @@ public class PrivateWarehouse extends Warehouse {
                 item.setPackage(rs.getInt("package") != 0);
 				item.setBless(rs.getInt("bless"));
 				item.set_bless_level(rs.getInt("bless_level"));
+					item.set_bless_level2(optionColumns.readBlessingQuality(rs));
 				/**특수 인챈트 시스템**/
 				item.set_item_level(rs.getInt("item_level"));
 				/**여관 리뉴얼**/
@@ -104,7 +106,7 @@ public class PrivateWarehouse extends Warehouse {
 
     private static final class Row {
         final int id, itemId, count, enchant, identified, durability, charge, remaining;
-        final int attr, bless, special, pack, blessLevel, itemLevel;
+        final int attr, bless, special, pack, blessLevel, blessQuality, itemLevel;
         final String name, hotel, account;
         final java.sql.Timestamp used, end;
 
@@ -124,6 +126,7 @@ public class PrivateWarehouse extends Warehouse {
             special = item.getSpecialEnchant();
             pack = item.isPackage() ? 1 : 0;
             blessLevel = item.get_bless_level();
+            blessQuality = item.get_bless_level2();
             itemLevel = item.get_item_level();
             hotel = item.getHotel_Town();
             used = copyTimestamp(item.getLastUsed());
@@ -138,11 +141,11 @@ public class PrivateWarehouse extends Warehouse {
         return copy;
     }
 
-    private static void insertMoveRow(Connection con, Row row) throws SQLException {
+    private static void insertRow(Connection con, Row row) throws SQLException {
         final String sql = "INSERT INTO character_warehouse SET id=?,account_name=?,item_id=?,item_name=?,count=?,"
                 + "is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,"
                 + "last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,package=?,bless_level=?,"
-                + "item_level=?,Hotel_Town=?,end_time=?";
+                + "bless_level2=?,item_level=?,Hotel_Town=?,end_time=?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             int i = 0;
             ps.setInt(++i, row.id);
@@ -161,6 +164,7 @@ public class PrivateWarehouse extends Warehouse {
             ps.setInt(++i, row.special);
             ps.setInt(++i, row.pack);
             ps.setInt(++i, row.blessLevel);
+            ps.setInt(++i, row.blessQuality);
             ps.setInt(++i, row.itemLevel);
             ps.setString(++i, row.hotel);
             ps.setTimestamp(++i, row.end);
@@ -212,33 +216,8 @@ public class PrivateWarehouse extends Warehouse {
     }
 
     private static void insertRow(Row row) {
-        final String sql = "INSERT INTO character_warehouse SET id=?,account_name=?,item_id=?,item_name=?,count=?,"
-                + "is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,"
-                + "last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,package=?,bless_level=?,"
-                + "item_level=?,Hotel_Town=?,end_time=?";
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            int i = 0;
-            ps.setInt(++i, row.id);
-            ps.setString(++i, row.account);
-            ps.setInt(++i, row.itemId);
-            ps.setString(++i, row.name);
-            ps.setInt(++i, row.count);
-            ps.setInt(++i, row.enchant);
-            ps.setInt(++i, row.identified);
-            ps.setInt(++i, row.durability);
-            ps.setInt(++i, row.charge);
-            ps.setInt(++i, row.remaining);
-            ps.setTimestamp(++i, row.used);
-            ps.setInt(++i, row.attr);
-            ps.setInt(++i, row.bless);
-            ps.setInt(++i, row.special);
-            ps.setInt(++i, row.pack);
-            ps.setInt(++i, row.blessLevel);
-            ps.setInt(++i, row.itemLevel);
-            ps.setString(++i, row.hotel);
-            ps.setTimestamp(++i, row.end);
-            ps.executeUpdate();
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            insertRow(con, row);
         } catch (SQLException e) {
             // Replays after an ambiguous COMMIT may encounter the same row.
             // Only treat the row as already stored when owner, item and count
@@ -247,7 +226,7 @@ public class PrivateWarehouse extends Warehouse {
                  PreparedStatement ps = con.prepareStatement(
                          "SELECT account_name,item_id,count,enchantlvl,is_id,durability,charge_count,"
                                  + "remaining_time,attr_enchantlvl,bless,special_enchant,package,"
-                                 + "bless_level,item_level,Hotel_Town,last_used,end_time "
+                                 + "bless_level,bless_level2,item_level,Hotel_Town,last_used,end_time "
                                  + "FROM character_warehouse WHERE id=?")) {
                 ps.setInt(1, row.id);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -258,10 +237,11 @@ public class PrivateWarehouse extends Warehouse {
                             && row.remaining == rs.getInt(8) && row.attr == rs.getInt(9)
                             && row.bless == rs.getInt(10) && row.special == rs.getInt(11)
                             && row.pack == rs.getInt(12) && row.blessLevel == rs.getInt(13)
-                            && row.itemLevel == rs.getInt(14)
-                            && java.util.Objects.equals(row.hotel, rs.getString(15))
-                            && java.util.Objects.equals(row.used, rs.getTimestamp(16))
-                            && java.util.Objects.equals(row.end, rs.getTimestamp(17))) return;
+                            && row.blessQuality == rs.getInt("bless_level2")
+                            && row.itemLevel == rs.getInt("item_level")
+                            && java.util.Objects.equals(row.hotel, rs.getString("Hotel_Town"))
+                            && java.util.Objects.equals(row.used, rs.getTimestamp("last_used"))
+                            && java.util.Objects.equals(row.end, rs.getTimestamp("end_time"))) return;
                 }
             } catch (SQLException checkFailure) {
                 e.addSuppressed(checkFailure);
@@ -325,7 +305,7 @@ public class PrivateWarehouse extends Warehouse {
             throw new IllegalArgumentException("Invalid warehouse item");
         }
         final Row snapshot = new Row(getName(), item);
-        if (CacheD.stageWarehouseMoveSql(con -> insertMoveRow(con, snapshot))) return;
+        if (CacheD.stageWarehouseMoveSql(con -> insertRow(con, snapshot))) return;
         CacheD.getInstance().submitDbJobRetryOrdered(CacheD.accountOrderKey(snapshot.account),
                 () -> insertRow(snapshot));
     }

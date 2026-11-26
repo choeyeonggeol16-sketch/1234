@@ -84,6 +84,7 @@ public class SupplementaryService extends Warehouse {
 
     /** Read detached items only; no warehouse/world mutation or JDBC writes. */
     public static java.util.List<L1ItemInstance> readDetachedSnapshot(ResultSet rs) throws SQLException {
+        final WarehouseOptionColumns optionColumns = WarehouseOptionColumns.read(rs);
 			java.util.ArrayList<L1ItemInstance> loaded = new java.util.ArrayList<>();
 			L1ItemInstance item = null;
 			L1Item itemTemplate = null;
@@ -107,6 +108,7 @@ public class SupplementaryService extends Warehouse {
 				item.setSpecialEnchant(rs.getInt("special_enchant"));
                 item.setPackage(rs.getInt("package") != 0);
 				item.setBless(rs.getInt("bless"));
+				item.set_bless_level2(optionColumns.readBlessingQuality(rs));
 				
 
                 loaded.add(item);

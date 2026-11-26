@@ -55,6 +55,7 @@ public class SpecialWarehouse extends Warehouse {
 
     /** Read detached items only; no warehouse/world mutation or JDBC writes. */
     public static java.util.List<L1ItemInstance> readDetachedSnapshot(ResultSet rs) throws SQLException {
+        final WarehouseOptionColumns optionColumns = WarehouseOptionColumns.read(rs);
 			java.util.ArrayList<L1ItemInstance> loaded = new java.util.ArrayList<>();
 			L1ItemInstance item = null;
 			L1Item itemTemplate = null;
@@ -78,6 +79,7 @@ public class SpecialWarehouse extends Warehouse {
                 item.setPackage(rs.getInt("package") != 0);
 				item.setBless(rs.getInt("bless"));
 				item.set_bless_level(rs.getInt("bless_level"));
+				item.set_bless_level2(optionColumns.readBlessingQuality(rs));
 				/**특수 인챈트 시스템**/
 				item.set_item_level(rs.getInt("item_level"));
 				/**여관 리뉴얼**/

@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
@@ -19,6 +20,7 @@ import l1j.server.server.storage.mysql.MySqlCharactersItemStorage.ItemSnapshot;
  */
 public final class CTransaction {
     private static final Logger LOG = Logger.getLogger(CTransaction.class.getName());
+    private static final Pattern TABLE_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 
     private CTransaction() {}
 
@@ -129,27 +131,8 @@ public final class CTransaction {
      * or a nontransactional storage engine would silently defeat atomic COMMIT.
      */
     public static void verifySchema() throws SQLException {
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(
-                     "SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES "
-                     + "WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN (?,?,?,?,?,?,?,?,?,?)")) {
-            for (int i = 0; i < TRANSACTION_TABLES.length; i++)
-                ps.setString(i + 1, TRANSACTION_TABLES[i]);
-            boolean[] found = new boolean[TRANSACTION_TABLES.length];
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    final String name = rs.getString(1);
-                    for (int i = 0; i < TRANSACTION_TABLES.length; i++) {
-                        if (TRANSACTION_TABLES[i].equals(name)) {
-                            if (!"InnoDB".equalsIgnoreCase(rs.getString(2)))
-                                throw new SQLException("CacheD atomic storage requires InnoDB: " + name);
-                            found[i] = true;
-                        }
-                    }
-                }
-            }
-            for (int i = 0; i < found.length; i++)
-                if (!found[i]) throw new SQLException("Missing atomic CacheD table: " + TRANSACTION_TABLES[i]);
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            requireTransactionalTables(con, TRANSACTION_TABLES);
             // An InnoDB table alone is not enough: without these UNIQUE keys,
             // a duplicate receipt or quest flag can defeat idempotent replay.
             requireUniqueIndex(con, "cached_transaction_receipts", "tx_id", null);
@@ -206,17 +189,33 @@ public final class CTransaction {
     }
 
     public static void requireTransactionalTables(Connection con, String... tables) throws SQLException {
+        if (tables.length == 0) return;
         for (String table : tables) {
-            if (table == null || !table.matches("[A-Za-z_][A-Za-z0-9_]*"))
+            if (table == null || !TABLE_NAME.matcher(table).matches())
                 throw new SQLException("Invalid transaction table name");
-            try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?")) {
-                ps.setString(1, table);
-                try (ResultSet rows = ps.executeQuery()) {
-                    if (!rows.next() || !"InnoDB".equalsIgnoreCase(rows.getString(1)))
+        }
+
+        // Check the current engines on this connection. Keep the check live
+        // so a schema change cannot stay hidden behind a cached result.
+        final String query = "SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES "
+                + "WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ("
+                + "?,".repeat(tables.length - 1) + "?)";
+        final boolean[] found = new boolean[tables.length];
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            for (int i = 0; i < tables.length; i++) ps.setString(i + 1, tables[i]);
+            try (ResultSet rows = ps.executeQuery()) {
+                while (rows.next()) {
+                    final String table = rows.getString(1);
+                    if (!"InnoDB".equalsIgnoreCase(rows.getString(2)))
                         throw new SQLException("Atomic economy requires InnoDB table: " + table);
+                    for (int i = 0; i < tables.length; i++) {
+                        if (tables[i].equals(table)) found[i] = true;
+                    }
                 }
             }
+        }
+        for (int i = 0; i < tables.length; i++) {
+            if (!found[i]) throw new SQLException("Atomic economy requires InnoDB table: " + tables[i]);
         }
     }
 

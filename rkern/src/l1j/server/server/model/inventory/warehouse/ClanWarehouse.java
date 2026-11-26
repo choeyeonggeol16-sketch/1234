@@ -62,6 +62,7 @@ public class ClanWarehouse extends Warehouse {
 			pstm = con.prepareStatement("SELECT * FROM clan_warehouse WHERE clan_name = ?");
 			pstm.setString(1, getName());
 			rs = pstm.executeQuery();
+			final WarehouseOptionColumns optionColumns = WarehouseOptionColumns.read(rs);
 			java.util.ArrayList<L1ItemInstance> loaded = new java.util.ArrayList<>();
 			L1ItemInstance item = null;
 			L1Item itemTemplate  = null;
@@ -87,6 +88,7 @@ public class ClanWarehouse extends Warehouse {
 				item.setSpecialEnchant(rs.getInt("special_enchant"));
                 item.setPackage(rs.getInt("package") != 0);
 				item.set_bless_level(rs.getInt("bless_level"));
+				item.set_bless_level2(optionColumns.readBlessingQuality(rs));
 				/**특수 인챈트 시스템**/
 				item.set_item_level(rs.getInt("item_level"));
 				/**여관 리뉴얼**/

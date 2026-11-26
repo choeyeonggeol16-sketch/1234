@@ -3,6 +3,7 @@ package l1j.server.server.model.inventory.warehouse;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -80,17 +81,17 @@ public abstract class Warehouse extends L1Object {
     };
     private static final String[] INSERT_SQL = {
         "",
-        "INSERT INTO clan_warehouse SET id=?,clan_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,special_enchant=?,package=?,bless_level=?,item_level=?,Hotel_Town=?,end_time=?",
-        "INSERT INTO character_elf_warehouse SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,bless_level=?,item_level=?,Hotel_Town=?,end_time=?",
-        "INSERT INTO character_special_warehouse SET id=?,char_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,package=?,bless_level=?,item_level=?,Hotel_Town=?,end_time=?",
-        "INSERT INTO character_supplementary_service SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,package=?",
-        "INSERT INTO character_package_warehouse SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,special_enchant=?,bless_level=?,item_level=?,Hotel_Town=?,end_time=?"
+        "INSERT INTO clan_warehouse SET id=?,clan_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,special_enchant=?,package=?,bless_level=?,bless_level2=?,item_level=?,Hotel_Town=?,end_time=?",
+        "INSERT INTO character_elf_warehouse SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,bless_level=?,bless_level2=?,item_level=?,Hotel_Town=?,end_time=?",
+        "INSERT INTO character_special_warehouse SET id=?,char_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,package=?,bless_level=?,bless_level2=?,item_level=?,Hotel_Town=?,end_time=?",
+        "INSERT INTO character_supplementary_service SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,bless=?,special_enchant=?,package=?,bless_level2=?",
+        "INSERT INTO character_package_warehouse SET id=?,account_name=?,item_id=?,item_name=?,count=?,is_equipped=0,enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,attr_enchantlvl=?,special_enchant=?,bless_level=?,bless_level2=?,item_level=?,Hotel_Town=?,end_time=?"
     };
 
     private static final class WarehouseRow {
         final String owner, itemName, hotel;
         final int id, itemId, count, enchant, identified, durability, charge, remaining;
-        final int attr, bless, special, pack, blessLevel, itemLevel;
+        final int attr, bless, special, pack, blessLevel, blessQuality, itemLevel;
         final Timestamp lastUsed, endTime;
 
         WarehouseRow(String owner, L1ItemInstance item) {
@@ -109,6 +110,7 @@ public abstract class Warehouse extends L1Object {
             special = item.getSpecialEnchant();
             pack = item.isPackage() ? 1 : 0;
             blessLevel = item.get_bless_level();
+            blessQuality = item.get_bless_level2();
             itemLevel = item.get_item_level();
             hotel = item.getHotel_Town();
             lastUsed = L1ItemInstance.CopyTimestamp(item.getLastUsed());
@@ -133,6 +135,30 @@ public abstract class Warehouse extends L1Object {
         throw new IllegalStateException("Unsupported warehouse type: " + getClass().getName());
     }
 
+    protected record WarehouseOptionColumns(int blessingLevel, int blessingQuality, int itemLevel) {
+        public static WarehouseOptionColumns read(ResultSet rows) throws SQLException {
+            final ResultSetMetaData metadata = rows.getMetaData();
+            int blessingLevel = 0;
+            int blessingQuality = 0;
+            int itemLevel = 0;
+            for (int index = 1, count = metadata.getColumnCount(); index <= count; index++) {
+                final String label = metadata.getColumnLabel(index);
+                if ("bless_level".equalsIgnoreCase(label)) blessingLevel = index;
+                else if ("bless_level2".equalsIgnoreCase(label)) blessingQuality = index;
+                else if ("item_level".equalsIgnoreCase(label)) itemLevel = index;
+            }
+            return new WarehouseOptionColumns(blessingLevel, blessingQuality, itemLevel);
+        }
+
+        public int readBlessingLevel(ResultSet rows) throws SQLException { return readInt(rows, blessingLevel); }
+        public int readBlessingQuality(ResultSet rows) throws SQLException { return readInt(rows, blessingQuality); }
+        public int readItemLevel(ResultSet rows) throws SQLException { return readInt(rows, itemLevel); }
+
+        private static int readInt(ResultSet rows, int column) throws SQLException {
+            return column == 0 ? 0 : rows.getInt(column);
+        }
+    }
+
     protected final void assertWarehouseReadsCurrent(int type) {
         assertWarehouseActive();
         // Never reload an older DB snapshot while asynchronous writes are pending.
@@ -148,7 +174,7 @@ public abstract class Warehouse extends L1Object {
             throw new IllegalArgumentException("Invalid warehouse item");
         }
         final WarehouseRow row = new WarehouseRow(getName(), item);
-        if (CacheD.stageWarehouseMoveSql(con -> insertWarehouseMove(con, type, row))) return;
+        if (CacheD.stageWarehouseMoveSql(con -> insertWarehouseRow(con, type, row))) return;
         CacheD.getInstance().submitDbJobRetryOrdered(persistenceKey(type), () -> insertWarehouseRow(type, row));
     }
 
@@ -234,7 +260,7 @@ public abstract class Warehouse extends L1Object {
 
     // Transfer-only operations never obtain their own connection. Source and
     // destination run under CTransaction.persistWarehouseMove() on ONE MySQL tx.
-    private static void insertWarehouseMove(Connection con, int type, WarehouseRow row)
+    private static void insertWarehouseRow(Connection con, int type, WarehouseRow row)
             throws SQLException {
         try (PreparedStatement ps = con.prepareStatement(INSERT_SQL[type])) {
             int p = 0;
@@ -254,6 +280,7 @@ public abstract class Warehouse extends L1Object {
             ps.setInt(++p, row.special);
             if (type != ELF_ROWS && type != PACKAGE_ROWS) ps.setInt(++p, row.pack);
             if (type != SUPPLEMENT_ROWS) ps.setInt(++p, row.blessLevel);
+            ps.setInt(++p, row.blessQuality);
             if (type != SUPPLEMENT_ROWS) {
                 ps.setInt(++p, row.itemLevel);
                 ps.setString(++p, row.hotel);
@@ -308,31 +335,8 @@ public abstract class Warehouse extends L1Object {
     }
 
     private static void insertWarehouseRow(int type, WarehouseRow row) {
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(INSERT_SQL[type])) {
-            int p = 0;
-            ps.setInt(++p, row.id);
-            ps.setString(++p, row.owner);
-            ps.setInt(++p, row.itemId);
-            ps.setString(++p, row.itemName);
-            ps.setInt(++p, row.count);
-            ps.setInt(++p, row.enchant);
-            ps.setInt(++p, row.identified);
-            ps.setInt(++p, row.durability);
-            ps.setInt(++p, row.charge);
-            ps.setInt(++p, row.remaining);
-            ps.setTimestamp(++p, row.lastUsed);
-            ps.setInt(++p, row.attr);
-            if (type != CLAN_ROWS && type != PACKAGE_ROWS) ps.setInt(++p, row.bless);
-            ps.setInt(++p, row.special);
-            if (type != ELF_ROWS && type != PACKAGE_ROWS) ps.setInt(++p, row.pack);
-            if (type != SUPPLEMENT_ROWS) ps.setInt(++p, row.blessLevel);
-            if (type != SUPPLEMENT_ROWS) {
-                ps.setInt(++p, row.itemLevel);
-                ps.setString(++p, row.hotel);
-                ps.setTimestamp(++p, row.endTime);
-            }
-            ps.executeUpdate();
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            insertWarehouseRow(con, type, row);
         } catch (SQLException ex) {
             // An uncertain INSERT completion can leave the row committed.
             // Only acknowledge a retry when all stored columns match exactly.
@@ -355,6 +359,7 @@ public abstract class Warehouse extends L1Object {
                             && row.special == rs.getInt("special_enchant")
                             && (type == ELF_ROWS || type == PACKAGE_ROWS || row.pack == rs.getInt("package"))
                             && (type == SUPPLEMENT_ROWS || row.blessLevel == rs.getInt("bless_level"))
+                            && row.blessQuality == rs.getInt("bless_level2")
                             && (type == SUPPLEMENT_ROWS || (row.itemLevel == rs.getInt("item_level")
                                 && Objects.equals(row.hotel, rs.getString("Hotel_Town"))
                                 && Objects.equals(row.endTime, rs.getTimestamp("end_time"))))) return;

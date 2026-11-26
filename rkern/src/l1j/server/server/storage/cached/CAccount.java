@@ -13,6 +13,8 @@ public final class CAccount extends CPendingState {
     public static final int LAST_LOGOUT = 1 << 1;
     public static final int BLESS_OF_AIN = 1 << 2;
     public static final int RAID_BUFF = 1 << 3;
+    private static final int ALL_FIELDS = LAST_ACTIVE | LAST_LOGOUT | BLESS_OF_AIN | RAID_BUFF;
+    private static final String[] UPDATE_SQL = updateStatements();
 
     public final String login;
     public String ip;
@@ -75,10 +77,15 @@ public final class CAccount extends CPendingState {
         }
     }
 
-    public static void persist(Snapshot snapshot) throws SQLException {
-        int mask = snapshot.mask;
-        if (mask == 0) return;
+    private static String[] updateStatements() {
+        String[] statements = new String[ALL_FIELDS + 1];
+        for (int mask = 1; mask < statements.length; mask++) {
+            statements[mask] = updateStatement(mask);
+        }
+        return statements;
+    }
 
+    private static String updateStatement(int mask) {
         StringBuilder sql = new StringBuilder(160);
         sql.append("UPDATE accounts SET ");
         if ((mask & CAccount.LAST_ACTIVE) != 0) {
@@ -95,9 +102,16 @@ public final class CAccount extends CPendingState {
         }
         sql.setLength(sql.length() - 1);
         sql.append(" WHERE login=?");
+        return sql.toString();
+    }
+
+    public static void persist(Snapshot snapshot) throws SQLException {
+        int mask = snapshot.mask;
+        if (mask == 0) return;
+        final String sql = (mask & ~ALL_FIELDS) == 0 ? UPDATE_SQL[mask] : updateStatement(mask);
 
         try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
             int idx = 1;
             if ((mask & CAccount.LAST_ACTIVE) != 0) {
                 ps.setTimestamp(idx++, new Timestamp(snapshot.lastActive));

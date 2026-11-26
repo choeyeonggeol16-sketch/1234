@@ -454,7 +454,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
             values[ni++] = pc.getExpRes();
             values[ni++] = pc.getPartnerId();
             values[ni++] = pc.getAccessLevel();
-            values[ni++] = pc.getOnlineStatus();
+            values[ni++] = onlineStatus;
             values[ni++] = pc.getHomeTownId();
             values[ni++] = pc.getContribution();
             values[ni++] = (pc.isBanned()) ? 1 : 0;
