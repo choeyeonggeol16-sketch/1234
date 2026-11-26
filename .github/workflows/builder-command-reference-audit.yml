@@ -18,6 +18,7 @@ jobs:
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
             rkern/tests/trade_lifecycle
+            rkern/tests/timer_integration
       - name: Assert consolidated User timer references
         if: github.ref_name == 'rkern/nc-user-timer-integration-20261126'
         run: |
@@ -143,6 +144,10 @@ jobs:
           """, encoding="utf-8")
           subprocess.run(["javac","-encoding","UTF-8","--enable-preview","--release","21","-cp",cp+os.pathsep+str(classes),"-d",str(classes),str(test)],check=True)
           subprocess.run(["java","--enable-preview","-cp",cp+os.pathsep+str(classes),"BuilderPermissionTest"],check=True)
+          if os.environ.get("GITHUB_REF_NAME") == "rkern/nc-user-timer-integration-20261126":
+              timer_test = root / "tests/timer_integration/UserTimerRegression.java"
+              subprocess.run(["javac","-encoding","UTF-8","--enable-preview","--release","21","-cp",cp+os.pathsep+str(classes),"-d",str(classes),str(timer_test)],check=True)
+              subprocess.run(["java","--enable-preview","-cp",cp+os.pathsep+str(classes),"UserTimerRegression"],check=True)
 
           PY
       - name: Trade lifecycle regression

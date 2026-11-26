@@ -739,11 +739,13 @@ public class Account {
     // already include the award before its in-memory callback has run.
     private transient boolean tamAwardPending;
     private transient long nextTimedTamRewardNs;
+    private transient boolean timedTamRewardArmed;
 
     /** Account-scoped payout: one admission, one balance change, one deadline. */
     public synchronized boolean AddTimedTamPoint(int amount, long nowNs, long intervalNs) {
         if (amount <= 0 || intervalNs <= 0L || getName() == null) return false;
-        if (nextTimedTamRewardNs == 0L) {
+        if (!timedTamRewardArmed) {
+            timedTamRewardArmed = true;
             nextTimedTamRewardNs = nowNs + intervalNs;
             return false;
         }

@@ -479,10 +479,17 @@ public class L1Tam {
     /** An invalidated or previously active account refreshes normally.
      * A known-zero account creates no recurring DB work until invalidated. */
     public int getActiveCountForTimer() {
-        if (_cacheAtMs == 0L || _cacheActiveCount > 0) {
-            if (System.currentTimeMillis() - _cacheAtMs >= CACHE_TTL_MS) requestCacheRefresh();
+        final long now = System.currentTimeMillis();
+        final long cachedAt = _cacheAtMs;
+        final int active = _cacheActiveCount;
+        final long remaining = _cacheRemainMs;
+        if (cachedAt == 0L || active > 0) {
+            if (now - cachedAt >= CACHE_TTL_MS) requestCacheRefresh();
         }
-        return _cacheActiveCount;
+        // Never award from an invalidated count or after its earliest ring expired.
+        if (cachedAt == 0L || _cacheAtMs != cachedAt || active <= 0
+                || remaining <= 0L || now - cachedAt >= remaining) return 0;
+        return active;
     }
 
     public int getActiveCountAndRefreshCached() {
