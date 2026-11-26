@@ -88,7 +88,6 @@ import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.companion.CompanionLoader;
 import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
 import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
-import l1j.server.server.model.character.scheduler.CharTamScheduler;
 import l1j.server.server.model.character.scheduler.CInventoryExpiry;
 import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.gametime.RealTimeClock;
@@ -336,8 +335,6 @@ public class GameServer {
 		BossController.start();
 
 
-		// 캐릭터 탐 시스템  쓰레드 처리
-		CharTamScheduler.getInstance().start();
 		
 		// 스킬 아우라 쓰레드 처리
 		AuraController.getInstance().start();
@@ -541,7 +538,6 @@ public class GameServer {
 
 	        CPacketFilter.getInstance().release();
 
-	        CharTamScheduler.getInstance().stop();
 
 	        CInventoryExpiry.getInstance().stop();
 

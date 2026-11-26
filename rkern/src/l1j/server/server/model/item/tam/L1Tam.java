@@ -158,6 +158,26 @@ public class L1Tam {
         }
     }
 
+    /** Absolute balance is idempotent; retries remain ahead of later
+     * account jobs, including receipt-backed rewards and reconnect reads.
+     * Called under the Account monitor before publishing the new balance. */
+    public void SaveTimedReward(int point) {
+        if (owner == null || !Thread.holdsLock(owner) || owner.isTamAwardPending()
+                || owner.getName() == null || point < 0)
+            throw new IllegalStateException("TAM timed reward admission");
+        final String account = owner.getName();
+        CacheD.getInstance().submitDbJobRetryOrdered(CacheD.accountOrderKey(account), () -> {
+            try (Connection con = newCon();
+                 PreparedStatement ps = con.prepareStatement(SQL_UPDATE_ACCOUNT_TAM_POINT)) {
+                ps.setInt(1, point);
+                ps.setString(2, account);
+                if (ps.executeUpdate() != 1) throw new SQLException("TAM account row not found");
+            } catch (SQLException e) {
+                throw new IllegalStateException("TAM timed reward save failed: " + account, e);
+            }
+        });
+    }
+
     private void updateTamPoint(Connection con) throws SQLException {
         try (PreparedStatement pstm = con.prepareStatement(SQL_UPDATE_ACCOUNT_TAM_POINT)) {
             pstm.setInt(1, owner.getTamPoint());
@@ -454,6 +474,15 @@ public class L1Tam {
             synchronized (_cacheLock) { _refreshing = false; }
             _log.log(Level.WARNING, "Async TAM refresh rejected: " + owner.getName(), ex);
         }
+    }
+
+    /** An invalidated or previously active account refreshes normally.
+     * A known-zero account creates no recurring DB work until invalidated. */
+    public int getActiveCountForTimer() {
+        if (_cacheAtMs == 0L || _cacheActiveCount > 0) {
+            if (System.currentTimeMillis() - _cacheAtMs >= CACHE_TTL_MS) requestCacheRefresh();
+        }
+        return _cacheActiveCount;
     }
 
     public int getActiveCountAndRefreshCached() {

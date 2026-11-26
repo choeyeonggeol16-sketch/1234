@@ -14,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
+import l1j.server.server.Account;
+import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.model.Instance.L1ClanJoinInstance;
@@ -1039,6 +1041,8 @@ public final class CIOThreadCallback {
 		private long lastGameTimeBucket = Long.MIN_VALUE;
 		private final long premiumRewardIntervalNs;
 		private long nextPremiumRewardNs;
+		private long nextTamCheckNs;
+		private final long tamRewardIntervalNs = TimeUnit.MINUTES.toNanos(Math.max(30L, (long) Config.Tam_Time));
 		int charSaveFailures;
 		int invSaveFailures;
 
@@ -1056,6 +1060,7 @@ public final class CIOThreadCallback {
 			premiumRewardIntervalNs = Config.깃털지급 && Config.FEATHERTIME > 0
 					? TimeUnit.MINUTES.toNanos((long) Config.FEATHERTIME) : 0L;
 			if (premiumRewardIntervalNs > 0L) nextPremiumRewardNs = now + premiumRewardIntervalNs;
+			nextTamCheckNs = now;
 			if (charSaveIntervalNs > 0L)
 				nextCharSaveNs = now + charSaveIntervalNs + saveJitterNs(charSaveIntervalNs);
 			if (invSaveIntervalNs > 0L)
@@ -1206,6 +1211,36 @@ public final class CIOThreadCallback {
 			}
 		}
 
+        /** L1 growth-ring reward: the account owns its payout deadline.
+         * CacheD admission precedes publication of the new balance. */
+        private void rewardTamIfDue(L1PcInstance pc) {
+            final long now = System.nanoTime();
+            if (now - nextTamCheckNs < 0L) return;
+            nextTamCheckNs = now + TimeUnit.MINUTES.toNanos(1L);
+            if (!activeSession(pc) || pc.is무인상점() || pc.isDead() || pc.isPrivateShop()
+                    || pc.noPlayerCK || pc.noPlayerck2) return;
+            final CUserSocket session = pc.getNetConnection();
+            if (!pc.isItemTransferSession(session, sessionStamp)) return;
+            final Account account = session.getAccount();
+            if (account == null || account.getAccountId() <= 0) return;
+            try {
+                final int rings = account.getTamActiveCountForTimer();
+                if (rings <= 0) return;
+                final long amount = (long) Config.탐갯수 * rings;
+                if (amount <= 0L || amount > Integer.MAX_VALUE) return;
+                synchronized (account) {
+                    if (!activeSession(pc) || pc.is무인상점() || pc.isDead() || pc.isPrivateShop()
+                            || pc.noPlayerCK || pc.noPlayerck2
+                            || !pc.isItemTransferSession(session, sessionStamp)
+                            || !account.AddTimedTamPoint((int) amount, now, tamRewardIntervalNs)) return;
+                }
+                SC_SystemMessage.send(pc, "[성장의 고리] " + rings + "단계 : Tam포인트(" + amount + ") 획득");
+                SC_NewCreateItem.sendTamPoint(pc, session);
+            } catch (RuntimeException failure) {
+                LOGGER.log(Level.WARNING, "User TAM timer failed: " + pc.getId(), failure);
+            }
+        }
+
 		/** User::TimerExpired-style heartbeat, dispatched by the existing CIO owner. */
 		private void TimerExpired(L1PcInstance pc) {
 			try {
@@ -1218,6 +1253,7 @@ public final class CIOThreadCallback {
 				try {
 					syncGameTimeIfDue(pc);
 					rewardPremiumIfDue(pc);
+					rewardTamIfDue(pc);
 				} finally {
 					requestSaveIfDue(pc);
 				}

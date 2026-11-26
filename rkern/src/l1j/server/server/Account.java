@@ -717,6 +717,10 @@ public class Account {
 		getTamHandler().updateTamPoint();
 	}
 	
+	public int getTamActiveCountForTimer() {
+		return getTamHandler().getActiveCountForTimer();
+	}
+
 	public int getTamActiveCountCached() {
 		return getTamHandler().getActiveCountAndRefreshCached();
 	}
@@ -734,6 +738,24 @@ public class Account {
     // Suppress snapshot flushes in this interval: the account DB balance may
     // already include the award before its in-memory callback has run.
     private transient boolean tamAwardPending;
+    private transient long nextTimedTamRewardNs;
+
+    /** Account-scoped payout: one admission, one balance change, one deadline. */
+    public synchronized boolean AddTimedTamPoint(int amount, long nowNs, long intervalNs) {
+        if (amount <= 0 || intervalNs <= 0L || getName() == null) return false;
+        if (nextTimedTamRewardNs == 0L) {
+            nextTimedTamRewardNs = nowNs + intervalNs;
+            return false;
+        }
+        if (nowNs - nextTimedTamRewardNs < 0L || tamAwardPending
+                || tam_point < 0 || amount > Integer.MAX_VALUE - tam_point) return false;
+        final int next = tam_point + amount;
+        // A rejection leaves both the balance and due deadline untouched.
+        getTamHandler().SaveTimedReward(next);
+        tam_point = next;
+        nextTimedTamRewardNs = nowNs + intervalNs;
+        return true;
+    }
 
     public synchronized boolean tryBeginTamAward() {
         if (tamAwardPending || tam_point < 0 || tam_point > Integer.MAX_VALUE - 100000) return false;

@@ -174,7 +174,7 @@ public final class CInventoryExpiry {
                     indexTask(task);
                     return task;
                 });
-                if (published != null && published.heapIndex == -1 && published.pendingPublication) publish(published);
+                if (published != null && published.pendingPublication) publish(published);
             } finally {
                 endRegistration();
             }
@@ -239,7 +239,8 @@ public final class CInventoryExpiry {
                     indexTask(retry);
                     return retry;
                 });
-                if (published != null && published != task && published.pendingPublication) publish(published);
+                if (published != null && published != task && published.pc == task.pc
+                        && published.item == task.item && published.pendingPublication) publish(published);
             } finally {
                 endRegistration();
             }

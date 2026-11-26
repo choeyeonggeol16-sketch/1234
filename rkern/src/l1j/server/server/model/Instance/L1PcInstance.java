@@ -79,7 +79,6 @@ import l1j.server.server.model.character.effect.PcPotentialEffects;
 import l1j.server.server.model.character.effect.PcWantedEffects;
 import l1j.server.server.model.character.experience.amplifier.ExpAmplifier;
 import l1j.server.server.model.character.scheduler.CRegenController;
-import l1j.server.server.model.character.scheduler.CharTamScheduler;
 import l1j.server.server.model.character.scheduler.CInventoryExpiry;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
@@ -1813,7 +1812,6 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public void startObjectAutoUpdate() { 
-		CharTamScheduler.getInstance().onEnterWorld(this);
 		nextSessionStamp();
 		CInventoryExpiry.getInstance().register(this);
 		CIOThreadCallback.getInstance().clearPcState(this);
@@ -2520,7 +2518,6 @@ public class L1PcInstance extends L1Character {
 	 * 중복 코드를 줄이기 위해 Regen 정지 함수들을 묶어주는 예시
 	 */
 	public void stopAllRegenerations() {
-		try { CharTamScheduler.getInstance().onLeaveWorld(this); } catch (Throwable ignore) {}
 		try { CIOThreadCallback.getInstance().unregisterPc(this);  } catch (Throwable ignore) {}
 		if (this.getNetConnection() != null) {
 			Account acc = this.getNetConnection().getAccount();

@@ -23,7 +23,9 @@ jobs:
         run: |
           test ! -f rkern/src/l1j/server/server/model/gametime/L1GameTimeCarrier.java
           test ! -f rkern/src/l1j/server/server/Controller/PremiumTimeController.java
-          if git grep -n -w -E 'L1GameTimeCarrier|beginGameTimeCarrier|stopGameTimeCarrier|PremiumTimeController' -- rkern/src; then exit 1; else test "$?" -eq 1; fi
+          test ! -f rkern/src/l1j/server/server/model/character/scheduler/CharTamScheduler.java
+          test ! -f rkern/src/l1j/server/server/model/character/scheduler/PcInventoryExpiryScheduler.java
+          if git grep -n -w -E 'L1GameTimeCarrier|beginGameTimeCarrier|stopGameTimeCarrier|PremiumTimeController|CharTamScheduler|PcInventoryExpiryScheduler' -- rkern/src; then exit 1; else test "$?" -eq 1; fi
       - name: Assert retired pet database dependencies removed
         run: |
           for cls in PetTable PetItemTable PetTypeTable L1Pet L1PetItem L1PetType; do
