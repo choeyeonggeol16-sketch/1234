@@ -367,9 +367,6 @@ public final class BuilderCmdHandler {
 		registerLevelCommand(loaded, "날씨", BuilderCmdHandler::BuilderCmd_change_weather);
 		registerLevelCommand(loaded, "누구", BuilderCmdHandler::BuilderCmd_who);
 		registerLevelCommand(loaded, "답장", BuilderCmdHandler::BuilderCmd_letter_reply);
-		registerLevelCommand(loaded, "데무", BuilderCmdHandler::BuilderCmd_desc_weapon);
-		registerLevelCommand(loaded, "데방", BuilderCmdHandler::BuilderCmd_desc_armor);
-		registerLevelCommand(loaded, "데스크", BuilderCmdHandler::BuilderCmd_desc_etc);
 		registerLevelCommand(loaded, "디비초기화", BuilderCmdHandler::BuilderCmd_database_init);
 		registerLevelCommand(loaded, "레벨", BuilderCmdHandler::BuilderCmd_level);
 		registerLevelCommand(loaded, "렙선물", BuilderCmdHandler::BuilderCmd_level_present);
@@ -430,7 +427,6 @@ public final class BuilderCmdHandler {
 		registerLevelCommand(loaded, "킬", BuilderCmdHandler::BuilderCmd_kill);
 		registerLevelCommand(loaded, "투명", BuilderCmdHandler::BuilderCmd_invisible);
 		registerLevelCommand(loaded, "파티소환", BuilderCmdHandler::BuilderCmd_party_recall);
-		registerLevelCommand(loaded, "편지삭제", BuilderCmdHandler::BuilderCmd_remove_letter);
 		registerLevelCommand(loaded, "피바", BuilderCmdHandler::BuilderCmd_hp_bar);
 		registerLevelCommand(loaded, "홈타운", BuilderCmdHandler::BuilderCmd_home_town);
 		registerDirect(loaded, "투견", (gm, cmd, param) -> {
@@ -4702,143 +4698,8 @@ for (L1PcInstance target : targets) {
 		}
 	}
 
-	private static void BuilderCmd_desc_weapon(L1PcInstance pc, String cmdName, String arg) {
-		try {
-			StringTokenizer st = new StringTokenizer(arg);
-			int descid = Integer.parseInt(st.nextToken(), 10);
-			int count = Integer.parseInt(st.nextToken(), 10);
-			int enchant = 0;
-			int attrLevel = 0;
-			if (st.hasMoreTokens()) {
-				enchant = Integer.parseInt(st.nextToken());
-			}
-			
-			if(st.hasMoreTokens()){
-				attrLevel = Integer.parseInt(st.nextToken());
-			}
-			
-			int countA = -1;
-			L1ItemInstance item = null;
-			for (int i = 0; i < count; i++) {
-				if (pc.getInventory().getSize() > 255) {
-					SC_SystemMessage.send(pc, "\\aG인벤보관 아이템의 최대 가짓수는 256개입니다.");
-					break;
-				}
-				countA++;
-				item = CObjectDB.LoadItem().createItem(87);
-				item.getItem().setItemDescId(descid + i);
-				item.getItem().setGfxId(1945);
-				item.setCount(1);
-				item.setEnchantLevel(enchant);
-				item.setAttrEnchantLevel(attrLevel);
-				item.getItem().setName(String.valueOf(descid + i));
-				item.getItem().setNameId(String.valueOf(descid + i));
-				item.setIdentified(true);
-				pc.getInventory().CreateOrAddItem(item);
-			}
-			SC_SystemMessage.send(pc, "\\aH웨폰 " + descid + "~" + String.valueOf(descid + countA) + " 생성 되었습니다.");
-		} catch (Exception exception) {
-			int count = 0;
-			for (L1ItemInstance item : pc.getInventory().getItems()) {
-				if (item.getItemId() == 87) {
-					pc.getInventory().DeleteItemAmount(item);
-					count++;
-				}
-			}
-			if (count > 0) {
-				SC_SystemMessage.send(pc, "\\aA웨폰 확인용 아이템("
-						+ count + ")이 삭제되었습니다.");
-			} else {
-				SC_SystemMessage.send(pc, cmdName + " [id] [출현시키는 수] [인챈]로 입력해 주세요. ");
-			}
-		}
-	}
 
-	private static void BuilderCmd_desc_armor(L1PcInstance pc, String cmdName, String arg) {
-		try {
-			StringTokenizer st = new StringTokenizer(arg);
-			int descid = Integer.parseInt(st.nextToken(), 10);
-			int count = Integer.parseInt(st.nextToken(), 10);
-			int enchant = 0;
-			if (st.hasMoreTokens()) {
-				enchant = Integer.parseInt(st.nextToken());
-			}
-			int countA = -1;
-			L1ItemInstance item = null;
-			for (int i = 0; i < count; i++) {
-				if (pc.getInventory().getSize() > 255) {
-					SC_SystemMessage.send(pc, "\\aG인벤보관 아이템의 최대 가짓수는 256개입니다.");
-					break;
-				}
-				countA++;
-				item = CObjectDB.LoadItem().createItem(20456);
-				item.getItem().setItemDescId(descid + i);
-				item.getItem().setGfxId(1945);
-				item.setCount(1);
-				item.setEnchantLevel(enchant);
-				item.getItem().setName(String.valueOf(descid + i));
-				item.getItem().setNameId(String.valueOf(descid + i));
-				item.setIdentified(true);
-				pc.getInventory().CreateOrAddItem(item);
-			}
-			SC_SystemMessage.send(pc, "\\aH아머 " + descid + "~" + String.valueOf(descid + countA) + " 생성 되었습니다.");
-		} catch (Exception exception) {
-			int count = 0;
-			for (L1ItemInstance item : pc.getInventory().getItems()) {
-				if (item.getItemId() == 20456) {
-					pc.getInventory().DeleteItemAmount(item);
-					count++;
-				}
-			}
-			if (count > 0) {
-				SC_SystemMessage.send(pc, "\\aA아머 확인용 아이템("
-						+ count + ")이 삭제되었습니다.");
-			} else {
-				SC_SystemMessage.send(pc, cmdName + " [id] [출현시키는 수] [인챈]로 입력해 주세요. ");
-			}
-		}
-	}
 
-	private static void BuilderCmd_desc_etc(L1PcInstance pc, String cmdName, String arg) {
-		try {
-			StringTokenizer st = new StringTokenizer(arg);
-			int descid = Integer.parseInt(st.nextToken(), 10);
-			int count = Integer.parseInt(st.nextToken(), 10);
-			int countA = -1;
-			L1ItemInstance item = null;
-			for (int i = 0; i < count; i++) {
-				if (pc.getInventory().getSize() > 255) {
-					SC_SystemMessage.send(pc, "\\aG인벤보관 아이템의 최대 가짓수는 256개입니다.");
-					break;
-				}
-				countA++;
-				item = CObjectDB.LoadItem().createItem(40005);
-				item.getItem().setType2(0);
-				item.getItem().setItemDescId(descid + i);
-				item.getItem().setGfxId(1945);
-				item.setCount(1);
-				item.getItem().setName(String.valueOf(descid + i));
-				item.getItem().setNameId(String.valueOf(descid + i));
-				item.setIdentified(true);
-				pc.getInventory().CreateOrAddItem(item);
-			}
-			SC_SystemMessage.send(pc, "\\aH이티시 " + descid + "~" + String.valueOf(descid + countA) + " 생성 되었습니다.");
-		} catch (Exception exception) {
-			int count = 0;
-			for (L1ItemInstance item : pc.getInventory().getItems()) {
-				if (item.getItemId() == 40005) {
-					pc.getInventory().Pop(item);
-					count++;
-				}
-			}
-			if (count > 0) {
-				SC_SystemMessage.send(pc, "\\aA이티시 확인용 아이템("
-						+ count + ")이 삭제되었습니다.");
-			} else {
-				SC_SystemMessage.send(pc, cmdName + " [id] [출현시키는 수]로 입력해 주세요. ");
-			}
-		}
-	}
 
 	private static void BuilderCmd_level(L1PcInstance pc, String cmdName, String poby) {
 	    try {
@@ -7958,31 +7819,7 @@ for (L1PcInstance pc2 : players) {
 		SC_DoActionShop.broadcast(newPc, newPc.getId(), ActionCodes.ACTION_Shop, chat);		
 	}
 
-	private static void BuilderCmd_remove_letter(L1PcInstance pc, String cmdName, String arg) {
-		try {				
-			BuilderRemoveLetters(pc.getName());	
-			SC_LetterList.sendListAsync(pc, 0, 200);
-			SC_SystemMessage.send(pc, "편지를 삭제 하였습니다.");
-		} catch (Exception e) {
-			SC_SystemMessage.send(pc, ".편지삭제을 입력해주세요.");
-		}
-	}
 
-	private static void BuilderRemoveLetters(String name) {
-		Connection con = null;
-		PreparedStatement pstm = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();			
-			pstm = con.prepareStatement("DELETE FROM letter WHERE receiver = ?");
-			pstm.setString(1, name);
-			pstm.execute();	
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			SQLUtil.close(pstm);
-			SQLUtil.close(con);
-		}
-	}
 
 	private static void BuilderCmd_hp_bar(
 			L1PcInstance pc,

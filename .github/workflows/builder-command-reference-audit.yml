@@ -36,6 +36,8 @@ jobs:
           echo 'Remaining unregistered L1CommandExecutor implementations:'
           git grep -l 'implements L1CommandExecutor' -- rkern/src || true
           if git grep -n -E '(^|[^[:alnum:]_])(BuilderCmd_spawn_robot|BuilderCmd_attack_log|BuilderDuplicateKick|doGiveEventStaff|doGiveEventStaff1|doGiveEventStaff2|킬삭제|킬증가|데스삭제|데스증가)[[:space:]]*\(' -- rkern/src; then status=1; fi
+          if git grep -n -w -E 'L1Adena|L1CreateItem|L1Describe2|BuilderCmd_desc_weapon|BuilderCmd_desc_armor|BuilderCmd_desc_etc|BuilderCmd_remove_letter|BuilderRemoveLetters' -- rkern/src; then status=1; fi
+          if git grep -n -E 'register(Direct|LevelCommand)\(loaded, "(데무|데방|데스크|편지삭제)"' -- rkern/src; then status=1; fi
           exit "$status"
       - uses: actions/cache@v4
         if: ${{ !cancelled() }}
