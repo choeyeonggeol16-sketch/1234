@@ -50,7 +50,7 @@ public class PrivateStoreTest {
         final int id,template; int count=20,bless=0,enchant=0,attr=0;
         boolean equipped,stackable=true,identified=true;
         long delay;
-        final Template item=new Template();
+        Template item=new Template();
         L1ItemInstance(int i,int t){id=i;template=t;}
         int getId(){return id;} int getItemId(){return template;} int getCount(){return count;}
         int getBless(){return bless;} boolean isEquipped(){return equipped;}
@@ -178,11 +178,18 @@ public class PrivateStoreTest {
         open(pc,11,2000000000,2);noOpen(pc,"overflow");
         open(pc,12,1,1);noOpen(pc,"currency listing");
         open(pc,11,1,21);noOpen(pc,"overcount");
+        Template template=item.item;item.item=null;
+        open(pc,11,1,1);noOpen(pc,"classic missing template");
+        byte[] buy=java.nio.ByteBuffer.allocate(16).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                .putShort((short)0).putShort((short)1).putInt(11).putInt(5).putInt(1).array();
+        User.OnPrivateStorePacket(pc.socket,0,buy);noOpen(pc,"classic buy missing template");
+        ui(pc,0x12,11,5,1);noOpen(pc,"UI missing template");item.item=template;
         pc.companion=new Companion();pc.companion.id=11;open(pc,11,1,1);noOpen(pc,"companion");pc.companion=null;
         DynamicShopStorage.reject=true;open(pc,11,1,1);noOpen(pc,"storage reject");DynamicShopStorage.reject=false;
         open(pc,11,5,2);
         check(pc.shop&&pc.sells.size()==1&&pc.sells.get(0).count==2&&!pc.inv.readWithoutGate&&pc.inv.depth==0,"classic");
         check(PlayerShopTransactions.canReach(customer,pc),"reachable");
+        check(!PlayerShopTransactions.canReach(null,pc)&&!PlayerShopTransactions.canReach(customer,null),"null parties");
         customer.trade=new Object();check(!PlayerShopTransactions.canReach(customer,pc),"customer trading");customer.trade=null;
         pc.dead=true;check(!PlayerShopTransactions.canReach(customer,pc),"dead merchant");
         pc.map=1;close(pc);check(!pc.shop&&pc.sells==null&&pc.inv.depth==0,"close outside market/dead");
@@ -197,6 +204,10 @@ public class PrivateStoreTest {
         ui(pc,0x1a,11,5,25);
         check(pc.shop&&pc.buys.get(0).count==25,"UI buy demand above example amount");
         DynamicShopItem d=pc.buys.get(0);check(PlayerShopTransactions.canTransfer(customer,item,d,1,1),"valid transfer");
+        check(!PlayerShopTransactions.canTransfer(customer,item,d,0,1),"zero transfer");
+        check(!PlayerShopTransactions.canTransfer(customer,item,d,-1,1),"negative transfer");
+        check(!PlayerShopTransactions.canTransfer(customer,item,d,21,1),"insufficient actual item count");
+        check(!PlayerShopTransactions.canTransfer(customer,item,null,1,1),"null listing");
         item.enchant=1;check(!PlayerShopTransactions.canTransfer(customer,item,d,1,1),"changed item");item.enchant=0;
         close(pc);
         check(!pc.inv.readWithoutGate&&pc.inv.depth==0,"all listing reads gated");
