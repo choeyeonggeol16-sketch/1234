@@ -13,6 +13,7 @@ public class EquipmentAudit {
  enum ItemStat {BLESS_CONSUMO,MAX_HP,MAX_MP,MR,SP;void apply(Owner p,int n){p.stat[ordinal()]+=n;}}
  static class L1Item {int id,sp;int get_addeinhasadper(){return 1;}int get_addhp(){return 2;}int get_addmp(){return 3;}int get_addstr(){return 4;}int get_addcon(){return 5;}int get_adddex(){return 6;}int get_addint(){return 7;}int get_addwis(){return 8;}int get_addcha(){return 9;}int get_missile_critical_probability(){return 10;}int get_melee_critical_probability(){return 11;}int getItemId(){return id;}int get_addsp(){return sp;}}
  static class L1ItemInstance {int mr;int getMr(){return mr;}}
+ record EquipmentTraits(int elfMr) {static EquipmentTraits forItem(int id){return new EquipmentTraits(id==20236?5:0);}}
  static class SC_SPMR {static int mask,calls;static void send(Owner p){if((mask&(1<<calls++))!=0)throw new IllegalStateException("send");}}
  final Owner _owner=new Owner();int failures;void equipmentNoticeFailed(RuntimeException e){failures++;}
 '''

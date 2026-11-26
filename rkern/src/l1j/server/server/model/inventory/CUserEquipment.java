@@ -130,8 +130,9 @@ public final class CUserEquipment {
     }
 
     private static void equipSelectedWeapon(L1PcInstance pc, CUserInventory inventory, L1ItemInstance weapon) {
-        if (weapon.getItemId() == 200002) {
-            try { SC_ServerMessage.send(pc, 149, weapon.getLogName()); }
+        final int equipMessage = EquipmentTraits.forItem(weapon.getItemId()).equipMessage();
+        if (equipMessage != 0) {
+            try { SC_ServerMessage.send(pc, equipMessage, weapon.getLogName()); }
             catch (RuntimeException notice) { noticeFailed(pc, notice); }
         }
         applyEquipment(pc, inventory, weapon, true, false, false);
@@ -163,13 +164,14 @@ public final class CUserEquipment {
 
         final L1EquipmentSlot slots = pc.getEquipSlot();
         final int itemId = item.getItemId();
+        final boolean invisibleGear = EquipmentTraits.forItem(itemId).has(EquipmentTraits.Flag.INVISIBILITY);
         final int type = template.getType2();
         final boolean weapon = type == 1;
         if (equipped) {
             if (weapon && !slots.hasRoomForWeapon(item)) return;
             if (type == 2 && slots.getSecondWeapon() != null
                     && (template.getType() == 7 || template.getType() == 13)) return;
-            if (isInvisibilityGear(itemId) && slots.isInvisibilityEquipCoolingDown()) return;
+            if (invisibleGear && slots.isInvisibilityEquipCoolingDown()) return;
             if (type != 0 && !item.startEquipmentTimer(pc)) return;
             try {
                 if (template.getType() != 4) clearArrowSelection(pc, inventory);
@@ -186,7 +188,7 @@ public final class CUserEquipment {
                 catch (RuntimeException notice) { noticeFailed(pc, notice); }
             }
         } else {
-            beforeUnequip(pc, inventory, slots, template, itemId, loaded, weapon);
+            beforeUnequip(pc, inventory, slots, template, invisibleGear, loaded, weapon);
             item.setEquipped(false);
             item.stopEquipmentTimer();
             inventory.SetEquippedCount(itemId, false);
@@ -222,10 +224,6 @@ public final class CUserEquipment {
         SC_CharVisualUpdate.broadcastFastPacked(pc, visual);
     }
 
-    static boolean isInvisibilityGear(int itemId) {
-        return itemId == 20077 || itemId == 20062 || itemId == 120077;
-    }
-
     private static void clearArrowSelection(L1PcInstance pc, CUserInventory inventory) {
         final int arrowId = inventory.getArrowItemId();
         if (arrowId == 0) return;
@@ -238,8 +236,8 @@ public final class CUserEquipment {
     }
 
     private static void beforeUnequip(L1PcInstance pc, CUserInventory inventory, L1EquipmentSlot slots,
-            L1Item template, int itemId, boolean loaded, boolean weapon) {
-        if (!loaded && isInvisibilityGear(itemId)) {
+            L1Item template, boolean invisibleGear, boolean loaded, boolean weapon) {
+        if (!loaded && invisibleGear) {
             if (pc.isInvisble()) {
                 pc.delInvis();
                 pc.beginInvisTimer();

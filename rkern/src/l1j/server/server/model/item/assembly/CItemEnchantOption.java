@@ -5,6 +5,7 @@ import java.util.List;
 import l1j.server.Config;
 import l1j.server.server.ThreadPool; //CrockController
 import l1j.server.server.model.inventory.EquipmentEnchantOptions;
+import l1j.server.server.model.inventory.EquipmentTraits;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.item.EquipmentBlessing;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -65,13 +66,15 @@ public final class CItemEnchantOption {
     }
 
     private static void AssembleRuneEnchantOption(L1ItemInstance item, ItemPresentOutStream os, int itemId) {
-		final int accuracy = L1EquipmentSlot.elixirRuneAccuracy(itemId);
+		final EquipmentTraits traits = EquipmentTraits.forItem(itemId);
+		final int accuracy = traits.runeAccuracy();
 		final L1PcInstance owner = item._cha;
 		if (owner == null || accuracy == 0) return;
 
-		if (accuracy == 5) {
+		final int magicDamageReduction = traits.runeMagicDamageReduction();
+		if (magicDamageReduction != 0) {
 			os.writeC(39);
-			os.writeS("\\f9PVP 마법 대미지 감소: \\aA+2%");
+			os.writeS("\\f9PVP 마법 대미지 감소: \\aA+" + magicDamageReduction + "%");
 		}
 		switch (owner.getType()) {
 		case 0 -> {

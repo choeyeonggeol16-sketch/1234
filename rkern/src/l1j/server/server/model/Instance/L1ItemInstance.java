@@ -7,6 +7,7 @@ import java.util.concurrent.RejectedExecutionException;
 import l1j.server.Config;
 import l1j.server.server.ThreadPool; //CrockController
 import l1j.server.server.model.inventory.CEquipmentTimer;
+import l1j.server.server.model.inventory.EquipmentTraits;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
@@ -710,24 +711,8 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public int getMrAtEnchant(int enchant) {
-		int mr = _item.get_mdef();
-		int itemid = getItemId();
-		if (itemid == 20011 || itemid == 20110 || itemid == 120011 || itemid == 22223 || itemid == 20117 // 바포갑빠
-				//|| getItemId() == 22204 || itemid == 22205 || itemid == 22206 || itemid == 22207 // 린드비오르마갑주
-				|| getItemId() == 22213 || itemid == 120110 || itemid == 93001 || itemid == 490008 || itemid == 22365
-				|| itemid == 222328 || getItemId() >= 222300 && getItemId() <= 222303 || itemid == 222328) {
-			mr += enchant;
-		} else if (itemid == 20056 || itemid == 120056 || itemid == 220056 || itemid == 93002 || itemid == 20074
-				|| itemid == 900090 || itemid == 120074 || itemid == 222324 || itemid == 222325 || itemid == 900043
-				|| itemid == 900044) {
-			mr += enchant * 2;
-		} else if (itemid == 20079 || itemid == 20078 || itemid == 900047 || itemid == 900055 || itemid == 20049
-				|| itemid == 20050 || itemid == 900057 || itemid == 900056) {
-			mr += enchant * 3;
-		}
-		if (mr < 0)
-			mr = 0;
-		return mr;
+        final int scale = EquipmentTraits.forItem(getItemId()).mrPerEnchant();
+        return Math.max(0, _item.get_mdef() + enchant * scale);
 	}
 
 	public int addhp() {

@@ -89,14 +89,16 @@ public final class EquipRules {
             L1ItemInstance[] planned, int plannedCount,
             int weaponCount, L1ItemInstance primaryWeapon) {
         final int type = armor.getItem().getType();
-        if (armor.getItemId() == 900111) {
+        final EquipmentTraits traits = EquipmentTraits.forItem(armor.getItemId());
+        if (traits.has(EquipmentTraits.Flag.EXCLUSIVE_ABILITY)) {
+            final int ability = traits.ability();
             if (planned == null) {
-                if (inv.IsEquippedByClassIDCached(900111) || inv.IsEquippedByClassIDCached(20288))
+                if (EquipmentTraits.isAbilityEquipped(inv, ability))
                     return EquipResult.fail(EquipFail.text("이미 착용중인 아이템입니다."));
             } else {
                 for (int i = 0; i < plannedCount; i++) {
                     final L1ItemInstance other = planned[i];
-                    if (other != armor && (other.getItemId() == 900111 || other.getItemId() == 20288))
+                    if (other != armor && EquipmentTraits.forItem(other.getItemId()).ability() == ability)
                         return EquipResult.fail(EquipFail.text("이미 착용중인 아이템입니다."));
                 }
             }

@@ -1,5 +1,7 @@
 package l1j.server.server.model.inventory;
 
+import static l1j.server.server.model.inventory.EquipmentTraits.Flag.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -358,18 +360,13 @@ public class L1EquipmentSlot {
 	}
 
 
-	private static boolean isRoomteece(int itemId) {
-		return itemId == 222340 || itemId == 222341 || itemId == 22229 || itemId == 22230 || itemId == 22231
-				|| itemId == 222337 || itemId == 222338 || itemId == 222339
-				|| itemId >= 900124 && itemId <= 900130;
-	}
-
     private void setArmor(L1ItemInstance armor) {
         final L1Item item = armor.getItem();
         final int itemId = item.getItemId();
+        final EquipmentTraits traits = EquipmentTraits.forItem(itemId);
         final int enchant = armor.getEnchantLevel();
 
-        if (isHalphasArmor(itemId)) {
+        if (traits.has(HALPHAS)) {
             final int seconds = _owner.getSkillEffectTimeSec(L1SkillId.할파스의신의);
             try {
                 if (seconds >= 60) SC_InventoryIcon.icoNew(_owner, L1SkillId.할파스의신의, 3942, seconds, true);
@@ -379,28 +376,28 @@ public class L1EquipmentSlot {
             }
         }
         EquipmentBlessing.applyArmor(_owner, armor, 1);
-        final int classBonus = applyArmorVitalBonus(armor, item);
-        if (itemId == 900111) _owner.setSkillEffect(L1SkillId.TELEPORT_RULER, -1);
+        final int classBonus = applyArmorVitalBonus(armor, item, traits);
+        if (traits.equippedSkill() != 0) _owner.setSkillEffect(traits.equippedSkill(), -1);
         applyArmorStats(armor, item, enchant, classBonus, 1);
         _armors.add(armor);
         validateSetItem(itemId, true, item.getType() == 9, false);
 
-        if (itemId == 900022 && _owner.getMapId() >= 1708 && _owner.getMapId() <= 1712) {
+        if (traits.has(MAP_BREATH_ICON) && _owner.getMapId() >= 1708 && _owner.getMapId() <= 1712) {
             try { SC_SkillSound.send(_owner, _owner.getId(), 11101); }
             catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
             try { SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, true); }
             catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
         }
-        if (CUserEquipment.isInvisibilityGear(itemId) && !_owner.hasSkillEffect(L1SkillId.DESPERADO)) {
+        if (traits.has(INVISIBILITY) && !_owner.hasSkillEffect(L1SkillId.DESPERADO)) {
             _owner.invisibleItem();
         }
-        sendArmorAbility(armor, true);
-        if (itemId == 20207) {
+        sendArmorAbility(armor, traits.ability(), true);
+        if (traits.has(WATER_BREATHING)) {
             try { SC_SkillIconBlessOfEva.send(_owner, _owner.getId(), -1); }
             catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
         }
 
-        applyArmorSlotOptions(item, enchant, 1);
+        applyArmorSlotOptions(item, traits, enchant, 1);
     }
 
 	public ArrayList<L1ItemInstance> getArmors() {
@@ -431,7 +428,8 @@ public class L1EquipmentSlot {
 		}
 		
 		
-        if (item.getItemId() == 203003 && _owner.getCurrentSpriteId() == 12232 && polymorphSet == null) {
+        final int morph = EquipmentTraits.forItem(item.getItemId()).morph();
+        if (morph != 0 && _owner.getCurrentSpriteId() == morph && polymorphSet == null) {
             L1PolyMorph.undoPoly(_owner);
         }
         applyWeaponBlessBonus(weapon, -1);
@@ -454,30 +452,31 @@ public class L1EquipmentSlot {
     private void removeArmor(L1ItemInstance armor) {
         final L1Item item = armor.getItem();
         final int itemId = item.getItemId();
+        final EquipmentTraits traits = EquipmentTraits.forItem(itemId);
         final int enchant = armor.getEnchantLevel();
 
-        if (isHalphasArmor(itemId)) {
+        if (traits.has(HALPHAS)) {
             try { SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의1); }
             catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
             try { SC_InventoryIcon.icoEnd(_owner, L1SkillId.할파스의신의); }
             catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
         }
         final int classBonus = removeArmorVitalBonus(armor.getId());
-        if (itemId == 900111) _owner.removeSkillEffect(L1SkillId.TELEPORT_RULER);
+        if (traits.equippedSkill() != 0) _owner.removeSkillEffect(traits.equippedSkill());
         final boolean blessingChangedSpMr = EquipmentBlessing.applyArmor(_owner, armor, -1);
         applyArmorStats(armor, item, enchant, classBonus, -1);
         validateSetItem(itemId, false, false, false);
 
-        if (itemId == 900022) {
+        if (traits.has(MAP_BREATH_ICON)) {
             try { SC_PacketBox.send(_owner, SC_PacketBox.UNLIMITED_ICON1, 484, false); }
             catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
         }
-        if (CUserEquipment.isInvisibilityGear(itemId)) _owner.delInvis();
-        sendArmorAbility(armor, false);
-        if (itemId == 20207) refreshEvaAfterRemoval(armor);
+        if (traits.has(INVISIBILITY)) _owner.delInvis();
+        sendArmorAbility(armor, traits.ability(), false);
+        if (traits.has(WATER_BREATHING)) refreshEvaAfterRemoval(armor);
 
         _armors.remove(armor);
-        applyArmorSlotOptions(item, enchant, -1);
+        applyArmorSlotOptions(item, traits, enchant, -1);
         if (blessingChangedSpMr) {
             try { SC_SPMR.send(_owner); }
             catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
@@ -485,41 +484,26 @@ public class L1EquipmentSlot {
     }
 
     private void applyArmorStats(L1ItemInstance armor, L1Item item, int enchant, int classBonus, int sign) {
-        applyArmorEnchantDodge(sign * armorEnchantDodge(item.getItemId(), enchant));
+        EquipmentOptionTable.ARMOR_DODGE.apply(_owner, item, enchant, sign, null);
         applyClassArmorBonus(classBonus, sign);
         EquipmentEnchantOptions.applyArmorPrimaryOptions(_owner, item, enchant, sign, null);
         applyArmorDefense(armor, enchant, sign);
-        applyArmorEnchantCasting(item.getItemId(), sign > 0 ? 0 : enchant, sign > 0 ? enchant : 0, null);
+        EquipmentOptionTable.ARMOR_CASTING.apply(_owner, item, enchant, sign, null);
         applyArmorStatBonus(item, sign);
     }
 
-    private void applyArmorSlotOptions(L1Item item, int enchant, int sign) {
-        applyElixirRuneBonus(item.getItemId(), sign);
+    private void applyArmorSlotOptions(L1Item item, EquipmentTraits traits, int enchant, int sign) {
+        applyElixirRuneBonus(traits, sign);
         EquipmentEnchantOptions.applyArmorSlotOptions(_owner, item, enchant, sign, null);
         if (EquipmentEnchantOptions.accessoryHeal(item, enchant) != 0) refreshAccessoryHeal();
     }
 
-    private static boolean isHalphasArmor(int itemId) {
-        return itemId == 123111 || itemId == 123112 || itemId == 123113;
-    }
-
-    private static int armorAbility(int itemId) {
-        return switch (itemId) {
-            case 20288, 900111 -> 1;
-            case 20281 -> 2;
-            case 20036 -> 3;
-            case 20284 -> 5;
-            default -> 0;
-        };
-    }
-
-    private void sendArmorAbility(L1ItemInstance changed, boolean equipped) {
-        final int ability = armorAbility(changed.getItemId());
+    private void sendArmorAbility(L1ItemInstance changed, int ability, boolean equipped) {
         if (ability == 0) return;
         if (!equipped) {
             for (int i = 0; i < _armors.size(); i++) {
                 final L1ItemInstance other = _armors.get(i);
-                if (other != changed && other.isEquipped() && armorAbility(other.getItemId()) == ability) return;
+                if (other != changed && other.isEquipped() && EquipmentTraits.forItem(other.getItemId()).ability() == ability) return;
             }
         }
         try { SC_Ability.send(_owner, ability, equipped); }
@@ -531,6 +515,7 @@ public class L1EquipmentSlot {
 		final L1Item item = equipment.getItem();
 		final int type = item.getType2();
 		if (type == 0) return;
+        final EquipmentTraits traits = EquipmentTraits.forItem(item.getItemId());
 
 		if (type == 1 && !hasRoomForWeapon(equipment)) {
 			throw new IllegalStateException("Weapon equip was submitted without a free slot");
@@ -548,7 +533,7 @@ public class L1EquipmentSlot {
 				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 			}
 		}
-		if (item.getItemId() == 20383 && _owner.hasSkillEffect(L1SkillId.STATUS_BRAVE)) {
+		if (traits.has(CHARGED_POLYMORPH) && _owner.hasSkillEffect(L1SkillId.STATUS_BRAVE)) {
 			BraveSpeedEffects.cancelTimer(_owner, L1SkillId.STATUS_BRAVE);
 		}
 		showMagicHelmSpells(equipment);
@@ -562,8 +547,8 @@ public class L1EquipmentSlot {
 			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		onEquipmentChanged(equipment, item, true);
-        if (type == 1 && item.getItemId() == 203003 && equipment.isEquipped()) {
-            L1PolyMorph.doPoly(_owner, 12232, 0, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
+        if (type == 1 && traits.morph() != 0 && equipment.isEquipped()) {
+            L1PolyMorph.doPoly(_owner, traits.morph(), 0, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
         }
 		// A set polymorph can synchronously unequip gear. Complete this item's
 		// own options and callbacks before exposing that transition.
@@ -573,7 +558,7 @@ public class L1EquipmentSlot {
 			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
 		// The last charge can still activate the set's polymorph on this equip.
-		if (type == 2 && item.getItemId() == 20383 && equipment.getChargeCount() != 0) {
+		if (type == 2 && traits.has(CHARGED_POLYMORPH) && equipment.getChargeCount() != 0) {
 			equipment.setChargeCount(equipment.getChargeCount() - 1);
 			_owner.getInventory().updateItem(equipment, CUserInventory.COL_CHARGE_COUNT);
 		}
@@ -643,7 +628,7 @@ public class L1EquipmentSlot {
 		_owner.AddStatBonusCha((byte) (sign * item.get_addcha()));
 
 		int magicResistance = equipment.getMr();
-		if (item.getItemId() == 20236 && _owner.isElf()) magicResistance += 5;
+		if (_owner.isElf()) magicResistance += EquipmentTraits.forItem(item.getItemId()).elfMr();
 		if (magicResistance != 0) {
 			ItemStat.MR.apply(_owner, sign * magicResistance);
 			try { SC_SPMR.send(_owner); }
@@ -656,13 +641,13 @@ public class L1EquipmentSlot {
 		}
 	}
 
-	private int applyArmorVitalBonus(L1ItemInstance armor, L1Item item) {
+	private int applyArmorVitalBonus(L1ItemInstance armor, L1Item item, EquipmentTraits traits) {
 		final var ability = _owner;
 		final int conBonus = item.get_addcon();
 		final int wisBonus = item.get_addwis();
 		final int hp = conBonus > 0 ? ability.GetStatCon() / 2 * conBonus : 0;
 		final int mp = wisBonus > 0 ? ability.GetStatWis() / 2 * wisBonus : 0;
-		final int classBonus = item.getItemId() == 800110 ? selectClassArmorBonus().ordinal() + 1 : 0;
+		final int classBonus = traits.has(CLASS_DEPENDENT_BONUS) ? selectClassArmorBonus().ordinal() + 1 : 0;
 		if (hp == 0 && mp == 0 && classBonus == 0) return 0;
 
 		final int i = appliedArmorBonusSize;
@@ -746,7 +731,7 @@ public class L1EquipmentSlot {
 		final L1Item item = armor.getItem();
 		if (item.getType() == 30) return;
 		ItemStat.AC.apply(_owner, sign * armorDefense(armor, enchant));
-		if (!isRoomteece(item.getItemId())) {
+		if (!EquipmentTraits.forItem(item.getItemId()).has(FIXED_ARMOR_AC)) {
 			try { SC_OwnCharAttrDef.send(_owner); }
 			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
@@ -756,66 +741,26 @@ public class L1EquipmentSlot {
 		final int durability = armor.get_durability();
 		final L1Item item = armor.getItem();
 		if (previousDurability == durability || !armor.isEquipped() || item.getType2() != 2
-				|| item.getType() == 30 || isRoomteece(item.getItemId())) return false;
+				|| item.getType() == 30 || EquipmentTraits.forItem(item.getItemId()).has(FIXED_ARMOR_AC)) return false;
 		ItemStat.AC.apply(_owner, durability - previousDurability);
 		return true;
 	}
 
 	private static int armorDefense(L1ItemInstance armor, int enchant) {
 		final L1Item item = armor.getItem();
-		final int itemId = item.getItemId();
 		final int type = item.getType();
 		if (type == 30) return 0;
-		if (isRoomteece(itemId)) return item.get_ac();
+        final EquipmentTraits traits = EquipmentTraits.forItem(item.getItemId());
+		if (traits.has(FIXED_ARMOR_AC)) return item.get_ac();
 
 		int enchantAc = enchant;
 		if (type >= 8 && type <= 12) {
 			enchantAc = (type == 8 || type == 12) && enchant >= 5
 					? (enchant >= 10 ? 6 : Math.min(enchant - 4, 5)) : 0;
-		} else if (itemId >= 900117 && itemId <= 900120) {
+		} else if (traits.has(NONNEGATIVE_ENCHANT_AC)) {
 			enchantAc = Math.max(enchant, 0);
 		}
 		return item.get_ac() - enchantAc + armor.get_durability();
-	}
-
-	private void applyArmorEnchantCasting(int itemId, int oldEnchant, int enchant, int[] changes) {
-		if (itemId == 202022) {
-			final int steps = Math.max(enchant, 0) - Math.max(oldEnchant, 0);
-			if (steps != 0) {
-				EquipmentEnchantOptions.applyStat(_owner, changes, ItemStat.MAX_MP, steps * 10);
-				EquipmentEnchantOptions.applyStat(_owner, changes, ItemStat.MR, steps * 2);
-			}
-		} else if (itemId == 20107) {
-			final int sp = Math.max(enchant - 2, 0) - Math.max(oldEnchant - 2, 0);
-			if (sp != 0) {
-				EquipmentEnchantOptions.applyStat(_owner, changes, ItemStat.SP, sp);
-			}
-		}
-	}
-
-	private static int armorEnchantDodge(int itemId, int enchant) {
-		if (itemId == 22228) {
-			return switch (Math.min(enchant, 9)) {
-				case 9 -> 7;
-				case 8 -> 4;
-				case 7 -> 1;
-				default -> 0;
-			};
-		}
-		if (itemId == 222334) {
-			return switch (Math.min(enchant, 9)) {
-				case 9 -> 9;
-				case 8 -> 5;
-				case 7 -> 3;
-				case 6 -> 1;
-				default -> 0;
-			};
-		}
-		return 0;
-	}
-
-	private void applyArmorEnchantDodge(int amount) {
-		if (amount != 0) _owner.addMagicDodgeProbability(amount);
 	}
 
 	public boolean applyEquippedEnchantChange(L1ItemInstance equipment, int oldEnchant) {
@@ -828,8 +773,6 @@ public class L1EquipmentSlot {
 		changes[ItemStat.MR.ordinal()] += equipment.getMr() - equipment.getMrAtEnchant(oldEnchant);
 		if (item.getType2() == 2) {
 			changes[ItemStat.AC.ordinal()] += armorDefense(equipment, enchant) - armorDefense(equipment, oldEnchant);
-			changes[ItemStat.MAGIC_DODGE.ordinal()] += armorEnchantDodge(itemId, enchant) - armorEnchantDodge(itemId, oldEnchant);
-			applyArmorEnchantCasting(itemId, oldEnchant, enchant, changes);
 			if (EquipmentEnchantOptions.accessoryHeal(item, oldEnchant) != EquipmentEnchantOptions.accessoryHeal(item, enchant)) {
 				refreshAccessoryHeal();
 			}
@@ -854,19 +797,13 @@ public class L1EquipmentSlot {
 		_owner.setAccessoryHeal(0);
 	}
 
-	public static int elixirRuneAccuracy(int itemId) {
-		if (itemId >= 900140 && itemId <= 900144) return 5;
-		if (itemId >= 900145 && itemId <= 900149) return 10;
-		return 0;
-	}
-
-	private void applyElixirRuneBonus(int itemId, int sign) {
-		final boolean lowTier = itemId >= 222295 && itemId <= 222299;
-		final boolean middleTier = itemId >= 222312 && itemId <= 222316
-				|| itemId >= 900135 && itemId <= 900139;
-		final int precision = elixirRuneAccuracy(itemId);
-		if (!lowTier && !middleTier && precision == 0) return;
-		if (precision == 5) _owner.addPVPMagicDamageReduction(2 * sign);
+    private void applyElixirRuneBonus(EquipmentTraits traits, int sign) {
+        final int tier = traits.runeTier();
+        if (tier == 0) return;
+        final boolean lowTier = tier == 1;
+        final int precision = traits.runeAccuracy();
+        final int magicDamageReduction = traits.runeMagicDamageReduction();
+        if (magicDamageReduction != 0) _owner.addPVPMagicDamageReduction(magicDamageReduction * sign);
 
 		switch (_owner.getType()) {
 		case 0 -> {
@@ -893,7 +830,7 @@ public class L1EquipmentSlot {
 		}
 		case 3 -> {
 			ItemStat.MPR.apply(_owner, 3 * sign);
-			if (itemId == 222297) ItemStat.MAX_MP.apply(_owner, 30 * sign);
+			if (traits.runeWizardMp() != 0) ItemStat.MAX_MP.apply(_owner, traits.runeWizardMp() * sign);
 			if (!lowTier) ItemStat.SP.apply(_owner, sign);
 			if (precision != 0) ItemStat.MAGIC_HIT.apply(_owner, precision * sign);
 		}
@@ -948,27 +885,12 @@ public class L1EquipmentSlot {
 		if (definition != null) definition.apply(_owner, _owner.getType(), equipment.getEnchantLevel(), sign);
 	}
 
-	private static long magicHelmSpells(int itemId) {
-		return switch (itemId) {
-		case 20013 -> spellBit(26) | spellBit(43);
-		case 20014 -> spellBit(1) | spellBit(19);
-		case 20015 -> spellBit(12) | spellBit(13) | spellBit(42);
-		case 20008 -> spellBit(43);
-		case 20023 -> spellBit(54);
-		default -> 0L;
-		};
-	}
-
-	private static long spellBit(int skillId) {
-		return 1L << (skillId - 1);
-	}
-
 	private static int spellMask(long spells, int level) {
 		return (int) (spells >>> (level * Byte.SIZE)) & 0xff;
 	}
 
 	private void showMagicHelmSpells(L1ItemInstance item) {
-		final long spells = magicHelmSpells(item.getItemId());
+		final long spells = EquipmentTraits.forItem(item.getItemId()).spells();
 		if (spells == 0L) return;
 		try { SC_AddSkill.send(_owner, spellMask(spells, 0), spellMask(spells, 1), spellMask(spells, 2),
 				spellMask(spells, 3), spellMask(spells, 4), spellMask(spells, 5), spellMask(spells, 6),
@@ -977,11 +899,11 @@ public class L1EquipmentSlot {
 	}
 
 	private void retireMagicHelmSpells(L1ItemInstance removed) {
-		long spells = magicHelmSpells(removed.getItemId());
+		long spells = EquipmentTraits.forItem(removed.getItemId()).spells();
 		if (spells == 0L) return;
 		for (int i = 0; i < _armors.size(); i++) {
 			final L1ItemInstance armor = _armors.get(i);
-			if (armor != removed && armor.isEquipped()) spells &= ~magicHelmSpells(armor.getItemId());
+			if (armor != removed && armor.isEquipped()) spells &= ~EquipmentTraits.forItem(armor.getItemId()).spells();
 		}
 
 		final SkillsTable learned = SkillsTable.getInstance();
@@ -1113,7 +1035,7 @@ public class L1EquipmentSlot {
 		}
 		for (int i = 0; i < _armors.size(); i++) {
 			final L1ItemInstance armor = _armors.get(i);
-			if (armor != removed && armor.isEquipped() && armor.getItemId() == 20207) return true;
+			if (armor != removed && armor.isEquipped() && EquipmentTraits.forItem(armor.getItemId()).has(WATER_BREATHING)) return true;
 		}
 		return false;
 	}
