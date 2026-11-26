@@ -24,6 +24,9 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.L1Clan;
+import l1j.server.server.datatables.CObjectDB;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.character.action.CCreatureController;
 import l1j.server.server.model.character.effect.poison.PoisonEffect;
 import l1j.server.server.model.character.skill.CSkillInfo;
@@ -1025,6 +1028,8 @@ public final class CIOThreadCallback {
 		volatile long nextInvSaveNs;
 		private volatile boolean savePending;
 		private long lastGameTimeBucket = Long.MIN_VALUE;
+		private final long premiumRewardIntervalNs;
+		private long nextPremiumRewardNs;
 		int charSaveFailures;
 		int invSaveFailures;
 
@@ -1039,6 +1044,9 @@ public final class CIOThreadCallback {
 			charSaveIntervalNs = charSeconds > 0 ? TimeUnit.SECONDS.toNanos(charSeconds) : 0L;
 			invSaveIntervalNs = invSeconds > 0 ? TimeUnit.SECONDS.toNanos(invSeconds) : 0L;
 			final long now = System.nanoTime();
+			premiumRewardIntervalNs = Config.깃털지급 && Config.FEATHERTIME > 0
+					? TimeUnit.MINUTES.toNanos((long) Config.FEATHERTIME) : 0L;
+			if (premiumRewardIntervalNs > 0L) nextPremiumRewardNs = now + premiumRewardIntervalNs;
 			if (charSaveIntervalNs > 0L)
 				nextCharSaveNs = now + charSaveIntervalNs + saveJitterNs(charSaveIntervalNs);
 			if (invSaveIntervalNs > 0L)
@@ -1139,6 +1147,56 @@ public final class CIOThreadCallback {
 			}
 		}
 
+		/** L1 premium reward: due work belongs to the User heartbeat, not a dedicated executor. */
+		private void rewardPremiumIfDue(L1PcInstance pc) {
+			if (premiumRewardIntervalNs <= 0L || !activeSession(pc)) return;
+			final long now = System.nanoTime();
+			if (now - nextPremiumRewardNs < 0L) return;
+			nextPremiumRewardNs = now + premiumRewardIntervalNs;
+			final CUserSocket session = pc.getNetConnection();
+			if (session == null || pc.is무인상점() || pc.isDead() || pc.getCurrentHp() == 0
+					|| pc.isPrivateShop() || pc.noPlayerCK || pc.noPlayerck2
+					|| !pc.isItemTransferSession(session, sessionStamp)) return;
+			final var inventory = pc.getInventory();
+			if (inventory == null) return;
+			if (!inventory.tryBeginEquipmentChange()) {
+				// No mutation was admitted; try again after the outstanding receipt.
+				nextPremiumRewardNs = now + Math.min(premiumRewardIntervalNs, TimeUnit.SECONDS.toNanos(1L));
+				return;
+			}
+			try {
+				if (!activeSession(pc) || pc.is무인상점() || pc.isPrivateShop()
+						|| pc.isDead() || pc.getCurrentHp() == 0 || pc.noPlayerCK || pc.noPlayerck2
+						|| !pc.isItemTransferSession(session, sessionStamp)) return;
+				final int base = Config.FEATHER_NUM;
+				int bonus = 0;
+				final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+				if (clan != null) {
+					if (clan.getCastleId() != 0) bonus = Config.FEATHER_NUM2;
+					else if (pc.getClanid() != 0) bonus = Config.FEATHER_NUM1;
+				}
+				final long count = (long) base + bonus;
+				final var template = CObjectDB.GetItem(Config.깃털번호);
+				// Preserve the old single-item/nonstackable restriction; do not allocate
+				// a world item before admission and do not send a false success notice.
+				if (template == null || count <= 0L || count > Integer.MAX_VALUE
+						|| (count != 1L && !template.isStackable())) return;
+				final L1ItemInstance stored = inventory.CreateOrAddItem(Config.깃털번호, (int) count);
+				if (stored != null) {
+					final String amount = clan == null || (clan.getCastleId() == 0 && pc.getClanid() == 0)
+							? Integer.toString(base) : base + "+" + bonus;
+					SC_SystemMessage.send(pc, stored.getName() + "(" + amount + ")개를 얻었습니다.");
+				}
+			} catch (RuntimeException failure) {
+				// Never replay an uncertain inventory mutation; the next regular
+				// reward is the same policy as the former controller.
+				LOGGER.log(Level.WARNING, "User premium reward failed: " + pc.getId(), failure);
+			} finally {
+				nextPremiumRewardNs = System.nanoTime() + premiumRewardIntervalNs;
+				inventory.endEquipmentChange();
+			}
+		}
+
 		/** User::TimerExpired-style heartbeat, dispatched by the existing CIO owner. */
 		private void TimerExpired(L1PcInstance pc) {
 			try {
@@ -1150,6 +1208,7 @@ public final class CIOThreadCallback {
 			} finally {
 				try {
 					syncGameTimeIfDue(pc);
+					rewardPremiumIfDue(pc);
 				} finally {
 					requestSaveIfDue(pc);
 				}

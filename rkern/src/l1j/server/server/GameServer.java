@@ -16,7 +16,6 @@ import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.Controller.HouseTaxTimeController;
 import l1j.server.server.Controller.NpcChatTimeController;
 import l1j.server.server.Controller.OneTimeController;
-import l1j.server.server.Controller.PremiumTimeController;
 import l1j.server.server.Controller.ShipTimeController;
 import l1j.server.server.appcenter.AppCenterService;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
@@ -336,9 +335,6 @@ public class GameServer {
 		BossMonsterSpawnList.init();
 		BossController.start();
 
-		if (Config.깃털지급) {
-			PremiumTimeController.getInstance().start();
-		}
 
 		// 캐릭터 탐 시스템  쓰레드 처리
 		CharTamScheduler.getInstance().start();
@@ -550,7 +546,6 @@ public class GameServer {
 	        PcInventoryExpiryScheduler.getInstance().stop();
 
 
-	        PremiumTimeController.getInstance().stop();
 	        BugRaceController.getInstance().stop();
 
 	        CPacketFilter.getInstance().release();

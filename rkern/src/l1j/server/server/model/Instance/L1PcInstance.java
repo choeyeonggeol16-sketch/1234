@@ -25,7 +25,6 @@ import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.FishingTimeController;
-import l1j.server.server.Controller.PremiumTimeController;
 import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.Opcodes;
 import l1j.server.server.SkillCheck;
@@ -1814,7 +1813,6 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public void startObjectAutoUpdate() { 
-		PremiumTimeController.getInstance().register(this);
 		CharTamScheduler.getInstance().onEnterWorld(this);
 		PcInventoryExpiryScheduler.getInstance().register(this);
 		nextSessionStamp();
@@ -2522,7 +2520,6 @@ public class L1PcInstance extends L1Character {
 	 * 중복 코드를 줄이기 위해 Regen 정지 함수들을 묶어주는 예시
 	 */
 	public void stopAllRegenerations() {
-		try { PremiumTimeController.getInstance().unregister(this);  } catch (Throwable ignore) {}
 		try { CharTamScheduler.getInstance().onLeaveWorld(this); } catch (Throwable ignore) {}
 		try { CIOThreadCallback.getInstance().unregisterPc(this);  } catch (Throwable ignore) {}
 		if (this.getNetConnection() != null) {
