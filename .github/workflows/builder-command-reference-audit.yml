@@ -69,4 +69,36 @@ jobs:
           print("Production sources:", len(sources), flush=True)
           subprocess.run(["javac","-J-Xmx2g","-encoding","UTF-8","-source","21","-target","21","--enable-preview","-cp",cp,"-d",str(classes),"@"+str(args)],check=True,timeout=300)
           print("PASS Java 21 compile",flush=True)
+          test = work / "BuilderPermissionTest.java"
+          test.write_text("""
+          import l1j.server.Config;
+          import l1j.server.server.BuilderCmdHandler;
+          import l1j.server.server.command.BuilderCmdPairType;
+          public final class BuilderPermissionTest {
+              public static void main(String[] args) throws Exception {
+                  Config.GMCODE=9999; Config.SUB_GMCODE=100;
+                  var check=BuilderCmdHandler.class.getDeclaredMethod("hasBuilderPermission",int.class,BuilderCmdPairType.class);
+                  check.setAccessible(true);
+                  String[] dangerous={"아이템","아데나","선물","전체선물","오토선물","세트아이템","아이템삭제","인벤삭제","유저인벤삭제","암호변경","디비초기화","검사"};
+                  for(String name:dangerous) {
+                      var entry=new BuilderCmdPairType(name,9999,true,(p,c,a)->{});
+                      for(int access:new int[]{0,5048,100,9999}) {
+                          boolean actual=(Boolean)check.invoke(null,access,entry);
+                          if(actual!=(access==9999))throw new AssertionError(name+" "+access);
+                      }
+                  }
+                  var ordinary=new BuilderCmdPairType("누구",9999,true,(p,c,a)->{});
+                  for(int access:new int[]{0,5048,100,9999})
+                      if((Boolean)check.invoke(null,access,ordinary)!=(access==100||access==9999))
+                          throw new AssertionError("ordinary "+access);
+                  Config.GMCODE=9000;
+                  if(!(Boolean)check.invoke(null,9000,ordinary) || (Boolean)check.invoke(null,9999,ordinary))
+                      throw new AssertionError("configured GM level");
+                  System.out.println("PASS Builder permission policy (54 checks)");
+              }
+          }
+          """, encoding="utf-8")
+          subprocess.run(["javac","-encoding","UTF-8","-cp",cp+os.pathsep+str(classes),"-d",str(classes),str(test)],check=True)
+          subprocess.run(["java","--enable-preview","-cp",cp+os.pathsep+str(classes),"BuilderPermissionTest"],check=True)
+
           PY

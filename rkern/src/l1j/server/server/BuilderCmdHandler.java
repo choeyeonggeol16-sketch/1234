@@ -343,7 +343,7 @@ public final class BuilderCmdHandler {
 				"계정추가", "암호변경", "계정정보", "계정검사", "계정확인", "계정",
 				"계정압류", "캐릭압류", "캐릭압류해제", "압류해제", "영구추방", "광역추방",
 				"밴아이피", "주변밴", "광역밴", "아이피추방", "무기인챈성공", "방어인챈성공",
-				"기운축복", "종료" -> true;
+				"기운축복", "종료", "검사", "케릭검사", "조회", "셋팅", "스텟", "렙작", "레벨", "캐릭터상태", "서버저장", "리로드", "성혈조작", "아지트지급", "혈맹포인트선물", "혈맹포인트삭제" -> true;
 			default -> false;
 		};
 	}
@@ -2512,46 +2512,22 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 	}
 
 	private void AddAccount(L1PcInstance gm, String account, String passwd, String Ip, String Host) {
-		try {
-			String login = null;
-			String password = null;
-			java.sql.Connection con = null;
-			con = DatabaseFactory.getInstance().getConnection();
-			PreparedStatement statement = null;
-			PreparedStatement pstm = null; 
-
-			password = passwd;
-
-			statement = con.prepareStatement("select * from accounts where login Like '" + account + "'");
-			ResultSet rs = statement.executeQuery();
-
-			if (rs.next())
-				login = rs.getString(1);
-			if (login != null) {
-				gm.sendPackets("이미 계정이 있습니다.");
-				return;
-			} else {
-				String sqlstr = "INSERT INTO accounts SET login=?,password=?,lastactive=?,access_level=?,ip=?,host=?,banned=?,charslot=?,gamepassword=?,notice=?";
-				pstm = con.prepareStatement(sqlstr);
-				pstm.setString(1, account);
-				pstm.setString(2, password);
-				pstm.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-				pstm.setInt(4, 0);
-				pstm.setString(5, Ip);
-				pstm.setString(6, Host);
-				pstm.setInt(7, 0);
-				pstm.setInt(8, 6);
-				pstm.setInt(9, 0);
-				pstm.setInt(10, 0);
-				pstm.execute();
-				gm.sendPackets("계정 추가가 완료되었습니다.");
-			}
-
-			rs.close();
-			pstm.close();
-			statement.close();
-			con.close();
-		} catch (Exception e) {
+		try (Connection con = DatabaseFactory.getInstance().getConnection();
+			 PreparedStatement ps = con.prepareStatement("INSERT INTO accounts SET login=?,password=?,lastactive=?,access_level=?,ip=?,host=?,banned=?,charslot=?,gamepassword=?,notice=?")) {
+			ps.setString(1, account);
+			ps.setString(2, passwd);
+			ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+			ps.setInt(4, 0);
+			ps.setString(5, Ip);
+			ps.setString(6, Host);
+			ps.setInt(7, 0);
+			ps.setInt(8, 6);
+			ps.setInt(9, 0);
+			ps.setInt(10, 0);
+			if (ps.executeUpdate() != 1) throw new SQLException("Account insert failed");
+			SC_SystemMessage.send(gm, "계정 추가 완료");
+		} catch (SQLException e) {
+			SC_SystemMessage.send(gm, "계정 추가 실패 (중복 계정 또는 DB 오류)");
 		}
 	}
 	private void AddAccount1(L1PcInstance gm, String account) {
@@ -2839,65 +2815,18 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 	
 	
 	
-	private void account_Cha2(L1PcInstance gm, String param) {
-		try {
-			String s_account = null;
-			String s_name = param;
-			String s_level = null;
-			String s_clan = null;
-			String s_bonus = null;
-			String s_online = null;
-			String s_hp = null;
-			String s_mp = null;
-			String s_type = null;// 추가
-			int count = 0;
-			int count0 = 0;
-			java.sql.Connection con0 = null; // 이름으로 objid를 검색하기 위해
-			con0 = DatabaseFactory.getInstance().getConnection();
-			PreparedStatement statement0 = null;
-			statement0 = con0.prepareStatement(
-					"select account_name, Clanname  from characters where char_name = '" + s_name + "'");
-			ResultSet rs0 = statement0.executeQuery();
-			while (rs0.next()) {
-				s_account = rs0.getString(1);
-				s_clan = rs0.getString(2);
-				gm.sendPackets("\\aD------------------------------------------");
-				gm.sendPackets("\\aE캐릭 : " + s_name + "(" + s_account + ")  클랜 : " + s_clan);// +"
-				// 클래스:"
-				// +
-				// s_type
-				count0++;
+	private void account_Cha2(L1PcInstance gm, String name) {
+		try (Connection con = DatabaseFactory.getInstance().getConnection();
+			 PreparedStatement ps = con.prepareStatement("SELECT c.char_name,c.level,c.clanname,c.OnlineStatus,c.Type,c.account_name FROM characters c JOIN characters selected ON c.account_name=selected.account_name WHERE selected.char_name=?")) {
+			ps.setString(1, name);
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					SC_SystemMessage.send(gm, "계정: " + rs.getString(6) + " 접속: " + rs.getInt(4)
+							+ " 레벨: " + rs.getInt(2) + " 캐릭: " + rs.getString(1)
+							+ " 클래스: " + rs.getInt(5) + " 혈맹: " + rs.getString(3));
+				}
 			}
-			java.sql.Connection con = null;
-			con = DatabaseFactory.getInstance().getConnection();
-			PreparedStatement statement = null;
-			statement = con.prepareStatement(
-					"select " + "char_name," + "level," + "Clanname," + "BonusStatus," + "OnlineStatus," + "MaxHp,"
-							+ "MaxMp, " + "Type " + " from characters where account_name = '" + s_account + "'");
-			gm.sendPackets("\\aD------------------------------------------");
-			ResultSet rs = statement.executeQuery();
-			while (rs.next()) {
-				s_name = rs.getString(1);
-				s_level = rs.getString(2);
-				s_clan = rs.getString(3);
-				s_bonus = rs.getString(4);
-				s_online = rs.getString(5);
-				s_hp = rs.getString(6);
-				s_mp = rs.getString(7);
-				s_type = rs.getString(8);
-				gm.sendPackets("접속:[" + s_online + "] 랩:" + s_level + " [" + s_name + "] 클래스:" + s_type + "");
-				count++;
-			}
-			rs0.close();
-			statement0.close();
-			con0.close();
-			rs.close();
-			statement.close();
-			con.close();
-			gm.sendPackets("\\aF0군주 1기사 2요정 3법사 4다엘 5용기사 6환술");
-			gm.sendPackets("\\aD------------------------------------------");
-		} catch (Exception e) {
-		}
+		} catch (SQLException e) { SC_SystemMessage.send(gm, "계정 조회 실패"); }
 	}
 
 	// .계정 -----------------------------------------------------------------
@@ -5746,131 +5675,58 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 	}
 
 	private static void BuilderCmd_check_character(L1PcInstance pc, String cmdName, String arg) {
-		Connection c = null;
-		PreparedStatement p = null;
-		PreparedStatement p1 = null;
-		ResultSet r = null;
-		ResultSet r1 = null;
 		try {
 			StringTokenizer st = new StringTokenizer(arg);
-			String charname = st.nextToken();
-			String type = st.nextToken();
-			
-			c = DatabaseFactory.getInstance().getConnection();
-			
-//			if (charname.equalsIgnoreCase("\uCF54\uBE0C")) {
-//				pc.sendPackets(new SC_SystemMessage("\\fY검사할 수 없는 운영자입니다."));
-//				
-//				return;
-//			}
-			
-			String itemname;
-			int searchCount = 0;
-			if (type.equalsIgnoreCase("인벤")){	
-				try {
-					// 캐릭 오브젝트 ID 검색 1=objid 2=charname
-					p = c.prepareStatement("SELECT objid, char_name FROM characters WHERE char_name = ?");
-					p.setString(1, charname);
-					r = p.executeQuery();
-					while(r.next()){
-						SC_SystemMessage.send(pc, "\\fW** 검사: "+type+" 캐릭: " + charname + " **");
-						L1PcInstance target = L1World.getInstance().getPlayer(charname);			
-						if (target != null) target.saveInventory();						
-						// 캐릭 아이템 검색 1-itemid 2-인챈 3-착용 4-수량 5-이름 6-축복 7-속성
-						p1 = c.prepareStatement("SELECT item_id,enchantlvl,is_equipped,count,item_name,bless,attr_enchantlvl " +
-								"FROM character_items WHERE char_id = ? ORDER BY 3 DESC,2 DESC, 1 ASC");
-						p1.setInt(1, r.getInt(1));
-						r1 = p1.executeQuery();				
-						while(r1.next()){
-							itemname = BuilderFormatInvenItem(r1.getInt(1),r1.getInt(2),r1.getInt(3),r1.getInt(4),r1.getString(5),r1.getInt(6),r1.getInt(7));
-							SC_SystemMessage.send(pc, "\\fU"+ ++searchCount +". " + itemname);
-							itemname = "";
-						}
-						SC_SystemMessage.send(pc, "\\fW** 총 "+searchCount+"건의 아이템이 검색 되었습니다 **");
-					}					
-				} catch (Exception e) {
-					SC_SystemMessage.send(pc, "\\fW** [" + charname + "] 캐릭 검색 오류 **");
-				}
-			} else if (type.equalsIgnoreCase("창고")){
-				try {
-					p = c.prepareStatement("SELECT account_name, char_name FROM characters WHERE char_name = ?");
-					p.setString(1, charname);
-					r = p.executeQuery();
-					while (r.next()){
-						SC_SystemMessage.send(pc, "\\fW** 검사: "+type+" 캐릭: " + charname + "(" + r.getString(1) + ") **");
-						//캐릭 창고 검색 1-itemid 2-인챈 3-수량 4-이름 5-축복 6-속성
-						p1 = c.prepareStatement("SELECT item_id,enchantlvl,count,item_name,bless,attr_enchantlvl FROM character_warehouse " +
-								"WHERE account_name = ? ORDER BY 2 DESC, 1 ASC");
-						p1.setString(1, r.getString(1));
-						r1 = p1.executeQuery();
-						while (r1.next()){
-							itemname = BuilderFormatInvenItem(r1.getInt(1),r1.getInt(2),0,r1.getInt(3),r1.getString(4),r1.getInt(5),r1.getInt(6));
-							SC_SystemMessage.send(pc, "\\fU"+ ++searchCount +". " + itemname);
-							itemname = "";
-						}
-						SC_SystemMessage.send(pc, "\\fW** 총 "+searchCount+"건의 아이템이 검색 되었습니다 **");
+			String name = st.nextToken(), type = st.nextToken();
+			boolean equipment = "장비".equals(type);
+			boolean inventory = equipment || "인벤".equals(type);
+			if (!inventory && !"창고".equals(type) && !"요정창고".equals(type)) throw new IllegalArgumentException();
+			final CUserSocket gmSocket = pc.getNetConnection();
+			final int gmStamp = pc.getSessionStamp();
+			L1PcInstance target = L1World.getInstance().getPlayer(name);
+			if (inventory && target != null && target.getNetConnection() != null) {
+				builderOnItemOwner(pc, target, () -> {
+					int rows = 0;
+					for (L1ItemInstance item : target.getInventory().getItems()) {
+						int kind = item.getItem().getType2();
+						if (equipment && kind != 1 && kind != 2) continue;
+						builderReply(pc, gmSocket, gmStamp, "고유번호 " + item.getId() + " / "
+								+ BuilderFormatInvenItem(item.getItemId(), item.getEnchantLevel(),
+									item.isEquipped() ? 1 : 0, item.getCount(), item.getName(),
+									item.getBless(), item.getAttrEnchantLevel()));
+						rows++;
 					}
-				} catch (Exception e) {
-					SC_SystemMessage.send(pc, "\\fW** [" + charname + "] 캐릭 검색 오류 **");
-				}
-			} else if (type.equalsIgnoreCase("장비")){	
-				try {
-					// 캐릭 오브젝트 ID 검색 1=objid 2=charname
-					p = c.prepareStatement("SELECT objid, char_name FROM characters WHERE char_name = ?");
-					p.setString(1, charname);
-					r = p.executeQuery();
-					while(r.next()){
-						SC_SystemMessage.send(pc, "\\fW** 검사: "+type+" 캐릭: " + charname + " **");
-						L1PcInstance target = L1World.getInstance().getPlayer(charname);			
-						if (target != null) target.saveInventory();						
-						// 캐릭 아이템 검색 1-itemid 2-인챈 3-착용 4-수량 5-이름 6-축복 7-속성
-						p1 = c.prepareStatement("SELECT item_id,enchantlvl,is_equipped,count,item_name,bless,attr_enchantlvl " +
-								"FROM character_items WHERE char_id = ? ORDER BY 3 DESC,2 DESC, 1 ASC");
-						p1.setInt(1, r.getInt(1));
-						r1 = p1.executeQuery();				
-						while(r1.next()){
-							L1ItemInstance item = CObjectDB.LoadItem().createItem(r1.getInt(1));							
-							if (item.getItem().getType2() == 1 || item.getItem().getType2() == 2) { // 무기 방어구만 표시
-								itemname = BuilderFormatInvenItem(r1.getInt(1),r1.getInt(2),r1.getInt(3),r1.getInt(4),r1.getString(5),r1.getInt(6),r1.getInt(7));
-								SC_SystemMessage.send(pc, "\\fU"+ ++searchCount +". " + itemname);
-								itemname = "";
+					builderReply(pc, gmSocket, gmStamp, "현재 인벤토리 " + rows + "개 항목");
+				});
+				return;
+			}
+			// Read committed DB rows only; never create an object or force a save to inspect.
+			final String sql = inventory
+				? "SELECT i.id,i.item_id,i.enchantlvl,i.is_equipped,i.count,i.item_name,i.bless,i.attr_enchantlvl FROM character_items i JOIN characters c ON i.char_id=c.objid WHERE c.char_name=?"
+				: "SELECT i.id,i.item_id,i.enchantlvl,0,i.count,i.item_name,i.bless,i.attr_enchantlvl FROM "
+					+ ("창고".equals(type) ? "character_warehouse" : "character_elf_warehouse")
+					+ " i JOIN characters c ON i.account_name=c.account_name WHERE c.char_name=?";
+			CacheD.getInstance().submitDbJob(() -> {
+				try (Connection con = DatabaseFactory.getInstance().getConnection();
+					 PreparedStatement ps = con.prepareStatement(sql)) {
+					ps.setString(1, name);
+					int rows = 0;
+					try (ResultSet rs = ps.executeQuery()) {
+						while (rs.next()) {
+							if (equipment) {
+								L1Item template = CObjectDB.GetItem(rs.getInt(2));
+								if (template == null || (template.getType2() != 1 && template.getType2() != 2)) continue;
 							}
+							builderReply(pc, gmSocket, gmStamp, "고유번호 " + rs.getInt(1) + " / "
+									+ BuilderFormatInvenItem(rs.getInt(2), rs.getInt(3), rs.getInt(4),
+										rs.getInt(5), rs.getString(6), rs.getInt(7), rs.getInt(8)));
+							rows++;
 						}
-						SC_SystemMessage.send(pc, "\\fW** 총 "+searchCount+"건의 아이템이 검색 되었습니다 **");
-					}					
-				} catch (Exception e) {
-					SC_SystemMessage.send(pc, "\\fW** [" + charname + "] 캐릭 검색 오류 **");
-				}						
-			} else if (type.equalsIgnoreCase("요정창고")){				
-				try {
-					p = c.prepareStatement("SELECT account_name, char_name FROM characters WHERE char_name = ?");
-					p.setString(1, charname);
-					r = p.executeQuery();
-					while (r.next()){
-						SC_SystemMessage.send(pc, "\\fW** 검사: "+type+" 캐릭: " + charname + "(" + r.getString(1) + ") **");
-						//캐릭 요정창고 검색 1-itemid 2-인챈 3-수량 4-이름 5-축복 6-속성
-						p1 = c.prepareStatement("SELECT item_id,enchantlvl,count,item_name,bless,attr_enchantlvl FROM character_elf_warehouse " +
-								"WHERE account_name = ? ORDER BY 2 DESC, 1 ASC");
-						p1.setString(1, r.getString(1));
-						r1 = p1.executeQuery();
-						while (r1.next()){
-							itemname = BuilderFormatInvenItem(r1.getInt(1),r1.getInt(2),0,r1.getInt(3),r1.getString(4),r1.getInt(5),r1.getInt(6));
-							SC_SystemMessage.send(pc, "\\fU"+ ++searchCount +". " + itemname);
-							itemname = "";
-						}
-						SC_SystemMessage.send(pc, "\\fW** 총 "+searchCount+"건의 아이템이 검색 되었습니다 **");
 					}
-				} catch (Exception e) {
-					SC_SystemMessage.send(pc, "\\fW** [" + charname + "] 캐릭 검색 오류 **");
-				}
-			}			
-		} catch (Exception e) {
-			SC_SystemMessage.send(pc, ".검사 [캐릭명] [장비,인벤,창고,요정창고]");
-		} finally {
-			SQLUtil.close(r1);SQLUtil.close(p1);
-			SQLUtil.close(r);SQLUtil.close(p);
-			SQLUtil.close(c);
-		}
+					builderReply(pc, gmSocket, gmStamp, "DB 저장본 " + rows + "개 항목");
+				} catch (SQLException e) { builderReply(pc, gmSocket, gmStamp, "아이템 조회 실패"); }
+			});
+		} catch (RuntimeException e) { SC_SystemMessage.send(pc, ".검사 [캐릭명] [장비,인벤,창고,요정창고]"); }
 	}
 	private static String BuilderFormatInvenItem(int itemid, int enchant, int equip, int count, String itemname, int bless, int attr){
 		StringBuilder name = new StringBuilder();
@@ -6085,106 +5941,8 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 		}
 	}
 
-	private static void BuilderCmd_database_init(L1PcInstance pc, String cmdName, String poby) {
-		Connection con = null;
-		try {
-
-			con = DatabaseFactory.getInstance().getConnection();
-
-			L1QueryUtil.execute(con, "DELETE FROM accounts", new Object[0]);
-
-			Calendar calendar = (Calendar) DateUtil.getRealTime().clone();
-			calendar.add(6, 1);
-			calendar.set(11, 21);
-			calendar.set(12, 0);
-			calendar.set(13, 0);
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			String fm = sdf.format(calendar.getTime());
-
-			L1QueryUtil.execute(con, "DELETE FROM board_posts WHERE board_id=1", new Object[0]);
-
-			L1QueryUtil.execute(con, "UPDATE castle SET tax_rate=" + Config.Tax_Rate + ", public_money=0",	new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_teleport", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_buddys", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_buff", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_config", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_elf_warehouse", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_exclude", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_items", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_quests", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_level_gifts", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_special_warehouse", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_new_quest", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM letter", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM report", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_skills", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM tam", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_warehouse", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM characters", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM clan_warehouse_log", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_supplementary_service", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_slot_items", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM adshop", new Object[0]);
-
-			L1QueryUtil.execute(con, "UPDATE house SET is_on_sale=1, is_purchase_basement=0, tax_deadline=?", new Object[] { new Timestamp(System.currentTimeMillis() + 86400000L) });
-
-			L1QueryUtil.execute(con, "DELETE FROM pets", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM character_teleport_item", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM clan_data", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM board_posts WHERE board_id=7", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM tb_mjct_mapping", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM tb_kda", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM attendance_startup", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM attendance_userinfo", new Object[0]);
-
-
-			L1QueryUtil.execute(con, "DELETE FROM tb_mbook_characterInfo", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM tb_mbook_wq_decks", new Object[0]);
-
-			L1QueryUtil.execute(con, "DELETE FROM tb_mbook_wq_startup;", new Object[0]);
-
-			File file = new File("emblem");
-			String[] fnameList = file.list();
-			for (String name : fnameList) {
-				File f = new File("emblem/" + name);
-				if (!f.isDirectory())
-					f.delete();
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			SQLUtil.close(con);
-		}
+	private static void BuilderCmd_database_init(L1PcInstance pc, String cmdName, String arg) {
+		SC_SystemMessage.send(pc, "실행 중인 게임 서버의 DB 초기화는 금지됩니다. 서버 종료 후 백업된 DB에서 작업하십시오.");
 	}
 
 
@@ -6676,10 +6434,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 
 	private static void BuilderCmd_favorite(L1PcInstance pc, String cmdName, String arg) {
 		try {
-			if (!BUILDER_FAVORITES.containsKey(pc.getId())) {
-				BUILDER_FAVORITES.put(pc.getId(), "");
-			}
-			String faviCom = BUILDER_FAVORITES.get(pc.getId());
+			String faviCom = BUILDER_FAVORITES.getOrDefault(pc.getId(), "");
 			if (arg.startsWith("셋팅")) {
 				// 커멘드의 등록
 				StringTokenizer st = new StringTokenizer(arg);
@@ -8383,7 +8138,7 @@ for (L1PcInstance pc2 : players) {
 				&& socket.isConnected() && socket.getActiveChar() == pc && !pc.isLogoutStarted();
 	}
 	private static void builderReply(L1PcInstance gm, CUserSocket socket, int stamp, String message) {
-		if (socket == null ? builderFullAccess(gm) : builderLive(gm, socket, stamp))
+		if (builderFullAccess(gm) && (socket == null || builderLive(gm, socket, stamp)))
 			SC_SystemMessage.send(gm, message);
 	}
 	private static void builderOnItemOwner(L1PcInstance gm, L1PcInstance target, Runnable action) {
