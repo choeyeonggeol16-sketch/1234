@@ -22,6 +22,12 @@ jobs:
             exit 1
           fi
           git grep -n 'BuilderCmd2Handler(' -- rkern/src
+          if git grep -n -w -E 'L1LetterCommand|L1LevelPresent|L1ImPactGfxid1|L1ImPactGfxid|L1Burf|L1PowerKick|L1SkillEffect|L1AdShop|L1RemoveLetter|L1HpBar' -- rkern/src; then
+            exit 1
+          fi
+          if git grep -n 'registerExisting(loaded,' -- rkern/src; then exit 1; fi
+          echo 'Remaining unregistered L1CommandExecutor implementations:'
+          git grep -l 'implements L1CommandExecutor' -- rkern/src || true
           if git grep -n -w -E 'L1Search1|L1Reload|L1Buff|L1Summon|L1Shutdown|L1Search|L1ItemDelete|L1QueryCharacter|L1PartyRecall' -- rkern/src; then
             exit 1
           fi
