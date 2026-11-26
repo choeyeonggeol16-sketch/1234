@@ -1,6 +1,7 @@
 package l1j.server.server.storage.cached;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage.ItemSnapshot;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
 
@@ -22,6 +23,17 @@ public final class CItem extends CPendingState {
         dirty |= mask;
         version++;
     }
+    /** Keep the pending FIFO position and wakeup deadline when both indexed owners stay the same. */
+    public boolean mergeQueued(L1ItemInstance item, int owner, long mask) {
+        if (!queued || owner != ownerId || latest.ownerId != owner) return false;
+        if (latest.matchesSaveSource(item, owner)) {
+            if ((mask & ~dirty) != 0) capture(latest, mask);
+        } else {
+            capture(ItemSnapshot.capture(item, owner), mask);
+        }
+        return true;
+    }
+
     public static void persist(ItemSnapshot snapshot, long dirtyMask) throws java.sql.SQLException {
         MySqlCharactersItemStorage.updateSnapshot(snapshot, dirtyMask);
     }

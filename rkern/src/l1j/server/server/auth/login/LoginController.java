@@ -3,16 +3,15 @@ package l1j.server.server.auth.login;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import l1j.server.server.Account;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.thread.CServerTimer;
 
 /**
  * 로그인 세션 레지스트리
@@ -166,106 +165,75 @@ public final class LoginController {
 
         final String id = accountKey(account.getName());
         final String ip = requireIp(client.getIp());
-        final String cClass = cClassOf(ip);
+        synchronized (client) {
+            if (!client.isConnected()) throw new IllegalStateException("Login session already closed");
+            if (client.loginRegistryKey() != null) throw new AccountAlreadyLoginException();
+            reserveOnline(account.isGameMaster());
 
-        // 용량 — GM 우회
-        if (_online.get() >= _maxAllowedOnlinePlayers && !account.isGameMaster()) {
-            throw new GameServerFullException();
-        }
-
-        final SessionRec newRec = new SessionRec(client, ip);
-
-        SessionRec replaced = null;
-        SessionRec duplicate = null;
-
-        for (;;) {
-            final SessionRec existing = _sessions.putIfAbsent(id, newRec);
-
-            if (existing == null) {
-                break;
-            }
-
-            if (isDeadSession(existing.client)) {
-                if (_sessions.replace(id, existing, newRec)) {
-                    replaced = existing;
-                    break;
+            boolean registered = false;
+            try {
+                final SessionRec newRec = new SessionRec(client, ip);
+                for (;;) {
+                    final SessionRec existing = _sessions.putIfAbsent(id, newRec);
+                    if (existing == null) break;
+                    if (isDeadSession(existing.client)) {
+                        if (!_sessions.replace(id, existing, newRec)) continue;
+                        _log.warning("[LoginController] 좀비 세션 교체 - account=" + id
+                                + " old=" + System.identityHashCode(existing.client)
+                                + " new=" + System.identityHashCode(client));
+                        decrementSessionCounts(existing);
+                        break;
+                    }
+                    _log.warning("[LoginController] 중복 로그인 거부 - account=" + id);
+                    scheduleKickIfNeeded(existing.client, id);
+                    throw new AccountAlreadyLoginException();
                 }
-                continue;
+
+                // Terminal cleanup uses this key even if sending the login reply
+                // or publishing the Account object has not completed.
+                increment(_perIp, ip);
+                increment(_perCClass, cClassOf(ip));
+                client.setLoginRegistryKey(id);
+                registered = true;
+            } finally {
+                if (!registered) decrementOnline();
             }
-
-            duplicate = existing;
-            break;
         }
+    }
 
-        // 좀비를 교체했다면 기존 세션 몫 카운터 정리
-        if (replaced != null) {
-            _log.warning("[LoginController] 좀비 세션 교체 - account=" + id
-                    + " old=" + System.identityHashCode(replaced.client)
-                    + " new=" + System.identityHashCode(client));
-
-            decrement(_perIp, replaced.ip);
-            decrement(_perCClass, cClassOf(replaced.ip));
-            decrementOnline();
+    private void reserveOnline(boolean gm) throws GameServerFullException {
+        if (gm) {
+            _online.incrementAndGet();
+            return;
         }
-
-        // 살아있는 진짜 중복만 거부
-        if (duplicate != null) {
-            _log.warning("[LoginController] 중복 로그인 거부 - account=" + id);
-            scheduleKickIfNeeded(duplicate.client, id);
-            throw new AccountAlreadyLoginException();
+        for (;;) {
+            final int current = _online.get();
+            if (current >= _maxAllowedOnlinePlayers) throw new GameServerFullException();
+            if (_online.compareAndSet(current, current + 1)) return;
         }
-
-        increment(_perIp, ip);
-        increment(_perCClass, cClass);
-        _online.incrementAndGet();
     }
 
     // ---------------- 로그아웃 ----------------
 
     public boolean logout(CUserSocket client) {
-        if (client == null) {
-            return false;
-        }
-
-        final String rawName = client.getAccountName();
-        SessionRec removed = null;
-
-        if (rawName != null) {
-            final String id = accountKey(rawName);
+        if (client == null) return false;
+        synchronized (client) {
+            final String id = client.loginRegistryKey();
+            if (id == null) return false; // never registered, including pre-auth transport close
+            client.setLoginRegistryKey(null);
             final SessionRec existing = _sessions.get(id);
-
-            if (existing != null
-                    && existing.client == client
-                    && _sessions.remove(id, existing)) {
-                removed = existing;
-            }
-
-        } else {
-         
-            for (Map.Entry<String, SessionRec> e : _sessions.entrySet()) {
-                final SessionRec rec = e.getValue();
-
-                if (rec != null && rec.client == client) {
-                    if (_sessions.remove(e.getKey(), rec)) {
-                        removed = rec;
-                    }
-                    break;
-                }
-            }
+            if (existing == null || existing.client != client || !_sessions.remove(id, existing))
+                return false;
+            decrementSessionCounts(existing);
+            return true;
         }
+    }
 
-        if (removed == null) {
-            _log.info("[LoginController] logout: 제거할 세션 없음 - account="
-                    + ((rawName != null) ? rawName : "(null)"));
-            return false;
-        }
-
+    private void decrementSessionCounts(SessionRec removed) {
         // 로그인 시점에 저장한 IP 기준으로 차감
         decrement(_perIp, removed.ip);
         decrement(_perCClass, cClassOf(removed.ip));
         decrementOnline();
-
-        return true;
     }
 
     // ---------------- 킥 ----------------
@@ -345,22 +313,10 @@ public final class LoginController {
 
     // ---------------- 좀비 판정 ----------------
 
-    /**
-     * 이미 끊긴(정리 진행 중이거나 끝난) 연결인지 판정.
-     * GameClient 정리 과정에서 계정명이 null로 바뀌는 현상을 이용한다.
-     * GameClient에 종료 플래그 getter(disconnected 류)가 있다면
-     * 추후 그 getter로 교체하는 편이 더 정확하다.
-     */
+    /** A login reserves the account before Account publication. Only cleanup
+     * completion identifies an old socket that can no longer own a session. */
     private static boolean isDeadSession(CUserSocket c) {
-        if (c == null) {
-            return true;
-        }
-
-        try {
-            return c.getAccountName() == null;
-        } catch (Throwable t) {
-            return false;
-        }
+        return c == null || c.isClientCleanupComplete();
     }
 
     // ---------------- 카운터 ----------------
@@ -369,7 +325,11 @@ public final class LoginController {
             ConcurrentHashMap<String, AtomicInteger> map,
             String key) {
 
-        map.computeIfAbsent(key, k -> new AtomicInteger()).incrementAndGet();
+        map.compute(key, (k, count) -> {
+            if (count == null) return new AtomicInteger(1);
+            count.incrementAndGet();
+            return count;
+        });
     }
 
     private static void decrement(
@@ -429,15 +389,12 @@ public final class LoginController {
             }
         }
 
-        _sessions.clear();
-        _perIp.clear();
-        _perCClass.clear();
         _pendingKickUntil.clear();
-        _online.set(0);
 
         for (CUserSocket c : all) {
             try {
-                c.kick();
+                try { logout(c); }
+                finally { c.kick(); }
             } catch (Throwable ignore) {
             }
         }

@@ -2655,6 +2655,7 @@ public final class CUserSocket extends CSocket {
 
 	private volatile Account account;
 	private volatile L1PcInstance _activeChar;
+    private String loginRegistryKey; // guarded by this, published by LoginController
     // Published only after the full asynchronous character-enter completion.
     // Prevents a half-initialized IN_GAME state from bypassing session guard.
     private volatile boolean _gameSessionReady;
@@ -3297,6 +3298,9 @@ public final class CUserSocket extends CSocket {
 	public Account getAccount() {
 		return account;
 	}
+
+    public String loginRegistryKey() { return loginRegistryKey; }
+    public void setLoginRegistryKey(String key) { loginRegistryKey = key; }
 
 	public String getAccountName() {
 		return account != null ? account.getName() : null;

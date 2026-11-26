@@ -1,4 +1,4 @@
-// Run each of expedite, quarantine, release, reload and logout in a fresh JVM.
+// Run each of expedite, quarantine, release, reload, coalesce and logout in a fresh JVM.
 import com.zaxxer.hikari.HikariDataSource;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -32,6 +32,7 @@ import l1j.server.server.templates.L1EtcItem;
 
 public class CacheDQueueFencesRegression {
     private static final AtomicInteger writes = new AtomicInteger();
+    private static final int PROFILE_OWNERS = 5120, PROFILE_THREADS = 4;
     private static volatile IntConsumer onItemWrite;
 
     public static void main(String[] args) throws Exception {
@@ -47,8 +48,10 @@ public class CacheDQueueFencesRegression {
             case "quarantine" -> quarantine(cache);
             case "release" -> release(cache);
             case "reload" -> reload(cache);
+            case "coalesce" -> coalesce(cache);
+            case "coalesce-profile" -> profileQueuedItemSaves(cache);
             case "logout" -> logout(cache);
-            default -> throw new IllegalArgumentException("expected expedite, quarantine, release, reload or logout");
+            default -> throw new IllegalArgumentException("expected expedite, quarantine, release, reload, coalesce, coalesce-profile or logout");
         }
         System.out.println("PASS actual CacheD " + args[0]);
     }
@@ -172,14 +175,16 @@ public class CacheDQueueFencesRegression {
                 warehouse.addPendingId(owner, owner + 100_000);
                 cache.requestCharacterItemOwnerRelease(owner);
             }
+            final var reloaded = new ArrayList<L1ItemInstance>(writes);
             for (int id = 1; id <= writes; id++) {
                 L1ItemInstance item = new L1ItemInstance(template, 1);
                 item.setId(id);
                 cache.registerLoadedItemOwner(previous, id);
                 cache.saveItem(item, 16L);
-                cache.registerLoadedItemOwner(current, id);
-                cache.saveItem(item, 16L);
+                reloaded.add(item);
             }
+            cache.registerLoadedItemOwners(current, reloaded);
+            for (L1ItemInstance item : reloaded) cache.saveItem(item, 16L);
             cache.requestCharacterItemOwnerRelease(previous);
             cache.requestCharacterItemOwnerRelease(current);
         }
@@ -205,6 +210,120 @@ public class CacheDQueueFencesRegression {
             check(!waiters.contains(800) && waiters.size() == held, "released final unknown-owner barrier");
             check(waiters.traversals == 1, "one global recheck for formerly unknown owner");
         }
+    }
+
+    /** Run in a fresh JVM with -Xms128m -Xmx128m -XX:ActiveProcessorCount=4.
+     * Per-thread allocated bytes cover save admissions only; no SQL service is needed. */
+    private static void profileQueuedItemSaves(CacheD cache) throws Exception {
+        Object monitor = field(CacheD.class, "lock").get(cache);
+        var held = (IntOpenHashSet) field(CacheD.class, "activeOwnerIds").get(cache);
+        var template = new L1EtcItem();
+        template.setItemId(40001);
+        template.setName("queued item profile");
+        var items = new L1ItemInstance[PROFILE_OWNERS];
+        try {
+            synchronized (monitor) {
+                for (int i = 0; i < items.length; i++) {
+                    int owner = 200000 + i;
+                    held.add(owner);
+                    var item = new L1ItemInstance(template, 10);
+                    item.setId(100000 + i);
+                    item.setLastUsed(java.sql.Timestamp.valueOf("2026-01-01 00:00:00"));
+                    items[i] = item;
+                    cache.registerLoadedItemOwner(owner, item.getId());
+                    cache.saveItem(item, 2L);
+                }
+            }
+            measureQueuedItemSaves(cache, items, 4, 4);
+            measureQueuedItemSaves(cache, items, 20, 4);
+            measureQueuedItemSaves(cache, items, 20, 4);
+            measureQueuedItemSaves(cache, items, 20, 1);
+        } finally {
+            synchronized (monitor) {
+                for (int i = 0; i < items.length; i++) held.remove(200000 + i);
+            }
+            check(cache.flushAll(15000), "profile released all owners and drained");
+        }
+    }
+
+    private static void measureQueuedItemSaves(CacheD cache, L1ItemInstance[] items, int passes, int changeEvery)
+            throws Exception {
+        var bean = java.lang.management.ManagementFactory.getPlatformMXBean(com.sun.management.ThreadMXBean.class);
+        var start = new java.util.concurrent.CyclicBarrier(PROFILE_THREADS + 1);
+        var results = new ArrayList<java.util.concurrent.Future<long[]>>();
+        try (var workers = java.util.concurrent.Executors.newFixedThreadPool(PROFILE_THREADS)) {
+            for (int worker = 0; worker < PROFILE_THREADS; worker++) {
+                int from = worker * items.length / PROFILE_THREADS;
+                int to = (worker + 1) * items.length / PROFILE_THREADS;
+                results.add(workers.submit(() -> {
+                    long[] elapsed = new long[passes * (to - from)];
+                    int sample = 0;
+                    start.await();
+                    long before = bean.getThreadAllocatedBytes(Thread.currentThread().threadId());
+                    for (int pass = 0; pass < passes; pass++) {
+                        for (int i = from; i < to; i++) {
+                            var item = items[i];
+                            if ((pass + i) % changeEvery == 0) item.setCount(item.getCount() + 1);
+                            long began = System.nanoTime();
+                            cache.saveItem(item, 2L);
+                            elapsed[sample++] = System.nanoTime() - began;
+                        }
+                    }
+                    long allocated = bean.getThreadAllocatedBytes(Thread.currentThread().threadId()) - before;
+                    java.util.Arrays.sort(elapsed);
+                    return new long[] { allocated, elapsed[(int) Math.ceil(elapsed.length * 0.99) - 1] };
+                }));
+            }
+            start.await();
+            long began = System.nanoTime(), bytes = 0, threadP99 = 0;
+            for (var result : results) {
+                long[] values = result.get(20, TimeUnit.SECONDS);
+                bytes += values[0];
+                threadP99 += values[1];
+            }
+            int requests = passes * items.length;
+            System.out.printf(java.util.Locale.ROOT,
+                    "passes=%d changed=1/%d requests=%d admissions/s=%.0f bytes/admission=%.2f meanThreadP99us=%.2f%n",
+                    passes, changeEvery, requests, requests * 1e9 / (System.nanoTime() - began),
+                    (double) bytes / requests, threadP99 / 1000.0 / PROFILE_THREADS);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void coalesce(CacheD cache) throws Exception {
+        final int id = 555, owner = 501;
+        var template = new L1EtcItem();
+        template.setItemId(40001);
+        template.setName("Coalescing fixture");
+        var item = new L1ItemInstance(template, 4);
+        item.setId(id);
+        item.setLastUsed(java.sql.Timestamp.valueOf("2026-01-01 00:00:00"));
+        Object monitor = field(CacheD.class, "lock").get(cache);
+        var pending = (Int2ObjectOpenHashMap<CItem>) field(CacheD.class, "items").get(cache);
+        synchronized (monitor) {
+            cache.registerLoadedItemOwner(owner, id);
+            cache.saveItem(item, 2L);
+            CItem state = pending.get(id);
+            var original = state.latest;
+            long firstVersion = state.version, deadline = state.dueAt;
+            cache.saveItem(item, 2L);
+            check(state.latest == original && state.version == firstVersion, "covered duplicate skipped");
+            cache.saveItem(item, 16L);
+            check(state.latest == original && state.dirty == 18 && state.version > firstVersion,
+                    "additional requested column retained");
+            item.getLastUsed().setNanos(100);
+            cache.saveItem(item, 2L);
+            check(state.latest != original && original.lastUsed.getNanos() == 0, "mutable timestamp recaptured");
+            var replacement = new L1ItemInstance(template, 4);
+            replacement.setId(id);
+            replacement.setLastUsed(item.getLastUsed());
+            var prior = state.latest;
+            cache.saveItem(replacement, 2L);
+            check(state.latest != prior && state.latest.matchesSaveSource(replacement, owner),
+                    "replacement object receives the acknowledgement");
+            check(state.dueAt == deadline, "coalescing preserved the original deadline");
+        }
+        check(cache.flushAll(3000) && writes.get() == 1, "one coalesced update");
     }
 
     private static void reload(CacheD cache) throws Exception {

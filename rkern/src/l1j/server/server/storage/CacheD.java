@@ -1861,16 +1861,35 @@ public final class CacheD {
         if (characterId <= 0 || itemId <= 0) return;
         synchronized (lock) {
             checkItemOwner(characterId);
-            // Loading DB rows does not prove successful world entry. Do not
-            // cancel an earlier logout release until session publication.
-            warehouse.trackItemOwner(itemId, characterId);
-            CItem state = items.get(itemId);
-            if (state != null && state.ownerId != characterId) {
-                warehouse.trackPendingItem(state, characterId);
-                ready.reindexResources(state);
-                signalReadyChange();
+            if (registerLoadedItemOwnerLocked(characterId, itemId)) signalReadyChange();
+        }
+    }
+
+    /** Publish only after hydration succeeds. Bound lock residency for oversized inventories. */
+    public void registerLoadedItemOwners(int characterId, ArrayList<L1ItemInstance> loaded) {
+        if (characterId <= 0) return;
+        for (int start = 0; start < loaded.size();) {
+            int end = start + Math.min(64, loaded.size() - start);
+            synchronized (lock) {
+                checkItemOwner(characterId);
+                boolean readyChanged = false;
+                while (start < end) {
+                    int id = loaded.get(start++).getId();
+                    if (id > 0 && registerLoadedItemOwnerLocked(characterId, id)) readyChanged = true;
+                }
+                if (readyChanged) signalReadyChange();
             }
         }
+    }
+
+    private boolean registerLoadedItemOwnerLocked(int characterId, int itemId) {
+        // Loading rows must not cancel an earlier logout release before world entry.
+        warehouse.trackItemOwner(itemId, characterId);
+        CItem state = items.get(itemId);
+        if (state == null || state.ownerId == characterId) return false;
+        warehouse.trackPendingItem(state, characterId);
+        ready.reindexResources(state);
+        return true;
     }
 
     public void saveItem(L1ItemInstance item, long mask) {
@@ -1903,8 +1922,9 @@ public final class CacheD {
                 throw new RejectedExecutionException("Stale transferred item object: " + item.getId());
             if (ownerApplyJobsByOwner.get(ownerId) != 0) return;
             checkItemOwner(ownerId);
+            CItem state = items.get(item.getId());
+            if (state != null && state.mergeQueued(item, ownerId, mask)) return;
             ItemSnapshot snapshot = ItemSnapshot.capture(item, ownerId);
-            CItem state = items.get(snapshot.id);
             if (state == null) {
                 if (items.size() >= MAX_ITEMS) {
                     throw new RejectedExecutionException("CacheD item cache is full");

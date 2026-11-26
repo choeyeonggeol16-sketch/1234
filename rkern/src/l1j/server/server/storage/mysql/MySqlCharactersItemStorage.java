@@ -38,15 +38,14 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
         }
         l1j.server.server.model.L1PendingCredit.recoverBeforeLoad(objId);
         final String sql = "SELECT * FROM character_items WHERE char_id = ?";
+        ArrayList<L1ItemInstance> items = new ArrayList<>();
         try (Connection con = DatabaseFactory.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, objId);
-            ArrayList<L1ItemInstance> items = new ArrayList<>();
             HashMap<Integer, L1ItemInstance> bossKeys = null;
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     L1ItemInstance item = rowToItem(rs);
-                    cache.registerLoadedItemOwner(objId, item.getId());
                     if (item.getItemId() == 80500) {
                         if (bossKeys == null) bossKeys = new HashMap<>();
                         bossKeys.put(item.getId(), item);
@@ -55,11 +54,12 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
                 }
             }
             if (bossKeys != null) KeyTable.loadInventoryKeys(con, objId, bossKeys);
-            return items;
         } catch (SQLException e) {
             _log.log(Level.SEVERE, "loadItems error for char_id: " + objId, e);
             throw e;
         }
+        cache.registerLoadedItemOwners(objId, items);
+        return items;
     }
 
     /** RS 한 행 → 아이템. 컬럼 매핑이 이 프로젝트에 이 메서드 하나에만 존재함. */
@@ -186,6 +186,12 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
                     && java.util.Objects.equals(endTime, item.getEndTime())
                     && java.util.Objects.equals(hotelTown, item.getHotel_Town());
         }
+        /** Dirty-write acknowledgements target the same live object that supplied the snapshot. */
+        public boolean matchesSaveSource(L1ItemInstance item, int owner) {
+            return source != null && source.refersTo(item) && matchesCurrent(item, owner)
+                    && java.util.Objects.equals(itemName, item.getItem().getName());
+        }
+
         /** Immutable SQL projection; never change the live item before COMMIT. */
         public static ItemSnapshot project(L1ItemInstance item, int ownerId,
                                            int finalCount, int finalCharge) {

@@ -30,6 +30,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.cached.CItem;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage.ItemSnapshot;
 import l1j.server.server.templates.L1EtcItem;
@@ -288,7 +289,87 @@ public final class WarehouseDisconnectRegression {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private static void saveWhileWriting() throws Exception {
+        var cache = CacheD.getInstance();
+        int id = FIRST_ID + 620, owner = FIRST_ID + 621;
+        var template = new L1EtcItem();
+        template.setItemId(40001);
+        template.setName("in-flight save");
+        var item = new L1ItemInstance(template, 4);
+        item.setId(id);
+        MySqlCharactersItemStorage.storeSnapshot(ItemSnapshot.capture(item, owner));
+        cache.registerLoadedItemOwner(owner, id);
+        AtomicInteger intervened = new AtomicInteger();
+        Object monitor = field(CacheD.class, "lock").get(cache);
+        var pending = (it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<CItem>)
+                field(CacheD.class, "items").get(cache);
+        try (var con = db.getConnection()) {
+            con.setAutoCommit(false);
+            try (var row = con.prepareStatement("SELECT id FROM character_items WHERE id=? FOR UPDATE")) {
+                row.setInt(1, id);
+                try (var rows = row.executeQuery()) { check(rows.next(), "locked fixture item"); }
+                item.setCount(7);
+                cache.saveItem(item, 2L);
+                long end = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+                for (;;) {
+                    synchronized (monitor) {
+                        var work = pending.get(id);
+                        if (work != null && work.writing) break;
+                    }
+                    check(System.nanoTime() < end, "first save started");
+                    Thread.sleep(1);
+                }
+                cache.submitDbJobOrdered(owner, () -> {
+                    try (var separate = db.getConnection(); var ps = separate.prepareStatement(
+                            "UPDATE character_items SET count=19 WHERE id=? AND char_id=?")) {
+                        ps.setInt(1, id);
+                        ps.setInt(2, owner);
+                        check(ps.executeUpdate() == 1, "intervening owner write");
+                        intervened.incrementAndGet();
+                    } catch (SQLException failure) { throw new AssertionError(failure); }
+                });
+                cache.saveItem(item, 2L);
+                cache.saveItem(item, 2L);
+            } finally {
+                con.rollback();
+            }
+        }
+        check(cache.flushDbOwner(owner, 4000) && cache.flushItemsByCharacter(owner, 4000), "owner drained");
+        check(intervened.get() == 1 && count("character_items", " WHERE id=" + id + " AND count=7") == 1
+                && item.getLastStatus().count == 7, "later save survives intervening owner work");
+
+        try (var con = db.getConnection(); var stmt = con.prepareStatement("DELETE FROM character_items WHERE id=?")) {
+            stmt.setInt(1, id);
+            check(stmt.executeUpdate() == 1, "remove fixture row before retry");
+        }
+        item.setCount(8);
+        cache.saveItem(item, 2L);
+        long retryEnd = System.nanoTime() + TimeUnit.SECONDS.toNanos(4);
+        for (;;) {
+            synchronized (monitor) {
+                var work = pending.get(id);
+                if (work != null && work.failureCount > 0 && work.queued && !work.writing) {
+                    long retryAt = work.dueAt, version = work.version;
+                    cache.saveItem(item, 2L);
+                    check(work.queued && work.dirty == 2 && work.version == version && work.dueAt == retryAt,
+                            "duplicate preserved failed image and retry deadline");
+                    break;
+                }
+            }
+            check(System.nanoTime() < retryEnd, "missing row entered retry");
+            Thread.sleep(1);
+        }
+        try (var con = db.getConnection()) {
+            MySqlCharactersItemStorage.insertTradeSnapshot(con, ItemSnapshot.project(item, owner, 1, 0));
+        }
+        check(cache.flushItemsByCharacter(owner, 4000)
+                && count("character_items", " WHERE id=" + id + " AND count=8") == 1
+                && item.getLastStatus().count == 8, "failed pending item applied after repairing the row");
+    }
+
     private static void verify() throws Exception {
+        saveWhileWriting();
         Config.MAX_ONLINE_USERS = 8;
         Config.MAX_PERSONAL_WAREHOUSE_ITEM = 150;
         Config.RATE_WEIGHT_LIMIT = 1;
@@ -343,6 +424,6 @@ public final class WarehouseDisconnectRegression {
                 ddl.executeUpdate("DROP DATABASE " + schema);
             }
         }
-        System.out.println("PASS warehouse moves, inventory debit after disconnect and auxiliary receipt with no item rows");
+        System.out.println("PASS in-flight and retried item saves, warehouse moves, inventory debit after disconnect and auxiliary receipt");
     }
 }
