@@ -1,5 +1,7 @@
 package l1j.server;
 
+import java.util.logging.Logger;
+
 import l1j.server.server.utils.ConfigReader;
 
 /**
@@ -9,6 +11,7 @@ public class DatabaseConfig
 {
 	// 파일 경로 설정
 	private static final String DATABASE_CONFIG_FILE = "./config/Database.ini";
+	private static final Logger LOG = Logger.getLogger(DatabaseConfig.class.getName());
 	
 	// 설정 상수들
 	public static String DATABASE_DRIVER;
@@ -16,6 +19,8 @@ public class DatabaseConfig
 	public static String DATABASE_LOGIN;
 	public static String DATABASE_PASSWORD;
 	public static int DATABASE_MAX_CONNECTIONS;
+	public static int DATABASE_CONNECT_TIMEOUT_MS;
+	public static int DATABASE_SOCKET_TIMEOUT_MS;
 	public static boolean DATABASE_TEST_CONNECTIONS;
 	
 	public static void load() {
@@ -26,5 +31,14 @@ public class DatabaseConfig
 		DATABASE_PASSWORD = config.getString("Password", "");
 		DATABASE_MAX_CONNECTIONS = config.getInt("MaximumDatabaseConnections", 10);
 		DATABASE_TEST_CONNECTIONS = config.getBoolean("TestDatabaseConnections", false);
+		DATABASE_CONNECT_TIMEOUT_MS = positiveTimeout(config, "ConnectTimeoutMillis", 5000);
+		DATABASE_SOCKET_TIMEOUT_MS = positiveTimeout(config, "SocketTimeoutMillis", 30000);
+	}
+
+	private static int positiveTimeout(ConfigReader config, String key, int defaultValue) {
+		final int value = config.getInt(key, defaultValue);
+		if (value > 0) return value;
+		LOG.warning(key + " must be positive. Using " + defaultValue + " ms.");
+		return defaultValue;
 	}
 }

@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -72,6 +74,7 @@ public class DatabaseFactory {
             config.setRegisterMbeans(true);
             config.setInitializationFailTimeout(-1);
             config.setValidationTimeout(5000);
+            configureDriverTimeouts(config, DatabaseConfig.DATABASE_URL);
 
             // MySQL 5.7.18 서버사이드 프리페어의 BLOB 처리 크래시 우회 설정 유지.
             config.addDataSourceProperty("cachePrepStmts", "true");
@@ -95,6 +98,38 @@ public class DatabaseFactory {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "데이터베이스: HikariCP 풀 초기화에 실패했습니다.", e);
         }
+    }
+
+    private static void configureDriverTimeouts(HikariConfig config, String jdbcUrl) {
+        if (!jdbcUrl.startsWith("jdbc:mysql:") && !jdbcUrl.startsWith("jdbc:mysql+srv:")
+                && !jdbcUrl.startsWith("jdbc:mariadb:")) return;
+        // Both drivers support milliseconds. Supply defaults only: driver
+        // precedence between URL settings and Properties is not portable.
+        if (!containsUrlOption(jdbcUrl, "connectTimeout")) {
+            config.addDataSourceProperty("connectTimeout", DatabaseConfig.DATABASE_CONNECT_TIMEOUT_MS);
+        }
+        if (!containsUrlOption(jdbcUrl, "socketTimeout")) {
+            config.addDataSourceProperty("socketTimeout", DatabaseConfig.DATABASE_SOCKET_TIMEOUT_MS);
+        }
+    }
+
+    private static boolean containsUrlOption(String jdbcUrl, String name) {
+        final int queryStart = jdbcUrl.indexOf('?');
+        if (queryStart < 0) return false;
+        for (String option : jdbcUrl.substring(queryStart + 1).split("&")) {
+            final int separator = option.indexOf('=');
+            if (separator <= 0) continue;
+            final String key = option.substring(0, separator).trim();
+            if (name.equalsIgnoreCase(key)) return true;
+            if (key.indexOf('%') >= 0) {
+                try {
+                    if (name.equalsIgnoreCase(URLDecoder.decode(key, StandardCharsets.UTF_8))) return true;
+                } catch (IllegalArgumentException malformedKey) {
+                    // Leave unrelated URL validation to the configured driver.
+                }
+            }
+        }
+        return false;
     }
 
     public static void testLeakDetection() {

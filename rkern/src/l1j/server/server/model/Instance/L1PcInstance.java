@@ -4298,14 +4298,14 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	}
 
 	public void save() {
-		try {
-			if (isGhost()) {
-				return;
-			}
-			if (noPlayerCK || noPlayerRobot || noPlayerck2)
-				return;
+		saveIfReady();
+	}
 
-			CharacterTable.getInstance().storeCharacter(this);
+	/** False means the caller must recapture after an owner replay. */
+	public boolean saveIfReady() {
+		try {
+			if (isGhost() || noPlayerCK || noPlayerRobot || noPlayerck2) return true;
+			return CharacterTable.getInstance().storeCharacter(this);
 		} catch (RuntimeException e) {
 			// The scheduler must observe failed submission and retry.
 			throw e;

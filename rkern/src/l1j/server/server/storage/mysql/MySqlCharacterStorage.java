@@ -614,8 +614,8 @@ public class MySqlCharacterStorage implements CharacterStorage {
 				+ " TamEndTime=?, SpecialSize=?, FishingShopBuyTime_1=?, slot_number=?, elf_attrinit_count=?, last_topBless=?, hp_mp_growth=? WHERE objid=?";
 
     @Override
-    public void storeCharacter(L1PcInstance pc) {
-        CacheD.getInstance().saveCharacter(new CharacterSnapshot(pc));
+    public boolean storeCharacter(L1PcInstance pc) {
+        return CacheD.getInstance().saveCharacter(new CharacterSnapshot(pc));
 
     }
 

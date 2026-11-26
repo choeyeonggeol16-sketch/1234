@@ -22,3 +22,14 @@ mysql --default-character-set=utf8mb4 net < database/CacheD_storage_schema_migra
 4. 필요하면 [CacheD 소유자 조회 인덱스](CacheD_owner_lookup_indexes.sql)를 적용합니다. 기존 DB에서 인덱스를 만드는 시간은 테이블 크기에 따라 달라집니다.
 
 테스트 DB에서 [CacheD 저장 스키마](CacheD_storage_schema_migration.sql)를 두 번 실행해 에러 없이 반복 적용되는지 확인하세요. 캐릭터 로딩과 아이템 보관을 확인한 뒤 운영 DB에 적용합니다. 이 변경은 운영 DB에 적용되지 않았습니다.
+
+## JDBC 연결 시간 제한
+
+MySQL 및 MariaDB 드라이버에서 `config/Database.ini`의 다음 값을 밀리초 단위로 설정할 수 있습니다.
+
+```ini
+ConnectTimeoutMillis=5000
+SocketTimeoutMillis=30000
+```
+
+첫 값은 DB 소켓 연결을 기다리는 시간이고 둘째 값은 DB에서 데이터를 읽을 때 응답을 기다리는 시간입니다. 생략하거나 0 이하로 지정하면 위의 기본값을 사용합니다. 기존 JDBC URL에 `connectTimeout` 또는 `socketTimeout`을 직접 지정했다면 해당 값을 우선 적용합니다. 드라이버 URL에서 `0`은 해당 시간 제한을 해제합니다.

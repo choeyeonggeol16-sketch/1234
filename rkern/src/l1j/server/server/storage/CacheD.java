@@ -1062,7 +1062,7 @@ public final class CacheD {
         }
     }
     private final ReadyQueue ready = new ReadyQueue();
-    // Existing CacheD.lock protects both resource indexes and DB execution.
+    // CacheD.lock protects resource indexes and result publication.
     private void signalReadyChange() {
         lock.notifyAll();
     }
@@ -1074,23 +1074,24 @@ public final class CacheD {
     private boolean stopping;
     private volatile Throwable lastFailure;
     private volatile boolean transactionStoreReady;
+    private final DbJob transactionSchemaProbe;
 
     private CacheD() {
-        for (int i = 0; i < WORKER_COUNT; i++) {
-            workers[i] = new Thread(this::run, "CacheD-Worker-" + i);
-            workers[i].setDaemon(true);
-        }
-        for (int i = 0; i < WORKER_COUNT; i++) workers[i].start();
-        // Probe only on an existing CacheD DB worker. Until the receipt table
-        // AND all item tables are InnoDB, reject transfers before memory moves.
-        submitDbJobRetryOrdered(0, () -> {
+        // Record the exact maintenance job before the workers can run it.
+        // Receipt admission stays closed until the DB worker verifies the schema.
+        transactionSchemaProbe = submitDbJobInternal(0, 0, () -> {
             try {
                 CTransaction.verifySchema();
                 transactionStoreReady = true;
             } catch (SQLException e) {
                 throw new IllegalStateException("CacheD receipt schema not ready", e);
             }
-        });
+        }, true, false);
+        for (int i = 0; i < WORKER_COUNT; i++) {
+            workers[i] = new Thread(this::run, "CacheD-Worker-" + i);
+            workers[i].setDaemon(true);
+        }
+        for (Thread worker : workers) worker.start();
     }
 
     private boolean isWorkerThread() {
@@ -1120,25 +1121,53 @@ public final class CacheD {
         submitDbJobInternal(ownerId, secondaryOwnerId, task, false);
     }
 
-    /** Capture a small, immutable session snapshot at the same admission
-     * boundary as economy reservations. The supplier MUST NOT do I/O, wait,
-     * mutate game state, or acquire an owner/session monitor here.
-     * An old logout must never queue its buff snapshot behind a new receipt.
+    /** Reserve the owner FIFO before capturing mutable session data. The
+     * reservation prevents later writes from overtaking this snapshot while
+     * unrelated owners can submit and execute work during capture. The capture
+     * must not wait for jobs in the reserved owner FIFO.
      */
     public boolean submitSessionDbJobOrdered(int ownerId, long epoch,
             java.util.function.Supplier<Runnable> capture) {
         Objects.requireNonNull(capture, "capture");
+        final DbJob reservation;
         synchronized (lock) {
-            CUser active = activeUsers.get(ownerId);
+            final CUser active = activeUsers.get(ownerId);
             if (ownerId <= 0 || active == null || active.sessionEpoch != epoch
                     || hasPendingOwnerApply(ownerId)) return false;
             if (!accepting) throw new RejectedExecutionException("CacheD is closed");
             checkItemOwner(ownerId);
-            if (pendingDbJobs >= MAX_DB_JOBS)
-                throw new RejectedExecutionException("CacheD DB request backlog is full");
-            submitDbJobInternal(ownerId, 0, Objects.requireNonNull(capture.get(), "captured task"), false);
+            reservation = submitDbJobInternal(ownerId, 0, NO_EXTRA_OWNERS, null, false, false, false);
+        }
+
+        final Runnable task;
+        try {
+            task = Objects.requireNonNull(capture.get(), "captured task");
+        } catch (RuntimeException | Error failure) {
+            synchronized (lock) { discardSessionCapture(reservation); }
+            throw failure;
+        }
+
+        synchronized (lock) {
+            final CUser active = activeUsers.get(ownerId);
+            if (active == null || active.sessionEpoch != epoch) {
+                discardSessionCapture(reservation);
+                return false;
+            }
+            reservation.task = task;
+            reservation.prepared = true;
+            ready.refresh(reservation);
+            signalReadyChange();
             return true;
         }
+    }
+
+    // CacheD.lock held. Unprepared work cannot have been selected by a worker.
+    private void discardSessionCapture(DbJob reservation) {
+        if (!ready.remove(reservation))
+            throw new IllegalStateException("Session snapshot reservation lost");
+        reservation.queued = false;
+        completeDbJob(reservation);
+        signalReadyChange();
     }
 
     // Reserved for idempotent persistence operations. Failures remain ahead of
@@ -1173,7 +1202,14 @@ public final class CacheD {
 
     private DbJob submitDbJobInternal(int ownerId, int secondaryOwnerId, int[] extraOwners,
                                      Runnable task, boolean retryOnFailure, boolean failClosedOnError) {
-        Objects.requireNonNull(task, "task");
+        return submitDbJobInternal(ownerId, secondaryOwnerId, extraOwners, task,
+                retryOnFailure, failClosedOnError, true);
+    }
+
+    private DbJob submitDbJobInternal(int ownerId, int secondaryOwnerId, int[] extraOwners,
+                                     Runnable task, boolean retryOnFailure, boolean failClosedOnError,
+                                     boolean prepared) {
+        if (prepared) Objects.requireNonNull(task, "task");
         ownerId = Math.max(0, ownerId);
         secondaryOwnerId = Math.max(0, secondaryOwnerId);
         synchronized (lock) {
@@ -1199,6 +1235,7 @@ public final class CacheD {
             }
             for (int owner : extraOwners) dbJobsByOwner.addTo(owner, 1);
             final DbJob job = new DbJob(ownerId, secondaryOwnerId, extraOwners, task, retryOnFailure, failClosedOnError);
+            job.prepared = prepared;
             enqueueNext(job, 0L);
             signalReadyChange();
             return job;
@@ -1209,6 +1246,8 @@ public final class CacheD {
      * The acknowledgement may race the DB worker's return from task.run().
      */
     private void finishOwnerApply(DbJob job, Throwable failure) {
+        String diagnostic = null;
+        SQLException persistenceFailure = null;
         synchronized (lock) {
             if (job == null || !job.ownerApplyRequired)
                 throw new IllegalStateException("No pending owner replay");
@@ -1219,11 +1258,16 @@ public final class CacheD {
                 if (!ready.remove(job)) throw new IllegalStateException("Owner replay reservation lost");
                 job.queued = false;
                 job.awaitingOwnerApply = false;
-                if (failure == null) completeDbJob(job);
-                else quarantineDbJob(job, new SQLException("Committed owner replay failed", failure));
+                if (failure == null) {
+                    completeDbJob(job);
+                } else {
+                    persistenceFailure = new SQLException("Committed owner replay failed", failure);
+                    diagnostic = quarantineDbJob(job, persistenceFailure);
+                }
             }
             signalReadyChange();
         }
+        reportFailure(diagnostic, persistenceFailure);
     }
 
     // All three helpers run only while holding lock. The counter reflects
@@ -1370,7 +1414,7 @@ public final class CacheD {
         return actions;
     }
 
-    private void quarantineDbJob(DbJob state, SQLException failure) {
+    private String quarantineDbJob(DbJob state, SQLException failure) {
         lastFailure = failure;
         state.outcomeUnknown = true;
         // Quarantine keeps owner lanes, not the cancelled receipt payload or
@@ -1380,11 +1424,10 @@ public final class CacheD {
         state.queued = true;
         state.urgent = false;
         ready.addFirst(state);
-        LOG.log(Level.SEVERE,
-                "CacheD ATOMIC TRANSACTION FAILED / UNRESOLVED: DB writes for owners "
+        return "CacheD ATOMIC TRANSACTION FAILED / UNRESOLVED: DB writes for owners "
                 + state.ownerId + "/" + state.secondaryOwnerId
                 + " QUARANTINED. Disconnect affected sessions and reconcile from authoritative MySQL. "
-                + "NO automatic replay.", failure);
+                + "NO automatic replay.";
     }
 
     // Used at a reload boundary so a fresh SELECT cannot overtake preceding
@@ -1565,7 +1608,8 @@ public final class CacheD {
         }
     }
 
-    public void saveCharacter(CharacterSnapshot snapshot) {
+    /** False means this image must be recaptured after owner replay. */
+    public boolean saveCharacter(CharacterSnapshot snapshot) {
         Objects.requireNonNull(snapshot, "snapshot");
         Objects.requireNonNull(snapshot.name, "snapshot.name");
         synchronized (lock) {
@@ -1583,7 +1627,7 @@ public final class CacheD {
                     || (active == null && snapshot.sessionEpoch != 0L))
                 throw new RejectedExecutionException("Stale character session save: " + snapshot.name);
             if (ownerApplyJobsByOwner.get(snapshot.objectId) != 0
-                    || (active != null && active.karmaReceiptRevision != snapshot.karmaReceiptRevision)) return;
+                    || (active != null && active.karmaReceiptRevision != snapshot.karmaReceiptRevision)) return false;
             CUser state = characters.get(snapshot.name);
             if (state == null) {
                 state = activeUsers.get(snapshot.objectId);
@@ -1599,13 +1643,14 @@ public final class CacheD {
             // An identical pending write already covers this state; an identical
             // committed write needs no additional JDBC operation. Failed writes
             // remain pending in CacheD and are never mistaken for a commit.
-            if (state.latest != null && state.latest.sameData(snapshot)) return;
+            if (state.latest != null && state.latest.sameData(snapshot)) return true;
             if (state.latest == null && state.persisted != null
-                    && state.persisted.sameData(snapshot)) return;
+                    && state.persisted.sameData(snapshot)) return true;
             characters.put(state.name, state);
             state.capture(snapshot);
             enqueueNext(state, COALESCE_NANOS);
             signalReadyChange();
+            return true;
         }
     }
 
@@ -2129,6 +2174,7 @@ public final class CacheD {
                 failure = new SQLException("CacheD JDBC execution failed", e);
             }
 
+            String diagnostic = null;
             synchronized (lock) {
                 selected.writing = false;
                 if (selected instanceof CAccount) {
@@ -2143,7 +2189,7 @@ public final class CacheD {
                         }
                     } else {
                         state.dirty |= accountSnapshot.mask;
-                        retry(state, failure, "account=" + state.login);
+                        diagnostic = retry(state, failure, "account=" + state.login);
                     }
                 } else if (selected instanceof CUser) {
                     CUser state = (CUser) selected;
@@ -2161,20 +2207,23 @@ public final class CacheD {
                         }
                         if (state.objectId > 0) completeOwnerRelease(state.objectId);
                     } else {
-                        retry(state, failure, "character=" + state.name);
+                        diagnostic = retry(state, failure, "character=" + state.name);
                     }
                 } else if (selected instanceof DbJob) {
                     DbJob state = (DbJob) selected;
                     activeDbJobs--;
                     if (failure == null && state.ownerApplyFailure != null)
                         failure = new SQLException("Committed owner replay failed", state.ownerApplyFailure);
-                    if (failure != null && (state.commitConfirmed || state.ownerApplyFailure != null
+                    if (state == transactionSchemaProbe && !accepting) {
+                        // The schema probe is a readiness check, not a durable operation.
+                        completeDbJob(state);
+                    } else if (failure != null && (state.commitConfirmed || state.ownerApplyFailure != null
                             || state.failClosedOnError
                             || hasUnknownTransactionOutcome(failure))) {
                         // Retain BOTH owner lanes; never replay uncertain SQL/memory.
-                        quarantineDbJob(state, failure);
+                        diagnostic = quarantineDbJob(state, failure);
                     } else if (failure != null && state.retryOnFailure) {
-                        retry(state, failure, "ordered DB owner=" + state.ownerId);
+                        diagnostic = retry(state, failure, "ordered DB owner=" + state.ownerId);
                     } else if (failure == null && state.ownerApplyRequired && !state.ownerApplyFinished) {
                         // Keep the existing job as a FIFO barrier, not a running
                         // worker. CIO acknowledgement retires or quarantines it.
@@ -2185,7 +2234,7 @@ public final class CacheD {
                         completeDbJob(state);
                         if (failure != null) {
                             lastFailure = failure;
-                            LOG.log(Level.SEVERE, "CacheD async DB request failed", failure);
+                            diagnostic = "CacheD async DB request failed";
                         }
                     }
                 } else if (selected instanceof CItem) {
@@ -2202,7 +2251,7 @@ public final class CacheD {
                             }
                         } else {
                             state.dirty |= itemMask;
-                            retry(state, failure, "item=" + state.id);
+                            diagnostic = retry(state, failure, "item=" + state.id);
                         }
                     }
                     completeOwnerRelease(state.ownerId);
@@ -2221,7 +2270,7 @@ public final class CacheD {
                     } else {
                         // Never acknowledge a failed insert/delete. Retry it
                         // ahead of later requests for the same item/owner.
-                        retry(state, failure, "item command=" + itemSnapshot.id);
+                        diagnostic = retry(state, failure, "item command=" + itemSnapshot.id);
                     }
                     completeOwnerRelease(state.ownerId);
                     if (state.previousOwnerId > 0 && state.previousOwnerId != state.ownerId) {
@@ -2236,6 +2285,7 @@ public final class CacheD {
                 releaseResources(selectedOwnerId, selectedPreviousOwnerId, selectedItemId, selected);
                 signalReadyChange();
             }
+            reportFailure(diagnostic, failure);
         }
     }
 
@@ -2246,7 +2296,7 @@ public final class CacheD {
         return false;
     }
 
-    private void retry(CPendingState state, SQLException failure, String identity) {
+    private String retry(CPendingState state, SQLException failure, String identity) {
         lastFailure = failure;
         state.failureCount++;
         long retryMillis = Math.min(5000L,
@@ -2259,9 +2309,17 @@ public final class CacheD {
             ready.addFirst(state);
         } else ready.refresh(state);
         if (state.failureCount == 1 || state.failureCount % 20 == 0) {
-            LOG.log(Level.SEVERE,
-                    "CacheD save failed; retaining dirty data. " + identity
-                            + " retry=" + state.failureCount, failure);
+            return "CacheD save failed; retaining dirty data. " + identity + " retry=" + state.failureCount;
+        }
+        return null;
+    }
+
+    private static void reportFailure(String diagnostic, Throwable failure) {
+        if (diagnostic == null) return;
+        try {
+            LOG.log(Level.SEVERE, diagnostic, failure);
+        } catch (RuntimeException ignored) {
+            // An installed logging handler cannot strand admitted persistence.
         }
     }
 
@@ -2390,10 +2448,22 @@ public final class CacheD {
         if (isWorkerThread()) {
             throw new IllegalStateException("CacheD worker cannot shut itself down");
         }
+        final long deadline = System.nanoTime()
+                + TimeUnit.MILLISECONDS.toNanos(Math.max(0L, timeoutMillis));
         synchronized (lock) {
             accepting = false;
+            // Only this read-only probe may be discarded. Durable pending work
+            // still drains. An in-flight probe completes on its DB worker.
+            if (transactionSchemaProbe.queued) {
+                if (!ready.remove(transactionSchemaProbe))
+                    throw new IllegalStateException("CacheD schema probe reservation lost");
+                transactionSchemaProbe.queued = false;
+                completeDbJob(transactionSchemaProbe);
+            }
+            signalReadyChange();
         }
-        if (!flushAll(timeoutMillis)) {
+        final long flushMillis = TimeUnit.NANOSECONDS.toMillis(Math.max(0L, deadline - System.nanoTime()));
+        if (!flushAll(flushMillis)) {
             LOG.severe("CacheD shutdown incomplete: unsaved accounts=" + pendingAccounts()
                     + " characters=" + pendingCharacters() + " items=" + pendingItems());
             return false;
@@ -2402,20 +2472,19 @@ public final class CacheD {
             stopping = true;
             signalReadyChange();
         }
-        long deadline = System.nanoTime()
-                + TimeUnit.MILLISECONDS.toNanos(Math.max(1L, timeoutMillis));
         try {
-            for (int i = 0; i < WORKER_COUNT; i++) {
+            for (Thread worker : workers) {
+                if (!worker.isAlive()) continue;
                 long remaining = deadline - System.nanoTime();
                 if (remaining <= 0L) return false;
-                TimeUnit.NANOSECONDS.timedJoin(workers[i], remaining);
+                TimeUnit.NANOSECONDS.timedJoin(worker, remaining);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return false;
         }
-        for (int i = 0; i < WORKER_COUNT; i++) {
-            if (workers[i].isAlive()) return false;
+        for (Thread worker : workers) {
+            if (worker.isAlive()) return false;
         }
         return true;
     }

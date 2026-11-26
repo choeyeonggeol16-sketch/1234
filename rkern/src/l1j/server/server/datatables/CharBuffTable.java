@@ -104,9 +104,9 @@ public class CharBuffTable {
     public static void SaveBuff(L1PcInstance pc) {
         if (pc == null) return;
         final int charId = pc.getId();
-        // Capture and job admission share the existing CacheD lock with session
-        // publication and economy reservations. A stale/pending logout never
-        // builds a snapshot that could erase a newly committed paid buff.
+        // Reserve the session's persistence position before reading effects.
+        // Capture runs outside CacheD's monitor; paid buff writes ordered after
+        // this reservation cannot overtake it.
         CacheD.getInstance().submitSessionDbJobOrdered(charId, pc.getCacheDSessionEpoch(), () -> {
             final int[] snapshot = new int[buffSkill.length * 3];
             int count = 0;

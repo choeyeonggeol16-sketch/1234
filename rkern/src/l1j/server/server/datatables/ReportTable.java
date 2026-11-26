@@ -46,9 +46,8 @@ public class ReportTable {
 	public boolean isReport(String objectName) {
 		return reportList.get(objectName) != null ? true : false;
 	}
-    public void reportUpdate(String objectName, String reporter, Timestamp date) throws SQLException {
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(
+    public void reportUpdate(Connection con, String objectName, String reporter, Timestamp date) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(
                  "INSERT INTO report SET object_name=?, reporter=?, date=?")) {
             ps.setString(1, objectName);
             ps.setString(2, reporter);

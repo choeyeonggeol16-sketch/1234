@@ -339,7 +339,7 @@ public final class CS_Channel {
                         already = rs.next();
                     }
                     if (!already) {
-                        ReportTable.getInstance().reportUpdate(targetName, reporterName,
+                        ReportTable.getInstance().reportUpdate(con, targetName, reporterName,
                                 new Timestamp(System.currentTimeMillis()));
                         inserted = true;
                     }

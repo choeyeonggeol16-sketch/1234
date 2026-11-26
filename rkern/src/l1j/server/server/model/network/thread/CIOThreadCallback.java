@@ -1127,6 +1127,11 @@ public final class CIOThreadCallback {
 			}
 		}
 
+		private void retryCharacterSave() {
+			charSaveFailures = Math.min(31, charSaveFailures + 1);
+			nextCharSaveNs = System.nanoTime() + saveRetryNs(charSaveFailures);
+		}
+
 		/** Capture and enqueue CacheD writes off the character's CIO owner. */
 		private void saveOnWorker() {
 			try {
@@ -1135,32 +1140,34 @@ public final class CIOThreadCallback {
 				synchronized (pc.autoSaveLifecycleLock()) {
 					// Logout may have started while this worker waited for the lock.
 					if (!activeSession(pc)) return;
-				if (charSaveIntervalNs > 0L && System.nanoTime() - nextCharSaveNs >= 0L) {
-					try {
-						pc.save();
-						charSaveFailures = 0;
-						nextCharSaveNs = System.nanoTime() + charSaveIntervalNs
-								+ saveJitterNs(charSaveIntervalNs);
-					} catch (Throwable failure) {
-						charSaveFailures = Math.min(31, charSaveFailures + 1);
-						nextCharSaveNs = System.nanoTime() + saveRetryNs(charSaveFailures);
-						LOGGER.log(Level.WARNING, "Char save failed: " + pc.getName(), failure);
+					if (charSaveIntervalNs > 0L && System.nanoTime() - nextCharSaveNs >= 0L) {
+						try {
+							if (pc.saveIfReady()) {
+								charSaveFailures = 0;
+								nextCharSaveNs = System.nanoTime() + charSaveIntervalNs
+										+ saveJitterNs(charSaveIntervalNs);
+							} else {
+								retryCharacterSave();
+							}
+						} catch (Throwable failure) {
+							retryCharacterSave();
+							LOGGER.log(Level.WARNING, "Char save failed: " + pc.getName(), failure);
+						}
 					}
-				}
-				// The socket may have started logout while the character snapshot ran.
-				if (!activeSession(pc)) return;
-				if (invSaveIntervalNs > 0L && System.nanoTime() - nextInvSaveNs >= 0L) {
-					try {
-						pc.saveInventory();
-						invSaveFailures = 0;
-						nextInvSaveNs = System.nanoTime() + invSaveIntervalNs
-								+ saveJitterNs(invSaveIntervalNs);
-					} catch (Throwable failure) {
-						invSaveFailures = Math.min(31, invSaveFailures + 1);
-						nextInvSaveNs = System.nanoTime() + saveRetryNs(invSaveFailures);
-						LOGGER.log(Level.WARNING, "Inv save failed: " + pc.getName(), failure);
+					// The socket may have started logout while the character snapshot ran.
+					if (!activeSession(pc)) return;
+					if (invSaveIntervalNs > 0L && System.nanoTime() - nextInvSaveNs >= 0L) {
+						try {
+							pc.saveInventory();
+							invSaveFailures = 0;
+							nextInvSaveNs = System.nanoTime() + invSaveIntervalNs
+									+ saveJitterNs(invSaveIntervalNs);
+						} catch (Throwable failure) {
+							invSaveFailures = Math.min(31, invSaveFailures + 1);
+							nextInvSaveNs = System.nanoTime() + saveRetryNs(invSaveFailures);
+							LOGGER.log(Level.WARNING, "Inv save failed: " + pc.getName(), failure);
+						}
 					}
-				}
 				}
 			} finally {
 				savePending = false;

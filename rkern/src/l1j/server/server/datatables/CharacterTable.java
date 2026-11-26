@@ -83,13 +83,13 @@ public class CharacterTable {
 		}
 	}
 
-	public void storeCharacter(L1PcInstance pc) throws Exception {
+	public boolean storeCharacter(L1PcInstance pc) throws Exception {
         // Snapshot capture takes this same lock and later reads synchronized
         // getters. Never hold the PC monitor before waiting for this lock.
         pc.lockUserState();
         try {
-            if (pc.rst != null && pc.getReturnStat() != 0) return;
-			_charStorage.storeCharacter(pc);
+            if (pc.rst != null && pc.getReturnStat() != 0) return true;
+            final boolean accepted = _charStorage.storeCharacter(pc);
 			String name = pc.getName();
 			if (!_charNameList.containsKey(name)) {
 				L1CharName cn = new L1CharName();
@@ -101,6 +101,7 @@ public class CharacterTable {
 				}
 			}
 			_log.finest("storeCharacter: " + pc.getName());
+            return accepted;
         } finally { pc.unlockUserState(); }
 	}
 
