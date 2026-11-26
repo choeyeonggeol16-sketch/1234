@@ -109,7 +109,7 @@ public class DogFightInstance extends L1NpcInstance{
         L1Npc npc = CObjectDB.LoadNPC().getTemplate(cInfo.get_npc_id());
 		if(npc == null)
 			throw new IllegalArgumentException(String.format("DogFightInstance::set_class_info()... found companion npc template...class name %s, npc id : %d ", cInfo.get_class_name(), cInfo.get_npc_id()));
-		setting_template(npc);
+		CopyFrom(npc);
 		return this;
 	}
 	public DogFightInstance set_corner_id(int corner_id){
