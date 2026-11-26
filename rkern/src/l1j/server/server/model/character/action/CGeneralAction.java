@@ -13,7 +13,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
-import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.utils.GameUtils;
@@ -79,7 +78,6 @@ public final class CGeneralAction extends CNewAction {
 
         if (obj == null
                 || !obj.instanceOf(L1Type.L1TYPE_CHARACTER)
-                || owner.getInstStatus() == InstStatus.INST_USERSTATUS_LFCINREADY
                 || !owner.glanceCheck(tX, tY)) {
 
             consumeWand(owner, item);

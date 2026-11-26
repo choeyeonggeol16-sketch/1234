@@ -1580,7 +1580,7 @@ public class L1Shop {
 		}
 
 		if (!pc.getInventory().HaveItemByClassId(3000156, price)) {
-			SC_SystemMessage.send(pc, "LFC종이학이 부족 합니다.");
+			SC_SystemMessage.send(pc, "종이학이 부족 합니다.");
 			return false;
 		}
 		long currentWeight = pc.getInventory().GetCarryingWeight() * 1000L;

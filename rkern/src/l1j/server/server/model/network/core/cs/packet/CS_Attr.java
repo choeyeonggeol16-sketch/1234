@@ -51,8 +51,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_Trade;
-import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
-import l1j.server.server.model.world.instance.lobby.creator.LobbyCreator;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.model.world.siege.WarFactory;
@@ -65,7 +63,6 @@ import l1j.server.server.templates.L1Npc;
 public final class CS_Attr {
 
 	public static final int MSGCODE_622_BOSS 				= 1;
-	public static final int MSGCODE_622_LFC					= 2;
 	public static final int MSGCODE_622_KDINIT				= 3;
 	public static final int MSGCODE_622_Name				= 6;
 	public static final int MSGCODE_622_Card				= 7;
@@ -209,6 +206,8 @@ public final class CS_Attr {
 
 		if (attrcode == 622) {
 			switch(msgIdx){
+			case 2: // Retired dialog ID. Do not consume another pending confirmation.
+				return;
 			case MSGCODE_622_KDINIT:
                 L1ItemInstance resetItem = pc.getKillDeathInitializeItem();
                 pc.setKillDeathInitializeItem(null);
@@ -260,15 +259,6 @@ public final class CS_Attr {
                 if (c == MSGCODE_YES) L1CardAdd.SkillTree(pc);
                 else pc.setCollecItem(null);
                 return;
-			case MSGCODE_622_LFC:{
-				if(c == MSGCODE_NO){
-					LobbyCreator.setInstStatus(pc, InstStatus.INST_USERSTATUS_NONE);
-				}else if(c == MSGCODE_YES){
-					if(pc.getInstStatus() == InstStatus.INST_USERSTATUS_LFCREADY)
-						LobbyCreator.setInstStatus(pc, InstStatus.INST_USERSTATUS_LFCINREADY);
-				}
-				return;
-			}
 			case MSGCODE_622_BOSS: {
 				if (c == MSGCODE_NO) {
 					if (pc.getLevel() < Config.YN_pclevel) {

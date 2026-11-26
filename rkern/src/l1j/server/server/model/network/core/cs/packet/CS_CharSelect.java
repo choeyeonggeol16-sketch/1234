@@ -13,8 +13,6 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Unknown2;
 import l1j.server.server.model.network.utill.CConnectionState;
-import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
-import l1j.server.server.model.world.instance.InstanceSpace;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
 import l1j.server.server.shared.observer.CopyMapObservable;
 public final class CS_CharSelect {
@@ -60,10 +58,6 @@ public final class CS_CharSelect {
 
 
         RaidSpace.getInstance().getBackPc(pc);
-
-        if (InstanceSpace.isInInstance(pc) && pc.getInstStatus() != InstStatus.INST_USERSTATUS_NONE) {
-            return;
-        }
 
         restartProcess(pc);
     }

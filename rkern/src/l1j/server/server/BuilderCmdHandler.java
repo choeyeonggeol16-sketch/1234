@@ -63,8 +63,6 @@ import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
 import l1j.server.server.model.character.companion.CompanionCommandExecutor;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.character.survey.SurveyFactory;
-import l1j.server.server.model.character.survey.SurveySystemLoader;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
@@ -94,8 +92,6 @@ import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
-import l1j.server.server.model.world.instance.loader.InstanceLoadManager;
-import l1j.server.server.model.world.instance.lobby.creator.LobbyCreator;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
 import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
@@ -108,7 +104,6 @@ import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 import l1j.server.server.storage.sql.handler.SelectorHandler;
-import l1j.server.server.templates.L1BoardPost;
 import l1j.server.server.model.world.residence.L1House;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1Npc;
@@ -261,19 +256,6 @@ public final class BuilderCmdHandler {
 		BuilderCmd2Handler(gm, cmdLine);
 	}
 	
-	private static void test_lfc(L1PcInstance gm, String param){
-		StringTokenizer token = new StringTokenizer(param);
-		String name = token.nextToken();
-		L1PcInstance pc = L1World.getInstance().findpc(name);
-		if(pc == null){
-			gm.sendPackets(String.format("%s님을 찾을 수 없습니다.", name));
-			return;
-		}
-		L1BoardPost bp = L1BoardPost.createLfc(name, "-", String.format("3 %s", gm.getName()));
-		LobbyCreator.registLfc(gm, 3);
-		gm.sendPackets(String.format("%s님에게 결투를 신청했습니다.", name));
-		SurveySystemLoader.getInstance().registerSurvey(pc,String.format("%s님이 결투를 신청했습니다.", gm.getName()), bp.getId() + 1000, SurveyFactory.createLFCSurvey(), 30 * 1000);
-	}
 	
 	public void BuilderCmd2Handler(L1PcInstance gm, String cmdLine) {
 		if (gm == null || cmdLine == null) return;
@@ -447,11 +429,6 @@ public final class BuilderCmdHandler {
 		});
 		registerDirect(loaded, "펫", (gm, cmd, param) -> {
 			CompanionCommandExecutor.exec(new CommandArgs().setOwner(gm).setParam(param));
-
-
-		});
-		registerDirect(loaded, "결투", (gm, cmd, param) -> {
-			test_lfc(gm, param);
 
 
 		});
@@ -636,11 +613,6 @@ public final class BuilderCmdHandler {
 		});
 		registerDirect(loaded, "혈마크", (gm, cmd, param) -> {
 			clanMark(gm, param);
-
-
-		});
-		registerDirect(loaded, "인스턴스", (gm, cmd, param) -> {
-			InstanceLoadManager.commands(gm, param);
 
 
 		});

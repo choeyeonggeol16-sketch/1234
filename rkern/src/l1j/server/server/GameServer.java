@@ -114,7 +114,6 @@ import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.model.world.trap.L1WorldTraps;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
 import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
-import l1j.server.server.model.world.instance.loader.InstanceLoadManager;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.monitor.LoggerInstance;
@@ -275,9 +274,6 @@ public class GameServer {
 		/** 레이드 **/
 		RaidLoadManager.getInstance().load();
 		EffectModelLoader.initialize();
-
-		/** 2016.11.26 server 앱센터 LFC **/
-		InstanceLoadManager.getInstance().load();
 
 		CopyMapObservable.getInstance();
 		InnHelperLoader.getInstance();
@@ -527,8 +523,6 @@ public class GameServer {
                 System.err.println("[TaskLane] Waiting for accepted work to finish");
             }
 	        RaidLoadManager.getInstance().release();
-
-	        InstanceLoadManager.getInstance().release();
 
 	        DynamicShopStorage.clearProcess();
 

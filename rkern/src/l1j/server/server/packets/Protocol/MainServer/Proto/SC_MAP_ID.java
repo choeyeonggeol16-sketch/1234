@@ -2,7 +2,6 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.world.instance.InstanceSpace;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
 
 public final class SC_MAP_ID extends ProtoPacket {
@@ -68,8 +67,7 @@ public final class SC_MAP_ID extends ProtoPacket {
 		if (mapId >= 12257 && mapId <= 12357)
 			return 12257;		// 클라우디아 데스나이트
 
-		final int idenMap = RaidSpace.getInstance().getIdenMap(mapId);
-		return InstanceSpace.getInstance().getIdenMap(idenMap);
+		return RaidSpace.getInstance().getIdenMap(mapId);
 	}
 
 

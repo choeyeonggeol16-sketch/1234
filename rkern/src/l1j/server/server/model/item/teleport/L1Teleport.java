@@ -34,7 +34,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
-import l1j.server.server.model.world.instance.InstanceSpace;
 import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
@@ -66,7 +65,7 @@ public class L1Teleport {
 	public void doTeleportation(L1PcInstance pc) {
 		if (pc == null || !pc.get_teleport()) return;
 
-		if (pc.isDead() && !RaidSpace.getInstance().isInInstance(pc) && !InstanceSpace.isInInstance(pc)) {
+		if (pc.isDead() && !RaidSpace.getInstance().isInInstance(pc)) {
 			return;
 		}
 		teleportInternal(pc, pc.get_teleport_x(), pc.get_teleport_y(), pc.get_teleport_map());

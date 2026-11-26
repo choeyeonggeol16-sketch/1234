@@ -26,7 +26,6 @@ public class L1BoardPost {
 	public static final String TABLE_NOTICE2 = "board_notice2";
 	public static final String TABLE_NOTICE3 = "board_notice3";
 	public static final String TABLE_PHONE = "board_posts_fix";
-	public static final String TABLE_LFC = "board_mjlfc";
 	public static final String TABLE_APPCENTER = "board_mjnotice";
 
 	private static final String POSTS = "board_posts";
@@ -39,7 +38,6 @@ public class L1BoardPost {
 		if (TABLE_NOTICE2.equals(table)) return 4;
 		if (TABLE_NOTICE3.equals(table)) return 5;
 		if (TABLE_PHONE.equals(table)) return 6;
-		if (TABLE_LFC.equals(table)) return 7;
 		if (TABLE_APPCENTER.equals(table)) return 8;
 		throw new IllegalArgumentException("Unsupported board category: " + table);
 	}
@@ -164,19 +162,6 @@ public class L1BoardPost {
 		}
 	}
 
-	private static void deleteByNameGeneric(String table, String name) {
-		final int board = boardId(table);
-		final String sql = "DELETE FROM " + POSTS + " WHERE board_id=? AND name=?";
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement pstm = con.prepareStatement(sql)) {
-			pstm.setInt(1, board);
-			pstm.setString(2, name);
-			pstm.executeUpdate();
-		} catch (SQLException e) {
-			_log.log(Level.SEVERE, "L1BoardPost deleteByName Error - Board: " + table + ", name: " + name, e);
-		}
-	}
-
 	public static List<L1BoardPost> index(int id, int limit, String table) {
 		final int board = boardId(table);
 		final List<L1BoardPost> result = new ArrayList<L1BoardPost>();
@@ -233,10 +218,6 @@ public class L1BoardPost {
 		return createPost(TABLE_PHONE, name, title, content);
 	}
 
-	public static L1BoardPost createLfc(String name, String title, String content) {
-		return createPost(TABLE_LFC, name, title, content);
-	}
-
 	public static L1BoardPost createAppCenterNotice(String name, String title, String content) {
 		return createPost(TABLE_APPCENTER, name, title, content);
 	}
@@ -266,10 +247,6 @@ public class L1BoardPost {
 		return findByIdGeneric(TABLE_PHONE, id);
 	}
 
-
-	public static L1BoardPost findByIdLfc(int id) {
-		return findByIdGeneric(TABLE_LFC, id);
-	}
 
 	public static L1BoardPost findByIdAppCenterNotice(int id) {
 		return findByIdGeneric(TABLE_APPCENTER, id);
@@ -305,10 +282,6 @@ public class L1BoardPost {
 	}
 
 
-	public static List<L1BoardPost> indexLfc(int id, int limit) {
-		return index(id, limit, TABLE_LFC);
-	}
-
 	public static List<L1BoardPost> indexAppCenterNotice(int id, int limit) {
 		return index(id, limit, TABLE_APPCENTER);
 	}
@@ -336,14 +309,6 @@ public class L1BoardPost {
 
 	public void 건의사항() {
 		deleteByIdGeneric(TABLE_PHONE, getId());
-	}
-
-	public static void delLfc(String name) {
-		deleteByNameGeneric(TABLE_LFC, name);
-	}
-
-	public static void delLfc(int id) {
-		deleteByIdGeneric(TABLE_LFC, id);
 	}
 
 	public static void delData(int id, String table) {

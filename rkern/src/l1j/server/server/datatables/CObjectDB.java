@@ -51,7 +51,6 @@ import l1j.server.server.model.Instance.L1RequestInstance;
 import l1j.server.server.model.Instance.L1ScarecrowInstance;
 import l1j.server.server.model.Instance.L1SignboardInstance;
 import l1j.server.server.model.Instance.L1TeleporterInstance;
-import l1j.server.server.model.Instance.L1TowerFromLfcInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
 import l1j.server.server.model.L1World;
@@ -184,7 +183,6 @@ public final class CObjectDB {
     private static final int NPC_L1RAIDDOOR = 23;
     private static final int NPC_L1CROWN = 24;
     private static final int NPC_L1AUCTIONBOARD = 25;
-    private static final int NPC_L1TOWERFROMLFC = 26;
     private static final int NPC_L1REQUEST = 27;
     private static final int NPC_L1NPCCASHSHOP = 28;
     private static final int NPC_L1MOBTRAP = 29;
@@ -220,7 +218,8 @@ public final class CObjectDB {
             case "L1RaidDoor", "L1RaidDoorInstance" -> NPC_L1RAIDDOOR;
             case "L1Crown", "L1CrownInstance" -> NPC_L1CROWN;
             case "L1AuctionBoard", "L1AuctionBoardInstance" -> NPC_L1AUCTIONBOARD;
-            case "L1TowerFromLfc", "L1TowerFromLfcInstance" -> NPC_L1TOWERFROMLFC;
+            // Skip retired tower templates still present in older NPC catalogs.
+            case "L1TowerFromLfc", "L1TowerFromLfcInstance" -> NPC_CONTEXT_REQUIRED;
             case "L1Request", "L1RequestInstance" -> NPC_L1REQUEST;
             case "L1NpcCashShop", "L1NpcCashShopInstance" -> NPC_L1NPCCASHSHOP;
             case "L1MobTrap", "L1MobTrapInstance" -> NPC_L1MOBTRAP;
@@ -266,7 +265,6 @@ public final class CObjectDB {
                 case NPC_L1RAIDDOOR -> new L1RaidDoorInstance(template);
                 case NPC_L1CROWN -> new L1CrownInstance(template);
                 case NPC_L1AUCTIONBOARD -> new L1AuctionBoardInstance(template);
-                case NPC_L1TOWERFROMLFC -> new L1TowerFromLfcInstance(template);
                 case NPC_L1REQUEST -> new L1RequestInstance(template);
                 case NPC_L1NPCCASHSHOP -> new L1NpcCashShopInstance(template);
                 case NPC_L1MOBTRAP -> new L1MobTrapInstance(template);

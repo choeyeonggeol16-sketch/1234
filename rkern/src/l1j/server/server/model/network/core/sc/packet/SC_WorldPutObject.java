@@ -27,8 +27,6 @@ import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.world.instance.InstanceObject;
-import l1j.server.server.model.world.instance.InstanceSpace;
 import l1j.server.server.model.world.siege.War;
 
 /**
@@ -1153,36 +1151,11 @@ public final class SC_WorldPutObject {
                 return 0;
             }
 
-            return computeTeamId(pc, mark);
+            return Config.영자마크 && pc.isGm() ? 29 : 0;
 
         } catch (RuntimeException e) {
             return 0;
         }
-    }
-
-    private static int computeTeamId(
-            L1PcInstance pc,
-            int mark) {
-
-        try {
-            final InstanceObject instance =
-                    InstanceSpace.getInstance()
-                            .getOpenObject(pc.getMapId());
-
-            if (instance != null) {
-                return mark;
-            }
-        } catch (RuntimeException ignored) {
-        }
-
-        try {
-            if (Config.영자마크 && pc.isGm()) {
-                return 29;
-            }
-        } catch (RuntimeException ignored) {
-        }
-
-        return 0;
     }
 
     private static L1Clan safeClan(

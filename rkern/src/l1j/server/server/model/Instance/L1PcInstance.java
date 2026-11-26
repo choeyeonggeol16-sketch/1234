@@ -134,8 +134,6 @@ import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.rank.loader.RankUserLoader;
-import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
-import l1j.server.server.model.world.instance.InstanceSpace;
 import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
 import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeUserInformation;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeProgressLoader;
@@ -2049,11 +2047,6 @@ public class L1PcInstance extends L1Character {
 		if (getCurrentHp() == i)
 			return;
 
-		/** 2016.11.26 server 앱센터 LFC **/
-		/* lfc중이고 hp가 깎였으면, */
-		if ((getInstStatus() == InstStatus.INST_USERSTATUS_LFC) && i > getCurrentHp())
-			addDamageFromLfc(i - getCurrentHp());
-
 		super.setCurrentHp(i);
 		SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
 		if (isInParty()) {
@@ -2450,8 +2443,6 @@ public class L1PcInstance extends L1Character {
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout rank index failed: " + getId(), e); }
             try { RaidSpace.getInstance().getBackPc(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout raid space failed: " + getId(), e); }
-            try { InstanceSpace.getInstance().getBackPc(this); }
-            catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout instance space failed: " + getId(), e); }
             try { CharacterSlotItemTable.getInstance().updateCharSlotItems(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout slot item save rejected: " + getId(), e); }
         } finally {
@@ -3110,8 +3101,6 @@ public class L1PcInstance extends L1Character {
 				final int newHp = (int) hpChange;
 				if (newHp > 0) {
 					if (newHp != oldHp) {
-						if (getInstStatus() == InstStatus.INST_USERSTATUS_LFC && newHp > oldHp)
-							addDamageFromLfc(newHp - oldHp);
 						SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
 						if (isInParty()) getParty().refreshPartyMemberStatus(this);
 					}
@@ -3430,11 +3419,9 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 			final int newHp = (int) hpChange;
 			if (newHp > 0) {
 				// The atomic update already changed HP, so calling setCurrentHp
-				// here would overwrite another attack. Keep its original LFC,
-				// packet and party-status side effects without a second store.
+				// here would overwrite another attack. Notify HP and party status
+				// without a second store.
 				if (newHp != oldHp) {
-					if (getInstStatus() == InstStatus.INST_USERSTATUS_LFC && newHp > oldHp)
-						addDamageFromLfc(newHp - oldHp);
 					SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
 					if (isInParty()) getParty().refreshPartyMemberStatus(this);
 				}
@@ -4993,15 +4980,13 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
     public void healHp(int pt) {
         if (pt == 0) return;
         // A heal from a potion/trap may race another controller's damage.
-        // Preserve the original HP/LFC/party notifications without a blind
+        // Preserve HP and party notifications without a blind
         // read-modify-write that overwrites an intervening hit.
         final long hpChange = changeHpAtomicPair((long) pt);
         if (hpChange < 0L) return;
         final int oldHp = (int) (hpChange >>> 32);
         final int newHp = (int) hpChange;
         if (oldHp == newHp) return;
-        if (getInstStatus() == InstStatus.INST_USERSTATUS_LFC && newHp > oldHp)
-            addDamageFromLfc(newHp - oldHp);
         SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
         if (isInParty()) getParty().refreshPartyMemberStatus(this);
     }
@@ -6386,36 +6371,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		_isBossNotify = b;
 	}
 
-	/** 2016.11.26 server 앱센터 LFC **/
-	/** instance space 공간중 어떤 상태에 있는지 여부를 나타냄 **/
-	private InstStatus _instStatus = InstStatus.INST_USERSTATUS_NONE;
-
-	public InstStatus getInstStatus() {
-		return _instStatus;
-	}
-
-	public void setInstStatus(InstStatus status) {
-		_instStatus = status;
-	}
-
-	/** lfc 중 받은 데미지를 누적한다. **/
-	private int _dmgLfc;
-
-	public int getDamageFromLfc() {
-		return _dmgLfc;
-	}
-
-	public void addDamageFromLfc(int i) {
-		_dmgLfc = +i;
-	}
-
-	public void setDamageFromLfc(int i) {
-		_dmgLfc = i;
-	}
-
-	/** 2016.11.26 server 앱센터 LFC **/
-
-	/** 2016.12.01 server 앱센터 LFC **/
 	private int _findMerchantId = 0;
 
 	public int getFindMerchantId() {
@@ -6425,8 +6380,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	public void setFindMerchantId(int i) {
 		_findMerchantId = i;
 	}
-
-	/** 2016.12.01 server 앱센터 LFC **/
 
 	private boolean _isValakasProduct;
 

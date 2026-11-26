@@ -18,8 +18,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_Weather;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
-import l1j.server.server.model.world.instance.InstanceSpace;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_ID;
 import l1j.server.server.shared.EPcStatus;
@@ -67,12 +65,6 @@ public final class CS_Restart {
         }
 
         RaidSpace.getInstance().getBackPc(pc);
-
-        if (InstanceSpace.isInInstance(pc)
-                && pc.getInstStatus() != InstStatus.INST_USERSTATUS_NONE) {
-
-            return;
-        }
 
         pc.setCurrentSprite(pc.getClassId());
 

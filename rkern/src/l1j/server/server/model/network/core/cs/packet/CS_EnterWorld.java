@@ -90,7 +90,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.rank.loader.RankUserLoader;
-import l1j.server.server.model.world.instance.InstanceSpace;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeProgressLoader;
 import l1j.server.server.model.world.instance.dungeon.time.progress.DungeonTimeProgress;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
@@ -579,7 +578,6 @@ public final class CS_EnterWorld {
         SC_ActionUI2.send(pc, SC_ActionUI2.Elixir, pc.getElixirStats());
         CopyMapObservable.getInstance().resetPosition(pc);
         RaidSpace.getInstance().getBackPc(pc);
-        InstanceSpace.getInstance().getBackPc(pc);
        
         // --- 성 전쟁 중 겟백 ---
         applyCastleGetBack(pc);

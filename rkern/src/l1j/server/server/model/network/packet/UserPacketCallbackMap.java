@@ -732,7 +732,6 @@ public final class UserPacketCallbackMap {
             case CS_Attr.MSGCODE_622_Name:
             case CS_Attr.MSGCODE_622_Card2:
             case CS_Attr.MSGCODE_622_Card3:
-            case CS_Attr.MSGCODE_622_LFC:
             case CS_Attr.MSGCODE_622_BOSS:
             case CS_Attr.MSGCODE_622_Tree:
                 if (payloadSize < cursor) {
