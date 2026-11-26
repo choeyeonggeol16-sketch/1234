@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1EffectInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -424,7 +424,7 @@ public class OrimController extends Thread {
 		L1EffectInstance efNpc = null;
 		L1NpcInstance Npc = null;
 
-		Iterator<L1Object> localIterator = L1World.getInstance().getVisibleObjects(9101).values().iterator();
+		Iterator<L1Object> localIterator = CWorld.getInstance().getVisibleObjects(9101).values().iterator();
 	
 		while (localIterator.hasNext()) {
 			Object obj = localIterator.next();
@@ -590,7 +590,7 @@ public class OrimController extends Thread {
             // The original loop sent the same packet to the leader once for
             // *each* viewer. Self must be sent once, before visible members.
             l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared, leader);
-            for (L1PcInstance viewer : L1World.getInstance().getVisiblePlayer(leader)) {
+            for (L1PcInstance viewer : CWorld.getInstance().getVisiblePlayer(leader)) {
                 if (viewer == leader) continue; // Do not duplicate the self SEND if AOI includes self.
                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared, viewer);
             }
@@ -968,6 +968,6 @@ public class OrimController extends Thread {
 			try { InDunclear(); }
 			finally { clearPlayMember(); }
 		}
-		L1World.getInstance().broadcastServerMessage("해상던전이 초기화 되였습니다.");
+		CWorld.getInstance().broadcastServerMessage("해상던전이 초기화 되였습니다.");
 	}
 }

@@ -3,7 +3,7 @@ package l1j.server.server.model.world.instance.raid.util;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.templates.L1Npc;
 
@@ -30,12 +30,12 @@ public class L1RaidPoisonInstance extends L1NpcInstance{
 		}
 		allTargetClear();
 		_master = null;
-		L1World.getInstance().removeVisibleObject(this);
-		L1World.getInstance().removeObject(this);
+		CWorld.getInstance().removeVisibleObject(this);
+		CWorld.getInstance().removeObject(this);
 		try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 				SC_RemoveObject.nativeWriter(getId()),
 				Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-			for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+			for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 				if (pc == null) {
 					continue;
 				}

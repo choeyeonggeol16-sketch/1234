@@ -11,7 +11,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -35,7 +35,7 @@ final class ResurrectionConsumables {
             return ItemActionResult.STOP;
         }
 
-        final L1Object candidate = L1World.getInstance().findObject(spellTargetId);
+        final L1Object candidate = CWorld.getInstance().findObject(spellTargetId);
         if (candidate instanceof L1Character resobject) {
             if (resobject != null) {
                 if (resobject instanceof L1PcInstance) {
@@ -60,7 +60,7 @@ final class ResurrectionConsumables {
                                 try {
                                     // Do not publish a consent request to a disconnected or
                                     // replaced target after the durable receipt commits.
-                                    if (L1World.getInstance().findObject(target.getId()) != target
+                                    if (CWorld.getInstance().findObject(target.getId()) != target
                                             || !target.isDead() || target.getCurrentHp() != 0) return;
                                     target.setTempID(pc.getId());
                                     try {
@@ -104,7 +104,7 @@ final class ResurrectionConsumables {
                             UseDurableConsume(pc, item, () -> {
                                 try {
                                     // Do not resurrect a re-used / already-alive NPC twice.
-                                    if (L1World.getInstance().findObject(npc.getId()) == npc
+                                    if (CWorld.getInstance().findObject(npc.getId()) == npc
                                             && npc.getCurrentHp() == 0 && npc.isDead()) {
                                         npc.resurrect(npc.getMaxHp() / 4);
                                         npc.setResurrect(true);
@@ -132,7 +132,7 @@ final class ResurrectionConsumables {
         final int id = target.getId();
         final int map = target.getMapId();
         final var point = target.getLocation();
-        for (L1PcInstance other : L1World.getInstance().getAllPlayers()) {
+        for (L1PcInstance other : CWorld.getInstance().getAllPlayers()) {
             if (other != null && other.getId() != id && other.getMapId() == map
                     && point.isSamePoint(other.getLocation()) && !other.isDead())
                 return true;

@@ -11,7 +11,7 @@ import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 
 public class DogFightLoader {
 	private static DogFightLoader m_instance;
@@ -29,7 +29,7 @@ public class DogFightLoader {
 		DogFightSkill.do_load();
 		DogFightHistory.getInstance();
 		DogFightTicketIdManager.getInstance();
-		L1NpcInstance messenger = L1World.getInstance().findNpc(DogFightSettings.MESSENGER_NPC_ID);
+		L1NpcInstance messenger = CWorld.getInstance().findNpc(DogFightSettings.MESSENGER_NPC_ID);
 		if(messenger != null && messenger instanceof MessengerInstance)
 			((MessengerInstance)messenger).set_current_message(DogFightSettings.MESSENGER_SELL_CLOSING_MESSAGE);
 	}

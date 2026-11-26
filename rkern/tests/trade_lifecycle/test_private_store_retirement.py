@@ -35,9 +35,9 @@ public final class RetirementCheck {
         void close(){connected=false;}
 """ + socket + r"""
     }
-    static class L1World {
-        static L1World world=new L1World();
-        static L1World getInstance(){return world;}
+    static class CWorld {
+        static CWorld world=new CWorld();
+        static CWorld getInstance(){return world;}
         final Map<Integer,L1PcInstance> players=new HashMap<>();
         Object findObject(int id){return players.get(id);}
     }
@@ -80,7 +80,7 @@ public final class RetirementCheck {
         CUserSocket socket;
         final Inventory inv=new Inventory();
         final AtomicInteger gate=new AtomicInteger();
-        L1PcInstance(int id,String a){this.id=id;account=a;inv.pc=this;L1World.world.players.put(id,this);}
+        L1PcInstance(int id,String a){this.id=id;account=a;inv.pc=this;CWorld.world.players.put(id,this);}
         int getId(){return id;}
         int getSessionStamp(){return stamp;}
         String getAccountName(){return account;}
@@ -96,7 +96,7 @@ public final class RetirementCheck {
         void endItemTransfer(int t){gate.compareAndSet(t,t+1);}
         boolean isItemTransferSession(CUserSocket s,int st){return s!=null&&!dead&&stamp==st&&socket==s&&s.pc==this&&s.connected;}
         void quarantineItemTransferSession(CUserSocket s,int st){quarantined=true;}
-        void logout(){check(isItemTransferBusy(),"logout must own inventory gate");dead=true;done=true;logouts++;L1World.world.players.remove(id,this);}
+        void logout(){check(isItemTransferBusy(),"logout must own inventory gate");dead=true;done=true;logouts++;CWorld.world.players.remove(id,this);}
     }
     static class User {
         static boolean reject;
@@ -120,7 +120,7 @@ public final class RetirementCheck {
     static L1PcInstance shop(int id){var p=new L1PcInstance(id,"merchant");p.shop=true;return p;}
     static void drain(){CSessionLifecycle.jobs.remove().run();CIOThreadCallback.INSTANCE.jobs.remove().run();}
     public static void main(String[] a){
-        var world=L1World.world;
+        var world=CWorld.world;
         var merchant=shop(100);
         var customer=new L1PcInstance(101,"buyer");attach(customer);
         var other=new L1PcInstance(102,"buyer2");attach(other);

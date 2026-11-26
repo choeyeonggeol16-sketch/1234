@@ -10,7 +10,7 @@ import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -97,7 +97,7 @@ public final class CS_CRAFT_MAKE_REQ {
                 return;
             }
 
-            final L1Object obj = L1World.getInstance().findObject(npcId);
+            final L1Object obj = CWorld.getInstance().findObject(npcId);
             if (obj == null || !obj.instanceOf(L1Type.L1TYPE_NPC)) {
                 eCraftMakeReqResultType.RP_ERROR_INVALID_NPC.sendCachedMessage(pc);
                 return;

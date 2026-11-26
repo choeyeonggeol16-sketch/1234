@@ -4,7 +4,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -78,7 +78,7 @@ public final class CS_War {
             return;
         }
 
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final CastleWar war = warBusiness.findWar(targetClanName);
 
         if (war != null) {
@@ -106,7 +106,7 @@ public final class CS_War {
 
     private static void handleWarRequest(L1PcInstance player, int type, String targetClanName) {
 
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final int redKnightClanId = player.getRedKnightClanId();
         
         String playerClanName = player.getClanname();

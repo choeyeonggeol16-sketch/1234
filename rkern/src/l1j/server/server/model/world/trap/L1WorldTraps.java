@@ -18,7 +18,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1TrapInstance;
 import l1j.server.server.types.Point;
@@ -83,11 +83,11 @@ public class L1WorldTraps {
 
 				for (int i = 0; i < count; i++) {
 					trap = new L1TrapInstance(IdFactory.getInstance().nextId(), trapTemp, loc, rndPt, span);
-					L1World.getInstance().addVisibleObject(trap);
+					CWorld.getInstance().addVisibleObject(trap);
 					_allTraps.add(trap);
 				}
 				base = new L1TrapInstance(IdFactory.getInstance().nextId(), loc);
-				L1World.getInstance().addVisibleObject(base);
+				CWorld.getInstance().addVisibleObject(base);
 				_allBases.add(base);
 			}
 			_allTraps.sort(_comp);
@@ -116,7 +116,7 @@ public class L1WorldTraps {
 	private static void removeTraps(List<L1TrapInstance> traps) {
 		for (L1TrapInstance trap : traps) {
 			trap.disableTrap();
-			L1World.getInstance().removeVisibleObject(trap);
+			CWorld.getInstance().removeVisibleObject(trap);
 		}
 	}
 

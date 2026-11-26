@@ -3,7 +3,7 @@ package l1j.server.server.model.npc.ai.action;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -113,7 +113,7 @@ public final class CGetItemAction {
         if (inventory == null) return;
         L1ItemInstance found = null;
         int nearest = AIR_FOOD_RADIUS + 1;
-        for (L1Object obj : L1World.getInstance().getClusterGrid()
+        for (L1Object obj : CWorld.getInstance().getClusterGrid()
                 .queryNearbyReusable(npc, AIR_FOOD_RADIUS)) {
             if (!(obj instanceof L1GroundInventory)) continue;
             final L1GroundInventory ground = (L1GroundInventory) obj;
@@ -226,7 +226,7 @@ public final class CGetItemAction {
         L1ItemInstance nearest = null;
         int nearestDistance = maxDistance + 1;
 
-        for (L1Object obj : L1World.getInstance()
+        for (L1Object obj : CWorld.getInstance()
                 .getClusterGrid()
                 .queryNearbyReusable(
                         creature,
@@ -406,7 +406,7 @@ public final class CGetItemAction {
         }
 
         final CInventory groundInventory =
-                L1World.getInstance().findGroundInventory(
+                CWorld.getInstance().findGroundInventory(
                         targetItem.getX(),
                         targetItem.getY(),
                         targetItem.getMapId());
@@ -504,7 +504,7 @@ public final class CGetItemAction {
         }
 
         final CInventory groundInventory =
-                L1World.getInstance().findGroundInventory(
+                CWorld.getInstance().findGroundInventory(
                         item.getX(),
                         item.getY(),
                         item.getMapId());

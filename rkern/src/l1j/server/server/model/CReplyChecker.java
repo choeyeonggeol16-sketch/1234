@@ -208,7 +208,7 @@ public final class CReplyChecker {
                 || pc.isDead() || pc.isGhost()) return false;
         CUserSocket socket = pc.getNetConnection();
         return socket != null && socket.isConnected() && socket.getActiveChar() == pc
-                && L1World.getInstance().findObject(pc.getId()) == pc;
+                && CWorld.getInstance().findObject(pc.getId()) == pc;
     }
 
     private static boolean valid(Pending p, L1PcInstance requester, L1PcInstance replier,
@@ -216,11 +216,11 @@ public final class CReplyChecker {
         if (!live(requester, p.requesterStamp) || !live(replier, p.replierStamp)) return false;
         if (requester.getClanid() != p.sourceClanId || replier.getClanid() != p.targetClanId
                 || requester.getMapId() != p.mapId || replier.getMapId() != p.mapId
-                || target == null || target.IsDismissed() || L1World.getInstance().getClan(p.targetClanId) != target
+                || target == null || target.IsDismissed() || CWorld.getInstance().getClan(p.targetClanId) != target
                 || (!replier.isCrown() && replier.getClanRank() != L1Clan.수호)) return false;
         if (p.sourceClanId == 0) return source == null;
         return source != null && !source.IsDismissed() && source != target
-                && L1World.getInstance().getClan(p.sourceClanId) == source
+                && CWorld.getInstance().getClan(p.sourceClanId) == source
                 && requester.isCrown() && requester.getId() == source.getLeaderId()
                 && source.getCastleId() == 0 && source.getHouseId() == 0;
     }
@@ -232,7 +232,7 @@ public final class CReplyChecker {
         final int replierStamp = replier.getSessionStamp();
         if (!live(requester, requesterStamp) || !live(replier, replierStamp)) return false;
         final int sourceClanId = requester.getClanid();
-        final L1Clan source = sourceClanId == 0 ? null : L1World.getInstance().getClan(sourceClanId);
+        final L1Clan source = sourceClanId == 0 ? null : CWorld.getInstance().getClan(sourceClanId);
         final Pending p = WAITING.attach(requester.getId(), replier.getId(), requester, replier,
                 requesterStamp, replierStamp, source, target, sourceClanId, target.getClanId(),
                 requester.getMapId(), System.nanoTime());

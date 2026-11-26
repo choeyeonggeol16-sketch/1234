@@ -5,7 +5,7 @@ import java.util.List;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
@@ -165,14 +165,14 @@ public class L1LiftGateInstance extends L1Object{
 	}
 
 	public void dispose(){
-		L1World.getInstance().removeVisibleObject(this);
-		L1World.getInstance().removeObject(this);
+		CWorld.getInstance().removeVisibleObject(this);
+		CWorld.getInstance().removeObject(this);
 		_isDisposing = true;
 		_worldPutBody = null;
 		down();
 	}
 	public void notifyDispose() {
-        final List<L1PcInstance> viewers=L1World.getInstance().getVisiblePlayer(this);
+        final List<L1PcInstance> viewers=CWorld.getInstance().getVisiblePlayer(this);
         if(viewers.isEmpty())return;
         final int objectId=getId(),action=_act;
         final var attrFrames=createSharedAttrs(isClose());
@@ -202,7 +202,7 @@ public class L1LiftGateInstance extends L1Object{
     }
 
 	public void notifyChanged() {
-        final List<L1PcInstance> viewers=L1World.getInstance().getVisiblePlayer(this);
+        final List<L1PcInstance> viewers=CWorld.getInstance().getVisiblePlayer(this);
         if(viewers.isEmpty())return;
         final int objectId=getId(),action=_act;
         final var attrFrames=createSharedAttrs(isClose());

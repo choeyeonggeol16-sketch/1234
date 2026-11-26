@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1MonsterInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
@@ -168,7 +168,7 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 		
 		set_status(EStatus.RUNNING);
 		_lift.up();
-		int spawns = (L1World.getInstance().getVisiblePlayers(_map_id).size() / 2) * CombatLoadManager.COMBAT_BT_MONSTER_PACK;
+		int spawns = (CWorld.getInstance().getVisiblePlayers(_map_id).size() / 2) * CombatLoadManager.COMBAT_BT_MONSTER_PACK;
 		set_death_count(new AtomicInteger(spawns));
 		CInstanceEvents.start(new Runnable(){
 			@Override
@@ -231,7 +231,7 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 	
 	private void broadcast(String s){
         if (_round_id >= 4) {
-            l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(L1World.getInstance().getVisiblePlayers(_map_id),s);
+            l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(CWorld.getInstance().getVisiblePlayers(_map_id),s);
         } else {
             l1j.server.server.model.network.core.broadcast.CSharedBroadcast
                     .sendWrittenMapTeamBestEffort(_map_id, _team_id, SC_SystemMessage.nativeWriter(s));

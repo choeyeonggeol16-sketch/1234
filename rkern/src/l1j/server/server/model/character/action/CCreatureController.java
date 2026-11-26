@@ -12,7 +12,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
@@ -790,10 +790,10 @@ public final class CCreatureController {
 
     /**
      * Combat execution now crosses the world-level attack boundary first.
-     * The underlying target onAction semantics are still preserved by L1World.attack().
+     * The underlying target onAction semantics are still preserved by CWorld.attack().
      */
     void DoAttack(L1PcInstance attacker, L1Character target) {
-        L1World.getInstance().attack(attacker, target);
+        CWorld.getInstance().attack(attacker, target);
     }
 
     public void MoveToTarget(int targetId, boolean forceAttack) {

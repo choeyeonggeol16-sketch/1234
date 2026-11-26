@@ -15,7 +15,7 @@ import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.effect.action.EffectModel;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -125,7 +125,7 @@ public class OnEffectThread {
     private void publishOwnerTick() {
         if (finished.get()) return;
         final CNPCServer npcs = CNPCServer.getInstance();
-        if (isExpired() || owner.isDestroyed() || L1World.getInstance().smartIdOf(owner) == 0L) {
+        if (isExpired() || owner.isDestroyed() || CWorld.getInstance().smartIdOf(owner) == 0L) {
             finish();
         } else if (npcs.postNpcWheelTask(owner, timer)) {
             admissionRetries = 0;
@@ -153,7 +153,7 @@ public class OnEffectThread {
         try {
             if (!initialized) {
                 initialized = true;
-                players = L1World.getInstance().getVisiblePlayer(owner, model.getRange());
+                players = CWorld.getInstance().getVisiblePlayer(owner, model.getRange());
                 SC_DoActionGFX.broadcast(owner, 19);
                 radius = model.getRange();
                 offset = 0;

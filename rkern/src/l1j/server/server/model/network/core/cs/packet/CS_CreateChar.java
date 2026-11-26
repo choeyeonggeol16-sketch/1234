@@ -14,7 +14,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Beginner;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.templates.L1Skills;
@@ -66,7 +66,7 @@ public final class CS_CreateChar {
 			return;
 		}
 
-		if (CharacterTable.getInstance().isContainNameList(name) || L1World.getInstance().getPlayer(name) != null) {
+		if (CharacterTable.getInstance().isContainNameList(name) || CWorld.getInstance().getPlayer(name) != null) {
 			_log.fine("charname: " + name + " already exists. creation failed.");
 			SC_CharCreateStatus.send(client, SC_CharCreateStatus.REASON_ALREADY_EXSISTS);
 			return;
@@ -124,7 +124,7 @@ public final class CS_CreateChar {
         final String accountName = pc.getAccountName();
         final int accountKey = l1j.server.server.storage.CacheD.accountOrderKey(accountName);
         final int creationKey = l1j.server.server.storage.CacheD.accountOrderKey("$character-create");
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final int skillId = pc.isWizard() ? 4 : pc.isElf() ? 131 : 0;
         final L1Skills skill = skillId == 0 ? null : SkillsTable.getInstance().getTemplate(skillId);
         // Creation is metadata, with no live PC yet. Retain both account and

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -166,7 +166,7 @@ public class ValakasReady implements Runnable {
 
 	private void checkPc() {
 		int check = 0;
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1PcInstance) {
 				check = 1;
 			}
@@ -183,11 +183,11 @@ public class ValakasReady implements Runnable {
 		if (ended) return;
 		ended = true;
 		try {
-		for (L1Object ob : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object ob : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if(ob == null) continue;
 			if(ob instanceof L1ItemInstance){
 				L1ItemInstance obj = (L1ItemInstance)ob;
-				CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
+				CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
 				groundInventory.DeleteItemAmount(obj);
 			}else if(ob instanceof L1NpcInstance){
 				L1NpcInstance npc = (L1NpcInstance)ob;

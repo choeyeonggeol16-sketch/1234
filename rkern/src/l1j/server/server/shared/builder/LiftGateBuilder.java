@@ -1,7 +1,7 @@
 package l1j.server.server.shared.builder;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.world.instance.shared.L1LiftGateInstance;
 
 public class LiftGateBuilder{
@@ -18,7 +18,7 @@ public class LiftGateBuilder{
 	
 	public L1LiftGateInstance build(int x, int y, short mapid, boolean isWidth, int weight) {
 		L1LiftGateInstance lift = new L1LiftGateInstance(IdFactory.getInstance().nextId(), _gfx, x, y, 2, mapid, isWidth, weight);
-		L1World.getInstance().storeAndEnterWorld(lift);
+		CWorld.getInstance().storeAndEnterWorld(lift);
 		lift.up();
 		return lift;
 	}
@@ -29,7 +29,7 @@ public class LiftGateBuilder{
 	
 	public L1LiftGateInstance build(int gfxId, int x, int y, short mapid, boolean isWidth, int weight) {
 		L1LiftGateInstance lift = new L1LiftGateInstance(IdFactory.getInstance().nextId(), gfxId, x, y, 2, mapid, isWidth, weight);
-		L1World.getInstance().storeAndEnterWorld(lift);
+		CWorld.getInstance().storeAndEnterWorld(lift);
 		lift.up();
 		return lift;
 	}

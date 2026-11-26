@@ -24,7 +24,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1WarSpawn;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
@@ -170,7 +170,7 @@ public class L1TowerInstance extends L1NpcInstance {
 				L1TowerInstance tower = null;
 
 				for (L1Object l1object
-						: L1World.getInstance().getObject()) {
+						: CWorld.getInstance().getObject()) {
 
 					if (l1object instanceof L1TowerInstance) {
 
@@ -343,17 +343,17 @@ public class L1TowerInstance extends L1NpcInstance {
 
 		_master = null;
 
-		L1World.getInstance()
+		CWorld.getInstance()
 				.removeVisibleObject(this);
 
-		L1World.getInstance()
+		CWorld.getInstance()
 				.removeObject(this);
 
 		try {
 		try (var sharedRemove = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 		        SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
 		for (L1PcInstance pc
-				: L1World.getInstance()
+				: CWorld.getInstance()
 						.getRecognizePlayer(this)) {
 
 			pc.removeKnownObject(this);

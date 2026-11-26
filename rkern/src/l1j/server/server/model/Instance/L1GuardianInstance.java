@@ -11,7 +11,7 @@ import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.Exp.CalcExp;
@@ -152,7 +152,7 @@ public class L1GuardianInstance extends L1NpcInstance {
 		int objid = getId();
 		L1NpcTalkData talking = NPCTalkDataTable.getInstance().getTemplate(
 				getNpcTemplate().get_npcId());
-		L1Object object = L1World.getInstance().findObject(getId());
+		L1Object object = CWorld.getInstance().findObject(getId());
 		if (object == null)
 			return;
 		L1NpcInstance target = (L1NpcInstance) object;

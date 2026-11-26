@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /** The owners of a durable receipt, captured once at admission.
@@ -184,7 +184,7 @@ final class InventoryTransactionOwners {
                 && (session == null || !session.isConnected())
                 && (session == null || current == null || current == session)
                 && captureSession(pc) == null
-                && L1World.getInstance().findObject(pc.getId()) == pc;
+                && CWorld.getInstance().findObject(pc.getId()) == pc;
     }
 
     void release() {

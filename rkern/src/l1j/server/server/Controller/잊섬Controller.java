@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Locale;
 
 import javolution.util.FastTable;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public class 잊섬Controller extends Thread {
@@ -95,13 +95,13 @@ public class 잊섬Controller extends Thread {
 				/** 오픈 **/
 				if (!isOpen() && !isGmOpen)
 					continue;
-				if (L1World.getInstance().getAllPlayers().size() <= 0)
+				if (CWorld.getInstance().getAllPlayers().size() <= 0)
 					continue;
 
 				isGmOpen = false;
 
 				/** 오픈 메세지 **/
-				L1World.getInstance().broadcastServerMessage("잠시후 잊혀진 섬 입장이 1시간 동안 가능 합니다.");
+				CWorld.getInstance().broadcastServerMessage("잠시후 잊혀진 섬 입장이 1시간 동안 가능 합니다.");
 
 				/** 잊섬컨트롤러 시작 **/
 				set잊섬Start(false);
@@ -116,7 +116,7 @@ public class 잊섬Controller extends Thread {
 				if (list.size() > 0) {
 					end_pc_map();
 				}
-				L1World.getInstance().broadcastServerMessage("잠시후 잊혀진 섬 이용 시간이 만료 됩니다.");
+				CWorld.getInstance().broadcastServerMessage("잠시후 잊혀진 섬 이용 시간이 만료 됩니다.");
 				End();
 			}
 		} catch (Exception e) {

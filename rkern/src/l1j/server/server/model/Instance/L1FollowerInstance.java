@@ -8,7 +8,7 @@ import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Npc;
@@ -44,7 +44,7 @@ public class L1FollowerInstance extends L1NpcInstance {
         }
 
         final int followerId = getNpcId();
-        for (L1Object object : L1World.getInstance().getVisibleObjects(this)) {
+        for (L1Object object : CWorld.getInstance().getVisibleObjects(this)) {
             if (!(object instanceof L1NpcInstance recipient) || !validRecipient(recipient)) continue;
             switch (followerId) {
                 case 71093:
@@ -104,8 +104,8 @@ public class L1FollowerInstance extends L1NpcInstance {
 		target.setParalyzed(true);
 		target.deleteMe();
 
-		L1World.getInstance().storeAndEnterWorld(this);
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+		CWorld.getInstance().storeAndEnterWorld(this);
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 			onPerceive(pc);
 		}
 
@@ -191,14 +191,14 @@ public class L1FollowerInstance extends L1NpcInstance {
             setSleepTime(1000L);
             return;
         }
-        final long recipientId = L1World.getInstance().smartIdOf(recipient);
+        final long recipientId = CWorld.getInstance().smartIdOf(recipient);
         if (recipientId == 0L) return;
         nextHandoffAt = now + 1000L;
         questHandoff = HANDOFF_PENDING;
         setSleepTime(1000L);
         CIOThreadCallback.getInstance().completeSession(client, () -> {
             if (isDestroyed() || isDead() || getMaster() != pc || !ownerStillNear(pc)
-                    || L1World.getInstance().findObjectBySmartId(recipientId) != recipient
+                    || CWorld.getInstance().findObjectBySmartId(recipientId) != recipient
                     || !validRecipient(recipient) || !handoffPositionStillValid(pc, questId)) {
                 questHandoff = HANDOFF_IDLE;
                 return;
@@ -315,7 +315,7 @@ public class L1FollowerInstance extends L1NpcInstance {
 				mob.setMap(Map);
 				mob.setHeading(H);
 				
-				L1World.getInstance().storeAndEnterWorld(mob);
+				CWorld.getInstance().storeAndEnterWorld(mob);
 				
 				if (mob instanceof L1QuestInstance newnpc) {
 					newnpc.onNpcAI();

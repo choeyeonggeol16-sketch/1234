@@ -2,7 +2,7 @@ package l1j.server.server.model.npc.ai.action;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.npc.ai.CNPCServer;
 
@@ -27,7 +27,7 @@ public final class dMoveToTarget {
             return false;
         }
         final L1Object target =
-                L1World.getInstance().findObject(targetObjectId);
+                CWorld.getInstance().findObject(targetObjectId);
         if (!validTarget(npc, target)) {
             return false;
         }
@@ -47,7 +47,7 @@ public final class dMoveToTarget {
                 || npc._scriptMoveMapId != npc.getMapId()) {
             return CCreatureController.RESULT_INVALID;
         }
-        final L1Object target = L1World.getInstance()
+        final L1Object target = CWorld.getInstance()
                 .findObject(npc._scriptMoveTargetId);
         return dMoveToTarget(npc, target, npc._scriptMoveStopDistance);
     }

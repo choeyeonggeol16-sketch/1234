@@ -45,7 +45,7 @@ import l1j.server.server.auth.login.LoginController;
 import l1j.server.server.GameServer;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.SystemUtil;
@@ -664,7 +664,7 @@ public class chocco extends JFrame {
         if (message.isEmpty()) return;
 
         appendLog(txtTrade, "[******]  :  " + message);
-        L1World.getInstance().broadcastServerMessage("[******] " + message);
+        CWorld.getInstance().broadcastServerMessage("[******] " + message);
     }
 
     private void showSimpleReport(String title, String text) {
@@ -767,7 +767,7 @@ public class chocco extends JFrame {
 			String value = (String) JOptionPane.showInputDialog(this, "이벤트를 시작하시겠습니까?", " Server Message", JOptionPane.QUESTION_MESSAGE, null, smallList, smallList[0]);
 			if (value != null) {
 				if (value.equals("올버프")) {
-					for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+					for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 						if (pc == null) {
 							continue;
 						}
@@ -785,10 +785,10 @@ public class chocco extends JFrame {
 						}
 					}
 				} else if (value.equals("전체채금")) {
-					L1World.getInstance().set_worldChatElabled(false);
+					CWorld.getInstance().set_worldChatElabled(false);
 					appendLog(txtGlobalChat, "전체채금 실행");
 				} else if (value.equals("채금해제")) {
-					L1World.getInstance().set_worldChatElabled(true);
+					CWorld.getInstance().set_worldChatElabled(true);
 					appendLog(txtGlobalChat, "채금해제 실행");
 				} else {
 					JOptionPane.showMessageDialog(this, "준비중인 서비스 입니다..", " Server Message", JOptionPane.INFORMATION_MESSAGE);
@@ -841,9 +841,9 @@ public class chocco extends JFrame {
 				if (!message.isEmpty()) {
 					if (name.getText().trim().isEmpty()) {
 						appendLog(txtTrade, "[******]  :  " + message);
-						L1World.getInstance().broadcastServerMessage("[******] " + message);
+						CWorld.getInstance().broadcastServerMessage("[******] " + message);
 					} else {
-						L1PcInstance pc = L1World.getInstance().getPlayer(name.getText().trim());
+						L1PcInstance pc = CWorld.getInstance().getPlayer(name.getText().trim());
 						if (pc != null) {
 							appendLog(txtWhisper, "[******] -> [" + name.getText() + "]  :  " + message);
 							SC_SystemMessage.send(pc, "[******] -> " + message);
@@ -874,7 +874,7 @@ public class chocco extends JFrame {
 
 	private void menu1ActionPerformed(java.awt.event.ActionEvent evt) {
 		if (serverstart && userlist.getSelectedItem() != null) {
-			L1PcInstance players = L1World.getInstance().getPlayer(userlist.getSelectedItem());
+			L1PcInstance players = CWorld.getInstance().getPlayer(userlist.getSelectedItem());
 			if (players != null) {
 				GameServer.disconnectChar(userlist.getSelectedItem());
 				JOptionPane.showMessageDialog(this, players.getName() + "를 강제추방 하였습니다.", "Server Message", JOptionPane.INFORMATION_MESSAGE);
@@ -887,7 +887,7 @@ public class chocco extends JFrame {
 
 	private void menu2ActionPerformed(java.awt.event.ActionEvent evt) {
 		if (serverstart && userlist.getSelectedItem() != null) {
-			L1PcInstance pc = L1World.getInstance().getPlayer(userlist.getSelectedItem());
+			L1PcInstance pc = CWorld.getInstance().getPlayer(userlist.getSelectedItem());
 			if (pc != null && pc.getNetConnection() != null) {
 				IpTable.getInstance().banIp(pc.getNetConnection().getIp());
 				iplist.add(pc.getNetConnection().getIp());
@@ -900,7 +900,7 @@ public class chocco extends JFrame {
 
 	private void menu3ActionPerformed(java.awt.event.ActionEvent evt) {
 		if (serverstart && !inf && userlist.getSelectedItem() != null) {
-			L1PcInstance pc = L1World.getInstance().getPlayer(userlist.getSelectedItem());
+			L1PcInstance pc = CWorld.getInstance().getPlayer(userlist.getSelectedItem());
 			if (pc != null) new infomation(pc);
 		}
 	}
@@ -924,14 +924,14 @@ public class chocco extends JFrame {
 
 	private void menu7ActionPerformed(java.awt.event.ActionEvent evt) {
 		if (serverstart && userlist.getSelectedItem() != null) {
-			L1PcInstance pc = L1World.getInstance().getPlayer(userlist.getSelectedItem());
+			L1PcInstance pc = CWorld.getInstance().getPlayer(userlist.getSelectedItem());
 			if (pc != null) name.setText(pc.getName());
 		}
 	}
 
 	private void menu6ActionPerformed(java.awt.event.ActionEvent evt) {
 		if (serverstart && !inf && userlist.getSelectedItem() != null) {
-			L1PcInstance pc = L1World.getInstance().getPlayer(userlist.getSelectedItem());
+			L1PcInstance pc = CWorld.getInstance().getPlayer(userlist.getSelectedItem());
 			if (pc != null) new Give(pc);
 		}
 	}

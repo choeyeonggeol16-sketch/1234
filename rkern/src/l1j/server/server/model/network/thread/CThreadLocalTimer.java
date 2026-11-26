@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 import org.jctools.queues.MpmcArrayQueue;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.CNpcMaker;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -172,7 +172,7 @@ public final class CThreadLocalTimer {
         while (distantSize != 0) {
             final Node head = distant[0];
             if (staleBudget > 0 && head.kind == KIND_ITEM) {
-                final Object object = L1World.getInstance().findObjectBySmartId(head.l0);
+                final Object object = CWorld.getInstance().findObjectBySmartId(head.l0);
                 if (!(object instanceof L1ItemInstance item)
                         || !item.isItemTimerCurrent(head.p0, head.p1)) {
                     recycleNode(removeDistant(0));
@@ -366,12 +366,12 @@ public final class CThreadLocalTimer {
 						retryAction = !controller.AddExecutableTimer(cur.p0, cur.p1);
 					}
                 } else if (cur.kind == KIND_ITEM) {
-                    final Object item = L1World.getInstance().findObjectBySmartId(cur.l0);
+                    final Object item = CWorld.getInstance().findObjectBySmartId(cur.l0);
                     if (item instanceof L1ItemInstance live
                             && live.isItemTimerCurrent(cur.p0, cur.p1)) {
                         // Saturation: keep the same timer node for next tick.
                         // CWorld rechecks identity and the tile rechecks generation.
-                        retryAction = !L1World.getInstance().AsyncItemTimer(live, cur.p0, cur.p1);
+                        retryAction = !CWorld.getInstance().AsyncItemTimer(live, cur.p0, cur.p1);
                     }
 				} else {
                     retryAction = dispatch(owner, cur);
@@ -419,7 +419,7 @@ public final class CThreadLocalTimer {
 		}
 
         case KIND_PC_TELEPORT: {
-            final Object obj = L1World.getInstance().findObjectBySmartId(node.l0);
+            final Object obj = CWorld.getInstance().findObjectBySmartId(node.l0);
             if (obj instanceof L1PcInstance pc && pc.getSessionStamp() == node.p0
                     && pc.teleportTimerEpoch() == node.p1
                     && CIOThreadCallback.getInstance().shardOf(pc) == owner) {
@@ -431,7 +431,7 @@ public final class CThreadLocalTimer {
         }
 
 		case KIND_PC_ITEM_DELAY: {
-            final Object obj = L1World.getInstance().findObjectBySmartId(node.l0);
+            final Object obj = CWorld.getInstance().findObjectBySmartId(node.l0);
 			if (obj instanceof L1PcInstance pc
                     && CIOThreadCallback.getInstance().shardOf(pc) == owner) {
                 final CCreatureController controller = pc.getCreatureController();
@@ -443,7 +443,7 @@ public final class CThreadLocalTimer {
 
 		case KIND_NPC_TIMER: {
 			final Object obj =
-					L1World.getInstance()
+					CWorld.getInstance()
 							.findObjectBySmartId(
 									node.l0);
 

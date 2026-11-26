@@ -100,9 +100,9 @@ public class PrivateStoreTest {
         void setPurchasings(ArrayList<DynamicShopItem> l){buys=l;} void setPrivateShop(boolean b){shop=b;}
         void setCurrentSprite(int i){sprite=i;} void curePoison(){}
     }
-    static class L1World {
-        static final L1World world=new L1World(); final List<L1PcInstance> players=new ArrayList<>();
-        static L1World getInstance(){return world;} List<L1PcInstance> getAllPlayers3(){return players;}
+    static class CWorld {
+        static final CWorld world=new CWorld(); final List<L1PcInstance> players=new ArrayList<>();
+        static CWorld getInstance(){return world;} List<L1PcInstance> getAllPlayers3(){return players;}
     }
     static class DynamicShopItem {
         int objId,itemId,count,price,iden,enchant,attr; boolean isPurchase;
@@ -170,7 +170,7 @@ public class PrivateStoreTest {
     static void noOpen(L1PcInstance pc,String why){check(!pc.shop&&pc.inv.depth==0,why);}
     public static void main(String[] args) {
         L1PcInstance pc=new L1PcInstance(1),customer=new L1PcInstance(2);
-        L1World.world.players.add(pc);L1World.world.players.add(customer);
+        CWorld.world.players.add(pc);CWorld.world.players.add(customer);
         L1ItemInstance item=new L1ItemInstance(11,100);
         pc.inv.items.put(11,item);pc.inv.items.put(12,new L1ItemInstance(12,40308));
         pc.trade=new Object();open(pc,11,1,1);noOpen(pc,"trade");pc.trade=null;

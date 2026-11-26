@@ -1,14 +1,19 @@
 package l1j.server.server.model;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
+
+import sun.misc.Unsafe;
 
 public final class WorldBroadcastAudienceRegression {
     public static void main(String[] args) throws Exception {
@@ -16,6 +21,7 @@ public final class WorldBroadcastAudienceRegression {
         recycledMapIdRemainsIsolated();
         clanGazeSnapshotRemainsStable();
         failingSightUpdateDoesNotAbortNestedFanout();
+        canonicalWorldKeepsIdentityAndVisibilityInSync();
         System.out.println("PASS world broadcast audience regression");
     }
 
@@ -99,6 +105,66 @@ public final class WorldBroadcastAudienceRegression {
         viewer.setId(24);
         viewer.getCreatureController().ReconcileSight(trigger, false);
         check(processedHealthy.get(), "failed reentrant sight update cannot abort later work");
+    }
+
+    private static void canonicalWorldKeepsIdentityAndVisibilityInSync() throws Exception {
+        // Supply only map definitions. CWorld and all its registries/serializer are real.
+        final Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        final Unsafe allocator = (Unsafe) unsafeField.get(null);
+        final MapsTable table = (MapsTable) allocator.allocateInstance(MapsTable.class);
+        final Field maps = MapsTable.class.getDeclaredField("_maps");
+        maps.setAccessible(true);
+        maps.set(table, Map.of());
+        final Field mapSingleton = MapsTable.class.getDeclaredField("_instance");
+        mapSingleton.setAccessible(true);
+        mapSingleton.set(null, table);
+
+        final CWorld world = CWorld.getInstance();
+        final L1Map room = map();
+        final L1PcInstance origin = player(room, 31, 100);
+        origin.setName("origin");
+        final L1PcInstance peer = player(room, 32, 101);
+        peer.setName("old peer");
+        final L1PcInstance differentRoom = player(map(), 33, 102);
+        differentRoom.setName("different room");
+        final L1PcInstance replacement = player(room, 32, 103);
+        replacement.setName("replacement");
+
+        try {
+            world.storeAndEnterWorld(origin);
+            check(world.AsyncStoreAndEnterWorld(peer), "canonical serializer admitted the peer");
+            world.storeAndEnterWorld(differentRoom);
+            final long oldIdentity = world.smartIdOf(peer);
+            check(oldIdentity != 0 && world.findObjectBySmartId(oldIdentity) == peer,
+                    "ID and smart-ID lookup share the active registration");
+            check(world.getPlayer("OLD PEER") == peer && world.getAllPlayers().contains(peer),
+                    "name and player roster share the active registration");
+            check(world.getVisiblePlayerFast(origin).equals(List.of(peer)),
+                    "world AOI excludes a separate instance with the same map ID");
+
+            check(world.AsyncStoreAndEnterWorld(replacement), "canonical serializer admitted the ID replacement");
+            check(world.AsyncRemoveObject(peer), "stale asynchronous removal admitted harmlessly");
+            check(world.ExecutableBacklog() == 0, "world serializer drained in the caller");
+            check(world.findObject(peer.getId()) == replacement && world.findObjectBySmartId(oldIdentity) == null,
+                    "stale identity and removal cannot affect the replacement");
+            check(world.getPlayer("old peer") == null && world.getPlayer("REPLACEMENT") == replacement,
+                    "ID replacement retires the original name entry");
+            check(world.getVisiblePlayerFast(origin).equals(List.of(replacement)),
+                    "world AOI retires the original and observes only the replacement");
+
+            world.clear();
+            final CWorld next = CWorld.getInstance();
+            check(next != world && CWorld.getInstance() == next,
+                    "reset publishes a different stable world for stale callback checks");
+            check(next.findObject(replacement.getId()) == null && next.getAllPlayers().isEmpty()
+                            && next.getVisiblePlayerFast(origin).isEmpty(),
+                    "replacement world starts with empty identity and AOI registries");
+        } finally {
+            world.leaveAndRemoveObject(origin);
+            world.leaveAndRemoveObject(replacement);
+            world.leaveAndRemoveObject(differentRoom);
+        }
     }
 
     private static L1Map map() {

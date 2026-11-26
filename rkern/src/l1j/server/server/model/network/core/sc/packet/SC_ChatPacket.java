@@ -5,7 +5,7 @@ import java.nio.charset.Charset;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -70,7 +70,7 @@ public final class SC_ChatPacket {
         final String name=source.getName()==null?"":source.getName();
         final String formatted=name+": "+(chat==null?"":chat);
         if(!fitsBroadcastChat(formatted,true))return;
-        final L1World world=L1World.getInstance();
+        final CWorld world=CWorld.getInstance();
         final java.util.List<L1PcInstance> visible=world.borrowVisiblePlayerFast(source);
         try {
             CSharedBroadcast.sendWrittenRecipientsBestEffort(visible,

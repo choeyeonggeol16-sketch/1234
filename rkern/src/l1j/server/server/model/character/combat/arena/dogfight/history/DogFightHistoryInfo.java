@@ -10,7 +10,7 @@ import l1j.server.server.model.character.combat.arena.dogfight.history.log.DogFi
 import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.shared.KeyValuePair;
 import l1j.server.server.templates.L1Item;
@@ -288,7 +288,7 @@ public class DogFightHistoryInfo {
 	            DogFightTicketInfo tInfo = m_tickets_info.get(pair.key);
 
 	            pc.getInventory().CreateOrAddItem(ticket);
-	            L1World.getInstance().storeObject(ticket);
+	            CWorld.getInstance().storeObject(ticket);
 
 	            m_total_ticket_count += pair.value;
 	            int price = get_ticket_price() * pair.value;

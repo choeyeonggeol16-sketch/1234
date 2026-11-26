@@ -41,7 +41,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 
@@ -50,7 +50,7 @@ public final class DogFightEnhancementItems {
 	public static void 투견조작(L1PcInstance pc, int targetId, L1ItemInstance item) {
 		SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
 		SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
-		L1Object target = L1World.getInstance().findObject(targetId);
+		L1Object target = CWorld.getInstance().findObject(targetId);
 		
 		if (target != null && target instanceof DogFightInstance) {
 			

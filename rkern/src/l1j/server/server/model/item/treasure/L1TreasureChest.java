@@ -3,7 +3,7 @@ package l1j.server.server.model.item.treasure;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -118,8 +118,8 @@ public class L1TreasureChest extends L1Object {
 	}
 
 	public void dispose(){
-		L1World.getInstance().removeVisibleObject(this);
-		L1World.getInstance().removeObject(this);
+		CWorld.getInstance().removeVisibleObject(this);
+		CWorld.getInstance().removeObject(this);
 		_worldPutBody = null;
 		remove();
 		_ofilter 		= null;
@@ -128,8 +128,8 @@ public class L1TreasureChest extends L1Object {
 	}
 
 	public void dispose(boolean isDestroy){
-		L1World.getInstance().removeVisibleObject(this);
-		L1World.getInstance().removeObject(this);
+		CWorld.getInstance().removeVisibleObject(this);
+		CWorld.getInstance().removeObject(this);
 		_worldPutBody = null;
 		CWorldWork.execute(() -> {
 			showOpen();
@@ -160,7 +160,7 @@ public class L1TreasureChest extends L1Object {
 	private void remove() {
         try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                 SC_RemoveObject.nativeWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-            for(L1PcInstance pc:L1World.getInstance().getVisiblePlayer(this)) {
+            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayer(this)) {
                 if(pc==null)continue;
                 pc.removeKnownObject(this);
                 final var client=pc.getNetConnection();
@@ -174,7 +174,7 @@ public class L1TreasureChest extends L1Object {
     }
 	private void showOpen(){
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast
-                .sendWrittenRecipientsBestEffort(L1World.getInstance().getVisiblePlayer(this),
+                .sendWrittenRecipientsBestEffort(CWorld.getInstance().getVisiblePlayer(this),
                         SC_DoActionGFX.nativeWriter(getId(), CHEST_OPEN));
     }
 

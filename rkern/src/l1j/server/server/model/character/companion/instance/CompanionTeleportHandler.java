@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.world.instance.shared.EffectTriggerInstance;
 import l1j.server.server.shared.geometry.GamePoint;
@@ -34,7 +34,7 @@ public final class CompanionTeleportHandler {
 	         * 기존 위치에서 보고 있던 플레이어들에게 companion / trigger 제거.
 	         */
 	        final ArrayList<L1PcInstance> oldViewers =
-	                L1World.getInstance().getVisiblePlayer(companion);
+	                CWorld.getInstance().getVisiblePlayer(companion);
 
 	        hideCompanionFromViewer(owner, companion, triggers);
 
@@ -50,7 +50,7 @@ public final class CompanionTeleportHandler {
 	         */
 	        final GamePoint pt = GamePoint.newInstance(next_x, next_y, 2, mid);
 
-	        L1World.getInstance().relocateVisibleObject(
+	        CWorld.getInstance().relocateVisibleObject(
 	                companion, pt.x, pt.y, mid);
 
 	        if (triggers != null) {
@@ -58,7 +58,7 @@ public final class CompanionTeleportHandler {
 	                trigger.setX(pt.x);
 	                trigger.setY(pt.y);
 	                trigger.setMap(mid);
-	                L1World.getInstance().getClusterGrid().relocate(trigger);
+	                CWorld.getInstance().getClusterGrid().relocate(trigger);
 	            }
 	        }
 
@@ -68,7 +68,7 @@ public final class CompanionTeleportHandler {
 	         */
 	        showCompanionToViewer(owner, companion, triggers);
 
-	        for (L1PcInstance viewer : L1World.getInstance().getVisiblePlayerFast(companion)) {
+	        for (L1PcInstance viewer : CWorld.getInstance().getVisiblePlayerFast(companion)) {
 	            if (viewer == null || viewer == owner) {
 	                continue;
 	            }

@@ -19,7 +19,7 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ManagerInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.warehouse.ClanWarehouse;
@@ -68,7 +68,7 @@ public class ClanTable {
 
 	private void publishClans() {
 		for (L1Clan clan : _clans.valueCollection()) {
-			if (clan != null) L1World.getInstance().storeClan(clan);
+			if (clan != null) CWorld.getInstance().storeClan(clan);
 		}
 	}
 
@@ -174,7 +174,7 @@ public class ClanTable {
 			return null;
 		}
 		
-		L1Clan clan = L1World.getInstance().findClan(Config.신규혈맹이름);
+		L1Clan clan = CWorld.getInstance().findClan(Config.신규혈맹이름);
 		if(clan != null){
 			manager.setClanid(clan.getClanId());
 			manager.setClanname(clan.getClanName());
@@ -240,7 +240,7 @@ public class ClanTable {
             return null;
 		}
 
-		L1World.getInstance().storeClan(clan);
+		CWorld.getInstance().storeClan(clan);
 		_clans.put(clan.getClanId(), clan);
 
 		manager.setClanid(clan.getClanId());
@@ -256,7 +256,7 @@ public class ClanTable {
     public void createClanPaid(L1PcInstance player, String clanName, Consumer<L1Clan> committed) {
         if (player == null || clanName == null || clanName.isEmpty() || player.getClanid() != 0
                 || !player.isCrown() || player.isGhost()) return;
-        if (L1World.getInstance().findClan(clanName) != null) return;
+        if (CWorld.getInstance().findClan(clanName) != null) return;
         final L1Clan clan = new L1Clan();
         clan.setClanId(IdFactory.getInstance().nextId());
         clan.setClanName(clanName);
@@ -311,9 +311,9 @@ public class ClanTable {
                     player, "혈맹 창설을 완료하지 못했습니다. 다시 시도해 주세요."));
             tx.commitAfterInventoryRelease(() -> {
                 if (ClanTable.getInstance() != this || player.getClanid() != 0
-                        || L1World.getInstance().findClan(clanName) != null)
+                        || CWorld.getInstance().findClan(clanName) != null)
                     throw new IllegalStateException("Clan creation world preimage changed after COMMIT");
-                L1World.getInstance().storeClan(clan);
+                CWorld.getInstance().storeClan(clan);
                 _clans.put(clan.getClanId(), clan);
                 player.setClanid(clan.getClanId());
                 player.setClanname(clanName);
@@ -432,7 +432,7 @@ public class ClanTable {
             return null;
 		}
 
-		L1World.getInstance().storeClan(clan);
+		CWorld.getInstance().storeClan(clan);
 		_clans.put(clan.getClanId(), clan);
 
 		player.setClanid(clan.getClanId());
@@ -534,7 +534,7 @@ public class ClanTable {
         final String name = clan.getClanName();
         try {
             CacheD.getInstance().submitDbJobOrdered(clanId, () -> {
-                if (L1World.getInstance().getClan(clanId) != clan) return;
+                if (CWorld.getInstance().getClan(clanId) != clan) return;
                 final long counts = clan.GetMemberCounts();
                 final String sql = "UPDATE clan_data SET total_m=?,current_m=? WHERE clan_id=? AND clan_name=?";
                 try (Connection con = DatabaseFactory.getInstance().getConnection();
@@ -622,7 +622,7 @@ public class ClanTable {
             return;
 		}
 
-		L1World.getInstance().storeClan(clan);
+		CWorld.getInstance().storeClan(clan);
 		_clans.put(clan.getClanId(), clan);
         player.setClanid(clan.getClanId());
         player.setClanname(clan.getClanName());
@@ -742,7 +742,7 @@ public class ClanTable {
     public void forgetCommittedClanDisband(L1Clan clan, ClanWarehouse vault) {
         if (_clans.get(clan.getClanId()) != clan)
             throw new IllegalStateException("Stale committed pledge dismissal");
-        L1World.getInstance().removeClan(clan);
+        CWorld.getInstance().removeClan(clan);
         _clans.remove(clan.getClanId());
         WarehouseManager.getInstance().retireDisbandedClanWarehouse(clan.getClanName(), vault);
     }
@@ -769,7 +769,7 @@ public class ClanTable {
             clanWarehouse.clearItems();
             clanWarehouse.deleteAllItems();
         }
-        L1World.getInstance().removeClan(clan);
+        CWorld.getInstance().removeClan(clan);
         _clans.remove(clan.getClanId());
     }
 
@@ -781,7 +781,7 @@ public class ClanTable {
         if (clan == null || _clans.get(clan.getClanId()) != clan) {
             throw new IllegalStateException("Stale source pledge after merge commit");
         }
-        L1World.getInstance().removeClan(clan);
+        CWorld.getInstance().removeClan(clan);
         _clans.remove(clan.getClanId());
         try {
             WarehouseManager.getInstance().delClanWarehouse(clan.getClanName());
@@ -793,7 +793,7 @@ public class ClanTable {
     }
 
 	public void deleteClan(String clan_name) {
-		L1Clan clan = L1World.getInstance().findClan(clan_name);
+		L1Clan clan = CWorld.getInstance().findClan(clan_name);
 		if (clan != null) {
 			deleteClan(clan);
 		}
@@ -812,7 +812,7 @@ public class ClanTable {
 		// The staged table never publishes until its roster and warehouses load.
 		ClanTable candidate = new ClanTable(false);
 		ClanTable oldInstance = _instance;
-		L1World.getInstance().clearClan();
+		CWorld.getInstance().clearClan();
 		candidate.publishClans();
 		_instance = candidate;
 		if (oldInstance != null) oldInstance._clans.clear();

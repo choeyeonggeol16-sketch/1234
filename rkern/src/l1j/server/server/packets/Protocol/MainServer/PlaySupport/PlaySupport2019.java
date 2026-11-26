@@ -6,7 +6,7 @@ import java.util.HexFormat;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
 import java.util.logging.Logger;
@@ -372,7 +372,7 @@ public final class PlaySupport2019 {
 
     /** Reload recalculates active leases without stopping the client's PSS automation. */
     public static void refreshForReload() {
-        for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+        for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
             final CUserSocket client = pc.getNetConnection();
             if (client == null) continue;
             final ClientAutomationSession session = client.getAutomationSession();

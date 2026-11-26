@@ -6,7 +6,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -38,7 +38,7 @@ public final class CS_GiveItem {
             return;
         }
 
-        final L1Object object = L1World.getInstance().findObject(targetId);
+        final L1Object object = CWorld.getInstance().findObject(targetId);
 
         if (!(object instanceof L1NpcInstance)) {
             return;

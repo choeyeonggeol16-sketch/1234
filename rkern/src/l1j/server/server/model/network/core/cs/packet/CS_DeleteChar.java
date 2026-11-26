@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.CharacterTable;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -86,7 +86,7 @@ public final class CS_DeleteChar {
     private static int performDelete(String account, String name) throws Exception {
         final L1PcInstance pc = CharacterTable.getInstance().restoreCharacter(name);
         if (pc == null || !account.equals(pc.getAccountName())) return ERROR_MISSING;
-        for (L1PcInstance player : L1World.getInstance().getAllPlayers3()) {
+        for (L1PcInstance player : CWorld.getInstance().getAllPlayers3()) {
             if (player != null && player.getId() == pc.getId()) return ERROR_ONLINE;
         }
         if (pc.getLevel() >= 1 && Config.DELETE_CHARACTER_AFTER_7DAYS) {

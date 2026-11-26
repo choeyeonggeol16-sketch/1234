@@ -9,7 +9,7 @@ import l1j.server.server.datatables.CObjectDB;
 import javax.swing.JOptionPane;
 
 import l1j.server.server.model.inventory.CInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -129,7 +129,7 @@ public class Give extends javax.swing.JFrame {
 		int count = Integer.parseInt(ItemCount.getText());
 		int enchant = Integer.parseInt(ItemEn.getText());		
 		String name2 = PcName.getText();		
-		for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+		for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 			if(pc.getName().equalsIgnoreCase(name2)){					   
 				L1Item temp = CObjectDB.GetItem(itemid);
 				if (temp != null) {

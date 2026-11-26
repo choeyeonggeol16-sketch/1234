@@ -11,7 +11,7 @@ import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.basic.huntingground.CompanionHuntingGround;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -93,7 +93,7 @@ public final class ExpGainCalculator {
             L1Clan clan = null;
             if (pc.getClanid() != 0) {
                 clan = pc.getClan();
-                if (clan == null) clan = L1World.getInstance().getClan(pc.getClanid());
+                if (clan == null) clan = CWorld.getInstance().getClan(pc.getClanid());
             }
             if (clan != null && clan.getCastleId() != 0) {
                 BloodBonus += Config.성혈경험치;

@@ -2,7 +2,7 @@ package l1j.server.server.model.character.action;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class CMoveToTargetAction extends CNewAction {
@@ -26,7 +26,7 @@ public final class CMoveToTargetAction extends CNewAction {
         }
 
         final int targetId = controller.i0();
-        final L1Object obj = L1World.getInstance().findObject(targetId);
+        final L1Object obj = CWorld.getInstance().findObject(targetId);
         if (!(obj instanceof L1Character)) {
             return true;
         }

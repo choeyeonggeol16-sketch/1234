@@ -6,7 +6,7 @@ import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 
 public final class SC_EinhasadClanBuff {
     private SC_EinhasadClanBuff() {}
@@ -19,7 +19,7 @@ public final class SC_EinhasadClanBuff {
         if (client == null || !client.isConnected() || pc == null ) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
-        final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+        final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
         final boolean hasClan = clan != null;
         final int buffFirst = hasClan ? clan.getBuffFirst() : 0;
         final int buffSecond = hasClan ? clan.getBuffSecond() : 0;

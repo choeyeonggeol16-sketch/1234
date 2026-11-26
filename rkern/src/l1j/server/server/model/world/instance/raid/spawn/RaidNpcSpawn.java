@@ -9,7 +9,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Location;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.templates.L1Npc;
 
@@ -243,7 +243,7 @@ public class RaidNpcSpawn {
 			npc.setHeading(_heading);
 			npc.setLightSize(npc.getNpcTemplate().getLightSize());
 			npc.refreshLight();
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 			SC_WorldPutObject.broadcastNpc(npc);
 		}catch(Exception e){
 			e.printStackTrace();
@@ -269,7 +269,7 @@ public class RaidNpcSpawn {
 			npc.setLightSize(npc.getNpcTemplate().getLightSize());
 			npc.refreshLight();
 			npc.setPassObject(false);
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -294,7 +294,7 @@ public class RaidNpcSpawn {
 			npc.setLightSize(npc.getNpcTemplate().getLightSize());
 			npc.refreshLight();
 			npc.setPassObject(false);
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -318,7 +318,7 @@ public class RaidNpcSpawn {
 			npc.setHeading(_heading);
 			npc.setLightSize(npc.getNpcTemplate().getLightSize());
 			npc.refreshLight();
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -353,7 +353,7 @@ public class RaidNpcSpawn {
 	public void manualNpc(L1NpcInstance npc){
 		npc.setLightSize(npc.getNpcTemplate().getLightSize());
 		npc.refreshLight();
-		L1World.getInstance().storeAndEnterWorld(npc);
+		CWorld.getInstance().storeAndEnterWorld(npc);
 	}
 	
 	public ArrayList<L1NpcInstance> spawnForArray(int npcid, int mapId, int[][] posArray){
@@ -380,7 +380,7 @@ public class RaidNpcSpawn {
 				npc.setHeading(_heading);
 				npc.setLightSize(npc.getNpcTemplate().getLightSize());
 				npc.refreshLight();
-				L1World.getInstance().storeAndEnterWorld(npc);
+				CWorld.getInstance().storeAndEnterWorld(npc);
 				npc.setPassObject(false);
 				npcs.add(npc);
 			}

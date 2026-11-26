@@ -6,7 +6,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -85,7 +85,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 			return false;
 		}
 
-		return !L1World.getInstance().hasRecognizePlayerFast(this);
+		return !CWorld.getInstance().hasRecognizePlayerFast(this);
 	}
 
 	@Override
@@ -201,7 +201,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 			}
 
 			else if (npcid == 60514) { 
-				for (L1Clan clan : L1World.getInstance().getAllClans()) {
+				for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 					if (clan.getCastleId() 
 					== L1CastleLocation.KENT_CASTLE_ID) {
 						clan_name = clan.getClanName();
@@ -212,7 +212,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 				htmlid = "ktguard6";
 				htmldata = new String[] { getName(), clan_name, pri_name };
 			} else if (npcid == 60560) { 
-				for (L1Clan clan : L1World.getInstance().getAllClans()) {
+				for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 					if (clan.getCastleId() 
 					== L1CastleLocation.OT_CASTLE_ID) {
 						clan_name = clan.getClanName();
@@ -223,7 +223,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 				htmlid = "orcguard6";
 				htmldata = new String[] { getName(), clan_name, pri_name };
 			} else if (npcid == 60552 || npcid == 5155) {
-				for (L1Clan clan : L1World.getInstance().getAllClans()) {
+				for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 					if (clan.getCastleId()
 					== L1CastleLocation.WW_CASTLE_ID) {
 						clan_name = clan.getClanName();
@@ -235,7 +235,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 				htmldata = new String[] { getName(), clan_name, pri_name };
 			} else if (npcid == 60524 || // 공성 경비병 클릭시
 					npcid == 60525 || npcid == 60529 || npcid == 7320232) {
-				for (L1Clan clan : L1World.getInstance().getAllClans()) {
+				for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 					if (clan.getCastleId() == L1CastleLocation.GIRAN_CASTLE_ID) {
 						clan_name = clan.getClanName();
 						pri_name = clan.getLeaderName();
@@ -245,7 +245,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 				htmlid = "grguard6";
 				htmldata = new String[] { getName(), clan_name, pri_name };
 			} else if (npcid == 70857) { 
-				for (L1Clan clan : L1World.getInstance().getAllClans()) {
+				for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 					if (clan.getCastleId() 
 					== L1CastleLocation.HEINE_CASTLE_ID) {
 						clan_name = clan.getClanName();
@@ -257,7 +257,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 				htmldata = new String[] { getName(), clan_name, pri_name };
 			} else if (npcid == 60530 || 
 					npcid == 60531) {
-				for (L1Clan clan : L1World.getInstance().getAllClans()) {
+				for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 					if (clan.getCastleId() 
 					== L1CastleLocation.DOWA_CASTLE_ID) {
 						clan_name = clan.getClanName();
@@ -269,7 +269,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 				htmldata = new String[] { getName(), clan_name, pri_name };
 			} else if (npcid == 60533 || 
 					npcid == 60534) {
-				for (L1Clan clan : L1World.getInstance().getAllClans()) {
+				for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 					if (clan.getCastleId() 
 					== L1CastleLocation.ADEN_CASTLE_ID) {
 						clan_name = clan.getClanName();
@@ -280,7 +280,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 				htmlid = "adguard6";
 				htmldata = new String[] { getName(), clan_name, pri_name };
 			} else if (npcid == 81156) {
-				for (L1Clan clan : L1World.getInstance().getAllClans()) {
+				for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 					if (clan.getCastleId()
 					== L1CastleLocation.DIAD_CASTLE_ID) {
 						clan_name = clan.getClanName();
@@ -404,7 +404,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 
 	private boolean checkHasCastle(L1PcInstance pc, int castleId) {
 		boolean isExistDefenseClan = false;
-		for (L1Clan clan : L1World.getInstance().getAllClans()) {
+		for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 			if (castleId == clan.getCastleId()) {
 				isExistDefenseClan = true;
 				break;
@@ -415,7 +415,7 @@ public class L1CastleGuardInstance extends L1NpcInstance {
 		}
 
 		if (pc.getClanid() != 0) {
-			L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+			L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 			if (clan != null) {
 				if (clan.getCastleId() == castleId) {
 					return true;

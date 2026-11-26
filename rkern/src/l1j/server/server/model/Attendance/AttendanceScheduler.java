@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.gametime.TimeListener;
@@ -161,7 +161,7 @@ public class AttendanceScheduler implements TimeListener{
 	}
 
 	private void updatePlayers(int seconds, boolean rollover) {
-		L1World.getInstance().getAllPlayerStream().forEach(pc -> {
+		CWorld.getInstance().getAllPlayerStream().forEach(pc -> {
 			if (pc == null || pc.isLogoutStarted() || pc.is무인상점() || pc.getOnlineStatus() != 1) return;
 			final SC_ATTENDANCE_USER_DATA_EXTEND data = pc.getAttendanceData();
 			if (data == null) return;

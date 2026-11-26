@@ -171,7 +171,7 @@ public class Getback {
 			if (pc != null && pc.getClanid() != 0) {
 				int castle_id = 0;
 				int house_id = 0;
-				L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+				L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 				if (clan != null) {
 					castle_id = clan.getCastleId();
 					house_id = clan.getHouseId();

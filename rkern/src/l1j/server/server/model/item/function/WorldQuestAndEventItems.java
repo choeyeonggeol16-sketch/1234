@@ -3,7 +3,7 @@ import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.L1NeigeItemBox;
 import l1j.server.server.model.quest.CQuestSystem;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -36,7 +36,7 @@ case 40566: { // 신비한 소라 껍데기
 		            && !pc.getInventory().HaveItemByClassId(40548)) { // 망령의 봉투
 
 		        final L1NpcInstance npc =
-		                L1World.getInstance()
+		                CWorld.getInstance()
 		                        .findNpcByNpcId(45300);
 
 		        if (npc instanceof L1MonsterInstance) {
@@ -71,7 +71,7 @@ case 40700: { // 실버 플룻
 		            && pc.getMapId() == 440) {
 
 		        final L1NpcInstance npc =
-		                L1World.getInstance()
+		                CWorld.getInstance()
 		                        .findNpcByNpcId(45875);
 
 		        if (!(npc instanceof L1MonsterInstance)) {

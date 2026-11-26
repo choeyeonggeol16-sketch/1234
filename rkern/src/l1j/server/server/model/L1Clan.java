@@ -315,8 +315,8 @@ public class L1Clan {
             synchronized (member) {
                 if (online) {
                     if (pc.getClanid() != clanId
-                            || L1World.getInstance().findObject(pc.getId()) != pc
-                            || L1World.getInstance().getPlayer(pc.getName()) != pc) return;
+                            || CWorld.getInstance().findObject(pc.getId()) != pc
+                            || CWorld.getInstance().getPlayer(pc.getName()) != pc) return;
                     member.player = pc;
                     member.online = true;
                 } else if (member.player == pc) {
@@ -536,7 +536,7 @@ public class L1Clan {
     /** CPledge GetAllMember: resolve member IDs through the existing world registry.
      *  A stale ID must never deliver a pledge operation to another character. */
     private L1PcInstance FindOnlineMember(ClanMember member) {
-        L1World world = L1World.getInstance();
+        CWorld world = CWorld.getInstance();
         if (world.findObject(member.memberId) instanceof L1PcInstance pc
                 && pc.getClanid() == getClanId()
                 && pc.getOnlineStatus() == 1

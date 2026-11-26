@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.combat.arena.loader.CombatTrapsLoader;
 import l1j.server.server.model.character.combat.statistics.shared.TeamKda;
@@ -169,7 +169,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         return this;
     }
     protected void dispose_users(){
-        Collection<L1PcInstance> col = L1World.getInstance().getVisiblePlayers(_copyMapId);
+        Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
         
         // The quit countdown is the same S_EVENT frame for every participant.
         // Keep the original map collection iteration order; serialize once.
@@ -191,7 +191,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             @Override
             public void run(){
                 try{
-                    Collection<L1PcInstance> col = L1World.getInstance().getVisiblePlayers(copy_map_id);
+                    Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(copy_map_id);
                     for(L1PcInstance pc : col){
                         if(pc == null || pc.getNetConnection() == null)
                             continue;
@@ -322,7 +322,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     }
     
     protected boolean validation_users(){
-          Collection<L1PcInstance> col = L1World.getInstance().getVisiblePlayers(_copyMapId);
+          Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
            if(col.size() < _team_size){
                String message = String.format("참가 인원이 부족하여 %s이(가) 종료되었습니다.", _combat_info.get_game_type().to_kr_desc());
                l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcast(message);
@@ -429,7 +429,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
                         for (int i = 0; i < frames.length; ++i)
                             frames[i] = l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(sourceBoxes[i]);
                     }
-                    for (L1PcInstance pc : L1World.getInstance().getVisiblePlayers(_copyMapId)) {
+                    for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayers(_copyMapId)) {
                         if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected() || !pc.is_combat_field())
                             continue;
                         if (frames != null)
@@ -512,7 +512,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     }
     
     protected boolean is_live_team(int team_id){
-        Collection<L1PcInstance> col = L1World.getInstance().getVisiblePlayers(_copyMapId);
+        Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
         for(L1PcInstance p : col){
             if(p == null || p.getNetConnection() == null)
                 continue;
@@ -642,7 +642,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
                             return;
                         
                         if(sec % CombatLoadManager.COMBAT_TRAPS_SPAWN_SECOND == 0 && GameRandom.isWinning(1000000, CombatLoadManager.COMBAT_TRAPS_SPAWN_PROB_BY_MILLION)){
-                            Collection<L1PcInstance> col = L1World.getInstance().getVisiblePlayers(_copyMapId);
+                            Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
                             AbstractTrap trap = CombatTrapsLoader.getInstance().to_rand_trap();
                             trap.do_traps(col);
                         }
@@ -666,7 +666,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         final UserKda[] ranker_kdas = select_ranker_kda();
         final SC_NOTIFICATION_MESSAGE[] packets = CombatLoadManager.create_result_notify(winner_kda, ranker_kdas);
         final int winner_id = winner_kda.get_team_id();
-        Collection<L1PcInstance> col = L1World.getInstance().getVisiblePlayers(_copyMapId);
+        Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
         // Notifications are best effort; distributing the already decided
         // match rewards must not depend on Native broadcast admission.
         l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer win = null;

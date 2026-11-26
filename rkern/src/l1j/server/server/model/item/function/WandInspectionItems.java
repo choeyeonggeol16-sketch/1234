@@ -41,7 +41,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_Serchdrop2;
@@ -52,7 +52,7 @@ public final class WandInspectionItems {
 	public static void useFieldObjectRemovalWand1(L1PcInstance pc, int targetId, L1ItemInstance item) {
 		SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
 		SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
-		L1Object target = L1World.getInstance().findObject(targetId);
+		L1Object target = CWorld.getInstance().findObject(targetId);
 		if (target != null && target instanceof L1NpcInstance) {
 			L1NpcInstance npc = (L1NpcInstance) target;
 			SC_SystemMessage.send(pc, "\\f;NPC이름: \\aA"+npc.getName());
@@ -75,7 +75,7 @@ public final class WandInspectionItems {
 
 		SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
 		SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
-		L1Object target = L1World.getInstance().findObject(targetId);
+		L1Object target = CWorld.getInstance().findObject(targetId);
 		if (target != null && target instanceof L1MonsterInstance) {
 			L1MonsterInstance npc = (L1MonsterInstance) target;
 

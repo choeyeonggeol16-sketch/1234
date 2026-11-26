@@ -6,7 +6,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter;
@@ -73,14 +73,14 @@ public final class SC_NpcChatPacket {
         if (source == null || cha == null) return;
         final NativeWireWriter writer = nativeTextWriter(cha.getId(), 0, chat == null ? "" : chat);
         if (writer != null) CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                L1World.getInstance().getVisiblePlayer(source), writer);
+                CWorld.getInstance().getVisiblePlayer(source), writer);
     }
 
     public static void broadcastNpcFast(L1Character source, L1NpcInstance npc, String chat, int type) {
         if (source == null) return;
         final NativeWireWriter writer = nativeNpcWriter(npc, chat, type);
         if (writer == null) return;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final List<L1PcInstance> visible = world.borrowVisiblePlayerFast(source);
         try {
             CSharedBroadcast.sendWrittenRecipientsBestEffort(visible, writer);
@@ -127,14 +127,14 @@ public final class SC_NpcChatPacket {
         if (source == null) return;
         final NativeWireWriter writer = nativeNpcWriter(npc, chat, type);
         if (writer != null) CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                L1World.getInstance().getVisiblePlayer(source), writer);
+                CWorld.getInstance().getVisiblePlayer(source), writer);
     }
 
     public static void broadcastNpcWide(L1Character source, L1NpcInstance npc, String chat, int type) {
         if (source == null) return;
         final NativeWireWriter writer = nativeNpcWriter(npc, chat, type);
         if (writer != null) CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                L1World.getInstance().getVisiblePlayer(source, 50), writer);
+                CWorld.getInstance().getVisiblePlayer(source, 50), writer);
     }
 
 }

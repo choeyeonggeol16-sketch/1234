@@ -13,7 +13,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.CompanionSettings;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -156,7 +156,7 @@ public class CalcExp {
 		if (n <= 0) return;
 		if (acquisitorList.size() != n) return;
 
-		final L1Object obj = L1World.getInstance().findObject(targetid);
+		final L1Object obj = CWorld.getInstance().findObject(targetid);
 		if (!(obj instanceof L1NpcInstance)) return;
 		final L1NpcInstance npc = (L1NpcInstance) obj;
 
@@ -226,7 +226,7 @@ public class CalcExp {
 				return;
 			}
 
-			if (!L1World.getInstance().isProcessingContributionTotal() && killerPc.getHomeTownId() > 0) {
+			if (!CWorld.getInstance().isProcessingContributionTotal() && killerPc.getHomeTownId() > 0) {
 				final int contribution = npc.getLevel() / 10;
 				killerPc.addContribution(contribution);
 			}
@@ -298,7 +298,7 @@ public class CalcExp {
 
 			if (m == 0 || totalHateExp <= 0L) return;
 
-			if (!L1World.getInstance().isProcessingContributionTotal() && killerPc.getHomeTownId() > 0) {
+			if (!CWorld.getInstance().isProcessingContributionTotal() && killerPc.getHomeTownId() > 0) {
 				final int contribution = npc.getLevel() / 10;
 				killerPc.addContribution(contribution);
 			}

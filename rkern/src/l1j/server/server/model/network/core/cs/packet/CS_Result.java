@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.CWareHouseRequest;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -52,7 +52,7 @@ public final class CS_Result {
 
         if (MerchantTransactions.handleResult(client, pc, npcObjectId, resultType, size, packed0, params)) return;
 
-		L1Object findObject = L1World.getInstance().findObject(npcObjectId);
+		L1Object findObject = CWorld.getInstance().findObject(npcObjectId);
         // Also handle cancel after the NPC disappeared; only the matching view is affected.
         if (size == 0 && (resultType == 3 || resultType == 5 || resultType == 9
                 || resultType == 10 || resultType == 20)
@@ -79,7 +79,7 @@ public final class CS_Result {
 				if (gm == pc && pc.isGm() && resultType == 3) {
 					if (hasFirst != 0) {
 						int objectId = param1(packed0, params, 0);
-						L1Object tmp = L1World.getInstance().findObject(objectId);
+						L1Object tmp = CWorld.getInstance().findObject(objectId);
 						if (tmp != null && tmp instanceof L1PcInstance) {
 							pc.start_teleport(tmp.getX(), tmp.getY(), tmp.getMapId(), pc.getHeading(), 169, false, false);
                             return;

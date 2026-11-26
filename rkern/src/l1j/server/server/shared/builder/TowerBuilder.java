@@ -2,7 +2,7 @@ package l1j.server.server.shared.builder;
 
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.world.instance.shared.GameL1TowerInstance;
 
 public class TowerBuilder {
@@ -40,7 +40,7 @@ public class TowerBuilder {
 		tower.setHomeX(_x);
 		tower.setHomeY(_y);
 		tower.setHeading(0);
-		L1World.getInstance().storeAndEnterWorld(tower);
+		CWorld.getInstance().storeAndEnterWorld(tower);
 		return tower;
 	}
 }

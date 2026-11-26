@@ -27,7 +27,7 @@ import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1Racing;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.combat.statistics.Kda;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
@@ -351,13 +351,13 @@ public final class CS_Attr {
             break;
 		case 3348:
 			if (c == 1) {
-				final L1Object requester = L1World.getInstance().findObject(pc.getTempID());
+				final L1Object requester = CWorld.getInstance().findObject(pc.getTempID());
 				pc.setTempID(0);
 				if (!(requester instanceof L1PcInstance gazePc)) return;
-				L1Clan targetClan = L1World.getInstance().findClan(gazePc.getClanname());
+				L1Clan targetClan = CWorld.getInstance().findClan(gazePc.getClanname());
 				if (targetClan == null) return;
 
-				L1Clan pcClan = L1World.getInstance().findClan(pc.getClanname());
+				L1Clan pcClan = CWorld.getInstance().findClan(pc.getClanname());
 				if (pcClan == null) return;
 
 				targetClan.addGazelist(pcClan.getClanName());
@@ -370,7 +370,7 @@ public final class CS_Attr {
 		case 217:
 		case 221:
 		case 222:
-			L1PcInstance enemyLeader = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
+			L1PcInstance enemyLeader = (L1PcInstance) CWorld.getInstance().findObject(pc.getTempID());
 			if (enemyLeader == null) return;
 			pc.setTempID(0);
 			String clanName = pc.getClanname();
@@ -382,8 +382,8 @@ public final class CS_Attr {
 					SC_ServerMessage.send(enemyLeader, 237, clanName);
 				}
 			} else if (c == 1) {
-				L1Clan defense = L1World.getInstance().findClan(clanName);
-				L1Clan offense = L1World.getInstance().findClan(enemyClanName);
+				L1Clan defense = CWorld.getInstance().findClan(clanName);
+				L1Clan offense = CWorld.getInstance().findClan(enemyClanName);
 				if(defense == null || offense == null) return;
 
 				if (attrcode == 217) {
@@ -420,7 +420,7 @@ public final class CS_Attr {
             break;
         }
         case 321:
-			L1PcInstance resusepc1 = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
+			L1PcInstance resusepc1 = (L1PcInstance) CWorld.getInstance().findObject(pc.getTempID());
 			pc.setTempID(0);
 			if (resusepc1 != null) {
 				if (c == 1) {
@@ -437,7 +437,7 @@ public final class CS_Attr {
 			}
 			break;
 		case 322:
-			L1PcInstance resusepc2 = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
+			L1PcInstance resusepc2 = (L1PcInstance) CWorld.getInstance().findObject(pc.getTempID());
 			pc.setTempID(0);
 			if (resusepc2 != null) {
 				if (c == 1) {
@@ -479,7 +479,7 @@ public final class CS_Attr {
 		case 622:
 			CFriendsDb buddyTable = CFriendsDb.getInstance();
 			CFriends buddyList = buddyTable.GetFriends(pc.getId());
-			L1PcInstance target2 = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
+			L1PcInstance target2 = (L1PcInstance) CWorld.getInstance().findObject(pc.getTempID());
 			pc.setTempID(0);
 			String name2 = pc.getName();
 			if (c == 0) {
@@ -509,7 +509,7 @@ public final class CS_Attr {
 			}
 			break;
 		case 654:
-			L1PcInstance partner = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
+			L1PcInstance partner = (L1PcInstance) CWorld.getInstance().findObject(pc.getTempID());
 			pc.setTempID(0);
 			if (partner != null) {
 				if (c == 0) {
@@ -600,7 +600,7 @@ public final class CS_Attr {
 				SC_ChatPacket.sendDirect(pc, pc, "드래곤 포탈 입장이 취소되었습니다.");
 			} else if (c == 1) {
 				if (pc.DragonPortalLoc[0] != 0) {
-					Collection<L1PcInstance> templist = L1World.getInstance().getAllPlayers();
+					Collection<L1PcInstance> templist = CWorld.getInstance().getAllPlayers();
 					L1PcInstance[] list = templist.toArray(new L1PcInstance[templist.size()]);
 					int count = 0;
 					for (L1PcInstance player : list) {
@@ -638,7 +638,7 @@ public final class CS_Attr {
 	
 
 	private static void callClan(L1PcInstance pc) {
-		L1PcInstance callClanPc = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
+		L1PcInstance callClanPc = (L1PcInstance) CWorld.getInstance().findObject(pc.getTempID());
 		pc.setTempID(0);
 		if (callClanPc == null) {
 			return;
@@ -687,7 +687,7 @@ public final class CS_Attr {
 
 		boolean isExistCharacter = false;
         L1Character cha = null;
-        for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(callClanPc, 1)) {
+        for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(callClanPc, 1)) {
             if (object instanceof L1Character) {
                 cha = (L1Character) object;
                 if (cha.getX() == locX && cha.getY() == locY && cha.getMapId() == mapId) {

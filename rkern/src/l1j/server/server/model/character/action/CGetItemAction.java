@@ -19,7 +19,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -85,7 +85,7 @@ public final class CGetItemAction extends CNewAction {
             if (blockedTrade != null) return true;
 
             pickupGInven =
-                    L1World.getInstance().findGroundInventory(x, y, owner.getMapId());
+                    CWorld.getInstance().findGroundInventory(x, y, owner.getMapId());
 
             if (pickupGInven == null) {
                 return true;
@@ -265,7 +265,7 @@ public final class CGetItemAction extends CNewAction {
             GameServer.disconnectChar(owner);
 
             pickupGInven.Pop(pickupItem);
-            L1World.getInstance().removeObject(pickupItem);
+            CWorld.getInstance().removeObject(pickupItem);
             return false;
         }
 

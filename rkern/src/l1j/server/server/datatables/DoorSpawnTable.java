@@ -13,7 +13,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.templates.L1Npc;
 
@@ -73,7 +73,7 @@ public class DoorSpawnTable {
 				door.setCurrentHp(rs.getInt(10));
 				door.setKeeperId(rs.getInt(11));
 
-				L1World.getInstance().storeAndEnterWorld(door);
+				CWorld.getInstance().storeAndEnterWorld(door);
 
 				_doorList.add(door);
 				_doorMap.put(door.getDoorId(), door);

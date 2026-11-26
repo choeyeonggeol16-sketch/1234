@@ -17,7 +17,7 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.world.effect.L1EffectSpawn;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.attack.L1AttackHelper;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
@@ -40,7 +40,7 @@ final class ElvenStrikeItemEffect {
         if (pc == null || item == null || item.getItemId() != 70888
                 || pc.getInventory().GetByServerID(item.getId()) != item
                 || pc.isDead() || pc.get_teleport()) return false;
-        L1Object target = L1World.getInstance().findObject(targetId);
+        L1Object target = CWorld.getInstance().findObject(targetId);
         if (!validTarget(pc, target)) return false;
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);

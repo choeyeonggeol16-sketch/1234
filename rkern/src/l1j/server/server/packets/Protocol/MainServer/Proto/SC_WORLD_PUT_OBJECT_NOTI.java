@@ -14,7 +14,7 @@ import l1j.server.server.model.Instance.L1SignboardInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.world.instance.shared.EffectTriggerInstance;
@@ -74,7 +74,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
 
     private static int get_presentation_npc_emblem(L1NpcInstance npc){
         if (npc.getNpcId() == 6200008) {
-            for (L1Clan checkClan : L1World.getInstance().getAllClans()) {
+            for (L1Clan checkClan : CWorld.getInstance().getAllClans()) {
                 if (checkClan.getCastleId() == 4) {
                     return checkClan.getEmblemId();
                 }

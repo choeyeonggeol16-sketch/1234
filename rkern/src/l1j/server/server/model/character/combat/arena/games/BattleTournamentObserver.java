@@ -10,7 +10,7 @@ import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.arena.CombatInformation;
 import l1j.server.server.model.character.combat.arena.CombatObserver;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
@@ -196,7 +196,7 @@ public class BattleTournamentObserver extends CombatObserver{
 			npc.setHomeX(x);
 			npc.setHomeY(y);
 			npc.setHeading(h);
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 			npc.refreshLight();
 		}catch(Exception e){
 			e.printStackTrace();
@@ -282,7 +282,7 @@ public class BattleTournamentObserver extends CombatObserver{
 							@Override
 							public void run(){
 								try{
-									l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(L1World.getInstance().getVisiblePlayers(_copyMapId), String.format("%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.", CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND));
+									l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(CWorld.getInstance().getVisiblePlayers(_copyMapId), String.format("%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.", CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND));
 									Thread.sleep(CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND * 1000L);
 								}catch(Exception e){
 									e.printStackTrace();
@@ -346,7 +346,7 @@ public class BattleTournamentObserver extends CombatObserver{
 			@Override
 			public void run(){
 				try{
-					l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(L1World.getInstance().getVisiblePlayers(_copyMapId), String.format("%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.", CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND));
+					l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(CWorld.getInstance().getVisiblePlayers(_copyMapId), String.format("%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.", CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND));
 					Thread.sleep(CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND * 1000L);
 				}catch(Exception e){
 					e.printStackTrace();

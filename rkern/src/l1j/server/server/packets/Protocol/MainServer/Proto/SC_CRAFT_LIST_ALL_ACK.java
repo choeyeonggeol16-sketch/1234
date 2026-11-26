@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.Craft;
@@ -160,7 +160,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
             return;
         }
 
-        if (Config.CRAFT_TRANSMIT_SAFELINE <= L1World.getInstance().getAllPlayersSize()) {
+        if (Config.CRAFT_TRANSMIT_SAFELINE <= CWorld.getInstance().getAllPlayersSize()) {
             pc.sendPackets("현재 클라이언트의 제작 정보가 이전 버전임으로 모든 목록이 나오지 않을 수 있습니다.");
             pc.sendPackets("접속기에서 오류패치를 하신 후 다시 접속하면 모든 목록을 받아볼 수 있습니다.");
             l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, _craftSameCache);

@@ -73,7 +73,7 @@ public class CFriends {
 
     /** Resolve by object ID, then confirm membership in the existing online index. */
     public static L1PcInstance FindOnlineFriend(int id) {
-        L1World world = L1World.getInstance();
+        CWorld world = CWorld.getInstance();
         if (world.findObject(id) instanceof L1PcInstance pc && world.getPlayer(pc.getName()) == pc)
             return pc;
         return null;

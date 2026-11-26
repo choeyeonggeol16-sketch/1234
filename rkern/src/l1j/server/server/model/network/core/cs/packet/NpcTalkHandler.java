@@ -6,7 +6,7 @@ import l1j.server.server.model.Instance.L1AuctionBoardInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_AuctionBoard;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -199,7 +199,7 @@ final class NpcTalkHandler {
 
         if (!HtmlCmdHandler.canInteractWithNpc(client, pc)) return;
 
-        final L1Object obj =L1World.getInstance().findObject(objId);
+        final L1Object obj =CWorld.getInstance().findObject(objId);
 
         if (!(obj instanceof L1NpcInstance)) {
             return;

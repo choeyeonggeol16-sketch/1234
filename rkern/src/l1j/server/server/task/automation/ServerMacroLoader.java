@@ -17,7 +17,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatMessageNoti;
 import l1j.server.server.model.network.core.sc.packet.SC_IconMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -136,7 +136,7 @@ public class ServerMacroLoader implements Runnable{
             return;
         }
         try {
-            Collection<L1PcInstance> col = L1World.getInstance().getAllPlayers();
+            Collection<L1PcInstance> col = CWorld.getInstance().getAllPlayers();
             int size = list.size();			
 			for(int i=0; i<size; i++){
                 if (!_isrun) break;

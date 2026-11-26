@@ -12,7 +12,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.world.cleanup.MapCleaner;
@@ -114,7 +114,7 @@ public class RaidSpace {
 		
 		try{
 			int copyMapId = copyMap.getId();
-			Iterator<L1Object> it = L1World.getInstance().getVisibleObjects(copyMapId).values().iterator();
+			Iterator<L1Object> it = CWorld.getInstance().getVisibleObjects(copyMapId).values().iterator();
 			while(it.hasNext()){
 				L1Object l1obj = it.next();
 				if((l1obj instanceof L1DollInstance) || (l1obj instanceof L1SummonInstance))

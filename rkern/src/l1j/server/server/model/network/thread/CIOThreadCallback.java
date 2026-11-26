@@ -25,7 +25,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.CNpcMaker;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -374,15 +374,15 @@ public final class CIOThreadCallback {
     /** Global metadata has no player socket. Existing shard zero serializes
      * publication; do not apply a result prepared for a replaced world.
      */
-    public void completeWorldMutation(L1World expectedWorld, Runnable action,
+    public void completeWorldMutation(CWorld expectedWorld, Runnable action,
             java.util.function.Consumer<Throwable> completion) {
         java.util.Objects.requireNonNull(completion, "completion");
-        if (expectedWorld == null || expectedWorld != L1World.getInstance() || action == null) {
+        if (expectedWorld == null || expectedWorld != CWorld.getInstance() || action == null) {
             completion.accept(new IllegalStateException("Stale world completion"));
             return;
         }
         completeOnShard(0, () -> {
-            if (expectedWorld != L1World.getInstance())
+            if (expectedWorld != CWorld.getInstance())
                 throw new IllegalStateException("World replaced before committed replay");
             action.run();
         }, completion);
@@ -416,10 +416,10 @@ public final class CIOThreadCallback {
         final var actor = client.getActiveChar();
         final int stamp = actor == null ? 0 : actor.getSessionStamp();
         final var state = client.getConnectionState();
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         return completeOnShard(shardIndex, delayMs, () -> {
             synchronized (client) {
-                if (world != L1World.getInstance() || !client.isConnected() || client.getAccount() != account
+                if (world != CWorld.getInstance() || !client.isConnected() || client.getAccount() != account
                         || client.getActiveChar() != actor || client.getConnectionState() != state
                         || (actor != null && (actor.getSessionStamp() != stamp || actor.getNetConnection() != client)))
                     throw new IllegalStateException("Stale session owner completion");
@@ -805,7 +805,7 @@ public final class CIOThreadCallback {
             return false;
         }
         final int session = pc.getSessionStamp();
-        final long smartId = L1World.getInstance().smartIdOf(pc);
+        final long smartId = CWorld.getInstance().smartIdOf(pc);
         if (smartId == 0L || pc.getSessionStamp() != session
                 || shardOf(pc) != owner
                 || (task instanceof EndGhostTask && ((EndGhostTask) task).stamp != session)
@@ -837,14 +837,14 @@ public final class CIOThreadCallback {
 			return null;
 		}
 
-		final Object current = L1World.getInstance().findObject(pcObjId);
+		final Object current = CWorld.getInstance().findObject(pcObjId);
 		if (!(current instanceof L1PcInstance)) {
 			return null;
 		}
 
 		final L1PcInstance pc = (L1PcInstance) current;
         if (pc.getSessionStamp() != sessionStamp) return null;
-		final long smartId = L1World.getInstance().smartIdOf(pc);
+		final long smartId = CWorld.getInstance().smartIdOf(pc);
 		if (smartId == 0L) {
 			return null;
 		}
@@ -876,14 +876,14 @@ public final class CIOThreadCallback {
 			return null;
 		}
 
-		final Object current = L1World.getInstance().findObject(pcObjId);
+		final Object current = CWorld.getInstance().findObject(pcObjId);
 		if (!(current instanceof L1PcInstance)) {
 			return null;
 		}
 
 		final L1PcInstance pc = (L1PcInstance) current;
         if (pc.getSessionStamp() != sessionStamp) return null;
-		final long smartId = L1World.getInstance().smartIdOf(pc);
+		final long smartId = CWorld.getInstance().smartIdOf(pc);
 		if (smartId == 0L) {
 			return null;
 		}
@@ -958,7 +958,7 @@ public final class CIOThreadCallback {
 			return null;
 		}
 
-		final long smartId = L1World.getInstance().smartIdOf(pc);
+		final long smartId = CWorld.getInstance().smartIdOf(pc);
 		if (smartId == 0L) {
 			return null;
 		}
@@ -1209,7 +1209,7 @@ public final class CIOThreadCallback {
 						|| !pc.isItemTransferSession(session, sessionStamp)) return;
 				final int base = Config.FEATHER_NUM;
 				int bonus = 0;
-				final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+				final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 				if (clan != null) {
 					if (clan.getCastleId() != 0) bonus = Config.FEATHER_NUM2;
 					else if (pc.getClanid() != 0) bonus = Config.FEATHER_NUM1;
@@ -1304,7 +1304,7 @@ public final class CIOThreadCallback {
 		EndGhostTask(int pcId, long smartId, int stamp, TaskHandle h) { this.pcId = pcId; this.smartId = smartId; this.stamp = stamp; this.h = h; }
 		@Override public void run() {
             if (h.isCancelled()) return;
-            final Object live = L1World.getInstance().findObjectBySmartId(smartId);
+            final Object live = CWorld.getInstance().findObjectBySmartId(smartId);
             if (!(live instanceof L1PcInstance)) { h.cancel(); return; }
             final L1PcInstance pc = (L1PcInstance) live;
             final CIOThread owner = CIOThreadCallback.getInstance().shardOf(pc);
@@ -1314,7 +1314,7 @@ public final class CIOThreadCallback {
 
         @Override public void runOnController(L1PcInstance pc) {
             if (!h.isCancelled() && pc.getId() == pcId && pc.getSessionStamp() == stamp
-                    && L1World.getInstance().findObjectBySmartId(smartId) == pc) {
+                    && CWorld.getInstance().findObjectBySmartId(smartId) == pc) {
                 try { pc.endGhost() ; } catch (Throwable failure) {
                     LOGGER.log(Level.SEVERE, "PC one-shot timer failed", failure);
                 }
@@ -1328,7 +1328,7 @@ public final class CIOThreadCallback {
 		InvisDelayTask(int pcId, long smartId, int stamp, TaskHandle h) { this.pcId = pcId; this.smartId = smartId; this.stamp = stamp; this.h = h; }
 		@Override public void run() {
             if (h.isCancelled()) return;
-            final Object live = L1World.getInstance().findObjectBySmartId(smartId);
+            final Object live = CWorld.getInstance().findObjectBySmartId(smartId);
             if (!(live instanceof L1PcInstance)) { h.cancel(); return; }
             final L1PcInstance pc = (L1PcInstance) live;
             final CIOThread owner = CIOThreadCallback.getInstance().shardOf(pc);
@@ -1338,7 +1338,7 @@ public final class CIOThreadCallback {
 
         @Override public void runOnController(L1PcInstance pc) {
             if (!h.isCancelled() && pc.getId() == pcId && pc.getSessionStamp() == stamp
-                    && L1World.getInstance().findObjectBySmartId(smartId) == pc) {
+                    && CWorld.getInstance().findObjectBySmartId(smartId) == pc) {
                 try { pc.clearInvisDelay() ; } catch (Throwable failure) {
                     LOGGER.log(Level.SEVERE, "PC one-shot timer failed", failure);
                 }
@@ -1421,14 +1421,14 @@ public final class CIOThreadCallback {
 
 		@Override
 		public void run() {
-            final Object live = L1World.getInstance().findObjectBySmartId(smartId);
+            final Object live = CWorld.getInstance().findObjectBySmartId(smartId);
             owner.dispatchPcWheelTask(this, live instanceof L1PcInstance ? (L1PcInstance) live : null,
                     h, sessionStamp);
         }
 
         @Override public void runOnController(L1PcInstance pc) {
             if (h.isCancelled() || pc.getSessionStamp() != sessionStamp
-                    || L1World.getInstance().findObjectBySmartId(smartId) != pc
+                    || CWorld.getInstance().findObjectBySmartId(smartId) != pc
                     || !pc.hasSkillEffect(L1SkillId.GMSTATUS_HPBAR)) {
                 h.cancel(); finishPcWheelTask(owner, this, 6, 0L); return;
             }
@@ -1529,7 +1529,7 @@ public final class CIOThreadCallback {
 
 		/*
 		 * bindNetworkIngress() 이후 같은 canonical ClusterGrid를 연결한다.
-		 * CIOThread thread 생성 시점에는 L1World를 건드리지 않아 초기화 race를 피한다.
+		 * CIOThread thread 생성 시점에는 CWorld를 건드리지 않아 초기화 race를 피한다.
 		 */
 
 		volatile long lastWheelAtMs;
@@ -1648,7 +1648,7 @@ public final class CIOThreadCallback {
 
 			case TimerOp.PC_TELEPORT_TIMER: {
                 final long smartId = ((long) p0 << 32) | (pcId & 0xffffffffL);
-                final Object obj = L1World.getInstance().findObjectBySmartId(smartId);
+                final Object obj = CWorld.getInstance().findObjectBySmartId(smartId);
                 if (obj instanceof L1PcInstance) {
                     final L1PcInstance pc = (L1PcInstance) obj;
                     if (pc.getSessionStamp() == p1 && pc.teleportTimerEpoch() == p2
@@ -1883,7 +1883,7 @@ public final class CIOThreadCallback {
 			// Never bind its heartbeat or timers to a different session or object.
 			if (pc == null || pc.getId() != pcId
 					|| pc.getSessionStamp() != expectedSession) return;
-			final Object liveActor = L1World.getInstance().findObject(pcId);
+			final Object liveActor = CWorld.getInstance().findObject(pcId);
 			// A different PC may already own a recycled object ID. Ignore a
 			// late old-session timer bind instead of replacing the new CIOState.
 			if (liveActor != null && liveActor != pc) return;
@@ -1969,7 +1969,7 @@ public final class CIOThreadCallback {
             if (task == null || handle == null || handle.isCancelled()) return;
             if (pc == null || pc.getId() <= 0 || pc.getSessionStamp() != sessionStamp
                     || pc.getNetConnection() == null || !pc.getNetConnection().isConnected()
-                    || L1World.getInstance().findObject(pc.getId()) != pc) {
+                    || CWorld.getInstance().findObject(pc.getId()) != pc) {
                 handle.cancel();
                 return;
             }
@@ -2121,7 +2121,7 @@ public final class CIOThreadCallback {
 				return;
 			}
 
-			final long smartId = L1World.getInstance().smartIdOf(pcId);
+			final long smartId = CWorld.getInstance().smartIdOf(pcId);
 			if (smartId == 0L) {
 				return;
 			}
@@ -2218,11 +2218,11 @@ public final class CIOThreadCallback {
                 if (handle != null) handle.cancel();
                 return;
             }
-            final Object live = L1World.getInstance().findObjectBySmartId(expectedSmartId);
+            final Object live = CWorld.getInstance().findObjectBySmartId(expectedSmartId);
             if (!(live instanceof L1PcInstance)) { handle.cancel(); return; }
             final L1PcInstance pc = (L1PcInstance) live;
             if (pc.getId() != pcId || pc.getSessionStamp() != expectedSession
-                    || L1World.getInstance().findObject(pcId) != pc
+                    || CWorld.getInstance().findObject(pcId) != pc
                     || CIOThreadCallback.getInstance().shardOf(pc) != this) {
                 handle.cancel();
                 return;
@@ -2541,7 +2541,7 @@ public final class CIOThreadCallback {
 		}
 
 		final long smartId =
-				L1World.getInstance().smartIdOf(pc);
+				CWorld.getInstance().smartIdOf(pc);
 
 		if (smartId == 0L) {
 			return false;
@@ -2555,7 +2555,7 @@ public final class CIOThreadCallback {
 		final int expectedSession = pc.getSessionStamp();
 		if (currentShardIndex() == owner.idx) {
 			if (pc.getSessionStamp() != expectedSession
-					|| L1World.getInstance().smartIdOf(pc) != smartId) return false;
+					|| CWorld.getInstance().smartIdOf(pc) != smartId) return false;
 			owner.onPcItemDelayTimerSchedule(
 					delayMs,
 					smartId,
@@ -2565,7 +2565,7 @@ public final class CIOThreadCallback {
 		}
 
 		if (pc.getSessionStamp() != expectedSession || shardOf(pc) != owner
-				|| L1World.getInstance().smartIdOf(pc) != smartId) return false;
+				|| CWorld.getInstance().smartIdOf(pc) != smartId) return false;
 
 		return owner.admitTimer(
 				TimerOp.PC_ITEM_DELAY_TIMER,
@@ -2587,19 +2587,19 @@ public final class CIOThreadCallback {
         final int expectedEpoch = pc.nextTeleportTimerEpoch();
         final CIOThread owner = shardOf(pc);
         if (owner == null || !owner.running) return false;
-        final long smartId = L1World.getInstance().smartIdOf(pc);
+        final long smartId = CWorld.getInstance().smartIdOf(pc);
         if (smartId == 0L) return false;
 
         if (currentShardIndex() == owner.idx) {
             if (!owner.running || pc.getSessionStamp() != expectedSession
                     || pc.teleportTimerEpoch() != expectedEpoch || shardOf(pc) != owner
-                    || L1World.getInstance().smartIdOf(pc) != smartId) return false;
+                    || CWorld.getInstance().smartIdOf(pc) != smartId) return false;
             owner.threadLocalTimer.scheduleTeleport(delayMs, smartId, expectedSession, expectedEpoch);
             return true;
         }
         if (!owner.running || pc.getSessionStamp() != expectedSession
                 || pc.teleportTimerEpoch() != expectedEpoch || shardOf(pc) != owner
-                || L1World.getInstance().smartIdOf(pc) != smartId) return false;
+                || CWorld.getInstance().smartIdOf(pc) != smartId) return false;
         return owner.admitTimer(TimerOp.PC_TELEPORT_TIMER,
                 (int) smartId, delayMs, (int) (smartId >>> 32),
                 expectedSession, expectedEpoch, null, null, null);
@@ -2951,7 +2951,7 @@ public final class CIOThreadCallback {
 		}
 
 		final long smartId =
-				L1World.getInstance()
+				CWorld.getInstance()
 						.smartIdOf(npc);
 
 		if (smartId == 0L) {
@@ -2992,7 +2992,7 @@ public final class CIOThreadCallback {
 	 * 이미 owner thread 안이면 MPSC command allocation 없이 바로 wheel에 등록한다.
 	 */
     public boolean scheduleItemTimer(int objectId, int timerId, int generation, long delayMs) {
-        final L1Object object = L1World.getInstance().findObject(objectId);
+        final L1Object object = CWorld.getInstance().findObject(objectId);
         return object instanceof L1ItemInstance item
                 && scheduleItemTimer(item, timerId, generation, delayMs);
     }
@@ -3000,7 +3000,7 @@ public final class CIOThreadCallback {
     public boolean scheduleItemTimer(L1ItemInstance item, int timerId, int generation, long delayMs) {
         if (item == null || item.getId() <= 0 || timerId <= 0
                 || generation == 0 || delayMs <= 0L) return false;
-        final long smartId = L1World.getInstance().smartIdOf(item);
+        final long smartId = CWorld.getInstance().smartIdOf(item);
         if (smartId == 0L) return false;
         int h = item.getId();
         h ^= (h >>> 16);
@@ -3206,7 +3206,7 @@ public final class CIOThreadCallback {
 		}
 
 		if (attackerId > 0) {
-			final Object attacker = L1World.getInstance().findObject(attackerId);
+			final Object attacker = CWorld.getInstance().findObject(attackerId);
 			if (attacker instanceof L1PcInstance) {
 				final CIOThread owner = shardOf((L1PcInstance) attacker);
 				if (owner != null) {

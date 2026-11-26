@@ -2,7 +2,7 @@ package l1j.server.server.model.character.combat.arena.stadium;
 
 import l1j.server.server.model.world.instance.CInstanceEvents;
 import java.util.Collection;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_EVENT_COUNTDOWN_NOTI_PACKET;
@@ -31,7 +31,7 @@ public class StadiumObject {
             public void run(){
                 try{
                     for(int i=m_ready_seconds; i>=0; --i){
-                        Collection<L1PcInstance> col = L1World.getInstance().getVisiblePlayers(m_map_id);
+                        Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(m_map_id);
                         String message = null;
                         if(i > 0){
                             message = String.format("%d초 후 경기가 시작됩니다.", i);
@@ -85,7 +85,7 @@ public class StadiumObject {
         StadiumManager.getInstance().remove(this);
         byte[] countDownData = SC_EVENT_COUNTDOWN_NOTI_PACKET.create(0, String.format("\\f3%s", m_name)).encode();
         String message = String.format("%s 경기가 종료되었습니다.", m_name);
-        Collection<L1PcInstance> col = L1World.getInstance().getVisiblePlayers(m_map_id);
+        Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(m_map_id);
         byte[] countDown = countDownData;
         try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                 SC_SystemMessage.nativeWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE);

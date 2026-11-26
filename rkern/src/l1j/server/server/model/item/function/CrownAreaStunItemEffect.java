@@ -44,7 +44,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.world.effect.L1EffectSpawn;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1PinkName;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
@@ -98,7 +98,7 @@ final class CrownAreaStunItemEffect {
             // 5-element duration array. Duration and hit probability match the
             // original 5-way and 1..100 distributions exactly.
             final ThreadLocalRandom random = ThreadLocalRandom.current();
-            for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(pc, 10)) {
+            for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(pc, 10)) {
                 final int stunDuration = 2000 + 500 * random.nextInt(5);
                 final int probability = random.nextInt(100) + 1;
 

@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter;
@@ -19,7 +19,7 @@ public final class SC_WarStartMessage {
 
     public static String[] snapshot() {
         final String[] names = CASTLE_NAMES.clone();
-        for (L1Clan clan : L1World.getInstance().getAllClans()) {
+        for (L1Clan clan : CWorld.getInstance().getAllClans()) {
             final int index = clan.getCastleId() - 1;
             if (index >= 0 && index < names.length) names[index] = clan.getClanName();
         }

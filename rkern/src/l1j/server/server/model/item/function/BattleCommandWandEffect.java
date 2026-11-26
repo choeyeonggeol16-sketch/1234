@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -21,7 +21,7 @@ final class BattleCommandWandEffect {
     public static void 전투지휘봉(L1PcInstance pc, int targetId, L1ItemInstance item) {
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
-        L1Object target = L1World.getInstance().findObject(targetId);
+        L1Object target = CWorld.getInstance().findObject(targetId);
         CParty party = pc.getParty();
         if (target != null) {
             if (party != null) {
@@ -39,7 +39,7 @@ final class BattleCommandWandEffect {
                         SC_SystemMessage.send(pc, "\\aH같은 혈맹원에게는 사용할 수 없습니다.");
                         return;
                     }
-                    for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(pc, 18)) {
+                    for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(pc, 18)) {
                         if (obj instanceof L1PcInstance) {
                             L1PcInstance other = (L1PcInstance)obj;
                             if (other.hasSkillEffect(L1SkillId.전투지휘)) {

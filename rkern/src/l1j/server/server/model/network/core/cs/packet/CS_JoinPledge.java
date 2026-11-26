@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.CReplyChecker;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -76,7 +76,7 @@ public final class CS_JoinPledge {
         }
 
         final L1Clan clan =
-                L1World
+                CWorld
                         .getInstance()
                         .getClan(targetClanId);
 
@@ -95,7 +95,7 @@ public final class CS_JoinPledge {
             if (player.isCrown()) {
 
                 final L1Clan playerClan =
-                        L1World
+                        CWorld
                                 .getInstance()
                                 .getClan(playerClanId);
 

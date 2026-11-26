@@ -16,7 +16,7 @@ import l1j.server.server.templates.L1Item;
 
 import l1j.server.Config;
 import l1j.server.server.model.L1Karma;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.mysql.MySqlCharacterStorage;
 import l1j.server.server.model.L1Object;
@@ -133,7 +133,7 @@ final class NpcQuestTransactions {
         final CUserSocket client = pc.getNetConnection();
         if (client == null) return;
         final int version = client.npcDialogueVersion();
-        final long target = L1World.getInstance().smartIdOf(npc);
+        final long target = CWorld.getInstance().smartIdOf(npc);
         if (!pc.getQuest().RequestSetSelectedQuest(questId, expectedStep, nextStep, () -> {
             if (pc.getNetConnection() == client && client.canReplyToNpcDialogue(pc, target, version))
                 SC_NPCTalkReturn.send(pc, objid, page);
@@ -964,7 +964,7 @@ final class NpcQuestTransactions {
         final int npcObjectId = npc.getId();
         final var client = pc.getNetConnection();
         final int dialogueVersion = client == null ? 0 : client.npcDialogueVersion();
-        final long dialogueTarget = L1World.getInstance().smartIdOf(npc);
+        final long dialogueTarget = CWorld.getInstance().smartIdOf(npc);
         final String failurePage = blood ? "meet104" : "meet004";
         final int delta = (int) ((blood ? -100 : 100) * count * Config.RATE_KARMA);
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
@@ -1082,7 +1082,7 @@ final class NpcQuestTransactions {
         final CUserSocket client = pc.getNetConnection();
         if (client == null) return;
         final int version = client.npcDialogueVersion();
-        final long target = L1World.getInstance().smartIdOf(npc);
+        final long target = CWorld.getInstance().smartIdOf(npc);
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, quest)) {
             if (pc.getQuest().get_step(quest) != step || pc.getKarmaLevel() >= 1) return;
             if (!NpcExchangeCommands.debitLegacy(tx, pc, essence, 1)) {

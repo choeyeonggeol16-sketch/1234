@@ -18,7 +18,7 @@ import l1j.server.server.model.L1NeigeSaveChar;
 import l1j.server.server.model.SeasonRewardHandler;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1PolyMorph;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -225,7 +225,7 @@ public class ActionControlHandler {
     }
 
     private void openBoardUI(L1PcInstance pc, int npcId) {
-        for (L1Object obj : L1World.getInstance().getObject()) {
+        for (L1Object obj : CWorld.getInstance().getObject()) {
             if (obj instanceof L1NpcInstance && ((L1NpcInstance) obj).getNpcId() == npcId) {
                 SC_Board.send(pc, (L1NpcInstance) obj);
                 break;

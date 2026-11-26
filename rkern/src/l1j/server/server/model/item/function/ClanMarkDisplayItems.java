@@ -8,7 +8,7 @@ import static l1j.server.server.model.item.function.SpecialEnchantScrolls.isOwne
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_War;
@@ -35,7 +35,7 @@ final class ClanMarkDisplayItems {
                 pc.문장주시 = true;
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "모든 혈맹의 마크를 표시하거나 종료하였습니다.");
 
-            for (L1Clan clan : L1World.getInstance().getAllClans()) {
+            for (L1Clan clan : CWorld.getInstance().getAllClans()) {
                 if (clan != null) {
                     SC_War.send(pc, i, pc.getClanname(), clan.getClanName());
                 }

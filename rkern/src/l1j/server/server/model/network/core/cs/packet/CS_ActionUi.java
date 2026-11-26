@@ -17,7 +17,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.tam.TamFruitUseService;
 import l1j.server.server.model.map.L1Map;
@@ -609,7 +609,7 @@ public final class CS_ActionUi {
                             MS949);
 
             final L1Clan clan =
-                    L1World
+                    CWorld
                             .getInstance()
                             .findClan(
                                     clanName);

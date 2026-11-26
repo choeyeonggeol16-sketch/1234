@@ -2,7 +2,7 @@ package l1j.server.server.model.npc.ai.action;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;
@@ -43,7 +43,7 @@ public final class dFlee {
         if (creature == null || targetObjectId <= 0) {
             return CCreatureController.RESULT_INVALID;
         }
-        final L1Object object = L1World.getInstance().findObject(targetObjectId);
+        final L1Object object = CWorld.getInstance().findObject(targetObjectId);
         return dFleeEx(creature,
                 object instanceof L1Character ? (L1Character) object : null,
                 fleeDistanceTiles);

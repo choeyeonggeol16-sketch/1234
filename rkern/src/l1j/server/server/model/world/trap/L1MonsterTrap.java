@@ -25,7 +25,7 @@ import java.util.List;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1Map;
@@ -79,7 +79,7 @@ public class L1MonsterTrap extends L1Trap {
 		npc.getLocation().set(loc);
 		npc.setHomeX(loc.getX());
 		npc.setHomeY(loc.getY());
-		L1World.getInstance().storeAndEnterWorld(npc);
+		CWorld.getInstance().storeAndEnterWorld(npc);
 
 		npc.onNpcAI();
 		npc.refreshLight();

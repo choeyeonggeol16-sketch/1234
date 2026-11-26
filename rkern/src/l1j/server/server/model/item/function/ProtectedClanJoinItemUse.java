@@ -11,7 +11,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanJoin;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.CommonUtil;
 
@@ -37,7 +37,7 @@ final class ProtectedClanJoinItemUse {
 
             int random_id = CommonUtil.random(1);
 
-            L1Clan clan = L1World.getInstance().findClan(PROTECTED_CLAN_NAMES[random_id]);
+            L1Clan clan = CWorld.getInstance().findClan(PROTECTED_CLAN_NAMES[random_id]);
             L1ClanJoin.getInstance().tutorialJoin(clan, pc);
             pc.getInventory().DeleteItemAmount(item, 1);
             pc.start_teleport(pc.getX(), pc.getY(), pc.getMapId(), pc.getHeading(), 169, false, false);

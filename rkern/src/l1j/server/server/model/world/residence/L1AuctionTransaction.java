@@ -14,7 +14,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1PendingCredit;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -252,7 +252,7 @@ public final class L1AuctionTransaction {
     /** Called on the existing house timer. Receipt contains foreclosure and listing. */
     public static void foreclose(L1House house) {
         if(house==null || house.isOnSale() || house.getTaxDeadline()==null)return;
-        final L1World world=L1World.getInstance();
+        final CWorld world=CWorld.getInstance();
         final HouseTable houses=HouseTable.getInstance();
         final AuctionBoardTable boards=AuctionBoardTable.getInstance();
         if(houses.getHouseTable(house.getHouseId())!=house
@@ -286,7 +286,7 @@ public final class L1AuctionTransaction {
     /** Settlement and the old owner's durable proceeds are one receipt. */
     public static void expire(L1AuctionBoard board) {
         if(board==null || board.getDeadline()==null)return;
-        final L1World world=L1World.getInstance();
+        final CWorld world=CWorld.getInstance();
         final HouseTable houses=HouseTable.getInstance();
         final AuctionBoardTable boards=AuctionBoardTable.getInstance();
         final int houseId=board.getHouseId(),price=board.getPrice(),bidder=board.getBidderId(),oldOwner=board.getOldOwnerId();
@@ -357,13 +357,13 @@ public final class L1AuctionTransaction {
         final int houseId,leaderId;
         ClanHouseImage(L1Clan clan){this.clan=clan;houseId=clan.getHouseId();leaderId=clan.getLeaderId();}
     }
-    private static List<ClanHouseImage> clanImages(L1World world,int houseId,int bidder) {
+    private static List<ClanHouseImage> clanImages(CWorld world,int houseId,int bidder) {
         List<ClanHouseImage> images=new ArrayList<>();
         for(L1Clan clan:world.getAllClans())if(clan.getHouseId()==houseId
                 || (bidder>0 && clan.getLeaderId()==bidder))images.add(new ClanHouseImage(clan));
         return images;
     }
-    private static void verifyClanImages(L1World world,List<ClanHouseImage> images,int houseId,int bidder) {
+    private static void verifyClanImages(CWorld world,List<ClanHouseImage> images,int houseId,int bidder) {
         int current=0;
         for(L1Clan clan:world.getAllClans())if(clan.getHouseId()==houseId
                 || (bidder>0 && clan.getLeaderId()==bidder))current++;
@@ -380,7 +380,7 @@ public final class L1AuctionTransaction {
                 || boards.getAuctionBoardTable(house.getHouseId())!=board)
             throw new IllegalStateException("Auction world/table identity changed");
     }
-    private static void runTimer(L1World world,int house,CTransaction.Mutation operation,Runnable apply) {
+    private static void runTimer(CWorld world,int house,CTransaction.Mutation operation,Runnable apply) {
         try(CacheD.WarehouseMove move=CacheD.beginEconomyMove(ORDER_KEY,house)) {
             move.stageWarehouseSql(operation);
             // The timer remains an existing trigger only. Post-COMMIT game

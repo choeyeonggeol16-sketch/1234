@@ -14,7 +14,7 @@ import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 
@@ -53,8 +53,8 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
 		m_all_fighters = new ArrayList<DogFightInstance>();
 		m_fighters = new HashMap<Integer, ArrayList<DogFightInstance>>();
 		m_down_fighters = new HashMap<Integer, ArrayList<DogFightInstance>>();
-		m_caster = L1World.getInstance().findNpc(DogFightSettings.CASTER_NPC_ID);
-		L1NpcInstance messenger = L1World.getInstance().findNpc(DogFightSettings.MESSENGER_NPC_ID);
+		m_caster = CWorld.getInstance().findNpc(DogFightSettings.CASTER_NPC_ID);
+		L1NpcInstance messenger = CWorld.getInstance().findNpc(DogFightSettings.MESSENGER_NPC_ID);
 		if(messenger != null && messenger instanceof MessengerInstance)
 			m_messenger = (MessengerInstance)messenger;
 		m_fighter_dead_lock = new Object();

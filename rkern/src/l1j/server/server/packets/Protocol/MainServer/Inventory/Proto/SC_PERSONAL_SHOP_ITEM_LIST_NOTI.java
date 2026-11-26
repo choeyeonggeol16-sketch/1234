@@ -9,7 +9,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.item.NpcReissuedItemPolicy;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -98,7 +98,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         if (pc == null || type == null || pc.getNetConnection() == null) return;
         final CUserSocket client = pc.getNetConnection();
         client.setPlayerShopView(null);
-        if (!(L1World.getInstance().findObject(objectId) instanceof L1PcInstance shop)
+        if (!(CWorld.getInstance().findObject(objectId) instanceof L1PcInstance shop)
                 || !shop.isPrivateShop()) return;
         final boolean purchase = type == ePersonalShopType.TRADE_SELL;
         final ArrayList<DynamicShopItem> listings = purchase ? shop.getPurchasings() : shop.getSellings();
@@ -447,7 +447,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
             return;
         }
 
-        final L1Object obj = L1World.getInstance().findObject(objectId);
+        final L1Object obj = CWorld.getInstance().findObject(objectId);
         if (!(obj instanceof L1NpcInstance)) {
             return;
         }

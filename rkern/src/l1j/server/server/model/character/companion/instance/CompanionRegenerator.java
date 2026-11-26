@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.CompanionSettings;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
@@ -101,7 +101,7 @@ public class CompanionRegenerator implements TimeListener, Runnable {
 					String message = "펫 훈련시간이 초기화 되었습니다.";
 					try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                     SC_SystemMessage.nativeWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)){
-for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
 						if(pc == null)
 							continue;
 						
@@ -128,7 +128,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
     public void run() {
         try {
             if (!m_is_run) return;
-            for (L1CompanionInstance companion : L1World.getInstance().getAllCompanions()) {
+            for (L1CompanionInstance companion : CWorld.getInstance().getAllCompanions()) {
                 if (companion == null || companion.isDead() || companion.get_master() == null) continue;
                 if (companion.getCurrentHp() >= companion.getMaxHp()) continue;
                 companion.do_update_regen_tick();

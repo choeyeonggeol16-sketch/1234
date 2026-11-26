@@ -2,7 +2,7 @@ package l1j.server.server.model.inventory;
 
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.Warehouse;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -215,7 +215,7 @@ final class WarehouseWithdrawalTransaction {
                                             if (result == null)
                                                 throw new IllegalStateException("Withdrawal replay failed id=" + ids[i]);
                                             if (move.replayCarry(ids[i]) == result)
-                                                L1World.getInstance().storeObject(result);
+                                                CWorld.getInstance().storeObject(result);
                                         }
                                     });
                                     for (int i = 0; i < size; i++)

@@ -2,7 +2,7 @@ package l1j.server.server.utils;
 
 import java.util.List;
 
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
@@ -15,7 +15,7 @@ public class FaceToFace {
         int pcX = pc.getX();
         int pcY = pc.getY();
         int pcHeading = pc.getHeading();
-        List<L1PcInstance> players = L1World.getInstance().getClusterGrid().queryNearbyPlayers(pc, 1);
+        List<L1PcInstance> players = CWorld.getInstance().getClusterGrid().queryNearbyPlayers(pc, 1);
 
         if (players.size() == 0) {
             SC_ServerMessage.send(pc, 93); // \f1 거기에는 아무도 없습니다.

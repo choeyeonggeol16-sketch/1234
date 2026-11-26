@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.world.instance.raid.RaidMessage;
 import l1j.server.server.model.world.instance.raid.RaidType;
 import l1j.server.server.model.world.instance.raid.loader.RaidTypesLoader;
@@ -74,7 +74,7 @@ public class RaidCreator {
 		pc.getInventory().DeleteItemAmount(item, _needCount);
 		type.create(pc);
 		ArrayList<L1PcInstance> pcs = new ArrayList<L1PcInstance>();
-		pcs.addAll(L1World.getInstance().getAllPlayers());
+		pcs.addAll(CWorld.getInstance().getAllPlayers());
 		RaidMessage.RAID_OPEN_SUCCESS_MESSAGE.sendMessage(pcs);
 		pcs.clear();
 	}

@@ -29,7 +29,7 @@ public final class EnchantedBagTransactions {
                 || enchantLevel != 3) return;
         l1j.server.server.templates.L1Item definition = CObjectDB.LoadItem().getTemplate(rewardId);
         if (definition == null) return;
-        // A detached image is required: createItem() publishes to L1World and
+        // A detached image is required: createItem() publishes to CWorld and
         // is invalid for a receipt-backed NEW grant.
         L1ItemInstance reward = new L1ItemInstance(definition, 1);
         // grant() snapshots via Warehouse.transferCopy(), which requires a

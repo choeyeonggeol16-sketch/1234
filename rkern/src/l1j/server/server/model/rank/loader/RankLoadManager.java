@@ -1,7 +1,7 @@
 package l1j.server.server.model.rank.loader;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.rank.business.RankBusiness;
 import l1j.server.server.shared.PropertyReader;
 import l1j.server.server.shared.command.Command;
@@ -91,7 +91,7 @@ public class RankLoadManager implements Command{
 					RankUserLoader.reload();
 					RankBusiness.getInstance().run();
 					Thread.sleep(3000L);
-					for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+					for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
 						if(pc == null) {
 							continue;
 						}
@@ -144,7 +144,7 @@ public class RankLoadManager implements Command{
 					RankUserLoader.reload();
 					RankBusiness.getInstance().run();
 					Thread.sleep(3000L);
-					for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+					for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
 						if(pc == null) {
 							continue;
 						}

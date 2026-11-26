@@ -25,7 +25,7 @@ import l1j.server.server.model.Instance.L1ScarecrowInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1PolyMorph;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.attack.DamageReductionHelper;
 import l1j.server.server.model.character.combat.attack.HitEvasionModel;
 import l1j.server.server.model.character.combat.attack.KeylinkBalanceConfig;
@@ -189,7 +189,7 @@ public final class CAttackAction extends CNewAction {
             return true;
         }
 
-        final L1Object targetObj = L1World.getInstance().findObject(tId);
+        final L1Object targetObj = CWorld.getInstance().findObject(tId);
         if (!(targetObj instanceof L1Character)) {
             return true;
         }
@@ -230,7 +230,7 @@ public final class CAttackAction extends CNewAction {
             return false;
         }
 
-        final L1Object obj = L1World.getInstance().findObject(tId);
+        final L1Object obj = CWorld.getInstance().findObject(tId);
 
         if (obj == null || !obj.instanceOf(L1Type.L1TYPE_CHARACTER)) {
             if (!isAuto) {

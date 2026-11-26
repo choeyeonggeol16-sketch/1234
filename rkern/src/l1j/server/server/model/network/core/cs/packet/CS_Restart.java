@@ -5,7 +5,7 @@ import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Getback;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.combat.arena.CombatObserver;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
@@ -104,7 +104,7 @@ public final class CS_Restart {
             pc.removeAllKnownObjects();
             SC_RemoveObject.broadcast(pc);
 
-            L1World.getInstance().relocateVisibleObject(
+            CWorld.getInstance().relocateVisibleObject(
                     pc, loc[0], loc[1], loc[2]);
 
             pc.setCurrentHp(pc.getLevel());
@@ -144,7 +144,7 @@ public final class CS_Restart {
                     pc.getY());
 
             SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
-            SC_Weather.send(pc, L1World.getInstance().getWeather());
+            SC_Weather.send(pc, CWorld.getInstance().getWeather());
 
             final CParty party = pc.getParty();
 

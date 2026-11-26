@@ -6,7 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.datatables.DoorSpawnTable;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1TimeMap;
 
@@ -34,7 +34,7 @@ public final class TimeMapController implements Runnable {
                     i++;
                     continue;
                 }
-                for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+                for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                     if (pc == null || timeMap.getId() != pc.getMapId()) continue;
                     switch (pc.getMapId()) {
                     case 72:

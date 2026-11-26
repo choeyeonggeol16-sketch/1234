@@ -1,7 +1,7 @@
 package l1j.server.server.model.shop;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 
 /** The wire indices shown to one customer. Retains no shop or item objects. */
 public final class PlayerShopView {
@@ -13,7 +13,7 @@ public final class PlayerShopView {
     private int size;
 
     public PlayerShopView(L1PcInstance shop, boolean purchase, int capacity) {
-        shopIdentity = L1World.getInstance().smartIdOf(shop);
+        shopIdentity = CWorld.getInstance().smartIdOf(shop);
         shopVersion = shop.getPrivateShopVersion();
         this.purchase = purchase;
         rows = new int[capacity * FIELDS];
@@ -38,6 +38,6 @@ public final class PlayerShopView {
     public boolean matches(L1PcInstance shop, boolean purchase) {
         return this.purchase == purchase && shop.isPrivateShop()
                 && shopVersion == shop.getPrivateShopVersion() && shopIdentity != 0
-                && L1World.getInstance().findObjectBySmartId(shopIdentity) == shop;
+                && CWorld.getInstance().findObjectBySmartId(shopIdentity) == shop;
     }
 }

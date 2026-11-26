@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.StreamUtil;
 
@@ -78,6 +78,6 @@ public class Announcements {
 	}
 
 	public void announceToAll(String msg) {
-		L1World.getInstance().broadcastServerMessage(msg);
+		CWorld.getInstance().broadcastServerMessage(msg);
 	}
 }

@@ -146,7 +146,7 @@ public class L1WeaponSkill {
 				
 				L1PcInstance targetPc = null;
 				L1NpcInstance targetNpc = null;
-				for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+				for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(cha, 3)) {
 					if (object == null || !(object instanceof L1Character)) continue;
 					if (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;
 					if (object instanceof L1PcInstance) {
@@ -201,7 +201,7 @@ public class L1WeaponSkill {
 				
 				L1PcInstance targetPc = null;
 				L1NpcInstance targetNpc = null;
-				for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+				for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(cha, 3)) {
 					if (object == null || !(object instanceof L1Character)) continue;
 					if (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;
 					if (object instanceof L1PcInstance) {
@@ -494,7 +494,7 @@ public class L1WeaponSkill {
 				
 				L1PcInstance targetPc = null;
 				L1NpcInstance targetNpc = null;
-				for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+				for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(cha, 3)) {
 					if (object == null || !(object instanceof L1Character)) continue;
 					if (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;
 					if (object instanceof L1PcInstance) {
@@ -559,7 +559,7 @@ public class L1WeaponSkill {
 				// 추가된 주변 3칸 광역(스플래시) 데미지 로직
 				L1PcInstance targetPc = null;
 				L1NpcInstance targetNpc = null;
-				for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+				for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(cha, 3)) {
 					if (object == null || !(object instanceof L1Character)) continue;
 					if (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;
 					if (object instanceof L1PcInstance) {
@@ -640,7 +640,7 @@ public class L1WeaponSkill {
 				// 주변 3칸 광역 데미지 로직 
 				L1PcInstance targetPc = null;
 				L1NpcInstance targetNpc = null;
-				for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+				for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(cha, 3)) {
 					if (object == null) continue;
 					if (!(object instanceof L1Character)) continue;
 					if (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;
@@ -728,7 +728,7 @@ public class L1WeaponSkill {
 				// 주변 3칸 광역 데미지 로직 (기존 소스 100% 유지)
 				L1PcInstance targetPc = null;
 				L1NpcInstance targetNpc = null;
-				for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+				for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(cha, 3)) {
 					if (object == null) continue;
 					if (!(object instanceof L1Character)) continue;
 					if (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;
@@ -792,7 +792,7 @@ public class L1WeaponSkill {
 				
 				L1PcInstance targetPc = null;
 				L1NpcInstance targetNpc = null;
-				for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+				for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(cha, 3)) {
 					if (object == null || !(object instanceof L1Character)) continue;
 					if (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;
 					
@@ -874,7 +874,7 @@ public class L1WeaponSkill {
 				// 주변 3칸 광역 데미지 로직 (기존 소스 100% 유지)
 				L1PcInstance targetPc = null;
 				L1NpcInstance targetNpc = null;
-				for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+				for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(cha, 3)) {
 					if (object == null) continue;
 					if (!(object instanceof L1Character)) continue;
 					if (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;
@@ -945,7 +945,7 @@ public class L1WeaponSkill {
 				// 주변 3칸 광역(스플래시) 데미지 로직
 				L1PcInstance targetPc = null;
 				L1NpcInstance targetNpc = null;
-				for (L1Object object : L1World.getInstance().getClusterGrid().queryNearby(cha, 3)) {
+				for (L1Object object : CWorld.getInstance().getClusterGrid().queryNearby(cha, 3)) {
 					if (object == null || !(object instanceof L1Character)) continue;
 					if (object.getId() == pc.getId() || object.getId() == cha.getId()) continue;
 					if (object instanceof L1PcInstance) {

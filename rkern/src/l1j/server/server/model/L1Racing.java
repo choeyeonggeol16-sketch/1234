@@ -241,7 +241,7 @@ public class L1Racing implements Runnable
 			}
 		}
 
-		for (L1PcInstance pc : L1World.getInstance().getAllPlayers3())
+		for (L1PcInstance pc : CWorld.getInstance().getAllPlayers3())
 		{
 			if( pc.getMapId() == getMapId() && !isMember(pc))
 			{
@@ -360,7 +360,7 @@ for(L1PcInstance pc : toArray(일반)){
 	private void openDoor()
 	{
 		L1DoorInstance door = null;
-		for (L1Object object : L1World.getInstance().getObject()) {
+		for (L1Object object : CWorld.getInstance().getObject()) {
 			if (object instanceof L1DoorInstance) {
 				door = (L1DoorInstance) object;
 
@@ -374,7 +374,7 @@ for(L1PcInstance pc : toArray(일반)){
 	private void closeDoor()
 	{
 		L1DoorInstance door = null;
-		for (L1Object object : L1World.getInstance().getObject()) {
+		for (L1Object object : CWorld.getInstance().getObject()) {
 			if (object instanceof L1DoorInstance) {
 				door = (L1DoorInstance) object;
 
@@ -400,7 +400,7 @@ for(L1PcInstance pc : toArray(일반)){
 	
 	private void npcBroadcast(String msg)
 	{
-		for(L1Object obj : L1World.getInstance().getObject2()){
+		for(L1Object obj : CWorld.getInstance().getObject2()){
 			if(obj instanceof L1NpcInstance){
 				L1NpcInstance npc = (L1NpcInstance)obj;
 				if(npc.getNpcTemplate().get_npcId() == 300000){
@@ -471,7 +471,7 @@ for(int i = 0; i < 18; i++)
 
 		final var shared = openGameBroadcast(SC_GameOver.nativeWriter());
 		try {
-for(L1PcInstance c : L1World.getInstance().getAllPlayers()){
+for(L1PcInstance c : CWorld.getInstance().getAllPlayers()){
 			if(c.getMapId() == getMapId()){
 				sendGameNotice(shared,c);
 			}

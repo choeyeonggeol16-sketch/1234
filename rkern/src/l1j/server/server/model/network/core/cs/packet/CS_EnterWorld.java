@@ -37,7 +37,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.quest.CQuestSystem;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.SupplementaryService;
 import l1j.server.server.model.inventory.warehouse.WarehouseManager;
 import l1j.server.server.model.inventory.warehouse.PrivateWarehouse;
@@ -200,7 +200,7 @@ public final class CS_EnterWorld {
                 || !client.isConnected() || client.getAccount() == null
                 || client.isPrivateStoreRetirementPending()) return;
         final Account sessionAccount = client.getAccount();
-        final L1World expectedWorld = L1World.getInstance();
+        final CWorld expectedWorld = CWorld.getInstance();
         final L1PcInstance previousShop = expectedWorld.getPlayer(charName);
         if (previousShop != null && previousShop.isPrivateShop()) {
             retirePrivateStoreForLogin(charName, client, sessionAccount, expectedWorld, previousShop);
@@ -227,7 +227,7 @@ public final class CS_EnterWorld {
                 failure = caught;
                 CIOThreadCallback.getInstance().completeSession(client,
                         () -> {
-                            if (expectedWorld != L1World.getInstance())
+                            if (expectedWorld != CWorld.getInstance())
                                 throw new IllegalStateException("World replaced during login DB load");
                             completeEnterWorld(charName, client, sessionAccount, data, failure);
                         }, terminal -> {
@@ -253,8 +253,8 @@ public final class CS_EnterWorld {
                 && LoginController.getInstance().getClientByAccount(account.getName()) == client;
     }
 
-    private static boolean canRetirePrivateStore(L1World world, L1PcInstance shop, Account account) {
-        if (world != L1World.getInstance() || world.findObject(shop.getId()) != shop
+    private static boolean canRetirePrivateStore(CWorld world, L1PcInstance shop, Account account) {
+        if (world != CWorld.getInstance() || world.findObject(shop.getId()) != shop
                 || !shop.isPrivateShop() || shop.isLogoutStarted()
                 || !account.getName().equals(shop.getAccountName())
                 || CacheD.getInstance().hasPendingOwnerApply(shop.getId())) return false;
@@ -266,7 +266,7 @@ public final class CS_EnterWorld {
      * Existing instant worker runs logout; the CIO does not wait for JDBC.
      */
     private static void retirePrivateStoreForLogin(String charName, CUserSocket client, Account account,
-            L1World world, L1PcInstance shop) {
+            CWorld world, L1PcInstance shop) {
         if (!currentPrivateStoreLogin(client, account)) return;
         if (!canRetirePrivateStore(world, shop, account) || shop.isItemTransferBusy()) {
             client.close();
@@ -298,7 +298,7 @@ public final class CS_EnterWorld {
                 CIOThreadCallback.getInstance().completeSession(client, () -> {
                     client.endPrivateStoreRetirement();
                     if (!currentPrivateStoreLogin(client, account)) return;
-                    if (ready && world == L1World.getInstance()) doEnterWorld(charName, client);
+                    if (ready && world == CWorld.getInstance()) doEnterWorld(charName, client);
                     else client.close();
                 }, failure -> {
                     if (failure != null) {
@@ -376,12 +376,12 @@ public final class CS_EnterWorld {
             // A detached login SELECT may predate a committed offline oust.
             // Validate before world publication, under the same short pledge
             // monitor as offline receipt admission. A stale image must reload.
-            final L1Clan loginClan = L1World.getInstance().getClan(pc.getClanid());
+            final L1Clan loginClan = CWorld.getInstance().getClan(pc.getClanid());
             if (pc.getClanid() != 0) {
                 if (loginClan == null)
                     throw new IllegalStateException("Stale pledge login image");
                 synchronized (loginClan) {
-                    if (L1World.getInstance().getClan(pc.getClanid()) != loginClan
+                    if (CWorld.getInstance().getClan(pc.getClanid()) != loginClan
                             || loginClan.IsDismissed()
                             || loginClan.GetDbMember(pc.getId()) == null
                             || CacheD.getInstance().hasPendingOwnerApply(pc.getId()))
@@ -447,7 +447,7 @@ public final class CS_EnterWorld {
         }
 
         // 월드 내 중복 캐릭 
-        L1PcInstance other = L1World.getInstance().getPlayer(charName);
+        L1PcInstance other = CWorld.getInstance().getPlayer(charName);
         if (other != null) {
             boolean exceptionCase = !other.isPrivateShop() && other.isAutoClanjoin();
             if (!exceptionCase) {
@@ -544,7 +544,7 @@ public final class CS_EnterWorld {
         pc.setOnlineStatus(1);
         pc.create_captcha();
         CharacterTable.updateOnlineStatus(pc);
-        L1World.getInstance().storeObject(pc);
+        CWorld.getInstance().storeObject(pc);
         pc.setNetConnection(client);
         client.setActiveChar(pc);
         client.setConnectionState(CConnectionState.IN_GAME);
@@ -590,14 +590,14 @@ public final class CS_EnterWorld {
         SC_OwnCharStatus.send(pc);
         SC_MAP_ID.sendCreate(pc, pc.getMap().getBaseMapId(), pc.getMap().isUnderwater());
         ExpAmplifierLoader.getInstance().set(pc);
-        SC_Weather.send(pc, L1World.getInstance().getWeather());
+        SC_Weather.send(pc, CWorld.getInstance().getWeather());
         pc.sendClanMarks();
         SC_SPMR.send(pc);
         SC_Karma.send(pc);
         if (!SC_WorldPutObject.put(pc.getNetConnection(), pc)) {
             throw new IllegalStateException("Login character world packet not accepted: " + pc.getName());
         }
-        L1World.getInstance().addVisibleObject(pc);
+        CWorld.getInstance().addVisibleObject(pc);
         pc.startObjectAutoUpdate();
         clampHpMp(pc);
         final List<L1ItemInstance> loadedEquipment = CharacterTable.getInstance()
@@ -643,7 +643,7 @@ public final class CS_EnterWorld {
         }
 
         // 존재 정합 최종 확인
-        if (L1World.getInstance().getPlayer(pc.getName()) == null) {
+        if (CWorld.getInstance().getPlayer(pc.getName()) == null) {
             SC_SystemMessage.send(pc, "존재버그 강제종료! 재접속하세요");
             client.kick();
             return;
@@ -680,7 +680,7 @@ public final class CS_EnterWorld {
         // One-time canonical scene reconciliation at login. The owner-local
         // spatial replica can lag canonical NPC/signboard publication; known
         // objects are not retransmitted, and failed sends remain retryable.
-        for (L1Object visible : L1World.getInstance().getVisibleObjects(pc)) {
+        for (L1Object visible : CWorld.getInstance().getVisibleObjects(pc)) {
             if (visible != null) {
                 pc.reconcileSight(visible);
             }
@@ -702,7 +702,7 @@ public final class CS_EnterWorld {
         serchSummon(pc);
         CastleWarBusiness.getInstance().viewNowCastleWarState(pc);
 
-        L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+        L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
         if (clan != null) {
             clan.updateClanMemberOnline(pc);
         }
@@ -751,7 +751,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         applyNBuffSnapshot(pc, data.nBuffRows);
 
         if (pc.getPartnerId() != 0) {
-            L1PcInstance partner = (L1PcInstance) L1World.getInstance().findObject(pc.getPartnerId());
+            L1PcInstance partner = (L1PcInstance) CWorld.getInstance().findObject(pc.getPartnerId());
             if (partner != null && partner.getPartnerId() != 0
                     && pc.getPartnerId() == partner.getId() && partner.getPartnerId() == pc.getId()) {
                 SC_ServerMessage.send(pc, 548);
@@ -857,7 +857,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         }
         if (0 < castle_id) {
             if (CastleWarBusiness.getInstance().isNowWar(castle_id)) {
-                L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+                L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
                 if (clan != null && clan.getCastleId() != castle_id) {
                     int[] loc = L1CastleLocation.getGetBackLoc(castle_id);
                     pc.setX(loc[0]);
@@ -1093,11 +1093,11 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 
 	private static void serchSummon(L1PcInstance pc) {
 		try {
-			for (L1SummonInstance summon : L1World.getInstance().getAllSummons()) {
+			for (L1SummonInstance summon : CWorld.getInstance().getAllSummons()) {
 				if (summon.getMaster().getId() == pc.getId()) {
 					summon.setMaster(pc);
 					pc.addPet(summon);
-					for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(summon)) {
+					for (L1PcInstance visiblePc : CWorld.getInstance().getVisiblePlayer(summon)) {
 						SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(visiblePc, summon, visiblePc);
 					}
 				}

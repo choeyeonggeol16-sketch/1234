@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1EffectInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
@@ -45,9 +45,9 @@ public class L1EffectSpawn {
             effect.setHeading(0);
             effect.setMap(mapId);
 
-            L1World.getInstance().storeAndEnterWorld(effect);
+            CWorld.getInstance().storeAndEnterWorld(effect);
 
-            for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(effect)) {
+            for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayerFast(effect)) {
                 if (pc != null && !effect.isDestroyed()) {
                     effect.onPerceive(pc);
                 }
@@ -108,7 +108,7 @@ public class L1EffectSpawn {
                 break;
             }
 
-            for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(effect, 0)) {
+            for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(effect, 0)) {
                 if (obj instanceof L1EffectInstance && obj != effect) {
                     L1EffectInstance npc = (L1EffectInstance) obj;
                     if (npc.getNpcTemplate().get_npcId() == 81157

@@ -23,7 +23,7 @@ import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1PinkName;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.combat.statistics.Kda;
 import l1j.server.server.model.character.companion.CompanionSettings;
@@ -70,7 +70,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     private static final Logger COMPANION_LOG = Logger.getLogger(L1CompanionInstance.class.getName());
     
     public static void do_store_companions(){
-        for(L1CompanionInstance companion : L1World.getInstance().getAllCompanions()){
+        for(L1CompanionInstance companion : CWorld.getInstance().getAllCompanions()){
             companion.update_instance();
             companion.update_buffs();
             companion.update_skills();
@@ -726,7 +726,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         try (var sharedRemove = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                      SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE);
              var sharedPut = l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(data)) {
-            for (L1PcInstance visible : L1World.getInstance().getRecognizePlayer(this)) {
+            for (L1PcInstance visible : CWorld.getInstance().getRecognizePlayer(this)) {
                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedRemove, visible);
                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedPut, visible);
             }
@@ -811,8 +811,8 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     
     public void do_store_object(){
-        L1World.getInstance().storeAndEnterWorld(this);
-        for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+        CWorld.getInstance().storeAndEnterWorld(this);
+        for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
             onPerceive(pc);
         }
     }
@@ -1010,7 +1010,7 @@ public class L1CompanionInstance extends L1NpcInstance{
                 _inventory.tradeItem(item,  item.getCount(), master_inventory);
                 SC_ServerMessage.send(m_master, 143, getName(), item.getLogName());
             }else{
-                _inventory.tradeItem(item,  item.getCount(), L1World.getInstance().getInventory(getX(), getY(), getMapId()));
+                _inventory.tradeItem(item,  item.getCount(), CWorld.getInstance().getInventory(getX(), getY(), getMapId()));
             }
         }
     }
@@ -1019,7 +1019,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         if(m_master != null){
             return m_master.getInventory();
         }
-        L1Object obj = L1World.getInstance().findObject(m_master_id);
+        L1Object obj = CWorld.getInstance().findObject(m_master_id);
         if(obj != null && obj instanceof L1PcInstance){
             L1PcInstance pc = (L1PcInstance)obj;
             if(pc.getNetConnection() != null && pc.getNetConnection().isConnected())
@@ -1027,7 +1027,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         }
         return MySqlCharacterStorage.isValidUserObjectId(m_master_id) ? 
                 null : 
-                L1World.getInstance().getInventory(getX(), getY(), getMapId());
+                CWorld.getInstance().getInventory(getX(), getY(), getMapId());
     }
     
     private void do_drop_items(){
@@ -1085,7 +1085,7 @@ public class L1CompanionInstance extends L1NpcInstance{
     protected void onDeath(L1Character last_attacker) {
         if (!Die()) return;
         final int lifeEpoch = npcEventEpoch();
-        final long smartId = L1World.getInstance().smartIdOf(this);
+        final long smartId = CWorld.getInstance().smartIdOf(this);
         try {
             setStatus(ActionCodes.ACTION_Die);
             send_action(ActionCodes.ACTION_Die);
@@ -1108,7 +1108,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             // Keep the existing 60-second one-shot worker: removal persists
             // companion/inventory data, so it must not block the NPC owner.
             CWorldWork.scheduleRequired(() -> {
-                if (!L1World.getInstance().contains_companion(getId())
+                if (!CWorld.getInstance().contains_companion(getId())
                         || !ClaimDeathRemoval(lifeEpoch, smartId)) return;
                 // Delete this exact companion, never whatever the master
                 // happens to have summoned when the old deadline expires.
@@ -1122,7 +1122,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         final boolean wasDead = isDead();
         super.resurrect(hp);
         if (wasDead && !isDead() && m_master != null
-                && L1World.getInstance().smartIdOf(this) != 0L) {
+                && CWorld.getInstance().smartIdOf(this) != 0L) {
             CompanionInstanceCache.update_cache(this, true);
         }
     }
@@ -1311,7 +1311,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             _inventory.tradeItem(item,  item.getCount(), master_inventory);
             SC_ServerMessage.send(m_master, 143, getName(), item.getLogName());
         }else{
-            _inventory.tradeItem(item,  item.getCount(), L1World.getInstance().getInventory(getX(), getY(), getMapId()));
+            _inventory.tradeItem(item,  item.getCount(), CWorld.getInstance().getInventory(getX(), getY(), getMapId()));
         }
     }
     

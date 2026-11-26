@@ -1,7 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
@@ -86,7 +86,7 @@ public final class CS_PARTY_CONTROL_REQ {
         if (pc == null) return;
 
         // 이름 필드 누락 대비 — getPlayer(null) 방지
-        L1PcInstance target = targetUserName == null ? null : L1World.getInstance().getPlayer(targetUserName);
+        L1PcInstance target = targetUserName == null ? null : CWorld.getInstance().getPlayer(targetUserName);
 
         try {
             switch (type) {

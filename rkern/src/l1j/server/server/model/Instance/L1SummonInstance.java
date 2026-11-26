@@ -13,7 +13,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.model.item.drop.DropTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.inventory.CInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -87,8 +87,8 @@ public class L1SummonInstance extends L1NpcInstance {
 		
 		_tamed = false;
 
-		L1World.getInstance().storeAndEnterWorld(this);
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+		CWorld.getInstance().storeAndEnterWorld(this);
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 			if (pc != null)
 				onPerceive(pc);
 		}
@@ -165,8 +165,8 @@ public class L1SummonInstance extends L1NpcInstance {
 		}
 
 		target.deleteMe();
-		L1World.getInstance().storeAndEnterWorld(this);
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+		CWorld.getInstance().storeAndEnterWorld(this);
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 			if(pc != null)
 				onPerceive(pc);
 		}
@@ -260,7 +260,7 @@ public class L1SummonInstance extends L1NpcInstance {
             // A later retry may run after the owner's old session was removed.
             // Never write into a retired PC inventory: use ground settlement.
             final CInventory masterInventory = master instanceof L1PcInstance pc
-                    && L1World.getInstance().getPlayer(pc.getName()) == pc
+                    && CWorld.getInstance().getPlayer(pc.getName()) == pc
                     ? pc.getInventory() : null;
             while (!_inventory.getItems().isEmpty()) {
                 final L1ItemInstance item = _inventory.getItems().get(0);
@@ -278,7 +278,7 @@ public class L1SummonInstance extends L1NpcInstance {
                         }
                     }
                 } else {
-                    final CInventory ground = L1World.getInstance().getInventory(getX(), getY(), getMapId());
+                    final CInventory ground = CWorld.getInstance().getInventory(getX(), getY(), getMapId());
                     if (_inventory.tradeItem(item, count, ground) == null) return;
                 }
                 // This is a full-stack transfer. A reported success that did
@@ -326,7 +326,7 @@ public class L1SummonInstance extends L1NpcInstance {
 					_inventory.tradeItem(item, item.getCount(), targetInventory);
 					SC_ServerMessage.send(((L1PcInstance) _master), 143, getName(), item.getLogName());
 				} else {
-					targetInventory = L1World.getInstance().getInventory(getX(), getY(), getMapId());
+					targetInventory = CWorld.getInstance().getInventory(getX(), getY(), getMapId());
 					_inventory.tradeItem(item, item.getCount(), targetInventory);
 				}
 			}
@@ -393,7 +393,7 @@ public class L1SummonInstance extends L1NpcInstance {
 		monster.setLawful(0);
 
 		deleteMe();
-		L1World.getInstance().storeAndEnterWorld(monster);
+		CWorld.getInstance().storeAndEnterWorld(monster);
 	}
 
 	public void setTarget(L1Character target) {
@@ -566,7 +566,7 @@ public class L1SummonInstance extends L1NpcInstance {
 		boolean isExistMaster = false;
 		if (this.getMaster() != null) {
 			String masterName = this.getMaster().getName();
-			if (L1World.getInstance().getPlayer(masterName) != null) {
+			if (CWorld.getInstance().getPlayer(masterName) != null) {
 				isExistMaster = true;
 			}
 		}
@@ -581,7 +581,7 @@ public class L1SummonInstance extends L1NpcInstance {
 
 		if( _master instanceof L1PcInstance && ((L1PcInstance)_master).isInWarArea()){
 
-			for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(this)) {
+			for (L1PcInstance visiblePc : CWorld.getInstance().getVisiblePlayer(this)) {
 			    SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(visiblePc, this, visiblePc);
 			}		
 			deleteMe();

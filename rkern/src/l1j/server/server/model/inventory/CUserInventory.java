@@ -7,7 +7,7 @@ import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
@@ -127,7 +127,7 @@ public class CUserInventory extends CInventory {
                     l1j.server.server.model.character.scheduler.CInventoryExpiry
                             .getInstance().cancelItem(_owner, original);
                 }
-                L1World.getInstance().removeObject(original);
+                CWorld.getInstance().removeObject(original);
                 try { SC_DeleteInventoryItem.send(_owner, original); }
                 catch (RuntimeException failure) { receiptNoticeFailed("delete", failure); }
                 if (original.getItemId() == 900075) {
@@ -219,7 +219,7 @@ public class CUserInventory extends CInventory {
             image.getLastStatus().updateAll();
             _items.Push(image);
             addItemCountCache(image.getItemId(), image.getCount());
-            L1World.getInstance().storeObject(image);
+            CWorld.getInstance().storeObject(image);
             try { SC_ADD_INVENTORY_NOTI.sendItem(_owner, image, false, _owner.getId()); }
             catch (RuntimeException failure) { receiptNoticeFailed("item-added", failure); }
             if (image.getItemId() == 900075) {
@@ -409,7 +409,7 @@ public class CUserInventory extends CInventory {
                 if (GetByServerID(item.getId()) != null)
                     throw new IllegalStateException("Duplicate stored item identity: " + item.getId());
                 final L1PcInstance previousOwner = item._cha;
-                final L1World world = L1World.getInstance();
+                final CWorld world = CWorld.getInstance();
                 _items.Push(item);
                 item._cha = _owner;
                 try {

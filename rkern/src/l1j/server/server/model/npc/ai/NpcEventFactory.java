@@ -16,7 +16,7 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.npc.spawn.group.L1MobGroupInfo;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.templates.L1Npc;
@@ -473,7 +473,7 @@ public final class NpcEventFactory {
 		}
 
 		final L1Object obj =
-				L1World.getInstance()
+				CWorld.getInstance()
 						.findObject(occupierId);
 
 		if (!(obj instanceof L1PcInstance)) {
@@ -510,7 +510,7 @@ public final class NpcEventFactory {
 		}
 
 		final L1Object obj =
-				L1World.getInstance()
+				CWorld.getInstance()
 						.findObject(occupierId);
 
 		if (!(obj instanceof L1SummonInstance)
@@ -735,7 +735,7 @@ public final class NpcEventFactory {
 			}
 
 			final L1Object obj =
-					L1World.getInstance()
+					CWorld.getInstance()
 							.findObject(occupierId);
 
 			if (!(obj instanceof L1Character)) {
@@ -1028,7 +1028,7 @@ public final class NpcEventFactory {
         final int mapId = source.getMapId();
         final ArrayList<L1Object> nearby = OBJECT_BUFFER.get();
         try {
-            L1World.getInstance().getClusterGrid().queryNearby(
+            CWorld.getInstance().getClusterGrid().queryNearby(
                     source, CLAN_HELP_RANGE_TILES, nearby);
             for (int i = 0, n = nearby.size(); i < n; i++) {
                 final L1Object object = nearby.get(i);
@@ -1078,7 +1078,7 @@ public final class NpcEventFactory {
         final ArrayList<L1Object> nearby =
                 OBJECT_BUFFER.get();
 
-        L1World.getInstance()
+        CWorld.getInstance()
                 .getClusterGrid()
                 .queryNearby(
                         source,
@@ -1207,7 +1207,7 @@ public final class NpcEventFactory {
 		int bestDist = Integer.MAX_VALUE;
 		int bestId = Integer.MAX_VALUE;
 
-		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(monster)) {
+		for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayerFast(monster)) {
 			if (pc == null || pc == oldTarget) {
 				continue;
 			}
@@ -1304,7 +1304,7 @@ public final class NpcEventFactory {
 		}
 
 		final ArrayList<L1Object> nearby = OBJECT_BUFFER.get();
-		L1World.getInstance().getClusterGrid().queryNearby(moved, -1, nearby);
+		CWorld.getInstance().getClusterGrid().queryNearby(moved, -1, nearby);
 
 		try {
 			for (int i = 0, size = nearby.size(); i < size; i++) {
@@ -1554,7 +1554,7 @@ public final class NpcEventFactory {
 
 		final ArrayList<L1Object> nearby = OBJECT_BUFFER.get();
 
-		L1World.getInstance().getClusterGrid().queryNearby(npc, -1, nearby);
+		CWorld.getInstance().getClusterGrid().queryNearby(npc, -1, nearby);
 
 		L1MonsterInstance factionTarget = null;
 
@@ -1776,7 +1776,7 @@ public final class NpcEventFactory {
 	    final ArrayList<L1Object> nearby =
 	            OBJECT_BUFFER.get();
 
-	    L1World.getInstance()
+	    CWorld.getInstance()
 	            .getClusterGrid()
 	            .queryNearby(
 	                    source,

@@ -314,7 +314,7 @@ for (L1PcInstance pc : getMembersArray()) {
 				item = CObjectDB.CreateItem(itemId);
 				item.setEnchantLevel(0);
 				item.setCount(stackCount);
-				ground = L1World.getInstance().getInventory(loc.getX(),
+				ground = CWorld.getInstance().getInventory(loc.getX(),
 						loc.getY(), _mapId);
 				try {
 					if (ground.CheckAddable(item, stackCount) == CInventory.OK) {
@@ -324,7 +324,7 @@ for (L1PcInstance pc : getMembersArray()) {
 					// A failed ground insert or stack merge cannot retain a
 					// world-registered, unowned temporary item.
 					if (ground.GetByServerID(item.getId()) != item) {
-						L1World.getInstance().removeObject(item);
+						CWorld.getInstance().removeObject(item);
 					}
 				}
 			} else {
@@ -332,7 +332,7 @@ for (L1PcInstance pc : getMembersArray()) {
 				for (int createCount = 0; createCount < stackCount; createCount++) {
 					item = CObjectDB.CreateItem(itemId);
 					item.setEnchantLevel(0);
-					ground = L1World.getInstance().getInventory(loc.getX(),
+					ground = CWorld.getInstance().getInventory(loc.getX(),
 							loc.getY(), _mapId);
 					try {
 						if (ground.CheckAddable(item, stackCount) == CInventory.OK) {
@@ -342,7 +342,7 @@ for (L1PcInstance pc : getMembersArray()) {
 						// A failed ground insert or stack merge cannot retain a
 						// world-registered, unowned temporary item.
 						if (ground.GetByServerID(item.getId()) != item) {
-							L1World.getInstance().removeObject(item);
+							CWorld.getInstance().removeObject(item);
 						}
 					}
 				}
@@ -353,7 +353,7 @@ for (L1PcInstance pc : getMembersArray()) {
 	private void clearColosseum() {
 		L1MonsterInstance mob = null;
 		CInventory inventory = null;
-		for (Object obj : L1World.getInstance().getVisibleObjects(_mapId)
+		for (Object obj : CWorld.getInstance().getVisibleObjects(_mapId)
 				.values()) {
 			if (obj instanceof L1MonsterInstance) {
 				mob = (L1MonsterInstance) obj;
@@ -482,7 +482,7 @@ for (L1PcInstance pc : getMembersArray()) {
     public synchronized void start() {
         if (battleTimer != null) return;
         if (getUbId() == 1) {
-            L1World.getInstance().broadcastServerMessage(
+            CWorld.getInstance().broadcastServerMessage(
                     "5분 후 기란 마을의 무한대전이 시작됩니다. 지금부터 입장가능합니다.");
         }
         _pattern = 1;

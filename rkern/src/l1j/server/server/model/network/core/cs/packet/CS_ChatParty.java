@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.L1ChatParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Party;
@@ -71,7 +71,7 @@ public final class CS_ChatParty {
             return;
         }
 
-        final L1PcInstance target = L1World.getInstance().getPlayer(name);
+        final L1PcInstance target = CWorld.getInstance().getPlayer(name);
 
         if (target == null) {
             SC_ServerMessage.send(pc, 109, name);

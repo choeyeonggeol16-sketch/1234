@@ -2,7 +2,7 @@ package l1j.server.server.model.character.skill.core;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -138,7 +138,7 @@ public enum SkillUseInitializer {
         }
 
         final L1Object obj =
-                L1World.getInstance().findObject(targetId);
+                CWorld.getInstance().findObject(targetId);
 
         if (obj == null) {
             return false;

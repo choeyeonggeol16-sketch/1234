@@ -11,7 +11,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
@@ -89,12 +89,12 @@ public class L1DoorInstance extends L1NpcInstance {
 		}
 		allTargetClear();
 		_master = null;
-		L1World.getInstance().removeVisibleObject(this);
-		L1World.getInstance().removeObject(this);
+		CWorld.getInstance().removeVisibleObject(this);
+		CWorld.getInstance().removeObject(this);
 		try {
 		try (var sharedRemove = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 		        SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 			if (pc == null) {
 				continue;
 			}
@@ -124,12 +124,12 @@ public class L1DoorInstance extends L1NpcInstance {
 			if (newHp > 0) {
 				if (attacker instanceof L1PcInstance) {
 					L1PcInstance pc = (L1PcInstance) attacker;
-					L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+					L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 					if (clan != null) {
 						int castleId = clan.getCastleId();
 						if (castleId != L1CastleLocation.getCastleIdByArea(pc)) {
 							L1CastleGuardInstance guard = null;
-							for (L1Object object : L1World.getInstance().getVisibleObjects(pc)) {
+							for (L1Object object : CWorld.getInstance().getVisibleObjects(pc)) {
 								if (object instanceof L1CastleGuardInstance) {
 									guard = (L1CastleGuardInstance) object;
 									guard.setTarget(pc);
@@ -138,7 +138,7 @@ public class L1DoorInstance extends L1NpcInstance {
 						}
 					} else {
 						L1CastleGuardInstance guard = null;
-						for (L1Object object : L1World.getInstance().getVisibleObjects(pc)) {
+						for (L1Object object : CWorld.getInstance().getVisibleObjects(pc)) {
 							if (object instanceof L1CastleGuardInstance) {
 								guard = (L1CastleGuardInstance) object;
 								guard.setTarget(pc);

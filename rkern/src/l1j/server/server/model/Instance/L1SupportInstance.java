@@ -4,7 +4,7 @@ import java.util.Random;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.npc.ai.CNpcItemUse;
 import l1j.server.server.templates.L1Npc;
@@ -79,9 +79,9 @@ public class L1SupportInstance extends L1NpcInstance {
 //		setHeading(5);
 //		setLightSize(template.getLightSize());
 //
-//		L1World.getInstance().storeObject(this);
-//		L1World.getInstance().addVisibleObject(this);
-//		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+//		CWorld.getInstance().storeObject(this);
+//		CWorld.getInstance().addVisibleObject(this);
+//		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 //			onPerceive(pc);
 //		}
 //		master.addSupport(this);
@@ -117,7 +117,7 @@ public class L1SupportInstance extends L1NpcInstance {
 		boolean isExsistMaster = true;
 		if (this.getMaster() != null) {
 			String masterName = this.getMaster().getName();
-			if (L1World.getInstance().getPlayer(masterName) == null) {
+			if (CWorld.getInstance().getPlayer(masterName) == null) {
 				isExsistMaster = false;
 			}
 		}
@@ -226,7 +226,7 @@ public class L1SupportInstance extends L1NpcInstance {
 	//				}
 	//				if (attacker instanceof L1PcInstance && ((L1PcInstance) attacker).isPinkName()) {
 	//					L1GuardInstance guard = null;
-	//					for (L1Object object : L1World.getInstance().getVisibleObjects(attacker)) {
+	//					for (L1Object object : CWorld.getInstance().getVisibleObjects(attacker)) {
 	//						if (object instanceof L1GuardInstance) {
 	//							guard = (L1GuardInstance) object;
 	//							guard.setTarget(((L1PcInstance) attacker));

@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.treasure.L1TreasureChest;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.world.instance.shared.L1LiftGateInstance;
@@ -23,7 +23,7 @@ public final class MapCleaner implements Runnable {
 
     public static void removeGroundItems(L1Map map) {
         if (map == null || map.isNull()) return;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final var visible = world.getVisibleObjects(map.getId());
         if (visible == null) return;
 
@@ -53,7 +53,7 @@ public final class MapCleaner implements Runnable {
     }
 
     @Override public void run() {
-        final var visible = L1World.getInstance().getVisibleObjects(map.getId());
+        final var visible = CWorld.getInstance().getVisibleObjects(map.getId());
         if (visible == null) return;
         for (L1Object object : visible.values()) {
             // A copied map ID can already belong to a different room.

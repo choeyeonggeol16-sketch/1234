@@ -13,7 +13,7 @@ import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -115,7 +115,7 @@ public class Demon implements Runnable {
 		if (Time % 60 == 0) {
 			int min = Time / 60;
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    L1World.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getVisibleObjects(_map).values(),
                     SC_PacketBox.nativeGreenWriter(min+"분 후에 마을로 강제 이동 됩니다."));
 		}
 	}
@@ -188,7 +188,7 @@ public class Demon implements Runnable {
 			}
 		} else {
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    L1World.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getVisibleObjects(_map).values(),
                     SC_PacketBox.nativeGreenWriter("벽 뒤에 있는 스빈을 만나십시오."));
 			openDoor(5151); // 다섯번째 문 개방.
 			BossRoom = false;
@@ -196,13 +196,13 @@ public class Demon implements Runnable {
 	}
 	
 	private void Demon_Delete(){
-		Collection<L1Object> cklist = L1World.getInstance().getVisibleObjects(_map).values();
+		Collection<L1Object> cklist = CWorld.getInstance().getVisibleObjects(_map).values();
 		for(L1Object ob : cklist){
 			if(ob == null)
 				continue;
 			if(ob instanceof L1ItemInstance){
 				L1ItemInstance obj = (L1ItemInstance)ob;
-				CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
+				CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
 				groundInventory.DeleteItemAmount(obj);
 			}else if(ob instanceof L1NpcInstance){
 				L1NpcInstance npc = (L1NpcInstance)ob;
@@ -220,7 +220,7 @@ public class Demon implements Runnable {
 		ListClear(4);
 		ListClear(5);
 		ListClear(6);
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1MonsterInstance) {
 				L1MonsterInstance mon = (L1MonsterInstance) obj;
 				mon.deleteMe();
@@ -230,7 +230,7 @@ public class Demon implements Runnable {
 	
 	private void CheckPc() {
 		int check = 0;
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1PcInstance) {
 				check = 1;
 			}
@@ -240,7 +240,7 @@ public class Demon implements Runnable {
 	
 	private void openDoor(int doorId) {
 		L1DoorInstance door = null;
-		for (L1Object object : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object object : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if(object instanceof L1DoorInstance){
 				door = (L1DoorInstance)object;
 				if (door.getNpcTemplate().get_npcId() == doorId){
@@ -253,7 +253,7 @@ public class Demon implements Runnable {
 	}
 
 	private void End() {
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1PcInstance) {
 				L1PcInstance pc = (L1PcInstance) obj;
 //				L1Teleport.teleport(pc, 34068, 32311, (short)4, 4, true); // 이부분이 떨어질 좌표에요
@@ -415,7 +415,7 @@ public class Demon implements Runnable {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(Heading);
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			switch(type){
 			case 1:

@@ -26,7 +26,7 @@ import l1j.server.server.model.L1Location;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
@@ -138,7 +138,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 	            setTempLawful(targetPc.getLawful());
 	            setCurrentSprite(targetPc.getClassId());
 
-	            for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+	            for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 	                if (pc == null) {
 	                    continue;
 	                }
@@ -587,7 +587,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 	        if (npcId == bossIds[i]) {
 	          l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer greenShared=null;
 try{
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers())
+for (L1PcInstance pc : CWorld.getInstance().getAllPlayers())
 	          {
 	            if ((lastAttacker.getMapId() == pc.getMapId()) && (pc.is특정보스()) && (!pc.isDead()) && (!pc.isInvisble()) && 
 	              (getLocation().getTileLineDistance(new Point(pc.getLocation())) < 20))
@@ -623,7 +623,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	        if (npcId == bossIds[i]) {
 	          l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer greenShared=null;
 try{
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers())
+for (L1PcInstance pc : CWorld.getInstance().getAllPlayers())
 	          {
 	            if ((lastAttacker.getMapId() == pc.getMapId()) && (pc.is특정보스투()) && (!pc.isDead()) && (!pc.isInvisble()) && 
 	              (getLocation().getTileLineDistance(new Point(pc.getLocation())) < 20))
@@ -724,7 +724,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         L1NpcInstance Pearl = null;
         L1PcInstance PearlBuff = null;
         Sahel.receiveDamage(Sahel, 1);
-        for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(Sahel, 5)) {
+        for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(Sahel, 5)) {
             if (obj instanceof L1MonsterInstance) {
                 L1MonsterInstance mon = (L1MonsterInstance) obj;
                 if (mon.getNpcTemplate().get_gfxid() == 7684 || mon.getNpcTemplate().get_gfxid() == 7805)
@@ -768,7 +768,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         L1PcInstance PearlBuff = null;
         Random random = new Random();
         // ── 클러스터 기반: 반경 10 조회 ──
-        for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(Pearl, 10)) {
+        for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(Pearl, 10)) {
             if (obj instanceof L1MonsterInstance) {
                 L1MonsterInstance mon = (L1MonsterInstance) obj;
                 if (mon.getNpcTemplate().get_gfxid() == 7864 || mon.getNpcTemplate().get_gfxid() == 7869
@@ -930,7 +930,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         // Never publish while holding the NPC monitor: the existing serializer
         // may execute immediately on this producer or drain on another thread.
         try {
-            if (!L1World.getInstance().AsyncPickItem(this, job.epoch)) DispatchPartyDrop(job.epoch);
+            if (!CWorld.getInstance().AsyncPickItem(this, job.epoch)) DispatchPartyDrop(job.epoch);
         } catch (RuntimeException failure) {
             DEATH_DROP_LOG.log(java.util.logging.Level.WARNING, "Party pickup admission failed", failure);
             DispatchPartyDrop(job.epoch);
@@ -980,7 +980,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     private boolean RecoverPartyDrop(DeathSettlement job) {
         final CInventory source = job.source;
         if (source.getItems().isEmpty()) return true;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         for (L1ItemInstance item : source.getItems()) {
             if (item == null || source.GetByServerID(item.getId()) != item || item.getCount() <= 0) continue;
             try {
@@ -1034,7 +1034,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
             job.claimed = false;
         }
         try {
-            if (!L1World.getInstance().AsyncPickItem(this, job.epoch)) DispatchPartyDrop(job.epoch);
+            if (!CWorld.getInstance().AsyncPickItem(this, job.epoch)) DispatchPartyDrop(job.epoch);
         } catch (RuntimeException failure) {
             DEATH_DROP_LOG.log(java.util.logging.Level.WARNING, "Party pickup retry admission failed", failure);
             DispatchPartyDrop(job.epoch);
@@ -1082,7 +1082,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     private void handleExplosionDamage() {
         int npcId = getNpcId();
         if (npcId == 45263 || npcId == 7320176 || npcId == 7320180 || npcId == 7320182) {
-            for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(this, 2)) {
+            for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(this, 2)) {
                 if (obj instanceof L1PcInstance) {
                     L1PcInstance pc = (L1PcInstance) obj;
                     if (!pc.isDead() && !GameUtils.isCounterMagic(pc)) {
@@ -1356,7 +1356,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 
 		@Override
 		public void run() {
-			if (!isCancelled() && L1World.getInstance().smartIdOf(_Pearl) != 0L) {
+			if (!isCancelled() && CWorld.getInstance().smartIdOf(_Pearl) != 0L) {
 				CIOThreadCallback.getInstance().scheduleNpcTimer(_Pearl, TIMER_PAP_PEARL, 1, 1L);
 			}
 		}
@@ -1391,7 +1391,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 				pc.getInventory().updateItem(item, CUserInventory.COL_BLESS);
 				pc.getInventory().saveItem(item, CUserInventory.COL_BLESS);
 			} else { // 가질 수 없는 경우는 지면에 떨어뜨리는 처리의 캔슬은 하지 않는다(부정 방지)
-				L1World.getInstance().getInventory(pc.getX(), pc.getY(), pc.getMapId()).CreateOrAddItem(item);
+				CWorld.getInstance().getInventory(pc.getX(), pc.getY(), pc.getMapId()).CreateOrAddItem(item);
 			}
 			if (pc.isInParty()) { // 파티 인경우
                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArrayBestEffort(

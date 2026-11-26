@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.core.sc.packet;
 
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.shop.NpcShopView;
 import l1j.server.server.datatables.CObjectDB;
@@ -94,7 +94,7 @@ public final class SC_PremiumShopSellList {
         capacity += tailSize;
         final L1PcInstance pc = connection.getActiveChar();
         final NpcShopView view = pc != null && shop != null
-                && L1World.getInstance().findObject(objId) instanceof L1NpcInstance npc
+                && CWorld.getInstance().findObject(objId) instanceof L1NpcInstance npc
                 ? NpcShopView.purchase(connection, pc, npc, objId, shop, offers) : null;
         final CIOFrame frame = connection.beginDirectFrame((int) capacity);
         if (frame == null) return false;

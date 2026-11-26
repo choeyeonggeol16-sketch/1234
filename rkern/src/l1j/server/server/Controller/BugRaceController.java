@@ -34,7 +34,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
 import l1j.server.server.model.L1IntRegistry;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.gametime.TimeListener;
@@ -393,14 +393,14 @@ public class BugRaceController implements Runnable, TimeListener {
 	public void initNpc() {
 		/*
 		 * 기존에는 map 4의 모든 visible object를 훑었다.
-		 * L1World에 이미 npcId -> L1NpcInstance 인덱스가 있으므로 바로 조회한다.
+		 * CWorld에 이미 npcId -> L1NpcInstance 인덱스가 있으므로 바로 조회한다.
 		 */
-		_npc[0] = L1World.getInstance().findNpc(70041);
-		_npc[1] = L1World.getInstance().findNpc(70035);
-		_npc[2] = L1World.getInstance().findNpc(70042);
+		_npc[0] = CWorld.getInstance().findNpc(70041);
+		_npc[1] = CWorld.getInstance().findNpc(70035);
+		_npc[2] = CWorld.getInstance().findNpc(70042);
 
 		final L1NpcInstance boxNpc =
-				L1World.getInstance().findNpc(50000063);
+				CWorld.getInstance().findNpc(50000063);
 
 		if (boxNpc instanceof MessengerInstance) {
 			_box_npc = (MessengerInstance) boxNpc;
@@ -527,15 +527,15 @@ public class BugRaceController implements Runnable, TimeListener {
 	            _littleBugBear[m].setId(
 	                    IdFactory.getInstance().nextId());
 
-	            L1World.getInstance()
+	            CWorld.getInstance()
 	                    .storeObject(_littleBugBear[m]);
 
-	            L1World.getInstance()
+	            CWorld.getInstance()
 	                    .addVisibleObject(_littleBugBear[m]);
 
 	            list.add(_littleBugBear[m]);
 
-	            players = L1World.getInstance().getVisiblePlayerFast(_littleBugBear[m]);
+	            players = CWorld.getInstance().getVisiblePlayerFast(_littleBugBear[m]);
 
 	            for (L1PcInstance member : players) {
 	                if (member != null && member.canSeeObject(_littleBugBear[m])) {
@@ -575,7 +575,7 @@ public class BugRaceController implements Runnable, TimeListener {
 	public void doorAction(boolean open) {
 
 		final L1IntRegistry<L1Object> mapObjects =
-		        L1World.getInstance().getVisibleObjects(4);
+		        CWorld.getInstance().getVisibleObjects(4);
 
 		if (mapObjects == null || mapObjects.isEmpty()) {
 			return;
@@ -1073,7 +1073,7 @@ public class BugRaceController implements Runnable, TimeListener {
 	public void BroadcastAllUser(String text) {
 		try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
       SC_SystemMessage.nativeWriter(text),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance player : L1World.getInstance().getAllPlayers()) {
+for (L1PcInstance player : CWorld.getInstance().getAllPlayers()) {
 			try {
 				l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,player);
 			} catch (Exception exception) {

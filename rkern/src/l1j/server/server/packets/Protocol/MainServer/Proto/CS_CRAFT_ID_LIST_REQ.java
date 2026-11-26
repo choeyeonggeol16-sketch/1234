@@ -3,7 +3,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.shared.L1Type;
 
@@ -41,7 +41,7 @@ public final class CS_CRAFT_ID_LIST_REQ {
             pc = client.getActiveChar();
             if (pc == null) return;
 
-            L1Object obj = L1World.getInstance().findObject(npcId);
+            L1Object obj = CWorld.getInstance().findObject(npcId);
             if (obj == null || !obj.instanceOf(L1Type.L1TYPE_NPC)) {
                 sendError(pc, RP_ERROR_INVALID_NPC_ID);
                 return;

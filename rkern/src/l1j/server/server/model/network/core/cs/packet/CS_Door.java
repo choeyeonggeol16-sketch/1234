@@ -9,7 +9,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.treasure.L1TreasureChest;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -53,7 +53,7 @@ public final class CS_Door {
         }
 
         final L1Object obj =
-                L1World.getInstance()
+                CWorld.getInstance()
                         .findObject(objectId);
 
         if (obj == null) {
@@ -339,7 +339,7 @@ public final class CS_Door {
         }
 
         final L1Clan clan =
-                L1World.getInstance()
+                CWorld.getInstance()
                         .getClan(pc.getClanid());
 
         if (clan != null) {

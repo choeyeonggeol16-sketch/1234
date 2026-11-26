@@ -9,7 +9,7 @@ import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -117,9 +117,9 @@ final class NpcExperienceCommands {
 				return true;
 			} finally {
 				// ItemTable registers before an inventory decision; rejected or
-				// stack-merged item images must not survive in L1World.
+				// stack-merged item images must not survive in CWorld.
 				if (pc.getInventory().GetByServerID(item.getId()) != item) {
-					L1World.getInstance().removeObject(item);
+					CWorld.getInstance().removeObject(item);
 				}
 			}
 		} else {

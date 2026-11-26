@@ -1,6 +1,6 @@
 package l1j.server.server.model.Instance;
 
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.templates.L1Npc;
 
@@ -44,12 +44,12 @@ public class L1FieldObjectInstance extends L1NpcInstance {
 		if (getInventory() != null) {
 			getInventory().clearItems();
 		}
-		L1World.getInstance().removeVisibleObject(this);
-		L1World.getInstance().removeObject(this);
+		CWorld.getInstance().removeVisibleObject(this);
+		CWorld.getInstance().removeObject(this);
 		try {
 		try (var sharedRemove = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 		        SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 			if (pc == null) {
 				continue;
 			}

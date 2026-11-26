@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.templates.L1Npc;
 
@@ -51,7 +51,7 @@ public class FurnitureSpawnTable {
 						furniture.setHomeY(furniture.getY());
 						furniture.setHeading(0);
 
-						L1World.getInstance().storeAndEnterWorld(furniture);
+						CWorld.getInstance().storeAndEnterWorld(furniture);
 					} catch (Exception e) {
 						_log.log(Level.SEVERE, "Furniture instantiation error for npcId: " + npcId, e);
 					}

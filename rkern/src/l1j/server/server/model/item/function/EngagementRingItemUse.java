@@ -10,7 +10,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -27,7 +27,7 @@ final class EngagementRingItemUse {
 
             int chargeCount = item.getChargeCount();
             if (pc.getPartnerId() != 0) {
-                partner = (L1PcInstance) L1World.getInstance().findObject(pc.getPartnerId());
+                partner = (L1PcInstance) CWorld.getInstance().findObject(pc.getPartnerId());
                 if (chargeCount > 0) {
                     if (partner != null && partner.getPartnerId() != 0 && pc.getPartnerId() == partner.getId()
                             && partner.getPartnerId() == pc.getId()) {

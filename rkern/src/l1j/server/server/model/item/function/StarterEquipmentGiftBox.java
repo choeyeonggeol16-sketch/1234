@@ -82,7 +82,7 @@ final class StarterEquipmentGiftBox {
             int itemId, int count, int enchant, int bless, int attr, boolean identified) {
         final L1Item template = CObjectDB.LoadItem().getTemplate(itemId);
         if (template == null || count <= 0) return false;
-        // createItem() publishes the item to L1World before COMMIT. Build a detached image.
+        // createItem() publishes the item to CWorld before COMMIT. Build a detached image.
         final L1ItemInstance item = new L1ItemInstance(template, count);
         item.setId(IdFactory.getInstance().nextId());
         item.setCount(count);

@@ -3,7 +3,7 @@ package l1j.server.server.model.world.instance.dungeon.time.loader;
 import java.util.Calendar;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.world.index.IndexStampManager;
 import l1j.server.server.model.world.index.StampIndex;
@@ -106,7 +106,7 @@ public class DungeonTimeLoadManager implements Command{
 					@Override
 					protected void to_handle_command(CommandArgs args) throws Exception{
 						String character_name = args.nextString();
-						L1PcInstance pc = L1World.getInstance().getPlayer(character_name);
+						L1PcInstance pc = CWorld.getInstance().getPlayer(character_name);
 						if(pc == null){
 							args.notify(String.format("캐릭터 이름 %s을(를) 찾을 수 없습니다.", character_name));
 							return;

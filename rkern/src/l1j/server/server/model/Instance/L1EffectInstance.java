@@ -4,7 +4,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Magic;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -53,7 +53,7 @@ public class L1EffectInstance extends L1NpcInstance {
     }
 
     private void applyFireWallDamage() {
-        for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(this, 0)) {
+        for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(this, 0)) {
             if (_destroyed) {
                 return;
             }
@@ -115,11 +115,11 @@ public class L1EffectInstance extends L1NpcInstance {
 			getInventory().clearItems();
 		}
 		allTargetClear();
-		L1World.getInstance().removeVisibleObject(this);
-		L1World.getInstance().removeObject(this);
+		CWorld.getInstance().removeVisibleObject(this);
+		CWorld.getInstance().removeObject(this);
 		try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                 SC_RemoveObject.nativeWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-            for(L1PcInstance pc:L1World.getInstance().getVisiblePlayerFast(this)) {
+            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayerFast(this)) {
                 if(pc==null)continue;
                 pc.removeKnownObject(this);
                 final var client=pc.getNetConnection();

@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.npc.spawn.group.L1MobGroupInfo;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.ai.core.PathFinder;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
@@ -92,7 +92,7 @@ public final class CMoveAction {
 
         case CCreatureController.ACTION_FOLLOW_GROUP: {
             if (!creature.isMovable() || creature.isRest()
-                    || !L1World.getInstance().hasRecognizePlayerFast(creature)) {
+                    || !CWorld.getInstance().hasRecognizePlayerFast(creature)) {
                 dMoveFormation.clear(creature);
                 return CCreatureController.RESULT_DONE;
             }

@@ -19,7 +19,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.L1TownLocation;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.CWareHouseWithdraw;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
@@ -84,7 +84,7 @@ final class NpcServiceHtmlCommands {
             htmlid = NpcTravelCommands.hyosue(pc, s, htmlid);
         } else if (obj instanceof L1HousekeeperInstance && s.equalsIgnoreCase("g")) {
             if (s.equalsIgnoreCase("g")) {
-                L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+                L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
                 if (clan == null) return;
                 int houseId = clan.getHouseId();
                 if (houseId != 0) {
@@ -295,7 +295,7 @@ final class NpcServiceHtmlCommands {
                                 else
                                     HadinSystem.getInstance().startHadin(pc);
                                 L1PolyMorph.undoPoly(pc);
-                                L1World.getInstance().broadcastServerMessage("\\aD" + pc.getName() + " 님이 동료들과 함께 과거로 여행을 떠났습니다.");
+                                CWorld.getInstance().broadcastServerMessage("\\aD" + pc.getName() + " 님이 동료들과 함께 과거로 여행을 떠났습니다.");
                             }
                             htmlid = "";
                         } else if (pc.getMapId() == 9100) {
@@ -351,7 +351,7 @@ final class NpcServiceHtmlCommands {
                 htmlid = "dfguard3";
             }
         } else if (s.equalsIgnoreCase("inex")) {
-            L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 int castle_id = clan.getCastleId();
                 if (castle_id != 0) {
@@ -365,7 +365,7 @@ final class NpcServiceHtmlCommands {
             if (clan != null && clan.getCastleId() != 0)
                 SC_TaxRate.send(pc, pc.getId(), CastleWarBusiness.getInstance().getTaxRate(clan.getCastleId()));
         } else if (s.equalsIgnoreCase("withdrawal")) {
-            L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 int castle_id = clan.getCastleId();
                 if (castle_id != 0) {
@@ -416,7 +416,7 @@ final class NpcServiceHtmlCommands {
         } else if (s.equalsIgnoreCase("map")) {
             SC_HouseMap.send(pc, objid, s2);
         } else if (s.equalsIgnoreCase("apply")) {
-            L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 if (pc.isCrown() && pc.getId() == clan.getLeaderId()) {
                     if (pc.getLevel() >= 15) {
@@ -455,7 +455,7 @@ final class NpcServiceHtmlCommands {
             NpcCastleActions.payFee(pc, npc);
             htmlid = "";
         } else if (s.equalsIgnoreCase("name")) {
-            L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 int houseId = clan.getHouseId();
                 if (houseId != 0 && pc.isCrown() && clan.getLeaderId() == pc.getId()) {
@@ -471,7 +471,7 @@ final class NpcServiceHtmlCommands {
         } else if (s.equalsIgnoreCase("rem")) {
         } else if (s.equalsIgnoreCase("tel0") || s.equalsIgnoreCase("tel1") || s.equalsIgnoreCase("tel2")
                 || s.equalsIgnoreCase("tel3")) {
-            L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 int houseId = clan.getHouseId();
                 if (houseId != 0) {
@@ -488,7 +488,7 @@ final class NpcServiceHtmlCommands {
             }
             htmlid = "";
         } else if (s.equalsIgnoreCase("upgrade")) {
-            L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 int houseId = clan.getHouseId();
                 if (houseId != 0) {
@@ -515,7 +515,7 @@ final class NpcServiceHtmlCommands {
             }
             htmlid = "";
         } else if (s.equalsIgnoreCase("hall") && obj instanceof L1HousekeeperInstance) {
-            L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 int houseId = clan.getHouseId();
                 if (houseId != 0) {

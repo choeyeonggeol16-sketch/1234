@@ -22,7 +22,7 @@ import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcShopAction;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
@@ -254,7 +254,7 @@ public class NpcShopManager {
             npc.setTitle(shop.getTitle());
             L1NpcShopInstance obj = (L1NpcShopInstance) npc;
             obj.setShopName(shop.getShopName());
-            L1World.getInstance().storeAndEnterWorld(npc);
+            CWorld.getInstance().storeAndEnterWorld(npc);
             npc.refreshLight();
             obj.setState(1);
             SC_NpcShopAction.broadcast(npc, npc.getId(), ActionCodes.ACTION_Shop, shop.getShopName());

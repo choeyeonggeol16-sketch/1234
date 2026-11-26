@@ -33,9 +33,9 @@ middle = r'''
         void endEquipmentChange(){released++;}
     }
     static class Items {boolean empty=true;boolean isEmpty(){return empty;}}
-    static class L1World {
-        static final L1World WORLD=new L1World();
-        static L1World getInstance(){return WORLD;}
+    static class CWorld {
+        static final CWorld WORLD=new CWorld();
+        static CWorld getInstance(){return WORLD;}
         L1GroundInventory current;int removed;boolean fail;
         L1GroundInventory findGroundInventory(int x,int y,short map){return current;}
         void removeVisibleObject(L1GroundInventory g){if(fail)throw new IllegalStateException("cleanup");if(current==g){current=null;removed++;}}
@@ -56,7 +56,7 @@ checks = r'''
         for(boolean applying:new boolean[]{false,true})for(boolean busy:new boolean[]{false,true})for(boolean reject:new boolean[]{false,true})for(boolean fail:new boolean[]{false,true})for(boolean populated:new boolean[]{false,true})for(boolean stale:new boolean[]{false,true})for(boolean cleanupFail:new boolean[]{false,true}){
             CacheD.applying=applying;CUserInventory src=new CUserInventory();src.busy=busy;src.reject=reject;src.fail=fail;src.add=true;
             L1GroundInventory dst=new L1GroundInventory();dst._items.empty=!populated;
-            L1World w=L1World.WORLD;L1GroundInventory replacement=new L1GroundInventory();w.current=stale?replacement:dst;w.removed=0;w.fail=cleanupFail;
+            CWorld w=CWorld.WORLD;L1GroundInventory replacement=new L1GroundInventory();w.current=stale?replacement:dst;w.removed=0;w.fail=cleanupFail;
             boolean entered=applying||!busy;boolean success=entered&&!fail&&!reject;
             L1ItemInstance result=null;boolean threw=false;
             synchronized(dst){synchronized(src){try{result=((CInventory)src).tradeItemLocked(new L1ItemInstance(),1,dst);}catch(IllegalStateException e){check(e.getMessage().equals("transfer"));threw=true;}}}

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.MonsterBookV2Info;
 import l1j.server.server.storage.sql.executors.Selector;
@@ -70,7 +70,7 @@ public class BQSWQDecksLoader {
 		try{
 			try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
        SC_SystemMessage.nativeWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
 				if(pc == null)
 					continue;
 				

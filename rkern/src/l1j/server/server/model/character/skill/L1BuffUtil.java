@@ -7,7 +7,7 @@ import java.util.Collection;
 
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.SkillsTable;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 
@@ -185,7 +185,7 @@ public class L1BuffUtil {
 		}
 
 		private boolean applySkillToRange(int skillId) {
-			final L1World world = L1World.getInstance();
+			final CWorld world = CWorld.getInstance();
 
 			if (_range == null) {
 				return applySkillToCollection(world.getAllPlayers(), skillId);

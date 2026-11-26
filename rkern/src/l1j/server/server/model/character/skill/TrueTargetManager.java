@@ -2,7 +2,7 @@ package l1j.server.server.model.character.skill;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class TrueTargetManager {
@@ -48,7 +48,7 @@ public final class TrueTargetManager {
         if (oldTargetId != 0) {
 
             final L1Object oldObj =
-                    L1World.getInstance()
+                    CWorld.getInstance()
                             .findObject(oldTargetId);
 
             if (oldObj instanceof L1Character) {
@@ -92,7 +92,7 @@ public final class TrueTargetManager {
         caster.clearTrueTargetId();
 
         final L1Object obj =
-                L1World.getInstance()
+                CWorld.getInstance()
                         .findObject(targetId);
 
         if (!(obj instanceof L1Character)) {

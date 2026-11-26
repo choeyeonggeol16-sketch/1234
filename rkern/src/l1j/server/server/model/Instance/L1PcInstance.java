@@ -64,7 +64,7 @@ import l1j.server.server.model.L1StatReset;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.inventory.CTradeManager;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.ReportDeley;
 import l1j.server.server.model.character.CYieldLock;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
@@ -1965,7 +1965,7 @@ public class L1PcInstance extends L1Character {
 
 	    if (isCrown()) {
 	        L1Clan clan =
-	                L1World.getInstance()
+	                CWorld.getInstance()
 	                        .getClan(getClanid());
 
 	        if (clan != null) {
@@ -2022,7 +2022,7 @@ public class L1PcInstance extends L1Character {
 
 	public void sendClanMarks() {
 		if (getClanid() != 0) {
-			L1Clan clan = L1World.getInstance().getClan(getClanid());
+			L1Clan clan = CWorld.getInstance().getClan(getClanid());
 			if (clan != null) {
 				if (isCrown() && getId() == clan.getLeaderId() && clan.getCastleId() != 0) {
 					SC_CastleMaster.send(this, clan.getCastleId(), getId());
@@ -2249,7 +2249,7 @@ public class L1PcInstance extends L1Character {
 		// 결투중
 		try {
 			if (getFightId() != 0) {
-				L1PcInstance fightPc = (L1PcInstance) L1World.getInstance().findObject(getFightId());
+				L1PcInstance fightPc = (L1PcInstance) CWorld.getInstance().findObject(getFightId());
 				if (fightPc != null) {
 					fightPc.setFightId(0);
 					SC_PacketBox.send(fightPc, SC_PacketBox.MSG_DUEL, 0, 0);
@@ -2463,7 +2463,7 @@ public class L1PcInstance extends L1Character {
             }
             try { CacheD.getInstance().requestCharacterItemOwnerRelease(getId(), getCacheDSessionEpoch()); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout CacheD owner release failed: " + getId(), e); }
-            final L1World world = L1World.getInstance();
+            final CWorld world = CWorld.getInstance();
             try { notifyPlayersLogout(getKnownPlayers()); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout known players notify failed: " + getId(), e); }
             try { world.leaveAndRemoveObject(this); }
@@ -3824,7 +3824,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 	                    var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
        SC_SystemMessage.nativeWriter("\\fY[GM] " + getName() + "님의 [" + item.getLogName() + "] 증발"),Integer.MIN_VALUE,Integer.MAX_VALUE);
 try {
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 							if (pc.isGm()) {
 								l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared,pc);
 							}
@@ -3836,7 +3836,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	                    LoggerInstance.getInstance().addItemAction(ItemActionType.del, this, item, count);
 	                } else {
 	                    getInventory().tradeItem(item, item.isStackable() ? item.getCount() : 1,
-	                            L1World.getInstance().getInventory(getX(), getY(), getMapId()));
+	                            CWorld.getInstance().getInventory(getX(), getY(), getMapId()));
 	                    SC_SystemMessage.send(this, "사망 패널티(드랍): [" + item.getLogName() + "] ");
 
 	                   // sendPackets(new SC_ServerMessage(638, item.getLogName()));// 증발
@@ -4728,7 +4728,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
         if (BloodName != null && ((getLevel() >= Config.신규혈맹보호레벨
                 && BloodName.equalsIgnoreCase(Config.신규혈맹이름))
                 || BloodName.equalsIgnoreCase("초보"))) {
-            final L1Clan clan = L1World.getInstance().getClan(getClanid());
+            final L1Clan clan = CWorld.getInstance().getClan(getClanid());
             if (clan != null) {
                 l1j.server.server.model.L1ClanJoin.LeaveMember(clan, this, () -> {
                     start_teleport(getX(), getY(), getMapId(), getHeading(), 169, false, false);
@@ -5443,7 +5443,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public L1Clan getClan() {
-		return L1World.getInstance().getClan(getClanid());
+		return CWorld.getInstance().getClan(getClanid());
 	}
 
 	public int getClanRank() {
@@ -5983,7 +5983,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 				final L1ItemInstance drop = CObjectDB.CreateItem(592248);
 				SC_SystemMessage.send(this, "수호자의 가호를 드랍하였습니다.");
 				getInventory().DeleteItemAmount(original, 1);
-				L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
+				CWorld.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 			}
 		}
 	}
@@ -6002,7 +6002,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		SC_ServerMessage.send(this, 3802);
 		SC_ServerMessage.send(this, 158, message);
 		getInventory().DeleteItemAmount(original, 1);
-		L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
+		CWorld.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 	}
 
 	public void movePlayerClanData(L1Clan move_clan) {
@@ -7591,7 +7591,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	    final int clanId = getClanid();
 
-	    for (L1PcInstance viewer : L1World.getInstance() .getVisiblePlayerFast(this)) {
+	    for (L1PcInstance viewer : CWorld.getInstance() .getVisiblePlayerFast(this)) {
 	        if (viewer == null) {
 	            continue;
 	        }
@@ -7656,7 +7656,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	            wire -> wire.put((byte) l1j.server.server.Opcodes.S_INVISIBLE)
 	                    .putInt(objectId).put((byte) 0),
 	            Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-	        for (L1PcInstance viewer : L1World.getInstance().getVisiblePlayerFast(this)) {
+	        for (L1PcInstance viewer : CWorld.getInstance().getVisiblePlayerFast(this)) {
 	            if (viewer == null) continue;
 	            SC_WorldPutObject.get(viewer.getNetConnection(), this);
 	            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedInvis, viewer);
@@ -7681,7 +7681,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	            getClanid();
 
 	    for (L1PcInstance target
-	            : L1World.getInstance()
+	            : CWorld.getInstance()
 	                    .getVisiblePlayerFast(this)) {
 
 	        if (target == null
@@ -7723,7 +7723,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	            getClanid();
 
 	    for (L1PcInstance target
-	            : L1World.getInstance()
+	            : CWorld.getInstance()
 	                    .getVisiblePlayerFast(this)) {
 
 	        if (target == null
@@ -7852,7 +7852,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
             releaseKnownObjects(scannedObjects);
         }
 
-		final LocalWorldMap grid = L1World.getInstance().getClusterGrid();
+		final LocalWorldMap grid = CWorld.getInstance().getClusterGrid();
 		final List<L1Object> nearby = grid.borrowNearby(this, Config.PC_RECOGNIZE_RANGE);
 		try {
 			for (int i = 0, size = nearby.size(); i < size; i++) {
@@ -7921,7 +7921,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
         } finally {
             releaseKnownObjects(scannedObjects);
         }
-		final LocalWorldMap grid = L1World.getInstance().getClusterGrid();
+		final LocalWorldMap grid = CWorld.getInstance().getClusterGrid();
 		final List<L1Object> nearby = grid.borrowNearby(this, Config.PC_RECOGNIZE_RANGE);
 		try {
 			for (L1Object visible : nearby) {
@@ -7957,7 +7957,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			return;
 		}
 
-		final LocalWorldMap grid = L1World.getInstance().getClusterGrid();
+		final LocalWorldMap grid = CWorld.getInstance().getClusterGrid();
 		final List<L1Object> nearby = grid.borrowNearby(this, Config.PC_RECOGNIZE_RANGE);
 		try {
 			for (L1Object visible : nearby) {

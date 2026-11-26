@@ -16,7 +16,7 @@ import l1j.server.server.Account;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
@@ -228,7 +228,7 @@ public static void broadcastGreen(String message) {
 
     public static void broadcastGreenMap(int mapId, String message) {
         CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                L1World.getInstance().getVisiblePlayers(mapId), b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });
+                CWorld.getInstance().getVisiblePlayers(mapId), b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });
     }
 
     public static boolean send(L1PcInstance receiver, int subCode) {
@@ -1086,9 +1086,9 @@ public static void broadcastGreen(String message) {
 
 
 	private static void callSomething(Assemble buffer) {
-		Iterator<L1PcInstance> itr = L1World.getInstance().getAllPlayers().iterator();
+		Iterator<L1PcInstance> itr = CWorld.getInstance().getAllPlayers().iterator();
 
-		buffer.writeC(L1World.getInstance().getAllPlayers().size());
+		buffer.writeC(CWorld.getInstance().getAllPlayers().size());
 		L1PcInstance targetPc = null;
 		Account acc = null;
 		Calendar cal = null;

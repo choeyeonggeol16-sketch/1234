@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.L1Location;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -34,7 +34,7 @@ public final class CS_CallPlayer {
         }
 
         final L1PcInstance target =
-                L1World
+                CWorld
                         .getInstance()
                         .getPlayer(name);
 

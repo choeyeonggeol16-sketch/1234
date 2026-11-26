@@ -187,7 +187,7 @@ public class L1ClanJoin {
                 if (result != null) result.accept(false);
             });
             tx.commitAfterInventoryRelease(() -> {
-                if (L1World.getInstance().getClan(clanId) != clan || joinPc.getClanid() != 0)
+                if (CWorld.getInstance().getClan(clanId) != clan || joinPc.getClanid() != 0)
                     throw new IllegalStateException("Stale clan admission after COMMIT");
                 // Commit the live state before encoding or sending any packet.
                 joinPc.setClanid(clanId);
@@ -268,7 +268,7 @@ public class L1ClanJoin {
         // connected player's clan fields from this shard. Offline members are
         // transferred in SQL and will load the destination on next login.
         for (L1Clan.ClanMember member : roster) {
-            final L1PcInstance active = L1World.getInstance().getPlayer(member.name);
+            final L1PcInstance active = CWorld.getInstance().getPlayer(member.name);
             if (active != null && active != sourceLeader) {
                 SC_SystemMessage.send(sourceLeader, "혈맹 합병 전에 다른 혈맹원은 접속을 종료해야 합니다.");
                 return false;
@@ -380,19 +380,19 @@ public class L1ClanJoin {
                 tx.commitAfterInventoryRelease(() -> {
                     // This runs on the existing CIO owner, only AFTER the
                     // durable commit. No offline character is restored/saved.
-                    if (L1World.getInstance().getClan(sourceId) != source
-                            || L1World.getInstance().getClan(targetId) != target)
+                    if (CWorld.getInstance().getClan(sourceId) != source
+                            || CWorld.getInstance().getClan(targetId) != target)
                         throw new IllegalStateException("Stale clan merge replay after COMMIT");
                     // A concurrent login after admission cannot be applied
                     // safely by this shard. Fail closed and quarantine the
                     // durable owner rather than replay another owner's state.
                     for (L1Clan.ClanMember member : roster) {
-                        final L1PcInstance live = L1World.getInstance().getPlayer(member.name);
+                        final L1PcInstance live = CWorld.getInstance().getPlayer(member.name);
                         if (live != null && live != sourceLeader)
                             throw new IllegalStateException("Member logged in during committed clan merge: " + member.memberId);
                     }
                     for (L1Clan.ClanMember member : roster) {
-                        L1PcInstance online = L1World.getInstance().getPlayer(member.name);
+                        L1PcInstance online = CWorld.getInstance().getPlayer(member.name);
                         if (online != null && online.getId() == member.memberId
                                 && online.getClanid() == sourceId) {
                             online.setClanid(targetId);
@@ -504,7 +504,7 @@ public class L1ClanJoin {
         if (pc == null || joinPc == null) return false;
         int clan_id = pc.getClanid();
 		String clanName = pc.getClanname();
-		L1Clan clan = L1World.getInstance().getClan(clan_id);
+		L1Clan clan = CWorld.getInstance().getClan(clan_id);
 		if (clan != null) {
 			int maxMember = 0;
 			int charisma = 0;
@@ -544,9 +544,9 @@ public class L1ClanJoin {
 
     private boolean changeClan(L1PcInstance pc, L1PcInstance joinPc, int maxMember, Consumer<Boolean> result, String account) {
         int clanId = pc.getClanid();
-        L1Clan clan = L1World.getInstance().getClan(clanId);
+        L1Clan clan = CWorld.getInstance().getClan(clanId);
         int oldClanId = joinPc.getClanid();
-        L1Clan oldClan = L1World.getInstance().getClan(oldClanId);
+        L1Clan oldClan = CWorld.getInstance().getClan(oldClanId);
         if (clan == null || oldClan == null || clan == oldClan || oldClanId == clanId) return false;
         if (joinPc.isCrown() && joinPc.getId() == oldClan.getLeaderId()) {
             return mergeClanAtomic(clan, oldClan, joinPc, maxMember, result, account);
@@ -638,7 +638,7 @@ public class L1ClanJoin {
         }
 
         final L1Clan clan =
-                L1World
+                CWorld
                         .getInstance()
                         .getClan(clanId);
 
@@ -743,7 +743,7 @@ public class L1ClanJoin {
     private static void DeletePledge(L1Clan clan, L1PcInstance player,
             String playerName, String clanName) {
         final int clanId = clan.getClanId(), leaderId = player.getId();
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final ClanTable table = ClanTable.getInstance();
         final CUserSocket leaderSocket = player.getNetConnection();
         final int leaderStamp = player.getSessionStamp();
@@ -832,7 +832,7 @@ public class L1ClanJoin {
 
     /** DB COMMIT is confirmed; clear each live PC on its existing owner.
      * Keep all reserved lanes until every owner and the world reply finish. */
-    private static void ReplyDeletePledge(CacheD.WarehouseMove tx, L1World world,
+    private static void ReplyDeletePledge(CacheD.WarehouseMove tx, CWorld world,
             ClanTable table, L1Clan clan, ClanWarehouse vault,
             L1Clan.ClanMember[] roster, L1PcInstance[] live, int[] shards, int[] stamps,
             String playerName, String clanName) {
@@ -872,7 +872,7 @@ public class L1ClanJoin {
             if (pc == null) continue;
             final int stamp = stamps[i];
             cio.completeOnShard(shards[i], () -> {
-                if (world != L1World.getInstance() || pc.getSessionStamp() != stamp)
+                if (world != CWorld.getInstance() || pc.getSessionStamp() != stamp)
                     throw new IllegalStateException("Stale pledge member dismissal reply");
                 pc.lockUserState();
                 try {
@@ -930,7 +930,7 @@ public class L1ClanJoin {
                             player, "혈맹 탈퇴를 완료하지 못했습니다."));
             tx.commitAfterInventoryRelease(() -> {
                 if (player.getClanid() != oldClanId || player.getId() == clan.getLeaderId()
-                        || L1World.getInstance().getClan(oldClanId) != clan)
+                        || CWorld.getInstance().getClan(oldClanId) != clan)
                     throw new IllegalStateException("Clan leave memory preimage changed after COMMIT");
                 // Make the membership state authoritative before any observable effect.
                 player.ClearCommittedClanData();
@@ -998,7 +998,7 @@ public class L1ClanJoin {
          * semantics 그대로 유지.
          */
         final L1Clan clan =
-                L1World
+                CWorld
                         .getInstance()
                         .findClan(
                                 pc.getClanname());
@@ -1039,7 +1039,7 @@ public class L1ClanJoin {
          * 먼저 온라인 캐릭터 검색.
          */
         final L1PcInstance target =
-                L1World
+                CWorld
                         .getInstance()
                         .getPlayer(
                                 targetName);
@@ -1073,9 +1073,9 @@ public class L1ClanJoin {
                 || leader.getClanid() != clan.getClanId() || leader.getId() != clan.getLeaderId()
                 || target.getClanid() != clan.getClanId() || target.getId() == clan.getLeaderId()
                 || clan.GetDbMember(target.getId()) == null
-                || L1World.getInstance().getClan(clan.getClanId()) != clan
-                || L1World.getInstance().findObject(leader.getId()) != leader
-                || L1World.getInstance().findObject(target.getId()) != target) return false;
+                || CWorld.getInstance().getClan(clan.getClanId()) != clan
+                || CWorld.getInstance().findObject(leader.getId()) != leader
+                || CWorld.getInstance().findObject(target.getId()) != target) return false;
         int castle = clan.getCastleId();
         return castle == 0 || !CastleWarBusiness.getInstance().isNowWar(castle);
     }
@@ -1120,7 +1120,7 @@ public class L1ClanJoin {
                 });
                 tx.commitAfterInventoryRelease(() -> {
                     if (target.getClanid() != clanId
-                            || L1World.getInstance().getClan(clanId) != clan)
+                            || CWorld.getInstance().getClan(clanId) != clan)
                         throw new IllegalStateException("Stale committed pledge ban");
                     target.ClearCommittedClanData();
                     clan.removeClanMember(targetId);
@@ -1172,7 +1172,7 @@ public class L1ClanJoin {
                 if (clan.IsDismissed() || client.getActiveChar() != pc || pc.isLogoutStarted() || pc.isGhost()
                         || !pc.isCrown() || pc.getClanid() != clanId
                         || leaderId != clan.getLeaderId()
-                        || L1World.getInstance().getClan(clanId) != clan) return;
+                        || CWorld.getInstance().getClan(clanId) != clan) return;
                 final int castle = clan.getCastleId();
                 if (castle != 0 && CastleWarBusiness.getInstance().isNowWar(castle)) {
                     SC_ServerMessage.send(pc, 439);
@@ -1183,7 +1183,7 @@ public class L1ClanJoin {
                     SC_ServerMessage.send(pc, 109, targetName);
                     return;
                 }
-                if (L1World.getInstance().findObject(targetId) instanceof L1PcInstance live) {
+                if (CWorld.getInstance().findObject(targetId) instanceof L1PcInstance live) {
                     online = live;
                 } else {
                     final int lane = CacheD.accountOrderKey("clan-join:", clanId);
@@ -1223,7 +1223,7 @@ public class L1ClanJoin {
                             // committed roster is visible, even if the leader logs out.
                             Throwable replayFailure = null;
                             try {
-                                if (L1World.getInstance().getClan(clanId) != clan
+                                if (CWorld.getInstance().getClan(clanId) != clan
                                         || clan.GetDbMember(targetId) != member)
                                     throw new IllegalStateException("Stale committed pledge oust");
                                 clan.removeClanMember(targetId);

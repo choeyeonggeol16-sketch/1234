@@ -52,10 +52,10 @@ import l1j.server.server.monitor.Logger.ItemActionType;
 import l1j.server.server.monitor.LoggerInstance;""")
     write(M, "CInventory", "public class CInventory { public static final int MAX_AMOUNT=2000000000; }")
     write(M, "L1Object", "public class L1Object {}")
-    write(M, "L1World", """public class L1World {
-        public static final L1World INSTANCE=new L1World();
+    write(M, "CWorld", """public class CWorld {
+        public static final CWorld INSTANCE=new CWorld();
         public final java.util.List<L1Object> objects=new java.util.ArrayList<>();
-        public static L1World getInstance(){return INSTANCE;}
+        public static CWorld getInstance(){return INSTANCE;}
         public java.util.List<L1Object> getObject(){return objects;}
     }""")
     write(M+".Instance", "L1ItemInstance", """public class L1ItemInstance {
@@ -248,9 +248,9 @@ import l1j.server.server.monitor.LoggerInstance;""")
             check(LetterTable.deletes==1
                 &&!pc.inv.rows.containsKey(3)&&!pc.inv.rows.containsKey(4),"linked deletion in receipt");
             add(pc,5,41383,1);L1FurnitureInstance f=new L1FurnitureInstance();f.id=5;
-            L1World.INSTANCE.objects.add(f);
+            CWorld.INSTANCE.objects.add(f);
             CS_DestroyItem.handle(sock,1,5,1,null);noSubmit(pc,"deployed furniture");
-            L1World.INSTANCE.objects.clear();L1InventoryTransaction.furnitureRow=true;
+            CWorld.INSTANCE.objects.clear();L1InventoryTransaction.furnitureRow=true;
             CS_DestroyItem.handle(sock,1,5,1,null);L1InventoryTransaction.complete(true);
             check(pc.inv.rows.containsKey(5),"persisted placement rejects");
             L1InventoryTransaction.furnitureRow=false;

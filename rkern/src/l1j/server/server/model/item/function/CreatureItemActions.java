@@ -14,7 +14,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.network.core.connection.CUserSocket;

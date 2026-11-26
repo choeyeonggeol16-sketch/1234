@@ -18,7 +18,7 @@ import l1j.server.server.model.Instance.L1SignboardInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
@@ -1335,7 +1335,7 @@ public final class SC_WorldPutObject {
 
         try {
             for (L1Clan clan
-                    : L1World.getInstance().getAllClans()) {
+                    : CWorld.getInstance().getAllClans()) {
 
                 if (clan != null
                         && clan.getCastleId() == 4) {

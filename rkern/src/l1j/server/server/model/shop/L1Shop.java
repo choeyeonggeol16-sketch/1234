@@ -21,7 +21,7 @@ import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1TaxCalculator;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.NpcReissuedItemPolicy;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
@@ -1183,7 +1183,7 @@ public class L1Shop {
 		}
 		
 		/** 2016.11.24 server 앱센터 시세 **/
-		L1NpcInstance npc = L1World.getInstance().findNpc(getNpcId());
+		L1NpcInstance npc = CWorld.getInstance().findNpc(getNpcId());
 		/** 2016.11.24 server 앱센터 시세 **/
 		
 		for (L1ShopBuyOrder order : orderList.getList()) {
@@ -1242,7 +1242,7 @@ public class L1Shop {
 		}
 		
 		/** 2016.11.24 server 앱센터 시세 **/
-		L1NpcInstance npc = L1World.getInstance().findNpc(getNpcId());
+		L1NpcInstance npc = CWorld.getInstance().findNpc(getNpcId());
 		/** 2016.11.24 server 앱센터 시세 **/
 		
 		for (L1ShopBuyOrder order : orderList.getList()) {

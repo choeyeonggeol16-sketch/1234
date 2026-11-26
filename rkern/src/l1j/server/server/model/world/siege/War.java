@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_War;
 import l1j.server.server.model.world.siege.WarFactory.WAR_TYPE;
 
@@ -66,7 +66,7 @@ public class War {
 		_warLock = new ReentrantLock();
 		_warId = id;
 		setDefenseClan(defense);
-		L1World.getInstance().addWar(this);
+		CWorld.getInstance().addWar(this);
 	}
 	
 	public int getId(){
@@ -113,7 +113,7 @@ public class War {
 	public void dispose(){
 		try{
 			_warLock.lock();
-			L1World.getInstance().removeWar(this);
+			CWorld.getInstance().removeWar(this);
 			if(_defense != null){
 				_defense.setCurrentWar(null);
 				_defense = null;
@@ -255,7 +255,7 @@ public class War {
 	}
 	
 	public L1Clan getDefenseClan(){
-		return _defense == null ? L1World.getInstance().getClan(_defenseId) : _defense;
+		return _defense == null ? CWorld.getInstance().getClan(_defenseId) : _defense;
 	}
 	
 	public void setDefenseClan(L1Clan clan) {

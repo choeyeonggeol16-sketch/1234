@@ -10,7 +10,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.world.effect.L1EffectSpawn;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 final class DeployableEffectItems {
@@ -19,7 +19,7 @@ final class DeployableEffectItems {
         int[] loc = null;
         switch (itemId) {
 		case 41260:// 장착
-			for (L1Object object : L1World.getInstance().getVisibleObjects(pc, 3)) {
+			for (L1Object object : CWorld.getInstance().getVisibleObjects(pc, 3)) {
 				if (object instanceof L1EffectInstance) {
 					if (((L1NpcInstance) object).getNpcTemplate().get_npcId() == 81170) {
 						SC_ServerMessage.send(pc, 1162);

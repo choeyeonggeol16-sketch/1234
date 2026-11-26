@@ -10,7 +10,7 @@ import java.util.Random;
 import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -318,10 +318,10 @@ public class FantasyIsland implements Runnable {
 						} else if (rnd < 684) { itemId = 1137; //진노의 크로우
 						}
 						L1ItemInstance item = CObjectDB.LoadItem().createItem(810010);
-						L1World.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).CreateOrAddItem(item);
+						CWorld.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).CreateOrAddItem(item);
 						L1ItemInstance item1 = CObjectDB.LoadItem().createItem(itemId);
 						if (item1 != null) {
-							L1World.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).CreateOrAddItem(item1);
+							CWorld.getInstance().getInventory(unicorn.getX(), unicorn.getY(), unicorn.getMapId()).CreateOrAddItem(item1);
 						} 
 
 						unicorn.deleteMe();
@@ -432,7 +432,7 @@ public class FantasyIsland implements Runnable {
 
 	private void checkPc() {
 		int check = 0;
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1PcInstance) {
 				check = 1;
 			}
@@ -466,12 +466,12 @@ public class FantasyIsland implements Runnable {
 			오전오후 = "오전";
 		}
 		if (Running) {
-			Collection<L1Object> cklist = L1World.getInstance().getVisibleObjects(_map).values();
+			Collection<L1Object> cklist = CWorld.getInstance().getVisibleObjects(_map).values();
 			for(L1Object ob : cklist){
 				if(ob == null) continue;
 				if(ob instanceof L1ItemInstance){
 					L1ItemInstance obj = (L1ItemInstance)ob;
-					CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
+					CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
 					groundInventory.DeleteItemAmount(obj);
 				}else if(ob instanceof L1NpcInstance){
 					L1NpcInstance npc = (L1NpcInstance)ob;

@@ -11,7 +11,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1TaxCalculator;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -33,7 +33,7 @@ public final class SC_ShopSellList {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
-        final L1Object obj = L1World.getInstance().findObject(objId);
+        final L1Object obj = CWorld.getInstance().findObject(objId);
         if (!(obj instanceof L1NpcInstance)) return false;
         final int npcId = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
         final L1Shop shop = ShopTable.getInstance().get(npcId);

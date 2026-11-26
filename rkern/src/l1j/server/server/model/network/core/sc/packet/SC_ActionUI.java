@@ -7,7 +7,7 @@ import java.util.StringTokenizer;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -94,7 +94,7 @@ public final class SC_ActionUI {
         int liveNpcId() {
             if (npc == null || npc.isDestroyed() || npc.isDead()) return 0;
             final int id = npc.getId();
-            return L1World.getInstance().findObject(id) == npc ? id : 0;
+            return CWorld.getInstance().findObject(id) == npc ? id : 0;
         }
     }
 

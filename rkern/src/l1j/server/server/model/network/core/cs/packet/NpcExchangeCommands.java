@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CInventory;
 import java.util.Random;
@@ -126,7 +126,7 @@ final class NpcExchangeCommands {
             L1ItemInstance reward = tx.grant(210106 + random.nextInt(4), 1);
             if (reward == null) return "camus3";
             // Use the staged reward rather than createItem(), which registers a
-            // second object in L1World even for a name-only lookup.
+            // second object in CWorld even for a name-only lookup.
             final String rewardName = reward.getNumberedName(1);
             tx.onFailure(() -> SC_NPCTalkReturn.send(pc, npcObjectId, "camus3"));
             tx.commitAfterInventoryRelease(() -> {
@@ -487,7 +487,7 @@ final class NpcExchangeCommands {
         if (count <= 0 || count > CInventory.MAX_AMOUNT) return false;
         final L1ItemInstance item = CObjectDB.LoadItem().createItem(item_id);
         if (item == null) return false;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         CInventory destination = null;
         L1ItemInstance stored = null;
         try {

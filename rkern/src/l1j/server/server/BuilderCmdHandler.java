@@ -57,7 +57,7 @@ import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1NeigeSaveChar;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1PolyMorph;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
@@ -931,7 +931,7 @@ public final class BuilderCmdHandler {
 				StringTokenizer st = new StringTokenizer(param);
 				int mapid = Integer.parseInt(st.nextToken());
 				String locName = MapsTable.getInstance().getMapName(mapid);
-				L1World.getInstance().getMapObject(mapid);
+				CWorld.getInstance().getMapObject(mapid);
 				CNpcMakerDB.getInstance().reload(mapid);
 				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "["+locName+"]의 몬스터들을 리스폰하였습니다.");
 				//gm.sendPackets("몬스폰리스트 (지정맵) 리로드 완료");
@@ -947,13 +947,13 @@ public final class BuilderCmdHandler {
 				StringTokenizer st = new StringTokenizer(param);
 				String name = st.nextToken();
 				int number = Integer.parseInt(st.nextToken());
-				L1Clan clan = L1World.getInstance().findClan(name);
+				L1Clan clan = CWorld.getInstance().findClan(name);
 				if (clan == null) {
 					gm.sendPackets("혈맹이 존재하지 않습니다.");
 				} else {
 					clan.setCastleId(number);
-					L1World.getInstance().removeClan(clan);
-					L1World.getInstance().storeClan(clan);
+					CWorld.getInstance().removeClan(clan);
+					CWorld.getInstance().storeClan(clan);
 					ClanTable.getInstance().updateClan(clan);
 					gm.sendPackets(name + " 혈맹정보가 변경됐습니다.");
 				}
@@ -981,8 +981,8 @@ public final class BuilderCmdHandler {
 				StringTokenizer st = new StringTokenizer(param);
 				String name = st.nextToken();
 				String clanname = st.nextToken();
-				L1PcInstance pc = L1World.getInstance().getPlayer(name);
-				L1Clan clan = L1World.getInstance().findClan(clanname);
+				L1PcInstance pc = CWorld.getInstance().getPlayer(name);
+				L1Clan clan = CWorld.getInstance().findClan(clanname);
 				if (pc == null) {
 					gm.sendPackets("그런 유저는 없습니다.");
 					return;
@@ -1030,7 +1030,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			try {
 				StringTokenizer tokenizer = new StringTokenizer(param);
 				String pcName = tokenizer.nextToken();
-				L1PcInstance pc = L1World.getInstance().getPlayer(pcName);
+				L1PcInstance pc = CWorld.getInstance().getPlayer(pcName);
 				if (pc == null) {
 					gm.sendPackets("그런 유저는 없습니다.");
 					return;
@@ -1300,7 +1300,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			int count = 0;
 			IpTable iptable = IpTable.getInstance();
 			pc.sendPackets("----------------------------------------------------");
-			for (L1PcInstance player : L1World.getInstance().getVisiblePlayer(pc, range)) {
+			for (L1PcInstance player : CWorld.getInstance().getVisiblePlayer(pc, range)) {
 				Account.ban(player.getAccountName(), reason); // 계정을 BAN시킨다.
 				iptable.banIp(player.getNetConnection().getIp()); // BAN 리스트에
 				// IP를 추가한다.
@@ -1376,31 +1376,31 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 				L1SpawnUtil.Gmspawn(7320159, 33441, 32813, (short) 4, 6, time * 60 * 60 * 1000);
 
 				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "드래곤 헌터의 가호 이벤트가 시작되었습니다. 곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
+				CWorld.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
 
 			} else if (event.equalsIgnoreCase("특급용사1")) {
 				L1SpawnUtil.Gmspawn(526, 33447, 32793, (short) 4, 5, time * 60 * 60 * 1000);// 기란
 
 				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "특급 용사 이벤트(1) 가 시작되었습니다. 곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
+				CWorld.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
 
 			} else if (event.equalsIgnoreCase("특급용사2")) {
 				L1SpawnUtil.Gmspawn(529, 33445, 32791, (short) 4, 5, time * 60 * 60 * 1000);// 기란
 
 				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "특급 용사 이벤트(2) 가 시작되었습니다. 곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
+				CWorld.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
 
 			} else if (event.equalsIgnoreCase("특급용사3")) {
 				L1SpawnUtil.Gmspawn(530, 33449, 32795, (short) 4, 5, time * 60 * 60 * 1000);// 기란
 
 				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "특급 용사 이벤트(3) 가 시작되었습니다. 곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
+				CWorld.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
 
 			} else if (event.equalsIgnoreCase("특급용사4")) {
 				L1SpawnUtil.Gmspawn(531, 33444, 32797, (short) 4, 5, time * 60 * 60 * 1000);// 기란
 
 				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "특급 용사 이벤트(4) 가 시작되었습니다. 곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
-				L1World.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
+				CWorld.getInstance().broadcastServerMessage("곧이어 (" + time + ") 시간 동안 기란 마을에 출현 합니다.");
 			}
 		} catch (Exception e) {
 			gm.sendPackets("[.이벤트] [이벤트명] [시간]");
@@ -1670,7 +1670,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			String charName = st.nextToken();
 			String banIp = "";
 
-			L1PcInstance player = L1World.getInstance().getPlayer(charName);
+			L1PcInstance player = CWorld.getInstance().getPlayer(charName);
 
 			if (player != null) {
 				banIp = player.getNetConnection().getIp();
@@ -1704,7 +1704,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			if (name == null || name.equals(""))
 				throw new Exception();
 
-			L1PcInstance target = L1World.getInstance().getPlayer(name);
+			L1PcInstance target = CWorld.getInstance().getPlayer(name);
 			if (target == null) {
 				pc.sendPackets(String.format("%s 님을 찾을 수 없습니다.", name));
 				return;
@@ -1746,7 +1746,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 	private void Saveserver() {
 		/** 전체플레이어를 호출* */
 		Collection<L1PcInstance> list = null;
-		list = L1World.getInstance().getAllPlayers();
+		list = CWorld.getInstance().getAllPlayers();
 		for (L1PcInstance player : list) {
 			if (player == null)
 				continue;
@@ -1769,10 +1769,10 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			    StringTokenizer st = new StringTokenizer(poby);
 			    String pobyname = st.nextToken();
 			    int pobyhouseid = Integer.parseInt(st.nextToken());
-			    L1PcInstance target = L1World.getInstance().getPlayer(pobyname);
+			    L1PcInstance target = CWorld.getInstance().getPlayer(pobyname);
 			    if (target != null) {
 			     if (target.getClanid() != 0) {
-			      L1Clan TargetClan = L1World.getInstance().getClan(target.getClanid());
+			      L1Clan TargetClan = CWorld.getInstance().getClan(target.getClanid());
 			      L1House pobyhouse = HouseTable.getInstance().getHouseTable(pobyhouseid);
 			      if (pobyhouseid != 0 && pobyhouse == null) return;
                   final int expectedHouse = TargetClan.getHouseId();
@@ -2020,7 +2020,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 						Config.STANDBY_SERVER = false;
 
 
-						L1World.getInstance().broadcastServerMessage("\\aH정상적으로 서버가 오픈되었습니다. 기다려주신 여러분들께 진심으로 감사합니다.");
+						CWorld.getInstance().broadcastServerMessage("\\aH정상적으로 서버가 오픈되었습니다. 기다려주신 여러분들께 진심으로 감사합니다.");
 
 						SC_PacketBox.broadcastGreen("정상적으로 서버가 오픈되었습니다. 기다려주신 여러분들께 진심으로 감사합니다.");
 					//	grn.clear();
@@ -2036,7 +2036,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 	private void hold(L1PcInstance gm, String pcName) {
 		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(pcName);
+			L1PcInstance target = CWorld.getInstance().getPlayer(pcName);
 			if (target != null) {
 				holdnow(gm, target);
 			} else {
@@ -2065,7 +2065,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			StringTokenizer tokenizer = new StringTokenizer(param);
 			String pcName = tokenizer.nextToken();
 			L1PcInstance target = null; // q
-			target = L1World.getInstance().getPlayer(pcName);
+			target = CWorld.getInstance().getPlayer(pcName);
 			if (target != null) { // 타겟
 				// L1Teleport.teleport(target, 33437, 32812, (short) 4, 5,
 				// true);
@@ -2090,7 +2090,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		
 		StringTokenizer st = new StringTokenizer(param);
 		String char_name = st.nextToken();
-		L1PcInstance target = L1World.getInstance().getPlayer(char_name);
+		L1PcInstance target = CWorld.getInstance().getPlayer(char_name);
 		try {
 		if (target != null) {
 			for (L1ItemInstance item : target.getInventory().getItems()) {
@@ -2120,7 +2120,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 	}
 	private void unprison(L1PcInstance pc, String param) {
 		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(param);
+			L1PcInstance target = CWorld.getInstance().getPlayer(param);
 			if (target != null) {
 				unprisonnow(pc, target);
 			} else {
@@ -2175,7 +2175,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			StringTokenizer tokenizer = new StringTokenizer(param);
 			String pcName = tokenizer.nextToken();
 			L1PcInstance target = null;
-			target = L1World.getInstance().getPlayer(pcName);
+			target = CWorld.getInstance().getPlayer(pcName);
 			if (target != null) {
 				target.killSkillEffectTimer(L1SkillId.STATUS_CHAT_PROHIBITED);
 				SC_SkillIconGFX.send(target, 36, 0);
@@ -2198,7 +2198,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		try {
 			StringTokenizer tok = new StringTokenizer(arg);
 			String user = tok.nextToken();
-			L1PcInstance target = L1World.getInstance().getPlayer(user);
+			L1PcInstance target = CWorld.getInstance().getPlayer(user);
 			int level = Integer.parseInt(tok.nextToken());
 			if (level == target.getLevel()) {
 				return;
@@ -2221,7 +2221,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		try {
 			StringTokenizer st = new StringTokenizer(param);
 			String char_name = st.nextToken();
-			L1PcInstance target = L1World.getInstance().getPlayer(char_name);
+			L1PcInstance target = CWorld.getInstance().getPlayer(char_name);
 			
 				
 			if (target != null) {
@@ -2249,7 +2249,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			StringTokenizer st = new StringTokenizer(param);
 			String 이름 = st.nextToken();
 			int id = Integer.parseInt(st.nextToken());
-			L1PcInstance 유저 = L1World.getInstance().getPlayer(이름);
+			L1PcInstance 유저 = CWorld.getInstance().getPlayer(이름);
 			if (유저 != null) {
 				if (유저.getClanid() != 0) {
 				if (id <= 0) { gm.sendPackets("지급 포인트는 양수여야 합니다."); return; }
@@ -2280,7 +2280,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			StringTokenizer st = new StringTokenizer(param);
 			String 이름 = st.nextToken();
 			int id = Integer.parseInt(st.nextToken());
-			L1PcInstance 유저 = L1World.getInstance().getPlayer(이름);
+			L1PcInstance 유저 = CWorld.getInstance().getPlayer(이름);
 			if (유저 != null) {
 				if (유저.getClanid() != 0) {
 				if (id <= 0) { gm.sendPackets("차감 포인트는 양수여야 합니다."); return; }
@@ -2308,7 +2308,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 	
 	private void allrecall(L1PcInstance gm) {
 		try {
-			for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+			for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 				if (!pc.isGm() && !pc.isPrivateShop()) {
 					recallnow(gm, pc);
 				}
@@ -2331,7 +2331,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 	private void ShopKick(L1PcInstance gm, String param) {
 		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(param);
+			L1PcInstance target = CWorld.getInstance().getPlayer(param);
 			if (target != null) {
 				gm.sendPackets((new StringBuilder()).append(target.getName()).append("님을 추방 했습니다.").toString());
 				GameServer.disconnectChar(target);
@@ -2365,7 +2365,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 					SC_SystemMessage.send(gm, "이미 잠재력활성화 상태입니다.");
 					return;
 				}
-				for (Object obj : L1World.getInstance().getObject()) {
+				for (Object obj : CWorld.getInstance().getObject()) {
 					if (obj instanceof L1DollInstance) {
 						L1DollInstance 인형 = (L1DollInstance) obj;
 						if (인형.getMaster() != null) {
@@ -2384,7 +2384,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 					SC_SystemMessage.send(gm, "이미 잠재력은 비활성화상태입니다.");
 					return;
 				}
-				for (Object obj : L1World.getInstance().getObject()) {
+				for (Object obj : CWorld.getInstance().getObject()) {
 					if (obj instanceof L1DollInstance) {
 						L1DollInstance 인형 = (L1DollInstance) obj;
 						if (인형.getMaster() != null) {
@@ -2418,7 +2418,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			int addReduction = Integer.parseInt(st.nextToken());
 			int addReductionRate = Integer.parseInt(st.nextToken());
 
-			L1PcInstance player = L1World.getInstance().getPlayer(charName);
+			L1PcInstance player = CWorld.getInstance().getPlayer(charName);
 
 			if (player != null) {
 				player.setAddDamage(addDamage);
@@ -2497,7 +2497,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 	private void targetInventoryDelete(L1PcInstance gm, String param) {
 		try {
 			StringTokenizer st = new StringTokenizer(param);
-			L1PcInstance target = L1World.getInstance().getPlayer(st.nextToken());
+			L1PcInstance target = CWorld.getInstance().getPlayer(st.nextToken());
 			if (!"확인".equals(st.nextToken()) || st.hasMoreTokens()) throw new IllegalArgumentException();
 			builderDelete(gm, target, 0, 0, true);
 		} catch (RuntimeException e) { SC_SystemMessage.send(gm, ".유저인벤삭제 [접속 캐릭명] 확인 (미착용 아이템만)"); }
@@ -2520,7 +2520,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 			int countGM = 0, nocountPlayer = 0, countPlayer = 0, countShop = 0;
 
-			for (L1Object each1 : L1World.getInstance().getVisibleObjects(i).values()) {
+			for (L1Object each1 : CWorld.getInstance().getVisibleObjects(i).values()) {
 				if (each1 instanceof L1PcInstance) {
 					L1PcInstance eachpc = (L1PcInstance) each1;
 
@@ -2659,7 +2659,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		try {
 			StringTokenizer tokenizer = new StringTokenizer(param);
 			String pcName = tokenizer.nextToken();
-			L1PcInstance target = L1World.getInstance().getPlayer(pcName);
+			L1PcInstance target = CWorld.getInstance().getPlayer(pcName);
 			if (target != null) {
 				int oldLevel = target.getLevel();
 				int needExp = ExpTable.getNeedExpNextLevel(oldLevel);
@@ -2835,7 +2835,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				gm.sendPackets("암호에 허용되지 않는 문자가 포함되었습니다.");
 				return;
 			}
-			L1PcInstance target = L1World.getInstance().getPlayer(user);
+			L1PcInstance target = CWorld.getInstance().getPlayer(user);
 			if (target != null) {
 				to_Change_Passwd(gm, target, passwd);
 			} else {
@@ -2932,7 +2932,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 
 	private void findMagicDodge(L1PcInstance gm, String param) {
-		L1PcInstance pc = L1World.getInstance().findpc(param);
+		L1PcInstance pc = CWorld.getInstance().getPlayer(param);
 		if (pc != null) {
 			gm.sendPackets(String.format("%s의 마법 회피율 %d", param, pc.getMagicDodgeProbability()));
 		} else {
@@ -2974,7 +2974,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 	private void showWarList(L1PcInstance gm) {
 		try {
 			int i = 0;
-			L1World.getInstance().createWarStream().forEach((War war) -> {
+			CWorld.getInstance().createWarStream().forEach((War war) -> {
 				gm.sendPackets(war.toString());
 			});
 		} catch (Exception e) {
@@ -3003,7 +3003,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			}
 
 			int objid = rs.getInt("objid");
-			L1PcInstance pc = L1World.getInstance().getPlayer(name);
+			L1PcInstance pc = CWorld.getInstance().getPlayer(name);
 			SQLUtil.close(rs, pstm);
 
 			pstm = con.prepareStatement("insert ignore into tb_character_block set objid=?, name=?");
@@ -3176,27 +3176,27 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				L1SpawnUtil.spawn2(32854, 33262, (short) 4, 50000059, 3, 3600 * 1000, 0);
 				L1SpawnUtil.spawn2(32854, 33262, (short) 4, 50000059, 3, 3600 * 1000, 0);
 				L1SpawnUtil.spawn2(32854, 33262, (short) 4, 50000059, 3, 3600 * 1000, 0);
-				L1World.getInstance().broadcastServerMessage("\\aH[이벤트 보스(1/6)]:돌격! 커츠의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
+				CWorld.getInstance().broadcastServerMessage("\\aH[이벤트 보스(1/6)]:돌격! 커츠의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
 				SC_PacketBox.broadcastGreen("\\fR[이벤트 보스(1/6)]:돌격! 커츠의 부대가 소환 되었습니다 (장소: 사막 아슈르)");
 			} else if (BossName.equalsIgnoreCase("데스나이트")) {
 				L1SpawnUtil.spawn2(32856, 33263, (short) 4, 45601, 0, 3600 * 1000, 0);
-				L1World.getInstance().broadcastServerMessage("\\aH[이벤트 보스(2/6)]:돌격! 데스나이트의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
+				CWorld.getInstance().broadcastServerMessage("\\aH[이벤트 보스(2/6)]:돌격! 데스나이트의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
 				SC_PacketBox.broadcastGreen("\\fR[이벤트 보스(2/6)]:돌격! 데스나이트의 부대가 소환 되었습니다 (장소: 사막 아슈르)");
 			} else if (BossName.equalsIgnoreCase("피닉스")) {
 				L1SpawnUtil.spawn2(32853, 33265, (short) 4, 45617, 50, 3600 * 1000, 0);
-				L1World.getInstance().broadcastServerMessage("\\aH[이벤트 보스(3/6)]:돌격! 피닉스의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
+				CWorld.getInstance().broadcastServerMessage("\\aH[이벤트 보스(3/6)]:돌격! 피닉스의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
 				SC_PacketBox.broadcastGreen("\\fR[이벤트 보스(3/6)]:돌격! 피닉스의 부대가 소환 되었습니다 (장소: 사막 아슈르)");
 			} else if (BossName.equalsIgnoreCase("마령군왕라이아")) {
 				L1SpawnUtil.spawn2(32854, 33259, (short) 4, 45863, 0, 3600 * 1000, 0);
-				L1World.getInstance().broadcastServerMessage("\\aH[이벤트 보스(4/6)]:돌격! 마령군왕 라이아의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
+				CWorld.getInstance().broadcastServerMessage("\\aH[이벤트 보스(4/6)]:돌격! 마령군왕 라이아의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
 				SC_PacketBox.broadcastGreen("\\fR[이벤트 보스(4/6)]:돌격! 마령군왕 라이아의 부대가 소환 되었습니다 (장소: 사막 아슈르)");
 			} else if (BossName.equalsIgnoreCase("사신그림리퍼")) {
 				L1SpawnUtil.spawn2(32854, 33266, (short) 4, 7310077, 0, 3600 * 1000, 0);
-				L1World.getInstance().broadcastServerMessage("\\aH[이벤트 보스(5/6)]:돌격! 사신 그림리퍼의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
+				CWorld.getInstance().broadcastServerMessage("\\aH[이벤트 보스(5/6)]:돌격! 사신 그림리퍼의 부대가 소환 되었습니다. (장소: 사막 아슈르)");
 				SC_PacketBox.broadcastGreen("\\fR[이벤트 보스(5/6)]:돌격! 사신 그림리퍼의 부대가 소환 되었습니다 (장소: 사막 아슈르)");
 			} else if (BossName.equalsIgnoreCase("공포의안타라스")) {
 				L1SpawnUtil.spawn2(32848, 33260, (short) 4, 7310154, 0, 3600 * 1000, 0);
-				L1World.getInstance().broadcastServerMessage("\\aH[이벤트 보스(6/6)]:돌격! 마지막 몬스터가 소환 되었습니다. (장소: 사막 아슈르)");
+				CWorld.getInstance().broadcastServerMessage("\\aH[이벤트 보스(6/6)]:돌격! 마지막 몬스터가 소환 되었습니다. (장소: 사막 아슈르)");
 				SC_PacketBox.broadcastGreen("\\fR[이벤트 보스(6/6)]:돌격! 마지막 몬스터가 소환 되었습니다. (장소: 사막 아슈르)");
 			}
 		} catch (Exception e) {
@@ -3240,7 +3240,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		try {
 			String name = args.nextString();
 			int status = args.nextInt();
-			L1PcInstance pc = L1World.getInstance().getPlayer(name);
+			L1PcInstance pc = CWorld.getInstance().getPlayer(name);
 			if (pc == null) {
 				args.notify(String.format("캐릭터이름 : %s를 찾을 수 없습니다.", name));
 				return;
@@ -3272,7 +3272,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			if (name == null || name.equalsIgnoreCase(""))
 				throw new Exception();
 
-			L1PcInstance pc = L1World.getInstance().getPlayer(name);
+			L1PcInstance pc = CWorld.getInstance().getPlayer(name);
 			if (pc == null) {
 				args.notify(String.format("%s을(를) 찾을 수 없습니다.", name));
 				return;
@@ -3293,7 +3293,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		try {
 			String command_type = args.nextString();
 			if (command_type.equalsIgnoreCase("전체")) {
-				L1World.getInstance().getAllPlayerStream().filter((L1PcInstance pc) -> {
+				CWorld.getInstance().getAllPlayerStream().filter((L1PcInstance pc) -> {
 					return pc != null;
 				}).forEach((L1PcInstance pc) -> {
 					pc.set_lateral_damage(0);
@@ -3306,7 +3306,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				String name = args.nextString();
 				if (name == null || name.equalsIgnoreCase(""))
 					throw new Exception();
-				L1PcInstance pc = L1World.getInstance().getPlayer(name);
+				L1PcInstance pc = CWorld.getInstance().getPlayer(name);
 				if (pc == null) {
 					args.notify(String.format("%s을(를) 찾을 수 없습니다.", name));
 					return;
@@ -3779,7 +3779,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		try {
 			StringTokenizer tokenizer = new StringTokenizer(param);
 			String pcName = tokenizer.nextToken();
-			L1PcInstance target = L1World.getInstance().getPlayer(pcName);
+			L1PcInstance target = CWorld.getInstance().getPlayer(pcName);
 			int objid = 0;
 			String acname = null;
 			if (target != null) {
@@ -3820,7 +3820,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 	private void Blessleaf(L1PcInstance gm, String pcName) {
 		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(pcName);
+			L1PcInstance target = CWorld.getInstance().getPlayer(pcName);
 			if (target != null) {
 				target._Blessleaf = true;
 				gm.sendPackets("" + target.getName() + " 님의 기운을 잃은 아이템 성공율이 1회성으로 100% 적용됩니다.");
@@ -3834,7 +3834,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 	private void EnchantWeaponSuccess(L1PcInstance gm, String pcName) {
 		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(pcName);
+			L1PcInstance target = CWorld.getInstance().getPlayer(pcName);
 			if (target != null) {
 				target._EnchantWeaponSuccess = true;
 				gm.sendPackets("" + target.getName() + " 님의 무기인챈성공율이 1회성으로 100% 적용됩니다.");
@@ -3848,7 +3848,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 	private void EnchantArmorSuccess(L1PcInstance gm, String pcName) {
 		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(pcName);
+			L1PcInstance target = CWorld.getInstance().getPlayer(pcName);
 			if (target != null) {
 				target._EnchantArmorSuccess = true;
 				gm.sendPackets("" + target.getName() + " 님의 방어인챈성공율이 1회성으로 100% 적용됩니다.");
@@ -3867,7 +3867,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 	}
 	private void searchclaner(L1PcInstance gm, String name) {
 		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(name);
+			L1PcInstance target = CWorld.getInstance().getPlayer(name);
 			String charinfo = null;
 			charinfo = String.format(
 					"select account_name, char_name, level, clanname, OnlineStatus from characters where clanname Like '%s'",
@@ -3957,7 +3957,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			int time = Integer.parseInt(st.nextToken());
 			String reason = st.nextToken();
 
-			L1PcInstance tg = L1World.getInstance(). getPlayer(name);
+			L1PcInstance tg = CWorld.getInstance(). getPlayer(name);
 
 			if (tg != null) {
 				tg.setSkillEffect(L1SkillId.STATUS_CHAT_PROHIBITED, time * 60 * 1000);
@@ -3977,7 +3977,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			StringTokenizer tok = new StringTokenizer(arg);
 			
 			int weather = Integer.parseInt(tok.nextToken());
-			L1World.getInstance(). setWeather(weather);
+			CWorld.getInstance(). setWeather(weather);
 			SC_Weather.broadcastAll(weather);
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, cmdName + " 0~3(눈), 16~19(비)라고 입력 해주세요.");
@@ -3986,7 +3986,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 	private static void BuilderCmd_who(L1PcInstance pc, String cmdName, String arg) {
 		try {
-			Collection<L1PcInstance> players = L1World.getInstance().getAllPlayers();
+			Collection<L1PcInstance> players = CWorld.getInstance().getAllPlayers();
 			int robotcount = 0; // 무인
 			int playercount = 0; 
 			int AutoShopUser = 0;
@@ -4080,7 +4080,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 		try {
 			for (L1PcInstance target :
-					L1World.getInstance().getVisiblePlayer(pc)) {
+					CWorld.getInstance().getVisiblePlayer(pc)) {
 
 				if (target == null) {
 					continue;
@@ -4353,7 +4353,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			
 			int reason = SC_LoginResult.banServerCodes.get(Integer.parseInt(st.nextToken()));
 			
-			L1PcInstance target = L1World.getInstance().getPlayer(name);
+			L1PcInstance target = CWorld.getInstance().getPlayer(name);
 			if (target == null) {
 				target = CharacterTable.getInstance().restoreCharacter(name);
 			}
@@ -4413,10 +4413,10 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			
 			
 			if (arg.equalsIgnoreCase("소환")) {
-				targets = L1World.getInstance().getAllPlayers();
+				targets = CWorld.getInstance().getAllPlayers();
 			} else {
 				targets = new ArrayList<L1PcInstance>();
-				L1PcInstance tg = L1World.getInstance().getPlayer(arg);
+				L1PcInstance tg = CWorld.getInstance().getPlayer(arg);
 				if (tg == null) {
 					SC_SystemMessage.send(pc, "그러한 캐릭터는 없습니다. ");
 					return;
@@ -4453,7 +4453,7 @@ for (L1PcInstance target : targets) {
 
 	private static void BuilderCmd_kick(L1PcInstance pc, String cmdName, String arg) {
 		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(arg);
+			L1PcInstance target = CWorld.getInstance().getPlayer(arg);
 
 			if (target != null) {
 				SC_SystemMessage.send(pc, (new StringBuilder()).append(target.getName()).append(" 를 추방 했습니다. ").toString());
@@ -4534,7 +4534,7 @@ for (L1PcInstance target : targets) {
 
 	private static void BuilderCmd_kill(L1PcInstance pc, String cmdName, String arg) {
 		try {
-			L1PcInstance target = L1World.getInstance(). getPlayer(arg);
+			L1PcInstance target = CWorld.getInstance(). getPlayer(arg);
 			if(pc.getName().equalsIgnoreCase(target.getName())) {
 				SC_SystemMessage.send(pc, "본인은 죽일 수 없습니다.");
 				return;
@@ -4554,7 +4554,7 @@ for (L1PcInstance target : targets) {
 
 	private static void BuilderCmd_to_pc(L1PcInstance pc, String cmdName, String arg) {
 		try {
-			L1PcInstance target = L1World.getInstance(). getPlayer(arg);
+			L1PcInstance target = CWorld.getInstance(). getPlayer(arg);
 
 			if (target != null) {
 
@@ -4605,7 +4605,7 @@ for (L1PcInstance target : targets) {
 	      String name = token.nextToken();
 	      int level = Integer.parseInt(token.nextToken());
 
-	      L1PcInstance target = L1World.getInstance().getPlayer(name);
+	      L1PcInstance target = CWorld.getInstance().getPlayer(name);
 	      if (target == null) {
 //	        pc.sendPackets(new SC_ServerMessage(73, new String[] { name }));
 	    	SC_SystemMessage.send(pc, "해당 아이가 없습니다.");
@@ -4713,7 +4713,7 @@ for (L1PcInstance target : targets) {
 					npc.setHomeY(npc.getY());
 					npc.setHeading(5);
 					npc.setStatus(0);
-					L1World.getInstance().storeAndEnterWorld(npc);
+					CWorld.getInstance().storeAndEnterWorld(npc);
 					
 					BuilderCmdHandler.getInstance().add_list(npc);
 				}
@@ -4784,7 +4784,7 @@ for (L1PcInstance target : targets) {
 			int time = Integer.parseInt(st.nextToken());
 //			String reason = st.nextToken();
 
-			L1PcInstance tg = L1World.getInstance(). getPlayer(name);
+			L1PcInstance tg = CWorld.getInstance(). getPlayer(name);
 
 			if (tg != null) {
 				tg.setSkillEffect(L1SkillId.STATUS_CHAT_PROHIBITED, time * 60 * 1000);
@@ -4806,10 +4806,10 @@ for (L1PcInstance target : targets) {
 				String flag = st.nextToken();
 				String msg;
 				if (flag.compareToIgnoreCase("켬") == 0) {
-					L1World.getInstance(). set_worldChatElabled(true);
+					CWorld.getInstance(). set_worldChatElabled(true);
 					msg = "월드 채팅을 유효하게 했습니다. ";
 				} else if (flag.compareToIgnoreCase("끔") == 0) {
-					L1World.getInstance(). set_worldChatElabled(false);
+					CWorld.getInstance(). set_worldChatElabled(false);
 					msg = "월드 채팅을 정지했습니다. ";
 				} else {
 					throw new Exception();
@@ -4817,7 +4817,7 @@ for (L1PcInstance target : targets) {
 				SC_SystemMessage.send(pc, msg);
 			} else {
 				String msg;
-				if (L1World.getInstance(). isWorldChatElabled()) {
+				if (CWorld.getInstance(). isWorldChatElabled()) {
 					msg = "현재 월드 채팅은 유효합니다.. 채팅 끔 로 정지할 수 있습니다. ";
 				} else {
 					msg = "현재 월드 채팅은 정지하고 있습니다.. 채팅 켬 로 유효하게 할 수 있습니다. ";
@@ -4836,7 +4836,7 @@ for (L1PcInstance target : targets) {
 			//pc.broadcastPacket(new S_SkillSound(objid, 759));
 			try(var askShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 SC_MessageYN.nativeWriter(322,""),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
+for (L1PcInstance tg : CWorld.getInstance(). getVisiblePlayer(pc)) {
 				if (tg.getCurrentHp() == 0 && tg.isDead()) {
 					//tg.sendPackets(new SC_SystemMessage("GM이 부활을 해주었습니다. "));
 					SC_SkillSound.broadcast(tg, tg.getId(), 3944);
@@ -4926,7 +4926,7 @@ for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
 			
 			StringTokenizer st = new StringTokenizer(arg);
 			String charname = st.nextToken();
-			L1PcInstance pc = L1World.getInstance().getPlayer(charname);
+			L1PcInstance pc = CWorld.getInstance().getPlayer(charname);
 			
 			if(pc == null)
 				SC_SystemMessage.send(gm, "경고: 접속중 캐릭터가 아닙니다.");
@@ -5168,7 +5168,7 @@ for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
  
           SC_PacketBox.broadcastGreen("[긴급공지] 월드전체 몬스터가 재배치 되었습니다.");
         } else if (spawn.equals("삭제")) {
-        	 for (L1Object obj : L1World.getInstance().getAllObj()) {
+          for (L1Object obj : CWorld.getInstance().getObject()) {
         		 if ((obj != null) && ((obj instanceof L1MonsterInstance))) {
         			 L1MonsterInstance mon = (L1MonsterInstance) obj;
         			 mon.setRespawn(false);
@@ -5185,7 +5185,7 @@ for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
 
           SC_PacketBox.broadcastGreen("[긴급공지] 월드전체 NPC가 재배치 되었습니다.");
         } else if (spawn.equals("삭제")) {
-        	  for (L1Object npc : L1World.getInstance().getAllObj()) {
+          for (L1Object npc : CWorld.getInstance().getObject()) {
         		  if ((npc != null) && npc instanceof L1MerchantInstance) {
         			  L1MerchantInstance merchent = (L1MerchantInstance)npc;
 	        			  merchent.setRespawn(false);
@@ -5225,7 +5225,7 @@ for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
 	}
 
 	private static void BuilderCmd_clear(L1PcInstance pc, String cmdName, String arg) {
-		for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(pc, -1)) {
+		for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(pc, -1)) {
 			if (!(obj instanceof L1MonsterInstance)) {
 				continue;
 			}
@@ -5250,7 +5250,7 @@ for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
 		try {
 			StringTokenizer st = new StringTokenizer(arg);
 			String name = st.nextToken();
-			L1PcInstance target = L1World.getInstance(). getPlayer(name);
+			L1PcInstance target = CWorld.getInstance(). getPlayer(name);
 			if (target == null) {
 				SC_ServerMessage.send(pc, 73, name); // \f1%0은 게임을 하고 있지 않습니다.
 				return;
@@ -5360,16 +5360,16 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			CInventory groundInventory= null;
 			LetterTable lettertable = null;
 			L1FurnitureInstance furniture = null;
-			for (L1Object l1object : L1World.getInstance().getObject()) {
+			for (L1Object l1object : CWorld.getInstance().getObject()) {
 				if (l1object instanceof L1ItemInstance) {
 					l1iteminstance = (L1ItemInstance) l1object;
 					if (l1iteminstance.getX() == 0 && l1iteminstance.getY() == 0) { // 지면상의 아이템은 아니고, 누군가의 소유물
 						continue;
 					}
 					//
-				//	players = L1World.getInstance().getVisiblePlayer(l1iteminstance, 2);
+				//	players = CWorld.getInstance().getVisiblePlayer(l1iteminstance, 2);
 				//	if (0 == players.size()) {
-						groundInventory = L1World.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
+						groundInventory = CWorld.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
 						int itemId = l1iteminstance.getItem(). getItemId();
 						if (itemId >= 49016 && itemId <= 49025) { // 편지지
 							lettertable = new LetterTable();
@@ -5383,15 +5383,15 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 							}
 						}
 						groundInventory.Pop(l1iteminstance);
-						L1World.getInstance().removeVisibleObject(l1iteminstance);
-						L1World.getInstance().removeObject(l1iteminstance);
+						CWorld.getInstance().removeVisibleObject(l1iteminstance);
+						CWorld.getInstance().removeObject(l1iteminstance);
 					}
 			}
 		}else if(type.equalsIgnoreCase("맵")){
 			CInventory groundInventory= null;
 			LetterTable lettertable = null;
 			L1FurnitureInstance furniture = null;
-			for (L1Object l1object : L1World.getInstance().getObject()) {
+			for (L1Object l1object : CWorld.getInstance().getObject()) {
 				if(l1object.getMapId() == pc.getMapId()){
 					if (l1object instanceof L1ItemInstance) {
 						l1iteminstance = (L1ItemInstance) l1object;
@@ -5399,7 +5399,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 							continue;
 						}
 				
-							groundInventory = L1World.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
+							groundInventory = CWorld.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
 							int itemId = l1iteminstance.getItem(). getItemId();
 							if (itemId >= 49016 && itemId <= 49025) { // 편지지
 								lettertable = new LetterTable();
@@ -5413,15 +5413,15 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 								}
 							}
 							groundInventory.Pop(l1iteminstance);
-							L1World.getInstance().removeVisibleObject(l1iteminstance);
-							L1World.getInstance().removeObject(l1iteminstance);
+							CWorld.getInstance().removeVisibleObject(l1iteminstance);
+							CWorld.getInstance().removeObject(l1iteminstance);
 						}
 				}
 			}
 		}else{
 			SC_SystemMessage.send(pc, "청소 [맵,전체]");
 		}
-		//L1World.getInstance().broadcastServerMessage("월드 맵상의 아이템이 GM에 의해 삭제되었습니다. ");
+		//CWorld.getInstance().broadcastServerMessage("월드 맵상의 아이템이 GM에 의해 삭제되었습니다. ");
 	} catch (Exception e) {
 		SC_SystemMessage.send(pc, "청소 [맵,전체]");
 	}
@@ -5436,7 +5436,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			if (!inventory && !"창고".equals(type) && !"요정창고".equals(type)) throw new IllegalArgumentException();
 			final CUserSocket gmSocket = pc.getNetConnection();
 			final int gmStamp = pc.getSessionStamp();
-			L1PcInstance target = L1World.getInstance().getPlayer(name);
+			L1PcInstance target = CWorld.getInstance().getPlayer(name);
 			if (inventory && target != null && target.getNetConnection() != null) {
 				builderOnItemOwner(pc, target, () -> {
 					int rows = 0;
@@ -5637,7 +5637,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			if(reason == null)
 				throw new Exception("");
 			
-			L1PcInstance target = L1World.getInstance().getPlayer(sname);
+			L1PcInstance target = CWorld.getInstance().getPlayer(sname);
 //			if (target == null) {
 //				target = CharacterTable.getInstance().restoreCharacter(arg);
 //			}
@@ -5648,7 +5648,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 				Account.ban(target.getAccountName(), reason); // 계정을 BAN시킨다.
 				ip.rangeBanIp(target.getNetConnection().getHostname());
 				SC_SystemMessage.send(pc, target.getName() + "[" + pc.getNetConnection() + "] 를 광역추방 했습니다.");						
-				L1World.getInstance().removeObject(target);
+				CWorld.getInstance().removeObject(target);
 
 				/*target.getNetConnection().kick();
 				target.getNetConnection().close();
@@ -5763,7 +5763,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			StringTokenizer stringtokenizer = new StringTokenizer(arg);
 			String name = stringtokenizer.nextToken();
 
-			if (CharacterTable.getInstance().isContainNameList(name) || L1World.getInstance().getPlayer(name) != null) {
+			if (CharacterTable.getInstance().isContainNameList(name) || CWorld.getInstance().getPlayer(name) != null) {
 				SC_SystemMessage.send(pc, "이미 존재하는 캐릭터 이름입니다");
 				return;
 			}
@@ -5909,7 +5909,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 				newPc.EquipItem(item4);
 			}
 
-			L1World.getInstance().storeAndEnterWorld(newPc);
+			CWorld.getInstance().storeAndEnterWorld(newPc);
 
 			newPc.setNetConnection(null);
 
@@ -5970,7 +5970,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			IpTable iptable = IpTable.getInstance();
 			boolean isBanned = iptable.isBannedIp(s1);
 
-			for (L1PcInstance tg : L1World.getInstance(). getAllPlayers()) {
+			for (L1PcInstance tg : CWorld.getInstance(). getAllPlayers()) {
 				if (tg.getNetConnection() != null && s1.equals(tg.getNetConnection(). getIp())) {
 					String msg = new StringBuilder(). append("IP : ").append(s1).append(" 로 접속중의 플레이어 : ").append(tg.getName()).toString();
 					SC_SystemMessage.send(pc, msg);
@@ -6011,7 +6011,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			String name = st.nextToken();
 			int polyid = Integer.parseInt(st.nextToken());
 
-			L1PcInstance tg = L1World.getInstance(). getPlayer(name);
+			L1PcInstance tg = CWorld.getInstance(). getPlayer(name);
 
 			if (tg == null) {
 				SC_ServerMessage.send(pc, 73, name); // \f1%0은 게임을 하고 있지 않습니다.
@@ -6030,7 +6030,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 	private static void BuilderCmd_give_present(L1PcInstance pc, String cmdName, String arg) {
 		try {
 			StringTokenizer st = new StringTokenizer(arg);
-			L1PcInstance target = L1World.getInstance().getPlayer(st.nextToken());
+			L1PcInstance target = CWorld.getInstance().getPlayer(st.nextToken());
 			L1Item template = builderFindItem(st.nextToken());
 			int count = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 1;
 			int enchant = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 0;
@@ -6048,7 +6048,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			int value = Integer.parseInt(st.nextToken());
 
 			L1PcInstance target = null;
-			target = L1World.getInstance(). getPlayer(char_name);
+			target = CWorld.getInstance(). getPlayer(char_name);
 
 			if (target == null) {
 				SC_ServerMessage.send(pc, 73, char_name); // \f1%0은 게임을 하고 있지 않습니다.
@@ -6122,7 +6122,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 
 	private static void BuilderCmd_ip_kick(L1PcInstance pc, String cmdName, String arg) {
 		try {
-			L1PcInstance target = L1World.getInstance().getPlayer(arg);
+			L1PcInstance target = CWorld.getInstance().getPlayer(arg);
 
 			IpTable iptable = IpTable.getInstance();
 			if (target != null) {
@@ -6261,7 +6261,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			BuilderEventSpawn(pc, npcId, 60000 * time);
 
 			SC_SystemMessage.send(pc, "(" + nameid + ") (ID:" + npcId + ") (" + time + ")분 소환 ");
-			L1World.getInstance().broadcastServerMessage("(" + nameid + ")  (" + time + ")분 동안 소환됩니다. ");
+			CWorld.getInstance().broadcastServerMessage("(" + nameid + ")  (" + time + ")분 동안 소환됩니다. ");
 			tok = null;
 			nameid = null;
 		} catch (Exception e) {
@@ -6283,7 +6283,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			npc.setHomeY(npc.getY());
 			npc.setHeading(pc.getHeading());
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
@@ -6472,7 +6472,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			gm.sendPackets("spr_boundary 테이블이 리로드 되었습니다.");
 		}else if(arg.equalsIgnoreCase("엔피씨속도")){
 			NpcSpeedData.do_load();
-			for(L1NpcInstance npc : L1World.getInstance().getAllNpc())
+			for(L1NpcInstance npc : CWorld.getInstance().getAllNpc())
 				NpcSpeedData.install_npc(npc);
 			gm.sendPackets("npc_speed_data  테이블이 리로드 되었습니다.");
 
@@ -6696,8 +6696,8 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			gm.sendPackets("리로드: armor_set 테이블이 리로드 되었습니다");
 //		} else if (arg.equalsIgnoreCase("이벤트알람")) {
 //			try {
-//				L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f:보스알람시간이 재정비되었습니다." ));
-//				L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f:리스 후 보스알람시간표기가 리로드됩니다." ));
+//				CWorld.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f:보스알람시간이 재정비되었습니다." ));
+//				CWorld.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f:리스 후 보스알람시간표기가 리로드됩니다." ));
 //				
 //			} catch (Exception e) {
 //				e.printStackTrace();
@@ -6767,14 +6767,14 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 
 			} else if ("전체".equals(targetType)) {
 				players =
-						L1World.getInstance()
+						CWorld.getInstance()
 								.getAllPlayers();
 
 				skillToken = tok.nextToken();
 
 			} else {
 				players =
-						L1World.getInstance()
+						CWorld.getInstance()
 								.getVisiblePlayer(pc);
 
 				skillToken = targetType;
@@ -7193,7 +7193,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 		try {
 			StringTokenizer st = new StringTokenizer(arg);
 			if (!"회수".equals(st.nextToken())) throw new IllegalArgumentException();
-			L1PcInstance target = L1World.getInstance().getPlayer(st.nextToken());
+			L1PcInstance target = CWorld.getInstance().getPlayer(st.nextToken());
 			int id = Integer.parseInt(st.nextToken());
 			int count = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 0;
 			if (id <= 0 || count < 0 || st.hasMoreTokens()) throw new IllegalArgumentException();
@@ -7222,7 +7222,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 	private static void BuilderCmd_query_character(L1PcInstance pc, String cmdName, String arg) {
 		try
 		{
-			L1PcInstance target = L1World.getInstance(). getPlayer(arg);
+			L1PcInstance target = CWorld.getInstance(). getPlayer(arg);
 
 			if (target != null) {
 				long totalAdena = 0;
@@ -7236,7 +7236,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 				
 				String cClass = BuilderQueryCClass(client.getIp());
 
-				Collection<L1PcInstance> pcs = L1World.getInstance().getAllPlayers();
+				Collection<L1PcInstance> pcs = CWorld.getInstance().getAllPlayers();
 
 				for (L1PcInstance otherPc : pcs) {
 					
@@ -7309,7 +7309,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 	}
 
 	private static void BuilderCmd_party_recall(L1PcInstance pc, String cmdName, String arg) {
-		L1PcInstance target = L1World.getInstance(). getPlayer(arg);
+		L1PcInstance target = CWorld.getInstance(). getPlayer(arg);
 
 		if (target != null) {
 			CParty party = target.getParty();
@@ -7373,7 +7373,7 @@ for (L1PcInstance pc2 : players) {
                     LetterTable.getInstance().writeLetter(949,new Timestamp(System.currentTimeMillis()),
                         senderName,receiverName,0,subject,content,sender,()->{
                             SC_SystemMessage.send(sender,receiverName+"님께 편지를 보냈습니다.");
-                            L1PcInstance target=L1World.getInstance().getPlayer(receiverName);
+                            L1PcInstance target=CWorld.getInstance().getPlayer(receiverName);
                             if(target!=null)l1j.server.server.model.network.thread.CIOThreadCallback.getInstance()
                                 .completeWarehouseMove(target,target.getSessionStamp(),
                                     ()->BuilderLetter_sendMessageToReceiver(target,sender,0,50),failure->{});
@@ -7472,7 +7472,7 @@ for (L1PcInstance pc2 : players) {
 			if(reason == null)
 				throw new Exception("");
 			
-			L1PcInstance target = L1World.getInstance().getPlayer(sname);
+			L1PcInstance target = CWorld.getInstance().getPlayer(sname);
 			IpTable iptable = IpTable.getInstance();
 			if (target != null) {
 				if (target.isGm()) {
@@ -7592,7 +7592,7 @@ for (L1PcInstance pc2 : players) {
 			StringTokenizer stringtokenizer = new StringTokenizer(arg);
 			String name = stringtokenizer.nextToken();
 
-			if (CharacterTable.getInstance().isContainNameList(name) || L1World.getInstance().getPlayer(name) != null) {
+			if (CharacterTable.getInstance().isContainNameList(name) || CWorld.getInstance().getPlayer(name) != null) {
 				SC_SystemMessage.send(pc, "이미 존재하는 캐릭터 이름입니다");
 				return;
 			}
@@ -7631,7 +7631,7 @@ for (L1PcInstance pc2 : players) {
 	}
 	
 	public static void BuilderCreateAdShop(String account, String name, int sex, int type, int x, int y, int heading, int mapId) {
-		if (CharacterTable.getInstance().isContainNameList(name) || L1World.getInstance().getPlayer(name) != null) {
+		if (CharacterTable.getInstance().isContainNameList(name) || CWorld.getInstance().getPlayer(name) != null) {
 			return;
 		}
 
@@ -7708,7 +7708,7 @@ for (L1PcInstance pc2 : players) {
 		newPc.setMoveSpeed(0);
 		newPc.setBraveSpeed(0);
 		newPc.setGmInvis(false);		
-		L1World.getInstance().storeAndEnterWorld(newPc);		
+		CWorld.getInstance().storeAndEnterWorld(newPc);
 		newPc.setNetConnection(null);
 		newPc.startObjectAutoUpdate();
 		
@@ -7811,7 +7811,7 @@ for (L1PcInstance pc2 : players) {
 				npc.setHomeX(npc.getX());
 				npc.setHomeY(npc.getY());
 				npc.setHeading(4);
-				L1World.getInstance().storeAndEnterWorld(npc);
+				CWorld.getInstance().storeAndEnterWorld(npc);
 				CWorldWork.scheduleRequired(new BuilderImpactTask(npc, action), 1000);
 				npc.startTimedDelete(60 * 60 * 1000);
 				if (!attack) {
@@ -7979,7 +7979,7 @@ for (L1PcInstance pc2 : players) {
 	}
 	private static void builderGiftOnline(L1PcInstance gm, L1Item template, int count, int enchant) {
 		builderValidateGrant(template, count, enchant, 0, 0);
-		for (L1PcInstance target : L1World.getInstance().getAllPlayers()) {
+		for (L1PcInstance target : CWorld.getInstance().getAllPlayers()) {
 			if (target == null || target.isGhost() || target.isPrivateShop() || target.getNetConnection() == null) continue;
 			builderGrant(gm, target, template, count, enchant, 0, 0);
 		}

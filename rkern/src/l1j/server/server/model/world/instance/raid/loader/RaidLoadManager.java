@@ -10,7 +10,7 @@ import java.util.Properties;
 
 import l1j.server.server.Account;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.instance.raid.RaidObject;
@@ -221,7 +221,7 @@ public class RaidLoadManager {
 	
 	private static void allUserInitializeCommands(L1PcInstance gm){
         boolean saved = true;
-        for (L1PcInstance pc : new ArrayList<>(L1World.getInstance().getAllPlayers())) {
+        for (L1PcInstance pc : new ArrayList<>(CWorld.getInstance().getAllPlayers())) {
             final Account account = pc == null ? null : pc.getAccount();
             if (account == null) continue;
             if (!RaidUserTimeStore.update(account, 1L)) saved = false;
@@ -233,7 +233,7 @@ public class RaidLoadManager {
 	}
 
 	private static void userInitializeCommands(L1PcInstance gm, String name){
-		L1PcInstance pc = L1World.getInstance().getPlayer(name);
+		L1PcInstance pc = CWorld.getInstance().getPlayer(name);
 		StringBuilder sb = new StringBuilder(256);
         final Account account = pc == null ? null : pc.getAccount();
         if (account == null) {

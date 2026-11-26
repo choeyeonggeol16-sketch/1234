@@ -16,7 +16,7 @@
  */
 package l1j.server.server.model.npc.spawn.group;
 
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.IdFactory;
@@ -102,7 +102,7 @@ public class L1MobGroupSpawn {
 
 			// Publish membership before perception and the first AI tick.
 			group.addMember(mob);
-			L1World.getInstance().storeAndEnterWorld(mob);
+			CWorld.getInstance().storeAndEnterWorld(mob);
 
 			if (mob instanceof L1MonsterInstance) {
 				if (!isInitSpawn && mob.getHiddenStatus() == 0) {
@@ -113,7 +113,7 @@ public class L1MobGroupSpawn {
 			mob.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
 		} catch (Exception e) {
 			if (mob != null && mob.getMobGroupInfo() == group
-					&& L1World.getInstance().findObject(mob.getId()) != mob) {
+					&& CWorld.getInstance().findObject(mob.getId()) != mob) {
 				group.removeMember(mob);
 			}
 			e.printStackTrace();
@@ -126,7 +126,7 @@ public class L1MobGroupSpawn {
 			if (isRespawnScreen) {
 				return true;
 			}
-			if (L1World.getInstance().getVisiblePlayer(mob).size() == 0) {
+			if (CWorld.getInstance().getVisiblePlayer(mob).size() == 0) {
 				return true;
 			}
 		}

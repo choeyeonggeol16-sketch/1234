@@ -26,7 +26,7 @@ import l1j.server.server.model.npc.spawn.group.L1MobGroupInfo;
 import l1j.server.server.model.npc.ai.action.CSkillAction2;
 import l1j.server.server.model.npc.ai.TimerData;
 import l1j.server.server.model.CNpcMaker;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
 import l1j.server.server.model.character.animation.EActionCodes;
@@ -512,8 +512,8 @@ public class L1NpcInstance extends L1Character {
             return;
         }
         _timedDeleteDeadlineMs = 0L;
-        final long smartId = L1World.getInstance().smartIdOf(this);
-        if (smartId != 0L && L1World.getInstance().findObjectBySmartId(smartId) == this) {
+        final long smartId = CWorld.getInstance().smartIdOf(this);
+        if (smartId != 0L && CWorld.getInstance().findObjectBySmartId(smartId) == this) {
             deleteMe();
         }
     }
@@ -532,7 +532,7 @@ public class L1NpcInstance extends L1Character {
                 return true;
             }
 
-            final long smartId = L1World.getInstance().smartIdOf(this);
+            final long smartId = CWorld.getInstance().smartIdOf(this);
             if (smartId == 0L) {
                 return true;
             }
@@ -555,7 +555,7 @@ public class L1NpcInstance extends L1Character {
                     || generation != _corpseTimerGeneration
                     || (generation & 1) == 0 || !isDead()
                     || _destroyed || _corpseDeleteStarted
-                    || L1World.getInstance().findObjectBySmartId(smartId) != this) {
+                    || CWorld.getInstance().findObjectBySmartId(smartId) != this) {
                 return;
             }
 
@@ -810,7 +810,7 @@ public class L1NpcInstance extends L1Character {
     protected final synchronized boolean ClaimDeathRemoval(int lifeEpoch, long smartId) {
         if (_destroyed || _corpseDeleteStarted || _deathProcessing || !isDead()
                 || getCurrentHp() > 0 || npcEventEpoch() != lifeEpoch
-                || smartId == 0L || L1World.getInstance().findObjectBySmartId(smartId) != this) return false;
+                || smartId == 0L || CWorld.getInstance().findObjectBySmartId(smartId) != this) return false;
         _corpseDeleteStarted = true;
         return true;
     }
@@ -1209,7 +1209,7 @@ public class L1NpcInstance extends L1Character {
         if (Config.STANDBY_SERVER || lastAttacker == null || origin == null) return;
         final CInventory source = getInventory();
         if (source == null) return;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final var log = java.util.logging.Logger.getLogger(L1NpcInstance.class.getName());
         try {
             DropTable.getInstance().append_drop_adena(lastAttacker, this);
@@ -1265,7 +1265,7 @@ public class L1NpcInstance extends L1Character {
         catch (RuntimeException failure) { return false; }
     }
 
-    private static void DropItemToUser(L1World world, L1Location origin, CInventory source,
+    private static void DropItemToUser(CWorld world, L1Location origin, CInventory source,
             L1ItemInstance item, CContributeData contribute, L1PcInstance primary,
             CParty admittedParty, L1PcInstance[] admittedMembers) {
         if (admittedParty != null) {
@@ -1372,9 +1372,9 @@ public class L1NpcInstance extends L1Character {
         }
         allTargetClear();
         
-        final List<L1PcInstance> players = L1World.getInstance().getVisiblePlayerFast(this);
+        final List<L1PcInstance> players = CWorld.getInstance().getVisiblePlayerFast(this);
 
-        L1World.getInstance().leaveAndRemoveObject(this);
+        CWorld.getInstance().leaveAndRemoveObject(this);
 
         if (!players.isEmpty()) {
             try (var shared = new CAsyncSendConstBuffer(
@@ -1510,7 +1510,7 @@ public class L1NpcInstance extends L1Character {
                 }
                 moved = true;
                 AddPassingPos(fromX, fromY, toX, toY, fromMap);
-                L1World.getInstance().moveTo(this, fromMap, fromX, fromY);
+                CWorld.getInstance().moveTo(this, fromMap, fromX, fromY);
             }
             NpcEventFactory.onNpcWorldEvent(this);
             SC_MoveChar.broadcast(this);
@@ -1625,7 +1625,7 @@ public class L1NpcInstance extends L1Character {
             if (WorldCollisionHash.getInstance().testStep((short) mapId, nx, ny, getId())
                     != WorldCollisionHash.MOVE_CLEAR) return false;
 
-            final L1World world = L1World.getInstance();
+            final CWorld world = CWorld.getInstance();
             final long smartId = world.smartIdOf(this);
             if (smartId == 0L) return false;
             previousViewers = world.getVisiblePlayerFast(this);
@@ -1688,9 +1688,9 @@ public class L1NpcInstance extends L1Character {
     }
 
     public void teleport(int nx, int ny, int dir) {
-        broadcastTeleportDeparture(L1World.getInstance().getVisiblePlayerFast(this));
+        broadcastTeleportDeparture(CWorld.getInstance().getVisiblePlayerFast(this));
         final int oldX = getX(), oldY = getY(), oldMapId = getMapId();
-        L1World.getInstance().relocateVisibleObject(this, nx, ny, oldMapId);
+        CWorld.getInstance().relocateVisibleObject(this, nx, ny, oldMapId);
         ResetPassingPos(nx, ny, oldMapId);
         setHeading(dir);
         NpcEventFactory.onNpcWorldEvent(this);
@@ -2199,7 +2199,7 @@ public class L1NpcInstance extends L1Character {
         CopyFrom(npcTemplate);
         StartRegeneration();
         sendShape(getCurrentSpriteId());
-        for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(this)) {
+        for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayerFast(this)) {
             if (pc != null) {
                 onPerceive(pc);
             }
@@ -2376,7 +2376,7 @@ public class L1NpcInstance extends L1Character {
 
         synchronized (this) {
             if (_destroyed || getHiddenStatus() != HIDDEN_STATUS_NONE
-                    || L1World.getInstance().smartIdOf(this) == 0L) return;
+                    || CWorld.getInstance().smartIdOf(this) == 0L) return;
             if ((chatTiming == CHAT_TIMING_APPEARANCE || chatTiming == CHAT_TIMING_HIDE)
                     && isDead()) return;
             if (chatTiming == CHAT_TIMING_DEAD && !isDead()) return;
@@ -2433,13 +2433,13 @@ public class L1NpcInstance extends L1Character {
             _npcChatTimers = timer.next;
             timer.next = null;
         }
-        final long smartId = L1World.getInstance().smartIdOf(this);
+        final long smartId = CWorld.getInstance().smartIdOf(this);
         if (smartId == 0L) return;
         final long delay = timer.TimerExpired(this);
         if (delay <= 0L) return;
         synchronized (this) {
             if (!timer.isValid(this)
-                    || L1World.getInstance().smartIdOf(this) != smartId) return;
+                    || CWorld.getInstance().smartIdOf(this) != smartId) return;
             timer.deadlineMs = System.currentTimeMillis() + delay;
             addNpcChat(timer);
         }
@@ -2586,9 +2586,9 @@ public class L1NpcInstance extends L1Character {
         allTargetClear();
         _master = null;
 
-        L1World.getInstance().leaveAndRemoveObject(this);
+        CWorld.getInstance().leaveAndRemoveObject(this);
         List<L1PcInstance> players =
-        		L1World.getInstance().getRecognizePlayer(this);
+                CWorld.getInstance().getRecognizePlayer(this);
 
         if (players.size() > 0) {
             try (var shared = new CAsyncSendConstBuffer(
@@ -2760,7 +2760,7 @@ public class L1NpcInstance extends L1Character {
         if (_destroyed || isDead() || getId() <= 0) return;
         final L1Npc template = getNpcTemplate();
         if (template == null) return;
-        final long smartId = L1World.getInstance().smartIdOf(this);
+        final long smartId = CWorld.getInstance().smartIdOf(this);
         if (smartId == 0L || _regenSmartId == smartId) return;
 
         final long now = System.currentTimeMillis();
@@ -2783,7 +2783,7 @@ public class L1NpcInstance extends L1Character {
 
     /** World removal/replacement can race a fresh registration. */
     public final synchronized void StopRegenerationIfUnregistered() {
-        if (_regenSmartId != 0L && L1World.getInstance().smartIdOf(this) != _regenSmartId) {
+        if (_regenSmartId != 0L && CWorld.getInstance().smartIdOf(this) != _regenSmartId) {
             StopRegeneration();
         }
     }
@@ -2799,7 +2799,7 @@ public class L1NpcInstance extends L1Character {
     public final synchronized void tickRegeneration(long nowMs) {
         if (!CNPCServer.getInstance().isOwnerThread(this) || _regenSmartId == 0L) return;
         if (_destroyed || isDead()
-                || L1World.getInstance().smartIdOf(this) != _regenSmartId) {
+                || CWorld.getInstance().smartIdOf(this) != _regenSmartId) {
             StopRegeneration();
             return;
         }

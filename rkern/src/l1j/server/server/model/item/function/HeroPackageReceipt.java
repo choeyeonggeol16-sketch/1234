@@ -52,7 +52,7 @@ final class HeroPackageReceipt {
             SC_SystemMessage.send(pc, "영웅 패키지 보상을 찾을 수 없습니다.");
             return;
         }
-        // createItem() publishes in L1World; prepare a detached gift instead.
+        // createItem() publishes in CWorld; prepare a detached gift instead.
         final L1ItemInstance reward = new L1ItemInstance(definition, 1);
         reward.setId(l1j.server.server.IdFactory.getInstance().nextId());
         reward.setBless(1);

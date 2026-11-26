@@ -290,7 +290,7 @@ public final class LocalWorldMap {
                 if (_objects[i].getId() == id) {
                     final L1Object existing = _objects[i];
                     if (existing != obj
-                            && L1World.getInstance().findObject(id) != obj) {
+                            && CWorld.getInstance().findObject(id) != obj) {
                         return;
                     }
                     replaceGroundCount(existing, obj);
@@ -323,7 +323,7 @@ public final class LocalWorldMap {
             final int index = findObjectSlot(id);
             if (index >= 0) {
                 final L1Object existing = _objects[index];
-                if (existing != obj && L1World.getInstance().findObject(id) != obj) {
+                if (existing != obj && CWorld.getInstance().findObject(id) != obj) {
                     return;
                 }
                 replaceGroundCount(existing, obj);

@@ -6,7 +6,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -136,7 +136,7 @@ final class MassImmuneSkillConsumable {
 SC_SystemMessage.nativeWriter("\\f:[" + pc.getName() + "]님의 매스 이뮨 투 함이 시전되었습니다."),Integer.MIN_VALUE,Integer.MAX_VALUE);
 var noticeB=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 SC_SystemMessage.nativeWriter("\\fY같은 혈맹이 아니므로 매스 이뮨 투 함 미적용"),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance player : L1World.getInstance().getVisiblePlayer(pc, 9)) {
+for (L1PcInstance player : CWorld.getInstance().getVisiblePlayer(pc, 9)) {
                             if (pc.getParty().isMember(player)) {
                                 if (player.getClanid() == pc.getClanid()) {
                                     if (player.hasSkillEffect(L1SkillId.IMMUNE_TO_HARM)) {

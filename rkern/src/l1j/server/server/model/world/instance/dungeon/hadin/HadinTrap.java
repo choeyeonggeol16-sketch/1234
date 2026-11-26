@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -71,7 +71,7 @@ public class HadinTrap implements Runnable {
 		nextTick = null;
 		try {
 			TRAP_RESET();
-			for (L1Object ob : L1World.getInstance().getVisibleObjects(_map).values()) {
+			for (L1Object ob : CWorld.getInstance().getVisibleObjects(_map).values()) {
 				if (ob instanceof L1PcInstance pc) {
 					TRAP_ON(pc);
 				} else if (ob instanceof L1DoorInstance door) {
@@ -146,7 +146,7 @@ public class HadinTrap implements Runnable {
 			door.open();			
 		} else if(LEVEL_3_TRAP_1 && LEVEL_3_TRAP_2 && LEVEL_3_TRAP_3 && LEVEL_3_TRAP_4){
 			Collection<L1Object> cklist;
-			cklist = L1World.getInstance().getVisibleObjects(_map).values();
+			cklist = CWorld.getInstance().getVisibleObjects(_map).values();
 			for(L1Object ob : cklist){
 				if(ob == null)
 					continue;
@@ -160,13 +160,13 @@ public class HadinTrap implements Runnable {
 			LEVEL_4_TRAP_CK = true;
 		} else if (LAST_TRAP_1 && LAST_TRAP_2 && LAST_TRAP_4 && LAST_TRAP_5){
 			Collection<L1Object> cklist;
-			cklist = L1World.getInstance().getVisibleObjects(_map).values();
+			cklist = CWorld.getInstance().getVisibleObjects(_map).values();
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(cklist,SC_ServerMessage.nativeWriter(8719));
 			LAST_TRAP_CK = true;
 		} else if (LAST_TRAP){
 			Running = false;
 			Collection<L1Object> cklist;
-			cklist = L1World.getInstance().getVisibleObjects(_map).values();
+			cklist = CWorld.getInstance().getVisibleObjects(_map).values();
 			try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                         SC_ServerMessage.nativeWriter(403,"$9355 (1)"),
                         Integer.MIN_VALUE,Integer.MAX_VALUE)){
@@ -220,7 +220,7 @@ public class HadinTrap implements Runnable {
 
 	private void BonginSendPacekt(int count){
 		Collection<L1Object> cklist;
-		cklist = L1World.getInstance().getVisibleObjects(_map).values();
+		cklist = CWorld.getInstance().getVisibleObjects(_map).values();
 		l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(cklist,SC_PacketBox.nativeGreenWriter("$"+count));
 	}
 

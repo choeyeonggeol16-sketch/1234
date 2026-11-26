@@ -3,7 +3,7 @@ package l1j.server.server.model.character.action;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.skill.core.SkillUseInitializer;
@@ -38,7 +38,7 @@ public final class CSkillAction extends CNewAction {
                 || pc.teleportTimerEpoch() != controller.l0()
                 || pc.getMap() != controller.o0()
                 || session == null || session.getActiveChar() != pc || !session.ownsReadyGameSession()
-                || L1World.getInstance().findObject(pc.getId()) != pc) {
+                || CWorld.getInstance().findObject(pc.getId()) != pc) {
             return true;
         }
 
@@ -139,7 +139,7 @@ public final class CSkillAction extends CNewAction {
         }
         range += 4.5D;
 
-        final L1Object target = L1World.getInstance().findObject(tId);
+        final L1Object target = CWorld.getInstance().findObject(tId);
         if (target != null) {
             if (target.instanceOf(L1Type.L1TYPE_CHARACTER)) {
                 if (owner.getMapId() != target.getMapId() || owner.getLocation().getLineDistance(target.getLocation()) > range) {
@@ -177,7 +177,7 @@ public final class CSkillAction extends CNewAction {
             return true;
         }
 
-        final L1Object target = L1World.getInstance().findObject(tId);
+        final L1Object target = CWorld.getInstance().findObject(tId);
         return target == null || !(target instanceof L1PcInstance);
     }
 }

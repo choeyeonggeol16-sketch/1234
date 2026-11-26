@@ -82,7 +82,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.rank.L1ClanRanking;
 import l1j.server.server.model.world.residence.L1HouseLocation;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
 import l1j.server.server.model.character.action.listener.ActionListenerLinkageLoader;
@@ -234,7 +234,7 @@ public class GameServer {
 		DropItemTable.getInstance();
 		ShopTable.getInstance();
 		NPCTalkDataTable.getInstance();
-		L1World.getInstance();
+		CWorld.getInstance();
 		L1WorldTraps.getInstance();
 		Dungeon.getInstance();
 		NpcSpawnTable.getInstance();
@@ -355,7 +355,7 @@ public class GameServer {
         // Two phases: request close for every remaining session, then await all
         // completed PC logouts. This does NOT invoke pc.logout concurrently
         // with an in-progress packet or a previously submitted logout job.
-        final L1PcInstance[] pcs = L1World.getInstance().getAllPlayers()
+        final L1PcInstance[] pcs = CWorld.getInstance().getAllPlayers()
                 .toArray(new L1PcInstance[0]);
         final l1j.server.server.model.network.core.connection.CUserSocket[] clients =
                 new l1j.server.server.model.network.core.connection.CUserSocket[pcs.length];
@@ -410,7 +410,7 @@ public class GameServer {
 	}
 
 	public static void disconnectChar(String name) {
-		L1PcInstance pc = L1World.getInstance().getPlayer(name);
+		L1PcInstance pc = CWorld.getInstance().getPlayer(name);
 
 		if (pc != null) {
 			disconnectChar(pc);
@@ -426,7 +426,7 @@ public class GameServer {
 
 		@Override
 		public void run() {
-			L1World world = L1World.getInstance();
+			CWorld world = CWorld.getInstance();
 			try {
 				int secondsCount = _secondsCount;
 				world.broadcastServerMessage("잠시 후, 서버를 종료 합니다.");
@@ -460,7 +460,7 @@ public class GameServer {
 		}
 		_shutdownThread = new ServerShutdownThread(secondsCount);
 		_shutdownThread.start();
-		Collection<L1PcInstance> pcList = L1World.getInstance().getAllPlayers();
+		Collection<L1PcInstance> pcList = CWorld.getInstance().getAllPlayers();
 		for (L1PcInstance pc : pcList) {
 			if (pc == null || pc.noPlayerck2)
 				continue;

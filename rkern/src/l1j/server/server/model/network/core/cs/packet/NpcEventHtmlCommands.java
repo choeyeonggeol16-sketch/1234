@@ -14,7 +14,7 @@ import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1TownLocation;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.listener.ActionListener;
 import l1j.server.server.model.character.action.listener.ActionListenerLoader;
 import l1j.server.server.model.character.classinfo.EClassesType;
@@ -314,12 +314,12 @@ final class NpcEventHtmlCommands {
                 int[] loc = L1TownLocation.getGetBackLoc(L1TownLocation.TOWNID_GIRAN);
                 pc.start_teleport(loc[0], loc[1], loc[2], pc.getHeading(), 169, true, false);
             } else if (s.equals("EnterSeller")) {
-                L1PcInstance targetShop = L1World.getInstance().getPlayer(s2);
+                L1PcInstance targetShop = CWorld.getInstance().getPlayer(s2);
                 if (targetShop != null && targetShop.isPrivateShop() && pc.getMapId() == targetShop.getMapId()) {
                    pc.setFindMerchantId(targetShop.getId());
                    pc.start_teleport(targetShop.getX() - 1, targetShop.getY() + 1, targetShop.getMapId(), 1, 169, true, false);
                 }else{
-                   L1NpcShopInstance nn = L1World.getInstance().getShopNpc(s2);
+                   L1NpcShopInstance nn = CWorld.getInstance().getShopNpc(s2);
                    if (nn != null && nn.getMapId() == 800 && nn.getState() == 1) {
                       pc.setFindMerchantId(nn.getId());
                       pc.start_teleport(nn.getX() + CommonUtil.random(3)-1, nn.getY() + CommonUtil.random(3)-1, nn.getMapId(), 0, 169, false, false);

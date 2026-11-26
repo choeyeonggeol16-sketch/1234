@@ -5,7 +5,7 @@ import l1j.server.server.model.DungeonRandom;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.world.transport.L1NeigeShip;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.actionValidator.WalkDelayValidator;
 import l1j.server.server.model.character.animation.EActionCodes;
@@ -204,7 +204,7 @@ public final class CMoveAction extends CNewAction {
     private static void publishStep(L1PcInstance pc, int moveMap, int sx, int sy, int nextX, int nextY) {
         try {
             pc.AddPassingPos(sx, sy, nextX, nextY, moveMap);
-            L1World.getInstance().moveTo(pc, moveMap, sx, sy);
+            CWorld.getInstance().moveTo(pc, moveMap, sx, sy);
             SC_MoveChar.broadcast(pc);
 
             final int ztype = pc.getZoneType();

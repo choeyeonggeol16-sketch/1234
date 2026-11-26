@@ -11,7 +11,7 @@ import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.item.teleport.L1Teleport;
@@ -32,7 +32,7 @@ final class CallAdvanceItemEffect {
                 || pc.isDead() || pc.get_teleport()) return false;
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
-        L1Object target = L1World.getInstance().findObject(targetId);
+        L1Object target = CWorld.getInstance().findObject(targetId);
         CParty party = pc.getParty();
         if ((pc.getType() == 0 && pc.getLevel() >= Config.어드밴스레벨) || pc.isGm()) {
             if (target != null) {

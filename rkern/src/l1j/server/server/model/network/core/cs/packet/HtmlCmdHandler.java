@@ -7,7 +7,7 @@ import l1j.server.server.datatables.NpcActionTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -63,7 +63,7 @@ final class HtmlCmdHandler {
                 return;
 
         //	System.out.println("Action : " + s);
-            L1Object obj = L1World.getInstance().findObject(objid);
+            L1Object obj = CWorld.getInstance().findObject(objid);
             if (!dispatchTarget(pc, obj, objid, s)) return;
             if (obj instanceof L1NpcInstance npc) trackDialogue(client, npc, false);
             if (dispatchRegisteredAction(pc, obj, s, actionData)) return;
@@ -112,7 +112,7 @@ final class HtmlCmdHandler {
     }
 
     static void trackDialogue(CUserSocket client, L1NpcInstance npc, boolean newTalk) {
-        client.trackNpcDialogue(L1World.getInstance().smartIdOf(npc), newTalk);
+        client.trackNpcDialogue(CWorld.getInstance().smartIdOf(npc), newTalk);
     }
 
     static boolean canReplyToDialogue(L1PcInstance pc, long target, int version) {

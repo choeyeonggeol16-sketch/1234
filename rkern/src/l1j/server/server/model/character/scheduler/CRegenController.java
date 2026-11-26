@@ -7,7 +7,7 @@ import l1j.server.Config;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1EffectInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -445,7 +445,7 @@ public final class CRegenController {
         try {
             if (isPcCk(pc)) return;
 
-            L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan == null) return;
 
             if (pc.getClanid() != 0

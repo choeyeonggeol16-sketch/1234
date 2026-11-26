@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceGroupType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceDataGroup;
@@ -157,7 +157,7 @@ public class AttendanceLoadManager implements Command{
 	
 	private L1PcInstance findPc(CommandArgs args) throws CommandArgsIndexException{
 		String name = args.nextString();
-		L1PcInstance pc = L1World.getInstance().findpc(name);
+		L1PcInstance pc = CWorld.getInstance().getPlayer(name);
 		if(pc == null)
 			args.notify(String.format("%s님을 찾을 수 없습니다.", name));
 		else if(pc.getAttendanceData() == null)
@@ -227,7 +227,7 @@ public class AttendanceLoadManager implements Command{
 				CWorldWork.scheduleRequired(new Runnable(){
 					@Override
 					public void run(){
-						L1World.getInstance().getAllPlayerStream()
+						CWorld.getInstance().getAllPlayerStream()
 						.filter((L1PcInstance pc) -> pc != null && pc.getAttendanceData() != null)
 						.forEach((L1PcInstance pc) ->{
 							try{
@@ -253,7 +253,7 @@ public class AttendanceLoadManager implements Command{
 						}
 						try{
 							load();
-							L1World.getInstance().getAllPlayerStream()
+							CWorld.getInstance().getAllPlayerStream()
 							.filter((L1PcInstance pc) -> pc != null && !pc.is무인상점())
 							.forEach((L1PcInstance pc) ->{
 								try{

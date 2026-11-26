@@ -3,7 +3,7 @@ package l1j.server.server.model.world.instance.shared;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_MoveChar;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
@@ -20,8 +20,8 @@ public class EffectTriggerInstance extends L1Object{
 		trigger.setX(x);
 		trigger.setY(y);
 		trigger.setMap(map_id);
-		L1World.getInstance().storeAndEnterWorld(trigger);
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(trigger)) {
+		CWorld.getInstance().storeAndEnterWorld(trigger);
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(trigger)) {
 			trigger.onPerceive(pc);
 		}
 		return trigger;
@@ -69,13 +69,13 @@ public class EffectTriggerInstance extends L1Object{
         setY(y);
         final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter wire = SC_MoveChar.nativeWriter(getId(), x, y, h);
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                L1World.getInstance().getRecognizePlayer(this), wire);
+                CWorld.getInstance().getRecognizePlayer(this), wire);
     }
 
 	public void do_action(int action){
         final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter wire = SC_DoActionGFX.nativeWriter(getId(), action);
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                L1World.getInstance().getRecognizePlayer(this), wire);
+                CWorld.getInstance().getRecognizePlayer(this), wire);
     }
 
 	
@@ -90,12 +90,12 @@ public class EffectTriggerInstance extends L1Object{
 	}
 
 	public void dispose(){
-        L1World.getInstance().removeVisibleObject(this);
-        L1World.getInstance().removeObject(this);
+        CWorld.getInstance().removeVisibleObject(this);
+        CWorld.getInstance().removeObject(this);
         try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                 SC_RemoveObject.nativeWriter(getId()),
                 Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-            for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this)) {
+            for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayer(this)) {
                 if (pc == null) continue;
                 pc.removeKnownObject(this);
                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared, pc);

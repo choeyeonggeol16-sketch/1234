@@ -4,7 +4,7 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.basic.joke.CompanionJokeInfo;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
@@ -56,7 +56,7 @@ public final class CS_COMPANION_TM_COMMAND_REQ {
 
             switch (command) {
             case TM_Attack: {
-                L1Object obj = L1World.getInstance().findObject(targetId);
+                L1Object obj = CWorld.getInstance().findObject(targetId);
                 if (obj != null && obj instanceof L1Character)
                     companion.set_target((L1Character) obj);
                 break;

@@ -66,25 +66,25 @@ public final class OfflineStoreCommandTest {
     static class CTrade {static boolean HasPendingTradeBlocker(L1PcInstance p){return false;}}
     static class CacheD {static final CacheD I=new CacheD();boolean pending;static CacheD getInstance(){return I;}boolean hasPendingOwnerApply(int i){return pending;}}
     static class L1Clan {void updateClanMemberOnline(L1PcInstance p){}}
-    static class L1World {
-        static final L1World I=new L1World();final List<L1PcInstance> players=new ArrayList<>();
-        static L1World getInstance(){return I;}List<L1PcInstance> getAllPlayers3(){return players;}
+    static class CWorld {
+        static final CWorld I=new CWorld();final List<L1PcInstance> players=new ArrayList<>();
+        static CWorld getInstance(){return I;}List<L1PcInstance> getAllPlayers3(){return players;}
         L1Clan getClan(int id){return null;}
     }
     static class SC_Unknown2 {static int sent;static void send(CUserSocket c,int v){check(c.pc==null&&c.state==CConnectionState.AUTHENTICATED&&!c.ready,"selection publication order");sent++;}}
 """ + body + r"""
     public static void main(String[] a){
         L1PcInstance p=new L1PcInstance(1);
-        L1World.I.players.add(p);
+        CWorld.I.players.add(p);
         CUserSocket c=p.client;
         p.shop=false;RequestOfflinePrivateStore(p);check(!p.offline&&p.notices==1,"no store");
         p.shop=true;p.map=4;RequestOfflinePrivateStore(p);check(!p.offline,"wrong map");
         p.map=800;p.inv.busy=true;RequestOfflinePrivateStore(p);check(!p.offline,"busy receipt");
         p.inv.busy=false;CacheD.I.pending=true;RequestOfflinePrivateStore(p);check(!p.offline&&!p.inv.held,"pending owner replay");
         CacheD.I.pending=false;
-        L1PcInstance other=new L1PcInstance(2);L1World.I.players.add(other);
+        L1PcInstance other=new L1PcInstance(2);CWorld.I.players.add(other);
         RequestOfflinePrivateStore(p);check(!p.offline,"one shop per account");
-        L1World.I.players.remove(other);
+        CWorld.I.players.remove(other);
         p.failAttendance=true;RequestOfflinePrivateStore(p);check(!p.offline&&p.client==c&&!p.inv.held,"attendance reject");
         p.failAttendance=false;p.failSave=true;RequestOfflinePrivateStore(p);check(!p.offline&&p.online==1&&p.client==c,"save reject");
         p.failSave=false;RequestOfflinePrivateStore(p);

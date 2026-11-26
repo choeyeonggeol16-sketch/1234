@@ -16,7 +16,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.companion.instance.CompanionTeleportHandler;
 import l1j.server.server.model.character.experience.amplifier.ExpAmplifierLoader;
@@ -172,7 +172,7 @@ public class L1Teleport {
 		final int oldY = pc.getY();
 		final short oldMapId = pc.getMapId();
 		
-		final L1World world = L1World.getInstance();
+		final CWorld world = CWorld.getInstance();
 
 	    world.relocateVisibleObject(pc, x, y, mapid);
 	    pc.setHeading(pc.getHeading());
@@ -264,7 +264,7 @@ public class L1Teleport {
 		
 		// 주변 핑크네임 유저 확인
 		CParty party = pc.getParty();
-		for (L1PcInstance visible : L1World.getInstance().getVisiblePlayerFast(pc)) {
+		for (L1PcInstance visible : CWorld.getInstance().getVisiblePlayerFast(pc)) {
 			if (visible.isPinkName()) {
 				SC_PinkName.send(pc, visible.getId(), visible.getPinkNameTime());
 			}
@@ -379,7 +379,7 @@ public class L1Teleport {
 
 		teleport(follower, nx, ny, (short) mapid, owner.getHeading());
 
-		final L1World world = L1World.getInstance();
+		final CWorld world = CWorld.getInstance();
 		for (L1PcInstance visible : world.getVisiblePlayerFast(follower)) {
 			visible.removeKnownObject(follower);
 			addSubject(subjects, visible);
@@ -408,7 +408,7 @@ public class L1Teleport {
 	private void removePetGracefully(L1PcInstance owner, L1NpcInstance petNpc) {
 		if (petNpc instanceof L1SummonInstance) {
 			L1SummonInstance summon = (L1SummonInstance) petNpc;
-			for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayerFast(summon)) {
+			for (L1PcInstance visiblePc : CWorld.getInstance().getVisiblePlayerFast(summon)) {
 				SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(visiblePc, summon, visiblePc);
 			}
 		}
@@ -528,7 +528,7 @@ public class L1Teleport {
 		final int oldY = npc.getY();
 		final int oldMapId = npc.getMapId();
 		
-		final L1World world = L1World.getInstance();
+		final CWorld world = CWorld.getInstance();
 
 	    world.relocateVisibleObject(npc, x, y, map);
 	    npc.setHeading(head);
@@ -571,7 +571,7 @@ public class L1Teleport {
 	
     private static void clearPcFromOldViewers(L1PcInstance pc) {
     	try {
-    		final L1World world = L1World.getInstance();
+            final CWorld world = CWorld.getInstance();
 
     		try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.nativeWriter(pc.getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
                 for(L1PcInstance v:world.getVisiblePlayerFast(pc)) {

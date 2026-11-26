@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.Warehouse;
 import l1j.server.server.model.network.core.sc.packet.SC_DropItem;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
@@ -27,14 +27,14 @@ public class L1GroundInventory extends CInventory {
         setY(y);
         setMap(map);
 
-        L1World.getInstance().addVisibleObject(this);
+        CWorld.getInstance().addVisibleObject(this);
     }
 
     /** A ground item's visible identity is the item, not this tile bucket. */
     public static boolean isVisibleGroundItem(L1PcInstance viewer, L1ItemInstance item) {
         if (viewer == null || item == null || item.getClusterMapId() < 0
                 || !viewer.canSeeObject(item)) return false;
-        final L1GroundInventory ground = L1World.getInstance().findGroundInventory(
+        final L1GroundInventory ground = CWorld.getInstance().findGroundInventory(
                 item.getX(), item.getY(), item.getMapId());
         return ground != null && ground._items.Have(item);
     }
@@ -63,7 +63,7 @@ public class L1GroundInventory extends CInventory {
         if (!ready(viewer, epoch) || !viewer.knownsObject(item)) return;
         final var client = viewer.getNetConnection();
         if (client == null || client.getActiveChar() != viewer) return;
-        final L1Object current = L1World.getInstance().findObject(item.getId());
+        final L1Object current = CWorld.getInstance().findObject(item.getId());
         if (current instanceof L1ItemInstance replacement && replacement != item
                 && viewer.knownsObject(replacement) && isVisibleGroundItem(viewer, replacement)) {
             viewer.removeKnownObject(item);
@@ -115,9 +115,9 @@ public class L1GroundInventory extends CInventory {
                 _log.log(java.util.logging.Level.SEVERE,
                         "Ground item restored without delete timer: " + item.getId(), unavailable);
             }
-            L1World.getInstance().addVisibleObject(item);
+            CWorld.getInstance().addVisibleObject(item);
         } catch (RuntimeException | Error failure) {
-            try { L1World.getInstance().removeVisibleObject(item); }
+            try { CWorld.getInstance().removeVisibleObject(item); }
             catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
             try { item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE); }
             catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
@@ -156,7 +156,7 @@ public class L1GroundInventory extends CInventory {
             if (!_items.Pop(item)) return false;
             item.CancelTimer(L1ItemInstance.TIMER_GROUND_DELETE);
             // World leave publishes the item itself to User::OutOfSight.
-            L1World.getInstance().removeVisibleObject(item);
+            CWorld.getInstance().removeVisibleObject(item);
             return true;
         }
     }
@@ -164,7 +164,7 @@ public class L1GroundInventory extends CInventory {
     void finishGroundTransfer(L1ItemInstance item) {
         assert Thread.holdsLock(this);
         if (_items.isEmpty()) {
-            final L1World world = L1World.getInstance();
+            final CWorld world = CWorld.getInstance();
             if (world.findGroundInventory(getX(), getY(), getMapId()) != this) return;
             world.removeVisibleObject(this);
             if (DEBUG_GROUND_ITEM_TIMER)
@@ -202,9 +202,9 @@ public class L1GroundInventory extends CInventory {
         if (owner == null || !supportsReceiptPickup(item) || amount <= 0
                 || !_items.Have(item) || item.isGroundPickupPending() || item.isGroundDropUnsettled()
                 || item.is_Not_PickUp_Item() || amount > item.getCount()
-                || L1World.getInstance().findGroundInventory(getX(), getY(), getMapId()) != this)
+                || CWorld.getInstance().findGroundInventory(getX(), getY(), getMapId()) != this)
             return false;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final int before = item.getCount();
         final L1InventoryTransaction receipt;
         try {
@@ -258,7 +258,7 @@ public class L1GroundInventory extends CInventory {
             int before, int amount) {
         if (!item.hasGroundPickupReservation(receipt)) return;
         if (!receipt.isDurablyCommitted()) throw new IllegalStateException("Uncommitted pickup reply");
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         if (amount == before) {
             // Retire the original ground identity before the full-count
             // inventory image with that same ID is installed by the receipt.
@@ -289,7 +289,7 @@ public class L1GroundInventory extends CInventory {
         // Keep its tile published until the exact committed/rollback reply.
         for (L1ItemInstance item : getItems()) {
             if (item == null || item.isGroundPickupPending() || item.isGroundDropUnsettled()) continue;
-            if (unlinkGroundItem(item)) L1World.getInstance().removeObject(item);
+            if (unlinkGroundItem(item)) CWorld.getInstance().removeObject(item);
         }
         finishGroundTransfer(null);
     }

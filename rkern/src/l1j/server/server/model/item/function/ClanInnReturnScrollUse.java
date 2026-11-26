@@ -12,7 +12,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1TownLocation;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
@@ -60,7 +60,7 @@ final class ClanInnReturnScrollUse {
 			}
 
 			if (pc.getClanid() != 0) { // 크란 소속
-				L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+				L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 				if (clan != null) {
 					castle_id = clan.getCastleId();
 					house_id = clan.getHouseId();

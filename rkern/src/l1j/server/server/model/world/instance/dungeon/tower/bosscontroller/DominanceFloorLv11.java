@@ -7,7 +7,7 @@ import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -112,7 +112,7 @@ public class DominanceFloorLv11 implements Runnable {
 						l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(PcCK(),SC_PacketBox.nativeGreenWriter("\\fY$27699"));
 						Thread.sleep(3000);
 						spawn(_mapx, _mapy, (short) _mapid, 0, 8500137, ActionCodes.ACTION_Appear);
-						L1Object effect = L1World.getInstance().findNpc(8500137);
+						L1Object effect = CWorld.getInstance().findNpc(8500137);
 						if (effect != null && effect instanceof L1NpcInstance && !(effect instanceof L1DollInstance)) {
 							L1NpcInstance npc = (L1NpcInstance) effect;
 							deleteNpc(npc);
@@ -194,7 +194,7 @@ public class DominanceFloorLv11 implements Runnable {
 
 	private void Object_Check() {
 		L1NpcInstance mob = null;
-		for (L1Object object : L1World.getInstance().getVisibleObjects(_mapid).values()) {
+		for (L1Object object : CWorld.getInstance().getVisibleObjects(_mapid).values()) {
 			if (object instanceof L1MonsterInstance) {
 				mob = (L1NpcInstance) object;
 				int npc = mob.getNpcTemplate().get_npcId();
@@ -222,27 +222,27 @@ public class DominanceFloorLv11 implements Runnable {
 			}
 		}
 		if (_event == true && _event2 == true) {
-			L1Object target = L1World.getInstance().findNpc(8500301);
+			L1Object target = CWorld.getInstance().findNpc(8500301);
 			if (target != null && target instanceof L1NpcInstance && !(target instanceof L1DollInstance)) {
 				L1NpcInstance npc = (L1NpcInstance) target;
 				deleteNpc(npc);
 			}
-			L1Object passlock = L1World.getInstance().findNpc(8500132);
+			L1Object passlock = CWorld.getInstance().findNpc(8500132);
 			if (passlock != null && passlock instanceof L1NpcInstance && !(passlock instanceof L1DollInstance)) {
 				L1NpcInstance npc = (L1NpcInstance) passlock;
 				deleteNpc(npc);
 			}
-			L1Object passlock2 = L1World.getInstance().findNpc(8500133);
+			L1Object passlock2 = CWorld.getInstance().findNpc(8500133);
 			if (passlock2 != null && passlock2 instanceof L1NpcInstance && !(passlock2 instanceof L1DollInstance)) {
 				L1NpcInstance npc = (L1NpcInstance) passlock2;
 				deleteNpc(npc);
 			}
-			L1Object passlock3 = L1World.getInstance().findNpc(8500134);
+			L1Object passlock3 = CWorld.getInstance().findNpc(8500134);
 			if (passlock3 != null && passlock3 instanceof L1NpcInstance && !(passlock3 instanceof L1DollInstance)) {
 				L1NpcInstance npc = (L1NpcInstance) passlock3;
 				deleteNpc(npc);
 			}
-			L1Object passlock4 = L1World.getInstance().findNpc(8500135);
+			L1Object passlock4 = CWorld.getInstance().findNpc(8500135);
 			if (passlock4 != null && passlock4 instanceof L1NpcInstance && !(passlock4 instanceof L1DollInstance)) {
 				L1NpcInstance npc = (L1NpcInstance) passlock4;
 				deleteNpc(npc);
@@ -256,42 +256,42 @@ public class DominanceFloorLv11 implements Runnable {
 	}
 
 	private void reset() {
-		L1Object dominance = L1World.getInstance().findNpc(8500301);
+		L1Object dominance = CWorld.getInstance().findNpc(8500301);
 		if (dominance != null && dominance instanceof L1NpcInstance && !(dominance instanceof L1DollInstance)) {
 			L1NpcInstance npc = (L1NpcInstance) dominance;
 			deleteNpc(npc);
 		}
-		L1Object guarder = L1World.getInstance().findNpc(8500130);
+		L1Object guarder = CWorld.getInstance().findNpc(8500130);
 		if (guarder != null && guarder instanceof L1NpcInstance && !(guarder instanceof L1DollInstance)) {
 			L1NpcInstance npc = (L1NpcInstance) guarder;
 			deleteNpc(npc);
 		}
-		L1Object guarder2 = L1World.getInstance().findNpc(8500131);
+		L1Object guarder2 = CWorld.getInstance().findNpc(8500131);
 		if (guarder2 != null && guarder2 instanceof L1NpcInstance && !(guarder2 instanceof L1DollInstance)) {
 			L1NpcInstance npc = (L1NpcInstance) guarder2;
 			deleteNpc(npc);
 		}
-		L1Object passlock = L1World.getInstance().findNpc(8500132);
+		L1Object passlock = CWorld.getInstance().findNpc(8500132);
 		if (passlock != null && passlock instanceof L1NpcInstance && !(passlock instanceof L1DollInstance)) {
 			L1NpcInstance npc = (L1NpcInstance) passlock;
 			deleteNpc(npc);
 		}
-		L1Object passlock2 = L1World.getInstance().findNpc(8500133);
+		L1Object passlock2 = CWorld.getInstance().findNpc(8500133);
 		if (passlock2 != null && passlock2 instanceof L1NpcInstance && !(passlock2 instanceof L1DollInstance)) {
 			L1NpcInstance npc = (L1NpcInstance) passlock2;
 			deleteNpc(npc);
 		}
-		L1Object passlock3 = L1World.getInstance().findNpc(8500134);
+		L1Object passlock3 = CWorld.getInstance().findNpc(8500134);
 		if (passlock3 != null && passlock3 instanceof L1NpcInstance && !(passlock3 instanceof L1DollInstance)) {
 			L1NpcInstance npc = (L1NpcInstance) passlock3;
 			deleteNpc(npc);
 		}
-		L1Object passlock4 = L1World.getInstance().findNpc(8500135);
+		L1Object passlock4 = CWorld.getInstance().findNpc(8500135);
 		if (passlock4 != null && passlock4 instanceof L1NpcInstance && !(passlock4 instanceof L1DollInstance)) {
 			L1NpcInstance npc = (L1NpcInstance) passlock4;
 			deleteNpc(npc);
 		}
-		L1Object boss = L1World.getInstance().findNpc(_npcid);
+		L1Object boss = CWorld.getInstance().findNpc(_npcid);
 		if (boss != null && boss instanceof L1NpcInstance && !(boss instanceof L1DollInstance)) {
 			L1NpcInstance npc = (L1NpcInstance) boss;
 			deleteNpc(npc);
@@ -300,7 +300,7 @@ public class DominanceFloorLv11 implements Runnable {
 
 	public ArrayList<L1PcInstance> PcCK() {
 		ArrayList<L1PcInstance> _pc = new ArrayList<L1PcInstance>();
-		for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+		for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 			if (pc.getMapId() == _mapid)
 				_pc.add(pc);
 		}
@@ -333,7 +333,7 @@ public class DominanceFloorLv11 implements Runnable {
 			}
 			try (var sharedAction = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 			        SC_DoActionGFX.nativeWriter(npc.getId(), actioncode), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-			    for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(npc)) {
+			    for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayer(npc)) {
 			        npc.onPerceive(pc);
 			        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedAction, pc);
 			    }
@@ -342,7 +342,7 @@ public class DominanceFloorLv11 implements Runnable {
                         java.util.logging.Level.WARNING, "NPC spawn/action visual send failed", visualFailure);
             }
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
@@ -359,7 +359,7 @@ public class DominanceFloorLv11 implements Runnable {
 			
 			try (var sharedAction = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 			        SC_DoActionGFX.nativeWriter(npc.getId(), ActionCodes.ACTION_On), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-			    for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(npc)) {
+			    for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayer(npc)) {
 			        npc.onPerceive(pc);
 			        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedAction, pc);
 			    }

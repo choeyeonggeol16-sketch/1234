@@ -5,7 +5,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.model.L1Location;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -28,7 +28,7 @@ final class TeleportClanBookmarkTravel {
         final int clanId = pc.getClanid();
         if (clanId == 0) return;
 
-        for (L1PcInstance m : L1World.getInstance().getVisiblePlayer(pc, 3)) {
+        for (L1PcInstance m : CWorld.getInstance().getVisiblePlayer(pc, 3)) {
             if (m == null) continue;
             if (m.getClanid() != clanId) continue;
             if (m.getId() == pc.getId()) continue;

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -81,8 +81,8 @@ public final class CS_PledgeWatch {
         final String pcClanName =
                 pc.getClanname();
 
-        final L1World world =
-                L1World.getInstance();
+        final CWorld world =
+                CWorld.getInstance();
 
         final L1Clan clan =
                 world.findClan(
@@ -201,8 +201,8 @@ public final class CS_PledgeWatch {
             return;
         }
 
-        final L1World world =
-                L1World.getInstance();
+        final CWorld world =
+                CWorld.getInstance();
 
         final L1Clan clan =
                 world.findClan(

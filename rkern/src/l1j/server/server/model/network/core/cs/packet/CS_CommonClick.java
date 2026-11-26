@@ -37,7 +37,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.Account;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.rank.business.RankBusiness;
@@ -160,7 +160,7 @@ public class CS_CommonClick {
         for (int i = 0, size = deleted.size(); i < size; i++) {
             DeletedCharacter entry = deleted.get(i);
             if (entry.clanName != null && !entry.clanName.isEmpty()) {
-                L1Clan clan = L1World.getInstance().findClan(entry.clanName);
+                L1Clan clan = CWorld.getInstance().findClan(entry.clanName);
                 if (clan != null) clan.removeClanMember(entry.name);
             }
         }

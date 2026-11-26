@@ -113,7 +113,7 @@ public class L1WarSpawn {
 				if (gfxId != -1) {
 					npc.setCurrentSprite(gfxId);
 				}
-				L1World.getInstance().storeAndEnterWorld(npc);
+				CWorld.getInstance().storeAndEnterWorld(npc);
 				
 				return npc;
 			}

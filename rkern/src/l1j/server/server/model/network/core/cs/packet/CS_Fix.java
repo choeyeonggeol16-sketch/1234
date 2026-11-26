@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -52,7 +52,7 @@ public final class CS_Fix {
             int itemObjectId,
             int npcObjectId) {
 
-        final L1Object object = L1World.getInstance().findObject(npcObjectId);
+        final L1Object object = CWorld.getInstance().findObject(npcObjectId);
         if (!(object instanceof L1NpcInstance npc) || npc.getMapId() != pc.getMapId()
                 || Math.abs(pc.getX() - npc.getX()) > 3 || Math.abs(pc.getY() - npc.getY()) > 3) return;
 

@@ -6,7 +6,7 @@ import java.util.Random;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 
@@ -70,7 +70,7 @@ public class DropItemBuilder {
 				item.setEnchantLevel(_rnd.nextInt(_max_enchant + 1 - _min_enchant) + _min_enchant);
 			item.setCount(_min == _max ? _min : _rnd.nextInt(_max - _min + 1) + _min);
 			item.setIdentified(true);
-			CInventory inv = L1World.getInstance().getInventory(x, y, (short)m.getId());
+			CInventory inv = CWorld.getInstance().getInventory(x, y, (short)m.getId());
 			inv.CreateOrAddItem(item);
 		}catch(Exception e){
 			e.printStackTrace();

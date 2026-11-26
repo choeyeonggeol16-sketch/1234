@@ -337,7 +337,7 @@ public class L1Magic {
 						&& skillId != NATURES_BLESSING) { // 버프계
 
 					boolean attack_ok = false;
-					for (L1Object obj : L1World.getInstance().getVisibleObjects(_targetPc)) {
+					for (L1Object obj : CWorld.getInstance().getVisibleObjects(_targetPc)) {
 						if (!(obj instanceof L1MonsterInstance)) {
 							continue;
 						}
@@ -2158,7 +2158,7 @@ public class L1Magic {
 //				if(!(_pc.is_combat_field() || _targetPc.is_combat_field())){
 //				if (Config.신규혈맹보호처리) {
 //					boolean attack_ok = false;
-//					for (L1Object obj : L1World.getInstance().getVisibleObjects(_targetPc)) {
+//					for (L1Object obj : CWorld.getInstance().getVisibleObjects(_targetPc)) {
 //						if (!(obj instanceof L1MonsterInstance)) {
 //							continue;
 //						}

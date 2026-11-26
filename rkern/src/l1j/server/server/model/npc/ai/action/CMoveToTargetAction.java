@@ -910,7 +910,7 @@ public final class CMoveToTargetAction {
         if (oldId == 0 || (currentTarget != null && oldId == currentTarget.getId())) {
             return;
         }
-        final L1Object object = l1j.server.server.model.L1World.getInstance()
+        final L1Object object = l1j.server.server.model.CWorld.getInstance()
                 .findObject(oldId);
         if (object instanceof L1Character) {
             ((L1Character) object).AbandonAttackLeaderOf(monster);
@@ -933,7 +933,7 @@ public final class CMoveToTargetAction {
             return;
         }
         if (existingId != 0) {
-            final L1Object object = l1j.server.server.model.L1World.getInstance()
+            final L1Object object = l1j.server.server.model.CWorld.getInstance()
                     .findObject(existingId);
             if (object instanceof L1MonsterInstance) {
                 final L1MonsterInstance previous = (L1MonsterInstance) object;

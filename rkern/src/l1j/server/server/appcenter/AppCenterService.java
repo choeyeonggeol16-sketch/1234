@@ -34,7 +34,7 @@ import com.sun.net.httpserver.HttpServer;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 
@@ -594,7 +594,7 @@ public final class AppCenterService {
         ArrayList<Market> result = new ArrayList<>(1024);
         // Read only the market map and shops already in the world registry.
         // Avoid a JDBC connection and never hold world locks across HTTP requests.
-        for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+        for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
             if (pc == null || pc.getMapId() != 800 || !pc.isPrivateShop()) continue;
             String seller = validText(pc.getName(),32);
             if (seller.isEmpty()) continue;
@@ -609,9 +609,9 @@ public final class AppCenterService {
             if (result.size() >= MAX_SHOP_ROWS) break;
         }
         // Offline/stationary shops are L1NpcShopInstance, not L1PcInstance.
-        // They are registered separately in L1World and otherwise never appear
+        // They are registered separately in CWorld and otherwise never appear
         // in market search despite having active stock.
-        for (L1NpcShopInstance npc : L1World.getInstance().getAllShopNpc()) {
+        for (L1NpcShopInstance npc : CWorld.getInstance().getAllShopNpc()) {
             if (npc == null || npc.getState() != 1 || npc.getMapId() != 800) continue;
             String seller=validText(npc.getName(),32);
             if(seller.isEmpty()) continue;
@@ -678,7 +678,7 @@ public final class AppCenterService {
     private static Map<String,Profile> refreshProfiles(){
         HashMap<String,Profile> found=new HashMap<>();
         java.util.HashSet<String> ambiguous=new java.util.HashSet<>();
-        for(L1PcInstance pc:L1World.getInstance().getAllPlayers()){
+        for(L1PcInstance pc:CWorld.getInstance().getAllPlayers()){
             if(pc==null)continue;
             CUserSocket client=pc.getNetConnection();
             if(client==null||!client.isConnected())continue;

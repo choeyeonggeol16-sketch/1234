@@ -10,7 +10,7 @@ import l1j.server.server.model.world.instance.dungeon.clandungeon.AzmodanSystem;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.gametime.TimeListener;
@@ -89,7 +89,7 @@ public final class OneTimeController implements TimeListener {
     }
 
     private void resetUnderDungeon() throws java.sql.SQLException {
-        for (L1Clan clan : L1World.getInstance().getAllClans()) {
+        for (L1Clan clan : CWorld.getInstance().getAllClans()) {
             // Persist first: a JDBC failure must leave the clan retryable.
             ClanTable.getInstance().updateUnderDungeonOrThrow(clan.getClanId(), 0);
             clan.setUnderDungeon(0);

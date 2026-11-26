@@ -6,7 +6,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.world.instance.CInstanceWork;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.map.L1WorldMap;
@@ -43,7 +43,7 @@ public class BossTrainingSystem {
             room.keeper.setHeading(5);
             room.keeper.setLightSize(0);
             room.keeper.refreshLight();
-            L1World.getInstance().storeAndEnterWorld(room.keeper);
+            CWorld.getInstance().storeAndEnterWorld(room.keeper);
             room.expiry = CInstanceWork.schedule(() -> expire(room), LIFETIME_MS);
             if (room.expiry == null) throw new RejectedExecutionException("Training expiry admission failed");
             return room;

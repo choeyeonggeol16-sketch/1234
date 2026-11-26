@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
@@ -53,8 +53,8 @@ public final class CS_Title {
             return;
         }
 
-        final L1World world =
-                L1World.getInstance();
+        final CWorld world =
+                CWorld.getInstance();
 
         final L1PcInstance target =
                 world.getPlayer(
@@ -223,7 +223,7 @@ for (L1PcInstance clanPc :
         final boolean leader =
                 pc.isCrown()
                 && pc.getId()
-                    == L1World
+                    == CWorld
                         .getInstance()
                         .getClan(
                                 pc.getClanid())

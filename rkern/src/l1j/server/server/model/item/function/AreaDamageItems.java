@@ -2,7 +2,7 @@ package l1j.server.server.model.item.function;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -54,14 +54,14 @@ public final class AreaDamageItems {
         if (pc.isInvisble()) return;
         // Capture the original target identity, not merely a potentially reused object ID.
         // The original code consumed even when the target ID could not be resolved.
-        final L1Object target = L1World.getInstance().findObject(targetId);
+        final L1Object target = CWorld.getInstance().findObject(targetId);
         ItemReceiptOperations.UseDurableConsume(pc, input, () -> {
             try {
                 CreatureItemActions.cancelAbsoluteBarrier(pc);
-                if (target == null || L1World.getInstance().findObject(targetId) != target) return;
+                if (target == null || CWorld.getInstance().findObject(targetId) != target) return;
                 final int damage = itemId == 30055 ? 250 : itemId == 3000425 ? 50 : 100;
                 final int effect = itemId == 30055 ? 762 : itemId == 3000425 ? 5789 : 16060;
-                for (L1Object object : L1World.getInstance().getVisiblePoint(target.getLocation(), 4)) {
+                for (L1Object object : CWorld.getInstance().getVisiblePoint(target.getLocation(), 4)) {
                     if (object instanceof L1MonsterInstance) {
                         L1NpcInstance npc = (L1NpcInstance) object;
                         if (!npc.isDead() && npc.getId() != target.getId()) {

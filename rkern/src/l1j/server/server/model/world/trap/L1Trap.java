@@ -20,7 +20,7 @@ package l1j.server.server.model.world.trap;
 
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 
@@ -57,7 +57,7 @@ public abstract class L1Trap {
 				getGfxId());
 
 		l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
-				L1World.getInstance().getRecognizePlayer(trapObj),
+				CWorld.getInstance().getRecognizePlayer(trapObj),
 				SC_EffectLocation.nativeWriter((int) (effect >> 32) & 0xffff,
 						(int) (effect >> 16) & 0xffff, (int) effect & 0xffff));
 	}

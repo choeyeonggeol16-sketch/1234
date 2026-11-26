@@ -21,7 +21,7 @@ package l1j.server.server.model.npc.action;
 import java.util.function.Consumer;
 
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.dialog.L1NpcHtml;
@@ -56,7 +56,7 @@ public interface L1NpcAction {
         final int objectId = obj.getId();
         final var client = pc.getNetConnection();
         final int dialogueVersion = client == null ? 0 : client.npcDialogueVersion();
-        final long dialogueTarget = client == null ? 0 : L1World.getInstance().smartIdOf(obj);
+        final long dialogueTarget = client == null ? 0 : CWorld.getInstance().smartIdOf(obj);
         Consumer<L1NpcHtml> sendDeferred = html -> {
             if (html != null && html != DEFERRED
                     && client != null && client.canReplyToNpcDialogue(pc, dialogueTarget, dialogueVersion))

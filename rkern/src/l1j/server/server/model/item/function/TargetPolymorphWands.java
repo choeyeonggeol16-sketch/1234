@@ -11,7 +11,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -43,7 +43,7 @@ final class TargetPolymorphWands {
                 SC_ServerMessage.send(pc, 79);
                 return ItemActionResult.STOP;
             }
-            L1Object target = L1World.getInstance().findObject(spellTargetId);
+            L1Object target = CWorld.getInstance().findObject(spellTargetId);
             if (spellTargetId == pc.getId() || (target != null && target instanceof L1Character)) {
                 L1Character cha = spellTargetId == pc.getId() ? pc : (L1Character) target;
                 if (itemId == 40008 || itemId == 140008) {

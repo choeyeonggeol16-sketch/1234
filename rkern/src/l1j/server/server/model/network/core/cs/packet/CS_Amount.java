@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.world.residence.L1AuctionTransaction;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.npc.action.L1NpcAction;
 import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
@@ -21,7 +21,7 @@ public final class CS_Amount {
         if (client == null || actionName == null || amount <= 0 || amount > CInventory.MAX_AMOUNT) return;
         final L1PcInstance pc = client.getActiveChar();
         if (!HtmlCmdHandler.canInteractWithNpc(client, pc)) return;
-        final L1Object object = L1World.getInstance().findObject(objectId);
+        final L1Object object = CWorld.getInstance().findObject(objectId);
         if (!(object instanceof L1NpcInstance npc) || !HtmlCmdHandler.isNpcTargetInRange(pc, npc)) return;
         HtmlCmdHandler.trackDialogue(client, npc, false);
 

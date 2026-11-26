@@ -20,7 +20,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1WarSpawn;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.network.core.sc.packet.SC_CastleMaster;
@@ -183,7 +183,7 @@ try {
 var ownerShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
     SC_CastleMaster.nativeWriter(_castleId,nextDefense.getLeaderId()),Integer.MIN_VALUE,Integer.MAX_VALUE);
 try {
-for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
                 if(pc == null)
                     continue;
                 L1Clan clan = pc.getClan();
@@ -209,7 +209,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
                 @Override
                 public void run(){
                     try{
-                        for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+                        for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
                             if(pc == null)
                                 continue;
 
@@ -243,7 +243,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
                 if (injury == null) return;
                 byte[] raw = injury;
                 try (var sharedInjury = l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(raw)) {
-                    for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+                    for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                         if (pc == null || pc.getNetConnection() == null) continue;
                         L1Clan c = pc.getClan();
                         if (c != null && c.getClanId() == _defense.getClanId()) {
@@ -418,7 +418,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
         initializeOffenses();
 
         final L1Location loc = createGetBackLocation();
-        L1World.getInstance().getAllPlayerStream().filter((L1PcInstance pc) -> pc != null)
+        CWorld.getInstance().getAllPlayerStream().filter((L1PcInstance pc) -> pc != null)
         .forEach((L1PcInstance pc) -> {
             try {
                 L1Clan clan = pc.getClan();
@@ -458,7 +458,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
 
     private void deleteTower() {
         L1TowerInstance tower = null;
-        for (L1Object l1object : L1World.getInstance().getObject()) {
+        for (L1Object l1object : CWorld.getInstance().getObject()) {
             if (l1object instanceof L1TowerInstance) {
                 tower = (L1TowerInstance) l1object;
                 if (L1CastleLocation.checkInWarArea(_castleId, tower)) {
@@ -509,7 +509,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
             if (_castleId >= 1 && _castleId <= 4) {
                 final int[] loc = L1CastleLocation.getGetBackLoc(_castleId);
                 final int defenseId = _defenseId;
-                L1World.getInstance().getAllPlayerStream().filter((L1PcInstance pc) -> {
+                CWorld.getInstance().getAllPlayerStream().filter((L1PcInstance pc) -> {
                     if (pc == null || pc.isGm() || pc.getClanid() == defenseId)
                         return false;
 
@@ -538,7 +538,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
 var rosterShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                     rosterWire,Integer.MIN_VALUE,Integer.MAX_VALUE);
 try {
-            for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+            for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                 if(pc!=null){
                     l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(iconShared,pc);
                     l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(rosterShared,pc);
@@ -555,7 +555,7 @@ try {
             if (defenseClan != null) {
                 byte[] injury = createInjury(defenseClan, SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.DEFENCE);
                 int[] loc = L1CastleLocation.getGetBackLoc(_castleId);
-                L1World.getInstance().getAllPlayerStream().filter((L1PcInstance pc) -> pc != null)
+                CWorld.getInstance().getAllPlayerStream().filter((L1PcInstance pc) -> pc != null)
                 .forEach((L1PcInstance pc) -> {
                     try {
                         if (L1CastleLocation.checkInWarArea(_castleId, pc)) {
@@ -591,7 +591,7 @@ try {
                 _taxRate = Config.Tax_Rate;
                 CastleWarBusiness.getInstance().updateCastle(_castleId);
 
-                L1World.getInstance().createVisibleObjectsStream(L1CastleLocation.getCastleByMapId(_castleId))
+                CWorld.getInstance().createVisibleObjectsStream(L1CastleLocation.getCastleByMapId(_castleId))
                 .filter((L1Object obj) -> obj != null).forEach((L1Object obj) -> {
                     if (obj.instanceOf(L1Type.L1TYPE_PC)) {
                         L1PcInstance pc = (L1PcInstance) obj;

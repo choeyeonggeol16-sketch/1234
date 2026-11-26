@@ -7,7 +7,7 @@ import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.listener.ActionListener;
 import l1j.server.server.model.character.action.listener.npc.NpcActionListener;
 import l1j.server.server.model.character.action.listener.npc.TeleporterActionListener;
@@ -161,7 +161,7 @@ public class AcceptorToNpcListenerAdapter extends AbstractDateAcceptor implement
 					try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
       SC_PacketBox.nativeGreenWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
 for(int i=0; i<2; ++i){
-						for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+						for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
 							if(pc == null)
 								continue;
 							

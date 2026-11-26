@@ -29,7 +29,7 @@ import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
@@ -445,7 +445,7 @@ public final class CS_Craft {
 			return;
 		}
 
-		final L1PcInstance whisperTo = L1World.getInstance().getPlayer(targetName);
+		final L1PcInstance whisperTo = CWorld.getInstance().getPlayer(targetName);
 
 		if (whisperTo == null) {
 			SC_ServerMessage.send(whisperFrom, 73, targetName);
@@ -528,7 +528,7 @@ public final class CS_Craft {
 					CSharedBroadcast.sendRecipientBestEffort(chatShared, pc);
 				}
 
-				for (L1PcInstance listener : L1World.getInstance().getVisiblePlayerFast(pc)) {
+				for (L1PcInstance listener : CWorld.getInstance().getVisiblePlayerFast(pc)) {
 					if (listener.getMapId() == 5554 && !listener.isGm() && !pc.isGm()) {
 						continue;
 					}
@@ -569,7 +569,7 @@ public final class CS_Craft {
 
 		case 4: {
 			if (pc.getClanid() != 0) {
-				final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+				final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 				if (clan != null) {
 					final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
 					LoggerInstance.getInstance().addChat(ChatType.Clan, pc, chatText);
@@ -613,7 +613,7 @@ public final class CS_Craft {
 
 		case 13: {
 			if (pc.getClanid() != 0) {
-				final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+				final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 				final int rank = pc.getClanRank();
 
 				if (clan != null && (rank == L1Clan.군주 || rank == L1Clan.수호)) {
@@ -656,7 +656,7 @@ public final class CS_Craft {
 
 		case 17:
 			if (pc.getClanid() != 0) {
-				final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+				final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 				if (clan != null && pc.isCrown() && pc.getId() == clan.getLeaderId()) {
 					final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
 					LoggerInstance.getInstance().addChat(ChatType.Guardian, pc, chatText);
@@ -769,7 +769,7 @@ public final class CS_Craft {
 				return;
 			}
 
-			if (!L1World.getInstance().isWorldChatElabled()) {
+			if (!CWorld.getInstance().isWorldChatElabled()) {
 				SC_ServerMessage.send(pc, 510);
 				return;
 			}
@@ -787,7 +787,7 @@ public final class CS_Craft {
 				final SpamTable spam = SpamTable.getInstance();
 				final String senderName = pc.getName();
 				try (var chatShared = new CAsyncSendConstBuffer(chatWire, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-					for (L1PcInstance listener : L1World.getInstance().getAllPlayers()) {
+					for (L1PcInstance listener : CWorld.getInstance().getAllPlayers()) {
 						if (listener == null || spam.excludesChat(listener.getId(), senderName)) continue;
 						if (chatType == 12 ? listener.isShowTradeChat() : listener.isShowWorldChat())
 							CSharedBroadcast.sendRecipientBestEffort(chatShared, listener);

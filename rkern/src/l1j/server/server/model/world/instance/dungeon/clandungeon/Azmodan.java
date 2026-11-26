@@ -12,7 +12,7 @@ import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -95,7 +95,7 @@ public class Azmodan implements Runnable {
 		if (Time % 600 == 0) {
 			int min = Time / 60;
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    L1World.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getVisibleObjects(_map).values(),
                     SC_PacketBox.nativeGreenWriter(min+"분뒤에 던전은 종료됩니다."));
 		}
 	}
@@ -141,19 +141,19 @@ public class Azmodan implements Runnable {
 	}
 
 	private void Azmodan_Delete() {
-		for (L1Object ob : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object ob : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (ob == null)
 				continue;
 			if (ob instanceof L1ItemInstance) {
 				L1ItemInstance obj = (L1ItemInstance) ob;
-				CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
+				CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
 				groundInventory.DeleteItemAmount(obj);
 			} else if (ob instanceof L1NpcInstance) {
 				L1NpcInstance npc = (L1NpcInstance) ob;
 				npc.deleteMe();
 			}
 		}
-		for (L1Clan clan : L1World.getInstance().getAllClans()) {
+		for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 			if (clan.getClanId() == AzmodanSystem.getInstance().getClanid(_map)) {	
 				clan.setUnderDungeon(2);
 				ClanTable.getInstance().updateUnderDungeon(clan.getClanId(), 2);	
@@ -169,7 +169,7 @@ public class Azmodan implements Runnable {
 		ListClear(2);
 		ListClear(3);
 		ListClear(4);		
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1MonsterInstance) {
 				L1MonsterInstance mon = (L1MonsterInstance) obj;
 				mon.deleteMe();
@@ -179,7 +179,7 @@ public class Azmodan implements Runnable {
 
 	private void openDoor(int doorId) {
 		L1DoorInstance door = null;
-		for (L1Object object : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object object : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (object instanceof L1DoorInstance) {
 				door = (L1DoorInstance) object;
 				if (door.getNpcTemplate().get_npcId() == doorId) {
@@ -192,10 +192,10 @@ public class Azmodan implements Runnable {
 	}
 	
 	private void CheckClanId() {	
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1NpcInstance) {
 				if (((L1NpcInstance) obj).getNpcId() == 14907 && ((L1NpcInstance) obj).isDead() ) {
-					for (L1Clan clan : L1World.getInstance().getAllClans()) {
+					for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 						int clantime = 3600 - Time; //744
 						int min = clantime / 60;    // 12
 						int second = clantime - (min * 60);
@@ -226,10 +226,10 @@ public class Azmodan implements Runnable {
 	private void End() {
 		try {
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    L1World.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getVisibleObjects(_map).values(),
                     SC_PacketBox.nativeGreenWriter("30초후 지하통로가 닫힙니다."));
 			Thread.sleep(30000);
-			for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+			for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 				if (obj instanceof L1PcInstance) {
 					L1PcInstance pc = (L1PcInstance) obj;				
 //					L1Teleport.teleport(pc, 33426, 32811, (short) 4, 5, true);
@@ -550,7 +550,7 @@ public class Azmodan implements Runnable {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(Heading);
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			Azmodan azmodan = AzmodanSystem.getInstance().getAzmodan(MapId);
 			if (roomnumber == 0) {

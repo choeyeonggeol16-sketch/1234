@@ -15,7 +15,7 @@ import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.CItemList;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
@@ -360,7 +360,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         // A grant is a NEW persistent row, never an already published world item.
         // Transferring an owned item must use transfer() with its preimage check.
         CItemList.requireDetached(image);
-        if (image.getId() > 0 && L1World.getInstance().findObject(image.getId()) != null)
+        if (image.getId() > 0 && CWorld.getInstance().findObject(image.getId()) != null)
             throw new IllegalStateException("Reward must be a detached item: " + image.getId());
         L1ItemInstance prepared=copy(image);initializeNewGrant(prepared);
         return grantCopyPrepared(primary,prepared,prepared.getCount(),true);

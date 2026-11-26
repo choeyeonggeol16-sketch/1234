@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -126,7 +126,7 @@ public class ShipTimeController implements Runnable {
             var boarding=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                 SC_PacketBox.nativeGreenWriter("서둘러 배에 승선해주십시오."),
                 Integer.MIN_VALUE,Integer.MAX_VALUE)){
-            for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+            for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 				if (pc.getMapId() == 445) {
 					SC_SkillSound.send(pc, pc.getId(), 631);
 					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(docked,pc);
@@ -155,7 +155,7 @@ public class ShipTimeController implements Runnable {
 				|| (nowtime >= -70270 && nowtime < -69600)
 				|| (nowtime >= -65770 && nowtime < -65100)
 				) {
-			for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+			for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 				if (pc.getMapId() == 447) {
 					pc.start_teleport(32297, 33086, 440, pc.getHeading(), 169, false, false);
 					pc.getInventory().DeleteItemInInventory(40303, 1); // 숨겨진 섬 선착장행 배표

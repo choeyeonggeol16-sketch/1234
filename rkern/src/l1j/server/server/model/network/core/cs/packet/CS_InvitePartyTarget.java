@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.CReplyChecker;
@@ -66,7 +66,7 @@ public final class CS_InvitePartyTarget {
 				return;
 			}
 
-			final L1PcInstance target = L1World.getInstance().getPlayer(targetName);
+			final L1PcInstance target = CWorld.getInstance().getPlayer(targetName);
 
 			if (target == null) {
 				SC_ServerMessage.send(pc, 109, targetName);
@@ -79,7 +79,7 @@ public final class CS_InvitePartyTarget {
 			/*
 			 * 0/1 = objectId 기반 초대
 			 */
-			targetObject = L1World.getInstance().findObject(targetId);
+			targetObject = CWorld.getInstance().findObject(targetId);
 		}
 
 		if (!(targetObject instanceof L1PcInstance)) {
@@ -119,7 +119,7 @@ public final class CS_InvitePartyTarget {
 			return;
 		}
 
-		final L1PcInstance targetPc = L1World.getInstance().getPlayer(targetName);
+		final L1PcInstance targetPc = CWorld.getInstance().getPlayer(targetName);
 
 		if (targetPc == null) {
 			SC_ServerMessage.send(pc, 109, targetName);
@@ -146,7 +146,7 @@ public final class CS_InvitePartyTarget {
 
 	private static void handlePassLeader(L1PcInstance pc, int targetId) {
 
-		final L1Object targetObject = L1World.getInstance().findObject(targetId);
+		final L1Object targetObject = CWorld.getInstance().findObject(targetId);
 
 		if (!(targetObject instanceof L1PcInstance)) {
 			return;

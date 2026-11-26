@@ -9,7 +9,7 @@ import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.auth.login.LoginController;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.listener.ActionListenerLoader;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
@@ -341,7 +341,7 @@ public final class DominationHybrid {
         try {
             if (isExpired(p) || !next.isConnected() || next.getAccount() != null
                     || LoginController.getInstance().getClientByAccount(p.account.getName()) != null
-                    || L1World.getInstance().getPlayer(p.character) != null) {
+                    || CWorld.getInstance().getPlayer(p.character) != null) {
                 fail(p); return;
             }
             LoginController.getInstance().login(next, p.account);

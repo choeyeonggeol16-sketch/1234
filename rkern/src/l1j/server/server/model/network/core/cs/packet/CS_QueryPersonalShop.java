@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_PERSONAL_SHOP_ITEM_LIST_NOTI;
 import l1j.server.server.shared.L1Type;
@@ -34,7 +34,7 @@ public final class CS_QueryPersonalShop {
         }
 
         final L1Object shopObject =
-                L1World
+                CWorld
                         .getInstance()
                         .findObject(objectId);
 

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -20,7 +20,7 @@ public final class SC_MarkSee {
         int length = 7;
         if (type == 2 && on) {
             names = new ArrayList<>();
-            for (L1Clan clan : L1World.getInstance().getAllClans()) {
+            for (L1Clan clan : CWorld.getInstance().getAllClans()) {
                 if (clan != null && clan.getClanName() != null) {
                     final String name = clan.getClanName();
                     names.add(name);

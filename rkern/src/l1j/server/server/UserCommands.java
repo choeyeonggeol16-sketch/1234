@@ -19,7 +19,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1NeigeSaveChar;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.statistics.chart.KdaChartScheduler;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -144,7 +144,7 @@ public class UserCommands {
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "모든 혈맹의 마크를 표시하거나 종료하였습니다.");
         }
         final String ownClan = pc.getClanname();
-        for (L1Clan clan : L1World.getInstance().getAllClans()) {
+        for (L1Clan clan : CWorld.getInstance().getAllClans()) {
             if (clan != null) SC_War.send(pc, action, ownClan, clan.getClanName());
         }
         pc.setQuizTime(now);

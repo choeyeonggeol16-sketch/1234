@@ -3,7 +3,7 @@ package l1j.server.server.model.character.skill;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -76,7 +76,7 @@ public final class TomahawkBleedService {
         }
 
         final L1Object obj =
-                L1World.getInstance().findObject(targetId);
+                CWorld.getInstance().findObject(targetId);
 
         if (obj instanceof L1Character) {
             cancel((L1Character) obj);
@@ -129,7 +129,7 @@ public final class TomahawkBleedService {
          * node가 target 참조를 가지고 있으므로 identity까지 확인한다.
          */
         final L1Object live =
-                L1World.getInstance().findObject(target.getId());
+                CWorld.getInstance().findObject(target.getId());
 
         if (live != target) {
             finish(target, token);
@@ -150,7 +150,7 @@ public final class TomahawkBleedService {
         L1PcInstance attacker = null;
         if (attackerId != 0) {
             final L1Object ao =
-                    L1World.getInstance().findObject(attackerId);
+                    CWorld.getInstance().findObject(attackerId);
 
             if (ao instanceof L1PcInstance) {
                 attacker = (L1PcInstance) ao;

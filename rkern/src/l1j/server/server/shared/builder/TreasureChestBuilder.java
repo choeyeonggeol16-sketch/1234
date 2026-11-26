@@ -1,7 +1,7 @@
 package l1j.server.server.shared.builder;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.treasure.L1TreasureChest;
 import l1j.server.server.model.item.treasure.TreasureChestAttackFilter;
 import l1j.server.server.model.item.treasure.TreasureChestCompensator;
@@ -51,7 +51,7 @@ public class TreasureChestBuilder {
 	public L1TreasureChest build(int x, int y, int h, short mapId){
 		L1TreasureChest chest = new L1TreasureChest(
 				IdFactory.getInstance().nextId(), _name, _gfx, x, y, h, mapId, _ofilter, _afilter, _compensator);
-		L1World.getInstance().storeAndEnterWorld(chest);
+		CWorld.getInstance().storeAndEnterWorld(chest);
 		_ofilter 		= null;
 		_afilter 		= null;
 		_compensator 	= null;

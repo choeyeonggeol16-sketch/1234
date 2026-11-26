@@ -14,7 +14,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -32,7 +32,7 @@ final class NpcRemovalWandItems {
 static void useFieldObjectRemovalWand(L1PcInstance pc, int targetId, L1ItemInstance item) {
     SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
     SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
-    L1Object target = L1World.getInstance().findObject(targetId);
+    L1Object target = CWorld.getInstance().findObject(targetId);
     if (target != null && target instanceof L1NpcInstance && !(target instanceof L1DollInstance)) {
         L1NpcInstance npc = (L1NpcInstance) target;
         NpcSpawnTable.getInstance().removeSpawn(npc);

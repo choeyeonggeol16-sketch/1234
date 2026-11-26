@@ -17,7 +17,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.auth.login.LoginController;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.ClanWarehouse;
 import l1j.server.server.model.inventory.warehouse.WarehouseManager;
 import l1j.server.server.model.network.buffer.Assemble;
@@ -2808,7 +2808,7 @@ public final class CUserSocket extends CSocket {
         }
         if (smartId != 0L && warehouseNpcTarget != smartId
                 && IsWarehouseActor(_activeChar)
-                && L1World.getInstance().findObjectBySmartId(smartId) instanceof L1NpcInstance npc
+                && CWorld.getInstance().findObjectBySmartId(smartId) instanceof L1NpcInstance npc
                 && IsWarehouseNpc(npc) && IsInWarehouseRange(_activeChar, npc)) {
             warehouseNpcTarget = smartId;
         }
@@ -2854,7 +2854,7 @@ public final class CUserSocket extends CSocket {
         synchronized (this) {
             if (_activeChar != pc || warehouseNpcTarget == 0L) return;
             if (!IsWarehouseActor(pc)
-                    || !(L1World.getInstance().findObjectBySmartId(warehouseNpcTarget) instanceof L1NpcInstance npc)
+                    || !(CWorld.getInstance().findObjectBySmartId(warehouseNpcTarget) instanceof L1NpcInstance npc)
                     || !IsWarehouseNpc(npc) || !IsInWarehouseRange(pc, npc)) {
                 warehouseNpcTarget = 0L;
                 // A supplementary service uses the character, not this NPC.
@@ -2886,14 +2886,14 @@ public final class CUserSocket extends CSocket {
     public boolean IsWarehouseLeaseTargetLive(L1PcInstance pc) {
         final long target = warehouseNpcTarget;
         return target != 0L && IsWarehouseActor(pc)
-                && L1World.getInstance().findObjectBySmartId(target) instanceof L1NpcInstance npc
+                && CWorld.getInstance().findObjectBySmartId(target) instanceof L1NpcInstance npc
                 && IsWarehouseNpc(npc) && IsInWarehouseRange(pc, npc);
     }
 
     public boolean IsWarehouseNpcInRange(L1PcInstance pc, int objectId) {
         final long target = warehouseNpcTarget;
         if (!IsWarehouseActor(pc) || target == 0L) return false;
-        return L1World.getInstance().findObjectBySmartId(target) instanceof L1NpcInstance npc
+        return CWorld.getInstance().findObjectBySmartId(target) instanceof L1NpcInstance npc
                 && npc.getId() == objectId && IsWarehouseNpc(npc) && IsInWarehouseRange(pc, npc);
     }
 
@@ -3023,7 +3023,7 @@ public final class CUserSocket extends CSocket {
                 || !isConnected() || _activeChar != pc || pc.getNetConnection() != this
                 || getConnectionState() != CConnectionState.IN_GAME || pc.isDead()
                 || pc.isGhost() || pc.isPrivateShop() || pc.is무인상점() || pc.isAutoClanjoin()) return false;
-        return L1World.getInstance().findObjectBySmartId(smartId) instanceof L1NpcInstance npc
+        return CWorld.getInstance().findObjectBySmartId(smartId) instanceof L1NpcInstance npc
                 && !npc.isDead() && pc.getMapId() == npc.getMapId()
                 && Math.abs((long) pc.getX() - npc.getX()) <= 6
                 && Math.abs((long) pc.getY() - npc.getY()) <= 6;

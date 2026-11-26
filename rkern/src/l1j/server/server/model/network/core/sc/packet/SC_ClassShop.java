@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -32,7 +32,7 @@ public final class SC_ClassShop {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
-        final L1Object npcObj = L1World.getInstance().findObject(objId);
+        final L1Object npcObj = CWorld.getInstance().findObject(objId);
         if (!(npcObj instanceof L1NpcInstance)) return false;
         int npcId = ((L1NpcInstance) npcObj).getNpcTemplate().get_npcId();
         final int offset = getClassOffset(pc);

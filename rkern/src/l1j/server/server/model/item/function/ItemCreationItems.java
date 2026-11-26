@@ -2,7 +2,7 @@ package l1j.server.server.model.item.function;
 
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.inventory.CInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -41,7 +41,7 @@ final class ItemCreationItems {
             }
             // storeItem may merge a stackable grant into an existing instance.
             // In that case ItemTable's pre-registered temporary object is orphaned
-            // unless it is removed from L1World.
+            // unless it is removed from CWorld.
             if (pc.getInventory().CreateOrAddItem(item) == null) return false;
             SC_ServerMessage.send(pc, 403, item.getLogName());
             return true;
@@ -49,7 +49,7 @@ final class ItemCreationItems {
             // Keep the world object only when THIS new instance really entered
             // inventory. On rejection, merge, or a failed insert, release it.
             if (pc.getInventory().GetByServerID(item.getId()) != item) {
-                L1World.getInstance().removeObject(item);
+                CWorld.getInstance().removeObject(item);
             }
         }
     }

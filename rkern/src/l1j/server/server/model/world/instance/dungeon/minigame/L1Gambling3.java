@@ -8,7 +8,7 @@ import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.world.effect.L1EffectSpawn;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
@@ -72,7 +72,7 @@ public class L1Gambling3 {
         try(var chatShared=chatWire==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                     chatWire,Integer.MIN_VALUE,Integer.MAX_VALUE)){
             l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,pc);
-            for (L1PcInstance listner : L1World.getInstance().getRecognizePlayer(pc)) {
+            for (L1PcInstance listner : CWorld.getInstance().getRecognizePlayer(pc)) {
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,listner);
 		}
         }
@@ -114,7 +114,7 @@ public class L1Gambling3 {
 	}
 
 	private L1NpcInstance findDealer() {
-		for (L1Object o : L1World.getInstance().getObject()) {
+		for (L1Object o : CWorld.getInstance().getObject()) {
 			if (o instanceof L1NpcInstance && ((L1NpcInstance) o).getNpcTemplate().get_npcId() == DEALER) {
 				return (L1NpcInstance) o;
 			}

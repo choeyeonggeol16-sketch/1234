@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -105,7 +105,7 @@ final class NpcSpellScrollCommands {
         cast(pc, 37);
         cast(pc, 42);
         cast(pc, bow ? 149 : 48);
-        L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+        L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
         if (clan != null && clan.getCastleId() != 0) cast(pc, L1SkillId.성혈버프);
         SC_NPCTalkReturn.send(pc, objid, "", EMPTY_PAGE_ARGS);
     }

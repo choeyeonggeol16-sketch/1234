@@ -259,7 +259,7 @@ for (L1PcInstance player : getMembersArray()) {
 			}
 		}
 
-		for (L1PcInstance pc : L1World.getInstance().getAllPlayers3()) {
+		for (L1PcInstance pc : CWorld.getInstance().getAllPlayers3()) {
 			if (pc.getMapId() == 5140 && !isMember(pc)) {
 //				L1Teleport.teleport(pc, 32624, 32813, (short) 4, 5, true);
 				pc.start_teleport(32624, 32813, 4, pc.getHeading(), 169, true, false);
@@ -279,7 +279,7 @@ for (L1PcInstance player : getMembersArray()) {
 
 	private void npcBroadcast(String msg) {
 		if (_guide == null) {
-			for (Object obj : L1World.getInstance().getVisibleObjects(4).values()) {
+			for (Object obj : CWorld.getInstance().getVisibleObjects(4).values()) {
 				if (obj instanceof L1NpcInstance) {
 					L1NpcInstance n = (L1NpcInstance) obj;
 					if (n.getNpcTemplate().get_npcId() == 80085) {
@@ -352,7 +352,7 @@ for (L1PcInstance player : getMembersArray()) {
 
 	private void openDoor() {
 		L1DoorInstance door = null;
-		for (L1Object object : L1World.getInstance().getObject()) {
+		for (L1Object object : CWorld.getInstance().getObject()) {
 			if (object instanceof L1DoorInstance) {
 				door = (L1DoorInstance) object;
 				// 첫번째 문이라면 연다..
@@ -365,7 +365,7 @@ for (L1PcInstance player : getMembersArray()) {
 
 	private void closeDoor() {
 		L1DoorInstance door = null;
-		for (L1Object object : L1World.getInstance().getObject()) {
+		for (L1Object object : CWorld.getInstance().getObject()) {
 			if (object instanceof L1DoorInstance) {
 				door = (L1DoorInstance) object;
 				// 첫번째 문이라면 닫는다..
@@ -391,8 +391,8 @@ for (L1PcInstance player : getMembersArray()) {
 					npc.setHomeY(32830);
 					npc.setHeading(0);
 
-					L1World.getInstance().storeAndEnterWorld(npc);
-					L1Object object = L1World.getInstance().findObject(npc.getId());
+					CWorld.getInstance().storeAndEnterWorld(npc);
+					L1Object object = CWorld.getInstance().findObject(npc.getId());
 					_fire = (L1FieldObjectInstance) object;
 					_fire.onNpcAI();
 					_fire.refreshLight();
@@ -458,7 +458,7 @@ for (L1PcInstance player : getMembersArray()) {
 				// ItemTable pre-registers this object. Stack merge/rejection/exception
 				// must not retain a world index entry for the unowned image.
 				if (pc.getInventory().GetByServerID(item.getId()) != item) {
-					L1World.getInstance().removeObject(item);
+					CWorld.getInstance().removeObject(item);
 				}
 			}
 		}

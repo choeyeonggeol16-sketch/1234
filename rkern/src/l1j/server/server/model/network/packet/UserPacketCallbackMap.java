@@ -11,7 +11,7 @@ import l1j.server.server.model.Dungeon;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
 import l1j.server.server.model.network.buffer.Disassemble;
@@ -1490,7 +1490,7 @@ public final class UserPacketCallbackMap {
             action2 = readCStringMs949(buffer, cursor, action2End - cursor);
             cursor = action2End + 1;
         } else if (action.equalsIgnoreCase("ent")) {
-            final L1Object obj = L1World.getInstance().findObject(objid);
+            final L1Object obj = CWorld.getInstance().findObject(objid);
             if (obj instanceof L1NpcInstance) {
                 final L1NpcInstance npc = (L1NpcInstance) obj;
                 if (npc.getNpcTemplate().get_npcId() == 80088) {

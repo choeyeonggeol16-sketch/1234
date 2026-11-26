@@ -14,7 +14,7 @@ import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
@@ -122,7 +122,7 @@ public final class AuraController implements Runnable {
     private void tickAura() {
         if (trackedCrownIds.isEmpty()) return;
 
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
 
         for (Iterator<Integer> it = trackedCrownIds.iterator(); it.hasNext(); ) {
             final int crownId = it.next();
@@ -163,7 +163,7 @@ public final class AuraController implements Runnable {
         }
     }
 
-    private static L1PcInstance findPc(L1World world, int objId) {
+    private static L1PcInstance findPc(CWorld world, int objId) {
         try {
             return (L1PcInstance) world.findObject(objId);
         } catch (Throwable t) {
@@ -267,7 +267,7 @@ public final class AuraController implements Runnable {
 
     private void tickClanBuff() {
         try {
-            for (L1Clan clan : L1World.getInstance().getAllClans()) {
+            for (L1Clan clan : CWorld.getInstance().getAllClans()) {
                 if (clan == null) continue;
                 synchronized (clan) {
                 if (l1j.server.server.storage.CacheD.getInstance().hasPendingOwnerApply(clan.getClanId())) continue;

@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
@@ -80,7 +80,7 @@ final class NpcCraftCommands {
         final int resourceKey = target instanceof L1NpcInstance npc ? npc.getNpcId() : objid;
         final CUserSocket client = pc.getNetConnection();
         final int dialogueVersion = client == null ? 0 : client.npcDialogueVersion();
-        final long dialogueTarget = L1World.getInstance().smartIdOf(target);
+        final long dialogueTarget = CWorld.getInstance().smartIdOf(target);
         boolean prepared = false;
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, resourceKey)) {
             for (int i = 0; i < materials.length; i++) {

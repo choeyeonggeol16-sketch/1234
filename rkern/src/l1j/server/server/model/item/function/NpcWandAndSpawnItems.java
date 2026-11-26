@@ -45,7 +45,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
@@ -103,7 +103,7 @@ public final class NpcWandAndSpawnItems {
                     npc.setHomeX(pc.getX());
                     npc.setHomeY(pc.getY());
                     npc.setHeading(2);
-                    L1World.getInstance().storeAndEnterWorld(npc);
+                    CWorld.getInstance().storeAndEnterWorld(npc);
                     npc.startTimedDelete(60000);
                 } catch (Exception spawnFailure) {
                     // A committed debit must not be retried or silently refunded
@@ -183,7 +183,7 @@ public final class NpcWandAndSpawnItems {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(Heading);
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 
 			npc.refreshLight();

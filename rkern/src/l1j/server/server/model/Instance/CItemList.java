@@ -24,7 +24,7 @@ import java.util.function.ToIntFunction;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.set.hash.TIntHashSet;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.templates.L1Item;
 
 /** Intrusive, ordered inventory membership. The list monitor protects only links;
@@ -519,7 +519,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
 
     /** Registered online item only: no linked-list fallback on stale preset IDs. */
     public L1ItemInstance GetRegisteredItemByServerID(int objectId) {
-        final L1Object object = L1World.getInstance().findObject(objectId);
+        final L1Object object = CWorld.getInstance().findObject(objectId);
         return object instanceof L1ItemInstance item && item.getId() == objectId
                 && Have(item) ? item : null;
     }

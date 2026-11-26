@@ -6,7 +6,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1PinkName;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -74,7 +74,7 @@ public final class CGeneralAction extends CNewAction {
             }
         }
 
-        final L1Object obj = L1World.getInstance().findObject(tId);
+        final L1Object obj = CWorld.getInstance().findObject(tId);
 
         if (obj == null
                 || !obj.instanceOf(L1Type.L1TYPE_CHARACTER)

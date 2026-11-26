@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.arena.CombatObserver;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -119,7 +119,7 @@ public final class CS_CharSelect {
             }
             if (privateStore && !User.RemovePrivateStoreList(pc)) return;
 
-            final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 pc.setOnlineStatus(0);
                 clan.updateClanMemberOnline(pc);
@@ -172,7 +172,7 @@ public final class CS_CharSelect {
                 || pc.is무인상점() || pc.GetTrade() != null
                 || l1j.server.server.model.inventory.CTrade.HasPendingTradeBlocker(pc)
                 || l1j.server.server.storage.CacheD.getInstance().hasPendingOwnerApply(pc.getId())) return;
-        for (L1PcInstance target : L1World.getInstance().getAllPlayers3()) {
+        for (L1PcInstance target : CWorld.getInstance().getAllPlayers3()) {
             if (target.getId() != pc.getId()
                     && target.getAccountName().equalsIgnoreCase(pc.getAccountName())
                     && target.isPrivateShop()) {
@@ -202,7 +202,7 @@ public final class CS_CharSelect {
         }
         pc.set무인상점(true);
         pc.setPrivateReady(false);
-        final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+        final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
         try {
             if (clan != null) clan.updateClanMemberOnline(pc);
         } catch (RuntimeException failure) {

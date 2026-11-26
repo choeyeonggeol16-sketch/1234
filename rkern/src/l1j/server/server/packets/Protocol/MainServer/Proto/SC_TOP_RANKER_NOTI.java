@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.classinfo.EClassesType;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -134,7 +134,7 @@ public class SC_TOP_RANKER_NOTI extends ProtoPacket implements Comparable<SC_TOP
         rnk.set_previous_rank(RankLoadManager.MRK_SYS_TOTAL_RANGE + 1);
         rnk.set_rank(RankLoadManager.MRK_SYS_TOTAL_RANGE + 1);
         noti.set_total_ranker(rnk);
-        noti.set_characterInstance(L1World.getInstance().getPlayer(rnk.get_name()));
+        noti.set_characterInstance(CWorld.getInstance().getPlayer(rnk.get_name()));
         noti.set_almost_lower_class(false);
         noti.set_almost_lower_total(false);
         noti.set_almost_upper_class(false);
@@ -513,7 +513,7 @@ public class SC_TOP_RANKER_NOTI extends ProtoPacket implements Comparable<SC_TOP
                 rnk.set_previous_rank(RankLoadManager.MRK_SYS_TOTAL_RANGE + 1);
                 rnk.set_rank(RankLoadManager.MRK_SYS_TOTAL_RANGE + 1);
                 { notiWire_hasTotalRanker = true; notiWire_total_ranker = rnk; }
-                { notiWire_characterInstance = (L1World.getInstance().getPlayer(rnk.get_name())); }
+                { notiWire_characterInstance = (CWorld.getInstance().getPlayer(rnk.get_name())); }
                 { notiWire_hasLowerClass = true; notiWire_almost_lower_class = false; }
                 { notiWire_hasLowerTotal = true; notiWire_almost_lower_total = false; }
                 { notiWire_hasUpperClass = true; notiWire_almost_upper_class = false; }

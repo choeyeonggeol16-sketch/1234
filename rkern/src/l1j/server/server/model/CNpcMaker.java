@@ -402,7 +402,7 @@ public class CNpcMaker {
             int newlocy = getLocY();
             int tryCount = 0;
 
-            final L1Object obj = L1World.getInstance().findObject(objectId);
+            final L1Object obj = CWorld.getInstance().findObject(objectId);
             if (obj != null && obj.instanceOf(L1Type.L1TYPE_MONSTER)) {
                 final L1MonsterInstance old = (L1MonsterInstance) obj;
                 if (!old.isDead()) {
@@ -501,7 +501,7 @@ public class CNpcMaker {
             }
 
             if (npcId == 45573 && mob.getMapId() == 2) {
-                for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+                for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                     if (pc != null && pc.getMapId() == 2) {
                         pc.start_teleport(32664, 32797, 2, pc.getHeading(), 169, true, false);
                     }
@@ -513,7 +513,7 @@ public class CNpcMaker {
                 mob.startTimedDelete(60 * 1000);  
             }
 
-            L1World.getInstance().storeAndEnterWorld(mob);
+            CWorld.getInstance().storeAndEnterWorld(mob);
             storedInWorld = true;
 
             if (mob instanceof L1MonsterInstance) {

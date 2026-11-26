@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -39,7 +39,7 @@ public final class CS_RankControl {
         }
 
         try {
-            final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 
             switch (type) {
 
@@ -114,7 +114,7 @@ public final class CS_RankControl {
             SC_SystemMessage.send(pc, "계급 부여 실패 : 계급 부여 권한이 없음.");
             return;
         }
-        final L1PcInstance onlineTarget = L1World.getInstance().getPlayer(name);
+        final L1PcInstance onlineTarget = CWorld.getInstance().getPlayer(name);
 
         if (onlineTarget != null) {
             if (onlineTarget.getClanid() != pc.getClanid()) {
@@ -154,7 +154,7 @@ public final class CS_RankControl {
                 if (!CIOThreadCallback.getInstance().completeSession(client, () -> {
                     if (client.getActiveChar() != pc || pc.isGhost()
                             || pc.getClanid() != sourceClanId
-                            || L1World.getInstance().getClan(sourceClanId) != clan
+                            || CWorld.getInstance().getClan(sourceClanId) != clan
                             || (!pc.isCrown() && pc.getClanRank() != L1Clan.수호
                                     && pc.getClanRank() != L1Clan.부군주)) {
                         return;
@@ -162,7 +162,7 @@ public final class CS_RankControl {
                     // The offline character may have logged in while the DB
                     // worker was loading it. Never save a detached snapshot
                     // over a freshly connected instance.
-                    final L1PcInstance live = L1World.getInstance().getPlayer(name);
+                    final L1PcInstance live = CWorld.getInstance().getPlayer(name);
                     final L1PcInstance target = live != null ? live : restored;
                     if (target == null || target.getId() != targetId
                             || target.getClanid() != sourceClanId) {

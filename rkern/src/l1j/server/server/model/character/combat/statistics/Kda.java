@@ -17,7 +17,7 @@ import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -282,28 +282,28 @@ public class Kda {
 		String locName = MapsTable.getInstance().getMapName(victim.getMapId());
 		//ServerBasePacket[] pcks = new ServerBasePacket[]{//\\da
 			//new SC_ChatPacket(String.format("\\aG%s 님이 %s 님을 죽였습니다.", killer.getName(), victim.getName()), Opcodes.S_MESSAGE),
-			//L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f3[ 승리 : \\aA"+killer.getName() + " \\f3]  ■  [ 패배 : \\aA"+victim.getName()+"\\f3]"));
-			//L1World.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f3사망위치 : \\aA"+locName));
+			//CWorld.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f3[ 승리 : \\aA"+killer.getName() + " \\f3]  ■  [ 패배 : \\aA"+victim.getName()+"\\f3]"));
+			//CWorld.getInstance().broadcastPacketToAll(new SC_SystemMessage("\\f3사망위치 : \\aA"+locName));
 			//new SC_ChatPacket(String.format("\\f>사망위치 : %s", MapsTable.getInstance().getMapName(killer.getMapId())), Opcodes.S_MESSAGE),
 		//};
-		//L1World.getInstance().broadcastPacketToAll(pcks, true);
+		//CWorld.getInstance().broadcastPacketToAll(pcks, true);
 			/*
 			if (killer.hasSkillEffect(L1SkillId.킬1)) {
 				killer.removeSkillEffect(L1SkillId.킬1);
 				killer.setSkillEffect(L1SkillId.킬2,20*1000);
-				L1World.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+"님이 더블킬중 입니다."));
+				CWorld.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+"님이 더블킬중 입니다."));
 			} else if (killer.hasSkillEffect(L1SkillId.킬2)) {
 				killer.removeSkillEffect(L1SkillId.킬2);
 				killer.setSkillEffect(L1SkillId.킬3,20*1000);
-				L1World.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+"님이 트리플킬중 입니다."));
+				CWorld.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+"님이 트리플킬중 입니다."));
 			} else if (killer.hasSkillEffect(L1SkillId.킬3)) {
 				killer.removeSkillEffect(L1SkillId.킬3);
 				killer.setSkillEffect(L1SkillId.킬4,20*1000);
-				L1World.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+"님이 쿼드라킬중 입니다."));
+				CWorld.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+"님이 쿼드라킬중 입니다."));
 			} else if (killer.hasSkillEffect(L1SkillId.킬4)) {
 				killer.removeSkillEffect(L1SkillId.킬4);
 				killer.setSkillEffect(L1SkillId.킬5,20*1000);
-				L1World.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+"님이 학살중 입니다."));
+				CWorld.getInstance().broadcastPacketToAll(S_IconMessage.getGmMessage(killer.getName()+"님이 학살중 입니다."));
 			} else {
 				killer.setSkillEffect(L1SkillId.킬1,20*1000);
 			}		
@@ -327,7 +327,7 @@ public class Kda {
         try(var plainShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                      SC_ShowCmd.nativePkWriter(plain,victimBytes),Integer.MIN_VALUE,Integer.MAX_VALUE)){
         if (cid == 0) {
-            for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+            for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                 if (pc != null) l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(plainShared,pc);
             }
             return;
@@ -335,7 +335,7 @@ public class Kda {
         final byte[] colored = SC_ShowCmd.encode(String.format("\\aG%s", killer.getName()));
         try(var coloredShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                    SC_ShowCmd.nativePkWriter(colored,victimBytes),Integer.MIN_VALUE,Integer.MAX_VALUE)){
-        for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+        for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
             if (pc == null) continue;
             l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(pc.getClanid()==cid?coloredShared:plainShared,pc);
         }

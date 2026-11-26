@@ -78,10 +78,10 @@ public class Beginner {
 									}
 								}
 							} finally {
-								// createItem() registers in L1World before the inventory owns it.
+								// createItem() registers in CWorld before the inventory owns it.
 								// A rejection, failed insert, or stack merge must release that image.
 								if (pc.getInventory().GetByServerID(item.getId()) != item) {
-									L1World.getInstance().removeObject(item);
+									CWorld.getInstance().removeObject(item);
 								}
 							}
 						}
@@ -101,7 +101,7 @@ public class Beginner {
 									}
 								} finally {
 									if (pc.getInventory().GetByServerID(item.getId()) != item) {
-										L1World.getInstance().removeObject(item);
+										CWorld.getInstance().removeObject(item);
 									}
 								}
 							}

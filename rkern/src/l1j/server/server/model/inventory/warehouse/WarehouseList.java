@@ -71,7 +71,7 @@ public abstract class WarehouseList {
         synchronized (expected) {
             if (warehouses.get(name) != expected || expected.isRetired()
                     || expected.getWarehouseUsingChar() != 0 || expected.getSize() != 0
-                    || l1j.server.server.model.L1World.getInstance().findClan(name) != null) return;
+                    || l1j.server.server.model.CWorld.getInstance().findClan(name) != null) return;
             if (CacheD.getInstance().deferWarehouseRetirement(expected.transferOrderKey(), expected,
                     () -> retireEmptyClanWarehouseWhenIdle(name, expected))) return;
             expected.retireWarehouse();

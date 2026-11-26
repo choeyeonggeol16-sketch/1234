@@ -29,7 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CServerTimer;
@@ -105,7 +105,7 @@ public final class CAnnounceTimer {
         }
         try {
             CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                    L1World.getInstance().getAllPlayers(), SC_SystemMessage.nativeWriter(message));
+                    CWorld.getInstance().getAllPlayers(), SC_SystemMessage.nativeWriter(message));
         } catch (RuntimeException failure) {
             LOG.log(Level.WARNING, "Scheduled announcement failed", failure);
         }

@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.item.collection.loader.CollectionSystemLoader;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -76,7 +76,7 @@ public final class CollectionHandler {
             SC_SystemMessage.send(pc, "자기 자신에게는 사용할 수 없습니다.");
             return false;
         }
-        if (objid <= 0 || L1World.getInstance().findObject(objid) != null) {
+        if (objid <= 0 || CWorld.getInstance().findObject(objid) != null) {
             SC_SystemMessage.send(pc, CollectionLoadManager._invalidCharacter);
             return false;
         }
@@ -165,7 +165,7 @@ public final class CollectionHandler {
     private static void requireOffline(CollectionObject o) throws SQLException {
         // These existing CacheD DB-worker probes return false rather than wait
         // for outstanding writes. A recent logout must finish before boxing.
-        if (o.name == null || L1World.getInstance().findObject(o.charId) != null
+        if (o.name == null || CWorld.getInstance().findObject(o.charId) != null
                 || !CacheD.getInstance().flushCharacter(o.name, 0)
                 || !CacheD.getInstance().flushItemsByCharacter(o.charId, 0))
             throw new SQLException("Character still active or persistence pending");

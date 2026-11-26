@@ -19,7 +19,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
@@ -176,7 +176,7 @@ public final class GludioInstanceDungeon {
                 || r.ownerId!=owner.getId() || memberRooms.get(owner.getId())!=r
                 || guestName==null || guestName.isBlank() || guestName.length()>24
                 || r.members.size()>=r.maximum) return false;
-        L1PcInstance guest=L1World.getInstance().getPlayer(guestName);
+        L1PcInstance guest=CWorld.getInstance().getPlayer(guestName);
         if(guest==null || guest==owner || memberRooms.containsKey(guest.getId())
                 || guest.getLevel()<r.minLevel || !guest.getInventory().HaveItemByClassId(KEY_ITEM,r.keyCount())
                 || guest.getNetConnection()==null || !guest.getNetConnection().isConnected()) return false;
@@ -437,7 +437,7 @@ public final class GludioInstanceDungeon {
         npc.setHeading(heading);
         npc.setLightSize(tpl.getLightSize());
         if(location!=null) npc.setSpawnLocation(location);
-        L1World.getInstance().storeAndEnterWorld(npc);
+        CWorld.getInstance().storeAndEnterWorld(npc);
         npc.refreshLight();
         r.npcs.add(npc);
         if(npc instanceof L1MonsterInstance) {
@@ -661,7 +661,7 @@ public final class GludioInstanceDungeon {
     private void cleanup(Room r) {
         synchronized(this) {
             if(r.mapId==0) return;
-            for(L1Object obj:L1World.getInstance().getVisibleObjects(r.mapId).values())
+            for(L1Object obj:CWorld.getInstance().getVisibleObjects(r.mapId).values())
                 if(obj instanceof L1PcInstance) {
                     LOG.warning("[Gludio-Indun] Player still on map; cleanup deferred="+r.mapId);
                     scheduleCleanup(r,15000L);return;

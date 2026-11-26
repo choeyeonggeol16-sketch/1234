@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.npc.dialog.L1NpcHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.templates.L1Npc;
@@ -429,7 +429,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 				//  뮤탄트안트단젼(군주 Lv30 퀘스트)
 				if (action.equalsIgnoreCase("teleport mutant-dungen_la")) {
 					// 3 매스 이내의 Pc
-					for (L1PcInstance otherPc : L1World.getInstance()
+					for (L1PcInstance otherPc : CWorld.getInstance()
 							.getVisiblePlayer(player, 3)) {
 						if (otherPc.getClanid() == player.getClanid()
 								&& otherPc.getId() != player.getId()) {
@@ -449,7 +449,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 					L1PcInstance wiz = null;
 					// 3 매스 이내의 Pc
 					CQuestSystem quest = null;
-					for (L1PcInstance otherPc : L1World.getInstance()
+					for (L1PcInstance otherPc : CWorld.getInstance()
 							.getVisiblePlayer(player, 3)) {
 						quest = otherPc.getQuest();
 						if (otherPc.isKnight() // 나이트

@@ -11,7 +11,7 @@ import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.gametime.TimeListener;
@@ -117,7 +117,7 @@ public final class NpcChatTimeController implements Runnable, TimeListener {
 
 
             for (L1Object obj
-                    : L1World.getInstance().getObject()) {
+                    : CWorld.getInstance().getObject()) {
 
                 if (!(obj instanceof L1NpcInstance)) {
                     continue;

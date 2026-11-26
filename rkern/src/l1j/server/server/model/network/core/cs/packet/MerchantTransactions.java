@@ -8,7 +8,7 @@ import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -195,7 +195,7 @@ final class MerchantTransactions {
         try (var shared = new CAsyncSendConstBuffer(
                 SC_SystemMessage.nativeWriter(pc.getName() + "님 상점 최대구매 수량 (" + count + ")를 초과 하였습니다."),
                 Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-            for (L1PcInstance recipient : L1World.getInstance().getAllPlayers())
+            for (L1PcInstance recipient : CWorld.getInstance().getAllPlayers())
                 if (recipient == pc || recipient.isGm()) CSharedBroadcast.sendRecipient(shared, recipient);
         }
     }

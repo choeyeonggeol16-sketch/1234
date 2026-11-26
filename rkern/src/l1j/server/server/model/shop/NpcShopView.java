@@ -7,7 +7,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightHistory;
 import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightHistoryInfo;
 import l1j.server.server.model.map.L1Map;
@@ -42,7 +42,7 @@ public final class NpcShopView {
         sessionStamp = pc.getSessionStamp();
         dialogueVersion = client.npcDialogueVersion();
         map = pc.getMap();
-        npcIdentity = npc == null ? 0L : L1World.getInstance().smartIdOf(npc);
+        npcIdentity = npc == null ? 0L : CWorld.getInstance().smartIdOf(npc);
         this.resultId = resultId;
         shopId = shop == null ? (npc == null ? 0 : npc.getNpcId()) : shop.getNpcId();
         this.buying = buying;
@@ -86,7 +86,7 @@ public final class NpcShopView {
     public boolean dogFight() { return source == Source.DOG_FIGHT; }
 
     public L1NpcInstance npc() {
-        return npcIdentity != 0L && L1World.getInstance().findObjectBySmartId(npcIdentity) instanceof L1NpcInstance npc
+        return npcIdentity != 0L && CWorld.getInstance().findObjectBySmartId(npcIdentity) instanceof L1NpcInstance npc
                 ? npc : null;
     }
 

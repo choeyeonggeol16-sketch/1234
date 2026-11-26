@@ -13,7 +13,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.assembly.CItemAssembler;
 import l1j.server.server.model.item.doll.DollPotentialEffects;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -1513,7 +1513,7 @@ public class L1ItemInstance extends L1Object {
         if (x == 0) return;
         final int y = getY();
         final short mapId = getMapId();
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final L1GroundInventory ground = world.findGroundInventory(x, y, mapId);
         if (ground == null) return;
         // Preserve the original visibility scan outside the tile monitor.
@@ -1529,7 +1529,7 @@ public class L1ItemInstance extends L1Object {
         synchronized (ground) {
             if ((generation != 0 && generation != _groundDeleteTimerGeneration)
                     || getX() != x || getY() != y || getMapId() != mapId
-                    || world != L1World.getInstance()
+                    || world != CWorld.getInstance()
                     || world.findGroundInventory(x, y, mapId) != ground
                     || ground.GetByServerID(getId()) != this) return;
             if (generation != 0 && (world.findObject(getId()) != this || getItemId() == 40515)) return;

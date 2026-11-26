@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.TimeUnit;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.cs.packet.CDB;
@@ -256,7 +256,7 @@ public final class TamFruitUseService {
     }
 
     private static void syncOnlineTarget(String account, int id, FruitResult result) {
-        L1Object object = L1World.getInstance().findObject(id);
+        L1Object object = CWorld.getInstance().findObject(id);
         if (!(object instanceof L1PcInstance target) || !account.equalsIgnoreCase(target.getAccountName())) return;
         final var client = target.getNetConnection();
         if (client == null || client.getActiveChar() != target) return;

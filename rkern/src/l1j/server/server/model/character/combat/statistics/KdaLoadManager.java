@@ -10,7 +10,7 @@ import java.util.Properties;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.statistics.chart.KdaChartScheduler;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.GameUtils;
@@ -60,7 +60,7 @@ public class KdaLoadManager {
 			if(s == null || s.equalsIgnoreCase(""))
 				throw new Exception("");
 			
-			L1PcInstance pc = L1World.getInstance().findpc(s);
+			L1PcInstance pc = CWorld.getInstance().getPlayer(s);
 			if(pc == null){
 				SC_SystemMessage.send(gm, String.format("%s(을)를 찾을 수 없습니다.", s));
 			}else{

@@ -8,7 +8,7 @@ import l1j.server.server.model.world.instance.dungeon.orim.OrimController;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1FieldObjectInstance;
 import l1j.server.server.model.Instance.L1MerchantInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -50,7 +50,7 @@ public class L1SpawnUtil {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(pc.getHeading());
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 			
 			if (npcId == 181164) { //기르타스 큰화염
 			    SC_WorldPutObject.broadcastNpc(npc);
@@ -104,7 +104,7 @@ public class L1SpawnUtil {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(pc.getHeading());
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			if (npcId == 181164) { // 기르타스 큰화염
 				SC_WorldPutObject.broadcastNpc(npc);
@@ -159,7 +159,7 @@ public class L1SpawnUtil {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(pc.getHeading());
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 			
 			if (npcId == 181164) { //기르타스 큰화염
 			    SC_WorldPutObject.broadcastNpc(npc);
@@ -195,7 +195,7 @@ public class L1SpawnUtil {
 			npc.setHomeY(pc.getY());
 			npc.setHeading(pc.getHeading());
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 			
 			
 
@@ -239,7 +239,7 @@ public class L1SpawnUtil {
 			if (npc.getNpcId() == 900007 || npc.getNpcId() == 900015 || npc.getNpcId() == 900036 || npc.getNpcId() == 900219) {
 				try (var sharedAction = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 				        SC_DoActionGFX.nativeWriter(npc.getId(), ActionCodes.ACTION_AxeWalk), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-				    for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {
+				    for (L1PcInstance _pc : CWorld.getInstance().getVisiblePlayer(npc)) {
 				        npc.onPerceive(_pc);
 				        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedAction, _pc);
 				    }
@@ -250,7 +250,7 @@ public class L1SpawnUtil {
 			}
 			/*
 			if (npc.getNpcId() == 460000365) {
-				for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {
+				for (L1PcInstance _pc : CWorld.getInstance().getVisiblePlayer(npc)) {
 					npc.onPerceive(_pc);
 					SC_DoActionGFX.send(_pc.getNetConnection(), npc.getId(), 95);
 				}
@@ -266,7 +266,7 @@ public class L1SpawnUtil {
 				fobj.setMoveMapId(movemap);
 			}
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 			if (npc.getNpcId() == 460000365) {
 			npc.getNpcTemplate().doBornNpc(npc);
 			}
@@ -308,7 +308,7 @@ public class L1SpawnUtil {
 			npc.setHomeX(npc.getX());
 			npc.setHomeY(npc.getY());
 			npc.setHeading(Heading);
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			npc.refreshLight();
 			npc.startChat(0);
@@ -350,7 +350,7 @@ public class L1SpawnUtil {
 			if (npc.getNpcId() == 900007 || npc.getNpcId() == 900015 || npc.getNpcId() == 900036 || npc.getNpcId() == 900219) {
 				try (var sharedAction = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 				        SC_DoActionGFX.nativeWriter(npc.getId(), ActionCodes.ACTION_AxeWalk), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-				    for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {
+				    for (L1PcInstance _pc : CWorld.getInstance().getVisiblePlayer(npc)) {
 				        npc.onPerceive(_pc);
 				        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedAction, _pc);
 				    }
@@ -362,7 +362,7 @@ public class L1SpawnUtil {
 			if (npc.getNpcId() == 460000365) {
 				try (var sharedAction = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 				        SC_DoActionGFX.nativeWriter(npc.getId(), 95), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-				    for (L1PcInstance _pc : L1World.getInstance().getVisiblePlayer(npc)) {
+				    for (L1PcInstance _pc : CWorld.getInstance().getVisiblePlayer(npc)) {
 				        npc.onPerceive(_pc);
 				        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedAction, _pc);
 				    }
@@ -380,7 +380,7 @@ public class L1SpawnUtil {
 				fobj.setMoveMapId(movemap);
 			}
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			if (0 < timeMillisToDelete) {
@@ -407,7 +407,7 @@ public class L1SpawnUtil {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(heading);
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			if (0 < timeMinToDelete) {
 				npc.startTimedDelete(timeMinToDelete);  
@@ -437,7 +437,7 @@ public class L1SpawnUtil {
 				mer.setClanname(clan.getClanName());
 			}
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
@@ -477,7 +477,7 @@ public class L1SpawnUtil {
 			npc.setHomeX(npc.getX());
 			npc.setHomeY(npc.getY());
 			npc.setHeading(npc.getHeading());
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
@@ -528,7 +528,7 @@ public class L1SpawnUtil {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(pc.getHeading());
 			
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 		} catch (Exception e) {
@@ -567,7 +567,7 @@ public class L1SpawnUtil {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(4);
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
@@ -617,7 +617,7 @@ public class L1SpawnUtil {
 					mon.setMovementDistance(15);
 				}
 
-				L1World.getInstance().storeAndEnterWorld(npc);
+				CWorld.getInstance().storeAndEnterWorld(npc);
 
 				npc.refreshLight();
 				npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
@@ -662,7 +662,7 @@ public class L1SpawnUtil {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(pc.getHeading());
 			
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 			
 			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시

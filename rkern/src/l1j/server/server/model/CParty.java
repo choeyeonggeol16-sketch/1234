@@ -438,7 +438,7 @@ public class CParty {
             CContributeData snap, L1PcInstance primaryOwner, L1PcInstance[] admittedMembers) {
         if (!Config.PARTY_LOOT_ENABLE || primaryOwner == null || primaryOwner.getParty() != this
                 || origin == null || source == null || item == null) return false;
-        final CWorld world = L1World.getInstance().getWorldExecutor();
+        final CWorld world = CWorld.getInstance();
         if (!world.PickItemCond(source, item, item.getCount())) return false;
 
         final boolean adena = item.getItemId() == L1ItemId.ADENA;

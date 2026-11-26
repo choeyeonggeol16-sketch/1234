@@ -17,7 +17,7 @@ import l1j.server.server.model.Instance.L1RaidDoorInstance;
 import l1j.server.server.model.Instance.L1RaidPortalInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
@@ -394,7 +394,7 @@ public abstract class RaidObject implements Runnable{
         }
 			
 			ArrayList<L1PcInstance> pcs = new ArrayList<L1PcInstance>();
-			pcs.addAll(L1World.getInstance().getAllPlayers());
+			pcs.addAll(CWorld.getInstance().getAllPlayers());
 			RaidMessage.RAID_CLEAR_SUCCESS_MESSAGE.sendMessage(pcs);
 			pcs.clear();
 
@@ -442,7 +442,7 @@ public abstract class RaidObject implements Runnable{
 	}
 	
 	protected void resetRaid(){
-		Iterator<L1Object> it 	= L1World.getInstance().getVisibleObjects(getCopyMapId()).values().iterator();
+		Iterator<L1Object> it 	= CWorld.getInstance().getVisibleObjects(getCopyMapId()).values().iterator();
 		L1NpcInstance 	obj 	= null;
 		L1NpcInstance	npc		= null;
 		int npcSize				= 0;

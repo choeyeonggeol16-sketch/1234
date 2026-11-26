@@ -24,7 +24,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Clan.ClanMember;
 import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -75,7 +75,7 @@ public final class CS_Mail {
     }
 
     private static boolean blocked(L1PcInstance sender,String receiver) {
-        L1PcInstance target=L1World.getInstance().getPlayer(receiver);
+        L1PcInstance target=CWorld.getInstance().getPlayer(receiver);
         if (target==null) return false;
         L1ExcludingList exclude=SpamTable.getInstance().getExcludeTable(target.getId());
         if (exclude!=null && exclude.contains(0,sender.getName())) {
@@ -98,7 +98,7 @@ public final class CS_Mail {
     private static void writeBloodPledgeMail(L1PcInstance sender,String receiverName,
             String subject,String content,int paper) {
         if (receiverName==null || subject==null || content==null || !eligibleSender(sender)) return;
-        L1Clan clan=L1World.getInstance().findClan(receiverName);
+        L1Clan clan=CWorld.getInstance().findClan(receiverName);
         if (clan==null || clan.getClanMemberList()==null) return;
         List<Letter> letters=new ArrayList<>();
         HashSet<String> names=new HashSet<>();
@@ -161,7 +161,7 @@ public final class CS_Mail {
     }
 
     private static void notifyWritten(Letter letter) {
-        final L1PcInstance target=L1World.getInstance().getPlayer(letter.receiver);
+        final L1PcInstance target=CWorld.getInstance().getPlayer(letter.receiver);
         if (target==null) return;
         final CUserSocket session=target.getNetConnection();
         final int stamp=target.getSessionStamp();

@@ -3,7 +3,7 @@ package l1j.server.server.model.character.combat.arena.loader;
 import java.util.concurrent.ConcurrentHashMap;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.arena.CombatEGameType;
 import l1j.server.server.model.character.combat.arena.CombatInformation;
 import l1j.server.server.model.character.combat.arena.CombatObserver;
@@ -249,7 +249,7 @@ public class CombatLoadManager implements Command{
 				}
 				
 				String msg = String.format("운영자에 의해 진행중인 %s이(가) %d초 후 강제 종료됩니다.", observer.get_combat_info().get_game_type().to_kr_desc(), COMBAT_QUIT_DELAY_SECOND);
-                L1World.getInstance().getAllPlayerStream()
+                CWorld.getInstance().getAllPlayerStream()
                     .filter((L1PcInstance pc) -> pc != null && pc.is_combat_field())
                     .forEach((L1PcInstance pc) -> {
                         SC_SystemMessage.send(pc, msg);

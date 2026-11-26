@@ -19,7 +19,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -80,7 +80,7 @@ public final class CSharedBroadcast {
             int p6,int p7,int p8,int p9,int p10,boolean fast) {
         if(anchor==null)return;
         final boolean optional = kind != FORMAT_CHANGESHAPE;
-        final L1World world=L1World.getInstance();
+        final CWorld world=CWorld.getInstance();
         final List<L1PcInstance> recipients=fast
                 ? world.borrowVisiblePlayerFast(anchor)
                 : world.getVisiblePlayer(anchor);
@@ -143,7 +143,7 @@ public final class CSharedBroadcast {
             int p0, int p1, int p2, int p3,
             boolean fast, int radius, Predicate<L1PcInstance> filter, boolean optional) {
         if (anchor == null) return;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final boolean borrowed = fast && radius < 0;
         final List<L1PcInstance> recipients = borrowed
                 ? world.borrowVisiblePlayerFast(anchor)
@@ -186,7 +186,7 @@ public final class CSharedBroadcast {
 
     public static void sendAction(L1Object anchor, int objectId, int actionId) {
         if (anchor == null) return;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final List<L1PcInstance> recipients = world.borrowVisiblePlayerFast(anchor);
         CAsyncSendConstBufferExceptSelf shared = null;
         try {
@@ -220,7 +220,7 @@ public final class CSharedBroadcast {
 
     public static void sendMove(L1Object anchor, int objectId, int x, int y, int heading) {
         if (anchor == null) return;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final List<L1PcInstance> recipients = world.borrowVisiblePlayerFast(anchor);
         CAsyncSendConstBufferExceptSelf shared = null;
         try {
@@ -292,7 +292,7 @@ public final class CSharedBroadcast {
     private static void sendWritten(L1Object anchor, NativeWireWriter writer, boolean fast,
             int radius, Predicate<L1PcInstance> filter, boolean optional) {
         if(anchor==null||writer==null)return;
-        final L1World world=L1World.getInstance();
+        final CWorld world=CWorld.getInstance();
         final boolean borrowed=fast&&radius<0;
         final List<L1PcInstance> recipients=borrowed
                 ? world.borrowVisiblePlayerFast(anchor)
@@ -493,7 +493,7 @@ public final class CSharedBroadcast {
         if(writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try {
-            for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+            for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                 if (pc == null) continue;
                 try {
                     if (pc.isPrivateShop() || !pc.is_world()) continue;
@@ -515,7 +515,7 @@ public final class CSharedBroadcast {
         if(writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try {
-            for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+            for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                 if (pc == null) continue;
                 try {
                     if (pc.isGm())
@@ -565,7 +565,7 @@ public final class CSharedBroadcast {
         try {
             if(anchor instanceof L1PcInstance pc)
                 shared=sendWrittenOptionalTo(shared,pc,writer);
-            for(L1PcInstance viewer:L1World.getInstance().getVisiblePlayer(anchor))
+            for(L1PcInstance viewer:CWorld.getInstance().getVisiblePlayer(anchor))
                 shared=sendWrittenOptionalTo(shared,viewer,writer);
         } catch(UnavailableOptionalSource invalid) {
             // Broken source must not be regenerated for every viewer.
@@ -580,7 +580,7 @@ public final class CSharedBroadcast {
     public static void sendWrittenNestedVisibleBestEffort(
             L1Object origin,NativeWireWriter writer) {
         if(origin==null||writer==null)return;
-        final L1World world=L1World.getInstance();
+        final CWorld world=CWorld.getInstance();
         CAsyncSendConstBuffer shared=null;
         try {
             final List<L1PcInstance> anchors = world.getVisiblePlayer(origin);
@@ -611,7 +611,7 @@ public final class CSharedBroadcast {
         if(writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try {
-            for(L1PcInstance pc:L1World.getInstance().getVisiblePlayers(mapId)) {
+            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayers(mapId)) {
                 if(pc==null)continue;
                 try {
                     if(pc.get_current_combat_team_id()!=teamId)continue;
@@ -767,7 +767,7 @@ public final class CSharedBroadcast {
         try {
             if(anchor instanceof L1PcInstance pc)
                 shared=sendWrittenTo(shared,pc,writer);
-            for(L1PcInstance viewer:L1World.getInstance().getVisiblePlayer(anchor))
+            for(L1PcInstance viewer:CWorld.getInstance().getVisiblePlayer(anchor))
                 shared=sendWrittenTo(shared,viewer,writer);
         } finally {
             if(shared!=null)shared.close();
@@ -782,7 +782,7 @@ public final class CSharedBroadcast {
         if(item==null||writer==null)return 0;
         int viewers=0;
         CAsyncSendConstBuffer shared=null;
-        final L1World world=L1World.getInstance();
+        final CWorld world=CWorld.getInstance();
         final int range=Config.PC_RECOGNIZE_RANGE;
         // L1's screen test is directional: user -> item, not item -> user.
         final List<L1PcInstance> visible=world.borrowVisiblePlayerFast(item,range<0?22:range);
@@ -870,7 +870,7 @@ public final class CSharedBroadcast {
         if(writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try {
-            for(L1PcInstance pc:L1World.getInstance().getAllPlayers()) {
+            for(L1PcInstance pc:CWorld.getInstance().getAllPlayers()) {
                 if(pc==null||pc.isPrivateShop()||!pc.is_world())continue;
                 shared=sendWrittenTo(shared,pc,writer);
             }
@@ -881,7 +881,7 @@ public final class CSharedBroadcast {
         if(writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try {
-            for(L1PcInstance pc:L1World.getInstance().getAllPlayers()) {
+            for(L1PcInstance pc:CWorld.getInstance().getAllPlayers()) {
                 if(pc!=null&&pc.isGm())shared=sendWrittenTo(shared,pc,writer);
             }
         } finally { if(shared!=null)shared.close(); }
@@ -890,7 +890,7 @@ public final class CSharedBroadcast {
     /** Preserves original nested-visible iteration and repeated recipients. */
     public static void sendWrittenNestedVisible(L1Object origin,NativeWireWriter writer) {
         if(origin==null||writer==null)return;
-        final L1World world=L1World.getInstance();
+        final CWorld world=CWorld.getInstance();
         CAsyncSendConstBuffer shared=null;
         try {
             for(L1PcInstance anchor:world.getVisiblePlayer(origin)) {
@@ -916,7 +916,7 @@ public final class CSharedBroadcast {
             throw new IllegalArgumentException("large SC area frame length "+length);
         try (var shared = new CAsyncSendConstBuffer(writer, anchor.getId(), Integer.MAX_VALUE, length)) {
             if (anchor instanceof L1PcInstance pc) sendLargeTo(pc, shared);
-            for (L1PcInstance viewer : L1World.getInstance().getVisiblePlayer(anchor)) sendLargeTo(viewer, shared);
+            for (L1PcInstance viewer : CWorld.getInstance().getVisiblePlayer(anchor)) sendLargeTo(viewer, shared);
         }
     }
 
@@ -944,7 +944,7 @@ public final class CSharedBroadcast {
         if(anchor==null||writer==null)return;
         if(length<=16384||length>0xFFFF)
             throw new IllegalArgumentException("large SC wire length "+length);
-        final L1World world=L1World.getInstance();
+        final CWorld world=CWorld.getInstance();
         final List<L1PcInstance> visible=world.borrowVisiblePlayerFast(anchor);
         try (var shared = new CAsyncSendConstBuffer(writer, anchor.getId(), Integer.MAX_VALUE, length)) {
             for(L1PcInstance pc:visible) {
@@ -968,7 +968,7 @@ public final class CSharedBroadcast {
     public static void sendWrittenAll(NativeWireWriter writer) {
         if (writer == null) return;
         try {
-            sendWrittenRecipientsBestEffort(L1World.getInstance().getAllPlayers(), writer);
+            sendWrittenRecipientsBestEffort(CWorld.getInstance().getAllPlayers(), writer);
         } catch(RuntimeException failure) {
             logOptionalNoticeFailure(failure);
         }
@@ -1012,7 +1012,7 @@ public final class CSharedBroadcast {
         try(var shared=openRaw(encoded)) {
             if(shared==null)return;
             sendRecipient(shared,self);
-            for(L1PcInstance pc:L1World.getInstance().getVisiblePlayer(self))
+            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayer(self))
                 sendRecipient(shared,pc);
         }
     }
@@ -1027,7 +1027,7 @@ public final class CSharedBroadcast {
         if(writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try{
-            for(L1PcInstance pc:L1World.getInstance().getVisiblePlayers(mapId)){
+            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayers(mapId)){
                 if(pc==null||pc.get_current_combat_team_id()!=teamId)continue;
                 shared=sendWrittenTo(shared,pc,writer);
             }
@@ -1044,7 +1044,7 @@ public final class CSharedBroadcast {
                 if(writers[i]==null)return;
                 shared[i]=new CAsyncSendConstBuffer(writers[i],Integer.MIN_VALUE,Integer.MAX_VALUE);
             }
-            for(L1PcInstance pc:L1World.getInstance().getVisiblePlayers(mapId)){
+            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayers(mapId)){
                 final CUserSocket socket;
                 try {
                     if(pc==null||(teamOnly&&pc.get_current_combat_team_id()!=teamId))continue;

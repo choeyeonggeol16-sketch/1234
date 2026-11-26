@@ -3,7 +3,7 @@ package l1j.server.server.model.item.function;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 
@@ -102,7 +102,7 @@ final class ClanRaidNpcSpawn {
             npc.setHomeY(npc.getY());
             npc.setHeading(heading);
 
-            L1World.getInstance().storeAndEnterWorld(npc);
+            CWorld.getInstance().storeAndEnterWorld(npc);
 
             npc.refreshLight();
             npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);

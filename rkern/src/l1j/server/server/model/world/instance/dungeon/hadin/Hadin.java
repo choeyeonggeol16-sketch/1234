@@ -13,7 +13,7 @@ import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -680,13 +680,13 @@ public class Hadin implements Runnable {
 			HT.stop();
 			HT = null;
 		}
-		Collection<L1Object> cklist = L1World.getInstance().getVisibleObjects(_map).values();
+		Collection<L1Object> cklist = CWorld.getInstance().getVisibleObjects(_map).values();
 		for(L1Object ob : cklist){
 			if(ob == null)
 				continue;
 			if(ob instanceof L1ItemInstance){
 				L1ItemInstance obj = (L1ItemInstance)ob;
-				CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
+				CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
 				groundInventory.DeleteItemAmount(obj);
 			}else if(ob instanceof L1NpcInstance){
 				L1NpcInstance npc = (L1NpcInstance)ob;

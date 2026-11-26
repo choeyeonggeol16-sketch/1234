@@ -3,7 +3,7 @@ package l1j.server.server.model.Instance;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.templates.L1Npc;
@@ -77,10 +77,10 @@ public class L1MobTrapInstance extends L1NpcInstance {
 	}
 
 	private boolean onTrapAi() {
-		if (L1World.getInstance().getRecognizePlayer(this).size() == 0) {
+		if (CWorld.getInstance().getRecognizePlayer(this).size() == 0) {
 			return true;
 		}
-		for (L1PcInstance pc : L1World.getInstance().getVisiblePlayer(this, 0)) {
+		for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayer(this, 0)) {
 			if (pc != null) {
 				int count = IntRange.random(1) + 3;// 불러낼수치
 				int[] moblist = { 7000056, 7000057, 7000058, 7000059, 7000060 };// 나올몹종류

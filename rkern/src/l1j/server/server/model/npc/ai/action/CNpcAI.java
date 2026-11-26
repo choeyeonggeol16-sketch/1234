@@ -13,7 +13,7 @@ import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.npc.spawn.group.L1MobGroupInfo;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -55,7 +55,7 @@ public final class CNpcAI {
                 && npc.getLocation().getTileLineDistance(master.getLocation()) > 2) {
             return npc.noTargetMaster();
         }
-        if (!L1World.getInstance().hasRecognizePlayerFast(npc)) return true;
+        if (!CWorld.getInstance().hasRecognizePlayerFast(npc)) return true;
         if (master == null && npc.isMovable() && !npc.isRest()) {
             final L1MobGroupInfo group = npc.getMobGroupInfo();
             final L1NpcInstance leader = group == null ? null : group.getActiveLeader();
@@ -279,7 +279,7 @@ public final class CNpcAI {
                     && (!canMoveAround(npc)
                             || idleGroupFollower((L1MonsterInstance) npc)
                             || (npc._target == null
-                                    && !L1World.getInstance()
+                                    && !CWorld.getInstance()
                                             .hasRecognizePlayerFast(npc)))) {
 
                 stopMoveAroundRuntime(
@@ -414,7 +414,7 @@ public final class CNpcAI {
             final boolean moveAroundRunnable =
                     canMoveAround(monster)
                     && !idleGroupFollower(monster)
-                    && L1World.getInstance()
+                    && CWorld.getInstance()
                             .hasRecognizePlayerFast(monster);
 
             if (moveAroundRunnable) {
@@ -571,7 +571,7 @@ public final class CNpcAI {
                 if (dMoveTo.request(creature, creature.getHomeX(), creature.getHomeY())) {
                     return;
                 }
-            } else if (!L1World.getInstance().hasRecognizePlayerFast(creature)) {
+            } else if (!CWorld.getInstance().hasRecognizePlayerFast(creature)) {
                 CCreatureController.submit(creature, CCreatureController.ACTION_NOTHING);
                 return;
             }
@@ -602,7 +602,7 @@ public final class CNpcAI {
             return;
         }
 
-        if (!L1World.getInstance()
+        if (!CWorld.getInstance()
                 .hasRecognizePlayerFast(creature)) {
 
             CCreatureController.submit(

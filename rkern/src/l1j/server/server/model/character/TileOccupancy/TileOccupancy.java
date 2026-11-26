@@ -6,7 +6,7 @@ import java.util.concurrent.locks.StampedLock;
 import org.agrona.collections.Long2LongHashMap;
 
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -430,7 +430,7 @@ public final class TileOccupancy {
     public boolean isGhostOccupier(int occupierId) {
         if (occupierId == 0) return true;
 
-        L1Object obj = L1World.getInstance().findObject(occupierId);
+        L1Object obj = CWorld.getInstance().findObject(occupierId);
         if (obj == null) return true;
 
         if (obj instanceof L1PcInstance) {

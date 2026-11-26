@@ -10,7 +10,7 @@ import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 
@@ -89,7 +89,7 @@ public class L1PeopleInstance extends L1NpcInstance {
 			pauseForDialog();
 		}
 
-		L1Object obj = L1World.getInstance().findObject(objid);
+		L1Object obj = CWorld.getInstance().findObject(objid);
 		String npcName = ((L1NpcInstance) obj).getNpcTemplate().get_name();
 
 		if (talking != null) {

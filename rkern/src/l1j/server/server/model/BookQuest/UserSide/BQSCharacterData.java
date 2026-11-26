@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
 import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
@@ -184,7 +184,7 @@ public class BQSCharacterData {
 //            cardList.append(c.get_criteria_id()).append("(").append(c.get_amount()).append("/").append(c.get_required_amount()).append(") ");
 //        System.out.println("[T6] deck=" + difficulty + " cards=[" + cardList + "]");
         
-        L1PcInstance pc = (L1PcInstance)L1World.getInstance().findObject(_object_id);
+        L1PcInstance pc = (L1PcInstance)CWorld.getInstance().findObject(_object_id);
         if(pc == null)
             return;
 
@@ -224,7 +224,7 @@ public class BQSCharacterData {
             return;
         }
 
-        L1PcInstance pc = (L1PcInstance) L1World.getInstance().findObject(_object_id);
+        L1PcInstance pc = (L1PcInstance) CWorld.getInstance().findObject(_object_id);
 
         // =========================================================
         // 몬스터 도감 단계 버그 확인 로그

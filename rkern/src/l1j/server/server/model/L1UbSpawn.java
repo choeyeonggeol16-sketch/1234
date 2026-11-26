@@ -135,9 +135,9 @@ public class L1UbSpawn implements Comparable<L1UbSpawn> {
 		mob.setUbSealCount(getSealCount());
 		mob.setUbId(getUbId());
 
-		L1World.getInstance().storeAndEnterWorld(mob);
+		CWorld.getInstance().storeAndEnterWorld(mob);
 
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(mob)) {
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(mob)) {
 		    if (pc == null || pc.knownsObject(mob)) continue;
 		    if (SC_WorldPutObject.get(pc.getNetConnection(), mob)) {
 		        pc.addKnownObject(mob);

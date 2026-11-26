@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.inventory.CInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -269,7 +269,7 @@ public final class CS_DropItem {
         }
 
         final L1GroundInventory ground =
-                L1World.getInstance().getInventory(
+                CWorld.getInstance().getInventory(
                         x,
                         y,
                         (short) mapId);

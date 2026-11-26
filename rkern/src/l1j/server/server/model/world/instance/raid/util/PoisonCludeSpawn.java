@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.templates.L1Npc;
 
 public class PoisonCludeSpawn implements Runnable{
@@ -59,7 +59,7 @@ public class PoisonCludeSpawn implements Runnable{
 					npc.setHomeY(cy + col);
 					npc.setHeading(0);
 					npc.setMap((short)mid);
-					L1World.getInstance().storeAndEnterWorld(npc);
+					CWorld.getInstance().storeAndEnterWorld(npc);
 					npc.startTimedDelete(_duration);
 					if(_cha instanceof L1MonsterInstance)
 						npc.setOwner((L1MonsterInstance)_cha);

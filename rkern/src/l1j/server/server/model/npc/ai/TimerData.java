@@ -1,6 +1,6 @@
 package l1j.server.server.model.npc.ai;
 
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -81,7 +81,7 @@ public final class TimerData {
         if (isWorldChat) {
             try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
     SC_NpcChatPacket.nativeNpcWriter(npc,chatId,3),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                 if (pc != null) {
                     l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
                 }

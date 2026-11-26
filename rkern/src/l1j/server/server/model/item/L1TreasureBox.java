@@ -25,7 +25,7 @@ import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1ItemDelay;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1EtcItem;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -346,7 +346,7 @@ public class L1TreasureBox {
                                int itemId,int count,int enchant,int attr,int bless,
                                int minutes,long now,boolean randomReward) {
         if(count<=0) throw new IllegalStateException("Nonpositive treasure reward: "+itemId);
-        // Never register a speculative reward in L1World before its DB receipt.
+        // Never register a speculative reward in CWorld before its DB receipt.
         // ItemTable.createItem() publishes immediately and leaves a ghost on rollback.
         final l1j.server.server.templates.L1Item template=CObjectDB.GetItem(itemId);
         if(template==null) throw new IllegalStateException("Missing treasure reward: "+itemId);

@@ -15,7 +15,7 @@ import l1j.server.server.model.Instance.CItemList;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.Warehouse;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.search.inventory.InventoryFindItemFilter;
@@ -278,7 +278,7 @@ public class CInventory extends L1Object {
 
 	/** The newly allocated object belongs to this creation path until insertion succeeds. */
 	private L1ItemInstance registerCreatedItem(L1ItemInstance item) {
-		final L1World world = L1World.getInstance();
+		final CWorld world = CWorld.getInstance();
 		try {
 			world.storeObject(item);
 			final L1ItemInstance stored = CreateOrAddItem(item);
@@ -397,7 +397,7 @@ public class CInventory extends L1Object {
         }
         if (localNew) {
             item.setId(IdFactory.getInstance().nextId());
-            final L1World world = L1World.getInstance();
+            final CWorld world = CWorld.getInstance();
             try {
                 world.storeObject(item);
                 insertLinkedItem(item);
@@ -570,7 +570,7 @@ public class CInventory extends L1Object {
                     LetterTable.getInstance().deleteLetter(item.getId());
 			} else if (itemId >= 41383 && itemId <= 41400) {
 				L1FurnitureInstance furniture = null;
-				for (L1Object l1object : L1World.getInstance().getObject()) {
+				for (L1Object l1object : CWorld.getInstance().getObject()) {
 					if (l1object == null)
 						continue;
 					if (l1object instanceof L1FurnitureInstance) {
@@ -582,7 +582,7 @@ public class CInventory extends L1Object {
 				}
 			}
 			Pop(item);
-			L1World.getInstance().removeObject(item);
+			CWorld.getInstance().removeObject(item);
 		} else {
 			changeStackCount(item, -count);
 		}
@@ -606,7 +606,7 @@ public class CInventory extends L1Object {
                 || fee.getCount() < amount || !fee.isStackable()) return false;
         if (fee.getCount() == amount) {
             Pop(fee);
-            L1World.getInstance().removeObject(fee);
+            CWorld.getInstance().removeObject(fee);
         } else {
             removeItemCountCache(fee.getItemId(), amount);
             fee.setCount(fee.getCount() - amount);
@@ -639,7 +639,7 @@ public class CInventory extends L1Object {
                 _items.Pop(fee);
                 throw e;
             }
-            L1World.getInstance().storeObject(fee);
+            CWorld.getInstance().storeObject(fee);
         } else {
             throw new IllegalStateException("Fee item identity changed during rollback");
         }
@@ -829,10 +829,10 @@ public class CInventory extends L1Object {
         }
         // A pickup may retire the tile between lookup and lock acquisition.
         if (this instanceof L1GroundInventory
-                && L1World.getInstance().findGroundInventory(getX(), getY(), getMapId()) != this)
+                && CWorld.getInstance().findGroundInventory(getX(), getY(), getMapId()) != this)
             return null;
         if (inventory instanceof L1GroundInventory
-                && L1World.getInstance().findGroundInventory(inventory.getX(), inventory.getY(),
+                && CWorld.getInstance().findGroundInventory(inventory.getX(), inventory.getY(),
                         inventory.getMapId()) != inventory) return null;
         if (inventory instanceof CUserInventory) {
             final boolean chargeMerge = !item.isStackable() && Warehouse.chargeMergeItem(item.getItemId())
@@ -862,7 +862,7 @@ public class CInventory extends L1Object {
             // Use the existing transfer snapshot so split items retain all
             // persistent attributes, including expiry, package and key data.
             carryItem = allocateTransferCarry(item, count, inventory instanceof L1GroundInventory);
-            final L1World world = L1World.getInstance();
+            final CWorld world = CWorld.getInstance();
             try {
                 world.storeObject(carryItem);
                 changeStackCount(item, -count);
@@ -894,7 +894,7 @@ public class CInventory extends L1Object {
             if (carryItem == item && this instanceof L1GroundInventory ground)
                 ground.finishGroundTransfer(item);
             // Merged carry has no inventory owner; retire its world ID.
-            if (stored != carryItem) L1World.getInstance().removeObject(carryItem);
+            if (stored != carryItem) CWorld.getInstance().removeObject(carryItem);
 			return stored;
 		}
 
@@ -912,13 +912,13 @@ public class CInventory extends L1Object {
                 try {
                     changeStackCount(item, count);
                 } finally {
-                    L1World.getInstance().removeObject(carryItem);
+                    CWorld.getInstance().removeObject(carryItem);
                 }
             }
         } catch (RuntimeException recovery) {
             // A detached full-transfer object must not remain in the world index.
             if (carryItem == item && !_items.Have(item)) {
-                try { L1World.getInstance().removeObject(item); }
+                try { CWorld.getInstance().removeObject(item); }
                 catch (RuntimeException cleanup) { recovery.addSuppressed(cleanup); }
             }
             throw new TransferRecoveryFailure(recovery, transferFailure);
@@ -945,7 +945,7 @@ public class CInventory extends L1Object {
             L1ItemInstance item, int count) {
         assert Thread.holdsLock(this) && Thread.holdsLock(ground);
         final CInventory dest = ground;
-        final L1World world = L1World.getInstance();
+        final CWorld world = CWorld.getInstance();
         final boolean full = count == item.getCount();
         final int oldX = item.getX(), oldY = item.getY();
         final short oldMap = item.getMapId();
@@ -1269,7 +1269,7 @@ public class CInventory extends L1Object {
 			item = (L1ItemInstance) itemObject;
 			if (item == null || item.getItemId() == InnHelper.INN_KEYID)
 				continue;
-			L1World.getInstance().removeObject(item);
+			CWorld.getInstance().removeObject(item);
 		}
 		_items.clear();
 	}
@@ -1301,7 +1301,7 @@ public class CInventory extends L1Object {
         for (L1ItemInstance item : selected) {
             if (!_items.Have(item)) continue;
             Pop(item);
-            if (!_items.Have(item)) L1World.getInstance().removeObject(item);
+            if (!_items.Have(item)) CWorld.getInstance().removeObject(item);
         }
     }
 

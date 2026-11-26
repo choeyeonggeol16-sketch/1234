@@ -13,7 +13,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.world.effect.L1EffectSpawn;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
@@ -33,7 +33,7 @@ final class ShadowBindingItemEffect {
     public static void 쉐도우(L1PcInstance pc, int targetId, L1ItemInstance item) {
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
-        L1Object target = L1World.getInstance().findObject(targetId);
+        L1Object target = CWorld.getInstance().findObject(targetId);
         if ((pc.getType() == 4 && pc.getLevel() >= 80) || pc.isGm()) {
             if (target != null) {
                 if (target instanceof L1PcInstance) {

@@ -11,7 +11,7 @@ import l1j.server.server.model.BookQuest.BQSWQUpdator;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterCriteriaProgress;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -186,7 +186,7 @@ public class BQSLoadManager implements Command{
             @Override
             protected void to_handle_command(CommandArgs args) throws Exception{
                 String character_name = args.nextString();
-                L1PcInstance pc = L1World.getInstance().getPlayer(character_name);
+                L1PcInstance pc = CWorld.getInstance().getPlayer(character_name);
                 L1PcInstance gm = args.getOwner();
                 if(pc == null){
                     args.notify("케릭터 이름 %s을(를) 찾을 수 없습니다.");
@@ -228,7 +228,7 @@ public class BQSLoadManager implements Command{
                         try{
                             try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
        SC_SystemMessage.nativeWriter(message),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
+for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
                                 if(pc == null)
                                     continue;
                                 
@@ -285,7 +285,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
             @Override
             protected void to_handle_command(CommandArgs args) throws Exception{
                 String character_name = args.nextString();
-                L1PcInstance pc = L1World.getInstance().getPlayer(character_name);
+                L1PcInstance pc = CWorld.getInstance().getPlayer(character_name);
                 L1PcInstance gm = args.getOwner();
                 if(pc == null){
                     args.notify("케릭터 이름 %s을(를) 찾을 수 없습니다.");
@@ -352,7 +352,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
                 int criteria_id = args.nextInt();
                 int count = args.nextInt();
                 L1PcInstance gm = args.getOwner();
-                L1PcInstance pc = L1World.getInstance().getPlayer(character_name);
+                L1PcInstance pc = CWorld.getInstance().getPlayer(character_name);
                 if(pc == null){
                     args.notify("케릭터 이름 %s을(를) 찾을 수 없습니다.");
                     return;
@@ -411,7 +411,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
                     BQSWQInformationLoader.reload();
                     BQSWQRewardsLoader.reload();
                     BQSWQDecksLoader.truncate();
-                    BQSCharacterDataLoader.deleteCharactersBps(L1World.getInstance().getAllPlayers());
+                    BQSCharacterDataLoader.deleteCharactersBps(CWorld.getInstance().getAllPlayers());
                     BQSWQDecksLoader.reload();
                     truncateBqsUpdateCalendar();
                     BQSWQUpdator.getInstance().update_listener();

@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1FieldObjectInstance;
 import l1j.server.server.templates.L1Npc;
 
@@ -60,7 +60,7 @@ public class LightSpawnTable {
 						field.setHeading(0);
 						field.setLightSize(l1npc.getLightSize());
 
-						L1World.getInstance().storeAndEnterWorld(field);
+						CWorld.getInstance().storeAndEnterWorld(field);
 					} catch (Exception e) {
 						_log.log(Level.SEVERE, "Light instantiation error for npcId: " + npcId, e);
 					}

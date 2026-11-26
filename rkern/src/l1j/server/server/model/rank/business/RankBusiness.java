@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
@@ -102,7 +102,7 @@ public class RankBusiness implements TimeListener{
             _accumulate_second = 0;
             requestRefresh();
             if (Config.멘트온오프) {
-                L1World.getInstance().broadcastServerMessage(Config.랭킹멘트);
+                CWorld.getInstance().broadcastServerMessage(Config.랭킹멘트);
             }
         } else if (_refreshPending) {
             // A rejected admission is retried by the existing clock, not inline.

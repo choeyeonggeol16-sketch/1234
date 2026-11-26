@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
@@ -104,7 +104,7 @@ class OrimFight extends Thread {
 
 	private void getOwnNpc() {
 		L1NpcInstance npc = null;
-		for (L1Object obj : L1World.getInstance().getObject())
+		for (L1Object obj : CWorld.getInstance().getObject())
 			if ((obj instanceof L1NpcInstance)) {
 				npc = (L1NpcInstance) obj;
 				if (npc.getNpcId() == 91235)
@@ -147,7 +147,7 @@ class OrimFight extends Thread {
 
 		L1NpcInstance Npc = null;
 
-		Iterator<L1Object> localIterator = L1World.getInstance().getVisibleObjects(9101).values().iterator();
+		Iterator<L1Object> localIterator = CWorld.getInstance().getVisibleObjects(9101).values().iterator();
 
 		while (localIterator.hasNext()) {
 			Object obj = localIterator.next();

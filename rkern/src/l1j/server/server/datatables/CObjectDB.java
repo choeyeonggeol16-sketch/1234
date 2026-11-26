@@ -53,7 +53,7 @@ import l1j.server.server.model.Instance.L1SignboardInstance;
 import l1j.server.server.model.Instance.L1TeleporterInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.search.template.TableFindItemFilter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftOutputItem;
 import l1j.server.server.templates.L1Armor;
@@ -150,7 +150,7 @@ public final class CObjectDB {
         item.setItem(template);
         item.setBless(template.getBless());
         if (setIdentified) item.setIdentified(identified);
-        L1World.getInstance().storeObject(item);
+        CWorld.getInstance().storeObject(item);
         return item;
     }
 

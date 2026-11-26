@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.statistics.Kda;
 import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
@@ -99,7 +99,7 @@ public class KdaChartUpdator {
 //				}
 				
 				if(_pck != null){
-                    Collection<L1PcInstance> cols=L1World.getInstance().getAllPlayers();
+                    Collection<L1PcInstance> cols=CWorld.getInstance().getAllPlayers();
                     final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter wire=SC_ChartRank.nativeWriter(_pck);
                     if(wire!=null){
                         try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(

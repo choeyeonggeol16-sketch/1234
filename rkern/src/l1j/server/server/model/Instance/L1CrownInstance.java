@@ -3,7 +3,7 @@ package l1j.server.server.model.Instance;
 
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -40,7 +40,7 @@ public class L1CrownInstance extends L1NpcInstance {
 				return;
 			} 
 			
-			clan = L1World.getInstance().getClan(player.getClanid());
+			clan = CWorld.getInstance().getClan(player.getClanid());
 			if(clan == null || clan.getLeaderId() != player.getId())
 				return;
 			else if(clan.getCastleId() != 0){
@@ -73,12 +73,12 @@ public class L1CrownInstance extends L1NpcInstance {
 		}
 		allTargetClear();
 		_master = null;
-		L1World.getInstance().removeVisibleObject(this);
-		L1World.getInstance().removeObject(this);
+		CWorld.getInstance().removeVisibleObject(this);
+		CWorld.getInstance().removeObject(this);
 		try {
 		try (var sharedRemove = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 		        SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 			if (pc == null) {
 				continue;
 			}

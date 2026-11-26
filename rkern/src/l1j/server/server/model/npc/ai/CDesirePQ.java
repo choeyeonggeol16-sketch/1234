@@ -8,7 +8,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 
 /**
@@ -1487,7 +1487,7 @@ public final class CDesirePQ {
         }
 
         final L1Object obj =
-                L1World.getInstance()
+                CWorld.getInstance()
                         .findObject(targetId);
 
         return obj instanceof L1Character

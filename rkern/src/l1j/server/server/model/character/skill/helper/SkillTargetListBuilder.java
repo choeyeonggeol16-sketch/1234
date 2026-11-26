@@ -9,7 +9,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
@@ -60,7 +60,7 @@ public enum SkillTargetListBuilder {
 
         // ===== LIGHTNING: 선형 타겟 =====
         if (su.tlSkillId() == L1SkillId.LIGHTNING) {
-            final List<L1Object> olist = L1World.getInstance().getVisibleLineObjects(user, target);
+            final List<L1Object> olist = CWorld.getInstance().getVisibleLineObjects(user, target);
             if (olist == null || olist.isEmpty()) return;
 
             for (int i = 0, n = olist.size(); i < n; i++) {
@@ -192,9 +192,9 @@ public enum SkillTargetListBuilder {
 
         try {
             if (area == -1) {
-                L1World.getInstance().fillVisibleObjectsLimit(su.tlUser(), -1, lim, out);
+                CWorld.getInstance().fillVisibleObjectsLimit(su.tlUser(), -1, lim, out);
             } else {
-                L1World.getInstance().fillVisibleObjectsLimit(su.tlTarget(), area, lim, out);
+                CWorld.getInstance().fillVisibleObjectsLimit(su.tlTarget(), area, lim, out);
             }
             return out;
         } catch (Throwable t) {

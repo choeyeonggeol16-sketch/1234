@@ -7,7 +7,7 @@ import java.util.List;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
@@ -27,7 +27,7 @@ public final class SC_ShopBuyList {
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
 
-        final L1Object object = L1World.getInstance().findObject(objid);
+        final L1Object object = CWorld.getInstance().findObject(objid);
         if (!(object instanceof L1NpcInstance)) {
             throw new IllegalArgumentException(String.format(
                     "알 수 없는 오브젝트가 상점 구매목록으로 전송되었습니다.[objectid : %d, L1Object : %d]",

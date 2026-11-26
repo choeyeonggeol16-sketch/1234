@@ -4,7 +4,7 @@ import java.util.TimerTask;
 import l1j.server.server.model.network.thread.CServerTimer;
 
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 
@@ -44,7 +44,7 @@ public class BossTraining extends TimerTask {
 
 	@Override
 	public void run() {
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(mapId).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(mapId).values()) {
 			if (obj instanceof L1NpcInstance npc) {
 				npc.deleteMe();
 			} else if (obj instanceof L1PcInstance pc) {

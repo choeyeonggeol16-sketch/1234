@@ -14,7 +14,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.SkillCheck;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1Skills;
 
@@ -132,7 +132,7 @@ public class SkillsTable {
 			}
 		});
 		// No in-memory grant on admission refusal; the caller may retry.
-		L1Object obj = L1World.getInstance().findObject(playerobjid);
+		L1Object obj = CWorld.getInstance().findObject(playerobjid);
 		if (obj instanceof L1PcInstance) ((L1PcInstance) obj).setSkillMastery(skillid);
 		SkillCheck.getInstance().AddSkill(playerobjid, skillid);
 	}
@@ -151,7 +151,7 @@ public class SkillsTable {
 			}
 		});
 		// Do not remove skill from memory when the write was not admitted.
-		L1Object obj = L1World.getInstance().findObject(playerobjid);
+		L1Object obj = CWorld.getInstance().findObject(playerobjid);
 		if (obj instanceof L1PcInstance) ((L1PcInstance) obj).removeSkillMastery(skillid);
 		SkillCheck.getInstance().DelSkill(playerobjid, skillid);
 	}
@@ -160,7 +160,7 @@ public class SkillsTable {
 		// Online characters already own the authoritative loaded mastery list.
 		// A frequent packet-side skill check must not block an IOCP/NIO.2 worker
 		// waiting on a JDBC SELECT. Offline/GM lookups retain the DB fallback.
-		L1Object obj = L1World.getInstance().findObject(playerobjid);
+		L1Object obj = CWorld.getInstance().findObject(playerobjid);
 		if (obj instanceof L1PcInstance)
 			return ((L1PcInstance) obj).isSkillMastery(skillid);
 		try (Connection con = DatabaseFactory.getInstance().getConnection();

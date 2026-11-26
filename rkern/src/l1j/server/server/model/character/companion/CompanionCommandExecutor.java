@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.basic.buff.CompanionBuffInfo;
 import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
 import l1j.server.server.model.character.companion.basic.exp.CompanionExpPenalty;
@@ -73,7 +73,7 @@ public class CompanionCommandExecutor implements Command{
 	}
 	
 	private L1CompanionInstance find_companion(CommandArgs args, String name) throws CommandArgsIndexException{
-		L1PcInstance pc = L1World.getInstance().findpc(name);
+		L1PcInstance pc = CWorld.getInstance().getPlayer(name);
 		if(pc == null){
 			args.notify(String.format("%s님을 찾을 수 없습니다.", name));
 			return null;
@@ -196,7 +196,7 @@ public class CompanionCommandExecutor implements Command{
 			switch(args.nextInt()){
 			case 1:{
 				CompanionClassInfo.do_load();
-				for(L1CompanionInstance companion : L1World.getInstance().getAllCompanions()){
+				for(L1CompanionInstance companion : CWorld.getInstance().getAllCompanions()){
 					if(companion == null)
 						continue;
 						
@@ -223,7 +223,7 @@ public class CompanionCommandExecutor implements Command{
 			}
 			case 5:{
 				CompanionSkillInfo.do_load();
-				for(L1CompanionInstance companion : L1World.getInstance().getAllCompanions()){
+				for(L1CompanionInstance companion : CWorld.getInstance().getAllCompanions()){
 					if(companion == null)
 						continue;
 					
@@ -245,7 +245,7 @@ public class CompanionCommandExecutor implements Command{
 			}
 			case 8:{
 				CompanionStatEffect.do_load();
-				for(L1CompanionInstance companion : L1World.getInstance().getAllCompanions()){
+				for(L1CompanionInstance companion : CWorld.getInstance().getAllCompanions()){
 					if(companion == null)
 						continue;
 					

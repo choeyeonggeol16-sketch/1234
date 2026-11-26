@@ -21,7 +21,7 @@ import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.ReportTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -312,7 +312,7 @@ public final class CS_Channel {
 
     private static void handleAutoReport(L1PcInstance pc, int objid) {
         if (pc == null || pc.getNetConnection() == null) return;
-        final L1Object obj = L1World.getInstance().findObject(objid);
+        final L1Object obj = CWorld.getInstance().findObject(objid);
         if (!(obj instanceof L1PcInstance)) return;
         final L1PcInstance target = (L1PcInstance) obj;
         if (target.isGm()) {
@@ -356,7 +356,7 @@ public final class CS_Channel {
        SC_SystemMessage.nativeWriter("\\fY 피신고자 : " + targetName),Integer.MIN_VALUE,Integer.MAX_VALUE);
  var shared2=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
        SC_SystemMessage.nativeWriter("\\fY해당 유저를 소환하여 취조하길 바랍니다."),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
+for (L1PcInstance gm : CWorld.getInstance().getAllPlayers()) {
                         if (gm.isGm()) {
                             l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared0,gm);
                             l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared1,gm);
@@ -386,14 +386,14 @@ for (L1PcInstance gm : L1World.getInstance().getAllPlayers()) {
                 || pc.isGhost() || pc.isItemTransferBusy() || pc.isTradeResolving()) return;
         String seller=name.strip();
         if (seller.isEmpty() || seller.length()>32) return;
-        final L1PcInstance merchant=L1World.getInstance().getPlayer(seller);
+        final L1PcInstance merchant=CWorld.getInstance().getPlayer(seller);
         final L1Object target;
         if (merchant!=null && merchant!=pc && merchant.getMapId()==800
                 && merchant.isPrivateShop()) {
             target=merchant;
         } else {
             // Preserve the existing NPC merchant-search behavior as well.
-            L1NpcShopInstance npc=L1World.getInstance().getShopNpc(seller);
+            L1NpcShopInstance npc=CWorld.getInstance().getShopNpc(seller);
             if (npc==null || npc.getMapId()!=800 || npc.getState()!=1) {
                 SC_SystemMessage.send(pc,"상인찾기 : 현재 판매 중인 상인이 없습니다.");
                 return;
@@ -569,7 +569,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
             return;
         }
 
-        final L1PcInstance target = L1World.getInstance().getPlayer(targetName);
+        final L1PcInstance target = CWorld.getInstance().getPlayer(targetName);
 
         if (target == null) {
             SC_ServerMessage.send(pc, 1782);

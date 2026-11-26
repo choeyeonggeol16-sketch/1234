@@ -423,7 +423,7 @@ public class L1Character extends L1Object {
             final int position = actor.GetMyPositionFrom(this);
             final int leaderId = GetAttackLeaderId(position);
             final L1Object leaderObject = leaderId == 0
-                    ? null : L1World.getInstance().findObject(leaderId);
+                    ? null : CWorld.getInstance().findObject(leaderId);
             if (leaderObject instanceof L1MonsterInstance
                     && leaderObject != actor) {
                 final L1MonsterInstance leader = (L1MonsterInstance) leaderObject;
@@ -598,7 +598,7 @@ public class L1Character extends L1Object {
 	    L1PolyMorph.undoPoly(this);
 
 	    for (L1PcInstance pc :
-	            L1World.getInstance().getRecognizePlayer(this)) {
+	            CWorld.getInstance().getRecognizePlayer(this)) {
 
 	        if (pc == null) {
 	            continue;

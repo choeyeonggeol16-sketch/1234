@@ -6,7 +6,7 @@ import l1j.server.server.BadNamesList;
 import l1j.server.server.datatables.ClanBuffTable;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -68,7 +68,7 @@ public final class CS_CreatePledge {
         /*
          * 동일 이름 검사.
          */
-        if (L1World.getInstance().findClan(clanName) != null) {
+        if (CWorld.getInstance().findClan(clanName) != null) {
             SC_ServerMessage.send(pc, 99);
             return;
         }

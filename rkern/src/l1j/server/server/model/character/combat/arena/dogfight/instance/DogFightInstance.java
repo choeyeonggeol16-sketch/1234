@@ -13,7 +13,7 @@ import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
@@ -225,8 +225,8 @@ public class DogFightInstance extends L1NpcInstance{
 			startAI();
 	}
 	public void do_store_object(){
-		L1World.getInstance().storeAndEnterWorld(this);
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) {
+		CWorld.getInstance().storeAndEnterWorld(this);
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) {
 			onPerceive(pc);
 		}
 	}

@@ -2,7 +2,7 @@ package l1j.server.server.model.inventory;
 
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.Warehouse;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -124,7 +124,7 @@ final class WarehouseDepositTransaction {
                                             if (result == null)
                                                 throw new IllegalStateException("Warehouse batch memory replay failed item=" + ids[i]);
                                             if (move.replayCarry(ids[i]) == result)
-                                                L1World.getInstance().storeObject(result);
+                                                CWorld.getInstance().storeObject(result);
                                         }
                                     });
                                     for (int i = 0; i < size; i++)
@@ -213,7 +213,7 @@ final class WarehouseDepositTransaction {
                                 if (applied == null)
                                     throw new IllegalStateException("Warehouse deposit replay failed");
                                 if (move.replayCarry() == applied)
-                                    L1World.getInstance().storeObject(applied);
+                                    CWorld.getInstance().storeObject(applied);
                             });
                         }
                     }
@@ -304,7 +304,7 @@ final class WarehouseDepositTransaction {
         }
         if (stored != null) {
             move.commit();
-            if (carryItem == item && stored != item) L1World.getInstance().removeObject(item);
+            if (carryItem == item && stored != item) CWorld.getInstance().removeObject(item);
             return stored;
         }
 

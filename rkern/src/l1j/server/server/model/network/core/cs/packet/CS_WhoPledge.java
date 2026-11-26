@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
@@ -41,7 +41,7 @@ public final class CS_WhoPledge {
                 return;
             }
 
-            final L1Clan clan = L1World.getInstance().getClan(clanId);
+            final L1Clan clan = CWorld.getInstance().getClan(clanId);
 
             if (clan == null) {
                 return;

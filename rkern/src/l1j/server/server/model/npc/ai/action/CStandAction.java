@@ -4,7 +4,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 
 /**
  * 정지 상태 action.
@@ -81,7 +81,7 @@ public final class CStandAction {
                 CCreatureController.sleep(creature, GUARD_RETRY_MS);
                 return CCreatureController.RESULT_DONE;
             }
-            if (!L1World.getInstance().hasRecognizePlayerFast(creature)) {
+            if (!CWorld.getInstance().hasRecognizePlayerFast(creature)) {
                 return CCreatureController.RESULT_DONE;
             }
             // guard_stand MOVE_TO_FINISHED -> AddDoNothingDesire(40, 30).

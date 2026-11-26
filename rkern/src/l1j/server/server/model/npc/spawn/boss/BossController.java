@@ -16,7 +16,7 @@ import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
@@ -354,7 +354,7 @@ public final class BossController {
         }
         if ("끔".equals(action)) {
             shopAlarmsEnabled = false;
-            for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+            for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                 if (pc != null) SC_ActionUI.removeShopEvents(pc);
             }
             broadcastBossEventSnapshot();
@@ -369,7 +369,7 @@ public final class BossController {
                 SC_SystemMessage.send(gm, "[이벤트상점] NPC 템플릿 번호를 입력하세요.");
                 return;
             }
-            final L1NpcInstance npc = L1World.getInstance().findNpcByNpcId(npcTemplateId);
+            final L1NpcInstance npc = CWorld.getInstance().findNpcByNpcId(npcTemplateId);
             if (npc == null || npc.isDestroyed() || npc.isDead()) {
                 SC_SystemMessage.send(gm, "[이벤트상점] 월드에 살아 있는 NPC를 찾지 못했습니다: " + npcTemplateId);
                 return;
@@ -412,7 +412,7 @@ public final class BossController {
         final List<SC_ActionUI.EventEntry> snapshot = getBossEventSnapshot();
         final SC_ActionUI.ShopEntry aden = shopAlarmsEnabled ? adenShop : null;
         final SC_ActionUI.ShopEntry general = shopAlarmsEnabled ? generalShop : null;
-        for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+        for (final L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
             if (pc != null) {
                 SC_ActionUI.sendEvents(pc, SC_ActionUI.EVENT_SYSTEM, snapshot, aden, general);
             }
@@ -487,7 +487,7 @@ public final class BossController {
                     || npc.getNpcId() == 900036 || npc.getNpcId() == 900219) {
                 try (var sharedAction = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                         SC_DoActionGFX.nativeWriter(npc.getId(), ActionCodes.ACTION_AxeWalk), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-                    for (L1PcInstance pc : L1World.getInstance().getVisiblePlayerFast(npc)) {
+                    for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayerFast(npc)) {
                         npc.onPerceive(pc);
                         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedAction, pc);
                     }
@@ -501,7 +501,7 @@ public final class BossController {
             npc.setHomeY(npc.getY());
             npc.setHeading(5);
 
-            L1World.getInstance().storeAndEnterWorld(npc);
+            CWorld.getInstance().storeAndEnterWorld(npc);
 
             sendBossEventSystem(npc);
 
@@ -519,7 +519,7 @@ public final class BossController {
                  SC_MessageYN.nativeIndexedWriter(
                       CS_Attr.MSGCODE_622_BOSS,622,b.getYnMessage()),
                  Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+for (final L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                         if (pc == null || pc.isPrivateShop() || !pc.isBossNotify()
                                 || !pc.is_world() || !pc.getMap().isEscapable()) {
                             continue;
@@ -535,7 +535,7 @@ for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
                 CWorldWork.scheduleRequiredOnWorldClock(new Runnable() {
                     @Override
                     public void run() {
-                        for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+                        for (final L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                             if (pc != null && pc.getBossYN() == spawnedNpcId) {
                                 pc.setBossYN(0);
                             }

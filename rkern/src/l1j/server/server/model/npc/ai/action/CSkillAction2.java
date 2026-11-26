@@ -5,7 +5,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1PolyMorph;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -264,7 +264,7 @@ public final class CSkillAction2 {
         boolean usePoly = false;
 
         for (L1PcInstance pc :
-                L1World.getInstance().getVisiblePlayer(attacker)) {
+                CWorld.getInstance().getVisiblePlayer(attacker)) {
 
             if (pc == null || pc.isDead()) {
                 continue;
@@ -297,7 +297,7 @@ public final class CSkillAction2 {
 
         if (usePoly) {
             for (L1PcInstance pc :
-                    L1World.getInstance().getVisiblePlayer(attacker)) {
+                    CWorld.getInstance().getVisiblePlayer(attacker)) {
 
                 if (pc == null) {
                     continue;
@@ -739,7 +739,7 @@ public final class CSkillAction2 {
 
         if (e.areaHeight > 0) {
             final ArrayList<L1Object> olist =
-                    L1World.getInstance()
+                    CWorld.getInstance()
                             .getVisibleBoxObjects(
                                     attacker,
                                     attacker.getHeading(),
@@ -999,7 +999,7 @@ public final class CSkillAction2 {
         final int family =
                 attacker.getNpcTemplate().get_family();
 
-        final ArrayList<L1Object> objects = L1World.getInstance().getVisibleObjects(attacker);
+        final ArrayList<L1Object> objects = CWorld.getInstance().getVisibleObjects(attacker);
         for (int i = 0, size = objects.size(); i < size; i++) {
             final L1Object object = objects.get(i);
 
@@ -1115,7 +1115,7 @@ public final class CSkillAction2 {
                     ThreadLocalRandom.current()
                             .nextInt(8));
 
-            L1World.getInstance().storeAndEnterWorld(mob);
+            CWorld.getInstance().storeAndEnterWorld(mob);
 
             if (mob instanceof L1MonsterInstance) {
                 final L1MonsterInstance newnpc =
@@ -1180,7 +1180,7 @@ public final class CSkillAction2 {
             L1Character picked = null;
             int seen = 0;
 
-            final ArrayList<L1Object> objects = L1World.getInstance().getVisibleObjects(attacker);
+            final ArrayList<L1Object> objects = CWorld.getInstance().getVisibleObjects(attacker);
             for (int i = 0, size = objects.size(); i < size; i++) {
                 final L1Object obj = objects.get(i);
 

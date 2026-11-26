@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.TownTable;
 import l1j.server.server.storage.cached.CTransaction;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.L1GameTime;
 import l1j.server.server.model.gametime.L1GameTimeAdapter;
@@ -81,7 +81,7 @@ public class HomeTownTimeController {
      * resets or leader notifications before that transaction commits. */
     public synchronized void monthlyProc() {
         _log.info("홈 타운 시스템：월시 처리 개시");
-        L1World.getInstance().setProcessingContributionTotal(true);
+        CWorld.getInstance().setProcessingContributionTotal(true);
         try {
             final String[] leaders = new String[11];
             try (Connection con = DatabaseFactory.getInstance().getConnection()) {
@@ -113,7 +113,7 @@ public class HomeTownTimeController {
                 if (leader == null) continue;
                 try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
 SC_PacketBox.nativeTownLeaderWriter(leader),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                     if (pc != null && pc.getHomeTownId() == townId) {
                         pc.setContribution(0);
                         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
@@ -122,7 +122,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 }
             }
             TownTable.getInstance().load();
-            for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+            for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
                 if (pc == null) continue;
                 if (pc.getHomeTownId() == -1) pc.setHomeTownId(0);
                 pc.setContribution(0);
@@ -133,7 +133,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
                 }
             }
         } finally {
-            L1World.getInstance().setProcessingContributionTotal(false);
+            CWorld.getInstance().setProcessingContributionTotal(false);
         }
     }
 

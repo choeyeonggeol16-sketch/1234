@@ -14,7 +14,7 @@ import org.jctools.queues.MpscArrayQueue;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.CNpcMaker;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.npc.ai.action.CCreatureController;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
@@ -853,7 +853,7 @@ public final class CNPCServer {
                         event.npc.processCorpseDelete(event.generation, event.smartId);
                         break;
                     case EVENT_TIMER:
-                        if (L1World.getInstance().findObjectBySmartId(event.smartId) == event.npc
+                        if (CWorld.getInstance().findObjectBySmartId(event.smartId) == event.npc
                                 && !event.npc.handleCorpseDeleteTimer(event.timerId, event.generation)
                                 && !event.npc.handleDigestTimer(event.timerId, event.generation)) {
                             event.npc.TimerExpired(event.timerId, event.generation);

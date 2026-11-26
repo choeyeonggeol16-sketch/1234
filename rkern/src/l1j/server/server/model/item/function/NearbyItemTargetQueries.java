@@ -12,7 +12,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -69,7 +69,7 @@ public final class NearbyItemTargetQueries {
 	public static ArrayList<L1NpcInstance> get어드밴스1(L1Object object, int radius) {
 		int map = object.getMapId();
 		Point pt = object.getLocation();
-		Collection<L1NpcInstance> pc1 = L1World.getInstance().getAllNpc();
+		Collection<L1NpcInstance> pc1 = CWorld.getInstance().getAllNpc();
 		ArrayList<L1NpcInstance> result = null;
 		if(radius < 0)
 			result = new ArrayList<L1NpcInstance>(19 * 4);
@@ -99,7 +99,7 @@ public final class NearbyItemTargetQueries {
 	public static ArrayList<L1PcInstance> get어드밴스(L1PcInstance pc, L1Object object, int radius) {
 		int map = object.getMapId();
 		Point pt = object.getLocation();
-		Collection<L1PcInstance> pc1 = L1World.getInstance().getAllPlayers();
+		Collection<L1PcInstance> pc1 = CWorld.getInstance().getAllPlayers();
 		ArrayList<L1PcInstance> result = null;
 		if(radius < 0)
 			result = new ArrayList<L1PcInstance>(19 * 4);

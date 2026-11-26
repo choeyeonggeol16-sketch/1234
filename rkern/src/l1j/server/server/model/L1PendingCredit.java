@@ -73,7 +73,7 @@ public final class L1PendingCredit {
      * login performs authoritative recovery if the current session is busy.
      */
     public static void notifyOnline(int characterId) {
-        L1Object object=L1World.getInstance().findObject(characterId);
+        L1Object object=CWorld.getInstance().findObject(characterId);
         if(!(object instanceof L1PcInstance))return;
         final L1PcInstance pc=(L1PcInstance)object;
         final int stamp=pc.getSessionStamp();

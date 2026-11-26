@@ -9,7 +9,7 @@ import java.util.TimeZone;
 import l1j.server.Config;
 import l1j.server.server.auth.captcha.Captcha;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_Ability;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.shared.PropertyReader;
@@ -171,7 +171,7 @@ public class CaptchaLoadManager implements Command{
 			@Override
 			protected void to_handle_command(CommandArgs args) throws Exception{
 				String character_name = args.nextString();
-				L1PcInstance pc = L1World.getInstance().getPlayer(character_name);
+				L1PcInstance pc = CWorld.getInstance().getPlayer(character_name);
 				if(pc == null){
 					args.notify("케릭터 이름 %s을(를) 찾을 수 없습니다.");
 					return;
@@ -194,7 +194,7 @@ public class CaptchaLoadManager implements Command{
 		return new CommandTree("전체초기화", "전체 유저의 캡차 정보를 초기화합니다.", null){
 			@Override
 			protected void to_handle_command(CommandArgs args) throws Exception{
-				L1World.getInstance().getAllPlayerStream()
+				CWorld.getInstance().getAllPlayerStream()
 				.filter((L1PcInstance pc) ->{
 					return pc != null;
 				})

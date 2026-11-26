@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -122,7 +122,7 @@ public class BossRaid implements Runnable {
 		if (Time % 60 == 0) {
 			int min = Time / 60;
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    L1World.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getVisibleObjects(_map).values(),
                     SC_PacketBox.nativeGreenWriter(min+"분 후에 마을로 강제 이동 됩니다."));
 		}
 	}
@@ -149,13 +149,13 @@ public class BossRaid implements Runnable {
 	}
 
 	private void BossRaid_Delete(){
-		Collection<L1Object> cklist = L1World.getInstance().getVisibleObjects(_map).values();
+		Collection<L1Object> cklist = CWorld.getInstance().getVisibleObjects(_map).values();
 		for(L1Object ob : cklist){
 			if(ob == null)
 				continue;
 			if(ob instanceof L1ItemInstance){
 				L1ItemInstance obj = (L1ItemInstance)ob;
-				CInventory groundInventory = L1World.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
+				CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
 				groundInventory.DeleteItemAmount(obj);
 			}else if(ob instanceof L1NpcInstance){
 				L1NpcInstance npc = (L1NpcInstance)ob;
@@ -169,7 +169,7 @@ public class BossRaid implements Runnable {
 		Running = false;
 		ListClear(1);
 		ListClear(2);
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1MonsterInstance) {
 				L1MonsterInstance mon = (L1MonsterInstance) obj;
 				mon.deleteMe();
@@ -179,7 +179,7 @@ public class BossRaid implements Runnable {
 	
 	private void CheckPc() {
 		int check = 0;
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1PcInstance) {
 				check = 1;
 			}
@@ -188,7 +188,7 @@ public class BossRaid implements Runnable {
 	}
 
 	private void End() {
-		for (L1Object obj : L1World.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
 			if (obj instanceof L1PcInstance) {
 				L1PcInstance pc = (L1PcInstance) obj;
 

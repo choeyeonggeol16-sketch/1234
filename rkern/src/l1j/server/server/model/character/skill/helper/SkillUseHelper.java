@@ -10,7 +10,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -455,7 +455,7 @@ public final class SkillUseHelper {
 	public static void detectionAround(L1PcInstance pc) {
 		if (pc == null) return;
 
-		final L1World world = L1World.getInstance();
+		final CWorld world = CWorld.getInstance();
 
 		for (L1PcInstance tgt : world.getVisiblePlayer(pc)) {
 			if (tgt == null) continue;

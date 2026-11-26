@@ -22,7 +22,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.world.effect.L1EffectSpawn;
 import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -69,7 +69,7 @@ final class NpcCastleActions {
     }
 
 	static String sellHouse(L1PcInstance pc, int objectId, int npcId) {
-		L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+		L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 		if (clan == null) {
 			return "";
 		}
@@ -100,7 +100,7 @@ final class NpcCastleActions {
 	}
 
 	static void openCloseDoor(L1PcInstance pc, L1NpcInstance npc, String s) {
-		L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+		L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 		if (clan != null) {
 			int houseId = clan.getHouseId();
 			if (houseId != 0) {
@@ -170,7 +170,7 @@ final class NpcCastleActions {
 		boolean isNowWar = false;
 		int pcCastleId = 0;
 		if (pc.getClanid() != 0) {
-			L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+			L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 			if (clan != null) {
 				pcCastleId = clan.getCastleId();
 			}
@@ -249,7 +249,7 @@ final class NpcCastleActions {
 
 	static boolean isExistDefenseClan(int castleId) {
 		boolean isExistDefenseClan = false;
-		for (L1Clan clan : L1World.getInstance().getAllClans()) {
+		for (L1Clan clan : CWorld.getInstance().getAllClans()) {
 			if (castleId == clan.getCastleId()) {
 				isExistDefenseClan = true;
 				break;
@@ -291,7 +291,7 @@ final class NpcCastleActions {
 	    final int clanId =
 	            clanPc.getClanid();
 
-	    for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+	    for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 
 	        if (pc == null) {
 	            continue;
@@ -321,7 +321,7 @@ final class NpcCastleActions {
 	}
 
 	static void repairGate(L1PcInstance pc) {
-		L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+		L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 		if (clan != null) {
 			int castleId = clan.getCastleId();
 			if (castleId != 0) {
@@ -342,7 +342,7 @@ final class NpcCastleActions {
 	}
 
 	static void payFee(L1PcInstance pc, L1NpcInstance npc) {
-		L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+		L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 		if (clan == null || clan.getHouseId() <= 0) return;
 		L1House house = HouseTable.getInstance().getHouseTable(clan.getHouseId());
 		if (house == null || npc.getNpcTemplate().get_npcId() != house.getKeeperId()) return;
@@ -363,7 +363,7 @@ final class NpcCastleActions {
 		String name = npc.getNpcTemplate().get_name();
 		String[] result;
 		result = new String[] { name, "2000", "1", "1", "00" };
-		L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+		L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 		if (clan != null) {
 			int houseId = clan.getHouseId();
 			if (houseId != 0) {
@@ -507,7 +507,7 @@ final class NpcCastleActions {
 					} else if (s.equalsIgnoreCase("0-9")) { // 외성문 방향으로 발사!
 						int pcCastleId = 0;
 						if (pc.getClanid() != 0) {
-							L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+							L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 							if (clan != null) {
 								pcCastleId = clan.getCastleId();
 							}
@@ -612,7 +612,7 @@ final class NpcCastleActions {
 		L1NpcInstance targetNpc = null;
 		L1EffectInstance effect = L1EffectSpawn.getInstance().spawnEffect(81154, 1 * 1000, locx, locy, (short) 4);
 		if (effect == null) return;
-		for (L1Object object : L1World.getInstance().getVisibleObjects(effect, 3)) {
+		for (L1Object object : CWorld.getInstance().getVisibleObjects(effect, 3)) {
 			if (object == null) {
 				continue;
 			}

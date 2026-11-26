@@ -4,7 +4,7 @@ import l1j.server.Config;
 import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.UserCommands;
 import l1j.server.server.datatables.SpamTable;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
@@ -65,7 +65,7 @@ public final class CS_Chat {
             return;
         }
 
-        if (!pc.isGm() && !L1World.getInstance().isWorldChatElabled()) {
+        if (!pc.isGm() && !CWorld.getInstance().isWorldChatElabled()) {
             SC_ServerMessage.send(pc, 510);
             return;
         }
@@ -109,7 +109,7 @@ public final class CS_Chat {
                      firstWriter, Integer.MIN_VALUE, Integer.MAX_VALUE);
              var second = new CAsyncSendConstBuffer(
                      secondWriter, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-            for (L1PcInstance listener : L1World.getInstance().getAllPlayers()) {
+            for (L1PcInstance listener : CWorld.getInstance().getAllPlayers()) {
                 if (listener == null) continue;
 
                 if (!spam.excludesChat(listener.getId(), senderName)) {

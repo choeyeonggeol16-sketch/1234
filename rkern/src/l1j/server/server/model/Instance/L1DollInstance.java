@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.doll.DollPotentialEffects;
 import l1j.server.server.model.item.doll.DollRegistry;
@@ -221,8 +221,8 @@ public class L1DollInstance extends L1NpcInstance {
 		
 		setLightSize(template.getLightSize());
 
-		L1World.getInstance().storeAndEnterWorld(this);
-		for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(this)) onPerceive(pc);
+		CWorld.getInstance().storeAndEnterWorld(this);
+		for (L1PcInstance pc : CWorld.getInstance().getRecognizePlayer(this)) onPerceive(pc);
 
 		master.addDoll(this);
 		if (!isAiRunning()) startAI();

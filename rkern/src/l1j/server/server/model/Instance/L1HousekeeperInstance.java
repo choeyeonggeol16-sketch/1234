@@ -24,7 +24,7 @@ import l1j.server.server.model.world.residence.HouseTable;
 import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.world.residence.L1House;
@@ -63,7 +63,7 @@ public class L1HousekeeperInstance extends L1NpcInstance {
 	    }
 
 		if (talking != null) {
-			L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+			L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 			if (clan != null) {
 				int houseId = clan.getHouseId();
 				if (houseId != 0) {
@@ -95,7 +95,7 @@ public class L1HousekeeperInstance extends L1NpcInstance {
 				boolean isOccupy = false;
 				String clanName = null;
 				String leaderName = null;
-				for (L1Clan targetClan : L1World.getInstance().getAllClans()) {
+				for (L1Clan targetClan : CWorld.getInstance().getAllClans()) {
 					try {
 						if (targetHouse.getHouseId() == targetClan.getHouseId()) {
 							isOccupy = true;

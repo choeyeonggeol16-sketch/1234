@@ -7,7 +7,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
@@ -98,7 +98,7 @@ public class L1ClanJoinInstance extends L1Object{
 		        pc.getNetConnection(),
 		        cjInstance.serialize());
 		_clan_to_cj.put(pc.getClanid(), cjInstance);
-		L1World.getInstance().storeAndEnterWorld(cjInstance);
+		CWorld.getInstance().storeAndEnterWorld(cjInstance);
 		return cjInstance;
 	}
 	
@@ -127,7 +127,7 @@ public class L1ClanJoinInstance extends L1Object{
 	}
 	
 	public void dispose(){
-		L1World world = L1World.getInstance();
+		CWorld world = CWorld.getInstance();
 		world.removeVisibleObject(this);
 		world.removeObject(this);
 //		if(_world_put != null){
@@ -179,7 +179,7 @@ public class L1ClanJoinInstance extends L1Object{
 	}
 	
 	public L1PcInstance get_owner(){
-		return L1World.getInstance().getPlayer(get_name());
+		return CWorld.getInstance().getPlayer(get_name());
 	}
 	
 	public L1ClanJoinInstance set_clan_id(int clan_id){
@@ -192,7 +192,7 @@ public class L1ClanJoinInstance extends L1Object{
 	}
 	
 	public L1Clan get_clan(){
-		return L1World.getInstance().getClan(get_clan_id());
+		return CWorld.getInstance().getClan(get_clan_id());
 	}
 	
 	public L1ClanJoinInstance set_emblem_id(int emblem_id){

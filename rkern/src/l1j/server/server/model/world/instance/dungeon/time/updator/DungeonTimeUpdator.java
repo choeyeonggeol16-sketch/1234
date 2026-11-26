@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.gametime.TimeListener;
@@ -102,7 +102,7 @@ public class DungeonTimeUpdator implements TimeListener{
 				String message = "전체 던전 시간이 초기화되었습니다.";
 				String message_en = "[NOTICE] All dungeon timers have been reset."; 
 				try{
-					L1World.getInstance()
+					CWorld.getInstance()
 					.getAllPlayerStream()
 					.filter((L1PcInstance pc)->{
 						return is_possible_update_character(pc);
@@ -167,7 +167,7 @@ public class DungeonTimeUpdator implements TimeListener{
                 SC_PacketBox.nativeGreenWriter(message),
                 Integer.MIN_VALUE,Integer.MAX_VALUE)){
             for (int i = 0; i < 2; ++i) {
-			for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+			for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 				if (pc == null) continue;
 				if(i==0)l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
 				if (pc.getMapId() == 53 || pc.getMapId() == 54) {
@@ -243,7 +243,7 @@ public class DungeonTimeUpdator implements TimeListener{
 		private void do_update() {
 			try {
 				DungeonTimeInformationLoader loader = DungeonTimeInformationLoader.getInstance();
-				for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+				for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 					if (!is_possible_update_character(pc)) continue;
 					DungeonTimeInformation dtInfo = loader.from_map_id(pc.getMapId());
 					if (dtInfo != null) pc.dec_dungeon_progress(dtInfo);

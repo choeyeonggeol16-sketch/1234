@@ -26,7 +26,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.inventory.L1PolyMorph;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.core.DurationResolver;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
 import l1j.server.server.model.character.skill.helper.WeakExposeHelper;
@@ -90,7 +90,7 @@ public final class SkillHandlers {
                     && tierId != L1SkillId.프라임95) || duration <= 0) return;
         final boolean casterSelf = target.getId() == casterId;
         if (!casterSelf) {
-            final L1Object obj = L1World.getInstance().findObject(casterId);
+            final L1Object obj = CWorld.getInstance().findObject(casterId);
             if (!(obj instanceof L1PcInstance caster) || caster.getClanid() == 0
                     || target.getClanid() != caster.getClanid()
                     || caster.getMapId() != target.getMapId()
@@ -442,7 +442,7 @@ public final class SkillHandlers {
 		if (pc.isDead()) return;
 		L1PcInstance caster = null;
 		if (casterId != 0 && casterId != pc.getId()) {
-			final L1Object source = L1World.getInstance().findObject(casterId);
+			final L1Object source = CWorld.getInstance().findObject(casterId);
 			if (!(source instanceof L1PcInstance other)) return;
 			caster = other;
 			if (pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
@@ -567,7 +567,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 	    // 같은 혈맹원에게 트루타겟 표시
 	    // =====================================================
 	    for (L1PcInstance pc
-	            : L1World.getInstance()
+	            : CWorld.getInstance()
 	                    .getRecognizePlayer((L1Object) target)) {
 
 	        if (pri.getClanid() == pc.getClanid()) {
@@ -852,8 +852,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 			if (caster.getId() != pc.getId()) {
 
-				if (L1World.getInstance().getVisiblePlayer(pc, 0).size() > 0) {
-					for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(pc, 0)) {
+				if (CWorld.getInstance().getVisiblePlayer(pc, 0).size() > 0) {
+					for (L1PcInstance visiblePc : CWorld.getInstance().getVisiblePlayer(pc, 0)) {
 						if (!visiblePc.isDead()) {
 							SC_ServerMessage.send(caster, 592);
 							return HandlerResult.RETURN;
@@ -898,9 +898,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 				}
 
 				if ((npc instanceof L1CompanionInstance )
-						&& L1World.getInstance().getVisiblePlayer(npc, 0).size() > 0) {
+						&& CWorld.getInstance().getVisiblePlayer(npc, 0).size() > 0) {
 
-					for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)) {
+					for (L1PcInstance visiblePc : CWorld.getInstance().getVisiblePlayer(npc, 0)) {
 						if (!visiblePc.isDead()) {
 							SC_ServerMessage.send(caster, 592);
 							return HandlerResult.RETURN;
@@ -2536,8 +2536,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		if (cha instanceof L1PcInstance) {
 			final L1PcInstance pc = (L1PcInstance) cha;
 			if (caster.getId() != pc.getId()) {
-				if (L1World.getInstance().getVisiblePlayer(pc, 0).size() > 0) {
-					for (L1PcInstance v : L1World.getInstance().getVisiblePlayer(pc, 0)) {
+				if (CWorld.getInstance().getVisiblePlayer(pc, 0).size() > 0) {
+					for (L1PcInstance v : CWorld.getInstance().getVisiblePlayer(pc, 0)) {
 						if (!v.isDead()) {
 							SC_ServerMessage.send(caster, 592);
 							return HandlerResult.RETURN;
@@ -2560,8 +2560,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 			final L1NpcInstance npc = (L1NpcInstance) cha;
 			if ((npc instanceof L1CompanionInstance)
-					&& L1World.getInstance().getVisiblePlayer(npc, 0).size() > 0) {
-				for (L1PcInstance v : L1World.getInstance().getVisiblePlayer(npc, 0)) {
+					&& CWorld.getInstance().getVisiblePlayer(npc, 0).size() > 0) {
+				for (L1PcInstance v : CWorld.getInstance().getVisiblePlayer(npc, 0)) {
 					if (!v.isDead()) {
 						SC_ServerMessage.send(caster, 592);
 						return HandlerResult.RETURN;
@@ -4045,7 +4045,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
                 boolean cancelled = false;
 
                 try {
-                    final L1World world = L1World.getInstance();
+                    final CWorld world = CWorld.getInstance();
                     final L1Object attackerObj = world.findObject(attackerId);
 
                     if (!(attackerObj instanceof L1PcInstance)) {

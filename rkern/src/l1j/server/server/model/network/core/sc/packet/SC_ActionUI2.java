@@ -8,7 +8,7 @@ import java.util.StringTokenizer;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -69,7 +69,7 @@ public final class SC_ActionUI2 {
 		ClanWaitPlayerSnapshot(int index, L1PcInstance pc) {
 			this.index = index;
 			this.nameBytes = pc.getName().getBytes();
-			this.isOnline = L1World.getInstance().getPlayer(pc.getName()) != null ? 1 : 0;
+			this.isOnline = CWorld.getInstance().getPlayer(pc.getName()) != null ? 1 : 0;
 			this.pcType = pc.getType();
 		}
 	}
@@ -364,7 +364,7 @@ buffer.writeC(Opcodes.S_EXTENDED_PROTOBUF);
 		_byteData = null;
 
 		if (subCode == CLAN_JOIN_WAIT) {
-			Collection<L1PcInstance> list = L1World.getInstance().getAllPlayers();
+			Collection<L1PcInstance> list = CWorld.getInstance().getAllPlayers();
 			List<ClanWaitPlayerSnapshot> snapshots = new ArrayList<>();
 			int i = 0;
 			for (L1PcInstance pc : list) {

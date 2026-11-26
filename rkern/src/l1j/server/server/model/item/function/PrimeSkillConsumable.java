@@ -6,7 +6,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
@@ -76,7 +76,7 @@ final class PrimeSkillConsumable {
                  var castleNotice = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                     SC_SystemMessage.nativeWriter("공성존의 프라임 효과가 적용되었습니다."),
                     Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-                for (L1PcInstance recipient : L1World.getInstance().getVisiblePlayer(pc, 20)) {
+                for (L1PcInstance recipient : CWorld.getInstance().getVisiblePlayer(pc, 20)) {
                     if (recipient == pc || recipient.getClanid() != pc.getClanid()) continue;
                     if (!submitPrime(recipient, pc, skillId, tierId)) continue;
                     l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(

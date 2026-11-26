@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1Npc;
@@ -85,7 +85,7 @@ public class ValakasRoomSpawn {
 						field.setHeading(rs.getInt("heading"));
 						field.setLightSize(l1npc.getLightSize());
 						field.refreshLight();
-						L1World.getInstance().storeAndEnterWorld(field);
+						CWorld.getInstance().storeAndEnterWorld(field);
 						if(RT)
 							list.add(field);
 					} catch (Exception e) {

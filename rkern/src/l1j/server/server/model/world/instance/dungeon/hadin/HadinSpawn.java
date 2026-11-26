@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1Npc;
@@ -90,7 +90,7 @@ public class HadinSpawn {
 							fi.setPassable(1);
 						}
 
-						L1World.getInstance().storeAndEnterWorld(field);
+						CWorld.getInstance().storeAndEnterWorld(field);
 						if(RT)
 							list.add(field);
 					} catch (Exception e) {
@@ -149,7 +149,7 @@ public class HadinSpawn {
 						field.setLightSize(l1npc.getLightSize());
 						field.refreshLight();
 						field.setSpawnLocation(rs.getString("location"));
-						L1World.getInstance().storeAndEnterWorld(field);
+						CWorld.getInstance().storeAndEnterWorld(field);
 						list.add(field);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -211,7 +211,7 @@ public class HadinSpawn {
 							fi.setPassable(1);
 						}
 
-						L1World.getInstance().storeAndEnterWorld(field);
+						CWorld.getInstance().storeAndEnterWorld(field);
 						list.put(field.getSpawnLocation(), field);
 					} catch (Exception e) {
 						e.printStackTrace();

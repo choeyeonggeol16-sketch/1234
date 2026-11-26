@@ -10,7 +10,7 @@ import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.experience.fishing.EFishingType;
 import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -561,10 +561,10 @@ public final class FishingTimeController {
             int owner_object_id,String message,int effect_id){
         // Preserve two independent AOI lookups, first all notices, then all FX.
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                L1World.getInstance().getVisiblePlayers(5490),
+                CWorld.getInstance().getVisiblePlayers(5490),
                 SC_PacketBox.nativeGreenWriter(message));
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                L1World.getInstance().getVisiblePlayers(5490),
+                CWorld.getInstance().getVisiblePlayers(5490),
                 SC_SkillSound.nativeWriter(owner_object_id,effect_id));
     }
 

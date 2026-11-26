@@ -35,7 +35,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import java.util.Random;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.utils.L1SpawnUtil;
@@ -347,7 +347,7 @@ final class NpcGameEventActions {
 			npc.setHomeY(npc.getY());
 			npc.setHeading(Heading);
 
-			L1World.getInstance().storeAndEnterWorld(npc);
+			CWorld.getInstance().storeAndEnterWorld(npc);
 
 
 			npc.refreshLight();
@@ -392,7 +392,7 @@ final class NpcGameEventActions {
         final int npcId = npc.getId();
         final var client = pc.getNetConnection();
         final int dialogueVersion = client == null ? 0 : client.npcDialogueVersion();
-        final long dialogueTarget = L1World.getInstance().smartIdOf(npc);
+        final long dialogueTarget = CWorld.getInstance().smartIdOf(npc);
         BossTraining reserved = null;
         boolean submitted = false;
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcId())) {
@@ -567,7 +567,7 @@ final class NpcGameEventActions {
                 room.startAdmission(members);
                 String departure = leader.getName() + " 님이 동료들과 함께 해상던전으로 떠났습니다.";
                 SC_PacketBox.broadcastGreen(departure);
-                L1World.getInstance().broadcastServerMessage("\\aD" + departure);
+                CWorld.getInstance().broadcastServerMessage("\\aD" + departure);
                 for (L1PcInstance member : members) {
                     CIOThreadCallback.getInstance().completeSession(member.getNetConnection(), () -> {
                         if (member.getParty() == party && member.getMapId() == 0)

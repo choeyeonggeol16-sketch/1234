@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1NpcShop;
 
@@ -100,7 +100,7 @@ public class NpcCashShopSpawnTable {
 				npc.setName(shop.getName());
 				npc.setTitle(shop.getTitle());
 
-				L1World.getInstance().storeAndEnterWorld(npc);
+				CWorld.getInstance().storeAndEnterWorld(npc);
 
 				npc.refreshLight();
 			}

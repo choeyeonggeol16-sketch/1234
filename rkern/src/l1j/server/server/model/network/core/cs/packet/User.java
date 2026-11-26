@@ -32,7 +32,7 @@ import l1j.server.server.model.character.companion.instance.CompanionInstanceCac
 import l1j.server.server.monitor.Logger.ItemActionType;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.function.ExtendedItemActions;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
@@ -102,7 +102,7 @@ public final class User {
         // Deployed furniture owns a live world object. Require retrieval first;
         // the receipt also checks the persisted placement under the SQL lock.
         if (item.getItemId() >= 41383 && item.getItemId() <= 41400) {
-            for (L1Object object : L1World.getInstance().getObject()) {
+            for (L1Object object : CWorld.getInstance().getObject()) {
                 if (object instanceof L1FurnitureInstance furniture
                         && furniture.getItemObjId() == item.getId()) {
                     SC_SystemMessage.send(pc, "설치된 가구를 회수한 뒤 삭제해 주세요.");
@@ -178,7 +178,7 @@ public final class User {
 
 		final L1PcInstance pc = client.getActiveChar();
 		if (pc == null || !client.ownsReadyGameSession() || client.getActiveChar() != pc
-				|| L1World.getInstance().findObject(pc.getId()) != pc) return;
+				|| CWorld.getInstance().findObject(pc.getId()) != pc) return;
 		final L1ItemInstance l1iteminstance = pc.getInventory().GetByServerID(itemObjid);
 
         // This item only opens an owned settings window. It has no item effects,
@@ -477,7 +477,7 @@ public final class User {
             SC_ChatPacket.sendDirect(pc, pc, "\\aG상점 설치는 1,000원이 필요합니다.");
             return;
         }
-        for (L1PcInstance other : L1World.getInstance().getAllPlayers3()) {
+        for (L1PcInstance other : CWorld.getInstance().getAllPlayers3()) {
             if (other != pc && other.getId() != pc.getId() && other.isPrivateShop()
                     && pc.getAccountName().equalsIgnoreCase(other.getAccountName())) {
                 SC_SystemMessage.send(pc, "이미 당신의 보조 캐릭터가 무인상점 상태입니다.");

@@ -12,7 +12,7 @@ import javax.swing.ImageIcon;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.warehouse.ClanWarehouse;
@@ -460,7 +460,7 @@ public class infomation extends javax.swing.JFrame {
         jLayeredPane2.add(jLabel6, javax.swing.JLayeredPane.DEFAULT_LAYER);
         L1Clan clan = null;        
        if (pc.getClanname() != null){
-    	   clan = L1World.getInstance().getClan(pc.getClanid());
+            clan = CWorld.getInstance().getClan(pc.getClanid());
        }
 		String Castle = "";
 		String House = "";

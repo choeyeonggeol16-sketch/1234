@@ -13,7 +13,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -75,7 +75,7 @@ public final class FurniturePlacementItems {
 
 		boolean isAppear = true;
 		L1FurnitureInstance furniture = null;
-		for (L1Object l1object : L1World.getInstance().getObject()) {
+		for (L1Object l1object : CWorld.getInstance().getObject()) {
 			if (l1object instanceof L1FurnitureInstance) {
 				furniture = (L1FurnitureInstance) l1object;
 				if (furniture.getItemObjId() == itemObjectId) { // 이미 꺼내고 있는 가구
@@ -170,7 +170,7 @@ public final class FurniturePlacementItems {
 						furniture.setHeading(0);
 						furniture.setItemObjId(itemObjectId);
 
-						L1World.getInstance().storeAndEnterWorld(furniture);
+						CWorld.getInstance().storeAndEnterWorld(furniture);
 						FurnitureSpawnTable.getInstance().insertFurniture(furniture);
 					} catch (Exception e) {
 						e.printStackTrace();

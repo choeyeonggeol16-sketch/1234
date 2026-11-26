@@ -6,7 +6,7 @@ import java.util.Random;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1MonsterInstance;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.shared.listener.MonsterDeathHandler;
 import l1j.server.server.templates.L1Npc;
 
@@ -57,7 +57,7 @@ public class MonsterSpawnBuilder {
 		m.setHeading(_rnd.nextInt(8));
 		m.setLightSize(npc.getLightSize());
 		m.refreshLight();
-		L1World.getInstance().storeAndEnterWorld(m);
+		CWorld.getInstance().storeAndEnterWorld(m);
 		return m;
 	}
 	

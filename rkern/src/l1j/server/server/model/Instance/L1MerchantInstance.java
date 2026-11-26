@@ -20,7 +20,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1TownLocation;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.gametime.L1GameTimeClock;
@@ -2429,7 +2429,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 		}
 
 		final L1Clan clan =
-				L1World.getInstance().getClan(player.getClanid());
+				CWorld.getInstance().getClan(player.getClanid());
 
 		return clan != null && clan.getCastleId() == castleId;
 	}
@@ -2440,7 +2440,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 		}
 
 		final L1Clan clan =
-				L1World.getInstance().getClan(player.getClanid());
+				CWorld.getInstance().getClan(player.getClanid());
 
 		return clan != null && player.getId() == clan.getLeaderId();
 	}
