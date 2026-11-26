@@ -1,13 +1,13 @@
 package l1j.server.server.storage.mysql;
 
 import l1j.server.server.datatables.CObjectDB;
+import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,7 +118,9 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
         public final int remaining, bless, attr, special, pack, blessLevel, blessLevel2, itemLevel;
         public final Timestamp lastUsed, endTime;
         public final String hotelTown;
-        private final L1ItemInstance source;
+        // SQL and retries use the captured values. A detached inventory need not
+        // stay reachable for the optional in-memory acknowledgement.
+        private final WeakReference<L1ItemInstance> source;
 
         private ItemSnapshot(int ownerId, L1ItemInstance item, boolean idOnly) {
             this(ownerId, item, idOnly, -1, -1);
@@ -128,7 +130,7 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
                              int projectedCount, int projectedCharge) {
             id = item.getId();
             this.ownerId = ownerId;
-            source = item;
+            source = idOnly ? null : new WeakReference<>(item);
             if (idOnly) {
                 itemId=0; itemName=null; count=0; equipped=0; enchant=0; identified=0;
                 durability=0; charge=0; remaining=0; bless=0; attr=0; special=0;
@@ -198,35 +200,37 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
         }
 
         public void finish(long mask) {
-            L1ItemInstance item = source;
+            L1ItemInstance item = source == null ? null : source.get();
             if (item == null) return;
-            if ((mask & 1L) != 0 && item.getItemId() == itemId) item.getLastStatus().updateItemId();
-            if ((mask & 2L) != 0 && item.getCount() == count) item.getLastStatus().updateCount();
-            if ((mask & 4L) != 0 && item.isIdentified() == (identified != 0)) item.getLastStatus().updateIdentified();
-            if ((mask & 8L) != 0 && item.isEquipped() == (equipped != 0)) item.getLastStatus().updateEquipped();
-            if ((mask & 16L) != 0 && item.getEnchantLevel() == enchant) item.getLastStatus().updateEnchantLevel();
-            if ((mask & 32L) != 0 && item.get_durability() == durability) item.getLastStatus().updateDuraility();
-            if ((mask & 64L) != 0 && item.getChargeCount() == charge) item.getLastStatus().updateChargeCount();
-            if ((mask & 128L) != 0 && item.getRemainingTime() == remaining) item.getLastStatus().updateRemainingTime();
-            if ((mask & 256L) != 0 && eqTime(item.getLastUsed(), lastUsed)) item.getLastStatus().updateLastUsed();
-            if ((mask & 512L) != 0 && item.getBless() == bless) item.getLastStatus().updateBless();
-            if ((mask & 1024L) != 0 && item.getAttrEnchantLevel() == attr) item.getLastStatus().updateAttrEnchantLevel();
-            if ((mask & 2048L) != 0 && eqTime(item.getEndTime(), endTime)) item.getLastStatus().updateEndTime();
-            if ((mask & (1L << 12)) != 0 && item.isPackage() == (pack != 0)) item.getLastStatus().updatePackage();
-            if ((mask & (1L << 13)) != 0 && item.get_bless_level() == blessLevel) item.getLastStatus().update_bless_level();
-            if ((mask & (1L << 14)) != 0 && item.get_bless_level2() == blessLevel2) item.getLastStatus().update_bless_level2();
-            if ((mask & (1L << 15)) != 0 && item.get_item_level() == itemLevel) item.getLastStatus().update_item_level();
-            if ((mask & (1L << 16)) != 0 && java.util.Objects.equals(item.getHotel_Town(), hotelTown)) item.getLastStatus().update_town_name();
-            if ((mask & (1L << 17)) != 0 && item.getSpecialEnchant() == special) item.getLastStatus().updateSpecialEnchant();
+            L1ItemInstance.LastStatus status = item.getLastStatus();
+            synchronized (status) {
+                // Record exactly what SQL committed, even if the live value
+                // changed back while the worker was writing.
+                if ((mask & 1L) != 0) status.itemId = itemId;
+                if ((mask & 2L) != 0) status.count = count;
+                if ((mask & 4L) != 0) status.isIdentified = identified != 0;
+                if ((mask & 8L) != 0) status.isEquipped = equipped != 0;
+                if ((mask & 16L) != 0) status.enchantLevel = enchant;
+                if ((mask & 32L) != 0) status.durability = durability;
+                if ((mask & 64L) != 0) status.chargeCount = charge;
+                if ((mask & 128L) != 0) status.remainingTime = remaining;
+                if ((mask & 256L) != 0) status.lastUsed = lastUsed;
+                if ((mask & 512L) != 0) status.bless = bless;
+                if ((mask & 1024L) != 0) status.attrenchantLevel = attr;
+                if ((mask & 2048L) != 0) status.endTime = endTime;
+                if ((mask & (1L << 12)) != 0) status._isPackage = pack != 0;
+                if ((mask & (1L << 13)) != 0) status.bless_level = blessLevel;
+                if ((mask & (1L << 14)) != 0) status.bless_level2 = blessLevel2;
+                if ((mask & (1L << 15)) != 0) status.item_level = itemLevel;
+                if ((mask & (1L << 16)) != 0) status.town_name = hotelTown;
+                if ((mask & (1L << 17)) != 0) status.specialEnchant = special;
+            }
         }
         private static Timestamp copyTime(Timestamp t) {
             if (t == null) return null;
             Timestamp copy = new Timestamp(t.getTime());
             copy.setNanos(t.getNanos());
             return copy;
-        }
-        private static boolean eqTime(Timestamp x, Timestamp y) {
-            return Objects.equals(x, y);
         }
     }
 
@@ -408,20 +412,25 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
     // 갱신 — CacheD 상태 병합
     // ==================================================================
 
-    /**
-     * 배치 플러시용 부분 UPDATE — 마스크에 세팅된 컬럼만 갱신.
-     * 호출자: CacheD.
-     * 커넥션 획득/실행 지연 출력 — 안정화 후 제거 가능.
-     */
-    public void updateItemCombined(L1ItemInstance item, long mask) throws Exception {
-        CacheD.getInstance().saveItem(item, mask);
+    private static final int ITEM_COLUMN_COUNT = 18;
+    private static final long ALL_ITEM_COLUMNS = (1L << ITEM_COLUMN_COUNT) - 1;
+    private static final String FULL_UPDATE = buildUpdateSql(ALL_ITEM_COLUMNS);
+    private static final String[] SINGLE_COLUMN_UPDATES = singleColumnUpdates();
+
+    private static String[] singleColumnUpdates() {
+        String[] sql = new String[ITEM_COLUMN_COUNT];
+        for (int bit = 0; bit < sql.length; bit++) sql[bit] = buildUpdateSql(1L << bit);
+        return sql;
     }
 
-    public static void updateSnapshot(ItemSnapshot s, long mask) throws SQLException {
-        if (mask == 0L) return;
-        if (s == null || s.id <= 0 || s.ownerId <= 0 || s.itemId <= 0 || s.count <= 0) {
-            throw new SQLException("Invalid character item update snapshot or owner");
-        }
+    private static String updateSql(long mask) {
+        if (mask == ALL_ITEM_COLUMNS) return FULL_UPDATE;
+        if (mask > 0 && mask <= ALL_ITEM_COLUMNS && (mask & (mask - 1)) == 0)
+            return SINGLE_COLUMN_UPDATES[Long.numberOfTrailingZeros(mask)];
+        return buildUpdateSql(mask);
+    }
+
+    private static String buildUpdateSql(long mask) {
         StringBuilder sql = new StringBuilder(320).append("UPDATE character_items SET ");
         if ((mask & 1L) != 0) sql.append("item_id=?,");
         if ((mask & 2L) != 0) sql.append("count=?,");
@@ -444,8 +453,25 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
         sql.setLength(sql.length() - 1);
         // A stale item write must not modify a row that has changed owner.
         sql.append(" WHERE id=? AND char_id=?");
+        return sql.toString();
+    }
+
+    /**
+     * 배치 플러시용 부분 UPDATE — 마스크에 세팅된 컬럼만 갱신.
+     * 호출자: CacheD.
+     * 커넥션 획득/실행 지연 출력 — 안정화 후 제거 가능.
+     */
+    public void updateItemCombined(L1ItemInstance item, long mask) throws Exception {
+        CacheD.getInstance().saveItem(item, mask);
+    }
+
+    public static void updateSnapshot(ItemSnapshot s, long mask) throws SQLException {
+        if (mask == 0L) return;
+        if (s == null || s.id <= 0 || s.ownerId <= 0 || s.itemId <= 0 || s.count <= 0) {
+            throw new SQLException("Invalid character item update snapshot or owner");
+        }
         try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+             PreparedStatement ps = con.prepareStatement(updateSql(mask))) {
             int i = 0;
             if ((mask & 1L) != 0) ps.setInt(++i, s.itemId);
             if ((mask & 2L) != 0) ps.setInt(++i, s.count);

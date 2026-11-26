@@ -1,6 +1,7 @@
 package l1j.server.server.model.inventory;
 
 import java.lang.reflect.Field;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.templates.L1EtcItem;
+import l1j.server.server.storage.mysql.MySqlCharactersItemStorage.ItemSnapshot;
 import sun.misc.Unsafe;
 
 public final class InventoryIndexRegression {
@@ -20,6 +22,7 @@ public final class InventoryIndexRegression {
 
     public static void main(String[] args) throws ReflectiveOperationException {
         installEmptyWorldMapFixture();
+        checkPendingItemSave();
 
         CInventory inventory = new CInventory();
         CInventory other = new CInventory();
@@ -81,6 +84,27 @@ public final class InventoryIndexRegression {
         same(null, inventory.GetByServerID(loaded.getId()), "cleared identity");
         verifySelection(inventory);
         System.out.println("PASS inventory index order, eligibility, rekey, transfer, reconnect and clear");
+    }
+
+    private static void checkPendingItemSave() {
+        L1ItemInstance row = item(3001, CANDLE, LIGHT_DESCRIPTION, 10);
+        Timestamp lastUsed = Timestamp.valueOf("2025-01-02 03:04:05.123456");
+        row.setLastUsed(lastUsed);
+        row.getLastStatus().updateAll();
+
+        row.setCount(9);
+        ItemSnapshot write = ItemSnapshot.capture(row, 77);
+        row.setCount(10);
+        row.setChargeCount(2);
+        write.finish(2L);
+        check(row.getLastStatus().count == 9, "acknowledge the committed count");
+        check((row.getRecordingColumns() & CUserInventory.COL_COUNT) != 0, "reverted count still needs SQL");
+        check(row.getLastStatus().chargeCount == 0, "partial acknowledgement changed another column");
+
+        lastUsed.setNanos(876543000);
+        check((row.getRecordingColumns() & CUserInventory.COL_DELAY_EFFECT) != 0, "timestamp alias hid mutation");
+        ItemSnapshot.capture(row, 77).finish((1L << 18) - 1);
+        check(row.getRecordingColumns() == 0, "latest full acknowledgement");
     }
 
     private static void installEmptyWorldMapFixture() throws ReflectiveOperationException {

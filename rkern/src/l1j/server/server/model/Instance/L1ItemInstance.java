@@ -824,7 +824,7 @@ public class L1ItemInstance extends L1Object {
 		public String town_name;
 		public boolean _isPackage;
 
-		public void updateAll() {
+		public synchronized void updateAll() {
 			count = getCount();
 			itemId = getItemId();
 			isEquipped = isEquipped();
@@ -833,11 +833,11 @@ public class L1ItemInstance extends L1Object {
 			durability = get_durability();
 			chargeCount = getChargeCount();
 			remainingTime = getRemainingTime();
-			lastUsed = getLastUsed();
+			lastUsed = CopyTimestamp(getLastUsed());
 			bless = getBless();
 			attrenchantLevel = getAttrEnchantLevel();
 			specialEnchant = getSpecialEnchant();
-			endTime = getEndTime();
+			endTime = CopyTimestamp(getEndTime());
 			bless_level = get_bless_level();
 			bless_level2 = get_bless_level2();
 			_isPackage = isPackage();
@@ -883,7 +883,7 @@ public class L1ItemInstance extends L1Object {
 		}
 
 		public void updateLastUsed() {
-			lastUsed = getLastUsed();
+			lastUsed = CopyTimestamp(getLastUsed());
 		}
 
 		public void updateBless() {
@@ -895,7 +895,7 @@ public class L1ItemInstance extends L1Object {
 		}
 
 		public void updateEndTime() {
-			endTime = getEndTime();
+			endTime = CopyTimestamp(getEndTime());
 		}
 
 		public void update_bless_level() {
@@ -940,29 +940,31 @@ public class L1ItemInstance extends L1Object {
 		// Every field compared by CTransaction.verifyItemPreimage must be
 		// accounted for before a receipt-guarded item use.
 		final LastStatus snapshot = getLastStatus();
-		int column = 0;
-		if (getCount() != snapshot.count) column |= CUserInventory.COL_COUNT;
-		if (getItemId() != snapshot.itemId) column |= CUserInventory.COL_ITEMID;
-		if (isEquipped() != snapshot.isEquipped) column |= CUserInventory.COL_EQUIPPED;
-		if (getEnchantLevel() != snapshot.enchantLevel) column |= CUserInventory.COL_ENCHANTLVL;
-		if (get_durability() != snapshot.durability) column |= CUserInventory.COL_DURABILITY;
-		if (getChargeCount() != snapshot.chargeCount) column |= CUserInventory.COL_CHARGE_COUNT;
-		if (!java.util.Objects.equals(getLastUsed(), snapshot.lastUsed))
-			column |= CUserInventory.COL_DELAY_EFFECT;
-		if (isIdentified() != snapshot.isIdentified) column |= CUserInventory.COL_IS_ID;
-		if (getRemainingTime() != snapshot.remainingTime) column |= CUserInventory.COL_REMAINING_TIME;
-		if (getBless() != snapshot.bless) column |= CUserInventory.COL_BLESS;
-		if (getAttrEnchantLevel() != snapshot.attrenchantLevel) column |= CUserInventory.COL_ATTRENCHANTLVL;
-		if (getSpecialEnchant() != snapshot.specialEnchant) column |= CUserInventory.COL_SPECIAL_ENCHANT;
-		if (get_bless_level() != snapshot.bless_level) column |= CUserInventory.COL_BLESS_LEVEL;
-		if (get_bless_level2() != snapshot.bless_level2) column |= CUserInventory.COL_BLESS_LEVEL2;
-		if (!java.util.Objects.equals(getEndTime(), snapshot.endTime))
-			column |= CUserInventory.COL_END_TIME;
-		if (isPackage() != snapshot._isPackage) column |= CUserInventory.COL_PACKAGE;
-		if (get_item_level() != snapshot.item_level) column |= CUserInventory.COL_ITEM_LEVEL;
-		if (!java.util.Objects.equals(getHotel_Town(), snapshot.town_name))
-			column |= CUserInventory.COL_HOTEL_TOWN;
-		return column;
+		synchronized (snapshot) {
+			int column = 0;
+			if (getCount() != snapshot.count) column |= CUserInventory.COL_COUNT;
+			if (getItemId() != snapshot.itemId) column |= CUserInventory.COL_ITEMID;
+			if (isEquipped() != snapshot.isEquipped) column |= CUserInventory.COL_EQUIPPED;
+			if (getEnchantLevel() != snapshot.enchantLevel) column |= CUserInventory.COL_ENCHANTLVL;
+			if (get_durability() != snapshot.durability) column |= CUserInventory.COL_DURABILITY;
+			if (getChargeCount() != snapshot.chargeCount) column |= CUserInventory.COL_CHARGE_COUNT;
+			if (!java.util.Objects.equals(getLastUsed(), snapshot.lastUsed))
+				column |= CUserInventory.COL_DELAY_EFFECT;
+			if (isIdentified() != snapshot.isIdentified) column |= CUserInventory.COL_IS_ID;
+			if (getRemainingTime() != snapshot.remainingTime) column |= CUserInventory.COL_REMAINING_TIME;
+			if (getBless() != snapshot.bless) column |= CUserInventory.COL_BLESS;
+			if (getAttrEnchantLevel() != snapshot.attrenchantLevel) column |= CUserInventory.COL_ATTRENCHANTLVL;
+			if (getSpecialEnchant() != snapshot.specialEnchant) column |= CUserInventory.COL_SPECIAL_ENCHANT;
+			if (get_bless_level() != snapshot.bless_level) column |= CUserInventory.COL_BLESS_LEVEL;
+			if (get_bless_level2() != snapshot.bless_level2) column |= CUserInventory.COL_BLESS_LEVEL2;
+			if (!java.util.Objects.equals(getEndTime(), snapshot.endTime))
+				column |= CUserInventory.COL_END_TIME;
+			if (isPackage() != snapshot._isPackage) column |= CUserInventory.COL_PACKAGE;
+			if (get_item_level() != snapshot.item_level) column |= CUserInventory.COL_ITEM_LEVEL;
+			if (!java.util.Objects.equals(getHotel_Town(), snapshot.town_name))
+				column |= CUserInventory.COL_HOTEL_TOWN;
+			return column;
+		}
 	}
 
     public String getNumberedViewName(int count) {

@@ -792,9 +792,15 @@ public class L1PcInstance extends L1Character {
     /** Failure callback for an old receipt must never kick a replacement character. */
     public void quarantineItemTransferSession(CUserSocket session, int stamp) {
         if (!isItemTransferSession(session, stamp)) return;
-        CIOThreadCallback.getInstance().completeSession(session, () -> {
-            if (isItemTransferSession(session, stamp)) session.kick();
-        });
+        try {
+            CIOThreadCallback.getInstance().completeSession(session, () -> {
+                if (isItemTransferSession(session, stamp)) session.kick();
+            }, failure -> {
+                if (failure != null) session.closeIfCurrentCharacter(this, stamp);
+            });
+        } catch (RuntimeException rejected) {
+            session.closeIfCurrentCharacter(this, stamp);
+        }
     }
 
     public boolean tryBeginItemTransfer() {
@@ -2404,9 +2410,10 @@ public class L1PcInstance extends L1Character {
 
 	public void logout() {
         if (!_destroyed.compareAndSet(false, true)) return;
-        l1j.server.server.model.CReplyChecker.FinishWaitingReplyByRequester(this);
-        suspendGroundSight();
         try {
+            try { l1j.server.server.model.CReplyChecker.FinishWaitingReplyByRequester(this); }
+            catch (RuntimeException e) { _log.log(Level.WARNING, "Logout waiting reply cleanup failed: " + getId(), e); }
+            suspendGroundSight();
             try {
                 final CUserSocket warehouseSession = getNetConnection();
                 if (warehouseSession != null) warehouseSession.ClearWarehouseViewFor(this);

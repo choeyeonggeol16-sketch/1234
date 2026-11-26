@@ -27,6 +27,7 @@ import l1j.server.server.model.network.core.broadcast.CSharedPacketFormat;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
+import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.model.network.core.session.DominationHybrid;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.Connection;
 import l1j.server.server.model.network.packet.CBytesPacket;
@@ -34,6 +35,7 @@ import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.safe.CPacketFilter;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.shop.NpcShopView;
 import l1j.server.server.model.shop.PlayerShopView;
@@ -42,7 +44,6 @@ import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
-import l1j.server.server.model.network.core.session.CSessionLifecycle;
 
 /**
  * Game packet framing and the per-socket 512-slot callback serializer.
@@ -519,8 +520,12 @@ public final class CUserSocket extends CSocket {
     }
 
     private static final int CLOSE_STARTED = 1, CLEANUP_COMPLETE = 2, SERVER_DRAIN_REPORTED = 4,
-            LOGOUT_STARTED = 8, IO_DRAINED = 16, CRAFT_LIST_SENDING = 32;
+            LOGOUT_STARTED = 8, IO_DRAINED = 16, CRAFT_LIST_SENDING = 32, FORCED_CHARACTER_CLOSE = 64;
     private volatile int socketLifecycle;
+    private record ForcedLogout(L1PcInstance pc, int stamp) { }
+    private volatile ForcedLogout forcedLogout;
+    private static final AtomicReferenceFieldUpdater<CUserSocket, ForcedLogout> FORCED_LOGOUT =
+            AtomicReferenceFieldUpdater.newUpdater(CUserSocket.class, ForcedLogout.class, "forcedLogout");
 
     private boolean markLifecycle(int event) {
         return ((int) LIFECYCLE.getAndBitwiseOr(this, event) & event) == 0;
@@ -605,9 +610,17 @@ public final class CUserSocket extends CSocket {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void requestClientClose(IPacketWriter packet) {
+        if (beginClientClose()) finishClientClose(packet);
+    }
+
+    private boolean beginClientClose() {
         if (_disconnecting != 0 || !isOpen()
-                || !CLOSING.compareAndSet(this, 0, 1)) return;
+                || !CLOSING.compareAndSet(this, 0, 1)) return false;
         _gracefulCloseStartedNs = System.nanoTime();
+        return true;
+    }
+
+    private void finishClientClose(IPacketWriter<CUserSocket> packet) {
         if (!_gameSession) {
             close();
             return;
@@ -2428,6 +2441,21 @@ public final class CUserSocket extends CSocket {
     @Override public void close(){_gameSessionReady = false; close(false);}
     private void close(boolean graceful) {
         if (!CLOSED.compareAndSet(this, 0, 1)) return;
+        finishClose(graceful);
+    }
+
+    /** Claim the disconnect while the original actor still owns this socket. */
+    public void closeIfCurrentCharacter(L1PcInstance pc, int stamp) {
+        synchronized (this) {
+            if (pc == null || !pc.isItemTransferSession(this, stamp)
+                    || !CLOSED.compareAndSet(this, 0, 1)) return;
+            _gameSessionReady = false;
+        }
+        // Transport teardown has its own locks and must not run under this monitor.
+        finishClose(false);
+    }
+
+    private void finishClose(boolean graceful) {
         // Session observer / Native packet cleanup can fail independently of
         // transport shutdown. Neither may strand the SEND/READ leases.
         try { onTransportClosing(); }
@@ -2651,17 +2679,46 @@ public final class CUserSocket extends CSocket {
 
 
 	public void kick() {
-		LOG.info(String.format(
-				"[GameClient Kick] 강제 강퇴 처리 (DISCONNECT 전송) - IP: %s, Account: %s",
-				getIp(), getAccountName()));
-
-		SC_Disconnect.send(this);
-		close();
+		try {
+            logKick();
+            SC_Disconnect.send(this);
+        }
+		finally { close(); }
 	}
 
-    /** Public close/kick/disconnect only request transport shutdown. The socket
-     * callback starts logout after every accepted packet releases its lease. */
+    private void logKick() {
+        LOG.info(String.format(
+                "[GameClient Kick] 강제 강퇴 처리 (DISCONNECT 전송) - IP: %s, Account: %s",
+                getIp(), getAccountName()));
+    }
 
+    /** An administrative kick also retires the exact private-store or auto-clan
+     * session after its transport and packets have drained. */
+    public void kickAndLogout(L1PcInstance pc, int stamp) {
+        final boolean startClose;
+        synchronized (this) {
+            if (_activeChar != pc || pc.getNetConnection() != this || pc.getSessionStamp() != stamp) return;
+            FORCED_LOGOUT.compareAndSet(this, null, new ForcedLogout(pc, stamp));
+            markLifecycle(FORCED_CHARACTER_CLOSE);
+            startClose = beginClientClose();
+            if (startClose) _gameSessionReady = false;
+        }
+        try {
+            if (startClose) {
+                try {
+                    logKick();
+                    finishClientClose(SC_Disconnect.closePacket());
+                }
+                catch (RuntimeException | Error failure) {
+                    close();
+                    throw failure;
+                }
+            }
+        }
+        finally {
+            if (isClientCleanupComplete()) finishForcedLogout();
+        }
+    }
 
     /** Terminal packet/I/O drain starts one deferred L1 logout operation. */
     private void onTransportClosed() {
@@ -2686,17 +2743,43 @@ public final class CUserSocket extends CSocket {
         final int stamp = pc == null ? 0 : pc.getSessionStamp();
         final CUserSocketReleaseTask task = new CUserSocketReleaseTask(
                 () -> pc != null && pc.getNetConnection() == this && pc.getSessionStamp() == stamp
-                        && !pc.isPrivateShop() && !pc.isAutoClanjoin(),
-                () -> {
-                    try { pc.logout(); }
-                    catch (Throwable failure) { LOG.log(Level.SEVERE, "[GameClient Close] deferred player logout failed", failure); }
-                }, () -> cleanupAfterLogout(pc));
+                        && ((!pc.isPrivateShop() && !pc.isAutoClanjoin()) || matchesForcedLogout(pc, stamp)),
+                () -> logoutPlayer(pc), () -> cleanupAfterLogout(pc));
         if (pc == null) { task.run(); return; }
+        submitTerminalRelease(task);
+    }
+
+    private boolean matchesForcedLogout(L1PcInstance pc, int stamp) {
+        final ForcedLogout request = forcedLogout;
+        return request != null && request.pc() == pc && request.stamp() == stamp;
+    }
+
+    /** A kick arriving after the ordinary release made its decision must still
+     * complete after that release has finished, even if it detached the PC. */
+    private void finishForcedLogout() {
+        final ForcedLogout request = FORCED_LOGOUT.getAndSet(this, null);
+        if (request == null || request.pc().isLogoutStarted()) return;
+        submitTerminalRelease(() -> {
+            final L1PcInstance pc = request.pc();
+            final CUserSocket current = pc.getNetConnection();
+            if (pc.getSessionStamp() == request.stamp() && (current == this || current == null))
+                logoutPlayer(pc);
+        });
+    }
+
+    private static void logoutPlayer(L1PcInstance pc) {
+        try { pc.logout(); }
+        catch (Throwable failure) {
+            LOG.log(Level.SEVERE, "[GameClient Close] deferred player logout failed", failure);
+        }
+    }
+
+    private void submitTerminalRelease(Runnable task) {
         try {
             CSessionLifecycle.release(task);
         } catch (Exception failure) {
             LOG.log(Level.SEVERE, "[GameClient Close] deferred logout admission failed", failure);
-            if (isTransportOwnerThread()) {
+            if (CIOThreadCallback.currentShardIndex() >= 0 || isTransportOwnerThread()) {
                 try { Thread.ofVirtual().name("CIO-logout-recovery").start(task); return; }
                 catch (Throwable startFailure) {
                     LOG.log(Level.SEVERE, "[GameClient Close] emergency logout thread unavailable", startFailure);
@@ -2708,7 +2791,8 @@ public final class CUserSocket extends CSocket {
 
 
 	private void cleanupAfterLogout(L1PcInstance pc) {
-		registry.releaseCleanupIp(this);
+        try { registry.releaseCleanupIp(this); }
+        catch (RuntimeException failure) { LOG.log(Level.WARNING, "Connection limit release failed", failure); }
 
 		try {
 			LoginController.getInstance().logout(this);
@@ -2742,23 +2826,59 @@ public final class CUserSocket extends CSocket {
 		} finally {
             // Hybrid handoff is allowed only after full logout/session removal.
             try { DominationHybrid.onClientClosed(this); }
-            finally { onClientCleanupComplete(); }
+            finally {
+                onClientCleanupComplete();
+                finishForcedLogout();
+            }
 		}
 	}
 
     // Coalesce re-entry requests while the detached merchant is being retired.
     private volatile boolean privateStoreRetirementPending;
+    private volatile LoginDbLoad loginDbLoad;
 
     public boolean isPrivateStoreRetirementPending() { return privateStoreRetirementPending; }
 
     public synchronized boolean tryBeginPrivateStoreRetirement() {
-        if (privateStoreRetirementPending) return false;
+        if (privateStoreRetirementPending || loginDbLoad != null) return false;
         privateStoreRetirementPending = true;
         return true;
     }
 
     public synchronized void endPrivateStoreRetirement() {
         privateStoreRetirementPending = false;
+    }
+
+    /** A single detached login read owns the socket until its owner completes it. */
+    public static final class LoginDbLoad {
+        private final CConnectionState state;
+        private final Account account;
+
+        private LoginDbLoad(CConnectionState state, Account account) {
+            this.state = state;
+            this.account = account;
+        }
+    }
+
+    public boolean isLoginDbLoadPending() { return loginDbLoad != null; }
+
+    public synchronized LoginDbLoad tryBeginLoginDbLoad(CConnectionState state, Account account) {
+        if (loginDbLoad != null || privateStoreRetirementPending || !matchesLoginState(state, account)) return null;
+        return loginDbLoad = new LoginDbLoad(state, account);
+    }
+
+    public boolean isCurrentLoginDbLoad(LoginDbLoad request) {
+        return request != null && loginDbLoad == request && matchesLoginState(request.state, request.account);
+    }
+
+    public synchronized boolean finishLoginDbLoad(LoginDbLoad request) {
+        if (request == null || loginDbLoad != request) return false;
+        loginDbLoad = null;
+        return true;
+    }
+
+    private boolean matchesLoginState(CConnectionState state, Account account) {
+        return isConnected() && getActiveChar() == null && getConnectionState() == state && getAccount() == account;
     }
 
     private volatile PlayerShopView playerShopView;
@@ -3039,6 +3159,8 @@ public final class CUserSocket extends CSocket {
             playerShopView = null;
         }
         synchronized (this) {
+            if (pc != null && _activeChar != pc && (socketLifecycle & FORCED_CHARACTER_CLOSE) != 0)
+                throw new IllegalStateException("Cannot replace the character during a forced logout");
             if (_activeChar != pc || pc == null) trackNpcDialogue(0L, true);
             _activeChar = pc;
         }

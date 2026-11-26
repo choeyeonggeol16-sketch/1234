@@ -325,35 +325,30 @@ public final class CTransaction {
 
     public static void writeCharacterMoveRow(Connection con, ItemSnapshot snapshot,
                                              boolean insert, int previousCount) throws SQLException {
-        if (!insert && previousCount <= 0)
+        if (insert) {
+            // A plain INSERT verifies absence through the primary key. A
+            // locking read of the missing row would take a gap lock and can
+            // deadlock with an unrelated move inserting in the same gap.
+            MySqlCharactersItemStorage.insertTradeSnapshot(con, snapshot);
+            return;
+        }
+        if (previousCount <= 0)
             throw new SQLException("Missing character move original count: " + snapshot.id);
         try (PreparedStatement ps = con.prepareStatement(
-                "SELECT item_id,count FROM character_items WHERE id=? AND char_id=? FOR UPDATE")) {
+                "SELECT char_id,item_id,count FROM character_items WHERE id=? FOR UPDATE")) {
             ps.setInt(1, snapshot.id);
-            ps.setInt(2, snapshot.ownerId);
             try (ResultSet rows = ps.executeQuery()) {
-                boolean exists = rows.next();
-                if (insert ? exists : !exists)
+                if (!rows.next())
                     throw new SQLException("Character move unexpected row existence: " + snapshot.id);
-                if (exists && rows.getInt(1) != snapshot.itemId)
+                if (rows.getInt(1) != snapshot.ownerId)
+                    throw new SQLException("Character move owner conflict: " + snapshot.id);
+                if (rows.getInt(2) != snapshot.itemId)
                     throw new SQLException("Character move item type mismatch: " + snapshot.id);
-                if (exists && rows.getInt(2) != previousCount)
+                if (rows.getInt(3) != previousCount)
                     throw new SQLException("Character move stale quantity: " + snapshot.id);
             }
         }
-        // A row with this ID but a different owner must never be overwritten.
-        try (PreparedStatement ps = con.prepareStatement(
-                "SELECT char_id FROM character_items WHERE id=? FOR UPDATE")) {
-            ps.setInt(1, snapshot.id);
-            try (ResultSet rows = ps.executeQuery()) {
-                if (rows.next() && rows.getInt(1) != snapshot.ownerId)
-                    throw new SQLException("Character move owner conflict: " + snapshot.id);
-            }
-        }
-        if (insert)
-            MySqlCharactersItemStorage.insertTradeSnapshot(con, snapshot);
-        else
-            MySqlCharactersItemStorage.updateTradeSnapshot(con, snapshot, snapshot.ownerId);
+        MySqlCharactersItemStorage.updateTradeSnapshot(con, snapshot, snapshot.ownerId);
     }
 
     public static void deleteCharacterMoveRow(Connection con, int id, int ownerId,

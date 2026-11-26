@@ -25,11 +25,12 @@ public final class CAccount extends CPendingState {
     public int dirty;
     // Only CacheD-owned lightweight CUser records, never L1PcInstance copies.
     // Mutated under the existing CacheD lock.
-    private final Int2ObjectOpenHashMap<CUser> characters = new Int2ObjectOpenHashMap<>();
+    private Int2ObjectOpenHashMap<CUser> characters;
 
     public void setCharacter(CUser user) {
         if (user == null || user.objectId <= 0 || !login.equals(user.accountName))
             throw new IllegalArgumentException("Invalid account character");
+        if (characters == null) characters = new Int2ObjectOpenHashMap<>(1);
         CUser old = characters.get(user.objectId);
         if (old != null && old != user)
             throw new IllegalStateException("Character ID already cached: " + user.objectId);
@@ -37,14 +38,15 @@ public final class CAccount extends CPendingState {
     }
 
     public boolean deleteCharacter(int objectId, CUser expected) {
-        if (expected == null || characters.get(objectId) != expected) return false;
+        if (expected == null || character(objectId) != expected) return false;
         characters.remove(objectId);
+        if (characters.isEmpty()) characters = null;
         return true;
     }
 
-    public CUser character(int objectId) { return characters.get(objectId); }
-    public boolean hasCharacters() { return !characters.isEmpty(); }
-    public int characterCount() { return characters.size(); }
+    public CUser character(int objectId) { return characters == null ? null : characters.get(objectId); }
+    public boolean hasCharacters() { return characters != null; }
+    public int characterCount() { return characters == null ? 0 : characters.size(); }
 
     public CAccount(String login) { this.login = login; }
 

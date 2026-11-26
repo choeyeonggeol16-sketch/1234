@@ -130,8 +130,8 @@ public final class CS_EnterWorld {
 	}
 
 	
-	public static void handle(CUserSocket client, String charName) {
-		if (client == null || charName == null || charName.isEmpty()) {
+    public static void handle(CUserSocket client, String charName) {
+        if (client == null || charName == null || charName.isEmpty() || client.isLoginDbLoadPending()) {
 			return;
 		}
 
@@ -198,6 +198,8 @@ public final class CS_EnterWorld {
     public static void doEnterWorld(String charName, CUserSocket client) {
         if (client == null || charName == null || charName.isEmpty()
                 || !client.isConnected() || client.getAccount() == null
+                || client.getConnectionState() != CConnectionState.AUTHENTICATED
+                || client.getActiveChar() != null || client.isLoginDbLoadPending()
                 || client.isPrivateStoreRetirementPending()) return;
         final Account sessionAccount = client.getAccount();
         final CWorld expectedWorld = CWorld.getInstance();
@@ -210,40 +212,59 @@ public final class CS_EnterWorld {
         final int charId = known == null ? 0 : known.getId();
         final int accountKey = CacheD.accountOrderKey(sessionAccount.getName());
         final int specialKey = CacheD.accountOrderKey("special:" + (known == null ? charName : known.getName()));
+        final CUserSocket.LoginDbLoad request = client.tryBeginLoginDbLoad(CConnectionState.AUTHENTICATED, sessionAccount);
+        if (request == null) return;
         try {
             CacheD.getInstance().submitWarehouseLoginJob(charId, accountKey, specialKey, () -> {
+                if (!client.isCurrentLoginDbLoad(request)) {
+                    client.finishLoginDbLoad(request);
+                    return;
+                }
                 final EnterData data;
                 final Throwable failure;
                 EnterData prepared = null;
                 Throwable caught = null;
                 try {
-                    if (client.isConnected() && client.getAccount() == sessionAccount) {
-                        prepared = loadEnterData(charName, sessionAccount);
-                    }
+                    prepared = loadEnterData(charName, sessionAccount);
                 } catch (Throwable e) {
                     caught = e;
                 }
                 data = prepared;
                 failure = caught;
-                CIOThreadCallback.getInstance().completeSession(client,
-                        () -> {
-                            if (expectedWorld != CWorld.getInstance())
-                                throw new IllegalStateException("World replaced during login DB load");
-                            completeEnterWorld(charName, client, sessionAccount, data, failure);
-                        }, terminal -> {
-                    // The snapshots contain only detached items. Releasing
-                    // rejected login data needs no JDBC or world mutation.
-                    discardEnterData(data);
-                    if (terminal != null) {
-                        _log.log(Level.WARNING, "Enter owner completion failed: " + charName, terminal);
-                        if (client.isConnected() && client.getAccount() == sessionAccount
-                                && client.getActiveChar() == null) client.close();
-                    }
-                });
+                try {
+                    CIOThreadCallback.getInstance().completeSession(client,
+                            () -> {
+                                if (!client.isCurrentLoginDbLoad(request)) return;
+                                if (expectedWorld != CWorld.getInstance())
+                                    throw new IllegalStateException("World replaced during login DB load");
+                                completeEnterWorld(charName, client, sessionAccount, data, failure);
+                            }, terminal -> finishEnterLoad(client, request, charName, data, terminal));
+                } catch (RuntimeException rejected) {
+                    finishEnterLoad(client, request, charName, data, rejected);
+                }
             });
         } catch (RuntimeException e) {
-            _log.log(Level.SEVERE, "Enter DB request rejected: " + charName, e);
-            client.kick();
+            try {
+                if (client.isCurrentLoginDbLoad(request)) {
+                    _log.log(Level.SEVERE, "Enter DB request rejected: " + charName, e);
+                    client.kick();
+                }
+            } finally {
+                client.finishLoginDbLoad(request);
+            }
+        }
+    }
+
+    private static void finishEnterLoad(CUserSocket client, CUserSocket.LoginDbLoad request,
+            String charName, EnterData data, Throwable failure) {
+        try {
+            discardEnterData(data);
+            if (failure != null && client.isCurrentLoginDbLoad(request)) {
+                _log.log(Level.WARNING, "Enter owner completion failed: " + charName, failure);
+                client.close();
+            }
+        } finally {
+            client.finishLoginDbLoad(request);
         }
     }
 

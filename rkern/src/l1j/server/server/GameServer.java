@@ -3,6 +3,7 @@ package l1j.server.server;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.CWorldWork;
@@ -357,21 +358,19 @@ public class GameServer {
         // with an in-progress packet or a previously submitted logout job.
         final L1PcInstance[] pcs = CWorld.getInstance().getAllPlayers()
                 .toArray(new L1PcInstance[0]);
-        final l1j.server.server.model.network.core.connection.CUserSocket[] clients =
-                new l1j.server.server.model.network.core.connection.CUserSocket[pcs.length];
+        final CUserSocket[] clients = new CUserSocket[pcs.length];
         final long started = System.nanoTime();
         for (int i = 0; i < pcs.length; i++) {
             final L1PcInstance pc = pcs[i];
             if (pc == null || pc.noPlayerck2) continue;
-            final l1j.server.server.model.network.core.connection.CUserSocket client = pc.getNetConnection();
+            final CUserSocket client = pc.getNetConnection();
             clients[i] = client;
-            if (client != null && client != null)
-                client.close();
+            if (client != null) client.close();
         }
         for (int i = 0; i < pcs.length; i++) {
             final L1PcInstance pc = pcs[i];
             if (pc == null || pc.noPlayerck2) continue;
-            final l1j.server.server.model.network.core.connection.CUserSocket client = clients[i];
+            final CUserSocket client = clients[i];
             if (client != null) {
                 while (!client.isLogoutComplete()) {
                     if (System.nanoTime() - started >= 30_000_000_000L)
@@ -403,10 +402,10 @@ public class GameServer {
 	 * 온라인중의 플레이어에 대해서 kick , 캐릭터 정보의 보존을 한다.
 	 */
 	public static void disconnectChar(L1PcInstance pc) {
-		if (pc.getNetConnection() != null) {
-			pc.getNetConnection().kick();
-		}
-		pc.logout();
+        final int stamp = pc.getSessionStamp();
+        final CUserSocket client = pc.getNetConnection();
+        if (client != null) client.kickAndLogout(pc, stamp);
+        else pc.logout();
 	}
 
 	public static void disconnectChar(String name) {
@@ -579,36 +578,42 @@ public class GameServer {
 	            throw new IllegalStateException("NPC owner termination exceeded 30 seconds");
 	        Server.printShutdownStatus("엔피시 서버가 종료되었습니다.");
 
-	        CIOThreadCallback.getInstance().shutdown();
-            // Stop packet and actor timers before closing the CacheD write queue.
-            if (!CIOThreadCallback.getInstance().awaitTermination(
-                    30L, java.util.concurrent.TimeUnit.SECONDS))
-                throw new IllegalStateException("CIO game shard termination exceeded 30 seconds");
-	        TileOccupancyNpc.getInstance().destroy();
-	        TileOccupancy.getInstance().destroy();
+            final CacheD cache = CacheD.getInstance();
+            // Already committed receipts can still need their game owner.
+            // Keep SQL admission open until those CIO callbacks have returned.
+            while (!cache.drainBeforeOwnerShutdown(30_000L)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException("CacheD owner drain interrupted");
+                }
+                System.err.println("[CacheD] 저장 대기: accounts=" + cache.pendingAccounts()
+                        + ", characters=" + cache.pendingCharacters() + ", items=" + cache.pendingItems()
+                        + ", dbJobs=" + cache.pendingDbJobs());
+                Throwable failure = cache.lastFailure();
+                if (failure != null) failure.printStackTrace();
+                LoggerInstance.getInstance().flushImmediately();
+            }
 
-	        CacheD cache = CacheD.getInstance();
-	        while (!cache.shutdown(30_000L)) {
-	            System.err.println("[CacheD] 저장 대기: accounts=" + cache.pendingAccounts()
-	                    + ", characters=" + cache.pendingCharacters()
-	                    + ", items=" + cache.pendingItems());
-	            Throwable failure = cache.lastFailure();
-	            if (failure != null) {
-	                failure.printStackTrace();
-	            }
-	            LoggerInstance.getInstance().flushImmediately();
-	            try {
-	                Thread.sleep(5000L);
-	            } catch (InterruptedException e) {
-	                Thread.currentThread().interrupt();
-	            }
-	        }
+            final CIOThreadCallback cio = CIOThreadCallback.getInstance();
+            cio.shutdown();
+            if (!cio.awaitTermination(30L, TimeUnit.SECONDS))
+                throw new IllegalStateException("CIO game shard termination exceeded 30 seconds");
+            TileOccupancyNpc.getInstance().destroy();
+            TileOccupancy.getInstance().destroy();
+
+            // An owner may have queued follow-up writes after acknowledging
+            // replay. Its callback has now finished, so seal and drain CacheD.
+            while (!cache.shutdown(30_000L)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException("CacheD final shutdown interrupted");
+                }
+            }
 
 	       Server.printShutdownStatus("게임서버가 종료되었습니다.");
 	        DatabaseFactory.getInstance().shutdown();
 
 	    } catch (Throwable t) {
 	        fatal = t;
+            if (t instanceof InterruptedException) Thread.currentThread().interrupt();
 	        t.printStackTrace();
 	        LoggerInstance.getInstance().flushImmediately();
 	    } finally {

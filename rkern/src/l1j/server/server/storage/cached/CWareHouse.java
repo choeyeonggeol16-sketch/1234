@@ -88,12 +88,4 @@ public final class CWareHouse {
         }
     }
 
-    public void expeditePendingItems(int ownerId, Int2ObjectOpenHashMap<CItem> items) {
-        IntOpenHashSet ids = pendingItemIds.get(ownerId);
-        if (ids == null) return;
-        for (IntIterator it = ids.iterator(); it.hasNext();) {
-            CItem item = items.get(it.nextInt());
-            if (item != null) item.urgent = true;
-        }
-    }
 }

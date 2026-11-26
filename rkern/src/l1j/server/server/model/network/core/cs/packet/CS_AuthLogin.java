@@ -38,9 +38,9 @@ public final class CS_AuthLogin {
     }
 
     public static void handle(CUserSocket client, String rawAccountName, String password) {
-        if (client == null) {
-            return;
-        }
+        if (client == null || !client.isConnected() || client.getAccount() != null
+                || client.getConnectionState() != CConnectionState.CONNECTED
+                || client.isLoginDbLoadPending()) return;
 
         final String accountName =
                 rawAccountName != null ? rawAccountName.toLowerCase().trim() : null;
@@ -72,8 +72,14 @@ public final class CS_AuthLogin {
             return;
         }
 
+        final CUserSocket.LoginDbLoad request = client.tryBeginLoginDbLoad(CConnectionState.CONNECTED, null);
+        if (request == null) return;
         try {
             CacheD.getInstance().submitDbJobOrdered(accountName, () -> {
+                if (!client.isCurrentLoginDbLoad(request)) {
+                    client.finishLoginDbLoad(request);
+                    return;
+                }
                 final AuthLoad loaded;
                 final Throwable failure;
                 AuthLoad result = null;
@@ -82,27 +88,46 @@ public final class CS_AuthLogin {
                 catch (Throwable e) { error = e; }
                 loaded = result;
                 failure = error;
-                if (!CIOThreadCallback.getInstance().completeSession(client, () -> {
-                    if (!client.isConnected()) return;
-                    if (failure != null) {
-                        _log.log(Level.SEVERE, "Auth DB load failed: " + accountName, failure);
-                        client.close();
-                        return;
-                    }
-                    try {
-                        if (isAuthority(client, accountName, loaded))
-                            sendNotice(client, client.getAccountName());
-                    } catch (Exception e) {
-                        _log.log(Level.WARNING, "RAuthLoginHandler flow exception", e);
-                        client.close();
-                    }
-                })) {
-                    _log.warning("Auth DB callback rejected: " + accountName);
+                try {
+                    CIOThreadCallback.getInstance().completeSession(client, () -> {
+                        if (!client.isCurrentLoginDbLoad(request)) return;
+                        if (failure != null) {
+                            _log.log(Level.SEVERE, "Auth DB load failed: " + accountName, failure);
+                            client.close();
+                            return;
+                        }
+                        try {
+                            if (isAuthority(client, accountName, loaded))
+                                sendNotice(client, client.getAccountName());
+                        } catch (Exception e) {
+                            _log.log(Level.WARNING, "RAuthLoginHandler flow exception", e);
+                            client.close();
+                        }
+                    }, terminal -> finishAuthLoad(client, request, accountName, terminal));
+                } catch (RuntimeException rejected) {
+                    finishAuthLoad(client, request, accountName, rejected);
                 }
             });
         } catch (RuntimeException e) {
-            _log.log(Level.SEVERE, "Auth DB request rejected: " + accountName, e);
-            client.close();
+            try {
+                if (client.isCurrentLoginDbLoad(request)) {
+                    _log.log(Level.SEVERE, "Auth DB request rejected: " + accountName, e);
+                    client.close();
+                }
+            } finally {
+                client.finishLoginDbLoad(request);
+            }
+        }
+    }
+
+    private static void finishAuthLoad(CUserSocket client, CUserSocket.LoginDbLoad request,
+            String accountName, Throwable failure) {
+        try {
+            if (failure != null && client.isCurrentLoginDbLoad(request)) {
+                _log.log(Level.WARNING, "Auth DB completion failed: " + accountName, failure);
+            }
+        } finally {
+            client.finishLoginDbLoad(request);
         }
     }
 

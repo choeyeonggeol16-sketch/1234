@@ -41,6 +41,7 @@ public final class CGetItemAction extends CNewAction {
     private CUserInventory pickupInven;
     private CInventory pickupGInven;
     private long effectiveAmount;
+    private boolean disconnectAfterPickup;
 
     CGetItemAction(CCreatureController controller) {
         super(controller);
@@ -158,7 +159,14 @@ public final class CGetItemAction extends CNewAction {
             t.printStackTrace();
             return false;
         } finally {
+            final boolean disconnectOwner = disconnectAfterPickup;
+            disconnectAfterPickup = false;
             clearTemp();
+            // Claim the socket close only after releasing the ground inventory.
+            if (disconnectOwner) {
+                try { GameServer.disconnectChar(owner); }
+                catch (RuntimeException failure) { LOG.log(Level.WARNING, "Pickup disconnect failed", failure); }
+            }
             if (blockedTrade != null) blockedTrade.RejectPickup(owner);
         }
     }
@@ -262,7 +270,7 @@ public final class CGetItemAction extends CNewAction {
          * 클라이언트가 0/음수를 보냈다는 이유로 정상 ground item을 지우지 않는다.
          */
         if (itemCount <= 0L || itemCount > MAX_STACKABLE) {
-            GameServer.disconnectChar(owner);
+            disconnectAfterPickup = true;
 
             pickupGInven.Pop(pickupItem);
             CWorld.getInstance().removeObject(pickupItem);
