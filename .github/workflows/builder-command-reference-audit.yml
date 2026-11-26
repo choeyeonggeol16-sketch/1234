@@ -142,3 +142,4 @@ jobs:
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 rkern/tests/trade_lifecycle/test_trade_lifecycle.py
           python3 rkern/tests/trade_lifecycle/test_destroy_request.py
+          python3 rkern/tests/trade_lifecycle/test_private_store.py
