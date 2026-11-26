@@ -55,7 +55,7 @@ stub(M+".network.core.connection", "CUserSocket", """
 public class CUserSocket {
     public volatile boolean connected=true;
     public volatile L1PcInstance active;
-    public int starts, adds, result=-1, results, token, resync;
+    public int starts, adds, result=-1, results, token, resync, messages;
     public boolean failAdd, failAsk;
     public int affinityShard(){return 0;}
     public L1PcInstance getActiveChar(){return active;}
@@ -91,7 +91,8 @@ public class L1PcInstance {
     public final CUserSocket socket=new CUserSocket();
     public final CUserInventory inv=new CUserInventory();
     private final java.util.concurrent.atomic.AtomicBoolean gate=new java.util.concurrent.atomic.AtomicBoolean();
-    private final java.util.Map<Integer,Object> pets=new java.util.HashMap<>(), dolls=new java.util.HashMap<>();
+    private final java.util.Map<Integer,Object> dolls=new java.util.HashMap<>();
+    public L1CompanionInstance companion;
     public L1PcInstance(int id){this.id=id;account="a"+id;socket.active=this;}
     public int getId(){return id;} public String getName(){return account;}
     public String getAccountName(){return account;} public int getLevel(){return 80;}
@@ -108,14 +109,14 @@ public class L1PcInstance {
     public void endItemTransfer(int n){if(n==1)gate.set(false);}
     public boolean isItemTransferBusy(){return gate.get();}
     public CUserInventory getInventory(){return inv;}
-    public java.util.Map<Integer,Object> getPetList(){return pets;}
+    public L1CompanionInstance get_companion(){return companion;}
     public java.util.Map<Integer,Object> getDollList(){return dolls;}
     public Light getLight(){return new Light();}
     public static class Light { public void turnOnOffLight(){} }
 }
 """, f"import {M}.*; import {M}.network.core.connection.CUserSocket;")
-for name in ("L1PetInstance","L1DollInstance"):
-    stub(M+".Instance", name, f"public class {name} {{ public int getItemObjId(){{return 0;}} }}")
+stub(M+".Instance", "L1DollInstance", "public class L1DollInstance { public int getItemObjId(){return 0;} }")
+stub(M+".Instance", "L1CompanionInstance", "public class L1CompanionInstance { public int control; public int get_control_object_id(){return control;} }")
 stub("l1j.server.server.datatables","NoTradable","public class NoTradable { public static NoTradable getInstance(){return new NoTradable();} public boolean isNoTradable(int id){return false;} }")
 stub(M+".character.companion.instance","CompanionInstanceCache","public class CompanionInstanceCache { public static boolean is_companion_oblivion(int id){return true;} }")
 stub(M+".item","L1ItemId","public class L1ItemId { public static final int HIGH_CHARACTER_TRADE=999,LOW_CHARACTER_TRADE=998; }")
@@ -129,7 +130,7 @@ stub(P,"SC_TradeAddItem","public class SC_TradeAddItem { public static boolean s
 stub(P,"SC_TradeStatus","public class SC_TradeStatus { public static boolean send(CUserSocket s,int result){s.result=result;s.results++;return true;} }",imports)
 stub(P,"SC_ItemStatus","public class SC_ItemStatus { public static boolean send(L1PcInstance pc,L1ItemInstance item){pc.socket.resync++;return true;} }",imports)
 stub(P,"SC_ServerMessage","public class SC_ServerMessage { public static boolean send(L1PcInstance pc,int type,String... text){return true;} }",imports)
-stub(P,"SC_SystemMessage","public class SC_SystemMessage { public static boolean send(L1PcInstance pc,String text){return true;} }",imports)
+stub(P,"SC_SystemMessage","public class SC_SystemMessage { public static boolean send(L1PcInstance pc,String text){pc.socket.messages++;return true;} }",imports)
 stub(M+".network.thread","CIOThreadCallback","""
 public class CIOThreadCallback {
     private static final CIOThreadCallback INSTANCE=new CIOThreadCallback();
@@ -314,6 +315,21 @@ public class TradeLifecycleTest {
         final L1PcInstance pendingChange=b;L1InventoryTransaction.planHook=()->pendingChange.changeItem=true;
         try{t.PressDone(a);t.PressDone(b);}finally{L1InventoryTransaction.planHook=null;}
         retired(t,a,b);check(v.count==9&&L1InventoryTransaction.pending==null,"pending change during planning");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);t.RequestAddItems(a,v.id,2);
+        t.RejectPickup(a);retired(t,a,b);
+        check(a.socket.result==1&&b.socket.result==1&&a.socket.messages==1&&v.count==9,"pickup cancels both, no ownership mutation");
+        a=pc();b=pc();t=request(a,b);t.RejectPickup(b);retired(t,a,b);
+        check(b.socket.messages==1,"pickup cancels pending request");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);pending(a,b,t,v);
+        t.RejectPickup(b);check(t.IsResolving()&&b.socket.messages==1&&a.GetTrade()==t,"pickup cannot cancel pending receipt");
+        L1InventoryTransaction.complete(1);retired(t,a,b);
+        a=pc();b=pc();t=open(a,b);v=item(a,9);a.companion=new L1CompanionInstance();a.companion.control=v.id;
+        t.RequestAddItems(a,v.id,2);check(a.socket.adds==0,"active companion control item rejected");
+        t.Canceled(a);retired(t,a,b);
+        a=pc();b=pc();t=open(a,b);v=item(a,9);t.RequestAddItems(a,v.id,2);
+        a.companion=new L1CompanionInstance();a.companion.control=v.id;
+        t.PressDone(a);t.PressDone(b);retired(t,a,b);
+        check(v.count==9&&L1InventoryTransaction.pending==null,"companion summoned after offer rejected");
         for(int round=0;round<100;round++){
             final L1PcInstance x=pc(),y=pc(),z=pc();
             Thread left=new Thread(()->MGR.CreateTrade(x,y)),right=new Thread(()->MGR.CreateTrade(x,z));

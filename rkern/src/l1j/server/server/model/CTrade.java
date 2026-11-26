@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.datatables.NoTradable;
-import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -149,8 +149,8 @@ public final class CTrade {
                 || !source.getItem().isTradable() || source.getBless()>=128 || characterToken(source)
                 || (!from.isGm() && NoTradable.getInstance().isNoTradable(source.getItemId()))
                 || !CompanionInstanceCache.is_companion_oblivion(source.getId())) return false;
-        for(Object value:from.getPetList().values())
-            if(value instanceof L1PetInstance pet && pet.getItemObjId()==source.getId()) return false;
+        final L1CompanionInstance companion = from.get_companion();
+        if (companion != null && companion.get_control_object_id() == source.getId()) return false;
         for(Object value:from.getDollList().values())
             if(value instanceof L1DollInstance doll && doll.getItemObjId()==source.getId()) return false;
         return true;
@@ -407,6 +407,14 @@ public final class CTrade {
     public synchronized void Canceled(L1PcInstance pc) {
         if (!member(pc) || state == COMMITTING || state == ENDED) return;
         close(false, true);
+    }
+    /** OFF User::GetItem: reject this pickup and cancel the captured exchange.
+     * An admitted CacheD settlement cannot be canceled. No inventory locks held. */
+    public synchronized void RejectPickup(L1PcInstance pc) {
+        if (!member(pc)) return;
+        Canceled(pc);
+        if (pc == first ? liveFirst() : liveSecond())
+            SC_SystemMessage.send(pc, "교환 중에는 아이템을 줍거나 사용할 수 없습니다.");
     }
     /** One deadline per active trade, refreshed on successful operations. */
     synchronized long CheckTradeTimeout() {

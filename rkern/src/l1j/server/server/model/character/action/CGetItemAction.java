@@ -11,6 +11,7 @@ import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CInventory;
+import l1j.server.server.model.CTrade;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.CParty;
@@ -61,6 +62,7 @@ public final class CGetItemAction extends CNewAction {
         final long requestedAmount = controller.l0();
 
         clearTemp();
+        CTrade blockedTrade = null;
 
         try {
             /*
@@ -71,6 +73,11 @@ public final class CGetItemAction extends CNewAction {
                 GameServer.disconnectChar(owner);
                 return true;
             }
+
+            // OFF User::GetItem: abort the pickup as well as the trade.
+            // Close outside the ground monitor; close may resync inventory.
+            blockedTrade = owner.GetTrade();
+            if (blockedTrade != null) return true;
 
             pickupGInven =
                     L1World.getInstance().findGroundInventory(x, y, owner.getMapId());
@@ -100,24 +107,30 @@ public final class CGetItemAction extends CNewAction {
                         && L1GroundInventory.supportsReceiptPickup(pickupItem)) {
                     final L1ItemInstance pickedItem = pickupItem;
                     final int count = (int) effectiveAmount;
-                    ground.RequestPickItem(owner, pickedItem, count, () -> {
+                    if (!ground.RequestPickItem(owner, pickedItem, count, () -> {
                         notifySinglePickup(owner, party, pickedItem);
                         finalizePickup(owner, tId, count, pickedItem, false);
-                    });
+                    })) blockedTrade = owner.GetTrade();
                     return true;
                 }
-                if (partyAuto) {
-                    picked = handlePartyDistribution(
-                            owner,
-                            party,
-                            itemId,
-                            dropMobId,
-                            effectiveAmount);
-                } else {
-                    picked = handleSinglePickup(
-                            owner,
-                            party,
-                            effectiveAmount);
+                // Prevent remote trade attachment during legacy/party pickup.
+                // Receipt pickup reserves its own gate.
+                if (!pickupInven.tryBeginEquipmentChange()) {
+                    blockedTrade = owner.GetTrade();
+                    return true;
+                }
+                try {
+                    blockedTrade = owner.GetTrade();
+                    if (blockedTrade != null) return true;
+                    if (partyAuto) {
+                        picked = handlePartyDistribution(
+                                owner, party, itemId, dropMobId, effectiveAmount);
+                    } else {
+                        picked = handleSinglePickup(
+                                owner, party, effectiveAmount);
+                    }
+                } finally {
+                    pickupInven.endEquipmentChange();
                 }
             }
 
@@ -136,6 +149,7 @@ public final class CGetItemAction extends CNewAction {
             return false;
         } finally {
             clearTemp();
+            if (blockedTrade != null) blockedTrade.RejectPickup(owner);
         }
     }
 
