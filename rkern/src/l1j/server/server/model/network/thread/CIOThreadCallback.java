@@ -32,6 +32,8 @@ import l1j.server.server.model.character.skill.SkillHandlers;
 import l1j.server.server.model.character.skill.TomahawkBleedService;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.execution.CIOShardContext;
+import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.network.core.sc.packet.SC_GameTime;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -1005,6 +1007,7 @@ public final class CIOThreadCallback {
     }
 
 	private static final class UserTimerTask implements WheelTask {
+		private static final long GAME_TIME_SYNC_SECONDS = 300L;
 		private static final long SAVE_RETRY_MIN_NS = TimeUnit.SECONDS.toNanos(2L);
 		private static final long SAVE_RETRY_MAX_NS = TimeUnit.SECONDS.toNanos(60L);
 		final L1PcInstance actor;
@@ -1021,6 +1024,7 @@ public final class CIOThreadCallback {
 		volatile long nextCharSaveNs;
 		volatile long nextInvSaveNs;
 		private volatile boolean savePending;
+		private long lastGameTimeBucket = Long.MIN_VALUE;
 		int charSaveFailures;
 		int invSaveFailures;
 
@@ -1121,21 +1125,43 @@ public final class CIOThreadCallback {
 			owner.dispatchPcWheelTask(this, actor, h, sessionStamp);
 		}
 
-		@Override public void runOnController(L1PcInstance pc) {
-			if (h.isCancelled() || pc != actor || pc.getSessionStamp() != sessionStamp) return;
+		private void syncGameTimeIfDue(L1PcInstance pc) {
+			if (!activeSession(pc) || pc.is무인상점() || pc.getNetConnection() == null) return;
+			try {
+				final L1GameTimeClock clock = L1GameTimeClock.getInstance();
+				if (clock == null) return;
+				final long serverTime = clock.getGameTime().getSeconds();
+				final long bucket = serverTime / GAME_TIME_SYNC_SECONDS;
+				if (bucket != lastGameTimeBucket && SC_GameTime.send(pc, serverTime))
+					lastGameTimeBucket = bucket;
+			} catch (RuntimeException failure) {
+				LOGGER.log(Level.WARNING, "User game-time sync failed: " + pc.getId(), failure);
+			}
+		}
+
+		/** User::TimerExpired-style heartbeat, dispatched by the existing CIO owner. */
+		private void TimerExpired(L1PcInstance pc) {
 			try {
 				try {
 					pc.getRegenController().TimerExpired();
 				} finally {
-					// Retain the existing regeneration/Einhasad tick order.
 					pc.einhasadHeartbeatFromController();
 				}
 			} finally {
 				try {
-					requestSaveIfDue(pc);
+					syncGameTimeIfDue(pc);
 				} finally {
-					finishPcWheelTask(owner, this, 1, USER_TIMER_TICK_MS);
+					requestSaveIfDue(pc);
 				}
+			}
+		}
+
+		@Override public void runOnController(L1PcInstance pc) {
+			if (h.isCancelled() || pc != actor || pc.getSessionStamp() != sessionStamp) return;
+			try {
+				TimerExpired(pc);
+			} finally {
+				finishPcWheelTask(owner, this, 1, USER_TIMER_TICK_MS);
 			}
 		}
 

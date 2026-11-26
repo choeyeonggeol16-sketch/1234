@@ -88,7 +88,6 @@ import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.character.skill.passive.PassiveInfo;
 import l1j.server.server.model.character.slot.SwapSlotItems;
 import l1j.server.server.model.classes.L1ClassFeature;
-import l1j.server.server.model.gametime.L1GameTimeCarrier;
 import l1j.server.server.model.item.Card.L1CardCollection;
 import l1j.server.server.model.item.Exp.ExpBonusState;
 import l1j.server.server.model.item.proc.ItemSkillModelLoader;
@@ -2526,7 +2525,6 @@ public class L1PcInstance extends L1Character {
 		try { PremiumTimeController.getInstance().unregister(this);  } catch (Throwable ignore) {}
 		try { CharTamScheduler.getInstance().onLeaveWorld(this); } catch (Throwable ignore) {}
 		try { CIOThreadCallback.getInstance().unregisterPc(this);  } catch (Throwable ignore) {}
-		try { stopGameTimeCarrier(); } catch (Throwable ignore) {}
 		if (this.getNetConnection() != null) {
 			Account acc = this.getNetConnection().getAccount();
 			if (acc != null) {
@@ -5068,20 +5066,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		SC_OwnCharStatus.send(this);
 	}
 
-	private L1GameTimeCarrier _gameTimeCarrier;
-
-	public void beginGameTimeCarrier() {
-	    stopGameTimeCarrier();
-	    _gameTimeCarrier = new L1GameTimeCarrier(this);
-	    _gameTimeCarrier.start();
-	}
-
-	public void stopGameTimeCarrier() {
-	    if (_gameTimeCarrier != null) {
-	        _gameTimeCarrier.stop();
-	        _gameTimeCarrier = null;
-	    }
-	}
 	public boolean isGhost() {
 		return _ghost;
 	}

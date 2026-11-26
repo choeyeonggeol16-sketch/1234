@@ -601,7 +601,6 @@ public final class CS_EnterWorld {
         }
         L1World.getInstance().addVisibleObject(pc);
         pc.startObjectAutoUpdate();
-        pc.beginGameTimeCarrier();
         clampHpMp(pc);
         final List<L1ItemInstance> loadedEquipment = CharacterTable.getInstance()
                 .restoreInventoryFromSnapshots(pc, data.items, data.warehouseItems);
