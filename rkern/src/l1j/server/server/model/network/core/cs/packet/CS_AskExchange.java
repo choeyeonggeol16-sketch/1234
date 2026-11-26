@@ -1,9 +1,9 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.CTradeManager;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
-import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.FaceToFace;
@@ -116,32 +116,8 @@ public final class CS_AskExchange {
         }
 
 
-        final L1PcInstance first = player.getId() < target.getId() ? player : target;
-        final L1PcInstance second = first == player ? target : player;
-        if (!first.tryBeginTradeResolution()) return;
-        if (!second.tryBeginTradeResolution()) {
-            first.endTradeResolution();
-            return;
-        }
-        try {
-            // Do not forcibly cancel an existing pair: cancellation may be
-            // refused because its DB transaction or escrow return is pending.
-            if (player.getTradeID() != 0 || target.getTradeID() != 0
-                    || player.isItemTransferBusy() || target.isItemTransferBusy()
-                    || player.getTradeWindowInventory().getSize() != 0
-                    || target.getTradeWindowInventory().getSize() != 0) {
-                SC_SystemMessage.send(player, "상대방이 거래를 처리 중입니다. 잠시 후 다시 시도해 주세요.");
-                return;
-            }
-            player.setTradeOk(false);
-            target.setTradeOk(false);
-            player.setTradeID(target.getId());
-            target.setTradeID(player.getId());
-            SC_MessageYN.send(target, 252, player.getName());
-        } finally {
-            second.endTradeResolution();
-            first.endTradeResolution();
-        }
+        if (!CTradeManager.getInstance().CreateTrade(player, target))
+            SC_SystemMessage.send(player, "상대방이 거래를 처리 중입니다. 잠시 후 다시 시도해 주세요.");
     }
 
     private static boolean hasAnyChangeItem(

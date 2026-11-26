@@ -24,6 +24,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CReplyChecker;
+import l1j.server.server.model.CTrade;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
@@ -424,32 +425,23 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
             // or debit clan funds (including a cancellation packet).
             SC_SystemMessage.send(pc, "리뉴얼 공사로인해 이용 불가능합니다.");
             break;
-		case 252:
-			L1PcInstance trading_partner = (L1PcInstance) L1World.getInstance().findObject(pc.getTradeID());
-			L1Npc npc = CObjectDB.GetNPC(400064);
-			L1Npc npc3 = CObjectDB.GetNPC(300027);
-			if (trading_partner != null) {
-				if (c == 0) {
-					SC_ServerMessage.send(trading_partner, 253, pc.getName());
-					pc.setTradeID(0);
-					trading_partner.setTradeID(0);
-				} else if (c == 1) {
-					SC_Trade.send(pc, trading_partner.getName());
-					SC_Trade.send(trading_partner, pc.getName());
-				}
-			} else {
-				if (c == 0) {
-					pc.setTradeID(0);
-				} else if (c == 1) {
-					if (pc.getX() == 33507 && pc.getY() == 32851 && pc.getMapId() == 4) {
-						SC_Trade.send(pc, npc.get_name());
-					} else if (pc.getX() == 33515 && pc.getY() == 32851 && pc.getMapId() == 4) {
-						SC_Trade.send(pc, npc3.get_name());
-					}
-				}
-			}
-			break;
-		case 321:
+        case 252: {
+            CTrade trade = pc.GetTrade();
+            if (trade != null) {
+                trade.Request(pc, msgIdx, c);
+            } else if (msgIdx == 0 && c == 1) {
+                // Preserve the legacy NPC-only dialog, not a stale player reply.
+                int npcId = 0;
+                if (pc.getMapId() == 4 && pc.getY() == 32851) {
+                    if (pc.getX() == 33507) npcId = 400064;
+                    else if (pc.getX() == 33515) npcId = 300027;
+                }
+                L1Npc npc = npcId == 0 ? null : CObjectDB.GetNPC(npcId);
+                if (npc != null) SC_Trade.send(pc, npc.get_name());
+            }
+            break;
+        }
+        case 321:
 			L1PcInstance resusepc1 = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
 			pc.setTempID(0);
 			if (resusepc1 != null) {

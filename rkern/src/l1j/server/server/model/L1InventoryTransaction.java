@@ -166,9 +166,8 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         }
     }
 
-    static L1InventoryTransaction beginTrade(L1PcInstance first, L1PcInstance second) {
-        if (second == null || first == second || first.getTradeID() != second.getId()
-                || second.getTradeID() != first.getId() || !first.getTradeOk() || !second.getTradeOk())
+    static L1InventoryTransaction beginTrade(CTrade trade, L1PcInstance first, L1PcInstance second) {
+        if (trade == null || first == null || second == null || !trade.ReadyForCommit(first, second))
             throw new IllegalStateException("Unconfirmed trade relation");
         return new L1InventoryTransaction(first, second, second.getId(), true);
     }

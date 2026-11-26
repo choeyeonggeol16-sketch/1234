@@ -50,7 +50,6 @@ import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.L1EquipmentSlot;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1GroundInventory;
-import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1Karma;
 import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.L1Object;
@@ -64,7 +63,8 @@ import l1j.server.server.model.L1ReturnStatTemp;
 import l1j.server.server.model.L1SmallIntMap;
 import l1j.server.server.model.L1StatReset;
 import l1j.server.server.model.L1TownLocation;
-import l1j.server.server.model.L1Trade;
+import l1j.server.server.model.CTrade;
+import l1j.server.server.model.CTradeManager;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.ReportDeley;
 import l1j.server.server.model.character.CYieldLock;
@@ -760,7 +760,6 @@ public class L1PcInstance extends L1Character {
 	private boolean _banned;
 	private boolean _isAutoClanjoin = false;
 	private boolean _gresValid;
-	private volatile boolean _tradeOk;
     // Covers the short interval between a durable item transfer's prepare
     // and the CIO owner's post-COMMIT replay. Does NOT wait for JDBC.
     private volatile int itemTransferBusy;
@@ -821,20 +820,9 @@ public class L1PcInstance extends L1Character {
         return (itemTransferBusy & 1) != 0;
     }
 
-	private volatile int tradeResolutionBusy;
-	private static final AtomicIntegerFieldUpdater<L1PcInstance> TRADE_RESOLUTION =
-			AtomicIntegerFieldUpdater.newUpdater(L1PcInstance.class, "tradeResolutionBusy");
-
-	public boolean tryBeginTradeResolution() {
-		return TRADE_RESOLUTION.compareAndSet(this, 0, 1);
-	}
-
-	public void endTradeResolution() {
-		TRADE_RESOLUTION.set(this, 0);
-	}
-
     public boolean isTradeResolving() {
-        return tradeResolutionBusy != 0;
+        CTrade trade = _trade;
+        return trade != null && trade.IsResolving();
     }
 	public boolean RootMent = true;// 루팅 멘트]
 	public boolean RootMent1 = true;// 루팅 멘트]
@@ -944,7 +932,6 @@ public class L1PcInstance extends L1Character {
 	private int karmaReceiptRevision;
 	private final CUserInventory _inventory;
 	private final L1DwarfForPackageInventory _dwarfForPackage;
-	private final CInventory _tradewindow;
 
 	private L1ItemInstance _weapon;
 	private L1ItemInstance _secondweapon;
@@ -955,7 +942,7 @@ public class L1PcInstance extends L1Character {
 	private int _cookingId = 0;
 	private int _partyID;
 	private volatile int _partyType;
-	private volatile int _tradeID;
+	private volatile CTrade _trade;
 	private int _tempID;
 
 	private CQuestSystem _quest;
@@ -1128,7 +1115,6 @@ public class L1PcInstance extends L1Character {
 		_currentWeapon = 0;
 		_inventory = new CUserInventory(this);
 		_dwarfForPackage = new L1DwarfForPackageInventory(this);
-		_tradewindow = new CInventory();
 		userBookmark = new CUserBookmark();
 		_quest = new CQuestSystem(this);
 		_equipSlot = new L1EquipmentSlot(this);
@@ -2107,9 +2093,6 @@ public class L1PcInstance extends L1Character {
 		return _dwarfForPackage;
 	}
 
-	public CInventory getTradeWindowInventory() {
-		return _tradewindow;
-	}
 
 	public boolean isGmInvis() {
 		return _gmInvis;
@@ -2269,8 +2252,7 @@ public class L1PcInstance extends L1Character {
 		// 트레이드를 중지한다
 		try {
 			if (getTradeID() != 0) { // 트레이드중
-				L1Trade trade = new L1Trade();
-				trade.TradeCancel(this);
+				CTradeManager.getInstance().CancelTrade(this);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -2657,21 +2639,15 @@ public class L1PcInstance extends L1Character {
 		_partyType = partyType;
 	}
 
-	public int getTradeID() {
-		return _tradeID;
-	}
+    public CTrade GetTrade() { return _trade; }
 
-	public void setTradeID(int tradeID) {
-		_tradeID = tradeID;
-	}
+    /** Set only by CTradeManager under its registry monitor. */
+    public void SetTrade(CTrade trade) { _trade = trade; }
 
-	public void setTradeOk(boolean tradeOk) {
-		_tradeOk = tradeOk;
-	}
-
-	public boolean getTradeOk() {
-		return _tradeOk;
-	}
+    public int getTradeID() {
+        CTrade trade = _trade;
+        return trade == null ? 0 : trade.GetID();
+    }
 
 	public int getTempID() {
 		return _tempID;
