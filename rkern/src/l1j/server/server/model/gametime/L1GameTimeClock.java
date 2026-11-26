@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 
 public class L1GameTimeClock {
     private static final Logger _log = Logger.getLogger(L1GameTimeClock.class.getName());
@@ -89,7 +90,7 @@ public class L1GameTimeClock {
         final L1GameTimeClock clock = _instance;
         if (clock._future != null) return;
         clock._currentTime = new L1GameTime();
-        clock._future = CServerTimer.fixedRate(
+        clock._future = CWorldWork.scheduleAtFixedRate(
                 clock.new TimeUpdater(), 0L, TIMER_INTERVAL);
         if (clock._future == null) throw new IllegalStateException("Game clock timer rejected");
     }

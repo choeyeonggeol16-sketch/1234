@@ -5,7 +5,7 @@ import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -4109,13 +4109,13 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
                 }
 
                 if (nextDelayMs <= 0L) {
-                    TaskLane.SESSION.execute(this);
+                    CWorldWork.execute(this);
                 } else {
-                    TaskLane.SESSION.scheduleRequired(this, nextDelayMs);
+                    CWorldWork.scheduleRequired(this, nextDelayMs);
                 }
             }
         };
 
-        TaskLane.SESSION.execute(task);
+        CWorldWork.execute(task);
     }
 }

@@ -5,7 +5,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import java.util.ArrayList;
 import java.util.Random;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1FieldObjectInstance;
@@ -98,9 +98,9 @@ public class L1HauntedHouse implements Runnable {
 			case EXECUTE_STATUS_NONE: {
 				if (getHauntedHouseStatus() == STATUS_READY) {
 					_executeStatus = EXECUTE_STATUS_PREPARE;
-					TaskLane.INSTANCE.scheduleRequired(this, 60000L);
+					CInstanceWork.scheduleRequired(this, 60000L);
 				} else {
-					TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+					CInstanceWork.scheduleRequired(this, 1000L);
 				}
 			}
 				break;
@@ -116,7 +116,7 @@ public class L1HauntedHouse implements Runnable {
 					_executeStatus = EXECUTE_STATUS_NONE;
 				}
 
-				TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+				CInstanceWork.scheduleRequired(this, 1000L);
 			}
 				break;
 
@@ -130,7 +130,7 @@ public class L1HauntedHouse implements Runnable {
 					_executeStatus = EXECUTE_STATUS_PROGRESS;
 				}
 
-				TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+				CInstanceWork.scheduleRequired(this, 1000L);
 			}
 				break;
 
@@ -139,9 +139,9 @@ public class L1HauntedHouse implements Runnable {
 				if (getHauntedHouseStatus() == STATUS_CLEANUP) {
 					if (endCountDown()) {
 						_executeStatus = EXECUTE_STATUS_FINALIZE;
-						TaskLane.INSTANCE.scheduleRequired(this, 5 * 60 * 000L);
+						CInstanceWork.scheduleRequired(this, 5 * 60 * 000L);
 					} else {
-						TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+						CInstanceWork.scheduleRequired(this, 1000L);
 					}
 				} else {
 					if (--_count == 0) {
@@ -153,7 +153,7 @@ public class L1HauntedHouse implements Runnable {
 						endHauntedHouse();
 
 					}
-					TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+					CInstanceWork.scheduleRequired(this, 1000L);
 				}
 			}
 				break;
@@ -162,7 +162,7 @@ public class L1HauntedHouse implements Runnable {
 				_executeStatus = EXECUTE_STATUS_NONE;
 				setHauntedHouseStatus(STATUS_NONE);
 
-				TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+				CInstanceWork.scheduleRequired(this, 1000L);
 			}
 				break;
 			}

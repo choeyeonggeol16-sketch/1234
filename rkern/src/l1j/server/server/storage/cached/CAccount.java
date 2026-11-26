@@ -12,12 +12,14 @@ public final class CAccount extends CPendingState {
     public static final int LAST_ACTIVE = 1;
     public static final int LAST_LOGOUT = 1 << 1;
     public static final int BLESS_OF_AIN = 1 << 2;
+    public static final int RAID_BUFF = 1 << 3;
 
     public final String login;
     public String ip;
     public long lastActive;
     public long lastLogout;
     public int blessOfAin;
+    public long raidBuffUntil;
     public int dirty;
     // Only CacheD-owned lightweight CUser records, never L1PcInstance copies.
     // Mutated under the existing CacheD lock.
@@ -52,22 +54,24 @@ public final class CAccount extends CPendingState {
 
     /** Immutable DB write image; later account updates remain in the owner. */
     public static final class Snapshot {
-        public final CAccount owner;
+        public final String login;
         public final int mask;
         public final long version;
         public final String ip;
         public final long lastActive;
         public final long lastLogout;
         public final int blessOfAin;
+        public final long raidBuffUntil;
 
         public Snapshot(CAccount owner) {
-            this.owner = owner;
+            this.login = owner.login;
             this.mask = owner.dirty;
             this.version = owner.version;
             this.ip = owner.ip;
             this.lastActive = owner.lastActive;
             this.lastLogout = owner.lastLogout;
             this.blessOfAin = owner.blessOfAin;
+            this.raidBuffUntil = owner.raidBuffUntil;
         }
     }
 
@@ -86,6 +90,9 @@ public final class CAccount extends CPendingState {
         if ((mask & CAccount.BLESS_OF_AIN) != 0) {
             sql.append("bless_of_ain=?,");
         }
+        if ((mask & CAccount.RAID_BUFF) != 0) {
+            sql.append("raid_buff=?,");
+        }
         sql.setLength(sql.length() - 1);
         sql.append(" WHERE login=?");
 
@@ -102,7 +109,10 @@ public final class CAccount extends CPendingState {
             if ((mask & CAccount.BLESS_OF_AIN) != 0) {
                 ps.setInt(idx++, snapshot.blessOfAin);
             }
-            ps.setString(idx, snapshot.owner.login);
+            if ((mask & CAccount.RAID_BUFF) != 0) {
+                ps.setTimestamp(idx++, new Timestamp(snapshot.raidBuffUntil));
+            }
+            ps.setString(idx, snapshot.login);
             ps.executeUpdate();
         }
     }

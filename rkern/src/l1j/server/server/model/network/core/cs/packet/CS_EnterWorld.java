@@ -13,7 +13,7 @@ import javax.swing.SwingUtilities;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Account;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.npc.spawn.boss.BossController;
 import l1j.server.server.auth.login.LoginController;
@@ -274,7 +274,7 @@ public final class CS_EnterWorld {
         }
         if (!client.tryBeginPrivateStoreRetirement()) return;
         try {
-            TaskLane.SESSION.execute(() -> {
+            CSessionLifecycle.retireCharacter(() -> {
                 boolean retired = false;
                 try {
                     if (currentPrivateStoreLogin(client, account)

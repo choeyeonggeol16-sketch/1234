@@ -10,7 +10,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.HashMap;
 import l1j.server.server.model.network.thread.CServerTimer;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -134,7 +134,7 @@ public class L1WorldTraps {
 		synchronized (this) {
 			if (_stopped) return;
 			final TrapSpawnTimer task = new TrapSpawnTimer(trap);
-			final CServerTimer future = TaskLane.WORLD.schedule(task, trap.getSpan());
+			final CServerTimer future = CWorldWork.schedule(task, trap.getSpan());
 			if (future == null) {
 				_log.warning("Trap respawn schedule rejected; leaving trap enabled: " + trap.getId());
 				return;

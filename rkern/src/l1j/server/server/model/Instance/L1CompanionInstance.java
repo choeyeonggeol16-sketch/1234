@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.inventory.L1GroundInventory;
@@ -42,6 +42,7 @@ import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.npc.ai.action.dFollow;
 import l1j.server.server.model.npc.ai.action.dPetDefault;
@@ -402,7 +403,9 @@ public class L1CompanionInstance extends L1NpcInstance{
     private int m_pvp_dmg_ratio;
     private boolean m_is_oblivion;
     private boolean m_is_traning;
-    private boolean m_is_combo_time;
+    private static final int TIMER_COMBO_END = 0x434F4D42;
+    private volatile boolean m_is_combo_time;
+    private int comboGeneration;
     private int m_combo_count;
     private int m_name_changed_count;
     private ArrayList<Skill> m_exercise_skills;
@@ -875,23 +878,37 @@ public class L1CompanionInstance extends L1NpcInstance{
     }
     
     public void do_combo_run(){
-        set_is_combo_time(true);
-        set_friend_ship_guage(0);
-        add_friend_ship_marble(CompanionSettings.FRIEND_SHIP_TO_MARBLE);
-        update_friend_ship_marble();
-        TaskLane.WORLD.scheduleRequired(new Runnable(){
-            @Override
-            public void run(){
-                if(!get_is_combo_time())
-                    return;
-                
-                set_is_combo_time(false);
-                if(m_master != null){
-                    SC_COMPANION_STATUS_NOTI.send(m_master, L1CompanionInstance.this, 
-                            CompanionUpdateFlag.UPDATE_FRIEND_SHIP | CompanionUpdateFlag.UPDATE_DELAY_REDUCE | CompanionUpdateFlag.UPDATE_COMBO_TIME);	
-                }
+        synchronized (this) {
+            int generation = comboGeneration + 1;
+            if (generation == 0) generation = 1;
+            if (!CIOThreadCallback.getInstance().tryScheduleNpcTimer(
+                    this, TIMER_COMBO_END, generation, Math.max(1L, CompanionSettings.COMBO_DURATION_MILLIS))) {
+                throw new RejectedExecutionException("Companion combo timer unavailable: " + getId());
             }
-        }, CompanionSettings.COMBO_DURATION_MILLIS);
+            comboGeneration = generation;
+            set_is_combo_time(true);
+            set_friend_ship_guage(0);
+            add_friend_ship_marble(CompanionSettings.FRIEND_SHIP_TO_MARBLE);
+        }
+        update_friend_ship_marble();
+    }
+
+    @Override
+    public void TimerExpired(int timerId, int generation) {
+        if (timerId != TIMER_COMBO_END) {
+            super.TimerExpired(timerId, generation);
+            return;
+        }
+        final L1PcInstance master;
+        synchronized (this) {
+            if (comboGeneration != generation || isDestroyed() || !get_is_combo_time()) return;
+            set_is_combo_time(false);
+            master = m_master;
+        }
+        if (master != null) {
+            SC_COMPANION_STATUS_NOTI.send(master, this, CompanionUpdateFlag.UPDATE_FRIEND_SHIP
+                    | CompanionUpdateFlag.UPDATE_DELAY_REDUCE | CompanionUpdateFlag.UPDATE_COMBO_TIME);
+        }
     }
 
     public void do_update_regen_tick(){
@@ -1090,7 +1107,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             DeathFinished(false);
             // Keep the existing 60-second one-shot worker: removal persists
             // companion/inventory data, so it must not block the NPC owner.
-            TaskLane.WORLD.scheduleRequired(() -> {
+            CWorldWork.scheduleRequired(() -> {
                 if (!L1World.getInstance().contains_companion(getId())
                         || !ClaimDeathRemoval(lifeEpoch, smartId)) return;
                 // Delete this exact companion, never whatever the master

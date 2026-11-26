@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
@@ -78,7 +78,7 @@ public class CompanionRegenerator implements TimeListener, Runnable {
             m_accumulcate_seconds = 0;
             if (m_regenQueued.compareAndSet(false, true)) {
                 try {
-                    TaskLane.WORLD.execute(this);
+                    CWorldWork.execute(this);
                 } catch (RejectedExecutionException rejected) {
                     m_regenQueued.set(false);
                     LOG.log(Level.WARNING, "Companion regen admission rejected", rejected);
@@ -94,7 +94,7 @@ public class CompanionRegenerator implements TimeListener, Runnable {
 	}
 
 	public void do_traning_initialized(){
-		TaskLane.WORLD.execute(new Runnable(){
+		CWorldWork.execute(new Runnable(){
 			@Override
 			public void run() {
 				try{

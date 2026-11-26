@@ -19,6 +19,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.L1World;
@@ -192,7 +193,7 @@ public class NpcShopManager {
     /** 리필 스케줄 등록 — 기존 핸들이 있으면 먼저 취소  */
     private synchronized void scheduleRefill() {
         cancelRefill();
-        _refillTask = CServerTimer.fixedRate(this::refillAll, 3600000L, 3600000L);
+        _refillTask = CWorldWork.scheduleAtFixedRate(this::refillAll, 3600000L, 3600000L);
     }
 
     public synchronized void cancelRefill() {

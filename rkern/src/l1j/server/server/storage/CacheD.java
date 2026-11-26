@@ -807,7 +807,8 @@ public final class CacheD {
      * EVERY occupied lane is a dispatch candidate. Inactive, delayed and
      * unprepared heads still reserve their lanes, just as the old FIFO scan.
      *
-     * The ordered candidate index replaces the whole-queue collision scan.
+     * Candidates also require free resources. A claim removes the selected
+     * head, and release rechecks only the affected lane heads.
      * Tree nodes are bounded by the 2,048 admitted DB jobs plus dirty states;
      * there is no per-dispatch collection, iterator or scan-array creation.
      */
@@ -993,16 +994,11 @@ public final class CacheD {
             return key <= 0 || laneHead(map.get(key)) == node;
         }
 
-        private boolean extraLanesAtHead(CPendingState node) {
-            if (!(node instanceof DbJob)) return true;
-            for (int owner : ((DbJob) node).extraOwnerIds)
-                if (!isLaneHead(owners, owner, node)) return false;
-            return true;
-        }
-        private boolean extraLanesFree(CPendingState node) {
-            if (!(node instanceof DbJob)) return true;
-            for (int owner : ((DbJob) node).extraOwnerIds)
-                if (activeOwnerIds.contains(owner)) return false;
+        private boolean extraLanesReady(CPendingState node) {
+            if (!(node instanceof DbJob job)) return true;
+            for (int owner : job.extraOwnerIds) {
+                if (!isLaneHead(owners, owner, node) || activeOwnerIds.contains(owner)) return false;
+            }
             return true;
         }
 
@@ -1010,10 +1006,13 @@ public final class CacheD {
             if (!node.readyIndexed) return;
             removeCandidate(node);
             final int first = firstOwner(node), second = secondOwner(node), item = itemId(node);
-            if (!isLaneHead(owners, first, node)
+            if (node.writing || !isLaneHead(owners, first, node)
                     || !isLaneHead(owners, second, node)
-                    || !extraLanesAtHead(node)
-                    || !isLaneHead(itemsById, item, node) || node.writing) return;
+                    || !isLaneHead(itemsById, item, node)
+                    || (first > 0 && activeOwnerIds.contains(first))
+                    || (second > 0 && activeOwnerIds.contains(second))
+                    || !extraLanesReady(node)
+                    || (item > 0 && activeItemIds.contains(item))) return;
             if (node instanceof DbJob) {
                 final DbJob job = (DbJob) node;
                 if (!job.prepared || job.awaitingOwnerApply || job.outcomeUnknown) return;
@@ -1032,23 +1031,26 @@ public final class CacheD {
             }
         }
 
-        private CPendingState firstResourceFree(java.util.TreeSet<CPendingState> set) {
-            for (CPendingState state = set.isEmpty() ? null : set.first(); state != null;
-                    state = set.higher(state)) {
-                if (!state.writing
-                        && (firstOwner(state) <= 0 || !activeOwnerIds.contains(firstOwner(state)))
-                        && (secondOwner(state) <= 0 || !activeOwnerIds.contains(secondOwner(state)))
-                        && extraLanesFree(state)
-                        && (itemId(state) <= 0 || !activeItemIds.contains(itemId(state)))) return state;
+        private void refreshHead(Int2ObjectOpenHashMap<Object> lanes, int key) {
+            if (key <= 0) return;
+            final CPendingState head = laneHead(lanes.get(key));
+            if (head != null) refresh(head);
+        }
+
+        void refreshReleasedResources(int owner, int previousOwner, int item, CPendingState state) {
+            refreshHead(owners, owner);
+            if (previousOwner != owner) refreshHead(owners, previousOwner);
+            if (state instanceof DbJob job) {
+                for (int extra : job.extraOwnerIds) refreshHead(owners, extra);
             }
-            return null;
+            refreshHead(itemsById, item);
         }
 
         CPendingState select(long now) {
             activateDue(now);
-            final CPendingState other = firstResourceFree(readyOther);
+            final CPendingState other = readyOther.isEmpty() ? null : readyOther.first();
             if (activeDbJobs >= WORKER_COUNT - 1) return other;
-            final CPendingState job = firstResourceFree(readyJobs);
+            final CPendingState job = readyJobs.isEmpty() ? null : readyJobs.first();
             if (other == null) return job;
             if (job == null) return other;
             return other.readyOrder < job.readyOrder ? other : job;
@@ -1489,6 +1491,14 @@ public final class CacheD {
         }
     }
 
+
+    public void saveRaidBuff(String login, long untilMillis) {
+        synchronized (lock) {
+            CAccount state = getOrCreate(login);
+            state.raidBuffUntil = untilMillis;
+            changed(state, CAccount.RAID_BUFF);
+        }
+    }
 
     public void registerLoadedCharacter(String accountName, String name, int characterId) {
         registerLoadedCharacterSession(accountName, name, characterId);
@@ -1991,6 +2001,7 @@ public final class CacheD {
         if (state instanceof DbJob) for (int extra : ((DbJob) state).extraOwnerIds)
             activeOwnerIds.remove(extra);
         if (itemId > 0) activeItemIds.remove(itemId);
+        ready.refreshReleasedResources(owner, previousOwner, itemId, state);
     }
 
     private void run() {
@@ -2017,13 +2028,15 @@ public final class CacheD {
                     final int candidateOwner = candidateSelected == null ? 0 : firstOwner(candidateSelected);
                     final int candidatePreviousOwner = candidateSelected == null ? 0 : secondOwner(candidateSelected);
                     final int candidateItem = candidateSelected == null ? 0 : itemId(candidateSelected);
-                    if (candidateSelected != null) ready.remove(candidateSelected);
                     if (candidateSelected != null) {
                         selected = candidateSelected;
                         selectedOwnerId = candidateOwner;
                         selectedPreviousOwnerId = candidatePreviousOwner;
                         selectedItemId = candidateItem;
+                        // Removing the selected head can expose new lane heads.
+                        // Index those successors with this claim already visible.
                         acquireResources(selectedOwnerId, selectedPreviousOwnerId, selectedItemId, selected);
+                        ready.remove(selected);
                         if (selected instanceof DbJob) activeDbJobs++;
                         selected.queued = false;
                         selected.writing = true;

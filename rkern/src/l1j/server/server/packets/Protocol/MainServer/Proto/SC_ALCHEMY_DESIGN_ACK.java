@@ -6,10 +6,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import l1j.server.Config;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoInputStream;
 import l1j.server.server.utils.HexHelper;
 
@@ -25,8 +26,8 @@ import l1j.server.server.utils.HexHelper;
  */
 public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
 
-	private static ArrayList<byte[]> _alchemyCaches;
-	private static byte[] _alchemySameCache;
+	private static volatile ArrayList<byte[]> _alchemyCaches;
+	private static volatile byte[] _alchemySameCache;
 	private static SC_ALCHEMY_DESIGN_ACK _instance;
 
 	private static ArrayList<byte[]> createAlchemyInfoCache(){
@@ -74,7 +75,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
 	public static void load(){
 		final SC_ALCHEMY_DESIGN_ACK message = new SC_ALCHEMY_DESIGN_ACK();
 		_instance = message;
-		TaskLane.SESSION.scheduleRequired(new Runnable(){
+		CWorldWork.scheduleRequired(new Runnable(){
 			@Override
 			public void run(){
 				try {
@@ -99,16 +100,17 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
 				pc.sendPackets("접속기에서 오류패치를 하신 후 다시 접속하면 모든 목록을 받아볼 수 있습니다.");
 				l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, _alchemySameCache);
 			}else{
-                final l1j.server.server.model.network.core.connection.CUserSocket socket = pc.getNetConnection();
+                final CUserSocket socket = pc.getNetConnection();
                 if (socket == null || !socket.isConnected()) return;
-                if (TaskLane.SESSION.schedule(() -> {
-                    if (socket.isConnected() && socket.getActiveChar() == pc)
-                        socket.directSendPacketBytes(_alchemyCaches);
-                }, 100L) == null) {
-                    // Never silently leave the client's alchemy loading state
-                    // waiting for a scheduled task that was not accepted.
-                    SC_ALCHEMY_DESIGN_ACK.sendClosed(pc);
-                }
+                final int stamp = pc.getSessionStamp();
+                CIOThreadCallback.getInstance().completeSession(socket, 100L, () -> {
+                    final ArrayList<byte[]> frames = _alchemyCaches;
+                    if (frames != null) socket.directSendPacketBytes(frames);
+                    else sendClosed(pc);
+                }, failure -> {
+                    if (failure != null && pc.getSessionStamp() == stamp && pc.getNetConnection() == socket
+                            && socket.isConnected() && socket.getActiveChar() == pc) sendClosed(pc);
+                });
 			}
 		}catch(Exception e){
 			SC_ALCHEMY_DESIGN_ACK.sendClosed(pc);

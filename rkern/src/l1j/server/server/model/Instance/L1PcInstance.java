@@ -28,7 +28,7 @@ import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.Opcodes;
 import l1j.server.server.SkillCheck;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.auth.captcha.Captcha;
 import l1j.server.server.datatables.CharBuffTable;
 import l1j.server.server.datatables.CharacterSlotItemTable;
@@ -286,7 +286,8 @@ public class L1PcInstance extends L1Character {
 		if (isLogoutStarted()) return;
 		final ReportDeley next = new ReportDeley(this);
 		final int shard = CIOThreadCallback.getInstance().ownerShardIndex(this);
-		final CServerTimer future = CServerTimer.onceOnShard(TaskLane.SESSION, shard, next, 100000L);
+		final CServerTimer future = CServerTimer.onceSignalOnShard(shard, next, 100000L,
+				() -> completeReportDeley(next));
 		// Never leave report permanently disabled if scheduler admission fails.
 		if (future == null) return;
 		final CServerTimer previous = _reportDelayFuture;
@@ -1521,7 +1522,7 @@ public class L1PcInstance extends L1Character {
 		_lastShellUseTime = System.currentTimeMillis();
 	}
 	
-	private transient CServerTimer _pinkNameFuture;
+	private transient volatile CServerTimer _pinkNameFuture;
 	public CServerTimer getPinkNameFuture() {
 	    return _pinkNameFuture;
 	}
@@ -3601,7 +3602,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
         final Death mandatoryDeath = new Death(lastAttacker, deathPenalty,
                 deathGeneration, deathSession);
         try {
-            TaskLane.SESSION.execute(mandatoryDeath);
+            CWorldWork.execute(mandatoryDeath);
         } catch (RejectedExecutionException rejected) {
             // Death has already been published; dropping this continuation
             // strands corpse/penalty processing. Explicit overload fallback.

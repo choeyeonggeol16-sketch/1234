@@ -2,7 +2,7 @@ package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -27,7 +27,7 @@ public class WideArea extends RaidBossSkill{
             if(_actid >= 0)
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
-            TaskLane.INSTANCE.execute(new tightenEffectThread(own, pcs, _effectId, _range));
+            CInstanceEvents.start(new tightenEffectThread(own, pcs, _effectId, _range));
             sleepAction(own, _actid);
         }catch(Exception e){
             e.printStackTrace();
@@ -48,7 +48,7 @@ public class WideArea extends RaidBossSkill{
         try{
             if(_actid >= 0)
                 SC_DoActionGFX.broadcast(own, getSafeActId());
-            TaskLane.INSTANCE.execute(new tightenEffectThread(own, pcs, _effectId, _range));
+            CInstanceEvents.start(new tightenEffectThread(own, pcs, _effectId, _range));
             sleepAction(own, _actid);
         }catch(Exception e){
             e.printStackTrace();
@@ -73,7 +73,7 @@ public class WideArea extends RaidBossSkill{
 
         @Override
         public void run(){
-            double radX = _range / 2;
+            double radX = Math.max(1, _range / 2);
             double radY = radX;
             double cx	= _own.getX();
             double cy	= _own.getY();
@@ -81,7 +81,7 @@ public class WideArea extends RaidBossSkill{
             int ry		= 0;
             // [TEST] S_EffectLocation 임시 주석 처리 - 3.8 미지원 effectId 크래시 원인 확인용
             long eff = 0L;
-            for(int z=_range; z>=1; z-=3){
+            for(int z=_range; z>=1 && !CInstanceEvents.isStopping(); z-=3){
                 for(int i=1; i<=360; i += radX){
                     rx		= (int)(cx+Math.cos(i) * radX);
                     ry		= (int)(cy+Math.sin(i) * radY);
@@ -100,8 +100,9 @@ public class WideArea extends RaidBossSkill{
                 }
                 try {
                     Thread.sleep(300);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (InterruptedException stopping) {
+                    Thread.currentThread().interrupt();
+                    return;
                 }
             }
         }

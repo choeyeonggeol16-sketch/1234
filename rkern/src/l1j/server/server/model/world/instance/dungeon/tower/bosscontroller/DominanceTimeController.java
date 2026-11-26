@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.world.instance.dungeon.tower.DominanceBoss;
 import l1j.server.server.model.world.instance.dungeon.tower.DominanceDataLoader;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.network.thread.CServerTimer;
 
 public class DominanceTimeController implements Runnable {
@@ -61,7 +61,7 @@ public class DominanceTimeController implements Runnable {
         if (pendingSpawnMinute.get() <= lastProcessedMinute
                 || !tickPending.compareAndSet(false, true)) return;
         try {
-            TaskLane.INSTANCE.execute(this);
+            CInstanceWork.execute(this);
         } catch (RejectedExecutionException refused) {
             tickPending.set(false); // Next scheduled tick retries admission.
             LOG.log(Level.WARNING, "Dominance spawn tick admission refused", refused);

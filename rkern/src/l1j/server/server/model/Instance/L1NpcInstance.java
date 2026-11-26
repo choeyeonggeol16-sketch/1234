@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import l1j.server.Config;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.item.drop.DropTable;
 import l1j.server.server.datatables.AutoLoot;
@@ -794,7 +794,7 @@ public class L1NpcInstance extends L1Character {
 
     private static void ExecuteDeathSettlement(Runnable task) {
         try {
-            TaskLane.WORLD.execute(task);
+            CWorldWork.execute(task);
         } catch (RejectedExecutionException rejected) {
             // A confirmed death may not lose its mandatory settlement.
             task.run();

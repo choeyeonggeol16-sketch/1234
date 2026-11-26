@@ -5,14 +5,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.Shutdown;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.task.COwnedWork;
 
-public final class TaskLaneLifecycleRegression {
+public final class OwnedWorkLifecycleRegression {
     private static void check(boolean result, String message) {
         if (!result) throw new AssertionError(message);
     }
@@ -118,42 +119,73 @@ public final class TaskLaneLifecycleRegression {
         check(CInstanceEvents.pendingEvents() == 0, "Instance event owner still retains work");
     }
 
+    private static void reuseWorker(COwnedWork owner) throws InterruptedException {
+        final AtomicReference<Thread> worker = new AtomicReference<>();
+        Thread firstWorker = null;
+        for (int burst = 0; burst < 8; burst++) {
+            final CountDownLatch ran = new CountDownLatch(1);
+            owner.execute(() -> {
+                worker.set(Thread.currentThread());
+                ran.countDown();
+            });
+            await(ran);
+            final long idleBy = System.nanoTime() + TimeUnit.SECONDS.toNanos(5L);
+            while (owner.pendingWork() != 0 && System.nanoTime() - idleBy < 0L)
+                Thread.sleep(1L);
+            check(owner.pendingWork() == 0, "Worker drained its burst");
+            if (burst == 0) firstWorker = worker.get();
+            else check(worker.get() == firstWorker, "Short idle gaps reuse the same worker");
+            Thread.sleep(25L);
+        }
+        owner.stopAccepting();
+        check(owner.awaitDrained(5L, TimeUnit.SECONDS), "Stopped worker drained");
+        firstWorker.join(5_000L);
+        check(!firstWorker.isAlive(), "Idle worker exits when its owner stops");
+    }
+
     public static void main(String[] args) throws Exception {
         final CIOThreadCallback cio = CIOThreadCallback.getInstance();
         final AtomicInteger unexpected = new AtomicInteger();
         final AtomicInteger executed = new AtomicInteger();
+        final COwnedWork burstOwner = new COwnedWork("LifecycleReuse", 1, 16, 16);
+        final COwnedWork session = new COwnedWork("LifecycleSession", 1, 16, 4096);
+        final COwnedWork world = new COwnedWork("LifecycleWorld", 2, 512, 16);
+        final COwnedWork persistence = new COwnedWork("LifecyclePersistence", 1, 16, 4096);
+        final COwnedWork[] owners = {burstOwner, session, world, persistence};
         final int shard = cio.shardCount() - 1;
         final Runnable mustNotRun = unexpected::incrementAndGet;
         final CountDownLatch allowDrain = new CountDownLatch(1);
         final CountDownLatch draining = new CountDownLatch(1);
+        final CountDownLatch raceStart = new CountDownLatch(1);
         try {
             replaceCountdown();
             instanceEvents(unexpected);
-            final int before = TaskLane.SESSION.pendingTimers();
+            reuseWorker(burstOwner);
+            final int before = session.pendingTimers();
             final ArrayList<CServerTimer> timers = new ArrayList<>(4096);
             for (int i = 0; i < 4096; i++) {
-                final CServerTimer timer = CServerTimer.onceOnShard(TaskLane.SESSION, shard, mustNotRun, 60_000 + i);
+                final CServerTimer timer = CServerTimer.onceOnShard(session, shard, mustNotRun, 60_000 + i);
                 check(timer != null, "Long deadline admission");
                 timers.add(timer);
             }
-            check(TaskLane.SESSION.pendingTimers() == before + 4096, "Timer budget tracks heap size");
+            check(session.pendingTimers() == before + 4096, "Timer budget tracks heap size");
             for (int i = timers.size() - 1; i >= 0; i--) {
                 check(timers.get(i).cancel(), "Timer cancelled");
                 check(!timers.get(i).cancel(), "Timer cancelled twice");
             }
-            check(TaskLane.SESSION.pendingTimers() == before, "All cancelled timers returned their budget");
+            check(session.pendingTimers() == before, "All cancelled timers returned their budget");
 
             final CountDownLatch ranOnOwner = new CountDownLatch(1);
-            check(CServerTimer.onceOnShard(TaskLane.SESSION, shard, () -> {
-                if (CIOThreadCallback.currentShardIndex() >= 0 || !TaskLane.isWorkerThread()) unexpected.incrementAndGet();
+            check(CServerTimer.onceOnShard(session, shard, () -> {
+                if (CIOThreadCallback.currentShardIndex() >= 0 || !session.isWorkerThread()) unexpected.incrementAndGet();
                 ranOnOwner.countDown();
             }, 1) != null, "Separate timer and callback ownership");
             await(ranOnOwner);
 
-            for (int i = 0; i < 512; i++) TaskLane.WORLD.execute(executed::incrementAndGet);
-            TaskLane.PERSISTENCE.execute(() -> {
+            for (int i = 0; i < 512; i++) world.execute(executed::incrementAndGet);
+            persistence.execute(() -> {
                 try {
-                    TaskLane.awaitAll(1, TimeUnit.MILLISECONDS);
+                    persistence.awaitDrained(1, TimeUnit.MILLISECONDS);
                     unexpected.incrementAndGet();
                 } catch (IllegalStateException expected) {
                     draining.countDown();
@@ -165,7 +197,6 @@ public final class TaskLaneLifecycleRegression {
             await(draining);
 
             final CountDownLatch published = new CountDownLatch(8);
-            final CountDownLatch raceStart = new CountDownLatch(1);
             final Thread[] producers = new Thread[8];
             for (int i = 0; i < producers.length; i++) {
                 producers[i] = Thread.ofPlatform().daemon().start(() -> {
@@ -174,37 +205,39 @@ public final class TaskLaneLifecycleRegression {
                             published.countDown();
                             await(raceStart);
                         }
-                        final CServerTimer timer = CServerTimer.onceOnShard(TaskLane.PERSISTENCE, shard, mustNotRun, 60_000);
+                        final CServerTimer timer = CServerTimer.onceOnShard(persistence, shard, mustNotRun, 60_000);
                         if (timer != null && (j & 1) != 0) timer.cancel();
                     }
                 });
             }
             await(published);
-            check(TaskLane.PERSISTENCE.pendingTimers() >= producers.length, "Live deadlines before stop barrier");
+            check(persistence.pendingTimers() >= producers.length, "Live deadlines before stop barrier");
             raceStart.countDown();
-            TaskLane.stopAll();
-            check(!TaskLane.PERSISTENCE.tryExecute(mustNotRun), "Closed lane rejects new work");
-            check(TaskLane.WORLD.schedule(mustNotRun, 1) == null, "Closed lane rejects deadlines");
-            check(!TaskLane.awaitAll(10, TimeUnit.MILLISECONDS), "Shutdown accounts for live callback body");
+            for (COwnedWork owner : owners) owner.stopAccepting();
+            check(!persistence.tryExecute(mustNotRun), "Closed owner rejects new work");
+            check(world.schedule(mustNotRun, 1) == null, "Closed owner rejects deadlines");
+            check(!persistence.awaitDrained(10, TimeUnit.MILLISECONDS), "Shutdown accounts for live callback body");
             allowDrain.countDown();
             for (Thread producer : producers) {
                 producer.join(3000);
                 check(!producer.isAlive(), "Timer registration and stop deadlocked");
             }
         } finally {
+            raceStart.countDown();
             allowDrain.countDown();
-            TaskLane.stopAll();
+            for (COwnedWork owner : owners) owner.stopAccepting();
             cio.shutdown();
             check(cio.awaitTermination(5, TimeUnit.SECONDS), "CIO did not terminate");
-            check(TaskLane.awaitAll(5, TimeUnit.SECONDS), "Task lanes did not terminate");
+            for (COwnedWork owner : owners)
+                check(owner.awaitDrained(5, TimeUnit.SECONDS), "Owned work did not drain");
         }
         check(executed.get() == 512 && unexpected.get() == 0, "Exactly accepted work completed");
-        for (TaskLane lane : TaskLane.values()) {
-            check(lane.pendingWork() == 0, lane + " still retains work");
-            check(lane.pendingTimers() == 0, lane + " still retains timers");
+        for (COwnedWork owner : owners) {
+            check(owner.pendingWork() == 0, "Stopped owner still retains work");
+            check(owner.pendingTimers() == 0, "Stopped owner still retains timers");
         }
         check(ManagementFactory.getThreadMXBean().findDeadlockedThreads() == null, "JVM deadlock");
-        System.out.println("PASS instance event lifecycle, direct CIO signals, 4096 distant cancellations, "
+        System.out.println("PASS worker reuse, instance event lifecycle, direct CIO signals, 4096 distant cancellations, "
                 + "2048 stop races, 512 accepted jobs and zero retained work");
     }
 }

@@ -74,6 +74,10 @@ public final class CInstanceEvents {
         return true;
     }
 
+    public static boolean isStopping() {
+        return closed;
+    }
+
     public static boolean isEventThread() {
         return EVENT_THREAD.get() != null;
     }

@@ -7,7 +7,7 @@ import java.util.Random;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.TimeMapController;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.DoorSpawnTable;
@@ -38,6 +38,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillBrave;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
@@ -1013,7 +1014,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         // scheduler. Never block the world serializer or spin on a full tile.
         final long delayMs = Math.min(30_000L, 250L << Math.min(7, attempt - 1));
         try {
-            TaskLane.WORLD.scheduleRequired(() -> RetryPartyDrop(job, attempt), delayMs);
+            CWorldWork.scheduleRequired(() -> RetryPartyDrop(job, attempt), delayMs);
         } catch (java.util.concurrent.RejectedExecutionException rejected) {
             // Typically shutdown: do not release the source merely because the
             // retry was rejected. No durable crash guarantee is implied.
@@ -1054,7 +1055,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         job.afterPickup = true;
         // Keep scripts and death completion out of the normal CWorld drain.
         try {
-            TaskLane.WORLD.execute(job);
+            CWorldWork.execute(job);
         } catch (java.util.concurrent.RejectedExecutionException rejected) {
             job.run();
         }
@@ -1337,8 +1338,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	}
 
 	private PapPearlMonitor _PapPearlMonster;// 행동
+	private static final int TIMER_PAP_PEARL = 0x50454152;
 
-	public class PapPearlMonitor implements Runnable {
+	public class PapPearlMonitor implements CIOThreadCallback.WheelTask {
 		private final L1MonsterInstance _Pearl;
 
 		public PapPearlMonitor(L1MonsterInstance npc) {
@@ -1346,19 +1348,36 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 		}
 
 		public void begin() {
-			TaskLane.WORLD.scheduleRequired(this, 3000);
+			// The initial timer is armed before the constructor's caller registers the NPC.
+			if (!CIOThreadCallback.getInstance().scheduleCharacterEffectTick(_Pearl, this, 3000L)) {
+				throw new java.util.concurrent.RejectedExecutionException("Pearl timer unavailable");
+			}
 		}
 
 		@Override
 		public void run() {
-			try {
-				if (_Pearl.getNpcTemplate().get_gfxid() == 7684 || _Pearl.getNpcTemplate().get_gfxid() == 7805)
-					PapPearl(_Pearl);
-				else if (_Pearl.getNpcTemplate().get_gfxid() == 8063)
-					Sahel(_Pearl);
-			} catch (Exception exception) {
+			if (!isCancelled() && L1World.getInstance().smartIdOf(_Pearl) != 0L) {
+				CIOThreadCallback.getInstance().scheduleNpcTimer(_Pearl, TIMER_PAP_PEARL, 1, 1L);
 			}
 		}
+
+		@Override
+		public boolean isCancelled() {
+			return _Pearl.isDestroyed();
+		}
+
+	}
+
+	@Override
+	public void TimerExpired(int timerId, int generation) {
+		if (timerId != TIMER_PAP_PEARL) {
+			super.TimerExpired(timerId, generation);
+			return;
+		}
+		if (isDestroyed()) return;
+		final int gfxId = getNpcTemplate().get_gfxid();
+		if (gfxId == 7684 || gfxId == 7805) PapPearl(this);
+		else if (gfxId == 8063) Sahel(this);
 	}
 
 	private boolean createNewItem(L1PcInstance pc, int item_id, int count, int Bless) {

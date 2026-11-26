@@ -1,6 +1,6 @@
 package l1j.server.server.model.item.treasure;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -131,28 +131,30 @@ public class L1TreasureChest extends L1Object {
 		L1World.getInstance().removeVisibleObject(this);
 		L1World.getInstance().removeObject(this);
 		_worldPutBody = null;
-		TaskLane.WORLD.execute(new Runnable(){
-			@Override
-			public void run() {
-				try{
-					showOpen();
-					if(isDestroy)
-						showBlackCloud();
-					else{
-						showCloud();
-						Thread.sleep(300);
-						if(_compensator != null)
-							_compensator.compensate(L1TreasureChest.this);
-					}
-					Thread.sleep(300);
-					dispose();
-				}catch(Exception e){
-					e.printStackTrace();
-				}finally{
-
-				}
+		CWorldWork.execute(() -> {
+			showOpen();
+			if (isDestroy) {
+				showBlackCloud();
+				scheduleOpenedDisposal();
+			} else {
+				showCloud();
+				if (CWorldWork.schedule(this::compensateOpenedChest, 300L) == null)
+					compensateOpenedChest();
 			}
 		});
+	}
+
+	private void compensateOpenedChest() {
+		try {
+			final var compensator = _compensator;
+			if (compensator != null) compensator.compensate(this);
+		} finally {
+			scheduleOpenedDisposal();
+		}
+	}
+
+	private void scheduleOpenedDisposal() {
+		if (CWorldWork.schedule(this::dispose, 300L) == null) dispose();
 	}
 
 	private void remove() {

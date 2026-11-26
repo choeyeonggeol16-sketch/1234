@@ -7,7 +7,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Random;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -52,9 +52,17 @@ public class FantasyIsland implements Runnable {
 
 	@Override
 	public void run() {
+		try {
+			runIsland();
+		} finally {
+			endRaid();
+		}
+	}
+
+	private void runIsland() {
 		setting();
 		NpcList = FantasyIslandSpawn.getInstance().fillSpawnTable(_map, 1, true);
-		while(Running){
+		while (Running && !CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
 			try {
 
 				if(NpcList != null){
@@ -366,20 +374,24 @@ public class FantasyIsland implements Runnable {
 				default:
 					break;
 				}
-			}catch(Exception e){
-			}finally{
-				try{
-					Thread.sleep(1500);
-				}catch(Exception e){}
+			} catch (InterruptedException stopping) {
+				Thread.currentThread().interrupt();
+			} catch (Exception e) {
+			} finally {
+				if (!CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
+					try { Thread.sleep(1500L); }
+					catch (InterruptedException stopping) { Thread.currentThread().interrupt(); }
+				}
 			}
 		}
-		endRaid();
 	}
 
 	private void Sleep(int time){
 		try{
 			Thread.sleep(time);
-		}catch(Exception e){}
+		} catch (InterruptedException stopping) {
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	private void setting(){
@@ -441,7 +453,7 @@ public class FantasyIsland implements Runnable {
 		if (cal.get(Calendar.AM_PM) == 0) {
 			오전오후 = "오전";
 		}
-		TaskLane.INSTANCE.scheduleRequired(this, 2000);
+		CInstanceEvents.schedule(this, 2000L);
 		System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■중앙사원 시작■캐릭터:"+pc.getName()+"■맵:"+_map+"■");
 	}
 	private void endRaid(){
@@ -468,7 +480,7 @@ public class FantasyIsland implements Runnable {
 			}
 			Running = false;
 			FantasyIslandSystem.getInstance().remove(_map);
-			System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■중앙사원 종료■캐릭터:"+pc.getName()+"■맵:"+_map+"■");
+			System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■중앙사원 종료■캐릭터:"+(pc == null ? "-" : pc.getName())+"■맵:"+_map+"■");
 		}
 	}
 }

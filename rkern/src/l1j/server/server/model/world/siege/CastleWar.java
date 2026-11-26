@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
-import l1j.server.server.task.TaskLane;
-import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.DoorSpawnTable;
@@ -206,7 +205,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
 } finally {
     l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(shared);
 }
-            CServerTimer.onceRequired(new Runnable(){
+            CInstanceWork.scheduleRequired(new Runnable(){
                 @Override
                 public void run(){
                     try{
@@ -237,7 +236,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
         if (oldDefense != null)
             ClanTable.getInstance().updateClan(oldDefense);
 
-        TaskLane.INSTANCE.execute(new Runnable() {
+        CInstanceWork.execute(new Runnable() {
             @Override
             public void run() {
                 byte[] injury = createInjury(_defense, SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.DEFENCE);
@@ -304,7 +303,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
             final CastleWarEState previous = _state;
             setState(CastleWarEState.RUN);
             try {
-                TaskLane.INSTANCE.execute(new WarOpener());
+                CInstanceWork.execute(new WarOpener());
             } catch (java.util.concurrent.RejectedExecutionException rejected) {
                 if (_state == CastleWarEState.RUN) setState(previous);
                 _log.warning("Castle war start rejected: " + _castleId + ": " + rejected);
@@ -318,7 +317,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
             final CastleWarEState previous = _state;
             setState(CastleWarEState.CLOSING);
             try {
-                TaskLane.INSTANCE.execute(new WarCloser());
+                CInstanceWork.execute(new WarCloser());
             } catch (java.util.concurrent.RejectedExecutionException rejected) {
                 if (_state == CastleWarEState.CLOSING) setState(previous);
                 _log.warning("Castle war close rejected: " + _castleId + ": " + rejected);

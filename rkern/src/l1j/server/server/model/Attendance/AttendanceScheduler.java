@@ -5,7 +5,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.gametime.BaseTime;
@@ -104,7 +104,7 @@ public class AttendanceScheduler implements TimeListener{
 		}
 		if (!submit) return;
 		try {
-			TaskLane.WORLD.execute(_updateTask);
+			CWorldWork.execute(_updateTask);
 		} catch (RejectedExecutionException rejected) {
 			synchronized (this) { _updateQueued = false; }
 			LOG.log(Level.WARNING, "Attendance update admission rejected; retry next second", rejected);

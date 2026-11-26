@@ -8,6 +8,7 @@ import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightH
 import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightInstance;
 import l1j.server.server.model.character.combat.arena.dogfight.instance.IFighterGameEndedHandler;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.shared.GameRandom;
 
 public class DogFightGameManager implements IFighterGameEndedHandler{
@@ -61,7 +62,7 @@ public class DogFightGameManager implements IFighterGameEndedHandler{
 	
     public synchronized void execute() {
         if (transition != null || m_current_game != null || !is_next_match()) return;
-        transition = CServerTimer.onceRequired(this::startMatch, DogFightSettings.NEXT_MATCH_READY_SECONDS * 1_000L);
+        transition = CInstanceWork.scheduleRequired(this::startMatch, DogFightSettings.NEXT_MATCH_READY_SECONDS * 1_000L);
     }
 
     private synchronized void startMatch() {
@@ -90,7 +91,7 @@ public class DogFightGameManager implements IFighterGameEndedHandler{
 			DogFightHistory.getInstance().update_game();			
 		}
         finished.set_fight(false);
-        transition = CServerTimer.onceRequired(() -> finishMatch(finished), 5_000L);
+        transition = CInstanceWork.scheduleRequired(() -> finishMatch(finished), 5_000L);
     }
 
     private synchronized void finishMatch(DogFightGame finished) {

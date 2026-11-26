@@ -1,8 +1,14 @@
 package l1j.server.server;
 
-import l1j.server.server.model.network.thread.CServerTimer;
-import l1j.server.server.model.world.instance.CInstanceEvents;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+
+import l1j.server.server.model.network.core.session.CSessionLifecycle;
+import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
+import l1j.server.server.model.world.instance.CInstanceEvents;
+import l1j.server.server.model.world.instance.CInstanceWork;
+import l1j.server.server.storage.CCharacterSaveService;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
@@ -12,7 +18,7 @@ import l1j.server.Server;
 import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceTimeController;
 import l1j.server.server.model.world.instance.dungeon.tower.DominanceDataLoader;
 import l1j.server.server.model.world.residence.CWorldAgitTimer;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.task.COwnedWork;
 import l1j.server.server.Controller.AuraController;
 import l1j.server.server.model.npc.spawn.boss.BossController;
 import l1j.server.server.Controller.BugRaceController;
@@ -467,7 +473,7 @@ public class GameServer {
     private int resourceShutdownStatus;
 
     public void shutdown() {
-        if (CIOThreadCallback.currentShardIndex() >= 0 || TaskLane.isWorkerThread()
+        if (CIOThreadCallback.currentShardIndex() >= 0 || COwnedWork.onServiceWorker()
                 || CInstanceEvents.isEventThread()) {
             shutdownWithCountdown(0);
             return;
@@ -522,13 +528,25 @@ public class GameServer {
             // Let accepted off-owner work finish before removing the world, its
             // owner threads, or the database that those callbacks may still use.
             CInstanceEvents.stop();
-            CServerTimer.stopOwnerSignals();
-            TaskLane.stopAll();
-            while (!CInstanceEvents.awaitTermination(30L, java.util.concurrent.TimeUnit.SECONDS)) {
+            while (!CInstanceEvents.awaitTermination(30L, TimeUnit.SECONDS)) {
                 System.err.println("[Instance] Waiting for running events to finish");
             }
-            while (!TaskLane.awaitAll(30L, java.util.concurrent.TimeUnit.SECONDS)) {
-                System.err.println("[TaskLane] Waiting for accepted work to finish");
+            CServerTimer.stopOwnerSignals();
+            CSessionLifecycle.stopAccepting();
+            CCharacterSaveService.stopAccepting();
+            CInstanceWork.stopAccepting();
+            CWorldWork.stopAccepting();
+            while (!CSessionLifecycle.awaitDrained(30L, TimeUnit.SECONDS)) {
+                System.err.println("[Session] Waiting for accepted session transitions");
+            }
+            while (!CCharacterSaveService.awaitDrained(30L, TimeUnit.SECONDS)) {
+                System.err.println("[CharacterSave] Waiting for accepted snapshots");
+            }
+            while (!CInstanceWork.awaitDrained(30L, TimeUnit.SECONDS)) {
+                System.err.println("[Instance] Waiting for accepted instance work");
+            }
+            while (!CWorldWork.awaitDrained(30L, TimeUnit.SECONDS)) {
+                System.err.println("[World] Waiting for accepted world work");
             }
 	        RaidLoadManager.getInstance().release();
 
@@ -562,8 +580,7 @@ public class GameServer {
 	        Server.printShutdownStatus("엔피시 서버가 종료되었습니다.");
 
 	        CIOThreadCallback.getInstance().shutdown();
-            // No game owner may still be running a packet or actor timer when
-            // the shared executor and CacheD are torn down.
+            // Stop packet and actor timers before closing the CacheD write queue.
             if (!CIOThreadCallback.getInstance().awaitTermination(
                     30L, java.util.concurrent.TimeUnit.SECONDS))
                 throw new IllegalStateException("CIO game shard termination exceeded 30 seconds");

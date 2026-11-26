@@ -6,7 +6,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceEvents;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
@@ -263,14 +264,17 @@ try {
 			//		pc.sendPackets(s_quakeDisplay,false);
 			//}
 			
+			if (_state != RS_READY || CInstanceEvents.isStopping()) return;
 			if(_bossSpawn != null){
 				_boss = _bossSpawn.spawnBoss(getCopyMapId());
 				createStartMeteor();
 				deleteFires(_fires);
-				_state = RS_START;
-				TaskLane.INSTANCE.scheduleRequired(this, RaidLoadManager.MRS_MESSAGE_DELAY);
+				enterCombatPhase();
 			}
-		}catch(Exception e){
+		} catch (InterruptedException stopping) {
+			Thread.currentThread().interrupt();
+			return;
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -296,11 +300,11 @@ try {
 			if(_combos != null)
 				csize = _combos.size();
 			
-			while((_state & RS_START) > 0){
+			while (_state == RS_START && !CInstanceEvents.isStopping()) {
 				Thread.sleep(RaidLoadManager.MRS_THREAD_CLOCK);
 				
 				// 한번 더 검사.
-				if((_state & RS_START) == 0)
+				if (_state != RS_START || CInstanceEvents.isStopping())
 					return;
 				
 				if(!isInRaid()){
@@ -341,7 +345,10 @@ try {
 					skill.action(_boss, _users);
 				}
 			}
-		}catch(Exception e){
+		} catch (InterruptedException stopping) {
+			Thread.currentThread().interrupt();
+			return;
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -426,7 +433,7 @@ try {
 				SC_SkillSound.send(pc, pc.getId(), 15837);
 				pc.setValakasProduct(true);
 			}	
-			if (TaskLane.INSTANCE.schedule(this, RaidLoadManager.MRS_SP_VALAKAS_PRODUCT_DESTTIME - 50) == null)
+			if (CInstanceWork.schedule(this, RaidLoadManager.MRS_SP_VALAKAS_PRODUCT_DESTTIME - 50) == null)
 				throw new RejectedExecutionException("Raid product deadline admission failed");
 		}
 		

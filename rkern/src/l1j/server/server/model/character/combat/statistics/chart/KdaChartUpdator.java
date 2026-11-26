@@ -8,7 +8,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.combat.statistics.Kda;
@@ -66,7 +66,7 @@ public class KdaChartUpdator {
 			_isUpdate = true;
 		}
 		try {
-			TaskLane.PERSISTENCE.execute(new UpdateChart());
+			CWorldWork.execute(new UpdateChart());
 		} catch (RejectedExecutionException rejected) {
 			synchronized (this) { _isUpdate = false; }
 			LOG.log(Level.WARNING, "KDA chart refresh admission rejected", rejected);

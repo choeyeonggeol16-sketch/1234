@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.LongSupplier;
 
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 
 /** Authenticated, window-only companion channel; never accepts gameplay commands. */
 public final class PssWindowTransport implements AutoCloseable {
@@ -86,7 +87,7 @@ public final class PssWindowTransport implements AutoCloseable {
         }
         if (useGameTimer) {
             try {
-                final CServerTimer expiry = CServerTimer.fixedDelay(this::sweep, 1_000L, 1_000L);
+                final CServerTimer expiry = CWorldWork.scheduleWithFixedDelay(this::sweep, 1_000L, 1_000L);
                 if (expiry == null) throw new IOException("PSS expiry timer admission rejected");
                 cancelSweep = expiry::cancel;
             } catch (IOException | RuntimeException failure) {

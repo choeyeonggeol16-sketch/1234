@@ -1,6 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 
+import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,6 +13,8 @@ import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Unknown2;
+import l1j.server.server.model.network.core.session.CSessionLifecycle;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
 import l1j.server.server.shared.observer.CopyMapObservable;
@@ -68,13 +71,40 @@ public final class CS_CharSelect {
      * 다른 게임 로직에서도 직접 사용하므로 public static 유지.
      */
     public static void restartProcess(L1PcInstance pc) {
+        if (pc != null) restartProcess(pc, pc.getNetConnection());
+    }
 
-        if (pc == null) {
-            return;
-        }
-
+    /** A class/appearance change retires the original session after its final visual frame. */
+    public static void requestRestartAfter(L1PcInstance pc, long delayMs) {
         final CUserSocket client = pc.getNetConnection();
-        if (client == null) return;
+        if (client == null || client.getActiveChar() != pc) return;
+        final int stamp = pc.getSessionStamp();
+        final Runnable onRejected = () -> {
+            if (isCurrentRestart(pc, client, stamp)) client.close();
+        };
+        CIOThreadCallback.getInstance().completeSession(client, delayMs, () -> {
+            try {
+                CSessionLifecycle.retireCharacter(() -> {
+                    if (!isCurrentRestart(pc, client, stamp)) return;
+                    restartProcess(pc, client);
+                    CS_CommonClick.sendCharAmountAndPacks(client);
+                });
+            } catch (RejectedExecutionException rejected) {
+                LOGGER.log(Level.WARNING, "Character restart queue unavailable", rejected);
+                onRejected.run();
+            }
+        }, failure -> {
+            if (failure != null) onRejected.run();
+        });
+    }
+
+    private static boolean isCurrentRestart(L1PcInstance pc, CUserSocket client, int stamp) {
+        return client.getActiveChar() == pc && pc.getNetConnection() == client
+                && pc.getSessionStamp() == stamp && client.ownsReadyGameSession();
+    }
+
+    private static void restartProcess(L1PcInstance pc, CUserSocket client) {
+        if (client == null || pc.getNetConnection() != client) return;
 
         final boolean privateStore = pc.isPrivateShop();
         if (privateStore && !pc.getInventory().tryBeginEquipmentChange()) {

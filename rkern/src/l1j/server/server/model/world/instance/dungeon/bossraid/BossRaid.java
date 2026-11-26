@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -76,7 +76,7 @@ public class BossRaid implements Runnable {
 		Running = true;
 		FirstRoom = true;
 		Time = 1800;
-		while(Running){
+		while (Running && !CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
 			try {
 				Check();
 				if (End) {
@@ -86,11 +86,10 @@ public class BossRaid implements Runnable {
 					First();
 				}
 			}catch(Exception e){
-			}finally{
-				try{
-					Thread.sleep(1000);
-				} catch (Exception e) {
-					_log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			} finally {
+				if (!CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
+					try { Thread.sleep(1000L); }
+					catch (InterruptedException stopping) { Thread.currentThread().interrupt(); }
 				}
 			}
 		}
@@ -107,7 +106,7 @@ public class BossRaid implements Runnable {
 		if (cal.get(Calendar.AM_PM) == 0) {
 			오전오후 = "오전";
 		}
-		TaskLane.INSTANCE.scheduleRequired(this, 2000);
+		CInstanceEvents.schedule(this, 2000L);
 	  System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■■■■■■ 보스 레이드 시작 " +  _map+" ■■■■■■");
 	}
 
@@ -140,8 +139,8 @@ public class BossRaid implements Runnable {
 			try {
 				Thread.sleep(3000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Thread.currentThread().interrupt();
+				return;
 			}
 			L1SpawnUtil.spawn2(32801, 32797, (short) _map, _MonsterList[_random.nextInt(_MonsterList.length - 1)], 0, 0, 0);//1라운드 보스.
 			FirstRoom = false;

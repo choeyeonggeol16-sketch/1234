@@ -33,6 +33,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 
 public final class CAnnounceTimer {
     private static final Logger LOG = Logger.getLogger(CAnnounceTimer.class.getName());
@@ -80,7 +81,7 @@ public final class CAnnounceTimer {
                     LOG.warning("Show_Announcecycle_Time must be positive");
                     return false;
                 }
-                timer = CServerTimer.fixedRate(this::broadcast, FIRST_DELAY_MS, intervalMs);
+                timer = CWorldWork.scheduleAtFixedRate(this::broadcast, FIRST_DELAY_MS, intervalMs);
                 if (timer == null) LOG.warning("Announcement timer registration rejected");
                 return timer != null;
             }

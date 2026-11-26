@@ -32,7 +32,7 @@ import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.network.core.session.CSessionLifecycle;
 
 /**
  * Real loopback peers exercising production broadcast, SEND leases, and per-peer cipher state.
@@ -83,8 +83,9 @@ public final class BroadcastDeliveryRegression {
             UserPacketCallbackMap.gPacketTableFromClient[ALIVE] = previous;
             owners.shutdown();
             if (!owners.awaitTermination(5, TimeUnit.SECONDS)) throw new AssertionError("owner shutdown timed out");
-            TaskLane.stopAll();
-            if (!TaskLane.awaitAll(5, TimeUnit.SECONDS)) throw new AssertionError("task lane shutdown timed out");
+            CSessionLifecycle.stopAccepting();
+            if (!CSessionLifecycle.awaitDrained(5, TimeUnit.SECONDS))
+                throw new AssertionError("session release shutdown timed out");
         }
         if (ManagementFactory.getThreadMXBean().findDeadlockedThreads() != null)
             throw new AssertionError("JVM deadlock found after loopback broadcast");

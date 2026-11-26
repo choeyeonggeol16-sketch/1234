@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
@@ -118,7 +118,7 @@ public class ServerMacroLoader implements Runnable{
     private void signalTick() {
         if (!_isrun || _workList == null || !tickPending.compareAndSet(false, true)) return;
         try {
-            TaskLane.WORLD.execute(this);
+            CWorldWork.execute(this);
         } catch (RejectedExecutionException refused) {
             tickPending.set(false);
             LOG.log(Level.WARNING, "Server macro tick admission refused; retry next second", refused);

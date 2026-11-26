@@ -25,8 +25,7 @@ import javolution.util.FastTable;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
-import l1j.server.server.task.TaskLane;
-import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.datatables.RaceTable;
 import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.Instance.L1DoorInstance;
@@ -96,7 +95,7 @@ public class BugRaceController implements Runnable, TimeListener {
                 || !tickInFlight.compareAndSet(false, true)) return;
         final int epoch = clockEpoch;
         try {
-            TaskLane.INSTANCE.execute(() -> {
+            CInstanceWork.execute(() -> {
                 try {
                     if (clockRegistered && clockEpoch == epoch) run();
                 } finally {
@@ -645,7 +644,7 @@ public class BugRaceController implements Runnable, TimeListener {
 
 	private void scheduleTicketCloseCountdown() {
 		final int epoch = clockEpoch;
-		CServerTimer.onceRequired(new Runnable() {
+		CInstanceWork.scheduleRequired(new Runnable() {
 			private int remain = 30;
 
 			@Override
@@ -659,7 +658,7 @@ public class BugRaceController implements Runnable, TimeListener {
 					if (remain > 0) {
 						broadcastBox(String.format("판매 마감 : %d 초 전", remain));
 						--remain;
-						CServerTimer.onceRequired(this, 1000L);
+						CInstanceWork.scheduleRequired(this, 1000L);
 						return;
 					}
 
@@ -1011,7 +1010,7 @@ public class BugRaceController implements Runnable, TimeListener {
 				_first = _littleBugBear[i].getName();
 				SetWinRaceTicketPrice(_ticket[i], _ration[i]);
 				AddWinCount(i);
-				CServerTimer.onceRequired(new Runnable(){
+				CInstanceWork.scheduleRequired(new Runnable(){
 					@Override
 					public void run(){
 						우승자멘트(String.format("제 %d회 우승자는 '%s' 입니다.", _round, _littleBugBear[i].getNameId()));						
@@ -1119,7 +1118,7 @@ for (L1PcInstance player : L1World.getInstance().getAllPlayers()) {
             if (!clockRegistered || _epoch != clockEpoch) return;
             final long delay = Math.max(1L, delayMs);
             final long due = System.currentTimeMillis() + delay;
-            if (CServerTimer.once(this, delay) == null) {
+            if (CInstanceWork.schedule(this, delay) == null) {
                 // Retain the current phase, position and runner instance.
                 // Losing this scheduled callback would freeze the race.
                 rejectedDueMs = due;

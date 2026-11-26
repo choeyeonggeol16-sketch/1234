@@ -1,15 +1,14 @@
 package l1j.server.server.model.world.instance.raid;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.TimerTask;
 import java.util.concurrent.RejectedExecutionException;
+import l1j.server.server.Account;
 import l1j.server.server.model.network.thread.CServerTimer;
 
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -26,6 +25,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_OnlyEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.instance.CInstanceEvents;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.world.instance.raid.boss.skill.RaidBossCombo;
 import l1j.server.server.model.world.instance.raid.boss.skill.RaidBossSkill;
 import l1j.server.server.model.world.instance.raid.compensator.CompensatorElement;
@@ -49,7 +50,7 @@ public abstract class RaidObject implements Runnable{
 	protected static final int RS_START = 8;	// 진행 상태.
 	
 	
-	protected int								_state;			// 현재 오브젝트의 상태
+	protected volatile int								_state;			// 현재 오브젝트의 상태
 	protected Object							_lock;			// 각각 오브젝트 인스턴스를 동기화하기 위한.
 	protected int								_baseMapId;		// base map id.
 	protected L1Map 							_copyMap;		// copy map.
@@ -205,30 +206,44 @@ public abstract class RaidObject implements Runnable{
 			p = _users.get(i);
 			if(p.getId() == pc.getId()){
 				_type.move(pc, getCopyMapId());		
-				if((_state & RS_OPEN) > 0){
+                synchronized (_lock) {
+                    if (_state != RS_OPEN) return;
                     _state = RS_READY;
-                    try {
-                        TaskLane.INSTANCE.execute(this);
-                    } catch (java.util.concurrent.RejectedExecutionException rejected) {
+                }
+                try {
+                    CInstanceEvents.start(this);
+                } catch (RejectedExecutionException rejected) {
+                    synchronized (_lock) {
                         if (_state == RS_READY) _state = RS_OPEN;
-                        throw rejected;
                     }
-				}
+                    throw rejected;
+                }
 				break;
 			}
 		}
 	}
 	
-	/** runnable **/
-	/** 해당 인스턴스는 인스턴스 공간 전체를 관리하므로, run 메서드가 종료 시 호출됨, **/
-	@Override
-	public void run() {
-		if((_state & RS_READY) > 0)			// 준비 상태에서 runnable 되었다면, 레이드 시작.
-			readyRaid();
-		else if((_state & RS_START) > 0)	// 레이드가 시작 되어 있는 상태에서 runnable되었다면, 종료시킬차례.
-			runRaid();
-	}
-	
+    /** The same room event owns preparation and the subsequent combat loop. */
+    @Override
+    public void run() {
+        if (_state != RS_READY || CInstanceEvents.isStopping()) return;
+        readyRaid();
+        if (_state != RS_START || CInstanceEvents.isStopping()) return;
+        try {
+            Thread.sleep(RaidLoadManager.MRS_MESSAGE_DELAY);
+        } catch (InterruptedException stopping) {
+            Thread.currentThread().interrupt();
+            return;
+        }
+        if (_state == RS_START && !CInstanceEvents.isStopping()) runRaid();
+    }
+
+    protected final void enterCombatPhase() {
+        synchronized (_lock) {
+            if (_state == RS_READY && !CInstanceEvents.isStopping()) _state = RS_START;
+        }
+    }
+
 	/**
 	 ********************************************** 레이드 메서드 및 추상메서드. **********************************************
 	 *  **/
@@ -301,7 +316,10 @@ public abstract class RaidObject implements Runnable{
 	protected abstract void readyRaid();							// 레이드를 준비 상태로 만든다.
 	protected abstract void runRaid();								// 레이드를 진행 상태로 만든다.
 	protected void closeRaid(){										// 레이드를 종료시킨다. 공용으로 사용될 가능성이 높기에 abstract가 아님.
-		_state = RS_CLOSE;
+        synchronized (_lock) {
+            if (_state == RS_CLOSE) return;
+            _state = RS_CLOSE;
+        }
 		if(_task != null){
 			_task.cancel();
 			_task = null;
@@ -365,12 +383,13 @@ public abstract class RaidObject implements Runnable{
 				if(pc == null || pc.getMapId() != mid)
 					continue;
 				
+				final Account account = pc.getAccount();
 				SC_OnlyEffect.send(pc, pc.getId(), 7783);
                 SC_OnlyEffect.broadcast(pc, pc.getId(), 7783);
 				pc.setSkillEffect(L1SkillId.DRAGONRAID_BUFF, (int)RaidLoadManager.MRS_RAID_DELAY);
-				Timestamp deleteTime = new Timestamp(System.currentTimeMillis() + RaidLoadManager.MRS_RAID_DELAY);
+				long raidBuffUntil = System.currentTimeMillis() + RaidLoadManager.MRS_RAID_DELAY;
 				l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(raidShared,pc);
-				pc.getNetConnection().getAccount().setDragonRaid(deleteTime);
+				RaidUserTimeStore.update(account, raidBuffUntil);
 			}
         }
 			
@@ -378,8 +397,7 @@ public abstract class RaidObject implements Runnable{
 			pcs.addAll(L1World.getInstance().getAllPlayers());
 			RaidMessage.RAID_CLEAR_SUCCESS_MESSAGE.sendMessage(pcs);
 			pcs.clear();
-			
-			TaskLane.PERSISTENCE.execute(new RaidUserTimeStore(_users));
+
 		}
 	}
 	
@@ -480,7 +498,7 @@ public abstract class RaidObject implements Runnable{
 		private final CServerTimer _future;
 		public CloseTask(RaidObject obj){
 			_obj = obj;
-			_future = TaskLane.INSTANCE.schedule(this, obj.getRaidType().getRaidTime());
+			_future = CInstanceWork.schedule(this, obj.getRaidType().getRaidTime());
 			if (_future == null)
 				throw new RejectedExecutionException("Raid close deadline admission failed");
 		}

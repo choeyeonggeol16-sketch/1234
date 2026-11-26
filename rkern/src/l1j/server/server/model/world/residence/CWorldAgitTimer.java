@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 
 /** Runs the residence economy pass once per wall-clock minute. */
 public final class CWorldAgitTimer {
@@ -17,7 +18,7 @@ public final class CWorldAgitTimer {
     public static synchronized void start() {
         if (timer != null) return;
         final long firstDelay = MINUTE_MS - Math.floorMod(System.currentTimeMillis(), MINUTE_MS);
-        timer = CServerTimer.fixedRate(CWorldAgitTimer::TimerExpired, firstDelay, MINUTE_MS);
+        timer = CWorldWork.scheduleAtFixedRate(CWorldAgitTimer::TimerExpired, firstDelay, MINUTE_MS);
         if (timer == null) throw new IllegalStateException("Agit timer admission rejected");
     }
 

@@ -4,15 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.classinfo.EClassesType;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
-import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
 import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_DelSkill;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
@@ -132,16 +129,7 @@ public class ClassChange {
     }
 
     private static void handleRestart(final L1PcInstance pc) {
-        TaskLane.SESSION.scheduleRequired(new Runnable() {
-            @Override
-            public void run() {
-                CUserSocket clnt = pc.getNetConnection();
-                if (clnt == null) return;
-                
-                CS_CharSelect.restartProcess(pc);
-                CS_CommonClick.sendCharAmountAndPacks(clnt);
-            }
-        }, 500L);
+        CS_CharSelect.requestRestartAfter(pc, 500L);
     }
     
     private static void clearNewSkills(L1PcInstance pc) {

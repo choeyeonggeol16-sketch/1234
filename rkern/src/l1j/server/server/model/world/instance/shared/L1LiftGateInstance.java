@@ -16,7 +16,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.shared.L1Type;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.utils.BytesOutputStream;
 
 public class L1LiftGateInstance extends L1Object{
@@ -230,7 +230,7 @@ public class L1LiftGateInstance extends L1Object{
 
 	public void takeClose(long l){
 		down();
-		TaskLane.INSTANCE.scheduleRequired(new Runnable(){
+		CInstanceWork.scheduleRequired(new Runnable(){
 			@Override
 			public void run(){
 				up();

@@ -5,7 +5,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -82,7 +82,7 @@ public class L1Gambling {
 		if (bet <= 0) {
 			return;
 		}
-		TaskLane.INSTANCE.execute(new Runnable() {
+		CInstanceWork.execute(new Runnable() {
 			@Override
 			public void run() {
 				try {

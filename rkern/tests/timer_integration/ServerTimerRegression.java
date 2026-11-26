@@ -9,9 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import l1j.server.server.model.L1UltimateBattle;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CServerTimer;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.task.COwnedWork;
 
 public final class ServerTimerRegression {
+    private static final int WORKERS = 2;
+    private static final int QUEUE_LIMIT = 16;
     private static int checks;
 
     private static void check(boolean condition, String message) {
@@ -25,13 +27,13 @@ public final class ServerTimerRegression {
         return field.get(target);
     }
 
-    private static void cancelDistant(CIOThreadCallback cio) throws Exception {
+    private static void cancelDistant(CIOThreadCallback cio, COwnedWork world) throws Exception {
         final Object shard = ((Object[]) field(cio, "shards"))[0];
         final Object wheel = field(shard, "threadLocalTimer");
         final ArrayList<CServerTimer> timers = new ArrayList<>();
         final Random order = new Random(1901L);
         for (int i = 0; i < 128; i++) {
-            timers.add(CServerTimer.onceRequired(() -> {
+            timers.add(world.scheduleRequired(() -> {
                 throw new AssertionError("Long deadline fired early");
             }, 60_000L + order.nextInt(60_000)));
         }
@@ -55,11 +57,8 @@ public final class ServerTimerRegression {
         }
     }
 
-    private static void retryOnSaturation() throws Exception {
-        final TaskLane world = TaskLane.WORLD;
-        final int parallelism = (int) field(world, "parallelism");
-        final int queueLimit = (int) field(world, "queueLimit");
-        final CountDownLatch occupied = new CountDownLatch(parallelism);
+    private static void retryOnSaturation(COwnedWork world, COwnedWork session, COwnedWork persistence) throws Exception {
+        final CountDownLatch occupied = new CountDownLatch(WORKERS);
         final CountDownLatch release = new CountDownLatch(1);
         final CountDownLatch entered = new CountDownLatch(1);
         final AtomicInteger executions = new AtomicInteger();
@@ -69,27 +68,30 @@ public final class ServerTimerRegression {
             try { release.await(); }
             catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
         };
-        for (int i = 0; i < parallelism; i++) world.execute(pinned);
+        for (int i = 0; i < WORKERS; i++) world.execute(pinned);
         try {
             check(occupied.await(2L, TimeUnit.SECONDS), "instant worker occupied");
             final Runnable unused = () -> {};
-            for (int i = 0; i < queueLimit; i++) check(world.tryExecute(unused), "bounded queue accepts capacity");
+            for (int i = 0; i < QUEUE_LIMIT; i++) check(world.tryExecute(unused), "bounded queue accepts capacity");
             check(!world.tryExecute(unused), "full world queue rejects");
             final CountDownLatch isolated = new CountDownLatch(2);
-            TaskLane.SESSION.execute(isolated::countDown);
-            TaskLane.PERSISTENCE.execute(isolated::countDown);
+            session.execute(isolated::countDown);
+            persistence.execute(isolated::countDown);
             check(isolated.await(2L, TimeUnit.SECONDS), "world saturation leaves session and storage responsive");
             final CountDownLatch signals = new CountDownLatch(3);
             final CServerTimer signal = CServerTimer.fixedDelaySignal(signals::countDown, 1L, 50L);
             check(signal != null, "CIO signal registered");
-            final CServerTimer timer = CServerTimer.onceRequired(() -> {
-                callbackShard.set(CIOThreadCallback.currentShardIndex());
-                executions.incrementAndGet();
-                entered.countDown();
-            }, 1L);
-            check(signals.await(3L, TimeUnit.SECONDS), "CIO keeps ticking while workers are saturated");
-            check(executions.get() == 0 && !timer.isCancelled(), "saturation leaves the deadline pending");
-            signal.cancel();
+            try {
+                final CServerTimer timer = world.scheduleRequired(() -> {
+                    callbackShard.set(CIOThreadCallback.currentShardIndex());
+                    executions.incrementAndGet();
+                    entered.countDown();
+                }, 1L);
+                check(signals.await(3L, TimeUnit.SECONDS), "CIO keeps ticking while workers are saturated");
+                check(executions.get() == 0 && !timer.isCancelled(), "saturation leaves the deadline pending");
+            } finally {
+                signal.cancel();
+            }
         } finally {
             release.countDown();
         }
@@ -114,15 +116,20 @@ public final class ServerTimerRegression {
 
     public static void main(String[] args) throws Exception {
         final CIOThreadCallback cio = CIOThreadCallback.getInstance();
+        final COwnedWork world = new COwnedWork("TimerRegressionWorld", WORKERS, QUEUE_LIMIT, 128);
+        final COwnedWork session = new COwnedWork("TimerRegressionSession", 1, 4, 4);
+        final COwnedWork persistence = new COwnedWork("TimerRegressionPersistence", 1, 4, 4);
+        final COwnedWork[] owners = {world, session, persistence};
         try {
-            cancelDistant(cio);
-            retryOnSaturation();
+            cancelDistant(cio, world);
+            retryOnSaturation(world, session, persistence);
             cancelArenaCountdown();
         } finally {
-            TaskLane.stopAll();
+            for (COwnedWork owner : owners) owner.stopAccepting();
             cio.shutdown();
             check(cio.awaitTermination(5L, TimeUnit.SECONDS), "CIO timer owners terminated");
-            check(TaskLane.awaitAll(5L, TimeUnit.SECONDS), "accepted work drained");
+            for (COwnedWork owner : owners)
+                check(owner.awaitDrained(5L, TimeUnit.SECONDS), "accepted work drained");
         }
         System.out.println("PASS Server timer regression (" + checks + " checks)");
     }

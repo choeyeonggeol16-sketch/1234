@@ -1,19 +1,14 @@
 package l1j.server.server.model.world.instance.raid.util;
 
-import java.util.concurrent.ThreadLocalRandom;
-
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
-import l1j.server.server.model.character.effect.poison.DamagePoison;
 import l1j.server.server.templates.L1Npc;
 
 @SuppressWarnings("serial")
 public class L1RaidPoisonInstance extends L1NpcInstance{
-	private static final int	INTERVAL	= 0x3e8;
 	private L1MonsterInstance 	_owner;
 	public L1RaidPoisonInstance(L1Npc template){
 		super(template);
@@ -51,28 +46,4 @@ public class L1RaidPoisonInstance extends L1NpcInstance{
 		removeAllKnownObjects();
 	}
 	
-	class poisonTickTimer implements Runnable{
-		private L1RaidPoisonInstance _poison;
-		public poisonTickTimer(L1RaidPoisonInstance poison){
-			_poison = poison;
-		}
-		@Override 
-		public void run(){
-			if(_destroyed)
-				return;
-			
-			try{	
-				for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
-					if(pc == null || getMapId() != pc.getMapId() || getX() != pc.getX() || getY() != pc.getY() || pc.isDead()  || pc.isGhost() || pc.isGm())
-						continue;
-					
-					int dmg = ThreadLocalRandom.current().nextInt(150) + 50;
-					DamagePoison.doInfection(getOwner() == null ? _poison : getOwner(), pc, 3000, dmg, false,30000);
-				}
-				TaskLane.INSTANCE.scheduleRequired(this, INTERVAL);
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-		}
-	}
 }

@@ -8,6 +8,7 @@ import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightH
 import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightTicketIdManager;
 import l1j.server.server.model.character.combat.arena.dogfight.skills.DogFightSkill;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
 import l1j.server.server.model.L1World;
@@ -35,7 +36,7 @@ public class DogFightLoader {
 	
     public synchronized void startAutomaticReservation() {
         if (DogFightSettings.IS_ON_RUN && autoStart == null) {
-            autoStart = CServerTimer.onceRequired(this::startReservedMatches, 30_000L);
+            autoStart = CInstanceWork.scheduleRequired(this::startReservedMatches, 30_000L);
         }
     }
 

@@ -1,5 +1,6 @@
 package l1j.server.server.model.character.combat.arena;
 
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.instance.CInstanceEvents;
 import java.util.Calendar;
 import java.util.Collection;
@@ -9,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
@@ -60,7 +61,8 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     protected int _team_size;
     protected LinkedList<Integer> _team_q;
     protected CParty[]	_parties;
-    protected EStatus _status;
+    protected volatile EStatus _status;
+    private CServerTimer finishTimer;
     protected AtomicInteger _team_id;
     protected byte[][] _box_attr;
     protected byte[][][][] _team_box_attr;
@@ -185,7 +187,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         final int copy_map_id = _copyMapId;
         final TeamKda[] team_kda = _team_kda;
         final CParty[] parties	= _parties;
-        TaskLane.INSTANCE.scheduleRequired(new Runnable(){
+        CInstanceWork.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 try{
@@ -267,7 +269,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             long ready_seconds = _combat_info.get_ready_seconds();
             
             _start_sec = (System.currentTimeMillis() / 1000L) + ready_seconds;
-            TaskLane.INSTANCE.scheduleRequired(this, ready_seconds * 1000L);
+            CInstanceWork.scheduleRequired(this, ready_seconds * 1000L);
         }
         return this;
     }
@@ -302,7 +304,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         pc.start_teleport(rt.x, rt.y, _copyMapId, pc.getHeading(), 169, true, false);
         
         final int enter_team_id = next_id;
-        TaskLane.INSTANCE.scheduleRequired(new Runnable(){
+        CInstanceWork.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 PacketFactory.sendTime(pc, _start_sec - (System.currentTimeMillis() / 1000L));
@@ -413,7 +415,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             } finally {
                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(sharedNotice);
                }
-        TaskLane.INSTANCE.scheduleRequired(new Runnable(){
+        CInstanceWork.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 // Common arena UI packets: assemble each immutable frame once,
@@ -495,7 +497,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             boolean is_live = is_live_team(team_id);
             if(!is_live && !is_disposing()){
                 set_status(EStatus.DISPOSING);
-                TaskLane.INSTANCE.execute(new Runnable(){
+                CInstanceWork.execute(new Runnable(){
                     @Override
                     public void run(){
                         batch_quit();					
@@ -553,7 +555,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         
         if(receiver.getNetConnection() == null || !receiver.getNetConnection().isConnected()){
             on_kill(attacker, receiver);
-            TaskLane.INSTANCE.execute(new Runnable(){
+            CInstanceWork.execute(new Runnable(){
                 @Override
                 public void run(){
                     try{
@@ -604,15 +606,28 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             set_status(EStatus.RUNNING);
             on_running();
             execute_traps();
-            Thread.sleep(_combat_info.get_play_seconds() * 1000L);
-        }catch(Exception e){
-            e.printStackTrace();
+            _lock.lock();
+            try {
+                if (is_running())
+                    finishTimer = CInstanceWork.scheduleRequired(
+                            this::finishCombat, _combat_info.get_play_seconds() * 1000L);
+            } finally {
+                _lock.unlock();
+            }
+        } catch (RuntimeException failure) {
+            failure.printStackTrace();
+            finishCombat();
         }
-        
-        if(!is_running())
-            return;
-        
-        set_status(EStatus.DISPOSING);
+    }
+
+    protected final void finishCombat() {
+        _lock.lock();
+        try {
+            if (!is_running()) return;
+            set_status(EStatus.DISPOSING);
+        } finally {
+            _lock.unlock();
+        }
         batch_quit();
     }
     
@@ -757,7 +772,16 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     
     @Override
     public void dispose(){
-        _status = EStatus.CLOSED;
+        _lock.lock();
+        try {
+            _status = EStatus.CLOSED;
+            if (finishTimer != null) {
+                finishTimer.cancel();
+                finishTimer = null;
+            }
+        } finally {
+            _lock.unlock();
+        }
         if(_quit_listener != null){
             _quit_listener.clear();
             _quit_listener = null;
@@ -766,7 +790,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         dispose_users();
         _box_attr = null;
         _team_box_attr = null;
-        TaskLane.INSTANCE.scheduleRequired(new Runnable(){
+        CInstanceWork.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 CombatObserver.super.dispose();				

@@ -2,7 +2,7 @@ package l1j.server.server.model.world.trap;
 
 import java.util.Collection;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 
@@ -28,7 +28,7 @@ public class DisplayEffectTrap extends AbstractTrap{
 		l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArrayBestEffort(pc_array,SC_DisplayEffect.nativeWriter(asset_id));
 		
 		if(asset_id == SC_DisplayEffect.QUAKE_DISPLAY){
-			TaskLane.WORLD.scheduleRequired(new Runnable(){
+			CWorldWork.scheduleRequired(new Runnable(){
 				@Override
 				public void run(){
 					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArrayBestEffort(pc_array,SC_DisplayEffect.nativeWriter(asset_id));

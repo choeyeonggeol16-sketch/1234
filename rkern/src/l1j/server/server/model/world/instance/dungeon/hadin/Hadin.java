@@ -676,6 +676,10 @@ public class Hadin implements Runnable {
 	}
 
 	private void Hadin_Delete(){
+		if (HT != null) {
+			HT.stop();
+			HT = null;
+		}
 		Collection<L1Object> cklist = L1World.getInstance().getVisibleObjects(_map).values();
 		for(L1Object ob : cklist){
 			if(ob == null)
@@ -690,10 +694,6 @@ public class Hadin implements Runnable {
 			}
 		}
 		HadinSystem.getInstance().removeHadin(_map);
-		if(HT != null){//트랩 쓰레드 같이 종료
-			HT.Running = false;
-			HT = null;
-		}
 	}
 
 	public void OpenDoor(int i){

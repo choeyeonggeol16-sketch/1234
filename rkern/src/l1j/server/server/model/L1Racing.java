@@ -15,7 +15,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_GameOver;
 import l1j.server.server.model.network.core.sc.packet.SC_GameStart;
 import java.util.ArrayList;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -142,11 +142,11 @@ public class L1Racing implements Runnable
 
 						npcBroadcast("잠시후 펫 레이싱을 진행하겠습니다.");
 
-						TaskLane.INSTANCE.scheduleRequired(this, 60000L);
+						CInstanceWork.scheduleRequired(this, 60000L);
 					}
 					else
 					{
-						TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+						CInstanceWork.scheduleRequired(this, 1000L);
 					}
 				}
 				break;
@@ -166,7 +166,7 @@ public class L1Racing implements Runnable
 						_executeStatus = EXECUTE_STATUS_NONE;					
 					}
 
-					TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+					CInstanceWork.scheduleRequired(this, 1000L);
 				}
 				break;
 
@@ -182,7 +182,7 @@ public class L1Racing implements Runnable
 						_executeStatus = EXECUTE_STATUS_PROGRESS;
 					}
 
-					TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+					CInstanceWork.scheduleRequired(this, 1000L);
 				}
 				break;
 
@@ -194,11 +194,11 @@ public class L1Racing implements Runnable
 						if( endCountDown() )
 						{
 							_executeStatus = EXECUTE_STATUS_FINALIZE;
-							TaskLane.INSTANCE.scheduleRequired(this, 5 * 60 * 000L);
+							CInstanceWork.scheduleRequired(this, 5 * 60 * 000L);
 						}
 						else
 						{
-							TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+							CInstanceWork.scheduleRequired(this, 1000L);
 						}
 					}
 					else
@@ -213,7 +213,7 @@ public class L1Racing implements Runnable
 							endGame();
 
 						}
-						TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+						CInstanceWork.scheduleRequired(this, 1000L);
 					}
 				}
 				break;
@@ -223,7 +223,7 @@ public class L1Racing implements Runnable
 					_executeStatus = EXECUTE_STATUS_NONE;
 					setGameStatus(STATUS_NONE);
 
-					TaskLane.INSTANCE.scheduleRequired(this, 1000L);
+					CInstanceWork.scheduleRequired(this, 1000L);
 				}
 				break;
 			}

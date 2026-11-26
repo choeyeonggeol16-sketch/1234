@@ -23,6 +23,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -160,7 +161,7 @@ public final class AppCenterService {
             service.createContext("/",new Handler(HTML,CSS,JS));
             service.setExecutor(executor);
             service.start();
-            snapshotTimer=CServerTimer.fixedDelay(new SnapshotTimer(service),0L,5_000L);
+            snapshotTimer=CWorldWork.scheduleWithFixedDelay(new SnapshotTimer(service),0L,5_000L);
             if(snapshotTimer==null)throw new IllegalStateException("AppCenter snapshot timer rejected");
             System.out.println("앱센터 서버가 연결되었습니다.");
         }catch(IOException|RuntimeException e){

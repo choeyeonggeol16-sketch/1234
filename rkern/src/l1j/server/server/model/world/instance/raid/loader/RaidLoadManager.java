@@ -3,14 +3,12 @@ package l1j.server.server.model.world.instance.raid.loader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.Account;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -222,41 +220,31 @@ public class RaidLoadManager {
 	}
 	
 	private static void allUserInitializeCommands(L1PcInstance gm){
-		Collection<L1PcInstance> pcs 	= L1World.getInstance().getAllPlayers();
-		ArrayList<L1PcInstance> pcList 	= new ArrayList<L1PcInstance>(pcs.size());
-		int size 						= pcList.size();
-		Timestamp ts 					= new Timestamp(1);
-		L1PcInstance pc					= null;
-		pcList.addAll(pcs);
-		
-		for(int i=0; i<size; i++){ 
-			pc = pcList.get(i);
-			if(pc == null || pc.getAccount() == null)
-				continue;
-			
-			pc.getAccount().setDragonRaid(ts);
-			if(pc.hasSkillEffect(L1SkillId.DRAGONRAID_BUFF))
-				pc.removeSkillEffect(L1SkillId.DRAGONRAID_BUFF);
-		}
-		
-		TaskLane.PERSISTENCE.execute(new RaidUserTimeStore(pcList));
-		SC_SystemMessage.send(gm, "모든 유저의 레이드 시간을 초기화 했습니다.");
+        boolean saved = true;
+        for (L1PcInstance pc : new ArrayList<>(L1World.getInstance().getAllPlayers())) {
+            final Account account = pc == null ? null : pc.getAccount();
+            if (account == null) continue;
+            if (!RaidUserTimeStore.update(account, 1L)) saved = false;
+            if (pc.hasSkillEffect(L1SkillId.DRAGONRAID_BUFF))
+                pc.removeSkillEffect(L1SkillId.DRAGONRAID_BUFF);
+        }
+        SC_SystemMessage.send(gm, saved ? "모든 유저의 레이드 시간을 초기화 했습니다."
+                : "레이드 시간을 초기화했지만 일부 계정의 저장 요청이 거절되었습니다.");
 	}
-	
+
 	private static void userInitializeCommands(L1PcInstance gm, String name){
 		L1PcInstance pc = L1World.getInstance().getPlayer(name);
 		StringBuilder sb = new StringBuilder(256);
-		if(pc == null || pc.getAccount() == null){
-			sb.append("[").append(name).append("] 유저를 찾을 수 없습니다.");
-		}else{
-			Timestamp ts = new Timestamp(1);
-			pc.getAccount().setDragonRaid(ts);
-			if(pc.hasSkillEffect(L1SkillId.DRAGONRAID_BUFF))
-				pc.removeSkillEffect(L1SkillId.DRAGONRAID_BUFF);
-			ArrayList<L1PcInstance> list = new ArrayList<L1PcInstance>();
-			new RaidUserTimeStore(list).run();
-			sb.append("[").append(name).append("] 레이드 시간을 초기화 했습니다.");
-		}
+        final Account account = pc == null ? null : pc.getAccount();
+        if (account == null) {
+            sb.append("[").append(name).append("] 유저를 찾을 수 없습니다.");
+        } else {
+            final boolean saved = RaidUserTimeStore.update(account, 1L);
+            if (pc.hasSkillEffect(L1SkillId.DRAGONRAID_BUFF))
+                pc.removeSkillEffect(L1SkillId.DRAGONRAID_BUFF);
+            sb.append("[").append(name).append(saved ? "] 레이드 시간을 초기화 했습니다."
+                    : "] 레이드 시간을 초기화했지만 저장 요청이 거절되었습니다.");
+        }
 		
 		SC_SystemMessage.send(gm, sb.toString());
 	}

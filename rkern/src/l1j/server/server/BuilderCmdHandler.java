@@ -1,6 +1,6 @@
 package l1j.server.server;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 
 import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
@@ -2013,7 +2013,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 					return;
 				}
 
-				TaskLane.WORLD.execute(new Runnable() {
+				CWorldWork.execute(new Runnable() {
 					@Override
 					public void run() {
 						// Config.load();
@@ -2162,7 +2162,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				@Override public void run() {
 					if (!builderFullAccess(gm) || !builderLive(gm, socket, stamp)) return;
 					builderGiftOnline(gm, template, count, enchant);
-					if (--remaining > 0) TaskLane.WORLD.scheduleRequired(this, delay);
+					if (--remaining > 0) CWorldWork.scheduleRequired(this, delay);
 				}
 			}.run();
 		} catch (RuntimeException e) { SC_SystemMessage.send(gm, ".오토선물 [횟수] [초] [아이템ID] [강화] [수량]"); }
@@ -3016,7 +3016,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "당신의 계정내 현재 캐릭터가 압류 되었습니다.");
 			SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "\\f3-------------------------------------------------------------------");
 			pc.sendPackets("\\f1당신의 계정내 현재 캐릭터가 압류 되었습니다.");
-			TaskLane.WORLD.scheduleRequired(new DelayRestart(pc), 3000);
+			CWorldWork.scheduleRequired(new DelayRestart(pc), 3000);
 		} catch (Exception e) {
 			gm.sendPackets(".캐릭압류 [압류 캐릭터이름]");
 		} finally {
@@ -4367,7 +4367,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				if (target.getOnlineStatus() == 1) {
 					SC_Disconnect.send(target);
 				}
-				TaskLane.WORLD.scheduleRequired(new Runnable(){
+				CWorldWork.scheduleRequired(new Runnable(){
 					@Override
 					public void run(){
 						if(clnt != null && clnt.isConnected()){
@@ -7454,7 +7454,7 @@ for (L1PcInstance pc2 : players) {
 			int count = Integer.parseInt(st.nextToken(), 10);
 			
 			BuilderSkillGfxTask spr = new BuilderSkillGfxTask(pc, sprid, count);
-			TaskLane.WORLD.execute(spr);
+			CWorldWork.execute(spr);
 			
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, cmdName + " [castgfx] 라고 입력해 주세요. ");
@@ -7574,7 +7574,7 @@ for (L1PcInstance pc2 : players) {
 			int sprid = Integer.parseInt(st.nextToken(), 10);
 			int count = Integer.parseInt(st.nextToken(), 10);
 			BuilderEffectGfxTask spr = new BuilderEffectGfxTask(pc, sprid, count);
-			TaskLane.WORLD.execute(spr);
+			CWorldWork.execute(spr);
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, cmdName + " [숫자,숫자] 라고 입력해 주세요. ");
 		}
@@ -7812,7 +7812,7 @@ for (L1PcInstance pc2 : players) {
 				npc.setHomeY(npc.getY());
 				npc.setHeading(4);
 				L1World.getInstance().storeAndEnterWorld(npc);
-				TaskLane.WORLD.scheduleRequired(new BuilderImpactTask(npc, action), 1000);
+				CWorldWork.scheduleRequired(new BuilderImpactTask(npc, action), 1000);
 				npc.startTimedDelete(60 * 60 * 1000);
 				if (!attack) {
 					if (i == row) {
@@ -7861,7 +7861,7 @@ for (L1PcInstance pc2 : players) {
 			try {
 				if (npc == null || npc._destroyed) return;
 				SC_DoActionGFX.broadcast(npc, action);
-				TaskLane.WORLD.scheduleRequired(this, 3000);
+				CWorldWork.scheduleRequired(this, 3000);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

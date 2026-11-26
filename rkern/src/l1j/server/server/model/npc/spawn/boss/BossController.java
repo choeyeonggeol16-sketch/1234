@@ -25,6 +25,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.utils.SystemUtil;
 
 /**
@@ -130,7 +131,7 @@ public final class BossController {
         //    _log.warning(String.format("[BossController] 스폰 시각 계산 실패 npcId=%d name=%s version=%d — 10분 후 재시도",
       //              boss.getNpcId(), boss.getMonName(), version));
 //
-            trackSchedule(version, CServerTimer.onceRequired(new Runnable() {
+            trackSchedule(version, CWorldWork.scheduleRequiredOnWorldClock(new Runnable() {
                 @Override
                 public void run() {
                     if (version != SCHEDULE_VERSION.get()) {
@@ -152,7 +153,7 @@ public final class BossController {
 
         final long finalDelay = delayMs + jitterMs;
 
-        trackSchedule(version, CServerTimer.onceRequired(new Runnable() {
+        trackSchedule(version, CWorldWork.scheduleRequiredOnWorldClock(new Runnable() {
             @Override
             public void run() {
                 /*
@@ -276,7 +277,7 @@ public final class BossController {
                 _log.warning(String.format("[BossController] 스폰 실패 npcId=%d name=%s — 10분 후 재시도",
                         boss.getNpcId(), boss.getMonName()));
 
-                trackSchedule(version, CServerTimer.onceRequired(new Runnable() {
+                trackSchedule(version, CWorldWork.scheduleRequiredOnWorldClock(new Runnable() {
                     @Override
                     public void run() {
                         if (version != SCHEDULE_VERSION.get()) {
@@ -531,7 +532,7 @@ for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
                 }
 
                 final int spawnedNpcId = npc.getNpcId();
-                CServerTimer.onceRequired(new Runnable() {
+                CWorldWork.scheduleRequiredOnWorldClock(new Runnable() {
                     @Override
                     public void run() {
                         for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {

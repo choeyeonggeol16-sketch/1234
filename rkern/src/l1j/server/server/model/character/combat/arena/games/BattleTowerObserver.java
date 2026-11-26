@@ -2,7 +2,7 @@ package l1j.server.server.model.character.combat.arena.games;
 
 import java.util.HashMap;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.combat.arena.CombatInformation;
@@ -48,7 +48,7 @@ public class BattleTowerObserver extends CombatObserver{
 			boolean is_live = is_live_team(team_id);
 			if((tower == null || tower.isDead() || !is_live) && !is_disposing()){
 				set_status(EStatus.DISPOSING);
-				TaskLane.INSTANCE.execute(new Runnable(){
+				CInstanceWork.execute(new Runnable(){
 					@Override
 					public void run(){
 						batch_quit();					

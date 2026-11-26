@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.storage.CCharacterSaveService;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -1055,7 +1055,7 @@ public final class CIOThreadCallback {
 		final int sessionStamp;
 		final TaskHandle h;
 		final CIOThread owner;
-		// Persistence snapshots run on the bounded persistence lane, outside
+		// Persistence snapshots run in the character save service, outside
 		// the CIO shard monitor. Only one save job is pending per user/session.
 		final long charSaveIntervalNs;
 		final long invSaveIntervalNs;
@@ -1117,7 +1117,7 @@ public final class CIOThreadCallback {
 			if (!charDue && !invDue) return;
 			savePending = true;
 			try {
-				TaskLane.PERSISTENCE.execute(saveWork);
+				CCharacterSaveService.capture(saveWork);
 			} catch (RuntimeException failure) {
 				savePending = false;
 				// Admission rejection must not silently disable a periodic save.
@@ -1127,7 +1127,7 @@ public final class CIOThreadCallback {
 			}
 		}
 
-		/** Executed on the preexisting bounded instant pool, never on the CIO owner. */
+		/** Capture and enqueue CacheD writes off the character's CIO owner. */
 		private void saveOnWorker() {
 			try {
 				final L1PcInstance pc = actor;

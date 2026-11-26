@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -152,7 +152,7 @@ public final class GludioInstanceDungeon {
                 || (closed && (password==null || password.length()!=4))) return null;
         Room r=new Room(roomSequence++,kind,owner,minLevel,boost,closed,title,
                 password==null?"":password,max,fee,distribution);
-        r.idle=TaskLane.INSTANCE.schedule(()->expire(r),600_000L);
+        r.idle=CInstanceWork.schedule(()->expire(r),600_000L);
         if(r.idle==null) return null;
         rooms.put(r.id,r);memberRooms.put(owner.getId(),r);
         return r;
@@ -418,7 +418,7 @@ public final class GludioInstanceDungeon {
 
     private void schedule(Room r) {
         if(r.ended) return;
-        if(TaskLane.INSTANCE.schedule(r,1000L)==null) finish(r,"던전 스케줄 등록 실패로 종료되었습니다.");
+        if(CInstanceWork.schedule(r,1000L)==null) finish(r,"던전 스케줄 등록 실패로 종료되었습니다.");
     }
     private void spawnWalls(Room r) {
         for(int i=0;i<6;i++) r.guards[i]=spawn(r,50000221,32797+i,32851,0,null,null);
@@ -655,7 +655,7 @@ public final class GludioInstanceDungeon {
         }
     }
     private void scheduleCleanup(Room r,long delay) {
-        if(TaskLane.INSTANCE.schedule(()->cleanup(r),delay)==null)
+        if(CInstanceWork.schedule(()->cleanup(r),delay)==null)
             LOG.warning("[Gludio-Indun] Cleanup admission refused; retain map="+r.mapId);
     }
     private void cleanup(Room r) {

@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TOP_RANKER_NOTI;
 import l1j.server.server.utils.SQLUtil;
@@ -156,7 +156,7 @@ public class RankUserLoader {
     }
 
     public void offBuff(){
-        TaskLane.PERSISTENCE.execute(new Runnable(){
+        CWorldWork.execute(new Runnable(){
             @Override
             public void run(){
                 try{

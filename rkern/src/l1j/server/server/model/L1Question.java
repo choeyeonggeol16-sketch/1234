@@ -1,6 +1,6 @@
 package l1j.server.server.model;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import java.util.logging.Logger;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 
@@ -25,7 +25,7 @@ public class L1Question implements Runnable{
 		final L1Question survey = new L1Question(text);
 		_instance = survey;
 		try {
-			TaskLane.SESSION.execute(survey);
+			CWorldWork.execute(survey);
 		} catch (java.util.concurrent.RejectedExecutionException rejected) {
 			survey.resetRejected(rejected);
 		}
@@ -50,7 +50,7 @@ public class L1Question implements Runnable{
 	}
 
 	private void scheduleNext(long delayMs) {
-		if (TaskLane.SESSION.schedule(this, delayMs) == null) {
+		if (CWorldWork.schedule(this, delayMs) == null) {
 			resetRejected(new java.util.concurrent.RejectedExecutionException("survey timer queue full"));
 		}
 	}

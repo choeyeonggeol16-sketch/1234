@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.BQSWQUpdator;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterCriteriaProgress;
@@ -15,6 +15,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRITERIA_UPDATE_NOTI;
 import l1j.server.server.shared.PropertyReader;
 import l1j.server.server.shared.command.Command;
@@ -191,7 +192,7 @@ public class BQSLoadManager implements Command{
                     args.notify("케릭터 이름 %s을(를) 찾을 수 없습니다.");
                     return;					
                 }
-                TaskLane.WORLD.execute(new Runnable(){
+                CWorldWork.execute(new Runnable(){
                     @Override
                     public void run(){
                         try{
@@ -218,7 +219,7 @@ public class BQSLoadManager implements Command{
         .add_command(new CommandTree("전체초기화", "현재 접속중인 모든 케릭터의 도감을 초기화합니다.", null){
             protected void to_handle_command(CommandArgs args) throws Exception{
                 L1PcInstance gm = args.getOwner();
-                TaskLane.WORLD.execute(new Runnable(){
+                CWorldWork.execute(new Runnable(){
                     @Override
                     public void run(){
                         BQS_IS_ONUPDATE_BOOKS = false;
@@ -290,28 +291,32 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
                     args.notify("케릭터 이름 %s을(를) 찾을 수 없습니다.");
                     return;					
                 }
-                TaskLane.WORLD.execute(new Runnable(){
-                    @Override
-                    public void run(){
-                        try{
-                            BQSCharacterData bqs = pc.getBqs();
-                            bqs
+                final var session = pc.getNetConnection();
+                if (session == null || session.getActiveChar() != pc) {
+                    args.notify("캐릭터 접속 상태를 확인할 수 없습니다.");
+                    return;
+                }
+                CIOThreadCallback.getInstance().completeSession(session, () -> {
+                    final BQSCharacterData bqs = pc.getBqs();
+                    if (bqs == null) {
+                        args.notify("캐릭터의 주간퀘스트 정보를 찾을 수 없습니다.");
+                        return;
+                    }
+                    bqs
                             .set_decks_version(0L)
                             .realloc_decks(pc)
                             .send_decks_noti(pc);
-                            pc.sendPackets("운영자에 의해 주간퀘스트 정보가 초기화되었습니다.");
-                            gm.sendPackets(String.format("%s의 몬스터북 정보를 초기화 하였습니다.", pc.getName()));
-                        }catch(Exception e){
-                            e.printStackTrace();
-                        }
-                    }
+                    pc.sendPackets("운영자에 의해 주간퀘스트 정보가 초기화되었습니다.");
+                    gm.sendPackets(String.format("%s의 몬스터북 정보를 초기화 하였습니다.", pc.getName()));
+                }, failure -> {
+                    if (failure != null) args.notify("캐릭터의 주간퀘스트 초기화에 실패했습니다.");
                 });
             }
         })
         .add_command(new CommandTree("전체초기화", "현재 접속중인 모든 케릭터의 주간퀘스트를 초기화합니다.", null){
             protected void to_handle_command(CommandArgs args) throws Exception{
                 L1PcInstance gm = args.getOwner();
-                TaskLane.WORLD.execute(new Runnable(){
+                CWorldWork.execute(new Runnable(){
                     @Override
                     public void run(){
                         gm.sendPackets(String.format("%d명의 캐릭터 주간퀘스트를 초기화하였습니다.", BQSWQDecksLoader.getInstance().notifyUpdated()));
@@ -359,7 +364,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
                     return;
                 }
                 
-                TaskLane.WORLD.execute(new Runnable(){
+                CWorldWork.execute(new Runnable(){
                     @Override
                     public void run(){
                         BQSCharacterData bqs = pc.getBqs();

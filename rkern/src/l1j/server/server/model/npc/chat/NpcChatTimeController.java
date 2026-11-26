@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -58,7 +58,7 @@ public final class NpcChatTimeController implements Runnable, TimeListener {
         if (completedMinute == minute || !inFlight.compareAndSet(false, true)) return;
         final int epoch = generation;
         try {
-            TaskLane.WORLD.execute(() -> {
+            CWorldWork.execute(() -> {
                 try {
                     if (!started || generation != epoch) return;
                     run();

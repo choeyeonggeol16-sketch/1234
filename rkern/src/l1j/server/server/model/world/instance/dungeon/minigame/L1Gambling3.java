@@ -4,7 +4,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.world.effect.L1EffectSpawn;
 import l1j.server.server.model.L1Object;
@@ -84,7 +84,7 @@ public class L1Gambling3 {
 		}
 		final int target = 300040 + type; // type1=300041 ... type9=300049
 		final short mapId = pc.getMapId();
-		TaskLane.INSTANCE.execute(new Runnable() {
+		CInstanceWork.execute(new Runnable() {
 			@Override
 			public void run() {
 				try {

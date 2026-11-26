@@ -2,7 +2,7 @@ package l1j.server.server.model.world.cleanup;
 
 import java.util.ArrayList;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.inventory.CInventory;
@@ -17,8 +17,8 @@ import l1j.server.server.shared.L1Type;
 public final class MapCleaner implements Runnable {
     public static void cleanup(L1Map map, MapCleanerFilter filter) {
         final MapCleaner cleaner = new MapCleaner(map, filter);
-        if (TaskLane.WORLD.tryExecute(cleaner) || TaskLane.INSTANCE.tryExecute(cleaner)) return;
-        if (!TaskLane.WORLD.isClosed()) TaskLane.WORLD.scheduleRequired(cleaner, 1L);
+        if (!CInstanceWork.tryExecute(cleaner) && !CInstanceWork.isClosed())
+            CInstanceWork.scheduleRequired(cleaner, 1L);
     }
 
     public static void removeGroundItems(L1Map map) {

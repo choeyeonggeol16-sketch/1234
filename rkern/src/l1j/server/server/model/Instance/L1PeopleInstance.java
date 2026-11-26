@@ -6,7 +6,6 @@ import l1j.server.server.model.character.action.CAttackAction;
 
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
@@ -19,6 +18,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.templates.L1Npc;
 
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 public class L1PeopleInstance extends L1NpcInstance {
 	private static final long serialVersionUID = 1L;
 	/**
@@ -158,14 +158,14 @@ public class L1PeopleInstance extends L1NpcInstance {
                 DeathFinished(true);
             }
         }
-        if (lastAttacker != null) {
-            final Runnable penalty = () -> lastAttacker.addLawful(-5000);
-            try {
-                TaskLane.WORLD.execute(penalty);
-            } catch (java.util.concurrent.RejectedExecutionException rejected) {
-                penalty.run();
+        if (lastAttacker instanceof L1PcInstance pc) {
+            final var session = pc.getNetConnection();
+            if (session != null && session.getActiveChar() == pc
+                    && CIOThreadCallback.getInstance().completeSession(session, () -> pc.addLawful(-5000))) {
+                return;
             }
         }
+        if (lastAttacker != null) lastAttacker.addLawful(-5000);
     }
 
 }

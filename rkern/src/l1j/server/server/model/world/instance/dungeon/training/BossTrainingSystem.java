@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -44,7 +44,7 @@ public class BossTrainingSystem {
             room.keeper.setLightSize(0);
             room.keeper.refreshLight();
             L1World.getInstance().storeAndEnterWorld(room.keeper);
-            room.expiry = TaskLane.INSTANCE.schedule(() -> expire(room), LIFETIME_MS);
+            room.expiry = CInstanceWork.schedule(() -> expire(room), LIFETIME_MS);
             if (room.expiry == null) throw new RejectedExecutionException("Training expiry admission failed");
             return room;
         } catch (Exception failure) {
@@ -58,14 +58,14 @@ public class BossTrainingSystem {
         room.cancelled = true;
         // Keep the slot reserved until the old keeper is out of the world.
         // If this submission fails, the already-admitted expiry cleans it up.
-        TaskLane.INSTANCE.schedule(() -> expire(room), 0L);
+        CInstanceWork.schedule(() -> expire(room), 0L);
     }
 
     private void expire(BossTraining room) {
         synchronized (room) {
             if (rooms.get(room.mapId) != room) return;
             if (!room.cancelled && !room.isActive()) {
-                room.expiry = TaskLane.INSTANCE.schedule(() -> expire(room), 30_000L);
+                room.expiry = CInstanceWork.schedule(() -> expire(room), 30_000L);
                 return;
             }
             try {

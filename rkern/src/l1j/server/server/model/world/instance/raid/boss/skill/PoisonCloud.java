@@ -3,7 +3,7 @@ package l1j.server.server.model.world.instance.raid.boss.skill;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -42,7 +42,7 @@ public class PoisonCloud extends RaidBossSkill{
             }
 
             if(pending <= 10)
-                TaskLane.INSTANCE.execute(new PoisonCludeSpawn(
+                CInstanceWork.execute(new PoisonCludeSpawn(
                         own, pc.getX(), pc.getY(), RaidLoadManager.MRS_SP_POISONCLOUD_ID, RaidLoadManager.MRS_SP_POISONCLOUD_TIME));
             sleepAction(own, _actid);
         }catch(Exception e){
@@ -77,7 +77,7 @@ public class PoisonCloud extends RaidBossSkill{
                     break;
             }
             if(pending <= 10)
-                TaskLane.INSTANCE.execute(new PoisonCludeSpawn(
+                CInstanceWork.execute(new PoisonCludeSpawn(
                         own, pc.getX(), pc.getY(), RaidLoadManager.MRS_SP_POISONCLOUD_ID, RaidLoadManager.MRS_SP_POISONCLOUD_TIME));
 
             sleepAction(own, _actid);

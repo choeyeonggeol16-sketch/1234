@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 
 public class RealTimeClock {
     public static final int DAY_TO_HOURS = 24;
@@ -125,7 +126,7 @@ public class RealTimeClock {
         final RealTimeClock clock = _instance;
         if (clock._future != null) return;
         clock._currentTime = new RealTime();
-        clock._future = CServerTimer.fixedDelay(
+        clock._future = CWorldWork.scheduleWithFixedDelay(
                 clock.new TimeUpdater(), 0L, TICK_MS);
         if (clock._future == null) throw new IllegalStateException("Real-time clock timer rejected");
     }

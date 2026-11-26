@@ -11,6 +11,7 @@ import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFight
 import l1j.server.server.model.character.combat.arena.dogfight.instance.IFighterDeadNotifyHandler;
 import l1j.server.server.model.character.combat.arena.dogfight.instance.IFighterGameEndedHandler;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
 import l1j.server.server.model.L1World;
@@ -193,7 +194,7 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
                     }
                     if (nextTicket == tickets.size()) return;
                 }
-                noticeTimer = CServerTimer.once(this, 1_000L);
+                noticeTimer = CInstanceWork.schedule(this, 1_000L);
             }
         }
     }
@@ -201,7 +202,7 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
     public synchronized void execute() {
         if (m_is_run) return;
         m_is_run = true;
-        countdownTimer = CServerTimer.once(this::TimerExpired, 1L);
+        countdownTimer = CInstanceWork.schedule(this::TimerExpired, 1L);
         if (countdownTimer == null) dispose();
     }
 
@@ -222,14 +223,14 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
             }
             if (seconds <= 3) do_three_seconds_trigger(seconds);
             m_ready_remain_seconds--;
-            countdownTimer = CServerTimer.once(this::TimerExpired, 1_000L);
+            countdownTimer = CInstanceWork.schedule(this::TimerExpired, 1_000L);
             if (countdownTimer == null) dispose();
             return;
         }
         countdownTimer = null;
         m_is_fight = true;
         send_messenger_message(DogFightSettings.MESSENGER_SELL_CLOSING_MESSAGE);
-        noticeTimer = CServerTimer.once(new CMatchNoticeTimer(), 1L);
+        noticeTimer = CInstanceWork.schedule(new CMatchNoticeTimer(), 1L);
         do_game_start_trigger();
         for (Integer cornerId : m_fighters.keySet()) {
             final ArrayList<DogFightInstance> opponents = create_different_fighters(cornerId);

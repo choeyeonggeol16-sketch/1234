@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CParty;
@@ -81,7 +81,7 @@ public class BattleTournamentObserver extends CombatObserver{
 			long ready_seconds = _combat_info.get_ready_seconds();
 			
 			_start_sec = (System.currentTimeMillis() / 1000L) + ready_seconds;
-			TaskLane.INSTANCE.scheduleRequired(this, ready_seconds * 1000L);
+			CInstanceWork.scheduleRequired(this, ready_seconds * 1000L);
 		}
 		return this;
 	}
@@ -253,7 +253,7 @@ public class BattleTournamentObserver extends CombatObserver{
 							}else{
 								set_is_last_level(true);
 								_areas[team_id][round_id + 1].do_complete();
-								TaskLane.INSTANCE.scheduleRequired(new Runnable(){
+								CInstanceWork.scheduleRequired(new Runnable(){
 									@Override
 									public void run(){
 										_areas[team_id][round_id + 1].do_boss_spawn();										
@@ -271,13 +271,9 @@ public class BattleTournamentObserver extends CombatObserver{
 							.setMaxCount(1)
 							.setDice(-1)
 							.build(rt.x, rt.y, _copyMapId, -1);
-							TaskLane.INSTANCE.scheduleRequired(new Runnable(){
-								@Override
-								public void run(){
-									set_status(EStatus.DISPOSING);
-									batch_quit();									
-								}
-							}, CombatLoadManager.COMBAT_BT_MASTER_DEATH_DELAY * 1000L);
+							CInstanceWork.scheduleRequired(
+									BattleTournamentObserver.this::finishCombat,
+									CombatLoadManager.COMBAT_BT_MASTER_DEATH_DELAY * 1000L);
 							return t;
 						}
 						_areas[team_id][round_id].do_complete();

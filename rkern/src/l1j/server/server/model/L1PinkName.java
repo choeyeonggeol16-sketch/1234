@@ -1,8 +1,8 @@
 package l1j.server.server.model;
 
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CServerTimer;
 
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
@@ -63,7 +63,8 @@ public class L1PinkName {
             }
 
             PinkTicker ticker = new PinkTicker(attacker);
-            CServerTimer f = TaskLane.SESSION.scheduleAtFixedRate(ticker, 1000L, 1000L);
+            final int shard = Math.max(0, CIOThreadCallback.getInstance().ownerShardIndex(attacker));
+            CServerTimer f = CServerTimer.fixedRateSignalOnShard(shard, ticker, 1000L, 1000L);
             if (f == null) {
                 stopPink(attacker);
                 return;

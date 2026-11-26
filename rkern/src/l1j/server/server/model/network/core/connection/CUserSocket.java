@@ -42,7 +42,7 @@ import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.network.core.session.CSessionLifecycle;
 
 /**
  * Game packet framing and the per-socket 512-slot callback serializer.
@@ -2693,7 +2693,7 @@ public final class CUserSocket extends CSocket {
                 }, () -> cleanupAfterLogout(pc));
         if (pc == null) { task.run(); return; }
         try {
-            TaskLane.SESSION.execute(task);
+            CSessionLifecycle.release(task);
         } catch (Exception failure) {
             LOG.log(Level.SEVERE, "[GameClient Close] deferred logout admission failed", failure);
             if (isTransportOwnerThread()) {

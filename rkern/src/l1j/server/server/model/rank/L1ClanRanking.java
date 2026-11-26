@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.utils.SQLUtil;
@@ -60,7 +60,7 @@ public class L1ClanRanking implements Runnable {
 	private void submitUpdate() {
 		if (!_isStart || !_updateQueued.compareAndSet(false, true)) return;
 		try {
-			TaskLane.PERSISTENCE.execute(() -> {
+			CacheD.getInstance().submitDbJob(() -> {
 				try { run(); }
 				finally { _updateQueued.set(false); }
 			});

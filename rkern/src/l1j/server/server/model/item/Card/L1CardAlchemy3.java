@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 import l1j.server.Config;
 import l1j.server.server.Account;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.utils.DelaySender;
 import l1j.server.server.utils.MessageUtil;
@@ -248,7 +248,7 @@ public class L1CardAlchemy3 {
     };
 
     private static void broadcastUniqueSuccess(L1PcInstance pc) {
-        TaskLane.WORLD.scheduleRequired(UNIQUE_BROADCAST, 2300L);
+        CWorldWork.scheduleRequired(UNIQUE_BROADCAST, 2300L);
     }
 
 

@@ -3,7 +3,7 @@ package l1j.server.server.model.world.instance.raid.objects;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -66,7 +66,7 @@ public class RaidAntaras extends RaidObject{
 			L1PcInstance[] pcs	= null;
 			boolean isInArea 	= true;
 	
-			while(isInArea){
+			while (isInArea && _state == RS_READY && !CInstanceEvents.isStopping()) {
 				Thread.sleep(500);
 				pcs = _users.toArray(new L1PcInstance[_users.size()]);
 				for(int i=0; i<pcs.length; i++){
@@ -86,6 +86,7 @@ public class RaidAntaras extends RaidObject{
 				}
 			}
 			
+			if (_state != RS_READY || CInstanceEvents.isStopping()) return;
 			size = _users.size();
 			for(int i=0; i<=s_startMessages.length; i++){
 				Thread.sleep(RaidLoadManager.MRS_MESSAGE_DELAY);
@@ -106,12 +107,15 @@ public class RaidAntaras extends RaidObject{
 				}
              }
 			}
+			if (_state != RS_READY || CInstanceEvents.isStopping()) return;
 			if(_bossSpawn != null)
 				_boss = _bossSpawn.spawnBoss(getCopyMapId());
 			
-			_state = RS_START;
-			TaskLane.INSTANCE.scheduleRequired(this, RaidLoadManager.MRS_MESSAGE_DELAY);
-		}catch(Exception e){
+			enterCombatPhase();
+		} catch (InterruptedException stopping) {
+			Thread.currentThread().interrupt();
+			return;
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -134,11 +138,11 @@ public class RaidAntaras extends RaidObject{
 			if(_combos != null)
 				csize = _combos.size();
 			
-			while((_state & RS_START) > 0){
+			while (_state == RS_START && !CInstanceEvents.isStopping()) {
 				Thread.sleep(RaidLoadManager.MRS_THREAD_CLOCK);
 				
 				// 한번 더 검사.
-				if((_state & RS_START) == 0)
+				if (_state != RS_START || CInstanceEvents.isStopping())
 					return;
 				
 				if(!isInRaid()){
@@ -170,7 +174,10 @@ public class RaidAntaras extends RaidObject{
 					skill.action(_boss, _users);
 				}
 			}
-		}catch(Exception e){
+		} catch (InterruptedException stopping) {
+			Thread.currentThread().interrupt();
+			return;
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

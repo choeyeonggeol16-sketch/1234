@@ -5,7 +5,7 @@ import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -34,7 +34,7 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
             }
             synchronized (room) {
                 room.registered = true;
-                room._future = TaskLane.INSTANCE.scheduleRequired(room, InnHelper.RENTAL_MINUTE * 60L * 1000L);
+                room._future = CInstanceWork.scheduleRequired(room, InnHelper.RENTAL_MINUTE * 60L * 1000L);
             }
             return room;
         } catch (RuntimeException e) {

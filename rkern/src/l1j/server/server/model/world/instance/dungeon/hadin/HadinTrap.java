@@ -2,8 +2,11 @@ package l1j.server.server.model.world.instance.dungeon.hadin;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DoorInstance;
@@ -15,8 +18,10 @@ import l1j.server.server.utils.L1SpawnUtil;
 
 public class HadinTrap implements Runnable {
 
-	private short _map;
-	public boolean Running = true;
+	private static final Logger LOG = Logger.getLogger(HadinTrap.class.getName());
+	private final short _map;
+	private CServerTimer nextTick;
+	public volatile boolean Running = true;
 
 	private boolean LEVEL_1_TRAP_1 = false;
 	private boolean LEVEL_1_TRAP_2 = false;
@@ -44,55 +49,54 @@ public class HadinTrap implements Runnable {
 	private boolean LAST_TRAP = false;
 
 	public boolean MonCK = false;
-	public boolean LEVEL_1_TRAP_CK = false;//첫방 발판 4개
-	public boolean LEVEL_2_TRAP_CK = false;//둘방 발판 1개
-	public boolean LEVEL_3_TRAP_CK = false;//셋방 발판 4개
-	public boolean LEVEL_4_TRAP_CK = false;//마지막방 발판
+	public volatile boolean LEVEL_1_TRAP_CK = false;//첫방 발판 4개
+	public volatile boolean LEVEL_2_TRAP_CK = false;//둘방 발판 1개
+	public volatile boolean LEVEL_3_TRAP_CK = false;//셋방 발판 4개
+	public volatile boolean LEVEL_4_TRAP_CK = false;//마지막방 발판
 
 	public boolean BossRoomCK = false;
-	public boolean LAST_TRAP_CK = false;
+	public volatile boolean LAST_TRAP_CK = false;
 
 	private HashMap<String, L1DoorInstance> doorList;
 
 	public HadinTrap(short id){
 		_map = (short)id;
 		doorList = new HashMap<String, L1DoorInstance>();
-		TaskLane.INSTANCE.scheduleRequired(this, 5000);
+		nextTick = CInstanceWork.scheduleRequired(this, 5000L);
 	}
 
 	@Override
-	public void run() {
-		//System.out.println("HadinTrap Thread Create Compleate");
-		while(Running){
-			try {
-				TRAP_RESET();
-				Collection<L1Object> cklist;
-				cklist = L1World.getInstance().getVisibleObjects(_map).values();
-				for(L1Object ob : cklist){
-					if(ob == null || ob instanceof L1MonsterInstance)
-						continue;
-					if(ob instanceof L1PcInstance){
-						L1PcInstance pc = (L1PcInstance)ob;
-						TRAP_ON(pc);
-					} else if(ob instanceof L1DoorInstance) {
-						L1DoorInstance door = (L1DoorInstance)ob;
-						if(door.getNpcTemplate().get_npcId() == 900151 || door.getNpcTemplate().get_npcId() == 900152){
-							if(!doorList.containsKey(door.getSpawnLocation())){
-								doorList.put(door.getSpawnLocation(), door);
-							}
-						}
-					}
+	public synchronized void run() {
+		if (!Running) return;
+		nextTick = null;
+		try {
+			TRAP_RESET();
+			for (L1Object ob : L1World.getInstance().getVisibleObjects(_map).values()) {
+				if (ob instanceof L1PcInstance pc) {
+					TRAP_ON(pc);
+				} else if (ob instanceof L1DoorInstance door) {
+					final int npcId = door.getNpcTemplate().get_npcId();
+					if (npcId == 900151 || npcId == 900152)
+						doorList.putIfAbsent(door.getSpawnLocation(), door);
 				}
-				if(!MonCK)
-					TRAP_ON_CK();
-			}catch(Exception e){
-				//System.out.println("HadinTrap Event Thread Error instanceID : "+_map +" -> "+e);
-			}finally{
-				try{
-					Thread.sleep(2000);
-				}catch(Exception e){}
 			}
+			if (!MonCK) TRAP_ON_CK();
+		} catch (RuntimeException failure) {
+			LOG.log(Level.WARNING, "Hadin trap tick failed for map " + _map, failure);
 		}
+		if (Running) {
+			nextTick = CInstanceWork.schedule(this, 2000L);
+			if (nextTick == null) Running = false;
+		}
+	}
+
+	public synchronized void stop() {
+		Running = false;
+		if (nextTick != null) {
+			nextTick.cancel();
+			nextTick = null;
+		}
+		doorList.clear();
 	}
 
 

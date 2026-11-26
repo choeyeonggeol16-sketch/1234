@@ -9,7 +9,6 @@ import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.Account;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.CObjectDB;
@@ -230,14 +229,7 @@ public final class CS_Attr {
 						pc.sendShape(pc.getClassId());
 						pc.getInventory().DeleteItemAmount(item, 1);
 					}
-					TaskLane.SESSION.scheduleRequired(new Runnable(){
-						@Override
-						public void run(){
-							CUserSocket clnt = pc.getNetConnection();
-							CS_CharSelect.restartProcess(pc);
-                            CS_CommonClick.sendCharAmountAndPacks(clnt);							
-						}
-					}, 500L);
+					CS_CharSelect.requestRestartAfter(pc, 500L);
 				}
 				pc.setNameInstance(null);
 				return;

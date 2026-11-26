@@ -1,6 +1,6 @@
 package l1j.server.server.auth.captcha;
 
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.auth.captcha.loader.CaptchaDataLoader;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -146,7 +146,7 @@ public class Captcha {
         set_is_answer(false);
         set_relay_count(0);
         l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, c_data.get_bytes());
-        TaskLane.SESSION.scheduleRequired(new Runnable(){
+        CWorldWork.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 if(is_answer()){

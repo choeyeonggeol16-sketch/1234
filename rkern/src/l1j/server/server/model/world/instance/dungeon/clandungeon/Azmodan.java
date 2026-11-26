@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
@@ -53,7 +53,7 @@ public class Azmodan implements Runnable {
 		Time = 3600;
 		
 		SpawnMonster();
-		while (Running) {
+		while (Running && !CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
 			try {
 				Check();
 				if (End) {
@@ -68,18 +68,19 @@ public class Azmodan implements Runnable {
 				} 
 			} catch (Exception e) {
 			} finally {
-				try {
-					Thread.sleep(1000);
-				} catch (Exception e) {
-					e.printStackTrace();
+				if (!CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
+					try { Thread.sleep(1000L); }
+					catch (InterruptedException stopping) { Thread.currentThread().interrupt(); }
 				}
 			}
 		}
+		// Preserve shutdown storage cleanup even after the room wait was interrupted.
+		Thread.interrupted();
 		Azmodan_Delete();		
 	}
 
 	public void Start() {
-		TaskLane.INSTANCE.scheduleRequired(this, 2000);
+		CInstanceEvents.schedule(this, 2000L);
 	}
 	
 	private void Check() {
@@ -235,6 +236,8 @@ public class Azmodan implements Runnable {
 					pc.start_teleport(33426, 32811, 4, 5, 169, true, false);
 				}
 			}
+		} catch (InterruptedException stopping) {
+			Thread.currentThread().interrupt();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

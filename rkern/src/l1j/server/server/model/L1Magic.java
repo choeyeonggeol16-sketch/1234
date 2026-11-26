@@ -5,7 +5,6 @@ import static l1j.server.server.model.character.skill.L1SkillId.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.datatables.UserProtectMonsterTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -22,7 +21,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.character.effect.poison.DamagePoison;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Skills;
@@ -2748,46 +2746,6 @@ public class L1Magic {
         return Math.max(1, dmg - resist / 2);
     }
 
-	public void Start() {
-		
-		
-		TaskLane.WORLD.scheduleRequired(new Runnable(){
-			@Override
-			public void run(){
-				if (!_targetPc.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) {
-					if (_targetPc.hasSkillEffect(L1SkillId.리버레이션)) {
-						int 요정 = (int) ((double)Config.이터제약  * Config.리버레이션절감);
-						DamagePoison.doInfection(_pc, _targetPc, 1000, 요정, true, 1);
-					} else {
-						int B = ThreadLocalRandom.current().nextInt(Config.이터이차최대-Config.이터이차최소) + Config.이터이차최소;
-						DamagePoison.doInfection(_pc, _targetPc, 1000, B, true, 1);
-					}
-				}
-			}
-		}, Config.이터제약);
-		
-		
-	
-		
-	}
-public void Start1() {
-		
-		
-		TaskLane.WORLD.scheduleRequired(new Runnable(){
-			@Override
-			public void run(){
-				if (!_targetNpc.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) {
-				int B = ThreadLocalRandom.current().nextInt(Config.이터이차최대-Config.이터이차최소) + Config.이터이차최소;
-				DamagePoison.doInfection(_pc, _targetPc, 1000, B, true, 1);
-				
-				}
-			}
-		}, Config.이터제약);
-		
-		
-	
-		
-	}
 	public void commit(int damage, int drainMana) {
 		if (_calcType == PC_PC || _calcType == NPC_PC) {
 			commitPc(damage, drainMana);

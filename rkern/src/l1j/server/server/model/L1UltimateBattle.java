@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.datatables.UBSpawnTable;
 import l1j.server.server.datatables.UBTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -388,7 +389,7 @@ for (L1PcInstance pc : getMembersArray()) {
         private CServerTimer deadline;
 
         private void AddTimer(long delayMs) {
-            deadline = CServerTimer.once(this, delayMs);
+            deadline = CInstanceWork.schedule(this, delayMs);
             if (deadline == null) {
                 stop();
                 _log.warning("Ultimate battle timer admission rejected for arena " + _ubId);
