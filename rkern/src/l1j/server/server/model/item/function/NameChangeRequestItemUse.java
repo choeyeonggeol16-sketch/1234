@@ -7,7 +7,7 @@ import static l1j.server.server.model.item.function.PotionEffects.useFruit;
 import static l1j.server.server.model.item.function.SpecialEnchantScrolls.isOwnedScrollTarget;
 
 import l1j.server.server.model.character.combat.arena.stadium.StadiumManager;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeCharName;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -38,7 +38,7 @@ final class NameChangeRequestItemUse {
         SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "잠시후 캐릭터 이름 변경이 진행됩니다.");
         pc.sendPackets("잠시후 캐릭터 이름 변경이 진행됩니다.");
 
-        ThreadPool.getInstance().scheduleRequired(new Runnable() {
+        TaskLane.SESSION.scheduleRequired(new Runnable() {
             @Override
             public void run() {
                 SC_ChangeCharName.sendStart(pc);

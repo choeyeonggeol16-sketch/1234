@@ -1,6 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -20,7 +20,7 @@ public final class CS_USER_PLAY_INFO_REQ {
         if (!pc.isPrivateReady() && pc.isPrivateShop() && pc.isAutoClanjoin()) {
             pc.setPrivateReady(true);
             final int shopVersion = pc.getPrivateShopVersion();
-            if (ThreadPool.getInstance().schedule(() ->
+            if (TaskLane.SESSION.schedule(() ->
                     CIOThreadCallback.getInstance().completeSession(client, () -> {
                         if (client.getActiveChar() != pc || pc.getPrivateShopVersion() != shopVersion) return;
                         if (!pc.tryBeginItemTransfer()) {

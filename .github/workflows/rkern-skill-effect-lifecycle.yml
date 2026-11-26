@@ -14,7 +14,7 @@ on:
       - rkern/src/l1j/server/server/model/Ability.java
       - rkern/src/l1j/server/server/model/Resistance.java
       - rkern/src/l1j/server/server/model/L1Character.java
-      - rkern/src/l1j/server/server/model/inventory/L1EquipmentSlot.java
+      - rkern/src/l1j/server/server/model/inventory/CUserEquipment.java
       - rkern/src/l1j/server/server/model/L1WeaponSkill.java
       - rkern/src/l1j/server/server/model/character/effect/paralysis/**
       - rkern/src/l1j/server/server/SingleTask.java

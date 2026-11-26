@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.L1NpcTalkData;
 import l1j.server.server.model.L1World;
@@ -476,12 +476,12 @@ public class L1TeleporterInstance extends L1NpcInstance {
 						
 						TeleportDelyTimer timer = new TeleportDelyTimer();
 						// A rejected 15-minute release must not lock the portal forever.
-						_isNowDely = ThreadPool.getInstance().schedule(timer, 900000) != null;
+						_isNowDely = TaskLane.WORLD.schedule(timer, 900000) != null;
 					}
 				} else if (action.equalsIgnoreCase("teleport barlog_la")) { // 고대인(Lv50 퀘스트 고대의 공간 2 F)
 					player.start_teleport(32755, 32844, 2002, 5, 169, true, false);
 					TeleportDelyTimer timer = new TeleportDelyTimer();
-					ThreadPool.getInstance().execute(timer);
+					TaskLane.WORLD.execute(timer);
 				}			
 
 			} catch (Exception e) {

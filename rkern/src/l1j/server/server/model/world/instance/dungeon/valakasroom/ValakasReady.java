@@ -4,7 +4,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 import java.util.ArrayList;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -50,7 +50,7 @@ public class ValakasReady implements Runnable {
 	private void runRaid() {
 		setting();
 		Running = true;
-		while(Running){
+		while(Running && !Thread.currentThread().isInterrupted()){
 			try {
 				switch(stage){
 				case READY_START:
@@ -136,17 +136,21 @@ public class ValakasReady implements Runnable {
 				}
 				Thread.sleep(1000);
 				checkPc();
+			}catch(InterruptedException interrupted){
+				Thread.currentThread().interrupt();
+				break;
 			}catch(Exception e){
 			}finally{
-				try{
-					Thread.sleep(1500);
-				}catch(Exception e){}
+				if (!Thread.currentThread().isInterrupted()) {
+					try { Thread.sleep(1500); }
+					catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
+				}
 			}
 		}
 	}
 
 	public void Start(){
-		ThreadPool.getInstance().execute(this);
+		TaskLane.INSTANCE.startEvent(this);
 	}
 
 

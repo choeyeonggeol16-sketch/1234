@@ -24,7 +24,10 @@ public final class Check {
         Session(Player owner) { this.owner = owner; }
         boolean isConnected() { return true; }
         Player getActiveChar() { return owner; }
-        Socket getConnection() { return connection; }
+        boolean isClientConnected() { return connection.isClientConnected(); }
+        Frame beginDirectFrame(int bytes) { return connection.beginDirectFrame(bytes); }
+        boolean commitDirectFrame(Frame frame) { return connection.commitDirectFrame(frame); }
+        void abortDirectFrame(Frame frame) { connection.abortDirectFrame(frame); }
     }
     static final class Socket {
         int begins, commits, aborts;

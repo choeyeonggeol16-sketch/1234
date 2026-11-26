@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.character.Item.Drop.CContributeData;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
@@ -196,7 +196,7 @@ public class L1GuardianInstance extends L1NpcInstance {
 				setRest(true);
 			}
 
-			ThreadPool.getInstance().scheduleRequired(new RestMonitor(), REST_MILLISEC);
+			TaskLane.WORLD.scheduleRequired(new RestMonitor(), REST_MILLISEC);
 		}
 	}
 

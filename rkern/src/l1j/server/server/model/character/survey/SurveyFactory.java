@@ -1,6 +1,6 @@
 package l1j.server.server.model.character.survey;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
@@ -106,7 +106,7 @@ public class SurveyFactory {
 					SC_NOTIFICATION_MESSAGE.send(t, SC_NOTIFICATION_MESSAGE.DISPLAY_POSITION_BOTTOM,
 							message, notificationRgb, duration_second);
 				});
-				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+				TaskLane.SESSION.scheduleRequired(new Runnable(){
 					@Override
 					public void run(){
 						isMegaphoneSpeaking = false;

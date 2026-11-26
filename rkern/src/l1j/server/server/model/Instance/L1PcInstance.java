@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledFuture;
+import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -28,7 +28,7 @@ import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.Opcodes;
 import l1j.server.server.SkillCheck;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.auth.captcha.Captcha;
 import l1j.server.server.datatables.CharBuffTable;
 import l1j.server.server.datatables.CharacterSlotItemTable;
@@ -46,14 +46,13 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1DwarfForPackageInventory;
-import l1j.server.server.model.inventory.L1EquipmentSlot;
+import l1j.server.server.model.inventory.CUserEquipment;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.L1Karma;
 import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.inventory.CUserEquipment;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.inventory.L1PolyMorph;
@@ -284,19 +283,20 @@ public class L1PcInstance extends L1Character {
 	}
 
 	private ReportDeley _reportdeley;
-	private ScheduledFuture<?> _reportDelayFuture;
+	private CServerTimer _reportDelayFuture;
 
 	public synchronized void startReportDeley() {
 		if (isLogoutStarted()) return;
 		final ReportDeley next = new ReportDeley(this);
-		final ScheduledFuture<?> future = ThreadPool.getInstance().schedule(next, 100000L);
+		final int shard = CIOThreadCallback.getInstance().ownerShardIndex(this);
+		final CServerTimer future = CServerTimer.onceOnShard(TaskLane.SESSION, shard, next, 100000L);
 		// Never leave report permanently disabled if scheduler admission fails.
 		if (future == null) return;
-		final ScheduledFuture<?> previous = _reportDelayFuture;
+		final CServerTimer previous = _reportDelayFuture;
 		_reportdeley = next;
 		_reportDelayFuture = future;
 		setReport(false);
-		if (previous != null) previous.cancel(false);
+		if (previous != null) previous.cancel();
 	}
 
 	public synchronized void completeReportDeley(ReportDeley task) {
@@ -307,10 +307,10 @@ public class L1PcInstance extends L1Character {
 	}
 
 	private synchronized void stopReportDeley() {
-		final ScheduledFuture<?> future = _reportDelayFuture;
+		final CServerTimer future = _reportDelayFuture;
 		_reportDelayFuture = null;
 		_reportdeley = null;
-		if (future != null) future.cancel(false);
+		if (future != null) future.cancel();
 	}
 
 	// /신고 추가
@@ -693,7 +693,7 @@ public class L1PcInstance extends L1Character {
 
 	public L1ItemInstance _fishingRod = null;
 	private L1ClassFeature _classFeature = null;
-	private L1EquipmentSlot _equipSlot;
+	private final CUserEquipment _equipment;
 	private String _accountName;
 	private int _classId;
 	private int _type;
@@ -1096,7 +1096,7 @@ public class L1PcInstance extends L1Character {
 
 	private final CUserBookmark userBookmark;
 	public final CUserBookmark getUserBookmark() { return userBookmark; }
-	private byte[] _shopChat;
+	private volatile byte[] _shopChat;
 	private AtomicInteger _pinkNameTime;
 	private volatile CUserSocket _netConnection;
 	// Odd: current client world can accept ground sprites. Even: map/world reset.
@@ -1113,7 +1113,7 @@ public class L1PcInstance extends L1Character {
 		_dwarfForPackage = new L1DwarfForPackageInventory(this);
 		userBookmark = new CUserBookmark();
 		_quest = new CQuestSystem(this);
-		_equipSlot = new L1EquipmentSlot(this);
+		_equipment = new CUserEquipment(this);
 		_pinkNameTime = new AtomicInteger(0);
 		changeNpcId5 = 88001;
 		isChangeItem5 = false;
@@ -1522,11 +1522,11 @@ public class L1PcInstance extends L1Character {
 		_lastShellUseTime = System.currentTimeMillis();
 	}
 	
-	private transient ScheduledFuture<?> _pinkNameFuture;
-	public ScheduledFuture<?> getPinkNameFuture() {
+	private transient CServerTimer _pinkNameFuture;
+	public CServerTimer getPinkNameFuture() {
 	    return _pinkNameFuture;
 	}
-	public void setPinkNameFuture(ScheduledFuture<?> f) {
+	public void setPinkNameFuture(CServerTimer f) {
 	    _pinkNameFuture = f;
 	}
 
@@ -2728,6 +2728,12 @@ public class L1PcInstance extends L1Character {
 		return _shopChat;
 	}
 
+    @Override
+    public void disposeShopInfo() {
+        super.disposeShopInfo();
+        _shopChat = null;
+    }
+
 	public boolean isPrivateShop() {
 		return _isPrivateShop;
 	}
@@ -3357,7 +3363,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 						companion.do_pink_name();
 				}
 
-				for (L1ItemInstance item : _equipSlot.getArmors()) {
+				for (L1ItemInstance item : _equipment.getArmors()) {
 					ItemSkillModel model = ItemSkillModelLoader.getInstance().getDef(item.getItemId());
                     if (model != null) {
                         final double reduction = model.get(attacker, this, item, damage);
@@ -3596,7 +3602,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
         final Death mandatoryDeath = new Death(lastAttacker, deathPenalty,
                 deathGeneration, deathSession);
         try {
-            ThreadPool.getInstance().execute(mandatoryDeath);
+            TaskLane.SESSION.execute(mandatoryDeath);
         } catch (RejectedExecutionException rejected) {
             // Death has already been published; dropping this continuation
             // strands corpse/penalty processing. Explicit overload fallback.
@@ -3986,7 +3992,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public L1ItemInstance getWeaponSwap() {
-		return getEquipSlot().getWeaponSwap();
+		return getEquipment().getWeaponSwap();
 	}
 
 	public L1ItemInstance getArmor() {
@@ -4252,12 +4258,12 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	/** 생존의외침 **/
 
-	public L1EquipmentSlot getEquipSlot() {
-		return _equipSlot;
+	public CUserEquipment getEquipment() {
+		return _equipment;
 	}
 
     public void RestoreEquippedItems(List<L1ItemInstance> loadedEquipment) {
-        CUserEquipment.RestoreEquippedItems(this, loadedEquipment);
+        _equipment.restoreEquippedItems(loadedEquipment);
     }
 
     public void EquipItem(L1ItemInstance item) {
@@ -4265,7 +4271,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
     }
 
     public void EquipItem(L1ItemInstance item, boolean loaded, boolean changeWeapon) {
-        CUserEquipment.ChangeEquipment(this, item, true, loaded, changeWeapon);
+        _equipment.changeEquipment(item, true, loaded, changeWeapon);
     }
 
     public void UnequipItem(L1ItemInstance item) {
@@ -4273,11 +4279,11 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
     }
 
     public void UnequipItem(L1ItemInstance item, boolean loaded, boolean changeWeapon) {
-        CUserEquipment.ChangeEquipment(this, item, false, loaded, changeWeapon);
+        _equipment.changeEquipment(item, false, loaded, changeWeapon);
     }
 
     public void TakeOffItems(int polyId) {
-        CUserEquipment.TakeOffItems(this, polyId);
+        _equipment.takeOffItems(polyId);
     }
 
 
@@ -6306,7 +6312,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	}
 
 	public boolean is시간제() {
-		return _equipSlot.hasTimedEquipment();
+		return _equipment.hasTimedEquipment();
 	}
 	
 	

@@ -459,6 +459,15 @@ public abstract class Warehouse extends L1Object {
 		return _items.GetFirstItemByClassID(id);
 	}
 
+    public final L1ItemInstance findCompatibleStack(L1ItemInstance incoming) {
+        return _items.GetMergeableStack(incoming, false);
+    }
+
+    public static L1ItemInstance withdrawalStack(CInventory inventory, L1ItemInstance item) {
+        if (item.isStackable()) return inventory.findCompatibleStack(item);
+        return chargeMergeItem(item.getItemId()) ? inventory.GetFirstItemByClassID(item.getItemId()) : null;
+    }
+
 	public synchronized L1ItemInstance storeTradeItem(L1ItemInstance item) {
         assertWarehouseActive();
 		if (item == null || item.getCount() <= 0 || CheckAddableToWarehouse(item, item.getCount()) != 0) {
@@ -466,7 +475,7 @@ public abstract class Warehouse extends L1Object {
 		}
         CItemList.requireDetached(item);
 		if (item.isStackable()) {
-			L1ItemInstance findItem = GetFirstItemByClassID(item.getItem().getItemId());
+			L1ItemInstance findItem = findCompatibleStack(item);
 			if (findItem != null) {
 				final int before = findItem.getCount();
 				if (!findItem.AddAmount(item.getCount())) return null;
@@ -520,7 +529,7 @@ public abstract class Warehouse extends L1Object {
         boolean submitted = false;
         try {
         final int sourceCount = item.getCount();
-        final L1ItemInstance destStack = inventory.GetFirstItemByClassID(item.getItemId());
+        final L1ItemInstance destStack = withdrawalStack(inventory, item);
         final boolean countMerge = item.isStackable() && destStack != null;
         final boolean chargeMerge = !item.isStackable() && chargeMergeItem(item.getItemId())
                 && destStack != null;
@@ -668,11 +677,9 @@ public abstract class Warehouse extends L1Object {
         if (feeAmount != 0 && feeItemId != 40308 && feeItemId != 40494) return null;
 		if (item == null || inventory == null || GetByServerID(item.getId()) != item) return null;
         if (!item.IsTransferableAmount(count)) return null;
-		if (inventory.CheckAddable(item, count) != CInventory.OK) return null;
-		
-        if (!(inventory instanceof l1j.server.server.model.inventory.CUserInventory)) return null;
-        final int characterId = ((l1j.server.server.model.inventory.CUserInventory) inventory)
-                .getOwner().getId();
+        if (!(inventory instanceof l1j.server.server.model.inventory.CUserInventory ownerInventory)
+                || ownerInventory.CheckAddableTransfer(item, count) != CInventory.OK) return null;
+        final int characterId = ownerInventory.getOwner().getId();
         if (!CacheD.isWarehouseApplying())
             return prepareWarehouseWithdrawal(item, count, inventory, feeItemId, feeAmount,
                     withdrawalEndTime, onCommitted);
@@ -685,7 +692,7 @@ public abstract class Warehouse extends L1Object {
         if (session != null) move.onFailure(() ->
                 CIOThreadCallback.getInstance().completeSession(session, session::kick));
         move.expectOriginal(item);
-        L1ItemInstance destStack = inventory.GetFirstItemByClassID(item.getItemId());
+        L1ItemInstance destStack = withdrawalStack(inventory, item);
         if (destStack != null) move.expectOriginal(destStack);
         final int originalCount = item.getCount();
         final int destinationCount = destStack == null ? 0 : destStack.getCount();
@@ -998,7 +1005,7 @@ public abstract class Warehouse extends L1Object {
 
 		final int OK = 0, SIZE_OVER = 1;
 		final int maxSize = getMax(), SIZE = getSize();
-		if ( SIZE > maxSize || (SIZE == maxSize && (!item.isStackable() || !HaveItemByClassId(item.getItem().getItemId(), 1))))  
+		if (SIZE > maxSize || (SIZE == maxSize && (!item.isStackable() || findCompatibleStack(item) == null)))
 			return SIZE_OVER;
 	
 		return OK;

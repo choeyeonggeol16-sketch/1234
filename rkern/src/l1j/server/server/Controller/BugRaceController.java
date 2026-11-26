@@ -25,7 +25,7 @@ import javolution.util.FastTable;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.datatables.RaceTable;
 import l1j.server.server.datatables.ShopTable;
@@ -96,7 +96,7 @@ public class BugRaceController implements Runnable, TimeListener {
                 || !tickInFlight.compareAndSet(false, true)) return;
         final int epoch = clockEpoch;
         try {
-            ThreadPool.getInstance().execute(() -> {
+            TaskLane.INSTANCE.execute(() -> {
                 try {
                     if (clockRegistered && clockEpoch == epoch) run();
                 } finally {
@@ -1180,7 +1180,6 @@ for (L1PcInstance player : L1World.getInstance().getAllPlayers()) {
 						if(is_down() || (IS_AUTO_TUMBLE && _rndGen.nextInt(MAX_TUMBLE_PROBABILITY) < 2 && _rndGen.nextInt(100) > (int) (_winRate[_bugId]))){
 //						if () {
 							SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);
-							// GeneralThreadPool.getInstance().schedule(this,
 							// 3500 - (int)(_winRate[_bugId]) * 5);
 							scheduleNext(2000 - (int) (_winRate[_bugId]) * 5);
 						} else {

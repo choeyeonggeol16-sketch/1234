@@ -15,8 +15,8 @@ import java.util.*;
 import java.io.Serializable;
 public class CacheAudit {
  static final int MAX_AMOUNT=2_000_000_000;
- static class L1EquipmentSlot {int clears;void clearEquipmentWindow(){clears++;}}
- static class L1PcInstance {final L1EquipmentSlot equipment=new L1EquipmentSlot();boolean poly;int getId(){return 1;}void setPolyRingMaster(boolean b){poly=b;}L1EquipmentSlot getEquipSlot(){return equipment;}}
+ static class CUserEquipment {int clears;void clearEquipmentWindow(){clears++;}}
+ static class L1PcInstance {final CUserEquipment equipment=new CUserEquipment();boolean poly;int getId(){return 1;}void setPolyRingMaster(boolean b){poly=b;}CUserEquipment getEquipment(){return equipment;}}
  static class L1ItemInstance {int id,itemId,count; L1PcInstance _cha; L1ItemInstance(int id,int itemId,int count){this.id=id;this.itemId=itemId;this.count=count;}int getId(){return id;}int getItemId(){return itemId;}int getCount(){return count;}boolean isEquipped(){return false;}}
  static class Items extends ArrayList<L1ItemInstance>{void Push(L1ItemInstance i){if(contains(i))throw new IllegalStateException();add(i);}void Pop(L1ItemInstance i){remove(i);}}
  static class L1World{static final L1World W=new L1World();Map<Integer,L1ItemInstance> rows=new HashMap<>();int failId;static L1World getInstance(){return W;}void storeObject(L1ItemInstance i){rows.put(i.id,i);if(i.id==failId)throw new IllegalStateException("store");}void removeObject(L1ItemInstance i){rows.remove(i.id,i);}}

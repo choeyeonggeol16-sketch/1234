@@ -3,7 +3,7 @@ package l1j.server.server.model.world.instance.dungeon.hadin;
 import java.util.Collection;
 import java.util.HashMap;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DoorInstance;
@@ -57,7 +57,7 @@ public class HadinTrap implements Runnable {
 	public HadinTrap(short id){
 		_map = (short)id;
 		doorList = new HashMap<String, L1DoorInstance>();
-		ThreadPool.getInstance().scheduleRequired(this, 5000);
+		TaskLane.INSTANCE.scheduleRequired(this, 5000);
 	}
 
 	@Override

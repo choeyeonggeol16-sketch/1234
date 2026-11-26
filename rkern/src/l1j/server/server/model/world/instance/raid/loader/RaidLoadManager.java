@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Properties;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -244,7 +244,7 @@ public class RaidLoadManager {
 				pc.removeSkillEffect(L1SkillId.DRAGONRAID_BUFF);
 		}
 		
-		ThreadPool.getInstance().execute(new RaidUserTimeStore(pcList));
+		TaskLane.PERSISTENCE.execute(new RaidUserTimeStore(pcList));
 		SC_SystemMessage.send(gm, "모든 유저의 레이드 시간을 초기화 했습니다.");
 	}
 	

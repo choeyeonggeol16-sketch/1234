@@ -44,11 +44,8 @@ import java.util.logging.Logger;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.cs.packet.CDB;
-import l1j.server.server.model.network.core.cs.packet.User;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.storage.CacheD;
 /** AttributeEnchantScrollEffects: original item effect implementation, without changing use order. */
 final class AttributeEnchantScrollEffects {
     private AttributeEnchantScrollEffects() {}
@@ -90,20 +87,12 @@ final class AttributeEnchantScrollEffects {
 		final boolean success = chance < limit;
 		final int next = base + grade + 1;
 		final String weaponName = weapon.getLogName();
-		try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
-				User.CheckAndSetPendingUseETCItem(pc,
-						CacheD.accountOrderKey("item-use:", pc.getId()))) {
+		try (var tx = ItemReceiptOperations.beginEnchantReceipt(pc, scroll, weapon)) {
 			if (!tx.debit(scroll, 1)) return;
 			if (success) tx.change(weapon, image -> image.setAttrEnchantLevel(next));
 			tx.onFailure(() -> SC_SystemMessage.send(pc, "속성 강화 주문서 저장에 실패했습니다."));
 			CDB.RequestUseItem(pc, tx, () -> {
-                if (success) {
-                    try { SC_PacketBox.send(pc, SC_PacketBox.ITEM_ENCHANT_UPDATE, weapon); }
-                    catch (RuntimeException noticeFailure) {
-                        ITEM_USE2_LOG.log(java.util.logging.Level.WARNING,
-                                "Committed attribute-enchant item notice failed", noticeFailure);
-                    }
-                }
+                ItemActionCompletion.finishCommittedConsumable(pc, scroll);
                 try { SC_ServerMessage.send(pc, success ? 1410 : 1411, weaponName); }
                 catch (RuntimeException noticeFailure) {
                     ITEM_USE2_LOG.log(java.util.logging.Level.WARNING,

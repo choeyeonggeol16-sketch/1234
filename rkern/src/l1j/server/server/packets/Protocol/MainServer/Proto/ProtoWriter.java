@@ -135,11 +135,7 @@ public final class ProtoWriter {
 		if (len <= 0) return;
 
 		if (directMode()) {
-			if (off == 0 && len == src.length) {
-				_out.writeBytes(src);
-			} else {
-				for (int i = 0; i < len; i++) _out.writeByte(src[off + i]);
-			}
+			_out.writeBytes(src, off, len);
 		} else {
 			ensure(len);
 			System.arraycopy(src, off, _a, _p, len);
@@ -258,6 +254,11 @@ public final class ProtoWriter {
 
 		if (s == null || s.isEmpty()) {
 			rawByte(0);
+			return this;
+		}
+
+		if (directMode()) {
+			_p += _out.writeVarintPrefixedMs949(s);
 			return this;
 		}
 

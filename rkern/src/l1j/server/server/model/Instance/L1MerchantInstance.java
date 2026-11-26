@@ -12,7 +12,7 @@ import static l1j.server.server.model.character.skill.L1SkillId.HASTE;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.NPCTalkDataTable;
@@ -147,7 +147,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				setRest(true);
 			}
 
-			ThreadPool.getInstance().scheduleRequired(new RestMonitor(), REST_MILLISEC);
+			TaskLane.WORLD.scheduleRequired(new RestMonitor(), REST_MILLISEC);
 		}
 
 

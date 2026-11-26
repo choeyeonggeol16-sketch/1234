@@ -1,8 +1,6 @@
 package l1j.server.server.model.item.function;
 
 import static l1j.server.server.model.item.function.CreatureItemActions._random;
-import static l1j.server.server.model.item.function.EnchantmentItems.FailureEnchant;
-import static l1j.server.server.model.item.function.EnchantmentItems.SuccessEnchant;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_bless_orim;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_insignia;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_insignia1;
@@ -53,18 +51,13 @@ final class ArmorEnchantScrollResolution {
                     || itemId == L1ItemId.ENCHANT_ARMOR || itemId == L1ItemId.Inadril_T_ScrollB3
                     || itemId == L1ItemId.B_SCROLL_OF_ENCHANT_ARMOR5) {
 
-                pc.getInventory().DeleteItemAmount(item, 1);
-                int rnd = _random.nextInt(100) + 1;
-                if (safe_enchant == 0 && rnd <= 30) {
-                    FailureEnchant(pc, targetItem, client);
-                    return ItemActionResult.STOP;
-
-                } else if (enchant_level < -1) {
-
-                    FailureEnchant(pc, targetItem, client);
+                final int roll = _random.nextInt(100) + 1;
+                if ((safe_enchant == 0 && roll <= 30) || enchant_level < -1) {
+                    ItemReceiptOperations.useAtomicEnchantFailure(pc, item, targetItem, null);
                 } else {
-                    SuccessEnchant(pc, targetItem, client, -1);
+                    ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client, -1, null);
                 }
+                return ItemActionResult.STOP;
             } else if (itemId == 810013) {
                 enchant_bless_orim(pc, item, targetItem);
                 return ItemActionResult.STOP;
@@ -280,59 +273,38 @@ final class ArmorEnchantScrollResolution {
 
                 }
             } else if (enchant_level < safe_enchant) {
-                pc.getInventory().DeleteItemAmount(item, 1);
-                SuccessEnchant(pc, targetItem, client, RandomELevel(targetItem, itemId));
+                ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
+                        RandomELevel(targetItem, itemId), null);
+                return ItemActionResult.STOP;
             } else {
-                pc.getInventory().DeleteItemAmount(item, 1);
+                final int roll = _random.nextInt(100) + 1;
+                final int chance = ArmorEnchantChanceCalculation.calculate(
+                        pc, targetItem, armorId, armortype, enchant_level, roll);
 
-                int enchant_chance_armor = 0;
-                int enchant_level_tmp;
-                int chance1 = 0;
-                int rnd = _random.nextInt(100) + 1;
-
-                enchant_chance_armor = ArmorEnchantChanceCalculation.calculate(
-                        pc, targetItem, armorId, armortype, enchant_level, rnd);
-
-                if (pc._EnchantArmorSuccess == true) {
-                    int randomEnchantLevel = 0;
-                    randomEnchantLevel = RandomELevel(targetItem, itemId);
-                    SuccessEnchant(pc, targetItem, client, randomEnchantLevel);
-                    pc._EnchantArmorSuccess = false;
-                } else if (rnd < enchant_chance_armor) {
-                    int randomEnchantLevel = RandomELevel(targetItem, itemId);
-
-                    if ((enchant_level >= 0 && armorId >= 22000 && armorId <= 22003)
-                            || (armorId >= 22254 && armorId <= 22256) || armorId == 22252 || armorId == 20190) {
-                        randomEnchantLevel = 1;
-                    }
-
-                    if ((enchant_level >= 1 && armorId == 900188 || armorId == 900121 || armorId == 900123 || armorId == 900189)) {
-                        randomEnchantLevel = 1;
-                    }
-
-                    if ((enchant_level >= 6 && armorId >= 900025 && armorId <= 900028)) {
-                        randomEnchantLevel = 1;
-                    }
-
-                    if ((enchant_level >= 6 && armorId >= 900011 && armorId <= 900018)) {
-                        randomEnchantLevel = 1;
-                    }
-                    SuccessEnchant(pc, targetItem, client, randomEnchantLevel);
-                } else if (enchant_level >= 9 && rnd < (enchant_chance_armor * 2)) {
-                    SC_ServerMessage.send(pc, 160, targetItem.getLogName(), "$245", "$248");
+                if (pc._EnchantArmorSuccess) {
+                    ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
+                            RandomELevel(targetItem, itemId), () -> pc._EnchantArmorSuccess = false);
+                } else if (roll < chance) {
+                    final int randomLevel = RandomELevel(targetItem, itemId);
+                    final boolean limitedStep = (enchant_level >= 0 && armorId >= 22000 && armorId <= 22003)
+                            || (armorId >= 22254 && armorId <= 22256) || armorId == 22252 || armorId == 20190
+                            || (enchant_level >= 1 && armorId == 900188) || armorId == 900121
+                            || armorId == 900123 || armorId == 900189
+                            || (enchant_level >= 6 && ((armorId >= 900025 && armorId <= 900028)
+                                    || (armorId >= 900011 && armorId <= 900018)));
+                    ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
+                            limitedStep ? 1 : randomLevel, null);
+                } else if (enchant_level >= 9 && roll < chance * 2) {
+                    ItemReceiptOperations.useEnchantScrollOnly(pc, item,
+                            () -> SC_ServerMessage.send(pc, 160, targetItem.getLogName(), "$245", "$248"));
+                } else if (itemId == 810012 && enchant_level != 0) {
+                    ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client, -1, null);
                 } else if (itemId == 810012) {
-
-                    if (enchant_level == 0) {
-                        SuccessEnchant(pc, targetItem, client, 0);
-                    } else {
-                        SuccessEnchant(pc, targetItem, client, -1);
-                    }
-                } else if (itemId == 810013) {
-                    SC_ServerMessage.send(pc, 4056, targetItem.getLogName());
-
+                    ItemReceiptOperations.useEnchantScrollOnly(pc, item, null);
                 } else {
-                    FailureEnchant(pc, targetItem, client);
+                    ItemReceiptOperations.useAtomicEnchantFailure(pc, item, targetItem, null);
                 }
+                return ItemActionResult.STOP;
             }
         // END_ORIGINAL_ARMORENCHANTSCROLLRESOLUTION
         return ItemActionResult.COMPLETE;

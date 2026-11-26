@@ -5,7 +5,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
@@ -113,7 +113,7 @@ public class BQSWQUpdator implements TimeListener{
 			_updateQueued = true;
 		}
 		try {
-			ThreadPool.getInstance().execute(new WeekQuestConsumer());
+			TaskLane.WORLD.execute(new WeekQuestConsumer());
 		} catch (RejectedExecutionException rejected) {
 			synchronized (this) { _updateQueued = false; }
 			LOG.log(Level.WARNING, "Book quest update admission rejected; retry next clock tick", rejected);

@@ -37,8 +37,8 @@ public class CopyMapObservable extends AbstractInstanceObservable<Short>{
 	public InstanceObserver remove(Short key){
         InstanceObserver observer = _observers.remove(key);
         if (observer != null) {
-            observer.dispose();
-            pushId(key);
+            try { observer.dispose(); }
+            finally { pushId(key); }
         }
         return observer;
 	}
@@ -80,8 +80,8 @@ public class CopyMapObservable extends AbstractInstanceObservable<Short>{
 	public void onNotify(InstanceObserver observer, int reason){
         short id = (short) reason;
         if (_observers.remove(id, observer)) {
-            observer.dispose();
-            pushId(id);
+            try { observer.dispose(); }
+            finally { pushId(id); }
         }
 	}
 	

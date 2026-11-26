@@ -23,7 +23,7 @@ import java.sql.PreparedStatement;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Account;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.classinfo.EClassesType;
@@ -86,7 +86,7 @@ public class change implements L1CommandExecutor {
 			pc.getInventory().DeleteItemAmount(123124, 1);
 			pc.save();
 
-			ThreadPool.getInstance().scheduleRequired(new Runnable() {
+			TaskLane.SESSION.scheduleRequired(new Runnable() {
 				@Override
 				public void run() {
 					CUserSocket clnt = pc.getNetConnection();

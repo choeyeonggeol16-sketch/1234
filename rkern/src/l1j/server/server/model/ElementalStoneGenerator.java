@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
@@ -120,7 +120,7 @@ public class ElementalStoneGenerator implements Runnable {
 				}
 
 				// thread 최적화 관련. sleep 난무는 좀 없애자. -- Mazik
-				ThreadPool.getInstance().scheduleRequired(this, INTERVAL * 1000); // 일정시간마다 설치
+				TaskLane.WORLD.scheduleRequired(this, INTERVAL * 1000); // 일정시간마다 설치
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();

@@ -91,7 +91,7 @@ public class DynamicShopStorage implements Runnable{
     }
 
 	public DynamicShopStorage(L1Character c, boolean isDelete) {
-        // Capture/admit on the caller before legacy ThreadPool dispatch. The
+        // Capture/admit on the caller before world task dispatch. The
         // legacy Runnable no longer reads live listings or changes game state.
         if (c == null) return;
         if (isDelete) deleteProcess(c); else updateProcess(c);

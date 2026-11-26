@@ -35,10 +35,11 @@ public class Shutdown extends Thread {
 	private static Logger _log = Logger.getLogger(Shutdown.class.getName());
 	private static Shutdown _instance;
 	private static Shutdown _counterInstance = null;
+	private static boolean terminating;
 
 	private int secondsShut;
 
-	private int shutdownMode;
+	private volatile int shutdownMode;
 	public static final int SIGTERM = 0;
 	public static final int GM_SHUTDOWN = 1;
 	public static final int GM_RESTART = 2;
@@ -82,7 +83,7 @@ public class Shutdown extends Thread {
 	 * 
 	 * @return instance of Shutdown, to be used as shutdown hook
 	 */
-	public static Shutdown getInstance() {
+	public static synchronized Shutdown getInstance() {
 		if (_instance == null) {
 			_instance = new Shutdown();
 		}
@@ -108,6 +109,7 @@ public class Shutdown extends Thread {
 	@Override
 	public void run() {
 		if (this == _instance) {
+			stopCountdown();
 			// last byebye, save all data and quit this server
 			// logging doesnt work here :(
 			saveData();
@@ -116,22 +118,55 @@ public class Shutdown extends Thread {
 			// gm shutdown: send warnings and then call exit to start shutdown
 			// sequence
 			countdown();
+			final int mode = claimCountdown(this);
+			if (mode == ABORT) return;
 			// last point where logging is operational :(
 			_log.warning("GM shutdown countdown is over. " + _modeText[shutdownMode] + " NOW!");
 			System.out.println("GM shutdown countdown is over. " + _modeText[shutdownMode] + " NOW!");
-			switch (shutdownMode) {
+			switch (mode) {
 			case GM_SHUTDOWN:
 				_instance.setMode(GM_SHUTDOWN);
-				ThreadPool.getInstance().detachCurrentDedicatedThreadForJvmExit();
 				System.exit(0);
 				break;
 			case GM_RESTART:
 				_instance.setMode(GM_RESTART);
-				ThreadPool.getInstance().detachCurrentDedicatedThreadForJvmExit();
 				System.exit(1);
 				break;
 			}
 		}
+	}
+
+	private static synchronized void startCountdown(int seconds, boolean restart) {
+		if (terminating) return;
+		cancelCountdown();
+		final Shutdown next = new Shutdown(seconds, restart);
+		_counterInstance = next;
+		try { next.start(); }
+		catch (RuntimeException | Error failure) {
+			_counterInstance = null;
+			throw failure;
+		}
+	}
+
+	private static synchronized void cancelCountdown() {
+		final Shutdown previous = _counterInstance;
+		_counterInstance = null;
+		if (previous != null) {
+			previous._abort();
+			previous.interrupt();
+		}
+	}
+
+	private static synchronized void stopCountdown() {
+		terminating = true;
+		cancelCountdown();
+	}
+
+	private static synchronized int claimCountdown(Shutdown owner) {
+		if (terminating || _counterInstance != owner || owner.getMode() == ABORT) return ABORT;
+		_counterInstance = null;
+		terminating = true;
+		return owner.getMode();
 	}
 
 	/**
@@ -153,14 +188,7 @@ public class Shutdown extends Thread {
 		System.out.println("GM: " + activeChar.getId() + " issued shutdown command. " + _modeText[shutdownMode] + " in "
 				+ seconds + " seconds!");
 		_an.announceToAll("Server is " + _modeText[shutdownMode] + " in " + seconds + " seconds!");
-		if (_counterInstance != null) {
-			_counterInstance._abort();
-		}
-
-		// the main instance should only run for shutdown hook, so we start a
-		// new instance
-		_counterInstance = new Shutdown(seconds, restart);
-		ThreadPool.getInstance().startDedicatedThread(_counterInstance);
+		startCountdown(seconds, restart);
 	}
 
 	/**
@@ -176,9 +204,7 @@ public class Shutdown extends Thread {
 
 		System.out.println("GM: " + activeChar.getName() + " issued shutdown ABORT. ");
 		_an.announceToAll("Server aborts shutdown and continues normal operation!");
-		if (_counterInstance != null) {
-			_counterInstance._abort();
-		}
+		cancelCountdown();
 	}
 
 	/**
@@ -302,11 +328,7 @@ public class Shutdown extends Thread {
 
 		System.out.println("IP: " + IP + " issued shutdown command. " + _modeText[shutdownMode] + " in " + seconds + " seconds!");
 		_an.announceToAll("Server is " + _modeText[shutdownMode] + " in " + seconds + " seconds!");
-		if (_counterInstance != null) {
-			_counterInstance._abort();
-		}
-		_counterInstance = new Shutdown(seconds, restart);
-		ThreadPool.getInstance().startDedicatedThread(_counterInstance);
+		startCountdown(seconds, restart);
 	}
 
 	/**
@@ -322,8 +344,6 @@ public class Shutdown extends Thread {
 
 		System.out.println("IP: " + IP + " issued shutdown ABORT. " + _modeText[shutdownMode] + " has been stopped!");
 		_an.announceToAll("Server aborts " + _modeText[shutdownMode] + " and continues normal operation!");
-		if (_counterInstance != null) {
-			_counterInstance._abort();
-		}
+		cancelCountdown();
 	}
 }

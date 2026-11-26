@@ -4,7 +4,7 @@ import static l1j.server.server.model.character.skill.L1SkillId.COUNTER_MAGIC;
 import java.util.Random;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -49,7 +49,7 @@ final class CombatSupportItems {
     }
     
     public static void Start(L1PcInstance pc, L1Character cha) {
-        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+        TaskLane.SESSION.scheduleRequired(new Runnable(){
             
             @Override
             public void run() {
@@ -69,7 +69,7 @@ final class CombatSupportItems {
     }
     
     public static void Start1(L1PcInstance pc, L1NpcInstance member1) {
-        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+        TaskLane.SESSION.scheduleRequired(new Runnable(){
             
             @Override
             public void run() {
@@ -82,7 +82,7 @@ final class CombatSupportItems {
     }
     
     public static void 액션(L1PcInstance pc, L1Character cha) {
-        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+        TaskLane.SESSION.scheduleRequired(new Runnable(){
             
             @Override
             public void run() {
@@ -96,7 +96,7 @@ final class CombatSupportItems {
     }
     
     public static void 액션1(L1PcInstance pc, L1NpcInstance member1) {
-        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+        TaskLane.SESSION.scheduleRequired(new Runnable(){
             
             @Override
             public void run() {

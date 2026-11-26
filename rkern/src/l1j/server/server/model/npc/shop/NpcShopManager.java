@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
@@ -181,7 +181,7 @@ public class NpcShopManager {
             if (npc == null) continue;
             try {
                 // DB에 상점 정보 정리(character_shop) 후 NPC 소멸
-                ThreadPool.getInstance().execute(new DynamicShopStorage(npc, true));
+                TaskLane.PERSISTENCE.execute(new DynamicShopStorage(npc, true));
                 npc.deleteMe();
             } catch (Exception e) {
                 _log.log(Level.WARNING, "[NpcShop] NPC 제거 실패", e);

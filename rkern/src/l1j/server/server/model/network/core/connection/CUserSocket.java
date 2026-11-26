@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import l1j.server.server.Account;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.auth.login.LoginController;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -524,7 +524,7 @@ public final class CUserSocket extends CSocket {
     }
 
     private static final int CLOSE_STARTED = 1, CLEANUP_COMPLETE = 2, SERVER_DRAIN_REPORTED = 4,
-            LOGOUT_STARTED = 8, IO_DRAINED = 16;
+            LOGOUT_STARTED = 8, IO_DRAINED = 16, CRAFT_LIST_SENDING = 32;
     private volatile int socketLifecycle;
 
     private boolean markLifecycle(int event) {
@@ -533,8 +533,21 @@ public final class CUserSocket extends CSocket {
 
     boolean markServerDrainReported() { return markLifecycle(SERVER_DRAIN_REPORTED); }
     boolean isServerDrainReported() { return (socketLifecycle & SERVER_DRAIN_REPORTED) != 0; }
+    public boolean isCraftListSending() { return (socketLifecycle & CRAFT_LIST_SENDING) != 0; }
+    public boolean beginCraftListSend() {
+        int state;
+        do {
+            state = socketLifecycle;
+            if ((state & (CLOSE_STARTED | LOGOUT_STARTED | CRAFT_LIST_SENDING)) != 0
+                    || !isConnected()) return false;
+        } while (!LIFECYCLE.compareAndSet(this, state, state | CRAFT_LIST_SENDING));
+        return true;
+    }
+    public void endCraftListSend() { LIFECYCLE.getAndBitwiseAnd(this, ~CRAFT_LIST_SENDING); }
+
     public void onTransportClosing() {
         if (!markLifecycle(CLOSE_STARTED)) return;
+        endCraftListSend();
         if (_gameSession) {
             _gameSessionReady = false;
             playerShopView = null;
@@ -736,6 +749,7 @@ public final class CUserSocket extends CSocket {
         if (_gracefulCloseStartedNs == 0L) _gracefulCloseStartedNs = System.nanoTime();
         _closing = 1;
         ON_DRAINED.setVolatile(this, null);
+        endCraftListSend();
         return true;
     }
 
@@ -2650,7 +2664,7 @@ public final class CUserSocket extends CSocket {
                 }, () -> cleanupAfterLogout(pc));
         if (pc == null) { task.run(); return; }
         try {
-            ThreadPool.getInstance().execute(task);
+            TaskLane.SESSION.execute(task);
         } catch (Exception failure) {
             LOG.log(Level.SEVERE, "[GameClient Close] deferred logout admission failed", failure);
             if (isTransportOwnerThread()) {

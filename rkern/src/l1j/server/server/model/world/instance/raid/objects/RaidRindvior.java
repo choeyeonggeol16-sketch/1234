@@ -3,7 +3,7 @@ package l1j.server.server.model.world.instance.raid.objects;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -110,7 +110,7 @@ public class RaidRindvior extends RaidObject{
 				_boss = _bossSpawn.spawnBoss(getCopyMapId());
 			
 			_state = RS_START;
-			ThreadPool.getInstance().scheduleRequired(this, RaidLoadManager.MRS_MESSAGE_DELAY);
+			TaskLane.INSTANCE.scheduleRequired(this, RaidLoadManager.MRS_MESSAGE_DELAY);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

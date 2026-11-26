@@ -5,7 +5,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_Door;
 
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
@@ -263,14 +263,14 @@ public class L1DoorInstance extends L1NpcInstance {
 		if (getOpenStatus() == ActionCodes.ACTION_Close) {
 			isPassibleDoor(true);//하딘 시스템
 			if (this.getDoorId() == 113 || this.getDoorId() == 125){					
-				ThreadPool.getInstance().scheduleRequired(new DoorTimer(), 5000);
+				TaskLane.WORLD.scheduleRequired(new DoorTimer(), 5000);
 			}
 			// 말하는 섬 던전 2층 보스문 시간 5분
 			if (this.getDoorId() >= 4100 && this.getDoorId() <= 4111){
-				ThreadPool.getInstance().scheduleRequired(new DoorTimer(), 300000);
+				TaskLane.WORLD.scheduleRequired(new DoorTimer(), 300000);
 			}
 			if (this.getDoorId() >= 8001 && this.getDoorId() <= 8010) {
-				ThreadPool.getInstance().scheduleRequired(new DoorTimer(), 1800000);
+				TaskLane.WORLD.scheduleRequired(new DoorTimer(), 1800000);
 			}
 			SC_DoActionGFX.broadcast(this, ActionCodes.ACTION_Open);
 			setOpenStatus(ActionCodes.ACTION_Open);

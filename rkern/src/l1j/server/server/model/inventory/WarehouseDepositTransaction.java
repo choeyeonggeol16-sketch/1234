@@ -52,7 +52,7 @@ final class WarehouseDepositTransaction {
                     int g = i;
                     if (item.isStackable()) {
                         for (int j = 0; j < i; j++) {
-                            if (sources[j].isStackable() && sources[j].getItemId() == item.getItemId()) {
+                            if (L1ItemInstance.CanMergeStack(sources[j], item)) {
                                 g = group[j];
                                 break;
                             }
@@ -60,7 +60,7 @@ final class WarehouseDepositTransaction {
                     }
                     group[i] = g;
                     if (g == i) {
-                        destinations[i] = item.isStackable() ? dest.GetFirstItemByClassID(item.getItemId()) : null;
+                        destinations[i] = item.isStackable() ? dest.findCompatibleStack(item) : null;
                         destinationCounts[i] = destinations[i] == null ? 0 : destinations[i].getCount();
                         if (destinations[i] == null) newSlots++;
                     }
@@ -169,7 +169,7 @@ final class WarehouseDepositTransaction {
         boolean submitted = false;
         try {
         final int sourceCount = item.getCount();
-        final L1ItemInstance destStack = item.isStackable() ? dest.GetFirstItemByClassID(item.getItemId()) : null;
+        final L1ItemInstance destStack = item.isStackable() ? dest.findCompatibleStack(item) : null;
         final int destCount = destStack == null ? 0 : destStack.getCount();
         if (destStack != null && !destStack.IsAddableAmount(count)) return null;
 
@@ -274,7 +274,7 @@ final class WarehouseDepositTransaction {
         if (session != null) move.onFailure(() ->
                 CIOThreadCallback.getInstance().completeSession(session, session::kick));
         move.expectOriginal(item);
-        L1ItemInstance destStack = inventory.GetFirstItemByClassID(item.getItemId());
+        L1ItemInstance destStack = item.isStackable() ? inventory.findCompatibleStack(item) : null;
         if (destStack != null) move.expectOriginal(destStack);
         final int originalCount = item.getCount();
         final int destinationCount = destStack == null ? 0 : destStack.getCount();

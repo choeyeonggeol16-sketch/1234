@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -74,7 +74,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
 	public static void load(){
 		final SC_ALCHEMY_DESIGN_ACK message = new SC_ALCHEMY_DESIGN_ACK();
 		_instance = message;
-		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+		TaskLane.SESSION.scheduleRequired(new Runnable(){
 			@Override
 			public void run(){
 				try {
@@ -101,7 +101,7 @@ public class SC_ALCHEMY_DESIGN_ACK extends ProtoPacket {
 			}else{
                 final l1j.server.server.model.network.core.connection.CUserSocket socket = pc.getNetConnection();
                 if (socket == null || !socket.isConnected()) return;
-                if (ThreadPool.getInstance().schedule(() -> {
+                if (TaskLane.SESSION.schedule(() -> {
                     if (socket.isConnected() && socket.getActiveChar() == pc)
                         socket.directSendPacketBytes(_alchemyCaches);
                 }, 100L) == null) {

@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
+import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import l1j.server.server.Account;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
@@ -311,7 +311,7 @@ public final class LoginController {
             delay = 0L;
         }
 
-        final ScheduledFuture<?> scheduled = ThreadPool.getInstance().schedule(new Runnable() {
+        final CServerTimer scheduled = CServerTimer.onceOnShard(TaskLane.SESSION, old.affinityShard(), new Runnable() {
             @Override
             public void run() {
                 try {
@@ -334,7 +334,7 @@ public final class LoginController {
             }
         }, delay);
         if (scheduled == null) {
-            // ThreadPool.schedule reports overload with null rather than
+            // Schedule reports overload with null rather than
             // throwing. Never keep an unscheduled deadline in the map: it
             // would suppress every further kick attempt until it expires.
             _pendingKickUntil.computeIfPresent(id, (key, current) -> current == dueBox ? null : current);

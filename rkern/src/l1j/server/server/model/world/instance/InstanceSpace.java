@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -96,7 +96,7 @@ public class InstanceSpace {
 		
 		try{
 			obj.init();
-			ThreadPool.getInstance().execute(obj);
+			TaskLane.INSTANCE.startEvent(obj);
 		}catch(Exception e){
 			e.printStackTrace();
 			obj.dispose();

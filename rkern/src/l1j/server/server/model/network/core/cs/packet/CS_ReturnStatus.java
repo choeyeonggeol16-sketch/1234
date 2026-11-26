@@ -5,7 +5,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 
 import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -543,7 +543,7 @@ public final class CS_ReturnStatus {
 
     private static void saveAsync(L1PcInstance pc) {
         try {
-            ThreadPool.getInstance().execute(() -> {
+            TaskLane.PERSISTENCE.execute(() -> {
                 try {
                     pc.save();
                 } catch (Exception e) {

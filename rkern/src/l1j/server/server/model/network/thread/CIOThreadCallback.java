@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -105,12 +105,24 @@ public final class CIOThreadCallback {
 
 	static final class TaskHandle implements Handle {
 		private final AtomicBoolean cancelled = new AtomicBoolean(false);
-		private final Runnable onCancel;
+		private Runnable onCancel;
+		// A heap entry is owned by exactly one wheel. Its index is guarded by that wheel.
+		volatile CThreadLocalTimer distantWheel;
+		int distantIndex = -1;
 		TaskHandle() { this(null); }
 		TaskHandle(Runnable onCancel) { this.onCancel = onCancel; }
 		@Override public boolean cancel() {
 			if (!cancelled.compareAndSet(false, true)) return false;
-			if (onCancel != null) onCancel.run();
+			final CThreadLocalTimer wheel = distantWheel;
+			if (wheel != null) wheel.cancelDistant(this);
+			final Runnable callback = onCancel;
+			onCancel = null;
+			if (callback != null) {
+				try { callback.run(); }
+				catch (Throwable failure) {
+					LOGGER.log(Level.SEVERE, "CIO timer cancellation callback failed", failure);
+				}
+			}
 			return true;
 		}
 		@Override public boolean isCancelled() { return cancelled.get(); }
@@ -497,14 +509,18 @@ public final class CIOThreadCallback {
     /** Server-owned timer callbacks share the existing CIO wheel on shard zero.
      * No transport configuration, additional dispatcher or executor is required. */
     public boolean scheduleServerTimer(WheelTask task, long delayMs) {
+        return scheduleServerTimer(0, task, delayMs);
+    }
+
+    boolean scheduleServerTimer(int shardIndex, WheelTask task, long delayMs) {
         if (task == null || task.isCancelled() || delayMs <= 0L) return false;
-        final CIOThread owner = shards[0];
+        final CIOThread owner = shards[shardIndex];
         return owner.running && owner.admitTimer(TimerOp.RAW_TIMER, 0, delayMs,
                 task, null, null);
     }
 
-    void cancelDistantServerTimer(CServerTimer timer) {
-        shards[0].threadLocalTimer.cancelDistant(timer);
+    void cancelDistantServerTimer(int shardIndex, CServerTimer timer) {
+        shards[shardIndex].threadLocalTimer.cancelDistant(timer);
     }
 
     /** Existing owner wheel drives connection deadlines; no extra worker or queue. */
@@ -1027,7 +1043,7 @@ public final class CIOThreadCallback {
 		final int sessionStamp;
 		final TaskHandle h;
 		final CIOThread owner;
-		// Persistence snapshots run on the existing bounded ThreadPool, not under
+		// Persistence snapshots run on the bounded persistence lane, outside
 		// the CIO shard monitor. Only one save job is pending per user/session.
 		final long charSaveIntervalNs;
 		final long invSaveIntervalNs;
@@ -1089,7 +1105,7 @@ public final class CIOThreadCallback {
 			if (!charDue && !invDue) return;
 			savePending = true;
 			try {
-				ThreadPool.getInstance().execute(saveWork);
+				TaskLane.PERSISTENCE.execute(saveWork);
 			} catch (RuntimeException failure) {
 				savePending = false;
 				// Admission rejection must not silently disable a periodic save.
@@ -2309,10 +2325,11 @@ public final class CIOThreadCallback {
                                         "[CIO-PACKET] shutdown cancellation failed idx=" + idx, failure);
                             }
                         }
-                        synchronized (this) {
-                            threadLocalTimer.discardOnShutdown();
-                            states.discardOnShutdown();
-                        }
+                        // Stop already fenced all successful admissions. Cancellation
+                        // resolves persistence callbacks, which may acquire other locks
+                        // or reenter a stopped shard from another thread.
+                        threadLocalTimer.discardOnShutdown();
+                        states.discardOnShutdown();
                     }
                 } finally {
                     CIOShardContext.exitShard();
@@ -2551,7 +2568,7 @@ public final class CIOThreadCallback {
 	}
 
 
-    /** Existing CThreadLocalTimer owns deferred teleport completion, not a separate ThreadPool. */
+    /** Existing CThreadLocalTimer owns deferred teleport completion, through direct shard dispatch. */
     public boolean schedulePcTeleport(L1PcInstance pc, long delayMs) {
         if (pc == null || delayMs <= 0L) return false;
         final int expectedSession = pc.getSessionStamp();

@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.DropTable;
 import l1j.server.server.datatables.AutoLoot;
@@ -784,7 +784,7 @@ public class L1NpcInstance extends L1Character {
 
     private static void ExecuteDeathSettlement(Runnable task) {
         try {
-            ThreadPool.getInstance().execute(task);
+            TaskLane.WORLD.execute(task);
         } catch (RejectedExecutionException rejected) {
             // A confirmed death may not lose its mandatory settlement.
             task.run();
@@ -2630,7 +2630,7 @@ public class L1NpcInstance extends L1Character {
 
     public void startExplosionTime(long l) {
         setExplosionTime(l);
-        ThreadPool.getInstance().scheduleRequired(new ExplosionCounter(this), 1000);
+        TaskLane.WORLD.scheduleRequired(new ExplosionCounter(this), 1000);
     }
 
     public class ExplosionCounter implements Runnable {
@@ -2656,7 +2656,7 @@ public class L1NpcInstance extends L1Character {
                 if (_explosion_remain_time <= 0 || isDead())
                     _explosion_remain_time = 0;
                 else
-                    ThreadPool.getInstance().scheduleRequired(this, 1000);
+                    TaskLane.WORLD.scheduleRequired(this, 1000);
             }
         }
     }

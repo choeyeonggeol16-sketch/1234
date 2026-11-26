@@ -5,7 +5,7 @@ import java.util.TimerTask;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
@@ -113,7 +113,7 @@ public class RaidFafurion extends RaidObject{
 				_boss = _bossSpawn.spawnBoss(getCopyMapId());
 			
 			_state = RS_START;
-			ThreadPool.getInstance().scheduleRequired(this, RaidLoadManager.MRS_MESSAGE_DELAY);
+			TaskLane.INSTANCE.scheduleRequired(this, RaidLoadManager.MRS_MESSAGE_DELAY);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -224,7 +224,7 @@ public class RaidFafurion extends RaidObject{
 			_sael1				= sp.spawnRandomBoss(mid);
 			sp					= createSpawn(RaidLoadManager.MRS_SP_SAEL2_ID, RaidNpcSpawn.ST_RECT, 1, 5, 0);
 			_sael2				= sp.spawnRandomBoss(mid);
-			if (ThreadPool.getInstance().schedule(this, RaidLoadManager.MRS_SP_PRODUCT_DESTTIME - 50) == null)
+			if (TaskLane.INSTANCE.schedule(this, RaidLoadManager.MRS_SP_PRODUCT_DESTTIME - 50) == null)
 				throw new RejectedExecutionException("Raid product deadline admission failed");
 		}
 		

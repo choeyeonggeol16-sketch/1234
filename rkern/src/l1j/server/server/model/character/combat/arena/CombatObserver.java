@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
@@ -184,7 +184,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         final int copy_map_id = _copyMapId;
         final TeamKda[] team_kda = _team_kda;
         final CParty[] parties	= _parties;
-        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+        TaskLane.INSTANCE.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 try{
@@ -266,7 +266,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             long ready_seconds = _combat_info.get_ready_seconds();
             
             _start_sec = (System.currentTimeMillis() / 1000L) + ready_seconds;
-            ThreadPool.getInstance().scheduleRequired(this, ready_seconds * 1000L);
+            TaskLane.INSTANCE.scheduleRequired(this, ready_seconds * 1000L);
         }
         return this;
     }
@@ -301,7 +301,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         pc.start_teleport(rt.x, rt.y, _copyMapId, pc.getHeading(), 169, true, false);
         
         final int enter_team_id = next_id;
-        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+        TaskLane.INSTANCE.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 PacketFactory.sendTime(pc, _start_sec - (System.currentTimeMillis() / 1000L));
@@ -412,7 +412,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             } finally {
                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(sharedNotice);
                }
-        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+        TaskLane.INSTANCE.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 // Common arena UI packets: assemble each immutable frame once,
@@ -494,7 +494,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             boolean is_live = is_live_team(team_id);
             if(!is_live && !is_disposing()){
                 set_status(EStatus.DISPOSING);
-                ThreadPool.getInstance().execute(new Runnable(){
+                TaskLane.INSTANCE.execute(new Runnable(){
                     @Override
                     public void run(){
                         batch_quit();					
@@ -552,7 +552,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         
         if(receiver.getNetConnection() == null || !receiver.getNetConnection().isConnected()){
             on_kill(attacker, receiver);
-            ThreadPool.getInstance().execute(new Runnable(){
+            TaskLane.INSTANCE.execute(new Runnable(){
                 @Override
                 public void run(){
                     try{
@@ -616,7 +616,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     }
     
     protected void execute_traps(){
-        ThreadPool.getInstance().execute(new Runnable(){
+        TaskLane.INSTANCE.startEvent(new Runnable(){
             @Override
             public void run(){
                 int sec = (int) _combat_info.get_play_seconds();
@@ -765,7 +765,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         dispose_users();
         _box_attr = null;
         _team_box_attr = null;
-        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+        TaskLane.INSTANCE.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 CombatObserver.super.dispose();				

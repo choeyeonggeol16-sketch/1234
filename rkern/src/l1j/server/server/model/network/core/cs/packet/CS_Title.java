@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -271,9 +271,7 @@ for (L1PcInstance clanPc :
         SC_CharTitle.broadcast(pc, objectId, broadcastTitle);
 
  
-        ThreadPool
-                .getInstance()
-                .execute(() -> {
+        TaskLane.PERSISTENCE.execute(() -> {
 
                     try {
 

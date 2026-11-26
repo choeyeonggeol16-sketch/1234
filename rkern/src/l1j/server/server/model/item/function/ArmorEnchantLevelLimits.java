@@ -1,8 +1,6 @@
 package l1j.server.server.model.item.function;
 
 import static l1j.server.server.model.item.function.CreatureItemActions._random;
-import static l1j.server.server.model.item.function.EnchantmentItems.FailureEnchant;
-import static l1j.server.server.model.item.function.EnchantmentItems.SuccessEnchant;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_bless_orim;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_insignia;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_insignia1;
@@ -85,8 +83,7 @@ final class ArmorEnchantLevelLimits {
                     if (enchant_level >= Config.방어구고급인첸트) {
                         if (itemId == L1ItemId.C_SCROLL_OF_ENCHANT_ARMOR || itemId == L1ItemId.ENCHANT_ARMOR) {
 
-                            pc.getInventory().DeleteItemAmount(item, 1);
-                            SuccessEnchant(pc, targetItem, client, -1);
+                            ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client, -1, null);
 
                         } else {
                             SC_SystemMessage.send(pc, "방어구는 +" + Config.방어구고급인첸트 + "이상 강화할 수 없습니다.");

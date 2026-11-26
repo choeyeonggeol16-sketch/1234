@@ -1,6 +1,7 @@
 package l1j.server.server.datatables;
 
 import l1j.server.server.model.item.EquipmentBaseOptions;
+import l1j.server.server.model.item.EtcItemBaseOptions;
 import l1j.server.server.model.item.EquipmentBaseOptions.Field;
 
 import gnu.trove.TCollections;
@@ -105,7 +106,7 @@ public final class CObjectDB {
     }
 
     // Publish one completed loader generation; do not mutate an older reader's
-    // set list. SQL failure policy stays in the loaders.
+    // set list. The item generation is published only after equipment validation.
     public static synchronized void ReloadItem() {
         Items.current = new ItemData();
     }
@@ -287,6 +288,10 @@ public final class CObjectDB {
 
     public static final class ItemData {
         private static final Logger _log = Logger.getLogger(ItemData.class.getName());
+        private static final String EQUIPMENT_METADATA =
+                "item_id, name, name_id, type, material, weight, invgfx, grdgfx, itemdesc_id, "
+                + "use_royal, use_knight, use_elf, use_mage, use_darkelf, use_dragonknight, "
+                + "use_blackwizard, use_warrior, bless, trade, cant_delete";
 
     	private TIntObjectMap<L1Item> _allTemplates;
     	public final TIntObjectMap<L1EtcItem> _etcitems;
@@ -304,16 +309,18 @@ public final class CObjectDB {
 
     	ItemData() {
             final EquipmentBaseOptions baseOptions = EquipmentBaseOptions.load();
-    		_etcitems = allEtcItem();
+            _etcitems = allEtcItem(EtcItemBaseOptions.load());
             _weapons = allWeapon(baseOptions);
             _armors = allArmor(baseOptions);
     		_descCached = TCollections.synchronizedMap(new TIntObjectHashMap<List<L1Item>>(64));
     		buildFastLookupTable();
     	}
 
-    	private TIntObjectMap<L1EtcItem> allEtcItem() {
+        private TIntObjectMap<L1EtcItem> allEtcItem(EtcItemBaseOptions definitions) {
     		TIntObjectMap<L1EtcItem> result = new TIntObjectHashMap<L1EtcItem>(3072);
-    		String sql = "SELECT * FROM etcitem";
+            final String sql = "SELECT item_id, name, name_id, item_type, use_type, material, weight, "
+                    + "invgfx, grdgfx, itemdesc_id, bless, trade, cant_delete, stackable, locx, locy, mapid, "
+                    + "delay_id, delay_effect, save_at_once, isEndedTimeMessage FROM etcitem";
 
     		try (Connection con = DatabaseFactory.getInstance().getConnection();
     			 PreparedStatement pstm = con.prepareStatement(sql);
@@ -322,6 +329,7 @@ public final class CObjectDB {
     			while (rs.next()) {
     				L1EtcItem item = new L1EtcItem();
     				item.setItemId(rs.getInt("item_id"));
+                    final EtcItemBaseOptions.Row options = definitions.requireRow(item.getItemId());
     				item.setName(rs.getString("name"));
     				item.setNameId(rs.getString("name_id"));
     				item.setType(parseEtcType(rs.getString("item_type")));
@@ -332,22 +340,22 @@ public final class CObjectDB {
     				item.setGfxId(rs.getInt("invgfx"));
     				item.setGroundGfxId(rs.getInt("grdgfx"));
     				item.setItemDescId(rs.getInt("itemdesc_id"));
-    				item.setMinLevel(rs.getInt("min_lvl"));
-    				item.setMaxLevel(rs.getInt("max_lvl"));
+                    item.setMinLevel(options.minLevel());
+                    item.setMaxLevel(options.maxLevel());
     				item.setBless(rs.getInt("bless"));
     				item.setTradable(rs.getInt("trade") == 0);
     				item.setCantDelete(rs.getInt("cant_delete") == 1);
-    				item.setHitModifier(rs.getInt("hit"));
-    				item.setDmgModifier(rs.getInt("dmg"));
+                    item.setHitModifier(options.hit());
+                    item.setDmgModifier(options.damage());
     				item.set_stackable(rs.getInt("stackable") == 1);
-    				item.setMaxChargeCount(rs.getInt("max_charge_count"));
+                    item.setMaxChargeCount(options.maxCharges());
     				item.set_locx(rs.getInt("locx"));
     				item.set_locy(rs.getInt("locy"));
     				item.set_mapid(rs.getShort("mapid"));
     				item.set_delayid(rs.getInt("delay_id"));
-    				item.set_delaytime(rs.getInt("delay_time"));
+                    item.set_delaytime(options.delayTime());
     				item.set_delayEffect(rs.getInt("delay_effect"));
-    				item.setFoodVolume(rs.getInt("food_volume"));
+                    item.setFoodVolume(options.foodVolume());
     				item.setToBeSavedAtOnce(rs.getInt("save_at_once") == 1);
     				item.setEndedTimeMessage(rs.getBoolean("isEndedTimeMessage"));
 
@@ -360,14 +368,14 @@ public final class CObjectDB {
     				result.put(item.getItemId(), item);
     			}
     		} catch (SQLException e) {
-                _log.log(Level.SEVERE, "ItemData allEtcItem error", e);
+                throw new IllegalStateException("Cannot load ETC item metadata", e);
     		}
     		return result;
     	}
 
         private TIntObjectMap<L1Weapon> allWeapon(EquipmentBaseOptions definitions) {
     		TIntObjectMap<L1Weapon> result = new TIntObjectHashMap<L1Weapon>(512);
-    		String sql = "SELECT * FROM weapon";
+            final String sql = "SELECT " + EQUIPMENT_METADATA + " FROM weapon";
 
     		try (Connection con = DatabaseFactory.getInstance().getConnection();
     			 PreparedStatement pstm = con.prepareStatement(sql);
@@ -376,7 +384,7 @@ public final class CObjectDB {
     			while (rs.next()) {
     				L1Weapon weapon = new L1Weapon();
     				weapon.setItemId(rs.getInt("item_id"));
-                    final EquipmentBaseOptions.Row options = definitions.row(true, weapon.getItemId());
+                    final EquipmentBaseOptions.Row options = definitions.requireRow(true, weapon.getItemId());
     				weapon.setName(rs.getString("name"));
     				weapon.setNameId(rs.getString("name_id"));
     				weapon.setType(parseWeaponType(rs.getString("type")));
@@ -388,9 +396,9 @@ public final class CObjectDB {
     				weapon.setGfxId(rs.getInt("invgfx"));
     				weapon.setGroundGfxId(rs.getInt("grdgfx"));
     				weapon.setItemDescId(rs.getInt("itemdesc_id"));
-                    weapon.setDmgSmall(options.integer(rs, Field.dmg_small));
-                    weapon.setDmgLarge(options.integer(rs, Field.dmg_large));
-                    weapon.set_safeenchant(options.integer(rs, Field.safenchant));
+                    weapon.setDmgSmall(options.integer(Field.dmg_small));
+                    weapon.setDmgLarge(options.integer(Field.dmg_large));
+                    weapon.set_safeenchant(options.integer(Field.safenchant));
     				weapon.setUseRoyal(rs.getInt("use_royal") != 0);
     				weapon.setUseKnight(rs.getInt("use_knight") != 0);
     				weapon.setUseElf(rs.getInt("use_elf") != 0);
@@ -399,34 +407,34 @@ public final class CObjectDB {
     				weapon.setUseDragonKnight(rs.getInt("use_dragonknight") != 0);
     				weapon.setUseBlackwizard(rs.getInt("use_blackwizard") != 0);
     				weapon.setUse전사(rs.getInt("use_warrior") != 0);
-                    weapon.setHitModifier(options.integer(rs, Field.hitmodifier));
-                    weapon.setDmgModifier(options.integer(rs, Field.dmgmodifier));
-                    weapon.set_addstr(options.signedByte(rs, Field.add_str));
-                    weapon.set_adddex(options.signedByte(rs, Field.add_dex));
-                    weapon.set_addcon(options.signedByte(rs, Field.add_con));
-                    weapon.set_addint(options.signedByte(rs, Field.add_int));
-                    weapon.set_addwis(options.signedByte(rs, Field.add_wis));
-                    weapon.set_addcha(options.signedByte(rs, Field.add_cha));
-                    weapon.set_addhp(options.integer(rs, Field.add_hp));
-                    weapon.set_addmp(options.integer(rs, Field.add_mp));
-                    weapon.set_addhpr(options.integer(rs, Field.add_hpr));
-                    weapon.set_addmpr(options.integer(rs, Field.add_mpr));
-                    weapon.set_addsp(options.integer(rs, Field.add_sp));
-                    weapon.set_mdef(options.integer(rs, Field.m_def));
-                    weapon.setDoubleDmgChance(options.integer(rs, Field.double_dmg_chance));
-                    weapon.setMagicDmgModifier(options.integer(rs, Field.magicdmgmodifier));
-                    weapon.set_canbedmg(options.integer(rs, Field.canbedmg));
-                    weapon.setMinLevel(options.integer(rs, Field.min_lvl));
-                    weapon.setMaxLevel(options.integer(rs, Field.max_lvl));
+                    weapon.setHitModifier(options.integer(Field.hitmodifier));
+                    weapon.setDmgModifier(options.integer(Field.dmgmodifier));
+                    weapon.set_addstr(options.signedByte(Field.add_str));
+                    weapon.set_adddex(options.signedByte(Field.add_dex));
+                    weapon.set_addcon(options.signedByte(Field.add_con));
+                    weapon.set_addint(options.signedByte(Field.add_int));
+                    weapon.set_addwis(options.signedByte(Field.add_wis));
+                    weapon.set_addcha(options.signedByte(Field.add_cha));
+                    weapon.set_addhp(options.integer(Field.add_hp));
+                    weapon.set_addmp(options.integer(Field.add_mp));
+                    weapon.set_addhpr(options.integer(Field.add_hpr));
+                    weapon.set_addmpr(options.integer(Field.add_mpr));
+                    weapon.set_addsp(options.integer(Field.add_sp));
+                    weapon.set_mdef(options.integer(Field.m_def));
+                    weapon.setDoubleDmgChance(options.integer(Field.double_dmg_chance));
+                    weapon.setMagicDmgModifier(options.integer(Field.magicdmgmodifier));
+                    weapon.set_canbedmg(options.integer(Field.canbedmg));
+                    weapon.setMinLevel(options.integer(Field.min_lvl));
+                    weapon.setMaxLevel(options.integer(Field.max_lvl));
     				weapon.setBless(rs.getInt("bless"));
     				weapon.setTradable(rs.getInt("trade") == 0);
     				weapon.setCantDelete(rs.getInt("cant_delete") == 1);
-                    weapon.setHasteItem(options.integer(rs, Field.haste_item) != 0);
-                    weapon.setMaxUseTime(options.integer(rs, Field.max_use_time));
-                    weapon.setMagicName(options.magicName(rs));
-                    weapon.setEndedTimeMessage(options.bool(rs, Field.isEndedTimeMessage));
-                    weapon.set_missile_critical_probability(options.integer(rs, Field.missile_critical_probability));
-                    weapon.set_melee_critical_probability(options.integer(rs, Field.melee_critical_probability));
+                    weapon.setHasteItem(options.integer(Field.haste_item) != 0);
+                    weapon.setMaxUseTime(options.integer(Field.max_use_time));
+                    weapon.setMagicName(options.magicName());
+                    weapon.setEndedTimeMessage(options.bool(Field.isEndedTimeMessage));
+                    weapon.set_missile_critical_probability(options.integer(Field.missile_critical_probability));
+                    weapon.set_melee_critical_probability(options.integer(Field.melee_critical_probability));
 
     				if (Config.IS_VALIDITEMID) {
     					if (_etcitems != null && _etcitems.containsKey(weapon.getItemId()))
@@ -438,14 +446,14 @@ public final class CObjectDB {
     				result.put(weapon.getItemId(), weapon);
     			}
     		} catch (SQLException e) {
-                _log.log(Level.SEVERE, "ItemData allWeapon error", e);
+                throw new IllegalStateException("Cannot load weapon metadata", e);
     		}
     		return result;
     	}
 
         private TIntObjectMap<L1Armor> allArmor(EquipmentBaseOptions definitions) {
     		TIntObjectMap<L1Armor> result = new TIntObjectHashMap<L1Armor>(1024);
-    		String sql = "SELECT * FROM armor";
+            final String sql = "SELECT " + EQUIPMENT_METADATA + ", acctype, grade FROM armor";
 
     		try (Connection con = DatabaseFactory.getInstance().getConnection();
     			 PreparedStatement pstm = con.prepareStatement(sql);
@@ -454,7 +462,7 @@ public final class CObjectDB {
     			while (rs.next()) {
     				L1Armor armor = new L1Armor();
     				armor.setItemId(rs.getInt("item_id"));
-                    final EquipmentBaseOptions.Row options = definitions.row(false, armor.getItemId());
+                    final EquipmentBaseOptions.Row options = definitions.requireRow(false, armor.getItemId());
     				armor.setName(rs.getString("name"));
     				armor.setNameId(rs.getString("name_id"));
     				armor.setType(parseArmorType(rs.getString("type")));
@@ -467,8 +475,8 @@ public final class CObjectDB {
     				armor.setGfxId(rs.getInt("invgfx"));
     				armor.setGroundGfxId(rs.getInt("grdgfx"));
     				armor.setItemDescId(rs.getInt("itemdesc_id"));
-                    armor.set_ac(options.integer(rs, Field.ac));
-                    armor.set_safeenchant(options.integer(rs, Field.safenchant));
+                    armor.set_ac(options.integer(Field.ac));
+                    armor.set_safeenchant(options.integer(Field.safenchant));
     				armor.setUseRoyal(rs.getInt("use_royal") != 0);
     				armor.setUseKnight(rs.getInt("use_knight") != 0);
     				armor.setUseElf(rs.getInt("use_elf") != 0);
@@ -477,55 +485,55 @@ public final class CObjectDB {
     				armor.setUseDragonKnight(rs.getInt("use_dragonknight") != 0);
     				armor.setUseBlackwizard(rs.getInt("use_blackwizard") != 0);
     				armor.setUse전사(rs.getInt("use_warrior") != 0);
-                    armor.set_addstr(options.signedByte(rs, Field.add_str));
-                    armor.set_addcon(options.signedByte(rs, Field.add_con));
-                    armor.set_adddex(options.signedByte(rs, Field.add_dex));
-                    armor.set_addint(options.signedByte(rs, Field.add_int));
-                    armor.set_addwis(options.signedByte(rs, Field.add_wis));
-                    armor.set_addcha(options.signedByte(rs, Field.add_cha));
-                    armor.set_addhp(options.integer(rs, Field.add_hp));
-                    armor.set_addmp(options.integer(rs, Field.add_mp));
-                    armor.set_addhpr(options.integer(rs, Field.add_hpr));
-                    armor.set_addmpr(options.integer(rs, Field.add_mpr));
-                    armor.set_addsp(options.integer(rs, Field.add_sp));
-                    armor.set_addeinhasadper(options.integer(rs, Field.add_einhasadper));
-                    armor.setMinLevel(options.integer(rs, Field.min_lvl));
-                    armor.setMaxLevel(options.integer(rs, Field.max_lvl));
-                    armor.set_mdef(options.integer(rs, Field.m_def));
-                    armor.setWeightReduction(options.integer(rs, Field.weight_reduction));
-                    armor.set_damage_reduction(options.integer(rs, Field.damage_reduction));
-                    armor.setHitRate(options.integer(rs, Field.hit_rate));
-                    armor.setDmgRate(options.integer(rs, Field.dmg_rate));
-                    armor.setBowHitRate(options.integer(rs, Field.bow_hit_rate));
-                    armor.setBowDmgRate(options.integer(rs, Field.bow_dmg_rate));
-                    armor.setHasteItem(options.integer(rs, Field.haste_item) != 0);
+                    armor.set_addstr(options.signedByte(Field.add_str));
+                    armor.set_addcon(options.signedByte(Field.add_con));
+                    armor.set_adddex(options.signedByte(Field.add_dex));
+                    armor.set_addint(options.signedByte(Field.add_int));
+                    armor.set_addwis(options.signedByte(Field.add_wis));
+                    armor.set_addcha(options.signedByte(Field.add_cha));
+                    armor.set_addhp(options.integer(Field.add_hp));
+                    armor.set_addmp(options.integer(Field.add_mp));
+                    armor.set_addhpr(options.integer(Field.add_hpr));
+                    armor.set_addmpr(options.integer(Field.add_mpr));
+                    armor.set_addsp(options.integer(Field.add_sp));
+                    armor.set_addeinhasadper(options.integer(Field.add_einhasadper));
+                    armor.setMinLevel(options.integer(Field.min_lvl));
+                    armor.setMaxLevel(options.integer(Field.max_lvl));
+                    armor.set_mdef(options.integer(Field.m_def));
+                    armor.setWeightReduction(options.integer(Field.weight_reduction));
+                    armor.set_damage_reduction(options.integer(Field.damage_reduction));
+                    armor.setHitRate(options.integer(Field.hit_rate));
+                    armor.setDmgRate(options.integer(Field.dmg_rate));
+                    armor.setBowHitRate(options.integer(Field.bow_hit_rate));
+                    armor.setBowDmgRate(options.integer(Field.bow_dmg_rate));
+                    armor.setHasteItem(options.integer(Field.haste_item) != 0);
     				armor.setBless(rs.getInt("bless"));
     				armor.setTradable(rs.getInt("trade") == 0);
     				armor.setCantDelete(rs.getInt("cant_delete") == 1);
-                    armor.set_defense_earth(options.integer(rs, Field.defense_earth));
-                    armor.set_defense_water(options.integer(rs, Field.defense_water));
-                    armor.set_defense_wind(options.integer(rs, Field.defense_wind));
-                    armor.set_defense_fire(options.integer(rs, Field.defense_fire));
+                    armor.set_defense_earth(options.integer(Field.defense_earth));
+                    armor.set_defense_water(options.integer(Field.defense_water));
+                    armor.set_defense_wind(options.integer(Field.defense_wind));
+                    armor.set_defense_fire(options.integer(Field.defense_fire));
     				
-                    armor.getSpecialStats().putResist(eKind.ABILITY.value(), options.integer(rs, Field.ability_resis));
-                    armor.getSpecialStats().putPierce(eKind.ABILITY.value(), options.integer(rs, Field.ability_pierce));
-                    armor.getSpecialStats().putResist(eKind.SPIRIT.value(), options.integer(rs, Field.spirit_resis));
-                    armor.getSpecialStats().putPierce(eKind.SPIRIT.value(), options.integer(rs, Field.spirit_pierce));
-                    armor.getSpecialStats().putResist(eKind.DRAGON_SPELL.value(), options.integer(rs, Field.dragonS_resis));
-                    armor.getSpecialStats().putPierce(eKind.DRAGON_SPELL.value(), options.integer(rs, Field.dragonS_pierce));
-                    armor.getSpecialStats().putResist(eKind.FEAR.value(), options.integer(rs, Field.fear_resis));
-                    armor.getSpecialStats().putPierce(eKind.FEAR.value(), options.integer(rs, Field.fear_pierce));
-                    armor.getSpecialStats().putResist(eKind.ALL.value(), options.integer(rs, Field.all_resis));
-                    armor.getSpecialStats().putPierce(eKind.ALL.value(), options.integer(rs, Field.all_pierce));
+                    armor.getSpecialStats().putResist(eKind.ABILITY.value(), options.integer(Field.ability_resis));
+                    armor.getSpecialStats().putPierce(eKind.ABILITY.value(), options.integer(Field.ability_pierce));
+                    armor.getSpecialStats().putResist(eKind.SPIRIT.value(), options.integer(Field.spirit_resis));
+                    armor.getSpecialStats().putPierce(eKind.SPIRIT.value(), options.integer(Field.spirit_pierce));
+                    armor.getSpecialStats().putResist(eKind.DRAGON_SPELL.value(), options.integer(Field.dragonS_resis));
+                    armor.getSpecialStats().putPierce(eKind.DRAGON_SPELL.value(), options.integer(Field.dragonS_pierce));
+                    armor.getSpecialStats().putResist(eKind.FEAR.value(), options.integer(Field.fear_resis));
+                    armor.getSpecialStats().putPierce(eKind.FEAR.value(), options.integer(Field.fear_pierce));
+                    armor.getSpecialStats().putResist(eKind.ALL.value(), options.integer(Field.all_resis));
+                    armor.getSpecialStats().putPierce(eKind.ALL.value(), options.integer(Field.all_pierce));
 
-                    armor.set_regist_calcPcDefense(options.integer(rs, Field.PVPcalcPcDefense));
-                    armor.set_regist_PVPweaponTotalDamage(options.integer(rs, Field.PVPweaponTotalDamage));
-                    armor.setMaxUseTime(options.integer(rs, Field.max_use_time));
-                    armor.setMagicName(options.magicName(rs));
-                    armor.setEndedTimeMessage(options.bool(rs, Field.isEndedTimeMessage));
-                    armor.set_missile_critical_probability(options.integer(rs, Field.missile_critical_probability));
-                    armor.set_melee_critical_probability(options.integer(rs, Field.melee_critical_probability));
-                    armor.setMagicHitup(options.integer(rs, Field.magic_hit_up));
+                    armor.set_regist_calcPcDefense(options.integer(Field.PVPcalcPcDefense));
+                    armor.set_regist_PVPweaponTotalDamage(options.integer(Field.PVPweaponTotalDamage));
+                    armor.setMaxUseTime(options.integer(Field.max_use_time));
+                    armor.setMagicName(options.magicName());
+                    armor.setEndedTimeMessage(options.bool(Field.isEndedTimeMessage));
+                    armor.set_missile_critical_probability(options.integer(Field.missile_critical_probability));
+                    armor.set_melee_critical_probability(options.integer(Field.melee_critical_probability));
+                    armor.setMagicHitup(options.integer(Field.magic_hit_up));
 
     				if (Config.IS_VALIDITEMID) {
     					if (_etcitems != null && _etcitems.containsKey(armor.getItemId()))
@@ -537,7 +545,7 @@ public final class CObjectDB {
     				result.put(armor.getItemId(), armor);
     			}
     		} catch (SQLException e) {
-                _log.log(Level.SEVERE, "ItemData allArmor error", e);
+                throw new IllegalStateException("Cannot load armor metadata", e);
     		}
     		return result;
     	}

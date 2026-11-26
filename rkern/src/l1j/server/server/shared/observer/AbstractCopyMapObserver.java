@@ -42,7 +42,11 @@ public abstract class AbstractCopyMapObserver implements InstanceObserver{
 	
 	@Override
 	public void dispose(){
-		MapCleaner.cleanup(_copyMapId, MapCleanerFilterFactory.createDefaultFilter());
-		L1WorldMap.getInstance().removeMap(_copyMapId);
+		final L1WorldMap maps = L1WorldMap.getInstance();
+		try {
+			MapCleaner.cleanup(maps.getMap(_copyMapId), MapCleanerFilterFactory.createDefaultFilter());
+		} finally {
+			maps.removeMap(_copyMapId);
+		}
 	}
 }

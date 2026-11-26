@@ -7,7 +7,7 @@ import l1j.server.server.model.character.action.CAttackAction;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1NpcTalkData;
@@ -93,7 +93,7 @@ public class L1PeopleInstance extends L1NpcInstance {
 				setRest(true);
 			}
 
-			ThreadPool.getInstance().scheduleRequired(new RestMonitor(), REST_MILLISEC);
+			TaskLane.WORLD.scheduleRequired(new RestMonitor(), REST_MILLISEC);
 		}
 
 		L1Object obj = L1World.getInstance().findObject(objid);
@@ -170,7 +170,7 @@ public class L1PeopleInstance extends L1NpcInstance {
         if (lastAttacker != null) {
             final Runnable penalty = () -> lastAttacker.addLawful(-5000);
             try {
-                ThreadPool.getInstance().execute(penalty);
+                TaskLane.WORLD.execute(penalty);
             } catch (java.util.concurrent.RejectedExecutionException rejected) {
                 penalty.run();
             }

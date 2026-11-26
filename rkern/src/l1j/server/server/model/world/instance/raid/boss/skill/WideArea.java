@@ -2,7 +2,7 @@ package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -27,7 +27,7 @@ public class WideArea extends RaidBossSkill{
             if(_actid >= 0)
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
-            ThreadPool.getInstance().execute(new tightenEffectThread(own, pcs, _effectId, _range));
+            TaskLane.INSTANCE.execute(new tightenEffectThread(own, pcs, _effectId, _range));
             sleepAction(own, _actid);
         }catch(Exception e){
             e.printStackTrace();
@@ -48,7 +48,7 @@ public class WideArea extends RaidBossSkill{
         try{
             if(_actid >= 0)
                 SC_DoActionGFX.broadcast(own, getSafeActId());
-            ThreadPool.getInstance().execute(new tightenEffectThread(own, pcs, _effectId, _range));
+            TaskLane.INSTANCE.execute(new tightenEffectThread(own, pcs, _effectId, _range));
             sleepAction(own, _actid);
         }catch(Exception e){
             e.printStackTrace();

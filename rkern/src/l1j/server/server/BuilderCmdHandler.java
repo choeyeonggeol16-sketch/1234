@@ -1,5 +1,7 @@
 package l1j.server.server;
 
+import l1j.server.server.task.TaskLane;
+
 import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -2023,7 +2025,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 					return;
 				}
 
-				ThreadPool.getInstance().execute(new Runnable() {
+				TaskLane.WORLD.execute(new Runnable() {
 					@Override
 					public void run() {
 						// Config.load();
@@ -2215,7 +2217,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				@Override public void run() {
 					if (!builderFullAccess(gm) || !builderLive(gm, socket, stamp)) return;
 					builderGiftOnline(gm, template, count, enchant);
-					if (--remaining > 0) ThreadPool.getInstance().scheduleRequired(this, delay);
+					if (--remaining > 0) TaskLane.WORLD.scheduleRequired(this, delay);
 				}
 			}.run();
 		} catch (RuntimeException e) { SC_SystemMessage.send(gm, ".오토선물 [횟수] [초] [아이템ID] [강화] [수량]"); }
@@ -3111,7 +3113,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "당신의 계정내 현재 캐릭터가 압류 되었습니다.");
 			SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "\\f3-------------------------------------------------------------------");
 			pc.sendPackets("\\f1당신의 계정내 현재 캐릭터가 압류 되었습니다.");
-			ThreadPool.getInstance().scheduleRequired(new DelayRestart(pc), 3000);
+			TaskLane.WORLD.scheduleRequired(new DelayRestart(pc), 3000);
 		} catch (Exception e) {
 			gm.sendPackets(".캐릭압류 [압류 캐릭터이름]");
 		} finally {
@@ -4462,7 +4464,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				if (target.getOnlineStatus() == 1) {
 					SC_Disconnect.send(target);
 				}
-				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+				TaskLane.WORLD.scheduleRequired(new Runnable(){
 					@Override
 					public void run(){
 						if(clnt != null && clnt.isConnected()){
@@ -6700,8 +6702,14 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			IpTable.reload();
 			gm.sendPackets("banIp 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("아이템")){
-			CObjectDB.ReloadItem();
-			gm.sendPackets("아이템 정보가 리로드 되었습니다.");
+            try {
+                CObjectDB.ReloadItem();
+            } catch (IllegalStateException failure) {
+                final String message = "아이템 리로드 실패: " + failure.getMessage();
+                gm.sendPackets(message);
+                System.err.println(message);
+                return;
+            }
 			TIntObjectMap<L1Item> items = CObjectDB.LoadItem().getAllTemplates();
 			HashMap<Integer, L1RaceTicket> map = BugRaceController.getInstance().getAllTemplates();
 			for(L1RaceTicket t : map.values()){
@@ -6709,6 +6717,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 					items.put(t.getItemId(), t);
 			}
 			DogFightTicketIdManager.getInstance().update_item_template();
+			gm.sendPackets("아이템 정보와 장비 기본 옵션을 리로드했습니다.");
 		} else if (arg.equalsIgnoreCase("상점")){
 			ShopTable.reload();
 			gm.sendPackets("shop 테이블이 리로드 되었습니다.");	
@@ -7543,7 +7552,7 @@ for (L1PcInstance pc2 : players) {
 			int count = Integer.parseInt(st.nextToken(), 10);
 			
 			BuilderSkillGfxTask spr = new BuilderSkillGfxTask(pc, sprid, count);
-			ThreadPool.getInstance().execute(spr);
+			TaskLane.WORLD.execute(spr);
 			
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, cmdName + " [castgfx] 라고 입력해 주세요. ");
@@ -7663,7 +7672,7 @@ for (L1PcInstance pc2 : players) {
 			int sprid = Integer.parseInt(st.nextToken(), 10);
 			int count = Integer.parseInt(st.nextToken(), 10);
 			BuilderEffectGfxTask spr = new BuilderEffectGfxTask(pc, sprid, count);
-			ThreadPool.getInstance().execute(spr);
+			TaskLane.WORLD.execute(spr);
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, cmdName + " [숫자,숫자] 라고 입력해 주세요. ");
 		}
@@ -7901,7 +7910,7 @@ for (L1PcInstance pc2 : players) {
 				npc.setHomeY(npc.getY());
 				npc.setHeading(4);
 				L1World.getInstance().storeAndEnterWorld(npc);
-				ThreadPool.getInstance().scheduleRequired(new BuilderImpactTask(npc, action), 1000);
+				TaskLane.WORLD.scheduleRequired(new BuilderImpactTask(npc, action), 1000);
 				npc.startTimedDelete(60 * 60 * 1000);
 				if (!attack) {
 					if (i == row) {
@@ -7950,7 +7959,7 @@ for (L1PcInstance pc2 : players) {
 			try {
 				if (npc == null || npc._destroyed) return;
 				SC_DoActionGFX.broadcast(npc, action);
-				ThreadPool.getInstance().scheduleRequired(this, 3000);
+				TaskLane.WORLD.scheduleRequired(this, 3000);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

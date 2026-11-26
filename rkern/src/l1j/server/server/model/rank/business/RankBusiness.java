@@ -16,7 +16,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.BaseTime;
@@ -125,7 +125,7 @@ public class RankBusiness implements TimeListener{
         if (!_isrun || !_refreshPending || !_refreshRunning.compareAndSet(false, true)) return;
         final long generation = _refreshGeneration;
         try {
-            ThreadPool.getInstance().execute(() -> {
+            TaskLane.PERSISTENCE.execute(() -> {
                 try {
                     if (!_isrun || _refreshGeneration != generation || !_refreshPending) return;
                     _refreshPending = false;

@@ -4,7 +4,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import java.util.ArrayList;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -194,7 +194,7 @@ public class ValakasStart implements Runnable {
 	}
 
 	public void Start() {
-		ThreadPool.getInstance().scheduleRequired(this, 2000);
+		TaskLane.INSTANCE.scheduleRequired(this, 2000);
 	}
 
 	private void setting(){

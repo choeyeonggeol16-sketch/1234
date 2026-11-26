@@ -1,8 +1,8 @@
 package l1j.server.server.model;
 
-import java.util.concurrent.ScheduledFuture;
+import l1j.server.server.model.network.thread.CServerTimer;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
@@ -19,11 +19,11 @@ public class L1PinkName {
     // =========================================
     // PC별 타이머 핸들(중복 방지용)
     // =========================================
-    private static ScheduledFuture<?> getPinkFuture(L1PcInstance pc) {
+    private static CServerTimer getPinkFuture(L1PcInstance pc) {
         return pc.getPinkNameFuture();
     }
 
-    private static void setPinkFuture(L1PcInstance pc, ScheduledFuture<?> f) {
+    private static void setPinkFuture(L1PcInstance pc, CServerTimer f) {
         pc.setPinkNameFuture(f);
     }
 
@@ -57,13 +57,17 @@ public class L1PinkName {
                 attacker.send_pink_name(attacker.getPinkNameTime());
             }
 
-            ScheduledFuture<?> old = getPinkFuture(attacker);
-            if (old != null && !old.isDone() && !old.isCancelled()) {
+            CServerTimer old = getPinkFuture(attacker);
+            if (old != null && !old.isCancelled()) {
                 return;
             }
 
             PinkTicker ticker = new PinkTicker(attacker);
-            ScheduledFuture<?> f = ThreadPool.getInstance().scheduleAtFixedRate(ticker, 1000L, 1000L);
+            CServerTimer f = TaskLane.SESSION.scheduleAtFixedRate(ticker, 1000L, 1000L);
+            if (f == null) {
+                stopPink(attacker);
+                return;
+            }
             setPinkFuture(attacker, f);
         } else {
             attacker.send_pink_name(attacker.getPinkNameTime());
@@ -76,9 +80,9 @@ public class L1PinkName {
         pc.setPinkName(false);
         pc.SetPinkNameTime(0);
 
-        ScheduledFuture<?> f = getPinkFuture(pc);
+        CServerTimer f = getPinkFuture(pc);
         if (f != null) {
-            try { f.cancel(false); } catch (Exception ignored) {}
+            try { f.cancel(); } catch (Exception ignored) {}
             setPinkFuture(pc, null);
         }
         SC_PinkName.send(pc, pc.getId(), 0);

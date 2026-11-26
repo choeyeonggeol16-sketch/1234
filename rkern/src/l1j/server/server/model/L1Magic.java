@@ -5,7 +5,7 @@ import static l1j.server.server.model.character.skill.L1SkillId.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.datatables.UserProtectMonsterTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -1516,7 +1516,7 @@ public class L1Magic {
 
 			if (skillId == ENERGY_BOLT || skillId == CALL_LIGHTNING || skillId == DISINTEGRATE) {
 
-				for (L1ItemInstance armor : _targetPc.getEquipSlot().getArmors()) {
+				for (L1ItemInstance armor : _targetPc.getEquipment().getArmors()) {
 					// 붉은 기사의 방패
 					if (armor.getItemId() == 20230) {
 						int probability = 1;
@@ -2751,7 +2751,7 @@ public class L1Magic {
 	public void Start() {
 		
 		
-		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+		TaskLane.WORLD.scheduleRequired(new Runnable(){
 			@Override
 			public void run(){
 				if (!_targetPc.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) {
@@ -2773,7 +2773,7 @@ public class L1Magic {
 public void Start1() {
 		
 		
-		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+		TaskLane.WORLD.scheduleRequired(new Runnable(){
 			@Override
 			public void run(){
 				if (!_targetNpc.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) {

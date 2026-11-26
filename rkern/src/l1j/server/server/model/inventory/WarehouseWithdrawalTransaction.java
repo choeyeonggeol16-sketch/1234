@@ -69,7 +69,8 @@ final class WarehouseWithdrawalTransaction {
                     int g = i;
                     if (stackable || mergeCharge) {
                         for (int j = 0; j < i; j++) {
-                            if (sources[j].getItemId() == item.getItemId()) {
+                            if (stackable ? L1ItemInstance.CanMergeStack(sources[j], item)
+                                    : sources[j].getItemId() == item.getItemId()) {
                                 g = group[j];
                                 break;
                             }
@@ -78,7 +79,7 @@ final class WarehouseWithdrawalTransaction {
                     group[i] = g;
                     if (!stackable && slots >= CUserInventory.MAX_SIZE) return false;
                     if (g == i) {
-                        destinations[i] = stackable || mergeCharge ? ownerInventory.GetFirstItemByClassID(item.getItemId()) : null;
+                        destinations[i] = Warehouse.withdrawalStack(ownerInventory, item);
                         destCounts[i] = destinations[i] == null ? 0 : destinations[i].getCount();
                         if (destinations[i] == null && ++slots > CUserInventory.MAX_SIZE) return false;
                         if (fee != null && destinations[i] == fee) feeGroup = i;

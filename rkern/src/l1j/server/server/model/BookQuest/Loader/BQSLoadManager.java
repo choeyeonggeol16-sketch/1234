@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.BQSWQUpdator;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterCriteriaProgress;
@@ -191,7 +191,7 @@ public class BQSLoadManager implements Command{
                     args.notify("케릭터 이름 %s을(를) 찾을 수 없습니다.");
                     return;					
                 }
-                ThreadPool.getInstance().execute(new Runnable(){
+                TaskLane.WORLD.execute(new Runnable(){
                     @Override
                     public void run(){
                         try{
@@ -218,7 +218,7 @@ public class BQSLoadManager implements Command{
         .add_command(new CommandTree("전체초기화", "현재 접속중인 모든 케릭터의 도감을 초기화합니다.", null){
             protected void to_handle_command(CommandArgs args) throws Exception{
                 L1PcInstance gm = args.getOwner();
-                ThreadPool.getInstance().execute(new Runnable(){
+                TaskLane.WORLD.execute(new Runnable(){
                     @Override
                     public void run(){
                         BQS_IS_ONUPDATE_BOOKS = false;
@@ -290,7 +290,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
                     args.notify("케릭터 이름 %s을(를) 찾을 수 없습니다.");
                     return;					
                 }
-                ThreadPool.getInstance().execute(new Runnable(){
+                TaskLane.WORLD.execute(new Runnable(){
                     @Override
                     public void run(){
                         try{
@@ -311,7 +311,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
         .add_command(new CommandTree("전체초기화", "현재 접속중인 모든 케릭터의 주간퀘스트를 초기화합니다.", null){
             protected void to_handle_command(CommandArgs args) throws Exception{
                 L1PcInstance gm = args.getOwner();
-                ThreadPool.getInstance().execute(new Runnable(){
+                TaskLane.WORLD.execute(new Runnable(){
                     @Override
                     public void run(){
                         gm.sendPackets(String.format("%d명의 캐릭터 주간퀘스트를 초기화하였습니다.", BQSWQDecksLoader.getInstance().notifyUpdated()));
@@ -359,7 +359,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
                     return;
                 }
                 
-                ThreadPool.getInstance().execute(new Runnable(){
+                TaskLane.WORLD.execute(new Runnable(){
                     @Override
                     public void run(){
                         BQSCharacterData bqs = pc.getBqs();

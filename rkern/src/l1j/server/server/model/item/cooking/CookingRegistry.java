@@ -405,6 +405,14 @@ public final class CookingRegistry {
         return true;
     }
 
+    public static void writeItemDuration(ItemPresentOutStream out, int itemId) {
+        final Def definition = byItemId(itemId);
+        if (definition == null) return;
+        final int seconds = definition.getDurationSec();
+        final String duration = seconds % 60 == 0 ? seconds / 60 + "분" : seconds + "초";
+        out.writeText("\\fI사용 시간: \\aA" + duration + ".");
+    }
+
     /** Registry에 등록된 요리 아이템인지 확인. */
     public static boolean containsItem(int itemId) {
         return itemId > 0 && BY_ITEM_ID.containsKey(itemId);

@@ -38,6 +38,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         final int rowId;
         L1PcInstance owner;
         L1ItemInstance image;
+        boolean retireEquipped;
         Entry(L1PcInstance pc, L1ItemInstance item, boolean existing) {
             originalOwner = existing ? pc : null;
             original = existing ? item : null;
@@ -499,30 +500,39 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         if (e.image.getCount() <= 0) throw new IllegalStateException("Consumed inventory item");
         e.image.setChargeCount(charge);
     }
-    /** Change a weapon/armor enchant level in the very same durable receipt as
-     * the consumed scroll. Equipped targets keep their equipment state; the
-     * owner applies the corresponding AC/MR effects only after COMMIT.
-     */
+    /** Stage the equipment change in the same receipt as its scroll. */
     public void changeEnchantLevel(L1ItemInstance item, int expectedLevel, int nextLevel) {
-        // A stale expected enchant level or invalid target is rejected often;
-        // no need to capture a DB preimage and clone the entire item first.
-        // Only fast-reject a verified live, unprepared row. Stale objects and
-        // staged mutations keep the existing entry() validation behavior.
-        open();
-        if (item != null && (item.getEnchantLevel() != expectedLevel
-                || (item.getItem().getType2() != 1 && item.getItem().getType2() != 2)
-                || nextLevel != expectedLevel + 1)
-                && findEntry(item.getId()) == null
-                && primary.getInventory().GetByServerID(item.getId()) == item && item.getCount() > 0)
-            throw new IllegalStateException("Invalid enchant receipt target/state");
-        Entry e = entry(primary, item);
-        if (e.image.getCount() <= 0 || e.image.getEnchantLevel() != expectedLevel
-                || item.getEnchantLevel() != expectedLevel
-                || (item.getItem().getType2() != 1 && item.getItem().getType2() != 2)
-                || nextLevel != expectedLevel + 1)
-            throw new IllegalStateException("Invalid enchant receipt target/state");
-        e.image.setEnchantLevel(nextLevel);
+        final long delta = (long) nextLevel - expectedLevel;
+        if (delta != -1 && (delta < 1 || delta > 3))
+            throw new IllegalArgumentException("Invalid enchant adjustment " + delta);
+        enchantTarget(item, expectedLevel).image.setEnchantLevel(nextLevel);
     }
+
+    public void stageEnchantFailure(L1ItemInstance item, int expectedLevel, boolean reset) {
+        final Entry target = enchantTarget(item, expectedLevel);
+        target.retireEquipped = target.image.isEquipped();
+        target.image.setEquipped(false);
+        if (reset) {
+            target.image.setEnchantLevel(0);
+        } else {
+            target.image.setCount(0);
+        }
+    }
+
+    private Entry enchantTarget(L1ItemInstance item, int expectedLevel) {
+        open();
+        if (item == null || item.getItem() == null || item.getEnchantLevel() != expectedLevel
+                || (item.getItem().getType2() != 1 && item.getItem().getType2() != 2)) {
+            throw new IllegalStateException("Invalid enchant receipt target/state");
+        }
+        final Entry e = entry(primary, item);
+        if (e.image.getCount() <= 0 || e.image.getEnchantLevel() != expectedLevel
+                || e.image.getItemId() != item.getItemId()) {
+            throw new IllegalStateException("Invalid prepared enchant target/state");
+        }
+        return e;
+    }
+
     /** Identify an inventory target in the same durable receipt as a scroll debit.
      * Identification is legal for equipped equipment as well; unlike generic
      * change(), this changes only the identified bit on the detached image.
@@ -777,9 +787,13 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         for (int i = 0; i < entryCount; i++) {
             final Entry e = entryAt(i);
             owns(e.owner);
-            ValidatePreparedRow(e.rowId, e.image,
-                    e.before != null && e.before.equipped != 0,
-                    e.originalOwner == e.owner);
+            final boolean wasEquipped = e.before != null && e.before.equipped != 0;
+            final boolean sameOwner = e.originalOwner == e.owner;
+            if (e.retireEquipped && (!wasEquipped || !sameOwner
+                    || (e.image.getCount() > 0 && e.image.getEnchantLevel() != 0))) {
+                throw new IllegalStateException("Invalid equipped enchant failure: " + e.rowId);
+            }
+            ValidatePreparedRow(e.rowId, e.image, wasEquipped && !e.retireEquipped, sameOwner);
         }
     }
 

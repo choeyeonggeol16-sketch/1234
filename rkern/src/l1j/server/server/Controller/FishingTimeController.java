@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.GameServerSetting;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -700,7 +700,7 @@ public final class FishingTimeController {
             pc.addExp((int) exp);
 
             /* CIO owner를 DB I/O로 막지 않는다. */
-            ThreadPool.getInstance().execute(new Runnable() {
+            TaskLane.WORLD.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {

@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
@@ -195,7 +195,7 @@ public class L1SummonInstance extends L1NpcInstance {
                 if (++deathReturnGeneration == 0) ++deathReturnGeneration;
             }
             try {
-                ThreadPool.getInstance().execute(this::finishSummonDeath);
+                TaskLane.WORLD.execute(this::finishSummonDeath);
             } catch (RejectedExecutionException rejected) {
                 synchronized (this) {
                     if (isDeathProcessing() && isDead() && !_destroyed) retryDeathReturn();

@@ -5,7 +5,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
 import java.util.Collection;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -176,7 +176,7 @@ public class L1BuffUtil {
 				_index++;
 
 				if (_index < _buffList.length) {
-					ThreadPool.getInstance().scheduleRequired(this, ALL_BUFF_INTERVAL_MS);
+					TaskLane.SESSION.scheduleRequired(this, ALL_BUFF_INTERVAL_MS);
 				}
 
 			} catch (Throwable t) {
@@ -251,7 +251,7 @@ public class L1BuffUtil {
 
 		private void begin() {
 			if (_buffList.length == 0) return;
-			ThreadPool.getInstance().execute(this);
+			TaskLane.SESSION.execute(this);
 		}
 	}
 

@@ -571,6 +571,28 @@ public final class CSkillInfo {
         }
     }
 
+    public record FixedItemBonuses(int hp, int mp, int meleeDamage, int meleeHit,
+            int rangedDamage, int rangedHit, int sp, int magicHit, int pvpReduction) {}
+
+    /** Resolves fixed scroll stats without applying them to a live character. */
+    public static FixedItemBonuses fixedItemBonuses(int skillId) {
+        final CSkillInfo info = get(skillId);
+        if (info == null || info.effects == null) {
+            throw new IllegalArgumentException("Missing fixed item skill " + skillId);
+        }
+        final var stats = new SkillEffectContainer.CCreatureSkillMod();
+        for (CSkillEffect effect : info.effects) {
+            if (!(effect instanceof CSkillEffect.Fixed fixed)) {
+                throw new IllegalArgumentException("Non-fixed effect in item skill " + skillId);
+            }
+            fixed.pump(0, stats);
+        }
+        return new FixedItemBonuses(stats.hp, stats.mp, stats.meleeDamage + stats.weaponDamageRate,
+                stats.meleeHit + stats.weaponHitRate, stats.rangedDamage + stats.bowDamageRate,
+                stats.rangedHit + stats.bowHitRate, stats.sp, stats.magicHit + stats.baseMagicHit,
+                stats.pvpReduction);
+    }
+
     boolean hasCast() {
         return start != null || (cast != null && (!(cast instanceof ContextualCast contextual) || contextual.cast() != null));
     }

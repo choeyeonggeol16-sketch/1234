@@ -3,14 +3,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import l1j.server.server.ThreadPool;
 import l1j.server.server.model.L1UltimateBattle;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.task.TaskLane;
 
 public final class ServerTimerRegression {
     private static int checks;
@@ -56,24 +55,30 @@ public final class ServerTimerRegression {
         }
     }
 
-    private static void retryOnSaturation(ThreadPool workers) throws Exception {
-        final ThreadPoolExecutor pool = (ThreadPoolExecutor) field(workers, "_instantPool");
-        pool.setCorePoolSize(1);
-        pool.setMaximumPoolSize(1);
-        final CountDownLatch occupied = new CountDownLatch(1);
+    private static void retryOnSaturation() throws Exception {
+        final TaskLane world = TaskLane.WORLD;
+        final int parallelism = (int) field(world, "parallelism");
+        final int queueLimit = (int) field(world, "queueLimit");
+        final CountDownLatch occupied = new CountDownLatch(parallelism);
         final CountDownLatch release = new CountDownLatch(1);
         final CountDownLatch entered = new CountDownLatch(1);
         final AtomicInteger executions = new AtomicInteger();
         final AtomicInteger callbackShard = new AtomicInteger(-2);
-        workers.execute(() -> {
+        final Runnable pinned = () -> {
             occupied.countDown();
             try { release.await(); }
             catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
-        });
+        };
+        for (int i = 0; i < parallelism; i++) world.execute(pinned);
         try {
             check(occupied.await(2L, TimeUnit.SECONDS), "instant worker occupied");
             final Runnable unused = () -> {};
-            while (pool.getQueue().offer(unused)) { }
+            for (int i = 0; i < queueLimit; i++) check(world.tryExecute(unused), "bounded queue accepts capacity");
+            check(!world.tryExecute(unused), "full world queue rejects");
+            final CountDownLatch isolated = new CountDownLatch(2);
+            TaskLane.SESSION.execute(isolated::countDown);
+            TaskLane.PERSISTENCE.execute(isolated::countDown);
+            check(isolated.await(2L, TimeUnit.SECONDS), "world saturation leaves session and storage responsive");
             final CountDownLatch signals = new CountDownLatch(3);
             final CServerTimer signal = CServerTimer.fixedDelaySignal(signals::countDown, 1L, 50L);
             check(signal != null, "CIO signal registered");
@@ -86,7 +91,6 @@ public final class ServerTimerRegression {
             check(executions.get() == 0 && !timer.isCancelled(), "saturation leaves the deadline pending");
             signal.cancel();
         } finally {
-            pool.getQueue().clear();
             release.countDown();
         }
         check(entered.await(3L, TimeUnit.SECONDS), "deadline retried after capacity becomes available");
@@ -110,15 +114,15 @@ public final class ServerTimerRegression {
 
     public static void main(String[] args) throws Exception {
         final CIOThreadCallback cio = CIOThreadCallback.getInstance();
-        final ThreadPool workers = ThreadPool.getInstance();
         try {
             cancelDistant(cio);
-            retryOnSaturation(workers);
+            retryOnSaturation();
             cancelArenaCountdown();
         } finally {
+            TaskLane.stopAll();
             cio.shutdown();
-            try { check(cio.awaitTermination(5L, TimeUnit.SECONDS), "CIO timer owners terminated"); }
-            finally { workers.shutdown(); }
+            check(cio.awaitTermination(5L, TimeUnit.SECONDS), "CIO timer owners terminated");
+            check(TaskLane.awaitAll(5L, TimeUnit.SECONDS), "accepted work drained");
         }
         System.out.println("PASS Server timer regression (" + checks + " checks)");
     }

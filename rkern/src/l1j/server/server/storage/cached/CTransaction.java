@@ -46,11 +46,11 @@ public final class CTransaction {
     // A receipt is committed with the item mutations, never in a second SQL transaction.
     // The schema is deployed separately; a missing receipt table fails CLOSED.
     private static boolean hasReceipt(Connection con, String txId, String kind,
-                                      int firstOwner, int secondOwner, boolean lock)
+                                      int firstOwner, int secondOwner, boolean readCurrent)
             throws SQLException {
         try (PreparedStatement ps = con.prepareStatement(
                 "SELECT kind,owner_a,owner_b FROM cached_transaction_receipts WHERE tx_id=?"
-                        + (lock ? " FOR UPDATE" : ""))) {
+                        + (readCurrent ? " LOCK IN SHARE MODE" : ""))) {
             ps.setString(1, txId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) return false;
@@ -73,6 +73,23 @@ public final class CTransaction {
             ps.setInt(4, secondOwner);
             if (ps.executeUpdate() != 1)
                 throw new SQLException("Transaction receipt was not inserted: " + txId);
+        }
+    }
+
+    private static boolean claimReceipt(Connection con, String txId, String kind,
+                                        int firstOwner, int secondOwner) throws SQLException {
+        // SELECT FOR UPDATE on a missing unique key locks its gap. Two
+        // unrelated receipts in the same gap could then deadlock on INSERT.
+        try {
+            insertReceipt(con, txId, kind, firstOwner, secondOwner);
+            return true;
+        } catch (SQLException failure) {
+            // INSERT has resolved the unique-key conflict. A shared current
+            // read verifies the committed owner without a lock upgrade or a
+            // stale repeatable-read snapshot.
+            if (failure.getErrorCode() == 1062
+                    && hasReceipt(con, txId, kind, firstOwner, secondOwner, true)) return false;
+            throw failure;
         }
     }
 
@@ -185,10 +202,7 @@ public final class CTransaction {
                                       Mutation[] operations) throws SQLException {
         if (operations == null || operations.length == 0)
             throw new SQLException("Empty economy transaction");
-        Mutation[] guarded = new Mutation[operations.length + 1];
-        guarded[0] = con -> requireTransactionalTables(con, "cached_transaction_receipts");
-        System.arraycopy(operations, 0, guarded, 1, operations.length);
-        persistAtomic(txId, "ECONOMY", firstOwner, secondOwner, guarded);
+        persistAtomic(txId, "ECONOMY", firstOwner, secondOwner, operations);
     }
 
     public static void requireTransactionalTables(Connection con, String... tables) throws SQLException {
@@ -264,7 +278,8 @@ public final class CTransaction {
             final boolean autoCommit = con.getAutoCommit();
             con.setAutoCommit(false);
             try {
-                if (hasReceipt(con, txId, kind, firstOwner, secondOwner, true)) {
+                requireTransactionalTables(con, "cached_transaction_receipts");
+                if (!claimReceipt(con, txId, kind, firstOwner, secondOwner)) {
                     // The matching durable receipt proves the original commit.
                     // The current connection owns only the receipt read lock.
                     committed = true;
@@ -279,7 +294,6 @@ public final class CTransaction {
                     return;
                 }
                 for (Mutation operation : operations) operation.apply(con);
-                insertReceipt(con, txId, kind, firstOwner, secondOwner);
                 commitAttempted = true;
                 con.commit();
                 committed = true;

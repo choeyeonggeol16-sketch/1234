@@ -2,7 +2,7 @@ package l1j.server.server.model.character.effect.action.realize;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
+import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -61,7 +61,7 @@ public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
     protected final L1NpcInstance owner;
     protected ArrayList<L1PcInstance> players;
     private final AtomicBoolean finished = new AtomicBoolean();
-    private volatile ScheduledFuture<?> next;
+    private volatile CServerTimer next;
     private volatile long deadlineNanos;
     private int steps;
     private int admissionRetries;
@@ -221,20 +221,20 @@ public class OnEffectThread implements CIOThreadCallback.WheelTask, Runnable {
             delayMs = Math.min(delayMs,
                     Math.max(1L, TimeUnit.NANOSECONDS.toMillis(remainingNs)));
         }
-        final ScheduledFuture<?> future = ThreadPool.getInstance().schedule(this, delayMs);
+        final CServerTimer future = TaskLane.WORLD.schedule(this, delayMs);
         if (future == null) {
             finish();
             return false;
         }
         next = future;
-        if (finished.get()) future.cancel(false);
+        if (finished.get()) future.cancel();
         return !finished.get();
     }
 
     private synchronized void finish() {
         if (!finished.compareAndSet(false, true)) return;
-        final ScheduledFuture<?> future = next;
-        if (future != null) future.cancel(false);
+        final CServerTimer future = next;
+        if (future != null) future.cancel();
         players = null;
         ACTIVE.remove(owner.getId(), this);
         owner.endCast();

@@ -968,10 +968,9 @@ public final class CAttackAction extends CNewAction {
 				_weaponType2 = weapon.getItem().getType();// 변경
                 // DB corrections are additive to the original template stats.
                 // One immutable memory lookup for both values; no SQL/new per hit.
-                final long weaponBonus = WeaponAddDamage.getInstance().getBonusPacked(_weaponId);
-                _weaponAddHit = weapon.getItem().getHitModifier() + (int) (weaponBonus >> 32);
-                _weaponAddDmg = weapon.getItem().getDmgModifier() + (int) weaponBonus
-                        + EquipmentBlessing.weaponDamage(weapon);
+                final long weaponStats = WeaponAddDamage.getInstance().getTemplateStatsPacked(weapon.getItem());
+                _weaponAddHit = (int) (weaponStats >> 32);
+                _weaponAddDmg = (int) weaponStats + EquipmentBlessing.weaponDamage(weapon);
                 weaponQuality = weapon.get_bless_level2();
 
 

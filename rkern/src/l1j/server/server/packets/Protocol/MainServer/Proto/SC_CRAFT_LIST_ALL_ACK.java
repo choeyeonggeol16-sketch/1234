@@ -5,17 +5,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.Craft;
 import l1j.server.server.shared.arrangement.ArrangeParsee;
 import l1j.server.server.shared.arrangement.ArrangeParseeFactory;
@@ -25,8 +25,6 @@ import l1j.server.server.utils.HexHelper;
 public final class SC_CRAFT_LIST_ALL_ACK {
 
     private static final Logger _log = Logger.getLogger(SC_CRAFT_LIST_ALL_ACK.class.getName());
-
-    private static final ConcurrentHashMap<CUserSocket, Boolean> CRAFT_SENDING = new ConcurrentHashMap<>();
 
     /*
      * 단일 제작 목록 protobuf chunk 제한.
@@ -141,7 +139,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
          * 전송 도중 다른 제작 응답이 끼면
          * 클라 제작 로딩 상태가 깨질 수 있다.
          */
-        if (CRAFT_SENDING.containsKey(client)) {
+        if (client.isCraftListSending()) {
             return;
         }
 
@@ -179,17 +177,16 @@ public final class SC_CRAFT_LIST_ALL_ACK {
         /*
          * 여기서부터 이 클라이언트는 제작목록 전송 중.
          */
-        if (CRAFT_SENDING.putIfAbsent(client, Boolean.TRUE) != null) {
+        if (!client.beginCraftListSend()) {
             return;
         }
 
         final long sendId = SEND_SEQUENCE.incrementAndGet();
 
         // The scheduler returns null on a full/shutting-down queue. Never
-        // retain the per-connection sending barrier for a task that cannot run.
-        if (ThreadPool.getInstance().schedule(
-                () -> sendNextChunk(pc, client, caches, sendId, 0, 0L, System.nanoTime()), 0L) == null) {
-            CRAFT_SENDING.remove(client);
+        // leave the per-connection sending flag set for a task that cannot run.
+        if (!TaskLane.SESSION.tryExecute(() -> sendNextChunk(pc, client, caches, sendId, 0, 0L))) {
+            client.endCraftListSend();
             _log.warning("[CRAFT ADMISSION] initial chunk rejected id=" + sendId);
         }
     }
@@ -204,32 +201,32 @@ public final class SC_CRAFT_LIST_ALL_ACK {
             final ArrayList<byte[]> caches, 
             final long sendId, 
             final int index, 
-            final long sentBytes, 
-            final long startNanos) {
+            final long sentBytes) {
 
-        if (pc == null || client == null || caches == null || !client.isConnected()) {
-            if (client != null) {
-                CRAFT_SENDING.remove(client);
-            }
+        if (!client.isConnected() || client.getActiveChar() != pc || pc.getNetConnection() != client) {
+            client.endCraftListSend();
             return;
         }
 
         if (index >= caches.size()) {
-            CRAFT_SENDING.remove(client);
+            client.endCraftListSend();
             return;
         }
 
         final byte[] bytes = caches.get(index);
 
         if (bytes == null || bytes.length == 0) {
-            scheduleNextChunk(pc, client, caches, sendId, index + 1, sentBytes, startNanos);
+            scheduleNextChunk(pc, client, caches, sendId, index + 1, sentBytes);
             return;
         }
 
         try {
-            l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, bytes);
+            if (!Proto.sendRaw(client, bytes)) {
+                client.endCraftListSend();
+                return;
+            }
         } catch (Throwable t) {
-            CRAFT_SENDING.remove(client);
+            client.endCraftListSend();
             _log.log(Level.SEVERE, String.format("[CRAFT SEND FAIL] id=%d idx=%d/%d IP=%s", 
                     sendId, index, caches.size() - 1, client.getHostAddress()), t);
             return;
@@ -244,13 +241,13 @@ public final class SC_CRAFT_LIST_ALL_ACK {
          */
         if (nextIndex >= caches.size()) {
             final boolean registered = client.whenWriteDrained(() -> {
-                CRAFT_SENDING.remove(client);
+                client.endCraftListSend();
                 _log.info(String.format("[CRAFT SEND END] id=%d bytes=%d IP=%s", 
                         sendId, nextSentBytes, client.getHostAddress()));
             });
 
             if (!registered) {
-                CRAFT_SENDING.remove(client);
+                client.endCraftListSend();
             }
             return;
         }
@@ -259,10 +256,10 @@ public final class SC_CRAFT_LIST_ALL_ACK {
          * 소켓 drain 후 다음 청크.
          */
         final boolean registered = client.whenWriteDrained(
-                () -> scheduleNextChunk(pc, client, caches, sendId, nextIndex, nextSentBytes, startNanos));
+                () -> scheduleNextChunk(pc, client, caches, sendId, nextIndex, nextSentBytes));
 
         if (!registered) {
-            CRAFT_SENDING.remove(client);
+            client.endCraftListSend();
             if (client.isConnected()) {
                 _log.warning(String.format("[CRAFT BACKPRESSURE] callback 등록 실패 id=%d idx=%d IP=%s", 
                         sendId, index, client.getHostAddress()));
@@ -276,20 +273,19 @@ public final class SC_CRAFT_LIST_ALL_ACK {
             final ArrayList<byte[]> caches, 
             final long sendId, 
             final int index, 
-            final long sentBytes, 
-            final long startNanos) {
+            final long sentBytes) {
 
         if (!client.isConnected()) {
-            CRAFT_SENDING.remove(client);
+            client.endCraftListSend();
             return;
         }
 
         // whenWriteDrained already fired. If this delayed admission fails,
-        // there will be no more callbacks to clear CRAFT_SENDING.
-        if (ThreadPool.getInstance().schedule(
-                () -> sendNextChunk(pc, client, caches, sendId, index, sentBytes, startNanos),
+        // there will be no more callbacks to clear the sending flag.
+        if (CServerTimer.onceOnShard(TaskLane.SESSION, client.affinityShard(),
+                () -> sendNextChunk(pc, client, caches, sendId, index, sentBytes),
                 CRAFT_CHUNK_DELAY_MS) == null) {
-            CRAFT_SENDING.remove(client);
+            client.endCraftListSend();
             _log.warning("[CRAFT ADMISSION] continuation rejected id=" + sendId
                     + " index=" + index);
         }
@@ -356,7 +352,7 @@ public final class SC_CRAFT_LIST_ALL_ACK {
     
     public static void onDisconnect(CUserSocket client) {
         if (client != null) {
-            CRAFT_SENDING.remove(client);
+            client.endCraftListSend();
         }
     }
 }

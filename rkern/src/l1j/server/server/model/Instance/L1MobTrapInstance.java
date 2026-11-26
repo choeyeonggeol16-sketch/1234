@@ -3,7 +3,7 @@ package l1j.server.server.model.Instance;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.templates.L1Npc;
@@ -39,7 +39,7 @@ public class L1MobTrapInstance extends L1NpcInstance {
 		AIStart = true;
 		// A trap must not hold an instant-pool worker sleeping indefinitely.
 		// The existing scheduled executor is bounded and reports admission failure.
-		if (ThreadPool.getInstance().schedule(new TrapAITick(), TRAP_TICK_MS) == null) {
+		if (TaskLane.WORLD.schedule(new TrapAITick(), TRAP_TICK_MS) == null) {
 			AIStart = false;
 			_log.warning("Trap AI schedule rejected npc=" + getId());
 		}
@@ -63,7 +63,7 @@ public class L1MobTrapInstance extends L1NpcInstance {
 			synchronized (L1MobTrapInstance.this) {
 				if (finished || isDestroyed()) {
 					AIStart = false;
-				} else if (ThreadPool.getInstance().schedule(this, TRAP_TICK_MS) == null) {
+				} else if (TaskLane.WORLD.schedule(this, TRAP_TICK_MS) == null) {
 					AIStart = false;
 					_log.warning("Trap AI re-schedule rejected npc=" + getId());
 				}

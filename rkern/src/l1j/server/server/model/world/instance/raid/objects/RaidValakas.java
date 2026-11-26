@@ -6,7 +6,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
@@ -268,7 +268,7 @@ try {
 				createStartMeteor();
 				deleteFires(_fires);
 				_state = RS_START;
-				ThreadPool.getInstance().scheduleRequired(this, RaidLoadManager.MRS_MESSAGE_DELAY);
+				TaskLane.INSTANCE.scheduleRequired(this, RaidLoadManager.MRS_MESSAGE_DELAY);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -426,7 +426,7 @@ try {
 				SC_SkillSound.send(pc, pc.getId(), 15837);
 				pc.setValakasProduct(true);
 			}	
-			if (ThreadPool.getInstance().schedule(this, RaidLoadManager.MRS_SP_VALAKAS_PRODUCT_DESTTIME - 50) == null)
+			if (TaskLane.INSTANCE.schedule(this, RaidLoadManager.MRS_SP_VALAKAS_PRODUCT_DESTTIME - 50) == null)
 				throw new RejectedExecutionException("Raid product deadline admission failed");
 		}
 		

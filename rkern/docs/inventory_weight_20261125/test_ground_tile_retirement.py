@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 
 root = Path(__file__).resolve().parents[2]
-model = root / "src/l1j/server/server/model"
+model = root / "src/l1j/server/server/model/inventory"
 def extract(file, start, end):
     source = (model / file).read_text(encoding="utf-8")
     a = source.index(start)

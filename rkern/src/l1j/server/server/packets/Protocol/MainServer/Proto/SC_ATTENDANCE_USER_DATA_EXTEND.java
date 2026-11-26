@@ -11,7 +11,6 @@ import java.util.Calendar;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.storage.CacheD;
-import l1j.server.server.ThreadPool;
 import l1j.server.server.model.Attendance.AttendanceLoadManager;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;

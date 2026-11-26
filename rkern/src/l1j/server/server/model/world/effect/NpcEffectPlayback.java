@@ -5,7 +5,7 @@ import java.util.function.ObjIntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_Sound;
@@ -43,7 +43,7 @@ final class NpcEffectPlayback implements Runnable {
 
     private void submit() {
         try {
-            ThreadPool.getInstance().execute(this);
+            TaskLane.WORLD.execute(this);
         } catch (RejectedExecutionException rejected) {
             npc = null;
         }
@@ -57,7 +57,7 @@ final class NpcEffectPlayback implements Runnable {
         } catch (RuntimeException failure) {
             LOG.log(Level.WARNING, "NPC repeated effect failed", failure);
         }
-        if (--remaining > 0 && ThreadPool.getInstance().schedule(nextTick, delayMs) != null) return;
+        if (--remaining > 0 && TaskLane.WORLD.schedule(nextTick, delayMs) != null) return;
         npc = null;
     }
 }

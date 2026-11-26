@@ -23,7 +23,7 @@ import l1j.server.server.model.character.action.CAttackAction;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.quest.CQuestSystem;
 
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -134,7 +134,7 @@ public class L1QuestInstance extends L1NpcInstance {
 			setRest(true);
 		}
 
-		ThreadPool.getInstance().scheduleRequired(new RestMonitor(), REST_MILLISEC);
+		TaskLane.WORLD.scheduleRequired(new RestMonitor(), REST_MILLISEC);
 	}
 
     @Override

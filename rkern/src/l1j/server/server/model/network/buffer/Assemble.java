@@ -81,6 +81,7 @@ public class Assemble {
     }
 
     private static final Charset MS949 = Charset.forName("MS949");
+    private static final int MAX_RETAINED_STRING_CHARS = 4096;
 
     private static final ThreadLocal<StringCodec> STRING_CODEC =
             ThreadLocal.withInitial(StringCodec::new);
@@ -757,12 +758,36 @@ public class Assemble {
 
     public void writeBytes(byte... value) {
         if (value == null || value.length == 0) return;
-        
-        ensureSize(_position + value.length);
+        writeBytes(value, 0, value.length);
+    }
+
+    public void writeBytes(byte[] value, int offset, int length) {
+        Objects.checkFromIndexSize(offset, length, value.length);
+        ensureSize(_position + length);
         _buf.limit(_base + _capacity);
         _buf.position(_base + _position);
-        _buf.put(value, 0, value.length);
-        _position += value.length;
+        _buf.put(value, offset, length);
+        _position += length;
+    }
+
+    /** Writes the exact encoded length and bytes for a protobuf string field. */
+    public int writeVarintPrefixedMs949(String text) {
+        final int start = _position;
+        final byte[] bytes;
+        final int length;
+        if (text.length() > MAX_RETAINED_STRING_CHARS) {
+            // Large, exceptional strings should not enlarge every owner's scratch buffers.
+            bytes = text.getBytes(MS949);
+            length = bytes.length;
+        } else {
+            final StringCodec codec = STRING_CODEC.get();
+            length = encodeMs949Scratch(text, codec);
+            bytes = codec.bytes;
+        }
+        ensureSize(start + size7B(length) + length);
+        writeBit(length);
+        writeBytes(bytes, 0, length);
+        return _position - start;
     }
 
     public void writeByte(byte[] text) {

@@ -1,7 +1,7 @@
 package l1j.server.server.model.world.instance.shared;
 
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.L1Object;
@@ -232,7 +232,7 @@ public class L1LiftGateInstance extends L1Object{
 
 	public void takeClose(long l){
 		down();
-		ThreadPool.getInstance().scheduleRequired(new Runnable(){
+		TaskLane.INSTANCE.scheduleRequired(new Runnable(){
 			@Override
 			public void run(){
 				up();

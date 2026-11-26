@@ -3,7 +3,10 @@ package l1j.server.server.model.character.action;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.GameServer;
@@ -26,11 +29,13 @@ import l1j.server.server.model.world.instance.raid.RaidSpace;
 import l1j.server.server.monitor.Logger.ItemActionType;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.utils.MessageUtil;
-import l1j.server.server.utils.TYUtil;
 
 public final class CGetItemAction extends CNewAction {
 
     private static final long MAX_STACKABLE = 2_000_000_000L;
+    private static final Logger LOG = Logger.getLogger(CGetItemAction.class.getName());
+    private record Announcements(String configuredIds, int[] ids) {}
+    private static volatile Announcements announcements = new Announcements("", new int[0]);
 
     private L1ItemInstance pickupItem;
     private CUserInventory pickupInven;
@@ -108,8 +113,13 @@ public final class CGetItemAction extends CNewAction {
                     final L1ItemInstance pickedItem = pickupItem;
                     final int count = (int) effectiveAmount;
                     if (!ground.RequestPickItem(owner, pickedItem, count, () -> {
-                        notifySinglePickup(owner, party, pickedItem);
-                        finalizePickup(owner, tId, count, pickedItem, false);
+                        try {
+                            notifySinglePickup(owner, party, pickedItem);
+                            finalizePickup(owner, tId, count, pickedItem, false);
+                        } catch (RuntimeException notificationFailure) {
+                            LOG.log(Level.WARNING, "Committed pickup notification failed: " + tId,
+                                    notificationFailure);
+                        }
                     })) blockedTrade = owner.GetTrade();
                     return true;
                 }
@@ -504,10 +514,12 @@ for (L1PcInstance member : party.getMembers()) {
     }
 
     private static void checkGlobalAnnouncement(L1PcInstance owner, L1ItemInstance item) {
-        final int[] itemIds =
-                TYUtil.GetIntTokenizeIntArray(Config.ItemListId);
+        final String configured = Config.ItemListId;
+        if (configured == null || configured.isBlank()) return;
+        Announcements current = announcements;
+        if (!configured.equals(current.configuredIds())) current = loadAnnouncements(configured);
 
-        for (int id : itemIds) {
+        for (int id : current.ids()) {
             if (item.getItemId() != id) {
                 continue;
             }
@@ -525,6 +537,22 @@ for (L1PcInstance member : party.getMembers()) {
             MessageUtil.greenMessageToAllPlayers(message);
             break;
         }
+    }
+
+    private static synchronized Announcements loadAnnouncements(String configured) {
+        if (configured.equals(announcements.configuredIds())) return announcements;
+        final var ids = new IntArrayList();
+        for (String value : configured.replace(" ", "").split(",")) {
+            if (value.isEmpty()) continue;
+            try {
+                ids.add(Integer.parseInt(value));
+            } catch (NumberFormatException invalid) {
+                LOG.warning("Invalid Item_Listid entry: " + value);
+            }
+        }
+        final Announcements loaded = new Announcements(configured, ids.toIntArray());
+        announcements = loaded;
+        return loaded;
     }
 
     private void clearTemp() {

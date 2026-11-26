@@ -1,7 +1,7 @@
 # Base equipment options copied from the supplied 2026-10-31 DB snapshot (UTF-8).
 # Tab-separated fields. Each row is weapon/armor, item ID, then key=value fields.
 # Numeric fields omitted within a row are zero. Omitted Magic_name is SQL NULL.
-# A row supplies the base values for that item. Unlisted IDs continue to read the database.
+# Every weapon and armor ID in the database requires a row in this file.
 # The database still provides template identity, item type, grade, restrictions and graphics.
 # Additional enchant and class effects are defined in equipment-options.txt.
 

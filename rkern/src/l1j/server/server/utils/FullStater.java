@@ -1,6 +1,6 @@
 package l1j.server.server.utils;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -23,7 +23,7 @@ public class FullStater implements Runnable{
 				SC_SystemMessage.send(pc, String.format("스텟이 충분하지 않습니다. [남은 스텟 : %d]",calcBonus(pc)));
 			}
 		}else
-			ThreadPool.getInstance().execute(stater);
+			TaskLane.SESSION.execute(stater);
 	}
 	
 	private L1PcInstance 	_pc;

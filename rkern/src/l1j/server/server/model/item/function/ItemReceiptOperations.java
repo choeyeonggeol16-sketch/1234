@@ -1,13 +1,12 @@
 package l1j.server.server.model.item.function;
 
 
-import static l1j.server.server.model.item.function.CreatureItemActions.*;
-
 import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.CUserInventory;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
@@ -28,47 +27,65 @@ public final class ItemReceiptOperations {
         ItemTransactionActions.consumeTwo(pc, first, second, afterCommitted);
     }
 
-    /** Atomic +1 enchant with its scroll debit. The target is a detached
-     * prepared image until COMMIT; the owner applies equipped AC/MR only once
-     * after receipt replay. No additional thread, queue or database connection.
-     */
     public static void UseAtomicEnchantSuccess(L1PcInstance pc, L1ItemInstance scroll,
             L1ItemInstance target, CUserSocket client, Runnable afterCommitted) {
+        UseAtomicEnchantSuccess(pc, scroll, target, client, 1, afterCommitted);
+    }
+
+    static void UseAtomicEnchantSuccess(L1PcInstance pc, L1ItemInstance scroll,
+            L1ItemInstance target, CUserSocket client, int delta, Runnable afterCommitted) {
+        submitEnchant(pc, scroll, target, client, delta, false, afterCommitted);
+    }
+
+    static void useAtomicEnchantFailure(L1PcInstance pc, L1ItemInstance scroll,
+            L1ItemInstance target, Runnable afterCommitted) {
+        submitEnchant(pc, scroll, target, null, 0, true, afterCommitted);
+    }
+
+    static void useEnchantScrollOnly(L1PcInstance pc, L1ItemInstance scroll, Runnable afterCommitted) {
+        UseDurableConsume(pc, scroll, () -> {
+            ItemActionCompletion.finishCommittedConsumable(pc, scroll);
+            if (afterCommitted != null) {
+                try { afterCommitted.run(); }
+                catch (RuntimeException failure) {
+                    ITEM_USE2_LOG.log(java.util.logging.Level.WARNING, "Committed scroll notice failed", failure);
+                }
+            }
+        });
+    }
+
+    private static void submitEnchant(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target,
+            CUserSocket client, int delta, boolean failure, Runnable afterCommitted) {
         if (!SpecialEnchantScrolls.isOwnedScrollTarget(pc, scroll, target)) return;
-        try {
-            // Flush older dirty values in FIFO order before preimage SQL checks.
-            if (scroll.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(scroll, CUserInventory.COL_SAVE_ALL);
-            if (target.getRecordingColumns() != 0)
-                pc.getInventory().saveItem(target, CUserInventory.COL_SAVE_ALL);
-        } catch (RuntimeException failure) {
-            ITEM_USE2_LOG.log(java.util.logging.Level.WARNING,
-                    "Enchant preimage save refused: " + pc.getId(), failure);
-            ItemTransactionActions.failureNotice(pc, "강화 저장 준비에 실패했습니다.");
-            return;
-        }
-        final int previousLevel = target.getEnchantLevel();
-        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
-                User.CheckAndSetPendingUseETCItem(pc,
-                        CacheD.accountOrderKey("item-use:", pc.getId()))) {
+        final int previous = target.getEnchantLevel();
+        final boolean reset = failure && EnchantmentOutcomeEffects.resetsOnFailure(target);
+        try (L1InventoryTransaction tx = beginEnchantReceipt(pc, scroll, target)) {
             if (!tx.debit(scroll, 1)) return;
-            tx.changeEnchantLevel(target, previousLevel, previousLevel + 1);
+            if (failure) tx.stageEnchantFailure(target, previous, reset);
+            else tx.changeEnchantLevel(target, previous, Math.addExact(previous, delta));
             tx.onFailure(() -> ItemTransactionActions.failureNotice(pc, "강화 결과가 저장되지 않았습니다."));
             CDB.RequestUseItem(pc, tx, () -> {
-                // The scroll is already durably consumed; record its delay
-                // before cosmetic effects, which may throw independently.
                 try {
-                    EnchantmentOutcomeEffects.SuccessEnchantCommitted(pc, target, client, 1);
+                    if (failure) EnchantmentOutcomeEffects.failureCommitted(pc, target, previous, reset);
+                    else EnchantmentOutcomeEffects.SuccessEnchantCommitted(pc, target, client, delta);
                 } finally {
                     ItemActionCompletion.finishCommittedConsumable(pc, scroll);
                 }
                 if (afterCommitted != null) afterCommitted.run();
             });
-        } catch (RuntimeException failure) {
+        } catch (RuntimeException e) {
             ITEM_USE2_LOG.log(java.util.logging.Level.WARNING,
-                    "Enchant receipt prepare failed: " + pc.getId(), failure);
+                    "Enchant receipt prepare failed: " + pc.getId(), e);
             ItemTransactionActions.failureNotice(pc, "강화를 처리하지 못했습니다.");
         }
+    }
+
+    static L1InventoryTransaction beginEnchantReceipt(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance target) {
+        // Queue older dirty fields before the receipt verifies its SQL preimages.
+        final CUserInventory inventory = pc.getInventory();
+        if (scroll.getRecordingColumns() != 0) inventory.saveItem(scroll, CUserInventory.COL_SAVE_ALL);
+        if (target.getRecordingColumns() != 0) inventory.saveItem(target, CUserInventory.COL_SAVE_ALL);
+        return User.CheckAndSetPendingUseETCItem(pc, CacheD.accountOrderKey("item-use:", pc.getId()));
     }
 
     /** Non-destructive protection scrolls: success changes the target +1 in
@@ -83,10 +100,8 @@ public final class ItemReceiptOperations {
                     announceSuccess ? () -> protectionNotice(pc,
                             "순간 강렬하게 빛을내어 인챈트에 성공 하였습니다.") : null);
         } else {
-            UseDurableConsume(pc, scroll, () -> {
-                ItemActionCompletion.finishCommittedConsumable(pc, scroll);
-                protectionNotice(pc, "한 순간 강렬하게 빛났지만 인챈트에 실패 하였습니다.");
-            });
+            useEnchantScrollOnly(pc, scroll,
+                    () -> protectionNotice(pc, "한 순간 강렬하게 빛났지만 인챈트에 실패 하였습니다."));
         }
     }
 

@@ -1,6 +1,6 @@
 package l1j.server.server.model.item.treasure;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -131,7 +131,7 @@ public class L1TreasureChest extends L1Object {
 		L1World.getInstance().removeVisibleObject(this);
 		L1World.getInstance().removeObject(this);
 		_worldPutBody = null;
-		ThreadPool.getInstance().execute(new Runnable(){
+		TaskLane.WORLD.execute(new Runnable(){
 			@Override
 			public void run() {
 				try{

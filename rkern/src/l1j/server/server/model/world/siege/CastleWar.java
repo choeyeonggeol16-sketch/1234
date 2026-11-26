@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanTable;
@@ -237,7 +237,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
         if (oldDefense != null)
             ClanTable.getInstance().updateClan(oldDefense);
 
-        ThreadPool.getInstance().execute(new Runnable() {
+        TaskLane.INSTANCE.execute(new Runnable() {
             @Override
             public void run() {
                 byte[] injury = createInjury(_defense, SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.DEFENCE);
@@ -296,7 +296,6 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
     public void ready() {
         if (!isReady()) {
             setState(CastleWarEState.READY);
-            //GeneralThreadPool.getInstance().execute(new WarReadier());
         }
     }
 
@@ -305,7 +304,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
             final CastleWarEState previous = _state;
             setState(CastleWarEState.RUN);
             try {
-                ThreadPool.getInstance().execute(new WarOpener());
+                TaskLane.INSTANCE.execute(new WarOpener());
             } catch (java.util.concurrent.RejectedExecutionException rejected) {
                 if (_state == CastleWarEState.RUN) setState(previous);
                 _log.warning("Castle war start rejected: " + _castleId + ": " + rejected);
@@ -319,7 +318,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
             final CastleWarEState previous = _state;
             setState(CastleWarEState.CLOSING);
             try {
-                ThreadPool.getInstance().execute(new WarCloser());
+                TaskLane.INSTANCE.execute(new WarCloser());
             } catch (java.util.concurrent.RejectedExecutionException rejected) {
                 if (_state == CastleWarEState.CLOSING) setState(previous);
                 _log.warning("Castle war close rejected: " + _castleId + ": " + rejected);

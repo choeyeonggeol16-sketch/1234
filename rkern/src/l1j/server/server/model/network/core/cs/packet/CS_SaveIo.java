@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.CharacterConfigTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -47,9 +47,7 @@ public final class CS_SaveIo {
         final int objectId =
                 pc.getId();
 
-        ThreadPool
-                .getInstance()
-                .execute(() -> {
+        TaskLane.PERSISTENCE.execute(() -> {
 
                     try {
                         CharacterConfigTable

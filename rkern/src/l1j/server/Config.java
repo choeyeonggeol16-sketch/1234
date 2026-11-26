@@ -1021,8 +1021,6 @@ public final class Config {
 	public static int THREAD_P_EFFECTS;
 	public static int THREAD_P_GENERAL;
 	public static int AI_MAX_THREAD;
-	public static int THREAD_P_SIZE_GENERAL;
-	public static int THREAD_P_TYPE_GENERAL;
 	public static int SELECT_THREAD_COUNT;
 
 	/** Server control */
@@ -1703,8 +1701,6 @@ public final class Config {
 					"jdbc:mysql://localhost/l1jdb?useUnicode=true&characterEncoding=euckr");
 			DB_LOGIN = serverSettings.getProperty("Login", "root");
 			DB_PASSWORD = serverSettings.getProperty("Password", "");
-			THREAD_P_TYPE_GENERAL = Integer.parseInt(serverSettings.getProperty("GeneralThreadPoolType", "0"), 10);
-			THREAD_P_SIZE_GENERAL = Integer.parseInt(serverSettings.getProperty("GeneralThreadPoolSize", "0"), 10);
 			SELECT_THREAD_COUNT = Integer.parseInt(serverSettings.getProperty("IoThreadPoolSize", "4"));
 			CLIENT_LANGUAGE = Integer.parseInt(serverSettings.getProperty("ClientLanguage", "4"));
 			TIME_ZONE = serverSettings.getProperty("TimeZone", "JST");

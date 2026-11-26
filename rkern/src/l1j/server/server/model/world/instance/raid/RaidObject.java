@@ -7,9 +7,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.TimerTask;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledFuture;
+import l1j.server.server.model.network.thread.CServerTimer;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -208,7 +208,7 @@ public abstract class RaidObject implements Runnable{
 				if((_state & RS_OPEN) > 0){
                     _state = RS_READY;
                     try {
-                        ThreadPool.getInstance().execute(this);
+                        TaskLane.INSTANCE.execute(this);
                     } catch (java.util.concurrent.RejectedExecutionException rejected) {
                         if (_state == RS_READY) _state = RS_OPEN;
                         throw rejected;
@@ -379,7 +379,7 @@ public abstract class RaidObject implements Runnable{
 			RaidMessage.RAID_CLEAR_SUCCESS_MESSAGE.sendMessage(pcs);
 			pcs.clear();
 			
-			ThreadPool.getInstance().execute(new RaidUserTimeStore(_users));
+			TaskLane.PERSISTENCE.execute(new RaidUserTimeStore(_users));
 		}
 	}
 	
@@ -477,10 +477,10 @@ public abstract class RaidObject implements Runnable{
 	/** 지정한 시간이 되면 종료를 시전할 객체 **/
 	public class CloseTask extends TimerTask{
 		private final RaidObject _obj;
-		private final ScheduledFuture<?> _future;
+		private final CServerTimer _future;
 		public CloseTask(RaidObject obj){
 			_obj = obj;
-			_future = ThreadPool.getInstance().schedule(this, obj.getRaidType().getRaidTime());
+			_future = TaskLane.INSTANCE.schedule(this, obj.getRaidType().getRaidTime());
 			if (_future == null)
 				throw new RejectedExecutionException("Raid close deadline admission failed");
 		}
@@ -488,7 +488,7 @@ public abstract class RaidObject implements Runnable{
 		@Override
 		public boolean cancel() {
 			boolean cancelled = super.cancel();
-			return _future.cancel(false) || cancelled;
+			return _future.cancel() || cancelled;
 		}
 
 		@Override

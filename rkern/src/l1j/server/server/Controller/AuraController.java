@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
@@ -63,7 +63,7 @@ public final class AuraController implements Runnable {
         final CServerTimer future = CServerTimer.fixedDelaySignal(() -> {
             if (stopped || generation != epoch || !queued.compareAndSet(false, true)) return;
             try {
-                ThreadPool.getInstance().execute(work);
+                TaskLane.WORLD.execute(work);
             } catch (RejectedExecutionException rejected) {
                 queued.set(false);
                 // Keep retrying on subsequent ticks; never run AOI on the timer.

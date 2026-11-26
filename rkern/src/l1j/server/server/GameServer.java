@@ -10,6 +10,7 @@ import l1j.server.Server;
 import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceTimeController;
 import l1j.server.server.model.world.instance.dungeon.tower.DominanceDataLoader;
 import l1j.server.server.model.world.residence.CWorldAgitTimer;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.Controller.AuraController;
 import l1j.server.server.model.npc.spawn.boss.BossController;
 import l1j.server.server.Controller.BugRaceController;
@@ -93,6 +94,7 @@ import l1j.server.server.model.item.L1TreasureBox;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.inventory.EquipmentEnchantOptions;
 import l1j.server.server.model.item.EquipmentBlessing;
+import l1j.server.server.model.item.assembly.CItemAssembler;
 import l1j.server.server.model.item.cooking.CookingRegistry;
 import l1j.server.server.model.item.doll.DollRegistry;
 import l1j.server.server.model.item.doll.DollPotentialEffects;
@@ -158,7 +160,7 @@ public class GameServer {
 		CookingRegistry.initialize();
 		DollRegistry.initialize();
 		DollPotentialEffects.initialize();
-		ThreadPool.getInstance();
+		CItemAssembler.initialize();
 		
 		CPacketFilter.getInstance().load();
 		// 나누기
@@ -198,7 +200,6 @@ public class GameServer {
 		// 정령의 돌 타임 컨트롤러
 //		if (Config.ELEMENTAL_STONE_AMOUNT > 0) {
 //			ElementalStoneGenerator elementalStoneGenerator = ElementalStoneGenerator.getInstance();
-//			GeneralThreadPool.getInstance().scheduleAtFixedRate(elementalStoneGenerator, 0, ElementalStoneGenerator.SLEEP_TIME);
 //		}
 		/** 로그파일저장 **/
 		LoggerInstance.getInstance();
@@ -206,10 +207,8 @@ public class GameServer {
 		AuctionBoardTable.getInstance();
 
 //		L1HauntedHouse hauntedHouse = L1HauntedHouse.getInstance();
-//		ThreadPool.getInstance().execute(hauntedHouse);
 //
 //		L1Racing race = L1Racing.getInstance();
-//		ThreadPool.getInstance().execute(race);
 
 		CObjectDB.LoadNPC();
 		NpcSpeedData.do_load();
@@ -475,6 +474,10 @@ public class GameServer {
     private int resourceShutdownStatus;
 
     public void shutdown() {
+        if (CIOThreadCallback.currentShardIndex() >= 0 || TaskLane.isWorkerThread()) {
+            shutdownWithCountdown(0);
+            return;
+        }
         final int status = shutdownResources();
         System.exit(status);
     }
@@ -520,6 +523,14 @@ public class GameServer {
             // can be executing on one of those owners.
             Server.stopLoginServer();
             disconnectAllCharacters();
+            L1GameTimeClock.stop();
+            RealTimeClock.stop();
+            // Let accepted off-owner work finish before removing the world, its
+            // owner threads, or the database that those callbacks may still use.
+            TaskLane.stopAll();
+            while (!TaskLane.awaitAll(30L, java.util.concurrent.TimeUnit.SECONDS)) {
+                System.err.println("[TaskLane] Waiting for accepted work to finish");
+            }
 	        RaidLoadManager.getInstance().release();
 
 	        InstanceLoadManager.getInstance().release();
@@ -561,18 +572,6 @@ public class GameServer {
                 throw new IllegalStateException("CIO game shard termination exceeded 30 seconds");
 	        TileOccupancyNpc.getInstance().destroy();
 	        TileOccupancy.getInstance().destroy();
-
-	        // Cancel clock futures before destroying the shared scheduler;
-	        // stale periodic callbacks must not retain listeners/game objects.
-	        L1GameTimeClock.stop();
-	        RealTimeClock.stop();
-            // Keep storage alive until every accepted instant job has finished.
-            ThreadPool pool = ThreadPool.getInstance();
-            while (!pool.shutdown(30L, java.util.concurrent.TimeUnit.SECONDS)) {
-                System.err.println("[ThreadPool] Waiting for accepted tasks to finish before storage shutdown");
-                if (Thread.currentThread().isInterrupted())
-                    throw new IllegalStateException("Interrupted while waiting for ThreadPool shutdown");
-            }
 
 	        CacheD cache = CacheD.getInstance();
 	        while (!cache.shutdown(30_000L)) {

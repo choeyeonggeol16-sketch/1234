@@ -53,10 +53,9 @@ public final class RetirementCheck {
         static LoginController getInstance(){return INSTANCE;}
         CUserSocket getClientByAccount(String a){return current;}
     }
-    static class ThreadPool {
-        static final ThreadPool INSTANCE=new ThreadPool();
+    static class TaskLane {
+        static final TaskLane SESSION=new TaskLane();
         final ArrayDeque<Runnable> jobs=new ArrayDeque<>();
-        static ThreadPool getInstance(){return INSTANCE;}
         void execute(Runnable r){jobs.add(r);}
     }
     static class CIOThreadCallback {
@@ -120,7 +119,7 @@ public final class RetirementCheck {
         p.socket.state=CConnectionState.IN_GAME;
     }
     static L1PcInstance shop(int id){var p=new L1PcInstance(id,"merchant");p.shop=true;return p;}
-    static void drain(){ThreadPool.INSTANCE.jobs.remove().run();CIOThreadCallback.INSTANCE.jobs.remove().run();}
+    static void drain(){TaskLane.SESSION.jobs.remove().run();CIOThreadCallback.INSTANCE.jobs.remove().run();}
     public static void main(String[] a){
         var world=L1World.world;
         var merchant=shop(100);
@@ -163,9 +162,9 @@ public final class RetirementCheck {
         check(!c.connected&&merchant.shop,"other account cannot retire shop");
 
         c=login("merchant");retirePrivateStoreForLogin("m",c,c.account,world,merchant);
-        check(c.isPrivateStoreRetirementPending()&&ThreadPool.INSTANCE.jobs.size()==1,"one retirement job");
+        check(c.isPrivateStoreRetirementPending()&&TaskLane.SESSION.jobs.size()==1,"one retirement job");
         retirePrivateStoreForLogin("m",c,c.account,world,merchant);
-        check(ThreadPool.INSTANCE.jobs.size()==1,"duplicate re-entry coalesced");
+        check(TaskLane.SESSION.jobs.size()==1,"duplicate re-entry coalesced");
         drain();
         check(merchant.logouts==1&&enters==1&&!c.isPrivateStoreRetirementPending()&&!merchant.isItemTransferBusy(),"close then logout then reload");
 
@@ -177,7 +176,7 @@ public final class RetirementCheck {
         c.connected=false;drain();
         check(merchant.shop&&merchant.logouts==0&&!c.isPrivateStoreRetirementPending(),"stale login cannot retire");
         c=login("merchant");CIOThreadCallback.INSTANCE.reject=true;
-        retirePrivateStoreForLogin("m",c,c.account,world,merchant);ThreadPool.INSTANCE.jobs.remove().run();
+        retirePrivateStoreForLogin("m",c,c.account,world,merchant);TaskLane.SESSION.jobs.remove().run();
         check(!c.connected&&!c.isPrivateStoreRetirementPending()&&merchant.done,"rejected callback clears pending");
         System.out.println("PASS private store retirement and owner gate ("+checks+" checks)");
     }

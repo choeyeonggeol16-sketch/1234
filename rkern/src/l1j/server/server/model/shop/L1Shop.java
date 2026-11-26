@@ -234,27 +234,31 @@ public class L1Shop {
 			return false;
 		}
 		
-		int aaaa = Config.마일리지값 > 0 ? price / Config.마일리지값 : 0;
-		int dd =  pc.getInventory().GetUnequippedItemAmount(40308) - price ;
-	
-		  int[] bossIds = TYUtil.GetIntTokenizeIntArray(Config.마일리지엔피씨);
-		  if (Config.마일리지지급여부){
-	        for (int i = 0; i < bossIds.length; i++) {
-	          if (getNpcId()  == bossIds[i]) {
-	        	  
-	        		if (dd >= 0 ) {
-	    				if (aaaa > 0 ) {
-	    				
-	    					shopMessage(pc, "\\fR[마일리지] 획득 : " + aaaa + "개");
-	    					grantPrepared(pc.getInventory(), 131300, aaaa );
-	          
-	        		}
-	          }
-	        }
-		  }
-		  }
+		grantPurchaseMileage(pc, price);
 		return true;
 	}
+
+    private void grantPurchaseMileage(L1PcInstance pc, int price) {
+        final String configuredNpcs = Config.마일리지엔피씨;
+        if (!Config.마일리지지급여부 || Config.마일리지값 <= 0
+                || configuredNpcs == null || configuredNpcs.isBlank()) return;
+        final int mileage = price / Config.마일리지값;
+        if (mileage == 0 || pc.getInventory().GetUnequippedItemAmount(L1ItemId.ADENA) < price) return;
+        final int[] npcIds;
+        try {
+            npcIds = TYUtil.GetIntTokenizeIntArray(configuredNpcs);
+        } catch (NumberFormatException invalid) {
+            java.util.logging.Logger.getLogger(L1Shop.class.getName())
+                    .log(java.util.logging.Level.WARNING, "Invalid mileage shop configuration", invalid);
+            return;
+        }
+        for (int npcId : npcIds) {
+            if (getNpcId() != npcId) continue;
+            shopMessage(pc, "\\fR[마일리지] 획득 : " + mileage + "개");
+            grantPrepared(pc.getInventory(), 131300, mileage);
+            return;
+        }
+    }
 
 	
 

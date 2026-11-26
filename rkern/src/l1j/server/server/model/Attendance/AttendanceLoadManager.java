@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.gametime.RealTimeClock;
@@ -209,7 +209,7 @@ public class AttendanceLoadManager implements Command{
 			case 3:{
 				args.notify("2초 후 모든 출석체크 정보가 초기화됩니다.");
 				AttendanceScheduler.getInstance().dispose();
-				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+				TaskLane.WORLD.scheduleRequired(new Runnable(){
 					@Override
 					public void run(){
 						L1World.getInstance().getAllPlayerStream()

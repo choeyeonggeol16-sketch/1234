@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.inventory.L1GroundInventory;
@@ -879,7 +879,7 @@ public class L1CompanionInstance extends L1NpcInstance{
         set_friend_ship_guage(0);
         add_friend_ship_marble(CompanionSettings.FRIEND_SHIP_TO_MARBLE);
         update_friend_ship_marble();
-        ThreadPool.getInstance().scheduleRequired(new Runnable(){
+        TaskLane.WORLD.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 if(!get_is_combo_time())
@@ -1090,7 +1090,7 @@ public class L1CompanionInstance extends L1NpcInstance{
             DeathFinished(false);
             // Keep the existing 60-second one-shot worker: removal persists
             // companion/inventory data, so it must not block the NPC owner.
-            ThreadPool.getInstance().scheduleRequired(() -> {
+            TaskLane.WORLD.scheduleRequired(() -> {
                 if (!L1World.getInstance().contains_companion(getId())
                         || !ClaimDeathRemoval(lifeEpoch, smartId)) return;
                 // Delete this exact companion, never whatever the master

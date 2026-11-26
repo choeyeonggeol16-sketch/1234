@@ -104,6 +104,17 @@ private static final int[] INS_IDS = { 900020, 900093, 900094, 900095, 900099 };
  		return 0.0;
  	}
 
+    static int tooltipPercent(L1ItemInstance item) {
+        double bonus = calcArkaDeltaIfAny(item);
+        for (int i = 0; i < INS_IDS.length; i++) {
+            if (INS_IDS[i] == item.getItemId()) {
+                bonus += INS_PER[i] * item.getEnchantLevel();
+                break;
+            }
+        }
+        return (int) Math.round(bonus * 100);
+    }
+
  	static void applyInsigniaIfMatch(ExpBonusState st, L1ItemInstance item) {
  		final int id = item.getItemId();
  		final int ench = item.getEnchantLevel();

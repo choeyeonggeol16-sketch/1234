@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.world.instance.dungeon.clandungeon.AzmodanSystem;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
@@ -66,7 +66,7 @@ public final class OneTimeController implements TimeListener {
                 || !inFlight.compareAndSet(false, true)) return;
         final int scheduledEpoch = epoch;
         try {
-            ThreadPool.getInstance().execute(() -> {
+            TaskLane.WORLD.execute(() -> {
                 try {
                     if (!started || epoch != scheduledEpoch || pendingDay != requested) return;
                     resetUnderDungeon();

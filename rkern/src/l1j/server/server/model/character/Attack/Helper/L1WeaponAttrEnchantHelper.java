@@ -11,6 +11,10 @@ public final class L1WeaponAttrEnchantHelper {
 
 	private L1WeaponAttrEnchantHelper() {}
 
+    public static int arrowElementalBonus(int arrowItemId) {
+        return arrowItemId == 3000516 ? 3 : 0;
+    }
+
 	public static double calcAttrEnchantDamage(
 			final int attrLevel,
 			final int arrowItemId,           // 없으면 0
@@ -25,10 +29,7 @@ public final class L1WeaponAttrEnchantHelper {
 
 		int dmg = 1 + (type.offsetInBand(attrLevel) << 1); // 1, 3, 5, 7, 9
 
-		// 2) 특수 화살 3000516 보너스 +3 (PC/NPC 공통)
-		if (arrowItemId == 3000516) {
-			dmg += 3;
-		}
+        dmg += arrowElementalBonus(arrowItemId);
 
 		// 3) 타겟이 PC인 경우: 해당 속성 저항 %로 감산 
 		if (targetPc != null) {

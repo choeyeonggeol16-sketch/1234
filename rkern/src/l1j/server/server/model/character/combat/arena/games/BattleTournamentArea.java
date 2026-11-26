@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
@@ -170,7 +170,7 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 		_lift.up();
 		int spawns = (L1World.getInstance().getVisiblePlayers(_map_id).size() / 2) * CombatLoadManager.COMBAT_BT_MONSTER_PACK;
 		set_death_count(new AtomicInteger(spawns));
-		ThreadPool.getInstance().execute(new Runnable(){
+		TaskLane.INSTANCE.startEvent(new Runnable(){
 			@Override
 			public void run(){
 				try{
@@ -239,7 +239,7 @@ public class BattleTournamentArea implements MonsterDeathHandler{
     }
 	
 	public void do_boss_spawn(){
-		ThreadPool.getInstance().execute(new Runnable(){
+		TaskLane.INSTANCE.startEvent(new Runnable(){
 			@Override
 			public void run(){
 				try{
@@ -261,7 +261,7 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 							if(m._destroyed)
 								return false;
 							
-							ThreadPool.getInstance().execute(new Runnable(){
+							TaskLane.INSTANCE.startEvent(new Runnable(){
 								@Override
 								public void run(){
 									try{
@@ -314,7 +314,7 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 		m.deleteMe();
 		if(_death_count.decrementAndGet() <= 0){
 			if(_drop_builders != null){
-				ThreadPool.getInstance().execute(new Runnable(){
+				TaskLane.INSTANCE.startEvent(new Runnable(){
 					@Override
 					public void run(){
 						Collections.shuffle(_drop_builders);

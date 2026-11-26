@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CParty;
@@ -80,7 +80,7 @@ public class BattleTournamentObserver extends CombatObserver{
 			long ready_seconds = _combat_info.get_ready_seconds();
 			
 			_start_sec = (System.currentTimeMillis() / 1000L) + ready_seconds;
-			ThreadPool.getInstance().scheduleRequired(this, ready_seconds * 1000L);
+			TaskLane.INSTANCE.scheduleRequired(this, ready_seconds * 1000L);
 		}
 		return this;
 	}
@@ -252,7 +252,7 @@ public class BattleTournamentObserver extends CombatObserver{
 							}else{
 								set_is_last_level(true);
 								_areas[team_id][round_id + 1].do_complete();
-								ThreadPool.getInstance().scheduleRequired(new Runnable(){
+								TaskLane.INSTANCE.scheduleRequired(new Runnable(){
 									@Override
 									public void run(){
 										_areas[team_id][round_id + 1].do_boss_spawn();										
@@ -270,7 +270,7 @@ public class BattleTournamentObserver extends CombatObserver{
 							.setMaxCount(1)
 							.setDice(-1)
 							.build(rt.x, rt.y, _copyMapId, -1);
-							ThreadPool.getInstance().scheduleRequired(new Runnable(){
+							TaskLane.INSTANCE.scheduleRequired(new Runnable(){
 								@Override
 								public void run(){
 									set_status(EStatus.DISPOSING);
@@ -281,7 +281,7 @@ public class BattleTournamentObserver extends CombatObserver{
 						}
 						_areas[team_id][round_id].do_complete();
 						_areas[team_id][round_id + 1].do_ready();
-						ThreadPool.getInstance().execute(new Runnable(){
+						TaskLane.INSTANCE.startEvent(new Runnable(){
 							@Override
 							public void run(){
 								try{
@@ -345,7 +345,7 @@ public class BattleTournamentObserver extends CombatObserver{
 		super.on_running();
 		_areas[0][0].do_ready();
 		_areas[1][0].do_ready();
-		ThreadPool.getInstance().execute(new Runnable(){
+		TaskLane.INSTANCE.startEvent(new Runnable(){
 			@Override
 			public void run(){
 				try{

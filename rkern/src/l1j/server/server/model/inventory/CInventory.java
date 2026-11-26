@@ -1134,8 +1134,7 @@ public class CInventory extends L1Object {
 	protected final L1ItemInstance findMergeItem(L1ItemInstance incoming) {
         final boolean ground = this instanceof L1GroundInventory;
         if (!ground) {
-            if (incoming.isStackable() && !CacheD.isWarehouseApplying())
-                return _items.GetMergeableStack(incoming, false);
+            if (incoming.isStackable()) return findCompatibleStack(incoming);
             return GetFirstItemByClassID(incoming.getItemId());
         }
         // Ground membership is already protected by the tile monitor in
@@ -1150,6 +1149,10 @@ public class CInventory extends L1Object {
             return candidate;
         }
         return null;
+    }
+
+    public final L1ItemInstance findCompatibleStack(L1ItemInstance incoming) {
+        return _items.GetMergeableStack(incoming, false);
     }
 
     public L1ItemInstance GetFirstItemByClassID(int id) {

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.item.collection.CollectionCharInfo;
 import l1j.server.server.model.item.collection.CollectionItem;
 import l1j.server.server.model.item.collection.CollectionObject;
@@ -365,7 +365,7 @@ public class CollectionSystemLoader {
     private void requestPreview(CollectionObject obj) {
         if (!isCurrent(obj) || !obj.tryQueuePreview()) return;
         try {
-            ThreadPool.getInstance().execute(new PckCreator(obj));
+            TaskLane.PERSISTENCE.execute(new PckCreator(obj));
         } catch (RuntimeException failure) {
             obj.finishPreview();
             java.util.logging.Logger.getLogger(CollectionSystemLoader.class.getName())

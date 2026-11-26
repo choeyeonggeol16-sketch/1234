@@ -8,7 +8,7 @@ import l1j.server.server.model.character.combat.arena.dogfight.game.trigger.DogF
 import l1j.server.server.model.character.combat.arena.dogfight.game.trigger.DogFightTriggerInfo;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -327,7 +327,7 @@ public class DogFightInstance extends L1NpcInstance{
 		
 		if(trigger.get_is_move_ended_send()){
 			if(sleeps > 0){
-				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+				TaskLane.INSTANCE.scheduleRequired(new Runnable(){
 					@Override
 					public void run(){
 						on_trigger_sended(trigger);

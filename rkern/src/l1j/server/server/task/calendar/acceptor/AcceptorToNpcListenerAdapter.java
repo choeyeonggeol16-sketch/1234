@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.Calendar;
 
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -155,7 +155,7 @@ public class AcceptorToNpcListenerAdapter extends AbstractDateAcceptor implement
 			if(_listener.get_npc_id() == 7320190){Config.용계오픈 = 0;}
 			if(_listener.get_npc_id() == 50000020){Config.테베오픈 = 0;}
 			
-			ThreadPool.getInstance().execute(new Runnable(){
+			TaskLane.WORLD.execute(new Runnable(){
 				@Override
 				public void run(){
 					try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(

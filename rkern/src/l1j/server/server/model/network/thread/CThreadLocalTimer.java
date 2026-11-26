@@ -63,7 +63,7 @@ public final class CThreadLocalTimer {
 
     /** Must be called with wheel monitor held after full node initialization. */
     private void publish(Node node) {
-        if (closed || !owner.running || (node.handle != null && node.handle.isCancelled())
+        if (closed || (node.handle != null && node.handle.isCancelled())
                 || (node.payload instanceof CServerTimer timer && timer.isCancelled())) {
             if (node.handle != null) node.handle.cancel();
             recycleNode(node);
@@ -97,11 +97,18 @@ public final class CThreadLocalTimer {
         }
         distantSize = i + 1;
         siftDistantUp(i, node);
+        // Cancellation may have run just before this node published its wheel.
+        final TaskHandle handle = node.handle;
+        if (handle != null) {
+            handle.distantWheel = this;
+            if (handle.isCancelled()) recycleNode(removeDistant(handle.distantIndex));
+        }
     }
 
     private void setDistant(int index, Node node) {
         distant[index] = node;
         if (node.payload instanceof CServerTimer timer) timer.distantIndex = index;
+        if (node.handle != null) node.handle.distantIndex = index;
     }
 
     private void siftDistantUp(int i, Node node) {
@@ -118,6 +125,10 @@ public final class CThreadLocalTimer {
     private Node removeDistant(int index) {
         final Node removed = distant[index];
         if (removed.payload instanceof CServerTimer timer) timer.distantIndex = -1;
+        if (removed.handle != null) {
+            removed.handle.distantIndex = -1;
+            removed.handle.distantWheel = null;
+        }
         final Node last = distant[--distantSize];
         distant[distantSize] = null;
         if (index == distantSize) return removed;
@@ -143,6 +154,10 @@ public final class CThreadLocalTimer {
     synchronized void cancelDistant(CServerTimer timer) {
         final int index = timer.distantIndex;
         if (index >= 0) recycleNode(removeDistant(index));
+    }
+
+    synchronized void cancelDistant(TaskHandle handle) {
+        if (handle.distantWheel == this) recycleNode(removeDistant(handle.distantIndex));
     }
 
     /** Long-timer -> near wheel promotion during this shard's tick. */
@@ -515,13 +530,15 @@ public final class CThreadLocalTimer {
 
     // On stop, a scheduled callback must not retain PCs/NPCs/Spawn and
     // active timer handles. Reuse the same pooled nodes, no new executor.
-    synchronized void discardOnShutdown() {
-        // Set first: all subsequent schedules are discarded even if an
-        // external thread races the shutdown drain or arrives afterwards.
-        closed = true;
-        for (int i = 0; i < buckets.length; i++) {
-            CSlot slot = buckets[i];
-            buckets[i] = null;
+    void discardOnShutdown() {
+        final CSlot[] pending;
+        synchronized (this) {
+            closed = true;
+            pending = buckets.clone();
+            java.util.Arrays.fill(buckets, null);
+        }
+        for (CSlot bucket : pending) {
+            CSlot slot = bucket;
             while (slot != null) {
                 final CSlot next = slot.next;
                 for (int j = 0; j < slot.count; j++) {
@@ -536,8 +553,12 @@ public final class CThreadLocalTimer {
                 slot = next;
             }
         }
-        while (distantSize != 0) {
-            Node node = removeDistant(0);
+        for (;;) {
+            final Node node;
+            synchronized (this) {
+                if (distantSize == 0) break;
+                node = removeDistant(0);
+            }
             if (node.handle != null) node.handle.cancel();
             if (node.payload instanceof CServerTimer timer) timer.discard();
             recycleNode(node);

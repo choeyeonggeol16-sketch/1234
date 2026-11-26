@@ -1,7 +1,7 @@
 package l1j.server.server.model.world.instance.dungeon.training;
 
 import java.util.TimerTask;
-import java.util.concurrent.ScheduledFuture;
+import l1j.server.server.model.network.thread.CServerTimer;
 
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -12,7 +12,7 @@ public class BossTraining extends TimerTask {
 	final int mapId;
 	volatile boolean cancelled;
 	L1NpcInstance keeper;
-	ScheduledFuture<?> expiry;
+	CServerTimer expiry;
 	private volatile int[] activeKeys;
 
 	public BossTraining(int mapId) {

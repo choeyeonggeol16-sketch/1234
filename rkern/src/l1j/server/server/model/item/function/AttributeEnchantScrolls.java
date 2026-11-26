@@ -1,6 +1,5 @@
 package l1j.server.server.model.item.function;
 import l1j.server.server.model.network.core.cs.packet.CDB;
-import l1j.server.server.model.network.core.cs.packet.User;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,8 +9,6 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.storage.CacheD;
 
 /** Attribute conversion and guaranteed-grade scrolls: source debit + target update share one receipt. */
 public final class AttributeEnchantScrolls {
@@ -81,17 +78,18 @@ public final class AttributeEnchantScrolls {
             return;
         }
         final String weaponName = weapon.getLogName();
-        try (L1InventoryTransaction tx = User.CheckAndSetPendingUseETCItem(pc,
-                CacheD.accountOrderKey("item-use:", pc.getId()))) {
+        try (L1InventoryTransaction tx = ItemReceiptOperations.beginEnchantReceipt(pc, scroll, weapon)) {
             if (!tx.debit(scroll, 1)) return;
             tx.change(weapon, image -> image.setAttrEnchantLevel(result));
             tx.onFailure(() -> SC_SystemMessage.send(pc, "속성 주문서 저장에 실패했습니다."));
             CDB.RequestUseItem(pc, tx, () -> {
-                // The original inventory update also sent the enchant-update packet.
-                // Receipt replay emits status/name/color, but not this packet.
-                SC_PacketBox.send(pc, SC_PacketBox.ITEM_ENCHANT_UPDATE, weapon);
-                if (message != 0) SC_ServerMessage.send(pc, message, weaponName);
-                else SC_SystemMessage.send(pc, notification);
+                ItemActionCompletion.finishCommittedConsumable(pc, scroll);
+                try {
+                    if (message != 0) SC_ServerMessage.send(pc, message, weaponName);
+                    else SC_SystemMessage.send(pc, notification);
+                } catch (RuntimeException failure) {
+                    LOG.log(Level.WARNING, "Committed attribute scroll notice failed", failure);
+                }
             });
         } catch (RuntimeException failure) {
             LOG.log(Level.WARNING, "Attribute scroll failed: " + pc.getId() + " / " + scrollId,

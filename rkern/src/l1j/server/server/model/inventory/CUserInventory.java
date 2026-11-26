@@ -120,6 +120,7 @@ public class CUserInventory extends CInventory {
             if (GetByServerID(original.getId()) != original)
                 throw new IllegalStateException("Economy source object changed");
             if (image == null) {
+                retireCommittedEquipment(original);
                 original.stopEquipmentTimer();
                 removeItemCountCache(original.getItemId(), original.getCount());
                 _items.Pop(original);
@@ -146,13 +147,14 @@ public class CUserInventory extends CInventory {
                 return;
             }
             // Preserve an existing object's identity for timers/equipment refs.
+            if (!image.isEquipped()) retireCommittedEquipment(original);
             final int oldTemplate = original.getItemId();
             final int oldEnchant = original.getEnchantLevel();
             final int oldAttrEnchant = original.getAttrEnchantLevel();
             final int oldDurability = original.get_durability();
             final boolean newTemplate = oldTemplate != image.getItemId();
             final boolean recalcEquipped = newTemplate && original.isEquipped();
-            final L1EquipmentSlot equipment = _owner.getEquipSlot();
+            final CUserEquipment equipment = _owner.getEquipment();
             final boolean restorePrimary = recalcEquipped && equipment.getSecondWeapon() != null
                     && equipment.getWeapon() == original;
             if (recalcEquipped) equipment.unequipItem(original);
@@ -245,6 +247,10 @@ public class CUserInventory extends CInventory {
         catch (RuntimeException failure) { receiptNoticeFailed("weight", failure); }
     }
 
+    private void retireCommittedEquipment(L1ItemInstance item) {
+        if (item.isEquipped()) _owner.UnequipItem(item);
+    }
+
     private void notifyEconomyBookmark(L1ItemInstance image) {
         final var session = _owner.getNetConnection();
         final int stamp = _owner.getSessionStamp(), objectId = image.getId(), templateId = image.getItemId();
@@ -290,7 +296,7 @@ public class CUserInventory extends CInventory {
 	}
 
     public void sendEquipmentWindow() {
-        _owner.getEquipSlot().sendEquipmentWindow(this);
+        _owner.getEquipment().sendEquipmentWindow(this);
     }
 
 	public int getWeight100() {
@@ -324,9 +330,8 @@ public class CUserInventory extends CInventory {
         return CheckAddable(item, count, message, false);
     }
 
-    /** Ordinary transfer uses the exact compatible stack, not a template-only row.
-     * The existing warehouse prepare/replay admission policy is unchanged. */
-    int CheckAddableTransfer(L1ItemInstance item, int count) {
+    /** Transfer admission uses the same compatible stack as the committed replay. */
+    public int CheckAddableTransfer(L1ItemInstance item, int count) {
         return CheckAddable(item, count, true, true);
     }
 
@@ -443,7 +448,7 @@ public class CUserInventory extends CInventory {
         super.clearItems();
         _itemCountMap.clear();
         _equippedCountMap.clear();
-        _owner.getEquipSlot().clearEquipmentWindow();
+        _owner.getEquipment().clearEquipmentWindow();
     }
 
 	@Override
@@ -573,10 +578,10 @@ public class CUserInventory extends CInventory {
         }
     }
 
-	private static final int MASK_STATUS  = COL_BLESS_LEVEL | COL_BLESS_LEVEL2 | COL_DURABILITY 
+	private static final int MASK_STATUS  = COL_EQUIPPED | COL_BLESS_LEVEL | COL_BLESS_LEVEL2 | COL_DURABILITY
 			| COL_ENCHANTLVL | COL_ATTRENCHANTLVL | COL_IS_ID | COL_ITEMID;
 
-	private static final int MASK_NAME    = COL_EQUIPPED | COL_SPECIAL_ENCHANT 
+	private static final int MASK_NAME    = COL_SPECIAL_ENCHANT
 			| COL_REMAINING_TIME | COL_CHARGE_COUNT;
 
 	private static final int MASK_COLOR   = COL_BLESS | COL_BLESS2 | COL_IS_ID | COL_ITEMID;
@@ -585,7 +590,7 @@ public class CUserInventory extends CInventory {
 
 	@Override
 	public void updateDurability(L1ItemInstance item, int previousDurability) {
-		final boolean defenseChanged = _owner.getEquipSlot().applyArmorDurabilityChange(item, previousDurability);
+		final boolean defenseChanged = _owner.getEquipment().applyArmorDurabilityChange(item, previousDurability);
 		super.updateDurability(item, previousDurability);
 		if (defenseChanged) SC_OwnCharAttrDef.send(_owner);
 	}

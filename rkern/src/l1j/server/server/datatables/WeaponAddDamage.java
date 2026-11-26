@@ -9,9 +9,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
+import l1j.server.server.templates.L1Item;
 
 /**
- * Weapon-specific hit/damage bonuses from the dedicated weapon_damage table.
+ * Weapon-specific hit/damage bonuses from the installed weapon bonus schema.
  * JDBC runs only at startup/reload. Each attack performs one allocation-free
  * lookup on the published immutable, primitive-only hash table.
  */
@@ -19,7 +20,10 @@ public final class WeaponAddDamage {
     private static final Logger LOG = Logger.getLogger(WeaponAddDamage.class.getName());
     private static volatile WeaponAddDamage instance;
     private static final String QUERY =
-            "SELECT item_id, addHit, addDamage FROM weapon_damage";
+            "SELECT item_id, addHit, addDamage, 1 AS damage_variants FROM weapon_damage";
+    private static final String LEGACY_QUERY =
+            "SELECT item_id, 0 AS addHit, COALESCE(MAX(NULLIF(addDamege, 0)), 0) AS addDamage, "
+            + "COUNT(DISTINCT NULLIF(addDamege, 0)) AS damage_variants FROM weapon_damege GROUP BY item_id";
 
     private final int[] itemIds;
     private final long[] packedBonuses;
@@ -45,13 +49,15 @@ public final class WeaponAddDamage {
         int hits = 0;
         int damages = 0;
         try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement stmt = con.prepareStatement(QUERY);
+             PreparedStatement stmt = con.prepareStatement(queryForSchema(con));
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 final int id = rs.getInt("item_id");
                 if (id <= 0) {
-                    throw new SQLException("Invalid weapon_damage.item_id=" + id);
+                    throw new SQLException("Invalid weapon bonus item_id=" + id);
                 }
+                if (rs.getInt("damage_variants") > 1)
+                    throw new SQLException("Conflicting legacy weapon damage bonuses for item " + id);
                 final int hit = rs.getInt("addHit");
                 final int damage = rs.getInt("addDamage");
                 if (count == loadedIds.length) {
@@ -91,8 +97,19 @@ public final class WeaponAddDamage {
         entryCount = count;
         hitCount = hits;
         damageCount = damages;
-        LOG.info("weapon_damage loaded: " + count + " weapons, hit bonuses="
+        LOG.info("Weapon bonuses loaded: " + count + " weapons, hit bonuses="
                 + hits + ", damage bonuses=" + damages);
+    }
+
+    private static String queryForSchema(Connection con) throws SQLException {
+        final String sql = "SELECT 1 FROM information_schema.TABLES "
+                + "WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='weapon_damage'";
+        try (PreparedStatement stmt = con.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            // The legacy key includes the name, so an item may have both a zero
+            // placeholder and a configured bonus. Coalesce those by item ID.
+            return rs.next() ? QUERY : LEGACY_QUERY;
+        }
     }
 
     public static WeaponAddDamage getInstance() {
@@ -104,8 +121,7 @@ public final class WeaponAddDamage {
                     try {
                         current = new WeaponAddDamage();
                     } catch (SQLException e) {
-                        throw new IllegalStateException(
-                                "Cannot load weapon_damage; run sql/weapon_damage.sql on the game DB", e);
+                        throw new IllegalStateException("Cannot load weapon bonus table", e);
                     }
                     instance = current;
                 }
@@ -124,6 +140,13 @@ public final class WeaponAddDamage {
             LOG.log(Level.SEVERE, "weapon_damage reload failed; previous snapshot retained", e);
             return false;
         }
+    }
+
+    /** Total hit and flat damage before per-instance blessing and enchant. */
+    public long getTemplateStatsPacked(L1Item template) {
+        final long extra = getBonusPacked(template.getItemId());
+        return pack(template.getHitModifier() + (int) (extra >> 32),
+                template.getDmgModifier() + (int) extra);
     }
 
     /** High 32 bits = signed hit bonus, low 32 bits = signed damage bonus. */

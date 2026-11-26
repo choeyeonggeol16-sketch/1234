@@ -1,11 +1,11 @@
 package l1j.server.server.model.world.instance.inn;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
+import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -34,7 +34,7 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
             }
             synchronized (room) {
                 room.registered = true;
-                room._future = ThreadPool.getInstance().scheduleRequired(room, InnHelper.RENTAL_MINUTE * 60L * 1000L);
+                room._future = TaskLane.INSTANCE.scheduleRequired(room, InnHelper.RENTAL_MINUTE * 60L * 1000L);
             }
             return room;
         } catch (RuntimeException e) {
@@ -116,7 +116,7 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
     private InnMapInfo _mapInfo;
     private int _usageCount;
     private int[] _keyIds;
-    private ScheduledFuture<?> _future;
+    private CServerTimer _future;
     private boolean registered;
     private boolean closed;
 
@@ -128,7 +128,7 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
         if (closed) return;
         closed = true;
         if (_future != null) {
-            _future.cancel(false);
+            _future.cancel();
             _future = null;
         }
         if (_keyIds != null) {

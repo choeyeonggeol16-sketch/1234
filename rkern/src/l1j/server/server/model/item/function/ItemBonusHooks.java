@@ -12,5 +12,8 @@ public final class ItemBonusHooks {
     public static void onDollSpawned(L1PcInstance pc, L1DollInstance doll) { DollExperienceBonuses.onDollSpawned(pc, doll); }
     public static void onDollRemoved(L1PcInstance pc, L1DollInstance doll) { DollExperienceBonuses.onDollRemoved(pc, doll); }
     public static void onEquipChanged(L1PcInstance pc, L1ItemInstance item, boolean equipped) { EquipmentExperienceBonuses.onEquipChanged(pc, item, equipped); }
+    public static int equipmentExperiencePercent(L1ItemInstance item) {
+        return EquipmentExperienceBonuses.tooltipPercent(item);
+    }
     public static void onEnchantChanged(L1PcInstance pc, L1ItemInstance item) { EquipmentExperienceBonuses.onEnchantChanged(pc, item); }
 }

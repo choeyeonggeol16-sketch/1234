@@ -9,7 +9,7 @@ import java.util.Random;
 import l1j.server.server.model.world.instance.dungeon.ice.demon.Demon;
 import l1j.server.server.model.world.instance.dungeon.ice.demon.DemonSystem;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
@@ -100,7 +100,7 @@ public class Queen implements Runnable {
 		if (cal.get(Calendar.AM_PM) == 0) {
 			오전오후 = "오전";
 		}
-		ThreadPool.getInstance().scheduleRequired(this, 2000);
+		TaskLane.INSTANCE.scheduleRequired(this, 2000);
 		// System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) +
 		// "분" + " ■■■■■■ 얼음의여왕 시작 " + _map+" ■■■■■■");
 		System.out.println("" + 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■얼음의여왕 시작■맵:" + _map + "■");

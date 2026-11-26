@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
@@ -87,7 +87,7 @@ public class Hadin implements Runnable {
 		BossRoomDoor = HadinSpawn.getInstance().fillSpawnTable2(_map, 22);
 		list2 = getParty().getList();
 		int firtCkCount = 0;
-		while(Running){
+		while(Running && !Thread.currentThread().isInterrupted()){
 			try {
 				if(UserCountCK){
 					int i = 0;
@@ -107,9 +107,7 @@ public class Hadin implements Runnable {
 							RETURN_TEL();
 							UserCountCK = false;
 						} else {
-							try{
-								Thread.sleep(1500);
-							} catch(Exception e){}
+							Thread.sleep(1500);
 							continue;
 						}
 					}
@@ -633,13 +631,15 @@ public class Hadin implements Runnable {
 				default:
 					break;
 				}
+			}catch(InterruptedException interrupted){
+				Thread.currentThread().interrupt();
+				break;
 			}catch(Exception e){
 				//System.out.println("Hadin Event Thread Error instanceID : "+_map +" -> "+e);
 			}finally{
-				try{
-					Thread.sleep(1500);
-				} catch (Exception e) {
-					e.printStackTrace();
+				if (!Thread.currentThread().isInterrupted()) {
+					try { Thread.sleep(1500); }
+					catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
 				}
 			}
 		}
@@ -648,13 +648,11 @@ public class Hadin implements Runnable {
 	}
 
 	public void Start(){
-		ThreadPool.getInstance().execute(this);
+		TaskLane.INSTANCE.startEvent(this);
 	}
 
-	private void Sleep(int time){
-		try{
-			Thread.sleep(time);
-		}catch(Exception e){}
+	private void Sleep(int time) throws InterruptedException {
+		Thread.sleep(time);
 	}
 
 	private void Hadin_Setting(){

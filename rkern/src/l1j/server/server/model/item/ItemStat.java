@@ -33,7 +33,7 @@ public enum ItemStat {
 	PVP_DMG_RED    (60, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.AddPvpDamageReduction(v); } },
 	
 	
-	PVP_MAGIC_DMG_RED   (135, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.AddPvpDamageReduction(v); } },
+	PVP_MAGIC_DMG_RED   (135, WType.B)      { @Override public void apply(L1PcInstance p, int v) { p.addPVPMagicDamageReduction(v); } },
 
 	BLESS_CONSUMO(116, WType.H)     { @Override public void apply(L1PcInstance p, int v) { p.addEinhasadBlessper(v); } },	
 	

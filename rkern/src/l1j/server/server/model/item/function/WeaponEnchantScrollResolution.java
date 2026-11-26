@@ -10,8 +10,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.CommonUtil;
 import static l1j.server.server.model.item.function.CreatureItemActions._random;
 import static l1j.server.server.model.item.function.EnchantmentItems.AttrEnchant;
-import static l1j.server.server.model.item.function.EnchantmentItems.FailureEnchant;
-import static l1j.server.server.model.item.function.EnchantmentItems.SuccessEnchant;
 import static l1j.server.server.model.item.function.TransformationItems.RandomELevel;
 
 /** Weapon enchant pipeline: original Phase 10 branch, with unchanged decision order. */
@@ -46,27 +44,19 @@ final class WeaponEnchantScrollResolution {
         int enchant_level = targetItem.getEnchantLevel();
         // BEGIN_ORIGINAL_WEAPONENCHANTSCROLLRESOLUTION
                             if (itemId == L1ItemId.C_SCROLL_OF_ENCHANT_WEAPON || itemId == L1ItemId.ENCHANT_WEAPONA) {
-                                pc.getInventory().DeleteItemAmount(item, 1);
-                                int rnd = _random.nextInt(100) + 1;
-                                if (safe_enchant == 0 && rnd <= 30) {
-                                    FailureEnchant(pc, targetItem, client);
-                                    return ItemActionResult.STOP;
-                                }
-                                if (enchant_level < -6) {
-                                    FailureEnchant(pc, targetItem, client);
+                                final int roll = _random.nextInt(100) + 1;
+                                if ((safe_enchant == 0 && roll <= 30) || enchant_level < -6) {
+                                    ItemReceiptOperations.useAtomicEnchantFailure(pc, item, targetItem, null);
                                 } else {
-                                    SuccessEnchant(pc, targetItem, client, -1);
+                                    ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client, -1, null);
                                 }
-
+                                return ItemActionResult.STOP;
                             } else if (itemId >= 210064 && itemId <= 210067) {
                                 AttrEnchant(pc, item, targetItem);
-
-                            } else if (itemId >= 310064 && itemId <= 310068) {
+                                return ItemActionResult.STOP;
+                            } else if ((itemId >= 310064 && itemId <= 310068) || (itemId >= 560030 && itemId <= 560033)) {
                                 AttributeEnchantScrolls.apply(pc, item, targetItem);
-
-                            } else if (itemId >= 560030 && itemId <= 560033) {
-                                AttributeEnchantScrolls.apply(pc, item, targetItem);
-
+                                return ItemActionResult.STOP;
                             } else if (itemId == 68076) {
                                 if (targetItem != null && targetItem.getItem().getType2() == 1) {
                                     int max_enchantLevel = targetItem.getItem().get_safeenchant() == 0
@@ -127,20 +117,13 @@ final class WeaponEnchantScrollResolution {
                                     int k3 = CommonUtil.random(100);
 
                                     if (k3 >= 0 && k3 <= Config.Hero_weapon) {
-
-                                        if (Config.ENCHANT_MAX_FAIL && enchant_level >= 11) {
-                                            pc.getInventory().DeleteItemAmount(item, 1);
-                                            resultNotice(pc, "강렬하게 빛났지만 인챈트에 실패 하였습니다.");
-                                        } else {
-                                            pc.getInventory().DeleteItemAmount(item, 1);
-                                            SuccessEnchant(pc, targetItem, client, +1);
-                                            resultNotice(pc, "강렬하게 빛을 내어 인챈트 성공 하였습니다.");
-                                        }
+                                        ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
+                                                () -> resultNotice(pc, "강렬하게 빛을 내어 인챈트 성공 하였습니다."));
                                     } else {
-                                        pc.getInventory().DeleteItemAmount(item, 1);
-                                        FailureEnchant(pc, targetItem, client);
-                                        resultNotice(pc, "강렬하게 빛났지만 인챈트에 실패 하였습니다.");
+                                        ItemReceiptOperations.useAtomicEnchantFailure(pc, item, targetItem,
+                                                () -> resultNotice(pc, "강렬하게 빛났지만 인챈트에 실패 하였습니다."));
                                     }
+                                    return ItemActionResult.STOP;
                                 }
 
                             } else if (itemId == 810003) {
@@ -186,30 +169,24 @@ final class WeaponEnchantScrollResolution {
                                     SC_ServerMessage.send(pc, 1294);
 
                                 }
-                            } else if (enchant_level < safe_enchant) {
-                                pc.getInventory().DeleteItemAmount(item, 1);
-                                SuccessEnchant(pc, targetItem, client, RandomELevel(targetItem, itemId));
                             } else {
-                                pc.getInventory().DeleteItemAmount(item, 1);
-                                int rnd = _random.nextInt(100) + 1;
-                                int enchant_chance_wepon = WeaponEnchantChanceCalculation.calculate(
-                                        pc, targetItem, weaponId, enchant_level, rnd);
-                                if (pc._EnchantWeaponSuccess == true) {
-                                    int randomEnchantLevel = 0;
-
-                                        randomEnchantLevel = RandomELevel(targetItem, itemId);
-
-                                    SuccessEnchant(pc, targetItem, client, randomEnchantLevel);
-                                    pc._EnchantWeaponSuccess = false;
-                                } else if (rnd < enchant_chance_wepon) {
-                                    int randomEnchantLevel = 0;
-
-                                        randomEnchantLevel = RandomELevel(targetItem, itemId);
-
-                                    SuccessEnchant(pc, targetItem, client, randomEnchantLevel);
+                                if (enchant_level < safe_enchant) {
+                                    ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
+                                            RandomELevel(targetItem, itemId), null);
                                 } else {
-                                    FailureEnchant(pc, targetItem, client);
+                                    final int roll = _random.nextInt(100) + 1;
+                                    final int chance = WeaponEnchantChanceCalculation.calculate(
+                                            pc, targetItem, weaponId, enchant_level, roll);
+                                    final boolean forced = pc._EnchantWeaponSuccess;
+                                    if (forced || roll < chance) {
+                                        ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
+                                                RandomELevel(targetItem, itemId),
+                                                forced ? () -> pc._EnchantWeaponSuccess = false : null);
+                                    } else {
+                                        ItemReceiptOperations.useAtomicEnchantFailure(pc, item, targetItem, null);
+                                    }
                                 }
+                                return ItemActionResult.STOP;
                             }
         // END_ORIGINAL_WEAPONENCHANTSCROLLRESOLUTION
         return ItemActionResult.COMPLETE;

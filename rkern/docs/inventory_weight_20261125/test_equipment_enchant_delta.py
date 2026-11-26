@@ -71,12 +71,12 @@ public final class EnchantAudit {
 
         final var regularBelt = new L1Item(42, 2, 10, 1, 1);
         final var exceptionalBelt = new L1Item(900007, 2, 10, 1, 1);
-        final int[] normal = EquipmentEnchantOptions.accessoryBonusSnapshot(regularBelt, 5);
-        final int[] special = EquipmentEnchantOptions.accessoryBonusSnapshot(exceptionalBelt, 5);
-        check(normal != special && normal[ItemStat.MAX_MP.ordinal()] == 40);
+        final int[] normal = new int[ItemStat.values().length];
+        final int[] special = new int[ItemStat.values().length];
+        EquipmentOptionTable.ACCESSORY.applyAccessory(null, regularBelt, 5, 1, normal);
+        EquipmentOptionTable.ACCESSORY.applyAccessory(null, exceptionalBelt, 5, 1, special);
+        check(normal[ItemStat.MAX_MP.ordinal()] == 40);
         check(special[ItemStat.PVP_DMG_RED.ordinal()] == normal[ItemStat.PVP_DMG_RED.ordinal()] + 2);
-        EquipmentEnchantOptions.releaseAccessoryBonusSnapshot(special);
-        EquipmentEnchantOptions.releaseAccessoryBonusSnapshot(normal);
 
         final var dodgeArmor = new L1Item(22228, 2, 2, 0, 1);
         final int[] dodge = EquipmentEnchantOptions.enchantDelta(pc, dodgeArmor, 7, 99);
@@ -87,6 +87,19 @@ public final class EnchantAudit {
 '''
 
 stubs = {
+    "l1j.server.server.model.Instance.L1ItemInstance": '''
+package l1j.server.server.model.Instance;
+import l1j.server.server.templates.L1Item;
+public record L1ItemInstance(L1Item getItem, int getEnchantLevel) {}
+''',
+    "l1j.server.server.model.inventory.CUserEquipment": '''
+package l1j.server.server.model.inventory;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+public final class CUserEquipment {
+    static void collectArmorTooltipModifiers(L1ItemInstance item, L1PcInstance pc, int[] totals) {}
+}
+''',
     "l1j.server.server.model.inventory.CUserInventory": '''
 package l1j.server.server.model.inventory;
 public final class CUserInventory {

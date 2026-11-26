@@ -6,14 +6,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ScheduledFuture;
+import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -61,7 +61,7 @@ public final class GludioInstanceDungeon {
         public L1NpcInstance crystal, boss, exitCircle;
         public final L1NpcInstance[] guards = new L1NpcInstance[27];
         public final L1NpcInstance[] family = new L1NpcInstance[4];
-        public ScheduledFuture<?> idle;
+        public CServerTimer idle;
         Room(int id, int kind, L1PcInstance owner, int minLevel, boolean boost,
              boolean closed, String title, String password, int maximum, int fee, int distribution) {
             this.id=id;this.kind=kind;this.ownerId=owner.getId();this.minLevel=minLevel;
@@ -152,7 +152,7 @@ public final class GludioInstanceDungeon {
                 || (closed && (password==null || password.length()!=4))) return null;
         Room r=new Room(roomSequence++,kind,owner,minLevel,boost,closed,title,
                 password==null?"":password,max,fee,distribution);
-        r.idle=ThreadPool.getInstance().schedule(()->expire(r),600_000L);
+        r.idle=TaskLane.INSTANCE.schedule(()->expire(r),600_000L);
         if(r.idle==null) return null;
         rooms.put(r.id,r);memberRooms.put(owner.getId(),r);
         return r;
@@ -246,7 +246,7 @@ public final class GludioInstanceDungeon {
     private void dissolve(Room r) {
         r.ended=true;rooms.remove(r.id);
         pendingInvites.entrySet().removeIf(e->e.getValue().room==r);
-        if(r.idle!=null) r.idle.cancel(false);
+        if(r.idle!=null) r.idle.cancel();
         for(Member m:r.members) memberRooms.remove(m.charId);
     }
 
@@ -346,7 +346,7 @@ public final class GludioInstanceDungeon {
         r.enteredAt=System.nanoTime();r.battleAt=0;
         r.nextEventAt=r.enteredAt+7*SECOND;
         r.phase=0;r.wave=0;r.introStep=0;
-        if(r.idle!=null) r.idle.cancel(false);
+        if(r.idle!=null) r.idle.cancel();
         // Source44: SC_ARENACO_BYPASS_INDUN_GAME_START_ACK (0x08b2)
         // precedes the dungeon transfer. This is a normal in-session
         // SC_Teleport, not the separate HIBREED reconnect (0x0071).
@@ -418,7 +418,7 @@ public final class GludioInstanceDungeon {
 
     private void schedule(Room r) {
         if(r.ended) return;
-        if(ThreadPool.getInstance().schedule(r,1000L)==null) finish(r,"던전 스케줄 등록 실패로 종료되었습니다.");
+        if(TaskLane.INSTANCE.schedule(r,1000L)==null) finish(r,"던전 스케줄 등록 실패로 종료되었습니다.");
     }
     private void spawnWalls(Room r) {
         for(int i=0;i<6;i++) r.guards[i]=spawn(r,50000221,32797+i,32851,0,null,null);
@@ -655,7 +655,7 @@ public final class GludioInstanceDungeon {
         }
     }
     private void scheduleCleanup(Room r,long delay) {
-        if(ThreadPool.getInstance().schedule(()->cleanup(r),delay)==null)
+        if(TaskLane.INSTANCE.schedule(()->cleanup(r),delay)==null)
             LOG.warning("[Gludio-Indun] Cleanup admission refused; retain map="+r.mapId);
     }
     private void cleanup(Room r) {

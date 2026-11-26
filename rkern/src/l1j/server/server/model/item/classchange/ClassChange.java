@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.classinfo.EClassesType;
@@ -132,7 +132,7 @@ public class ClassChange {
     }
 
     private static void handleRestart(final L1PcInstance pc) {
-        ThreadPool.getInstance().scheduleRequired(new Runnable() {
+        TaskLane.SESSION.scheduleRequired(new Runnable() {
             @Override
             public void run() {
                 CUserSocket clnt = pc.getNetConnection();

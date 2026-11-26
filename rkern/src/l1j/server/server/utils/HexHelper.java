@@ -45,7 +45,12 @@ public class HexHelper {
 	}
 	
 	public static boolean compareArrays(int[] buff1, byte[] buff2, int len){
-		return compareArrays(buff1, parseInt32Array(buff2, buff2.length), len);
+		if (buff1 == null || buff2 == null || len < 0 || len > buff1.length
+				|| len > (buff2.length + 3L) / Integer.BYTES) return false;
+		for (int i = len - 1; i >= 0; --i) {
+			if (buff1[i] != parseInt32(buff2, i * Integer.BYTES)) return false;
+		}
+		return true;
 	}
 	
 	public static boolean compareArrays(byte[] buff1, byte[] buff2, int len){

@@ -10,7 +10,7 @@ import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.Account;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.ExpTable;
@@ -215,7 +215,7 @@ public final class CS_Attr {
 						pc.sendShape(pc.getClassId());
 						pc.getInventory().DeleteItemAmount(item, 1);
 					}
-					ThreadPool.getInstance().scheduleRequired(new Runnable(){
+					TaskLane.SESSION.scheduleRequired(new Runnable(){
 						@Override
 						public void run(){
 							CUserSocket clnt = pc.getNetConnection();

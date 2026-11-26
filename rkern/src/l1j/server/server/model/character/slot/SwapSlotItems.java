@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.RandomAccess;
 import l1j.server.server.model.inventory.CUserInventory;
-import l1j.server.server.model.inventory.L1EquipmentSlot;
+import l1j.server.server.model.inventory.CUserEquipment;
 import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -179,7 +179,7 @@ public final class SwapSlotItems {
     /** Read only currently applied weapon and armor references. A disagreement
      * with the equipped index rejects the request before any mutation. */
     private int collectEquipped(CUserInventory inventory) {
-        final L1EquipmentSlot slots = owner.getEquipSlot();
+        final CUserEquipment slots = owner.getEquipment();
         final List<L1ItemInstance> armors = slots.getArmors();
         int count = 0;
         for (int i = -2, n = armors.size(); i < n; i++) {

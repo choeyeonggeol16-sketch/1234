@@ -27,7 +27,7 @@ public final class MerchantLimitCheck {
     record L1Shop(List<L1ShopItem> getSellingItems) { int getNpcId() { return 1; } }
     static final class L1TaxCalculator {
         L1TaxCalculator(int npc) {}
-        int layTax(int price) { return price; }
+        long layTaxLong(int price) { return price; }
     }
 ''' + "\n".join(classes) + r'''
     public static void main(String[] args) {

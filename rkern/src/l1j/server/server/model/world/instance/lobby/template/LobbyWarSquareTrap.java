@@ -4,7 +4,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
@@ -62,7 +62,7 @@ public class LobbyWarSquareTrap extends LobbyObject{
 		if(_curPhase >= MAX_PHASE)
 			return;
 		
-		ThreadPool.getInstance().execute(new TrapSpwanThread());
+		TaskLane.INSTANCE.execute(new TrapSpwanThread());
 	}
 	
 	public class TrapSpwanThread implements Runnable{

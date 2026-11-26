@@ -2,7 +2,7 @@ package l1j.server.server.model.world.instance.dungeon.valakasroom;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1WorldMap;
 
@@ -45,7 +45,7 @@ public class ValakasReadyStart {
     }
 
     public void cancel(ValakasReady room) {
-        if (ThreadPool.getInstance().schedule(() -> discard(room), 1L) == null)
+        if (TaskLane.INSTANCE.schedule(() -> discard(room), 1L) == null)
             discard(room);
     }
 

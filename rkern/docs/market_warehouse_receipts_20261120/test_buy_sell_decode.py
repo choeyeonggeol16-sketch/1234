@@ -4,8 +4,9 @@ import subprocess
 import tempfile
 
 source = (Path(__file__).resolve().parents[2] /
-          "src/l1j/server/server/model/network/packet/CPacketHandler.java").read_text(encoding="utf-8")
+          "src/l1j/server/server/model/network/packet/UserPacketCallbackMap.java").read_text(encoding="utf-8")
 decoder = source.split("    static boolean decodeBuySell(", 1)[1].split("    static boolean decodeNpcItemControl(", 1)[0]
+decoder = decoder.replace("Disassemble buffer", "ReadBuffer buffer").replace("CUserSocket client", "CIOClient client")
 program = r'''
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

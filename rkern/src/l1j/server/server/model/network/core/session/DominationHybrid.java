@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.auth.login.LoginController;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.listener.ActionListenerLoader;
@@ -309,7 +309,7 @@ public final class DominationHybrid {
         p.finishing = true;
         // Persistence barriers must not run on CIO completion workers or CacheD workers.
         try {
-            ThreadPool.getInstance().execute(() -> {
+            TaskLane.SESSION.execute(() -> {
                 try {
                     if (isExpired(p) || !p.newClient.isConnected()) { fail(p); return; }
                     final CacheD cache = CacheD.getInstance();

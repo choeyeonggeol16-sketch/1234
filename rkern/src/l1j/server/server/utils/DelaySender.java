@@ -1,6 +1,6 @@
 package l1j.server.server.utils;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 
@@ -13,7 +13,7 @@ public final class DelaySender implements Runnable {
         if (delay <= 0L) {
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, message);
         } else {
-            ThreadPool.getInstance().scheduleRequired(new DelaySender(pc, message), delay);
+            TaskLane.SESSION.scheduleRequired(new DelaySender(pc, message), delay);
         }
     }
 

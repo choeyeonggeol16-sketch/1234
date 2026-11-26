@@ -2,7 +2,6 @@ package l1j.server.server.model.Instance;
 
 import java.util.Random;
 
-import l1j.server.server.ThreadPool;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
@@ -71,7 +70,6 @@ public class L1SupportInstance extends L1NpcInstance {
 //		_supportMaster = master;
 //		setSupportType(supportType);
 //		setItemObjId(itemObjId);
-//		GeneralThreadPool.getInstance().schedule(new SupportTimer(), SUPPORT_TIME);
 //		setMaster(master);
 //		setCurrentHp(template.get_hp());
 //		setCurrentMp(template.get_mp());

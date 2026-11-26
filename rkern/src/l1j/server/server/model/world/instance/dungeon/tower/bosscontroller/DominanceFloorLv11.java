@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
@@ -164,7 +164,7 @@ public class DominanceFloorLv11 implements Runnable {
         reset();
         Running = true;
         final long generation = ++eventGeneration;
-        try { eventTask = ThreadPool.getInstance().scheduleBlocking(() -> runEvent(generation), 5000); }
+        try { eventTask = TaskLane.INSTANCE.scheduleBlocking(() -> runEvent(generation), 5000); }
         catch (RuntimeException failure) { Running = false; throw failure; }
 		if (!Config.STANDBY_SERVER) {
 			if (_isment) {

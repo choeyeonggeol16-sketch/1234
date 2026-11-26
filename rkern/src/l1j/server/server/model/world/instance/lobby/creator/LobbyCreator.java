@@ -3,7 +3,7 @@ package l1j.server.server.model.world.instance.lobby.creator;
 import java.util.ArrayList;
 import java.util.Random;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.world.instance.InstanceEnums.InstStatus;
@@ -193,7 +193,7 @@ public class LobbyCreator implements Runnable{
 				for(L1PcInstance pc : blue)
 					pc.setInstStatus(InstStatus.INST_USERSTATUS_LFCREADY);
 			}
-			ThreadPool.getInstance().execute(new LobbyCreator(red, blue, type));
+			TaskLane.INSTANCE.startEvent(new LobbyCreator(red, blue, type));
 		}
 		
 		public static void create(L1PcInstance partUser, L1PcInstance ownerUser, int type_id){

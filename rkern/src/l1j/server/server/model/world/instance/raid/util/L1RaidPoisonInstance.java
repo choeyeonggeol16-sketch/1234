@@ -2,7 +2,7 @@ package l1j.server.server.model.world.instance.raid.util;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -69,7 +69,7 @@ public class L1RaidPoisonInstance extends L1NpcInstance{
 					int dmg = ThreadLocalRandom.current().nextInt(150) + 50;
 					DamagePoison.doInfection(getOwner() == null ? _poison : getOwner(), pc, 3000, dmg, false,30000);
 				}
-				ThreadPool.getInstance().scheduleRequired(this, INTERVAL);
+				TaskLane.INSTANCE.scheduleRequired(this, INTERVAL);
 			}catch(Exception e){
 				e.printStackTrace();
 			}

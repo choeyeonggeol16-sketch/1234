@@ -7,7 +7,7 @@ import java.util.Random;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.TimeMapController;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.DoorSpawnTable;
@@ -1013,7 +1013,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         // scheduler. Never block the world serializer or spin on a full tile.
         final long delayMs = Math.min(30_000L, 250L << Math.min(7, attempt - 1));
         try {
-            ThreadPool.getInstance().scheduleRequired(() -> RetryPartyDrop(job, attempt), delayMs);
+            TaskLane.WORLD.scheduleRequired(() -> RetryPartyDrop(job, attempt), delayMs);
         } catch (java.util.concurrent.RejectedExecutionException rejected) {
             // Typically shutdown: do not release the source merely because the
             // retry was rejected. No durable crash guarantee is implied.
@@ -1054,7 +1054,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         job.afterPickup = true;
         // Keep scripts and death completion out of the normal CWorld drain.
         try {
-            ThreadPool.getInstance().execute(job);
+            TaskLane.WORLD.execute(job);
         } catch (java.util.concurrent.RejectedExecutionException rejected) {
             job.run();
         }
@@ -1346,7 +1346,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 		}
 
 		public void begin() {
-			ThreadPool.getInstance().scheduleRequired(this, 3000);
+			TaskLane.WORLD.scheduleRequired(this, 3000);
 		}
 
 		@Override

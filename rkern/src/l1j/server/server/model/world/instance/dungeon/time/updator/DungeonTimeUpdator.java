@@ -6,7 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.gametime.BaseTime;
@@ -96,7 +96,7 @@ public class DungeonTimeUpdator implements TimeListener{
 	private boolean do_initialize(Calendar cal, boolean scheduled) {
 		dispose();
 		try {
-		ThreadPool.getInstance().execute(new Runnable(){
+		TaskLane.INSTANCE.execute(new Runnable(){
 			@Override
 			public void run(){
 				String message = "전체 던전 시간이 초기화되었습니다.";
@@ -200,7 +200,7 @@ public class DungeonTimeUpdator implements TimeListener{
 
 	private void submitTick(DungeonTimeConsumer consumer) {
 		try {
-			ThreadPool.getInstance().execute(consumer);
+			TaskLane.INSTANCE.execute(consumer);
 		} catch (RejectedExecutionException refused) {
 			synchronized (this) { consumer.queued = false; }
 			// Preserve the pending ticks. The next clock event retries admission.

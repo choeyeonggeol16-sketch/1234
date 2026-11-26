@@ -9,8 +9,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.HashMap;
-import java.util.concurrent.ScheduledFuture;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.task.TaskLane;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -125,7 +125,7 @@ public class L1WorldTraps {
 		synchronized (this) {
 			_stopped = true;
 			for (TrapSpawnTimer task : _pendingRespawns.values()) {
-				if (task.future != null) task.future.cancel(false);
+				if (task.future != null) task.future.cancel();
 			}
 			_pendingRespawns.clear();
 		}
@@ -135,14 +135,14 @@ public class L1WorldTraps {
 		synchronized (this) {
 			if (_stopped) return;
 			final TrapSpawnTimer task = new TrapSpawnTimer(trap);
-			final ScheduledFuture<?> future = ThreadPool.getInstance().schedule(task, trap.getSpan());
+			final CServerTimer future = TaskLane.WORLD.schedule(task, trap.getSpan());
 			if (future == null) {
 				_log.warning("Trap respawn schedule rejected; leaving trap enabled: " + trap.getId());
 				return;
 			}
 			task.future = future;
 			TrapSpawnTimer previous = _pendingRespawns.put(trap, task);
-			if (previous != null && previous.future != null) previous.future.cancel(false);
+			if (previous != null && previous.future != null) previous.future.cancel();
 			trap.disableTrap();
 		}
 	}
@@ -150,7 +150,7 @@ public class L1WorldTraps {
 	public synchronized void resetAllTraps() {
 		if (_stopped) return;
 		for (TrapSpawnTimer task : _pendingRespawns.values()) {
-			if (task.future != null) task.future.cancel(false);
+			if (task.future != null) task.future.cancel();
 		}
 		_pendingRespawns.clear();
 		for (L1TrapInstance trap : _allTraps) {
@@ -224,7 +224,7 @@ public class L1WorldTraps {
 	
 	private class TrapSpawnTimer implements Runnable {
 		private final L1TrapInstance _targetTrap;
-		private ScheduledFuture<?> future;
+		private CServerTimer future;
 
 		public TrapSpawnTimer(L1TrapInstance trap) {
 			_targetTrap = trap;
