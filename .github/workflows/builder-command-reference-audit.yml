@@ -16,6 +16,9 @@ jobs:
           sparse-checkout: |
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
+      - name: Inventory trade call-site inventory
+        run: |
+          git grep -n -E 'L1Trade|[gs]etTradeID\(|[gs]etTradeOk\(|getTradeWindowInventory\(|tryBeginTradeResolution\(|endTradeResolution\(|isTradeResolving\(' -- rkern/src || true
       - name: Assert obsolete command classes and references removed
         run: |
           git grep -n 'BuilderCmd2Handler(' -- rkern/src
