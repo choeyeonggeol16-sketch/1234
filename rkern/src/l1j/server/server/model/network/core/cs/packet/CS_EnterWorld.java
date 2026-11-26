@@ -13,6 +13,7 @@ import javax.swing.SwingUtilities;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Account;
+import l1j.server.server.ThreadPool;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.BossController;
 import l1j.server.server.Controller.LoginController;
@@ -198,9 +199,14 @@ public final class CS_EnterWorld {
     public static void doEnterWorld(String charName, CUserSocket client) {
         if (client == null || charName == null || charName.isEmpty()
                 || !client.isConnected() || client.getAccount() == null
-                || client == null) return;
+                || client.isPrivateStoreRetirementPending()) return;
         final Account sessionAccount = client.getAccount();
         final L1World expectedWorld = L1World.getInstance();
+        final L1PcInstance previousShop = expectedWorld.getPlayer(charName);
+        if (previousShop != null && previousShop.isPrivateShop()) {
+            retirePrivateStoreForLogin(charName, client, sessionAccount, expectedWorld, previousShop);
+            return;
+        }
         final l1j.server.server.templates.L1CharName known = CharacterTable.getInstance().getCharName(charName);
         final int charId = known == null ? 0 : known.getId();
         final int accountKey = CacheD.accountOrderKey(sessionAccount.getName());
@@ -239,6 +245,72 @@ public final class CS_EnterWorld {
         } catch (RuntimeException e) {
             _log.log(Level.SEVERE, "Enter DB request rejected: " + charName, e);
             client.kick();
+        }
+    }
+
+    private static boolean currentPrivateStoreLogin(CUserSocket client, Account account) {
+        return client.isConnected() && client.getAccount() == account && client.getActiveChar() == null
+                && client.getConnectionState() == CConnectionState.AUTHENTICATED
+                && LoginController.getInstance().getClientByAccount(account.getName()) == client;
+    }
+
+    private static boolean canRetirePrivateStore(L1World world, L1PcInstance shop, Account account) {
+        if (world != L1World.getInstance() || world.findObject(shop.getId()) != shop
+                || !shop.isPrivateShop() || shop.isLogoutStarted()
+                || !account.getName().equals(shop.getAccountName())
+                || CacheD.getInstance().hasPendingOwnerApply(shop.getId())) return false;
+        final CUserSocket old = shop.getNetConnection();
+        return old == null || (!old.isConnected() && old.isLogoutComplete());
+    }
+
+    /** Retire the old owner before loading the detached login snapshot.
+     * Existing instant worker runs logout; the CIO does not wait for JDBC.
+     */
+    private static void retirePrivateStoreForLogin(String charName, CUserSocket client, Account account,
+            L1World world, L1PcInstance shop) {
+        if (!currentPrivateStoreLogin(client, account)) return;
+        if (!canRetirePrivateStore(world, shop, account) || shop.isItemTransferBusy()) {
+            client.close();
+            return;
+        }
+        if (!client.tryBeginPrivateStoreRetirement()) return;
+        try {
+            ThreadPool.getInstance().execute(() -> {
+                boolean retired = false;
+                try {
+                    if (currentPrivateStoreLogin(client, account)
+                            && canRetirePrivateStore(world, shop, account)
+                            && shop.getInventory().tryBeginEquipmentChange()) {
+                        try {
+                            if (currentPrivateStoreLogin(client, account)
+                                    && canRetirePrivateStore(world, shop, account)
+                                    && User.RemovePrivateStoreList(shop)) {
+                                shop.logout();
+                                retired = shop.isLogoutComplete() && world.findObject(shop.getId()) == null;
+                            }
+                        } finally {
+                            shop.getInventory().endEquipmentChange();
+                        }
+                    }
+                } catch (RuntimeException failure) {
+                    _log.log(Level.WARNING, "Private store retirement failed: " + charName, failure);
+                }
+                final boolean ready = retired;
+                CIOThreadCallback.getInstance().completeSession(client, () -> {
+                    client.endPrivateStoreRetirement();
+                    if (!currentPrivateStoreLogin(client, account)) return;
+                    if (ready && world == L1World.getInstance()) doEnterWorld(charName, client);
+                    else client.close();
+                }, failure -> {
+                    if (failure != null) {
+                        client.endPrivateStoreRetirement();
+                        if (currentPrivateStoreLogin(client, account)) client.close();
+                    }
+                });
+            });
+        } catch (RuntimeException rejected) {
+            client.endPrivateStoreRetirement();
+            if (currentPrivateStoreLogin(client, account)) client.close();
         }
     }
 
@@ -378,7 +450,7 @@ public final class CS_EnterWorld {
         // 월드 내 중복 캐릭 
         L1PcInstance other = L1World.getInstance().getPlayer(charName);
         if (other != null) {
-            boolean exceptionCase = other.isPrivateShop() || other.isAutoClanjoin();
+            boolean exceptionCase = !other.isPrivateShop() && other.isAutoClanjoin();
             if (!exceptionCase) {
                 client.close();
                 return null;

@@ -2675,7 +2675,12 @@ public final class CUserSocket extends CSocket {
 
 		try {
 			if (_activeChar == pc) {
-				setActiveChar(null);
+                try {
+                    if (pc != null && pc.isPrivateShop() && pc.getNetConnection() == this)
+                        pc.setNetConnection(null);
+                } finally {
+                    setActiveChar(null);
+                }
 			}
 		} catch (Throwable ignored) {
 		}
@@ -2697,6 +2702,21 @@ public final class CUserSocket extends CSocket {
             finally { onClientCleanupComplete(); }
 		}
 	}
+
+    // Coalesce re-entry requests while the detached merchant is being retired.
+    private volatile boolean privateStoreRetirementPending;
+
+    public boolean isPrivateStoreRetirementPending() { return privateStoreRetirementPending; }
+
+    public synchronized boolean tryBeginPrivateStoreRetirement() {
+        if (privateStoreRetirementPending) return false;
+        privateStoreRetirementPending = true;
+        return true;
+    }
+
+    public synchronized void endPrivateStoreRetirement() {
+        privateStoreRetirementPending = false;
+    }
 
     private volatile PlayerShopView playerShopView;
 

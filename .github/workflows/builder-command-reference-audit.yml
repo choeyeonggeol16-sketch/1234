@@ -143,3 +143,4 @@ jobs:
           python3 rkern/tests/trade_lifecycle/test_trade_lifecycle.py
           python3 rkern/tests/trade_lifecycle/test_destroy_request.py
           python3 rkern/tests/trade_lifecycle/test_private_store.py
+          python3 rkern/tests/trade_lifecycle/test_private_store_retirement.py

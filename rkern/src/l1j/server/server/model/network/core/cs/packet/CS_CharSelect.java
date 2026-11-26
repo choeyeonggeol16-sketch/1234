@@ -79,28 +79,28 @@ public final class CS_CharSelect {
             return;
         }
 
-        final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
-
-        if (clan != null) {
-            pc.setOnlineStatus(0);
-            clan.updateClanMemberOnline(pc);
-        }
-
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Disconnect from: " + pc.getName());
-        }
-
         final CUserSocket client = pc.getNetConnection();
+        if (client == null) return;
 
-        if (client == null) {
+        final boolean privateStore = pc.isPrivateShop();
+        if (privateStore && !pc.getInventory().tryBeginEquipmentChange()) {
+            pc.sendPackets("상점 거래 처리 중입니다. 잠시 후 다시 시도해 주세요.");
             return;
         }
-
         try {
-            if (pc.isPrivateShop() && pc.isPrivateReady()) {
+            if (privateStore && !pc.isItemTransferSession(client, pc.getSessionStamp())) return;
+            if (privateStore && pc.isPrivateReady()) {
                 detachPrivateShop(pc, client);
                 return;
             }
+            if (privateStore && !User.RemovePrivateStoreList(pc)) return;
+
+            final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+            if (clan != null) {
+                pc.setOnlineStatus(0);
+                clan.updateClanMemberOnline(pc);
+            }
+            if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Disconnect from: " + pc.getName());
 
             client.clearGameSessionReady();
             pc.logout();
@@ -115,6 +115,8 @@ public final class CS_CharSelect {
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "restartProcess 처리 중 예외 발생: " + pc.getName(), e);
+        } finally {
+            if (privateStore) pc.getInventory().endEquipmentChange();
         }
 
     }
@@ -129,6 +131,12 @@ public final class CS_CharSelect {
                 return;
             }
         }
+        final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+        if (clan != null) {
+            pc.setOnlineStatus(0);
+            clan.updateClanMemberOnline(pc);
+        }
+        client.clearGameSessionReady();
         pc.setNetConnection(null);
         client.setConnectionState(CConnectionState.OUT_GAME);
         pc.set무인상점(true);

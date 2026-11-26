@@ -595,7 +595,7 @@ public final class User {
         }
     }
 
-    private static boolean RemovePrivateStoreList(L1PcInstance pc) {
+    static boolean RemovePrivateStoreList(L1PcInstance pc) {
         try {
             DynamicShopStorage.deleteProcess(pc);
             pc.setPrivateShop(false);

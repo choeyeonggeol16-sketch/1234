@@ -175,10 +175,15 @@ final class InventoryTransactionOwners {
 
     private boolean current(L1PcInstance pc, CUserSocket session, int stamp) {
         if (pc.isLogoutStarted() || pc.getSessionStamp() != stamp) return false;
-        if (session == null) return pc != primary && pc.isPrivateShop()
+        if (session != null && pc.isItemTransferSession(session, stamp)) return true;
+        // A disconnected merchant still owns the reserved world inventory.
+        // The customer remains bound to its original online session.
+        final CUserSocket current = pc.getNetConnection();
+        return pc != primary && pc.isPrivateShop()
+                && (session == null || !session.isConnected())
+                && (session == null || current == null || current == session)
                 && captureSession(pc) == null
                 && L1World.getInstance().findObject(pc.getId()) == pc;
-        return pc.isItemTransferSession(session, stamp);
     }
 
     void release() {
