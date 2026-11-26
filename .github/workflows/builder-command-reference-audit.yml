@@ -17,6 +17,9 @@ jobs:
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
             rkern/tests/trade_lifecycle
+      - name: Audit legacy pet instance references
+        run: |
+          git grep -n -w L1PetInstance -- rkern/src || true
       - name: Assert obsolete command classes and references removed
         run: |
           git grep -n 'BuilderCmd2Handler(' -- rkern/src
