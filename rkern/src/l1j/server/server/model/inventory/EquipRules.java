@@ -32,7 +32,7 @@ public final class EquipRules {
     public static EquipResult canEquipArmor(L1PcInstance pc, CUserInventory inv, L1ItemInstance armor) {
         if (pc == null || inv == null || armor == null || armor.getItem() == null)
             return EquipResult.fail(null);
-        final L1EquipmentSlot slot = pc.getEquipSlot();
+        final CUserEquipment slot = pc.getEquipment();
         return checkArmor(pc, inv, armor, slot.getArmors(), null, 0,
                 slot.getWeaponCount(), slot.getWeapon());
     }
@@ -72,7 +72,7 @@ public final class EquipRules {
             }
         }
         if (weapons == 2 && (shield || guarder
-                || !pc.getEquipSlot().canUseSecondWeaponBySlayer(primary, secondary)))
+                || !pc.getEquipment().canUseSecondWeaponBySlayer(primary, secondary)))
             return false;
         if (primary != null && primary.getItem().isTwohandedWeapon() && shield)
             return false;
@@ -168,7 +168,7 @@ public final class EquipRules {
         }
 
         // 양손 + 방패 장착중 불가
-        if (weapon.getItem().isTwohandedWeapon() && pc.getEquipSlot().hasAppliedArmor(7)) {
+        if (weapon.getItem().isTwohandedWeapon() && pc.getEquipment().hasAppliedArmor(7)) {
             return EquipResult.fail(EquipFail.MSG_SHIELD_BLOCK_128);
         }
 
@@ -179,7 +179,7 @@ public final class EquipRules {
     public static EquipResult canEquipAsSecondWeaponSlayer(L1PcInstance pc, CUserInventory inv, L1ItemInstance current, L1ItemInstance next) {
         if (pc == null || inv == null || current == null || next == null) return EquipResult.fail(null);
 
-        final L1EquipmentSlot slot = pc.getEquipSlot();
+        final CUserEquipment slot = pc.getEquipment();
         if (!slot.canUseSecondWeaponBySlayer(current, next)) return EquipResult.fail(null);
         if (slot.hasAppliedArmor(7) || slot.hasAppliedArmor(13)) return EquipResult.fail(EquipFail.MSG_SHIELD_BLOCK_128);
         if (slot.getWeaponCount() >= 2) return EquipResult.fail(EquipFail.MSG_ALREADY_EQUIPPED_124);

@@ -109,6 +109,14 @@ public final class ItemEffectRegistry {
          * classType이 0~7 범위 밖(-1 등, 소유자 불명)이면 전 직업 공통 보너스만 적용.
          */
         public void apply(L1PcInstance pc, int classType, int enchantLevel, int sign) {
+            applyOrCollect(pc, classType, enchantLevel, sign, null);
+        }
+
+        public void collectModifiers(int classType, int enchantLevel, int[] totals) {
+            applyOrCollect(null, classType, enchantLevel, 1, totals);
+        }
+
+        private void applyOrCollect(L1PcInstance pc, int classType, int enchantLevel, int sign, int[] totals) {
             ensureIndex();
             final List<Bonus> source = (classType >= 0 && classType < byClass.length)
                     ? byClass[classType] : bonuses;
@@ -116,8 +124,10 @@ public final class ItemEffectRegistry {
                 final Bonus b = source.get(i);
                 if (b.classType != -1 && b.classType != classType) continue;   // 폴백 경로용 재필터
                 if (b.enchantLevel != -1 && b.enchantLevel != enchantLevel) continue;
-                final int v = b.value * sign;
-                if (b.stat != null) b.stat.apply(pc, v);
+                if (b.stat == null) continue;
+                final int value = b.value * sign;
+                if (totals == null) b.stat.apply(pc, value);
+                else totals[b.stat.ordinal()] += value;
             }
         }
 

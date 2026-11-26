@@ -20,7 +20,6 @@ import static l1j.server.server.model.item.function.WandInspectionItems.useField
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.inventory.CUserEquipment;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.classchange.ClassChange;
 import l1j.server.server.model.item.collection.CollectionHandler;
@@ -34,7 +33,7 @@ final class ItemActionDispatcher {
 
     /** Shared equipment path for the context-free service fast path. */
     static void useEquipment(L1PcInstance pc, L1ItemInstance item, int type2) {
-        if (type2 == 1 || type2 == 2) CUserEquipment.UseItem(pc, item);
+        if (pc != null && (type2 == 1 || type2 == 2)) pc.getEquipment().useItem(item);
     }
 
     static ItemActionResult use(ItemActionContext use) {

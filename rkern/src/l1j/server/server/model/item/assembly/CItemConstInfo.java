@@ -30,19 +30,6 @@ public final class CItemConstInfo {
 				os.writeD(item.getWeight());
     }
 
-    static int GetRuneAc(L1ItemInstance item) {
-		int ac = item.getItem().get_ac();
-
-		if ((item.getItemId() >= 900135 && item.getItemId() <= 900149) || (item.getItemId() >= 222295 && item.getItemId() <= 222316)) {
-			if (item._cha != null && item._cha.getType() == 4) {
-				ac += 3;
-			}
-		}
-
-		return ac;
-	
-    }
-
     /** Non-equipment item definitions and custom ETC display entries. */
     static void AssembleEtcItem(L1ItemInstance item, ItemPresentOutStream os,
                                 int itemType2, int itemId, int itemgrade) throws Exception { // etcitem
@@ -491,7 +478,7 @@ public final class CItemConstInfo {
 				}
 
 				// TODO 마법인형 리스트
-				CItemEnchantOption.AssembleDollOption(os, itemId);
+				DollOptionPresentation.write(os, itemId);
 
 				switch (item.getItem().getItemId()) {
 				case 300001:
@@ -1412,7 +1399,7 @@ public final class CItemConstInfo {
 					break;
 				}
 				/** 특수 마법인형 인챈트 시스템 **/
-				CItemEnchantOption.AssemblePotentialOption(item, os);
+				DollOptionPresentation.writePotential(item, os);
 				
 				switch (item.getItem().getItemId()) {
 				case 410063:

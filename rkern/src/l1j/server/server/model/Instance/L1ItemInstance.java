@@ -16,7 +16,7 @@ import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.assembly.CItemAssembler;
-import l1j.server.server.model.item.assembly.CItemEnchantOption;
+import l1j.server.server.model.item.doll.DollPotentialEffects;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Item;
@@ -971,7 +971,7 @@ public class L1ItemInstance extends L1Object {
 		return false;
 	}
 	public void 잠재력(ItemPresentOutStream 템) {
-		CItemEnchantOption.AssemblePotentialOption(this, 템);
+		if (Config.잠재력활성화) DollPotentialEffects.writeTooltip(템, get_item_level());
 	}
 	
 	private volatile CEquipmentTimer _equipmentTimer;

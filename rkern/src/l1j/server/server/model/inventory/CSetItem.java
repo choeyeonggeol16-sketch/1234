@@ -1,17 +1,18 @@
 package l1j.server.server.model.inventory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.ItemStat;
 import l1j.server.server.templates.L1ArmorSets;
+import l1j.server.server.utils.ItemPresentOutStream;
 
-/** Shared set definition. A player's active sets are owned by L1EquipmentSlot. */
+/** Shared set definition. A player's active sets are owned by CUserEquipment. */
 public final class CSetItem {
     private static final Definitions DEFINITIONS = loadSets();
 
@@ -55,30 +56,61 @@ public final class CSetItem {
         return polymorph ? DEFINITIONS.polymorph() : DEFINITIONS.regular();
     }
 
-    static boolean isMainItem(int itemId) {
-        return Arrays.binarySearch(DEFINITIONS.mainItemIds(), itemId) >= 0;
+    public static void writeTooltip(L1ItemInstance item, ItemPresentOutStream out) {
+        final List<CSetItem> sets = DEFINITIONS.byMainItem().get(item.getItemId());
+        if (sets == null) return;
+        out.writeSetItem();
+        out.writeC(item.get_main_set_armor() ? 1 : 2);
+        for (int i = 0; i < sets.size(); i++) {
+            sets.get(i).writeEffects(out);
+        }
+        out.writeSetItem();
+        out.writeC(0);
     }
 
-    private record Definitions(List<CSetItem> regular, List<CSetItem> polymorph, int[] mainItemIds) {}
+    private void writeEffects(ItemPresentOutStream out) {
+        out.writeAddAc(-ac);
+        out.writeAddMaxHP(hp);
+        out.writeMaxMP(mp);
+        out.writeAddHPPrecovery(hpr);
+        out.writeAddMPPrecovery(mpr);
+        out.writeAddMR(mr);
+        out.writeaSTR_Bu(str);
+        out.writeaDEX_Bu(dex);
+        out.writeaCON_Bu(con);
+        out.writeaWIS_Bu(wis);
+        out.writeaCHA_Bu(cha);
+        out.writeaINT_Bu(intelligence);
+        out.writeRegistWater(water);
+        out.writeRegistEarth(earth);
+        out.writeRegistWind(wind);
+        out.writeRegistFire(fire);
+    }
+
+    private record Definitions(List<CSetItem> regular, List<CSetItem> polymorph,
+                               TIntObjectHashMap<List<CSetItem>> byMainItem) {}
 
     private static Definitions loadSets() {
         final List<CSetItem> regular = new ArrayList<>();
         final List<CSetItem> polymorph = new ArrayList<>();
-        final L1ArmorSets[] rows = CObjectDB.LoadSetItem().getAllList();
-        final int[] mainItemIds = new int[rows.length];
-        int mainItemCount = 0;
-        for (L1ArmorSets row : rows) {
+        final var byMainItem = new TIntObjectHashMap<List<CSetItem>>();
+        for (L1ArmorSets row : CObjectDB.LoadSetItem().getAllList()) {
             try {
                 final CSetItem set = new CSetItem(row);
                 (set.polyId == -1 ? regular : polymorph).add(set);
-                if (set.mainItemId > 0) mainItemIds[mainItemCount++] = set.mainItemId;
+                if (set.mainItemId > 0) {
+                    List<CSetItem> group = byMainItem.get(set.mainItemId);
+                    if (group == null) {
+                        group = new ArrayList<>(1);
+                        byMainItem.put(set.mainItemId, group);
+                    }
+                    group.add(set);
+                }
             } catch (Exception failure) {
                 failure.printStackTrace();
             }
         }
-        final int[] registeredMainItems = Arrays.copyOf(mainItemIds, mainItemCount);
-        Arrays.sort(registeredMainItems);
-        return new Definitions(List.copyOf(regular), List.copyOf(polymorph), registeredMainItems);
+        return new Definitions(List.copyOf(regular), List.copyOf(polymorph), byMainItem);
     }
 
     private static int[] parseItemIds(String items) {
@@ -113,7 +145,7 @@ public final class CSetItem {
         resistance.AddFireResist(sign * fire);
     }
 
-    boolean isValid(L1EquipmentSlot slot) {
+    boolean isValid(CUserEquipment slot) {
         for (int itemId : itemIds) {
             if (!slot.hasAppliedItem(itemId)) return false;
         }
@@ -127,7 +159,7 @@ public final class CSetItem {
         return false;
     }
 
-    boolean hasDuplicateEquippedRing(L1EquipmentSlot slot) {
+    boolean hasDuplicateEquippedRing(CUserEquipment slot) {
         for (int id : itemIds) {
             final int copies = slot.equippedSetRingCopies(id);
             if (copies >= 2) return true;

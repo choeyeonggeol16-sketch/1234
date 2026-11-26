@@ -103,18 +103,6 @@ final class EquipmentOptionTable {
         return specific != null ? specific : defaults[variant];
     }
 
-    int value(int itemId, int enchant, ItemStat stat) {
-        final Profile profile = findProfile(itemId, 0);
-        if (profile == null) return 0;
-        final int[] ops = profile.forEnchant(enchant);
-        if (ops == null) return 0;
-        int total = 0;
-        for (int i = 0; i < ops.length; i += OP_WIDTH) {
-            if (ops[i] == stat.ordinal()) total += ops[i + 1] + enchant * ops[i + 2];
-        }
-        return total;
-    }
-
     static void initialize() {
         // The class initializer compiles all option sections before the server starts.
     }

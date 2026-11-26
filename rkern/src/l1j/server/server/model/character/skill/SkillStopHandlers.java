@@ -1340,7 +1340,7 @@ public final class SkillStopHandlers {
 
 	private static StopResult offUnderwaterBreath(L1Character cha, int skillId) {
 		if (cha instanceof L1PcInstance pc) {
-			SC_SkillIconBlessOfEva.send(pc, pc.getId(), pc.getEquipSlot().evaIconDuration(0));
+			SC_SkillIconBlessOfEva.send(pc, pc.getId(), pc.getEquipment().evaIconDuration(0));
 		}
 		return StopResult.HANDLED;
 	}

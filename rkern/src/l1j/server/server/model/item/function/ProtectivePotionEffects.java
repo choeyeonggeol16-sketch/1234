@@ -133,7 +133,7 @@ final class ProtectivePotionEffects {
 				time = 3600;
 			}
 		}
-		sendBreathIcon(pc, pc.getId(), pc.getEquipSlot().evaIconDuration(time));
+		sendBreathIcon(pc, pc.getId(), pc.getEquipment().evaIconDuration(time));
 		sendSound(pc, pc.getId(), 190);
 		broadcastSound(pc, pc.getId(), 190);
 		pc.setSkillEffect(STATUS_UNDERWATER_BREATH, time * 1000);

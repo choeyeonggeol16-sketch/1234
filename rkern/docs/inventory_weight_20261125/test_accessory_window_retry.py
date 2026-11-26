@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 
 root = Path(__file__).resolve().parents[2]
-source = (root / "src/l1j/server/server/model/inventory/L1EquipmentSlot.java").read_text(encoding="utf-8")
+source = (root / "src/l1j/server/server/model/inventory/CUserEquipment.java").read_text(encoding="utf-8")
 fields = source[source.index("private static final int RING_WINDOW_SLOTS") : source.index("private int displayedPrimaryWeapon")]
 methods = source[source.index("    private void publishAccessory(") : source.index("\tprivate void syncWeaponWindow(")]
 

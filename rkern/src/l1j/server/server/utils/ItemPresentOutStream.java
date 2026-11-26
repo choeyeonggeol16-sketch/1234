@@ -1,15 +1,13 @@
 package l1j.server.server.utils;
 
 public class ItemPresentOutStream extends BinaryOutputStream {
-    private int[] replacedEquipmentOptions;
-
-    public void replaceEquipmentOptions(int[] totals) {
-        replacedEquipmentOptions = totals;
+    public void writeText(String text) {
+        if (text == null || text.isEmpty()) return;
+        writeC(39);
+        writeS(text);
     }
 
     public void writeNumericOption(int opcode, int value, int width) {
-        final int[] totals = replacedEquipmentOptions;
-        if (totals != null && opcode >= 0 && opcode < totals.length && totals[opcode] != Integer.MIN_VALUE) return;
         writeC(opcode);
         switch (width) {
             case 1 -> writeC(value);

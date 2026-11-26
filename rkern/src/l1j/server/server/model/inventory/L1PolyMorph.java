@@ -256,7 +256,7 @@ public class L1PolyMorph {
 				}
 
 				// Only a validated transform can replace the active shape timer.
-				final L1EquipmentSlot equipment = pc.getEquipSlot();
+				final CUserEquipment equipment = pc.getEquipment();
 				if (equipmentSet != null && pc.getCurrentSpriteId() == polyId) return;
 				equipment.recordPolymorphSource(equipmentSet, polyId);
 				pc.killSkillEffectTimer(L1SkillId.SHAPE_CHANGE);
@@ -383,7 +383,7 @@ public class L1PolyMorph {
 	public static void undoPoly(L1Character cha) {
 		if (cha instanceof L1PcInstance) {
 			L1PcInstance pc = (L1PcInstance) cha;
-			pc.getEquipSlot().recordPolymorphSource(null, 0);
+			pc.getEquipment().recordPolymorphSource(null, 0);
 			
 			if (pc.getMapId() == 5143) { // 펫레이싱
 				doPoly(pc, 5065, 1000, MORPH_BY_NPC, false);

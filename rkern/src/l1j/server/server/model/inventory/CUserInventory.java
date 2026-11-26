@@ -152,7 +152,7 @@ public class CUserInventory extends CInventory {
             final int oldDurability = original.get_durability();
             final boolean newTemplate = oldTemplate != image.getItemId();
             final boolean recalcEquipped = newTemplate && original.isEquipped();
-            final L1EquipmentSlot equipment = _owner.getEquipSlot();
+            final CUserEquipment equipment = _owner.getEquipment();
             final boolean restorePrimary = recalcEquipped && equipment.getSecondWeapon() != null
                     && equipment.getWeapon() == original;
             if (recalcEquipped) equipment.unequipItem(original);
@@ -290,7 +290,7 @@ public class CUserInventory extends CInventory {
 	}
 
     public void sendEquipmentWindow() {
-        _owner.getEquipSlot().sendEquipmentWindow(this);
+        _owner.getEquipment().sendEquipmentWindow(this);
     }
 
 	public int getWeight100() {
@@ -443,7 +443,7 @@ public class CUserInventory extends CInventory {
         super.clearItems();
         _itemCountMap.clear();
         _equippedCountMap.clear();
-        _owner.getEquipSlot().clearEquipmentWindow();
+        _owner.getEquipment().clearEquipmentWindow();
     }
 
 	@Override
@@ -573,10 +573,10 @@ public class CUserInventory extends CInventory {
         }
     }
 
-	private static final int MASK_STATUS  = COL_BLESS_LEVEL | COL_BLESS_LEVEL2 | COL_DURABILITY 
+	private static final int MASK_STATUS  = COL_EQUIPPED | COL_BLESS_LEVEL | COL_BLESS_LEVEL2 | COL_DURABILITY
 			| COL_ENCHANTLVL | COL_ATTRENCHANTLVL | COL_IS_ID | COL_ITEMID;
 
-	private static final int MASK_NAME    = COL_EQUIPPED | COL_SPECIAL_ENCHANT 
+	private static final int MASK_NAME    = COL_SPECIAL_ENCHANT
 			| COL_REMAINING_TIME | COL_CHARGE_COUNT;
 
 	private static final int MASK_COLOR   = COL_BLESS | COL_BLESS2 | COL_IS_ID | COL_ITEMID;
@@ -585,7 +585,7 @@ public class CUserInventory extends CInventory {
 
 	@Override
 	public void updateDurability(L1ItemInstance item, int previousDurability) {
-		final boolean defenseChanged = _owner.getEquipSlot().applyArmorDurabilityChange(item, previousDurability);
+		final boolean defenseChanged = _owner.getEquipment().applyArmorDurabilityChange(item, previousDurability);
 		super.updateDurability(item, previousDurability);
 		if (defenseChanged) SC_OwnCharAttrDef.send(_owner);
 	}

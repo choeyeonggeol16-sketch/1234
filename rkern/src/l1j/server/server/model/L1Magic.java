@@ -1516,7 +1516,7 @@ public class L1Magic {
 
 			if (skillId == ENERGY_BOLT || skillId == CALL_LIGHTNING || skillId == DISINTEGRATE) {
 
-				for (L1ItemInstance armor : _targetPc.getEquipSlot().getArmors()) {
+				for (L1ItemInstance armor : _targetPc.getEquipment().getArmors()) {
 					// 붉은 기사의 방패
 					if (armor.getItemId() == 20230) {
 						int probability = 1;

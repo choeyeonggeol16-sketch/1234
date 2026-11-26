@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
+import l1j.server.server.templates.L1Item;
 
 /**
  * Weapon-specific hit/damage bonuses from the dedicated weapon_damage table.
@@ -124,6 +125,13 @@ public final class WeaponAddDamage {
             LOG.log(Level.SEVERE, "weapon_damage reload failed; previous snapshot retained", e);
             return false;
         }
+    }
+
+    /** Total hit and flat damage before per-instance blessing and enchant. */
+    public long getTemplateStatsPacked(L1Item template) {
+        final long extra = getBonusPacked(template.getItemId());
+        return pack(template.getHitModifier() + (int) (extra >> 32),
+                template.getDmgModifier() + (int) extra);
     }
 
     /** High 32 bits = signed hit bonus, low 32 bits = signed damage bonus. */

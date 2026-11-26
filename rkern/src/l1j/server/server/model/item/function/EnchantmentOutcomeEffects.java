@@ -227,7 +227,7 @@ final class EnchantmentOutcomeEffects {
 			}
 		}
 
-        if (!alreadyCommitted && pc.getEquipSlot().applyEquippedEnchantChange(item, oldEnchantLvl)) {
+        if (!alreadyCommitted && pc.getEquipment().applyEquippedEnchantChange(item, oldEnchantLvl)) {
             try {
                 SC_SPMR.send(pc);
             } catch (RuntimeException packetFailure) {
