@@ -10,6 +10,7 @@ public final class SC_ShowHelp {
     private static final String HELP_CONTENT = "\n\n" +
 			"<게임 이용 관련>\n\n" +
 			" \n" +
+			".무인상점 (시장 개인상점 개설 후)\n" +
 			".혈마크 (.emblem)\n" +
 			".혈맹파티 (.party)\n" +
 			".라이트 켬/끔 (.light on/off)\n" +

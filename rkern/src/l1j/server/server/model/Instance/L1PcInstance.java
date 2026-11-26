@@ -955,7 +955,7 @@ public class L1PcInstance extends L1Character {
 	private long _lastPasswordChangeTime;
 	private long _lastLocalTellTime;
 
-	private boolean 무인상점 = false;
+	private volatile boolean 무인상점 = false;
 
 	boolean isExpDrop;
 	boolean isItemDrop;
@@ -1102,7 +1102,7 @@ public class L1PcInstance extends L1Character {
 	public final CUserBookmark getUserBookmark() { return userBookmark; }
 	private byte[] _shopChat;
 	private AtomicInteger _pinkNameTime;
-	private CUserSocket _netConnection;
+	private volatile CUserSocket _netConnection;
 	// Odd: current client world can accept ground sprites. Even: map/world reset.
 	private volatile int groundSightEpoch;
 	private volatile boolean groundSightRetry;
@@ -2538,6 +2538,38 @@ public class L1PcInstance extends L1Character {
 		//try { disposeActionExecutor();} catch (Throwable ignore) {}
         
 	}
+    /** Persist the attendance snapshot before handing the account to another PC. */
+    public void savePrivateStoreAttendance() {
+        final SC_ATTENDANCE_USER_DATA_EXTEND data = getAttendanceData();
+        if (data != null) SC_ATTENDANCE_USER_DATA_EXTEND.update(getAccountName(), data);
+    }
+
+    /** Only session-owned resources are retired. Never clear sale items, world
+     * identity, CacheD owner epoch, equipment effects or the merchant's listings.
+     */
+    public void releasePrivateStoreSessionResources() {
+        stopAllRegenerations();
+        stopReportDeley();
+        stopEinhasadTimer();
+        try { l1j.server.server.model.CReplyChecker.FinishWaitingReplyByRequester(this); }
+        catch (RuntimeException e) { _log.log(Level.WARNING, "Offline shop reply cleanup failed", e); }
+        try { PcInventoryExpiryScheduler.getInstance().unregister(this); }
+        catch (RuntimeException e) { _log.log(Level.WARNING, "Offline shop expiry cleanup failed", e); }
+        try { InvalidateWarehouseAccess(); }
+        catch (RuntimeException e) { _log.log(Level.WARNING, "Offline shop warehouse view cleanup failed", e); }
+        final long lease = warehouseCacheLease;
+        if (lease != 0L) {
+            try {
+                l1j.server.server.model.Warehouse.WarehouseManager.getInstance()
+                        .releaseSessionWarehouses(getAccountName(), getName(), lease);
+            } catch (RuntimeException e) { _log.log(Level.WARNING, "Offline shop warehouse cache cleanup failed", e); }
+        }
+        suspendGroundSight();
+        try { removeAllKnownObjects(); }
+        catch (RuntimeException e) { _log.log(Level.WARNING, "Offline shop known-object cleanup failed", e); }
+        setAttendanceData(null);
+    }
+
 	public CUserSocket getNetConnection() {
 		return _netConnection;
 	}

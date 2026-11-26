@@ -688,6 +688,10 @@ for (L1PcInstance listener : clan.getOnlineClanMember()) {
 	}
 
 	private static boolean handleClientCommand(L1PcInstance pc, String tcmd) {
+        if ("무인상점".equals(tcmd)) {
+            CS_CharSelect.RequestOfflinePrivateStore(pc);
+            return true;
+        }
 		if (tcmd.equals("탐") || tcmd.equals("탐포인트")) {
 			SC_SystemMessage.send(pc, "보유 탐 포인트: " + pc.getNetConnection().getAccount().getTamPoint() + " 개");
 			return true;

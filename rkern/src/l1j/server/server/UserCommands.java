@@ -23,6 +23,7 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.combat.statistics.chart.KdaChartScheduler;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_Ability;
@@ -63,6 +64,7 @@ public class UserCommands {
 
         try {
             switch (cmd) {
+                case "무인상점" -> CS_CharSelect.RequestOfflinePrivateStore(pc);
                 case "혈맹포인트" -> showClanPoints(pc);
                 case "도움말", "help" -> SC_ShowHelp.send(pc, 1);
                 case "나이" -> setAge(pc, param);

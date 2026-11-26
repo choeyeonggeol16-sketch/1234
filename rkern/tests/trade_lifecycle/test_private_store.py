@@ -50,6 +50,8 @@ public class PrivateStoreTest {
         final int id,template; int count=20,bless=0,enchant=0,attr=0;
         boolean equipped,stackable=true,identified=true;
         long delay;
+        java.sql.Timestamp expiry;
+        java.sql.Timestamp getEndTime(){return expiry;}
         Template item=new Template();
         L1ItemInstance(int i,int t){id=i;template=t;}
         int getId(){return id;} int getItemId(){return template;} int getCount(){return count;}
@@ -208,6 +210,11 @@ public class PrivateStoreTest {
         check(!PlayerShopTransactions.canTransfer(customer,item,d,-1,1),"negative transfer");
         check(!PlayerShopTransactions.canTransfer(customer,item,d,21,1),"insufficient actual item count");
         check(!PlayerShopTransactions.canTransfer(customer,item,null,1,1),"null listing");
+        item.expiry=new java.sql.Timestamp(1);
+        check(!PlayerShopTransactions.canTransfer(customer,item,d,1,1),"expired item cannot be sold");
+        item.expiry=new java.sql.Timestamp(2);
+        check(PlayerShopTransactions.canTransfer(customer,item,d,1,1),"unexpired item");
+        item.expiry=null;
         item.enchant=1;check(!PlayerShopTransactions.canTransfer(customer,item,d,1,1),"changed item");item.enchant=0;
         close(pc);
         check(!pc.inv.readWithoutGate&&pc.inv.depth==0,"all listing reads gated");

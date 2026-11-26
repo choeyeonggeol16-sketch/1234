@@ -30,6 +30,10 @@ public final class CS_Chat {
         if (l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.handleLinkCommand(pc, chatText)) return;
 
         if (UserCommands.handleLightCommand(pc, chatText)) return;
+        if (".무인상점".equals(chatText.trim())) {
+            CS_CharSelect.RequestOfflinePrivateStore(pc);
+            return;
+        }
 
         // Password commands are not connected to the general chat dispatcher.
         // Never broadcast their arguments as world chat.

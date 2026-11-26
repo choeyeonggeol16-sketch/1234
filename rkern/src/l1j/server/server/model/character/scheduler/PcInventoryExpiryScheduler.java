@@ -185,7 +185,7 @@ public final class PcInventoryExpiryScheduler {
         // passed the earlier test must finish publishing before unregister
         // drains its heap/index entries. There is no global admission stall.
         synchronized (pc) {
-            if (!accepting || pc.isLogoutStarted() || item.getEndTime() == null) return;
+            if (!accepting || pc.isLogoutStarted() || pc.is무인상점() || item.getEndTime() == null) return;
             if (!beginRegistration()) return;
             try {
                 final int itemId = item.getId();
@@ -198,7 +198,7 @@ public final class PcInventoryExpiryScheduler {
                         queue.remove(previous);
                         unindexTask(previous);
                     }
-                    if (!accepting || pc.isLogoutStarted() || pc.getSessionStamp() != session)
+                    if (!accepting || pc.isLogoutStarted() || pc.is무인상점() || pc.getSessionStamp() != session)
                         return null;
                     final ExpiryTask task = new ExpiryTask(pc, item, end,
                             Math.max(1000L, end - System.currentTimeMillis()), session);
@@ -240,7 +240,7 @@ public final class PcInventoryExpiryScheduler {
         // Retry callbacks can arrive from a different worker AFTER logout;
         // they need the same per-session admission boundary as scheduleItem.
         synchronized (task.pc) {
-            if (!accepting || task.pc.isLogoutStarted()
+            if (!accepting || task.pc.isLogoutStarted() || task.pc.is무인상점()
                     || task.pc.getSessionStamp() != task.sessionStamp) {
                 removeTask(task);
                 return;
@@ -252,7 +252,7 @@ public final class PcInventoryExpiryScheduler {
             try {
                 scheduled.computeIfPresent(task.item.getId(), (key, current) -> {
                     if (current != task) return current;
-                    if (!accepting || task.pc.isLogoutStarted()
+                    if (!accepting || task.pc.isLogoutStarted() || task.pc.is무인상점()
                             || task.pc.getSessionStamp() != task.sessionStamp) {
                         unindexTask(task);
                         return null;

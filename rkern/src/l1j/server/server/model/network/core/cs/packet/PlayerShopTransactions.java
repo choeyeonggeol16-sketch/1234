@@ -228,7 +228,9 @@ final class PlayerShopTransactions {
 
     private static boolean canTransfer(L1PcInstance seller, L1ItemInstance item, DynamicShopItem listing,
             int count, long now) {
+        final var expiry = item == null ? null : item.getEndTime();
         return seller != null && listing != null && item != null && count > 0 && count <= item.getCount()
+                && (expiry == null || expiry.getTime() > now)
                 && item.getItem() != null && !item.isEquipped() && item.getItem().isTradable() && item.getBless() < 128
                 && (item.isIdentified() ? item.getBless() : -1) == listing.iden
                 && item.getItemdelay3() < now && item.getItemId() == listing.itemId

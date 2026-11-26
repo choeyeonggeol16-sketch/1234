@@ -120,8 +120,34 @@ public final class CS_CharSelect {
         }
 
     }
-    /** Preserve the existing offline-shop restart path without the deleted command. */
+    /** Explicit .무인상점 command: keep the merchant and inventory, retire only its session. */
+    public static void RequestOfflinePrivateStore(L1PcInstance pc) {
+        if (pc == null) return;
+        final CUserSocket client = pc.getNetConnection();
+        if (client == null || !pc.isItemTransferSession(client, pc.getSessionStamp())) return;
+        if (!pc.isPrivateShop() || pc.getMapId() != 800) {
+            pc.sendPackets("시장에서 개인상점을 연 뒤 사용할 수 있습니다.");
+            return;
+        }
+        if (pc.isDead() || pc.isGhost() || pc.get_teleport() || pc.is무인상점()) return;
+        if (!pc.getInventory().tryBeginEquipmentChange()) {
+            pc.sendPackets("상점 거래 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+            return;
+        }
+        try {
+            detachPrivateShop(pc, client);
+        } finally {
+            pc.getInventory().endEquipmentChange();
+        }
+    }
+
+    /** Caller owns the same reentrant inventory gate as private-store settlement. */
     private static void detachPrivateShop(L1PcInstance pc, CUserSocket client) {
+        if (!pc.isItemTransferSession(client, pc.getSessionStamp()) || !pc.isPrivateShop()
+                || pc.getMapId() != 800 || pc.isDead() || pc.isGhost() || pc.get_teleport()
+                || pc.is무인상점() || pc.GetTrade() != null
+                || l1j.server.server.model.CTrade.HasPendingTradeBlocker(pc)
+                || l1j.server.server.storage.CacheD.getInstance().hasPendingOwnerApply(pc.getId())) return;
         for (L1PcInstance target : L1World.getInstance().getAllPlayers3()) {
             if (target.getId() != pc.getId()
                     && target.getAccountName().equalsIgnoreCase(pc.getAccountName())
@@ -131,22 +157,45 @@ public final class CS_CharSelect {
                 return;
             }
         }
-        final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
-        if (clan != null) {
-            pc.setOnlineStatus(0);
-            clan.updateClanMemberOnline(pc);
+        // A rejected attendance write must not detach the only owner of that snapshot.
+        try {
+            pc.savePrivateStoreAttendance();
+        } catch (RuntimeException failure) {
+            LOGGER.log(Level.WARNING, "Offline shop attendance save rejected", failure);
+            pc.sendPackets("무인상점 전환에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+            return;
         }
-        client.clearGameSessionReady();
-        pc.setNetConnection(null);
-        client.setConnectionState(CConnectionState.OUT_GAME);
-        pc.set무인상점(true);
+        final int online = pc.getOnlineStatus();
+        pc.setOnlineStatus(0);
         try {
             pc.save();
             pc.saveInventory();
-        } catch (Exception failure) {
-            LOGGER.log(Level.WARNING, "Offline shop save failed", failure);
+        } catch (RuntimeException failure) {
+            pc.setOnlineStatus(online);
+            LOGGER.log(Level.WARNING, "Offline shop save rejected", failure);
+            pc.sendPackets("무인상점 전환에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+            return;
         }
-        client.setActiveChar(null);
-        SC_Unknown2.send(client, 1);
+        pc.set무인상점(true);
+        pc.setPrivateReady(false);
+        final L1Clan clan = L1World.getInstance().getClan(pc.getClanid());
+        try {
+            if (clan != null) clan.updateClanMemberOnline(pc);
+        } catch (RuntimeException failure) {
+            LOGGER.log(Level.WARNING, "Offline shop clan update failed", failure);
+        }
+        // Unregister while the original socket still identifies its CIO shard.
+        pc.releasePrivateStoreSessionResources();
+        try {
+            client.clearGameSessionReady();
+            pc.setNetConnection(null);
+            client.setActiveChar(null);
+            // Same state as ordinary character selection; EnterWorld accepts it.
+            client.setConnectionState(CConnectionState.AUTHENTICATED);
+            SC_Unknown2.send(client, 1);
+        } catch (RuntimeException failure) {
+            LOGGER.log(Level.WARNING, "Offline shop session detach failed", failure);
+            client.close();
+        }
     }
 }
