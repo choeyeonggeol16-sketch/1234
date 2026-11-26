@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.TreeMap;
 
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.inventory.EquipmentOptionScript.Section;
 
 /** Special equipment capabilities attached to item definitions. */
 public final class EquipmentTraits {
@@ -22,10 +23,41 @@ public final class EquipmentTraits {
     private static final EquipmentTraits[] DEFINITIONS;
 
     static {
+        final TreeMap<Integer, Builder> builders = loadDefinitions();
+        IDS = new int[builders.size()];
+        DEFINITIONS = new EquipmentTraits[builders.size()];
+        int index = 0;
+        for (var entry : builders.entrySet()) {
+            IDS[index] = entry.getKey();
+            final Builder builder = entry.getValue();
+            final EquipmentTraits definition = new EquipmentTraits(builder.flags, builder.values, builder.spells);
+            if (definition.has(Flag.EXCLUSIVE_ABILITY) && definition.ability() == 0) {
+                throw new IllegalArgumentException("Exclusive equipment has no ability " + entry.getKey());
+            }
+            DEFINITIONS[index++] = definition;
+        }
+    }
+
+    static void initialize() {
+        // Compile the traits before the server starts.
+    }
+
+    private static TreeMap<Integer, Builder> loadDefinitions() {
+        final String definitions = EquipmentOptionScript.read(Section.TRAITS);
+        try {
+            return compile(definitions);
+        } catch (IllegalArgumentException invalid) {
+            throw new IllegalStateException("Invalid equipment traits in " + EquipmentOptionScript.source()
+                    + " [TRAITS]: " + invalid.getMessage(), invalid);
+        }
+    }
+
+    private static TreeMap<Integer, Builder> compile(String definitions) {
         final TreeMap<Integer, Builder> builders = new TreeMap<>();
-        for (String row : EquipmentOptionData.TRAITS.split("\\R")) {
+        for (String row : definitions.split("\\R")) {
             if (row.isBlank()) continue;
-            final String[] fields = row.trim().split(" +");
+            final String[] fields = row.split("\\s+");
+            if (fields.length < 2) throw new IllegalArgumentException("Missing equipment traits in " + row);
             for (String selector : fields[0].split(",")) {
                 final String[] ends = selector.split("\\.\\.");
                 final int first = Integer.parseInt(ends[0]);
@@ -39,18 +71,7 @@ public final class EquipmentTraits {
                 }
             }
         }
-        IDS = new int[builders.size()];
-        DEFINITIONS = new EquipmentTraits[builders.size()];
-        int index = 0;
-        for (var entry : builders.entrySet()) {
-            IDS[index] = entry.getKey();
-            final Builder builder = entry.getValue();
-            final EquipmentTraits definition = new EquipmentTraits(builder.flags, builder.values, builder.spells);
-            if (definition.has(Flag.EXCLUSIVE_ABILITY) && definition.ability() == 0) {
-                throw new IllegalArgumentException("Exclusive equipment has no ability " + entry.getKey());
-            }
-            DEFINITIONS[index++] = definition;
-        }
+        return builders;
     }
 
     private static final class Builder {
@@ -121,7 +142,7 @@ public final class EquipmentTraits {
     int equippedSkill() { return values[Value.EQUIPPED_SKILL.ordinal()]; }
     int equipMessage() { return values[Value.EQUIP_MESSAGE.ordinal()]; }
     int morph() { return values[Value.MORPH.ordinal()]; }
-    int elfMr() { return values[Value.ELF_MR.ordinal()]; }
+    public int elfMr() { return values[Value.ELF_MR.ordinal()]; }
     int runeTier() { return values[Value.RUNE_TIER.ordinal()]; }
     int runeWizardMp() { return values[Value.RUNE_WIZARD_MP.ordinal()]; }
     long spells() { return spells; }

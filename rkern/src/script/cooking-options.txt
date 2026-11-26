@@ -1,0 +1,238 @@
+# Cooking definitions. UTF-8. Fields are separated by tabs.
+# profile <name> <seconds> <icon> <group> <needs-full-food>
+# effect <option> <value>; item <item-id> <skill-id>; skill <skill-id>
+
+profile	1차 요리 0	900	0	COOKING	false
+effect	ATTR_RESIS	10
+effect	DMG_RED	5
+item	41277	300000
+item	41285	3050
+
+profile	1차 요리 1	900	1	COOKING	false
+effect	MAX_HP	30
+effect	DMG_RED	5
+item	41278	300001
+item	41286	3051
+
+profile	1차 요리 2	900	2	COOKING	false
+item	41279	300002
+item	41287	3052
+
+profile	1차 요리 3	900	3	COOKING	false
+effect	AC	-1
+effect	DMG_RED	5
+item	41280	300003
+item	41288	3053
+
+profile	1차 요리 4	900	4	COOKING	false
+effect	MAX_MP	20
+effect	DMG_RED	5
+item	41281	3004
+item	41289	3054
+
+profile	1차 요리 5	900	5	COOKING	false
+item	41282	3005
+item	41290	3055
+
+profile	1차 요리 6	900	6	COOKING	false
+effect	MR	5
+effect	DMG_RED	5
+item	41283	3006
+item	41291	3056
+
+profile	1차 스프	900	7	DESSERT	true
+item	41284	3007
+item	41292	3057
+
+profile	2차 요리 8	900	16	COOKING	false
+effect	BOW_HIT_RATE	2
+effect	BOW_DMG	1
+effect	DMG_RED	5
+item	49049	3008
+item	49057	3058
+
+profile	2차 요리 9	900	17	COOKING	false
+effect	MAX_HP	30
+effect	MAX_MP	30
+effect	DMG_RED	5
+item	49050	3009
+item	49058	3059
+
+profile	2차 요리 10	900	18	COOKING	false
+effect	AC	-2
+effect	DMG_RED	5
+item	49051	3010
+item	49059	3060
+
+profile	2차 요리 11	900	19	COOKING	false
+item	49052	3011
+item	49060	3061
+
+profile	2차 요리 12	900	20	COOKING	false
+item	49053	3012
+item	49061	3062
+
+profile	2차 요리 13	900	21	COOKING	false
+effect	MR	10
+effect	DMG_RED	5
+item	49054	3013
+item	49062	3063
+
+profile	2차 요리 14	900	22	COOKING	false
+effect	SP	1
+effect	DMG_RED	5
+item	49055	3014
+item	49063	3064
+
+profile	2차 스프	900	23	DESSERT	true
+item	49056	3015
+item	49064	3065
+
+profile	3차 요리 16	900	45	COOKING	false
+effect	BOW_HIT_RATE	2
+effect	BOW_DMG	1
+effect	DMG_RED	5
+item	210048	3016
+item	210056	3066
+
+profile	3차 요리 17	900	46	COOKING	false
+effect	MAX_HP	50
+effect	MAX_MP	50
+effect	DMG_RED	5
+item	210049	3017
+item	210057	3067
+
+profile	3차 요리 18	900	47	COOKING	false
+effect	HIT	2
+effect	DMG	1
+effect	DMG_RED	5
+item	210050	3018
+item	210058	3068
+
+profile	3차 요리 19	900	48	COOKING	false
+effect	AC	-3
+effect	DMG_RED	5
+item	210051	3019
+item	210059	3069
+
+profile	3차 요리 20	900	49	COOKING	false
+effect	ATTR_RESIS	10
+effect	MR	15
+effect	DMG_RED	5
+item	210052	3020
+item	210060	3070
+
+profile	3차 요리 21	900	50	COOKING	false
+effect	SP	2
+effect	DMG_RED	5
+item	210053	3021
+item	210061	3071
+
+profile	3차 요리 22	900	51	COOKING	false
+effect	MAX_HP	30
+effect	DMG_RED	5
+item	210054	3022
+item	210062	3072
+
+profile	3차 스프	900	52	DESSERT	true
+item	210055	3023
+
+profile	3차 스프	900	52	DESSERT	true
+effect	DMG_RED	5
+item	210063	3073
+
+profile	힘센 한우 스테이크	1800	157	COOKING	false
+effect	DMG	2
+effect	HIT	1
+effect	HPR	2
+effect	MPR	2
+effect	MR	10
+effect	ATTR_RESIS	10
+effect	DMG_RED	2
+item	30051	3074
+item	42650	3080
+
+profile	날쌘 연어 찜	1800	158	COOKING	false
+effect	BOW_DMG	2
+effect	BOW_HIT	1
+effect	HPR	2
+effect	MPR	2
+effect	MR	10
+effect	ATTR_RESIS	10
+effect	DMG_RED	2
+item	30052	3075
+item	42651	3081
+
+profile	영리한 칠면조 구이	1800	159	COOKING	false
+effect	SP	2
+effect	HPR	2
+effect	MPR	3
+effect	MR	10
+effect	ATTR_RESIS	10
+effect	DMG_RED	2
+item	30053	3076
+item	42652	3082
+
+profile	힘센 한우 스테이크 강화	1800	215	COOKING	false
+effect	DMG	2
+effect	HIT	1
+effect	HPR	2
+effect	MPR	2
+effect	MR	10
+effect	ATTR_RESIS	10
+effect	ALL_PIERCE	3
+effect	DMG_RED	2
+item	4100156	3084
+
+profile	날쌘 연어 찜 강화	1800	216	COOKING	false
+effect	BOW_DMG	2
+effect	BOW_HIT	1
+effect	HPR	2
+effect	MPR	2
+effect	MR	10
+effect	ATTR_RESIS	10
+effect	ALL_PIERCE	3
+effect	DMG_RED	2
+item	4100157	3085
+
+profile	영리한 칠면조 구이 강화	1800	217	COOKING	false
+effect	SP	2
+effect	HPR	2
+effect	MPR	3
+effect	MR	10
+effect	ATTR_RESIS	10
+effect	ALL_PIERCE	3
+effect	DMG_RED	2
+item	4100158	3086
+
+profile	수련의 닭고기 스프	1800	160	DESSERT	false
+effect	DMG_RED	2
+item	30054	3077
+item	42653	3083
+
+profile	수련의 닭고기 스프 강화	1800	218	DESSERT	false
+effect	DMG_RED	2
+effect	ALL_RESIS	2
+effect	PVP_DMG_RED	2
+item	4100159	3087
+
+profile	메티스의 정성스런 요리	1800	151	COOKING	false
+effect	HIT	2
+effect	DMG	2
+effect	BOW_HIT	2
+effect	BOW_DMG	2
+effect	SP	2
+effect	HPR	3
+effect	MPR	4
+effect	MR	15
+effect	ATTR_RESIS	10
+effect	DMG_RED	5
+item	3000130	3000130
+
+profile	메티스의 정성스런 스프	1800	162	DESSERT	false
+effect	DMG_RED	5
+item	3000129	3000129
+
+profile	천하장사 버프	1800	187	NONE	false
+effect	DMG_RED	5
+skill	1541

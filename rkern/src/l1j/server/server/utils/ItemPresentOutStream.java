@@ -1,6 +1,24 @@
 package l1j.server.server.utils;
 
 public class ItemPresentOutStream extends BinaryOutputStream {
+    private int[] replacedEquipmentOptions;
+
+    public void replaceEquipmentOptions(int[] totals) {
+        replacedEquipmentOptions = totals;
+    }
+
+    public void writeNumericOption(int opcode, int value, int width) {
+        final int[] totals = replacedEquipmentOptions;
+        if (totals != null && opcode >= 0 && opcode < totals.length && totals[opcode] != Integer.MIN_VALUE) return;
+        writeC(opcode);
+        switch (width) {
+            case 1 -> writeC(value);
+            case 2 -> writeH(value);
+            case 4 -> writeD(value);
+            default -> throw new IllegalArgumentException("Unsupported item option width " + width);
+        }
+    }
+
 
 	public ItemPresentOutStream() {
 		super();
@@ -23,8 +41,7 @@ public class ItemPresentOutStream extends BinaryOutputStream {
 			return;
 		}
 
-		writeC(opcode);
-		writeC(value);
+		writeNumericOption(opcode, value, 1);
 	}
 
 	/**
@@ -36,8 +53,7 @@ public class ItemPresentOutStream extends BinaryOutputStream {
 			return;
 		}
 
-		writeC(opcode);
-		writeH(value);
+		writeNumericOption(opcode, value, 2);
 	}
 
 	/**
@@ -49,8 +65,7 @@ public class ItemPresentOutStream extends BinaryOutputStream {
 			return;
 		}
 
-		writeC(opcode);
-		writeD(value);
+		writeNumericOption(opcode, value, 4);
 	}
 
 	// TODO 작은몹 대미지

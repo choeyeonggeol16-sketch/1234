@@ -15,6 +15,17 @@ public final class EquipmentEnchantOptions {
 
     private EquipmentEnchantOptions() {}
 
+    public static void loadDefinitions() {
+        try {
+            EquipmentOptionTable.initialize();
+            EquipmentTraits.initialize();
+        } catch (ExceptionInInitializerError failure) {
+            final Throwable cause = failure.getCause();
+            throw new IllegalStateException("Unable to load equipment options: " + cause.getMessage(), cause);
+        }
+        NOTICE_LOG.info("Loaded equipment options from " + EquipmentOptionScript.source());
+    }
+
     private static final java.util.logging.Logger NOTICE_LOG =
             java.util.logging.Logger.getLogger(EquipmentEnchantOptions.class.getName());
 
@@ -70,6 +81,14 @@ public final class EquipmentEnchantOptions {
         return changes;
     }
 
+    public static int weaponOptionValue(int itemId, int enchant, ItemStat stat) {
+        return EquipmentOptionTable.WEAPON.value(itemId, enchant, stat);
+    }
+
+    public static void collectTooltipModifiers(L1Item item, int enchant, int[] totals) {
+        collect(null, item, enchant, 1, totals);
+    }
+
     private static void collect(L1PcInstance pc, L1Item item, int enchant, int sign, int[] changes) {
         if (item.getType2() == 1) {
             applyWeaponOptions(pc, item, enchant, sign, changes);
@@ -100,7 +119,13 @@ public final class EquipmentEnchantOptions {
 
     static void applyStat(L1PcInstance pc, int[] changes, ItemStat stat, int value) {
         if (changes == null) stat.apply(pc, value);
-        else changes[stat.ordinal()] += value;
+        else {
+            final int ordinal = stat.ordinal();
+            changes[ordinal] += value;
+            if (changes.length > STATS.length) {
+                changes[STATS.length + (ordinal >>> 5)] |= 1 << (ordinal & 31);
+            }
+        }
     }
 
     static boolean applyDelta(L1PcInstance pc, int[] changes) {

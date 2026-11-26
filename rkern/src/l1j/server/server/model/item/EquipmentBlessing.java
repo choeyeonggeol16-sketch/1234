@@ -1,5 +1,6 @@
 package l1j.server.server.model.item;
 
+import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 
@@ -10,45 +11,38 @@ public final class EquipmentBlessing {
 
     private record ArmorOption(ItemStat stat, int amount, String label) {
         private String description() {
-            final String prefix = stat == ItemStat.MAX_HP ? "" : "+";
-            return "\\aL" + label + " : " + prefix + Math.abs(amount);
+            final int value = stat == ItemStat.AC ? -amount : amount;
+            final String prefix = stat == ItemStat.MAX_HP || value < 0 ? "" : "+";
+            return "\\aL" + label + " : " + prefix + value;
         }
     }
 
-    private static final ArmorOption[] ARMOR_OPTIONS = {
-        null,
-        new ArmorOption(ItemStat.MAX_HP, 30, "최대HP"),
-        new ArmorOption(ItemStat.MAX_HP, 20, "최대HP"),
-        new ArmorOption(ItemStat.MAX_HP, 10, "최대HP"),
-        new ArmorOption(ItemStat.MAX_HP, 30, "최대HP"),
-        new ArmorOption(ItemStat.MAX_HP, 40, "최대HP"),
-        new ArmorOption(ItemStat.MAX_HP, 50, "최대HP"),
-        new ArmorOption(ItemStat.DMG_RED, 1, "리덕션"),
-        new ArmorOption(ItemStat.DMG_RED, 2, "리덕션"),
-        null,
-        new ArmorOption(ItemStat.ABILITY_PLERCE, 1, "기술적중"),
-        new ArmorOption(ItemStat.FEAR_PLERCE, 1, "공포적중"),
-        new ArmorOption(ItemStat.DRAGON_SPELL_PLERCE, 1, "용언적중"),
-        new ArmorOption(ItemStat.SPIRIT_PLERCE, 1, "정령적중"),
-        new ArmorOption(ItemStat.MAGIC_HIT, 1, "마법적중"),
-        new ArmorOption(ItemStat.ABILITY_RESIS, 1, "기술내성"),
-        new ArmorOption(ItemStat.FEAR_RESIS, 1, "공포내성"),
-        new ArmorOption(ItemStat.DRAGON_SPELL_RESIS, 1, "용언내성"),
-        new ArmorOption(ItemStat.SPIRIT_RESIS, 1, "정령내성"),
-        new ArmorOption(ItemStat.DMG_RATE, 1, "근거리대미지"),
-        new ArmorOption(ItemStat.BOW_DMG, 1, "원거리대미지"),
-        new ArmorOption(ItemStat.HIT, 1, "근거리명중"),
-        new ArmorOption(ItemStat.BOW_HIT, 1, "원거리명중"),
-        new ArmorOption(ItemStat.DMG_RED, 1, "리덕션"),
-        new ArmorOption(ItemStat.AC, -1, "추가방어력"),
-        new ArmorOption(ItemStat.MR, 3, "MR"),
-        new ArmorOption(ItemStat.SP, 1, "SP")
-    };
+    private static final TIntObjectHashMap<ArmorOption> ARMOR_OPTIONS = ItemScript.load(
+            "equipment-blessing.txt", "rkern.equipment.blessing", (source, reader) -> {
+                final TIntObjectHashMap<ArmorOption> result = new TIntObjectHashMap<>();
+                ItemScript.readRows(source, reader, row -> {
+                    ItemScript.requireFields(row, 4);
+                    final int level = Integer.parseInt(row[0]);
+                    final int amount = Integer.parseInt(row[2]);
+                    if (level <= 0 || amount == Integer.MIN_VALUE || row[3].isBlank()) {
+                        throw new IllegalArgumentException("Invalid armor blessing level " + level);
+                    }
+                    final ArmorOption option = new ArmorOption(ItemStat.valueOf(row[1]), amount, row[3]);
+                    if (result.putIfAbsent(level, option) != null) {
+                        throw new IllegalArgumentException("Duplicate armor blessing level " + level);
+                    }
+                });
+                return result;
+            });
+
+    public static void initialize() {
+        // Compile the blessing options at startup.
+    }
 
     private EquipmentBlessing() {}
 
     private static ArmorOption armorOption(int level) {
-        return level > 0 && level < ARMOR_OPTIONS.length ? ARMOR_OPTIONS[level] : null;
+        return ARMOR_OPTIONS.get(level);
     }
 
     public static boolean applyArmor(L1PcInstance pc, L1ItemInstance item, int sign) {

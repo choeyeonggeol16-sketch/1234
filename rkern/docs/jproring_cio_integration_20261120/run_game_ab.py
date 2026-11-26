@@ -49,7 +49,7 @@ def classpath(classes, deps):
             with urllib.request.urlopen(url, timeout=20) as stream:
                 path.write_bytes(stream.read())
         jars.append(str(path))
-    return os.pathsep.join((str(classes), *jars))
+    return os.pathsep.join((str(classes), *jars, str(ROOT / 'src')))
 
 
 def compile_java(cp, classes, reuse, source_root=ROOT):

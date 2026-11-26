@@ -91,6 +91,11 @@ import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1TreasureBox;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
+import l1j.server.server.model.inventory.EquipmentEnchantOptions;
+import l1j.server.server.model.item.EquipmentBlessing;
+import l1j.server.server.model.item.cooking.CookingRegistry;
+import l1j.server.server.model.item.doll.DollRegistry;
+import l1j.server.server.model.item.doll.DollPotentialEffects;
 import l1j.server.server.model.item.effects.ItemEffectBootstrap;
 import l1j.server.server.model.item.enchant.ItemEnchantSystemLoadManager;
 import l1j.server.server.model.item.function.L1HealingPotion;
@@ -147,6 +152,12 @@ public class GameServer {
 	}
 
 	private void loadGameData() throws Exception {
+		EquipmentEnchantOptions.loadDefinitions();
+		EquipmentBlessing.initialize();
+		ItemEffectBootstrap.loadAll();
+		CookingRegistry.initialize();
+		DollRegistry.initialize();
+		DollPotentialEffects.initialize();
 		ThreadPool.getInstance();
 		
 		CPacketFilter.getInstance().load();
@@ -310,9 +321,6 @@ public class GameServer {
 		
 		HouseTable.getInstance();       // 캐시 로드
 		L1HouseLocation.rebuildCaches();
-		
-		// 아이템 정보 등록 처리 
-		ItemEffectBootstrap.loadAll();
 		
 		BossMonsterSpawnList.init();
 	}

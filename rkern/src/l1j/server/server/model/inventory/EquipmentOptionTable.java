@@ -6,6 +6,7 @@ import java.util.TreeMap;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.ItemStat;
+import l1j.server.server.model.inventory.EquipmentOptionScript.Section;
 import l1j.server.server.templates.L1Item;
 
 /** Compiles the equipment definitions once and resolves each item by a primitive-key lookup. */
@@ -38,19 +39,23 @@ final class EquipmentOptionTable {
         }
     }
 
-    static final EquipmentOptionTable WEAPON = load(EquipmentOptionData.WEAPON, false);
-    static final EquipmentOptionTable ARMOR_PRIMARY = load(EquipmentOptionData.ARMOR_PRIMARY, false);
-    static final EquipmentOptionTable ARMOR_SLOT = load(EquipmentOptionData.ARMOR_SLOT, false);
-    static final EquipmentOptionTable ACCESSORY = load(EquipmentOptionData.ACCESSORY, true);
-    static final EquipmentOptionTable ARMOR_DODGE = load(EquipmentOptionData.ARMOR_DODGE, false);
-    static final EquipmentOptionTable ARMOR_CASTING = load(EquipmentOptionData.ARMOR_CASTING, false);
+    static final EquipmentOptionTable WEAPON = load(Section.WEAPON, false);
+    static final EquipmentOptionTable ARMOR_PRIMARY = load(Section.ARMOR_PRIMARY, false);
+    static final EquipmentOptionTable ARMOR_SLOT = load(Section.ARMOR_SLOT, false);
+    static final EquipmentOptionTable ACCESSORY = load(Section.ACCESSORY, true);
+    static final EquipmentOptionTable ARMOR_DODGE = load(Section.ARMOR_DODGE, false);
+    static final EquipmentOptionTable ARMOR_CASTING = load(Section.ARMOR_CASTING, false);
 
     private record Profile(int[] starts, int[] ends, int[][] steps) {
-        void apply(L1PcInstance pc, int enchant, int sign, int[] changes) {
+        private int[] forEnchant(int enchant) {
             final int match = Arrays.binarySearch(ends, enchant);
             final int index = match >= 0 ? match : -match - 1;
-            if (index >= steps.length || enchant < starts[index]) return;
-            final int[] ops = steps[index];
+            return index < steps.length && enchant >= starts[index] ? steps[index] : null;
+        }
+
+        void apply(L1PcInstance pc, int enchant, int sign, int[] changes) {
+            final int[] ops = forEnchant(enchant);
+            if (ops == null) return;
             for (int i = 0; i < ops.length; i += OP_WIDTH) {
                 final int op = ops[i];
                 if (op >= 0) {
@@ -88,33 +93,60 @@ final class EquipmentOptionTable {
     }
 
     private void apply(L1PcInstance pc, int itemId, int variant, int enchant, int sign, int[] changes) {
-        final int index = Arrays.binarySearch(itemIds, itemId);
-        final Profile specific = index >= 0 ? byItem[index][variant] : null;
-        final Profile profile = specific != null ? specific : defaults[variant];
+        final Profile profile = findProfile(itemId, variant);
         if (profile != null) profile.apply(pc, enchant, sign, changes);
     }
 
-    private static EquipmentOptionTable load(String[] chunks, boolean accessory) {
+    private Profile findProfile(int itemId, int variant) {
+        final int index = Arrays.binarySearch(itemIds, itemId);
+        final Profile specific = index >= 0 ? byItem[index][variant] : null;
+        return specific != null ? specific : defaults[variant];
+    }
+
+    int value(int itemId, int enchant, ItemStat stat) {
+        final Profile profile = findProfile(itemId, 0);
+        if (profile == null) return 0;
+        final int[] ops = profile.forEnchant(enchant);
+        if (ops == null) return 0;
+        int total = 0;
+        for (int i = 0; i < ops.length; i += OP_WIDTH) {
+            if (ops[i] == stat.ordinal()) total += ops[i + 1] + enchant * ops[i + 2];
+        }
+        return total;
+    }
+
+    static void initialize() {
+        // The class initializer compiles all option sections before the server starts.
+    }
+
+    private static EquipmentOptionTable load(Section section, boolean accessory) {
+        final String definitions = EquipmentOptionScript.read(section);
+        try {
+            return compile(definitions, accessory);
+        } catch (IllegalArgumentException invalid) {
+            throw new IllegalStateException("Invalid equipment options in " + EquipmentOptionScript.source()
+                    + " [" + section + "]: " + invalid.getMessage(), invalid);
+        }
+    }
+
+    private static EquipmentOptionTable compile(String definitions, boolean accessory) {
         final int variants = accessory ? AccessoryKind.values().length * 2 : 1;
         final TreeMap<Integer, Profile[]> byId = new TreeMap<>();
         final Profile[] defaults = new Profile[variants];
-        for (String chunk : chunks) {
-            String selector = null;
-            final ArrayList<String> rows = new ArrayList<>();
-            for (String line : chunk.split("\\R")) {
-                final String row = line.trim();
-                if (row.isEmpty()) continue;
-                if (row.startsWith("@ ")) {
-                    if (selector != null) addProfile(byId, defaults, selector, rows, accessory);
-                    selector = row.substring(2);
-                    rows.clear();
-                } else {
-                    if (selector == null) throw new IllegalArgumentException("Equipment row without item selector");
-                    rows.add(row);
-                }
+        String selector = null;
+        final ArrayList<String> rows = new ArrayList<>();
+        for (String line : definitions.split("\\R")) {
+            if (line.isBlank()) continue;
+            if (line.startsWith("@ ") || line.startsWith("@\t")) {
+                if (selector != null) addProfile(byId, defaults, selector, rows, accessory);
+                selector = line.substring(2).strip();
+                rows.clear();
+            } else {
+                if (selector == null) throw new IllegalArgumentException("Option row without item selector");
+                rows.add(line);
             }
-            if (selector != null) addProfile(byId, defaults, selector, rows, accessory);
         }
+        if (selector != null) addProfile(byId, defaults, selector, rows, accessory);
         final int[] ids = new int[byId.size()];
         final Profile[][] profiles = new Profile[byId.size()][];
         int index = 0;
@@ -127,7 +159,7 @@ final class EquipmentOptionTable {
 
     private static void addProfile(TreeMap<Integer, Profile[]> byId, Profile[] defaults,
             String selector, ArrayList<String> rows, boolean accessory) {
-        final String[] fields = selector.split(" ");
+        final String[] fields = selector.split("\\s+");
         final int firstVariant;
         final int lastVariant;
         if (accessory && (fields.length == 2 || fields.length == 3)) {
@@ -173,9 +205,9 @@ final class EquipmentOptionTable {
         final int[][] steps = new int[rows.size()][];
         for (int i = 0; i < rows.size(); i++) {
             final String row = rows.get(i);
-            final int separator = row.indexOf(' ');
-            if (separator < 0) throw new IllegalArgumentException("Missing equipment effects in " + row);
-            final String range = row.substring(0, separator);
+            final String[] fields = row.split("\\s+", 2);
+            if (fields.length != 2) throw new IllegalArgumentException("Missing equipment effects in " + row);
+            final String range = fields[0];
             final int interval = range.indexOf("..");
             if (interval < 0) {
                 starts[i] = ends[i] = Integer.parseInt(range);
@@ -188,13 +220,13 @@ final class EquipmentOptionTable {
             if (starts[i] > ends[i] || (i > 0 && starts[i] <= ends[i - 1])) {
                 throw new IllegalArgumentException("Overlapping or invalid equipment enchant range " + row);
             }
-            steps[i] = parseSteps(row.substring(separator + 1).trim());
+            steps[i] = parseSteps(fields[1]);
         }
         return new Profile(starts, ends, steps);
     }
 
     private static int[] parseSteps(String effects) {
-        final String[] tokens = effects.split(", ");
+        final String[] tokens = effects.split(",\\s*", -1);
         final int[] steps = new int[tokens.length * OP_WIDTH];
         for (int i = 0; i < tokens.length; i++) {
             final String token = tokens[i];

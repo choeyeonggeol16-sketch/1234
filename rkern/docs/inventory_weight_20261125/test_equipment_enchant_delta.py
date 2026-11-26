@@ -10,8 +10,8 @@ stats_source = (model / "item/ItemStat.java").read_text(encoding="utf-8")
 stat_names = re.findall(r"^\s*([A-Z][A-Z0-9_]+)\s*\(\d+,\s*WType\.", stats_source, re.MULTILINE)
 assert len(stat_names) > 20
 production = [model / "inventory" / f"{name}.java" for name in (
-    "EquipmentEnchantOptions", "EquipmentOptionTable", "EquipmentOptionData"
-)]
+    "EquipmentEnchantOptions", "EquipmentOptionTable", "EquipmentOptionScript", "EquipmentTraits"
+)] + [model / "item/ItemScript.java"]
 
 harness = r'''
 package l1j.server.server.model.inventory;
@@ -87,6 +87,16 @@ public final class EnchantAudit {
 '''
 
 stubs = {
+    "l1j.server.server.model.inventory.CUserInventory": '''
+package l1j.server.server.model.inventory;
+public final class CUserInventory {
+    public boolean IsEquippedByClassIDCached(int itemId) { return false; }
+}
+''',
+    "l1j.server.server.model.character.skill.L1SkillId": '''
+package l1j.server.server.model.character.skill;
+public final class L1SkillId { public static final int TELEPORT_RULER = 1; }
+''',
     "l1j.server.server.model.item.ItemStat": f'''
 package l1j.server.server.model.item;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -152,4 +162,5 @@ with tempfile.TemporaryDirectory() as directory:
     logging.write_text(".level=OFF\n", encoding="utf-8")
     subprocess.run(["javac", "-encoding", "UTF-8", "-d", work, *production, *fixtures], check=True)
     subprocess.run(["java", "-ea", f"-Djava.util.logging.config.file={logging}", "-cp", work,
+                    f"-Drkern.equipment.options={root / 'src/script/equipment-options.txt'}",
                     "l1j.server.server.model.inventory.EnchantAudit"], check=True, timeout=30)

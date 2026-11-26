@@ -1,0 +1,144 @@
+# Doll potential effects and tooltips. Fields are separated by tabs.
+# Potential ID, OPTION=value, then text=legacy client text.
+# {VALUE} inserts the first effect value, {ALL_STATS} requires matching stat values.
+# AC uses a negative applied modifier for positive defensive strength.
+
+1	MELEE_CRITICAL=1	text=\fH[잠재력 강화: 일반]	text=\fH근거리 치명타: \aA{VALUE}%
+2	BOW_CRITICAL=1	text=\fH[잠재력 강화: 일반]	text=\fH원거리 치명타: \aA{VALUE}%
+3	MAGIC_CRITICAL=1	text=\fH[잠재력 강화: 일반]	text=\fH마법 치명타: \aA{VALUE}%
+4	MELEE_DAMAGE=1	text=\fH[잠재력 강화: 일반]	text=\fH근거리 대미지: \aA{VALUE}
+5	BOW_DAMAGE=1	text=\fH[잠재력 강화: 일반]	text=\fH원거리 대미지: \aA{VALUE}
+6	MELEE_HIT=1	text=\fH[잠재력 강화: 일반]	text=\fH근거리 명중: \aA{VALUE}
+7	BOW_HIT=1	text=\fH[잠재력 강화: 일반]	text=\fH원거리 명중: \aA{VALUE}
+8	DAMAGE_REDUCTION=1	text=\fH[잠재력 강화: 일반]	text=\fH대미지 감소: \aA{VALUE}
+9	AC=-1	text=\fH[잠재력 강화: 일반]	text=\fH추가 방어력: \aA{VALUE}
+10	MR=3	text=\fH[잠재력 강화: 일반]	text=\fHMR: \aA{VALUE}
+11	MAX_HP=30	text=\fH[잠재력 강화: 일반]	text=\fH최대 HP: \aA{VALUE}
+12	MAX_MP=20	text=\fH[잠재력 강화: 일반]	text=\fH최대 MP: \aA{VALUE}
+13	PVP_DAMAGE=1	text=\fH[잠재력 강화: 일반]	text=\fHPVP 추가 대미지: \aA{VALUE}
+14	PVP_REDUCTION=1	text=\fH[잠재력 강화: 일반]	text=\fHPVP 대미지 감소: \aA{VALUE}
+15	FIRE_RESIST=10	text=\fH[잠재력 강화: 일반]	text=\fH속성 저항: \aA불 {VALUE}
+16	EARTH_RESIST=10	text=\fH[잠재력 강화: 일반]	text=\fH속성 저항: \aA땅 {VALUE}
+17	WATER_RESIST=10	text=\fH[잠재력 강화: 일반]	text=\fH속성 저항: \aA물 {VALUE}
+18	WIND_RESIST=10	text=\fH[잠재력 강화: 일반]	text=\fH속성 저항: \aA바람 {VALUE}
+19	WEIGHT=100	text=\fH[잠재력 강화: 일반]	text=\fH소지 무게 증가: \aA{VALUE}
+20	MELEE_CRITICAL=3	text=\aH[잠재력 강화: 고급]	text=\aH근거리 치명타: \aA{VALUE}%
+21	BOW_CRITICAL=3	text=\aH[잠재력 강화: 고급]	text=\aH원거리 치명타: \aA{VALUE}%
+22	MAGIC_CRITICAL=3	text=\aH[잠재력 강화: 고급]	text=\aH마법 치명타: \aA{VALUE}%
+23	MELEE_DAMAGE=2	text=\aH[잠재력 강화: 고급]	text=\aH근거리 대미지: \aA{VALUE}
+24	BOW_DAMAGE=2	text=\aH[잠재력 강화: 고급]	text=\aH원거리 대미지: \aA{VALUE}
+25	MELEE_HIT=2	text=\aH[잠재력 강화: 고급]	text=\aH근거리 명중: \aA{VALUE}
+26	BOW_HIT=2	text=\aH[잠재력 강화: 고급]	text=\aH원거리 명중: \aA{VALUE}
+27	DAMAGE_REDUCTION=2	text=\aH[잠재력 강화: 고급]	text=\aH대미지 감소: \aA{VALUE}
+28	AC=-2	text=\aH[잠재력 강화: 고급]	text=\aH추가 방어력: \aA{VALUE}
+29	MR=6	text=\aH[잠재력 강화: 고급]	text=\aHMR: \aA{VALUE}
+30	MAX_HP=60	text=\aH[잠재력 강화: 고급]	text=\aH최대 HP: \aA{VALUE}
+31	MAX_MP=40	text=\aH[잠재력 강화: 고급]	text=\aH최대 MP: \aA{VALUE}
+32	DG=3	text=\aH[잠재력 강화: 고급]	text=\aHDG: \aA{VALUE}
+33	HP_TICK=30	text=\aH[잠재력 강화: 고급]	text=\aHHP 절대 회복: \aA{VALUE}(32초)
+34	MP_TICK=10	text=\aH[잠재력 강화: 고급]	text=\aHMP 절대 회복: \aA{VALUE}(64초)
+35	ER=3	text=\aH[잠재력 강화: 고급]	text=\aHER: \aA{VALUE}
+36	PVP_DAMAGE=2	text=\aH[잠재력 강화: 고급]	text=\aHPVP 추가 대미지: \aA{VALUE}
+37	PVP_REDUCTION=2	text=\aH[잠재력 강화: 고급]	text=\aHPVP 대미지 감소: \aA{VALUE}
+38	SKILL=12129	text=\aH[잠재력 강화: 고급]	text=\aHPVP마법대미지 감소: \aA+2%
+39	RESIST_ABILITY=3	text=\aH[잠재력 강화: 고급]	text=\aH내성 :\aA기술 {VALUE}
+40	RESIST_SPIRIT=3	text=\aH[잠재력 강화: 고급]	text=\aH내성 :\aA정령 {VALUE}
+41	RESIST_DRAGON_SPELL=3	text=\aH[잠재력 강화: 고급]	text=\aH내성 :\aA용언 {VALUE}
+42	RESIST_FEAR=3	text=\aH[잠재력 강화: 고급]	text=\aH내성 :\aA공포 {VALUE}
+43	FIRE_RESIST=20	text=\aH[잠재력 강화: 고급]	text=\aH속성 저항: \aA불{VALUE}
+44	EARTH_RESIST=20	text=\aH[잠재력 강화: 고급]	text=\aH속성 저항: \aA땅{VALUE}
+45	WATER_RESIST=20	text=\aH[잠재력 강화: 고급]	text=\aH속성 저항: \aA물{VALUE}
+46	WIND_RESIST=20	text=\aH[잠재력 강화: 고급]	text=\aH속성 저항: \aA바람{VALUE}
+47	STR=1	text=\aH[잠재력 강화: 고급]	text=\aH스탯: \aASTR {VALUE}
+48	DEX=1	text=\aH[잠재력 강화: 고급]	text=\aH스탯: \aADEX {VALUE}
+49	CON=1	text=\aH[잠재력 강화: 고급]	text=\aH스탯: \aACON {VALUE}
+50	WIS=1	text=\aH[잠재력 강화: 고급]	text=\aH스탯: \aAWIS {VALUE}
+51	INT=1	text=\aH[잠재력 강화: 고급]	text=\aH스탯: \aAINT {VALUE}
+52	WEIGHT=200	text=\aH[잠재력 강화: 고급]	text=\aH소지 무게 증가: \aA{VALUE}
+53	MELEE_CRITICAL=5	text=\aL[잠재력 강화: 희귀]	text=\aL근거리 치명타: \aA{VALUE}%
+54	BOW_CRITICAL=5	text=\aL[잠재력 강화: 희귀]	text=\aL원거리 치명타: \aA{VALUE}%
+55	MAGIC_CRITICAL=5	text=\aL[잠재력 강화: 희귀]	text=\aL마법 치명타: \aA{VALUE}%
+56	MELEE_DAMAGE=3	text=\aL[잠재력 강화: 희귀]	text=\aL근거리 대미지: \aA{VALUE}
+57	BOW_DAMAGE=3	text=\aL[잠재력 강화: 희귀]	text=\aL원거리 대미지: \aA{VALUE}
+58	MELEE_HIT=3	text=\aL[잠재력 강화: 희귀]	text=\aL근거리 명중: \aA{VALUE}
+59	BOW_HIT=3	text=\aL[잠재력 강화: 희귀]	text=\aL원거리 명중: \aA{VALUE}
+60	SP=3	text=\aL[잠재력 강화: 희귀]	text=\aLSP: \aA{VALUE}
+61	MAGIC_HIT=3	text=\aL[잠재력 강화: 희귀]	text=\aL마법적중: \aA{VALUE}
+62	DAMAGE_REDUCTION=3	text=\aL[잠재력 강화: 희귀]	text=\aL대미지감소: \aA{VALUE}
+63	AC=-3	text=\aL[잠재력 강화: 희귀]	text=\aL추가 방어력: \aA{VALUE}
+64	MR=10	text=\aL[잠재력 강화: 희귀]	text=\aLMR: \aA{VALUE}
+65	MAX_HP=150	text=\aL[잠재력 강화: 희귀]	text=\aL최대 HP: \aA{VALUE}
+66	MAX_MP=100	text=\aL[잠재력 강화: 희귀]	text=\aL최대 MP: \aA{VALUE}
+67	DG=5	text=\aL[잠재력 강화: 희귀]	text=\aLDG: \aA{VALUE}
+68	HP_TICK=50	text=\aL[잠재력 강화: 희귀]	text=\aLHP절대 회복: \aA{VALUE}(32초)
+69	MP_TICK=12	text=\aL[잠재력 강화: 희귀]	text=\aLMP절대 회복: \aA{VALUE}(64초)
+70	ER=5	text=\aL[잠재력 강화: 희귀]	text=\aLER: \aA{VALUE}
+71	PVP_DAMAGE=3	text=\aL[잠재력 강화: 희귀]	text=\aLPVP 추가 대미지: \aA{VALUE}
+72	PVP_REDUCTION=3	text=\aL[잠재력 강화: 희귀]	text=\aLPVP 대미지 감소: \aA{VALUE}
+73	SKILL=12128	text=\aL[잠재력 강화: 희귀]	text=\aLPVP마법대미지 감소 :\aA+5%
+74	RESIST_ABILITY=5	text=\aL[잠재력 강화: 희귀]	text=\aL내성 :\aA기술 {VALUE}
+75	RESIST_SPIRIT=5	text=\aL[잠재력 강화: 희귀]	text=\aL내성 :\aA정령 {VALUE}
+76	RESIST_DRAGON_SPELL=5	text=\aL[잠재력 강화: 희귀]	text=\aL내성 :\aA용언 {VALUE}
+77	RESIST_FEAR=5	text=\aL[잠재력 강화: 희귀]	text=\aL내성 :\aA공포 {VALUE}
+78	PIERCE_ABILITY=3	text=\aL[잠재력 강화: 희귀]	text=\aL적중 :\aA기술 {VALUE}
+79	PIERCE_SPIRIT=3	text=\aL[잠재력 강화: 희귀]	text=\aL적중 :\aA정령 {VALUE}
+80	PIERCE_DRAGON_SPELL=3	text=\aL[잠재력 강화: 희귀]	text=\aL적중 :\aA용언 {VALUE}
+81	PIERCE_FEAR=3	text=\aL[잠재력 강화: 희귀]	text=\aL적중 :\aA공포 {VALUE}
+82	FIRE_RESIST=30	text=\aL[잠재력 강화: 희귀]	text=\aL속성 저항: \aA불{VALUE}
+83	EARTH_RESIST=30	text=\aL[잠재력 강화: 희귀]	text=\aL속성 저항: \aA땅{VALUE}
+84	WATER_RESIST=30	text=\aL[잠재력 강화: 희귀]	text=\aL속성 저항: \aA물{VALUE}
+85	WIND_RESIST=30	text=\aL[잠재력 강화: 희귀]	text=\aL속성 저항: \aA바람{VALUE}
+86	ELEMENT_RESIST=10	text=\aL[잠재력 강화: 희귀]	text=\aL모든 속성 저항: \aA{VALUE}
+87	STR=2	text=\aL[잠재력 강화: 희귀]	text=\aL스탯: \aASTR{VALUE}
+88	DEX=2	text=\aL[잠재력 강화: 희귀]	text=\aL스탯: \aADEX{VALUE}
+89	CON=2	text=\aL[잠재력 강화: 희귀]	text=\aL스탯: \aACON{VALUE}
+90	WIS=2	text=\aL[잠재력 강화: 희귀]	text=\aL스탯: \aAWIS{VALUE}
+91	INT=2	text=\aL[잠재력 강화: 희귀]	text=\aL스탯: \aAINT{VALUE}
+92	WEIGHT=300	text=\aL[잠재력 강화: 희귀]	text=\aL소지 무게 증가: \aA{VALUE}
+93	MELEE_DAMAGE=5	text=\f3[잠재력 강화: 영웅]	text=\f3근거리 대미지: \aA{VALUE}
+94	BOW_DAMAGE=5	text=\f3[잠재력 강화: 영웅]	text=\f3원거리 대미지: \aA{VALUE}
+95	MELEE_HIT=5	text=\f3[잠재력 강화: 영웅]	text=\f3근거리 명중: \aA{VALUE}
+96	BOW_HIT=5	text=\f3[잠재력 강화: 영웅]	text=\f3원거리 명중: \aA{VALUE}
+97	SP=5	text=\f3[잠재력 강화: 영웅]	text=\f3SP: \aA{VALUE}
+98	MAGIC_HIT=5	text=\f3[잠재력 강화: 영웅]	text=\f3마법적중: \aA{VALUE}
+99	DAMAGE_REDUCTION=5	text=\f3[잠재력 강화: 영웅]	text=\f3대미지감소: \aA{VALUE}
+100	AC=-5	text=\f3[잠재력 강화: 영웅]	text=\f3추가 방어력: \aA{VALUE}
+101	MR=15	text=\f3[잠재력 강화: 영웅]	text=\f3MR: \aA{VALUE}
+102	MAX_HP=300	text=\f3[잠재력 강화: 영웅]	text=\f3최대 HP: \aA{VALUE}
+103	MAX_MP=200	text=\f3[잠재력 강화: 영웅]	text=\f3최대 MP: \aA{VALUE}
+104	DG=10	text=\f3[잠재력 강화: 영웅]	text=\f3DG: \aA{VALUE}
+105	HP_TICK=150	text=\f3[잠재력 강화: 영웅]	text=\f3HP절대 회복: \aA{VALUE}(32초)
+106	MP_TICK=30	text=\f3[잠재력 강화: 영웅]	text=\f3MP절대 회복: \aA{VALUE}(64초)
+107	ER=12	text=\f3[잠재력 강화: 영웅]	text=\f3ER: \aA{VALUE}
+108	PVP_DAMAGE=7	text=\f3[잠재력 강화: 영웅]	text=\f3PVP 추가 대미지: \aA{VALUE}
+109	PVP_REDUCTION=7	text=\f3[잠재력 강화: 영웅]	text=\f3PVP 대미지 감소: \aA{VALUE}
+110	SKILL=12127	text=\f3[잠재력 강화: 영웅]	text=\f3PVP마법대미지 감소 :\aA+10%
+111	SKILL=12126	text=\f3[잠재력 강화: 영웅]	text=\f3PVP대미지감소무시 :\aA+10
+112	RESIST_ABILITY=8	text=\f3[잠재력 강화: 영웅]	text=\f3내성 :\aA기술 {VALUE}
+113	RESIST_SPIRIT=8	text=\f3[잠재력 강화: 영웅]	text=\f3내성 :\aA정령 {VALUE}
+114	RESIST_DRAGON_SPELL=8	text=\f3[잠재력 강화: 영웅]	text=\f3내성 :\aA용언 {VALUE}
+115	RESIST_FEAR=8	text=\f3[잠재력 강화: 영웅]	text=\f3내성 :\aA공포 {VALUE}
+116	RESIST_ALL=3	text=\f3[잠재력 강화: 영웅]	text=\f3모든 내성 :\aA{VALUE}
+117	PIERCE_ABILITY=5	text=\f3[잠재력 강화: 영웅]	text=\f3적중 :\aA기술 {VALUE}
+118	PIERCE_SPIRIT=5	text=\f3[잠재력 강화: 영웅]	text=\f3적중 :\aA정령 {VALUE}
+119	PIERCE_DRAGON_SPELL=5	text=\f3[잠재력 강화: 영웅]	text=\f3적중 :\aA용언 {VALUE}
+120	PIERCE_FEAR=5	text=\f3[잠재력 강화: 영웅]	text=\f3적중 :\aA공포 {VALUE}
+121	PIERCE_ALL=3	text=\f3[잠재력 강화: 영웅]	text=\f3모든 적중 :\aA{VALUE}
+122	ELEMENT_RESIST=30	text=\f3[잠재력 강화: 영웅]	text=\f3모든 속성 저항: \aA{VALUE}
+123	STR=3	text=\f3[잠재력 강화: 영웅]	text=\f3스탯: \aASTR {VALUE}
+124	DEX=3	text=\f3[잠재력 강화: 영웅]	text=\f3스탯: \aADEX {VALUE}
+125	CON=3	text=\f3[잠재력 강화: 영웅]	text=\f3스탯: \aACON {VALUE}
+126	WIS=3	text=\f3[잠재력 강화: 영웅]	text=\f3스탯: \aAWIS {VALUE}
+127	INT=3	text=\f3[잠재력 강화: 영웅]	text=\f3스탯: \aAINT {VALUE}
+128	STR=1	DEX=1	CON=1	WIS=1	INT=1	text=\f3[잠재력 강화: 영웅]	text=\f3모든 스탯: \aA{ALL_STATS}
+129	SKILL=12122	text=\f3[잠재력 강화: 영웅]	text=\f3MP 흡수
+130	WEIGHT=500	text=\f3[잠재력 강화: 영웅]	text=\f3소지 무게 증가: \aA{VALUE}
+131	SKILL=12121	text=\f4[잠재력 강화: 전설]	text=\f4디케이 포션 발동
+132	SKILL=12131	text=\f4[잠재력 강화: 전설]	text=\f4PVP대미지감소무시 :\aA{PVP_IGNORE}
+133	STR=3	DEX=3	CON=3	WIS=3	INT=3	text=\f4[잠재력 강화: 전설]	text=\f4모든 스탯 :\aA{ALL_STATS}
+134	SKILL=12124	text=\f4[잠재력 강화: 전설]	text=\f4HP 흡수
+135	SKILL=12123	text=\f4[잠재력 강화: 전설]	text=\f4MP 흡수
+136	SKILL=12125	text=\f4[잠재력 강화: 전설]	text=\f4소울오브프레임 발동
+137	SKILL=12130	text=\f4[잠재력 강화: 전설]	text=\f4이뮨투함 무시 \aA{IMMUNE_IGNORE}%
+138	SKILL=12137	text=\f4[잠재력 강화: 전설]	text=\f4저지먼트 발동
+139	PEARL=12138	text=\f4[잠재력 강화: 전설]	text=\f43단가속 상시 효과

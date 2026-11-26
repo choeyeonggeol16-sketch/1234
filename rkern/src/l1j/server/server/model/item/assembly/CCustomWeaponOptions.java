@@ -3,7 +3,10 @@ package l1j.server.server.model.item.assembly;
 import java.io.IOException;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.inventory.EquipmentEnchantOptions;
 import l1j.server.server.model.item.EquipmentBlessing;
+import l1j.server.server.model.item.ItemStat;
+import l1j.server.server.utils.eKind;
 import l1j.server.server.shared.stream.PresentationOutputStream;
 import l1j.server.server.templates.L1Item;
 
@@ -13,15 +16,11 @@ final class CCustomWeaponOptions {
 
     static byte[] assemble(L1ItemInstance item) throws IOException {
         final PresentationOutputStream out = switch (item.getItemId()) {
-            case 123777 -> assembleMelee(item, 40, 5, 22);
-            case 123888 -> assembleMelee(item, 44, 5, 18);
-            case 123666 -> assembleMagic(item, 25, 5, 22, true);
+            case 123777, 123888, 123555, 123444, 124111 -> assembleMelee(item);
+            case 123666 -> assembleMagic(item, 5, true);
             case 123800 -> assembleRanged(item);
             case 123900 -> assembleDrainWeapon(item);
-            case 123555 -> assembleMelee(item, 44, 5, 20);
-            case 123444 -> assembleMelee(item, 36, 5, 21);
-            case 123333 -> assembleMagic(item, 44, 2, 0, false);
-            case 124111 -> assembleMelee(item, 41, 5, 19);
+            case 123333 -> assembleMagic(item, 2, false);
             case 123999 -> assembleReaperSword(item);
             default -> null;
         };
@@ -37,24 +36,25 @@ final class CCustomWeaponOptions {
         return out.toArray();
     }
 
-    private static PresentationOutputStream assembleMelee(L1ItemInstance item, int damage,
-            int enchantDamage, int hit) throws IOException {
+    private static PresentationOutputStream assembleMelee(L1ItemInstance item) throws IOException {
         final L1Item template = item.getItem();
         final int enchant = item.getEnchantLevel();
         return weaponInfo(item)
                 .write_str(template.get_addstr())
                 .write_time(item)
-                .write_text(damageAndHit(damage, enchantDamage, enchant, hit + enchant + enchant / 2))
-                .write_text(criticalText(7, enchant))
+                .write_text(damageAndHit(template.getDmgModifier(), 5, enchant,
+                        template.getHitModifier() + enchant + enchant / 2))
+                .write_text(criticalText(template.get_melee_critical_probability(), enchant))
                 .write_weapon_level_options(item)
                 .write_magic_name(item, template.getMagicName());
     }
 
-    private static PresentationOutputStream assembleMagic(L1ItemInstance item, int damage,
-            int enchantDamage, int hit, boolean addEnchantHit) throws IOException {
+    private static PresentationOutputStream assembleMagic(L1ItemInstance item, int enchantDamage,
+            boolean addEnchantHit) throws IOException {
         final L1Item template = item.getItem();
         final int enchant = item.getEnchantLevel();
-        final int totalHit = hit + (addEnchantHit ? enchant : 0) + enchant / 2;
+        final int damage = addEnchantHit ? template.getDmgModifier() : template.getDmgSmall();
+        final int totalHit = template.getHitModifier() + (addEnchantHit ? enchant : 0) + enchant / 2;
         return weaponInfo(item)
                 .write_str(template.get_addstr())
                 .write_int(template.get_addint())
@@ -75,18 +75,21 @@ final class CCustomWeaponOptions {
                 .write_weapon_etc_info1(template, item.get_durability())
                 .write_dex(template.get_adddex())
                 .write_time(item)
-                .write_text(damageAndHit(39, 5, enchant, 18 + enchant + enchant / 2))
-                .write_text(criticalText(10, enchant))
+                .write_text(damageAndHit(template.getDmgModifier(), 5, enchant,
+                        template.getHitModifier() + enchant + enchant / 2))
+                .write_text(criticalText(template.get_missile_critical_probability(), enchant))
                 .write_magic_name(item, template.getMagicName());
     }
 
     private static PresentationOutputStream assembleDrainWeapon(L1ItemInstance item) throws IOException {
+        final L1Item template = item.getItem();
         final int enchant = item.getEnchantLevel();
         return weaponInfo(item)
                 .write_drain_hp()
                 .write_time(item)
-                .write_text(damageAndHit(36, 5, enchant, 20 + enchant + enchant / 2))
-                .write_text(criticalText(7, enchant))
+                .write_text(damageAndHit(template.getDmgModifier(), 5, enchant,
+                        template.getHitModifier() + enchant + enchant / 2))
+                .write_text(criticalText(template.get_melee_critical_probability(), enchant))
                 .write_weapon_level_options(item)
                 .write_magic_name(item, item.getItem().getMagicName());
     }
@@ -102,13 +105,21 @@ final class CCustomWeaponOptions {
                 .write_con(template.get_addcon())
                 .write_short_hit(template.getHitModifier() + enchant / 2)
                 .write_addsub_short_damage(template.getDmgModifier())
-                .write_short_critical(template.get_melee_critical_probability() + enchant)
-                .writeFearPierce(3 + enchant)
-                .writeAbilityPierce(3 + enchant)
-                .writeSpiritPierce(3 + enchant)
+                .write_short_critical(template.get_melee_critical_probability()
+                        + weaponOption(item, ItemStat.MELEE_CRITICAL_RATE))
+                .writeFearPierce(template.getSpecialStats().getPierce(eKind.FEAR)
+                        + weaponOption(item, ItemStat.FEAR_PLERCE))
+                .writeAbilityPierce(template.getSpecialStats().getPierce(eKind.ABILITY)
+                        + weaponOption(item, ItemStat.ABILITY_PLERCE))
+                .writeSpiritPierce(template.getSpecialStats().getPierce(eKind.SPIRIT)
+                        + weaponOption(item, ItemStat.SPIRIT_PLERCE))
                 .write_time(item)
                 .write_weapon_level_options(item)
                 .write_magic_name(item, template.getMagicName());
+    }
+
+    private static int weaponOption(L1ItemInstance item, ItemStat stat) {
+        return EquipmentEnchantOptions.weaponOptionValue(item.getItemId(), item.getEnchantLevel(), stat);
     }
 
     private static PresentationOutputStream weaponInfo(L1ItemInstance item) throws IOException {
