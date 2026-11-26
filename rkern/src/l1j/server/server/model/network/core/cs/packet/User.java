@@ -249,26 +249,37 @@ public final class User {
     /** The L1 client submits both store lists in one packet. The OFF User
      * admission and list-set/quit roles are kept without inventing a manage packet. */
     static void OnPrivateStorePacket(CUserSocket client, int type, byte[] data) {
+        OnPrivateStorePacket(client, type, data, null, false);
+    }
+
+    static void OnPrivateStorePacket(CUserSocket client, int type, CS_ActionUi.ShopPayload payload) {
+        OnPrivateStorePacket(client, type, null, payload, true);
+    }
+
+    private static void OnPrivateStorePacket(CUserSocket client, int type, byte[] data,
+            CS_ActionUi.ShopPayload payload, boolean actionUi) {
         if (client == null || (type != 0 && type != 1)) return;
         final L1PcInstance pc = client.getActiveChar();
         if (pc == null) return;
         final int stamp = pc.getSessionStamp();
-        final int token = pc.tryReserveItemTransfer(client, stamp);
-        if (token == 0) return;
+        // Existing reentrant synchronous inventory gate: UI morph removal may
+        // call equipment methods, and both wire formats must exclude settlement.
+        if (!pc.isItemTransferSession(client, stamp) || !pc.getInventory().tryBeginEquipmentChange()) return;
         try {
+            if (!pc.isItemTransferSession(client, stamp)) return;
             if (type == 1) {
-                // A close must remain possible even after death, morph or map change.
-                if (pc.isPrivateShop()) QuitPrivateStore(pc);
+                if (pc.isPrivateShop() && (!actionUi || !pc.isPrivateReady())) QuitPrivateStore(pc);
                 return;
             }
-            if (!CanOpenPrivateStore(pc)) return;
-            SetPrivateStoreList(pc, client, stamp, data);
+            if (!CanOpenPrivateStore(pc, actionUi)) return;
+            if (actionUi) SetPrivateStoreList(pc, client, stamp, payload);
+            else SetPrivateStoreList(pc, client, stamp, data);
         } finally {
-            pc.endItemTransfer(token);
+            pc.getInventory().endEquipmentChange();
         }
     }
 
-    private static boolean CanOpenPrivateStore(L1PcInstance pc) {
+    private static boolean CanOpenPrivateStore(L1PcInstance pc, boolean actionUi) {
         if (pc.isDead() || pc.isGhost() || pc.get_teleport() || pc.isLogoutStarted()
                 || pc.GetTrade() != null || CTrade.HasPendingTradeBlocker(pc)) return false;
         if (pc.isInvisble()) {
@@ -285,7 +296,7 @@ public final class User {
             SC_ChatPacket.sendDirect(pc, pc, "룬을 착용하셨다면 해제하시기 바랍니다.");
             return false;
         }
-        if (pc.getCurrentSpriteId() != pc.getClassId() && !pc.isPrivateShop()
+        if (!actionUi && pc.getCurrentSpriteId() != pc.getClassId() && !pc.isPrivateShop()
                 && pc.getSkillEffectTimeSec(L1SkillId.SHAPE_CHANGE) <= 0) {
             SC_SystemMessage.send(pc, "변신 아이템을 해제하세요.");
             return false;
@@ -462,8 +473,78 @@ public final class User {
             System.arraycopy(data, cursor, chat, 0, chatLength);
         }
 
-        if (!pc.isItemTransferSession(session, stamp) || !CanOpenPrivateStore(pc)) return;
+        CompletePrivateStoreOpen(pc, session, stamp, sells, buys, chat, resolveShopPoly(chat), false);
+    }
+
+    /** ActionUI uses explicit entry tags and a separate skin string, not the old wire layout. */
+    private static void SetPrivateStoreList(L1PcInstance pc, CUserSocket session, int stamp,
+            CS_ActionUi.ShopPayload payload) {
+        if (payload == null || payload.count <= 0 || payload.count > MAX_SHOP_ITEMS * 2
+                || payload.entries == null || payload.entries.length < payload.count * 4) return;
+        if (!pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 1000)) {
+            SC_ChatPacket.sendDirect(pc, pc, "\\aG상점 설치는 1,000원이 필요합니다.");
+            return;
+        }
+        for (L1PcInstance other : L1World.getInstance().getAllPlayers3()) {
+            if (other != pc && other.getId() != pc.getId() && other.isPrivateShop()
+                    && pc.getAccountName().equalsIgnoreCase(other.getAccountName())) {
+                SC_SystemMessage.send(pc, "이미 당신의 보조 캐릭터가 무인상점 상태입니다.");
+                if (pc.isPrivateShop()) QuitPrivateStore(pc);
+                return;
+            }
+        }
+        ArrayList<DynamicShopItem> sells = null, buys = null;
+        for (int i = 0; i < payload.count; i++) {
+            final int base = i << 2;
+            final int type = payload.entries[base];
+            if (type != 0x12 && type != 0x1A) return;
+            final boolean purchase = type == 0x1A;
+            final int id = payload.entries[base + 1], price = payload.entries[base + 2],
+                    amount = payload.entries[base + 3];
+            final L1ItemInstance item = pc.getInventory().GetByServerID(id);
+            if (id <= 0 || item == null || item.getId() != id || item.getItem() == null
+                    || item.getCount() <= 0 || amount <= 0 || price <= 0
+                    || item.getItemId() == L1ItemId.ADENA || (long) price * amount > CInventory.MAX_AMOUNT
+                    || (!item.isStackable() && amount != 1)
+                    || (!purchase && (item.isEquipped() || amount > item.getCount()))
+                    || containsListing(sells, id) || containsListing(buys, id)) {
+                SC_Disconnect.send(pc);
+                return;
+            }
+            if (item.getBless() >= 128 || !item.getItem().isTradable()
+                    || !CompanionInstanceCache.is_companion_oblivion(id)
+                    || IsCompanionItem(pc, id) || IsDollItem(pc, id)) {
+                sendNotTradable(pc, item);
+                return;
+            }
+            ArrayList<DynamicShopItem> list = purchase ? buys : sells;
+            if (list == null) {
+                list = new ArrayList<>(MAX_SHOP_ITEMS);
+                if (purchase) buys = list; else sells = list;
+            }
+            if (list.size() >= MAX_SHOP_ITEMS) {
+                sendMaxItems(pc);
+                return;
+            }
+            list.add(DynamicShopItem.create(item, amount, price, purchase));
+        }
+        final byte[] chat = payload.chat == null ? EMPTY_CHAT : payload.chat;
+        CompletePrivateStoreOpen(pc, session, stamp, sells, buys, chat, resolveShopPoly(payload.polyNum), true);
+    }
+
+    private static void CompletePrivateStoreOpen(L1PcInstance pc, CUserSocket session, int stamp,
+            ArrayList<DynamicShopItem> sells, ArrayList<DynamicShopItem> buys,
+            byte[] chat, int poly, boolean actionUi) {
+        if (!pc.isItemTransferSession(session, stamp) || !CanOpenPrivateStore(pc, actionUi)) return;
         if (!PublishPrivateStoreList(pc, sells, buys, chat)) return;
+        if (actionUi) {
+            // Same ActionUI morph semantics as before; after accepted list and
+            // under the reentrant gate, never against a rejected registration.
+            L1PolyMorph.undoPoly(pc);
+            pc.killSkillEffectTimer(L1SkillId.SHAPE_CHANGE);
+            if (pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER))
+                pc.removeSkillEffect(L1SkillId.POLY_RING_MASTER);
+        }
         final CUserSocket client = session;
 
         if (client != null && client.getAccount() != null) {
@@ -472,8 +553,6 @@ public final class User {
 
         SC_DoActionShop.send(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
         SC_DoActionShop.broadcast(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
-
-        final int poly = resolveShopPoly(chat);
 
         pc.상점변신 = poly;
         pc.setCurrentSprite(poly);
@@ -549,12 +628,12 @@ public final class User {
         return false;
     }
 
-    static boolean IsCompanionItem(L1PcInstance pc, int itemObjectId) {
+    public static boolean IsCompanionItem(L1PcInstance pc, int itemObjectId) {
         final var companion = pc.get_companion();
         return companion != null && companion.get_control_object_id() == itemObjectId;
     }
 
-    static boolean IsDollItem(L1PcInstance pc, int itemObjectId) {
+    public static boolean IsDollItem(L1PcInstance pc, int itemObjectId) {
 
         for (Object value : pc.getDollList().values()) {
             if (value instanceof L1DollInstance) {
@@ -572,6 +651,15 @@ public final class User {
     // =========================================================
     // CHAT -> POLY (상점 스킨 변신)
     // =========================================================
+
+    private static int resolveShopPoly(String skin) {
+        if (skin == null || skin.length() != 10 || !skin.regionMatches(true, 0, "tradezone", 0, 9)) return 0;
+        return switch (skin.charAt(9)) {
+            case '1' -> 11479; case '2' -> 11483; case '3' -> 11480; case '4' -> 11485;
+            case '5' -> 11482; case '6' -> 11486; case '7' -> 11481; case '8' -> 11484;
+            default -> 0;
+        };
+    }
 
     private static int resolveShopPoly(byte[] chat) {
 

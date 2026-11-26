@@ -169,7 +169,7 @@ public final class CS_Result {
             return;
         }
 
-        if (isPrivateShop) {
+        if (isPrivateShop && (findObject != pc || pc.isPrivateShop())) {
             if (size > 0 && (resultType == 0 || resultType == 1))
                 User.PrivateStoreBuy(pc, (L1PcInstance) findObject, resultType == 1, size, packed0, params);
             return;

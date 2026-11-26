@@ -8,7 +8,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.appcenter.AppCenterService;
 import l1j.server.server.datatables.BossMonsterSpawnList;
 import l1j.server.server.datatables.ClanTable;
@@ -18,29 +17,19 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1ClanJoin;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.tam.TamFruitUseService;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
-import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
-import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
-import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_NewCreateItem;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TAM_WINDOW;
@@ -77,13 +66,6 @@ public final class CS_ActionUi {
     private static final Charset MS949 =
             Charset.forName("MS949");
 
-    private static final int[] RUNE_ARMOR_IDS = {
-            22232, 22233, 22234, 22235,
-            22236, 22237, 22238, 22239,
-            22240, 22241, 22242, 22243,
-            22244, 22245, 22246, 22247,
-            22248, 22249
-    };
 
     private static final int[] SKY_GARDEN_COORDS = {
             32779, 32825,
@@ -150,8 +132,8 @@ public final class CS_ActionUi {
 
             case NEWSHOP:
 
-                handleNewShop(
-                        pc,
+                User.OnPrivateStorePacket(
+                        client,
                         p1,
                         o0 instanceof ShopPayload
                                 ? (ShopPayload) o0
@@ -293,267 +275,7 @@ public final class CS_ActionUi {
         }
     }
 
-    private static void handleNewShop(
-            L1PcInstance pc,
-            int newShopType,
-            ShopPayload payload) {
 
-        if (pc.isItemTransferBusy() || pc.isTradeResolving()) return;
-        try {
-
-            if (!pc.getInventory()
-                    .HaveItemByClassId(
-                            40308,
-                            1000)) {
-
-                SC_ChatPacket.sendDirect(pc, pc, "\\aG상점 설치는 1,000원이 필요합니다.");
-
-                return;
-            }
-
-            if (pc.isInvisble()) {
-
-                SC_ServerMessage.send(pc, 755);
-
-                return;
-            }
-
-            if (pc.getMapId() != 800) {
-
-                if (pc.isFishing()) {
-
-                    pc.setFishing(false);
-                    pc.setFishingTime(0);
-                    pc.setFishingReady(false);
-
-                    SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
-
-                    SC_CharVisualUpdate.broadcastPacked(pc, SC_CharVisualUpdate.pack(pc));
-
-                    FishingTimeController
-                            .getInstance()
-                            .removeMember(pc);
-
-                    SC_ServerMessage.send(pc, 2120);
-
-                    return;
-                }
-
-                SC_SystemMessage.send(pc, "개인상점은 시장에서만 열 수 있습니다.");
-
-                return;
-            }
-
-            for (int runeId :
-                    RUNE_ARMOR_IDS) {
-
-                if (pc.getInventory()
-                        .IsEquippedByClassID(runeId)) {
-
-                    SC_ChatPacket.sendDirect(pc, pc, "룬을 착용하셨다면 해제하시기 바랍니다.");
-
-                    return;
-                }
-            }
-
-            L1PolyMorph.undoPoly(pc);
-
-            pc.killSkillEffectTimer(
-                    L1SkillId.SHAPE_CHANGE);
-
-            if (newShopType == 0) {
-
-                if (pc.getCurrentSpriteId()
-                        != pc.getClassId()) {
-
-                    SC_SystemMessage.send(pc, "변신이 해제됩니다.");
-                }
-
-                if (pc.hasSkillEffect(
-                        L1SkillId.SHAPE_CHANGE)) {
-
-                    pc.removeSkillEffect(
-                            L1SkillId.SHAPE_CHANGE);
-
-                } else if (pc.hasSkillEffect(
-                        L1SkillId.POLY_RING_MASTER)) {
-
-                    pc.removeSkillEffect(
-                            L1SkillId.POLY_RING_MASTER);
-
-                } else {
-
-                    L1PolyMorph.undoPoly(pc);
-                }
-
-                for (L1PcInstance target :
-                        L1World
-                                .getInstance()
-                                .getAllPlayers3()) {
-
-                    if (target.getId() != pc.getId()
-                            && target
-                                .getAccountName()
-                                .equalsIgnoreCase(
-                                        pc.getAccountName())
-                            && target.isPrivateShop()) {
-
-                        pc.sendPackets(
-                                "\\f3이미 당신의 보조 캐릭터가 무인상점 상태입니다.");
-
-                        if (pc.isPrivateShop() && !CS_PersonalShop.removeListings(pc)) return;
-
-                        pc.상점변신 = 0;
-
-                        SC_DoActionGFX.send(
-                                pc.getNetConnection(),
-                                pc.getId(),
-                                ActionCodes.ACTION_Idle);
-
-                        SC_DoActionGFX.broadcast(
-                                pc,
-                                ActionCodes.ACTION_Idle);
-
-                        SC_WorldPutObject.broadcastPc(pc);
-
-                        return;
-                    }
-                }
-
-                final int[] entries = payload == null ? EMPTY_SHOP_ENTRIES : payload.entries;
-                final int count = payload == null ? 0 : payload.count;
-                ArrayList<DynamicShopItem> sells = null;
-                ArrayList<DynamicShopItem> buys = null;
-                for (int i = 0; i < count; i++) {
-                    final int base = i << 2;
-                    final int type = entries[base];
-                    if (type != 0x12 && type != 0x1A) continue;
-                    final int objectId = entries[base + 1], price = entries[base + 2], amount = entries[base + 3];
-                    final boolean purchase = type == 0x1A;
-                    final L1ItemInstance item = pc.getInventory().GetByServerID(objectId);
-                    if (item == null || item.getCount() <= 0 || amount <= 0 || price <= 0
-                            || (!item.isStackable() && amount != 1)
-                            || (!purchase && (item.isEquipped() || amount > item.getCount()))
-                            || CS_PersonalShop.containsListing(sells, objectId)
-                            || CS_PersonalShop.containsListing(buys, objectId)) {
-                        SC_Disconnect.send(pc);
-                        return;
-                    }
-                    if (item.getBless() >= 128 || !item.getItem().isTradable()
-                            || !CompanionInstanceCache.is_companion_oblivion(objectId)
-                            || CS_PersonalShop.isPetItem(pc, objectId) || CS_PersonalShop.isDollItem(pc, objectId)) {
-                        SC_ServerMessage.send(pc, 166, item.getItem().getName(), "거래 불가능합니다.");
-                        return;
-                    }
-                    DynamicShopItem listing = DynamicShopItem.create(item, amount, price, purchase);
-                    if (purchase) {
-                        if (buys == null) buys = new ArrayList<>();
-                        buys.add(listing);
-                    } else {
-                        if (sells == null) sells = new ArrayList<>();
-                        sells.add(listing);
-                    }
-                }
-                if (!CS_PersonalShop.replaceListings(pc, sells, buys)) return;
-
-                final byte[] chat =
-                        payload != null
-                                ? payload.chat
-                                : new byte[0];
-
-                final String polyNum =
-                        payload != null
-                                ? payload.polyNum
-                                : null;
-
-                if (pc.getNetConnection() != null
-                        && pc.getNetConnection()
-                            .getAccount() != null) {
-
-                    SC_PacketBox.send(pc, 
-                                    SC_PacketBox.상점개설횟수,
-                                    pc.getNetConnection()
-                                        .getAccount()
-                                        .Shop_open_count);
-                }
-
-                pc.setShopChat(chat);
-
-                SC_DoActionShop.send(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
-
-                SC_DoActionShop.broadcast(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
-
-                int poly = 0;
-
-                if (polyNum != null) {
-
-                    if (polyNum.equalsIgnoreCase("tradezone1")) {
-                        poly = 11479;
-                    } else if (polyNum.equalsIgnoreCase("tradezone2")) {
-                        poly = 11483;
-                    } else if (polyNum.equalsIgnoreCase("tradezone3")) {
-                        poly = 11480;
-                    } else if (polyNum.equalsIgnoreCase("tradezone4")) {
-                        poly = 11485;
-                    } else if (polyNum.equalsIgnoreCase("tradezone5")) {
-                        poly = 11482;
-                    } else if (polyNum.equalsIgnoreCase("tradezone6")) {
-                        poly = 11486;
-                    } else if (polyNum.equalsIgnoreCase("tradezone7")) {
-                        poly = 11481;
-                    } else if (polyNum.equalsIgnoreCase("tradezone8")) {
-                        poly = 11484;
-                    }
-                }
-
-                pc.상점변신 = poly;
-
-                pc.setCurrentSprite(poly);
-
-                SC_ChangeShape.send(pc, pc.getId(), poly, 70);
-
-                SC_ChangeShape.broadcast(pc, pc.getId(), poly, 70);
-
-                SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
-
-                SC_CharVisualUpdate.broadcastPacked(pc, SC_CharVisualUpdate.pack(pc));
-
-                SC_WorldPutObject.broadcastPc(pc);
-
-                pc.curePoison();
-
-
-            } else if (newShopType == 1) {
-
-                if (pc.isPrivateReady()
-                        && pc.isPrivateShop()) {
-
-                    return;
-                }
-
-                if (!CS_PersonalShop.removeListings(pc)) return;
-
-                pc.상점변신 = 0;
-
-                SC_DoActionGFX.send(
-                        pc.getNetConnection(),
-                        pc.getId(),
-                        ActionCodes.ACTION_Idle);
-
-                SC_DoActionGFX.broadcast(
-                        pc,
-                        ActionCodes.ACTION_Idle);
-
-                L1PolyMorph
-                        .undoPolyPrivateShop(pc);
-
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-    }
 
     private static void handleEventTeleport(
             L1PcInstance pc) {

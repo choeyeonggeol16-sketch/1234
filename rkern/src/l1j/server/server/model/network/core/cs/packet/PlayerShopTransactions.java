@@ -11,6 +11,7 @@ import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CInventory;
+import l1j.server.server.model.CTrade;
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.item.L1ItemId;
@@ -30,7 +31,7 @@ final class PlayerShopTransactions {
         return customer != shop && customer.getId() != shop.getId()
                 && User.CanUsePrivateStore(customer) && shop.isPrivateShop()
                 && !shop.isDead() && !shop.isGhost() && !shop.get_teleport() && !shop.isLogoutStarted()
-                && shop.GetTrade() == null && !l1j.server.server.model.CTrade.HasPendingTradeBlocker(shop)
+                && shop.GetTrade() == null && !CTrade.HasPendingTradeBlocker(shop)
                 && customer.getMapId() == shop.getMapId()
                 && Math.abs((long) customer.getX() - shop.getX()) <= 12
                 && Math.abs((long) customer.getY() - shop.getY()) <= 12;

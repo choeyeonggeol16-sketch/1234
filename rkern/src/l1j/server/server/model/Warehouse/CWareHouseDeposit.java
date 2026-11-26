@@ -5,7 +5,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CInventory;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
-import l1j.server.server.model.network.core.cs.packet.CS_PersonalShop;
+import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -38,11 +38,11 @@ final class CWareHouseDeposit {
         if (kind != 8 && item.getItemdelay3() >= now) return false;
         if (item.isEquipped() || !item.getItem().isTradable() || (kind != 8 && item.getBless() >= 128)
                 || !CompanionInstanceCache.is_companion_oblivion(item.getId())
-                || CS_PersonalShop.isPetItem(pc, item.getId())) {
+                || User.IsCompanionItem(pc, item.getId())) {
             SC_ServerMessage.send(pc, 210, item.getItem().getName());
             return false;
         }
-        if (CS_PersonalShop.isDollItem(pc, item.getId())) {
+        if (User.IsDollItem(pc, item.getId())) {
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "현재 소환 된 인형은 맡길수가 없습니다.");
             return false;
         }
