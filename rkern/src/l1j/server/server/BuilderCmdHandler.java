@@ -34,19 +34,11 @@ import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.command.BuilderCmdPairType;
 import l1j.server.server.command.executor.L1CommandExecutor;
-import l1j.server.server.command.executor.L1Patrol;
 import l1j.server.server.command.executor.L1CheckCharacter;
 import l1j.server.server.command.executor.L1Search1;
-import l1j.server.server.command.executor.L1AccountBanKick;
 import l1j.server.server.command.executor.L1CheckPassword;
 import l1j.server.server.command.executor.L1ToSpawn;
-import l1j.server.server.command.executor.L1ChatNG2;
-import l1j.server.server.command.executor.L1AttackLog;
-import l1j.server.server.command.executor.L1RessBuff;
 import l1j.server.server.command.executor.L1RangeKick;
-import l1j.server.server.command.executor.L1GMRoom;
-import l1j.server.server.command.executor.L1ChangeWeather;
-import l1j.server.server.command.executor.L1Who;
 import l1j.server.server.command.executor.L1LetterCommand;
 import l1j.server.server.command.executor.L1DescIdWeapon;
 import l1j.server.server.command.executor.L1DescIdArmor;
@@ -115,7 +107,6 @@ import l1j.server.server.command.executor.L1PartyRecall;
 import l1j.server.server.command.executor.L1RemoveLetter;
 import l1j.server.server.command.executor.L1HpBar;
 import l1j.server.server.command.executor.L1HomeTown;
-import l1j.server.server.command.executor.L1AllBuff;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
 import l1j.server.server.datatables.AccountSettlementTable;
 import l1j.server.server.datatables.AutoLoot;
@@ -207,6 +198,13 @@ import l1j.server.server.utils.L1QueryUtil;
 import l1j.server.server.utils.L1SpawnUtil;
 import l1j.server.server.utils.SQLUtil;
 import l1j.server.server.utils.ServerMessage;
+import l1j.server.server.model.character.skill.L1BuffUtil;
+import l1j.server.server.model.network.core.sc.packet.SC_WhoAmount;
+import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.L1Location;
+import l1j.server.server.Account;
+import l1j.server.server.ThreadPool;
+
 public final class BuilderCmdHandler {
  
 	private static Logger _log = Logger.getLogger(BuilderCmdHandler.class.getName());
@@ -335,20 +333,20 @@ public final class BuilderCmdHandler {
 
 	private Map<String, BuilderCmdPairType> createBuilderCmdMap() {
 		final Map<String, BuilderCmdPairType> loaded = new LinkedHashMap<>(256);
-		registerExisting(loaded, "감시", L1Patrol::getInstance);
-		registerExisting(loaded, "개인버프", L1AllBuff::getInstance);
+		registerLegacy(loaded, "감시", BuilderCmdHandler::BuilderCmd_patrol);
+		registerLegacy(loaded, "개인버프", BuilderCmdHandler::BuilderCmd_all_buff);
 		registerExisting(loaded, "검사", L1CheckCharacter::getInstance);
 		registerExisting(loaded, "검색", L1Search1::getInstance);
-		registerExisting(loaded, "계정압류", L1AccountBanKick::getInstance);
+		registerLegacy(loaded, "계정압류", BuilderCmdHandler::BuilderCmd_account_ban_kick);
 		registerExisting(loaded, "계정정보", L1CheckPassword::getInstance);
 		registerExisting(loaded, "고스폰", L1ToSpawn::getInstance);
-		registerExisting(loaded, "공개채금", L1ChatNG2::getInstance);
-		registerExisting(loaded, "공격로그", L1AttackLog::getInstance);
-		registerExisting(loaded, "광역버프", L1RessBuff::getInstance);
+		registerLegacy(loaded, "공개채금", BuilderCmdHandler::BuilderCmd_public_chat_ban);
+		registerLegacy(loaded, "공격로그", BuilderCmdHandler::BuilderCmd_attack_log);
+		registerLegacy(loaded, "광역버프", BuilderCmdHandler::BuilderCmd_range_buff);
 		registerExisting(loaded, "광역추방", L1RangeKick::getInstance);
-		registerExisting(loaded, "귀환", L1GMRoom::getInstance);
-		registerExisting(loaded, "날씨", L1ChangeWeather::getInstance);
-		registerExisting(loaded, "누구", L1Who::getInstance);
+		registerLegacy(loaded, "귀환", BuilderCmdHandler::BuilderCmd_gm_room);
+		registerLegacy(loaded, "날씨", BuilderCmdHandler::BuilderCmd_change_weather);
+		registerLegacy(loaded, "누구", BuilderCmdHandler::BuilderCmd_who);
 		registerExisting(loaded, "답장", L1LetterCommand::getInstance);
 		registerExisting(loaded, "데무", L1DescIdWeapon::getInstance);
 		registerExisting(loaded, "데방", L1DescIdArmor::getInstance);
@@ -984,7 +982,7 @@ public final class BuilderCmdHandler {
 			try {
 				StringTokenizer st = new StringTokenizer(param);
 				String status = st.nextToken();
-				L1AllBuff.getInstance().execute(gm, param, status);
+				BuilderCmd_all_buff(gm, param, status);
 			} catch (Exception e) {
 				SC_ChatPacket.sendDirect(gm, gm, "----------------------------------------------------");
 				SC_ChatPacket.sendDirect(gm, gm, " 1:풀업 2:축복  3:흑사 4:코마");
@@ -1129,6 +1127,10 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			Supplier<L1CommandExecutor> factory) {
 		registerBuilderCommand(loaded, new BuilderCmdPairType(name, 9999, true,
 				(gm, cmd, param) -> factory.get().execute(gm, cmd, param)));
+	}
+
+	private static void registerLegacy(Map<String, BuilderCmdPairType> loaded, String name, L1CommandExecutor handler) {
+		registerBuilderCommand(loaded, new BuilderCmdPairType(name, 9999, true, handler));
 	}
 
 	private static void registerDirect(Map<String, BuilderCmdPairType> loaded, String name, L1CommandExecutor handler) {
@@ -4484,4 +4486,480 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 
 	
 	
+
+	// General Builder commands, directly invoked without per-command instances.
+	private static void BuilderCmd_patrol(L1PcInstance pc, String cmdName, String arg) {
+		SC_PacketBox.send(pc, SC_PacketBox.CALL_SOMETHING);
+	}
+
+	private static void BuilderCmd_all_buff(L1PcInstance pc, String cmdName, String poby) {
+		try {
+			int buffType = 0;
+
+			StringTokenizer token = new StringTokenizer(poby);
+			String type = token.nextToken();
+			if (type.equals("1")) {
+				buffType = 1;
+			} else if (type.equals("2")) {
+				buffType = 2;
+			} else if (type.equals("3")) {
+				buffType = 3;
+			} else if (type.equals("4")) {
+				buffType = 4;
+			} else {
+				throw new Exception();
+			}
+
+			String range = null;
+			if (token.hasMoreTokens()) {
+				range = token.nextToken();
+			}
+			L1BuffUtil.startAllBuffThread(pc, range, buffType);
+		} catch (Exception e) {
+			if (pc != null) {
+				SC_SystemMessage.send(pc, "." + cmdName + " <종류>");
+				SC_SystemMessage.send(pc, "[종류] 버프/축복/흑사/코마");
+			}
+		}
+	}
+
+	private static void BuilderCmd_public_chat_ban(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			String name = st.nextToken();
+			int time = Integer.parseInt(st.nextToken());
+			String reason = st.nextToken();
+
+			L1PcInstance tg = L1World.getInstance(). getPlayer(name);
+
+			if (tg != null) {
+				tg.setSkillEffect(L1SkillId.STATUS_CHAT_PROHIBITED, time * 60 * 1000);
+				SC_SkillIconGFX.send(tg, 36, time * 60);
+				SC_ServerMessage.send(tg, 286, String.valueOf(time)); // \f3게임에 적합하지 않는 행동이기 (위해)때문에, 향후%0분간 채팅을 금지합니다.
+				SC_SystemMessage.broadcast(name + " 캐릭터 "+ String.valueOf(time) + "분간 채팅금지 (사유: " + reason + ")");
+			} else {
+				SC_SystemMessage.send(pc, "해당 캐릭터 미접속.");
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " [캐릭명] [분] [채금사유] 입력.");
+		}
+	}
+
+	private static void BuilderCmd_change_weather(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer tok = new StringTokenizer(arg);
+			
+			int weather = Integer.parseInt(tok.nextToken());
+			L1World.getInstance(). setWeather(weather);
+			SC_Weather.broadcastAll(weather);
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " 0~3(눈), 16~19(비)라고 입력 해주세요.");
+		}
+	}
+
+	private static void BuilderCmd_who(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			Collection<L1PcInstance> players = L1World.getInstance().getAllPlayers();
+			int robotcount = 0; // 무인
+			int playercount = 0; 
+			int AutoShopUser = 0;
+			for (L1PcInstance each : players) {
+				if(each.noPlayerCK || each.noPlayerck2)
+					robotcount++;
+				else if (each.isPrivateShop() && each.getNetConnection() == null) {
+					AutoShopUser++;
+				} else if (each.getNetConnection() != null
+                        && each.getNetConnection().isConnected()) {
+					playercount++;
+				}
+			}
+			String amount = String.valueOf(playercount);
+			SC_WhoAmount.send(pc, amount);
+			SC_ChatPacket.sendDirect(pc, pc, "\\aD=========== 접속중인 플레이어 수 ===========");
+			SC_ChatPacket.sendDirect(pc, pc, "\\aL[로봇] : " + robotcount);
+			SC_ChatPacket.sendDirect(pc, pc, "\\aH[유저] 총인원수: " + playercount);
+			SC_ChatPacket.sendDirect(pc, pc, "\\aJ[무인상점] : " + AutoShopUser);
+
+			
+			// 온라인의 플레이어 리스트를 표시
+			if (arg.equalsIgnoreCase("전체")) {
+				StringBuffer gmList = new StringBuffer();
+				StringBuffer playList = new StringBuffer();
+				StringBuffer shopList = new StringBuffer();
+				StringBuffer robotList = new StringBuffer();
+
+				int countGM = 0, countPlayer = 0, countShop = 0, countRobot = 0;
+
+				for (L1PcInstance each : players) {
+					if (each.isGm()) {
+						gmList.append(each.getName() + ", ");
+						countGM++;
+						continue;
+					}
+					if (each.noPlayerCK || each.noPlayerck2) {
+						robotList.append(each.getName() + ", ");
+						countRobot++;
+						continue;
+					}
+					if (!each.isPrivateShop()) {
+						playList.append(each.getName() + ", ");
+						countPlayer++;
+						continue;
+					}
+					if (each.isPrivateShop()) {
+						shopList.append(each.getName() + ", ");
+						countShop++;
+					}
+				}
+				if (gmList.length() > 0) {
+					SC_ChatPacket.sendDirect(pc, pc, "-- 운영자 (" + countGM + "명)");
+					SC_ChatPacket.sendDirect(pc, pc, gmList.toString());
+				}
+
+				if (playList.length() > 0) {
+					SC_ChatPacket.sendDirect(pc, pc, "-- 플레이어 (" + countPlayer + "명)");
+					SC_ChatPacket.sendDirect(pc, pc, playList.toString());
+				}
+				if (robotList.length() > 0) {
+					SC_ChatPacket.sendDirect(pc, pc, "-- 로봇유저 (" + countRobot + "명)");
+					SC_ChatPacket.sendDirect(pc, pc, robotList.toString());
+				}
+				if (shopList.length() > 0) {
+					SC_ChatPacket.sendDirect(pc, pc, "-- 개인상점 (" + countShop + "명)");
+					SC_ChatPacket.sendDirect(pc, pc, shopList.toString());
+				}
+			}
+			players = null;
+		} catch (Exception e) {
+			SC_ChatPacket.sendDirect(pc, pc, ".누구 [전체] 라고 입력해 주세요. ");
+		}
+	}
+
+	private static final int[] BUILDER_RANGE_BUFF_SKILLS = {
+			L1SkillId.PHYSICAL_ENCHANT_DEX,
+			L1SkillId.PHYSICAL_ENCHANT_STR,
+			L1SkillId.BLESS_WEAPON,
+			L1SkillId.IRON_SKIN,
+			L1SkillId.FEATHER_BUFF_A,
+			L1SkillId.LIFE_MAAN,
+			L1SkillId.God_buff,
+			L1SkillId.COMA_B
+	};
+
+	private static void BuilderCmd_range_buff(
+			L1PcInstance pc,
+			String cmdName,
+			String arg) {
+
+		try {
+			for (L1PcInstance target :
+					L1World.getInstance().getVisiblePlayer(pc)) {
+
+				if (target == null) {
+					continue;
+				}
+
+				final int targetId = target.getId();
+				final int targetX = target.getX();
+				final int targetY = target.getY();
+
+				target.setBuffnoch(1);
+
+				try {
+					for (int i = 0; i < BUILDER_RANGE_BUFF_SKILLS.length; i++) {
+
+						L1SkillUse.cast(
+								target,
+								BUILDER_RANGE_BUFF_SKILLS[i],
+								targetId,
+								targetX,
+								targetY,
+								null,
+								0,
+								L1SkillUse.TYPE_GMBUFF);
+					}
+
+				} finally {
+					target.setBuffnoch(0);
+				}
+			}
+
+		} catch (Throwable t) {
+			SC_SystemMessage.send(pc, cmdName + " 커멘드 에러");
+
+			t.printStackTrace();
+		}
+	}
+
+	private static void BuilderCmd_attack_log(L1PcInstance pc, String cmdName, String poby) {
+		// Original command is disabled; keep its registered behavior unchanged.
+	}
+
+	private static void BuilderCmd_gm_room(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			int i = 0;
+			try {
+				i = Integer.parseInt(arg);
+			} catch (NumberFormatException e) {
+			}
+
+			 if (i == 1) {
+				pc.start_teleport(32737, 32796, 99, 5, 169, false, false);
+			} else if (i == 2) {
+				pc.start_teleport(33440, 32805, 4, 5, 169, false, false);
+			} else if (i == 3) {
+				pc.start_teleport(33082, 33390, 4, 5, 169, false, false);
+			} else if (i == 4) {
+				pc.start_teleport(34055, 32290, 4, 5, 169, false, false);
+			} else if (i == 5) {
+				pc.start_teleport(33723, 32495, 4, 5, 169, false, false);
+			} else if (i == 6) {
+				pc.start_teleport(32614, 32788, 4, 5, 169, false, false);
+			} else if (i == 7) {
+				pc.start_teleport(32678, 32857, 2005, 5, 169, false, false);
+			} else if (i == 8) {
+				pc.start_teleport(33515, 32858, 4, 5, 169, false, false);
+			} else if (i == 9) {
+				pc.start_teleport(32763, 32817, 622, 5, 169, false, false);
+			} else if (i == 10) {
+				pc.start_teleport(32572, 32944, 0, 5, 169, false, false);
+			} else if (i == 11) {
+				pc.start_teleport(32736, 32796, 16896, 5, 169, false, false);
+			} else if (i == 12) {
+				pc.start_teleport(32783, 32865, 621, pc.getHeading(), 169, false, false);
+			} else if (i == 13) {
+				pc.start_teleport(32805, 32814, 5490, 5, 169, false, false);
+			} else if (i == 14) {
+				pc.start_teleport(32736, 32787, 15, 5, 169, false, false);
+			} else if (i == 15) {
+				pc.start_teleport(32735, 32788, 29, 5, 169, false, false);
+			} else if (i == 16) {
+				pc.start_teleport(32730, 32802, 52, 5, 169, false, false);
+			} else if (i == 17) {
+				pc.start_teleport(32572, 32826, 64, 5, 169, false, false);
+			} else if (i == 18) {
+				pc.start_teleport(32895, 32533, 300, 5, 169, false, false);
+			} else if (i == 19) {
+				pc.start_teleport(33168, 32779, 4, 5, 169, false, false);
+			} else if (i == 20) {
+				pc.start_teleport(32623, 33379, 4, 5, 169, false, false);
+			} else if (i == 21) {
+//				L1Teleport.teleport(pc , 33630, 32677, (short) 4, 5, true); // 기란 수호탑
+				pc.start_teleport(33630, 32677, 4, 5, 169, false, false);
+			} else if (i == 22) {
+//				L1Teleport.teleport(pc , 33524, 33394, (short) 4, 5, true); // 하이네 수호탑
+				pc.start_teleport(33524, 33394, 4, 5, 169, false, false);
+			} else if (i == 23) {
+//				L1Teleport.teleport(pc , 34090, 33260, (short) 4, 5, true); // 아덴 수호탑
+				pc.start_teleport(34090, 33260, 4, 5, 169, false, false);
+			} else if (i == 24) {
+//				L1Teleport.teleport(pc , 32424, 33068, (short) 440, 5, true); // 해적섬
+				pc.start_teleport(32424, 33068, 440, 5, 169, false, false);
+			} else if (i == 25) {
+//				L1Teleport.teleport(pc , 32800, 32868, (short) 1001, 5, true); // 베헤모스
+				pc.start_teleport(32800, 32868, 1001, 5, 169, false, false);
+			} else if (i == 26) {
+//				L1Teleport.teleport(pc , 32800, 32856, (short) 1000, 5, true); // 실베리아
+				pc.start_teleport(32800, 32856, 1000, 5, 169, false, false);
+			} else if (i == 27) {
+//				L1Teleport.teleport(pc , 32630, 32903, (short) 780, 5, true); // 테베사막
+				pc.start_teleport(32630, 32903, 780, 5, 169, false, false);
+			} else if (i == 28) {
+//				L1Teleport.teleport(pc , 32743, 32799, (short) 781, 5, true); // 테베 피라미드 내부
+				pc.start_teleport(32743, 32799, 781, 5, 169, false, false);
+			} else if (i == 29) {
+//				L1Teleport.teleport(pc , 32735, 32830, (short) 782, 5, true); // 테베 오리시스 제단
+				pc.start_teleport(32735, 32830, 782, 5, 169, false, false);
+			} else if (i == 30) {
+//				L1Teleport.teleport(pc , 32734, 32270, (short) 4, 5, true); // 피닉
+				pc.start_teleport(32734, 32270, 4, 5, 169, false, false);
+			} else if (i == 31) {
+//				L1Teleport.teleport(pc , 32699, 32819, (short) 82, 5, true); // 데몬
+				pc.start_teleport(32699, 32819, 82, 5, 169, false, false);
+			} else if (i == 32) {
+//				L1Teleport.teleport(pc , 32769, 32770, (short) 56, 5, true); // 기감4층
+				pc.start_teleport(32769, 32770, 56, 5, 169, false, false);
+			} else if (i == 33) {
+//				L1Teleport.teleport(pc , 32929, 32995, (short) 410, 5, true); // 마족신전	
+				pc.start_teleport(32929, 32995, 410, 5, 169, false, false);
+			} else if (i == 34) {
+//				L1Teleport.teleport(pc , 32791, 32691, (short) 1005, 5, true); // 레이드 안타라스
+				pc.start_teleport(32791, 32691, 1005, 5, 169, false, false);
+			} else if (i == 35) {
+//				L1Teleport.teleport(pc , 32960, 32840, (short) 1011, 5, true); // 레이드 파푸리온
+				pc.start_teleport(32960, 32840, 1011, 5, 169, false, false);
+			} else if (i == 36) {
+//				L1Teleport.teleport(pc , 32849, 32876, (short) 1017, 5, true); // 린드레이드
+				pc.start_teleport(32849, 32876, 1017, 5, 169, false, false);
+			} else if (i == 37) {
+//				L1Teleport.teleport(pc , 32725, 32800, (short) 67, 5, true); // 발라방
+				pc.start_teleport(32725, 32800, 67, 5, 169, false, false);
+			} else if (i == 38) {
+//				L1Teleport.teleport(pc , 32771, 32831, (short) 65, 5, true); // 파푸방
+				pc.start_teleport(32771, 32831, 65, 5, 169, false, false);
+			} else if (i == 39) {
+//				L1Teleport.teleport(pc , 32696, 32824, (short) 37, 5, true); // 버모스 (용던7층)
+				pc.start_teleport(32696, 32824, 37, 5, 169, false, false);
+			} else if (i == 40) {
+//				L1Teleport.teleport(pc , 32922, 32812, (short) 430, 5, true); // 정령무덤
+				pc.start_teleport(32922, 32812, 430, 5, 169, false, false);
+			} else if (i == 41) {
+//				L1Teleport.teleport(pc , 32737, 32834, (short) 2004, 5, true); // 고라스
+				pc.start_teleport(32737, 32834, 2004, 5, 169, false, false);
+			} else if (i == 42) {
+//				L1Teleport.teleport(pc , 32707, 32846, (short) 2, 5, true); // 섬던2층
+				pc.start_teleport(32707, 32846, 2, 5, 169, false, false);
+			} else if (i == 43) {
+//				L1Teleport.teleport(pc , 32772, 32861, (short) 400, 5, true); // 고대무덤
+				pc.start_teleport(32772, 32861, 400, 5, 169, false, false);
+			} else if (i == 44) {
+//				L1Teleport.teleport(pc , 32982, 32808, (short) 244, 5, true); // 오땅
+				pc.start_teleport(32982, 32808, 244, 5, 169, false, false);
+			} else if (i == 45) {
+//				L1Teleport.teleport(pc , 32811, 32819, (short) 460, 5, true); // 라바2층
+				pc.start_teleport(32811, 32819, 460, 5, 169, false, false);
+			} else if (i == 46) {
+//				L1Teleport.teleport(pc , 32724, 32792, (short) 536, 5, true); // 라던3층
+				pc.start_teleport(32724, 32792, 536, 5, 169, false, false);
+			} else if (i == 47) {
+//				L1Teleport.teleport(pc , 32847, 32793, (short) 532, 5, true); // 라던4층
+				pc.start_teleport(32847, 32793, 532, 5, 169, false, false);
+			} else if (i == 48) {
+//				L1Teleport.teleport(pc , 32843, 32693, (short) 550, 5, true); // 선박무덤
+				pc.start_teleport(32843, 32693, 550, 5, 169, false, false);
+			} else if (i == 49) {
+//				L1Teleport.teleport(pc , 32781, 32801, (short) 558, 5, true); // 심해
+				pc.start_teleport(32781, 32801, 558, 5, 169, false, false);
+			} else if (i == 50) {
+//				L1Teleport.teleport(pc , 32731, 32862, (short) 784, 5, true); // 제브
+				pc.start_teleport(32731, 32862, 784, 5, 169, false, false);
+			} else if (i == 51) {
+//				L1Teleport.teleport(pc , 32728, 32704, (short) 4, 5, true); // 균열 1
+				pc.start_teleport(32728, 32704, 4, 5, 169, false, false);
+			} else if (i == 52) {
+//				L1Teleport.teleport(pc , 32827, 32658, (short) 4, 5, true); // 균열 2
+				pc.start_teleport(32827, 32658, 4, 5, 169, false, false);
+			} else if (i == 53) {
+//				L1Teleport.teleport(pc , 32852, 32713, (short) 4, 5, true); // 균열 3
+				pc.start_teleport(32852, 32713, 4, 5, 169, false, false);
+			} else if (i == 54) {
+//				L1Teleport.teleport(pc , 32914, 33427, (short) 4, 5, true); // 균열 4
+				pc.start_teleport(32914, 33427, 4, 5, 169, false, false);
+			} else if (i == 55) {
+//				L1Teleport.teleport(pc , 32962, 33251, (short) 4, 5, true); // 균열 5
+				pc.start_teleport(32962, 33251, 4, 5, 169, false, false);
+			} else if (i == 56) {
+//				L1Teleport.teleport(pc , 32908, 33169, (short) 4, 5, true); // 균열 6
+				pc.start_teleport(32908, 33169, 4, 5, 169, false, false);
+			} else if (i == 57) {
+//				L1Teleport.teleport(pc , 34272, 33361, (short) 4, 5, true); // 균열 7
+				pc.start_teleport(34272, 33361, 4, 5, 169, false, false);
+			} else if (i == 58) {
+//				L1Teleport.teleport(pc , 34258, 33202, (short) 4, 5, true); // 균열 8
+				pc.start_teleport(34258, 33202, 4, 5, 169, false, false);
+			} else if (i == 59) {
+//				L1Teleport.teleport(pc , 34225, 33313, (short) 4, 5, true); // 균열 9
+				pc.start_teleport(34225, 33313, 4, 5, 169, false, false);
+			} else if (i == 60) {
+//				L1Teleport.teleport(pc , 32682, 32892, (short) 5167, 5, true); // 악마영토
+				pc.start_teleport(32682, 32892, 5167, 5, 169, false, false);
+			} else if (i == 61) {
+//				L1Teleport.teleport(pc , 32862, 32862, (short) 537, 5, true); // 기르타스
+				pc.start_teleport(32862, 32862, 537, 5, 169, false, false);
+			} else if (i == 62) {
+//				L1Teleport.teleport(pc , 32738, 32448, (short) 4, 5, true); // 화전민
+				pc.start_teleport(32738, 32448, 4, 5, 169, false, false);
+			} else if (i == 63) {
+//				L1Teleport.teleport(pc , 32797, 32285, (short) 4, 5, true); // 오성수탑
+				pc.start_teleport(32797, 32285, 4, 5, 169, false, false);
+			} else if (i == 64) {
+//				L1Teleport.teleport(pc , 33052, 32339, (short) 4, 5, true); // 요정숲
+				pc.start_teleport(33052, 32339, 4, 5, 169, false, false);
+			} else if (i == 65) {
+//				L1Teleport.teleport(pc, 32738, 32872, (short) 2236, 5, true); // 서버지기아지트
+				pc.start_teleport(32738, 32872, 2236, 5, 169, false, false);
+			} else if (i == 66) {
+				pc.start_teleport(32737, 32868, 2237, 5, 169, false, false);
+			} else if (i == 67) {
+				pc.start_teleport(32736, 32796, 16896, 5, 169, false, false);
+			} else if (i == 68) {
+				pc.start_teleport(32736, 32799, 38, 5, 169, false, false);
+			} else if (i == 69) {
+				pc.start_teleport(32769, 32827, 610, 5, 169, false, false);
+			} else if (i == 70) {
+					pc.start_teleport(32764, 32815, 5554, 5, 169, false, false);
+			} else {
+				L1Location loc = BuilderCmdConfig.ROOMS.get(arg.toLowerCase());
+				if (loc == null) {
+					SC_SystemMessage.send(pc, "\\f:==================<귀환 장소>===================");
+					SC_SystemMessage.send(pc, "\\aA1.gm룸 2.기란 3.은말 4.오렌 5.웰던 6.글루딘 7.숨계");
+					SC_SystemMessage.send(pc, "\\aA8.버경장 9.깃털말 10.말섬 11.상담소 12.벗꽃 13.낚시");
+					SC_SystemMessage.send(pc, "\\aA14.켄트성 15.윈다성 16.기란성 17.하이성 18.아덴성");
+					SC_SystemMessage.send(pc, "\\aA19.수호탑 20.수호탑 21.수호탑 22.수호탑 23.수호탑");
+					SC_SystemMessage.send(pc, "\\f:24.해섬 25.베히모 26.실베리아 27.테베 28.피라미드");
+					SC_SystemMessage.send(pc, "\\f:29.피라미드 30.피닉스 31.데몬 32.기감4층 33.마족방");
+					//pc.sendPackets(new SC_SystemMessage("\\aD34.안타 35.파푸 36.린드 37.발라 38.구파푸 39.버모스"));
+					SC_SystemMessage.send(pc, "\\f:40.정무 41.고라스 42.섬던2층 43.고대무덤 44.오땅");
+					SC_SystemMessage.send(pc, "\\f:45.라던2층 46.라던3층 47.라던4층 48.선박 49.심해");
+					SC_SystemMessage.send(pc, "\\f:50.제브레퀴 51~59.균열 60.악마영토 61.기르타스");
+					SC_SystemMessage.send(pc, "\\aA62.화전민마을 63.오크성 64.요정숲 65.서버지기아지트");
+					SC_SystemMessage.send(pc, "\\aA66.후원안내 67.VIP상담소 68.오토유저");
+					SC_SystemMessage.send(pc, "\\aA69.후원문의1 70.후원문의2");
+					return;
+				}
+//				L1Teleport.teleport(pc, loc.getX(), loc.getY(), (short) loc
+//						.getMapId(), 5, true);
+				pc.start_teleport(loc.getX(), loc.getY(), loc.getMapId(), 5, 169, false, false);
+			}
+			if (i > 0 && i < 33) {
+				SC_SystemMessage.send(pc, "운영자 귀환(" + i + ")번으로 이동했습니다.");
+			}
+		} catch (Exception exception) {
+			SC_SystemMessage.send(pc, ".귀환 [장소명]을 입력 해주세요.");
+		}
+	}
+
+	private static void BuilderCmd_account_ban_kick(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			String				name	= st.nextToken();
+			if(name == null || name.equalsIgnoreCase(""))
+				throw new Exception("");
+			
+			int reason = SC_LoginResult.banServerCodes.get(Integer.parseInt(st.nextToken()));
+			
+			L1PcInstance target = L1World.getInstance().getPlayer(name);
+			if (target == null) {
+				target = CharacterTable.getInstance().restoreCharacter(name);
+			}
+
+			if (target != null) { // 어카운트를 BAN 한다
+				final CUserSocket clnt = target.getNetConnection();
+				Account.ban(target.getAccountName(), reason);
+				SC_SystemMessage.send(pc, target.getName() + " 를 계정압류 하였습니다.");
+				SC_Disconnect.send(target);
+				
+				if (target.getOnlineStatus() == 1) {
+					SC_Disconnect.send(target);
+				}
+				ThreadPool.getInstance().scheduleRequired(new Runnable(){
+					@Override
+					public void run(){
+						if(clnt != null && clnt.isConnected()){
+							try {
+								clnt.close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}, 1000L);
+			} else {
+				SC_SystemMessage.send(pc, "그러한 이름의 캐릭터는 월드내에는 존재하지 않습니다. ");
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, ".계정압류 [캐릭터명] [압류사유번호] 으로 입력해 주세요.");
+			SC_SystemMessage.send(pc, "[압류사유]: 1(고정). 미풍양속으로.. 그외 없음");
+		}
+	}
 }

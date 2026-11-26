@@ -22,6 +22,9 @@ jobs:
             exit 1
           fi
           git grep -n 'BuilderCmd2Handler(' -- rkern/src
+          if git grep -n -w -E 'L1Patrol|L1AllBuff|L1ChatNG2|L1ChangeWeather|L1Who|L1RessBuff|L1AttackLog|L1GMRoom|L1AccountBanKick' -- rkern/src; then
+            exit 1
+          fi
       - uses: actions/cache@v4
         with:
           path: ~/.cache/rkern-skill-deps
