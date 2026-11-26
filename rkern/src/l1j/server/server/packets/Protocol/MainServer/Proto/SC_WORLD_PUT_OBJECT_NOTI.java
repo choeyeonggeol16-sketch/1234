@@ -367,9 +367,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
            nameId = summon.getNameId() != null ? summon.getNameId() : "";
            title = summon.getTitle() != null ? summon.getTitle() : "";
 
-           if (summon.getLight() != null) {
-               lightSize = summon.getLight().getChaLightSize();
-           }
+           lightSize = summon.getVisibleLightSize();
 
            boolean isOwner = false;
            if (summon.isExsistMaster() && summon.getMaster() != null) {
@@ -1333,9 +1331,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
                    nameId = summon.getNameId() != null ? summon.getNameId() : "";
                    title = summon.getTitle() != null ? summon.getTitle() : "";
 
-                   if (summon.getLight() != null) {
-                       lightSize = summon.getLight().getChaLightSize();
-                   }
+                   lightSize = summon.getVisibleLightSize();
 
                    boolean isOwner = false;
                    if (summon.isExsistMaster() && summon.getMaster() != null) {

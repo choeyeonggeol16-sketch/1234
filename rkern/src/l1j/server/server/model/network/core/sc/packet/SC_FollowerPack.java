@@ -24,7 +24,7 @@ public final class SC_FollowerPack {
             x = follower.getX(); y = follower.getY(); id = follower.getId();
             spriteId = follower.getCurrentSpriteId(); status = follower.getStatus();
             heading = follower.getHeading();
-            if (follower.getLight() != null) chaLightSize = follower.getLight().getChaLightSize();
+            chaLightSize = follower.getVisibleLightSize();
             moveSpeed = follower.getMoveSpeed();
             nameId = follower.getNameId(); title = follower.getTitle();
             level = follower.getLevel();

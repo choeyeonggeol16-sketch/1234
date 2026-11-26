@@ -242,7 +242,7 @@ public class RaidNpcSpawn {
 			npc.setHomeY(y);
 			npc.setHeading(_heading);
 			npc.setLightSize(npc.getNpcTemplate().getLightSize());
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			L1World.getInstance().storeAndEnterWorld(npc);
 			SC_WorldPutObject.broadcastNpc(npc);
 		}catch(Exception e){
@@ -267,7 +267,7 @@ public class RaidNpcSpawn {
 			npc.setHomeY(y);
 			npc.setHeading(_heading);
 			npc.setLightSize(npc.getNpcTemplate().getLightSize());
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.setPassObject(false);
 			L1World.getInstance().storeAndEnterWorld(npc);
 		}catch(Exception e){
@@ -292,7 +292,7 @@ public class RaidNpcSpawn {
 			npc.setHomeY(y);
 			npc.setHeading(_heading);
 			npc.setLightSize(npc.getNpcTemplate().getLightSize());
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.setPassObject(false);
 			L1World.getInstance().storeAndEnterWorld(npc);
 		}catch(Exception e){
@@ -317,7 +317,7 @@ public class RaidNpcSpawn {
 			npc.setHomeY(y);
 			npc.setHeading(_heading);
 			npc.setLightSize(npc.getNpcTemplate().getLightSize());
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			L1World.getInstance().storeAndEnterWorld(npc);
 		}catch(Exception e){
 			e.printStackTrace();
@@ -352,7 +352,7 @@ public class RaidNpcSpawn {
 	
 	public void manualNpc(L1NpcInstance npc){
 		npc.setLightSize(npc.getNpcTemplate().getLightSize());
-		npc.getLight().turnOnOffLight();
+		npc.refreshLight();
 		L1World.getInstance().storeAndEnterWorld(npc);
 	}
 	
@@ -379,7 +379,7 @@ public class RaidNpcSpawn {
 				npc.setHomeY(y);
 				npc.setHeading(_heading);
 				npc.setLightSize(npc.getNpcTemplate().getLightSize());
-				npc.getLight().turnOnOffLight();
+				npc.refreshLight();
 				L1World.getInstance().storeAndEnterWorld(npc);
 				npc.setPassObject(false);
 				npcs.add(npc);

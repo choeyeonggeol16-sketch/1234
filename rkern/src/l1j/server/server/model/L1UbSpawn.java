@@ -145,7 +145,7 @@ public class L1UbSpawn implements Comparable<L1UbSpawn> {
 		    }
 		}
 		mob.onNpcAI();
-		mob.getLight().turnOnOffLight();
+		mob.refreshLight();
 	}
 
 	public void spawnAll() {

@@ -6405,7 +6405,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 
 			L1World.getInstance().storeAndEnterWorld(npc);
 
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			if (0 < timeMinToDelete) {
 				npc.startTimedDelete(timeMinToDelete);

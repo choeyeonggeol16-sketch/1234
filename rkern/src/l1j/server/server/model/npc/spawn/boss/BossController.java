@@ -543,7 +543,7 @@ for (final L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
                 }, 10000L);
             }
 
-            npc.getLight().turnOnOffLight();
+            npc.refreshLight();
             npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
 
             if (timeMillisToDelete > 0) {

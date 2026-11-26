@@ -114,8 +114,7 @@ public class L1PcInstance {
     public CUserInventory getInventory(){return inv;}
     public L1CompanionInstance get_companion(){return companion;}
     public java.util.Map<Integer,Object> getDollList(){return dolls;}
-    public Light getLight(){return new Light();}
-    public static class Light { public void turnOnOffLight(){} }
+    public boolean refreshLight(){return true;}
 }
 """, f"import {I}.*; import {M}.network.core.connection.CUserSocket;")
 stub(M+".Instance", "L1DollInstance", "public class L1DollInstance { public int getItemObjId(){return 0;} }")

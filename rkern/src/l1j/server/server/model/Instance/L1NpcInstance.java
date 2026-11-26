@@ -1242,7 +1242,7 @@ public class L1NpcInstance extends L1Character {
                     }
                 }
             }
-            getLight().turnOnOffLight();
+            refreshLight();
         } finally {
             if (contribute != null) contribute.FinishRouting();
         }

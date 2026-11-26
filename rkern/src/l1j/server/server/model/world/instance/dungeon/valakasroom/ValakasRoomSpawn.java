@@ -84,7 +84,7 @@ public class ValakasRoomSpawn {
 						field.setHomeY(field.getY());
 						field.setHeading(rs.getInt("heading"));
 						field.setLightSize(l1npc.getLightSize());
-						field.getLight().turnOnOffLight();
+						field.refreshLight();
 						L1World.getInstance().storeAndEnterWorld(field);
 						if(RT)
 							list.add(field);

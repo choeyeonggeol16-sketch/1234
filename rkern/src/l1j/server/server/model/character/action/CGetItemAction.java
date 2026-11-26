@@ -503,7 +503,7 @@ for (L1PcInstance member : party.getMembers()) {
 
         checkGlobalAnnouncement(owner, item);
 
-        owner.getLight().turnOnOffLight();
+        owner.refreshLight();
         if (clearGiveItem) item.setGiveItem(false);
 
         LoggerInstance.getInstance().addItemAction(

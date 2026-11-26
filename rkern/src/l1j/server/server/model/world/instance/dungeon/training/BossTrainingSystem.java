@@ -42,7 +42,7 @@ public class BossTrainingSystem {
             room.keeper.setHomeY(room.keeper.getY());
             room.keeper.setHeading(5);
             room.keeper.setLightSize(0);
-            room.keeper.getLight().turnOnOffLight();
+            room.keeper.refreshLight();
             L1World.getInstance().storeAndEnterWorld(room.keeper);
             room.expiry = TaskLane.INSTANCE.schedule(() -> expire(room), LIFETIME_MS);
             if (room.expiry == null) throw new RejectedExecutionException("Training expiry admission failed");

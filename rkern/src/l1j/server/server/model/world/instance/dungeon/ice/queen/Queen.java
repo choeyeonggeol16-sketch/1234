@@ -521,7 +521,7 @@ public class Queen implements Runnable {
 				}
 				break;
 			}
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 
 		} catch (Exception e) {

@@ -101,7 +101,7 @@ public class NpcCashShopSpawnTable {
 
 				L1World.getInstance().storeAndEnterWorld(npc);
 
-				npc.getLight().turnOnOffLight();
+				npc.refreshLight();
 			}
 		} catch (Exception e) {
 			_log.log(Level.SEVERE, "NpcCashShopSpawnTable Start error", e);

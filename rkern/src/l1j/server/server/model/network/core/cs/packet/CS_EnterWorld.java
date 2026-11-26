@@ -636,7 +636,7 @@ public final class CS_EnterWorld {
         SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.UI4);
         SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.UI5);
         pc.sendVisualEffectAtLogin();
-        pc.getLight().turnOnOffLight();
+        pc.refreshLight();
         SC_SPMR.send(pc);
         SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.LOGIN);
 

@@ -438,7 +438,7 @@ public final class GludioInstanceDungeon {
         npc.setLightSize(tpl.getLightSize());
         if(location!=null) npc.setSpawnLocation(location);
         L1World.getInstance().storeAndEnterWorld(npc);
-        npc.getLight().turnOnOffLight();
+        npc.refreshLight();
         r.npcs.add(npc);
         if(npc instanceof L1MonsterInstance) {
             npc.onNpcAI();

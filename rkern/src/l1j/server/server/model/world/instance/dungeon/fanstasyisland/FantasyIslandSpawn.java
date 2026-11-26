@@ -66,7 +66,7 @@ public class FantasyIslandSpawn {
 						field.setHomeY(field.getY());
 						field.setHeading(rs.getInt("heading"));
 						field.setLightSize(l1npc.getLightSize());
-						field.getLight().turnOnOffLight();
+						field.refreshLight();
 						field.setSpawnLocation(rs.getString("location"));
 						L1World.getInstance().storeAndEnterWorld(field);
 						if(RT)

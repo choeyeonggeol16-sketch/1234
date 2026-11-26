@@ -64,7 +64,7 @@ public class L1SpawnUtil {
 			    npc.setStatus(8);
 			}
 			npc.getNpcTemplate().doBornNpc(npc);
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			if (0 < timeMillisToDelete) {
 				npc.startTimedDelete(timeMillisToDelete);  
@@ -118,7 +118,7 @@ public class L1SpawnUtil {
 				npc.setStatus(8);
 			}
 			npc.getNpcTemplate().doBornNpc(npc);
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			if (0 < timeMillisToDelete) {
 				npc.startTimedDelete(timeMillisToDelete);  
@@ -173,7 +173,7 @@ public class L1SpawnUtil {
 			    npc.setStatus(8);
 			}
 			npc.getNpcTemplate().doBornNpc(npc);
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			if (0 < timeMillisToDelete) {
 				npc.startTimedDelete(timeMillisToDelete);  
@@ -199,7 +199,7 @@ public class L1SpawnUtil {
 			
 			
 
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			
 		} catch (Exception e) {
@@ -270,7 +270,7 @@ public class L1SpawnUtil {
 			if (npc.getNpcId() == 460000365) {
 			npc.getNpcTemplate().doBornNpc(npc);
 			}
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			if (0 < timeMillisToDelete) {
 				npc.startTimedDelete(timeMillisToDelete);  
@@ -310,7 +310,7 @@ public class L1SpawnUtil {
 			npc.setHeading(Heading);
 			L1World.getInstance().storeAndEnterWorld(npc);
 
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(0);
 			if (timeMillisToDelete > 0) {
 				npc.startTimedDelete(timeMillisToDelete);  
@@ -381,7 +381,7 @@ public class L1SpawnUtil {
 			}
 
 			L1World.getInstance().storeAndEnterWorld(npc);
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			if (0 < timeMillisToDelete) {
 				npc.startTimedDelete(timeMillisToDelete);  
@@ -439,7 +439,7 @@ public class L1SpawnUtil {
 
 			L1World.getInstance().storeAndEnterWorld(npc);
 
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			if (0 < timeMillisToDelete) {
 				npc.startTimedDelete(timeMillisToDelete);  
@@ -479,7 +479,7 @@ public class L1SpawnUtil {
 			npc.setHeading(npc.getHeading());
 			L1World.getInstance().storeAndEnterWorld(npc);
 
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 
 			if (npc.getMapId() == 9101) {
@@ -529,7 +529,7 @@ public class L1SpawnUtil {
 			npc.setHeading(pc.getHeading());
 			
 			L1World.getInstance().storeAndEnterWorld(npc);
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -569,7 +569,7 @@ public class L1SpawnUtil {
 
 			L1World.getInstance().storeAndEnterWorld(npc);
 
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			if (0 < timeMillisToDelete) {
 				npc.startTimedDelete(timeMillisToDelete);  
@@ -619,7 +619,7 @@ public class L1SpawnUtil {
 
 				L1World.getInstance().storeAndEnterWorld(npc);
 
-				npc.getLight().turnOnOffLight();
+				npc.refreshLight();
 				npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 				if (0 < timeMillisToDelete) {
 					npc.startTimedDelete(timeMillisToDelete);  
@@ -664,7 +664,7 @@ public class L1SpawnUtil {
 			
 			L1World.getInstance().storeAndEnterWorld(npc);
 			
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 			
 			if (0 < timeMillisToDelete) {

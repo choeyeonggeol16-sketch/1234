@@ -256,7 +256,7 @@ public class NpcShopManager {
             L1NpcShopInstance obj = (L1NpcShopInstance) npc;
             obj.setShopName(shop.getShopName());
             L1World.getInstance().storeAndEnterWorld(npc);
-            npc.getLight().turnOnOffLight();
+            npc.refreshLight();
             obj.setState(1);
             SC_NpcShopAction.broadcast(npc, npc.getId(), ActionCodes.ACTION_Shop, shop.getShopName());
             refillOne(npc);

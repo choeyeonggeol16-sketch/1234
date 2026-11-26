@@ -395,7 +395,7 @@ for (L1PcInstance player : getMembersArray()) {
 					L1Object object = L1World.getInstance().findObject(npc.getId());
 					_fire = (L1FieldObjectInstance) object;
 					_fire.onNpcAI();
-					_fire.getLight().turnOnOffLight();
+					_fire.refreshLight();
 					_fire.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
 				} catch (Exception e) {
 					// e.printStackTrace();

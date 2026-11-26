@@ -228,7 +228,7 @@ public class DominanceFloorLv10 implements Runnable {
 
 			L1World.getInstance().storeAndEnterWorld(npc);
 
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
 
 		} catch (InterruptedException interrupted) {

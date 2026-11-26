@@ -243,7 +243,7 @@ public final class SC_WorldPutObject {
         final int spriteId = pc.getCurrentSpriteId();
         final int action = computePcAction(pc);
 
-        final int lightRadius = computePcLightRadius(pc);
+        final int lightRadius = pc.getOwnLightSize();
         final int lawful = pc.getLawful();
         final int level = pc.getLevel();
         final int speedData = pc.isHaste() ? 1 : 0;
@@ -1106,19 +1106,6 @@ public final class SC_WorldPutObject {
         return 0;
     }
 
-    private static int computePcLightRadius(
-            L1PcInstance pc) {
-
-        try {
-            return pc.getLight() != null
-                    ? pc.getLight().getOwnLightSize()
-                    : 0;
-
-        } catch (RuntimeException e) {
-            return 0;
-        }
-    }
-
     private static String computePcDesc(
             L1PcInstance pc,
             String requestedName,
@@ -1715,7 +1702,7 @@ public final class SC_WorldPutObject {
         final int spriteId = pc.getCurrentSpriteId();
         final int action = computePcAction(pc);
 
-        final int lightRadius = computePcLightRadius(pc);
+        final int lightRadius = pc.getOwnLightSize();
         final int lawful = pc.getLawful();
         final int level = pc.getLevel();
         final int speedData = pc.isHaste() ? 1 : 0;

@@ -82,8 +82,7 @@ import l1j.server.server.monitor.LoggerInstance;""")
         public String getName(){return "owner";} public Inventory getInventory(){return inv;}
         public L1CompanionInstance get_companion(){return companion;}
         public java.util.Map<Integer,Object> getDollList(){return dolls;}
-        public Light getLight(){return new Light();}
-        public class Light {public void turnOnOffLight(){lights++;}}
+        public boolean refreshLight(){lights++;return true;}
         public static class Inventory {
             public final java.util.Map<Integer,L1ItemInstance> rows=new java.util.HashMap<>();
             public L1ItemInstance GetByServerID(int id){return rows.get(id);}

@@ -196,7 +196,7 @@ public class BattleTournamentObserver extends CombatObserver{
 			npc.setHomeY(y);
 			npc.setHeading(h);
 			L1World.getInstance().storeAndEnterWorld(npc);
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 		}catch(Exception e){
 			e.printStackTrace();
 		}

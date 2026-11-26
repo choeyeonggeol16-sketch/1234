@@ -181,8 +181,8 @@ public final class CS_GiveItem {
         }
 
         target.onGetItem(item);
-        target.getLight().turnOnOffLight();
-        pc.getLight().turnOnOffLight();
+        target.refreshLight();
+        pc.refreshLight();
 
 
     }

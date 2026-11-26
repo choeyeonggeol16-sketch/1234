@@ -138,7 +138,7 @@ final class WarehouseDepositTransaction {
                                                          "Committed warehouse deposit audit dispatch failed", auditFailure);
                                         }
                                     }
-                                    try { pc.getLight().turnOnOffLight(); }
+                                    try { pc.refreshLight(); }
                                     catch (RuntimeException lightFailure) {
                                         java.util.logging.Logger.getLogger(CInventory.class.getName())
                                                 .log(java.util.logging.Level.WARNING,
@@ -219,7 +219,7 @@ final class WarehouseDepositTransaction {
                     }
                     Warehouse.recordCommittedMove(pc, dest, true, item, count);
                     pc.endItemTransfer(token);
-                    try { pc.getLight().turnOnOffLight(); }
+                    try { pc.refreshLight(); }
                     catch (RuntimeException lightFailure) {
                         java.util.logging.Logger.getLogger(CInventory.class.getName())
                                 .log(java.util.logging.Level.WARNING, "Warehouse light refresh failed", lightFailure);

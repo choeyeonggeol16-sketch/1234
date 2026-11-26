@@ -319,7 +319,7 @@ public class L1FollowerInstance extends L1NpcInstance {
 				
 				if (mob instanceof L1QuestInstance newnpc) {
 					newnpc.onNpcAI();
-					newnpc.getLight().turnOnOffLight();
+					newnpc.refreshLight();
 					newnpc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 개시
 				}
 			} catch (Exception e) {

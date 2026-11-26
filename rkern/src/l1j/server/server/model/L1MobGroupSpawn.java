@@ -110,7 +110,7 @@ public class L1MobGroupSpawn {
 					mob.onNpcAI();
 				}
 			}
-			mob.getLight().turnOnOffLight();
+			mob.refreshLight();
 			mob.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
 		} catch (Exception e) {
 			if (mob != null && mob.getMobGroupInfo() == group

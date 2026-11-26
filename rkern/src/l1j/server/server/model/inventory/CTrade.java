@@ -356,8 +356,8 @@ public final class CTrade {
             logItems(second, first, secondItems);
         } finally { close(true, false); }
         try {
-            if (liveFirst()) first.getLight().turnOnOffLight();
-            if (liveSecond()) second.getLight().turnOnOffLight();
+            if (liveFirst()) first.refreshLight();
+            if (liveSecond()) second.refreshLight();
         } catch (RuntimeException failure) {
             LOG.log(Level.WARNING, "Committed trade light refresh failed", failure);
         }

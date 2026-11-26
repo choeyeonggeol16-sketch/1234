@@ -150,7 +150,7 @@ public final class User {
     private static void DestroyItemReturn(L1PcInstance pc, L1ItemInstance[] items, int[] amounts) {
         for (int i = 0; i < items.length; i++)
             LoggerInstance.getInstance().addItemAction(ItemActionType.Delete, pc, items[i], amounts[i]);
-        pc.getLight().turnOnOffLight();
+        pc.refreshLight();
     }
 
     // Do not add a second pending flag or release it on DB submission.

@@ -93,7 +93,8 @@ public class L1Character extends L1Object {
 			AtomicReferenceFieldUpdater.newUpdater(L1Character.class, L1Paralysis.class, "_paralysis");
 	private volatile boolean _isDead;
 
-	protected Light light = null; // 캐릭터 주위 빛
+	private volatile int lightRadius;
+	private volatile boolean disposed;
 	// CStats: original, permanent and equipment sources, shared by every creature.
 	// Primitive byte lanes preserve the existing signed range and update order.
 	byte m_OriginalStatStr, m_StatStr, m_AddedStatStr;
@@ -106,7 +107,6 @@ public class L1Character extends L1Object {
 	int m_nStatSp;
 	volatile int m_nSkillSp;
 	// BEGIN shared resistance sources (CCreature)
-	private volatile boolean m_ResistanceDisposed;
 	int m_nOrgMDefend;
 	int m_nAddedMDefend;
 	int m_nFireResist;
@@ -224,19 +224,12 @@ public class L1Character extends L1Object {
 		final CKnownObjectContainer known = KNOWN_CONTAINER.getAndSet(this, CKnownObjectContainer.CLOSED);
 		if (known != null && known != CKnownObjectContainer.CLOSED) known.close();
 
-		m_ResistanceDisposed = true;
-
-		if (light != null) {
-			light.dispose();
-			light = null;
-		}
-
+		disposed = true;
 		disposeShopInfo();
 	}
 
 	public L1Character() {
 		_level = 1;
-		light = new Light(this);
 	}
 
 
@@ -1453,8 +1446,21 @@ public class L1Character extends L1Object {
 		_buffnoch = buffnoch;
 	}
 
-	public Light getLight() {
-		return light;
+	public final int getOwnLightSize() {
+		return disposed ? 0 : lightRadius;
+	}
+
+	public final int getVisibleLightSize() {
+		return disposed || isInvisble() ? 0 : lightRadius;
+	}
+
+	public final boolean refreshLight() {
+		if (disposed) return false;
+		final int radius = CharacterLight.calculate(this);
+		if (disposed) return false;
+		CharacterLight.send(this, radius);
+		lightRadius = radius;
+		return true;
 	}
 
 	// CStats lane operations. No new object, array or temporary allocation.
@@ -1923,7 +1929,7 @@ public class L1Character extends L1Object {
 	// END direct primary-stat operations
 
 	// BEGIN direct resistance operations
-	public final boolean IsResistanceActive() { return !m_ResistanceDisposed; }
+	public final boolean IsResistanceActive() { return !disposed; }
     public final void ResetResistanceStats() {
         m_nOrgMDefend = m_nAddedMDefend = 0;
         m_nFireResist = m_nWaterResist = m_nWindResist = m_nEarthResist = 0;
@@ -1972,7 +1978,7 @@ public class L1Character extends L1Object {
             case FEAR -> m_nResistFear += value;
             case ALL -> m_nResistAll += value;
         }
-        if (!m_ResistanceDisposed && this instanceof L1PcInstance pc) {
+        if (!disposed && this instanceof L1PcInstance pc) {
             SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
         }
     }
@@ -1997,7 +2003,7 @@ public class L1Character extends L1Object {
             case FEAR -> m_nPierceFear += value;
             case ALL -> m_nPierceAll += value;
         }
-        if (!m_ResistanceDisposed && this instanceof L1PcInstance pc) {
+        if (!disposed && this instanceof L1PcInstance pc) {
             SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
         }
     }
@@ -2029,7 +2035,7 @@ public class L1Character extends L1Object {
     public final void SetSkillMDefend(int value) { if (m_nSkillMDefend != value) m_nSkillMDefend = value; }
 
     public final int GetMDefend() {
-        if(m_ResistanceDisposed || !this.isPassive(PassiveID.RESIST_ELEMENT.toInt()))
+        if(disposed || !this.isPassive(PassiveID.RESIST_ELEMENT.toInt()))
             return CheckMDefendRange(m_nOrgMDefend + m_nAddedMDefend + m_nSkillMDefend, 0);
         return CheckMDefendRange(m_nOrgMDefend + m_nAddedMDefend + m_nSkillMDefend + 5, 0);
     }
@@ -2058,7 +2064,7 @@ public class L1Character extends L1Object {
         m_SkillSpecialResistance = specialResistance;
         m_nSkillSpecialPenalty = penalty;
         m_nSkillSpecialPierce = pierce;
-        if (notify && !m_ResistanceDisposed && this instanceof L1PcInstance pc) SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
+        if (notify && !disposed && this instanceof L1PcInstance pc) SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
     }
 
     public final int GetPvpDamageReduction() { return CheckResistanceRange(m_nPvpDamageReduction + (m_nSkillPvp >> 16)); }
@@ -2076,7 +2082,7 @@ public class L1Character extends L1Object {
     public final int GetEarthResist() { return IncreaseElementalResistance(CheckResistanceRange(m_nEarthResist + (short) (m_SkillElemental >>> 32))); }
 
     private int IncreaseElementalResistance(int source_resist) {
-        return m_ResistanceDisposed || !this.isPassive(PassiveID.RESIST_ELEMENT.toInt()) ?
+        return disposed || !this.isPassive(PassiveID.RESIST_ELEMENT.toInt()) ?
                 source_resist : source_resist + 5;
     }
 
@@ -2103,7 +2109,7 @@ public class L1Character extends L1Object {
         int effectedMr = GetMDefend();
         if (this.hasSkillEffect(L1SkillId.ERASE_MAGIC)){
             this.removeSkillEffect(L1SkillId.ERASE_MAGIC);
-            if (!m_ResistanceDisposed && this instanceof L1PcInstance) SC_PacketBox.send(((L1PcInstance) this), SC_PacketBox.UNLIMITED_ICON1, 55, false);
+            if (!disposed && this instanceof L1PcInstance) SC_PacketBox.send(((L1PcInstance) this), SC_PacketBox.UNLIMITED_ICON1, 55, false);
             effectedMr /= 2; // 25%
         }
         return effectedMr;

@@ -929,7 +929,7 @@ public final class SkillStopHandlers {
 		if (cha instanceof L1PcInstance) {
 			if (!cha.isInvisble()) {
 				L1PcInstance pc = (L1PcInstance) cha;
-				pc.getLight().turnOnOffLight();
+				pc.refreshLight();
 			}
 			return StopResult.HANDLED;
 		}

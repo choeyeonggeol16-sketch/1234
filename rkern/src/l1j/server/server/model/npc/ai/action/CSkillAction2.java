@@ -1146,14 +1146,14 @@ public final class CSkillAction2 {
                 }
 
                 newnpc.onNpcAI();
-                newnpc.getLight().turnOnOffLight();
+                newnpc.refreshLight();
 
                 newnpc.startChat(
                         L1NpcInstance.CHAT_TIMING_APPEARANCE);
 
             } else {
                 mob.onNpcAI();
-                mob.getLight().turnOnOffLight();
+                mob.refreshLight();
 
                 mob.startChat(
                         L1NpcInstance.CHAT_TIMING_APPEARANCE);

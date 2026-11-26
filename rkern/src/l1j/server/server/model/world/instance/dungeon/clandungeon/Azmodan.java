@@ -559,7 +559,7 @@ public class Azmodan implements Runnable {
 			} else if (roomnumber == 3) {
 				azmodan.add(npc, 3);		
 			}
-			npc.getLight().turnOnOffLight();
+			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); 
 
 		} catch (Exception e) {

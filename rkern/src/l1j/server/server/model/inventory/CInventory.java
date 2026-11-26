@@ -124,6 +124,10 @@ public class CInventory extends L1Object {
         return _items.GetItemsByType(type);
     }
 
+    public int getLightRadius(int radius) {
+        return _items.getLightRadius(radius);
+    }
+
     public L1ItemInstance[] GetItemsByKinds(int... kinds) {
         return _items.GetItemsByKinds(kinds);
     }

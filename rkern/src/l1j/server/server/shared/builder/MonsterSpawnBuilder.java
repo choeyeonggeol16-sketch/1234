@@ -56,7 +56,7 @@ public class MonsterSpawnBuilder {
 		m.setY(y); m.setHomeY(y);
 		m.setHeading(_rnd.nextInt(8));
 		m.setLightSize(npc.getLightSize());
-		m.getLight().turnOnOffLight();
+		m.refreshLight();
 		L1World.getInstance().storeAndEnterWorld(m);
 		return m;
 	}

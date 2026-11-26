@@ -527,7 +527,7 @@ public class CNpcMaker {
                         mob, getGroupId(), isRespawnScreen(), _initSpawn);
             }
 
-            mob.getLight().turnOnOffLight();
+            mob.refreshLight();
             mob.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE);
             return true;
 

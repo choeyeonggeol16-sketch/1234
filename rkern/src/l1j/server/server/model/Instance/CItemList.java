@@ -699,6 +699,21 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         return selectItems(ItemKey.TYPE, type, false, 0, false);
     }
 
+    public synchronized int getLightRadius(int radius) {
+        final int etcItemKind = 0;
+        final int lightItemType = 2;
+        final Object rows = lookup(ItemKey.TYPE, lightItemType);
+        int index = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++index)) {
+            final L1Item template = item.getItem();
+            if (template == null || template.getType2() != etcItemKind
+                    || template.getType() != lightItemType || !item.isNowLighting()) continue;
+            final int itemRadius = template.getLightRange();
+            if (itemRadius != 0) radius = Math.max(radius, itemRadius);
+        }
+        return radius;
+    }
+
     public synchronized L1ItemInstance[] GetItemsByKinds(int... kinds) {
         return selectKeys(ItemKey.KIND, kinds, false);
     }

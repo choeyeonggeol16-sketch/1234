@@ -72,7 +72,7 @@ public class HadinSpawn {
 						field.setHomeY(field.getY());
 						field.setHeading(rs.getInt("heading"));
 						field.setLightSize(l1npc.getLightSize());
-						field.getLight().turnOnOffLight();
+						field.refreshLight();
 						field.setSpawnLocation(rs.getString("location"));
 						if(field instanceof L1DoorInstance){
 							L1DoorInstance fi = (L1DoorInstance) field;
@@ -147,7 +147,7 @@ public class HadinSpawn {
 						field.setHomeY(field.getY());
 						field.setHeading(rs.getInt("heading"));
 						field.setLightSize(l1npc.getLightSize());
-						field.getLight().turnOnOffLight();
+						field.refreshLight();
 						field.setSpawnLocation(rs.getString("location"));
 						L1World.getInstance().storeAndEnterWorld(field);
 						list.add(field);
@@ -199,7 +199,7 @@ public class HadinSpawn {
 						field.setHomeY(field.getY());
 						field.setHeading(rs.getInt("heading"));
 						field.setLightSize(l1npc.getLightSize());
-						field.getLight().turnOnOffLight();
+						field.refreshLight();
 						field.setSpawnLocation(rs.getString("location"));
 						if(field instanceof L1DoorInstance){
 							L1DoorInstance fi = (L1DoorInstance) field;

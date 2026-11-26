@@ -2,7 +2,6 @@ package l1j.server.server.model.character.skill.core;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Magic;
-import l1j.server.server.model.Light;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -204,12 +203,7 @@ public enum TargetSkillProcessor {
         // =====================================================
         // Light refresh
         // =====================================================
-        if (targetIsPc) {
-            final Light light = ((L1PcInstance) target).getLight();
-            if (light != null) {
-                light.turnOnOffLight();
-            }
-        }
+        if (targetIsPc) target.refreshLight();
 
         return Outcome.CONTINUE;
     }

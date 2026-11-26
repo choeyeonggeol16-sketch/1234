@@ -1231,7 +1231,6 @@
 //		}
 //		// 몬스터의 AI를 시작
 //		mob.onNpcAI();
-//		mob.getLight().turnOnOffLight();
 //		mob.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 시작
 //		return mob;
 //	}
@@ -1266,7 +1265,6 @@
 //		}
 //		// 몬스터의 AI를 시작
 //		mob.onNpcAI();
-//		mob.getLight().turnOnOffLight();
 //		mob.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); // 채팅 시작
 //		return mob;
 //	}

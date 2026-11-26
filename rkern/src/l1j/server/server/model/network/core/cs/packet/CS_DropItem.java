@@ -321,7 +321,7 @@ public final class CS_DropItem {
             }
         }
 
-        pc.getLight().turnOnOffLight();
+        pc.refreshLight();
 
         LoggerInstance.getInstance().addItemAction(
                 ItemActionType.Drop,

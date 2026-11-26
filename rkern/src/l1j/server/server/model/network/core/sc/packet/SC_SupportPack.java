@@ -20,7 +20,7 @@ public final class SC_SupportPack {
         final int x = pet.getX(), y = pet.getY(), id = pet.getId();
         final int spriteId = pet.getCurrentSpriteId(), status = pet.getStatus();
         final int heading = pet.getHeading();
-        final int lightSize = pet.getLight() == null ? 0 : pet.getLight().getChaLightSize();
+        final int lightSize = pet.getVisibleLightSize();
         final int moveSpeed = pet.getMoveSpeed(), level = pet.getLevel();
         final String title = pet.getTitle() == null ? "" : pet.getTitle();
         int poisonAndFastMoveStatus = 0;
