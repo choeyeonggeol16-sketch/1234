@@ -17,6 +17,9 @@ jobs:
             rkern/src
             rkern/docs/jproring_cio_integration_20261120
             rkern/tests/trade_lifecycle
+      - name: Audit legacy pet database references
+        run: |
+          git grep -n -i -E '\b(PetTable|PetItemTable|PetTypeTable|L1Pet|L1PetItem|L1PetType|pets|petitem|pettypes|deletePetCollarSnapshot)\b' -- rkern/src | grep -iE 'PetTable|PetItemTable|PetTypeTable|\bL1Pet(Item|Type)?\b|deletePetCollarSnapshot|[[:space:]](FROM|INTO|UPDATE|JOIN|TABLE)[[:space:]]+(pets|petitem|pettypes)\b|"pets"|"petitem"|"pettypes"' || true
       - name: Audit legacy pet instance references
         run: |
           # The only surviving name is a rejected legacy DB discriminator, not a Java type.
