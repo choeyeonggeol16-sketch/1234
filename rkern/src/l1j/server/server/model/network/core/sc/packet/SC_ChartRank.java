@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -10,6 +11,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.combat.statistics.Kda;
 import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -74,7 +76,7 @@ public final class SC_ChartRank {
      * payload once for a chart update rather than rewriting the same
      * Snapshot fields for every eligible viewer.
      */
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(Snapshot snap) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(Snapshot snap) {
         if(snap==null||snap.wireSize>0xffff)return null;
         return b -> {b.put((byte)Opcodes.S_EXTENDED_PROTOBUF)
              .putShort((short)SC_BASECAMP_CHART_NOTI_PACKET);
@@ -86,7 +88,7 @@ public final class SC_ChartRank {
 
 
     /** Assemble.writeBit uses 32-bit unsigned semantics for negatives. */
-    private static void putBit(java.nio.ByteBuffer out,long value){
+    private static void putBit(ByteBuffer out,long value){
         if(value<0L)value &= 0xffffffffL;
         while((value & ~0x7fL)!=0L){
             out.put((byte)((value & 0x7fL)|0x80L));

@@ -256,6 +256,9 @@ public final class CIOServer implements AutoCloseable, CUserSocket.Closed {
     public String poolReport(){
         return "JProRing direct bytes=" + pool.allocatedDirectBytes() + "/" + pool.maxDirectBytes()
                 + " receive slots=" + pool.usedRecvSlots() + " send slots=" + pool.usedSendSlots()
+                + " shared source slots=" + pool.usedSharedSourceSlots()
+                + " shared source refused=" + pool.sharedSourceRefusals()
+                + " optional broadcast refused=" + pool.optionalBroadcastRefusals()
                 + " accounts=" + Arrays.toString(accountRegistryDiagnostics())
                 + " owners=" + ownerDiagnostics();
     }

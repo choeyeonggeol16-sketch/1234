@@ -1,15 +1,13 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 
 public final class SC_AreaAttackEffect {
     private static final AtomicInteger SEQUENCE = new AtomicInteger();
@@ -33,19 +31,19 @@ public final class SC_AreaAttackEffect {
         // the existing explicit large-frame socket FIFO, not another SC
         // broadcast serializer. This case needs >=2727 targets at once.
         if(length>16384L) {
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast
+            CSharedBroadcast
                     .sendWrittenLargeSelfAndVisible(caster,(int)length,
                             b -> writeNativeArea(b,id,x,y,heading,seq,gfx,action,ids));
             return;
         }
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenSelfAndVisibleBestEffort(caster,
+        CSharedBroadcast.sendWrittenSelfAndVisibleBestEffort(caster,
                 b -> writeNativeArea(b,id,x,y,heading,seq,gfx,action,ids));
     }
 
     /** Original SC_AreaAttackEffect::send Assemble byte layout. One buffer
      * per attack; per-socket encryption and SEND FIFO remain native-owned.
      */
-    private static void writeNativeArea(java.nio.ByteBuffer b,
+    private static void writeNativeArea(ByteBuffer b,
             int id,int x,int y,int heading,int seq,int gfx,int action,int[] ids) {
         b.put((byte)Opcodes.S_ATTACK_MANY).put((byte)action).putInt(id);
         b.putShort((short)x).putShort((short)y).put((byte)heading);

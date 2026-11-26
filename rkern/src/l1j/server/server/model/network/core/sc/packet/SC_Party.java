@@ -3,8 +3,9 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_Party {
     private SC_Party() {}
@@ -51,7 +52,7 @@ public final class SC_Party {
 
 
     /** Same fixed 10-byte S_EVENT 0x6c D(objectId) H(color) packet. */
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeNameColorWriter(int objectId,int color) {
+    public static CSharedBroadcast.NativeWireWriter nativeNameColorWriter(int objectId,int color) {
         if(color<0||color>2)return null;
         return b -> b.put((byte)Opcodes.S_EVENT).put((byte)0x6c).putInt(objectId).putShort((short)color);
     }

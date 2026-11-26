@@ -1,4 +1,6 @@
 package l1j.server.server.model.character.combat.arena.dogfight.history;
+
+import l1j.server.server.model.shop.NpcShopView;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -236,7 +238,8 @@ public class DogFightHistory {
     }
 
     public void on_show_ticket_view(L1PcInstance pc, L1NpcInstance npc){
-        if(!is_run() || m_current_history_info == null){
+        final DogFightHistoryInfo round = m_current_history_info;
+        if(!is_run() || round == null){
             SC_NPCTalkReturn.send(pc, npc.getId(), "maeno3");
             return;
         }
@@ -244,7 +247,12 @@ public class DogFightHistory {
             SC_NPCTalkReturn.send(pc, npc.getId(), "maeno3");
             return;
         }
-        SC_DogFightBuyList.send(pc, npc.getId(), m_current_history_info.get_tickets_info(), m_current_history_info.get_ticket_price());
+        final var client = pc.getNetConnection();
+        if (client == null) return;
+        final var tickets = round.get_tickets_info();
+        final NpcShopView view = NpcShopView.dogFight(client, pc, npc, true, round, tickets.size(), null);
+        if (SC_DogFightBuyList.send(pc, npc.getId(), tickets, round.get_ticket_price()))
+            client.publishNpcShopView(pc, view);
     }
 
     public void on_show_sells_view(L1PcInstance pc, L1NpcInstance npc){
@@ -253,12 +261,18 @@ public class DogFightHistory {
             return;
         }
 
+        final DogFightHistoryInfo round = m_current_history_info;
         ArrayList<KeyValuePair<Integer, Integer>> pairs = find_sellable_tickets(pc);
         if(pairs.isEmpty()){
             SC_NoSell.send(pc, npc);
             return;
         }
-        SC_DogFightSellList.send(pc, npc.getId(), pairs);
+        final var client = pc.getNetConnection();
+        if (client == null) return;
+        final int[] saleIds = new int[pairs.size()];
+        for (int i = 0; i < saleIds.length; i++) saleIds[i] = pairs.get(i).key;
+        final NpcShopView view = NpcShopView.dogFight(client, pc, npc, false, round, 0, saleIds);
+        if (SC_DogFightSellList.send(pc, npc.getId(), pairs)) client.publishNpcShopView(pc, view);
     }
 
     public void on_sell_ticket(L1PcInstance pc, int[] param1, long[] param2, int size, int npc_object_id){

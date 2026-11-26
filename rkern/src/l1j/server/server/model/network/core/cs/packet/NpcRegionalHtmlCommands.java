@@ -161,8 +161,10 @@ final class NpcRegionalHtmlCommands {
         } else if (templateId == 71056) {
             // 아들을 찾는다
             if (s.equalsIgnoreCase("a")) {
-                NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_SIMIZZ,
-                        pc.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ), 1, "SIMIZZ7");
+                final int step = pc.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ);
+                if (step == 0 || step == 1)
+                    NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_SIMIZZ,
+                            step, 1, "SIMIZZ7");
                 return;
             } else if (s.equalsIgnoreCase("b")) {
                 if (pc.getInventory().HaveItemByClassId(40661) && pc.getInventory().HaveItemByClassId(40662)
@@ -173,7 +175,7 @@ final class NpcRegionalHtmlCommands {
                 htmlid = "SIMIZZ9";
             } else if (s.equalsIgnoreCase("d")) {
                 NpcQuestTransactions.requestQuestPage(pc, obj, objid, CQuestSystem.QUEST_SIMIZZ,
-                        pc.getQuest().get_step(CQuestSystem.QUEST_SIMIZZ), CQuestSystem.QUEST_END, "SIMIZZ12");
+                        2, CQuestSystem.QUEST_END, "SIMIZZ12");
                 return;
             }
 

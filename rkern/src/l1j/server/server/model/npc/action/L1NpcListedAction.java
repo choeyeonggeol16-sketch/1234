@@ -18,8 +18,10 @@
  */
 package l1j.server.server.model.npc.action;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import org.w3c.dom.Element;
 
@@ -28,11 +30,33 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.L1NpcHtml;
 
 public class L1NpcListedAction extends L1NpcXmlAction {
+	private static final Logger LOG = Logger.getLogger(L1NpcListedAction.class.getName());
 	private final List<L1NpcAction> _actions;
+    private final boolean containsQuest;
+    private final boolean containsCraft;
+    private final boolean hasSplitCraftQuest;
 
 	public L1NpcListedAction(Element element) {
 		super(element);
 		_actions = L1NpcXmlParser.listActions(element);
+        boolean quest = false;
+        boolean craft = false;
+        boolean localSplit = false;
+        for (L1NpcAction action : _actions) {
+            final L1NpcListedAction nested = action instanceof L1NpcListedAction list ? list : null;
+            final boolean actionHasQuest = action instanceof L1NpcSetQuestAction
+                    || (nested != null && nested.containsQuest);
+            localSplit |= craft && actionHasQuest;
+            quest |= actionHasQuest;
+            craft |= action instanceof L1NpcMakeItemAction || (nested != null && nested.containsCraft);
+        }
+        containsQuest = quest;
+        containsCraft = craft;
+        // A nested list rejects its own split sequence when reached. Its
+        // presence alone must not disable other independently selected actions.
+        hasSplitCraftQuest = localSplit;
+        if (localSplit) LOG.warning("NPC XML quest reward needs SetQuest in the MakeItem Succeed branch: "
+                + sourceDescription(element));
 	}
 
     @Override
@@ -48,33 +72,60 @@ public class L1NpcListedAction extends L1NpcXmlAction {
     @Override
     public L1NpcHtml executeDeferred(String name, L1PcInstance pc, L1Object obj,
             byte[] args, Consumer<L1NpcHtml> completion) {
-        return run(name, pc, obj, args, 0, 0, null, completion);
+        return run(name, pc, obj, args, 0, 0, null, List.of(), completion);
     }
 
     @Override
     public L1NpcHtml executeAmountDeferred(String name, L1PcInstance pc, L1Object obj,
             int amount, Consumer<L1NpcHtml> completion) {
-        return run(name, pc, obj, null, amount, 0, null, completion);
+        return run(name, pc, obj, null, amount, 0, null, List.of(), completion);
     }
 
-    /** Do not reorder past any action or fold a conditional/nested child. */
-    final L1NpcSetQuestAction leadingPlainQuest(L1PcInstance pc) {
-        if (!_actions.isEmpty() && _actions.get(0) instanceof L1NpcSetQuestAction quest
-                && quest.isPlainQuestAction(pc)) return quest;
-        return null;
+    private enum QuestStageOrder { OPEN, CLOSED, UNSUPPORTED }
+
+    /** A passive HTML node and unconditional nesting preserve the quest order. */
+    final List<L1NpcSetQuestAction> successQuestStages() {
+        if (!containsQuest) return List.of();
+        final ArrayList<L1NpcSetQuestAction> quests = new ArrayList<>();
+        if (collectQuestStages(quests, QuestStageOrder.OPEN) == QuestStageOrder.UNSUPPORTED) return null;
+        return List.copyOf(quests);
     }
 
-    final L1NpcHtml resumeAfterCraftQuest(String name, L1PcInstance pc, L1Object obj,
-            byte[] args, Consumer<L1NpcHtml> completion) {
-        return run(name, pc, obj, args, 0, 1, null, completion);
+    private QuestStageOrder collectQuestStages(List<L1NpcSetQuestAction> quests, QuestStageOrder order) {
+        for (L1NpcAction action : _actions) {
+            if (action instanceof L1NpcSetQuestAction quest) {
+                if (order != QuestStageOrder.OPEN || !quest.hasDefaultConditions())
+                    return QuestStageOrder.UNSUPPORTED;
+                quests.add(quest);
+            } else if (action instanceof L1NpcListedAction nested) {
+                if (nested.hasDefaultConditions()) {
+                    order = nested.collectQuestStages(quests, order);
+                    if (order == QuestStageOrder.UNSUPPORTED) return order;
+                } else {
+                    if (nested.containsQuest) return QuestStageOrder.UNSUPPORTED;
+                    order = QuestStageOrder.CLOSED;
+                }
+            } else if (!(action instanceof L1NpcShowHtmlAction html) || !html.hasDefaultConditions()) {
+                order = QuestStageOrder.CLOSED;
+            }
+        }
+        return order;
+    }
+
+    final L1NpcHtml resumeAfterCraftQuests(String name, L1PcInstance pc, L1Object obj,
+            byte[] args, List<L1NpcSetQuestAction> stagedQuests, Consumer<L1NpcHtml> completion) {
+        return run(name, pc, obj, args, 0, 0, null, stagedQuests, completion);
     }
 
     /** Keep original order, acceptance checks and last non-null HTML. Only
      * suspend at a receipt; no new worker, queue or blocking wait. */
     private L1NpcHtml run(String name, L1PcInstance pc, L1Object obj, byte[] args,
-            int amount, int start, L1NpcHtml result, Consumer<L1NpcHtml> completion) {
+            int amount, int start, L1NpcHtml result, List<L1NpcSetQuestAction> stagedQuests,
+            Consumer<L1NpcHtml> completion) {
+        if (hasSplitCraftQuest) return rejectUnsafeQuestReward(pc);
         for (int i = start; i < _actions.size(); i++) {
             L1NpcAction action = _actions.get(i);
+            if (action instanceof L1NpcSetQuestAction && stagedQuests.contains(action)) continue;
             if (!action.acceptsRequest(name, pc, obj)) continue;
             L1NpcHtml r;
             if (action instanceof L1NpcMakeItemAction || action instanceof L1NpcListedAction
@@ -87,11 +138,15 @@ public class L1NpcListedAction extends L1NpcXmlAction {
                         return;
                     }
                     L1NpcHtml tail = run(name, pc, obj, args, amount, next,
-                            html == null ? previous : html, completion);
+                            html == null ? previous : html, stagedQuests, completion);
                     if (tail != DEFERRED) completion.accept(tail);
                 };
-                r = amount == 0 ? action.executeDeferred(name, pc, obj, args, resume)
-                        : action.executeAmountDeferred(name, pc, obj, amount, resume);
+                if (action instanceof L1NpcListedAction nested && !stagedQuests.isEmpty()) {
+                    r = nested.run(name, pc, obj, args, amount, 0, null, stagedQuests, resume);
+                } else {
+                    r = amount == 0 ? action.executeDeferred(name, pc, obj, args, resume)
+                            : action.executeAmountDeferred(name, pc, obj, amount, resume);
+                }
             } else {
                 r = amount == 0 ? action.execute(name, pc, obj, args)
                         : action.executeWithAmount(name, pc, obj, amount);

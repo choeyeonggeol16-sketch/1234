@@ -4,9 +4,10 @@ import l1j.server.Config;
 import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.UserCommands;
 import l1j.server.server.datatables.SpamTable;
-import l1j.server.server.model.L1ExcludingList;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_NewChat;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -97,26 +98,24 @@ public final class CS_Chat {
         final SC_NewChat.ChatData cp = SC_NewChat.prepare(sender, 4, 12, chatText, "");
         final SC_NewChat.ChatData cp2 = SC_NewChat.prepare(sender, 4, 3, chatText, "");
         final String senderName = sender.getName();
+        final SpamTable spam = SpamTable.getInstance();
         final var firstWriter = SC_NewChat.nativeWriter(cp);
         final var secondWriter = SC_NewChat.nativeWriter(cp2);
         // A frame too large for the L1 16-bit wire length was not deliverable
         // via the old direct sender either. Never create a legacy SEND fallback.
         if (firstWriter == null || secondWriter == null) return;
 
-        try (var first = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+        try (var first = new CAsyncSendConstBuffer(
                      firstWriter, Integer.MIN_VALUE, Integer.MAX_VALUE);
-             var second = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+             var second = new CAsyncSendConstBuffer(
                      secondWriter, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
             for (L1PcInstance listener : L1World.getInstance().getAllPlayers()) {
                 if (listener == null) continue;
 
-                final L1ExcludingList spamList =
-                        SpamTable.getInstance().getExcludeTable(listener.getId());
-
-                if (spamList != null && !spamList.contains(0, senderName)) {
+                if (!spam.excludesChat(listener.getId(), senderName)) {
                     // Keep the original recipient-major FIFO order: first 12, then 3.
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(first, listener);
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(second, listener);
+                    CSharedBroadcast.sendRecipientBestEffort(first, listener);
+                    CSharedBroadcast.sendRecipientBestEffort(second, listener);
                 }
             }
         }

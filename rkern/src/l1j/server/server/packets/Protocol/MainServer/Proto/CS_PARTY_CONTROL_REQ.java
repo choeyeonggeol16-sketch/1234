@@ -141,7 +141,8 @@ public final class CS_PARTY_CONTROL_REQ {
                     pc.sendPackets(415);
                     return;
                 }
-                if (pc.isInChatParty() && !pc.getChatParty().isLeader(pc)) {
+                final var chatParty = pc.getChatParty();
+                if (chatParty != null && !chatParty.isLeader(pc)) {
                     pc.sendPackets(416);
                     return;
                 }

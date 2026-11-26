@@ -135,12 +135,10 @@ public final class CS_InvitePartyTarget {
 			return;
 		}
 
-		if (pc.isInChatParty()) {
-			if (!pc.getChatParty().isLeader(pc)) {
-				SC_ServerMessage.send(pc, 416);
-				return;
-			}
-
+		final var chatParty = pc.getChatParty();
+		if (chatParty != null && !chatParty.isLeader(pc)) {
+			SC_ServerMessage.send(pc, 416);
+			return;
 		}
         if (!CReplyChecker.AttachReplyChecker(pc, targetPc, CReplyChecker.CHAT_PARTY))
             SC_SystemMessage.send(pc, "이미 승인 대기 중이거나 초대할 수 없는 상태입니다.");

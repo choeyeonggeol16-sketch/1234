@@ -48,7 +48,7 @@ public final class SC_ATTENDANCE_REWARD_ACK extends ProtoPacket {
     }
 
     public static boolean sendFields(CUserSocket recipient, int _attendanceId, int _groupId, UserAttendanceState _status) {
-        final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ATTENDANCE_REWARD_ACK, Proto.capacityBound(65535L));
+        final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ATTENDANCE_REWARD_ACK, 32);
         if (writer == null) return false;
         try {
             writeFields(writer, _attendanceId, _groupId, _status);

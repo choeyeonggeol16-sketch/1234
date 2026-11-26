@@ -1,42 +1,62 @@
 package l1j.server.server.model.network.core.sc.packet;
 
-import java.nio.charset.Charset;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import l1j.server.Config;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_NewChat {
-
-	private static final Charset MS949 = Charset.forName("MS949");
-	private static final byte[] EMPTY_BYTES = new byte[0];
-
     private SC_NewChat() {}
 
     public static final class ChatData {
         private final int type, chatType, pcObjId, pcX, pcY, rankLevel;
         private final byte[] textBytes, targetBytes, senderBytes;
+        private final int frameLength;
 
         private ChatData(L1PcInstance sender, int type, int chatType, String text, String target) {
             this.type = type;
             this.chatType = chatType;
-            textBytes = text == null ? EMPTY_BYTES : text.getBytes(MS949);
-            targetBytes = type == 3 && chatType == 1 && target != null
-                    ? target.getBytes(MS949) : EMPTY_BYTES;
+            textBytes = ProtoBroadcastFields.encode(text);
+            targetBytes = type == 3 && chatType == 1
+                    ? ProtoBroadcastFields.encode(target) : ProtoBroadcastFields.EMPTY;
             senderBytes = type == 4 && sender != null
-                    ? resolveSenderNameBytes(sender, chatType) : EMPTY_BYTES;
+                    ? resolveSenderNameBytes(sender, chatType) : ProtoBroadcastFields.EMPTY;
             pcObjId = type == 4 && sender != null ? sender.getId() : 0;
             pcX = type == 4 && sender != null ? sender.getX() : 0;
             pcY = type == 4 && sender != null ? sender.getY() : 0;
             rankLevel = type == 4 && sender != null ? sender.getRankLevel() : 0;
+            frameLength = frameLength();
         }
 
         public boolean send(L1PcInstance receiver) {
-            return sendFrame(receiver, type, chatType, textBytes, targetBytes,
-                    senderBytes, pcObjId, pcX, pcY, rankLevel);
+            return sendFrame(receiver, this);
+        }
+
+        private int frameLength() {
+            if (textBytes == null || targetBytes == null || senderBytes == null) return 0;
+            int size = 8 + ProtoBroadcastFields.varintSize(chatType)
+                    + ProtoBroadcastFields.bytesSize(textBytes);
+            if (type == 3) {
+                if (chatType == 0) size += 8;
+                else if (chatType == 1) size += ProtoBroadcastFields.bytesSize(targetBytes) + 6;
+                else return 0;
+            } else if (type == 4) {
+                size += ProtoBroadcastFields.bytesSize(senderBytes) + 2;
+                if (chatType == 0) size += 3 + kSize(pcObjId) + kSize(pcX) + kSize(pcY);
+                if (rankLevel != 0) size += 1 + ProtoBroadcastFields.varintSize(rankLevel);
+            } else {
+                return 0;
+            }
+            return size <= CIOBufferPool.MAX_WIRE_BYTES ? size : 0;
         }
     }
 
@@ -48,16 +68,7 @@ public final class SC_NewChat {
 
     public static boolean send(L1PcInstance receiver, L1PcInstance sender, int type,
                                int chatType, String text, String target) {
-        final byte[] textBytes = text == null ? EMPTY_BYTES : text.getBytes(MS949);
-        final byte[] targetBytes = type == 3 && chatType == 1 && target != null
-                ? target.getBytes(MS949) : EMPTY_BYTES;
-        final byte[] senderBytes = type == 4 && sender != null
-                ? resolveSenderNameBytes(sender, chatType) : EMPTY_BYTES;
-        return sendFrame(receiver, type, chatType, textBytes, targetBytes, senderBytes,
-                type == 4 && sender != null ? sender.getId() : 0,
-                type == 4 && sender != null ? sender.getX() : 0,
-                type == 4 && sender != null ? sender.getY() : 0,
-                type == 4 && sender != null ? sender.getRankLevel() : 0);
+        return receiver != null && prepare(sender, type, chatType, text, target).send(receiver);
     }
 
 	private static byte[] resolveSenderNameBytes(L1PcInstance pc, int chatType) {
@@ -77,7 +88,8 @@ public final class SC_NewChat {
 		} else if (Config.클랜이름) {
 			String clanName = pc.getClanname();
 			boolean hasClan = pc.getClanid() != 0;
-			boolean hasCastle = hasClan && pc.getClan() != null && pc.getClan().getCastleId() != 0;
+			final L1Clan clan = hasClan ? pc.getClan() : null;
+			boolean hasCastle = clan != null && clan.getCastleId() != 0;
 
 			if (chatType == 3) {
 				if (hasClan) {
@@ -104,26 +116,20 @@ public final class SC_NewChat {
 			nameStr = pc.getName();
 		}
 
-		return nameStr != null ? nameStr.getBytes(MS949) : EMPTY_BYTES;
+		return ProtoBroadcastFields.encode(nameStr);
 	}
 
-    private static boolean sendFrame(L1PcInstance receiver, int type, int chatType,
-                                     byte[] textBytes, byte[] targetNameBytes,
-                                     byte[] senderNameBytes, int pcObjId, int pcX,
-                                     int pcY, int rankLevel) {
-        if (receiver == null) return false;
-        final CUserSocket socket = receiver.getNetConnection();
-        if (socket == null || !socket.isConnected()) return false;
-        final CUserSocket connection = socket;
+    private static boolean sendFrame(L1PcInstance receiver, ChatData data) {
+        if (receiver == null || data.frameLength == 0) return false;
+        final CUserSocket connection = receiver.getNetConnection();
         if (connection == null || !connection.isClientConnected()) return false;
-        final long needed = 64L + textBytes.length + targetNameBytes.length + senderNameBytes.length;
-        if (needed > Integer.MAX_VALUE) return false;
-        final CIOFrame frame = connection.beginDirectFrame((int) needed);
+        if (!connection.isConnected()) return false;
+        final CIOFrame frame = connection.beginDirectFrame(data.frameLength);
         if (frame == null) return false;
         boolean committed = false;
         try {
-            writePayload(frame.buffer(), type, chatType, textBytes, targetNameBytes,
-                    senderNameBytes, pcObjId, pcX, pcY, rankLevel);
+            writePayload(frame.buffer(), data.type, data.chatType, data.textBytes, data.targetBytes,
+                    data.senderBytes, data.pcObjId, data.pcX, data.pcY, data.rankLevel);
             committed = connection.commitDirectFrame(frame);
             return committed;
         } finally {
@@ -133,8 +139,7 @@ public final class SC_NewChat {
 
     public static void broadcastAll(L1PcInstance sender, int type, int chatType,
                                     String text, String targetName) {
-        final ChatData data=prepare(sender,type,chatType,text,targetName);
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> writeNativeChat(b,data));
+        CSharedBroadcast.sendWrittenAll(nativeWriter(prepare(sender, type, chatType, text, targetName)));
     }
 
 	private static void writePayload(Assemble buffer, int type, int chatType, byte[] textBytes, byte[] targetNameBytes, byte[] senderNameBytes, int pcObjId, int pcX, int pcY, int rankLevel) {
@@ -153,11 +158,8 @@ public final class SC_NewChat {
 		buffer.writeC(0x08);
 		buffer.writeC(0x00);
 		buffer.writeC(0x10);
-		buffer.writeC(chatType);
-
-		buffer.writeC(0x1a);
-		buffer.writeC(textBytes.length);
-		buffer.writeByte(textBytes);
+		buffer.writeBit(chatType);
+		ProtoBroadcastFields.writeBytes(buffer, 0x1a, textBytes);
 
 		switch (type) {
 			case 3:
@@ -171,7 +173,7 @@ public final class SC_NewChat {
 					buffer.writeC(0x38);
 					buffer.writeC(0x00);
 				} else if (chatType == 1) {
-					buffer.writeC(targetNameBytes.length);
+					buffer.writeBit(targetNameBytes.length);
 					buffer.writeByte(targetNameBytes);
 					buffer.writeC(0x28);
 					buffer.writeC(0x00);
@@ -181,9 +183,7 @@ public final class SC_NewChat {
 				}
 				break;
 			case 4:
-				buffer.writeC(0x2a);
-				buffer.writeC(senderNameBytes.length);
-				buffer.writeByte(senderNameBytes);
+				ProtoBroadcastFields.writeBytes(buffer, 0x2a, senderNameBytes);
 
 				if (chatType == 0) {
 					buffer.writeC(0x38);
@@ -195,7 +195,7 @@ public final class SC_NewChat {
 				}
 				if (rankLevel != 0) {
 					buffer.writeC(0x50);
-					buffer.writeC(rankLevel);
+					buffer.writeBit(rankLevel);
 				}
 				buffer.writeH(0);
 				break;
@@ -205,7 +205,15 @@ public final class SC_NewChat {
     /** Preserves the historical writeK(int) (not generic protobuf varint).
      * In particular it uses signed int division and Java's 5-byte path.
      */
-    private static void putK(java.nio.ByteBuffer b,int value) {
+    private static int kSize(int value) {
+        final int quotient = value / 128;
+        if (quotient == 0) return 1;
+        if (quotient <= 127) return 2;
+        if (quotient <= 16383) return 3;
+        return quotient <= 2097151 ? 4 : 5;
+    }
+
+    private static void putK(ByteBuffer b,int value) {
         final int v=value/128;
         if(v==0)b.put((byte)value);
         else if(v<=127)b.put((byte)((value&0x7f)+128)).put((byte)v);
@@ -219,42 +227,44 @@ public final class SC_NewChat {
                 .put((byte)(((v/16384)&0x7f)+128)).put((byte)(v/2097152));
     }
 
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(ChatData d) {
-        if(d==null)return null;
-        final long cap=2L+64L+d.textBytes.length+d.targetBytes.length+d.senderBytes.length;
-        if(cap>0xFFFFL)return null;
+    public static NativeWireWriter nativeWriter(ChatData d) {
+        if (d == null || d.frameLength == 0) return null;
         return b -> writeNativeChat(b,d);
     }
 
 
 
-    private static void writeNativeChat(java.nio.ByteBuffer b,ChatData d) {
-        b.order(java.nio.ByteOrder.LITTLE_ENDIAN);
+    private static void writeNativeChat(ByteBuffer b,ChatData d) {
+        b.order(ByteOrder.LITTLE_ENDIAN);
         b.put((byte)Opcodes.S_EXTENDED_PROTOBUF);
         if(d.type==3)b.put((byte)0x03);
         else if(d.type==4)b.put((byte)0x04);
         b.put((byte)0x02).put((byte)0x08).put((byte)0x00)
-         .put((byte)0x10).put((byte)d.chatType);
-        b.put((byte)0x1a).put((byte)d.textBytes.length).put(d.textBytes);
+         .put((byte)0x10);
+        ProtoBroadcastFields.putVarint(b, d.chatType);
+        ProtoBroadcastFields.putBytes(b, 0x1a, d.textBytes);
         if(d.type==3) {
             b.put((byte)0x22);
             if(d.chatType==0)
                 b.put((byte)0x00).put((byte)0x28).put((byte)0x00)
                  .put((byte)0x30).put((byte)0x18).put((byte)0x38).put((byte)0x00);
-            else if(d.chatType==1)
-                b.put((byte)d.targetBytes.length).put(d.targetBytes)
-                 .put((byte)0x28).put((byte)0x00).put((byte)0x30)
+            else if(d.chatType==1) {
+                ProtoBroadcastFields.putVarint(b, d.targetBytes.length);
+                b.put(d.targetBytes).put((byte)0x28).put((byte)0x00).put((byte)0x30)
                  .put((byte)0x00).putShort((short)0);
+            }
         } else if(d.type==4) {
-            b.put((byte)0x2a).put((byte)d.senderBytes.length).put(d.senderBytes);
+            ProtoBroadcastFields.putBytes(b, 0x2a, d.senderBytes);
             if(d.chatType==0) {
                 b.put((byte)0x38);putK(b,d.pcObjId);
                 b.put((byte)0x40);putK(b,d.pcX);
                 b.put((byte)0x48);putK(b,d.pcY);
             }
-            if(d.rankLevel!=0)b.put((byte)0x50).put((byte)d.rankLevel);
+            if(d.rankLevel!=0) {
+                b.put((byte)0x50);
+                ProtoBroadcastFields.putVarint(b, d.rankLevel);
+            }
             b.putShort((short)0);
         }
-        if(b.position()>16384)throw new java.nio.BufferOverflowException();
     }
 }

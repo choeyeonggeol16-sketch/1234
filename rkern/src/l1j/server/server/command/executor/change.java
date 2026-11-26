@@ -66,12 +66,8 @@ public class change implements L1CommandExecutor {
 				pc.UnequipItem(pc.getWeapon());
 			pc.getInventory().takeoffEquip(945);
 			SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
-			for (L1ItemInstance armor : pc.getInventory().getItems()) {
-				for (int type = 0; type <= 12; type++) {
-					if (armor != null) {
-						pc.UnequipItem(armor);
-					}
-				}
+			for (L1ItemInstance equipped : pc.getInventory().GetEquippedItems()) {
+				pc.UnequipItem(equipped);
 			}
 			SC_DelSkill.send(pc, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 					255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255);
@@ -353,12 +349,8 @@ private void 신스킬삭제(L1PcInstance pc) {
 			SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
 			SC_OwnCharStatus2.send(pc);
 
-			for (L1ItemInstance armor : pc.getInventory().getItems()) {
-				for (int type = 0; type <= 12; type++) {
-					if (armor != null) {
-						pc.UnequipItem(armor);
-					}
-				}
+			for (L1ItemInstance equipped : pc.getInventory().GetEquippedItems()) {
+				pc.UnequipItem(equipped);
 			}
 			pc.setReturnStat(pc.getExp());
 			pc.save();

@@ -4,14 +4,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_UseAttackSkill {
 
@@ -260,7 +260,7 @@ public final class SC_UseAttackSkill {
 						? cha.getId()
 						: 0;
 
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(cha, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSKILL, Opcodes.S_ATTACK, fixedActionId, chaId, targetObj, isHit, heading, seq, spellGfx, myX, myY, x, y, true);
+        CSharedBroadcast.sendExtended(cha, CSharedBroadcast.FORMAT_ATTACKSKILL, Opcodes.S_ATTACK, fixedActionId, chaId, targetObj, isHit, heading, seq, spellGfx, myX, myY, x, y, true);
 }
 
 	public static boolean sendAndBroadcast(
@@ -385,7 +385,7 @@ public final class SC_UseAttackSkill {
 						x,
 						y);
 
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(pc, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSKILL, Opcodes.S_ATTACK, fixedActionId, chaId, targetObj, isHit, heading, seq, spellGfx, myX, myY, x, y, true);
+        CSharedBroadcast.sendExtended(pc, CSharedBroadcast.FORMAT_ATTACKSKILL, Opcodes.S_ATTACK, fixedActionId, chaId, targetObj, isHit, heading, seq, spellGfx, myX, myY, x, y, true);
         return selfSent;
 }
 
@@ -729,7 +729,7 @@ public final class SC_UseAttackSkill {
 			int myY,
 			int targetX,
 			int targetY) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSKILL, Opcodes.S_ATTACK, actionId, chaId, targetObjId, isHit, heading, seq, spellGfx, myX, myY, targetX, targetY, true);
+        CSharedBroadcast.sendExtended(anchor, CSharedBroadcast.FORMAT_ATTACKSKILL, Opcodes.S_ATTACK, actionId, chaId, targetObjId, isHit, heading, seq, spellGfx, myX, myY, targetX, targetY, true);
     }
 
 	private static boolean send0(

@@ -1,11 +1,25 @@
 package l1j.server.server.model.network.core.broadcast;
 
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CodingErrorAction;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import l1j.server.Config;
+import l1j.server.server.Opcodes;
+import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /** One immutable encoded frame, shared across every eligible recipient.
@@ -64,6 +78,7 @@ public final class CSharedBroadcast {
             int p0,int p1,int p2,int p3,int p4,int p5,
             int p6,int p7,int p8,int p9,int p10,boolean fast) {
         if(anchor==null)return;
+        final boolean optional = kind != FORMAT_CHANGESHAPE;
         final L1World world=L1World.getInstance();
         final List<L1PcInstance> recipients=fast
                 ? world.borrowVisiblePlayerFast(anchor)
@@ -71,7 +86,7 @@ public final class CSharedBroadcast {
         CAsyncSendConstBufferExceptSelf shared=null;
         try {
             for(L1PcInstance pc:recipients) {
-                final l1j.server.server.model.network.core.connection.CUserSocket socket;
+                final CUserSocket socket;
                 try {
                     if(!CTLMFilter.sameWorldOther(anchor,pc))continue;
                     socket = eligibleBroadcastSocket(pc);
@@ -84,10 +99,12 @@ public final class CSharedBroadcast {
                     shared=CAsyncSendConstBufferExceptSelf.forExtended(
                             socket,anchor.getId(),kind,opcode,
                             p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10);
-                    if(shared==null)throw new IllegalStateException(
-                            "Native pooled combat source unavailable: "+kind);
+                    if (shared == null) {
+                        if (!optional) throw new IllegalStateException("Shared packet source unavailable: " + kind);
+                        continue;
+                    }
                 }
-                try { shared.send(socket, pc.getId()); }
+                try { sendVisual(socket, pc.getId(), shared, optional); }
                 catch (RuntimeException failure) { logOptionalNoticeFailure(failure); }
             }
         } finally {
@@ -110,6 +127,20 @@ public final class CSharedBroadcast {
             L1Object anchor, int format, int opcode,
             int p0, int p1, int p2, int p3,
             boolean fast, int radius, Predicate<L1PcInstance> filter) {
+        sendFormatted(anchor, format, opcode, p0, p1, p2, p3, fast, radius, filter, false);
+    }
+
+    public static void sendFormattedBestEffort(
+            L1Object anchor, int format, int opcode,
+            int p0, int p1, int p2, int p3,
+            boolean fast, int radius, Predicate<L1PcInstance> filter) {
+        sendFormatted(anchor, format, opcode, p0, p1, p2, p3, fast, radius, filter, true);
+    }
+
+    private static void sendFormatted(
+            L1Object anchor, int format, int opcode,
+            int p0, int p1, int p2, int p3,
+            boolean fast, int radius, Predicate<L1PcInstance> filter, boolean optional) {
         if (anchor == null) return;
         final L1World world = L1World.getInstance();
         final boolean borrowed = fast && radius < 0;
@@ -120,7 +151,7 @@ public final class CSharedBroadcast {
         CAsyncSendConstBufferExceptSelf shared = null;
         try {
             for (L1PcInstance pc : recipients) {
-                final l1j.server.server.model.network.core.connection.CUserSocket socket;
+                final CUserSocket socket;
                 try {
                     if (!CTLMFilter.sameWorldOther(anchor, pc)
                         || filter != null && !filter.test(pc)) continue;
@@ -134,10 +165,12 @@ public final class CSharedBroadcast {
                     shared = CAsyncSendConstBufferExceptSelf.forFormatted(
                             socket, anchor.getId(), format, opcode,
                             p0, p1, p2, p3);
-                    if (shared == null) throw new IllegalStateException(
-                            "pooled S-packet source unavailable: " + format);
+                    if (shared == null) {
+                        if (!optional) throw new IllegalStateException("Shared packet source unavailable: " + format);
+                        continue;
+                    }
                 }
-                try { shared.send(socket, pc.getId()); }
+                try { sendVisual(socket, pc.getId(), shared, optional); }
                 catch (RuntimeException failure) { logOptionalNoticeFailure(failure); }
             }
         } finally {
@@ -150,14 +183,14 @@ public final class CSharedBroadcast {
     }
 
 
-public static void sendAction(L1Object anchor, int objectId, int actionId) {
+    public static void sendAction(L1Object anchor, int objectId, int actionId) {
         if (anchor == null) return;
         final L1World world = L1World.getInstance();
         final List<L1PcInstance> recipients = world.borrowVisiblePlayerFast(anchor);
         CAsyncSendConstBufferExceptSelf shared = null;
         try {
             for (L1PcInstance pc : recipients) {
-                final l1j.server.server.model.network.core.connection.CUserSocket socket;
+                final CUserSocket socket;
                 try {
                     if (!CTLMFilter.sameWorldOther(anchor, pc)) continue;
                     socket = eligibleBroadcastSocket(pc);
@@ -168,11 +201,11 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 if (socket == null) continue;
                 if (shared == null) {
                     shared = CAsyncSendConstBufferExceptSelf.forAction(
-                            socket, objectId, l1j.server.server.Opcodes.S_ACTION,
+                            socket, objectId, Opcodes.S_ACTION,
                             objectId, actionId);
-                    if (shared == null) throw new IllegalStateException("S_ACTION shared Native source unavailable (allocation or shutdown)");
+                    if (shared == null) continue;
                 }
-                try { shared.send(socket, pc.getId()); }
+                try { shared.sendBestEffort(socket, pc.getId()); }
                 catch (RuntimeException failure) { logOptionalNoticeFailure(failure); }
             }
         } finally {
@@ -191,7 +224,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         CAsyncSendConstBufferExceptSelf shared = null;
         try {
             for (L1PcInstance pc : recipients) {
-                final l1j.server.server.model.network.core.connection.CUserSocket socket;
+                final CUserSocket socket;
                 try {
                     if (!CTLMFilter.sameWorldOther(anchor, pc)) continue;
                     socket = eligibleBroadcastSocket(pc);
@@ -203,7 +236,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 if (shared == null) {
                     shared = CAsyncSendConstBufferExceptSelf.forMove(
                             socket, anchor.getId(),
-                            l1j.server.server.Opcodes.S_MOVE_OBJECT,
+                            Opcodes.S_MOVE_OBJECT,
                             objectId, x, y, heading);
                     if (shared == null) throw new IllegalStateException("S_MOVE shared Native source unavailable (allocation or shutdown)");
                 }
@@ -226,27 +259,37 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
      */
     @FunctionalInterface
     public interface NativeWireWriter {
-        void write(java.nio.ByteBuffer output);
+        void write(ByteBuffer output);
     }
 
-    private static final java.nio.charset.Charset MS949 =
-            java.nio.charset.Charset.forName("MS949");
+    private static final Charset MS949 =
+            Charset.forName("MS949");
 
     /** Exact MS949 replacement behavior of legacy String.getBytes(MS949). */
-    public static void writeMS949(java.nio.ByteBuffer out,String text) {
+    public static void writeMS949(ByteBuffer out,String text) {
         final var encoder=MS949.newEncoder()
-                .onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE)
-                .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE);
-        var result=encoder.encode(java.nio.CharBuffer.wrap(text==null?"":text),out,true);
-        if(result.isOverflow())throw new java.nio.BufferOverflowException();
+                .onMalformedInput(CodingErrorAction.REPLACE)
+                .onUnmappableCharacter(CodingErrorAction.REPLACE);
+        var result=encoder.encode(CharBuffer.wrap(text==null?"":text),out,true);
+        if(result.isOverflow())throw new BufferOverflowException();
         if(result.isError())throw new IllegalArgumentException("MS949 encode error");
         result=encoder.flush(out);
-        if(result.isOverflow())throw new java.nio.BufferOverflowException();
+        if(result.isOverflow())throw new BufferOverflowException();
         if(result.isError())throw new IllegalArgumentException("MS949 flush error");
     }
 
     public static void sendWritten(L1Object anchor,NativeWireWriter writer,boolean fast,
             int radius,Predicate<L1PcInstance> filter) {
+        sendWritten(anchor, writer, fast, radius, filter, false);
+    }
+
+    public static void sendWrittenBestEffort(L1Object anchor, NativeWireWriter writer, boolean fast,
+            int radius, Predicate<L1PcInstance> filter) {
+        sendWritten(anchor, writer, fast, radius, filter, true);
+    }
+
+    private static void sendWritten(L1Object anchor, NativeWireWriter writer, boolean fast,
+            int radius, Predicate<L1PcInstance> filter, boolean optional) {
         if(anchor==null||writer==null)return;
         final L1World world=L1World.getInstance();
         final boolean borrowed=fast&&radius<0;
@@ -257,7 +300,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         CAsyncSendConstBufferExceptSelf shared=null;
         try {
             for(L1PcInstance pc:recipients) {
-                final l1j.server.server.model.network.core.connection.CUserSocket socket;
+                final CUserSocket socket;
                 try {
                     if(!CTLMFilter.sameWorldOther(anchor,pc)
                             ||filter!=null&&!filter.test(pc))continue;
@@ -268,13 +311,15 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 }
                 if(socket==null)continue;
                 if(shared==null) {
-                    shared=CAsyncSendConstBufferExceptSelf.forWritten(
-                            socket,anchor.getId(),writer);
-                    if(shared==null)throw new IllegalStateException("Native SC writable source unavailable");
+                    shared = new CAsyncSendConstBufferExceptSelf(writer, anchor.getId(), Integer.MAX_VALUE);
                 }
-                try { shared.send(socket,pc.getId()); }
+                try { sendVisual(socket, pc.getId(), shared, optional); }
                 catch (RuntimeException failure) {
-                    if(!shared.hasFrozenSource())throw failure;
+                    if (!shared.hasFrozenSource()) {
+                        if (!optional) throw failure;
+                        logOptionalNoticeFailure(failure);
+                        break;
+                    }
                     logOptionalNoticeFailure(failure);
                 }
             }
@@ -289,11 +334,15 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
 
     /** Recipient socket lookup for the reference design visual fanouts. */
     private static CUserSocket eligibleBroadcastSocket(L1PcInstance pc) {
-        if(pc==null)return null;
-        final CUserSocket client=pc.getNetConnection();
-        if(client==null||!client.isConnected())return null;
-        final var socket=client;
-        return socket!=null&&socket.isClientConnected()?socket:null;
+        if (pc == null) return null;
+        final CUserSocket socket = pc.getNetConnection();
+        return socket != null && socket.isConnected() && socket.isClientConnected() ? socket : null;
+    }
+
+    private static void sendVisual(CUserSocket socket, int recipientId,
+            CAsyncSendConstBuffer shared, boolean optional) {
+        if (optional) shared.sendBestEffort(socket, recipientId);
+        else shared.send(socket, recipientId);
     }
 
     /**
@@ -302,14 +351,16 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
      * its strict error contract. No alternate serializer or SEND route.
      * Rate-limit exceptional logs during global Native-pool pressure.
      */
-    private static final java.util.logging.Logger OPTIONAL_NOTICE_LOG =
-            java.util.logging.Logger.getLogger(CSharedBroadcast.class.getName());
-    private static final java.util.concurrent.atomic.AtomicLong OPTIONAL_NOTICE_FAILURES =
-            new java.util.concurrent.atomic.AtomicLong();
+    private static final Logger OPTIONAL_NOTICE_LOG =
+            Logger.getLogger(CSharedBroadcast.class.getName());
+    private static final AtomicLong OPTIONAL_NOTICE_FAILURES =
+            new AtomicLong();
 
     public static void sendRecipientBestEffort(CAsyncSendConstBuffer shared,L1PcInstance pc) {
+        if (shared == null) return;
         try {
-            sendRecipient(shared,pc);
+            final CUserSocket socket = eligibleBroadcastSocket(pc);
+            if (socket != null) shared.sendBestEffort(socket, pc.getId());
         } catch (RuntimeException failure) {
             logOptionalNoticeFailure(failure);
         }
@@ -318,7 +369,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     private static void logOptionalNoticeFailure(RuntimeException failure) {
         final long failures=OPTIONAL_NOTICE_FAILURES.incrementAndGet();
         if(failures==1 || (failures&1023L)==0L)
-            OPTIONAL_NOTICE_LOG.log(java.util.logging.Level.WARNING,
+            OPTIONAL_NOTICE_LOG.log(Level.WARNING,
                     "Optional shared broadcast failed (count="+failures+")",failure);
     }
 
@@ -338,22 +389,27 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
 
     private static CAsyncSendConstBuffer sendWrittenOptionalTo(
             CAsyncSendConstBuffer shared,L1PcInstance pc,NativeWireWriter writer) {
-        if(pc==null)return shared;
+        final CUserSocket socket;
+        final int recipient;
+        try {
+            socket = eligibleBroadcastSocket(pc);
+            if (socket == null) return shared;
+            recipient = pc.getId();
+        } catch (RuntimeException failure) {
+            logOptionalNoticeFailure(failure);
+            return shared;
+        }
         // The caller owns a source only after this helper returns it. If a
         // fatal failure escapes the FIRST send, its newly allocated Native
         // source would otherwise be lost without a matching producer release.
         CAsyncSendConstBuffer first=null;
         try {
-            final CUserSocket client=pc.getNetConnection();
-            if(client==null||!client.isConnected())return shared;
-            final var socket=client;
-            if(socket==null||!socket.isClientConnected())return shared;
             if(shared==null) {
                 first=new CAsyncSendConstBuffer(
                         writer,Integer.MIN_VALUE,Integer.MAX_VALUE);
                 shared=first;
             }
-            shared.send(socket,pc.getId());
+            shared.sendBestEffort(socket, recipient);
         } catch(RuntimeException failure) {
             // No frozen plaintext exists after an encoder/acquire/seal error.
             // Trying the same broken writer on every later recipient multiplies
@@ -502,7 +558,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
      * included). Errors in one optional area visual only affect that viewer.
      */
     public static void sendWrittenSelfAndVisibleBestEffort(
-            l1j.server.server.model.L1Character anchor,NativeWireWriter writer) {
+            L1Character anchor,NativeWireWriter writer) {
         if(anchor==null||writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try {
@@ -573,11 +629,8 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
         CAsyncSendConstBuffer shared=null;
         try {
             for(L1PcInstance pc:recipients) {
-                if(pc==null)continue;
-                final CUserSocket client=pc.getNetConnection();
-                if(client==null||!client.isConnected())continue;
-                final var socket=client;
-                if(socket==null||!socket.isClientConnected())continue;
+                final CUserSocket socket = eligibleBroadcastSocket(pc);
+                if (socket == null) continue;
                 if(shared==null) {
                     shared=new CAsyncSendConstBuffer(
                             writer,Integer.MIN_VALUE,Integer.MAX_VALUE);
@@ -590,7 +643,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     }
 
     /** writeS2 exact MS949 byte count, with Native pooled direct output. */
-    public static void writeMS949S2(java.nio.ByteBuffer out,String msg) {
+    public static void writeMS949S2(ByteBuffer out,String msg) {
         final int lenPos=out.position();
         out.put((byte)0);
         writeMS949(out,msg);
@@ -605,7 +658,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
      * Invalid plaintext is attempted only once for the entire clan.
      */
     public static void sendWrittenClanBestEffort(
-            l1j.server.server.model.L1Clan clan,NativeWireWriter writer) {
+            L1Clan clan,NativeWireWriter writer) {
         if(clan==null||writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try(var members=clan.createOnlineMembers()) {
@@ -624,25 +677,15 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
 
     /** Original clan-member traversal and every online-member duplicate/order. */
     public static void sendWrittenClan(
-            l1j.server.server.model.L1Clan clan,NativeWireWriter writer) {
+            L1Clan clan,NativeWireWriter writer) {
         if(clan==null||writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try {
             try(var members=clan.createOnlineMembers()) {
                 final var it=members.iterator();
                 while(it.hasNext()) {
-                final var member=it.next();
-                final L1PcInstance pc=member.player;
-                if(pc==null)continue;
-                final CUserSocket client=pc.getNetConnection();
-                if(client==null||!client.isConnected())continue;
-                final var socket=client;
-                if(socket==null||!socket.isClientConnected())continue;
-                if(shared==null) {
-                    shared=new CAsyncSendConstBuffer(
-                            writer,Integer.MIN_VALUE,Integer.MAX_VALUE);
-                }
-                shared.send(socket,pc.getId());
+                    final var member = it.next();
+                    if (member != null) shared = sendWrittenTo(shared, member.player, writer);
                 }
             }
         } finally {
@@ -656,11 +699,12 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
             int kind,int opcode,int p0,int p1,int p2,int p3,int p4,int p5,
             int p6,int p7,int p8,int p9,int p10) {
         if(objects==null)return;
+        final boolean optional = kind != FORMAT_CHANGESHAPE;
         CAsyncSendConstBufferExceptSelf shared=null;
         try {
             for(L1Object object:objects) {
                 if(!(object instanceof L1PcInstance pc))continue;
-                final l1j.server.server.model.network.core.connection.CUserSocket socket;
+                final CUserSocket socket;
                 try { socket=eligibleBroadcastSocket(pc); }
                 catch(RuntimeException failure) {
                     logOptionalNoticeFailure(failure);
@@ -671,10 +715,12 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                     shared=CAsyncSendConstBufferExceptSelf.forExtended(
                             socket,Integer.MIN_VALUE,kind,opcode,
                             p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10);
-                    if(shared==null)throw new IllegalStateException(
-                            "Native explicit combat source unavailable");
+                    if (shared == null) {
+                        if (!optional) throw new IllegalStateException("Shared packet source unavailable: " + kind);
+                        continue;
+                    }
                 }
-                try { shared.send(socket,pc.getId()); }
+                try { sendVisual(socket, pc.getId(), shared, optional); }
                 catch(RuntimeException failure) { logOptionalNoticeFailure(failure); }
             }
         } finally {
@@ -686,11 +732,8 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     // original AOI member (including duplicates). No ExceptSelf suppression.
     private static CAsyncSendConstBuffer sendWrittenTo(
             CAsyncSendConstBuffer shared,L1PcInstance pc,NativeWireWriter writer) {
-        if(pc==null)return shared;
-        final CUserSocket client=pc.getNetConnection();
-        if(client==null||!client.isConnected())return shared;
-        final var socket=client;
-        if(socket==null||!socket.isClientConnected())return shared;
+        final CUserSocket socket = eligibleBroadcastSocket(pc);
+        if (socket == null) return shared;
         if(shared==null) {
             // If the first recipient raises after Native allocation, the
             // caller cannot yet own this just-created source. Release it here
@@ -713,7 +756,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     }
 
     public static void sendWrittenSelfAndVisible(
-            l1j.server.server.model.L1Character anchor,NativeWireWriter writer) {
+            L1Character anchor,NativeWireWriter writer) {
         if(anchor==null||writer==null)return;
         CAsyncSendConstBuffer shared=null;
         try {
@@ -729,13 +772,13 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     // Ground item AOI: do not make the item 'known' until SEND was admitted.
     // Preserve the visible-list borrow, all duplicate entries and recipient FIFO.
     public static int sendWrittenGroundItem(
-            l1j.server.server.model.Instance.L1ItemInstance item,
+            L1ItemInstance item,
             boolean addKnownObject,NativeWireWriter writer) {
         if(item==null||writer==null)return 0;
         int viewers=0;
         CAsyncSendConstBuffer shared=null;
         final L1World world=L1World.getInstance();
-        final int range=l1j.server.Config.PC_RECOGNIZE_RANGE;
+        final int range=Config.PC_RECOGNIZE_RANGE;
         // L1's screen test is directional: user -> item, not item -> user.
         final List<L1PcInstance> visible=world.borrowVisiblePlayerFast(item,range<0?22:range);
         try {
@@ -745,7 +788,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 // Do not send ground sprites before the client's map/self
                 // initialization has completed or during a teleport reset.
                 if((sightEpoch&1)==0)continue;
-                final l1j.server.server.model.network.core.connection.CUserSocket socket;
+                final CUserSocket socket;
                 try { socket=eligibleBroadcastSocket(pc); }
                 catch(RuntimeException failure) {
                     logOptionalNoticeFailure(failure);
@@ -758,7 +801,10 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 }
                 final boolean admitted;
                 if(pc.groundSightEpoch()!=sightEpoch)continue;
-                try { admitted=shared.send(socket,pc.getId()); }
+                try {
+                    admitted = addKnownObject ? shared.sendBestEffort(socket, pc.getId())
+                            : shared.send(socket, pc.getId());
+                }
                 catch(RuntimeException failure) {
                     // The writer is lazy: failure before source freeze is
                     // a broadcast-wide invalid packet, not a bad recipient.
@@ -858,7 +904,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
      * This preserves self-first followed by exact visible-player traversal.
      */
     public static void sendWrittenLargeSelfAndVisible(
-            l1j.server.server.model.L1Character anchor,
+            L1Character anchor,
             int length,NativeWireWriter writer) {
         if(anchor==null||writer==null)return;
         if(length<=16384||length>0xFFFF)
@@ -880,7 +926,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
     }
 
     private static void sendLargeTo(CUserSocket socket, int recipient, CAsyncSendConstBuffer shared) {
-        try { shared.send(socket, recipient); }
+        try { shared.sendBestEffort(socket, recipient); }
         catch (RuntimeException failure) {
             // Only a frozen frame can safely be reused for the remaining recipients.
             if (!shared.hasFrozenSource()) throw failure;
@@ -915,35 +961,12 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
      * order and share a single frozen Native source. No alternate SEND route.
      */
     public static void sendWrittenAll(NativeWireWriter writer) {
-        if(writer==null)return;
-        CAsyncSendConstBuffer shared=null;
+        if (writer == null) return;
         try {
-            for(L1PcInstance pc:L1World.getInstance().getAllPlayers()) {
-                if(pc==null)continue;
-                try {
-                    final CUserSocket client=pc.getNetConnection();
-                    if(client==null||!client.isConnected())continue;
-                    final var socket=client;
-                    if(socket==null||!socket.isClientConnected())continue;
-                    if(shared==null)
-                        shared=new CAsyncSendConstBuffer(
-                                writer,Integer.MIN_VALUE,Integer.MAX_VALUE);
-                    try {
-                        shared.send(socket,pc.getId());
-                    } catch(RuntimeException failure) {
-                        logOptionalNoticeFailure(failure);
-                        // A socket-local failure leaves a frozen source to
-                        // reuse; an invalid encoder has no valid frame, and
-                        // retrying once per online player wastes pool/CPU.
-                        if(!shared.hasFrozenSource())break;
-                    }
-                } catch(RuntimeException failure) {
-                    logOptionalNoticeFailure(failure);
-                }
-            }
+            sendWrittenRecipientsBestEffort(L1World.getInstance().getAllPlayers(), writer);
         } catch(RuntimeException failure) {
             logOptionalNoticeFailure(failure);
-        } finally {closeOptional(shared);}
+        }
     }
 
     /** Proto.sendRaw payload already has its opcode and trailer but no
@@ -951,10 +974,13 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
      * Protocol-valid >16KiB payload uses existing direct FIFO.
      */
     public static CAsyncSendConstBuffer openRaw(byte[] encoded) {
-        if(encoded==null||encoded.length==0||encoded.length>65533)return null;
+        if (encoded == null || encoded.length == 0
+                || encoded.length > CIOBufferPool.MAX_WIRE_BYTES - CIOBufferPool.HEADER_BYTES) return null;
         final byte[] snapshot=encoded.clone(); // protobuf encoder owns input
+        final int wireLength = encoded.length + CIOBufferPool.HEADER_BYTES;
         return new CAsyncSendConstBuffer(
-                b -> b.put(snapshot),Integer.MIN_VALUE,Integer.MAX_VALUE);
+                b -> b.put(snapshot), Integer.MIN_VALUE, Integer.MAX_VALUE,
+                wireLength > CIOBufferPool.SMALL_SEND_BYTES ? wireLength : 0);
     }
 
     /** Array fanout without an iterable adapter, one frame for all members. */
@@ -1014,7 +1040,7 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 shared[i]=new CAsyncSendConstBuffer(writers[i],Integer.MIN_VALUE,Integer.MAX_VALUE);
             }
             for(L1PcInstance pc:L1World.getInstance().getVisiblePlayers(mapId)){
-                final l1j.server.server.model.network.core.connection.CUserSocket socket;
+                final CUserSocket socket;
                 try {
                     if(pc==null||(teamOnly&&pc.get_current_combat_team_id()!=teamId))continue;
                     socket=eligibleBroadcastSocket(pc);
@@ -1024,7 +1050,9 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
                 }
                 if(socket==null)continue;
                 for(CAsyncSendConstBuffer source:shared) {
-                    try { source.send(socket,pc.getId()); }
+                    try {
+                        if (!source.sendBestEffort(socket, pc.getId())) break;
+                    }
                     catch(RuntimeException failure) {
                         // Invalid source is fatal for the entire effect set;
                         // a single failed recipient must not skip the next team member.
@@ -1066,12 +1094,9 @@ public static void sendAction(L1Object anchor, int objectId, int actionId) {
      * changing per-client FIFO ordering or allocating new lists.
      */
     public static void sendRecipient(CAsyncSendConstBuffer shared,L1PcInstance pc) {
-        if(shared==null || pc==null)return;
-        final CUserSocket client=pc.getNetConnection();
-        if(client==null || !client.isConnected())return;
-        final var socket=client;
-        if(socket!=null && socket.isClientConnected())
-            shared.send(socket,pc.getId());
+        if (shared == null) return;
+        final CUserSocket socket = eligibleBroadcastSocket(pc);
+        if (socket != null) shared.send(socket, pc.getId());
     }
 
-            }
+}

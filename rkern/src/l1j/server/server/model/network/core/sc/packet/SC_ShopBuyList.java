@@ -1,6 +1,7 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 
+import l1j.server.server.model.shop.NpcShopView;
 import java.util.List;
 
 import l1j.server.server.Opcodes;
@@ -52,11 +53,13 @@ public final class SC_ShopBuyList {
         if (count == 0) SC_NoSell.send(pc, npc);
         if (count > 65535) return false;
         final int[] itemData = new int[count << 1];
+        final int[] saleIds = new int[count];
         if (assessedItems != null) {
             int offset = 0;
             for (int i = 0, n = assessedItems.size(); i < n; ++i) {
                 final L1AssessedItem item = assessedItems.get(i);
                 if (item == null) continue;
+                saleIds[offset >>> 1] = item.getTargetId();
                 itemData[offset++] = item.getTargetId();
                 itemData[offset++] = item.getAssessedPrice();
             }
@@ -69,6 +72,7 @@ public final class SC_ShopBuyList {
 
         final long needed = 11L + (long) count * 8L;
         if (needed > Integer.MAX_VALUE) return false;
+        final NpcShopView view = NpcShopView.sale(connection, pc, npc, shop, saleIds);
         final CIOFrame frame = connection.beginDirectFrame((int) needed);
         if (frame == null) return false;
         boolean committed = false;
@@ -83,6 +87,7 @@ public final class SC_ShopBuyList {
             }
             buffer.writeH(adenDesc);
             committed = connection.commitDirectFrame(frame);
+            if (committed) connection.publishNpcShopView(pc, view);
             return committed;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);

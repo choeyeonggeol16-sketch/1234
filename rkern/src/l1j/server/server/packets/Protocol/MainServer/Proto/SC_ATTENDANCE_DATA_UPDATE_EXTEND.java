@@ -50,7 +50,7 @@ public final class SC_ATTENDANCE_DATA_UPDATE_EXTEND extends ProtoPacket {
     }
 
     public static boolean sendFields(CUserSocket recipient, int _index, UserAttendanceState _state, AttendanceGroupType _group) {
-        final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ATTENDANCE_DATA_UPDATE_EXTEND, Proto.capacityBound(65535L));
+        final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_ATTENDANCE_DATA_UPDATE_EXTEND, 32);
         if (writer == null) return false;
         try {
             writeFields(writer, _index, _state, _group);

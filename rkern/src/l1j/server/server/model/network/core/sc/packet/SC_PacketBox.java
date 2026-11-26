@@ -14,13 +14,14 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Account;
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.utils.SQLUtil;
 
@@ -153,11 +154,11 @@ public final class SC_PacketBox {
      * length, S_EVENT, subcode 179, 01 27 0e, D(seconds), H(0x63ef).
      */
 
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeDragonRaidBuffWriter(int seconds) {
+    public static CSharedBroadcast.NativeWireWriter nativeDragonRaidBuffWriter(int seconds) {
         return b -> b.put((byte)Opcodes.S_EVENT).put((byte)DRAGONRAID_BUFF)
             .put((byte)1).putShort((short)0x0e27).putInt(seconds).putShort((short)0x63ef);
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeEmblemStatusWriter(int status) {
+    public static CSharedBroadcast.NativeWireWriter nativeEmblemStatusWriter(int status) {
         final boolean hasByte=status==0||status==1;
         return b -> {
             b.put((byte)Opcodes.S_EVENT).put((byte)PLEDGE_EMBLEM_STATUS);
@@ -166,40 +167,40 @@ public final class SC_PacketBox {
             b.putInt(0);
         };
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeTownLeaderWriter(String leader) {
+    public static CSharedBroadcast.NativeWireWriter nativeTownLeaderWriter(String leader) {
         return b -> {b.put((byte)Opcodes.S_EVENT).put((byte)MSG_TOWN_LEADER);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,leader);b.put((byte)0);};
+            CSharedBroadcast.writeMS949(b,leader);b.put((byte)0);};
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeGreenWriter(String message) {
+    public static CSharedBroadcast.NativeWireWriter nativeGreenWriter(String message) {
         return b -> {b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message);b.put((byte)0);};
+            CSharedBroadcast.writeMS949(b,message);b.put((byte)0);};
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeColorNoticeWriter(int color,String text) {
+    public static CSharedBroadcast.NativeWireWriter nativeColorNoticeWriter(int color,String text) {
         if(color!=RED_MESSAGE&&color!=YELLOW_MESSAGE)throw new IllegalArgumentException("not a color message");
         return b -> {b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE)
             .put((byte)2).putShort((short)26204).put((byte)color);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,text);b.put((byte)0);};
+            CSharedBroadcast.writeMS949(b,text);b.put((byte)0);};
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeScoreWriter(String text) {
+    public static CSharedBroadcast.NativeWireWriter nativeScoreWriter(String text) {
         return b -> {b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE)
             .put((byte)SCORE_MARK);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,text);b.put((byte)0);};
+            CSharedBroadcast.writeMS949(b,text);b.put((byte)0);};
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeRoundWriter(int stage) {
+    public static CSharedBroadcast.NativeWireWriter nativeRoundWriter(int stage) {
         return b -> b.put((byte)Opcodes.S_EVENT).put((byte)ROUND1)
             .putInt(stage).putInt(12);
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeHadinDisplayWriter(int value) {
+    public static CSharedBroadcast.NativeWireWriter nativeHadinDisplayWriter(int value) {
         return b -> b.put((byte)Opcodes.S_EVENT).put((byte)HADIN_DISPLAY).put((byte)value);
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeMiniGameTimeWriter(int time) {
+    public static CSharedBroadcast.NativeWireWriter nativeMiniGameTimeWriter(int time) {
         return b -> b.put((byte)Opcodes.S_EVENT).put((byte)MINIGAME_TIME).putShort((short)time);
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeMiniGameEndWriter() {
+    public static CSharedBroadcast.NativeWireWriter nativeMiniGameEndWriter() {
         return b -> b.put((byte)Opcodes.S_EVENT).put((byte)MINIGAME_END)
             .put((byte)147).put((byte)92).put((byte)151).put((byte)220).put((byte)42).put((byte)74);
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeMapTimerWriter(int value) {
+    public static CSharedBroadcast.NativeWireWriter nativeMapTimerWriter(int value) {
         return b -> b.put((byte)Opcodes.S_EVENT).put((byte)MAP_TIMER).putInt(value);
     }
 
@@ -222,12 +223,12 @@ public final class SC_PacketBox {
     
     
 public static void broadcastGreen(String message) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });
+        CSharedBroadcast.sendWrittenAll(b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });
     }
 
     public static void broadcastGreenMap(int mapId, String message) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                L1World.getInstance().getVisiblePlayers(mapId), b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });
+        CSharedBroadcast.sendWrittenRecipientsBestEffort(
+                L1World.getInstance().getVisiblePlayers(mapId), b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });
     }
 
     public static boolean send(L1PcInstance receiver, int subCode) {

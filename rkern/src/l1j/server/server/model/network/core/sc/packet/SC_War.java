@@ -1,12 +1,13 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import java.nio.ByteBuffer;
+
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_War {
     private SC_War() {}
@@ -33,20 +34,20 @@ public final class SC_War {
         return pc != null && send(pc.getNetConnection(), type, clan1, clan2);
     }
     public static void broadcastAll(int type, String clan1, String clan2) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> writeNativeWar(b,type,clan1,clan2));
+        CSharedBroadcast.sendWrittenAll(b -> writeNativeWar(b,type,clan1,clan2));
     }
     public static void broadcastClan(l1j.server.server.model.L1Clan clan, int type, String clan1, String clan2) {
         if (clan == null) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenClanBestEffort(clan,b -> writeNativeWar(b,type,clan1,clan2));
+        CSharedBroadcast.sendWrittenClanBestEffort(clan,b -> writeNativeWar(b,type,clan1,clan2));
     }
 
 
-    private static void writeNativeWar(java.nio.ByteBuffer b,int type,
+    private static void writeNativeWar(ByteBuffer b,int type,
             String clan1,String clan2) {
         b.put((byte)Opcodes.S_WAR).put((byte)type);
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,clan1);
+        CSharedBroadcast.writeMS949(b,clan1);
         b.put((byte)0);
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,clan2);
+        CSharedBroadcast.writeMS949(b,clan2);
         b.put((byte)0);
     }
 

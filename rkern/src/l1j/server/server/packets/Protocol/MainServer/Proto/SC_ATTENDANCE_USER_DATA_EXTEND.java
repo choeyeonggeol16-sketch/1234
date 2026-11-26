@@ -1,31 +1,25 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.storage.CacheD;
 import l1j.server.server.model.Attendance.AttendanceLoadManager;
+import l1j.server.server.model.Attendance.AttendanceRewardClaims;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceGroupType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceUserFlag;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceDataExtend;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceDataGroup;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceState;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceTimeStatus;
-import l1j.server.server.utils.SQLUtil;
+import l1j.server.server.storage.CacheD;
 
 /**
  * SC_ATTENDANCE_USER_DATA_EXTEND (0x0221)
@@ -34,6 +28,10 @@ import l1j.server.server.utils.SQLUtil;
  * 와이어: 1 groups(repeated msg) / 2 user_flag(enum) / 3 active_group(repeated enum)
  */
 public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
+    private static final String READ_SNAPSHOT =
+            "SELECT attendance_data, attendance_indices, attendance_calendar FROM attendance_userInfo WHERE account=?";
+    private static final String UPDATE_SNAPSHOT =
+            "UPDATE attendance_userInfo SET attendance_data=?, attendance_indices=?, attendance_calendar=? WHERE account=?";
 
     // ────────────── 전송 ──────────────
 
@@ -45,8 +43,8 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
             return;
         }
         // A packet sender runs on a game/CIO owner. Never synchronously
-        // register()/query JDBC here when the login snapshot is absent.
-        final l1j.server.server.model.network.core.connection.CUserSocket socket = pc.getNetConnection();
+        // query JDBC here when the login snapshot is absent.
+        final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return;
         final String account = pc.getAccountName();
         if (account == null || account.isEmpty()) return;
@@ -78,49 +76,125 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
 
     // ────────────── DB: update ──────────────
 
-    /** 외부에서 호출되는 동기식 업데이트 메서드 */
     public static void update(String account, SC_ATTENDANCE_USER_DATA_EXTEND userData) {
-        if (userData == null) return;
-        update(account, userData.bodyBytes(), userData.createIndices());
-    }
-
-    /** 실제 DB 업데이트 처리를 수행하는 내부 메서드 */
-    public static void update(String account, byte[] data, String indices) {
-        if (account == null || data == null) return;
-        final byte[] bytes = data.clone();
-        final Timestamp ts = new Timestamp(AttendanceLoadManager.ATTEN_STARTUP_CALENDAR.getTimeInMillis());
-        CacheD.getInstance().submitDbJobOrdered(account, () -> {
-            try (Connection con = DatabaseFactory.getInstance().getConnection();
-                 PreparedStatement ps = con.prepareStatement(
-                         "INSERT INTO attendance_userInfo SET account=?, attendance_data=?, attendance_indices=?, attendance_calendar=? "
-                         + "ON DUPLICATE KEY UPDATE attendance_data=VALUES(attendance_data), "
-                         + "attendance_indices=VALUES(attendance_indices), attendance_calendar=VALUES(attendance_calendar)")) {
-                ps.setString(1, account);
-                ps.setBytes(2, bytes);
-                ps.setString(3, indices);
-                ps.setTimestamp(4, ts);
-                ps.executeUpdate();
-            } catch (Exception e) {
-                throw new IllegalStateException("Attendance DB save failed: " + account, e);
-            }
-        });
-    }
-
-    public static void updateAsync(final String account, final byte[] data, final String indices) {
-        update(account, data, indices);
-    }
-
-    // ────────────── DB: store / register ──────────────
-
-    public static void store(L1PcInstance pc) {
-        if (pc == null) return;
-        SC_ATTENDANCE_USER_DATA_EXTEND data = pc.getAttendanceData();
-        if (data == null) return;
-        try {
-            update(pc.getAccountName(), data.bodyBytes(), data.createIndices());
-        } catch (Exception e) {
-            throw new IllegalStateException("Attendance snapshot failed: " + pc.getAccountName(), e);
+        if (account == null || userData == null) return;
+        synchronized (userData) {
+            userData.queueSnapshot(account, userData.bodyBytes());
         }
+    }
+
+    private void queueSnapshot(String account, byte[] bytes) {
+        final long day = attendanceDay;
+        if (day <= 0L) return;
+        final String indices = createIndices();
+        CacheD.getInstance().submitDbJobOrdered(account, () -> saveSnapshot(account, bytes, indices, day));
+    }
+
+    /** Stage exactly one claim on the caller's inventory receipt connection. */
+    public static boolean stageRewardClaim(Connection con, String account, AttendanceGroupType type,
+            int indexZeroBased) throws SQLException {
+        final LoginSnapshot saved = readSnapshot(con, account, true);
+        if (!saved.present || saved.data == null) return false;
+        final SC_ATTENDANCE_USER_DATA_EXTEND data = decodeSnapshot(saved.data);
+        final UserAttendanceDataGroup group = AttendanceRewardClaims.findGroup(data, type);
+        final UserAttendanceDataExtend slot = AttendanceRewardClaims.findSlot(group, indexZeroBased);
+        if (slot == null || slot.get_state() != UserAttendanceState.COMPLETE) return false;
+        AttendanceRewardClaims.markClaimed(group, slot);
+        try (PreparedStatement ps = con.prepareStatement(
+                "UPDATE attendance_userInfo SET attendance_data=? WHERE account=?")) {
+            ps.setBytes(1, data.bodyBytes());
+            ps.setString(2, account);
+            if (ps.executeUpdate() != 1) throw new SQLException("Attendance reward row changed: " + account);
+        }
+        return true;
+    }
+
+    private static void saveSnapshot(String account, byte[] bytes, String indices, long day) {
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            con.setAutoCommit(false);
+            try {
+                final LoginSnapshot saved = readSnapshot(con, account, true);
+                final long savedDay = saved.dayMillis();
+                // Only the first login creates a row. A queued snapshot cannot
+                // recreate data that an administrator explicitly cleared.
+                if (saved.present && savedDay <= day) {
+                    if (saved.data != null && saved.data.length > 0) {
+                        final SC_ATTENDANCE_USER_DATA_EXTEND incoming = decodeSnapshot(bytes);
+                        final SC_ATTENDANCE_USER_DATA_EXTEND durable = decodeSnapshot(saved.data);
+                        incoming.applyIndices(indices);
+                        durable.applyIndices(saved.indices);
+                        if (savedDay > 0L && savedDay < day)
+                            durable.advanceDay(incoming._userFlag == AttendanceUserFlag.USER_FLAG_PC_CAFE);
+                        if (mergeProgress(incoming, durable, savedDay > 0L)) {
+                            bytes = incoming.bodyBytes();
+                            indices = incoming.createIndices();
+                        }
+                    }
+                    try (PreparedStatement ps = con.prepareStatement(UPDATE_SNAPSHOT)) {
+                        ps.setBytes(1, bytes);
+                        ps.setString(2, indices);
+                        ps.setTimestamp(3, new Timestamp(day));
+                        ps.setString(4, account);
+                        ps.executeUpdate();
+                    }
+                }
+                con.commit();
+            } catch (SQLException | RuntimeException failure) {
+                try { con.rollback(); }
+                catch (SQLException rollbackFailure) { failure.addSuppressed(rollbackFailure); }
+                throw failure;
+            }
+        } catch (SQLException | RuntimeException failure) {
+            throw new IllegalStateException("Attendance DB save failed: " + account, failure);
+        }
+    }
+
+    private static boolean mergeProgress(SC_ATTENDANCE_USER_DATA_EXTEND incoming,
+            SC_ATTENDANCE_USER_DATA_EXTEND durable, boolean alignedDay) throws SQLException {
+        if (durable._groups == null) return false;
+        boolean changed = false;
+        for (UserAttendanceDataGroup source : durable._groups) {
+            final UserAttendanceDataGroup target = AttendanceRewardClaims.findGroup(incoming, source.get_groupType());
+            for (UserAttendanceDataExtend stored : source.get_groupData()) {
+                final UserAttendanceState state = stored.get_state();
+                if (state != UserAttendanceState.CLEAR && state != UserAttendanceState.COMPLETE) continue;
+                final UserAttendanceDataExtend slot = AttendanceRewardClaims.findSlot(target, stored.get_index() - 1);
+                if (slot == null) throw new SQLException("Attendance snapshot loses a completed slot");
+                if (state == UserAttendanceState.CLEAR && slot.get_state() != UserAttendanceState.CLEAR) {
+                    slot.set_time(Math.max(slot.get_time(), stored.get_time()));
+                    slot.set_state(UserAttendanceState.CLEAR);
+                    changed = true;
+                } else if (state == UserAttendanceState.COMPLETE && slot.get_state() == UserAttendanceState.INIT) {
+                    slot.set_state(UserAttendanceState.COMPLETE);
+                    slot.set_time(stored.get_time());
+                    changed = true;
+                }
+            }
+            if (target == null) continue;
+            final UserAttendanceTimeStatus previousStatus = target.get_resultCode();
+            AttendanceRewardClaims.reconcileGroupStatus(target);
+            changed |= previousStatus != target.get_resultCode();
+            if (alignedDay) {
+                if (target.get_currentAttendanceIndex() < source.get_currentAttendanceIndex()) {
+                    target.set_currentAttendanceIndex(source.get_currentAttendanceIndex());
+                    target.set_attendanceTime(source.get_attendanceTime());
+                    changed = true;
+                }
+                if (target.get_recvedRewardCount() < source.get_recvedRewardCount()) {
+                    target.set_recvedRewardCount(source.get_recvedRewardCount());
+                    if (source.get_resultCode() == UserAttendanceTimeStatus.ATTENDANCE_NO_MORE_TIME
+                            && target.get_resultCode() == UserAttendanceTimeStatus.ATTENDANCE_NORMAL)
+                        target.set_resultCode(UserAttendanceTimeStatus.ATTENDANCE_NO_MORE_TIME);
+                    changed = true;
+                }
+            }
+        }
+        return changed;
+    }
+
+    private void advanceDay(boolean cafe) {
+        if (_groups == null) return;
+        for (UserAttendanceDataGroup group : _groups) group.onUpdateDay(cafe);
     }
 
     public static final class LoginSnapshot {
@@ -135,180 +209,129 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
             this.indices = indices;
             this.calendar = calendar;
         }
+
+        private long dayMillis() {
+            return calendar == null ? 0L : atSecond(calendar.getTime());
+        }
     }
 
-    public static LoginSnapshot readLoginSnapshot(String account) {
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(
-                     "SELECT attendance_data, attendance_indices, attendance_calendar FROM attendance_userInfo WHERE account=? LIMIT 1")) {
+    private static long atSecond(long millis) {
+        return millis / 1000L * 1000L;
+    }
+
+    private static LoginSnapshot readSnapshot(Connection con, String account, boolean lock) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(READ_SNAPSHOT + (lock ? " FOR UPDATE" : " LIMIT 1"))) {
             ps.setString(1, account);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) return new LoginSnapshot(false, null, null, null);
                 return new LoginSnapshot(true, rs.getBytes(1), rs.getString(2), rs.getTimestamp(3));
             }
-        } catch (Exception e) {
-            throw new IllegalStateException("Attendance DB load failed: " + account, e);
         }
     }
 
-    private static void insertInitialSnapshotAsync(String account, SC_ATTENDANCE_USER_DATA_EXTEND data) {
-        final byte[] bytes = data.bodyBytes();
-        final String indices = data.createIndices();
-        final Timestamp calendar = new Timestamp(AttendanceLoadManager.ATTEN_STARTUP_CALENDAR.getTimeInMillis());
+    public static LoginSnapshot readLoginSnapshot(String account) {
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            return readSnapshot(con, account, false);
+        } catch (SQLException failure) {
+            throw new IllegalStateException("Attendance DB load failed: " + account, failure);
+        }
+    }
+
+    private static SC_ATTENDANCE_USER_DATA_EXTEND decodeSnapshot(byte[] bytes) {
+        final SC_ATTENDANCE_USER_DATA_EXTEND data = newInstance();
+        if (bytes != null && bytes.length > 0) data.readFrom(bytes);
+        return data;
+    }
+
+    private void applyIndices(String indices) {
+        if (_groups == null || indices == null || indices.isEmpty()) return;
+        final String[] parts = indices.split(",");
+        for (int i = 0; i < parts.length && i < _groups.size(); i++)
+            _groups.get(i).set_currentAttendanceIndex(Integer.parseInt(parts[i].trim()));
+    }
+
+    private void insertInitialSnapshot(String account) {
+        final byte[] bytes = bodyBytes();
+        final String indices = createIndices();
+        final long day = attendanceDay;
+        if (day <= 0L) return;
         CacheD.getInstance().submitDbJobOrdered(account, () -> {
             try (Connection con = DatabaseFactory.getInstance().getConnection();
                  PreparedStatement ps = con.prepareStatement(
-                         "INSERT INTO attendance_userInfo SET account=?, attendance_data=?, attendance_indices=?, attendance_calendar=? "
-                         + "ON DUPLICATE KEY UPDATE account=VALUES(account)")) {
+                         "INSERT INTO attendance_userInfo (account, attendance_data, attendance_indices, attendance_calendar) "
+                         + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE account=VALUES(account)")) {
                 ps.setString(1, account);
                 ps.setBytes(2, bytes);
                 ps.setString(3, indices);
-                ps.setTimestamp(4, calendar);
+                ps.setTimestamp(4, new Timestamp(day));
                 ps.executeUpdate();
-            } catch (Exception e) {
-                java.util.logging.Logger.getLogger(SC_ATTENDANCE_USER_DATA_EXTEND.class.getName())
-                        .log(java.util.logging.Level.SEVERE, "Attendance CacheD initial insert failed: " + account, e);
-            }
-        });
-    }
-
-    private static void storeRolloverSnapshotAsync(String account, SC_ATTENDANCE_USER_DATA_EXTEND data,
-                                                   LoginSnapshot previous) {
-        final byte[] bytes = data.bodyBytes();
-        final String indices = data.createIndices();
-        final Timestamp calendar = new Timestamp(AttendanceLoadManager.ATTEN_STARTUP_CALENDAR.getTimeInMillis());
-        CacheD.getInstance().submitDbJobOrdered(account, () -> {
-            try (Connection con = DatabaseFactory.getInstance().getConnection();
-                 PreparedStatement ps = con.prepareStatement(
-                         "UPDATE attendance_userInfo SET attendance_data=?, attendance_indices=?, attendance_calendar=? "
-                         + "WHERE account=? AND attendance_calendar <=> ? "
-                         + "AND attendance_data <=> ? AND attendance_indices <=> ?")) {
-                ps.setBytes(1, bytes);
-                ps.setString(2, indices);
-                ps.setTimestamp(3, calendar);
-                ps.setString(4, account);
-                ps.setTimestamp(5, previous.calendar);
-                ps.setBytes(6, previous.data);
-                ps.setString(7, previous.indices);
-                ps.executeUpdate();
-            } catch (Exception e) {
-                java.util.logging.Logger.getLogger(SC_ATTENDANCE_USER_DATA_EXTEND.class.getName())
-                        .log(java.util.logging.Level.SEVERE, "Attendance CacheD day rollover failed: " + account, e);
+            } catch (SQLException failure) {
+                throw new IllegalStateException("Attendance DB initial insert failed: " + account, failure);
             }
         });
     }
 
     public static void applyLoginSnapshot(L1PcInstance pc, LoginSnapshot snapshot) {
         if (snapshot == null || pc == null) return;
-        SC_ATTENDANCE_USER_DATA_EXTEND userData = newInstance();
-        if (snapshot.present) {
-            if (snapshot.data != null && snapshot.data.length > 0) userData.readFrom(snapshot.data);
-            pc.setAttendanceData(userData);
-            if (snapshot.indices != null && !snapshot.indices.isEmpty()) {
-                String[] parts = snapshot.indices.split(",");
-                for (int i = 0; i < parts.length && i < userData.get_groups().size(); i++)
-                    userData.get_groups().get(i).set_currentAttendanceIndex(Integer.parseInt(parts[i].trim()));
-            }
-            userData.set_userFlag(pc.PC방_버프 ? AttendanceUserFlag.USER_FLAG_PC_CAFE : AttendanceUserFlag.USER_FLAG_NORMAL);
-            Calendar systemCal = AttendanceLoadManager.ATTEN_STARTUP_CALENDAR;
-            if (snapshot.calendar != null
-                    && systemCal.getTimeInMillis() / 1000L != snapshot.calendar.getTime() / 1000L) {
-                boolean cafe = userData.get_userFlag().equals(AttendanceUserFlag.USER_FLAG_PC_CAFE);
-                for (UserAttendanceDataGroup g : userData.get_groups()) g.onUpdateDay(cafe);
-                storeRolloverSnapshotAsync(pc.getAccountName(), userData, snapshot);
-            }
-        } else {
+        final SC_ATTENDANCE_USER_DATA_EXTEND userData = decodeSnapshot(snapshot.data);
+        final long savedDay = snapshot.dayMillis();
+        final long currentDay = atSecond(AttendanceLoadManager.attendanceDayMillis());
+        if (savedDay <= 0L && currentDay <= 0L) return;
+        final boolean needsGroups = userData._groups == null;
+        final boolean cafe = pc.PC방_버프;
+        userData.attendanceDay = Math.max(savedDay, currentDay);
+        if (needsGroups) {
             for (AttendanceGroupType group : AttendanceGroupType.values()) {
                 userData.add_groups(UserAttendanceDataGroup.newInstance(pc, group));
                 userData.add_active_group(group);
             }
+        } else {
+            userData.applyIndices(snapshot.indices);
+            for (UserAttendanceDataGroup group : userData._groups)
+                AttendanceRewardClaims.reconcileGroupStatus(group);
+        }
+        userData.set_userFlag(cafe ? AttendanceUserFlag.USER_FLAG_PC_CAFE : AttendanceUserFlag.USER_FLAG_NORMAL);
+        if (savedDay > 0L && savedDay < currentDay && !needsGroups) userData.advanceDay(cafe);
+        synchronized (userData) {
             pc.setAttendanceData(userData);
-            userData.set_userFlag(pc.PC방_버프 ? AttendanceUserFlag.USER_FLAG_PC_CAFE : AttendanceUserFlag.USER_FLAG_NORMAL);
-            insertInitialSnapshotAsync(pc.getAccountName(), userData);
-        }
-    }
-
-    public static void register(L1PcInstance pc) {
-        SC_ATTENDANCE_USER_DATA_EXTEND userData = newInstance();
-
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement pstm = con.prepareStatement("SELECT * FROM attendance_userInfo WHERE account=? LIMIT 1")) {
-            pstm.setString(1, pc.getAccountName());
-            try (ResultSet rs = pstm.executeQuery()) {
-                if (rs.next()) {
-                    byte[] blob = rs.getBytes("attendance_data");
-                    if (blob != null && blob.length > 0) {
-                        userData.readFrom(blob);
-                    }
-                    pc.setAttendanceData(userData);
-
-                    String indicesStr = rs.getString("attendance_indices");
-                    if (indicesStr != null && !indicesStr.isEmpty()) {
-                        String[] parts = indicesStr.split(",");
-                        for (int i = 0; i < parts.length && i < userData.get_groups().size(); ++i) {
-                            userData.get_groups().get(i).set_currentAttendanceIndex(Integer.parseInt(parts[i].trim()));
-                        }
-                    }
-
-                    userData.set_userFlag(pc.PC방_버프 ? AttendanceUserFlag.USER_FLAG_PC_CAFE : AttendanceUserFlag.USER_FLAG_NORMAL);
-
-                    Calendar systemCal = AttendanceLoadManager.ATTEN_STARTUP_CALENDAR;
-                    Timestamp dbTs = rs.getTimestamp("attendance_calendar");
-                    if (dbTs != null) {
-                        if ((systemCal.getTimeInMillis() / 1000) != (dbTs.getTime() / 1000)) {
-                            boolean isPcCafe = userData.get_userFlag().equals(AttendanceUserFlag.USER_FLAG_PC_CAFE);
-                            for (UserAttendanceDataGroup g : userData.get_groups()) {
-                                g.onUpdateDay(isPcCafe);
-                            }
-                            store(pc);
-                        }
-                    }
-                } else {
-                    for (AttendanceGroupType gType : AttendanceGroupType.values()) {
-                        userData.add_groups(UserAttendanceDataGroup.newInstance(pc, gType));
-                        userData.add_active_group(gType);
-                    }
-                    pc.setAttendanceData(userData);
-                    userData.set_userFlag(pc.PC방_버프 ? AttendanceUserFlag.USER_FLAG_PC_CAFE : AttendanceUserFlag.USER_FLAG_NORMAL);
-                    store(pc);
-                }
+            if (!snapshot.present) {
+                userData.insertInitialSnapshot(pc.getAccountName());
+            } else if (needsGroups || savedDay < currentDay) {
+                userData.queueSnapshot(pc.getAccountName(), userData.bodyBytes());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
+
     // ────────────── 갱신 (타이머) ──────────────
 
     private void handleUpdateTime(L1PcInstance pc, int second, boolean checkDayUpdate) throws IOException {
-        if (_userFlag == null || _groups == null) return;
+        final byte[] frame;
+        synchronized (this) {
+            if (pc.getAttendanceData() != this || _userFlag == null || _groups == null) return;
+            final long day = checkDayUpdate ? atSecond(AttendanceLoadManager.attendanceDayMillis()) : attendanceDay;
+            if (checkDayUpdate && day <= attendanceDay) return;
 
-        boolean isUpdate = false;
-        int activeGroupLimit = _userFlag.toInt();
-
-        for (int i = 0; i <= activeGroupLimit && i < _groups.size(); ++i) {
-            UserAttendanceDataGroup dGroup = _groups.get(i);
-            if (dGroup != null) {
-                isUpdate |= dGroup.onUpdateTime(second);
+            boolean changed = false;
+            final int activeGroupLimit = _userFlag.toInt();
+            for (int i = 0; i <= activeGroupLimit && i < _groups.size(); i++) {
+                UserAttendanceDataGroup group = _groups.get(i);
+                if (group != null) changed |= group.onUpdateTime(second);
             }
-        }
 
-        if (checkDayUpdate) {
-            boolean isPcCafe = _userFlag.equals(AttendanceUserFlag.USER_FLAG_PC_CAFE);
-            for (UserAttendanceDataGroup g : _groups) {
-                isUpdate |= g.onUpdateDay(isPcCafe);
+            if (checkDayUpdate) {
+                attendanceDay = day;
+                advanceDay(_userFlag == AttendanceUserFlag.USER_FLAG_PC_CAFE);
+                changed = true;
             }
-        }
+            if (!changed) return;
 
-        if (isUpdate) {
-        	ProtoWriter w = ProtoWriter.newInstance();
-        	body(w);
-        	byte[] body = w.bodyBytes();                                    // DB용
-        	byte[] frame = w.finishWithTrailer(ProtoMsg.SC_ATTENDANCE_USER_DATA_EXTEND); // 전송용
-        	updateAsync(pc.getAccountName(), body, createIndices());
-            l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, frame);               // 재직렬화 없이 전송
+            final ProtoWriter writer = ProtoWriter.newInstance();
+            body(writer);
+            queueSnapshot(pc.getAccountName(), writer.bodyBytes());
+            frame = writer.finishWithTrailer(ProtoMsg.SC_ATTENDANCE_USER_DATA_EXTEND);
         }
+        Proto.sendRaw(pc, frame);
     }
-
 
     public void onUpdateDay(L1PcInstance pc, int second) throws IOException {
         handleUpdateTime(pc, second, true);
@@ -320,7 +343,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
 
     // ────────────── indices ──────────────
 
-    public String createIndices() {
+    public synchronized String createIndices() {
         if (_groups == null || _groups.isEmpty()) {
             return "";
         }
@@ -342,6 +365,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
     private ArrayList<UserAttendanceDataGroup> _groups;
     private AttendanceUserFlag _userFlag;
     private ArrayList<AttendanceGroupType> _active_group;
+    private long attendanceDay;
 
     private SC_ATTENDANCE_USER_DATA_EXTEND() {}
 
@@ -360,16 +384,14 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         return _userFlag;
     }
 
-    public void set_userFlag(AttendanceUserFlag val) {
+    public synchronized void set_userFlag(AttendanceUserFlag val) {
         _userFlag = val;
 
-        if (_groups == null) return;
-
-        int pcCafeIndex = AttendanceUserFlag.USER_FLAG_PC_CAFE.toInt();
-        if (_groups.size() <= pcCafeIndex) return;
-
-        UserAttendanceDataGroup dGroup = _groups.get(pcCafeIndex);
-        if (val.equals(AttendanceUserFlag.USER_FLAG_NORMAL)) {
+        final UserAttendanceDataGroup dGroup = AttendanceRewardClaims.findGroup(this, AttendanceGroupType.PC_CAFE);
+        if (dGroup == null || val == null
+                || dGroup.get_resultCode() == UserAttendanceTimeStatus.ATTENDANCE_ALL_CLEAR
+                || dGroup.get_resultCode() == UserAttendanceTimeStatus.ATTENDANCE_ALL_COMPLETE) return;
+        if (val == AttendanceUserFlag.USER_FLAG_NORMAL) {
             dGroup.set_resultCode(UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME);
         } else {
             int index = dGroup.get_currentAttendanceIndex();
@@ -403,22 +425,8 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
     }
 
     @Override
-    protected void body(ProtoWriter w) {
-        if (_groups != null) {
-            for (UserAttendanceDataGroup val : _groups) {
-                w.msg(1);			// repeated group
-                val.writeTo(w);		// 도메인 오브젝트가 스스로 직렬화
-                w.end();
-            }
-        }
-        if (_userFlag != null) {
-            w.enumV(2, _userFlag.toInt());
-        }
-        if (_active_group != null) {
-            for (AttendanceGroupType val : _active_group) {
-                w.enumV(3, val.toInt());
-            }
-        }
+    protected synchronized void body(ProtoWriter w) {
+        writeFields(w, _groups, _userFlag, _active_group);
     }
 
     /** DB 저장용 body만 */
@@ -439,7 +447,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
                 add_groups(UserAttendanceDataGroup.parse(r.readBytes()));
                 break;
             case 2:
-                set_userFlag(AttendanceUserFlag.fromInt(r.varint32()));
+                _userFlag = AttendanceUserFlag.fromInt(r.varint32());
                 break;
             case 3:
                 add_active_group(AttendanceGroupType.fromInt(r.varint32()));

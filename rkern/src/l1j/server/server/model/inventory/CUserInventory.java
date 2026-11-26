@@ -1,6 +1,5 @@
 
 package l1j.server.server.model.inventory;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -814,73 +813,28 @@ public class CUserInventory extends CInventory {
 
 
 	/** '축복받은'이 아이템 접두어로 있다면 이를 제거하고 아이템 이름 비교. **/
-	public int getNameEquipped(int type2, int type, String name) {
-		int equipeCount = 0;
-		L1ItemInstance item = null;
-		String tName = null;
-		String aName = null;
-		if (name.indexOf("축복받은") != -1) {
-			aName = name.replace("축복받은 ", "");
-		} else {
-			aName = name;
-		}
+    public int getNameEquipped(int type2, int type, String name) {
+        int count = 0;
+        final String normalized = name.replace("축복받은 ", "");
+        for (L1ItemInstance item : GetEquippedItems()) {
+            if (item.getItem().getType2() == type2 && item.getItem().getType() == type
+                    && item.getName().replace("축복받은 ", "").equals(normalized)) count++;
+        }
+        return count;
+    }
 
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getType2() == type2 && item.getItem().getType() == type && item.isEquipped()) {
-				if (item != null) {
-					tName = item.getName();
-					if (tName.indexOf("축복받은") != -1)
-						tName = tName.replace("축복받은 ", "");
-					if (tName.equals(aName))
-						equipeCount++;
-				}
-			}
-		}
-		return equipeCount;
-	}
+    @Override
+    public int getTypeEquipped(int type2, int type) {
+        return _items.CountEquipped(type2, type, null);
+    }
 
-	public int getTypeEquipped(int type2, int type) {
-		int equipeCount = 0;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getType2() == type2 && item.getItem().getType() == type && item.isEquipped()) {
-				equipeCount++;
-			}
-		}
-		return equipeCount;
-	}
+    public L1ItemInstance getItemEquipped(int type2, int type) {
+        return _items.GetFirstEquippedByType(type2, type);
+    }
 
-	public L1ItemInstance getItemEquipped(int type2, int type) {
-		L1ItemInstance equipeitem = null;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getType2() == type2 && item.getItem().getType() == type && item.isEquipped()) {
-				equipeitem = item;
-				break;
-			}
-		}
-		return equipeitem;
-	}
-
-	public L1ItemInstance[] getRingEquipped() {
-		L1ItemInstance equipeItem[] = new L1ItemInstance[4];
-		int equipeCount = 0;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getType2() == 2 && item.getItem().getType() == 9 && item.isEquipped()) {
-				equipeItem[equipeCount] = item;
-				equipeCount++;
-				if (equipeCount == 4) {
-					break;
-				}
-			}
-		}
-		return equipeItem;
-	}
+    public L1ItemInstance[] getRingEquipped() {
+        return _items.GetEquippedByType(2, 9, 4);
+    }
 
 	@Deprecated
 	public void takeoffEquip(int polyid) {
@@ -921,20 +875,14 @@ public class CUserInventory extends CInventory {
 			}
 		}
 
-		for (Object itemObject : _items) {
-			bullet = (L1ItemInstance) itemObject;
-			if (bullet.getItem().getType() == type) {
-				if (type == 0) {
-					_arrowId = bullet.getItem().getItemId();
-				}
-				if (type == 15) {
-					_stingId = bullet.getItem().getItemId();
-				}
-				SC_ItemName.send(_owner, bullet);
-				SC_ServerMessage.send(_owner, 452, bullet.getName());
-				return bullet;
-			}
-		}
+        bullet = _items.GetFirstItemByType(type);
+        if (bullet != null) {
+            if (type == 0) _arrowId = bullet.getItem().getItemId();
+            if (type == 15) _stingId = bullet.getItem().getItemId();
+            SC_ItemName.send(_owner, bullet);
+            SC_ServerMessage.send(_owner, 452, bullet.getName());
+            return bullet;
+        }
 		return null;
 	}
 
@@ -983,45 +931,17 @@ public class CUserInventory extends CInventory {
 		return penaltyItem;
 	}
 
-	public int getEnchantCount(int id) {// 인첸 레벨
-		int cnt = 0;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItemId() == id) {
-				cnt = item.getEnchantLevel();
-			}
-		}
-		return cnt;
-	}
-	public L1ItemInstance get_etc_itemid(int itemid) {
-		Iterator<L1ItemInstance> iter = _items.iterator();
-		L1ItemInstance item = null;
+    public int getEnchantCount(int id) {
+        return _items.GetLastEnchantByClassID(id);
+    }
 
-		while (iter.hasNext()) {
-			item = iter.next();
-			if (item == null || item.getItem().getType2() != 0) { // -- 잡화만 검색
-				continue;
-			}
-			if (item.getItemId() == itemid) {
-				return item;
-			}
-		}
-		return null;
-	}
+    public L1ItemInstance get_etc_itemid(int itemId) {
+        return _items.GetFirstEtcByClassID(itemId);
+    }
 
-	public int checkEquippedcount(int id) {
-		int equipeCount = 0;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getItemId() == id && item.isEquipped())
-				equipeCount++;
-		}
-		return equipeCount;
-	}
-
-
+    public int checkEquippedcount(int id) {
+        return _items.CountEquippedByTemplate(id, 0, 0, false);
+    }
 
 	public boolean IsEquippedByClassID(int[] ids) {
 		for (int id : ids) {
@@ -1032,16 +952,9 @@ public class CUserInventory extends CInventory {
 		return true;
 	}
 
-	public boolean checkEquippedAtOnce(int[] ids) {
-		for (L1ItemInstance item : _items) {
-			int itemId = item.getItemId();
-			for (int id : ids) {
-				if (id == itemId && item.isEquipped())
-					return true;
-			}
-		}
-		return false;
-	}
+    public boolean checkEquippedAtOnce(int[] ids) {
+        return _items.HasAnyEquippedByClassID(ids);
+    }
 
 	public synchronized boolean DeleteItemInInventory(L1ItemInstance item, int count) {
         if (item == null || count <= 0 || GetByServerID(item.getId()) != item

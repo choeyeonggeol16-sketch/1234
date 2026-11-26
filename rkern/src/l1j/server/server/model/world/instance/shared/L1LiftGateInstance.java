@@ -1,18 +1,22 @@
 package l1j.server.server.model.world.instance.shared;
 
+import java.util.List;
 
-import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeAttr;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.shared.L1Type;
+import l1j.server.server.task.TaskLane;
 import l1j.server.server.utils.BytesOutputStream;
 
 public class L1LiftGateInstance extends L1Object{
@@ -168,15 +172,15 @@ public class L1LiftGateInstance extends L1Object{
 		down();
 	}
 	public void notifyDispose() {
-        final java.util.List<L1PcInstance> viewers=L1World.getInstance().getVisiblePlayer(this);
+        final List<L1PcInstance> viewers=L1World.getInstance().getVisiblePlayer(this);
         if(viewers.isEmpty())return;
         final int objectId=getId(),action=_act;
         final var attrFrames=createSharedAttrs(isClose());
         Throwable primaryFailure = null;
         try {
-            try (var actionFrame=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+            try (var actionFrame=new CAsyncSendConstBuffer(
                          SC_DoActionGFX.nativeWriter(objectId,action),Integer.MIN_VALUE,Integer.MAX_VALUE);
-                 var removeFrame=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                 var removeFrame=new CAsyncSendConstBuffer(
                          SC_RemoveObject.nativeWriter(objectId),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
                 for(L1PcInstance pc:viewers) {
                     if(pc==null)continue;
@@ -185,12 +189,9 @@ public class L1LiftGateInstance extends L1Object{
                     // Preserve original order: known-object removal, tile attributes,
                     // action and finally object removal for each specific player.
                     sendSharedAttrs(attrFrames,client,pc.getId());
-                    if(client!=null && client.isConnected()) {
-                        final var socket=client;
-                        if(socket!=null) {
-                            actionFrame.send(socket,pc.getId());
-                            removeFrame.send(socket,pc.getId());
-                        }
+                    if (client != null && client.isConnected()) {
+                        CSharedBroadcast.sendRecipientBestEffort(actionFrame, pc);
+                        removeFrame.send(client, pc.getId());
                     }
                 }
             }
@@ -201,22 +202,19 @@ public class L1LiftGateInstance extends L1Object{
     }
 
 	public void notifyChanged() {
-        final java.util.List<L1PcInstance> viewers=L1World.getInstance().getVisiblePlayer(this);
+        final List<L1PcInstance> viewers=L1World.getInstance().getVisiblePlayer(this);
         if(viewers.isEmpty())return;
         final int objectId=getId(),action=_act;
         final var attrFrames=createSharedAttrs(isClose());
         Throwable primaryFailure = null;
         try {
-            try (var actionFrame=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+            try (var actionFrame=new CAsyncSendConstBuffer(
                          SC_DoActionGFX.nativeWriter(objectId,action),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
                 for(L1PcInstance pc:viewers) {
                     if(pc==null)continue;
                     final var client=pc.getNetConnection();
                     // Preserve original order: action first, then tile attributes.
-                    if(client!=null && client.isConnected()) {
-                        final var socket=client;
-                        if(socket!=null)actionFrame.send(socket,pc.getId());
-                    }
+                    CSharedBroadcast.sendRecipientBestEffort(actionFrame, pc);
                     sendSharedAttrs(attrFrames,client,pc.getId());
                 }
             }
@@ -328,17 +326,17 @@ public class L1LiftGateInstance extends L1Object{
 
 
     /** One const buffer per unchanged tile attribute packet per gate event. */
-    private l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer[]
+    private CAsyncSendConstBuffer[]
             createSharedAttrs(boolean closed) {
         final int count=_attrCoordinates.length>>>1;
-        final var frames=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer[count];
+        final var frames=new CAsyncSendConstBuffer[count];
         int made=0;
         try {
             for(int i=0;i<count;i++) {
                 final int idx=i<<1;
-                final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter wire=SC_ChangeAttr.nativeWriter(_attrCoordinates[idx],
+                final CSharedBroadcast.NativeWireWriter wire=SC_ChangeAttr.nativeWriter(_attrCoordinates[idx],
                         _attrCoordinates[idx+1],_isWidth,closed);
-                frames[made++]=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                frames[made++]=new CAsyncSendConstBuffer(
                         wire,Integer.MIN_VALUE,Integer.MAX_VALUE);
             }
             return frames;
@@ -350,7 +348,7 @@ public class L1LiftGateInstance extends L1Object{
 
     /** Return every frame even when one Native source release fails. */
     private static void closeSharedAttrs(
-            l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer[] frames,
+            CAsyncSendConstBuffer[] frames,
             Throwable pending) {
         if (frames == null) return;
         Throwable failure = pending;
@@ -369,12 +367,10 @@ public class L1LiftGateInstance extends L1Object{
     }
 
     private static void sendSharedAttrs(
-            l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer[] attrs,
-            l1j.server.server.model.network.core.connection.CUserSocket client,int playerId) {
-        if(client==null || !client.isConnected())return;
-        final var socket=client;
-        if(socket==null)return;
-        for(var frame:attrs)frame.send(socket,playerId);
+            CAsyncSendConstBuffer[] attrs,
+            CUserSocket client,int playerId) {
+        if (client == null || !client.isConnected()) return;
+        for (var frame : attrs) frame.send(client, playerId);
     }
 
 }

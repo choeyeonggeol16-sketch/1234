@@ -1,134 +1,103 @@
 package l1j.server.server.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Objects;
 
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
-// Referenced classes of package l1j.server.server.model:
-// L1ChatParty
-
 public class L1ChatParty {
+    private static final L1PcInstance[] EMPTY = new L1PcInstance[0];
+    // Invite replies for different parties can reach the same player from
+    // different shards. Membership changes share one short admission lock.
+    private static final Object MEMBERSHIP = new Object();
+    private volatile L1PcInstance[] members = EMPTY;
 
-	private final List<L1PcInstance> _membersList = new ArrayList<L1PcInstance>();
-
-	private L1PcInstance _leader = null;
-
-	public void addMember(L1PcInstance pc) {
-		if (pc == null) {
-			throw new NullPointerException();
-		}
-		if (_membersList.size() == Config.MAX_CHAT_PT && !_leader.isGm() || _membersList.contains(pc)) {
-			return;
-		}
-
-		if (_membersList.isEmpty()) {
-			setLeader(pc);
-		}
-
-		_membersList.add(pc);
-		pc.setChatParty(this);
-		
-		l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(_membersList,
-                SC_ServerMessage.nativeWriter(424,pc.getName()));
-	}
-
-	private void removeMember(L1PcInstance pc) {
-		if (!_membersList.contains(pc)) {
-			return;
-		}
-
-		_membersList.remove(pc);
-		pc.setChatParty(null);
-	}
-
-	public boolean isVacancy() {
-		return _membersList.size() < Config.MAX_CHAT_PT;
-	}
-
-	public int getVacancy() {
-		return Config.MAX_CHAT_PT - _membersList.size();
-	}
-
-	public boolean isMember(L1PcInstance pc) {
-		return _membersList.contains(pc);
-	}
-
-	private void setLeader(L1PcInstance pc) {
-		_leader = pc;
-	}
-
-	public L1PcInstance getLeader() {
-		return _leader;
-	}
-
-	public boolean isLeader(L1PcInstance pc) {
-		return pc.getId() == _leader.getId();
-	}
-
-	public String getMembersNameList() {
-		String _result = new String("");
-		for (L1PcInstance pc : _membersList) {
-			_result = _result + pc.getName() + " ";
-		}
-		return _result;
-	}
-
-	private void breakup() {
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                SC_ServerMessage.nativeWriter(418),
-                Integer.MIN_VALUE,Integer.MAX_VALUE)){
-            for(L1PcInstance member:getMembers()){
-                removeMember(member);
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-            }
-        }
+    public void addMember(L1PcInstance pc) {
+        addMember(null, pc);
     }
 
-	public void leaveMember(L1PcInstance pc){
-        if(isLeader(pc)){
-            breakup();
-        } else {
-            try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                    SC_ServerMessage.nativeWriter(420,pc.getName()),
-                    Integer.MIN_VALUE,Integer.MAX_VALUE)){
-                if(getNumOfMembers()==2){
-                    removeMember(pc);
-                    L1PcInstance leader=getLeader();
-                    removeMember(leader);
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,leader);
-                } else {
-                    removeMember(pc);
-                    for(L1PcInstance member:getMembers())
-                        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
-                }
-            }
+    void addMember(L1PcInstance inviter, L1PcInstance pc) {
+        Objects.requireNonNull(pc);
+        final L1PcInstance[] added;
+        synchronized (MEMBERSHIP) {
+            final L1PcInstance[] current = members;
+            if ((inviter != null && (current.length == 0 || current[0] != inviter))
+                    || pc.isLogoutStarted() || pc.getChatParty() != null
+                    || (current.length >= Config.MAX_CHAT_PT && (current.length == 0 || !current[0].isGm()))) return;
+            added = Arrays.copyOf(current, current.length + 1);
+            added[current.length] = pc;
+            pc.setChatParty(this);
+            members = added;
         }
+        CSharedBroadcast.sendWrittenArrayBestEffort(added, SC_ServerMessage.nativeWriter(424, pc.getName()));
     }
 
-	public void kickMember(L1PcInstance pc) {
-		if (getNumOfMembers() == 2) {
-			removeMember(pc);
-			L1PcInstance leader = getLeader();
-			removeMember(leader);
-		} else {
-			removeMember(pc);
-		}
-		SC_ServerMessage.send(pc, 419);
-	}
+    public boolean isVacancy() { return getVacancy() > 0; }
+    public int getVacancy() { return Config.MAX_CHAT_PT - members.length; }
+    public boolean isMember(L1PcInstance pc) { return indexOf(members, pc) >= 0; }
 
-	public L1PcInstance[] getMembers() {
-		return _membersList.toArray(new L1PcInstance[_membersList.size()]);
-	}
+    public L1PcInstance getLeader() {
+        final L1PcInstance[] current = members;
+        return current.length == 0 ? null : current[0];
+    }
 
-	public int getNumOfMembers() {
-		return _membersList.size();
-	}
+    public boolean isLeader(L1PcInstance pc) { return pc != null && getLeader() == pc; }
 
-	
+    public String getMembersNameList() {
+        final StringBuilder names = new StringBuilder();
+        for (L1PcInstance member : members) names.append(member.getName()).append(' ');
+        return names.toString();
+    }
 
+    public void leaveMember(L1PcInstance pc) {
+        final L1PcInstance[] recipients;
+        final boolean leaderLeft;
+        synchronized (MEMBERSHIP) {
+            recipients = members;
+            final int index = indexOf(recipients, pc);
+            if (index < 0) return;
+            leaderLeft = index == 0;
+            if (leaderLeft || recipients.length == 2) clearMembers(recipients);
+            else removeMember(recipients, index);
+        }
+        // A failed notification cannot prevent the remaining members from leaving.
+        final var writer = leaderLeft ? SC_ServerMessage.nativeWriter(418)
+                : SC_ServerMessage.nativeWriter(420, pc.getName());
+        CSharedBroadcast.sendWrittenArrayBestEffort(recipients, writer);
+    }
+
+    public void kickMember(L1PcInstance pc) {
+        synchronized (MEMBERSHIP) {
+            final L1PcInstance[] current = members;
+            final int index = indexOf(current, pc);
+            if (index <= 0) return;
+            if (current.length == 2) clearMembers(current);
+            else removeMember(current, index);
+        }
+        CSharedBroadcast.sendWrittenArrayBestEffort(new L1PcInstance[] {pc}, SC_ServerMessage.nativeWriter(419));
+    }
+
+    private void clearMembers(L1PcInstance[] current) {
+        for (L1PcInstance member : current) member.setChatParty(null);
+        members = EMPTY;
+    }
+
+    private void removeMember(L1PcInstance[] current, int index) {
+        final L1PcInstance[] remaining = new L1PcInstance[current.length - 1];
+        System.arraycopy(current, 0, remaining, 0, index);
+        System.arraycopy(current, index + 1, remaining, index, remaining.length - index);
+        current[index].setChatParty(null);
+        members = remaining;
+    }
+
+    private static int indexOf(L1PcInstance[] current, L1PcInstance pc) {
+        for (int i = 0; i < current.length; i++) if (current[i] == pc) return i;
+        return -1;
+    }
+
+    public L1PcInstance[] getMembers() { return members.clone(); }
+    public int getNumOfMembers() { return members.length; }
 }

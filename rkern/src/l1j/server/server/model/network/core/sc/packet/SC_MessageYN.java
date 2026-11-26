@@ -2,10 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_MessageYN {
     private SC_MessageYN() {}
@@ -51,9 +51,9 @@ public final class SC_MessageYN {
         }
     }
     public static void broadcast(int type, String message) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {
+        CSharedBroadcast.sendWrittenAll(b -> {
             b.put((byte)Opcodes.S_ASK).putShort((short)0).putInt(0).putShort((short)type);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message);
+            CSharedBroadcast.writeMS949(b,message);
             b.put((byte)0);
         });
     }
@@ -63,13 +63,13 @@ public final class SC_MessageYN {
      * MS949 null-terminated message. The idx is not a per-user token.
      */
 
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int type,String message) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(int type,String message) {
         return nativeIndexedWriter(0,type,message);
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeIndexedWriter(int idx,int type,String message) {
+    public static CSharedBroadcast.NativeWireWriter nativeIndexedWriter(int idx,int type,String message) {
         return b -> {b.put((byte)Opcodes.S_ASK).putShort((short)0)
             .putInt(idx).putShort((short)type);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message);b.put((byte)0);};
+            CSharedBroadcast.writeMS949(b,message);b.put((byte)0);};
     }
 
 

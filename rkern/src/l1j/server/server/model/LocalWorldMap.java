@@ -1,15 +1,18 @@
 package l1j.server.server.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.locks.StampedLock;
 
 import gnu.trove.map.hash.TLongObjectHashMap;
 
 import l1j.server.Config;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.L1GroundInventory;
+import l1j.server.server.model.network.core.broadcast.CTLMFilter;
 
 /**
  * Concurrent canonical 8x8 world map. No CIO shard replica, spatial delta pipe,
@@ -34,6 +37,9 @@ public final class LocalWorldMap {
     private static final long NO_POSITION = -1L;
     private static final int CANONICAL_STRIPE_COUNT = 32;
     private static final int CANONICAL_STRIPE_MASK = CANONICAL_STRIPE_COUNT - 1;
+    private static final int RETAINED_PLAYER_SCAN_SIZE = 512;
+    private static final ThreadLocal<IdentityHashMap<L1PcInstance, Boolean>> PLAYER_SCAN_SEEN =
+            ThreadLocal.withInitial(IdentityHashMap::new);
 
     private static final class CanonicalStripe {
         final StampedLock lock = new StampedLock();
@@ -71,7 +77,7 @@ public final class LocalWorldMap {
         final NearbyFrame frame = _nearbyFrames.get();
         final int depth = frame.depth;
         if (depth == frame.slots.length)
-            frame.slots = java.util.Arrays.copyOf(frame.slots, depth << 1);
+            frame.slots = Arrays.copyOf(frame.slots, depth << 1);
         ArrayList<L1Object> result = frame.slots[depth];
         if (result == null) {
             result = new ArrayList<>(64);
@@ -501,7 +507,7 @@ public final class LocalWorldMap {
             for (int i = 0, size = _objectCount; i < size; i++) {
                 final L1Object obj = objects[i];
 
-                if (l1j.server.server.model.network.core.broadcast.CTLMFilter.nearby(origin, obj, radius, screenMode))
+                if (CTLMFilter.nearby(origin, obj, radius, screenMode))
                     result.add(obj);
             }
         }
@@ -522,7 +528,7 @@ public final class LocalWorldMap {
             for (int i = 0; i < playerCount; i++) {
                 final L1PcInstance pc = players[i];
 
-                if (l1j.server.server.model.network.core.broadcast.CTLMFilter.nearby(origin, pc, radius, screenMode))
+                if (CTLMFilter.nearby(origin, pc, radius, screenMode))
                     result.add(pc);
             }
         }
@@ -542,7 +548,7 @@ public final class LocalWorldMap {
             for (int i = 0; i < playerCount; i++) {
                 final L1PcInstance pc = players[i];
 
-                if (l1j.server.server.model.network.core.broadcast.CTLMFilter.nearby(origin, pc, radius, screenMode))
+                if (CTLMFilter.nearby(origin, pc, radius, screenMode))
                     return true;
             }
 
@@ -725,7 +731,7 @@ public final class LocalWorldMap {
         for (int cx = minX; cx <= maxX; cx++) {
             for (int cy = minY; cy <= maxY; cy++) {
                 if (mapId == skipMapId
-                        && l1j.server.server.model.network.core.broadcast.CTLMFilter.insideRectangle(
+                        && CTLMFilter.insideRectangle(
                                 cx, cy, skipMinX, skipMaxX, skipMinY, skipMaxY)) continue;
                 final long key = packedKey(mapId, cx, cy);
                 final CanonicalStripe stripe = canonicalStripe(key);
@@ -1068,6 +1074,31 @@ public final class LocalWorldMap {
                     stripe.lock.unlockRead(stamp);
                 }
             }
+        }
+        removeDuplicatePlayers(result);
+    }
+
+    private static void removeDuplicatePlayers(List<L1PcInstance> result) {
+        final int size = result.size();
+        if (size < 2) return;
+
+        // Cell read locks are released between scans. A player crossing from an
+        // earlier cell into a later one can appear twice in the same audience.
+        final IdentityHashMap<L1PcInstance, Boolean> cached = PLAYER_SCAN_SEEN.get();
+        final IdentityHashMap<L1PcInstance, Boolean> seen = size <= RETAINED_PLAYER_SCAN_SIZE && cached.isEmpty()
+                ? cached : new IdentityHashMap<>(size);
+        try {
+            int write = 0;
+            for (int read = 0; read < size; read++) {
+                final L1PcInstance pc = result.get(read);
+                if (seen.put(pc, Boolean.TRUE) == null) {
+                    if (write != read) result.set(write, pc);
+                    write++;
+                }
+            }
+            if (write < size) result.subList(write, size).clear();
+        } finally {
+            seen.clear();
         }
     }
 

@@ -92,62 +92,45 @@ public class CInventory extends L1Object {
 	    return false;
 	}
 	
-	public int getTypeAndItemIdEquipped(int type2, int type, int ItemId) {
-		// itemId도추가검색
-		int equipeCount = 0;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getType2() == type2 // 0 etc아템 1 무기 2아머
-					&& item.getItem().getType() == type // type2 의 세부항목들
-					&& item.getItem().getItemId() == ItemId// 아이템의 아이디
-					&& item.isEquipped()) { // 착용
-				equipeCount++;
-			}
-		}
-		return equipeCount;
-	}
-	public boolean EnchantEquipped(int itemid, int enchant) {
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			if (itemObject == null)
-				continue;
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getItemId() == itemid && item.isEquipped() && item.getEnchantLevel() == enchant) {
-				return true;
-			}
-		}
-		return false;
-	}
-	public int getTypeEquipped(int type, int type2) {
-		// itemId도추가검색
-		int equipeCount = 0;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getType2() == type // 0 etc아템 1 무기 2아머
-					&& item.getItem().getType() == type2 // type2 의 세부항목들
-					&& item.isEquipped()) { // 착용
-				equipeCount++;
-			}
-		}
-		return equipeCount;
-	}
+    public int getTypeAndItemIdEquipped(int type2, int type, int itemId) {
+        return _items.CountEquippedByTemplate(itemId, type2, type, true);
+    }
 
-	public int getTypeAndGradeEquipped(int type2, int type, int Grade) {
-		int equipeCount = 0;
-		L1ItemInstance item = null;
-		for (Object itemObject : _items) {
-			item = (L1ItemInstance) itemObject;
-			if (item.getItem().getType2() == type2 // 0 etc아템 1 무기 2아머
-					&& item.getItem().getType() == type // type2 의 세부항목들
-					&& item.getItem().getGrade() == Grade && item.isEquipped()) { // 착용
-				equipeCount++;
-			}
-		}
-		return equipeCount;
-	}
-	
+    public boolean EnchantEquipped(int itemId, int enchant) {
+        return _items.EnchantEquipped(itemId, enchant);
+    }
+
+    public int getTypeEquipped(int type, int type2) {
+        return _items.CountEquipped(type, type2, null);
+    }
+
+    public int getTypeAndGradeEquipped(int type2, int type, int grade) {
+        return _items.CountEquipped(type2, type, grade);
+    }
+
+    public boolean HasItemInstance(L1ItemInstance item) {
+        return _items.Have(item);
+    }
+
+    public L1ItemInstance[] GetEquippedItems() {
+        return _items.GetEquippedItems();
+    }
+
+    public List<L1ItemInstance> getItemSnapshot() {
+        return _items.snapshot();
+    }
+
+    public L1ItemInstance[] GetItemsByType(int type) {
+        return _items.GetItemsByType(type);
+    }
+
+    public L1ItemInstance[] GetItemsByKinds(int... kinds) {
+        return _items.GetItemsByKinds(kinds);
+    }
+
+    public L1ItemInstance[] GetCursedTemplateItems() {
+        return _items.GetCursedTemplateItems();
+    }
 
 	public int getSize() {
 		return _items.size();
@@ -1139,7 +1122,7 @@ public class CInventory extends L1Object {
         }
         // Ground membership is already protected by the tile monitor in
         // transfer/creation. Do not take CacheD's lock inside CItemList.
-        for (L1ItemInstance candidate : _items) {
+        for (L1ItemInstance candidate : GetItemListByClassID(incoming.getItemId())) {
             if (candidate == incoming || candidate.isGroundPickupPending()
                     || candidate.getItemId() != incoming.getItemId()
                     || !candidate.SameGroundLootRights(incoming)
@@ -1158,6 +1141,18 @@ public class CInventory extends L1Object {
     public L1ItemInstance GetFirstItemByClassID(int id) {
 		return _items.GetFirstItemByClassID(id);
 	}
+
+    public L1ItemInstance GetFirstItemByClassIDs(int firstClassId, int secondClassId) {
+        return _items.GetFirstItemByClassIDs(firstClassId, secondClassId);
+    }
+
+    public L1ItemInstance GetFirstUnequippedItemByClassID(int classId) {
+        return _items.GetFirstUnequippedItemByClassID(classId);
+    }
+
+    public L1ItemInstance[] GetUnequippedItemListByClassIDs(int[] ids) {
+        return _items.GetUnequippedItemListByClassIDs(ids);
+    }
 
     public L1ItemInstance[] GetItemListByClassID(int id) {
         return _items.GetItemListByClassID(id);
@@ -1291,25 +1286,18 @@ public class CInventory extends L1Object {
      * Unlike Pop, this is final destruction rather than transfer.
      */
     public synchronized void DeleteAllItemsByClassID(int id) {
-        for (L1ItemInstance item : _items) {
-            if (item != null && item.getItemId() == id && _items.Have(item)) {
-                Pop(item);
-                if (!_items.Have(item)) L1World.getInstance().removeObject(item);
-            }
-        }
+        deleteAllSelected(_items.GetItemListByClassID(id));
     }
 
     public synchronized void DeleteAllItemsByClassID(int[] ids) {
-        if (ids == null) return;
-        for (L1ItemInstance item : _items) {
-            if (item == null || !_items.Have(item)) continue;
-            for (int id : ids) {
-                if (item.getItemId() == id) {
-                    Pop(item);
-                    if (!_items.Have(item)) L1World.getInstance().removeObject(item);
-                    break;
-                }
-            }
+        if (ids != null) deleteAllSelected(_items.GetItemListByClassIDs(ids));
+    }
+
+    private void deleteAllSelected(L1ItemInstance[] selected) {
+        for (L1ItemInstance item : selected) {
+            if (!_items.Have(item)) continue;
+            Pop(item);
+            if (!_items.Have(item)) L1World.getInstance().removeObject(item);
         }
     }
 
@@ -1351,8 +1339,12 @@ public class CInventory extends L1Object {
 	
 	public int fillCraftInputItem(LinkedList<CraftInputItemSlotInfo> slotInfo){
 		int fillCount = 0;
-		int sSize = slotInfo.size();
-		for(L1ItemInstance item : getItems()){
+        int sSize = slotInfo.size();
+        final int[] descriptions = new int[sSize];
+        int slotIndex = 0;
+        for (CraftInputItemSlotInfo slot : slotInfo)
+            descriptions[slotIndex++] = slot.get_item_name_id();
+        for (L1ItemInstance item : _items.GetItemsByDescriptionIDs(descriptions)) {
 			if(fillCount >= sSize)
 				break;
 
@@ -1377,8 +1369,12 @@ public class CInventory extends L1Object {
 	
 	public int fillAlchemyInputItem(LinkedList<CS_ALCHEMY_MAKE_REQ.Input> inputs){
 		int fillCount = 0;
-		int size = inputs.size();
-		for(L1ItemInstance item : getItems()){
+        int size = inputs.size();
+        final int[] objectIds = new int[size];
+        int slotIndex = 0;
+        for (CS_ALCHEMY_MAKE_REQ.Input input : inputs)
+            objectIds[slotIndex++] = input.get_item_id();
+        for (L1ItemInstance item : _items.GetItemsByObjectIDs(objectIds)) {
 			if(fillCount >= size)
 				break;
 			

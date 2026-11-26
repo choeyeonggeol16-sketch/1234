@@ -3,6 +3,7 @@ package l1j.server.server.model;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -23,12 +24,13 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
+import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.types.Point;
-import l1j.server.server.model.inventory.CInventory;
-import l1j.server.server.model.inventory.L1GroundInventory;
 
 public class L1World {
     private static Logger _log = Logger.getLogger(L1World.class.getName());
@@ -344,15 +346,14 @@ public class L1World {
         return result;
     }
     
-    public final Collection<L1PcInstance> getVisiblePlayers(int map_id){
-        List<L1PcInstance> result = new ArrayList<L1PcInstance>();
-        L1IntRegistry<L1Object> mapSrc = visibleMap(map_id, false);
-        if (mapSrc != null) {
-            for (L1Object obj : mapSrc.values()) {
-                if (obj instanceof L1PcInstance) {
-                    result.add((L1PcInstance) obj);
-                }
-            }
+    public final Collection<L1PcInstance> getVisiblePlayers(int mapId) {
+        final List<L1PcInstance> result = new ArrayList<>();
+        final L1IntRegistry<L1Object> mapSrc = visibleMap(mapId, false);
+        if (mapSrc == null || mapSrc.isEmpty()) return result;
+        final L1Map currentMap = L1WorldMap.getInstance().getMap((short) mapId);
+        if (currentMap.isNull() || currentMap.getId() != mapId) return result;
+        for (L1Object object : mapSrc.values()) {
+            if (object instanceof L1PcInstance pc && pc.getMap() == currentMap) result.add(pc);
         }
         return result;
     }
@@ -379,7 +380,7 @@ public class L1World {
         final VisibleScratch scratch = VISIBLE_SCRATCH.get();
         final int depth = scratch.depth;
         if (depth == scratch.lists.length) {
-            scratch.lists = java.util.Arrays.copyOf(scratch.lists, depth << 1);
+            scratch.lists = Arrays.copyOf(scratch.lists, depth << 1);
         }
         ArrayList<L1PcInstance> list = scratch.lists[depth];
         if (list == null) {
@@ -508,7 +509,7 @@ public class L1World {
     }
     
     public ArrayList<L1PcInstance> getVisiblePlayer(L1Object object, int radius) {
-        int map = object.getMapId();
+        final L1Map map = object.getMap();
         Point pt = object.getLocation();
         Collection<L1PcInstance> pc = _allPlayers.values();
         ArrayList<L1PcInstance> result = null;
@@ -522,7 +523,7 @@ public class L1World {
         final int selfId = object.getId();
 
         for (L1PcInstance element : pc) {
-            if (element == null || element.getId() == selfId || map != element.getMapId())
+            if (element == null || element.getId() == selfId || map != element.getMap())
                 continue;
 
             if (radius == -1) {

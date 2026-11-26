@@ -177,7 +177,8 @@ public final class User {
 			int skillId) {
 
 		final L1PcInstance pc = client.getActiveChar();
-		if (pc == null) return;
+		if (pc == null || !client.ownsReadyGameSession() || client.getActiveChar() != pc
+				|| L1World.getInstance().findObject(pc.getId()) != pc) return;
 		final L1ItemInstance l1iteminstance = pc.getInventory().GetByServerID(itemObjid);
 
         // This item only opens an owned settings window. It has no item effects,
@@ -190,11 +191,11 @@ public final class User {
         // Reject before effects, charges, materials or direct item setters.
         if (pc.isItemTransferBusy() || pc.isTradeResolving() || pc.getTradeID() != 0) return;
 
-		if (!CanUseItem(client, pc, l1iteminstance)) return;
+		if (!CanUseItem(pc, l1iteminstance)) return;
 		UseItem(client, pc, l1iteminstance, itemObjid, targetId, x, y, name, skillId);
 	}
 
-	private static boolean CanUseItem(CUserSocket client, L1PcInstance pc, L1ItemInstance item) {
+	private static boolean CanUseItem(L1PcInstance pc, L1ItemInstance item) {
 		if (!CItem.CheckItemUseCondition(pc, item)) return false;
 
 		if (pc.get_teleport() || pc.isDead()) {
@@ -210,13 +211,6 @@ public final class User {
 		if (CommonUtil.teleport_check(pc, item)) {
 			SC_Paralysis.send(pc, 7, false);
 			SC_ServerMessage.send(pc, 647);
-			return false;
-		}
-
-		L1PcInstance jonje = L1World.getInstance().getPlayer(pc.getName());
-		if (jonje == null && pc.getAccessLevel() != 200) {
-			SC_SystemMessage.send(pc, "존재버그 강제종료! 재접속하세요");
-			client.kick();
 			return false;
 		}
 

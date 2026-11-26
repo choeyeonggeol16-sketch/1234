@@ -1,6 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto.Attend;
 
-import l1j.server.server.model.inventory.CInventory;
+import java.util.List;
+
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_BONUS_GROUP_INFO;
@@ -8,11 +9,11 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_BONUS_G
 public enum AttendanceGroupType{
     NORMAL(0),
     PC_CAFE(1);
-    private int value;
-    private SC_ATTENDANCE_BONUS_GROUP_INFO _gInfo;
-    private ProtoPacketWriter.Raw _gInfoPacket;
-    private int _bonusSize;
-    private int _checkSum;
+    private record BonusCatalog(List<AttendanceBonusGroup> days, ProtoPacketWriter.Raw packet) {}
+
+    private final int value;
+    private final int _checkSum;
+    private volatile BonusCatalog catalog;
     AttendanceGroupType(int val){
         value = val;
         _checkSum = 1 << val;
@@ -34,38 +35,24 @@ public enum AttendanceGroupType{
     }
     
     public int getBonusSize(){
-        return _bonusSize;
+        final BonusCatalog current = catalog;
+        return current == null ? 0 : current.days().size();
     }
     
     public void setGroupInfo(SC_ATTENDANCE_BONUS_GROUP_INFO gInfo){
-        ProtoPacketWriter.Raw tmpPacket = _gInfoPacket;
-        SC_ATTENDANCE_BONUS_GROUP_INFO tmpInfo = _gInfo;
-        if(gInfo.get_bonusGroup() != null)
-            _bonusSize = gInfo.get_bonusGroup().size();
-      //  gInfo.set_groupType(this);
-        _gInfo = gInfo;
-        _gInfoPacket = new ProtoPacketWriter.Raw(gInfo.encode());   // 1회 인코딩 후 Raw 공유
-        if(tmpPacket != null){
-            tmpPacket = null;
-        }
-        
-        if(tmpInfo != null){
-            tmpInfo = null;
-        }
+        catalog = new BonusCatalog(List.copyOf(gInfo.get_bonusGroup()), new ProtoPacketWriter.Raw(gInfo.encode()));
     }
     
     public void send(L1PcInstance pc){
-        if(_gInfoPacket != null)
-            pc.sendPackets(_gInfoPacket, false);
+        final BonusCatalog current = catalog;
+        if (current != null) pc.sendPackets(current.packet(), false);
     }
     
-    public void doReward(L1PcInstance pc, int index){
-        AttendanceBonusGroup bGroup = _gInfo.get_bonusGroup().get(index);
-        CInventory inv = pc.getInventory();
-        for(AttendanceBonusInfo bInfo : bGroup.get_bonuses()){
-            if(inv.CheckAddable(bInfo.get_itemId(), bInfo.get_itemCount()) == CInventory.OK)
-                inv.CreateOrAddItem(bInfo.get_itemId(), bInfo.get_itemCount());
-        }
+    public AttendanceBonusGroup getBonus(int index) {
+        final BonusCatalog current = catalog;
+        if (current == null || index < 0 || index >= current.days().size()) return null;
+        final AttendanceBonusGroup bonus = current.days().get(index);
+        return bonus.get_attendaceIndex() == index + 1 ? bonus : null;
     }
     
     public static AttendanceGroupType fromInt(int i){

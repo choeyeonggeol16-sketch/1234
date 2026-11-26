@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_ChangeHeading {
     private static final int WIRE_SIZE = 2 + 6;
@@ -38,8 +38,8 @@ public final class SC_ChangeHeading {
 
     private static void broadcast0(L1Character anchor, int objectId, int heading, boolean fast) {
         if (anchor == null) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(
-                anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_HEADING,
+        CSharedBroadcast.sendFormatted(
+                anchor, CSharedBroadcast.FORMAT_HEADING,
                 Opcodes.S_CHANGE_DIRECTION, objectId, heading, 0, 0, fast, -1, null);
     }
     public static void broadcast(L1Character anchor, int objectId, int heading) { broadcast0(anchor, objectId, heading, false); }

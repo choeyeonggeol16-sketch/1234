@@ -1427,7 +1427,6 @@ public final class Config {
 	
 	public static boolean WALK_POSITION_CHECK;
 	public static long WALK_NETWORK_TOLERANCE;
-	public static int WALK_DELAY_OVER_PENDING;
 	
 	public static int IMMUNE_Level;
 	public static double IMMUNE_DMG;
@@ -2489,7 +2488,6 @@ public final class Config {
 			
 			WALK_POSITION_CHECK = Boolean.parseBoolean(Magic.getProperty("WalkPositionCheck", "true"));
 			WALK_NETWORK_TOLERANCE = Long.parseLong(Magic.getProperty("WalkNetworkTolerance", "19"));
-			WALK_DELAY_OVER_PENDING = Integer.parseInt(Magic.getProperty("WalkDelayOverPending", "3"));
 			
 			포우데미지1 = Double.parseDouble(Magic.getProperty("Fous1", "5.0"));
 			포우데미지2 = Double.parseDouble(Magic.getProperty("Fous2", "5.0"));

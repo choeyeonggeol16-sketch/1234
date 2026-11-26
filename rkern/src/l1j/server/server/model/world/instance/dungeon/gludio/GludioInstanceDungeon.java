@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
 import l1j.server.server.task.TaskLane;
-import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -25,6 +24,7 @@ import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+import l1j.server.server.model.world.cleanup.MapCleaner;
 import l1j.server.server.packets.Protocol.MainServer.Indun.Proto.GludioDungeonPackets;
 import l1j.server.server.templates.L1Npc;
 
@@ -667,8 +667,7 @@ public final class GludioInstanceDungeon {
                     scheduleCleanup(r,15000L);return;
                 }
             clearNpcs(r);
-            for(L1ItemInstance item:L1World.getInstance().getAllItem()) if(item!=null && item.getMapId()==r.mapId)
-                L1World.getInstance().getInventory(item.getX(),item.getY(),item.getMapId()).DeleteItemAmount(item);
+            MapCleaner.removeGroundItems(L1WorldMap.getInstance().getMap((short) r.mapId));
             releaseMap(r);
         }
     }

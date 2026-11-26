@@ -1,17 +1,18 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import l1j.server.server.IdFactory;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.inventory.CUserInventory;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -158,9 +159,15 @@ public final class CS_CRAFT_MAKE_REQ {
     private static void makeBatch(L1PcInstance pc, Craft craft,
             LinkedList<CraftInputItemSlotInfo> slots, int craftId, int count, int probability) {
         final ArrayList<CraftAttempt> attempts = new ArrayList<>(count);
-        final Map<Integer, Integer> available = new HashMap<>();
-        for (L1ItemInstance item : pc.getInventory().getItems()) {
-            if (item != null) available.put(item.getId(), item.getCount());
+        final CUserInventory inventory = pc.getInventory();
+        final Int2ObjectOpenHashMap<L1ItemInstance[]> candidates = new Int2ObjectOpenHashMap<>(slots.size());
+        final Int2IntOpenHashMap available = new Int2IntOpenHashMap();
+        for (CraftInputItemSlotInfo slot : slots) {
+            final int descId = slot.get_item_name_id();
+            if (candidates.containsKey(descId)) continue;
+            final L1ItemInstance[] rows = inventory.GetItemListByDescID(descId);
+            candidates.put(descId, rows);
+            for (L1ItemInstance item : rows) available.put(item.getId(), item.getCount());
         }
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc,
                 CacheD.accountOrderKey("craft:" + pc.getId()))) {
@@ -168,7 +175,7 @@ public final class CS_CRAFT_MAKE_REQ {
                 final CraftOutputItemResult output = craft.get_outputs().createOutputItem(probability, craftId);
                 if (output == null || (output.isSuccess && output.outputItem == null))
                     throw new IllegalStateException("Craft output configuration is missing");
-                if (!prepareInputs(pc, tx, slots, available)) {
+                if (!prepareInputs(tx, slots, candidates, available)) {
                     eCraftMakeReqResultType.RP_ERROR_NO_REQUIRED_ITEM.sendCachedMessage(pc);
                     return; // no SQL, memory, success packet, or material debit
                 }
@@ -224,15 +231,16 @@ public final class CS_CRAFT_MAKE_REQ {
     /** Count exact matching instances across all slots/attempts. No selected
      * row can be spent twice, even when two recipe slots match the same item.
      */
-    private static boolean prepareInputs(L1PcInstance pc, L1InventoryTransaction tx,
-            LinkedList<CraftInputItemSlotInfo> slots, Map<Integer, Integer> available) {
+    private static boolean prepareInputs(L1InventoryTransaction tx,
+            LinkedList<CraftInputItemSlotInfo> slots,
+            Int2ObjectOpenHashMap<L1ItemInstance[]> candidates, Int2IntOpenHashMap available) {
         for (CraftInputItemSlotInfo slot : slots) {
             int needed = slot.get_count();
             if (needed <= 0) return false;
-            for (L1ItemInstance item : pc.getInventory().getItems()) {
+            for (L1ItemInstance item : candidates.get(slot.get_item_name_id())) {
                 if (needed == 0) break;
-                if (item == null || item.isEquipped() || !slot.isInput(item)) continue;
-                int remaining = available.getOrDefault(item.getId(), 0);
+                if (item.isEquipped() || !slot.isInput(item)) continue;
+                int remaining = available.get(item.getId());
                 if (remaining <= 0) continue;
                 int take = item.isStackable() ? Math.min(needed, remaining) : 1;
                 if (!tx.debit(item, take)) return false;

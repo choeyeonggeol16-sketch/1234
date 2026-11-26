@@ -1,13 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_CharSpeedUpdate {
     private SC_CharSpeedUpdate() {}
@@ -39,8 +38,8 @@ public static boolean send(CUserSocket client, int objectId, int speed, int leve
 
     public static void broadcast(L1Character anchor, int objectId, int speed, int level) {
         if (anchor == null) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(
-                anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHAR_SPEED,
+        CSharedBroadcast.sendFormatted(
+                anchor, CSharedBroadcast.FORMAT_CHAR_SPEED,
                 Opcodes.S_CHANGE_LEVEL, objectId, speed, level, 0, false, -1, null);
     }
 

@@ -2,10 +2,7 @@ package l1j.server.server.model.BookQuest.Loader;
 
 import java.sql.ResultSet;
 
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.MonsterBookV2Info;
-import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.eMonsterBookV2RewardGrade;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MONSTER_BOOK_V2_REWARD_ACK;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 
@@ -58,10 +55,6 @@ public class BQSWQRewardsLoader {
 		});
 		sysT.set_min_level(BQSLoadManager.BQS_WQ_MINLEVEL);
 		return sysT;
-	}
-	
-	public SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode doReward(L1PcInstance pc, eMonsterBookV2RewardGrade grade){
-		return _rewards.doReward(pc, grade);
 	}
 	
 	public MonsterBookV2Info.SystemT get(){

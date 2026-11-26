@@ -388,14 +388,7 @@ public final class FishingTimeController {
             if (!isNoBaitRod(rod.getItemId())) {
                 // Same first eligible stack as the transaction template debit.
                 // Track its removal for the original post-debit slot limit.
-                L1ItemInstance bait = null;
-                for (L1ItemInstance item : pc.getInventory().getItems()) {
-                    if (item != null && !item.isEquipped() && item.getItemId() == 41295
-                            && item.getCount() > 0) {
-                        bait = item;
-                        break;
-                    }
-                }
+                final L1ItemInstance bait = pc.getInventory().GetFirstUnequippedItemByClassID(41295);
                 if (bait == null || !tx.debit(bait, 1)) {
                     endFishing(pc);
                     return;

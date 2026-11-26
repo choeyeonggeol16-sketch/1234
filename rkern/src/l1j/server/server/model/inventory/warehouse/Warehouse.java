@@ -972,15 +972,9 @@ public abstract class Warehouse extends L1Object {
         _items.clear();
     }
 
-	public L1ItemInstance[] GetItemListByClassID(int id) {
-		ArrayList<L1ItemInstance> itemList = new ArrayList<>(4);
-		for (L1ItemInstance item : _items) {
-			if (item.getItemId() == id) {
-				itemList.add(item);
-			}
-		}
-		return itemList.toArray(new L1ItemInstance[] {});
-	}
+    public L1ItemInstance[] GetItemListByClassID(int id) {
+        return _items.GetItemListByClassID(id);
+    }
 
 	public boolean HaveItemByClassId(int id, int count) {
 		if (count < 0) return false;

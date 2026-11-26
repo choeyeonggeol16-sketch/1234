@@ -1,13 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_ChangeName {
     private SC_ChangeName() {}
@@ -37,12 +36,12 @@ public static boolean send(CUserSocket client, int objectId, String name) {
 
     public static void broadcast(L1Character anchor, int objectId, String name) {
         if (anchor == null) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_CHANGE_DESC).putInt(objectId); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,name); b.put((byte)0); }, false, -1, null);
+        CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_CHANGE_DESC).putInt(objectId); CSharedBroadcast.writeMS949(b,name); b.put((byte)0); }, false, -1, null);
     }
 
     public static void broadcastFast(L1Character anchor, int objectId, String name) {
         if (anchor == null) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_CHANGE_DESC).putInt(objectId); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,name); b.put((byte)0); }, true, -1, null);
+        CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_CHANGE_DESC).putInt(objectId); CSharedBroadcast.writeMS949(b,name); b.put((byte)0); }, true, -1, null);
     }
 
 }

@@ -1,17 +1,19 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanTable;
-import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_Pledge {
     private SC_Pledge() {}
@@ -146,7 +148,7 @@ public final class SC_Pledge {
      * tick. Snapshot the source fields once; retain the individual sendBless
      * method for asynchronous, recipient-timed updates (e.g. CS_Craft).
      */
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter
+    public static CSharedBroadcast.NativeWireWriter
             nativeBlessWriter(L1Clan clan, int bless) {
         final long blessCount = clan == null ? 0L : clan.getBlessCount();
         final int[] times = clan == null || clan.getBuffTime() == null
@@ -175,9 +177,9 @@ public final class SC_Pledge {
                 out.put((byte) 0x18);
                 out.put((byte) (value == 0 ? 1 : bless == i + 1 ? 2 : 3));
                 out.put((byte) 0x12);
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949S2(out, "$" + (22503 + i));
+                CSharedBroadcast.writeMS949S2(out, "$" + (22503 + i));
                 out.put((byte) 0x1a);
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949S2(out, "$" + (22508 + i));
+                CSharedBroadcast.writeMS949S2(out, "$" + (22508 + i));
                 out.put((byte) 0x20);
                 writeNativeVarint(out, 7233 + i * 2);
             }
@@ -194,7 +196,7 @@ public final class SC_Pledge {
         return 5;
     }
 
-    private static void writeNativeVarint(java.nio.ByteBuffer out, long n) {
+    private static void writeNativeVarint(ByteBuffer out, long n) {
         while ((n & ~0x7fL) != 0L) {
             out.put((byte) ((n & 0x7fL) | 0x80L));
             n >>>= 7;

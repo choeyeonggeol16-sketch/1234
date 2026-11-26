@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_HPMeter {
     private SC_HPMeter() {}
@@ -64,8 +64,8 @@ public static boolean send(CUserSocket client, int objId, int hpRatio, int mpRat
             } catch (Exception ignored) {}
         }
         final int frozenId = objectId, frozenHp = hpRatio, frozenMp = mpRatio;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(
-                anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_HP_METER,
+        CSharedBroadcast.sendFormatted(
+                anchor, CSharedBroadcast.FORMAT_HP_METER,
                 Opcodes.S_HIT_RATIO, frozenId, frozenHp, frozenMp, 0, false, -1, null);
     }
 

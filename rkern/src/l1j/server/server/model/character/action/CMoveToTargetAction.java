@@ -51,15 +51,17 @@ public final class CMoveToTargetAction extends CNewAction {
         }
 
         final int heading = actor.targetDirection(target.getX(), target.getY());
-        final boolean moved = controller.MoveStepDirect(
+        final long step = controller.MoveStepDirect(
                 actor.getX(), actor.getY(), heading, nowMs);
 
-        if (!moved) {
+        if (step == CMoveAction.BLOCKED) {
             controller.EnterMoveToTargetWait(1);
-            return false;
+        } else if (step == CMoveAction.MOVED) {
+            AddTimer(1);
+        } else {
+            final long waitMillis = (step - 1L) / 1_000_000L + 1L;
+            AddTimer(controller.millisToTicks(waitMillis));
         }
-
-        AddTimer(1);
         return false;
     }
 

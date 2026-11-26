@@ -68,7 +68,12 @@ public final class CAnnounceTimer {
                 if (stopped) return false;
                 messages = loaded;
                 if (nextMessage >= loaded.size()) nextMessage = 0;
-                if (timer != null || loaded.isEmpty() || !Config.Use_Show_Announcecycle) return true;
+                if (!Config.Use_Show_Announcecycle) {
+                    if (timer != null) timer.cancel();
+                    timer = null;
+                    return true;
+                }
+                if ((timer != null && !timer.isCancelled()) || loaded.isEmpty()) return true;
 
                 final long intervalMs = TimeUnit.MINUTES.toMillis(Config.Show_Announcecycle_Time);
                 if (intervalMs <= 0L) {
@@ -93,7 +98,7 @@ public final class CAnnounceTimer {
     private void broadcast() {
         final String message;
         synchronized (this) {
-            if (stopped || messages.isEmpty()) return;
+            if (stopped || !Config.Use_Show_Announcecycle || messages.isEmpty()) return;
             message = messages.get(nextMessage);
             if (++nextMessage == messages.size()) nextMessage = 0;
         }

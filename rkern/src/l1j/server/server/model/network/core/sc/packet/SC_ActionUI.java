@@ -8,10 +8,11 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 
 public final class SC_ActionUI {
 
@@ -243,7 +244,7 @@ public final class SC_ActionUI {
     /** S_EXTENDED_PROTOBUF 339 flag transport. Payload is snapshotted
      * exactly once before multicast, with original trailing H(0).
      */
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeFlagWriter(byte[] flag) {
+    public static CSharedBroadcast.NativeWireWriter nativeFlagWriter(byte[] flag) {
         final byte[] frozen=flag==null?new byte[0]:flag.clone();
         if(frozen.length>65528)return null;
         return b -> {b.put((byte)Opcodes.S_EXTENDED_PROTOBUF).putShort((short)339);

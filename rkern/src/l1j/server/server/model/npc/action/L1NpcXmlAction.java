@@ -101,14 +101,22 @@ public abstract class L1NpcXmlAction implements L1NpcAction {
 		return _name.equals(name);
 	}
 
-    /** Only plain SetQuest children may join the enclosing craft receipt.
-     * Explicit name/NPC/class/quest/level restrictions stay in the normal
-     * post-commit XML evaluator. Default level bounds still apply at admission. */
-    final boolean isPlainQuestAction(L1PcInstance pc) {
+    /** These actions have no XML predicate other than the common level bounds. */
+    final boolean hasDefaultConditions() {
         return _name == null && _npcIds.length == 0 && _classMask == 0
                 && _questId == -1 && _questStep == -1
-                && _minLevel == 1 && _maxLevel == 99
-                && pc.getLevel() >= 1 && pc.getLevel() <= 99;
+                && _minLevel == 1 && _maxLevel == 99;
+    }
+
+    static String sourceDescription(Element element) {
+        String source = element.getOwnerDocument().getDocumentURI();
+        return (source == null ? "NPC action XML" : source) + " <" + element.getTagName()
+                + "> Name=" + element.getAttribute("Name") + " NpcId=" + element.getAttribute("NpcId");
+    }
+
+    static L1NpcHtml rejectUnsafeQuestReward(L1PcInstance pc) {
+        SC_SystemMessage.send(pc, "이 NPC의 퀘스트 보상 설정을 확인해 주세요.");
+        return ABORTED;
     }
 
 	private boolean acceptsQuest(L1PcInstance pc) {

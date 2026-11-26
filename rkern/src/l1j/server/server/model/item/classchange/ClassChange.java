@@ -100,8 +100,8 @@ public class ClassChange {
         }
         pc.getInventory().takeoffEquip(945); 
 
-        for (L1ItemInstance armor : pc.getInventory().getItems()) {
-            if (armor != null && armor.isEquipped()) {
+        for (L1ItemInstance armor : pc.getInventory().GetEquippedItems()) {
+            if (armor.isEquipped()) {
                 pc.UnequipItem(armor);
             }
         }
@@ -188,8 +188,8 @@ public class ClassChange {
         			0,
         			L1SkillUse.TYPE_LOGIN);
 
-            for (L1ItemInstance item : pc.getInventory().getItems()) {
-                if (item != null && item.isEquipped()) {
+            for (L1ItemInstance item : pc.getInventory().GetEquippedItems()) {
+                if (item.isEquipped()) {
                     pc.UnequipItem(item);
                 }
             }

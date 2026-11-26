@@ -310,7 +310,8 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         long available=0;
         L1ItemInstance first = null;
         int firstCount = 0;
-        for (L1ItemInstance item : pc.getInventory().getItems()) {
+        final L1ItemInstance[] candidates = pc.getInventory().GetUnequippedItemListByClassID(templateId);
+        for (L1ItemInstance item : candidates) {
             if (item == null || item.isEquipped() || item.getItemId()!=templateId
                     || (matchEnchant && item.getEnchantLevel() != enchant)) continue;
             Entry e=findEntry(item.getId());
@@ -325,7 +326,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         // Most consumables live in one stack: skip a second full inventory pass.
         if (firstCount >= count) return debit(pc, first, count);
         int left=count;
-        for (L1ItemInstance item : pc.getInventory().getItems()) {
+        for (L1ItemInstance item : candidates) {
             if (left==0) break;
             if (item == null || item.isEquipped() || item.getItemId()!=templateId
                     || (matchEnchant && item.getEnchantLevel() != enchant)) continue;
@@ -420,7 +421,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
     /** Only unprepared, positive live rows may participate in a new merge. */
     private L1ItemInstance findLiveMergeTarget(L1PcInstance pc, L1ItemInstance image) {
-        for (L1ItemInstance item : pc.getInventory().getItems()) {
+        for (L1ItemInstance item : pc.getInventory().GetItemListByClassID(image.getItemId())) {
             if (item != null && item.getCount() > 0 && findEntry(item.getId()) == null
                     && mergeable(item, image)) return item;
         }

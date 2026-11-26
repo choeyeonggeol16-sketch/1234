@@ -1,12 +1,14 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import java.nio.ByteBuffer;
+
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_ExplosionNoti {
     private SC_ExplosionNoti() {}
@@ -37,11 +39,11 @@ public final class SC_ExplosionNoti {
     }
     public static void broadcast(L1Character anchor, int objectId, long mills) {
         if(anchor==null)return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_EXTENDED_PROTOBUF).putShort((short)0x0332); b.put((byte)0x08); writeVar(b,objectId); b.put((byte)0x10); writeVar(b,mills); b.putShort((short)0); }, false, -1, null);
+        CSharedBroadcast.sendWrittenBestEffort(anchor, b -> { b.put((byte)Opcodes.S_EXTENDED_PROTOBUF).putShort((short)0x0332); b.put((byte)0x08); writeVar(b,objectId); b.put((byte)0x10); writeVar(b,mills); b.putShort((short)0); }, false, -1, null);
     }
 
 
-    private static void writeVar(java.nio.ByteBuffer b,long value) {
+    private static void writeVar(ByteBuffer b,long value) {
         if(value<0L) value&=0xFFFFFFFFL;
         while((value & ~0x7fL)!=0L) {
             b.put((byte)((value&0x7fL)|0x80L));value>>>=7;

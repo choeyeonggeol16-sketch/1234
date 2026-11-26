@@ -98,7 +98,7 @@ public class L1EffectSpawn {
                 y = base.getY();
             }
             L1Map map = L1WorldMap.getInstance().getMap(cha.getMapId());
-            if (!map.isArrowPassable(x, y, cha.getHeading())) {
+            if (map == null || !map.isInMap(x, y) || !map.isArrowPassable(x, y, cha.getHeading())) {
                 break;
             }
 

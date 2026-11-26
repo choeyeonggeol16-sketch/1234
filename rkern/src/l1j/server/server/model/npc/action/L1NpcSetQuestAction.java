@@ -31,9 +31,12 @@ public class L1NpcSetQuestAction extends L1NpcXmlAction {
 		throw new IllegalStateException("XML quest requires continuation entry");
 	}
 
+    final int questId() { return _id; }
+
+    final int targetStep() { return _step; }
+
     /** Stage only after the enclosing craft has reserved the owner gate. */
-    final void stageInCraft(L1InventoryTransaction tx, L1PcInstance pc) {
-        final int expected = pc.getQuest().get_step(_id);
+    final void stageInCraft(L1InventoryTransaction tx, L1PcInstance pc, int expected) {
         CQuestSystem.StageQuestStep(tx, pc.getId(), _id, expected, _step, 0);
     }
 

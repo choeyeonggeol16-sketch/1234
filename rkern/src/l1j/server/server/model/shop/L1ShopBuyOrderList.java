@@ -45,8 +45,8 @@ public class L1ShopBuyOrderList {
         if (shopItem == null || shopItem.getItem() == null) { bugok = 1; return; }
 
         final int pack = Math.max(1, shopItem.getPackCount());
-        final long unitPriceL = safeUnitPrice(shopItem);
-        if (unitPriceL <= 0L || unitPriceL > MAX_ADENA) { bugok = 1; return; }
+        final long unitPriceL = sellingPackagePrice(shopItem);
+        if (unitPriceL <= 0L) { bugok = 1; return; }
 
         // 실제 지급 개수(팩 포함)
         final long giveCountL;
@@ -135,13 +135,11 @@ public class L1ShopBuyOrderList {
             expanded.add(new L1ShopBuyOrder(shopItem, 1, orderNumber));
     }
 
-    private long safeUnitPrice(L1ShopItem shopItem) {
-        // Config 배율 적용
-        double raw = shopItem.getPrice() * Config.RATE_SHOP_SELLING_PRICE;
-        if (!Double.isFinite(raw) || raw <= 0) return -1L;
-        // double -> long 변환 시 과대값 방어
-        long v = (long) raw;
-        return v;
+    static long sellingPackagePrice(L1ShopItem shopItem) {
+        final double raw = shopItem.getPrice() * Config.RATE_SHOP_SELLING_PRICE;
+        if (!Double.isFinite(raw) || raw < 1D) return -1L;
+        final long price = (long) raw;
+        return price <= MAX_ADENA ? price : -1L;
     }
 
     private static long safeAdd(long a, long b) {

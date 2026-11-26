@@ -2,18 +2,22 @@ package l1j.server.server.packets.Protocol.MainServer.Indun.Proto;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon;
-import l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon.Room;
-import l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon.Member;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon;
+import l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon.Member;
+import l1j.server.server.model.world.instance.dungeon.gludio.GludioInstanceDungeon.Room;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 
 /** Source44 ArenaCo/Indun protobuf IDs, encoded on the existing 2019 extended-proto transport. */
 public final class GludioDungeonPackets {
+    private static final Logger LOGGER = Logger.getLogger(GludioDungeonPackets.class.getName());
     private static final Charset MS949 = Charset.forName("MS949");
     private static final GludioInstanceDungeon DUNGEON = GludioInstanceDungeon.getInstance();
     private GludioDungeonPackets() { }
@@ -188,7 +192,7 @@ public final class GludioDungeonPackets {
     }
 
     private static void roomInfo(ProtoWriter w,Room r) {
-        w.int32(1,r.id).bytes(2,r.title.getBytes(MS949)).int32(3,r.members.size())
+        w.int32(1,r.id).string(2,r.title).int32(3,r.members.size())
          .int32(4,r.maximum).int32(5,r.kind==202?2:1).int32(6,r.kind)
          .bool(7,r.closed).int32(8,r.minLevel).int32(9,r.fee)
          .int32(10,r.distribution).bool(11,r.started).bool(12,false).bool(13,r.boost);
@@ -233,28 +237,37 @@ public final class GludioDungeonPackets {
     }
 
     public static void broadcastRoomStatus(Room r) {
-        if(r==null || r.ended) return;
-        final Member[] members = DUNGEON.members(r);
-        if(members.length==0) return;
-        // Room status contains no recipient-specific fields. Snapshot the
-        // roster once, encode one extended-proto frame, then preserve the
-        // exact original member traversal and per-socket CIO FIFO.
-        final ProtoWriter w = ProtoWriter.tl();
-        w.int32(1,r.id).int32(2,0);
-        for(Member m:members) { w.msg(3); writeUser(w,m,r); w.end(); }
-        w.msg(4); roomInfo(w,r); w.end();
-        try(var shared=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(
-                w.finishWithTrailer(SC_ARENACO_BYPASS_CHANGE_INDUN_ROOM_STATUS_NOTI))) {
-            if(shared==null) return;
-            for(Member target:members)
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared,target.pc);
+        if (r == null) return;
+        try {
+            final Member[] members;
+            final ProtoWriter writer = ProtoWriter.tl();
+            // Keep the advertised count, roster and room properties coherent.
+            // Socket dispatch stays outside the dungeon monitor.
+            synchronized (DUNGEON) {
+                if (r.ended) return;
+                members = DUNGEON.members(r);
+                if (members.length == 0) return;
+                writer.int32(1, r.id).int32(2, 0);
+                for (Member member : members) {
+                    writer.msg(3);
+                    writeUser(writer, member, r);
+                    writer.end();
+                }
+                writer.msg(4);
+                roomInfo(writer, r);
+                writer.end();
+            }
+            try (var shared = CSharedBroadcast.openRaw(
+                    writer.finishWithTrailer(SC_ARENACO_BYPASS_CHANGE_INDUN_ROOM_STATUS_NOTI))) {
+                if (shared == null) return;
+                for (Member target : members) CSharedBroadcast.sendRecipientBestEffort(shared, target.pc);
+            }
         } catch (RuntimeException noticeFailure) {
-            java.util.logging.Logger.getLogger(GludioDungeonPackets.class.getName()).log(
-                    java.util.logging.Level.WARNING,"Dungeon room-status notice failed",noticeFailure);
+            LOGGER.log(Level.WARNING, "Dungeon room-status notice failed", noticeFailure);
         }
     }
     private static void writeUser(ProtoWriter w,Member m,Room r) {
-        w.int32(1,m.charId).int32(2,0).bytes(3,m.pc.getName().getBytes(MS949))
+        w.int32(1,m.charId).int32(2,0).string(3,m.pc.getName())
          .int32(4,m.pc.getClassNumber()).int32(5,0).int32(6,1).int32(7,1)
          .bool(8,m.charId==r.ownerId).bool(9,m.ready).bool(10,true);
     }

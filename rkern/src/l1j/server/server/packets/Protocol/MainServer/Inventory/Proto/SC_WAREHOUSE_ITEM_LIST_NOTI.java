@@ -112,10 +112,10 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         boolean opened = false;
         try {
             final List<L1ItemInstance> items = whouse.GetItemsSnapshot();
-            opened = sendWarehouseItemsChunked(client, pc, npc_object_id, items,
-                    500, eWarehouseType.TRADE_RETRIEVE_PLEDGE, 5, generation)
-                    && pc.getClan() == clan
-                    && client.BindPledgeWarehouseView(pc, npc_object_id, clanId, whouse, lease, generation);
+            final int[] listed = sendWarehouseItemsChunked(client, pc, npc_object_id, items,
+                    500, eWarehouseType.TRADE_RETRIEVE_PLEDGE, 5, generation);
+            opened = listed != null && pc.getClan() == clan
+                    && client.BindPledgeWarehouseView(pc, npc_object_id, clanId, whouse, lease, generation, listed);
         } finally {
             if (!opened) client.ReleasePledgeWarehouseView(whouse, lease);
         }
@@ -138,9 +138,9 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
             SC_ServerMessage.send(pc, 263);
             return;
         }
-        if (sendWarehouseItemsChunked(client, pc, npc_object_id, whouse.GetItemsSnapshot(),
-                0x00, eWarehouseType.TRADE_RETRIEVE_CONTRACT, 20, generation))
-            client.BindWarehouseView(pc, npc_object_id, 20, 0, 0, generation);
+        final int[] listed = sendWarehouseItemsChunked(client, pc, npc_object_id, whouse.GetItemsSnapshot(),
+                0x00, eWarehouseType.TRADE_RETRIEVE_CONTRACT, 20, generation);
+        if (listed != null) client.BindWarehouseView(pc, npc_object_id, 20, 0, 0, generation, listed);
     }
 
     // ============================================================
@@ -165,23 +165,24 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
             SC_NPCTalkReturn.send(pc, npc_object_id, "noitemret", null);
             return;
         }
-        if (sendWarehouseItemsChunked(client, pc, npc_object_id, whouse.GetItemsSnapshot(),
-                300, eWarehouseType.TRADE_RETRIEVE, 3, generation))
-            client.BindWarehouseView(pc, npc_object_id, 3, 0, 0, generation);
+        final int[] listed = sendWarehouseItemsChunked(client, pc, npc_object_id, whouse.GetItemsSnapshot(),
+                300, eWarehouseType.TRADE_RETRIEVE, 3, generation);
+        if (listed != null) client.BindWarehouseView(pc, npc_object_id, 3, 0, 0, generation, listed);
     }
 
     // ============================================================
     // 청크 전송 
     // ============================================================
-    private static boolean sendWarehouseItemsChunked(CUserSocket client, L1PcInstance pc, int npc_object_id,
+    private static int[] sendWarehouseItemsChunked(CUserSocket client, L1PcInstance pc, int npc_object_id,
             List<L1ItemInstance> items, int price, eWarehouseType type, int kind, int generation){
         if (pc == null || items == null || items.isEmpty()
-                || !client.IsPendingWarehouseView(pc, npc_object_id, kind, generation)) return false;
+                || !client.IsPendingWarehouseView(pc, npc_object_id, kind, generation)) return null;
 
         int idx = 0, sent = 0;
         final int n = items.size();
         final int totalSize = n;
         int cntInChunk = 0, bytesInChunk = 0;
+        final int[] listedItemIds = new int[n];
 
         byte[][] encodedChunk = new byte[WH_CHUNK_MAX_ITEMS][];
 
@@ -204,34 +205,35 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
 
             if (addBytes >= WH_CHUNK_MAX_BYTES){
                 if (cntInChunk > 0){
-                    if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, false)) return false;
+                    if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, false)) return null;
                     sent += cntInChunk;
 
                     cntInChunk = 0; bytesInChunk = 0;
                 }
                 encodedChunk[0] = encoded;
-                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, 1, addBytes, false)) return false;
+                listedItemIds[sent] = item.getId();
+                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, 1, addBytes, false)) return null;
                 sent += 1;
                 continue;
             }
 
             if (cntInChunk > 0 && (cntInChunk >= WH_CHUNK_MAX_ITEMS
                     || (bytesInChunk + addBytes) >= WH_CHUNK_MAX_BYTES)){
-                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, false)) return false;
+                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, false)) return null;
                 sent += cntInChunk;
 
                 cntInChunk = 0; bytesInChunk = 0;
             }
 
             encodedChunk[cntInChunk] = encoded;
+            listedItemIds[sent + cntInChunk] = item.getId();
             cntInChunk++;
             bytesInChunk += addBytes;
         }
 
-        if (cntInChunk > 0) {
-            return sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, true);
-        }
-        return sent > 0 && sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, null, 0, 0, true);
+        if (sent + cntInChunk == 0) return null;
+        return sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation,
+                encodedChunk, cntInChunk, bytesInChunk, true) ? listedItemIds : null;
     }
 
     private static boolean sendWarehouseViewChunk(CUserSocket client, L1PcInstance pc, int checker,

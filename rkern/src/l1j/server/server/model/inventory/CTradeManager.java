@@ -37,8 +37,8 @@ public final class CTradeManager {
                 || lastId == Integer.MAX_VALUE) return null;
         final CUserSocket a = first.getNetConnection(), b = second.getNetConnection();
         final int as = first.getSessionStamp(), bs = second.getSessionStamp();
-        if (a == null || b == null || first.isDead() || second.isDead() || first.isGhost() || second.isGhost()
-                || first.isPrivateShop() || second.isPrivateShop() || first.getMapId() != second.getMapId()
+        if (a == null || b == null || !CTrade.IsParticipantEligible(first) || !CTrade.IsParticipantEligible(second)
+                || first.getMapId() != second.getMapId()
                 || first.getAccountName() == null || second.getAccountName() == null
                 || first.getAccountName().equalsIgnoreCase(second.getAccountName())) return null;
         // Exclude a racing non-trade receipt before publishing either PC's trade.

@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import l1j.server.Config;
-import l1j.server.server.ActionCodes;
 import l1j.server.server.task.TaskLane;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.DropTable;
@@ -25,7 +24,6 @@ import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1MobGroupInfo;
 import l1j.server.server.model.npc.ai.action.CSkillAction2;
 import l1j.server.server.model.npc.ai.TimerData;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CNpcMaker;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
@@ -34,7 +32,8 @@ import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_ExplosionNoti;
 import l1j.server.server.model.network.core.sc.packet.SC_MoveChar;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
@@ -1203,8 +1202,8 @@ public class L1NpcInstance extends L1Character {
         final var log = java.util.logging.Logger.getLogger(L1NpcInstance.class.getName());
         try {
             DropTable.getInstance().append_drop_adena(lastAttacker, this);
-            if (source.getItems().isEmpty()) return;
-            final L1ItemInstance[] items = source.getItems().toArray(new L1ItemInstance[0]);
+            final List<L1ItemInstance> items = source.getItemSnapshot();
+            if (items.isEmpty()) return;
             final boolean protectedDrop = contribute != null && contribute.HasGroundPriority();
             if (protectedDrop) {
                 contribute.StartDropPeriod();
@@ -1367,7 +1366,8 @@ public class L1NpcInstance extends L1Character {
         L1World.getInstance().leaveAndRemoveObject(this);
 
         if (!players.isEmpty()) {
-        	try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.nativeWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+            try (var shared = new CAsyncSendConstBuffer(
+                    SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
                 for(L1PcInstance pc:players) {
                     if(pc!=null) {
                         pc.removeKnownObject(this);
@@ -1660,15 +1660,15 @@ public class L1NpcInstance extends L1Character {
     }
 
     private void broadcastTeleportDeparture(List<L1PcInstance> previousViewers) {
-        try (var effectShared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+        try (var effectShared = new CAsyncSendConstBuffer(
                     SC_SkillSound.nativeWriter(getId(), 169), Integer.MIN_VALUE, Integer.MAX_VALUE);
-             var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+             var shared = new CAsyncSendConstBuffer(
                     SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
             for (L1PcInstance pc : previousViewers) {
                 if (pc == null) continue;
                 final var socket = pc.getNetConnection();
                 if (socket != null && socket.isConnected() && socket.isClientConnected()) {
-                    effectShared.send(socket, pc.getId());
+                    CSharedBroadcast.sendRecipientBestEffort(effectShared, pc);
                     shared.send(socket, pc.getId());
                 }
                 pc.removeKnownObject(this);
@@ -2583,7 +2583,8 @@ public class L1NpcInstance extends L1Character {
         		L1World.getInstance().getRecognizePlayer(this);
 
         if (players.size() > 0) {
-        	try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(SC_RemoveObject.nativeWriter(getId()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+            try (var shared = new CAsyncSendConstBuffer(
+                    SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
                 for(L1PcInstance pc:players) {
                     if(pc!=null) {
                         pc.removeKnownObject(this);

@@ -166,7 +166,6 @@ import l1j.server.server.model.character.bookmark.CUserBookmark;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.utils.CPCParamDB;
 import l1j.server.server.utils.GameUtils;
-import l1j.server.server.utils.ServerMessage;
 import l1j.server.swing.chocco;
 public class L1PcInstance extends L1Character {
     private volatile long cacheDSessionEpoch;
@@ -364,10 +363,12 @@ public class L1PcInstance extends L1Character {
 		SC_ATTENDANCE_USER_DATA_EXTEND userData = getAttendanceData();
 		if (userData != null) {
 			AttendanceUserFlag flag = b ? AttendanceUserFlag.USER_FLAG_PC_CAFE : AttendanceUserFlag.USER_FLAG_NORMAL;
-			if (!userData.get_userFlag().equals(flag)) {
-				userData.set_userFlag(flag);
-				SC_ATTENDANCE_USER_DATA_EXTEND.send(this);
+			final boolean changed;
+			synchronized (userData) {
+				changed = userData.get_userFlag() != flag;
+				if (changed) userData.set_userFlag(flag);
 			}
+			if (changed) SC_ATTENDANCE_USER_DATA_EXTEND.send(this);
 		}
 		SC_REST_EXP_INFO_NOTI.send(this);
 	}
@@ -2266,16 +2267,18 @@ public class L1PcInstance extends L1Character {
 		}
 		// 파티를 빠진다
 		try {
-			if (isInParty() || getParty() != null) { // 파티중
-				getParty().leaveMember(this);
+			final CParty party = getParty();
+			if (party != null) {
+				party.leaveMember(this);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		// 채팅파티를 빠진다
 		try {
-			if (isInChatParty()) { // 채팅파티중
-				getChatParty().leaveMember(this);
+			final L1ChatParty chatParty = getChatParty();
+			if (chatParty != null) {
+				chatParty.leaveMember(this);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -2569,17 +2572,26 @@ public class L1PcInstance extends L1Character {
         final CUserSocket previous = _netConnection;
 		if (previous != clientthread) suspendGroundSight();
 		_netConnection = clientthread;
-        if (previous != null && previous != clientthread) previous.ClearWarehouseViewFor(this);
+		if (previous != null && previous != clientthread) {
+            previous.clearNpcShopViewFor(this);
+            previous.ClearWarehouseViewFor(this);
+        }
 	}
 
     public void InvalidateWarehouseAccess() {
         final CUserSocket session = getNetConnection();
-        if (session != null) session.ClearWarehouseViewFor(this);
+        if (session != null) {
+            session.clearNpcShopViewFor(this);
+            session.ClearWarehouseViewFor(this);
+        }
     }
 
     public void CheckWarehouseRange() {
         final CUserSocket session = getNetConnection();
-        if (session != null) session.CheckWarehouseRange(this);
+        if (session != null) {
+            session.checkNpcShopRange(this);
+            session.CheckWarehouseRange(this);
+        }
     }
 
 	public int groundSightEpoch() { return groundSightEpoch; }
@@ -3109,7 +3121,7 @@ public class L1PcInstance extends L1Character {
 							|| getInventory().IsEquippedByClassID(123113))) {
 						if (!hasSkillEffect(L1SkillId.할파스의신의)) {
 
-							for (L1ItemInstance item : getInventory().getItems()) {
+							for (L1ItemInstance item : getInventory().GetEquippedItems()) {
 								if (item.isEquipped()) {
 									if (item.getEnchantLevel() >= 0 && (item.getItemId() == 123111
 											|| item.getItemId() == 123112 || item.getItemId() == 123113)) {
@@ -3432,7 +3444,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 						|| getInventory().IsEquippedByClassID(123113))) {
 					if (!hasSkillEffect(L1SkillId.할파스의신의)) {
 
-						for (L1ItemInstance item : getInventory().getItems()) {
+						for (L1ItemInstance item : getInventory().GetEquippedItems()) {
 							if (item.isEquipped()) {
 								if (item.getEnchantLevel() >= 0 && (item.getItemId() == 123111
 										|| item.getItemId() == 123112 || item.getItemId() == 123113)) {
@@ -5256,11 +5268,9 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			SC_CharVisualUpdate.sendPacked(this, SC_CharVisualUpdate.pack(this));
 			SC_OwnCharStatus2.send(this);
 
-			for (L1ItemInstance armor : getInventory().getItems()) {
-				for (int type = 0; type <= 12; type++) {
-					if (armor != null) {
-						UnequipItem(armor);
-					}
+			for (L1ItemInstance armor : getInventory().GetEquippedItems()) {
+				for (int attempt = 0; attempt <= 12 && armor.isEquipped(); attempt++) {
+					UnequipItem(armor);
 				}
 			}
 
@@ -5303,11 +5313,9 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			SC_CharVisualUpdate.sendPacked(this, SC_CharVisualUpdate.pack(this));
 			SC_OwnCharStatus2.send(this);
 
-			for (L1ItemInstance armor : getInventory().getItems()) {
-				for (int type = 0; type <= 12; type++) {
-					if (armor != null) {
-						UnequipItem(armor);
-					}
+			for (L1ItemInstance armor : getInventory().GetEquippedItems()) {
+				for (int attempt = 0; attempt <= 12 && armor.isEquipped(); attempt++) {
+					UnequipItem(armor);
 				}
 			}
 
@@ -5966,114 +5974,49 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 
 	// 고대의 가호 효과 구현
 	private void drop1() {
-		if ((getMapId() >= 1708 && getMapId() <= 1709) && getInventory().IsEquippedByClassID(900022)) { // 착용한
-																									// 아이템
-			L1ItemInstance drop = CObjectDB.CreateItem(3000122); // 드랍
-																				// 시킬아이템
-			for (L1ItemInstance item : getInventory().getItems()) {
-				if (item.getItemId() == 900022 & item.isEquipped()) {
-					SC_ServerMessage.send(this, 3802);
-					SC_ServerMessage.send(this, 158, "$22172");
-					getInventory().DeleteItemAmount(item, 1);
-					L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
-					break;
-				}
-			}
+		if (getMapId() >= 1708 && getMapId() <= 1709) {
+			dropProtectionItem(getInventory().GetFirstEquippedItemByClassID(900022), 3000122, "$22172");
 		}
 	}
 
 	// 불멸의 가호
 	private void gahodrop(L1Character lastAttacker) {
 		if (getInventory().HaveItemByClassId(4100122)) {
-			L1ItemInstance drop = CObjectDB.CreateItem(4100120);
-			for (L1ItemInstance item : getInventory().getItems()) {
-				if (item.getItemId() == 4100122) {
-					SC_ServerMessage.send(this, 3802);
-					SC_ServerMessage.send(this, 158, "$27279"); 
-					getInventory().DeleteItemAmount(item, 1);
-					 L1World.getInstance().getInventory(getX(), getY(),
-					 getMapId()).CreateOrAddItem(drop);
-					//lastAttacker.getInventory().storeItem(drop);
-					//lastAttacker.sendPackets(new SC_SystemMessage("타버린 불멸의 가호를 획득하였습니다."));
-					break;
-				}
-			}
+			dropProtectionItem(getInventory().GetFirstItemByClassID(4100122), 4100120, "$27279");
 		}
 	}
 
 	// 고급 불멸의 가호
 	private void specialgahodrop(L1Character lastAttacker) {
-
 		if (getInventory().HaveItemByClassId(4100121)) {
-			L1ItemInstance drop = CObjectDB.CreateItem(4100119);
-			for (L1ItemInstance item : getInventory().getItems()) {
-				if (item.getItemId() == 4100121) {
-					SC_ServerMessage.send(this, 3802);
-					SC_ServerMessage.send(this, 158, "$26711");
-					getInventory().DeleteItemAmount(item, 1);
-					 L1World.getInstance().getInventory(getX(), getY(),
-					 getMapId()).CreateOrAddItem(drop);
-				//	 L1World.getInstance().getInventory(getX(), getY(),
-				//	 getMapId()).storeItem(drop0, count22);
-				//	 sendPackets(new SC_SystemMessage("투게더코인 [드랍] : "+count22+"개"));
-					//lastAttacker.getInventory().storeItem(drop);
-					//lastAttacker.sendPackets(new SC_SystemMessage("타버린 고급 불멸의 가호를 획득하였습니다."));
-					break;
-				}
-
+			dropProtectionItem(getInventory().GetFirstItemByClassID(4100121), 4100119, "$26711");
+		}
+		if (getInventory().HaveItemByClassId(592247)) {
+			final L1ItemInstance original = getInventory().GetFirstItemByClassID(592247);
+			if (original != null) {
+				final L1ItemInstance drop = CObjectDB.CreateItem(592248);
+				SC_SystemMessage.send(this, "수호자의 가호를 드랍하였습니다.");
+				getInventory().DeleteItemAmount(original, 1);
+				L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 			}
-		} 
-		if (getInventory().HaveItemByClassId(592247)) { 
-
-			L1ItemInstance drop2 = CObjectDB.CreateItem(592248);
-			for (L1ItemInstance item : getInventory().getItems()) {
-				if (item.getItemId() == 592247) {
-					SC_SystemMessage.send(this, "수호자의 가호를 드랍하였습니다.");
-					getInventory().DeleteItemAmount(item, 1);
-					 L1World.getInstance().getInventory(getX(), getY(),
-					 getMapId()).CreateOrAddItem(drop2);
-				//	 L1World.getInstance().getInventory(getX(), getY(),
-				//	 getMapId()).storeItem(drop0, count22);
-				//	 sendPackets(new SC_SystemMessage("투게더코인 [드랍] : "+count22+"개"));
-					//lastAttacker.getInventory().storeItem(drop);
-					//lastAttacker.sendPackets(new SC_SystemMessage("타버린 고급 불멸의 가호를 획득하였습니다."));
-					break;
-				}
-			}
-		} 
-
+		}
 	}
 
 	private void drop2() {
-		if (getInventory().IsEquippedByClassID(10000)) { // 착용한 아이템
-			L1ItemInstance drop = CObjectDB.CreateItem(738); // 드랍
-																			// 시킬아이템
-			for (L1ItemInstance item : getInventory().getItems()) {
-				if (item.getItemId() == 10000 & item.isEquipped()) {
-					SC_ServerMessage.send(this, 3802);
-					SC_ServerMessage.send(this, 158, "$25382");
-					getInventory().DeleteItemAmount(item, 1);
-					L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
-					break;
-				}
-			}
-		}
+		dropProtectionItem(getInventory().GetFirstEquippedItemByClassID(10000), 738, "$25382");
 	}
 
 	private void drop3() {
-		if (getInventory().IsEquippedByClassID(10001)) { // 착용한 아이템
-			L1ItemInstance drop = CObjectDB.CreateItem(739); // 드랍
-																			// 시킬아이템
-			for (L1ItemInstance item : getInventory().getItems()) {
-				if (item.getItemId() == 10001 & item.isEquipped()) {
-					SC_ServerMessage.send(this, 3802);
-					SC_ServerMessage.send(this, 158, "$25384");
-					getInventory().DeleteItemAmount(item, 1);
-					L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
-					break;
-				}
-			}
-		}
+		dropProtectionItem(getInventory().GetFirstEquippedItemByClassID(10001), 739, "$25384");
+	}
+
+	private void dropProtectionItem(L1ItemInstance original, int dropClassId, String message) {
+		if (original == null) return;
+		final L1ItemInstance drop = CObjectDB.CreateItem(dropClassId);
+		SC_ServerMessage.send(this, 3802);
+		SC_ServerMessage.send(this, 158, message);
+		getInventory().DeleteItemAmount(original, 1);
+		L1World.getInstance().getInventory(getX(), getY(), getMapId()).CreateOrAddItem(drop);
 	}
 
 	public void movePlayerClanData(L1Clan move_clan) {
@@ -6737,7 +6680,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		}
 	}
 
-	private SC_ATTENDANCE_USER_DATA_EXTEND _attendance_data;
+	private volatile SC_ATTENDANCE_USER_DATA_EXTEND _attendance_data;
 
 	public void setAttendanceData(SC_ATTENDANCE_USER_DATA_EXTEND attendance_data) {
 		_attendance_data = attendance_data;
@@ -7349,32 +7292,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 	    return s;
 	}
 
-    // -------------------------------------------------------------------
-	// [스피드핵 방어 로직 전용 변수] 
-	// -------------------------------------------------------------------
-	private int _speedHackStrikes = 0;
-	private int _speedHackAnchorX = 0;
-	private int _speedHackAnchorY = 0;
-	private int _speedHackAnchorH = 0;
-
-	public int getSpeedHackAnchorH() {
-		return _speedHackAnchorH;
-	}
-	public void setSpeedHackAnchorH(int _speedHackAnchorH) {
-		this._speedHackAnchorH = _speedHackAnchorH;
-	}
-	public int getSpeedHackStrikes() { return _speedHackStrikes; }
-	public void setSpeedHackStrikes(int strikes) { _speedHackStrikes = strikes; }
-	public void addSpeedHackStrike() { _speedHackStrikes++; }
-	public void reduceSpeedHackStrike() { 
-		if (_speedHackStrikes > 0) _speedHackStrikes--; 
-	}
-	public int getSpeedHackAnchorX() { return _speedHackAnchorX; }
-	public void setSpeedHackAnchorX(int x) { _speedHackAnchorX = x; }
-
-	public int getSpeedHackAnchorY() { return _speedHackAnchorY; }
-	public void setSpeedHackAnchorY(int y) { _speedHackAnchorY = y; }
-	
 	private final SwapSlotItems _slotChange = new SwapSlotItems(this);
 	public int getSlotNumber() {
 		return _slotChange.getSlotNumber();
@@ -7929,7 +7846,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		if (obj == null || obj == this) {
 			return false;
 		}
-		if (obj.getMapId() != getMapId()) {
+		if (obj.getMap() != getMap()) {
 			return false;
 		}
 		

@@ -1,11 +1,10 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.datatables.CObjectDB;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 import l1j.server.Config;
@@ -13,6 +12,7 @@ import l1j.server.server.Account;
 import l1j.server.server.task.TaskLane;
 import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.CFriendsDb;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -39,12 +39,13 @@ import l1j.server.server.model.item.Card.L1CardAdd;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanAttention;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
-import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_Resurrection;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
@@ -55,7 +56,6 @@ import l1j.server.server.model.world.instance.lobby.creator.LobbyCreator;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.model.world.siege.WarFactory;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.geometry.GamePoint;
 import l1j.server.server.storage.CacheD;
@@ -88,6 +88,22 @@ public final class CS_Attr {
                 java.util.logging.Level.WARNING, "Confirmation economy preparation failed", failure);
         SC_SystemMessage.send(pc, "처리를 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     }
+
+    private static void broadcastGazeAdded(L1Clan clan, String opposingName) {
+        final List<String> gaze = clan.getGazeList();
+        final var announcement = SC_ClanAttention.nativeMentWriter(true, opposingName);
+        final var roster = SC_ClanAttention.nativeListWriter(gaze.size(), gaze);
+        try (var announcementFrame = announcement == null ? null
+                     : new CAsyncSendConstBuffer(announcement, Integer.MIN_VALUE, Integer.MAX_VALUE);
+             var rosterFrame = roster == null ? null
+                     : new CAsyncSendConstBuffer(roster, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+            for (L1PcInstance member : clan.getOnlineClanMember()) {
+                CSharedBroadcast.sendRecipient(announcementFrame, member);
+                CSharedBroadcast.sendRecipient(rosterFrame, member);
+            }
+        }
+    }
+
     /** Cost and persisted K/D image are committed together. Positive PVP events
      * that arrive while SQL is pending remain as deltas after the reset.
      */
@@ -353,10 +369,10 @@ public final class CS_Attr {
             break;
 		case 3348:
 			if (c == 1) {
-				L1PcInstance GazePc = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
+				final L1Object requester = L1World.getInstance().findObject(pc.getTempID());
 				pc.setTempID(0);
-				if(GazePc == null) return;
-				L1Clan targetClan = L1World.getInstance().findClan(GazePc.getClanname());
+				if (!(requester instanceof L1PcInstance gazePc)) return;
+				L1Clan targetClan = L1World.getInstance().findClan(gazePc.getClanname());
 				if (targetClan == null) return;
 
 				L1Clan pcClan = L1World.getInstance().findClan(pc.getClanname());
@@ -365,25 +381,8 @@ public final class CS_Attr {
 				targetClan.addGazelist(pcClan.getClanName());
 				pcClan.addGazelist(targetClan.getClanName());
 
-				try(var mentShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-SC_ClanAttention.nativeMentWriter(true,targetClan.getClanName()),Integer.MIN_VALUE,Integer.MAX_VALUE);
-var listShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-SC_ClanAttention.nativeListWriter(pcClan.getGazeSize(),pcClan.getGazeList()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance member : pcClan.getOnlineClanMember()) {
-					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(mentShared,member);
-					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(listShared,member);
-				}
-}
-
-				try(var mentShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-SC_ClanAttention.nativeMentWriter(true,pcClan.getClanName()),Integer.MIN_VALUE,Integer.MAX_VALUE);
-var listShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-SC_ClanAttention.nativeListWriter(targetClan.getGazeSize(),targetClan.getGazeList()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance member : targetClan.getOnlineClanMember()) {
-					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(mentShared,member);
-					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(listShared,member);
-				}
-}
+				broadcastGazeAdded(pcClan, targetClan.getClanName());
+				broadcastGazeAdded(targetClan, pcClan.getClanName());
 			}
 			break;
 		case 217:

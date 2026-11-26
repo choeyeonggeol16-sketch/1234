@@ -2,42 +2,33 @@ package l1j.server.server.model.map;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 import l1j.server.MapReader;
-import l1j.server.server.utils.PerformanceTimer;
 
 public class L1WorldMap {
-	private static Logger _log = Logger.getLogger(L1WorldMap.class.getName());
-
-	private static L1WorldMap _instance;
-	private Map<Integer, L1Map> _maps;
+	private static final class Holder {
+		private static final L1WorldMap INSTANCE = new L1WorldMap();
+	}
+	private final Map<Integer, L1Map> _maps = new ConcurrentHashMap<>();
 
 	public static L1WorldMap getInstance() {
-		if (_instance == null) {
-			_instance = new L1WorldMap();
-		}
-		return _instance;
+		return Holder.INSTANCE;
 	}
 
 	private L1WorldMap() {
-		PerformanceTimer timer = new PerformanceTimer();
-//		System.out.print("■ 월  드  맵 데이터 .......................... ");
-
 		MapReader in = MapReader.getDefaultReader();
 
 		try {
-			_maps = in.read();
-			if (_maps == null) {
+			final Map<Integer, L1Map> maps = in.read();
+			if (maps == null) {
 				throw new RuntimeException("MAP의 read에 실패");
 			}
+			_maps.putAll(maps);
 		} catch (Exception e) {
 			e.printStackTrace();
 
 			System.exit(0);
 		}
-
-//		System.out.println("■ 로딩 정상 완료 " + timer.get() + "ms");
 	}
 
 	public L1Map getMap(short mapId) {
@@ -62,11 +53,11 @@ public class L1WorldMap {
 	}
 	
 	// 오림 인던 관련
-	public synchronized void addMap(L1Map map) {
+	public void addMap(L1Map map) {
 		_maps.put(map.getId(), map);
 	}
 
-	public synchronized void removeMap(int mapId) {
+	public void removeMap(int mapId) {
 		_maps.remove(mapId);
 	}
 }

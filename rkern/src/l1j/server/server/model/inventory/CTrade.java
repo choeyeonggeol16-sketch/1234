@@ -50,6 +50,7 @@ public final class CTrade {
         this.firstStamp = firstStamp; this.secondStamp = secondStamp;
     }
     public int GetID() { return id; }
+    public boolean IsStarted() { return state == STARTED || state == COMMITTING; }
     public boolean IsResolving() { return state == COMMITTING; }
     public boolean IsEnded() { return state == ENDED; }
     L1PcInstance first() { return first; }
@@ -87,11 +88,15 @@ public final class CTrade {
                 || pc.getIsChangeItem20();
     }
 
+    static boolean IsParticipantEligible(L1PcInstance pc) {
+        return !pc.isDead() && !pc.isGhost() && !pc.get_teleport()
+                && !pc.isPrivateShop() && !pc.is무인상점() && !pc.isAutoClanjoin()
+                && !HasPendingTradeBlocker(pc);
+    }
+
     private boolean validPair() {
         return attached() && liveFirst() && liveSecond()
-                && !first.isDead() && !second.isDead() && !first.isGhost() && !second.isGhost()
-                && !first.isPrivateShop() && !second.isPrivateShop()
-                && !HasPendingTradeBlocker(first) && !HasPendingTradeBlocker(second)
+                && IsParticipantEligible(first) && IsParticipantEligible(second)
                 && first.getMapId() == second.getMapId()
                 && Math.abs((long) first.getX() - second.getX()) <= 1
                 && Math.abs((long) first.getY() - second.getY()) <= 1;
@@ -219,10 +224,7 @@ public final class CTrade {
             }
         }
         // A non-stackable persistent row may appear only once, even if its live count is corrupt.
-        if (previous != null && (!source.isStackable() || !matchesOffer(source, previous))) {
-            close(false, true);
-            return;
-        }
+        if (previous != null && (!source.isStackable() || !matchesOffer(source, previous))) return;
         long offered = (long) amount + (previous == null ? 0 : previous.getCount());
         if (offered > source.getCount() || offered > CInventory.MAX_AMOUNT) return;
         if (partner.getInventory().CheckAddableTransfer(source, (int) offered) != CInventory.OK) {

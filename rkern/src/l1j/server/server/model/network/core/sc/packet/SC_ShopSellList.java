@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.model.shop.NpcShopView;
 import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
 import java.util.Date;
@@ -46,6 +47,7 @@ public final class SC_ShopSellList {
         }
         if (shopItems == null) return false;
         final int max = shopItems.size();
+        final L1ShopItem[] offers = new L1ShopItem[max];
         final int[] values = new int[max << 2];
         final String[] names = new String[max];
         final byte[][] statuses = new byte[max][];
@@ -96,6 +98,7 @@ public final class SC_ShopSellList {
             if (capacity > Integer.MAX_VALUE) return false;
             final int j = count << 2;
             values[j] = i;
+            offers[i] = shopItem;
             values[j + 1] = gfxId;
             values[j + 2] = price;
             values[j + 3] = Math.max(0, item.getUseType());
@@ -105,6 +108,7 @@ public final class SC_ShopSellList {
         int adenDesc = 7;
         if (npcId >= 66110 && npcId <= 66120) adenDesc = 0x3DE4;
 
+        final NpcShopView view = NpcShopView.purchase(connection, pc, (L1NpcInstance) obj, objId, shop, offers);
         final CIOFrame frame = connection.beginDirectFrame((int) capacity);
         if (frame == null) return false;
         boolean committed = false;
@@ -125,6 +129,7 @@ public final class SC_ShopSellList {
             }
             buffer.writeH(adenDesc);
             committed = connection.commitDirectFrame(frame);
+            if (committed) connection.publishNpcShopView(pc, view);
             return committed;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);

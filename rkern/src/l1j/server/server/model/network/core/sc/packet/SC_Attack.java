@@ -1,12 +1,13 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_Attack {
     private static final AtomicInteger SEQ = new AtomicInteger();
@@ -20,7 +21,7 @@ public final class SC_Attack {
         final int y = pc.getY();
         final int seq = SEQ.incrementAndGet();
         send(pc, attackerId, targetId, damage, heading, seq, effect, x, y, endX, endY);
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(pc, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACK, Opcodes.S_ATTACK, attackerId, targetId, damage, heading, seq, effect, x, y, endX, endY, 0, true);
+        CSharedBroadcast.sendExtended(pc, CSharedBroadcast.FORMAT_ATTACK, Opcodes.S_ATTACK, attackerId, targetId, damage, heading, seq, effect, x, y, endX, endY, 0, true);
     }
 
     public static boolean send(L1PcInstance pc, int attackerId, int targetId,

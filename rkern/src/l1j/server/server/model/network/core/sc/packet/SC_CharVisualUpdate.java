@@ -5,6 +5,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -49,11 +50,11 @@ public final class SC_CharVisualUpdate {
 
     public static void broadcastPacked(L1Character anchor, long packed) {
         if (anchor == null || packed == 0L) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHARVISUALUPDATE, Opcodes.S_WIELD, (int)(packed >>> 32), (int)packed, 0, 0, false, -1, null);
+        CSharedBroadcast.sendFormatted(anchor, CSharedBroadcast.FORMAT_CHARVISUALUPDATE, Opcodes.S_WIELD, (int)(packed >>> 32), (int)packed, 0, 0, false, -1, null);
     }
 
     public static void broadcastFastPacked(L1Character anchor, long packed) {
         if (anchor == null || packed == 0L) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHARVISUALUPDATE, Opcodes.S_WIELD, (int)(packed >>> 32), (int)packed, 0, 0, true, -1, null);
+        CSharedBroadcast.sendFormatted(anchor, CSharedBroadcast.FORMAT_CHARVISUALUPDATE, Opcodes.S_WIELD, (int)(packed >>> 32), (int)packed, 0, 0, true, -1, null);
     }
 }

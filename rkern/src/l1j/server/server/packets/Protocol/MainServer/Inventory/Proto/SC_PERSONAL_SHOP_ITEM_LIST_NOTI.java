@@ -1,30 +1,31 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import gnu.trove.list.array.TIntArrayList;
+import l1j.server.server.model.shop.NpcShopView;
 import java.util.ArrayList;
 import java.util.List;
 
-import l1j.server.server.model.shop.dynamic.DynamicShopItem;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.inventory.CUserInventory;
+import l1j.server.server.model.item.NpcReissuedItemPolicy;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.PlayerShopView;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
-import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.TradeItemInfo;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
 
 /**
  * 개인상점/상점 아이템 목록 통지 (0x0407)
  */
-import l1j.server.server.model.shop.PlayerShopView;
-
 public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
 
     private ePersonalShopType type;       // 1 enum
@@ -109,10 +110,14 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
             PlayerShopView view = new PlayerShopView(shop, purchase, capacity);
             List<TradeItemInfo> items = new ArrayList<>(capacity);
             if (purchase) {
-                // The inventory is read on its own CIO. Existing order count limits
-                // also fit the one-byte row index in the sell request.
-                for (L1ItemInstance item : pc.getInventory().getItems()) {
-                    if (item == null || item.isEquipped() || item.getCount() <= 0) continue;
+                final int[] classIds = new int[listings.size()];
+                for (int i = 0; i < classIds.length; i++) {
+                    final DynamicShopItem listing = listings.get(i);
+                    if (listing != null) classIds[i] = listing.itemId;
+                }
+                // The view index follows inventory order, then listing order for each row.
+                for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassIDs(classIds)) {
+                    if (item.isEquipped() || item.getCount() <= 0) continue;
                     for (DynamicShopItem listing : listings) {
                         if (listing == null || item.getItemId() != listing.itemId
                                 || item.getEnchantLevel() != listing.enchant
@@ -164,12 +169,15 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
             return;
         }
 
+        final CUserSocket client = pc.getNetConnection();
+        if (client == null) return;
         final List<L1ShopItem> source = shop.getSellingItems();
         if (source == null || source.isEmpty()) {
             return;
         }
 
         final List<L1ShopItem> shopItems = new ArrayList<L1ShopItem>(source);
+        final L1ShopItem[] offers = new L1ShopItem[shopItems.size()];
         final boolean isNormal = L1Shop.is_normal_shop(npc);
 
         long notiWire_present = 0L;
@@ -248,6 +256,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
                         notiWire_items.add(proto921_arg0);
                     }
                 }
+                offers[i] = shopItem;
                 realSize++;
 
             } catch (Exception e) {
@@ -273,7 +282,9 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         }
 
         try {
-            SC_PERSONAL_SHOP_ITEM_LIST_NOTI.sendFields(pc, notiWire_present, notiWire_type, notiWire_sellerId, notiWire_size, notiWire_items);
+            final NpcShopView view = NpcShopView.purchase(client, pc, npc, npc.getId(), shop, offers);
+            if (sendFields(client, notiWire_present, notiWire_type, notiWire_sellerId, notiWire_size, notiWire_items))
+                client.publishNpcShopView(pc, view);
         } catch (Exception e) {
             System.err.println(
                     "[SHOP BUY SEND ERROR]"
@@ -304,12 +315,10 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
 
         final List<L1ShopItem> shopItems = new ArrayList<L1ShopItem>(source);
 
-        final List<L1ItemInstance> inventorySource = pc.getInventory().getItems();
-        if (inventorySource == null || inventorySource.isEmpty()) {
+        final CUserInventory inventory = pc.getInventory();
+        if (inventory.getSize() == 0) {
             return;
         }
-
-        final List<L1ItemInstance> inventoryItems = new ArrayList<L1ItemInstance>(inventorySource);
 
         long notiWire_present = 0L;
         ePersonalShopType notiWire_type = null;
@@ -321,11 +330,14 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         { notiWire_type = ePersonalShopType.TRADE_SELL; }
         { { notiWire_sellerId = (npc.getId()); notiWire_present |= (1L << 0); } }
 
+        final CUserSocket client = pc.getNetConnection();
+        if (client == null) return;
+        final TIntArrayList saleIds = new TIntArrayList();
         int realSize = 0;
 
         for (int i = 0; i < shopItems.size(); i++) {
             final L1ShopItem shopItem = shopItems.get(i);
-            if (shopItem == null) {
+            if (shopItem == null || NpcReissuedItemPolicy.isProtected(shopItem.getItemId())) {
                 continue;
             }
 
@@ -340,20 +352,17 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
                 continue;
             }
 
-            final int price = shopItem.getPrice();
+            final int price = shop.getAssessedPrice(shopItem);
             if (price < 0) {
                 continue;
             }
 
-            for (int j = 0; j < inventoryItems.size(); j++) {
-                final L1ItemInstance pcItem = inventoryItems.get(j);
-
-                if (pcItem == null || pcItem.isEquipped() || pcItem.getCount() <= 0) {
+            for (L1ItemInstance pcItem : inventory.GetUnequippedItemListByClassID(shopItem.getItemId())) {
+                if (pcItem.isEquipped() || pcItem.getCount() <= 0) {
                     continue;
                 }
 
-                if (shopItem.getItemId() != pcItem.getItemId()
-                        || shopItem.getEnchant() != pcItem.getEnchantLevel()) {
+                if (shopItem.getEnchant() != pcItem.getEnchantLevel()) {
                     continue;
                 }
 
@@ -384,6 +393,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
                             notiWire_items.add(proto925_arg0);
                         }
                     }
+                    saleIds.add(pcItem.getId());
                     realSize++;
 
                 } catch (Exception e) {
@@ -392,7 +402,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
                             + " npcId=" + npc.getNpcTemplate().get_npcId()
                             + " objectId=" + npc.getId()
                             + " shopIndex=" + i
-                            + " inventoryIndex=" + j
+                            + " itemObjectId=" + pcItem.getId()
                             + " itemId=" + shopItem.getItemId());
                     e.printStackTrace();
                 }
@@ -411,7 +421,9 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         }
 
         try {
-            SC_PERSONAL_SHOP_ITEM_LIST_NOTI.sendFields(pc, notiWire_present, notiWire_type, notiWire_sellerId, notiWire_size, notiWire_items);
+            final NpcShopView view = NpcShopView.sale(client, pc, npc, shop, saleIds.toArray());
+            if (sendFields(client, notiWire_present, notiWire_type, notiWire_sellerId, notiWire_size, notiWire_items))
+                client.publishNpcShopView(pc, view);
         } catch (Exception e) {
             System.err.println(
                     "[SHOP SELL SEND ERROR]"

@@ -7,9 +7,9 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_Result;
-import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -36,10 +36,7 @@ public final class CWareHouseRequest {
             SC_SystemMessage.send(pc, "창고 선택 항목이 너무 많거나 올바르지 않습니다.");
             return;
         }
-        if (!client.CanUseWarehouse(pc, objectId, kind)) {
-            SC_SystemMessage.send(pc, "창고를 다시 열어 주세요.");
-            return;
-        }
+        if (!client.CanUseWarehouse(pc, objectId, kind) || !canMoveItems(pc)) return;
         if (pc.isItemTransferBusy()) {
             SC_SystemMessage.send(pc, "이전 창고 아이템 처리가 끝난 뒤 다시 시도해 주세요.");
             return;
@@ -77,11 +74,11 @@ public final class CWareHouseRequest {
                 synchronized (pc.getInventory()) {
                     synchronized (vault) {
                         if (!client.CanUseWarehouse(pc, objectId, kind)
+                                || !canMoveItems(pc)
                                 || !client.OwnsPledgeWarehouse(pc, vault)) return;
                         try {
-                            if (pc.getClan() != membership
-                                    || !CWareHouseWithdraw.CheckPledgeUser(pc, vault)) return;
-                            RequestItems(pc, kind, size, first, rest, vault);
+                            if (pc.getClan() != membership) return;
+                            RequestItems(client, pc, kind, size, first, rest, vault);
                         } finally {
                             // Submission establishes the CacheD pending-apply fence before
                             // returning. A failed admission also closes the consumed view.
@@ -94,25 +91,31 @@ public final class CWareHouseRequest {
         }
         synchronized (client) {
             // Recheck at admission, not only before loading the warehouse reference.
-            if (!client.CanUseWarehouse(pc, objectId, kind)) return;
-            RequestItems(pc, kind, size, first, rest, warehouse);
+            if (!client.CanUseWarehouse(pc, objectId, kind) || !canMoveItems(pc)) return;
+            if (clan && (pc.getClan() != membership || !((ClanWarehouse) warehouse).HasPledgeMember(pc))) return;
+            RequestItems(client, pc, kind, size, first, rest, warehouse);
         }
     }
 
-    private static void RequestItems(L1PcInstance pc, int kind, int size, long first,
+    private static boolean canMoveItems(L1PcInstance pc) {
+        final CTrade trade = pc.GetTrade();
+        return (trade == null || !trade.IsStarted()) && !CTrade.HasPendingTradeBlocker(pc);
+    }
+
+    private static void RequestItems(CUserSocket client, L1PcInstance pc, int kind, int size, long first,
             byte[] rest, Warehouse warehouse) {
         final boolean deposit = CWareHouseDeposit.IsDeposit(kind);
         final int feeItem = deposit ? 0 : CWareHouseWithdraw.FeeItem(kind);
         final int feeEach = deposit ? 0 : CWareHouseWithdraw.FeeEach(kind);
         final var inventory = pc.getInventory();
-        if (!deposit && !CWareHouseWithdraw.CheckFee(pc, kind, size, feeItem, feeEach)) return;
-
         final long now = (deposit && kind != 8) || kind == 20 ? System.currentTimeMillis() : 0L;
         if (size == 1) {
             final int id = CS_Result.param1(first, rest, 0);
+            if (!deposit && !client.IsListedWarehouseItem(id)) return;
             final L1ItemInstance item = deposit ? inventory.GetByServerID(id) : warehouse.GetByServerID(id);
-            final int count = selectedCount(pc, item, (int) CS_Result.param2D(first, rest, 0));
+            final int count = selectedCount(item, (int) CS_Result.param2D(first, rest, 0));
             if (count == 0) return;
+            if (!deposit && !CWareHouseWithdraw.CheckFee(pc, kind, size, feeItem, feeEach)) return;
             if (deposit) CWareHouseDeposit.Request(pc, kind, warehouse, item, count, now);
             else CWareHouseWithdraw.Request(pc, kind, warehouse, feeItem, feeEach, item, count,
                     kind == 20 ? CWareHouseWithdraw.SupplementaryDeadline(item, now) : null);
@@ -125,14 +128,12 @@ public final class CWareHouseRequest {
         for (int i = 0; i < size; i++) {
             final int id = CS_Result.param1(first, rest, i);
             ids[i] = id;
+            if (!deposit && !client.IsListedWarehouseItem(id)) return;
             for (int earlier = 0; earlier < i; earlier++) {
-                if (ids[earlier] == id) {
-                    SC_SystemMessage.send(pc, "중복으로 선택한 창고 아이템이 있습니다.");
-                    return;
-                }
+                if (ids[earlier] == id) return;
             }
             final L1ItemInstance item = deposit ? inventory.GetByServerID(id) : warehouse.GetByServerID(id);
-            final int count = selectedCount(pc, item, (int) CS_Result.param2D(first, rest, i));
+            final int count = selectedCount(item, (int) CS_Result.param2D(first, rest, i));
             if (count == 0) return;
             if (deposit && !CWareHouseDeposit.CanDeposit(pc, kind, warehouse, item, count, now)) return;
             counts[i] = count;
@@ -146,18 +147,16 @@ public final class CWareHouseRequest {
         }
 
         if (deposit) CWareHouseDeposit.Request(pc, warehouse, ids, counts);
-        else CWareHouseWithdraw.Request(pc, warehouse, ids, counts, feeItem, feeEach, deadlines);
+        else if (CWareHouseWithdraw.CheckFee(pc, kind, size, feeItem, feeEach))
+            CWareHouseWithdraw.Request(pc, warehouse, ids, counts, feeItem, feeEach, deadlines);
     }
 
-    private static int selectedCount(L1PcInstance pc, L1ItemInstance item, int requested) {
-        if (item == null) return 0;
+    private static int selectedCount(L1ItemInstance item, int requested) {
+        if (item == null || item.getItem() == null) return 0;
         final int available = item.getCount();
-        if (requested <= 0 || requested > CInventory.MAX_AMOUNT || available <= 0
-                || available > CInventory.MAX_AMOUNT || (!item.isStackable() && requested != 1)) {
-            SC_Disconnect.send(pc);
-            return 0;
-        }
-        return Math.min(requested, available);
+        if (requested <= 0 || requested > available || available > CInventory.MAX_AMOUNT
+                || (!item.isStackable() && requested != 1)) return 0;
+        return requested;
     }
 
 }

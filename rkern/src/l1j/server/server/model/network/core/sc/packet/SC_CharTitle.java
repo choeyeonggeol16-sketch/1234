@@ -1,13 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_CharTitle {
     private SC_CharTitle() {}
@@ -37,7 +36,7 @@ public static boolean send(CUserSocket client, int objectId, String title) {
 
     public static void broadcast(L1Character anchor, int objectId, String title) {
         if (anchor == null) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_TITLE).putInt(objectId); l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,title); b.put((byte)0); }, false, -1, null);
+        CSharedBroadcast.sendWritten(anchor, b -> { b.put((byte)Opcodes.S_TITLE).putInt(objectId); CSharedBroadcast.writeMS949(b,title); b.put((byte)0); }, false, -1, null);
     }
 
 }

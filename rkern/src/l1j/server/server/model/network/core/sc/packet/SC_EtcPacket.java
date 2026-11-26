@@ -1,19 +1,21 @@
 package l1j.server.server.model.network.core.sc.packet;
 
-import l1j.server.server.Opcodes;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import java.util.ArrayList;
 import java.util.List;
+
+import l1j.server.server.Opcodes;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1HauntedHouse;
+import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_EtcPacket {
     private SC_EtcPacket() {}
 
     /** Constructor type 4: 10-byte S_EVENT 0x41 100 00 00 00 00 00. */
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter() { return b -> b.put((byte)Opcodes.S_EVENT).put((byte)0x41).putInt(100).putShort((short)0);
+    public static CSharedBroadcast.NativeWireWriter nativeWriter() { return b -> b.put((byte)Opcodes.S_EVENT).put((byte)0x41).putInt(100).putShort((short)0);
     }
 
 

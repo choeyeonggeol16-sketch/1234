@@ -760,7 +760,7 @@ public abstract class CSocket extends CIOSocket {
     /** Only call this for a frame that was NOT committed. */
     public void abortOutboundFrame(CIOBufferEx lease) {
         if (lease == null) return;
-        if (!_pool.owns(lease) || !lease.reserved())
+        if (!_pool.ownsSend(lease) || !lease.reserved())
             throw new IllegalStateException("abort after commit or foreign SEND lease");
         _pool.release(lease);
     }

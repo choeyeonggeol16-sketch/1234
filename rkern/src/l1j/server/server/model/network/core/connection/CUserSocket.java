@@ -1,50 +1,48 @@
 package l1j.server.server.model.network.core.connection;
 
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-
-import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
-import l1j.server.server.model.network.core.config.CIOConfig;
-import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
-import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.Connection;
-import l1j.server.server.model.network.core.broadcast.CSharedPacketFormat;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.concurrent.TimeUnit;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
-import l1j.server.server.Opcodes;
-import l1j.server.server.model.network.utill.CConnectionState;
-import l1j.server.server.model.network.buffer.Disassemble;
-import l1j.server.server.model.network.safe.CPacketFilter;
-import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.packet.UserPacketCallbackMap;
-import l1j.server.server.model.network.packet.IPacketWriter;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
-import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019;
-import l1j.server.server.packets.Protocol.MainServer.PlaySupport.ClientAutomationSession;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.BooleanSupplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import l1j.server.server.Account;
-import l1j.server.server.task.TaskLane;
+import l1j.server.server.Opcodes;
 import l1j.server.server.auth.login.LoginController;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1World;
 import l1j.server.server.model.inventory.warehouse.ClanWarehouse;
 import l1j.server.server.model.inventory.warehouse.WarehouseManager;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.shop.PlayerShopView;
-import l1j.server.server.model.network.packet.CBytesPacket;
-import l1j.server.server.model.network.packet.CServerPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
+import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.buffer.Disassemble;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedPacketFormat;
+import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.session.DominationHybrid;
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.Connection;
+import l1j.server.server.model.network.packet.CBytesPacket;
+import l1j.server.server.model.network.packet.CServerPacket;
+import l1j.server.server.model.network.packet.IPacketWriter;
+import l1j.server.server.model.network.packet.UserPacketCallbackMap;
+import l1j.server.server.model.network.safe.CPacketFilter;
+import l1j.server.server.model.network.utill.CConnectionState;
+import l1j.server.server.model.shop.NpcShopView;
+import l1j.server.server.model.shop.PlayerShopView;
+import l1j.server.server.packets.Protocol.MainServer.PlaySupport.ClientAutomationSession;
+import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019;
+import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
+import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
+import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
+import l1j.server.server.task.TaskLane;
 
 /**
  * Game packet framing and the per-socket 512-slot callback serializer.
@@ -551,6 +549,7 @@ public final class CUserSocket extends CSocket {
         if (_gameSession) {
             _gameSessionReady = false;
             playerShopView = null;
+            npcShopView = null;
         }
         if (_closedCallback != null) {
             try { _closedCallback.onClosing(this); }
@@ -652,7 +651,7 @@ public final class CUserSocket extends CSocket {
             source.sealJava(wire.length);
             return source;
         } catch (RuntimeException | Error failure) {
-            source.release();
+            releaseSharedSourceAfterFailure(source, failure);
             throw failure;
         }
     }
@@ -674,7 +673,7 @@ public final class CUserSocket extends CSocket {
             source.sealJava(source.mutableWire.position());
             return source;
         } catch (RuntimeException | Error failure) {
-            source.release();
+            releaseSharedSourceAfterFailure(source, failure);
             throw failure;
         }
     }
@@ -689,8 +688,15 @@ public final class CUserSocket extends CSocket {
             source.sealJava(source.mutableWire.position());
             return source;
         } catch (RuntimeException | Error failure) {
-            source.release();
+            releaseSharedSourceAfterFailure(source, failure);
             throw failure;
+        }
+    }
+
+    private static void releaseSharedSourceAfterFailure(CAsyncSendConstBuffer.Source source, Throwable failure) {
+        try { source.release(); }
+        catch (RuntimeException | Error cleanup) {
+            if (cleanup != failure) failure.addSuppressed(cleanup);
         }
     }
 
@@ -699,11 +705,14 @@ public final class CUserSocket extends CSocket {
     }
 
     public CAsyncSendConstBuffer.Source createPooledWritableConstBuffer(int capacity) {
-        CIOBufferEx lease = _pool.acquireSend(capacity);
+        CIOBufferEx lease = _pool.acquireSharedSource(capacity);
         if (lease == null) return null;
         try { return new CAsyncSendConstBuffer.Source(_pool, lease); }
         catch (RuntimeException | Error failure) {
-            _pool.release(lease);
+            try { _pool.release(lease); }
+            catch (RuntimeException | Error cleanup) {
+                if (cleanup != failure) failure.addSuppressed(cleanup);
+            }
             throw failure;
         }
     }
@@ -901,7 +910,6 @@ public final class CUserSocket extends CSocket {
                 }
             }
         } finally { _stateLock.unlock(); }
-        if (publishProducer) drainSocketCallbacks();
         if (refused) {
             // A packet that cannot be admitted must never look like a successful SEND.
             if (!optional) close();
@@ -910,14 +918,19 @@ public final class CUserSocket extends CSocket {
 
         CIOBufferEx lease = null;
         try {
-            lease = beginOutboundFrame(maxWireBytes);
-            if (lease != null) {
-                final CIOFrame frame = lease.beginDirectFrame(this);
-                frame.setReservation(maxWireBytes, slot, ticket);
-                frame.setOptional(optional);
-                return frame;
+            // Draining a published producer can run a close callback. Include
+            // it in rollback coverage for the new reservation.
+            if (publishProducer) drainSocketCallbacks();
+            if (_closed == 0) {
+                lease = beginOutboundFrame(maxWireBytes);
+                if (lease != null) {
+                    final CIOFrame frame = lease.beginDirectFrame(this);
+                    frame.setReservation(maxWireBytes, slot, ticket);
+                    frame.setOptional(optional);
+                    return frame;
+                }
+                rejectDirectSend(optional, REJECT_POOL);
             }
-            rejectDirectSend(optional, REJECT_POOL);
         } catch (Throwable failure) {
             rejectSend(REJECT_ENCODING);
             // The original encoder/pool failure takes precedence; a Native
@@ -994,6 +1007,7 @@ public final class CUserSocket extends CSocket {
         final int reservedBytes = frame.reservedBytes();
         final int slot = frame.reservedTicket();
         final long ticket = frame.reservedTicketId();
+        final boolean optional = frame.optional();
         boolean accepted = false;
         boolean packed = false;
         boolean resumeRead = false;
@@ -1010,7 +1024,7 @@ public final class CUserSocket extends CSocket {
                 if (length > CIOBufferPool.HEADER_BYTES && length <= reservedBytes) {
                     packed = packAdjacentStagedPacketLocked(lease,
                             ticket, slot, true);
-                    accepted = packed || stageOutboundFrameLocked(lease, false, slot);
+                    accepted = packed || stageOutboundFrameLocked(lease, false, slot, optional);
                     if (accepted) {
                         // Finish the reusable DirectFrame BEFORE releasing its
                         // lease: the pool may immediately hand it to another
@@ -1049,7 +1063,7 @@ public final class CUserSocket extends CSocket {
             else finishStagedSend(lease, false);
         }
         if (resumeRead && _closed == 0) kickRead();
-        if (!accepted) {
+        if (!accepted && !optional) {
             // The caller's finally aborts the still-owned frame/ticket.
             close();
         }
@@ -1262,21 +1276,26 @@ public final class CUserSocket extends CSocket {
 
     private boolean stageOutboundFrameLocked(CIOBufferEx lease, boolean direct,
             int reservedTicketSlot) {
-        if (lease == null || !_pool.owns(lease) || !lease.reserved()) return false;
+        return stageOutboundFrameLocked(lease, direct, reservedTicketSlot, false);
+    }
+
+    private boolean stageOutboundFrameLocked(CIOBufferEx lease, boolean direct,
+            int reservedTicketSlot, boolean optional) {
+        if (!_pool.ownsSend(lease) || !lease.reserved()) return false;
         final int length = lease.writer().position();
         if (length <= CIOBufferPool.HEADER_BYTES
                 || length > lease._reservedWireBytes
                 || length > CIOBufferPool.MAX_WIRE_BYTES
                 || _closed != 0) return false;
-        if (!canAdmitBytes(length)) return rejectSend(REJECT_WIRE_BYTES);
+        if (!canAdmitBytes(length)) return rejectDirectSend(optional, REJECT_WIRE_BYTES);
         if (physicalSendFullLocked()) {
             compactReadyStagedPacketsLocked();
             if (physicalSendFullLocked())
-                return rejectSend(REJECT_LOCAL_FRAMES);
+                return rejectDirectSend(optional, REJECT_LOCAL_FRAMES);
         }
 
         final int frames = lease._packedFrames ? lease._frameCount : 1;
-        if (frames < 1) return rejectSend(REJECT_LOCAL_FRAMES);
+        if (frames < 1) return rejectDirectSend(optional, REJECT_LOCAL_FRAMES);
 
         // Every staged SEND with no prior reservation takes a ticket unless
         // it is an inline completed action with no earlier work in the FIFO.
@@ -1289,7 +1308,7 @@ public final class CUserSocket extends CSocket {
                 final int pending = (int) SOCKET_PENDING.getAndAdd(this, 1);
                 if (pending >= SOCKET_REJECT_AT) {
                     SOCKET_PENDING.getAndAdd(this, -1);
-                    return rejectSend(REJECT_SERIALIZER);
+                    return rejectDirectSend(optional, REJECT_SERIALIZER);
                 }
                 slot = (int) (long) SOCKET_TICKET.getAndAdd(this, 1L) & SOCKET_MASK;
                 if (_producerLease != null) {
@@ -1523,7 +1542,7 @@ public final class CUserSocket extends CSocket {
     /** Only the FIFO serializer owner may attach a staged SEND lease. */
     private boolean commitStagedOutboundFrameLocked(CIOBufferEx lease) {
         if (lease == null) return false;
-        if (!_pool.owns(lease)) throw new IllegalArgumentException("foreign SEND lease");
+        if (!_pool.ownsSend(lease)) throw new IllegalArgumentException("foreign SEND lease");
         final Assemble writer = lease.writer();
         final int length = writer.position();
         if (length <= CIOBufferPool.HEADER_BYTES
@@ -2508,27 +2527,39 @@ public final class CUserSocket extends CSocket {
 
 
     /** Immutable pooled plaintext -> regular ordered per-socket SEND lease. */
-    public boolean sendFrozenWire(java.nio.ByteBuffer frozenFrame) {
+    public boolean sendFrozenWire(ByteBuffer frozenFrame) {
+        return sendFrozenWire(frozenFrame, false);
+    }
+
+    /** Visual broadcast backpressure may skip this socket without closing it. */
+    public boolean sendFrozenWireBestEffort(ByteBuffer frozenFrame) {
+        return sendFrozenWire(frozenFrame, true);
+    }
+
+    private boolean sendFrozenWire(ByteBuffer frozenFrame, boolean optional) {
         if (frozenFrame == null || !isClientConnected()) return false;
         final int length = frozenFrame.remaining();
         final int begin = frozenFrame.position();
         if (length <= CIOBufferPool.HEADER_BYTES || length > CIOBufferPool.MAX_WIRE_BYTES
                 || ((frozenFrame.get(begin) & 255)
                     | ((frozenFrame.get(begin + 1) & 255) << 8)) != length) return false;
-        final CIOFrame frame = beginDirectFrame(length);
-        if (frame == null) return false;
+        final CIOFrame frame = beginDirectFrame(length, 0, optional);
+        if (frame == null) {
+            if (optional && isClientConnected()) _pool.recordOptionalBroadcastRefusal();
+            return false;
+        }
         boolean committed = false;
         try {
-            final var writer = frame.buffer();
-            final java.nio.ByteBuffer dest = writer.getBuffer();
-            dest.position(writer.baseOffset() + writer.position());
-            dest.put(dest.position(),frozenFrame,
-                    begin+CIOBufferPool.HEADER_BYTES,
-                    length-CIOBufferPool.HEADER_BYTES);
+            final Assemble writer = frame.buffer();
+            final ByteBuffer dest = writer.getBuffer();
+            dest.put(writer.baseOffset() + writer.position(), frozenFrame,
+                    begin + CIOBufferPool.HEADER_BYTES, length - CIOBufferPool.HEADER_BYTES);
             writer.position(length);
             committed = commitDirectFrame(frame);
+            if (!committed && optional && isClientConnected()) _pool.recordOptionalBroadcastRefusal();
             return committed;
-        } catch (Throwable failure) {
+        } catch (RuntimeException failure) {
+            LOG.log(Level.WARNING, "Failed to enqueue frozen broadcast frame", failure);
             return false;
         } finally {
             if (!committed) abortDirectFrame(frame);
@@ -2552,7 +2583,8 @@ public final class CUserSocket extends CSocket {
             writer.position(frameBytes.length);
             committed=commitDirectFrame(frame);
             return committed;
-        } catch(Throwable failure) {
+        } catch(RuntimeException failure) {
+            LOG.log(Level.WARNING, "Failed to enqueue frozen wire frame", failure);
             return false;
         } finally {
             if(!committed)abortDirectFrame(frame);
@@ -2735,7 +2767,35 @@ public final class CUserSocket extends CSocket {
     private volatile PlayerShopView playerShopView;
 
     public PlayerShopView getPlayerShopView() { return playerShopView; }
-    public void setPlayerShopView(PlayerShopView view) { playerShopView = view; }
+    public void setPlayerShopView(PlayerShopView view) {
+        playerShopView = view;
+        if (view != null) npcShopView = null;
+    }
+
+    private volatile NpcShopView npcShopView;
+
+    public NpcShopView getNpcShopView() { return npcShopView; }
+
+    /** Publish only after the matching shop list is admitted to SEND. */
+    public synchronized void publishNpcShopView(L1PcInstance pc, NpcShopView view) {
+        if (view != null && view.currentFor(this, pc)) {
+            playerShopView = null;
+            npcShopView = view;
+        }
+    }
+
+    public synchronized void clearNpcShopView(NpcShopView view) {
+        if (npcShopView == view) npcShopView = null;
+    }
+
+    public synchronized void clearNpcShopViewFor(L1PcInstance pc) {
+        if (_activeChar == pc) npcShopView = null;
+    }
+
+    public void checkNpcShopRange(L1PcInstance pc) {
+        final NpcShopView view = npcShopView;
+        if (view != null && !view.currentFor(this, pc)) clearNpcShopView(view);
+    }
 
     // Owned by this session's CIO. Only deferred NPC replies use this state.
     private long npcDialogueTarget;
@@ -2743,6 +2803,7 @@ public final class CUserSocket extends CSocket {
 
     public synchronized void trackNpcDialogue(long smartId, boolean newTalk) {
         if (newTalk || smartId != npcDialogueTarget) {
+            npcShopView = null;
             warehouseNpcTarget = 0L;
             ClearWarehouseView();
             npcDialogueTarget = smartId;
@@ -2765,6 +2826,7 @@ public final class CUserSocket extends CSocket {
     private int warehouseViewClanId;
     private int warehouseViewPassword;
     private int warehouseViewSession;
+    private int[] warehouseViewItemIds;
     private ClanWarehouse pledgeWarehouseView;
     private long pledgeWarehouseLease;
 
@@ -2779,6 +2841,7 @@ public final class CUserSocket extends CSocket {
         warehouseViewClanId = 0;
         warehouseViewPassword = 0;
         warehouseViewSession = 0;
+        warehouseViewItemIds = null;
         if (vault != null) vault.ReleaseWarehouseUser(this, lease);
     }
 
@@ -2877,16 +2940,25 @@ public final class CUserSocket extends CSocket {
 
     // Call only after the complete list was admitted by the existing SEND path.
     public synchronized boolean BindWarehouseView(L1PcInstance pc, int objectId, int kind,
-            int suppliedPassword, int expectedClanId, int generation) {
+            int suppliedPassword, int expectedClanId, int generation, int[] listedItemIds) {
         if (generation == 0 || generation != warehouseViewGeneration
                 || objectId != warehouseViewObjectId || warehouseViewKind != -kind
+                || listedItemIds == null || listedItemIds.length == 0
                 || !CanOpenWarehouseView(pc, objectId, kind, suppliedPassword, expectedClanId)) return false;
         if (kind == 5 && !OwnsPledgeWarehouse(pc, pledgeWarehouseView)) return false;
+        // The list sender transfers this private array only after all frames are queued.
+        java.util.Arrays.sort(listedItemIds);
+        warehouseViewItemIds = listedItemIds;
         warehouseViewSession = pc.getSessionStamp();
         warehouseViewClanId = kind == 5 ? expectedClanId : 0;
         warehouseViewPassword = kind == 3 ? getAccount().getGamePassword() : 0;
         warehouseViewKind = kind;
         return true;
+    }
+
+    public synchronized boolean IsListedWarehouseItem(int itemId) {
+        return itemId > 0 && warehouseViewItemIds != null
+                && java.util.Arrays.binarySearch(warehouseViewItemIds, itemId) >= 0;
     }
 
     public synchronized boolean CanUseWarehouse(L1PcInstance pc, int objectId, int kind) {
@@ -2936,9 +3008,9 @@ public final class CUserSocket extends CSocket {
     }
 
     public synchronized boolean BindPledgeWarehouseView(L1PcInstance pc, int objectId,
-            int clanId, ClanWarehouse vault, long lease, int generation) {
+            int clanId, ClanWarehouse vault, long lease, int generation, int[] listedItemIds) {
         return pledgeWarehouseView == vault && pledgeWarehouseLease == lease
-                && BindWarehouseView(pc, objectId, 5, 0, clanId, generation);
+                && BindWarehouseView(pc, objectId, 5, 0, clanId, generation, listedItemIds);
     }
 
     public synchronized void ReleasePledgeWarehouseView(ClanWarehouse vault, long lease) {
@@ -3049,6 +3121,15 @@ public final class CUserSocket extends CSocket {
 
     public boolean isGameSessionReady() {
         return _gameSessionReady;
+    }
+
+    public boolean ownsReadyGameSession() {
+        if (!_gameSessionReady || getConnectionState() != CConnectionState.IN_GAME
+                || !isConnected() || getAccount() == null) {
+            return false;
+        }
+        final L1PcInstance pc = getActiveChar();
+        return pc != null && pc.getNetConnection() == this && !pc.isLogoutStarted();
     }
 
     public void publishGameSessionReady(L1PcInstance pc) {

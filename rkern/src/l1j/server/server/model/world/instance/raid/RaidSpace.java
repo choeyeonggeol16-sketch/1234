@@ -8,15 +8,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1DollInstance;
-import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.world.cleanup.MapCleaner;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
 
 /** 레이드 공간을 할당하고 시작하는 헬퍼. **/
@@ -109,12 +108,12 @@ public class RaidSpace {
 	
 	/** 인스턴스를 반환한다. **/
 	public void releaseInstance(RaidObject obj){
-		
-		if(obj == null || obj.getCopyMapId() == -1)
-			return;
+		if (obj == null) return;
+		final L1Map copyMap = obj.getCopyMap();
+		if (copyMap == null) return;
 		
 		try{
-			int copyMapId = obj.getCopyMapId();
+			int copyMapId = copyMap.getId();
 			Iterator<L1Object> it = L1World.getInstance().getVisibleObjects(copyMapId).values().iterator();
 			while(it.hasNext()){
 				L1Object l1obj = it.next();
@@ -124,26 +123,8 @@ public class RaidSpace {
 				if((l1obj instanceof L1NpcInstance))
 					((L1NpcInstance) l1obj).deleteMe();
 			}
-			
-			
-			Collection<L1ItemInstance> items 			= L1World.getInstance().getAllItem();
-			L1ItemInstance[] 				itemArray 	= items.toArray(new L1ItemInstance[items.size()]);
-			L1ItemInstance 				item			= null;
-			CInventory						inv				=	 null;
-			for(int i=0; i<itemArray.length; i++){
-				item = itemArray[i];
-				if(item == null)
-					continue;
-				
-				if(copyMapId != item.getMapId())
-					continue;
-				
-				inv = L1World.getInstance().getInventory(item.getX(), item.getY(), (short)copyMapId);
-				if(inv == null)
-					continue;
-				
-				inv.DeleteItemAmount(item);
-			}
+
+			MapCleaner.removeGroundItems(copyMap);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

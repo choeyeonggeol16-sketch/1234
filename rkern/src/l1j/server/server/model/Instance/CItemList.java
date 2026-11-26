@@ -7,9 +7,11 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -17,6 +19,10 @@ import java.util.Objects;
 import java.util.Spliterator;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import java.util.function.ToIntFunction;
+
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.set.hash.TIntHashSet;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.templates.L1Item;
@@ -40,6 +46,240 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     private transient int size;
     private transient int nextInventoryOrder;
     private transient volatile List<L1ItemInstance> snapshot;
+
+    private static final int INDEX_MIN_SIZE = 8;
+    private static final Object SMALL_LIST = new Object();
+    private static final L1ItemInstance[] NO_ITEMS = new L1ItemInstance[0];
+    private static final Comparator<L1ItemInstance> INVENTORY_ORDER =
+            Comparator.comparingInt(item -> item.inventoryOrder);
+
+    private enum ItemKey {
+        CLASS(L1ItemInstance::getItemId),
+        TEMPLATE(item -> item.getItem() == null ? item.getItemId() : item.getItem().getItemId()),
+        DESCRIPTION(item -> item.getItem() == null ? 0 : item.getItem().getItemDescId()),
+        BLESS(item -> item.getItem() == null ? -1 : item.getItem().getBless()),
+        TYPE(item -> item.getItem() == null ? -1 : item.getItem().getType()),
+        KIND(item -> item.getItem() == null ? -1 : item.getItem().getType2()),
+        OBJECT(L1ItemInstance::getId);
+
+        final ToIntFunction<L1ItemInstance> value;
+        ItemKey(ToIntFunction<L1ItemInstance> value) { this.value = value; }
+        int of(L1ItemInstance item) { return value.applyAsInt(item); }
+    }
+
+    private static final int INDEX_COUNT = ItemKey.values().length;
+
+    // Lazily built under the existing list monitor. Small NPC or ground
+    // inventories need no maps; unique keys store the row directly.
+    private transient ItemIndex[] indexes;
+    private transient boolean distinctTemplateClasses;
+    private transient ArrayList<L1ItemInstance> equipped;
+    private transient boolean equippedDirty;
+
+    private static final class ItemIndex {
+        private record Multiple(ArrayList<L1ItemInstance> rows) {}
+
+        final ItemKey key;
+        final TIntObjectHashMap<Object> buckets;
+
+        ItemIndex(ItemKey key, int capacity) {
+            this.key = key;
+            buckets = new TIntObjectHashMap<>(switch (key) {
+                case BLESS -> 1;
+                case TYPE, KIND -> 8;
+                default -> capacity;
+            });
+        }
+
+        void add(L1ItemInstance item) {
+            final int id = key.of(item);
+            if (key == ItemKey.BLESS && id != 2) return;
+            final Object previous = buckets.get(id);
+            if (previous == null) {
+                buckets.put(id, item);
+            } else if (previous instanceof Multiple group) {
+                insertInOrder(group.rows, item);
+            } else {
+                final var rows = new ArrayList<L1ItemInstance>(2);
+                rows.add((L1ItemInstance) previous);
+                insertInOrder(rows, item);
+                buckets.put(id, new Multiple(rows));
+            }
+        }
+
+        void remove(int id, L1ItemInstance item) {
+            final Object previous = buckets.get(id);
+            if (previous == item) {
+                buckets.remove(id);
+            } else if (previous instanceof Multiple group && group.rows.remove(item)
+                    && group.rows.size() == 1) {
+                buckets.put(id, group.rows.getFirst());
+            }
+        }
+
+        static L1ItemInstance at(Object bucket, int index) {
+            if (bucket instanceof Multiple group)
+                return index < group.rows.size() ? group.rows.get(index) : null;
+            return index == 0 ? (L1ItemInstance) bucket : null;
+        }
+    }
+
+    private static void insertInOrder(ArrayList<L1ItemInstance> rows, L1ItemInstance item) {
+        int i = rows.size();
+        while (i != 0 && rows.get(i - 1).inventoryOrder > item.inventoryOrder) i--;
+        rows.add(i, item);
+    }
+
+    private Object lookup(ItemKey key, int id) {
+        ItemIndex index = indexes == null ? null : indexes[key.ordinal()];
+        if (index == null) {
+            if (size < INDEX_MIN_SIZE) return SMALL_LIST;
+            index = new ItemIndex(key, size);
+            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+                index.add(item);
+            if (indexes == null) indexes = new ItemIndex[INDEX_COUNT];
+            indexes[key.ordinal()] = index;
+        }
+        return index.buckets.get(id);
+    }
+
+    private L1ItemInstance candidate(Object rows, L1ItemInstance previous, int index) {
+        return rows == SMALL_LIST
+                ? (previous == null ? first : previous.inventoryNext) : ItemIndex.at(rows, index);
+    }
+
+    // The item setters take this monitor and recheck ownership before calling.
+    void lookupKeyChanged(L1ItemInstance item, int previousClass, L1Item previousTemplate) {
+        final int previousTemplateId = previousTemplate == null ? previousClass : previousTemplate.getItemId();
+        final int previousDescription = previousTemplate == null ? 0 : previousTemplate.getItemDescId();
+        updateIndex(ItemKey.CLASS, previousClass, item);
+        updateIndex(ItemKey.TEMPLATE, previousTemplateId, item);
+        updateIndex(ItemKey.DESCRIPTION, previousDescription, item);
+        updateIndex(ItemKey.BLESS, previousTemplate == null ? -1 : previousTemplate.getBless(), item);
+        updateIndex(ItemKey.TYPE, previousTemplate == null ? -1 : previousTemplate.getType(), item);
+        updateIndex(ItemKey.KIND, previousTemplate == null ? -1 : previousTemplate.getType2(), item);
+        distinctTemplateClasses |= ItemKey.CLASS.of(item) != ItemKey.TEMPLATE.of(item);
+    }
+
+    void objectIdChanged(L1ItemInstance item, int previousId) {
+        updateIndex(ItemKey.OBJECT, previousId, item);
+    }
+
+    private void updateIndex(ItemKey key, int previous, L1ItemInstance item) {
+        if (indexes == null || previous == key.of(item)) return;
+        final ItemIndex index = indexes[key.ordinal()];
+        if (index != null) {
+            index.remove(previous, item);
+            index.add(item);
+        }
+    }
+
+    synchronized void invalidateLookupAfterDetachedChange() {
+        indexes = null;
+        distinctTemplateClasses = true;
+        carryingWeight = -1L;
+    }
+
+    synchronized void invalidateObjectIdAfterDetachedChange() {
+        if (indexes != null) indexes[ItemKey.OBJECT.ordinal()] = null;
+    }
+
+    synchronized void invalidateEquippedAfterDetachedChange() {
+        equippedDirty = true;
+    }
+
+    void equippedChanged(L1ItemInstance item) {
+        if (equippedDirty) return;
+        if (item.isEquipped()) {
+            if (equipped == null) equipped = new ArrayList<>(4);
+            insertInOrder(equipped, item);
+        } else if (equipped != null) {
+            equipped.remove(item);
+            if (equipped.isEmpty()) equipped = null;
+        }
+    }
+
+    private ArrayList<L1ItemInstance> equippedRows() {
+        if (equippedDirty) {
+            equipped = null;
+            equippedDirty = false;
+            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+                if (item.isEquipped()) equippedChanged(item);
+        }
+        return equipped;
+    }
+
+    public synchronized L1ItemInstance[] GetEquippedItems() {
+        final var rows = equippedRows();
+        return rows == null ? NO_ITEMS : rows.toArray(L1ItemInstance[]::new);
+    }
+
+    public synchronized L1ItemInstance GetFirstEquippedByType(int type2, int type) {
+        final var rows = equippedRows();
+        if (rows == null) return null;
+        for (int i = 0; i < rows.size(); i++) {
+            final L1ItemInstance item = rows.get(i);
+            if (item.getItem().getType2() == type2 && item.getItem().getType() == type) return item;
+        }
+        return null;
+    }
+
+    public synchronized L1ItemInstance[] GetEquippedByType(int type2, int type, int slots) {
+        final L1ItemInstance[] result = new L1ItemInstance[slots];
+        final var rows = equippedRows();
+        if (rows == null) return result;
+        int count = 0;
+        for (int i = 0; i < rows.size() && count < slots; i++) {
+            final L1ItemInstance item = rows.get(i);
+            if (item.getItem().getType2() == type2 && item.getItem().getType() == type)
+                result[count++] = item;
+        }
+        return result;
+    }
+
+    public synchronized int CountEquipped(int type2, int type, Integer grade) {
+        final var rows = equippedRows();
+        if (rows == null) return 0;
+        int count = 0;
+        for (int i = 0; i < rows.size(); i++) {
+            final L1Item template = rows.get(i).getItem();
+            if (template.getType2() == type2 && template.getType() == type
+                    && (grade == null || template.getGrade() == grade)) count++;
+        }
+        return count;
+    }
+
+    public synchronized int CountEquippedByTemplate(int classId, int type2, int type, boolean matchType) {
+        final var rows = equippedRows();
+        if (rows == null) return 0;
+        int count = 0;
+        for (int i = 0; i < rows.size(); i++) {
+            final L1Item template = rows.get(i).getItem();
+            if (template.getItemId() == classId
+                    && (!matchType || template.getType2() == type2 && template.getType() == type)) count++;
+        }
+        return count;
+    }
+
+    public synchronized boolean EnchantEquipped(int classId, int enchant) {
+        final var rows = equippedRows();
+        if (rows == null) return false;
+        for (int i = 0; i < rows.size(); i++) {
+            final L1ItemInstance item = rows.get(i);
+            if (item.getItem().getItemId() == classId && item.getEnchantLevel() == enchant) return true;
+        }
+        return false;
+    }
+
+    public synchronized boolean HasAnyEquippedByClassID(int[] ids) {
+        final var rows = equippedRows();
+        if (rows == null) return false;
+        for (int i = 0; i < rows.size(); i++) {
+            final int classId = rows.get(i).getItemId();
+            for (int id : ids) if (classId == id) return true;
+        }
+        return false;
+    }
 
     // OFF CInventory::GetCarryingWeight caches the aggregate. Store the raw
     // L1 per-row rounded sum, not the rate-adjusted value. Negative means dirty.
@@ -113,6 +353,11 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         size++;
         snapshot = null;
         carryingWeight = -1L;
+        if (indexes != null)
+            for (ItemIndex index : indexes)
+                if (index != null) index.add(item);
+        distinctTemplateClasses |= ItemKey.CLASS.of(item) != ItemKey.TEMPLATE.of(item);
+        if (item.isEquipped()) equippedChanged(item);
     }
 
     /** Reject a still-owned item before any caller changes counts or persistence. */
@@ -178,6 +423,14 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         size--;
         snapshot = null;
         carryingWeight = -1L;
+        if (indexes != null)
+            for (ItemIndex index : indexes)
+                if (index != null) index.remove(index.key.of(item), item);
+        if (equipped != null && equipped.remove(item) && equipped.isEmpty()) equipped = null;
+        if (size == 0) {
+            indexes = null;
+            distinctTemplateClasses = false;
+        }
         OWNER.setVolatile(item, null);
     }
 
@@ -206,6 +459,10 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         nextInventoryOrder = 0;
         snapshot = null;
         carryingWeight = -1L;
+        indexes = null;
+        distinctTemplateClasses = false;
+        equipped = null;
+        equippedDirty = false;
         while (item != null) {
             final L1ItemInstance next = item.inventoryNext;
             item.inventoryPrev = null;
@@ -287,79 +544,85 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     }
 
     public L1ItemInstance GetByServerID(int objectId) {
-        // World registration can lag list publication during receipt replay.
-        // Use the global index for registered objects, but the list remains
-        // authoritative if registration has not happened yet.
-        final L1Object object = L1World.getInstance().findObject(objectId);
-        if (object instanceof L1ItemInstance item
-                && item.getId() == objectId && Have(item)) return item;
-        // Identity lookup is used by mutation paths. Unlike snapshot iteration,
-        // it must not accept a detached row from a racing old snapshot.
+        // Published items already have a world registry index. Receipts and
+        // detached loads may link their rows before publishing that registry.
+        final L1ItemInstance registered = GetRegisteredItemByServerID(objectId);
+        if (registered != null) return registered;
         synchronized (this) {
-            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-                if (item.getId() == objectId) return item;
-            return null;
+            return firstBy(ItemKey.OBJECT, objectId);
         }
     }
 
-    public L1ItemInstance GetFirstItemByClassID(int classId) {
-        final List<L1ItemInstance> rows = snapshot;
-        if (rows != null) {
-            for (int i = 0, n = rows.size(); i < n; i++) {
-                final L1ItemInstance item = rows.get(i);
-                if (item.getItem().getItemId() == classId) return item;
-            }
-            return null;
-        }
-        synchronized (this) {
-            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-                if (item.getItem().getItemId() == classId) return item;
-            return null;
-        }
+    private L1ItemInstance firstBy(ItemKey key, int id) {
+        final Object rows = lookup(key, id);
+        if (rows != SMALL_LIST) return ItemIndex.at(rows, 0);
+        for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
+            if (key.of(item) == id) return item;
+        return null;
+    }
+
+    public synchronized L1ItemInstance GetFirstItemByClassID(int classId) {
+        return firstBy(distinctTemplateClasses ? ItemKey.TEMPLATE : ItemKey.CLASS, classId);
+    }
+
+    public synchronized L1ItemInstance GetFirstItemByClassIDs(int firstClassId, int secondClassId) {
+        final L1ItemInstance a = firstBy(ItemKey.CLASS, firstClassId);
+        final L1ItemInstance b = firstClassId == secondClassId ? a : firstBy(ItemKey.CLASS, secondClassId);
+        if (a == null) return b;
+        return b == null || a.inventoryOrder < b.inventoryOrder ? a : b;
+    }
+
+    public synchronized L1ItemInstance GetFirstItemByType(int type) {
+        return firstBy(ItemKey.TYPE, type);
+    }
+
+    public synchronized L1ItemInstance GetFirstEtcByClassID(int classId) {
+        final Object rows = lookup(ItemKey.CLASS, classId);
+        int i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i))
+            if (item.getItemId() == classId && item.getItem().getType2() == 0) return item;
+        return null;
+    }
+
+    public synchronized int GetLastEnchantByClassID(int classId) {
+        final Object rows = lookup(ItemKey.CLASS, classId);
+        int enchant = 0, i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i))
+            if (item.getItemId() == classId) enchant = item.getEnchantLevel();
+        return enchant;
     }
 
     /** No snapshot or temporary collection for a compatible stack lookup. */
     public synchronized L1ItemInstance GetMergeableStack(L1ItemInstance incoming, boolean ground) {
-        for (L1ItemInstance item = first; item != null; item = item.inventoryNext) {
-            if (item != incoming && item.getCount() > 0 && (!ground || !item.isGroundPickupPending())
-                    && L1ItemInstance.CanMergeStack(item, incoming)
+        if (incoming == null) return null;
+        final int classId = incoming.getItemId();
+        final Object rows = lookup(ItemKey.CLASS, classId);
+        int i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i)) {
+            if (item != incoming && item.getItemId() == classId && item.getCount() > 0
+                    && (!ground || !item.isGroundPickupPending()) && L1ItemInstance.CanMergeStack(item, incoming)
                     && (!ground || item.SameGroundLootRights(incoming))) return item;
         }
         return null;
     }
 
     /** Check the number of matching instances, not their accumulated quantity. */
-    public boolean HasInstancesByClassID(int classId, int count) {
+    public synchronized boolean HasInstancesByClassID(int classId, int count) {
         if (count <= 0) return true;
-        final List<L1ItemInstance> rows = snapshot;
-        if (rows != null) {
-            for (int i = 0, n = rows.size(); i < n; i++)
-                if (rows.get(i).getItemId() == classId && --count == 0) return true;
-            return false;
-        }
-        synchronized (this) {
-            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-                if (item.getItemId() == classId && --count == 0) return true;
-            return false;
-        }
+        final Object rows = lookup(ItemKey.CLASS, classId);
+        int i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i))
+            if (item.getItemId() == classId && --count == 0) return true;
+        return false;
     }
 
     /** Legacy non-stackable count: one per matching unequipped instance. */
-    public int CountUnequippedInstancesByClassID(int classId) {
-        int total = 0;
-        final List<L1ItemInstance> rows = snapshot;
-        if (rows != null) {
-            for (int i = 0, n = rows.size(); i < n; i++) {
-                final L1ItemInstance item = rows.get(i);
-                if (item.getItemId() == classId && !item.isEquipped()) total++;
-            }
-            return total;
-        }
-        synchronized (this) {
-            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-                if (item.getItemId() == classId && !item.isEquipped()) total++;
-            return total;
-        }
+    public synchronized int CountUnequippedInstancesByClassID(int classId) {
+        final Object rows = lookup(ItemKey.CLASS, classId);
+        int total = 0, i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i))
+            if (item.getItemId() == classId && !item.isEquipped()) total++;
+        return total;
     }
 
     public int GetItemCountByClassID(int classId) {
@@ -367,79 +630,108 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     }
 
     /** OFF uses a 64-bit accumulator; preserve L1's quantity semantics. */
-    public long GetItemAmount(int classId) {
+    public synchronized long GetItemAmount(int classId) {
+        final Object rows = lookup(ItemKey.CLASS, classId);
         long total = 0;
-        final List<L1ItemInstance> rows = snapshot;
-        if (rows != null) {
-            for (int i = 0, n = rows.size(); i < n; i++) {
-                final L1ItemInstance item = rows.get(i);
-                if (item.getItemId() == classId) total += item.getCount();
-            }
-            return total;
-        }
-        synchronized (this) {
-            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-                if (item.getItemId() == classId) total += item.getCount();
-            return total;
-        }
+        int i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i))
+            if (item.getItemId() == classId) total += item.getCount();
+        return total;
     }
 
     public boolean IsEquippedByClassID(int classId) {
         return GetFirstEquippedItemByClassID(classId) != null;
     }
 
-    public L1ItemInstance GetFirstEquippedItemByClassID(int classId) {
-        final List<L1ItemInstance> rows = snapshot;
-        if (rows != null) {
-            for (int i = 0, n = rows.size(); i < n; i++) {
-                final L1ItemInstance item = rows.get(i);
-                if (item.getItemId() == classId && item.isEquipped()) return item;
-            }
-            return null;
-        }
-        synchronized (this) {
-            for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-                if (item.getItemId() == classId && item.isEquipped()) return item;
-            return null;
-        }
-    }
-
-    private static final L1ItemInstance[] NO_ITEMS = new L1ItemInstance[0];
-
-    public synchronized L1ItemInstance GetFirstItemByDescID(int descId) {
-        for (L1ItemInstance item = first; item != null; item = item.inventoryNext)
-            if (item.getItem().getItemDescId() == descId) return item;
+    public synchronized L1ItemInstance GetFirstEquippedItemByClassID(int classId) {
+        final Object rows = lookup(ItemKey.CLASS, classId);
+        int i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i))
+            if (item.getItemId() == classId && item.isEquipped()) return item;
         return null;
     }
 
-    public L1ItemInstance[] GetItemListByClassID(int classId) {
-        return SelectItems(classId, 0, true, false, false);
+    public synchronized L1ItemInstance GetFirstUnequippedItemByClassID(int classId) {
+        final Object rows = lookup(ItemKey.CLASS, classId);
+        int i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i))
+            if (item.getItemId() == classId && !item.isEquipped() && item.getCount() > 0) return item;
+        return null;
     }
 
-    public L1ItemInstance[] GetItemListByDescID(int descId) {
-        return SelectItems(0, descId, false, true, false);
+    public synchronized L1ItemInstance GetFirstItemByDescID(int descId) {
+        return firstBy(ItemKey.DESCRIPTION, descId);
     }
 
-    public L1ItemInstance[] GetItemListByClassID(int classId, int descId) {
-        return SelectItems(classId, descId, true, true, false);
+    public synchronized L1ItemInstance[] GetItemListByClassID(int classId) {
+        return selectItems(ItemKey.CLASS, classId, false, 0, false);
     }
 
-    public L1ItemInstance[] GetUnequippedItemListByClassID(int classId) {
-        return SelectItems(classId, 0, true, false, true);
+    public synchronized L1ItemInstance[] GetItemListByDescID(int descId) {
+        return selectItems(ItemKey.DESCRIPTION, descId, false, 0, false);
     }
 
-    /** OFF-style linked selection, preserving append order. No iterator,
-     * snapshot construction or ArrayList; a single match needs one result array.
-     * Evaluate mutable predicates only once, not in a count/fill double pass.
-     */
-    private synchronized L1ItemInstance[] SelectItems(int classId, int descId,
-            boolean matchClass, boolean matchDesc, boolean unequipped) {
+    public synchronized L1ItemInstance[] GetItemListByClassID(int classId, int descId) {
+        return selectItems(ItemKey.CLASS, classId, true, descId, false);
+    }
+
+    public synchronized L1ItemInstance[] GetUnequippedItemListByClassID(int classId) {
+        return selectItems(ItemKey.CLASS, classId, false, 0, true);
+    }
+
+    public synchronized L1ItemInstance[] GetUnequippedItemListByClassIDs(int[] classIds) {
+        return selectKeys(ItemKey.CLASS, classIds, true);
+    }
+
+    public synchronized L1ItemInstance[] GetItemListByClassIDs(int[] classIds) {
+        return selectKeys(ItemKey.CLASS, classIds, false);
+    }
+
+    public synchronized L1ItemInstance[] GetItemsByDescriptionIDs(int[] descIds) {
+        return selectKeys(ItemKey.DESCRIPTION, descIds, false);
+    }
+
+    public synchronized L1ItemInstance[] GetItemsByObjectIDs(int[] objectIds) {
+        return selectKeys(ItemKey.OBJECT, objectIds, false);
+    }
+
+    public synchronized L1ItemInstance[] GetItemsByType(int type) {
+        return selectItems(ItemKey.TYPE, type, false, 0, false);
+    }
+
+    public synchronized L1ItemInstance[] GetItemsByKinds(int... kinds) {
+        return selectKeys(ItemKey.KIND, kinds, false);
+    }
+
+    public synchronized L1ItemInstance[] GetCursedTemplateItems() {
+        return selectItems(ItemKey.BLESS, 2, false, 0, false);
+    }
+
+    private L1ItemInstance[] selectKeys(ItemKey key, int[] ids, boolean unequipped) {
+        if (ids.length == 0 || size == 0) return NO_ITEMS;
+        if (ids.length == 1) return selectItems(key, ids[0], false, 0, unequipped);
+        final var seen = new TIntHashSet(ids.length);
+        final var result = new ArrayList<L1ItemInstance>();
+        for (int id : ids) {
+            if (!seen.add(id)) continue;
+            final Object rows = lookup(key, id);
+            int i = 0;
+            for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i))
+                if (key.of(item) == id && (!unequipped || !item.isEquipped())) result.add(item);
+        }
+        if (result.isEmpty()) return NO_ITEMS;
+        result.sort(INVENTORY_ORDER);
+        return result.toArray(L1ItemInstance[]::new);
+    }
+
+    /** Keep the original inventory order and evaluate mutable predicates once. */
+    private L1ItemInstance[] selectItems(ItemKey key, int id, boolean matchDesc, int descId, boolean unequipped) {
+        final Object rows = lookup(key, id);
         L1ItemInstance firstMatch = null;
         L1ItemInstance[] result = null;
-        int count = 0;
-        for (L1ItemInstance item = first; item != null; item = item.inventoryNext) {
-            if ((matchClass && item.getItemId() != classId)
-                    || (matchDesc && item.getItem().getItemDescId() != descId)
+        int count = 0, i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i)) {
+            if (key.of(item) != id || (matchDesc && ItemKey.DESCRIPTION.of(item) != descId)
                     || (unequipped && item.isEquipped())) continue;
             if (count == 0) {
                 firstMatch = item;
@@ -462,8 +754,10 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     /** Recipe quantity query uses the existing list monitor and no temporary rows. */
     public synchronized long GetRecipeMaterialAmount(int classId, int enchant,
             boolean matchEnchant, boolean countInstances) {
+        final Object rows = lookup(ItemKey.CLASS, classId);
         long total = 0L;
-        for (L1ItemInstance item = first; item != null; item = item.inventoryNext) {
+        int i = 0;
+        for (L1ItemInstance item = candidate(rows, null, 0); item != null; item = candidate(rows, item, ++i)) {
             if (item.isEquipped() || item.getItemId() != classId
                     || (matchEnchant && item.getEnchantLevel() != enchant)) continue;
             final int count = item.getCount();
@@ -515,6 +809,8 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         }
         first = rows[0]; last = rows[rows.length - 1]; snapshot = null;
         nextInventoryOrder = rows.length;
+        indexes = null;
+        if (equipped != null) equipped.sort(INVENTORY_ORDER);
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {

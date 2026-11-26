@@ -61,6 +61,7 @@ public final class SC_RetrieveList {
         final int size = raw.size();
         if (size > 0xffff) return false; // count is encoded as unsigned short
         final int[] items = new int[size * 4];
+        final int[] listedItemIds = new int[size];
         final byte[][] names = new byte[size][];
         int count = 0;
         long wireSize = 2 + 8 + (type == 15 ? 1 : 10);
@@ -72,6 +73,7 @@ public final class SC_RetrieveList {
             final int type2 = template == null ? 0 : template.getType2();
             final int bless = template == null ? 1 : template.getBless();
             items[p] = item.getId();
+            listedItemIds[count] = items[p];
             // Wire widths: C(type2), H(gfx), C(bless). Preserve low bits exactly.
             items[p + 1] = (type2 & 0xff) | ((item.get_gfxid() & 0xffff) << 8)
                     | ((bless & 0xff) << 24);
@@ -118,7 +120,8 @@ public final class SC_RetrieveList {
             }
             if (!connection.IsPendingWarehouseView(pc, objId, type == 15 ? 10 : type, generation)) return false;
             committed = connection.commitDirectFrame(frame);
-            if (committed) connection.BindWarehouseView(pc, objId, type == 15 ? 10 : type, suppliedPassword, 0, generation);
+            if (committed) connection.BindWarehouseView(pc, objId, type == 15 ? 10 : type,
+                    suppliedPassword, 0, generation, listedItemIds);
             return false;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);

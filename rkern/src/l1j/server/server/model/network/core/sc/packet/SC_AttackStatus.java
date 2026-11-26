@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_AttackStatus {
     private SC_AttackStatus() {}
@@ -45,12 +45,12 @@ public static boolean send(CUserSocket client, int attackerId, int heading, int 
 
     public static void broadcast(L1Character anchor, int attackerId, int heading, int receiverId, int type) {
         if (anchor == null) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSTATUS, Opcodes.S_ATTACK, attackerId, heading, receiverId, type, 0, 0, 0, 0, 0, 0, 0, false);
+        CSharedBroadcast.sendExtended(anchor, CSharedBroadcast.FORMAT_ATTACKSTATUS, Opcodes.S_ATTACK, attackerId, heading, receiverId, type, 0, 0, 0, 0, 0, 0, 0, false);
     }
 
     public static void broadcastFast(L1Character anchor, int attackerId, int heading, int receiverId, int type) {
         if (anchor == null) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKSTATUS, Opcodes.S_ATTACK, attackerId, heading, receiverId, type, 0, 0, 0, 0, 0, 0, 0, true);
+        CSharedBroadcast.sendExtended(anchor, CSharedBroadcast.FORMAT_ATTACKSTATUS, Opcodes.S_ATTACK, attackerId, heading, receiverId, type, 0, 0, 0, 0, 0, 0, 0, true);
     }
 
     public static void sendAndBroadcast(L1PcInstance pc, int receiverId, int type, boolean fast) {

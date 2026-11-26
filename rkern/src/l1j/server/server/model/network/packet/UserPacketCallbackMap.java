@@ -858,6 +858,15 @@ public final class UserPacketCallbackMap {
         final int limit = 1 + payloadSize;
         final int type = buffer.readByte(1) & 0xFF;
 
+        final boolean characterSelection = switch (type) {
+            case CS_Channel.케릭터생성, CS_Channel.케릭터비번생성,
+                 CS_Channel.케릭터비번인증, CS_Channel.케릭터비번변경 -> true;
+            default -> false;
+        };
+        if (characterSelection ? client.getAccount() == null : !client.ownsReadyGameSession()) {
+            return true;
+        }
+
         int readD1 = 0;
         int readD2 = 0;
         int readH1 = 0;
@@ -1666,7 +1675,7 @@ public final class UserPacketCallbackMap {
 
     static boolean decodeHypertextInputResult(Disassemble buffer, CUserSocket client) {
         final int payloadSize = buffer.remaining();
-        if (payloadSize < 10) {
+        if (payloadSize < 10 || !client.ownsReadyGameSession()) {
             return true;
         }
 
@@ -2909,6 +2918,10 @@ public final class UserPacketCallbackMap {
             return dispatchExtendedProto(buffer, client,  payloadSize);
         }
 
+        if (!client.ownsReadyGameSession()) {
+            return true;
+        }
+
         final int craftType = buffer.readByte(1) & 0xFF;
 
         if (isCraftType(craftType)) {
@@ -3145,19 +3158,17 @@ public final class UserPacketCallbackMap {
         }
 
         case ACTION_PARTY_FLAG_SET: {
-            int size = 0;
-            if (limit - pos >= 2) {
-                size = (buffer.readByte(pos) & 0xFF) | ((buffer.readByte(pos + 1) & 0xFF) << 8);
-                pos += 2;
+            if (limit - pos < Short.BYTES) {
+                return true;
+            }
+            final int size = buffer.readShort(pos) & 0xFFFF;
+            pos += Short.BYTES;
+            if (size > limit - pos) {
+                return true;
             }
 
-            final byte[] bytes = new byte[size];
-            final int available = Math.min(size, Math.max(0, limit - pos));
-
-            for (int i = 0; i < available; i++) {
-                bytes[i] = buffer.readByte(pos + i);
-            }
-
+            final byte[] bytes = size == 0 ? EMPTY_BYTES : new byte[size];
+            buffer.readBytes(pos, bytes, 0, size);
             o0 = bytes;
             break;
         }

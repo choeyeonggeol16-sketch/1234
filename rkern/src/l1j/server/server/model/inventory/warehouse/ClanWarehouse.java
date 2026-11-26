@@ -29,6 +29,7 @@ import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
@@ -139,16 +140,16 @@ public class ClanWarehouse extends Warehouse {
         if (isRetired() || pc == null || session == null || lease <= 0L
                 || pc.getId() <= 0 || pc.isLogoutStarted() || pc.isDead()
                 || pc.getNetConnection() != session || session.getActiveChar() != pc
-                || !session.isConnected() || !IsPledgeMember(pc)
+                || !session.isConnected() || !CanWithdraw(pc)
                 || CacheD.getInstance().hasPendingOwnerApply(transferOrderKey())) return false;
 
         if (_warehouse != 0) {
             if (warehouseUserLease == lease && warehouseUserSession == session
                     && warehouseUserPc == pc) return true;
-            // Reclaim only a proven obsolete session. No caller-supplied previous ID.
+            // Reclaim only when the existing holder is no longer eligible.
             if (warehouseUserSession == null || warehouseUserPc == null) return false;
             if (warehouseUserSession.IsWarehouseLeaseTargetLive(warehouseUserPc)
-                    && IsPledgeMember(warehouseUserPc)) return false;
+                    && CanWithdraw(warehouseUserPc)) return false;
             ClearWarehouseUser();
         }
         warehouseUserPc = pc;
@@ -161,7 +162,7 @@ public class ClanWarehouse extends Warehouse {
     public synchronized boolean OwnsWarehouseUser(L1PcInstance pc, CUserSocket session, long lease) {
         return !isRetired() && lease > 0L && warehouseUserLease == lease
                 && warehouseUserSession == session && warehouseUserPc == pc
-                && pc != null && _warehouse == pc.getId() && IsPledgeMember(pc);
+                && pc != null && _warehouse == pc.getId() && CanWithdraw(pc);
     }
 
     public synchronized boolean ReleaseWarehouseUser(CUserSocket session, long lease) {
@@ -177,20 +178,30 @@ public class ClanWarehouse extends Warehouse {
         return true;
     }
 
-    /** Legacy membership-removal hook. Release only a member that no longer belongs here.
+    /** Legacy membership-removal hook. Release only an ineligible holder.
      * An old packet or stale session must never clear a new lease by character ID alone. */
     public synchronized boolean releaseWarehouseUser(int ownerId) {
         if (ownerId <= 0 || _warehouse != ownerId) return false;
         if (warehouseUserPc != null && !warehouseUserPc.isLogoutStarted()
-                && !warehouseUserPc.isDead() && IsPledgeMember(warehouseUserPc)) return false;
+                && !warehouseUserPc.isDead() && CanWithdraw(warehouseUserPc)) return false;
         ClearWarehouseUser();
         return true;
     }
 
-    private boolean IsPledgeMember(L1PcInstance pc) {
+    boolean HasPledgeMember(L1PcInstance pc) {
+        return GetPledgeMember(pc) != null;
+    }
+
+    private boolean CanWithdraw(L1PcInstance pc) {
+        final L1Clan.ClanMember member = GetPledgeMember(pc);
+        return member != null && pc.getLevel() >= 5 && member.rank != L1Clan.수련
+                && pc.getClanRank() != L1Clan.수련 && !pc.hasSkillEffect(L1SkillId.SetBuff);
+    }
+
+    private L1Clan.ClanMember GetPledgeMember(L1PcInstance pc) {
         final L1Clan clan = pc.getClan();
-        return clan != null && getName().equals(clan.getClanName())
-                && clan.GetDbMember(pc.getId()) != null;
+        return clan != null && !clan.IsDismissed() && getName().equals(clan.getClanName())
+                ? clan.GetDbMember(pc.getId()) : null;
     }
 
     private void ClearWarehouseUser() {

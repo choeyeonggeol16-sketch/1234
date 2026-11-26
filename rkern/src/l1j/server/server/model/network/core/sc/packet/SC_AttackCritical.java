@@ -3,13 +3,13 @@ package l1j.server.server.model.network.core.sc.packet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_AttackCritical {
 
@@ -301,7 +301,7 @@ public final class SC_AttackCritical {
 			int targetId,
 			int heading,
 			int gfxId) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CRITICAL1, Opcodes.S_ATTACK, attackerId, targetId, heading, gfxId, 0, 0, 0, 0, 0, 0, 0, true);
+        CSharedBroadcast.sendExtended(anchor, CSharedBroadcast.FORMAT_CRITICAL1, Opcodes.S_ATTACK, attackerId, targetId, heading, gfxId, 0, 0, 0, 0, 0, 0, 0, true);
     }
 
 	private static void broadcastMode2(
@@ -317,7 +317,7 @@ public final class SC_AttackCritical {
 			int targetY,
 			int chaX,
 			int chaY) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CRITICAL2, Opcodes.S_ATTACK, attackerId, targetId, heading, aid, (isHit ? 1 : 0), seq, gfxId, targetX, targetY, chaX, chaY, true);
+        CSharedBroadcast.sendExtended(anchor, CSharedBroadcast.FORMAT_CRITICAL2, Opcodes.S_ATTACK, attackerId, targetId, heading, aid, (isHit ? 1 : 0), seq, gfxId, targetX, targetY, chaX, chaY, true);
     }
 
 private static boolean sendMode1(

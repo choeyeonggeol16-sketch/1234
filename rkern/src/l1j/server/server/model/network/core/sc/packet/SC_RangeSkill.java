@@ -1,13 +1,14 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_RangeSkill {
     public static final int TYPE_NODIR = 0;
@@ -55,7 +56,7 @@ public final class SC_RangeSkill {
         final int frozenHeading=heading, frozenCount=used;
         final long size=24L+6L*frozenCount;
         if(frozenCount>=0 && size<=0xFFFFL) {
-            final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter writer=b -> {
+            final CSharedBroadcast.NativeWireWriter writer=b -> {
                 b.put((byte)Opcodes.S_ATTACK_MANY).put((byte)action)
                  .putInt(id).putShort((short)x).putShort((short)y)
                  .put((byte)frozenHeading).putInt(seq).putShort((short)gfx)
@@ -64,9 +65,9 @@ public final class SC_RangeSkill {
                     b.putInt(ids[i]).put((byte)32).put((byte)action);
             };
             if(size<=16384L)
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWritten(caster,writer,true,-1,null);
+                CSharedBroadcast.sendWritten(caster,writer,true,-1,null);
             else
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenLarge(caster,(int)size,writer);
+                CSharedBroadcast.sendWrittenLarge(caster,(int)size,writer);
         }
 }
 

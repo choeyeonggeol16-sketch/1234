@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_ChangeShape {
     private SC_ChangeShape() {}
@@ -37,10 +37,10 @@ public final class SC_ChangeShape {
         return target instanceof L1PcInstance && send(((L1PcInstance) target).getNetConnection(), objectId, polyId, weaponState);
     }
     public static void broadcast(L1Character anchor, int objectId, int polyId, int weaponState) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHANGESHAPE, Opcodes.S_POLYMORPH, objectId, polyId, weaponState, 0, 0, 0, 0, 0, 0, 0, 0, false);
+        CSharedBroadcast.sendExtended(anchor, CSharedBroadcast.FORMAT_CHANGESHAPE, Opcodes.S_POLYMORPH, objectId, polyId, weaponState, 0, 0, 0, 0, 0, 0, 0, 0, false);
     }
     public static void broadcastFast(L1Character anchor, int objectId, int polyId, int weaponState) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_CHANGESHAPE, Opcodes.S_POLYMORPH, objectId, polyId, weaponState, 0, 0, 0, 0, 0, 0, 0, 0, true);
+        CSharedBroadcast.sendExtended(anchor, CSharedBroadcast.FORMAT_CHANGESHAPE, Opcodes.S_POLYMORPH, objectId, polyId, weaponState, 0, 0, 0, 0, 0, 0, 0, 0, true);
     }
 
 }

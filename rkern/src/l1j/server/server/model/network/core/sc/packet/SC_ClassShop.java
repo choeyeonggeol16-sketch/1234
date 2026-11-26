@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.model.shop.NpcShopView;
 import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -47,6 +48,7 @@ public final class SC_ClassShop {
         }
         final List<L1ShopItem> list = shop.getSellingItems();
         final int limit = list == null ? 0 : list.size();
+        final L1ShopItem[] offers = new L1ShopItem[limit];
         final int[] values = new int[limit << 2];
         final String[] names = new String[limit];
         final byte[][] statuses = new byte[limit][];
@@ -71,12 +73,14 @@ public final class SC_ClassShop {
             if (size > Integer.MAX_VALUE) return false;
             final int j = count << 2;
             values[j] = i;
+            offers[i] = shopItem;
             values[j + 1] = item.getGfxId();
             values[j + 2] = shopItem.getPrice();
             values[j + 3] = Math.max(0, item.getUseType());
             names[count] = name;
             statuses[count++] = status;
         }
+        final NpcShopView view = NpcShopView.purchase(connection, pc, (L1NpcInstance) npcObj, npcId, shop, offers);
         final CIOFrame frame = connection.beginDirectFrame((int) size);
         if (frame == null) return false;
         boolean committed = false;
@@ -98,6 +102,7 @@ public final class SC_ClassShop {
             }
             buffer.writeH(7);
             committed = connection.commitDirectFrame(frame);
+            if (committed) connection.publishNpcShopView(pc, view);
             return committed;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);

@@ -6,8 +6,9 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_ReturnedStat {
 
@@ -234,7 +235,7 @@ short initHp = 0;
 
     public static void broadcastEmblem(L1Character source, int objId, int emblemId) {
         if (source == null) return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
+        CSharedBroadcast.sendWrittenRecipientsBestEffort(
                 L1World.getInstance().getVisiblePlayer(source), b -> { b.put((byte)Opcodes.S_VOICE_CHAT).put((byte)0x3c).putInt(objId).putInt(emblemId); });
     }
 

@@ -224,6 +224,10 @@ public final class CSProto {
 
         final HandlerEntry handler = TABLE.get(msgId);
         if (handler == null) return; // 등록되지 않은 msgId 무시
+        // Version negotiation and server transfer precede character publication.
+        if (msgId != ProtoMsg.CS_CLIENT_VERSION_INFO
+                && msgId != ProtoMsg.CS_HIBREED_AUTH_REQ_PACKET
+                && !client.ownsReadyGameSession()) return;
 
         try {
             handler.handle(client, bytes, pos + HEADER_SIZE, len);

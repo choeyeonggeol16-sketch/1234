@@ -2,12 +2,11 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_AttackPacketForNpc {
 
@@ -61,7 +60,7 @@ public final class SC_AttackPacketForNpc {
         if (anchor == null) return;
         final int chaId = cha != null ? cha.getId() : 0;
         final int heading = cha != null ? cha.getHeading() : 0;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKNPC, Opcodes.S_ATTACK, type, npcObjectId, chaId, heading, 0, 0, 0, 0, 0, 0, 0, true);
+        CSharedBroadcast.sendExtended(anchor, CSharedBroadcast.FORMAT_ATTACKNPC, Opcodes.S_ATTACK, type, npcObjectId, chaId, heading, 0, 0, 0, 0, 0, 0, 0, true);
     }
 
 	private static boolean send0(

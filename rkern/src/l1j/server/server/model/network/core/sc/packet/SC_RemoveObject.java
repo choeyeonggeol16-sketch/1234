@@ -2,12 +2,11 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_RemoveObject {
 
@@ -89,15 +88,15 @@ public final class SC_RemoveObject {
 			return;
 		}
 
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(
-                anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_REMOVE_OBJECT,
+        CSharedBroadcast.sendFormatted(
+                anchor, CSharedBroadcast.FORMAT_REMOVE_OBJECT,
                 Opcodes.S_REMOVE_OBJECT, objectId, 0, 0, 0, true, -1, null);
     }
 
 
     /** Immutable remove-object frame, including the original 2-byte trailer. */
 
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int objectId) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(int objectId) {
         return b -> b.put((byte)Opcodes.S_REMOVE_OBJECT).putInt(objectId).putShort((short)0);
     }
 

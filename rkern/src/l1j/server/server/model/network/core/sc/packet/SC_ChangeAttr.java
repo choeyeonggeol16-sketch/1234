@@ -3,8 +3,9 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_ChangeAttr {
     private SC_ChangeAttr() {}
@@ -34,7 +35,7 @@ public final class SC_ChangeAttr {
 
 
     /** Same nine wire bytes as the individual direct SC_ChangeAttr sender. */
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int x,int y,boolean width,boolean close) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(int x,int y,boolean width,boolean close) {
         return b -> b.put((byte)Opcodes.S_CHANGE_ATTR).putShort((short)x).putShort((short)y)
             .put((byte)(width?1:0)).put((byte)(close?1:0));
     }

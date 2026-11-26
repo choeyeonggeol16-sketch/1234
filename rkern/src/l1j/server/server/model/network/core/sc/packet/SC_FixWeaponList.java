@@ -1,11 +1,11 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
+import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-import l1j.server.server.model.Instance.L1ItemInstance;
 
 public final class SC_FixWeaponList {
 
@@ -17,18 +17,13 @@ public final class SC_FixWeaponList {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
-        final java.util.List<L1ItemInstance> items = pc.getInventory().getItems();
-        int[] entries = new int[Math.max(4, items.size() << 1)];
+        final L1ItemInstance[] items = pc.getInventory().GetItemsByKinds(1);
+        final int[] entries = new int[items.length << 1];
         int size = 0;
         for (L1ItemInstance item : items) {
             if (item == null || item.getItem() == null || item.getItem().getType2() != 1) continue;
             final int durability = item.get_durability();
             if (durability <= 0) continue;
-            if ((size << 1) == entries.length) {
-                int[] grown = new int[entries.length << 1];
-                System.arraycopy(entries, 0, grown, 0, entries.length);
-                entries = grown;
-            }
             entries[size << 1] = item.getId();
             entries[(size << 1) + 1] = durability;
             size++;

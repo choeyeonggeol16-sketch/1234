@@ -2,6 +2,7 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
@@ -42,7 +43,7 @@ public final class SC_DoActionGFX {
     public static void broadcast(L1Character cha, int actionId) {
         if (cha == null) return;
         // reference design one owned plaintext frame, fanout with existing L1 AOI/FIFO.
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendAction(
+        CSharedBroadcast.sendAction(
                 cha, cha.getId(), actionId);
     }
 
@@ -53,7 +54,7 @@ public final class SC_DoActionGFX {
 
     /** Immutable action frame usable across several recipients. */
 
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int objectId,int actionId) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(int objectId,int actionId) {
         return b -> b.put((byte)l1j.server.server.Opcodes.S_ACTION)
             .putInt(objectId).put((byte)actionId);
     }

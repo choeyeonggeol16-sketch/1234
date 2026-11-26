@@ -4,16 +4,16 @@ import java.io.File;
 import java.sql.Timestamp;
 import java.util.AbstractList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
 import java.util.Spliterator;
-import java.util.Collections;
-import java.util.List;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import javolution.util.FastTable;
 
 import l1j.server.Config;
@@ -646,32 +646,34 @@ public class L1Clan {
 
 	/** 혈맹자동가입 */
 	// 문장주시 목록
-	private FastTable<String> GazeList = new FastTable<String>();
+	private final FastTable<String> GazeList = new FastTable<>();
 
 	// 문장주시 추가
 	public void addGazelist(String name) {
-		if (GazeList.contains(name)) {
-			return;
+		synchronized (GazeList) {
+			if (name != null && !GazeList.contains(name)) GazeList.add(name);
 		}
-		GazeList.add(name);
 	}
 
 	// 문장주시 삭제
 	public void removeGazelist(String name) {
-		if (!GazeList.contains(name)) {
-			return;
+		synchronized (GazeList) {
+			GazeList.remove(name);
 		}
-		GazeList.remove(name);
 	}
 
 	// 문장주시 사이즈
 	public int getGazeSize() {
-		return GazeList.size();
+		synchronized (GazeList) {
+			return GazeList.size();
+		}
 	}
 
 	// 주시 리스트 반환
-	public FastTable<String> getGazeList() {
-		return GazeList;
+	public List<String> getGazeList() {
+		synchronized (GazeList) {
+			return List.copyOf(GazeList);
+		}
 	}
 
     public L1PcInstance getonline간부() {

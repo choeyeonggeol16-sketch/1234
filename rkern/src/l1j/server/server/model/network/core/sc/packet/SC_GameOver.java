@@ -3,15 +3,16 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_GameOver {
     private SC_GameOver() {}
 
 
     /** Same fixed 10-byte packet as S_EVENT 0x45 direct writer. */
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter() { return b -> b.put((byte)Opcodes.S_EVENT).put((byte)0x45).put((byte)10).put((byte)109).put((byte)85).put((byte)208).put((byte)2).put((byte)220);
+    public static CSharedBroadcast.NativeWireWriter nativeWriter() { return b -> b.put((byte)Opcodes.S_EVENT).put((byte)0x45).put((byte)10).put((byte)109).put((byte)85).put((byte)208).put((byte)2).put((byte)220);
     }
 
 

@@ -82,17 +82,7 @@ public final class CS_ChatParty {
             return;
         }
 
-        final int targetId = target.getId();
-        boolean memberFound = false;
-
-        for (L1PcInstance member : chatParty.getMembers()) {
-            if (member != null && member.getId() == targetId) {
-                memberFound = true;
-                break;
-            }
-        }
-
-        if (memberFound) {
+        if (chatParty.isMember(target)) {
             chatParty.kickMember(target);
         } else {
             SC_ServerMessage.send(pc, 426, name);
@@ -102,10 +92,11 @@ public final class CS_ChatParty {
     private static void sendPartyInfo(L1PcInstance pc) {
 
         final L1ChatParty chatParty = pc.getChatParty();
+        final L1PcInstance leader = chatParty == null ? null : chatParty.getLeader();
 
-        if (pc.isInChatParty() && chatParty != null && chatParty.getLeader() != null) {
+        if (leader != null) {
             SC_Party.sendHypertext(pc, "party", pc.getId(),
-                    chatParty.getLeader().getName(), chatParty.getMembersNameList());
+                    leader.getName(), chatParty.getMembersNameList());
         } else {
             SC_Party.sendHypertext(pc, "party", pc.getId());
         }

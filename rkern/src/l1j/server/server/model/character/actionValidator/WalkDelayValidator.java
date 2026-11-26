@@ -1,51 +1,56 @@
 package l1j.server.server.model.character.actionValidator;
 
+import java.util.concurrent.TimeUnit;
+
 import l1j.server.Config;
-import l1j.server.server.model.Instance.L1PcInstance;
 
-public class WalkDelayValidator {
+/** Movement cadence for one player action owner. Record only committed steps. */
+public final class WalkDelayValidator {
+    private static final long FALLBACK_INTERVAL_MILLIS = 100L;
+    private static final long MAX_INTERVAL_MILLIS = 60_000L;
 
-    public static boolean validate(L1PcInstance owner, int x, int y, long interval) {
-        if (!Config.WALK_POSITION_CHECK) {
-            return true;
+    private boolean hasStep;
+    private int sessionStamp;
+    private int mapId;
+    private int x;
+    private int y;
+    private long stepCursorNanos;
+
+    public long remainingNanos(int sessionStamp, int mapId, int x, int y,
+            long nowNanos, long intervalMillis) {
+        if (!Config.WALK_POSITION_CHECK || !matches(sessionStamp, mapId, x, y)) return 0L;
+
+        final long intervalNanos = intervalNanos(intervalMillis);
+        final long toleranceNanos = Math.min(intervalNanos / 2L,
+                TimeUnit.MILLISECONDS.toNanos(Math.max(0L, Config.WALK_NETWORK_TOLERANCE)));
+        final long untilDue = stepCursorNanos + intervalNanos - nowNanos;
+        return untilDue > toleranceNanos ? untilDue - toleranceNanos : 0L;
+    }
+
+    public void recordStep(int sessionStamp, int mapId, int fromX, int fromY, int toX, int toY,
+            long nowNanos, long intervalMillis) {
+        long nextCursor = nowNanos;
+        if (Config.WALK_POSITION_CHECK && matches(sessionStamp, mapId, fromX, fromY)) {
+            final long due = stepCursorNanos + intervalNanos(intervalMillis);
+            // Early arrivals spend their tolerance once. Late arrivals start from now.
+            if (due - nowNanos > 0L) nextCursor = due;
         }
-        long lastMillis = owner.getLastMoveActionMillis();
-        if (lastMillis > 0) {
-            long currentMillis = System.currentTimeMillis();
-            long diffTime = currentMillis - lastMillis;
+        hasStep = true;
+        this.sessionStamp = sessionStamp;
+        this.mapId = mapId;
+        this.x = toX;
+        this.y = toY;
+        stepCursorNanos = nextCursor;
+    }
 
-            long allowedInterval = (long) interval - Config.WALK_NETWORK_TOLERANCE;
+    private boolean matches(int sessionStamp, int mapId, int x, int y) {
+        return hasStep && this.sessionStamp == sessionStamp && this.mapId == mapId
+                && this.x == x && this.y == y;
+    }
 
-            if (diffTime < allowedInterval) {       
-                // 첫 적발 시 앵커 좌표 기록
-                if (owner.getSpeedHackStrikes() == 0) {
-                    owner.setSpeedHackAnchorX(owner.getX());
-                    owner.setSpeedHackAnchorY(owner.getY());
-                    owner.setSpeedHackAnchorH(owner.getHeading());
-                }
-                
-                owner.addSpeedHackStrike(); // 스트라이크 누적
-                if (owner.getSpeedHackStrikes() >= Config.WALK_DELAY_OVER_PENDING) {
-                	owner.start_teleport(
-                            owner.getSpeedHackAnchorX(), 
-                            owner.getSpeedHackAnchorY(), 
-                            owner.getMapId(),
-                            owner.getSpeedHackAnchorH(), 
-                            169, false, false);
-                    owner.setLastMoveActionMillis(currentMillis);            
-                    if (owner.isGm()) {
-                        owner.sendPackets("\\fY■■ [" + owner.getName() + "]님 스피드핵 감지 (위치 롤백) ■■");
-                    }             
-                    // 처벌 후 초기화
-                    owner.setSpeedHackStrikes(0);
-                    return false; // 패킷 처리 거부
-                }
-            } else {
-                // 정상적인 딜레이로 이동하면 선량한 유저로 간주하고 스트라이크 차감
-                owner.reduceSpeedHackStrike();
-            }
-        }
-        
-        return true;
+    private static long intervalNanos(long intervalMillis) {
+        final long bounded = intervalMillis <= 0L ? FALLBACK_INTERVAL_MILLIS
+                : Math.min(intervalMillis, MAX_INTERVAL_MILLIS);
+        return TimeUnit.MILLISECONDS.toNanos(bounded);
     }
 }

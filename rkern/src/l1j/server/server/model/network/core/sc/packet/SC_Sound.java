@@ -1,12 +1,12 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_Sound {
     private static final int WIRE_SIZE = 2 + 4;
@@ -38,14 +38,14 @@ public final class SC_Sound {
     }
 
     public static void broadcast(L1Character anchor, int sound) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(
-                anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SOUND,
+        CSharedBroadcast.sendFormattedBestEffort(
+                anchor, CSharedBroadcast.FORMAT_SOUND,
                 Opcodes.S_SOUND_EFFECT, sound, 0, 0, 0, false, -1, null);
     }
 
     public static void broadcastFast(L1Character anchor, int sound) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(
-                anchor, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_SOUND,
+        CSharedBroadcast.sendFormattedBestEffort(
+                anchor, CSharedBroadcast.FORMAT_SOUND,
                 Opcodes.S_SOUND_EFFECT, sound, 0, 0, 0, true, -1, null);
     }
 

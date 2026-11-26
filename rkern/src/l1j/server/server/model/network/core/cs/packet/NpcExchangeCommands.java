@@ -23,6 +23,7 @@ final class NpcExchangeCommands {
     private static final int[] GOLEM_LEFT = {5, 145, 52, 125, 99, 32};
     private static final int[] GOLEM_RIGHT = {6, 148, 64, 129, 104, 42};
     private static final int[] GOLEM_REWARD = {602, 605, 601, 603, 604, 600};
+    private static final int[] PIERS_INPUTS = {13, 81, 162, 177, 194};
     private static final String[] GOLEM_PAGES = {"joegolem9", "joegolem10", "joegolem11", "joegolem12", "joegolem13", "joegolem14"};
     private static final String[] RUNE_MESSAGES = {"힘의 엘릭서 룬을 획득했습니다.", "민첩의 엘릭서 룬을 획득했습니다.",
             "체력의 엘릭서 룬을 획득했습니다.", "지식의 엘릭서 룬을 획득했습니다.", "지혜의 엘릭서 룬을 획득했습니다."};
@@ -375,8 +376,8 @@ final class NpcExchangeCommands {
 
     private static boolean debitFirstEnchant(L1InventoryTransaction tx, L1PcInstance pc, int[] candidates, int enchant) {
         for (int template : candidates) {
-            for (L1ItemInstance item : pc.getInventory().getItems()) {
-                if (item != null && !item.isEquipped() && item.getItemId() == template && item.getEnchantLevel() == enchant)
+            for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassID(template)) {
+                if (!item.isEquipped() && item.getEnchantLevel() == enchant)
                     return tx.debit(item, item.getCount());
             }
         }
@@ -388,8 +389,8 @@ final class NpcExchangeCommands {
     }
 
     private static boolean debitEnchant(L1InventoryTransaction tx, L1PcInstance pc, int template, int enchant) {
-        for (L1ItemInstance item : pc.getInventory().getItems()) {
-            if (item == null || item.isEquipped() || item.getItemId() != template || item.getEnchantLevel() != enchant) continue;
+        for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassID(template)) {
+            if (item.getEnchantLevel() != enchant) continue;
             final int remaining = tx.GetPreparedItemAmount(pc, item);
             if (remaining > 0) return tx.debit(pc, item, remaining);
         }
@@ -423,7 +424,7 @@ final class NpcExchangeCommands {
         return CObjectDB.LoadItem().getTemplate(itemId) != null && pc.getInventory().HaveItemByClassId(itemId, count);
     }
 
-    /** Preserve legacy first stack / lowest-enchant single-item selection without temporary arrays. */
+    /** Choose the first stack or the lowest-enchant eligible nonstackable row. */
     static boolean debitLegacy(L1InventoryTransaction tx, L1PcInstance pc, int template, int count) {
         L1Item def = CObjectDB.LoadItem().getTemplate(template);
         if (def == null) return false;
@@ -434,9 +435,8 @@ final class NpcExchangeCommands {
         }
         if (count != 1) return false; // no multi-unit nonstackable recipes in these handlers
         L1ItemInstance chosen = null;
-        for (L1ItemInstance item : pc.getInventory().getItems()) {
-            if (item == null || item.isEquipped() || item.getItemId() != template
-                    || tx.GetPreparedItemAmount(pc, item) <= 0) continue;
+        for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassID(template)) {
+            if (tx.GetPreparedItemAmount(pc, item) <= 0) continue;
             if (chosen == null || item.getEnchantLevel() < chosen.getEnchantLevel()) chosen = item;
         }
         return chosen != null && tx.debit(pc, chosen, 1);
@@ -585,25 +585,14 @@ final class NpcExchangeCommands {
 		for (int i = 0; i < 10; i++) {
 			list[i] = " ";
 		}
-		for (L1ItemInstance item : pc.getInventory().getItems()) {
+		for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassIDs(PIERS_INPUTS)) {
 			if (listcount == list.length) break;
-            if (item.isEquipped()) continue;
-			switch (item.getItemId()) {
-			case 13:
-			case 81:
-			case 162:
-			case 177:
-			case 194:
-				if (item.getEnchantLevel() == enchant && pc.getInventory().HaveItemByClassId(40308, adena)) {
-					list[listcount] = "+" + item.getEnchantLevel() + " " + item.getName();
-					pc.PiersItemId[listcount] = item.getId(); // bind exact owned object
-					pc.PiersEnchant[listcount] = enchant;
-					listcount++;
-				}
-				break;
-			default:
-				break;
-			}
+            if (item.isEquipped() || item.getEnchantLevel() != enchant
+                    || !pc.getInventory().HaveItemByClassId(40308, adena)) continue;
+            list[listcount] = "+" + item.getEnchantLevel() + " " + item.getName();
+            pc.PiersItemId[listcount] = item.getId(); // bind exact owned object
+            pc.PiersEnchant[listcount] = enchant;
+            listcount++;
 		}
 		if (listcount == 0 || !pc.getInventory().HaveItemByClassId(40308, adena)) {
 			SC_NPCTalkReturn.send(pc, objid, "piers04");
@@ -634,15 +623,10 @@ final class NpcExchangeCommands {
         if (command.equals("a")) {
             clearPiersSelection(pc); // opening a new top-level menu invalidates previous selections
             int flags = 0;
-            for (L1ItemInstance item : pc.getInventory().getItems()) {
+            for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassIDs(PIERS_INPUTS)) {
                 if (item.isEquipped()) continue;
-                switch (item.getItemId()) {
-                    case 13, 81, 162, 177, 194 -> {
-                        if (item.getEnchantLevel() == 8 && pc.getInventory().HaveItemByClassId(40308, 5000000)) flags |= 1;
-                        else if (item.getEnchantLevel() == 9 && pc.getInventory().HaveItemByClassId(40308, 10000000)) flags |= 2;
-                    }
-                    default -> { }
-                }
+                if (item.getEnchantLevel() == 8 && pc.getInventory().HaveItemByClassId(40308, 5000000)) flags |= 1;
+                else if (item.getEnchantLevel() == 9 && pc.getInventory().HaveItemByClassId(40308, 10000000)) flags |= 2;
             }
             return switch (flags) {
                 case 1 -> "piers03";
@@ -815,12 +799,11 @@ final class NpcExchangeCommands {
                 final int first = index < 3 ? 1126 : 22328;
                 L1ItemInstance chosen = null;
                 // First available template ID, then lowest enchant, in inventory order.
-                for (L1ItemInstance item : pc.getInventory().getItems()) {
-                    if (item == null || item.isEquipped() || item.getCount() <= 0
-                            || item.getItemId() < first || item.getItemId() >= first + 8) continue;
-                    if (chosen == null || item.getItemId() < chosen.getItemId()
-                            || (item.getItemId() == chosen.getItemId()
-                            && item.getEnchantLevel() < chosen.getEnchantLevel())) chosen = item;
+                for (int template = first; template < first + 8 && chosen == null; template++) {
+                    for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassID(template)) {
+                        if (item.isEquipped() || item.getCount() <= 0) continue;
+                        if (chosen == null || item.getEnchantLevel() < chosen.getEnchantLevel()) chosen = item;
+                    }
                 }
                 if (chosen == null || !tx.debit(chosen, 1)) return failure;
             }

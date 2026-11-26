@@ -396,7 +396,7 @@ public class L1PolyMorph {
 			L1ItemInstance weapon = pc.getWeapon();
 			// 용기사 포우
 			if (pc.isDragonknight()) {
-				for (L1ItemInstance items : pc.getInventory().getItems()) {
+				for (L1ItemInstance items : pc.getInventory().GetItemsByType(18)) {
 					if (items.getItem().getType() == 18) {
 						if (items.getItem().getType1() == 50) {
 							items.getItem().setType1(83);

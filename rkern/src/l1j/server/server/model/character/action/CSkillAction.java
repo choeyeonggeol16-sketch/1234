@@ -6,7 +6,10 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.character.skill.core.SkillUseInitializer;
+import l1j.server.server.model.character.skill.helper.SkillUseHelper;
 import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Skills;
@@ -27,11 +30,15 @@ public final class CSkillAction extends CNewAction {
     @Override
     public boolean OnTick(long nowMs) {
         final L1PcInstance pc = controller.actor();
-        if (pc == null
-                || pc.isDead()
+        if (pc == null) return true;
+        final CUserSocket session = pc.getNetConnection();
+        if (pc.isDead()
                 || pc.isGhost()
-                || pc.getNetConnection() == null
-                || !pc.getNetConnection().isConnected()) {
+                || pc.get_teleport()
+                || pc.teleportTimerEpoch() != controller.l0()
+                || pc.getMap() != controller.o0()
+                || session == null || session.getActiveChar() != pc || !session.ownsReadyGameSession()
+                || L1World.getInstance().findObject(pc.getId()) != pc) {
             return true;
         }
 
@@ -41,7 +48,8 @@ public final class CSkillAction extends CNewAction {
         final int tY = controller.i3();
         final String message = controller.s0();
 
-        if (!validateSpellValidation(pc, skillId, tId)) {
+        if (pc.isInvisble() || (pc.isInvisDelay() && !SkillUseHelper.canCastWithInvis(skillId))
+                || !validateSpellValidation(pc, skillId, tId, tX, tY)) {
             return true;
         }
 
@@ -88,7 +96,9 @@ public final class CSkillAction extends CNewAction {
     private boolean validateSpellValidation(
             L1PcInstance owner,
             int skillId,
-            int tId) {
+            int tId,
+            int targetX,
+            int targetY) {
 
         final L1Map map = owner.getMap();
         if (map == null || !map.isUsableSkill()) {
@@ -118,8 +128,10 @@ public final class CSkillAction extends CNewAction {
         if (skill == null) {
             return false;
         }
-
-        owner.offFishing();
+        if ((skillId == L1SkillId.FIRE_WALL || skillId == L1SkillId.LIFE_STREAM)
+                && !SkillUseInitializer.canPlaceGroundSkill(owner, skillId, skill, targetX, targetY)) {
+            return false;
+        }
 
         double range = skill.getRanged();
         if (range < 0D) {
@@ -146,6 +158,7 @@ public final class CSkillAction extends CNewAction {
             }
         }
 
+        owner.offFishing();
         return true;
     }
     

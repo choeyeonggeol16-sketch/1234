@@ -11,12 +11,9 @@ import l1j.server.server.model.BookQuest.BQSWQInformation;
 import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.BookQuest.Loader.BQSWQInformationLoader;
-import l1j.server.server.model.BookQuest.Reward.BQSExpReward;
-import l1j.server.server.model.BookQuest.Reward.BQSItemReward;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
-import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MONSTER_BOOK_V2_REWARD_ACK;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MONSTER_BOOK_V2_UPDATE_AMOUNT_NOTI;
 import l1j.server.server.templates.L1Item;
 
@@ -26,7 +23,7 @@ import l1j.server.server.templates.L1Item;
  * 역할 3개:
  *  1) 와이어: SC_MONSTER_BOOK_V2_INFO_NOTI의 info 서브메시지 (saveBody)
  *  2) DB 저장: BQSCharacterData character_data blob의 decks 필드 (DeckT.saveBody / DeckT.loadFrom)
- *  3) 도메인: 보상 지급(doReward), 덱 진행(onUpdateIsComplete), 덱 재생성(deepCopy)
+ *  3) 도메인: 보상 정의, 덱 진행(onUpdateIsComplete), 덱 재생성(deepCopy)
  *
  * 와이어 스키마
  *  MonsterBookV2Info { SystemT system=1; repeated DeckT decks=2; }
@@ -110,13 +107,6 @@ public final class MonsterBookV2Info {
         private int _min_level;
         private boolean _has_min_level;
         private SystemT(){}
-
-        public SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode doReward(L1PcInstance pc, eMonsterBookV2RewardGrade grade){
-            RewardT reward = get_rewards(grade.toInt());
-            return reward == null ?
-            		SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode.REWARD_FAIL :
-                    reward.doReward(pc);
-        }
 
         public HashMap<Integer, RewardT> get_rewards(){
             return _rewards;
@@ -202,9 +192,6 @@ public final class MonsterBookV2Info {
                 reward.set_reward_exp(rs.getInt("reward_exp_percent") * BQSLoadManager.BQS_WQ_STD_EXP);
                 reward.set_item_id(rs.getInt("reward_need_item_id"));
 
-                int reward_exp = reward.get_reward_exp();
-                if(reward_exp > 0)
-                    reward.set_bqsexp_reward(BQSExpReward.newInstance(reward.get_grade().toInt(), reward_exp));
                 return reward;
             }
 
@@ -212,7 +199,6 @@ public final class MonsterBookV2Info {
                 return new RewardT();
             }
             private eMonsterBookV2RewardGrade _grade;
-            private BQSExpReward _bqsexp_reward;
             private int _reward_exp;
             private int _item_id;
             private int _item_name_id;
@@ -221,24 +207,6 @@ public final class MonsterBookV2Info {
             private int _high_reward_exp;
             private int _bit;  
             private RewardT(){}
-
-            public SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode doReward(L1PcInstance pc){
-                if(_item_id > 0 && !pc.getInventory().DeleteItemInInventory(_item_id, 1)){
-                    return SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode.REWARD_FAIL_NOT_ENOUGH_ITEM;
-                }
-                if(_bqsexp_reward != null)
-                    _bqsexp_reward.doReward(pc);
-
-                if(has_item_rewards()){
-                    for(ItemRewardT reward : _item_rewards)
-                        reward.doReward(pc);
-                }
-                return SC_MONSTER_BOOK_V2_REWARD_ACK.eResultCode.REWARD_SUCCESS;
-            }
-
-            public void set_bqsexp_reward(BQSExpReward reward){
-                _bqsexp_reward = reward;
-            }
 
             public void set_item_id(int val){
                 _item_id = val;
@@ -358,29 +326,16 @@ public final class MonsterBookV2Info {
                     rewardT.set_item_id(rs.getInt("reward_item_id"));
                     rewardT.set_amount(rs.getInt("reward_amount"));
 
-                    int itemId = rewardT.get_item_id();
-                    if(itemId > 0)
-                        rewardT.set_bqsitem_reward(BQSItemReward.newInstance(1, itemId, rewardT.get_amount()));
                     return rewardT;
                 }
                 public static ItemRewardT newInstance(){
                     return new ItemRewardT();
                 }
-                private BQSItemReward _bqsitem_reward;
                 private int _item_id;
                 private int _item_name_id;
                 private int _amount;
                 private int _bit;
                 private ItemRewardT(){}
-
-                public void doReward(L1PcInstance pc){
-                    if(_bqsitem_reward != null)
-                        _bqsitem_reward.doReward(pc);
-                }
-
-                public void set_bqsitem_reward(BQSItemReward reward){
-                    _bqsitem_reward = reward;
-                }
 
                 public int get_item_id(){
                     return _item_id;

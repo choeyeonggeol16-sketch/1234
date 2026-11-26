@@ -349,7 +349,7 @@ final class NpcBuffCommands {
             return;
         }
         // Legacy weapon branch required the equipped object to be in the inventory.
-        if (weapon && !pc.getInventory().getItems().contains(equipped)) return;
+        if (weapon && !pc.getInventory().HasItemInstance(equipped)) return;
         if (!pc.getInventory().DeleteItemInInventory(40308, 100)) {
             SC_SystemMessage.send(pc, "아데나가 부족합니다.");
             return;

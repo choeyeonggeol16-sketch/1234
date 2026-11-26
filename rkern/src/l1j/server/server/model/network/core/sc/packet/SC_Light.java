@@ -2,12 +2,11 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_Light {
 
@@ -74,8 +73,8 @@ public final class SC_Light {
             int type) {
         if (cha == null) return;
         final int objectId = cha.getId();
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendFormatted(
-                cha, l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_LIGHT,
+        CSharedBroadcast.sendFormatted(
+                cha, CSharedBroadcast.FORMAT_LIGHT,
                 Opcodes.S_CHANGE_LIGHT, objectId, type, 0, 0, true, -1, null);
     }
 }

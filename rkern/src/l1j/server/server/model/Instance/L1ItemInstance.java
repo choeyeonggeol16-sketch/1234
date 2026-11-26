@@ -364,7 +364,22 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public void setEquipped(boolean equipped) {
-		_isEquipped = equipped;
+        for (;;) {
+            final CItemList list = inventoryLinkOwner;
+            if (list == null) {
+                _isEquipped = equipped;
+                final CItemList linked = inventoryLinkOwner;
+                if (linked != null) linked.invalidateEquippedAfterDetachedChange();
+                return;
+            }
+            synchronized (list) {
+                if (inventoryLinkOwner != list) continue;
+                if (_isEquipped == equipped) return;
+                _isEquipped = equipped;
+                list.equippedChanged(this);
+                return;
+            }
+        }
 	}
 
 	public L1Item getItem() {
@@ -379,14 +394,17 @@ public class L1ItemInstance extends L1Object {
                 _item = item;
                 _itemId = id;
                 final CItemList linked = inventoryLinkOwner;
-                if (linked != null) linked.invalidateCarryingWeight();
+                if (linked != null) linked.invalidateLookupAfterDetachedChange();
                 return;
             }
             synchronized (list) {
                 if (inventoryLinkOwner != list) continue;
                 final int before = list.weightBeforeChange(this);
+                final int previousId = _itemId;
+                final L1Item previousTemplate = _item;
                 _item = item;
                 _itemId = id;
+                list.lookupKeyChanged(this, previousId, previousTemplate);
                 list.weightChanged(this, before);
                 return;
             }
@@ -398,8 +416,43 @@ public class L1ItemInstance extends L1Object {
 	}
 
 	public void setItemId(int itemId) {
-		_itemId = itemId;
+        for (;;) {
+            final CItemList list = inventoryLinkOwner;
+            if (list == null) {
+                _itemId = itemId;
+                final CItemList linked = inventoryLinkOwner;
+                if (linked != null) linked.invalidateLookupAfterDetachedChange();
+                return;
+            }
+            synchronized (list) {
+                if (inventoryLinkOwner != list) continue;
+                final int previousId = _itemId;
+                _itemId = itemId;
+                list.lookupKeyChanged(this, previousId, _item);
+                return;
+            }
+        }
 	}
+
+    @Override
+    public void setId(int id) {
+        for (;;) {
+            final CItemList list = inventoryLinkOwner;
+            if (list == null) {
+                super.setId(id);
+                final CItemList linked = inventoryLinkOwner;
+                if (linked != null) linked.invalidateObjectIdAfterDetachedChange();
+                return;
+            }
+            synchronized (list) {
+                if (inventoryLinkOwner != list) continue;
+                final int previousId = getId();
+                super.setId(id);
+                list.objectIdChanged(this, previousId);
+                return;
+            }
+        }
+    }
 
 	public boolean isStackable() {
 		return _item.isStackable();

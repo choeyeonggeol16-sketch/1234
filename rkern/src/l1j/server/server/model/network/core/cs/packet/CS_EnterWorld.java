@@ -624,11 +624,9 @@ public final class CS_EnterWorld {
 
 
         // 기억의 구슬 목록 전송
-        for (L1ItemInstance item : pc.getInventory().getItems()) {
-            if (item.getItemId() == 700024) {
-                SC_PacketBox.send(pc, SC_PacketBox.BOOKMARK, item.getItemId(),
-                        "$13719", data.templateOrbBookmarks);
-            }
+        for (L1ItemInstance item : pc.getInventory().GetItemListByClassID(700024)) {
+            SC_PacketBox.send(pc, SC_PacketBox.BOOKMARK, item.getItemId(),
+                    "$13719", data.templateOrbBookmarks);
         }
 
         if (pc.getAccount().getphone() != null && pc.getAccount().getphone().length() >= 11) {
@@ -670,7 +668,7 @@ public final class CS_EnterWorld {
             if (pc.getWeapon() != null) {
                 pc.UnequipItem(pc.getWeapon());
             }
-            for (L1ItemInstance armor : pc.getInventory().getItems()) {
+            for (L1ItemInstance armor : pc.getInventory().GetEquippedItems()) {
                 pc.UnequipItem(armor);
             }
             SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.START);
@@ -700,7 +698,8 @@ public final class CS_EnterWorld {
     private static void postEnterProcess(L1PcInstance pc, CUserSocket client, EnterData data) {
     	
         final int mailCount = data.mailCount;
-        applyExcludeList(SpamTable.getInstance().getExcludeTable(pc.getId()), data.excludes);
+        if (data.excludes != null && !data.excludes.isEmpty())
+            applyExcludeList(SpamTable.getInstance().getExcludeTable(pc.getId()), data.excludes);
 
         serchSummon(pc);
         CastleWarBusiness.getInstance().viewNowCastleWarState(pc);
@@ -719,8 +718,9 @@ public final class CS_EnterWorld {
                 }
                 SC_ActionUI.send(pc, clan.getClanName(), pc.getClanRank());
                 SC_PacketBox.send(pc, SC_PacketBox.PLEDGE_EMBLEM_STATUS, pc.getClan().getEmblemStatus());
-                if (clan.getGazeSize() != 0) {
-                    SC_ClanAttention.sendList(pc, clan.getGazeSize(), clan.getGazeList());
+                final List<String> gaze = clan.getGazeList();
+                if (!gaze.isEmpty()) {
+                    SC_ClanAttention.sendList(pc, gaze.size(), gaze);
                 }
                 if (pc.getClanid() == clan.getClanId()
                         && pc.getClanname().toLowerCase().equals(clan.getClanName().toLowerCase())) {
@@ -1144,7 +1144,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 			SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
 			SC_OwnCharStatus2.send(pc);
 
-			for (L1ItemInstance armor : pc.getInventory().getItems()) {
+			for (L1ItemInstance armor : pc.getInventory().GetEquippedItems()) {
 				for (int type = 0; type <= 12; type++) {
 					if (armor != null) {
 						pc.UnequipItem(armor);
@@ -1361,18 +1361,15 @@ public static void loadNBuff(L1PcInstance pc) {
 	private static void sendItemPacketChunked(L1PcInstance pc) {
 	    if (pc == null) return;
 
-	    List<L1ItemInstance> items = pc.getInventory().getItems();
-	    if (items == null || items.isEmpty()) return;
-
-	    final L1ItemInstance[] snap = items.toArray(new L1ItemInstance[0]);
-	    final int total = snap.length;
+	    final List<L1ItemInstance> items = pc.getInventory().getItemSnapshot();
+	    final int total = items.size();
 	    if (total <= 0) return;
 
 	    final boolean ON_START = true;
 
 	    final byte[][] encoded = new byte[total][];
 	    for (int i = 0; i < total; i++) {
-	        L1ItemInstance item = snap[i];
+	        L1ItemInstance item = items.get(i);
 	        if (item == null || item.getItem() == null) continue;
 	        try {
 	            encoded[i] = ItemInfo.encodeItemBody(item);
@@ -1391,7 +1388,7 @@ public static void loadNBuff(L1PcInstance pc) {
 	    int chunkStart = 0;
 
 	    for (int i = 0; i < total; i++) {
-	        L1ItemInstance item = snap[i];
+	        L1ItemInstance item = items.get(i);
 	        final byte[] body = encoded[i];
 	        if (body == null) continue;
 
@@ -1487,7 +1484,7 @@ public static void loadNBuff(L1PcInstance pc) {
 			if (pc.getWeapon() != null) {
 				pc.UnequipItem(pc.getWeapon());
 			}
-			for (L1ItemInstance armor : pc.getInventory().getItems()) {
+			for (L1ItemInstance armor : pc.getInventory().GetEquippedItems()) {
 				if (armor != null && armor.isEquipped()) {
 					pc.UnequipItem(armor);
 				}

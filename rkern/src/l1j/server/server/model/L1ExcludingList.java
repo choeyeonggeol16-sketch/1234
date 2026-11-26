@@ -9,10 +9,10 @@ public class L1ExcludingList {
 
 	public final HashMap<Integer, String> _excludes = new HashMap<Integer, String>();
 
-	private ArrayList<String> _nameList_Chat = new ArrayList<String>();
-	private ArrayList<String> _nameList_Letter = new ArrayList<String>();
+	private final ArrayList<String> _nameList_Chat = new ArrayList<>();
+	private final ArrayList<String> _nameList_Letter = new ArrayList<>();
 
-	public String[] getExcludeList(int type) {
+	public synchronized String[] getExcludeList(int type) {
 		switch (type) {
 		case 0:
 			return _nameList_Chat.toArray(new String[_nameList_Chat.size()]);
@@ -22,7 +22,7 @@ public class L1ExcludingList {
 		return null;
 	}
 
-	public void add(int type, String name) {
+	public synchronized void add(int type, String name) {
 		switch (type) {
 		case 0:
 			_nameList_Chat.add(name);
@@ -33,7 +33,7 @@ public class L1ExcludingList {
 		}
 	}
 
-	public void remove(int type, String name) {
+	public synchronized void remove(int type, String name) {
 		switch (type) {
 		case 0:
 			_nameList_Chat.remove(name);
@@ -44,7 +44,7 @@ public class L1ExcludingList {
 		}
 	}
 
-	public boolean contains(int type, String name) {
+	public synchronized boolean contains(int type, String name) {
 		switch (type) {
 		case 0:
 			return _nameList_Chat.contains(name);

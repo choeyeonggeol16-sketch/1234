@@ -3,8 +3,12 @@ package l1j.server.server.model.Attendance;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.task.TaskLane;
@@ -24,6 +28,7 @@ import l1j.server.server.shared.exception.CommandArgsIndexException;
 import l1j.server.server.utils.SQLUtil;
 
 public class AttendanceLoadManager implements Command{
+	private static final Logger LOG = Logger.getLogger(AttendanceLoadManager.class.getName());
 	public static AttendanceLoadManager _instance;
 	public static AttendanceLoadManager getInstance(){
 		if(_instance == null)
@@ -31,60 +36,56 @@ public class AttendanceLoadManager implements Command{
 		return _instance;
 	}
 	
-	public static void loadAttendanceStartupCalendar(){
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		try{
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("select * from attendance_startup");
-			rs = pstm.executeQuery();
-			if(rs.next()){
-				Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
-				ATTEN_STARTUP_CALENDAR = (Calendar)cal.clone();
-				ATTEN_STARTUP_CALENDAR.setTimeInMillis(rs.getTimestamp("startup_info").getTime());
-				
-				long diff = (cal.getTimeInMillis() - ATTEN_STARTUP_CALENDAR.getTimeInMillis()) / 1000; 
-				if(diff > ATTEN_RESET_PERIOD_SECOND)
-					updateServerStartupInfo();
-				cal.clear();
-			}else{
-				updateServerStartupInfo();
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}finally{
-			SQLUtil.close(rs, pstm, con);
+	public static void loadAttendanceStartupCalendar() {
+		final Timestamp stored;
+		try (Connection con = DatabaseFactory.getInstance().getConnection();
+				 PreparedStatement statement = con.prepareStatement(
+						 "SELECT startup_info FROM attendance_startup WHERE id=1");
+				 ResultSet rows = statement.executeQuery()) {
+			stored = rows.next() ? rows.getTimestamp(1) : null;
+		} catch (SQLException error) {
+			throw new IllegalStateException("Attendance startup day read failed", error);
 		}
+
+		final Calendar current = RealTimeClock.getInstance().getRealTimeCalendar();
+		final long now = current.getTimeInMillis();
+		if (stored != null) {
+			current.setTimeInMillis(wholeSecond(stored.getTime()));
+			ATTEN_STARTUP_CALENDAR = current;
+			if (now - current.getTimeInMillis() < ATTEN_RESET_PERIOD_SECOND * 1000L) return;
+		}
+		updateServerStartupInfo(now);
 	}
-	
-	public static void updateServerStartupInfo(){
-		Connection con			= null;
-		PreparedStatement pstm 	= null;
-		Calendar old = ATTEN_STARTUP_CALENDAR;
-		ATTEN_STARTUP_CALENDAR = RealTimeClock.getInstance().getRealTimeCalendar();
-		Timestamp ts = new Timestamp(ATTEN_STARTUP_CALENDAR.getTimeInMillis());
-		try{
-			con 	= DatabaseFactory.getInstance().getConnection();
-			pstm 	= con.prepareStatement("insert into attendance_startup set id=1, startup_info=? on duplicate key update startup_info=?");
-			pstm.setTimestamp(1, ts);
-			pstm.setTimestamp(2, ts);
-			pstm.execute();
-		}catch(Exception e){
-			e.printStackTrace();
-		}finally{
-			SQLUtil.close(pstm, con);
+
+	static void updateServerStartupInfo(long dayMillis) {
+		final Calendar day = RealTimeClock.getInstance().getRealTimeCalendar();
+		day.setTimeInMillis(wholeSecond(dayMillis));
+		final Timestamp time = new Timestamp(day.getTimeInMillis());
+		try (Connection con = DatabaseFactory.getInstance().getConnection();
+				 PreparedStatement statement = con.prepareStatement(
+						 "INSERT INTO attendance_startup (id, startup_info) VALUES (1, ?) "
+								 + "ON DUPLICATE KEY UPDATE startup_info=VALUES(startup_info)")) {
+			statement.setTimestamp(1, time);
+			statement.executeUpdate();
+		} catch (SQLException error) {
+			throw new IllegalStateException("Attendance startup day save failed", error);
 		}
-		if(old != null){
-			old.clear();
-			old = null;
-		}
+		ATTEN_STARTUP_CALENDAR = day;
+	}
+
+	private static long wholeSecond(long millis) {
+		return Math.floorDiv(millis, 1000L) * 1000L;
+	}
+
+	public static long attendanceDayMillis() {
+		final Calendar day = ATTEN_STARTUP_CALENDAR;
+		return day == null ? 0L : day.getTimeInMillis();
 	}
 	
 	private AttendanceLoadManager(){
 	}
 	
-	public static Calendar ATTEN_STARTUP_CALENDAR;
+	public static volatile Calendar ATTEN_STARTUP_CALENDAR;
 	public static int ATTEN_CHECK_INTERVAL;
 	public static int ATTEN_RESET_PERIOD_SECOND;
 	public static int ATTEN_DAILY_MAX_COUNT;
@@ -93,7 +94,11 @@ public class AttendanceLoadManager implements Command{
 	public void load(){
 		loadConfig();
 		loadBonusGroup();
-		loadAttendanceStartupCalendar();
+		try {
+			loadAttendanceStartupCalendar();
+		} catch (IllegalStateException unavailable) {
+			LOG.log(Level.WARNING, "Attendance startup day unavailable; scheduler will retry", unavailable);
+		}
 		AttendanceScheduler.getInstance().run();
 	}
 	
@@ -171,16 +176,18 @@ public class AttendanceLoadManager implements Command{
 					return;
 				
 				SC_ATTENDANCE_USER_DATA_EXTEND userData = pc.getAttendanceData();
-				for(UserAttendanceDataGroup dGroup : userData.get_groups()){
-					args.notify(String.format("%s님의 [%s]정보 - 상태 : %s, 누적시간 : %d, 현재인덱스 : %d, 현재타입에 누적된 보상 : %d", 
-							pc.getName(),
-							dGroup.get_groupType().name(), 
-							dGroup.get_resultCode().name(), 
-							dGroup.get_attendanceTime(), 
-							dGroup.get_currentAttendanceIndex(), 
-							dGroup.get_recvedRewardCount())
-					);
+				if (userData == null) return;
+				final ArrayList<String> summary = new ArrayList<>();
+				synchronized (userData) {
+					if (pc.getAttendanceData() != userData || userData.get_groups() == null) return;
+					for (UserAttendanceDataGroup group : userData.get_groups()) {
+						if (group == null) continue;
+						summary.add(String.format("%s님의 [%s]정보 - 상태 : %s, 누적시간 : %d, 현재인덱스 : %d, 현재타입에 누적된 보상 : %d",
+								pc.getName(), group.get_groupType(), group.get_resultCode(), group.get_attendanceTime(),
+								group.get_currentAttendanceIndex(), group.get_recvedRewardCount()));
+					}
 				}
+				for (String line : summary) args.notify(line);
 				break;
 			}
 			
@@ -190,16 +197,24 @@ public class AttendanceLoadManager implements Command{
 					return;
 				
 				SC_ATTENDANCE_USER_DATA_EXTEND userData = pc.getAttendanceData();
-				for(UserAttendanceDataGroup dGroup : userData.get_groups()){
-					int index = dGroup.get_currentAttendanceIndex();
-					dGroup.get_groupData().get(index).set_time(0);
-					dGroup.set_currentAttendanceIndex(Math.max(0, dGroup.get_currentAttendanceIndex() - 1));
-					dGroup.set_attendanceTime(0);
-					if(dGroup.get_groupType().equals(AttendanceGroupType.NORMAL)){
-						dGroup.set_resultCode(UserAttendanceTimeStatus.ATTENDANCE_NORMAL);
-					}else{
-						dGroup.set_resultCode(pc.PC방_버프 ? UserAttendanceTimeStatus.ATTENDANCE_NORMAL : UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME);
+				if (userData == null) return;
+				boolean reset = false;
+				synchronized (userData) {
+					if (pc.getAttendanceData() != userData || userData.get_groups() == null) return;
+					for (UserAttendanceDataGroup group : userData.get_groups()) {
+						if (group == null) continue;
+						final int index = group.get_currentAttendanceIndex();
+						if (index < 0 || index >= group.get_groupData().size()) continue;
+						group.get_groupData().get(index).set_time(0);
+						group.set_currentAttendanceIndex(Math.max(0, index - 1));
+						group.set_attendanceTime(0);
+						group.set_resultCode(group.get_groupType() == AttendanceGroupType.NORMAL || pc.PC방_버프
+								? UserAttendanceTimeStatus.ATTENDANCE_NORMAL
+								: UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME);
+						reset = true;
 					}
+				}
+				if (reset) {
 					SC_ATTENDANCE_BONUS_INFO_EXTEND.send(pc);
 					SC_ATTENDANCE_BONUS_GROUP_INFO.send(pc);
 					SC_ATTENDANCE_USER_DATA_EXTEND.send(pc);

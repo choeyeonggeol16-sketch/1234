@@ -19,11 +19,9 @@ public class AttendanceScheduler implements TimeListener{
 	public static final int ATTEN_SHD_RESULT_NONUPDATE = 0;
 	public static final int ATTEN_SHD_RESULT_ONUPDATE = 1;
 	
-	private static AttendanceScheduler _instance;
+	private static final AttendanceScheduler INSTANCE = new AttendanceScheduler();
 	public static AttendanceScheduler getInstance(){
-		if(_instance == null)
-			_instance = new AttendanceScheduler();
-		return _instance;
+		return INSTANCE;
 	}
 	
 	private static final Logger LOG = Logger.getLogger(AttendanceScheduler.class.getName());
@@ -33,29 +31,38 @@ public class AttendanceScheduler implements TimeListener{
 	// one Runnable per second. Counters and admission gate use this monitor.
 	private int _pendingSeconds;
 	private int _pendingSecondsAfterDay;
-	private boolean _pendingDay;
+	private long _pendingDayMillis;
 	private boolean _updateQueued;
 	private volatile boolean _isrun;
 	private AttendanceScheduler() { }
 
 
-	public void run(){
+	public synchronized void run() {
+		if (_isrun) return;
+		final Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
+		final int period = AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND;
+		if (period <= 0) throw new IllegalStateException("Invalid attendance reset period: " + period);
+		_accumulate_second = (cal.get(Calendar.HOUR_OF_DAY) * 3600
+				+ cal.get(Calendar.MINUTE) * 60 + cal.get(Calendar.SECOND)) % period;
+		queueOverdueDay(cal.getTimeInMillis());
 		_isrun = true;
-		Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
-		_accumulate_second += (cal.get(Calendar.HOUR_OF_DAY) * 3600);
-		_accumulate_second += (cal.get(Calendar.MINUTE) * 60);
-		_accumulate_second += (cal.get(Calendar.SECOND));
-		_accumulate_second %= AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND;
 		RealTimeClock.getInstance().addListener(this, Calendar.SECOND);
 	}
 	
-	public void dispose(){
+	public synchronized void dispose() {
+		if (!_isrun) return;
 		_isrun = false;
-		RealTimeClock.getInstance().removeListener(this,  Calendar.SECOND);
-		synchronized (this) {
-			_pendingSeconds = 0;
-			_pendingSecondsAfterDay = 0;
-			_pendingDay = false;
+		RealTimeClock.getInstance().removeListener(this, Calendar.SECOND);
+		_pendingSeconds = 0;
+		_pendingSecondsAfterDay = 0;
+		_pendingDayMillis = 0L;
+	}
+
+	private void queueOverdueDay(long now) {
+		final long storedDay = AttendanceLoadManager.attendanceDayMillis();
+		if (_pendingDayMillis == 0L && storedDay != 0L
+				&& now - storedDay >= AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND * 1000L) {
+			_pendingDayMillis = Math.floorDiv(now, 1000L) * 1000L;
 		}
 	}
 	
@@ -83,8 +90,9 @@ public class AttendanceScheduler implements TimeListener{
 			_accumulate_second += UPDATE_SECOND;
 			if (_accumulate_second >= AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND) {
 				_accumulate_second = 0;
-				_pendingDay = true;
-			} else if (_pendingDay) {
+				_pendingDayMillis = time.getSeconds() * 1000L;
+				_pendingSecondsAfterDay = 0;
+			} else if (_pendingDayMillis != 0L) {
 				if (_pendingSecondsAfterDay < Integer.MAX_VALUE) _pendingSecondsAfterDay++;
 			} else {
 				if (_pendingSeconds < Integer.MAX_VALUE) _pendingSeconds++;
@@ -106,27 +114,45 @@ public class AttendanceScheduler implements TimeListener{
 	class AttendanceConsumer implements Runnable {
 		@Override
 		public void run() {
-			final int before, after;
-			final boolean day;
+			final int before;
+			final long day;
 			synchronized (AttendanceScheduler.this) {
 				if (!_isrun) { _updateQueued = false; return; }
 				before = _pendingSeconds;
-				after = _pendingSecondsAfterDay;
-				day = _pendingDay;
+				day = _pendingDayMillis;
 				_pendingSeconds = 0;
-				_pendingSecondsAfterDay = 0;
-				_pendingDay = false;
 			}
 			try {
 				// Apply pre-midnight ticks BEFORE the reset, and post-midnight
 				// ticks AFTER it. No worker remains blocked between clock ticks.
-				if (before > 0) doUpdateSecond(before);
-				if (day) {
-					AttendanceLoadManager.updateServerStartupInfo();
-					doUpdateDay();
+				if (AttendanceLoadManager.attendanceDayMillis() == 0L) {
+					AttendanceLoadManager.loadAttendanceStartupCalendar();
 				}
-				if (after > 0) doUpdateSecond(after);
+				if (before > 0) updatePlayers(before, false);
+				if (day != 0L) {
+					// Leave the pending boundary published until SQL succeeds so
+					// new ticks cannot be counted on the old side during a retry.
+					if (AttendanceLoadManager.attendanceDayMillis() < day) {
+						AttendanceLoadManager.updateServerStartupInfo(day);
+					}
+					final int after;
+					synchronized (AttendanceScheduler.this) {
+						if (!_isrun) return;
+						if (_pendingDayMillis == day) {
+							after = _pendingSecondsAfterDay;
+							_pendingDayMillis = 0L;
+							_pendingSecondsAfterDay = 0;
+						} else {
+							after = 0;
+						}
+					}
+					updatePlayers(UPDATE_SECOND, true);
+					if (after > 0) updatePlayers(after, false);
+				}
 			} catch (Exception error) {
+				synchronized (AttendanceScheduler.this) {
+					if (_isrun) queueOverdueDay(System.currentTimeMillis());
+				}
 				LOG.log(Level.WARNING, "Attendance update failed", error);
 			} finally {
 				synchronized (AttendanceScheduler.this) { _updateQueued = false; }
@@ -134,28 +160,16 @@ public class AttendanceScheduler implements TimeListener{
 		}
 	}
 
-	private void doUpdateDay(){
-		L1World.getInstance().getAllPlayerStream()
-		.filter((L1PcInstance pc) -> pc != null && pc.getAttendanceData() != null)
-		.forEach((L1PcInstance pc) ->{
-			try{
-				SC_ATTENDANCE_USER_DATA_EXTEND userData = pc.getAttendanceData();
-				userData.onUpdateDay(pc, UPDATE_SECOND);
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-		});
-	}
-	
-	private void doUpdateSecond(final int seconds){
-		L1World.getInstance().getAllPlayerStream()
-		.filter((L1PcInstance pc) -> pc != null && pc.getAttendanceData() != null)
-		.forEach((L1PcInstance pc) ->{
-			try{
-				SC_ATTENDANCE_USER_DATA_EXTEND userData = pc.getAttendanceData();
-				userData.onUpdateTime(pc, seconds);
-			}catch(Exception e){
-				e.printStackTrace();
+	private void updatePlayers(int seconds, boolean rollover) {
+		L1World.getInstance().getAllPlayerStream().forEach(pc -> {
+			if (pc == null || pc.isLogoutStarted() || pc.is무인상점() || pc.getOnlineStatus() != 1) return;
+			final SC_ATTENDANCE_USER_DATA_EXTEND data = pc.getAttendanceData();
+			if (data == null) return;
+			try {
+				if (rollover) data.onUpdateDay(pc, seconds);
+				else data.onUpdateTime(pc, seconds);
+			} catch (Exception error) {
+				LOG.log(Level.WARNING, "Attendance player update failed: " + pc.getId(), error);
 			}
 		});
 	}

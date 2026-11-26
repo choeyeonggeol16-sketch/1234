@@ -154,7 +154,7 @@ final class NpcLocalCommands {
 		SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
 		SC_OwnCharStatus2.send(pc);
 
-		for (L1ItemInstance armor : pc.getInventory().getItems()) {
+		for (L1ItemInstance armor : pc.getInventory().GetEquippedItems()) {
 			for (int type = 0; type <= 12; type++) {
 				if (armor != null) {
 					pc.UnequipItem(armor);

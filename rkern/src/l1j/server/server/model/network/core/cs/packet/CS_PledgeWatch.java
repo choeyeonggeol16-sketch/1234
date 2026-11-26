@@ -1,10 +1,13 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanAttention;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
@@ -100,11 +103,8 @@ public final class CS_PledgeWatch {
             return;
         }
 
-        /*
-         * 원본과 동일하게 직접 순회.
-         */
-        for (String gazeName :
-                clan.getGazeList()) {
+        final List<String> gaze = clan.getGazeList();
+        for (String gazeName : gaze) {
 
             if (gazeName.equalsIgnoreCase(
                     targetClanName)) {
@@ -115,7 +115,7 @@ public final class CS_PledgeWatch {
             }
         }
 
-        if (clan.getGazeList().size() >= 5) {
+        if (gaze.size() >= 5) {
 
             SC_SystemMessage.send(pc, "\\aG문장주시는 최대 5개 혈맹에만 가능합니다.");
 
@@ -232,28 +232,13 @@ public final class CS_PledgeWatch {
         targetClan.removeGazelist(
                 clan.getClanName());
 
-        /*
-         * 현재 혈맹 실시간 갱신.
-         */
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-SC_ClanAttention.nativeListWriter(clan.getGazeSize(),clan.getGazeList()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance member :
-                clan.getOnlineClanMember()) {
+        broadcastGazeList(clan);
+        broadcastGazeList(targetClan);
+    }
 
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-        }
-}
-
-        /*
-         * 상대 혈맹 실시간 갱신.
-         */
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-SC_ClanAttention.nativeListWriter(targetClan.getGazeSize(),targetClan.getGazeList()),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance member :
-                targetClan.getOnlineClanMember()) {
-
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-        }
-}
+    private static void broadcastGazeList(L1Clan clan) {
+        final List<String> gaze = clan.getGazeList();
+        CSharedBroadcast.sendWrittenRecipients(Arrays.asList(clan.getOnlineClanMember()),
+                SC_ClanAttention.nativeListWriter(gaze.size(), gaze));
     }
 }

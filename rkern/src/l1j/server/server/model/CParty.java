@@ -1,38 +1,41 @@
 package l1j.server.server.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import l1j.server.Config;
 import l1j.server.server.Controller.AuraController;
 import l1j.server.server.datatables.SkillsTable;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.Item.Drop.CContributeData;
-import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
+import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
+import l1j.server.server.model.network.core.sc.packet.SC_Party;
+import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_LIST;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_LIST_CHANGE;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_MARK_CHANGE_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_STATUS;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_SYNC_PERIODIC_INFO;
-import l1j.server.server.model.network.core.sc.packet.SC_Party;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.inventory.CInventory;
 
 public class CParty {
 
     private static final Logger _log = Logger.getLogger(CParty.class.getName());
 
-    protected final List<L1PcInstance> _membersList = new java.util.concurrent.CopyOnWriteArrayList<>();
-    protected final HashMap<Integer, Integer> _membersMark = new HashMap<Integer, Integer>();
+    protected final List<L1PcInstance> _membersList = new CopyOnWriteArrayList<>();
+    protected final ConcurrentHashMap<Integer, Integer> _membersMark = new ConcurrentHashMap<>();
 
     /** 전체 LIST 재전송 쿨다운 — 멘트/도배 방지 */
     private static final long FULL_LIST_COOLDOWN_MS = 1500L;
@@ -40,7 +43,7 @@ public class CParty {
 
     private volatile L1PcInstance _leader;
     private long lootCursor;
-    private static final java.util.concurrent.atomic.AtomicLong LOOT_IDENTITIES = new java.util.concurrent.atomic.AtomicLong();
+    private static final AtomicLong LOOT_IDENTITIES = new AtomicLong();
     private final long lootIdentity = LOOT_IDENTITIES.incrementAndGet();
     public final long GetLootIdentity() { return lootIdentity; }
 
@@ -71,7 +74,7 @@ public class CParty {
     /** 특정 대상 목록에게 공유 바이트 전송 */
     private static void sendRawTo(L1PcInstance[] targets, byte[] data) {
         if(targets==null || targets.length==0 || data==null)return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawArray(targets,data);
+        CSharedBroadcast.sendRawArray(targets,data);
     }
 
     /** 파티 전원에게 공유 바이트 전송 */
@@ -99,13 +102,13 @@ public class CParty {
             members.add(SC_PARTY_MEMBER_LIST.Member.from(m,
                     _membersMark.getOrDefault(m.getId(),0)));
         }
-        byte[] data=new SC_PARTY_MEMBER_LIST(
-                _leader!=null?_leader.getName():"",members).encode();
-        try(var shared=l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(data)){
+        final L1PcInstance leader = getLeader();
+        byte[] data = new SC_PARTY_MEMBER_LIST(leader != null ? leader.getName() : "", members).encode();
+        try(var shared=CSharedBroadcast.openRaw(data)){
             for(L1PcInstance t:targets){
                 if(!ok(t))continue;
                 if(!force && !canSendFullListNow(t.getId()))continue;
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,t);
+                CSharedBroadcast.sendRecipient(shared,t);
             }
         }
     }
@@ -128,7 +131,9 @@ public class CParty {
             pc.sendPackets("자동사냥 중에는 파티에 참가할 수 없습니다.");
             return;
         }
-        if (_membersList.size() == Config.MAX_PT && !_leader.isGm() || _membersList.contains(pc)) {
+        final L1PcInstance leader = getLeader();
+        if ((_membersList.size() >= Config.MAX_PT && (leader == null || !leader.isGm()))
+                || _membersList.contains(pc)) {
             SC_ServerMessage.send(pc, 417);
             return;
         }
@@ -155,9 +160,10 @@ public class CParty {
             list.add(SC_PARTY_MEMBER_LIST.Member.from(m, _membersMark.getOrDefault(m.getId(), 0)));
         }
 
-        if (beforeSize > 0) {
+        final L1PcInstance currentLeader = getLeader();
+        if (beforeSize > 0 && currentLeader != null) {
             // 신규 멤버: 전체 LIST (여기서 멘트 1번)
-            SC_PARTY_MEMBER_LIST.sendFields(pc, _leader.getName(), list);
+            SC_PARTY_MEMBER_LIST.sendFields(pc, currentLeader.getName(), list);
         }
         if (beforeSize == 1 && after.length == 2) {
             // 2인 파티 성립: 기존 멤버에게도 LIST (CHANGE 아님)
@@ -178,8 +184,15 @@ public class CParty {
             return;
         }
 
-        // 잔여 멤버 스냅샷 (본인 제외)
-        L1PcInstance[] rest = getMembersExcept(pc);
+        final boolean wasLeader = isLeader(pc);
+        if (!_membersList.remove(pc)) return;
+        _membersMark.remove(pc.getId());
+        _lastFullListSentAt.remove(pc.getId());
+        if (pc.getParty() == this) pc.setParty(null);
+
+        final L1PcInstance[] rest = getMembers();
+        final L1PcInstance newLeader = wasLeader && rest.length != 0 ? rest[0] : null;
+        if (wasLeader) setLeader(newLeader);
 
         // 잔여 멤버: out_user 알림
         sendRawTo(rest,
@@ -187,15 +200,7 @@ public class CParty {
         // 탈퇴자 본인: out_user + 빈 LIST → UI/HP바 완전 제거
         clearPartyUIForLeaver(pc);
 
-        boolean wasLeader = isLeader(pc);
-        _membersList.remove(pc);
-        _membersMark.remove(pc.getId());
-        pc.setParty(null);
-
-        // 리더가 나갔으면 승계 + 알림
-        if (wasLeader && !_membersList.isEmpty()) {
-            L1PcInstance newLeader = _membersList.get(0);
-            setLeader(newLeader);
+        if (newLeader != null) {
             sendRawTo(rest,
                     SC_PARTY_MEMBER_LIST_CHANGE.ofLeaderChange(newLeader.getName()).encode());
         }
@@ -241,7 +246,8 @@ public class CParty {
     }
 
     public boolean isLeader(L1PcInstance pc) {
-        return _leader != null && pc.getId() == _leader.getId();
+        final L1PcInstance leader = getLeader();
+        return pc != null && leader != null && pc.getId() == leader.getId();
     }
 
     public boolean isAutoDivision(L1PcInstance pc) {
@@ -256,22 +262,15 @@ public class CParty {
         return _result;
     }
 
-    public void refresh(L1PcInstance pc) {// 파티추가
-        L1PcInstance leader = getLeader();
-        final int partyColor=(leader!=null && leader.getId()==pc.getId())?2:1;
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-SC_Party.nativeNameColorWriter(pc.getId(),partyColor),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance member : getMembers()) {
-            if(member == null || pc.getId() == member.getId())
-                continue;
-
-            if (leader != null && leader.getId() == pc.getId()) {
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-            } else {
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
+    public void refresh(L1PcInstance pc) {
+        final int partyColor = isLeader(pc) ? 2 : 1;
+        try (var shared = new CAsyncSendConstBuffer(
+                SC_Party.nativeNameColorWriter(pc.getId(), partyColor), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+            for (L1PcInstance member : getMembers()) {
+                if (member == null || pc.getId() == member.getId()) continue;
+                CSharedBroadcast.sendRecipient(shared, member);
             }
         }
-}
     }
 
     public void memberDie(L1PcInstance pc) {// 파티원 죽었을 때 — 상태갱신 (0x0339)
@@ -321,13 +320,18 @@ for (L1PcInstance member : getMembers()) {
         _membersMark.clear();
         _lastFullListSentAt.clear();
         _leader=null;
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+        for (L1PcInstance member : members) {
+            if (member != null && member.getParty() == this) member.setParty(null);
+        }
+        try(var shared=new CAsyncSendConstBuffer(
                 SC_ServerMessage.nativeWriter(418),Integer.MIN_VALUE,Integer.MAX_VALUE)){
             for(L1PcInstance m:members){
-                if(m==null)continue;
-                m.setParty(null);
-                clearPartyUIForLeaver(m);
-                if(ok(m))l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,m);
+                if (m == null || m.getParty() != null) continue;
+                try { clearPartyUIForLeaver(m); }
+                catch (RuntimeException failure) {
+                    _log.log(Level.WARNING, "Could not clear party UI for " + m.getId(), failure);
+                }
+                if (ok(m)) CSharedBroadcast.sendRecipientBestEffort(shared, m);
             }
         }
     }
@@ -340,30 +344,32 @@ for (L1PcInstance member : getMembers()) {
     }
 
     public void leaveMember(L1PcInstance pc) {
+        if (!isMember(pc)) return;
         if(isLeader(pc) || getNumOfMembers()==2){
             breakup();
         } else {
             removeMember(pc);
-            try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+            try(var shared=new CAsyncSendConstBuffer(
                     SC_ServerMessage.nativeWriter(420,pc.getName()),
                     Integer.MIN_VALUE,Integer.MAX_VALUE)){
                 for(L1PcInstance member:getMembers())
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
+                    CSharedBroadcast.sendRecipientBestEffort(shared, member);
+                CSharedBroadcast.sendRecipientBestEffort(shared, pc);
             }
         }
     }
 
     public void kickMember(L1PcInstance pc) {
+        if (!isMember(pc)) return;
         if(getNumOfMembers()==2){
             breakup();
         } else {
             removeMember(pc);
-            try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+            try(var shared=new CAsyncSendConstBuffer(
                     SC_ServerMessage.nativeWriter(420,pc.getName()),
                     Integer.MIN_VALUE,Integer.MAX_VALUE)){
                 for(L1PcInstance member:getMembers())
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,member);
+                    CSharedBroadcast.sendRecipientBestEffort(shared, member);
             }
             sendKickMessage(pc);
         }
@@ -396,12 +402,12 @@ for (L1PcInstance member : getMembers()) {
 
     public void broadcastRootMent(String message) {
         if(message==null)return;
-        try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+        try(var shared=new CAsyncSendConstBuffer(
                 SC_SystemMessage.nativeWriter(message),
                 Integer.MIN_VALUE,Integer.MAX_VALUE)){
             for(L1PcInstance pc:_membersList){
                 if(pc!=null && pc.RootMent1)
-                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
+                    CSharedBroadcast.sendRecipient(shared,pc);
             }
         }
     }
@@ -470,7 +476,7 @@ for (L1PcInstance member : getMembers()) {
                     SC_SystemMessage.send(member, item.getNumberedName(amount)
                             + " 획득 : " + member.getName() + "(" + tag + ")");
                 } catch (RuntimeException e) {
-                    _log.log(java.util.logging.Level.WARNING, "Party adena notification failed", e);
+                    _log.log(Level.WARNING, "Party adena notification failed", e);
                 }
             }
         }
@@ -492,16 +498,16 @@ for (L1PcInstance member : getMembers()) {
             try {
                 final String msg = item.getNumberedName(amount) + " 획득 : "
                         + target.getName() + "(" + tag + ")";
-                try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+                try (var shared = new CAsyncSendConstBuffer(
                         SC_SystemMessage.nativeWriter(msg), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
                     for (int i = 0; i < size; i++) {
                         final L1PcInstance member = members[i];
                         if (member.getParty() == this && member.RootMent1)
-                            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared, member);
+                            CSharedBroadcast.sendRecipient(shared, member);
                     }
                 }
             } catch (RuntimeException e) {
-                _log.log(java.util.logging.Level.WARNING, "Party item notification failed", e);
+                _log.log(Level.WARNING, "Party item notification failed", e);
             }
         }
         RecoverRemainder(world, origin, source, item);

@@ -617,8 +617,14 @@ public final class CCreatureController {
             final L1PcInstance pc = actor;
             final L1Object observed = (L1Object) o0;
             if (pc != null && observed != null && pc != observed) {
-                if (observed.getClusterMapId() < 0) pc.outOfSight(observed);
-                else pc.reconcileSight(observed);
+                try {
+                    if (observed.getClusterMapId() < 0) pc.outOfSight(observed);
+                    else pc.reconcileSight(observed);
+                } catch (RuntimeException failure) {
+                    EXECUTION_LOG.log(Level.WARNING,
+                            "Sight update failed for viewer " + pc.getId() + " and object " + observed.getId(),
+                            failure);
+                }
             }
             break;
         }
@@ -765,7 +771,12 @@ public final class CCreatureController {
     }
 
     public void Move(int x, int y, int heading) {
-        SubmitEntry(ACTION_MOVE, x, y, heading & 7, 0, 0L, 0D, null, null, 0);
+        final L1PcInstance pc = actor;
+        if (pc == null) return;
+        final int teleportEpoch = pc.teleportTimerEpoch();
+        final int mapId = pc.getMapId();
+        if (pc.teleportTimerEpoch() != teleportEpoch) return;
+        SubmitEntry(ACTION_MOVE, x, y, heading & 7, teleportEpoch, mapId, 0D, null, null, 0);
     }
 
     public void Attack(int targetId, int x, int y) {
@@ -791,7 +802,13 @@ public final class CCreatureController {
     }
 
     public void Skill(int skillId, int targetId, int targetX, int targetY, String message) {
-        SubmitEntry(ACTION_SKILL, skillId, targetId, targetX, targetY, 0L, 0D, null, message, 0);
+        final L1PcInstance pc = actor;
+        if (pc == null || pc.get_teleport()) return;
+        final int teleportEpoch = pc.teleportTimerEpoch();
+        final var map = pc.getMap();
+        if (map == null || pc.get_teleport() || pc.teleportTimerEpoch() != teleportEpoch) return;
+        SubmitEntry(ACTION_SKILL, skillId, targetId, targetX, targetY,
+                teleportEpoch, 0D, map, message, 0);
     }
 
     public void GetItem(int x, int y, int objectId, long amount) {
@@ -1486,8 +1503,8 @@ public final class CCreatureController {
         return (cflags & FLAG_FORCE_ATTACK) != 0;
     }
 
-    boolean MoveStepDirect(int sx, int sy, int heading, long nowMs) {
-        return moveAction.MoveStep(actor, sx, sy, heading, nowMs);
+    long MoveStepDirect(int sx, int sy, int heading, long nowMs) {
+        return moveAction.moveStep(actor, sx, sy, heading, nowMs, System.nanoTime(), false);
     }
 }
 

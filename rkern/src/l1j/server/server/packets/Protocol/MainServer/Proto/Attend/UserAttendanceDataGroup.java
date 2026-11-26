@@ -51,70 +51,79 @@ public class UserAttendanceDataGroup {
     
     // ────────────── 게임로직 (server 1:1) ──────────────
 
-    public boolean onUpdateDay(boolean isPcCafe){
-        if(_resultCode.equals(UserAttendanceTimeStatus.ATTENDANCE_ALL_CLEAR) || _resultCode.equals(UserAttendanceTimeStatus.ATTENDANCE_ALL_COMPLETE))
-            return false;
-        
-        if(_currentAttendanceIndex > _groupData.size() - 1){
-            int clearcount = 0;
-            for(UserAttendanceDataExtend gData : _groupData){
-                if(gData.get_state().equals(UserAttendanceState.CLEAR))
-                    ++clearcount;
-            }
-            _resultCode = clearcount >= _groupData.size() ? UserAttendanceTimeStatus.ATTENDANCE_ALL_CLEAR : UserAttendanceTimeStatus.ATTENDANCE_ALL_COMPLETE;
-        }else{
-            UserAttendanceDataExtend gData = _groupData.get(_currentAttendanceIndex);
-            _attendanceTime = 0;
-            _totalAttendanceTime = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
-            _recvedRewardCount = 0;
-            _totalRewardCount = AttendanceLoadManager.ATTEN_DAILY_MAX_COUNT;
-            if(gData.get_state().equals(UserAttendanceState.INIT)){
-                gData.set_time(0);
-            }else{
-                ++_currentAttendanceIndex;
-            }
-            if(_groupType.equals(AttendanceGroupType.PC_CAFE) && !isPcCafe)
-                _resultCode = UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME;
-            else
-                _resultCode = UserAttendanceTimeStatus.ATTENDANCE_NORMAL;
+    public boolean onUpdateDay(boolean isPcCafe) {
+        if (_resultCode == UserAttendanceTimeStatus.ATTENDANCE_ALL_CLEAR
+                || _resultCode == UserAttendanceTimeStatus.ATTENDANCE_ALL_COMPLETE) {
+            return updateFinishedStatus();
         }
+
+        _currentAttendanceIndex = Math.max(0, _currentAttendanceIndex);
+        while (_currentAttendanceIndex < _groupData.size()
+                && _groupData.get(_currentAttendanceIndex).get_state() != UserAttendanceState.INIT) {
+            ++_currentAttendanceIndex;
+        }
+        if (_currentAttendanceIndex >= _groupData.size()) return updateFinishedStatus();
+
+        _attendanceTime = 0;
+        _totalAttendanceTime = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
+        _recvedRewardCount = 0;
+        _totalRewardCount = AttendanceLoadManager.ATTEN_DAILY_MAX_COUNT;
+        _groupData.get(_currentAttendanceIndex).set_time(0);
+        _resultCode = _groupType == AttendanceGroupType.PC_CAFE && !isPcCafe
+                ? UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME
+                : UserAttendanceTimeStatus.ATTENDANCE_NORMAL;
         return true;
     }
-    
-    public boolean onUpdateTime(int second){
-        if(!_resultCode.equals(UserAttendanceTimeStatus.ATTENDANCE_NORMAL))
-            return false;
-        
-        if(_currentAttendanceIndex > _groupData.size() - 1){
-            return true;
-        }
-        
-        UserAttendanceDataExtend attendance_data = _groupData.get(_currentAttendanceIndex);
-        if(!attendance_data.get_state().equals(UserAttendanceState.INIT))
-            return false;
-        
-        boolean isUpdate = false;
-        int updateTime = _attendanceTime + second;
-        if(updateTime >= AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND){
-            updateTime = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
-            _recvedRewardCount = _recvedRewardCount + 1;
-            attendance_data.set_state(UserAttendanceState.COMPLETE);
-            if(_recvedRewardCount >= _totalRewardCount){
-                _resultCode = UserAttendanceTimeStatus.ATTENDANCE_NO_MORE_TIME;
-            }else{					
-                if(++_currentAttendanceIndex > _groupData.size() - 1)
-                    _resultCode = UserAttendanceTimeStatus.ATTENDANCE_ALL_COMPLETE;
-                attendance_data.set_time(updateTime);
-                _attendanceTime = 0;
-                return true;
+
+    public boolean onUpdateTime(int seconds) {
+        if (_resultCode != UserAttendanceTimeStatus.ATTENDANCE_NORMAL || seconds <= 0) return false;
+        if (_currentAttendanceIndex >= _groupData.size()) return updateFinishedStatus();
+        final int threshold = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
+        if (_currentAttendanceIndex < 0 || threshold <= 0 || _totalRewardCount <= 0) return false;
+
+        boolean completedAny = false;
+        while (seconds > 0) {
+            final UserAttendanceDataExtend slot = _groupData.get(_currentAttendanceIndex);
+            if (slot.get_state() != UserAttendanceState.INIT) break;
+
+            _attendanceTime = Math.clamp(_attendanceTime, 0, threshold);
+            final int applied = Math.min(seconds, threshold - _attendanceTime);
+            _attendanceTime += applied;
+            seconds -= applied;
+            slot.set_time(_attendanceTime);
+            if (_attendanceTime < threshold) break;
+
+            ++_recvedRewardCount;
+            slot.set_state(UserAttendanceState.COMPLETE);
+            completedAny = true;
+            if (_currentAttendanceIndex + 1 == _groupData.size()) {
+                _currentAttendanceIndex = _groupData.size();
+                updateFinishedStatus();
+                break;
             }
-            isUpdate = true;
+            if (_recvedRewardCount >= _totalRewardCount) {
+                _resultCode = UserAttendanceTimeStatus.ATTENDANCE_NO_MORE_TIME;
+                break;
+            }
+            ++_currentAttendanceIndex;
+            _attendanceTime = 0;
         }
-        attendance_data.set_time(updateTime);
-        _attendanceTime = updateTime;
-        return isUpdate;
+        return completedAny;
     }
-    
+
+    private boolean updateFinishedStatus() {
+        UserAttendanceTimeStatus status = UserAttendanceTimeStatus.ATTENDANCE_ALL_CLEAR;
+        for (UserAttendanceDataExtend slot : _groupData) {
+            if (slot.get_state() != UserAttendanceState.CLEAR) {
+                status = UserAttendanceTimeStatus.ATTENDANCE_ALL_COMPLETE;
+                break;
+            }
+        }
+        if (_resultCode == status) return false;
+        _resultCode = status;
+        return true;
+    }
+
     // ────────────── getter/setter (호출부 유지) ──────────────
 
     public void set_currentAttendanceIndex(int index){

@@ -420,7 +420,7 @@ public final class CReplyChecker {
                             current = new L1ChatParty();
                             current.addMember(requester);
                         }
-                        if (current.isVacancy() || requester.isGm()) current.addMember(replier);
+                        if (current.isVacancy() || requester.isGm()) current.addMember(requester, replier);
                         else SC_ServerMessage.send(requester, 417);
                         if (!live(requester, p.requesterStamp) && requester.getChatParty() == current)
                             current.leaveMember(requester);

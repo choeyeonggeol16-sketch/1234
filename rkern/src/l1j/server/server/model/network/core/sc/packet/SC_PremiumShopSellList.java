@@ -1,5 +1,8 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.model.L1World;
+import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.model.shop.NpcShopView;
 import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -45,6 +48,7 @@ public final class SC_PremiumShopSellList {
             try { list = shop.getSellingItems(); } catch (Exception ignored) {}
         }
         final int limit = list == null ? 0 : list.size();
+        final L1ShopItem[] offers = new L1ShopItem[limit];
         final int[] values = new int[limit << 2];
         final byte[][] encodedNames = new byte[limit][];
         final byte[][] statuses = new byte[limit][];
@@ -80,6 +84,7 @@ public final class SC_PremiumShopSellList {
             if (capacity + tailSize > CIOConfig.MAX_WIRE_PACKET_SIZE) return false;
             final int j = count << 2;
             values[j] = i;
+            offers[i] = shopItem;
             values[j + 1] = item.getGfxId();
             values[j + 2] = shopItem.getPrice();
             values[j + 3] = Math.max(0, item.getUseType());
@@ -87,6 +92,10 @@ public final class SC_PremiumShopSellList {
             statuses[count++] = status;
         }
         capacity += tailSize;
+        final L1PcInstance pc = connection.getActiveChar();
+        final NpcShopView view = pc != null && shop != null
+                && L1World.getInstance().findObject(objId) instanceof L1NpcInstance npc
+                ? NpcShopView.purchase(connection, pc, npc, objId, shop, offers) : null;
         final CIOFrame frame = connection.beginDirectFrame((int) capacity);
         if (frame == null) return false;
         boolean committed = false;
@@ -114,6 +123,7 @@ public final class SC_PremiumShopSellList {
                 return false;
             }
             committed = connection.commitDirectFrame(frame);
+            if (committed) connection.publishNpcShopView(pc, view);
             return committed;
         } catch (Assemble.RegisteredCapacityExceededException e) {
             System.err.println("[RPremiumShopSellList] SEND capacity exceeded npcId="

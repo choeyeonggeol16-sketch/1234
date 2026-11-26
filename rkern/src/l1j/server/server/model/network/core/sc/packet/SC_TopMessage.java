@@ -1,11 +1,10 @@
 package l1j.server.server.model.network.core.sc.packet;
 
-import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-import l1j.server.server.model.L1World;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_TopMessage {
     private SC_TopMessage() {}
@@ -34,9 +33,9 @@ public final class SC_TopMessage {
         return pc != null && send(pc.getNetConnection(), msg);
     }
     public static void broadcastAll(String msg) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {
+        CSharedBroadcast.sendWrittenAll(b -> {
             b.put((byte)121).put((byte)84).put((byte)2);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,msg);
+            CSharedBroadcast.writeMS949(b,msg);
             b.put((byte)0).put((byte)0).put((byte)0);
         });
     }

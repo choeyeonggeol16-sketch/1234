@@ -2,9 +2,10 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_SystemMessage {
 
@@ -34,9 +35,9 @@ public final class SC_SystemMessage {
     }
 
     public static void broadcast(String message) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> {
+        CSharedBroadcast.sendWrittenAll(b -> {
             b.put((byte)Opcodes.S_MESSAGE).put((byte)0x09);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message);
+            CSharedBroadcast.writeMS949(b,message);
             b.put((byte)0);
         });
     }
@@ -47,9 +48,9 @@ public final class SC_SystemMessage {
      */
     public static void broadcastRecipients(
             Iterable<? extends L1PcInstance> recipients,String message) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(recipients,b -> {
+        CSharedBroadcast.sendWrittenRecipientsBestEffort(recipients,b -> {
             b.put((byte)Opcodes.S_MESSAGE).put((byte)0x09);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message);
+            CSharedBroadcast.writeMS949(b,message);
             b.put((byte)0);
         });
     }
@@ -70,11 +71,11 @@ public final class SC_SystemMessage {
     
 
 
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(String message) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(String message) {
         final String text=message==null?"":message;
         return b -> {
             b.put((byte)Opcodes.S_MESSAGE).put((byte)0x09);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,text);
+            CSharedBroadcast.writeMS949(b,text);
             b.put((byte)0);
         };
     }

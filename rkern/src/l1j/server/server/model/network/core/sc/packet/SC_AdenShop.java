@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.model.shop.NpcShopView;
 import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -32,6 +33,7 @@ public final class SC_AdenShop {
         final L1Shop shop = ShopTable.getInstance().get(DEFAULT_NPC_ID);
         final List<L1ShopItem> list = shop == null ? null : shop.getSellingItems();
         final int length = list == null ? 0 : list.size();
+        final L1ShopItem[] offers = new L1ShopItem[length];
         final int[] values = new int[length * 3];
         final String[] names = new String[length];
         final byte[][] statuses = new byte[length][];
@@ -59,8 +61,11 @@ public final class SC_AdenShop {
             values[j + 1] = shopItem.getPrice();
             values[j + 2] = Math.max(0, item.getUseType());
             names[count] = name;
+            offers[count] = shopItem;
             statuses[count++] = status;
         }
+        final NpcShopView view = pc != null && shop != null
+                ? NpcShopView.aden(connection, pc, 7626, shop, offers) : null;
         final CIOFrame frame = connection.beginDirectFrame((int) capacity);
         if (frame == null) return false;
         boolean committed = false;
@@ -82,6 +87,7 @@ public final class SC_AdenShop {
             }
             buffer.writeH(30050);
             committed = connection.commitDirectFrame(frame);
+            if (committed) connection.publishNpcShopView(pc, view);
             return committed;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);

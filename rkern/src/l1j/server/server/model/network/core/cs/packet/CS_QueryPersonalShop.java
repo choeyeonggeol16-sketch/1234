@@ -23,6 +23,7 @@ public final class CS_QueryPersonalShop {
         }
 
         client.setPlayerShopView(null);
+        client.clearNpcShopView(client.getNpcShopView());
         final L1PcInstance pc =
                 client.getActiveChar();
 

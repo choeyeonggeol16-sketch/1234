@@ -386,7 +386,8 @@ public class BQSCharacterData {
         return (_bit & 0x04) == 0x04;
     }
     public MonsterBookV2Info.DeckT get_deck(int difficulty){
-        return has_decks() ? _decks.get(difficulty) : null;
+        final var decks = _decks;
+        return decks != null && difficulty >= 0 && difficulty < decks.size() ? decks.get(difficulty) : null;
     }
     public ArrayList<MonsterBookV2Info.DeckT> get_decks(){
         return _decks;

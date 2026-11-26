@@ -52,7 +52,7 @@ public class Light {
 
 		final int TYPE_ETC_ITEM = 0, TYPE_LIGHT = 2; 
 		
-		for (L1ItemInstance item : character.getInventory().getItems()) {
+		for (L1ItemInstance item : character.getInventory().GetItemsByType(TYPE_LIGHT)) {
 			if (item.getItem().getType2() == TYPE_ETC_ITEM && item.getItem().getType() == TYPE_LIGHT) {
 				int itemlightSize = item.getItem().getLightRange();
 				if (itemlightSize != 0 && item.isNowLighting()) {

@@ -9,7 +9,9 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
+import l1j.server.server.model.map.L1Map;
 import l1j.server.server.templates.L1Skills;
 
 public enum SkillUseInitializer {
@@ -58,6 +60,13 @@ public enum SkillUseInitializer {
         // 기본 타겟 정보
         su.setupTargetBasics(skillTarget, targetId);
 
+        final boolean groundSkill = su.isGroundSkill(skillId);
+        if (groundSkill && attacker == null
+                && (type == L1SkillUse.TYPE_NORMAL || type == L1SkillUse.TYPE_SPELLSC)
+                && !canPlaceGroundSkill(player, skillId, skill, su.exTargetX(), su.exTargetY())) {
+            return false;
+        }
+
         // 타입별 사용 가능 체크
         if (!SkillUsabilityPolicy.INSTANCE.checkUsabilityByType(su, type)) {
             return false;
@@ -69,7 +78,7 @@ public enum SkillUseInitializer {
          * FIRE_WALL / LIFE_STREAM 은
          * 월드 오브젝트 target resolve가 필요 없음.
          */
-        if (su.isGroundSkill(skillId)) {
+        if (groundSkill) {
             su.exSetCalcTypeForGround();
             return true;
         }
@@ -107,6 +116,15 @@ public enum SkillUseInitializer {
         }
 
         return true;
+    }
+
+    public static boolean canPlaceGroundSkill(L1PcInstance player, int skillId, L1Skills skill, int x, int y) {
+        final L1Map map = player.getMap();
+        if (map == null || !map.isInMap(x, y)) return false;
+        // Fire Wall derives its direction from the selected tile and limits the path itself.
+        if (skillId == L1SkillId.FIRE_WALL) return true;
+        final double range = skill.getRanged() < 0 ? 15D : skill.getRanged();
+        return player.getLocation().getLineDistance(x, y) <= range + 4.5D;
     }
 
     /**

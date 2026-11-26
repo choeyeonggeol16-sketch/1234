@@ -43,6 +43,8 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.L1NpcHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.utils.IterableElementList;
 
@@ -55,6 +57,8 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
 	private final boolean _isAmountInputable;
 	private final L1NpcListedAction _actionOnSucceed;
 	private final L1NpcAction _actionOnFail;
+    private final List<L1NpcSetQuestAction> _successQuests;
+    private final boolean _completesQuest;
 
 	public L1NpcMakeItemAction(Element element) {
 		super(element);
@@ -90,47 +94,61 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
 
 		Element elem = L1NpcXmlParser.getFirstChildElementByTagName(element, "Succeed");
 		_actionOnSucceed = elem == null ? null : new L1NpcListedAction(elem);
+        _successQuests = _actionOnSucceed == null ? List.of() : _actionOnSucceed.successQuestStages();
+        _completesQuest = _successQuests != null && _successQuests.stream()
+                .anyMatch(quest -> quest.targetStep() == CQuestSystem.QUEST_END);
+        if (_successQuests == null)
+            LOG.warning("NPC XML reward SetQuest must be unconditional and precede state-changing effects: "
+                    + sourceDescription(element));
 		elem = L1NpcXmlParser.getFirstChildElementByTagName(element, "Fail");
 		_actionOnFail = elem == null ? null : new L1NpcListedAction(elem);
 	}
 
     /** Prepare exact unequipped material rows and detached reward images. */
-    private boolean submit(L1PcInstance pc, L1NpcInstance npc, int amount,
+    private L1NpcHtml submit(L1PcInstance pc, L1NpcInstance npc, int amount,
             String name, Consumer<L1NpcHtml> completion, Runnable failure) {
-        if (amount <= 0 || amount >= 1000 || (!_isAmountInputable && amount != 1)) return false;
+        if (amount <= 0 || amount >= 1000 || (!_isAmountInputable && amount != 1)) return null;
         final CUserInventory inv = pc.getInventory();
         final String npcName = npc.getNpcTemplate().get_name();
         final CObjectDB.ItemData templates = CObjectDB.LoadItem();
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, npc.getNpcTemplate().get_npcId())) {
+            if (!_successQuests.isEmpty()) {
+                if (!supportsSuccessQuests(pc)) return rejectUnsafeQuestReward(pc);
+                if (!acceptsRequest(name, pc, npc)) return ABORTED;
+                if (!stageSuccessQuests(tx, pc)) {
+                    SC_SystemMessage.send(pc, "이미 완료한 퀘스트의 보상은 다시 받을 수 없습니다.");
+                    return ABORTED;
+                }
+            }
             for (Material material : _materials) {
                 final int id = material.itemId(), enchant = material.enchant();
-                if (material.amount() <= 0 || material.amount() > CInventory.MAX_AMOUNT / amount) return false;
+                if (material.amount() <= 0 || material.amount() > CInventory.MAX_AMOUNT / amount) return null;
                 final long required = material.amount() * amount;
                 L1Item definition = templates.getTemplate(id);
-                if (definition == null) return false;
+                if (definition == null) return null;
                 final long available = inv.GetRecipeMaterialAmount(id, enchant);
                 if (available < required) {
                     String materialName = rewardName(definition, enchant, 1);
                     SC_ServerMessage.send(pc, 337, materialName + "(" + (required - available) + ")");
-                    return false;
+                    return null;
                 }
-                if (!tx.DebitRecipeMaterial(id, enchant, (int) required)) return false;
+                if (!tx.DebitRecipeMaterial(id, enchant, (int) required)) return null;
             }
             // Preserve the existing conservative preflight; the receipt also
             // validates projected stack quantities, capacity and weight.
             long slots = 0, weight = 0;
             for (L1ObjectAmount<Integer> row : _items) {
-                if (!validExpandedAmount(row.getAmount(), amount)) return false;
+                if (!validExpandedAmount(row.getAmount(), amount)) return null;
                 L1Item definition = templates.getTemplate(row.getObject());
-                if (definition == null) return false;
+                if (definition == null) return null;
                 int count = row.getAmount() * amount;
                 slots += definition.isStackable() ? (inv.HaveItemByClassId(row.getObject()) ? 0 : 1) : count;
                 weight = Math.addExact(weight, (long) definition.getWeight() * count / 1000);
-                if (slots > 1000) return false;
+                if (slots > 1000) return null;
             }
-            if (inv.getSize() + slots > 180) { SC_ServerMessage.send(pc, 263); return false; }
+            if (inv.getSize() + slots > 180) { SC_ServerMessage.send(pc, 263); return null; }
             if (pc.getMaxWeight() < Math.addExact((long) inv.GetCarryingWeight(), weight)) {
-                SC_ServerMessage.send(pc, 82); return false;
+                SC_ServerMessage.send(pc, 82); return null;
             }
             final String[] rewardNames = new String[_items.size()];
             for (int i = 0; i < _items.size(); i++) {
@@ -144,33 +162,50 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
                 image.setBless(definition.getBless());
                 image.setIdentified(true);
                 image.setEnchantLevel(row.getEnchant());
-                if (tx.grant(image) == null) return false;
+                if (tx.grant(image) == null) return null;
                 rewardNames[i] = rewardName(definition, row.getEnchant(), count);
             }
-            final L1NpcSetQuestAction quest = _actionOnSucceed == null
-                    ? null : _actionOnSucceed.leadingPlainQuest(pc);
-            if (quest != null) quest.stageInCraft(tx, pc);
             tx.onFailure(failure);
             Runnable effects = () -> {
                 for (String rewardName : rewardNames) {
                     SC_ServerMessage.send(pc, 143, npcName, rewardName);
                 }
-                if (quest == null) {
+                if (_successQuests.isEmpty()) {
                     completeOutcome(_actionOnSucceed, name, pc, npc, completion);
                 } else {
-                    L1NpcHtml result = _actionOnSucceed.resumeAfterCraftQuest(name, pc, npc,
-                            EMPTY_ARGS, html -> completion.accept(html == null ? L1NpcHtml.HTML_CLOSE : html));
+                    L1NpcHtml result = _actionOnSucceed.resumeAfterCraftQuests(name, pc, npc, EMPTY_ARGS,
+                            _successQuests, html -> completion.accept(html == null ? L1NpcHtml.HTML_CLOSE : html));
                     if (result != DEFERRED)
                         completion.accept(result == null ? L1NpcHtml.HTML_CLOSE : result);
                 }
             };
-            if (quest == null) tx.commitAfterInventoryRelease(effects);
-            else tx.commitAfterInventoryRelease(() -> quest.publishCraftStep(pc), effects);
-            return true;
+            if (_successQuests.isEmpty()) tx.commitAfterInventoryRelease(effects);
+            else tx.commitAfterInventoryRelease(() -> {
+                for (L1NpcSetQuestAction quest : _successQuests) quest.publishCraftStep(pc);
+            }, effects);
+            return DEFERRED;
         } catch (RuntimeException rejected) {
             LOG.log(Level.FINE, "XML NPC craft rejected", rejected);
-            return false;
+            return null;
         }
+    }
+
+    private boolean stageSuccessQuests(L1InventoryTransaction tx, L1PcInstance pc) {
+        for (int i = 0; i < _successQuests.size(); i++) {
+            final L1NpcSetQuestAction quest = _successQuests.get(i);
+            int expected = pc.getQuest().get_step(quest.questId());
+            if (quest.targetStep() == CQuestSystem.QUEST_END && expected == CQuestSystem.QUEST_END)
+                return false;
+            for (int previous = i - 1; previous >= 0; previous--) {
+                final L1NpcSetQuestAction earlier = _successQuests.get(previous);
+                if (earlier.questId() == quest.questId()) {
+                    expected = earlier.targetStep();
+                    break;
+                }
+            }
+            quest.stageInCraft(tx, pc, expected);
+        }
+        return true;
     }
 
     private static String rewardName(L1Item definition, int enchant, int count) {
@@ -218,8 +253,9 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
     public L1NpcHtml executeDeferred(String name, L1PcInstance pc, L1Object obj,
             byte[] args, Consumer<L1NpcHtml> completion) {
         if (!(obj instanceof L1NpcInstance)) return L1NpcHtml.HTML_CLOSE;
+        if (!supportsSuccessQuests(pc)) return rejectUnsafeQuestReward(pc);
         int available = countNumOfMaterials(pc.getInventory());
-        if (available > 1 && _isAmountInputable) {
+        if (available > 1 && _isAmountInputable && !_completesQuest) {
             SC_HowManyMake.send(pc, obj.getId(), available, name);
             return null;
         }
@@ -230,9 +266,15 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
     public L1NpcHtml executeAmountDeferred(String name, L1PcInstance pc, L1Object obj,
             int amount, Consumer<L1NpcHtml> completion) {
         if (!(obj instanceof L1NpcInstance npc)) return L1NpcHtml.HTML_CLOSE;
-        if (submit(pc, npc, amount, name, completion,
-                () -> completeOutcome(_actionOnFail, name, pc, obj, completion))) return DEFERRED;
-        return outcome(_actionOnFail, name, pc, obj, completion);
+        if (!supportsSuccessQuests(pc)) return rejectUnsafeQuestReward(pc);
+        if (_completesQuest && amount != 1) return ABORTED;
+        final L1NpcHtml submitted = submit(pc, npc, amount, name, completion,
+                () -> completeOutcome(_actionOnFail, name, pc, obj, completion));
+        return submitted == null ? outcome(_actionOnFail, name, pc, obj, completion) : submitted;
+    }
+
+    private boolean supportsSuccessQuests(L1PcInstance pc) {
+        return _successQuests != null && (_successQuests.isEmpty() || (pc.getLevel() >= 1 && pc.getLevel() <= 99));
     }
 
     private static L1NpcHtml outcome(L1NpcAction branch, String name, L1PcInstance pc,

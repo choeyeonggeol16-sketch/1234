@@ -705,6 +705,11 @@ public class L1V1Map extends L1Map {
 	}
 
 	@Override
+	public boolean isTileBlocked(int x, int y) {
+		return !isInMap(x, y) || (accessTile(x, y) & BITFLAG_IS_IMPASSABLE) != 0;
+	}
+
+	@Override
 	public boolean isClosedDoorCached(int x, int y) {
 		final MemorySegment door = _closedDoorCache;
 		if (door == null || !isInMap(x, y)) return false;

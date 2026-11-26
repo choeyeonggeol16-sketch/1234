@@ -4,28 +4,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.L1ExcludingList;
-import l1j.server.server.utils.SQLUtil;
 
 public class SpamTable {
 
-    private final static Logger _log = Logger.getLogger(SpamTable.class.getName());
-
-    private static SpamTable _instance;
+    private static final SpamTable INSTANCE = new SpamTable();
 
     private final Map<Integer, L1ExcludingList> _excludes = new ConcurrentHashMap<Integer, L1ExcludingList>();
 
     public static SpamTable getInstance() {
-        if (_instance == null) {
-            _instance = new SpamTable();
-        }
-        return _instance;
+        return INSTANCE;
     }
 
     public void addExclude(int charId, int objId, String name) {
@@ -67,5 +59,10 @@ public class SpamTable {
         return exclude;
     }
 
+    /** Reading a broadcast audience must not create or retain empty lists. */
+    public boolean excludesChat(int charId, String name) {
+        final L1ExcludingList exclude = _excludes.get(charId);
+        return exclude != null && exclude.contains(0, name);
+    }
 
 }

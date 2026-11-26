@@ -2,12 +2,11 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1World;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_AttackPacket {
 
@@ -160,12 +159,12 @@ public final class SC_AttackPacket {
         final int chaId=cha.getId();
         final int heading=cha.getHeading();
         final int nativeKind = switch(mode) {
-            case MODE_1 -> l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKPACKET1;
-            case MODE_2 -> l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKPACKET2;
-            case MODE_3 -> l1j.server.server.model.network.core.broadcast.CSharedBroadcast.FORMAT_ATTACKPACKET3;
+            case MODE_1 -> CSharedBroadcast.FORMAT_ATTACKPACKET1;
+            case MODE_2 -> CSharedBroadcast.FORMAT_ATTACKPACKET2;
+            case MODE_3 -> CSharedBroadcast.FORMAT_ATTACKPACKET3;
             default -> throw new IllegalArgumentException("Unsupported attack mode " + mode);
         };
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendExtended(cha, nativeKind, Opcodes.S_ATTACK, 0, chaId, objId, type, heading, attackType, gfx, 0, 0, 0, 0, true);
+        CSharedBroadcast.sendExtended(cha, nativeKind, Opcodes.S_ATTACK, 0, chaId, objId, type, heading, attackType, gfx, 0, 0, 0, 0, true);
     }
 
 private static boolean send0(

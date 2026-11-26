@@ -3,9 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 
-import l1j.server.Config;
 import l1j.server.server.datatables.ShopTable;
-import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.inventory.warehouse.CWareHouseRequest;
@@ -17,7 +15,6 @@ import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.model.shop.L1ShopBuyOrder;
 import l1j.server.server.model.shop.L1ShopBuyOrderList;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 public final class CS_Result {
@@ -27,7 +24,7 @@ public final class CS_Result {
 
 	public static void handle(CUserSocket client, int npcObjectId, int resultType, int size, int hasFirst, long packed0, byte[] params) {
 
-		if (client == null) {
+		if (client == null || !client.ownsReadyGameSession()) {
 			return;
 		}
 
@@ -39,10 +36,7 @@ public final class CS_Result {
 			return;
 
 		boolean isPrivateShop = false;
-		boolean isPrivateNpcShop = false;
 
-        int level;
-		int npcId = 0;
 		String npcImpl = "";
 
 		if (pc.getFindcharno() != 0) {
@@ -56,12 +50,13 @@ public final class CS_Result {
             return; // Retired legacy auto-potion selection packet.
         }
 
+        if (MerchantTransactions.handleResult(client, pc, npcObjectId, resultType, size, packed0, params)) return;
+
 		L1Object findObject = L1World.getInstance().findObject(npcObjectId);
         // Also handle cancel after the NPC disappeared; only the matching view is affected.
         if (size == 0 && (resultType == 3 || resultType == 5 || resultType == 9
                 || resultType == 10 || resultType == 20)
                 && client.CloseWarehouseView(pc, npcObjectId, resultType)) return;
-		String npcName = "";
 
 		if (findObject != null) {
             if (pc.getMapId() != findObject.getMapId()
@@ -77,16 +72,9 @@ public final class CS_Result {
                 return;
             }
 
-			if (findObject instanceof L1NpcInstance) {
-				L1NpcInstance targetNpc = (L1NpcInstance) findObject;
-				npcId = targetNpc.getNpcTemplate().get_npcId();
+			if (findObject instanceof L1NpcInstance targetNpc) {
 				npcImpl = targetNpc.getNpcTemplate().getImpl();
-				npcName = targetNpc.getName();
-
-				if (npcImpl.equals("L1NpcShop"))
-					isPrivateNpcShop = true;
-
-			} else if (findObject instanceof L1PcInstance) {
+				} else if (findObject instanceof L1PcInstance) {
 				L1PcInstance gm = (L1PcInstance) findObject;
 				if (gm == pc && pc.isGm() && resultType == 3) {
 					if (hasFirst != 0) {
@@ -107,7 +95,6 @@ public final class CS_Result {
         final boolean offline;
         pc.lockUserState();
         try {
-            level = pc.getLevel();
             offline = client.getActiveChar() != pc || pc.getOnlineStatus() == 0;
         } finally {
             pc.unlockUserState();
@@ -116,49 +103,6 @@ public final class CS_Result {
             client.kick();
             return;
         }
-
-		if (Config.혈맹포인트상점) {
-			if (npcId >= 66110 && npcId <= 66120) {
-				if (!pc.isGm()) {
-                    final L1Clan clan = pc.getClan();
-					if (clan != null) {
-						if (pc.getId() != clan.getLeaderId()) {
-							SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "\\f3혈맹의 군주만 구매가능한 상점입니다.");
-							SC_SystemMessage.send(pc, "\\f3혈맹의 군주만 구매가능한 상점입니다.");
-							return;
-						}
-					} else {
-						SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "\\f3혈맹의 군주만 구매가능한 상점입니다.");
-						SC_SystemMessage.send(pc, "\\f3혈맹의 군주만 구매가능한 상점입니다.");
-					}
-				}
-			}
-		}
-
-		if (npcId == 454599) {
-			SC_SystemMessage.send(pc, "\\f3자동사냥 시작 시 캐릭터가 자동으로 구매하는 상점입니다");
-			SC_SystemMessage.send(pc, "\\f3일반상태에서는 구입할 수 없습니다.");
-			return;
-		}
-
-		if (npcObjectId == 7626) {
-			npcId = 5;
-			npcImpl = "L1Merchant";
-		}
-		if (npcObjectId == 8626) {
-			npcId = 8;
-			npcImpl = "L1Merchant";
-		}
-
-		if (npcObjectId >= 73201211 && npcObjectId <= 73201218) {
-			npcId = npcObjectId;
-			npcImpl = "L1Merchant";
-		}
-
-		if (npcObjectId >= 2020562 && npcObjectId <= 2020577) {
-			npcId = npcObjectId;
-			npcImpl = "L1Merchant";
-		}
 
         final boolean warehouse = (resultType == 20 && pc == findObject)
                 || (npcImpl.equalsIgnoreCase("L1Dwarf") && CWareHouseRequest.IsDwarfAction(resultType));
@@ -180,12 +124,8 @@ public final class CS_Result {
 			return;
 		}
 
-        if (size == 0 || (resultType != 0 && resultType != 1)) return;
-        if (npcImpl.equalsIgnoreCase("L1Merchant") || isPrivateNpcShop) {
-            MerchantTransactions.execute(client, pc, resultType == 0, isPrivateNpcShop,
-                    npcObjectId, npcId, npcName, size, packed0, params);
-        }
-    }
+
+	}
 
 	private static boolean processChangeItems(L1PcInstance pc, int size, long packed0, byte[] params) {
 		for (int n = 1; n <= 20; n++) {

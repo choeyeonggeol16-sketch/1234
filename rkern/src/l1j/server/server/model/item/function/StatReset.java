@@ -83,8 +83,8 @@ public class StatReset {
 				pc.UnequipItem(pc.getWeapon());
 			}
 
-			for (L1ItemInstance armor : pc.getInventory().getItems()) {
-                if (armor != null && armor.isEquipped()) {
+            for (L1ItemInstance armor : pc.getInventory().GetEquippedItems()) {
+                if (armor.isEquipped()) {
                     pc.UnequipItem(armor);
                 }
             }

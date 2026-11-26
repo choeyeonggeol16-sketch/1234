@@ -3,8 +3,9 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_CastleMaster {
 
@@ -13,7 +14,7 @@ public final class SC_CastleMaster {
 
     /** S_CASTLE_OWNER frame identical to the eight-byte direct writer. */
 
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int type,int objectId) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(int type,int objectId) {
         return b -> b.put((byte)Opcodes.S_CASTLE_OWNER)
             .put((byte)type).putInt(objectId);
     }

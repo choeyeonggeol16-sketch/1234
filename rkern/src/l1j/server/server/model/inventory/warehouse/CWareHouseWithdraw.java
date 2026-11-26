@@ -5,7 +5,6 @@ import java.sql.Timestamp;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanWareHouseHistory;
@@ -19,11 +18,6 @@ import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUS
 /** Game-server withdrawal and list policy; no new per-request state or queue. */
 public final class CWareHouseWithdraw {
     private CWareHouseWithdraw() {}
-
-    static boolean CheckPledgeUser(L1PcInstance pc, Warehouse warehouse) {
-        return warehouse instanceof ClanWarehouse
-                && pc.getClanRank() != L1Clan.수련 && !pc.hasSkillEffect(L1SkillId.SetBuff);
-    }
 
     static int FeeItem(int kind) {
         return kind == 3 || kind == 5 ? L1ItemId.ADENA : kind == 9 ? 40494 : 0;

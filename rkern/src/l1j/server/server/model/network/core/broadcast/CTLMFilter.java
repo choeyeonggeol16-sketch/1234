@@ -7,7 +7,7 @@ public final class CTLMFilter {
     private CTLMFilter() {}
     public static boolean sameWorldOther(L1Object origin, L1Object candidate) {
         return candidate != null && origin != null && candidate.getId() != origin.getId()
-                && candidate.getMapId() == origin.getMapId();
+                && candidate.getMap() == origin.getMap();
     }
     public static boolean nearby(L1Object origin, L1Object candidate, int radius, boolean screen) {
         if (!sameWorldOther(origin, candidate)) return false;

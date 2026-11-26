@@ -1,11 +1,15 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_ChatPacket {
 
@@ -37,20 +41,20 @@ public final class SC_ChatPacket {
     private static boolean fitsBroadcastChat(String text, boolean includeObjectId) {
         final long fixed=5L+(includeObjectId?4L:0L); // header, opcode, type, NUL
         if(fixed+2L*text.length()<=0xFFFFL)return true;
-        return fixed+text.getBytes(java.nio.charset.Charset.forName("MS949")).length<=0xFFFFL;
+        return fixed+text.getBytes(Charset.forName("MS949")).length<=0xFFFFL;
     }
 
     public static void broadcastMessage(String chat) {
         final String safe=chat==null?"":chat;
         if(!fitsBroadcastChat(safe,false))return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(
+        CSharedBroadcast.sendWrittenAll(
                 b -> writeNativeChat(b,Opcodes.S_MESSAGE,1,0,safe,false));
     }
 
     public static void broadcastOpcode(String chat, int opcode) {
         final String safe=chat==null?"":chat;
         if(!fitsBroadcastChat(safe,false))return;
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(
+        CSharedBroadcast.sendWrittenAll(
                 b -> writeNativeChat(b,opcode,2,0,safe,false));
     }
 
@@ -69,7 +73,7 @@ public final class SC_ChatPacket {
         final L1World world=L1World.getInstance();
         final java.util.List<L1PcInstance> visible=world.borrowVisiblePlayerFast(source);
         try {
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(visible,
+            CSharedBroadcast.sendWrittenRecipientsBestEffort(visible,
                 b -> writeNativeChat(b,opcode,0,source.getId(),formatted,true));
         } finally {
             world.releaseVisiblePlayerFast(visible);
@@ -79,11 +83,11 @@ public final class SC_ChatPacket {
 
     // Original sharedWire() is kept as a test oracle and for 1:1 callers.
     // The broadcast itself always writes directly into the pooled native slab.
-    private static void writeNativeChat(java.nio.ByteBuffer b,int opcode,
+    private static void writeNativeChat(ByteBuffer b,int opcode,
             int type,int objectId,String text,boolean includeObjectId) {
         b.put((byte)opcode).put((byte)type);
         if(includeObjectId)b.putInt(objectId);
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,text);
+        CSharedBroadcast.writeMS949(b,text);
         b.put((byte)0);
     }
 
@@ -92,12 +96,12 @@ public final class SC_ChatPacket {
      * optional D(objectId), MS949 nul-terminated text. Native transport
      * applies receiver-specific encryption after enqueue.
      */
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int opcode,int type,int objectId,String text,boolean includeObjectId) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(int opcode,int type,int objectId,String text,boolean includeObjectId) {
         final String value=text==null?"":text;
         if(!fitsBroadcastChat(value,includeObjectId))return null;
         return b -> writeNativeChat(b,opcode,type,objectId,value,includeObjectId);
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeTargetWriter(String targetName,int type,String chat) {
+    public static CSharedBroadcast.NativeWireWriter nativeTargetWriter(String targetName,int type,String chat) {
         final String value=(targetName==null?"":targetName)+": "+(chat==null?"":chat);
         if(!fitsBroadcastChat(value,false))return null;
         return nativeWriter(Opcodes.S_MESSAGE,type,0,value,false);

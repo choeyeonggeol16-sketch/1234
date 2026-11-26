@@ -66,7 +66,7 @@ stub(M+".Instance", "L1PcInstance", """
 public class L1PcInstance {
     private final int id; private volatile CTrade trade;
     public volatile int stamp=1, x=10, y=10, map=4;
-    public volatile boolean dead, ghost, shop, logout, changeItem;
+    public volatile boolean dead, ghost, shop, logout, changeItem, teleport, offlineShop, autoClanJoin;
     public boolean getIsChangeItem(){return changeItem;}
     public boolean getIsChangeItem1(){return false;}
     public boolean getIsChangeItem2(){return false;}
@@ -101,6 +101,8 @@ public class L1PcInstance {
     public int getX(){return x;} public int getY(){return y;}
     public boolean isGhost(){return ghost;} public boolean isDead(){return dead;}
     public boolean isPrivateShop(){return shop;} public boolean isGm(){return false;}
+    public boolean get_teleport(){return teleport;} public boolean is무인상점(){return offlineShop;}
+    public boolean isAutoClanjoin(){return autoClanJoin;}
     public CTrade GetTrade(){return trade;} public void SetTrade(CTrade t){trade=t;}
     public CUserSocket getNetConnection(){return socket;}
     public boolean isItemTransferSession(CUserSocket s,int n){return s==socket && s.connected && s.active==this && stamp==n && !logout;}
@@ -301,8 +303,14 @@ public class TradeLifecycleTest {
         L1InventoryTransaction.complete(1);retired(t,a,b);
         check(v.count==7&&w.count==5&&a.inv.items.get(w.id).count==3&&b.inv.items.get(v.id).count==2,"different stackable classes exchange");
         a=pc();b=pc();t=open(a,b);v=item(a,2);v.stack=false;
-        t.RequestAddItems(a,v.id,1);t.RequestAddItems(a,v.id,1);retired(t,a,b);
-        check(v.count==2,"duplicate nonstack offer cancelled without mutation");
+        t.RequestAddItems(a,v.id,1);t.RequestAddItems(a,v.id,1);
+        check(v.count==2&&a.GetTrade()==t&&b.GetTrade()==t&&a.socket.adds==1&&b.socket.adds==1,
+                "duplicate nonstack offer ignored without mutation or repeated notification");
+        t.Canceled(a);retired(t,a,b);
+        a=pc();b=pc();b.offlineShop=true;check(!MGR.CreateTrade(a,b),"offline shop blocks trade request");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);t.RequestAddItems(a,v.id,2);t.PressDone(a);
+        b.teleport=true;t.PressDone(b);retired(t,a,b);
+        check(v.count==9&&L1InventoryTransaction.pending==null,"pending teleport blocks final confirmation");
         a=pc();b=pc();a.changeItem=true;check(!MGR.CreateTrade(a,b),"pending item change blocks request");
         check(a.GetTrade()==null&&b.GetTrade()==null,"pending change request cleanup");
         a=pc();b=pc();t=request(a,b);b.changeItem=true;t.Request(b,t.GetID(),1);retired(t,a,b);

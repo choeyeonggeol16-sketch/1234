@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.sc.packet;
 
+import l1j.server.server.model.shop.NpcShopView;
 import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -32,6 +33,7 @@ public final class SC_ShopSellList2 {
         final L1Shop shop = ShopTable.getInstance().get(DEFAULT_NPC_ID);
         final List<L1ShopItem> list = shop == null ? null : shop.getSellingItems();
         final int limit = list == null ? 0 : list.size();
+        final L1ShopItem[] offers = new L1ShopItem[limit];
         final int[] integers = new int[limit * 4];
         final String[] names = new String[limit];
         final byte[][] statuses = new byte[limit][];
@@ -60,12 +62,15 @@ public final class SC_ShopSellList2 {
             wire = next;
             final int j = count << 2;
             integers[j] = i;
+            offers[i] = shopItem;
             integers[j + 1] = gfxId;
             integers[j + 2] = shopItem.getPrice();
             integers[j + 3] = useType;
             names[count] = itemName;
             statuses[count++] = status;
         }
+        final NpcShopView view = shop != null
+                ? NpcShopView.gmSearch(connection, gm, CHECK_PACKET_ID, shop, offers) : null;
         final CIOFrame frame = connection.beginDirectFrame((int) wire);
         if (frame == null) return false;
         boolean committed = false;
@@ -86,6 +91,7 @@ public final class SC_ShopSellList2 {
             }
             buffer.writeH(0x07);
             committed = connection.commitDirectFrame(frame);
+            if (committed) connection.publishNpcShopView(gm, view);
             return committed;
         } finally {
             if (!committed) connection.abortDirectFrame(frame);

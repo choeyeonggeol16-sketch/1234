@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.broadcast;
 
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,20 +9,16 @@ import l1j.server.server.model.network.core.connection.CIOBufferEx;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
-/** Original broadcast role: one immutable plaintext, per-socket ordered output.
- * The same frozen plaintext is sent to every accepted recipient.
- * No per-packet legacy encoder is called during broadcast.
- */
+/** One pooled plaintext frame shared by ordered per-socket sends. */
 public class CAsyncSendConstBuffer implements AutoCloseable {
     private final CSharedBroadcast.NativeWireWriter writer;
     private final int senderId;
     private final int largeFrameLength;
     private Source source;
     private boolean closed;
+    private boolean freezing;
 
-    /** Lazy Native packet assembly, at the first eligible connected socket.
-     * The producer never allocates a legacy Java wire array.
-     */
+    /** Materialize the frame when the first connected recipient is eligible. */
     public CAsyncSendConstBuffer(CSharedBroadcast.NativeWireWriter writer,
                                  int senderId,int pendingLimit) {
         this(writer, senderId, pendingLimit, 0);
@@ -41,8 +38,8 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
     }
 
     protected CAsyncSendConstBuffer(Source pooled, int senderId, int pendingLimit) {
-        if (pooled == null || pooled.wire.remaining() < 3
-                || pooled.wire.remaining() > 16384 || pendingLimit <= 0)
+        if (pooled == null || pooled.wire.remaining() <= CIOBufferPool.HEADER_BYTES
+                || pooled.wire.remaining() > CIOBufferPool.SMALL_SEND_BYTES || pendingLimit <= 0)
             throw new IllegalArgumentException("pooled constant frame/limit");
         final ByteBuffer view = pooled.wire;
         if (((view.get(view.position()) & 255)
@@ -56,39 +53,61 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
 
     protected boolean exclude(int recipientId) { return false; }
     protected final int senderId() { return senderId; }
-
-    
-
-
-    /**
-     * The single shared-broadcast SEND contract.
-     * Native <=16 KiB: retain one immutable ConstBuffer source per owner.
-     * Other transports/large frames: enqueue those SAME frozen bytes directly.
-     * No recipient-specific packet construction, no legacy serializer.
-     * true means this socket actually admitted a SEND lease.
-     */
-    public final synchronized boolean send(CUserSocket target,int recipientId) {
-        if(closed)throw new IllegalStateException("broadcast already closed");
-        if(target==null || exclude(recipientId) || !target.isClientConnected())return false;
-        // Always materialize the one Native slab before any per-socket FIFO
-        // decision (including a full queue / owner-mismatch direct route).
-        if (source == null) {
-            if (largeFrameLength != 0) {
-                freezeLargeSource(target, largeFrameLength);
-            } else {
-                try {
-                    source = openWrittenSource(target, writer);
-                } catch (java.nio.BufferOverflowException overflow) {
-                    freezeLargeSource(target, CIOBufferPool.MAX_WIRE_BYTES);
-                }
-            }
-            if (source == null) return false;
-        }
-        return target.sendFrozenWire(source.wire);
+    /** Returns true when the socket admits a SEND lease for the shared bytes. */
+    public final boolean send(CUserSocket target, int recipientId) {
+        return send(target, recipientId, false);
     }
 
-    private void freezeLargeSource(CUserSocket target, int capacity) {
-        source = openWrittenSource(target, this::writeLarge, capacity);
+    /** Visual sends may refuse admission without disconnecting the receiver. */
+    public final boolean sendBestEffort(CUserSocket target, int recipientId) {
+        return send(target, recipientId, true);
+    }
+
+    private boolean send(CUserSocket target, int recipientId, boolean optional) {
+        final Source frozen;
+        synchronized (this) {
+            if (closed) throw new IllegalStateException("broadcast already closed");
+            if (target == null || exclude(recipientId) || !target.isClientConnected()) return false;
+            if (source == null) {
+                if (freezing) throw new IllegalStateException("broadcast writer reentered send");
+                final Source pending;
+                freezing = true;
+                try {
+                    pending = freezeSource(target);
+                } finally {
+                    freezing = false;
+                }
+                if (pending == null) return false;
+                if (closed) {
+                    // A writer can close its own broadcaster before it returns.
+                    pending.release();
+                    return false;
+                }
+                source = pending;
+            }
+            frozen = source.retain();
+        }
+
+        // Admission can run socket/session callbacks. Pin the source while
+        // copying without holding the broadcast monitor across those callbacks.
+        final boolean admitted;
+        try {
+            admitted = optional ? target.sendFrozenWireBestEffort(frozen.wire) : target.sendFrozenWire(frozen.wire);
+        } catch (RuntimeException | Error failure) {
+            releaseAfterFailure(frozen, failure);
+            throw failure;
+        }
+        frozen.release();
+        return admitted;
+    }
+
+    private Source freezeSource(CUserSocket target) {
+        if (largeFrameLength != 0) return openWrittenSource(target, this::writeLarge, largeFrameLength);
+        try {
+            return openWrittenSource(target, writer);
+        } catch (BufferOverflowException overflow) {
+            return openWrittenSource(target, this::writeLarge, CIOBufferPool.MAX_WIRE_BYTES);
+        }
     }
 
     private void writeLarge(ByteBuffer out) {
@@ -107,7 +126,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
      * second native copy. The first reference is still owned by producer.
      */
     static Source openWrittenSource(CUserSocket target,CSharedBroadcast.NativeWireWriter writer) {
-        return openWrittenSource(target, writer, 16384);
+        return openWrittenSource(target, writer, CIOBufferPool.SMALL_SEND_BYTES);
     }
 
     private static Source openWrittenSource(CUserSocket target, CSharedBroadcast.NativeWireWriter writer, int capacity) {
@@ -131,7 +150,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
                 if(releaseFailure!=failure)failure.addSuppressed(releaseFailure);
                 // Do not treat a failed native slab release as an ordinary
                 // 16KiB overflow and proceed to allocate another source.
-                if(failure instanceof java.nio.BufferOverflowException)
+                if(failure instanceof BufferOverflowException)
                     throw new IllegalStateException(
                             "Native oversized broadcast source release failed",failure);
             }
@@ -139,10 +158,22 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         }
     }
 
-    @Override public final synchronized void close() {
-        if (closed) return;
-        closed = true;
-        if (source != null) { source.release(); source = null; }
+    private static void releaseAfterFailure(Source source, Throwable failure) {
+        try { source.release(); }
+        catch (RuntimeException | Error releaseFailure) {
+            if (releaseFailure != failure) failure.addSuppressed(releaseFailure);
+        }
+    }
+
+    @Override public final void close() {
+        final Source pending;
+        synchronized (this) {
+            if (closed) return;
+            closed = true;
+            pending = source;
+            source = null;
+        }
+        if (pending != null) pending.release();
     }
 
     /** Used only after a failed SEND: distinguish a bad shared encoder from
@@ -153,10 +184,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         return source != null;
     }
 
-    /** Java queue references keep the FFM handle/DLL live through its last use.
-     * Native requests separately retain the CIOBufferEx block before returning.
-     */
-    @SuppressWarnings("preview")
+    /** Owns the pooled plaintext until the producer and its in-flight copies release it. */
     public static final class Source {
         public final ByteBuffer wire;
         /** Never published before sealing; null after seal. */
@@ -168,14 +196,15 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         public Source(CIOBufferPool pool, CIOBufferEx lease) {
             javaPool = pool;
             javaLease = lease;
-            mutableWire = lease.buffer();
+            mutableWire = lease.buffer().order(ByteOrder.LITTLE_ENDIAN);
             wire = mutableWire.asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
         }
 
         public void sealJava(int length) {
             if (mutableWire == null || length < 3 || length > 0xffff
                     || length > mutableWire.limit()) throw new IllegalArgumentException("Invalid shared frame length");
-            mutableWire.putShort(0, (short) length);
+            // The protocol header is little-endian even if a payload writer changes order.
+            mutableWire.put(0, (byte) length).put(1, (byte) (length >>> Byte.SIZE));
             wire.position(0).limit(length);
             mutableWire = null;
         }
@@ -189,7 +218,7 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         public void release() {
             // Never transition through a negative refcount. A double release
             // previously left -1, which retain() could increment and thereby
-            // resurrect an already released Native handle.
+            // resurrect an already released lease.
             for (;;) {
                 final int n = references.get();
                 if (n <= 0) throw new IllegalStateException("constant source double release");

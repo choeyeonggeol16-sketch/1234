@@ -1,8 +1,12 @@
 package l1j.server.server.model.world.cleanup;
 
+import java.util.ArrayList;
+
 import l1j.server.server.task.TaskLane;
+import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.treasure.L1TreasureChest;
@@ -15,6 +19,29 @@ public final class MapCleaner implements Runnable {
         final MapCleaner cleaner = new MapCleaner(map, filter);
         if (TaskLane.WORLD.tryExecute(cleaner) || TaskLane.INSTANCE.tryExecute(cleaner)) return;
         if (!TaskLane.WORLD.isClosed()) TaskLane.WORLD.scheduleRequired(cleaner, 1L);
+    }
+
+    public static void removeGroundItems(L1Map map) {
+        if (map == null || map.isNull()) return;
+        final L1World world = L1World.getInstance();
+        final var visible = world.getVisibleObjects(map.getId());
+        if (visible == null) return;
+
+        // Both registries traverse by object ID. Snapshot only the selected
+        // room's items before deleting from its visible registry.
+        ArrayList<L1ItemInstance> items = null;
+        for (L1Object object : visible.values()) {
+            if (object instanceof L1ItemInstance item && item.getMap() == map) {
+                if (items == null) items = new ArrayList<>();
+                items.add(item);
+            }
+        }
+        if (items == null) return;
+        for (L1ItemInstance item : items) {
+            if (item.getMap() != map) continue;
+            final L1GroundInventory ground = world.findGroundInventory(item.getX(), item.getY(), item.getMapId());
+            if (ground != null && ground.getMap() == map) ground.DeleteItemAmount(item);
+        }
     }
 
     private final L1Map map;

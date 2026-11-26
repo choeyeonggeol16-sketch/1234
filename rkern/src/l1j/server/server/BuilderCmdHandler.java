@@ -4839,11 +4839,9 @@ for (L1PcInstance target : targets) {
 	                + String.valueOf(count) + " 생성 되었습니다.");
 	    } catch (Exception exception) {
 	        int count = 0;
-	        for (L1ItemInstance item : pc.getInventory().getItems()) {
-	            if (item.getItemId() == 40005) {
-	                pc.getInventory().Pop(item);
-	                count++;
-	            }
+	        for (L1ItemInstance item : pc.getInventory().GetItemListByClassID(40005)) {
+	            pc.getInventory().Pop(item);
+	            count++;
 	        }
 	        if (count > 0) {
 	            SC_SystemMessage.send(pc, "\\aAInvGfxId 확인용 아이템("
@@ -5539,9 +5537,10 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			if (inventory && target != null && target.getNetConnection() != null) {
 				builderOnItemOwner(pc, target, () -> {
 					int rows = 0;
-					for (L1ItemInstance item : target.getInventory().getItems()) {
-						int kind = item.getItem().getType2();
-						if (equipment && kind != 1 && kind != 2) continue;
+                    final Iterable<L1ItemInstance> checkedItems = equipment
+                            ? java.util.Arrays.asList(target.getInventory().GetItemsByKinds(1, 2))
+                            : target.getInventory().getItemSnapshot();
+                    for (L1ItemInstance item : checkedItems) {
 						builderReply(pc, gmSocket, gmStamp, "고유번호 " + item.getId() + " / "
 								+ BuilderFormatInvenItem(item.getItemId(), item.getEnchantLevel(),
 									item.isEquipped() ? 1 : 0, item.getCount(), item.getName(),

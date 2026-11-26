@@ -35,6 +35,8 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.survey.SurveyFactory;
 import l1j.server.server.model.character.survey.SurveySystemLoader;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI2;
 import l1j.server.server.model.network.core.sc.packet.SC_NewChat;
@@ -458,9 +460,7 @@ public final class CS_Craft {
 			return;
 		}
 
-		final L1ExcludingList spamList2 = SpamTable.getInstance().getExcludeTable(whisperTo.getId());
-
-		if (spamList2.contains(0, whisperFrom.getName())) {
+		if (SpamTable.getInstance().excludesChat(whisperTo.getId(), whisperFrom.getName())) {
 			SC_ServerMessage.send(whisperFrom, 117, whisperTo.getName());
 			return;
 		}
@@ -529,35 +529,33 @@ public final class CS_Craft {
 			SC_NewChat.send(pc, pc, 3, chatType, chatText, "");
 			final SC_NewChat.ChatData sChatPacket = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
 
-			final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter chatBytes=SC_NewChat.nativeWriter(sChatPacket);
-try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-chatBytes,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-final L1ExcludingList spamList = SpamTable.getInstance().getExcludeTable(pc.getId());
-			if (!spamList.contains(0, pc.getName())) {
-				l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,pc);
-			}
-
-			for (L1PcInstance listener : L1World.getInstance().getVisiblePlayerFast(pc)) {
-				if (listener.getMapId() == 5554 && !listener.isGm() && !pc.isGm()) {
-					continue;
+			final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(sChatPacket);
+			try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
+			        chatBytes, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+				if (!SpamTable.getInstance().excludesChat(pc.getId(), pc.getName())) {
+					CSharedBroadcast.sendRecipientBestEffort(chatShared, pc);
 				}
 
-				if (!listener.isOutsideChat() && !pc.isGm()) {
-					final CFriends buddyList = CFriendsDb.getInstance().GetFriends(listener.getId());
-					final CParty party = listener.getParty();
-					final L1ChatParty cParty = listener.getChatParty();
-
-					if (!(buddyList.HasFriend(pc.getId()) || (listener.getClanid() > 0 && listener.getClanid() == pc.getClanid()) || (party != null && party.isMember(pc)) || (cParty != null && cParty.isMember(pc)))) {
+				for (L1PcInstance listener : L1World.getInstance().getVisiblePlayerFast(pc)) {
+					if (listener.getMapId() == 5554 && !listener.isGm() && !pc.isGm()) {
 						continue;
 					}
-				}
 
-				final L1ExcludingList spamList3 = SpamTable.getInstance().getExcludeTable(listener.getId());
-				if (!spamList3.contains(0, pc.getName())) {
-					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,listener);
+					if (!listener.isOutsideChat() && !pc.isGm()) {
+						final CFriends buddyList = CFriendsDb.getInstance().GetFriends(listener.getId());
+						final CParty party = listener.getParty();
+						final L1ChatParty cParty = listener.getChatParty();
+
+						if (!((buddyList != null && buddyList.HasFriend(pc.getId())) || (listener.getClanid() > 0 && listener.getClanid() == pc.getClanid()) || (party != null && party.isMember(pc)) || (cParty != null && cParty.isMember(pc)))) {
+							continue;
+						}
+					}
+
+					if (!SpamTable.getInstance().excludesChat(listener.getId(), pc.getName())) {
+						CSharedBroadcast.sendRecipientBestEffort(chatShared, listener);
+					}
 				}
 			}
-}
 
 			LoggerInstance.getInstance().addChat(ChatType.Normal, pc, chatText);
 			break;
@@ -584,37 +582,38 @@ final L1ExcludingList spamList = SpamTable.getInstance().getExcludeTable(pc.getI
 					final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
 					LoggerInstance.getInstance().addChat(ChatType.Clan, pc, chatText);
 
-					final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter chatBytes=SC_NewChat.nativeWriter(packet);
-try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-chatBytes,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance listener : clan.getOnlineClanMember()) {
-						final L1ExcludingList spam = SpamTable.getInstance().getExcludeTable(listener.getId());
-						if (!spam.contains(0, pc.getName())) {
-							l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,listener);
+					final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
+					try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
+					        chatBytes, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+						for (L1PcInstance listener : clan.getOnlineClanMember()) {
+							if (!SpamTable.getInstance().excludesChat(listener.getId(), pc.getName())) {
+								CSharedBroadcast.sendRecipientBestEffort(chatShared, listener);
+							}
 						}
 					}
-}
 				}
 			}
 			break;
 		}
 
-		case 11:
-			if (pc.isInParty()) {
+		case 11: {
+			final CParty party = pc.getParty();
+			if (party != null) {
 				final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
 				LoggerInstance.getInstance().addChat(ChatType.Party, pc, chatText);
 
-				final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter chatBytes=SC_NewChat.nativeWriter(packet);
-try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-chatBytes,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance listener : pc.getParty().getMembers()) {
-					if (!SpamTable.getInstance().getExcludeTable(listener.getId()).contains(0, pc.getName())) {
-						l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,listener);
+				final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
+				try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
+				        chatBytes, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+					for (L1PcInstance listener : party.getMembers()) {
+						if (!SpamTable.getInstance().excludesChat(listener.getId(), pc.getName())) {
+							CSharedBroadcast.sendRecipientBestEffort(chatShared, listener);
+						}
 					}
 				}
-}
 			}
 			break;
+		}
 
 		case 12:
 			chatWorld(pc, 12, chatText);
@@ -629,37 +628,39 @@ for (L1PcInstance listener : pc.getParty().getMembers()) {
 					final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
 					LoggerInstance.getInstance().addChat(ChatType.Alliance, pc, chatText);
 
-					final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter chatBytes=SC_NewChat.nativeWriter(packet);
-try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-chatBytes,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance listener : clan.getOnlineClanMember()) {
-						final int listenerRank = listener.getClanRank();
-						if (!SpamTable.getInstance().getExcludeTable(listener.getId()).contains(0, pc.getName()) && (listenerRank == L1Clan.군주 || listenerRank == L1Clan.수호)) {
-							l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,listener);
+					final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
+					try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
+					        chatBytes, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+						for (L1PcInstance listener : clan.getOnlineClanMember()) {
+							final int listenerRank = listener.getClanRank();
+							if (!SpamTable.getInstance().excludesChat(listener.getId(), pc.getName()) && (listenerRank == L1Clan.군주 || listenerRank == L1Clan.수호)) {
+								CSharedBroadcast.sendRecipientBestEffort(chatShared, listener);
+							}
 						}
 					}
-}
 				}
 			}
 			break;
 		}
 
-		case 14:
-			if (pc.isInChatParty()) {
+		case 14: {
+			final L1ChatParty party = pc.getChatParty();
+			if (party != null) {
 				final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
 				LoggerInstance.getInstance().addChat(ChatType.Party, pc, chatText);
 
-				final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter chatBytes=SC_NewChat.nativeWriter(packet);
-try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-chatBytes,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance listener : pc.getChatParty().getMembers()) {
-					if (!SpamTable.getInstance().getExcludeTable(listener.getId()).contains(0, pc.getName())) {
-						l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,listener);
+				final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
+				try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
+				        chatBytes, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+					for (L1PcInstance listener : party.getMembers()) {
+						if (!SpamTable.getInstance().excludesChat(listener.getId(), pc.getName())) {
+							CSharedBroadcast.sendRecipientBestEffort(chatShared, listener);
+						}
 					}
 				}
-}
 			}
 			break;
+		}
 
 		case 17:
 			if (pc.getClanid() != 0) {
@@ -668,15 +669,15 @@ for (L1PcInstance listener : pc.getChatParty().getMembers()) {
 					final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
 					LoggerInstance.getInstance().addChat(ChatType.Guardian, pc, chatText);
 
-					final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter chatBytes=SC_NewChat.nativeWriter(packet);
-try(var chatShared=chatBytes==null?null:new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-chatBytes,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance listener : clan.getOnlineClanMember()) {
-						if (!SpamTable.getInstance().getExcludeTable(listener.getId()).contains(0, pc.getName())) {
-							l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,listener);
+					final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
+					try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
+					        chatBytes, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+						for (L1PcInstance listener : clan.getOnlineClanMember()) {
+							if (!SpamTable.getInstance().excludesChat(listener.getId(), pc.getName())) {
+								CSharedBroadcast.sendRecipientBestEffort(chatShared, listener);
+							}
 						}
 					}
-}
 				}
 			}
 			break;
@@ -822,28 +823,19 @@ for (L1PcInstance listener : clan.getOnlineClanMember()) {
 
 			SC_PacketBox.send(pc, SC_PacketBox.FOOD, pc.get_food());
 
-			final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter chatWire=(chatType==3 || chatType==12)
-         ? SC_NewChat.nativeWriter(SC_NewChat.prepare(pc,4,chatType,text,""))
-         : null;
-         try(var chatShared=chatWire==null ? null : new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-               chatWire,Integer.MIN_VALUE,Integer.MAX_VALUE)){
-         for (L1PcInstance listener : L1World.getInstance().getAllPlayers()) {
-				final L1ExcludingList spam = SpamTable.getInstance().getExcludeTable(listener.getId());
-				if (spam.contains(0, pc.getName())) {
-					continue;
-				}
-
-				if (chatType == 12) {
-					if (listener.isShowTradeChat()) {
-						l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,listener);
-					}
-				} else if (chatType == 3) {
-					if (listener.isShowWorldChat()) {
-						l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(chatShared,listener);
+			final CSharedBroadcast.NativeWireWriter chatWire = (chatType == 3 || chatType == 12)
+			        ? SC_NewChat.nativeWriter(SC_NewChat.prepare(pc, 4, chatType, text, "")) : null;
+			if (chatWire != null) {
+				final SpamTable spam = SpamTable.getInstance();
+				final String senderName = pc.getName();
+				try (var chatShared = new CAsyncSendConstBuffer(chatWire, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+					for (L1PcInstance listener : L1World.getInstance().getAllPlayers()) {
+						if (listener == null || spam.excludesChat(listener.getId(), senderName)) continue;
+						if (chatType == 12 ? listener.isShowTradeChat() : listener.isShowWorldChat())
+							CSharedBroadcast.sendRecipientBestEffort(chatShared, listener);
 					}
 				}
 			}
-         }
 
 			if (chatType == 3) {
 				LoggerInstance.getInstance().addChat(ChatType.Global, pc, text);

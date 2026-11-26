@@ -1,11 +1,11 @@
 package l1j.server.server.model.network.core.sc.packet;
 
-
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.buffer.Assemble;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
+import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_ServerMessage {
 
@@ -76,7 +76,7 @@ public final class SC_ServerMessage {
     }
 
     public static void broadcast(int type) {
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAll(b -> b.put((byte)Opcodes.S_MESSAGE_CODE)
+        CSharedBroadcast.sendWrittenAll(b -> b.put((byte)Opcodes.S_MESSAGE_CODE)
                 .putShort((short)type).put((byte)0));
     }
 
@@ -88,24 +88,24 @@ public final class SC_ServerMessage {
      * The same MS949 bytes and terminating NUL as Assemble.writeS.
      */
 
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int type) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(int type) {
         return b -> b.put((byte)Opcodes.S_MESSAGE_CODE)
                      .putShort((short)type).put((byte)0);
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int type,String message) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(int type,String message) {
         if(message==null)return nativeWriter(type);
         return b -> {
             b.put((byte)Opcodes.S_MESSAGE_CODE).putShort((short)type).put((byte)1);
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,message);b.put((byte)0);
+            CSharedBroadcast.writeMS949(b,message);b.put((byte)0);
         };
     }
-    public static l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter nativeWriter(int type,String msg1,String msg2,String msg3) {
+    public static CSharedBroadcast.NativeWireWriter nativeWriter(int type,String msg1,String msg2,String msg3) {
         final int n=(msg1==null?0:1)+(msg2==null?0:1)+(msg3==null?0:1);
         return b -> {
             b.put((byte)Opcodes.S_MESSAGE_CODE).putShort((short)type).put((byte)n);
-            if(msg1!=null){l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,msg1);b.put((byte)0);}
-            if(msg2!=null){l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,msg2);b.put((byte)0);}
-            if(msg3!=null){l1j.server.server.model.network.core.broadcast.CSharedBroadcast.writeMS949(b,msg3);b.put((byte)0);}
+            if(msg1!=null){CSharedBroadcast.writeMS949(b,msg1);b.put((byte)0);}
+            if(msg2!=null){CSharedBroadcast.writeMS949(b,msg2);b.put((byte)0);}
+            if(msg3!=null){CSharedBroadcast.writeMS949(b,msg3);b.put((byte)0);}
         };
     }
 

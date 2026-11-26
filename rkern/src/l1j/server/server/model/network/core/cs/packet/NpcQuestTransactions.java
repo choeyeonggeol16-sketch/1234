@@ -87,6 +87,10 @@ final class NpcQuestTransactions {
             String successPage, String failurePage, Runnable afterCommitted) {
         final int npcObjectId = npc.getId();
         final String npcName = npc.getNpcTemplate().get_name();
+        if (pc.getQuest().get_step(questId) != expectedStep) {
+            SC_NPCTalkReturn.send(pc, npcObjectId, failurePage);
+            return;
+        }
         try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, questId)) {
             if (!tx.debit(materialId, materialCount)
@@ -343,7 +347,7 @@ final class NpcQuestTransactions {
     /** NPC starter quest gifts: exactly one durable award per expected quest stage. */
     static void questGrantOnce(L1PcInstance pc, L1NpcInstance npc,
             int questId, int expectedStep, int nextStep, int itemId, int count, String page) {
-        if (pc.getQuest().get_step(questId) != expectedStep) {
+        if (expectedStep == nextStep || pc.getQuest().get_step(questId) != expectedStep) {
             SC_NPCTalkReturn.send(pc, npc.getId(), page);
             return;
         }
@@ -371,6 +375,10 @@ final class NpcQuestTransactions {
     /** NPC 71056: all three Simizz clues and the reward share one receipt. */
     static void simizzReceipt(L1PcInstance pc, L1NpcInstance npc) {
         final int questId = CQuestSystem.QUEST_SIMIZZ;
+        if (pc.getQuest().get_step(questId) != 1) {
+            SC_NPCTalkReturn.send(pc, npc.getId(), "SIMIZZ9");
+            return;
+        }
         try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, questId)) {
             if (!tx.debit(40661, 1) || !tx.debit(40662, 1) || !tx.debit(40663, 1)) {
@@ -382,7 +390,7 @@ final class NpcQuestTransactions {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "SIMIZZ9");
                 return;
             }
-            stageQuestStep(tx, pc, questId, pc.getQuest().get_step(questId), 2, 0);
+            stageQuestStep(tx, pc, questId, 1, 2, 0);
             tx.onFailure(() -> SC_NPCTalkReturn.send(pc, npc.getId(), "SIMIZZ9"));
             final String npcName = npc.getNpcTemplate().get_name();
             tx.commitAfterInventoryRelease(() -> {
@@ -541,14 +549,16 @@ final class NpcQuestTransactions {
 
     /** Lizard rewards are earned only if material debit, quest step and item grant commit. */
     static boolean handleLizardQuest(L1PcInstance pc, L1NpcInstance npc, String action) {
+        final int questId = CQuestSystem.QUEST_LIZARD;
         if (action.equalsIgnoreCase("A")) {
-            requestQuestPage(pc, npc, npc.getId(), CQuestSystem.QUEST_LIZARD,
-                    pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD), 1, "lelder5");
+            final int step = pc.getQuest().get_step(questId);
+            // The normal dialogue also offers an explicit new run after completion.
+            if (step == 0 || step == 1 || step == CQuestSystem.QUEST_END)
+                requestQuestPage(pc, npc, npc.getId(), questId, step, 1, "lelder5");
             return true;
         }
         if (action.equalsIgnoreCase("B")) {
-            questItemExchange(pc, npc, CQuestSystem.QUEST_LIZARD,
-                    pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD), 3,
+            questItemExchange(pc, npc, questId, 2, 3,
                     40633, 1, 0, 0, 0, "lelder10", "lelder10");
             return true;
         }
@@ -559,8 +569,7 @@ final class NpcQuestTransactions {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "lelder13");
                 return true;
             }
-            questItemExchange(pc, npc, CQuestSystem.QUEST_LIZARD,
-                    pc.getQuest().get_step(CQuestSystem.QUEST_LIZARD), CQuestSystem.QUEST_END,
+            questItemExchange(pc, npc, questId, 3, CQuestSystem.QUEST_END,
                     40634, 1, 0, 20167, 0, "lelder13", "lelder13");
             return true;
         }
