@@ -52,32 +52,22 @@ import l1j.server.server.command.executor.L1Buff;
 import l1j.server.server.command.executor.L1Poly;
 import l1j.server.server.command.executor.L1Summon;
 import l1j.server.server.command.executor.L1Present;
-import l1j.server.server.command.executor.L1GMQuestion;
-import l1j.server.server.command.executor.L1CreateItemSet;
 import l1j.server.server.command.executor.L1ImPactGfxid1;
 import l1j.server.server.command.executor.L1ImPactGfxid;
 import l1j.server.server.command.executor.L1Status;
-import l1j.server.server.command.executor.L1ShowTrap;
-import l1j.server.server.command.executor.L1Thread;
 import l1j.server.server.command.executor.L1Burf;
-import l1j.server.server.command.executor.L1AddSkill;
 import l1j.server.server.command.executor.L1EventSpawn;
 import l1j.server.server.command.executor.L1Favorite;
 import l1j.server.server.command.executor.L1ItemDelete;
 import l1j.server.server.command.executor.L1SKick;
-import l1j.server.server.command.executor.L1NpcDown;
 import l1j.server.server.command.executor.L1PowerKick;
 import l1j.server.server.command.executor.L1NpcShopSwitch;
-import l1j.server.server.command.executor.L1ServerName;
 import l1j.server.server.command.executor.L1SkillEffect;
 import l1j.server.server.command.executor.L1AdShop;
-import l1j.server.server.command.executor.L1Clear;
-import l1j.server.server.command.executor.L1Describe;
 import l1j.server.server.command.executor.L1QueryCharacter;
 import l1j.server.server.command.executor.L1Shutdown;
 import l1j.server.server.command.executor.L1GM;
 import l1j.server.server.command.executor.L1Search;
-import l1j.server.server.command.executor.L1DeleteGroundItem;
 import l1j.server.server.command.executor.L1PartyRecall;
 import l1j.server.server.command.executor.L1RemoveLetter;
 import l1j.server.server.command.executor.L1HpBar;
@@ -192,6 +182,24 @@ import java.lang.reflect.Constructor;
 import l1j.server.server.IdFactory;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
+
+import l1j.server.server.model.L1Question;
+import l1j.server.server.templates.L1ItemSetItem;
+import l1j.server.server.model.Instance.L1TrapInstance;
+import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.passive.PassiveID;
+import l1j.server.server.model.character.skill.passive.PassiveInfo;
+import l1j.server.server.model.character.skill.passive.PassiveLoader;
+import l1j.server.server.model.character.skill.passive.PassiveUserLoader;
+import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
+import l1j.server.server.templates.L1Skills;
+import l1j.server.server.datatables.NpcSpawnTable;
+import l1j.server.server.model.Instance.L1MerchantInstance;
+import l1j.server.server.utils.eKind;
+import l1j.server.server.datatables.FurnitureSpawnTable;
+import l1j.server.server.datatables.LetterTable;
+import l1j.server.server.datatables.PetTable;
+import l1j.server.server.model.Instance.L1FurnitureInstance;
 
 public final class BuilderCmdHandler {
  
@@ -357,18 +365,18 @@ public final class BuilderCmdHandler {
 		registerLegacy(loaded, "불투명", BuilderCmdHandler::BuilderCmd_visible);
 		registerExisting(loaded, "서먼", L1Summon::getInstance);
 		registerExisting(loaded, "선물", L1Present::getInstance);
-		registerExisting(loaded, "설문", L1GMQuestion::getInstance);
-		registerExisting(loaded, "세트아이템", L1CreateItemSet::getInstance);
+		registerLegacy(loaded, "설문", BuilderCmdHandler::BuilderCmd_gm_question);
+		registerLegacy(loaded, "세트아이템", BuilderCmdHandler::BuilderCmd_summon_set_item);
 		registerExisting(loaded, "셀엔피씨", L1ImPactGfxid1::getInstance);
 		registerExisting(loaded, "셀이펙트", L1ImPactGfxid::getInstance);
 		registerExisting(loaded, "셋팅", L1Status::getInstance);
 		registerLegacy(loaded, "소생", BuilderCmdHandler::BuilderCmd_ress);
 		registerLegacy(loaded, "소환", BuilderCmdHandler::BuilderCmd_recall);
 		registerLegacy(loaded, "속도", BuilderCmdHandler::BuilderCmd_speed);
-		registerExisting(loaded, "쇼트랩", L1ShowTrap::getInstance);
-		registerExisting(loaded, "스레드", L1Thread::getInstance);
+		registerLegacy(loaded, "쇼트랩", BuilderCmdHandler::BuilderCmd_show_trap);
+		registerLegacy(loaded, "스레드", BuilderCmdHandler::BuilderCmd_thread);
 		registerExisting(loaded, "스킬", L1Burf::getInstance);
-		registerExisting(loaded, "스킬마스터", L1AddSkill::getInstance);
+		registerLegacy(loaded, "스킬마스터", BuilderCmdHandler::BuilderCmd_add_skill);
 		registerLegacy(loaded, "스킬아이콘", BuilderCmdHandler::BuilderCmd_skill_icon);
 		registerExisting(loaded, "스폰이벤트", L1EventSpawn::getInstance);
 		registerExisting(loaded, "실행", L1Favorite::getInstance);
@@ -376,25 +384,25 @@ public final class BuilderCmdHandler {
 		registerExisting(loaded, "아이피추방", L1SKick::getInstance);
 		registerLegacy(loaded, "액션", BuilderCmdHandler::BuilderCmd_action);
 		registerLegacy(loaded, "에코", BuilderCmdHandler::BuilderCmd_echo);
-		registerExisting(loaded, "엔피씨다운", L1NpcDown::getInstance);
+		registerLegacy(loaded, "엔피씨다운", BuilderCmdHandler::BuilderCmd_npc_down);
 		registerExisting(loaded, "영구추방", L1PowerKick::getInstance);
 		registerExisting(loaded, "영자상점1", L1NpcShopSwitch::getInstance);
 		registerLegacy(loaded, "위치", BuilderCmdHandler::BuilderCmd_show_loc);
 		registerLegacy(loaded, "이동", BuilderCmdHandler::BuilderCmd_move);
-		registerExisting(loaded, "이름", L1ServerName::getInstance);
+		registerLegacy(loaded, "이름", BuilderCmdHandler::BuilderCmd_server_name);
 		registerLegacy(loaded, "이미지", BuilderCmdHandler::BuilderCmd_gfx_id);
 		registerExisting(loaded, "이펙트", L1SkillEffect::getInstance);
 		registerLegacy(loaded, "인벤이미지", BuilderCmdHandler::BuilderCmd_inv_gfx_id);
 		registerExisting(loaded, "장사", L1AdShop::getInstance);
-		registerExisting(loaded, "정리", L1Clear::getInstance);
-		registerExisting(loaded, "정보", L1Describe::getInstance);
+		registerLegacy(loaded, "정리", BuilderCmdHandler::BuilderCmd_clear);
+		registerLegacy(loaded, "정보", BuilderCmdHandler::BuilderCmd_describe);
 		registerExisting(loaded, "조회", L1QueryCharacter::getInstance);
 		registerExisting(loaded, "종료", L1Shutdown::getInstance);
 		registerExisting(loaded, "지엠", L1GM::getInstance);
 		registerExisting(loaded, "찾기", L1Search::getInstance);
 		registerLegacy(loaded, "채금", BuilderCmdHandler::BuilderCmd_chat_ban);
 		registerLegacy(loaded, "채팅", BuilderCmdHandler::BuilderCmd_world_chat);
-		registerExisting(loaded, "청소", L1DeleteGroundItem::getInstance);
+		registerLegacy(loaded, "청소", BuilderCmdHandler::BuilderCmd_delete_ground_item);
 		registerLegacy(loaded, "추방", BuilderCmdHandler::BuilderCmd_kick);
 		registerLegacy(loaded, "출두", BuilderCmdHandler::BuilderCmd_to_pc);
 		registerLegacy(loaded, "킬", BuilderCmdHandler::BuilderCmd_kill);
@@ -5556,5 +5564,590 @@ for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, cmdName + " 커멘드 에러");
 		}
+	}
+
+	private static void BuilderCmd_gm_question(L1PcInstance pc, String cmdName, String arg) {
+		try{
+			if(L1Question.mainstart){
+				SC_SystemMessage.send(pc, "현재 설문조사가 진행중입니다.");
+				SC_SystemMessage.send(pc, "진행중인 설문 내용 : " + L1Question.maintext);
+			}
+			L1Question.getInstance(arg);
+		}catch(Exception e){
+			SC_SystemMessage.send(pc, ".설문 [설문내용] 을 입력 해주세요");
+		}
+	}
+
+	private static void BuilderCmd_summon_set_item(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			String name = new StringTokenizer(arg). nextToken();
+			List<L1ItemSetItem> list = BuilderCmdConfig.ITEM_SETS.get(name);
+			if (list == null) {
+				SC_SystemMessage.send(pc, name + "은 없습니다.");
+				return;
+			}
+			L1Item temp = null;
+			L1ItemInstance inst = null;
+			for (L1ItemSetItem item : list) {
+				temp = CObjectDB.GetItem(item.getId());
+				if (! temp.isStackable() && 0 != item.getEnchant()) {
+					for (int i = 0; i < item.getAmount(); i++) {
+						inst = CObjectDB.LoadItem().createItem(item.getId());
+						inst.setEnchantLevel(item.getEnchant());
+						pc.getInventory(). CreateOrAddItem(inst);
+					}
+				} else {
+					pc.getInventory(). CreateOrAddItem(item.getId(), item.getAmount());
+				}
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, ".세트아이템 세트명으로 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_show_trap(L1PcInstance pc, String cmdName, String arg) {
+		if (arg.equalsIgnoreCase("켬")) {
+			pc.setSkillEffect(L1SkillId.GMSTATUS_SHOWTRAPS, 0);
+		} else if (arg.equalsIgnoreCase("끔")) {
+			pc.removeSkillEffect(L1SkillId.GMSTATUS_SHOWTRAPS);
+
+			for (L1Object obj : pc.getKnownObjects()) {
+				if (obj instanceof L1TrapInstance) {
+					pc.removeKnownObject(obj);
+					SC_RemoveObject.send(
+							pc.getNetConnection(),
+							obj);
+				}
+			}
+		} else {
+			SC_SystemMessage.send(pc, cmdName + " [켬,끔] 라고 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_thread(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			Thread[] th = new Thread[Thread.activeCount()];
+			Thread.enumerate(th); 
+			for(int i=0; i<th.length; i++){
+			SC_SystemMessage.send(pc, "["+i+"] 사용 쓰레드 : [" + th[i]+"]");
+			}
+			SC_SystemMessage.send(pc, "현재 사용되는 쓰레드 갯수 : ["+Thread.activeCount()+"]");
+
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + "갯수 라고 입력 바랍니다.");
+		}
+	}
+
+	private static void BuilderCmd_add_skill(L1PcInstance gm, String cmdName, String arg) {
+		try {
+			int cnt = 0; // 루프 카운터
+			String skill_name = ""; // 스킬명
+			int skill_id = 0; // 스킬 ID
+			
+			StringTokenizer st = new StringTokenizer(arg);
+			String charname = st.nextToken();
+			L1PcInstance pc = L1World.getInstance().getPlayer(charname);
+			
+			if(pc == null)
+				SC_SystemMessage.send(gm, "경고: 접속중 캐릭터가 아닙니다.");
+			int object_id = pc.getId(); // 캐릭터의 objectid를 취득
+			SC_SkillSound.send(pc, object_id, '\343'); // 마법 습득의 효과음을 울린다
+			SC_SkillSound.broadcast(pc, object_id, '\343');
+			ArrayList<PassiveInfo> passives = null;
+			if (pc.isCrown()) {
+				passives = PassiveLoader.getInstance().fromClassType(0);
+				SC_AddSkill.send(pc, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+				L1Skills l1skills = null;
+
+				for (cnt = 1; cnt <= 16; cnt++) { // LV1~2 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+
+				for (cnt = 113; cnt <= 122; cnt++) {// 프리 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+			} else if (pc.isKnight()) {
+				passives = PassiveLoader.getInstance().fromClassType(1);
+				SC_AddSkill.send(pc, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+				L1Skills l1skills = null;
+
+				for (cnt = 1; cnt <= 8; cnt++) {// LV1 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+
+				for (cnt = 87; cnt <= 94; cnt++) {// 나이트 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+				if (!pc.hasSkillEffect(L1SkillId.프라이드)) {
+					pc.프라이드(true);
+					pc.setSkillEffect(L1SkillId.프라이드, -1);
+				
+				}
+				if (!pc.hasSkillEffect(L1SkillId.솔리드캐리지)) {
+					pc.솔리드캐리지(true);
+					pc.setSkillEffect(L1SkillId.솔리드캐리지, -1);
+				
+				}
+			} else if (pc.isElf()) {
+				passives = PassiveLoader.getInstance().fromClassType(2);
+				SC_AddSkill.send(pc, 255, 255, 127, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 127, 3, 255, 255, 255, 255, 0, 0, 0, 0, 0,
+						0, 0, 0, pc.getElfAttr());
+				L1Skills l1skills = null;
+
+				for (cnt = 1; cnt <= 48; cnt++) {// LV1~6 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+
+				for (cnt = 129; cnt <= 176; cnt++) {// 에르프 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+			} else if (pc.isWizard()) {
+				passives = PassiveLoader.getInstance().fromClassType(3);
+				SC_AddSkill.send(pc, 255, 255, 127, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0);
+				L1Skills l1skills = null;
+				for (cnt = 1; cnt <= 80; cnt++) {// LV1~10 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+			} else if (pc.isDarkelf()) {
+				passives = PassiveLoader.getInstance().fromClassType(4);
+				SC_AddSkill.send(pc, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 127, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+				L1Skills l1skills = null;
+
+				for (cnt = 1; cnt <= 16; cnt++) {// LV1~2 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+
+				for (cnt = 97; cnt <= 112; cnt++) { // DE마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+				{
+					l1skills = SkillsTable.getInstance().getTemplate(234); // 스킬 정보를 취득
+					if(l1skills != null){
+						skill_name = l1skills.getName();
+						skill_id = l1skills.getSkillId();
+						SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+					}
+				}
+				if (!pc.hasSkillEffect(L1SkillId.버닝)) {
+					pc.버닝(true);
+					pc.setSkillEffect(L1SkillId.버닝, -1);
+				
+				}
+				if (!pc.hasSkillEffect(L1SkillId.이베이젼)) {
+					pc.이베이젼(true);
+					pc.setSkillEffect(L1SkillId.이베이젼, -1);
+				
+				}
+				
+			} else if (pc.isDragonknight()) {
+				passives = PassiveLoader.getInstance().fromClassType(5);
+				SC_AddSkill.send(pc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0);
+				L1Skills l1skills = null;
+				for (cnt = 177; cnt <= 200; cnt++) { // 용기사스킬
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+			} else if (pc.isBlackwizard()) {
+				passives = PassiveLoader.getInstance().fromClassType(6);
+				SC_AddSkill.send(pc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 0, 0, 0);
+				L1Skills l1skills = null;
+				for (cnt = 201; cnt <= 224; cnt++) { // 환술사스킬
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+				
+				if (!pc.hasSkillEffect(L1SkillId.일루션리치)) {
+					pc.일루션리치(true);
+					pc.setSkillEffect(L1SkillId.일루션리치, -1);
+				
+				}
+				if (!pc.hasSkillEffect(L1SkillId.일루션골렘)) {
+					pc.일루션골렘(true);
+					pc.setSkillEffect(L1SkillId.일루션골렘, -1);
+				
+				}
+				
+			} else if (pc.isWarrior()) {
+				passives = PassiveLoader.getInstance().fromClassType(7);
+				SC_AddSkill.send(pc, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); // 전사꺼
+				L1Skills l1skills = null;
+
+				for (cnt = 1; cnt <= 8; cnt++) {// LV1 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+
+				for (cnt = 225; cnt <= 240; cnt++) {// 전사 마법
+					l1skills = SkillsTable.getInstance().getTemplate(cnt); // 스킬 정보를 취득
+					if(l1skills == null)
+						continue;
+					skill_name = l1skills.getName();
+					skill_id = l1skills.getSkillId();
+					SkillsTable.getInstance().spellMastery(object_id, skill_id, skill_name, 0, 0); // DB에 등록
+				}
+			}
+			if(passives != null){
+				for(PassiveInfo pInfo : passives){
+					if(pc.isPassive(pInfo.getPassiveId()))
+						continue;
+					
+					int passiveId = pInfo.getPassiveId();
+					if(passiveId == PassiveID.DOUBLE_BREAK_DESTINY.toInt()){
+						if(pc.hasSkillEffect(L1SkillId.DOUBLE_BRAKE))
+							pc.removeSkillEffect(L1SkillId.DOUBLE_BRAKE);
+					}
+					pc.addPassive(pInfo);
+					PassiveUserLoader.store(pc, pInfo);
+				}
+			}
+			
+			SC_SystemMessage.send(gm, "해당 캐릭터 스킬마스터 완료");
+		} catch (Exception e) {
+			SC_SystemMessage.send(gm, ".스킬마스터 [캐릭명] 명령하세요.");
+		}
+	}
+
+	private static void BuilderCmd_npc_down(L1PcInstance pc, String cmdName, String poby) {
+    try {
+      StringTokenizer token = new StringTokenizer(poby);
+      String type = token.nextToken();
+      String spawn = token.nextToken();
+
+      if (type.equals("몬스터")) {
+        if (spawn.equals("배치")) {
+          CNpcMakerDB.getInstance().reload();
+ 
+          SC_PacketBox.broadcastGreen("[긴급공지] 월드전체 몬스터가 재배치 되었습니다.");
+        } else if (spawn.equals("삭제")) {
+        	 for (L1Object obj : L1World.getInstance().getAllObj()) {
+        		 if ((obj != null) && ((obj instanceof L1MonsterInstance))) {
+        			 L1MonsterInstance mon = (L1MonsterInstance) obj;
+        			 mon.setRespawn(false);
+        			 mon.re();   
+        		 }
+          }
+          SC_PacketBox.broadcastGreen("[긴급공지] 월드전체 몬스터가 삭제 되었습니다.");
+        } else {
+          throw new Exception();
+        }
+      } else if (type.equals("엔피씨")) {
+        if (spawn.equals("배치")) {
+        	NpcSpawnTable.getInstance().reload();
+
+          SC_PacketBox.broadcastGreen("[긴급공지] 월드전체 NPC가 재배치 되었습니다.");
+        } else if (spawn.equals("삭제")) {
+        	  for (L1Object npc : L1World.getInstance().getAllObj()) {
+        		  if ((npc != null) && npc instanceof L1MerchantInstance) {
+        			  L1MerchantInstance merchent = (L1MerchantInstance)npc;
+	        			  merchent.setRespawn(false);
+	        			  merchent.deleteMe();
+                    }
+                  }
+         
+
+          SC_PacketBox.broadcastGreen("[긴급공지] 월드전체 NPC가 삭제 되었습니다.");
+        } else {
+          throw new Exception();
+        }
+      }
+      else throw new Exception(); 
+    }
+    catch (Exception e)
+    {
+    	SC_SystemMessage.send(pc, "." + cmdName + " <몬스터/엔피씨> <배치/삭제>");
+    }
+  }
+
+	private static void BuilderCmd_server_name(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			int invid = Integer.parseInt(st.nextToken(), 10);
+			int count = Integer.parseInt(st.nextToken(), 10);
+			L1ItemInstance item = null;
+
+			for (int i = 0; i < count; i++) {
+				item = CObjectDB.LoadItem().createItem(40308);
+				item.getItem().setName(String.valueOf("$" + (invid + i)));
+				SC_SystemMessage.send(pc, (invid + i)+" : " + "$" + (invid + i));
+			}
+		} catch (Exception exception) {
+			SC_SystemMessage.send(pc, ".네임  [id] [출현시키는 수]로 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_clear(L1PcInstance pc, String cmdName, String arg) {
+		for (L1Object obj : L1World.getInstance().getClusterGrid().queryNearby(pc, -1)) {
+			if (!(obj instanceof L1MonsterInstance)) {
+				continue;
+			}
+
+			L1MonsterInstance mob = (L1MonsterInstance) obj;
+
+			// 이미 죽었거나 삭제 중인 객체는 제외
+			if (mob.isDead() || mob.getCurrentHp() <= 0) {
+				continue;
+			}
+
+			try {
+				mob.receiveDamage(pc, mob.getCurrentHp());		
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static void BuilderCmd_describe(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			String name = st.nextToken();
+			L1PcInstance target = L1World.getInstance(). getPlayer(name);
+			if (target == null) {
+				SC_ServerMessage.send(pc, 73, name); // \f1%0은 게임을 하고 있지 않습니다.
+				return;
+			}		
+			if (!pc.isGm() && pc.getId() != target.getId()) {
+				SC_ChatPacket.sendDirect(pc, pc, ".정보 명령어는 본인 캐릭터만 조회할 수 있습니다.");
+				return;
+			}
+			int lv = target.getLevel();
+			int currentLvExp = ExpTable.getExpByLevel(lv);
+			int nextLvExp = ExpTable.getExpByLevel(lv + 1);
+			double neededExp = nextLvExp - currentLvExp ;
+			double currentExp =  target.getExp() - currentLvExp;
+			int per = (int)((currentExp / neededExp) * 100.0);
+			String typeName = null;
+			switch(target.getType()){
+			case 0:
+				typeName = "군주";
+				break;
+
+			case 1:
+				typeName = "기사";
+				break;
+
+			case 2:
+				typeName = "요정";
+				break;
+
+			case 3:
+				typeName = "마법사";
+				break;
+
+			case 4:
+				typeName = "다크엘프";
+				break;
+
+			case 5:
+				typeName = "용기사";
+				break;
+
+			case 6:
+				typeName = "환술사";
+				break;
+
+			case 7:
+				typeName = "전사";
+				break;
+
+			default:
+				typeName = "????";
+			}
+			SC_SystemMessage.send(pc, "\\aD--------------------------------------------------");
+			SC_SystemMessage.send(pc, "\\aD[ " + target.getName() + " ] 직업:" + typeName + ", 혈맹:" + target.getClanname());
+			if (!target.noPlayerCK && pc.isGm()) {
+				SC_SystemMessage.send(pc, "\\aD계정: " + target.getAccountName() + " / " + Account.load(target.getAccountName()).get_Password() + "   IP: " + target.getNetConnection().getIp());
+			}	
+			SC_SystemMessage.send(pc, "\\aD--------------------------------------------------");
+			SC_SystemMessage.send(pc, "\\aL* Lv: " + lv +" (" + per + "%)" + "   방어: " + target.getAc() + "   마방: " + target.GetMDefendBySkill());  // 원본 target.getResistance().getMr()
+			int hpr = target.getHpr();
+			int mpr = target.getMpr();
+			SC_ChatPacket.sendDirect(pc, pc, "* 피: " + target.getCurrentHp() + '/' + target.getMaxHp() + " (틱: " + hpr + ')' + "   엠: " + target.getCurrentMp() + '/' + target.getMaxMp() + " (틱: " + mpr + ')');
+			SC_ChatPacket.sendDirect(pc, pc, "* 힘: " + target.GetTotalStatStr() + "  " + "덱: " + target.GetTotalStatDex() + "   "
+					+ "콘: " + target.GetTotalStatCon() + "   " + "인: " + target.GetTotalStatInt() + "   "
+					+ "위: " + target.GetTotalStatWis() + "   " + "카: " + target.GetTotalStatCha());
+			SC_ChatPacket.sendDirect(pc, pc, "* 불: " + target.GetFireResist() + "  물: " + target.GetWaterResist() + "  바람: " + target.GetWindResist() + "  땅: " + target.GetEarthResist());		
+			
+			SC_ChatPacket.sendDirect(pc, pc, String.format("* 기술내성:%d 정령내성:%d 용언내성:%d 공포내성:%d 전체내성:%d", 
+					target.GetSpecialResistance(eKind.ABILITY), 
+					target.GetSpecialResistance(eKind.SPIRIT), 
+					target.GetSpecialResistance(eKind.DRAGON_SPELL), 
+					target.GetSpecialResistance(eKind.FEAR),
+					target.GetSpecialResistance(eKind.ALL))); 
+			
+			SC_ChatPacket.sendDirect(pc, pc, String.format("* 기술적중:%d 정령적중:%d 용언적중:%d 공포적중:%d 전체적중:%d", 
+					target.GetSpecialPierce(eKind.ABILITY), 
+					target.GetSpecialPierce(eKind.SPIRIT), 
+					target.GetSpecialPierce(eKind.DRAGON_SPELL), 
+					target.GetSpecialPierce(eKind.FEAR),
+					target.GetSpecialPierce(eKind.ALL))); 
+			
+			SC_ChatPacket.sendDirect(pc, pc, "* 추타: " + target.getDmgup() + "  공성: " + target.getHitup() + "  활타: " + target.getBowDmgup() + "  활명: " + target.getBowHitup() + "  주술: " + target.GetStatSp());
+			SC_ChatPacket.sendDirect(pc, pc, "* 대미지감소: " + target.getDamageReductionByArmor() + " * 근거리치명타: " + target.get_melee_critical_rate());
+			SC_ChatPacket.sendDirect(pc, pc, "* 원거리치명타: " + target.get_missile_critical_rate() + " * 마법치명타: " + target.getBaseMagicCritical());
+			SC_ChatPacket.sendDirect(pc, pc, "* 대미지리덕션무시: " + target.getDamageReductionIgnore());
+			SC_ChatPacket.sendDirect(pc, pc, "* PVP대미지: " + target.GetPvpDamage() +  " * PVP대미지감소: " + target.GetPvpDamageReduction());
+			SC_SystemMessage.send(pc, "* HP: (" + target.getCurrentHp() + '/' + target.getMaxHp() + ") (HPr: " + hpr + ')' 
+					+ " / MP: (" + target.getCurrentMp() + '/' + target.getMaxMp() + ") (MPr: " + mpr + ')');
+SC_SystemMessage.send(pc, "\\aDBASE:(S: " + target.GetOriginalStatStr() + " / " + "D: " + target.GetOriginalStatDex() + " / " 
+                        + "C: " + target.GetOriginalStatCon() + " / " + "I: " + target.GetOriginalStatInt() + " / " 
+                        + "W: " + target.GetOriginalStatWis() + " / " + "C: " + target.GetOriginalStatCha() + ')');
+SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "D: " + target.GetTotalStatDex() + " / "
+						+ "C: " + target.GetTotalStatCon() + " / " + "I: " + target.GetTotalStatInt() + " / "
+						+ "W: " + target.GetTotalStatWis() + " / " + "C: " + target.GetTotalStatCha() + ')');
+			SC_SystemMessage.send(pc, "\\aD--------------------------------------------------");
+		} catch (Exception e) {
+			SC_ChatPacket.sendDirect(pc, pc, ".정보 [캐릭명] 으로 입력.");
+		}
+	}
+
+	private static void BuilderCmd_delete_ground_item(L1PcInstance pc, String cmdName, String arg) {
+		L1ItemInstance l1iteminstance = null;
+	//	ArrayList<L1PcInstance> players = null;
+	try{
+		StringTokenizer st = new StringTokenizer(arg);
+		String type = st.nextToken();
+		if(type.equalsIgnoreCase("전체")){
+			CInventory groundInventory= null;
+			LetterTable lettertable = null;
+			L1FurnitureInstance furniture = null;
+			for (L1Object l1object : L1World.getInstance().getObject()) {
+				if (l1object instanceof L1ItemInstance) {
+					l1iteminstance = (L1ItemInstance) l1object;
+					if (l1iteminstance.getX() == 0 && l1iteminstance.getY() == 0) { // 지면상의 아이템은 아니고, 누군가의 소유물
+						continue;
+					}
+					//
+				//	players = L1World.getInstance().getVisiblePlayer(l1iteminstance, 2);
+				//	if (0 == players.size()) {
+						groundInventory = L1World.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
+						int itemId = l1iteminstance.getItem(). getItemId();
+						if (itemId == 40314 || itemId == 40316) { // 펫의 아뮤렛트
+							PetTable.getInstance().deletePet(l1iteminstance.getId());
+						} else if (itemId >= 49016 && itemId <= 49025) { // 편지지
+							lettertable = new LetterTable();
+							lettertable.deleteLetter(l1iteminstance.getId());
+						} else if (itemId >= 41383 && itemId <= 41400) { // 가구
+							if (l1object instanceof L1FurnitureInstance) {
+								furniture = (L1FurnitureInstance) l1object;
+								if (furniture.getItemObjId() == l1iteminstance.getId()) { // 이미 꺼내고 있는 가구
+									FurnitureSpawnTable.getInstance().deleteFurniture(furniture);
+								}
+							}
+						}
+						groundInventory.Pop(l1iteminstance);
+						L1World.getInstance().removeVisibleObject(l1iteminstance);
+						L1World.getInstance().removeObject(l1iteminstance);
+					}
+			}
+		}else if(type.equalsIgnoreCase("맵")){
+			CInventory groundInventory= null;
+			LetterTable lettertable = null;
+			L1FurnitureInstance furniture = null;
+			for (L1Object l1object : L1World.getInstance().getObject()) {
+				if(l1object.getMapId() == pc.getMapId()){
+					if (l1object instanceof L1ItemInstance) {
+						l1iteminstance = (L1ItemInstance) l1object;
+						if (l1iteminstance.getX() == 0 && l1iteminstance.getY() == 0) { // 지면상의 아이템은 아니고, 누군가의 소유물
+							continue;
+						}
+				
+							groundInventory = L1World.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
+							int itemId = l1iteminstance.getItem(). getItemId();
+							if (itemId == 40314 || itemId == 40316) { // 펫의 아뮤렛트
+								PetTable.getInstance().deletePet(l1iteminstance.getId());
+							} else if (itemId >= 49016 && itemId <= 49025) { // 편지지
+								lettertable = new LetterTable();
+								lettertable.deleteLetter(l1iteminstance.getId());
+							} else if (itemId >= 41383 && itemId <= 41400) { // 가구
+								if (l1object instanceof L1FurnitureInstance) {
+									furniture = (L1FurnitureInstance) l1object;
+									if (furniture.getItemObjId() == l1iteminstance.getId()) { // 이미 꺼내고 있는 가구
+										FurnitureSpawnTable.getInstance().deleteFurniture(furniture);
+									}
+								}
+							}
+							groundInventory.Pop(l1iteminstance);
+							L1World.getInstance().removeVisibleObject(l1iteminstance);
+							L1World.getInstance().removeObject(l1iteminstance);
+						}
+				}
+			}
+		}else{
+			SC_SystemMessage.send(pc, "청소 [맵,전체]");
+		}
+		//L1World.getInstance().broadcastServerMessage("월드 맵상의 아이템이 GM에 의해 삭제되었습니다. ");
+	} catch (Exception e) {
+		SC_SystemMessage.send(pc, "청소 [맵,전체]");
+	}
 	}
 }
