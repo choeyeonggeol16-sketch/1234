@@ -35,7 +35,8 @@ TIME_SLICE=50ms, MAX_SLOT=200, RESERVED_SLOT_TIME=10000ms, nMaxIOThread=32, nCou
 - 호출자의 CThreadManager::GetThreadID()로 타이머 저장소 선택.
 - 가까운 예약은 슬롯 배열, 넘치는 슬롯은 풀에서 연결 슬롯 재사용. 먼 예약은 m_ExtTimer[thread] priority queue에 저장.
 - Dispatch는 경과 슬롯을 처리하고 장기 예약을 wheel 범위 안으로 옮긴다.
-- CSlot은 object, id, uid를 배열에 저장한다. LISTEN ID 27에서는 OnTimerCallback 직접 호출. 그 외에는 thread_local 카운터의 previous==100일 때 직접 호출 및 카운터 초기화, 나머지는 SafeIOCallback 사용.
+- CSlot은 object, id, uid를 배열에 저장한다. LISTEN ID 27에서는 OnTimerCallback 호출. 그 외에는 thread_local 카운터의 previous==100일 때 OnTimerCallback 호출 및 카운터 초기화(101번째), 나머지는 SafeIOCallback 사용.
+- [IOCSocketCore.cpp:352–375](https://github.com/luannbr/Open_LU4_L2OFF/blob/main/Shared/src/IOCSocketCore.cpp#L352-L375)까지 직접 확인: 기본 OnTimerCallback은 PostIOCompletion으로 IO 완료 큐에 게시한다. 따라서 LISTEN 및 101번째 홉은 재게시, 일반 SafeIOCallback은 현재 스레드에서 OnIOCallback 직접 실행이다. OnIOCallback은 OnTimer/OnTimer2 호출 후 Timer 참조 해제, 게시 실패 경로도 참조 해제한다.
 - 중요: [SafeIOCallback:773–778](https://github.com/luannbr/Open_LU4_L2OFF/blob/main/Shared/src/IOCL2Server.cpp#L773-L778)은 object->OnIOCallback을 직접 호출한다. 이름만 보고 IOCP 재게시 또는 별도 worker enqueue라고 해석하면 틀린다.
 - 등록 스레드 기준 자료구조라는 사실이 모든 객체 변경의 직렬성을 보장하지는 않는다. RKern은 기존 CIO owner shard에서 실행하도록 유지한다.
 - [IOCL2Server.cpp:832–851](https://github.com/luannbr/Open_LU4_L2OFF/blob/main/Shared/src/IOCL2Server.cpp#L832-L851)의 owner cancellation은 portable shutdown 추가 경로라고 명시된다. Java에서는 logout/reuse 취소와 generation 검증을 보존한다.
@@ -72,5 +73,24 @@ TIME_SLICE=50ms, MAX_SLOT=200, RESERVED_SLOT_TIME=10000ms, nMaxIOThread=32, nCou
 5. shutdown, logout, respawn, 재접속, 예외, 중복 tick, 긴 작업의 IO 지연, queue overload, 타이머 누락 및 참조 수명 검증.
 6. 모든 참조가 제거되고 대체 경로가 검증된 후에만 ThreadPool.java와 관련 설정/startup/shutdown 코드를 삭제한다. 스레드 수 감소만 목표로 DB·파일·외부 서비스 블로킹을 CIO에 넣지 않는다.
 
-## 7. 확인 범위
-L2Server 실제 IO 생성/실행 루프, thread-local timer 등록/dispatch/직접 callback, 여러 반복 업무의 실제 재등록, 별도 재연결 스레드를 조회 완료. CacheD/AuthD 전수 조사, User/Creature heartbeat 원본 파일 식별, 전체 즉시 작업 호출 그래프 및 최신 RKern ThreadPool 사용처 전수 대조는 미완료. GitHub 재귀 트리 응답이 truncated였으므로 소스 전체를 검토했다고 주장하지 않는다. 실제 Java 변경, 컴파일, 부하 및 인게임 테스트는 수행하지 않았다. 다음 작업은 최신 Java 호출부 전수 분류 후 기능별로 이관하는 것이다.
+## 7. RKern 실제 소스 대조 — 구체적인 제거 대상
+
+[ThreadPool.java:73–119](https://github.com/choeyeonggeol16-sketch/1234/blob/rkern/nc-user-timer-integration-20261126/rkern/src/l1j/server/server/ThreadPool.java#L73-L119): 범용 실행기 필드 3개(_scheduler, _highPriorityScheduler, _instantPool)가 존재한다. 일반 예약 및 조건부 고우선순위 예약 실행기, bounded instant pool. 130–167행의 예약 admission monitor, 302–350행의 RunnableWrapper/Future 처리까지 확인했다. execute(Runnable)과 execute(Thread)는 다르다(185–206행). 후자는 전용 스레드 시작. scheduleBlocking(219–230행)은 지연 후 가상 스레드 시작이므로 예약 트리거와 블로킹 실행을 구분한다.
+
+| 실제 확인한 Java 파일 | 현재 실행 경로 | 이전 기준 |
+|---|---|---|
+| [AuraController:49–85](https://github.com/choeyeonggeol16-sketch/1234/blob/rkern/nc-user-timer-integration-20261126/rkern/src/l1j/server/server/Controller/AuraController.java#L49-L85) | fixed-delay → queued CAS → instant execute | 기존 CIO/상태 소유자에서 실행, coalescing/epoch 유지 |
+| [ShipTimeController:50–80](https://github.com/choeyeonggeol16-sketch/1234/blob/rkern/nc-user-timer-integration-20261126/rkern/src/l1j/server/server/Controller/ShipTimeController.java#L50-L80) | fixed-delay → instant execute | 선박 기존 소유자에서 타이머 실행, 하위 블로킹 확인 |
+| [BossController:118–166](https://github.com/choeyeonggeol16-sketch/1234/blob/rkern/nc-user-timer-integration-20261126/rkern/src/l1j/server/server/Controller/BossController.java#L118-L166) | scheduleRequired, 버전 및 ScheduledFuture 관리 | CIO server timer와 기존 NpcServer 소유권 활용, DB/스폰 순서 및 취소 유지 |
+| [CInventoryExpiry:67–105](https://github.com/choeyeonggeol16-sketch/1234/blob/rkern/nc-user-timer-integration-20261126/rkern/src/l1j/server/server/model/character/scheduler/CInventoryExpiry.java#L67-L105) | 기존 CIOThreadCallback.scheduleServerTimer, WheelTask 재등록 | 이미 통합된 참조 구현, 새 풀 불필요 |
+
+[GameServer.java:567–576](https://github.com/choeyeonggeol16-sketch/1234/blob/rkern/nc-user-timer-integration-20261126/rkern/src/l1j/server/server/GameServer.java#L567-L576)의 기존 ThreadPool 종료 및 스토리지 종료 순서를 유지한다. 142행 ThreadPool 초기화도 최종 제거 대상이다.
+
+실행기 삭제 순서: 일반/고우선순위 예약 호출을 CIO의 기존 타이머 및 업무 소유 실행부로 이전 → 두 예약 풀의 참조 0 확인 후 제거 → instant 호출의 소유 실행부 직접 실행 또는 기존 owner handoff로 이전 → blocking/dedicated 호출의 기존 업무 소유권·종료 보장 확인 → _instantPool 제거 → ThreadPool.java 및 미사용 설정/시작/종료 참조 제거. fixed-rate의 예정 시각과 fixed-delay의 완료 후 재등록을 구별한다. 전체 호출부 수와 하위 블로킹 경로는 아직 전수 확인하지 않았으므로 실제 이전 전 확인한다.
+
+## 8. 원본의 위험 경계
+
+AddTimer2가 Timer 참조를 확보한 후 호출하는 CThreadLocalTimer::AddTimer는 void 반환이다. 음수 interval 조기 반환 분기(147–172행)의 참조 회수는 조회 경로에 보이지 않는다. 잠재 수명 결함 후보이지 실제 발생을 재현한 것은 아니다. RKern은 등록 실패와 참조/상태 회수를 일치시킨다.
+
+## 9. 확인 범위
+L2Server 실제 IO 생성/실행 루프, thread-local timer 등록/dispatch/직접 callback, 여러 반복 업무의 실제 재등록, 별도 재연결 스레드를 조회 완료. CacheD/AuthD 전수 조사, User/Creature heartbeat 원본 파일 식별, 전체 즉시 작업 호출 그래프 및 최신 RKern ThreadPool 사용처 전수 대조는 미완료. 단 ThreadPool.java, GameServer.java, AuraController, ShipTimeController, BossController, CInventoryExpiry의 실제 본문은 확인하여 7절에 반영했다. GitHub 재귀 트리 응답이 truncated였으므로 소스 전체를 검토했다고 주장하지 않는다. 실제 Java 변경, 컴파일, 부하 및 인게임 테스트는 수행하지 않았다. 다음 작업은 최신 Java 호출부 전수 분류 후 기능별로 이관하는 것이다.
