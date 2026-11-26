@@ -1,5 +1,12 @@
 # NC OFF 스케줄러 구조 분석 — 2026-11-26
 
+## 참조 OFF 소스코드
+
+- [Open_LU4_L2OFF — GitHub](https://github.com/luannbr/Open_LU4_L2OFF)
+- [L2Server](https://github.com/luannbr/Open_LU4_L2OFF/tree/main/L2Server) · [L2NPC](https://github.com/luannbr/Open_LU4_L2OFF/tree/main/L2NPC) · [CacheD](https://github.com/luannbr/Open_LU4_L2OFF/tree/main/CacheD) · [AuthD](https://github.com/luannbr/Open_LU4_L2OFF/tree/main/AuthD)
+
+해당 공개 저장소는 C++20 이식판이며, 수정되지 않은 NC 내부 원본과 동일하다고 단정하지 않는다.
+
 ## 분석 대상과 범위
 - NC OFF 계열 C++ 원본 `Open_LU4_L2OFF`에 대한 직전 분석 결과를 정리한다.
 - RKern 기준 브랜치: `rkern/nc-user-timer-integration-20261126`, 기준 커밋 `e330a63ba01210ce81a3419cf0b180b6fba6fc43`.
