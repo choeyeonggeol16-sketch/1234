@@ -120,8 +120,6 @@ public final class SC_ChangeCharName {
 			}
 
 			pc.getInventory().DeleteItemInInventory(408991, 1);
-//			if (pc.is_shift_transfer()) {
-//				pc.set_shift_type(MJEShiftObjectType.NONE);
 //			} else {
 //				pc.getInventory().consumeItem(408991, 1);
 //			}

@@ -20,7 +20,7 @@ import l1j.server.server.datatables.TownTable;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1NpcTalkData;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;

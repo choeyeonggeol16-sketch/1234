@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.character.bookmark.CUserBookmark;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
@@ -131,8 +131,8 @@ public class CItemBookmark {
                 || pc.isItemTransferBusy() || pc.getTradeID() != 0 || pc.isTradeResolving()) return;
         final int charId = pc.getId(), objectId = item.getId(), limit = pc.getMark_count();
         final ArrayList<BookmarkSlot> prepared = new ArrayList<>();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc,
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc,
                     l1j.server.server.storage.CacheD.accountOrderKey("bookmark:" + charId))) {
             if (!tx.debit(item, 1)) return;
             tx.sql(con -> prepared.addAll(ReplaceItemSlots(con, charId, limit, objectId)));

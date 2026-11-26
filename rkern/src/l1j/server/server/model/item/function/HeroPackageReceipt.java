@@ -57,7 +57,7 @@ final class HeroPackageReceipt {
         reward.setId(l1j.server.server.IdFactory.getInstance().nextId());
         reward.setBless(1);
         reward.setIdentified(true);
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(input, 1)) return;

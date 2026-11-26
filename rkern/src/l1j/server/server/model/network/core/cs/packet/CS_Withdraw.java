@@ -102,8 +102,8 @@ public final class CS_Withdraw {
                 return;
             }
 
-            try (l1j.server.server.model.L1InventoryTransaction tx =
-                    l1j.server.server.model.L1InventoryTransaction.begin(pc, CastleWarBusiness.TREASURY_ORDER_KEY)) {
+            try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                    l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, CastleWarBusiness.TREASURY_ORDER_KEY)) {
                 if (tx.grant(L1ItemId.ADENA, drawAmount) == null) return;
                 final Runnable treasury = business.stageTreasury(tx, castleId, -drawAmount);
                 tx.commit(() -> {

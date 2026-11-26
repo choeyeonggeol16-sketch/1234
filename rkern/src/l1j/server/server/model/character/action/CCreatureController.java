@@ -45,7 +45,6 @@ public final class CCreatureController {
     private static final long MIN_ACTION_TIMER_MS = 80L;
     private static final int MAX_PENDING_RECURSION = 8;
 
-    // CCreatureController-local serialized execution (reference server 32-slot policy).
     // Controller is the sole executor for PC actions and PC timer mutations.
     // The CIO wheel only schedules expirations. No new queue or worker.
     private static final Logger EXECUTION_LOG = Logger.getLogger(CCreatureController.class.getName());
@@ -103,13 +102,6 @@ public final class CCreatureController {
     private volatile Thread executionThread;
     private volatile Thread executionWaiter;
 
-    /**
-     * reference server CSerializedDamageMessage-inspired overflow storage. A full 24-job controller ring must
-     * never discard a hit or block another character's controller. The normal
-     * path uses the ring's preallocated primitive slots; only overflow allocates
-     * an event. afterTicket preserves its place behind all already reserved
-     * controller commands when the ring is saturated.
-     */
     private abstract static class OverflowEvent {
         final int session, epoch;
         final long afterTicket;
@@ -179,11 +171,6 @@ public final class CCreatureController {
                 pc.getSessionStamp(), epoch);
     }
 
-    /**
-     * reference server CCreatureController::OnDamaged entry: serialize victim-side HP
-     * damage and death/skill side effects (via OnDamagedMessage). No attack-side HP mutation or new worker.
-     * A session/actor epoch snapshot prevents queued hits reaching a relogged PC.
-     */
     public boolean OnDamaged(L1Character attacker, int damage, boolean counter) {
         return OnDamaged(attacker, damage, counter, false);
     }
@@ -239,12 +226,12 @@ public final class CCreatureController {
     }
 
     /** A wheel expiration may only mutate a PC on its controller FIFO. */
-    public boolean AddExecutableSkillHeartbeat(int generation) {
+    public boolean AddExecutableSkillHeartbeat(L1PcInstance pc, int session, int generation) {
         final int epoch = actorEpoch;
-        final L1PcInstance pc = actor;
-        if (pc == null || (epoch & 1) != 0 || actorEpoch != epoch) return false;
+        if (actor != pc || (epoch & 1) != 0 || actorEpoch != epoch
+                || pc.getSessionStamp() != session) return false;
         return executeOrPublish(EXEC_SKILL_HEARTBEAT, 0, generation, 0, 0, 0,
-                0L, 0L, 0, null, null, pc.getSessionStamp(), epoch);
+                0L, 0L, 0, null, null, session, epoch);
     }
 
     /** CIO wheel only provides the due-time signal; PC state runs on this FIFO. */
@@ -274,21 +261,21 @@ public final class CCreatureController {
     }
 
     /** Item cooldown expiration changes controller-local state in FIFO order. */
-    public boolean AddExecutableItemDelay(int delayId, int generation) {
+    public boolean AddExecutableItemDelay(L1PcInstance pc, int delayId, int generation) {
         final int epoch = actorEpoch;
-        final L1PcInstance pc = actor;
-        if (pc == null || (epoch & 1) != 0 || actorEpoch != epoch) return false;
+        final int session = pc.getSessionStamp();
+        if (actor != pc || (epoch & 1) != 0 || actorEpoch != epoch) return false;
         return executeOrPublish(EXEC_ITEM_DELAY, 0, delayId, generation, 0, 0,
-                0L, 0L, 0, null, null, pc.getSessionStamp(), epoch);
+                0L, 0L, 0, null, null, session, epoch);
     }
 
     /** Teleport completion is ordered with the PC's in-flight game actions. */
-    public boolean AddExecutableTeleport(int teleportEpoch) {
+    public boolean AddExecutableTeleport(L1PcInstance pc, int session, int teleportEpoch) {
         final int epoch = actorEpoch;
-        final L1PcInstance pc = actor;
-        if (pc == null || (epoch & 1) != 0 || actorEpoch != epoch) return false;
+        if (actor != pc || (epoch & 1) != 0 || actorEpoch != epoch
+                || pc.getSessionStamp() != session) return false;
         return executeOrPublish(EXEC_TELEPORT, 0, teleportEpoch, 0, 0, 0,
-                0L, 0L, 0, null, null, pc.getSessionStamp(), epoch);
+                0L, 0L, 0, null, null, session, epoch);
     }
 
     public boolean ChangeHeading(int heading) {
@@ -369,9 +356,9 @@ public final class CCreatureController {
         final long ticket;
         for (;;) {
             final long tail = executionTail;
+            // Timer-wheel producers retry with their existing node if the ring is full.
             final boolean mustComplete = kind == EXEC_RESET || kind == EXEC_SKILL_EFFECT
-                    || kind == EXEC_SKILL_HEARTBEAT || kind == EXEC_TELEPORT
-                    || kind == EXEC_ITEM_DELAY || kind == EXEC_SIGHT
+                    || kind == EXEC_SIGHT
                     || kind == EXEC_REGEN_RESET || kind == EXEC_STOP_PSS_AUTO;
             if (tail - executionHead >= EXECUTION_LIMIT) {
                 if (kind == EXEC_SIGHT) {

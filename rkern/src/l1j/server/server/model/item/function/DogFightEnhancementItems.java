@@ -40,7 +40,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;

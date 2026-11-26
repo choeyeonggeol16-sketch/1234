@@ -1,8 +1,8 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.CTradeManager;
-import l1j.server.server.model.CTrade;
+import l1j.server.server.model.inventory.CTradeManager;
+import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;

@@ -1,7 +1,7 @@
 package l1j.server.server.model.item.function;
 
 import java.util.ArrayList;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1PcInstance;
 import static l1j.server.server.model.item.function.PackageRewardStaging.stageReward;
 import static l1j.server.server.model.item.function.PackageRewardStaging.stageSealedReward;

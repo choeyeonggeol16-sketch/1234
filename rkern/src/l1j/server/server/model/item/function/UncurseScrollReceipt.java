@@ -29,7 +29,7 @@ final class UncurseScrollReceipt {
 
     static void useUncurseScrollAtomic(L1PcInstance pc, L1ItemInstance scroll, int scrollId) {
         if (pc == null || scroll == null) return;
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(scroll, 1)) return;

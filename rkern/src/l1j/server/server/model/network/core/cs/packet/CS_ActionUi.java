@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.appcenter.AppCenterService;
-import l1j.server.server.datatables.BossMonsterSpawnList;
+import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.MapUserTeleportTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -35,7 +35,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TAM_WINDOW;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.geometry.GamePoint;
-import l1j.server.server.templates.L1Boss;
+import l1j.server.server.model.npc.spawn.boss.L1Boss;
 import l1j.server.server.utils.ServerMessage;
 import l1j.server.server.utils.TYUtil;
 

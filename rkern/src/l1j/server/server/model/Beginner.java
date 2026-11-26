@@ -14,6 +14,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.templates.L1Item;
+import l1j.server.server.model.inventory.CInventory;
 
 public class Beginner {
 

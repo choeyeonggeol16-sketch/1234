@@ -1,10 +1,4 @@
 package l1j.server.server.model.character.combat.statistics.chart;
-/**********************************
- * 
- * server Kill Death Assist Chart System scheduler.
- * made by mjsoft, 2017.
- *  
- **********************************/
 import java.util.Calendar;
 
 import l1j.server.server.model.Instance.L1PcInstance;

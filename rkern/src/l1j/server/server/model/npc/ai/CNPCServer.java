@@ -2,8 +2,9 @@ package l1j.server.server.model.npc.ai;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
-import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -97,6 +98,7 @@ public final class CNPCServer {
     private final MpmcArrayQueue<CorpseEvent> _skillReserveFree =
             new MpmcArrayQueue<>(SKILL_RESERVE_CAPACITY);
     private final Shard[] _shards = new Shard[WORKERS];
+    private boolean started;
     private volatile boolean _running = true;
     // A producer that was admitted before shutdown must finish publishing
     // before an owner drains/clears its queues. The counter avoids a monitor,
@@ -129,8 +131,18 @@ public final class CNPCServer {
         for (int i = 0; i < WORKERS; i++) {
             _shards[i] = new Shard(i);
         }
-        for (int i = 0; i < WORKERS; i++) {
-            _shards[i].start();
+    }
+
+    /** Initial spawn registrations can queue before the world is ready to run AI. */
+    public synchronized void start() {
+        if (!_running) throw new IllegalStateException("NPC server is stopped");
+        if (started) return;
+        try {
+            for (Shard shard : _shards) shard.start();
+            started = true;
+        } catch (RuntimeException | Error failure) {
+            shutdown();
+            throw failure;
         }
     }
 
@@ -262,6 +274,7 @@ public final class CNPCServer {
         }
     }
 
+    /** Work admission remains open while loaders queue initial registrations. */
     public boolean isRunning() { return _running; }
 
     public boolean isOwnerThread(L1NpcInstance npc) {
@@ -558,7 +571,8 @@ public final class CNPCServer {
         shard.signalWork();
     }
 
-    public void shutdown() {
+    public synchronized void shutdown() {
+        if (!_running) return;
         _running = false;
         // The only wait is on the shutdown thread, not a CIO/NPC producer.
         // A post admitted just before close must finish before the owner
@@ -566,13 +580,31 @@ public final class CNPCServer {
         while (_activePosts.get() != 0) {
             LockSupport.parkNanos(this, 100_000L);
         }
-        for (int i = 0; i < WORKERS; i++) {
-            final Shard shard = _shards[i];
-            if (shard != null && shard._thread != null) {
-                // Always wake on shutdown; this is not a hot path.
-                LockSupport.unpark(shard._thread);
+        for (Shard shard : _shards) {
+            final Thread owner = shard._thread;
+            if (owner == null) {
+                shard.clearOwnerState();
+            } else {
+                LockSupport.unpark(owner);
             }
         }
+    }
+
+    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        if (_running) return false;
+        final long budget = unit.toNanos(timeout);
+        final long startedAt = System.nanoTime();
+        for (Shard shard : _shards) {
+            final Thread owner = shard._thread;
+            if (owner == null) continue;
+            if (owner == Thread.currentThread()) return false;
+            while (owner.isAlive()) {
+                final long remaining = budget - (System.nanoTime() - startedAt);
+                if (remaining <= 0L) return false;
+                TimeUnit.NANOSECONDS.timedJoin(owner, remaining);
+            }
+        }
+        return true;
     }
 
     private final class Shard implements Runnable {
@@ -587,7 +619,7 @@ public final class CNPCServer {
 
         private final L1NpcInstance[] _wheelHeads = new L1NpcInstance[WHEEL_SIZE];
 
-        private Thread _thread;
+        private volatile Thread _thread;
         // 0: running, 1: work posted, 2: parked or about to park.
         // Queue publication always happens before signalWork().
         private volatile int _wakeGate;
@@ -607,7 +639,12 @@ public final class CNPCServer {
             final Thread t = new Thread(this, "NpcAiOwner-" + _id);
             t.setDaemon(true);
             _thread = t;
-            t.start();
+            try {
+                t.start();
+            } catch (RuntimeException | Error failure) {
+                _thread = null;
+                throw failure;
+            }
         }
 
         private void signalWork() {

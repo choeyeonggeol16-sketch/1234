@@ -9,9 +9,9 @@ import java.nio.charset.Charset;
 import java.util.List;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1DwarfForPackageInventory;
-import l1j.server.server.model.Warehouse.ElfWarehouse;
-import l1j.server.server.model.Warehouse.PrivateWarehouse;
-import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.inventory.warehouse.ElfWarehouse;
+import l1j.server.server.model.inventory.warehouse.PrivateWarehouse;
+import l1j.server.server.model.inventory.warehouse.WarehouseManager;
 
 public final class SC_RetrieveList {
     private static final Charset MS949 = Charset.forName("MS949");

@@ -38,7 +38,7 @@ public final class EnchantedBagTransactions {
         reward.setBless(definition.getBless());
         reward.setEnchantLevel(enchantLevel);
         reward.setIdentified(true);
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(input, 1)) return;

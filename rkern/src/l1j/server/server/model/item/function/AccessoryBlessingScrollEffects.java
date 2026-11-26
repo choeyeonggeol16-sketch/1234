@@ -84,7 +84,7 @@ final class AccessoryBlessingScrollEffects {
         }
         final boolean success = ThreadLocalRandom.current().nextInt(100) < Config.악세축복1단;
         final String name = target.getLogName();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(scroll, 1)) return;
@@ -136,7 +136,7 @@ final class AccessoryBlessingScrollEffects {
     final boolean higher = ThreadLocalRandom.current().nextInt(100) < Config.악세축복3단;
     final int nextLevel = higher ? 8 : 7;
     final String name = target.getLogName();
-    try (l1j.server.server.model.L1InventoryTransaction tx =
+    try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
             User.CheckAndSetPendingUseETCItem(pc,
                     l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
         if (!tx.debit(scroll, 1)) return;

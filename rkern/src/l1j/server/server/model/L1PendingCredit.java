@@ -19,6 +19,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
+import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 
 /** A durable credit, never a fire-and-forget payment to an offline object.
  * Created in the payer's receipt; consumed in the recipient's receipt. No

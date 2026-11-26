@@ -1,11 +1,6 @@
 package l1j.server.server.model.item.collection;
 
 import l1j.server.server.templates.L1Item;
-/** 
- * CollectionCharInfo
- * MJSoft Character TradeSystem - Item
- * made by mjsoft, 2016.
- **/
 public class CollectionItem {
 	public int 		id;
 	public int 		bless;

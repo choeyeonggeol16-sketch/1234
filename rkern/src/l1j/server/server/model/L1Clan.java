@@ -19,8 +19,8 @@ import javolution.util.FastTable;
 import l1j.server.Config;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Warehouse.ClanWarehouse;
-import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.inventory.warehouse.ClanWarehouse;
+import l1j.server.server.model.inventory.warehouse.WarehouseManager;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.utils.IntRange;
 
@@ -159,9 +159,6 @@ public class L1Clan {
 	private int _bot_style;
 	private int _bot_level;
 	/** 혈맹자동가입 */
-    // NC CPledgeMemberList owns its ID index. L1 additionally preserves
-    // insertion-ordered packet iteration. Publish a stable array lazily,
-    // rather than copying the whole roster for each DB-load/add/remove.
     private static final ClanMember[] EMPTY_MEMBERS = new ClanMember[0];
     private static final L1PcInstance[] EMPTY_ONLINE = new L1PcInstance[0];
 
@@ -330,7 +327,6 @@ public class L1Clan {
         }
     }
 
-    // NC-style dismissal reservation: 0 active, 1 pending/uncertain, 2 committed.
     private volatile int m_Dismissed;
     private static final java.util.concurrent.atomic.AtomicIntegerFieldUpdater<L1Clan> DISMISSED =
             java.util.concurrent.atomic.AtomicIntegerFieldUpdater.newUpdater(L1Clan.class, "m_Dismissed");

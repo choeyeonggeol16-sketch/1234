@@ -29,10 +29,6 @@ public class L1CrownInstance extends L1NpcInstance {
 				return;
 			}
 			
-//			if(ai != null && (ai.getBotType() == MJBotType.REDKNIGHT || ai.getBotType() == MJBotType.PROTECTOR)){
-//				clan.getCurrentWar().updateDefense(clan);
-//				deleteMe();
-//				return;
 //			}
 
 		

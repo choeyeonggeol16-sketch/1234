@@ -9,7 +9,7 @@ import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.DoorSpawnTable;
-import l1j.server.server.datatables.HouseTable;
+import l1j.server.server.model.world.residence.HouseTable;
 import l1j.server.server.model.Instance.L1CataInstance;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1EffectInstance;
@@ -19,8 +19,8 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1EffectSpawn;
-import l1j.server.server.model.L1HouseLocation;
+import l1j.server.server.model.world.effect.L1EffectSpawn;
+import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.buffer.Assemble;
@@ -35,7 +35,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.siege.War;
-import l1j.server.server.templates.L1House;
+import l1j.server.server.model.world.residence.L1House;
 import l1j.server.server.templates.L1Npc;
 
 final class NpcCastleActions {
@@ -356,7 +356,7 @@ final class NpcCastleActions {
 			SC_SystemMessage.send(pc, "더 이상 납부할 세금이 없습니다.");
 			return;
 		}
-		l1j.server.server.model.L1AuctionTransaction.payTax(pc, house);
+		l1j.server.server.model.world.residence.L1AuctionTransaction.payTax(pc, house);
 	}
 
 	static String[] makeHouseTaxStrings(L1PcInstance pc, L1NpcInstance npc) {

@@ -14,14 +14,14 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.DropTable;
 import l1j.server.server.datatables.AutoLoot;
-import l1j.server.server.datatables.BossMonsterSpawnList;
+import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.character.Item.Drop.CContributeData;
-import l1j.server.server.datatables.NpcChatTable;
+import l1j.server.server.model.npc.chat.NpcChatTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1HateList;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1MobGroupInfo;
 import l1j.server.server.model.npc.ai.action.CSkillAction2;
 import l1j.server.server.model.npc.ai.TimerData;
@@ -58,7 +58,7 @@ import l1j.server.server.model.npc.ai.action.SetMoving;
 import l1j.server.server.model.npc.ai.action.dMoveTo;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
-import l1j.server.server.templates.L1NpcChat;
+import l1j.server.server.model.npc.chat.L1NpcChat;
 import l1j.server.server.utils.CommonUtil;
 
 public class L1NpcInstance extends L1Character { 
@@ -219,11 +219,6 @@ public class L1NpcInstance extends L1Character {
     public int _waitDistance = 0;
     public byte _waitPendingAction = CCreatureController.ACTION_NONE;
 
-    /*
-     * NC scripted DESIRE_MOVE_TO / DESIRE_MOVE_TO_TARGET action payload.
-     * Written/read only by the fixed CNPCServer owner. Flat primitives:
-     * no per-NPC movement command object, worker or extra queue.
-     */
     public long _scriptMoveGoalXY;
     public volatile int _scriptMoveTargetId;
     public int _scriptMoveStopDistance;
@@ -235,7 +230,6 @@ public class L1NpcInstance extends L1Character {
      * Shared path-fail flag true => ++; fail when count > 30.
      */
     public int _pathFindFailCount = 0;
-    /** NC directional attack leader ownership, cleared on retarget/stop. */
     public int _ncAttackLeaderTargetId;
 
     private static final AtomicIntegerFieldUpdater<L1NpcInstance> AI_WAKE_QUEUED =
@@ -1200,7 +1194,6 @@ public class L1NpcInstance extends L1Character {
 	}
 
 
-    /** CNPC::DropItemOnDying: prepare loot, select its route, then use existing world/party delivery. */
     public final void DropItemOnDying(CContributeData contribute, L1PcInstance lastAttacker,
             CParty admittedParty, L1PcInstance[] admittedMembers, L1Location origin) {
         if (Config.STANDBY_SERVER || lastAttacker == null || origin == null) return;
@@ -1419,9 +1412,6 @@ public class L1NpcInstance extends L1Character {
 
     public void receiveDamage(L1Character attacker, int damage) {
     }
-    /** NC MoveToFinished (event 0x41). Invoked on the existing NPC CIO
-     *  owner only after an exact scripted dMoveTo arrival. Subclasses may
-     *  handle the completion without a second event queue or worker. */
     public void onMoveToFinished(final int x, final int y) {
     }
 
@@ -1608,12 +1598,6 @@ public class L1NpcInstance extends L1Character {
         return false;
     }
 
-    /**
-     * NC TeleportToLocation execution role, adapted to the existing L1
-     * occupancy and world relocation. Combat and scripted recovery use the
-     * same checked commit; the legacy public teleport entry retains its
-     * behavior for other callers.
-     */
     public final boolean TeleportToLocation(int nx, int ny, int dir, int mpCost) {
         if (!CNPCServer.getInstance().isOwnerThread(this)) return false;
         final List<L1PcInstance> previousViewers;

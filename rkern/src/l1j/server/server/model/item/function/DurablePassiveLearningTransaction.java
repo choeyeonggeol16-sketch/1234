@@ -26,7 +26,7 @@ final class DurablePassiveLearningTransaction {
             int skillId, int replacedSkillId, Runnable afterCommitted) {
         if (pc == null || input == null || pc.getInventory().GetByServerID(input.getId()) != input
                 || pc.hasSkillEffect(skillId)) return;
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(input, 1)) return;

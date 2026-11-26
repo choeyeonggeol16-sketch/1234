@@ -90,7 +90,7 @@ final class AttributeEnchantScrollEffects {
 		final boolean success = chance < limit;
 		final int next = base + grade + 1;
 		final String weaponName = weapon.getLogName();
-		try (l1j.server.server.model.L1InventoryTransaction tx =
+		try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
 				User.CheckAndSetPendingUseETCItem(pc,
 						CacheD.accountOrderKey("item-use:", pc.getId()))) {
 			if (!tx.debit(scroll, 1)) return;

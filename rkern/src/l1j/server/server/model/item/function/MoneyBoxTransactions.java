@@ -11,8 +11,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;

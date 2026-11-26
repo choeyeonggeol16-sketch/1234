@@ -81,7 +81,7 @@ final class ItemOptionScrollEffects {
     final boolean success = ThreadLocalRandom.current().nextInt(100) < Config.랜덤부여주문서;
     final int nextLevel = success ? 10 + ThreadLocalRandom.current().nextInt(17) : 0;
     final String name = target.getLogName();
-    try (l1j.server.server.model.L1InventoryTransaction tx =
+    try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
             User.CheckAndSetPendingUseETCItem(pc,
                     l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
         if (!tx.debit(scroll, 1)) return;
@@ -132,7 +132,7 @@ final class ItemOptionScrollEffects {
     final int nextQuality = bonus < 0 ? -1 : rnd.nextInt(20) + bonus;
     final boolean success = nextQuality >= 0 && nextQuality > target.get_bless_level2();
     final String name = target.getLogName();
-    try (l1j.server.server.model.L1InventoryTransaction tx =
+    try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
             User.CheckAndSetPendingUseETCItem(pc,
                     l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
         if (!tx.debit(scroll, 1)) return;

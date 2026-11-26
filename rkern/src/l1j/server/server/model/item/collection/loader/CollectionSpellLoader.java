@@ -8,12 +8,6 @@ import java.util.HashMap;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.item.collection.CollectionSpell;
 import l1j.server.server.utils.SQLUtil;
-/** 
- * CollectionCharInfo
- * MJSoft Character TradeSystem - Spell Loader.
- * spell icon loader
- * made by mjsoft, 2016.
- **/
 public class CollectionSpellLoader {
 	private static CollectionSpellLoader _instance;
 	public static CollectionSpellLoader getInstance(){

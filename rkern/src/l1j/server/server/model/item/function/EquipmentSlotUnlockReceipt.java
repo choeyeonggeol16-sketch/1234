@@ -55,7 +55,7 @@ final class EquipmentSlotUnlockReceipt {
         }
         final int missingMask = missing;
         final int charId = pc.getId();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey("item-use:" + charId))) {
             if (!tx.debit(item, 1)) return;

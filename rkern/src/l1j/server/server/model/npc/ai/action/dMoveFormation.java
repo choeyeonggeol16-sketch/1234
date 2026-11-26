@@ -5,12 +5,6 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.map.L1Map;
 
-/**
- * L1 2D formation adapter. NC exposes formationId/formationIndex and
- * dMoveFormation; its exact coordinate formula is not assumed here.
- * Group identity and stable member slots belong to L1MobGroupInfo.
- * Existing CIO owner, pathfinding and tile-occupancy commit are reused.
- */
 public final class dMoveFormation {
     private static final int[] DX = {0, 1, 1, 1, 0, -1, -1, -1};
     private static final int[] DY = {-1, -1, 0, 1, 1, 1, 0, -1};

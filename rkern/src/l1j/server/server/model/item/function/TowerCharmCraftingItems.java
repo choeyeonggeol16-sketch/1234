@@ -19,7 +19,7 @@ public final class TowerCharmCraftingItems {
     private TowerCharmCraftingItems() {}
 
 	public static void UseDurableTowerCharm(L1PcInstance pc, L1ItemInstance input) {
-		try (l1j.server.server.model.L1InventoryTransaction tx =
+		try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
 				User.CheckAndSetPendingUseETCItem(pc,
 						l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
 			if (!tx.debit(560028, 1) || !tx.debit(830011, 200)

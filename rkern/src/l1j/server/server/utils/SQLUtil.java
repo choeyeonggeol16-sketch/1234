@@ -77,7 +77,6 @@ public class SQLUtil {
 		close(con);
 	}
 	
-	/** made by mjsoft **/
 	public static int calcRows(ResultSet rs) throws SQLException{
 		rs.last();
 		int r = rs.getRow();

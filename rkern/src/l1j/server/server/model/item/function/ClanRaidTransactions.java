@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import java.sql.Timestamp;
 import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1ItemDelay;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;

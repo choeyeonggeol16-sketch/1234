@@ -37,8 +37,6 @@ public final class CCreatureController {
     public static final byte ACTION_MOVE_AROUND_NATIVE  = 12;
     public static final byte ACTION_USE_SKILL = 13;
     public static final byte ACTION_MOVE_TO_TARGET_RELATIVE = 14;
-    // NC DESIRE_MOVE_TO and DESIRE_MOVE_TO_TARGET are noncombat scripted
-    // movements. Keep them distinct from ACTION_MOVE_TO_TARGET (attack).
     public static final byte ACTION_MOVE_TO_POINT = 15;
     public static final byte ACTION_MOVE_TO_OBJECT = 16;
 
@@ -459,8 +457,6 @@ public final class CCreatureController {
                         result);
             }
 
-            // Scripted movement failure retires that one NC desire and
-            // returns to THINK. It must not unregister the entire NPC AI.
             return result == RESULT_INVALID
                     && current != ACTION_MOVE_TO_POINT
                     && current != ACTION_MOVE_TO_OBJECT;

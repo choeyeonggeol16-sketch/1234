@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1World;
 
 public class ItemCompensator implements CompensatorElement{

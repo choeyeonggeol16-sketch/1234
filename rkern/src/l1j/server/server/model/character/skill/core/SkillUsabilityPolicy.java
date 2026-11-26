@@ -3,7 +3,7 @@ package l1j.server.server.model.character.skill.core;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;

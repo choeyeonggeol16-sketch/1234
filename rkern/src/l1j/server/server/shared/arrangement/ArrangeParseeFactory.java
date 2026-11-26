@@ -2,10 +2,6 @@ package l1j.server.server.shared.arrangement;
 
 import l1j.server.server.shared.frame.FrameElement;
 
-/** 
- * ArrangeParseeFactory
- * made by mjsoft, 2017.
- **/
 public class ArrangeParseeFactory {
 	public static ArrangeParsee<Integer> createIntArrange(){
 		return new AbstractArrangeDefaultParsee<Integer>(){

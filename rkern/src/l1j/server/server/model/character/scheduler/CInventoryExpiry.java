@@ -12,7 +12,7 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CIOThreadCallback.WheelTask;
 import l1j.server.server.model.Instance.L1DollInstance;

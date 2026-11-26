@@ -10,7 +10,7 @@ import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightT
 import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightInstance;
 import l1j.server.server.model.character.combat.arena.dogfight.instance.IFighterDeadNotifyHandler;
 import l1j.server.server.model.character.combat.arena.dogfight.instance.IFighterGameEndedHandler;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
 import l1j.server.server.model.L1World;
@@ -36,8 +36,10 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
 	private L1NpcInstance m_caster;
 	private MessengerInstance m_messenger;
 	private int m_ready_remain_seconds;
-	private boolean m_is_run;
-	private boolean m_is_fight;
+	private CServerTimer countdownTimer;
+	private CServerTimer noticeTimer;
+	private volatile boolean m_is_run;
+	private volatile boolean m_is_fight;
 	private DogFightGameInfo m_game_info;
 	private IFighterGameEndedHandler m_ended_handler;
 	private Object m_fighter_dead_lock;
@@ -161,76 +163,82 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
 			m_messenger.broadcast_message();			
 		}
 	}
-	private void send_start_message(){
-		ThreadPool.getInstance().execute(new Runnable(){
-			@Override
-			public void run(){
-				try{
-					send_caster_message(DogFightSettings.START_MESSAGE);
-					Thread.sleep(1000L);
-					send_caster_message(DogFightSettings.DIVIDEND_START_MESSAGE);
-					Thread.sleep(1000L);
-					for(DogFightTicketInfo tInfo : DogFightHistory.getInstance().get_current_tickets_info()){
-						send_caster_message(String.format(DogFightSettings.DIVIDEND_MESSAGE, get_leader(tInfo.get_corner_id()).getName(), tInfo.get_dividend()));
-						Thread.sleep(1000L);
-					}
-				}catch(Exception e){
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-	 public void execute(){
-	        m_is_run = true;
-	        ThreadPool.getInstance().execute(new Runnable(){
-	            @Override
-	            public void run() {
-	                try{
-	                    for(int i=m_ready_remain_seconds; i>=1; --i){
-	                        if(!is_run())
-	                            return;
-	                        if(i % 60 == 0){
-	                            send_caster_message(String.format(DogFightSettings.MESSAGE_BY_MINUTE, i / 60, m_game_info.get_game_name()));
-	                            send_messenger_message(String.format(DogFightSettings.MESSENGER_MESSAGE_BY_MINUTE, i / 60));
-	                        }
-	                        if(i <= DogFightSettings.MESSENGER_REMAIN_MESSAGE_SECONDS){
-	                            send_messenger_message(String.format(DogFightSettings.MESSENGER_REMAIN_MESSAGE, i));							
-	                        }
-	                        
-	                        if(i <= m_game_info.get_ready_remain_message_cutline()){
-	                            send_caster_message(String.format(DogFightSettings.REMAIN_MESSAGE, i));
-	                        }
-	                        if(i <= 3){
-	                            do_three_seconds_trigger(i);
-	                        }
+    private final class CMatchNoticeTimer implements Runnable {
+        private int phase;
+        private ArrayList<DogFightTicketInfo> tickets;
+        private int nextTicket;
 
-	                        // 종료 신호(interrupt) 시 조용히 퇴장 — 스택트레이스 없음
-	                        try {
-	                            Thread.sleep(1000);
-	                        } catch (InterruptedException ie) {
-	                            Thread.currentThread().interrupt();
-	                            return;
-	                        }
-	                    }
-	                    if(!is_run())
-	                        return;
-	                    
-	                    m_is_fight = true;
-	                    send_messenger_message(DogFightSettings.MESSENGER_SELL_CLOSING_MESSAGE);
-	                    send_start_message();					
-	                    do_game_start_trigger();
-	                    for(Integer corner_id : m_fighters.keySet()){
-	                        ArrayList<DogFightInstance> fighters = create_different_fighters(corner_id);
-	                        for(DogFightInstance fighter : m_fighters.get(corner_id)){
-	                            fighter.set_targets(fighters);
-	                        }
-	                    }
-	                }catch(Exception e){
-	                    e.printStackTrace();
-	                }
-	            }
-	        });
-	    }
+        @Override
+        public void run() {
+            synchronized (DogFightGame.this) {
+                if (!is_run()) return;
+                if (phase == 0) {
+                    send_caster_message(DogFightSettings.START_MESSAGE);
+                    phase++;
+                } else if (phase == 1) {
+                    send_caster_message(DogFightSettings.DIVIDEND_START_MESSAGE);
+                    phase++;
+                } else {
+                    if (tickets == null) {
+                        final var currentTickets = DogFightHistory.getInstance().get_current_tickets_info();
+                        if (currentTickets == null) return;
+                        tickets = new ArrayList<>(currentTickets);
+                    }
+                    if (nextTicket >= tickets.size()) return;
+                    final DogFightTicketInfo ticket = tickets.get(nextTicket++);
+                    final DogFightInstance leader = get_leader(ticket.get_corner_id());
+                    if (leader != null) {
+                        send_caster_message(String.format(DogFightSettings.DIVIDEND_MESSAGE,
+                                leader.getName(), ticket.get_dividend()));
+                    }
+                    if (nextTicket == tickets.size()) return;
+                }
+                noticeTimer = CServerTimer.once(this, 1_000L);
+            }
+        }
+    }
+
+    public synchronized void execute() {
+        if (m_is_run) return;
+        m_is_run = true;
+        countdownTimer = CServerTimer.once(this::TimerExpired, 1L);
+        if (countdownTimer == null) dispose();
+    }
+
+    private synchronized void TimerExpired() {
+        if (!is_run()) return;
+        final int seconds = m_ready_remain_seconds;
+        if (seconds > 0) {
+            if (seconds % 60 == 0) {
+                send_caster_message(String.format(DogFightSettings.MESSAGE_BY_MINUTE,
+                        seconds / 60, m_game_info.get_game_name()));
+                send_messenger_message(String.format(DogFightSettings.MESSENGER_MESSAGE_BY_MINUTE, seconds / 60));
+            }
+            if (seconds <= DogFightSettings.MESSENGER_REMAIN_MESSAGE_SECONDS) {
+                send_messenger_message(String.format(DogFightSettings.MESSENGER_REMAIN_MESSAGE, seconds));
+            }
+            if (seconds <= m_game_info.get_ready_remain_message_cutline()) {
+                send_caster_message(String.format(DogFightSettings.REMAIN_MESSAGE, seconds));
+            }
+            if (seconds <= 3) do_three_seconds_trigger(seconds);
+            m_ready_remain_seconds--;
+            countdownTimer = CServerTimer.once(this::TimerExpired, 1_000L);
+            if (countdownTimer == null) dispose();
+            return;
+        }
+        countdownTimer = null;
+        m_is_fight = true;
+        send_messenger_message(DogFightSettings.MESSENGER_SELL_CLOSING_MESSAGE);
+        noticeTimer = CServerTimer.once(new CMatchNoticeTimer(), 1L);
+        do_game_start_trigger();
+        for (Integer cornerId : m_fighters.keySet()) {
+            final ArrayList<DogFightInstance> opponents = create_different_fighters(cornerId);
+            for (DogFightInstance fighter : m_fighters.get(cornerId)) {
+                fighter.set_targets(opponents);
+            }
+        }
+    }
+
 	private void do_three_seconds_trigger(int remain_seconds){
 		ArrayList<DogFightInstance> fighters = get_shuffle_fighters();
 		for(DogFightInstance fighter : fighters)
@@ -270,9 +278,16 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
 		return fighters;
 	}
 	
-	public void dispose(){
+	public synchronized void stopTimers(){
 		m_is_run = false;
 		m_is_fight = false;
+		if (countdownTimer != null) countdownTimer.cancel();
+		if (noticeTimer != null) noticeTimer.cancel();
+		countdownTimer = null;
+		noticeTimer = null;
+	}
+	public synchronized void dispose(){
+		stopTimers();
 		if(m_fighters != null){
 			for(ArrayList<DogFightInstance> fighters : m_fighters.values()){
 				for(DogFightInstance fighter : fighters)

@@ -5,12 +5,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.RandomAccess;
-import l1j.server.server.model.CUserInventory;
-import l1j.server.server.model.L1EquipmentSlot;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.CUserInventory;
+import l1j.server.server.model.inventory.L1EquipmentSlot;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.equip.EquipRules;
+import l1j.server.server.model.inventory.EquipRules;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 /**

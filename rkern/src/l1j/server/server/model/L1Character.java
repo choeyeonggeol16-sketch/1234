@@ -51,6 +51,8 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CHAR_STAT;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPECIAL_RESISTANCE_NOTI;
 import l1j.server.server.utils.eKind;
+import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.inventory.L1PolyMorph;
 public class L1Character extends L1Object {
 	private static final long serialVersionUID = 1L;
 	// 캐릭터 기본
@@ -135,7 +137,6 @@ public class L1Character extends L1Object {
 	volatile int m_nSkillSpecialPierce;
 	volatile long m_SkillElemental;
 	// END shared resistance sources
-	// NC-style defense parameters: source, skill modifier and effective AC.
 	private int m_nBasePDefend;
 	private int m_nAddedPDefend;
 	private int m_nSkillPDefend;
@@ -239,7 +240,6 @@ public class L1Character extends L1Object {
 	}
 
 
-    // NC CCreature passing-position ring and four directional attack leaders.
     // Allocate only when a creature actually moves or is chased. All movement
     // history reads/writes are protected by this character's monitor; leader
     // CAS uses an int-array VarHandle for cross-CIO owner safety.
@@ -261,11 +261,6 @@ public class L1Character extends L1Object {
         }
     }
 
-    /**
-     * Port of CCreature::AddPassingPos, with L1 two-dimensional tile
-     * projection and the NC new-add straight-segment compression.
-     * Invoked only after a PC/NPC movement has actually committed.
-     */
     public final synchronized void AddPassingPos(final int fromX,
             final int fromY, final int toX, final int toY, final int mapId) {
         if (fromX == toX && fromY == toY) return;
@@ -312,7 +307,6 @@ public class L1Character extends L1Object {
         if (_ncPassingCount < NC_PASSING_CAPACITY) ++_ncPassingCount;
     }
 
-    /** NC CCreature::GetPassingPosList, newest first, caller-owned scratch. */
     public final synchronized int GetPassingPosList(final long[] output) {
         if (output == null || output.length < NC_PASSING_CAPACITY
                 || _ncPassingPos == null || _ncPassingCount == 0
@@ -335,7 +329,6 @@ public class L1Character extends L1Object {
         return _ncPassingCount;
     }
 
-    /** NC CCreature::GetMyPositionFrom, projected to L1 2D quadrants 1..4. */
     public final int GetMyPositionFrom(final L1Character other) {
         if (other == null) return 1;
         final double angle = Math.atan2(
@@ -351,7 +344,6 @@ public class L1Character extends L1Object {
                 ? (int) NC_LEADER_SLOT.getVolatile(leaders, position) : 0;
     }
 
-    /** NC CCreature::SetAttackLeaderRelated: one CAS per direction. */
     public final boolean SetAttackLeaderRelated(final L1NpcInstance actor,
             final int expectedId) {
         if (actor == null || actor.getId() == 0) return false;
@@ -370,7 +362,6 @@ public class L1Character extends L1Object {
                 leaders, position, expectedId, actor.getId());
     }
 
-    /** NC CCreature::AbandonAttackLeaderOf. */
     public final void AbandonAttackLeaderOf(final L1NpcInstance actor) {
         if (actor == null) return;
         final int[] leaders = _ncAttackLeaderId;
@@ -381,7 +372,6 @@ public class L1Character extends L1Object {
         }
     }
 
-    /** NC CCreature::IsCloserThan, L1 static sight and squared tile distance. */
     public final boolean IsCloserThan(final L1Character leader,
             final L1Character target) {
         if (leader == null) return true;
@@ -396,13 +386,6 @@ public class L1Character extends L1Object {
                         getMap(), getX(), getY(), leader.getX(), leader.getY());
     }
 
-    /**
-     * NC CCreature::GetPassingPosOnSight projected to L1:
-     * direct static sight, target's up-to-15 passing points, directional
-     * attack leader's passing points, baked CPathNodeWorld fallback, then a
-     * last visible target passing point. Physical motion still belongs to
-     * SetMoving and WorldCollisionHash, never this static waypoint selector.
-     */
     public final long GetPassingPosOnSight(final L1NpcInstance actor,
             final int destinationX, final int destinationY,
             final long[] targetPassing, final long[] leaderPassing) {
@@ -421,8 +404,6 @@ public class L1Character extends L1Object {
         final int actorId = actor.getId();
         final WorldCollisionHash collision = WorldCollisionHash.getInstance();
 
-        // NC's straight case does not need a graph search. A target's
-        // occupied current tile is not a usable L1 movement destination.
         if (PathNodeWorld.moveStraight(
                 map, sx, sy, destinationX, destinationY)
                 && collision.canEnter(
@@ -485,7 +466,6 @@ public class L1Character extends L1Object {
         if (graphPoint != PathNodeWorld.NO_PATH) {
             return graphPoint;
         }
-        // NC fallback after PFR_ERROR: a visible target passing position.
         for (int i = 0; i < count; i++) {
             final long point = targetPassing[i];
             final int x = PathNodeWorld.unpackX(point);

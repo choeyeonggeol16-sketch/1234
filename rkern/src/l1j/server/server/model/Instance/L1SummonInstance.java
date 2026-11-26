@@ -12,7 +12,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.DropTable;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -54,8 +54,6 @@ public class L1SummonInstance extends L1NpcInstance {
 			_currentPetStatus = 3;
 			return dPetDefault.onTick(this, master, 3);
 		}
-		// NC DESIRE_PET_DEFAULT. 3=stay, 4=extend, 5=alert,
-		// remaining aggressive/defensive command states keep normal follow.
 		return dPetDefault.onTick(this, master, _currentPetStatus);
 	}
 

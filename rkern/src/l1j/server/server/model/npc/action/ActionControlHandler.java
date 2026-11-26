@@ -13,11 +13,11 @@ import java.util.Map;
 import java.util.Random;
 
 import l1j.server.Config;
-import l1j.server.server.NeigeTower;
+import l1j.server.server.model.item.teleport.NeigeTower;
 import l1j.server.server.model.L1NeigeSaveChar;
 import l1j.server.server.model.SeasonRewardHandler;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;

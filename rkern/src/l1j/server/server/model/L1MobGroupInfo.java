@@ -173,8 +173,6 @@ public class L1MobGroupInfo {
 			return 0;
 		}
 
-		// L1 leader succession is the counterpart of NC private-group
-		// identity updates. The rest of the group follows this new leader.
 		setLeader(_membersList.isEmpty() ? null : _membersList.get(0));
 		return _membersList.size();
 	}

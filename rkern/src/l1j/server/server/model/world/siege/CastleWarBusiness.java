@@ -148,7 +148,7 @@ public class CastleWarBusiness implements TimeListener{
     public static final int TREASURY_ORDER_KEY = l1j.server.server.storage.CacheD.accountOrderKey("$castle-treasury-global");
 
     /** Stage treasury arithmetic on the inventory receipt's connection. */
-    public Runnable stageTreasury(l1j.server.server.model.L1InventoryTransaction tx,
+    public Runnable stageTreasury(l1j.server.server.model.inventory.L1InventoryTransaction tx,
             int castleId, int delta) {
         final CastleWar war = get(castleId);
         if (war == null) throw new IllegalStateException("Castle missing");

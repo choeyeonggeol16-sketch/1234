@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import java.util.Random;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.map.L1Map;

@@ -31,7 +31,7 @@ final class TamPointBoxReceipt {
         final Account account = pc.getNetConnection().getAccount();
         if (account == null || !account.tryBeginTamAward()) return;
         boolean submitted = false;
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey(account.getName()))) {
             if (!tx.debit(box, 1)) return;

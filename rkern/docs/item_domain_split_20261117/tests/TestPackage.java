@@ -1,6 +1,6 @@
 import l1j.server.server.model.item.function.*;
 import l1j.server.server.model.Instance.*;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.datatables.ItemTable;
 public class TestPackage {
  public static void main(String[] args){

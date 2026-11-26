@@ -21,7 +21,7 @@ public class ServerStart extends JFrame {
 		chocco.first.setText("\uB85C\uB529 \uC911");
 		chocco.first.setForeground(Color.red);
 
-		if (!Server.startLoginServer() || !Server.startGameServer()) {
+		if (!Server.startGameServer()) {
 			chocco.first.setText("서버 초기화 실패");
 			return;
 		}

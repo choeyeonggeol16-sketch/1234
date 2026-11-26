@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.TimeUnit;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.thread.CIOThreadCallback;

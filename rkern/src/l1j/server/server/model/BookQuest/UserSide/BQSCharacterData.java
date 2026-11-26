@@ -63,7 +63,6 @@ public class BQSCharacterData {
     private BQSCharacterData(){}
 
     // ─────────────────────────────────────────────
-    // 저장 코덱 — 구 MJIProtoMessage 완전 제거, 우리식
     // ─────────────────────────────────────────────
 
     private void loadFrom(ProtoReader r){

@@ -53,7 +53,7 @@ public final class ChargedRewardBoxItems {
         }
         final boolean exhausted = charge == 1;
         final String boxName = exhausted ? box.getLogName() : null;
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (exhausted) {

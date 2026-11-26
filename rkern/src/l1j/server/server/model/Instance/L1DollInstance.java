@@ -178,8 +178,6 @@ public class L1DollInstance extends L1NpcInstance {
 				teleport(_master.getX(), _master.getY(), getHeading());
 				return false;
 			}
-			// Include arrival at <=2 tiles: NC dFollow clears its cached
-			// destination when the follower has reached the master.
 			return dPetDefault.follow(this, _master);
 		}
 		deleteDoll(true);

@@ -10,7 +10,7 @@ import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.experience.fishing.EFishingType;
 import l1j.server.server.model.character.experience.fishing.FishingExpInfo;

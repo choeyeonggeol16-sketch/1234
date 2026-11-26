@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.character.action.CAttackAction;
 
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.network.thread.CIOThreadCallback;

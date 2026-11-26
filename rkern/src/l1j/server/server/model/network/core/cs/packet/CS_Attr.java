@@ -11,7 +11,7 @@ import java.util.Random;
 import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.ThreadPool;
-import l1j.server.server.datatables.BossMonsterSpawnList;
+import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.PolyTable;
@@ -22,11 +22,11 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CReplyChecker;
-import l1j.server.server.model.CTrade;
+import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.L1HauntedHouse;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
@@ -60,7 +60,7 @@ import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.geometry.GamePoint;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
-import l1j.server.server.templates.L1Boss;
+import l1j.server.server.model.npc.spawn.boss.L1Boss;
 import l1j.server.server.templates.L1Npc;
 public final class CS_Attr {
 
@@ -491,7 +491,7 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
                         || ownClan.getHouseId() != houseId) {
                     SC_SystemMessage.send(pc, "아지트 이름 변경 권한이 없습니다.");
                 } else {
-                    l1j.server.server.model.L1AuctionTransaction.renameHouse(pc, houseId, name);
+                    l1j.server.server.model.world.residence.L1AuctionTransaction.renameHouse(pc, houseId, name);
                 }
 			}
 			break;

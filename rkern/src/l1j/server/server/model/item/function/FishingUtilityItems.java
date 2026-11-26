@@ -52,7 +52,7 @@ final class FishingUtilityItems {
                     return ItemActionResult.STOP;
                 }
                 final int newCharge = Math.min(10000, charge + 100);
-                try (l1j.server.server.model.L1InventoryTransaction tx =
+                try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                         User.CheckAndSetPendingUseETCItem(pc,
                                 CacheD.accountOrderKey("item-use:", pc.getId()))) {
                     if (!tx.debit(item, 1)) return ItemActionResult.STOP;

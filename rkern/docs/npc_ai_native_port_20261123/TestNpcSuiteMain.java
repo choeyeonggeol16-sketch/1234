@@ -28,6 +28,7 @@ public final class TestNpcSuiteMain {
         };
         log.addHandler(handler);
         try {
+            CNPCServer.getInstance().start();
             Class.forName(args[0]).getMethod("main", String[].class)
                     .invoke(null, (Object) new String[0]);
         } catch (InvocationTargetException failure) {

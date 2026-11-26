@@ -1490,11 +1490,6 @@ public final class CacheD {
     }
 
 
-    /**
-     * reference server CAccount::SetCharacter / CItem::CacheItem ownership equivalent.
-     * Called on successful game session publication, not for offline SQL reads.
-     * This is a local index only: no extra player or item copies, no JDBC.
-     */
     public void registerLoadedCharacter(String accountName, String name, int characterId) {
         registerLoadedCharacterSession(accountName, name, characterId);
     }

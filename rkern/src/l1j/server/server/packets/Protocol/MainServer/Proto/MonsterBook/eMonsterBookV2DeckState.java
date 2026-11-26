@@ -1,7 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook;
 
 
-// TODO : 자동으로 생성된 PROTO 코드입니다. made by MJSoft.
 public enum eMonsterBookV2DeckState{
 	DS_IN_PROGRESS(1),
 	DS_REQUEST_COMPLETE(2),

@@ -22,12 +22,6 @@ public final class SetMoving {
     private static final int NEAR_DIRECT_TARGET_TILES = 12;
     private static final int TARGET_REPLAN_DRIFT_TILES = 4;
 
-    /*
-     * CalcMidDest constants recovered from L2Server:
-     *   0x5ca778 = 0.8
-     *   timer min = 100
-     *   timer max = 800
-     */
     private static final double CALC_MID_DISTANCE_SECONDS = 0.8d;
     private static final long CALC_MID_MIN_MS = 100L;
     private static final long CALC_MID_MAX_MS = 800L;
@@ -91,13 +85,6 @@ public final class SetMoving {
                 true);
     }
 
-    /**
-     * Relative-action approach point. The original reference server action calculates
-     * target + normalized(target -> creature) * action distance. L1 must
-     * keep 8-way terrain/occupancy authoritative, so an unreachable or
-     * occupied projected tile falls back to the ordinary live-target chase.
-     * Reserved melee-slot movement is handled BEFORE this call.
-     */
     public static byte tickRelative(
             final L1NpcInstance creature,
             final L1Character target,
@@ -115,7 +102,6 @@ public final class SetMoving {
         final int deltaY = ty - sy;
 
         // Keep the proven static corridor on long-range and blocked chases.
-        // Use reference server's projected point only in near-field direct approaches.
         if (Math.max(Math.abs(deltaX), Math.abs(deltaY))
                 > NEAR_DIRECT_TARGET_TILES) {
             return tick(creature, target, desiredDistance);
@@ -480,12 +466,6 @@ public final class SetMoving {
         return result;
     }
 
-    /**
-     * reference server target actions observe the current target every execution. In the
-     * 2D grid adapter, only invalidate a cached PathNode waypoint when a live
-     * target becomes directly approachable nearby, or has significantly
-     * changed the long-range route. Do not run PathFind on every movement tick.
-     */
     private static void refreshLiveTarget(
             final L1NpcInstance creature,
             final int sx,

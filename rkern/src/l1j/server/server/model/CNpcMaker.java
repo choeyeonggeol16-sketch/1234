@@ -974,10 +974,6 @@ public class CNpcMaker {
         }
     }
 
-    /**
-     * NC의 AddTimer/TimerExpired 패턴에 맞춘 local bridge.
-     * absolute monotonic deadline을 CIO shared wheel delay로 변환한다.
-     */
     private void AddTimer(final long deadlineMs) {
         if (deadlineMs <= 0L) {
             return;

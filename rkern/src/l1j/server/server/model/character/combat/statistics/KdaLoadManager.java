@@ -1,10 +1,4 @@
 package l1j.server.server.model.character.combat.statistics;
-/**********************************
- * 
- * server Kill Death Assist LoadManager.
- * made by mjsoft, 2017.
- *  
- **********************************/
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;

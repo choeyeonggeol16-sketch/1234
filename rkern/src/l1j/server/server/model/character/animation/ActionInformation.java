@@ -4,10 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import l1j.server.server.shared.frame.FrameElement;
-/** 
- * ActionInformation
- * made by mjsoft, 2017.
- **/
 public class ActionInformation {
 	public static ActionInformation fromBasicAction(int actId){
 			return fromBasicAction(EActionCodes.fromInt(actId));

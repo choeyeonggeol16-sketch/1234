@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -39,8 +39,8 @@ final class NpcQuestTransactions {
             sendProtonGunRequirement(pc, count);
             return "falllovef";
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, 535)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, 535)) {
             if (!tx.debit(3000506, count)) {
                 sendProtonGunRequirement(pc, count);
                 return "falllovef";
@@ -87,8 +87,8 @@ final class NpcQuestTransactions {
             String successPage, String failurePage, Runnable afterCommitted) {
         final int npcObjectId = npc.getId();
         final String npcName = npc.getNpcTemplate().get_name();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, questId)) {
             if (!tx.debit(materialId, materialCount)
                     || (additionalMaterialId != 0 && !tx.debit(additionalMaterialId, 1))) {
                 SC_NPCTalkReturn.send(pc, npcObjectId, failurePage);
@@ -153,8 +153,8 @@ final class NpcQuestTransactions {
             SC_NPCTalkReturn.send(pc, npcObjectId, "maptbox0");
             return;
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, mainQuest)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, mainQuest)) {
             if (!tx.debit(40701, 1)) {
                 SC_ServerMessage.send(pc, 337, CObjectDB.LoadItem().getTemplate(40701).getName());
                 SC_NPCTalkReturn.send(pc, npcObjectId, successPage);
@@ -196,8 +196,8 @@ final class NpcQuestTransactions {
             SC_NPCTalkReturn.send(pc, npc.getId(), "keplisha8");
             return;
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
             if (!tx.debit(L1ItemId.ADENA, 1000) || !tx.debit(41313, 1)) {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "keplisha8");
                 return;
@@ -228,8 +228,8 @@ final class NpcQuestTransactions {
     static void dragonEyeExchange(L1PcInstance pc, L1NpcInstance npc,
             int materialId, int count, int adena, int rewardId,
             String failurePage, boolean showResult) {
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
             if (!tx.debit(materialId, count) || !tx.debit(L1ItemId.ADENA, adena)) {
                 SC_NPCTalkReturn.send(pc, npc.getId(), failurePage);
                 return;
@@ -261,8 +261,8 @@ final class NpcQuestTransactions {
             SC_NPCTalkReturn.send(pc, npc.getId(), "sherme0");
             return;
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
             if (!tx.debit(firstMaterial, 1) || !tx.debit(secondMaterial, 1)
                     || !tx.debit(L1ItemId.ADENA, 200000)) {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "sherme1");
@@ -295,8 +295,8 @@ final class NpcQuestTransactions {
     static void npcSingleMaterialExchange(L1PcInstance pc, L1NpcInstance npc,
             int materialId, int count, int rewardId, String successPage,
             String failurePage, String fixedRewardName) {
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
             if (!tx.debit(materialId, count)) {
                 SC_NPCTalkReturn.send(pc, npc.getId(), failurePage);
                 return;
@@ -323,8 +323,8 @@ final class NpcQuestTransactions {
      */
     static void npcPaidFloorTeleport(L1PcInstance pc, L1NpcInstance npc,
             int floorToken, int x, int y, int destinationMap) {
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
             if (!tx.debit(L1ItemId.ADENA, 300) || !tx.debit(floorToken, 2)) {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "maetnob2");
                 return;
@@ -347,8 +347,8 @@ final class NpcQuestTransactions {
             SC_NPCTalkReturn.send(pc, npc.getId(), page);
             return;
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, questId)) {
             final L1ItemInstance reward = tx.grant(itemId, count);
             if (reward == null) {
                 SC_SystemMessage.send(pc, "퀘스트 아이템을 수령할 수 없습니다.");
@@ -371,8 +371,8 @@ final class NpcQuestTransactions {
     /** NPC 71056: all three Simizz clues and the reward share one receipt. */
     static void simizzReceipt(L1PcInstance pc, L1NpcInstance npc) {
         final int questId = CQuestSystem.QUEST_SIMIZZ;
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, questId)) {
             if (!tx.debit(40661, 1) || !tx.debit(40662, 1) || !tx.debit(40663, 1)) {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "SIMIZZ9");
                 return;
@@ -413,8 +413,8 @@ final class NpcQuestTransactions {
             if (thirdGroup) SC_NPCTalkReturn.send(pc, npc.getId(), "");
             return true;
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
             if ((first && !tx.debit(firstId, 300)) || (second && !tx.debit(secondId, 300))
                     || (third && !tx.debit(thirdId, 300))
                     || tx.grant(400254, (first ? 1 : 0) + (second ? 1 : 0) + (third ? 1 : 0)) == null) {
@@ -464,8 +464,8 @@ final class NpcQuestTransactions {
 
     static void crystalKeeperPortal(L1PcInstance pc, L1NpcInstance npc, boolean leave) {
         final int questId = CQuestSystem.QUEST_CRYSTAL;
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, questId)) {
             // Reclaim existing crystal stones only on the return route.
             final L1ItemInstance stones = leave ? pc.getInventory().GetFirstItemByClassID(40660) : null;
             if ((stones != null && stones.getCount() > 0 && !tx.debit(stones, stones.getCount()))
@@ -498,8 +498,8 @@ final class NpcQuestTransactions {
             SC_NPCTalkReturn.send(pc, npc.getId(), "");
             return;
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, questId)) {
             final L1ItemInstance first = tx.grant(246, 1);
             final L1ItemInstance second = tx.grant(247, 1);
             final L1ItemInstance third = tx.grant(248, 1);
@@ -620,8 +620,8 @@ final class NpcQuestTransactions {
     /** Phase49: a one-for-one NPC exchange is one durable debit/grant. */
     static void npcItemExchange(L1PcInstance pc, L1NpcInstance npc,
             int materialId, int rewardId, String successPage, String failurePage) {
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, npc.getNpcId())) {
             if (!tx.debit(materialId, 1) || tx.grant(rewardId, 1) == null) {
                 SC_NPCTalkReturn.send(pc, npc.getId(), failurePage);
                 return;
@@ -641,8 +641,8 @@ final class NpcQuestTransactions {
             SC_NPCTalkReturn.send(pc, npc.getId(), failurePage);
             return;
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, questId)) {
             if (!tx.debit(materialId, count)) {
                 SC_NPCTalkReturn.send(pc, npc.getId(), failurePage);
                 return;
@@ -674,8 +674,8 @@ final class NpcQuestTransactions {
             SC_NPCTalkReturn.send(pc, npc.getId(), failurePage);
             return;
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, questId)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, questId)) {
             if (!start) {
                 final boolean ready = silrein
                         ? tx.debit(210091, 10) && tx.debit(40510, 1)

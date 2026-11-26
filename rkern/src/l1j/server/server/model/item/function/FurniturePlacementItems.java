@@ -11,7 +11,7 @@ import java.util.Collection;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
-import l1j.server.server.model.L1HouseLocation;
+import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1FurnitureInstance;

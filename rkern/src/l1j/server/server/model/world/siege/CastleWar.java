@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.DoorSpawnTable;
@@ -205,7 +206,7 @@ for(L1PcInstance pc : L1World.getInstance().getAllPlayers()){
 } finally {
     l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(shared);
 }
-            ThreadPool.getInstance().scheduleRequired(new Runnable(){
+            CServerTimer.onceRequired(new Runnable(){
                 @Override
                 public void run(){
                     try{

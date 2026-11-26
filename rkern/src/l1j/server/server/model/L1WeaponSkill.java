@@ -30,6 +30,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
 import l1j.server.server.templates.L1Skills;
+import l1j.server.server.model.world.effect.L1EffectSpawn;
 
 public class L1WeaponSkill {
 

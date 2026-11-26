@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.CSetItem;
+import l1j.server.server.model.inventory.CSetItem;
 import l1j.server.server.model.Instance.L1AuctionBoardInstance;
 import l1j.server.server.model.Instance.L1BoardInstance;
 import l1j.server.server.model.Instance.L1CastleGuardInstance;

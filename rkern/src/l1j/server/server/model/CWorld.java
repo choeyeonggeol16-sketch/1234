@@ -21,6 +21,8 @@ import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.world.instance.inn.InnHelper;
 import l1j.server.server.model.world.instance.inn.InnRoom;
 import l1j.server.server.shared.L1Type;
+import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.inventory.L1GroundInventory;
 
 /**
  * World mutation boundary. The synchronous legacy API retains its completion

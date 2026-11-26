@@ -2,7 +2,7 @@ package l1j.server.server.model.character.skill.core;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.skill.passive.PassiveID;

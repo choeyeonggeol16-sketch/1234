@@ -183,5 +183,5 @@ jobs:
                           "@" + str(args)], check=True, timeout=300)
           print("PASS full production Java 21 compile", flush=True)
           subprocess.run(["java", "--enable-preview", "-ea", "-cp", cp,
-                          "l1j.server.server.model.TestCarryingWeight"], cwd=work, check=True, timeout=120)
+                          "l1j.server.server.model.inventory.TestCarryingWeight"], cwd=work, check=True, timeout=120)
           PY

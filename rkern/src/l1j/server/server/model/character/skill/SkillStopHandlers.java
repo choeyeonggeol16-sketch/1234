@@ -12,7 +12,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import l1j.server.Config;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Magic;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;

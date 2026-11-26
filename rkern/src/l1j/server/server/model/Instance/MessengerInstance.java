@@ -33,7 +33,6 @@ public class MessengerInstance extends L1NpcInstance{
 	public void broadcast_message() {
 		SC_ChangeName.broadcast(this, getId(), get_current_message());
 		/// broadcastPacket(make_object_packet(),
-		/// MJEProtoMessages.SC_WORLD_PUT_OBJECT_NOTI, true, false);
 	}
 	
 	@Override

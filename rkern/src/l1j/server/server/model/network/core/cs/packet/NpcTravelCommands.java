@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import java.util.Random;
 import l1j.server.server.Controller.잊섬Controller;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;

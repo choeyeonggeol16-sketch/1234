@@ -17,12 +17,6 @@ import l1j.server.server.model.character.combat.statistics.KdaLoader;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.network.core.sc.packet.SC_ChartRank;
 
-/**********************************
- * 
- * server Kill Death Assist Chart System updator.
- * made by mjsoft, 2017.
- *  
- **********************************/
 public class KdaChartUpdator {
 	private static final Logger LOG = Logger.getLogger(KdaChartUpdator.class.getName());
 	private boolean 			_isUpdate;

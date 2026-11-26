@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CParty;
@@ -37,7 +37,7 @@ public final class AuraController implements Runnable {
     // Avoid queuing redundant aura scans while a prior tick is pending/running.
     private final AtomicBoolean queued = new AtomicBoolean(false);
     private volatile boolean stopped = true;
-    private volatile ScheduledFuture<?> ticker;
+    private volatile CServerTimer ticker;
     private volatile int generation;
 
     public static AuraController getInstance() {
@@ -60,7 +60,7 @@ public final class AuraController implements Runnable {
             }
         };
         // Timer only signals admission; AOI/packet work stays on instant workers.
-        final ScheduledFuture<?> future = ThreadPool.getInstance().scheduleWithFixedDelay(() -> {
+        final CServerTimer future = CServerTimer.fixedDelaySignal(() -> {
             if (stopped || generation != epoch || !queued.compareAndSet(false, true)) return;
             try {
                 ThreadPool.getInstance().execute(work);
@@ -82,9 +82,9 @@ public final class AuraController implements Runnable {
     public synchronized void stop() {
         stopped = true;
         ++generation;
-        final ScheduledFuture<?> future = ticker;
+        final CServerTimer future = ticker;
         ticker = null;
-        if (future != null) future.cancel(false);
+        if (future != null) future.cancel();
         started.set(false);
     }
 

@@ -5,16 +5,16 @@ import tempfile
 
 root = Path(__file__).resolve().parents[2]
 model = root / "src/l1j/server/server/model"
-source = (model / "EquipmentEnchantOptions.java").read_text(encoding="utf-8")
+source = (model / "inventory/EquipmentEnchantOptions.java").read_text(encoding="utf-8")
 a = source.index("    static void applyStat(")
 b = source.index("    static int accessoryHeal(", a)
 methods = source[a:b]
 a = source.index("        if (itemId == 123999) {")
 b = source.index("        if (itemId == 61", a)
 methods += "\n static void option(L1PcInstance pc,int itemId,int enchant,int sign,int[] changes){\n" + source[a:b] + "\n }\n"
-slot = (model / "L1EquipmentSlot.java").read_text(encoding="utf-8")
+slot = (model / "inventory/L1EquipmentSlot.java").read_text(encoding="utf-8")
 assert "ItemBonusHooks.onEnchantChanged(_owner, equipment);" in slot
-presenter = (model / "item/presentation/ItemPresentatorFactory.java").read_text(encoding="utf-8")
+presenter = (model / "item/assembly/ItemPresentatorFactory.java").read_text(encoding="utf-8")
 assert "pc.add_melee_critical_rate(enchant * signed);" not in presenter.split("case 123999:")[1]
 harness = r'''
 import java.util.Arrays;

@@ -1,18 +1,18 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.datatables.HouseTable;
+import l1j.server.server.model.world.residence.HouseTable;
 import l1j.server.server.datatables.NpcActionTable;
 import l1j.server.server.model.Instance.L1AuctionBoardInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1AuctionTransaction;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.world.residence.L1AuctionTransaction;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.npc.action.L1NpcAction;
 import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
-import l1j.server.server.templates.L1House;
+import l1j.server.server.model.world.residence.L1House;
 
 public final class CS_Amount {
     private CS_Amount() {}

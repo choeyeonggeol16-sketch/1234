@@ -148,8 +148,8 @@ public class BookmarkSlot {
                 || pc.isItemTransferBusy() || pc.getTradeID() != 0 || pc.isTradeResolving()) return;
         final int charId = pc.getId(), markLimit = pc.getMark_count();
         final ArrayList<BookmarkSlot> prepared = new ArrayList<>();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc,
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc,
                     CacheD.accountOrderKey("bookmark:" + charId))) {
             if (!tx.debit(useItem, 1)) return;
             tx.sql(con -> prepared.addAll(InsertItemSlots(con, charId, markLimit, obj_id)));

@@ -7,7 +7,7 @@ import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightH
 import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightHistoryInfo;
 import l1j.server.server.model.character.combat.arena.dogfight.instance.DogFightInstance;
 import l1j.server.server.model.character.combat.arena.dogfight.instance.IFighterGameEndedHandler;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.shared.GameRandom;
 
 public class DogFightGameManager implements IFighterGameEndedHandler{
@@ -25,8 +25,9 @@ public class DogFightGameManager implements IFighterGameEndedHandler{
 	private ArrayList<Integer> m_game_ids;
 	private DogFightGameInfo m_game_info;
 	private int m_current_match_count;
-	private int m_max_match_count;
-	private DogFightGame m_current_game;
+	private volatile int m_max_match_count;
+	private volatile DogFightGame m_current_game;
+	private CServerTimer transition;
 	private DogFightGameManager(){
 	}
 	public DogFightGameManager set_game_ids(ArrayList<Integer> game_ids){
@@ -58,17 +59,18 @@ public class DogFightGameManager implements IFighterGameEndedHandler{
 		return m_max_match_count;
 	}
 	
-	public void execute(){
-		ThreadPool.getInstance().scheduleRequired(new Runnable(){
-			@Override
-			public void run(){
-				if(!is_next_match()) return;
-				m_current_game = create_games();
-				m_current_game.execute();
-			}
-		}, (DogFightSettings.NEXT_MATCH_READY_SECONDS) * 1000L);
-	}
-	
+    public synchronized void execute() {
+        if (transition != null || m_current_game != null || !is_next_match()) return;
+        transition = CServerTimer.onceRequired(this::startMatch, DogFightSettings.NEXT_MATCH_READY_SECONDS * 1_000L);
+    }
+
+    private synchronized void startMatch() {
+        transition = null;
+        if (!is_next_match()) return;
+        m_current_game = create_games();
+        m_current_game.execute();
+    }
+
 	private DogFightGame create_games(){
 		++m_current_match_count;
 		set_game_info(DogFightGameInfo.get_game_info(m_game_ids.get(GameRandom.next(m_game_ids.size()))));
@@ -77,7 +79,9 @@ public class DogFightGameManager implements IFighterGameEndedHandler{
 	}
 
 	@Override
-	public void on_ended(int winner_id, ArrayList<DogFightInstance> winners) {
+	public synchronized void on_ended(int winner_id, ArrayList<DogFightInstance> winners) {
+		final DogFightGame finished = m_current_game;
+		if (finished == null || transition != null) return;
 		DogFightHistoryInfo hInfo = DogFightHistory.getInstance().get_current_history();
 		if(hInfo != null){
 			hInfo.set_winner_id(winner_id)
@@ -85,29 +89,35 @@ public class DogFightGameManager implements IFighterGameEndedHandler{
 			.do_calculate(winner_id);
 			DogFightHistory.getInstance().update_game();			
 		}
-		m_current_game.set_fight(false);
-		ThreadPool.getInstance().scheduleRequired(new Runnable(){
-			@Override
-			public void run(){
-				m_current_game.send_caster_message(String.format(DogFightSettings.NEXT_GAME_MESSAGE, DogFightSettings.NEXT_MATCH_READY_SECONDS));
-				m_current_game.dispose();
-				m_current_game = null;
-				do_next_match();
-			}
-		}, 5000L);//5초후 다음경기 시작 알림
-	}
-	
-	public void do_cancel_game(){
-	    m_max_match_count = 0;
-	    // 진행 중/대기 중 경기 강제 종료
-	    DogFightGame game = m_current_game;
-	    if(game != null){
-	        game.dispose();  // 카운트다운 중이면 is_run=false로 다음 틱에 자동 탈출
-	    }
-	    // 히스토리 정리 — 안 하면 현재 회차 티켓이 내 is_current_round_ticket 가드에 걸려 영구 판매 불가로 남음
-	    DogFightHistory.getInstance().do_cancel_game();
-	}
-	
+        finished.set_fight(false);
+        transition = CServerTimer.onceRequired(() -> finishMatch(finished), 5_000L);
+    }
+
+    private synchronized void finishMatch(DogFightGame finished) {
+        transition = null;
+        if (m_current_game != finished) return;
+        finished.send_caster_message(String.format(
+                DogFightSettings.NEXT_GAME_MESSAGE, DogFightSettings.NEXT_MATCH_READY_SECONDS));
+        finished.dispose();
+        m_current_game = null;
+        do_next_match();
+    }
+
+    public synchronized void stopTimers() {
+        m_max_match_count = 0;
+        if (transition != null) transition.cancel();
+        transition = null;
+        if (m_current_game != null) m_current_game.stopTimers();
+    }
+
+    public synchronized void do_cancel_game() {
+        stopTimers();
+        final DogFightGame game = m_current_game;
+        m_current_game = null;
+        if (game != null) game.dispose();
+        DogFightHistory.getInstance().do_cancel_game();
+    }
+
 	private String make_winners_name(ArrayList<DogFightInstance> winners){
 		int size = winners.size();
 		StringBuilder sb = new StringBuilder();

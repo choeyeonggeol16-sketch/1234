@@ -22,7 +22,7 @@ public final class DurabilityRepairItems {
                 || pc.getInventory().GetByServerID(whetstone.getId()) != whetstone
                 || pc.getInventory().GetByServerID(target.getId()) != target
                 || target.getItem().getType2() == 0 || target.get_durability() <= 0) return;
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(whetstone, 1)) return;

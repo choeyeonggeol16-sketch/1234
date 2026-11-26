@@ -11,6 +11,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.types.Point;
+import l1j.server.server.model.inventory.L1GroundInventory;
 
 public class ElementalStoneGenerator implements Runnable {
 

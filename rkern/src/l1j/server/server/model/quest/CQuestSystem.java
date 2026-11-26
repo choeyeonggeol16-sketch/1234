@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.storage.CacheD;
 

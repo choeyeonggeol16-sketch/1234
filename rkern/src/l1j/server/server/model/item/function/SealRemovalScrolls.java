@@ -2,7 +2,7 @@ package l1j.server.server.model.item.function;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -32,8 +32,8 @@ public final class SealRemovalScrolls {
                         return;
                     }
                     final int newBless = sealing ? oldBless + 128 : oldBless - 128;
-                    try (l1j.server.server.model.L1InventoryTransaction tx =
-                            l1j.server.server.model.L1InventoryTransaction.begin(pc, l1iteminstance1.getId())) {
+                    try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                            l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, l1iteminstance1.getId())) {
                         if (!tx.debit(l1iteminstance, 1)) {
                             SC_ServerMessage.send(pc, 79);
                             return;

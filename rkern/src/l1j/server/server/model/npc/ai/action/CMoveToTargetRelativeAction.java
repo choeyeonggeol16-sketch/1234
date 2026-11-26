@@ -8,18 +8,6 @@ import l1j.server.server.model.npc.ai.AstarProvider;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.L1Character;
 
-/**
- * reference server CMoveToTargetRelativeAction: distinct actor, target and container refs.
- *
- * Native GetTargetPos selects a target-position provider and projects it
- * through a container's coordinate frame. L1 maps have fixed 2-D tile frames:
- * the container reference is represented by the map id. All 8-direction
- * terrain, dynamic occupancy, reservations and fight hand-off remain owned by
- * the existing SetMoving / CMoveToTargetAction movement pipeline.
- *
- * The 3-D projected-vector timing/orientation is not copied to L1; doing so
- * would fabricate non-existent tile coordinates and bypass collision rules.
- */
 public final class CMoveToTargetRelativeAction {
     private static final long OPEN_LANE_CLAIM_MAX_MS = 6_000L;
     private static final int[] DX = { 0, 1, 1, 1, 0, -1, -1, -1 };
@@ -95,14 +83,6 @@ public final class CMoveToTargetRelativeAction {
         }
     }
 
-    /**
-     * CMoveToTargetRelativeAction::GetDestination, L1 2-D projection.
-     *
-     * reference server uses targetPos + normalize(actorPos - targetPos) * actionDistance.
-     * The L1 adaptation uses integer tile coordinates and returns packed
-     * primitive coordinates, avoiding per-tick FVector / Point allocation.
-     * This is a preferred approach point, never an occupancy reservation.
-     */
     static long getDestination(final int actorX,
                                final int actorY,
                                final int targetX,
@@ -125,8 +105,6 @@ public final class CMoveToTargetRelativeAction {
      * two sides of an obsolete blocked heading. Use a local static straight
      * test only; dynamic ownership is decided by one atomic reservation.
      */
-    // NC GetMeleeAttackPosition: select and claim one L1 8-direction
-    // melee tile using live occupancy before the SetMoving hand-off.
     static boolean GetMeleeAttackPosition(
             final L1MonsterInstance monster,
             final L1Character target) {

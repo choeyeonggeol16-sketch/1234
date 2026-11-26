@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +19,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.L1World;
@@ -63,7 +63,7 @@ public class NpcShopManager {
     // 가시성: 스케줄 스레드(read)와 GM 커맨드 스레드(write)가 공유
     private volatile boolean _power = false;
     // 리필 스케줄 핸들 — stop 시 취소 (켬/끔 반복 시 스케줄 누적 방지)
-    private ScheduledFuture<?> _refillTask;
+    private CServerTimer _refillTask;
     // 템플릿 없는 아이템 경고 스팸 방지 (reload 시 초기화)
     private final Set<Integer> _warnedItems = new HashSet<>();
 
@@ -192,15 +192,15 @@ public class NpcShopManager {
     }
 
     /** 리필 스케줄 등록 — 기존 핸들이 있으면 먼저 취소  */
-    private void scheduleRefill() {
+    private synchronized void scheduleRefill() {
         cancelRefill();
-        _refillTask = ThreadPool.getInstance().scheduleAtFixedRate(this::refillAll, 3600000L, 3600000L);
+        _refillTask = CServerTimer.fixedRate(this::refillAll, 3600000L, 3600000L);
     }
 
-    private void cancelRefill() {
+    public synchronized void cancelRefill() {
         if (_refillTask != null) {
             try {
-                _refillTask.cancel(false);
+                _refillTask.cancel();
             } catch (Exception ignore) {}
             _refillTask = null;
         }

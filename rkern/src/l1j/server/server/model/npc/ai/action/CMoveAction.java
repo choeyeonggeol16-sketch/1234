@@ -153,7 +153,6 @@ public final class CMoveAction {
 
         switch (result) {
         case CCreatureController.RESULT_DONE:
-            // NC dMoveTo removes its exact key before running
             // MoveToFinished(0x41). Run the virtual callback only after the
             // prior action is fully retired: a callback that submits MoveTo B
             // must not be overwritten by A's subsequent doPendingAction().
@@ -403,7 +402,6 @@ public final class CMoveAction {
         return delay + (creature.getId() & 0x1f);
     }
 
-    /** Existing NC dFollow adapter owns all L1 master-follow decisions. */
     public static boolean followMaster(final L1NpcInstance creature) {
         return dFollow.follow(
                 creature, creature != null ? creature.getMaster() : null);
@@ -441,10 +439,6 @@ public final class CMoveAction {
         return dMoveFormation.follow(creature, group, activeLeader);
     }
 
-    /**
-     * CNPC::GetFollowPosition 계열.
-     * 선택한 slot을 anchor가 의미 있게 움직이기 전까지 유지한다.
-     */
     static boolean followPosition(
             final L1NpcInstance creature,
             final L1Character anchor) {
@@ -606,15 +600,6 @@ public final class CMoveAction {
         final short mapId = (short) creature.getMapId();
         final int actorId = creature.getId();
 
-        /*
-         * NC GetFollowPosition scans all eight slots and chooses the valid
-         * one nearest to the follower. L1's 2D projection keeps the existing
-         * radius-2 ring (radius 1 only when the outer ring is unavailable),
-         * actual TileOccupancy collision, and stable movement action state goal.
-         *
-         * Tie order is deterministic per NPC, so 20 followers cannot start
-         * oscillating because of per-tick random slot selection.
-         */
         for (int radius = FOLLOW_RADIUS; radius >= 1; radius--) {
             long bestGoal = SetMoving.NO_POS;
             long bestDistanceSq = Long.MAX_VALUE;

@@ -27,12 +27,13 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.datatables.UBSpawnTable;
 import l1j.server.server.datatables.UBTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -42,6 +43,8 @@ import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.utils.IntRange;
+import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.inventory.L1GroundInventory;
 
 // Referenced classes of package l1j.server.server.model:
 // L1UltimateBattle
@@ -67,9 +70,9 @@ public class L1UltimateBattle {
 
 	private int _pattern;
 
-	private boolean _isNowUb;
+	private volatile boolean _isNowUb;
 
-	private boolean _active;
+	private volatile boolean _active;
 
 	private int _minLevel;
 
@@ -106,7 +109,7 @@ public class L1UltimateBattle {
 	// private static Random random = new Random(System.nanoTime());
 	private static int BEFORE_MINUTE = 5;
 
-	private static int ubcount = 0;
+	private CUltimateBattleTimer battleTimer;
 
 	private Set<Integer> _managers = new HashSet<Integer>();
 
@@ -114,7 +117,8 @@ public class L1UltimateBattle {
 
 	private static final Logger _log = Logger.getLogger(L1UltimateBattle.class.getName());
 
-	private final ArrayList<L1PcInstance> _members = new ArrayList<L1PcInstance>();
+	private static final L1PcInstance[] NO_MEMBERS = new L1PcInstance[0];
+	private final CopyOnWriteArrayList<L1PcInstance> _members = new CopyOnWriteArrayList<>();
 
 	private void sendRoundMessage(int curRound) {
 		switch (_ubId) {
@@ -369,132 +373,133 @@ for (L1PcInstance pc : getMembersArray()) {
 	public L1UltimateBattle() {
 	}
 
-	class UbThread implements Runnable {
-		private void countDown() throws InterruptedException {
+    private enum Phase { OPEN, WARNING, COUNTDOWN, FIRST_ROUND, SPAWN, NEXT_ROUND }
 
-			for (int loop = 0; loop < BEFORE_MINUTE * 60 - 15; loop++) {
-				Thread.sleep(1000);
-				// removeRetiredMembers();
-			}
-			removeRetiredMembers();
+    private static final int[] ROUND_WAIT_SECONDS = {70, 120, 360, 180};
+    private static final int[] UB4_WAIT_SECONDS = {120, 360, 180};
 
-			sendMessage("콜롯세움 관리인: 이제 곧 몬스터들이 등장할 것입니다. 건투를 빕니다."); // 10초전
-			Thread.sleep(5000);
-			sendMessage("콜롯세움 관리인: 10초뒤에 경기를 시작 합니다."); // 10초전
+    private final class CUltimateBattleTimer implements Runnable {
+        private final int[] roundWaits = _ubId == 4 ? UB4_WAIT_SECONDS : ROUND_WAIT_SECONDS;
+        private Phase phase = Phase.OPEN;
+        private int countdown = 5;
+        private int round = 1;
+        private int spawnIndex;
+        private ArrayList<L1UbSpawn> spawns;
+        private CServerTimer deadline;
 
-			Thread.sleep(5000);
-			sendMessage("콜롯세움 관리인: 5 !!"); // 5초전
+        private void AddTimer(long delayMs) {
+            deadline = CServerTimer.once(this, delayMs);
+            if (deadline == null) {
+                stop();
+                _log.warning("Ultimate battle timer admission rejected for arena " + _ubId);
+            }
+        }
 
-			Thread.sleep(1000);
-			sendMessage("콜롯세움 관리인: 4 !!"); // 4초전
+        @Override
+        public void run() {
+            synchronized (L1UltimateBattle.this) {
+                if (battleTimer != this) return;
+                try {
+                    TimerExpired();
+                } catch (RuntimeException failure) {
+                    stop();
+                    _log.log(Level.WARNING, "Ultimate battle failed for arena " + _ubId, failure);
+                }
+            }
+        }
 
-			Thread.sleep(1000);
-			sendMessage("콜롯세움 관리인: 3 !!"); // 3초전
+        private void TimerExpired() {
+            switch (phase) {
+                case OPEN -> {
+                    removeRetiredMembers();
+                    sendMessage("콜롯세움 관리인: 이제 곧 몬스터들이 등장할 것입니다. 건투를 빕니다.");
+                    phase = Phase.WARNING;
+                    AddTimer(5_000L);
+                }
+                case WARNING -> {
+                    sendMessage("콜롯세움 관리인: 10초뒤에 경기를 시작 합니다.");
+                    phase = Phase.COUNTDOWN;
+                    AddTimer(5_000L);
+                }
+                case COUNTDOWN -> {
+                    sendMessage("콜롯세움 관리인: " + countdown-- + " !!");
+                    if (countdown == 0) phase = Phase.FIRST_ROUND;
+                    AddTimer(1_000L);
+                }
+                case FIRST_ROUND -> {
+                    removeRetiredMembers();
+                    setNowUb(true);
+                    startRound();
+                }
+                case SPAWN -> spawnNext();
+                case NEXT_ROUND -> {
+                    removeRetiredMembers();
+                    if (++round <= roundWaits.length) startRound();
+                    else finish();
+                }
+            }
+        }
 
-			Thread.sleep(1000);
-			sendMessage("콜롯세움 관리인: 2 !!"); // 2초전
+        private void startRound() {
+            sendRoundMessage(round);
+            spawns = UBSpawnTable.getInstance().getPattern(_ubId, _pattern).getSpawnList(round);
+            spawnIndex = 0;
+            phase = Phase.SPAWN;
+            spawnNext();
+        }
 
-			Thread.sleep(1000);
-			sendMessage("콜롯세움 관리인: 1 !!"); // 1초전
+        private void spawnNext() {
+            while (spawnIndex < spawns.size()) {
+                final L1UbSpawn spawn = spawns.get(spawnIndex++);
+                if (getMembersCount() > 0) spawn.spawnAll();
+                final long delay = spawn.getSpawnDelay() * 1_000L;
+                if (delay > 0L) {
+                    AddTimer(delay);
+                    return;
+                }
+            }
+            spawns = null;
+            if (getMembersCount() > 0) spawnSupplies(round);
+            for (L1PcInstance pc : getMembersArray()) {
+                UBTable.getInstance().writeUbScore(getUbId(), pc);
+            }
+            phase = Phase.NEXT_ROUND;
+            AddTimer(roundWaits[round - 1] * 1_000L);
+        }
 
-			Thread.sleep(1000);
-			removeRetiredMembers();
-		}
+        private void finish() {
+            for (L1PcInstance pc : getMembersArray()) {
+                final int[] loc = Getback.GetBack_Location(pc, true);
+                pc.start_teleport(loc[0], loc[1], loc[2], 5, 169, true, false);
+                removeMember(pc);
+            }
+            clearColosseum();
+            stop();
+        }
+    }
 
-		private void waitForNextRound(int curRound) throws InterruptedException {
-			final int WAIT_TIME_TABLE[] = { 7, 12, 36, 18 };//시간
+    public synchronized void start() {
+        if (battleTimer != null) return;
+        if (getUbId() == 1) {
+            L1World.getInstance().broadcastServerMessage(
+                    "5분 후 기란 마을의 무한대전이 시작됩니다. 지금부터 입장가능합니다.");
+        }
+        _pattern = 1;
+        setActive(true);
+        battleTimer = new CUltimateBattleTimer();
+        battleTimer.AddTimer((BEFORE_MINUTE * 60L - 15L) * 1_000L);
+    }
 
-			int wait = WAIT_TIME_TABLE[curRound - 1];
-			if (_ubId == 4) {
-				if (curRound == 1) {
-					wait = 12;
-				} else if (curRound == 2) {
-					wait = 36;
-				} else if (curRound == 3) {
-					wait = 18;
-				}
-			}
-			for (int i = 0; i < wait; i++) {
-				Thread.sleep(10000);
-				// removeRetiredMembers();
-			}
-			removeRetiredMembers();
-		}
-
-		public void run() {
-			try {
-				setActive(true);
-				countDown();
-				setNowUb(true);
-				L1UbPattern pattern = null;
-				ArrayList<L1UbSpawn> spawnList = null;
-				for (int round = 1; round <= ubcount; round++) {
-					sendRoundMessage(round);
-
-					pattern = UBSpawnTable.getInstance().getPattern(_ubId, _pattern);
-
-					spawnList = pattern.getSpawnList(round);
-
-					for (L1UbSpawn spawn : spawnList) {
-						if (getMembersCount() > 0) {
-							spawn.spawnAll();
-						}
-
-						Thread.sleep(spawn.getSpawnDelay() * 1000);
-					}
-
-					if (getMembersCount() > 0) {
-						spawnSupplies(round);
-					}
-
-					for (L1PcInstance pc : getMembersArray()) {
-						UBTable.getInstance().writeUbScore(getUbId(), pc);
-					}
-					waitForNextRound(round);
-				}
-
-				for (L1PcInstance pc : getMembersArray()) {
-					int[] loc = Getback.GetBack_Location(pc, true);
-//					L1Teleport.teleport(pc, loc[0], loc[1], (short) loc[2], 5,
-//							true);
-					pc.start_teleport(loc[0], loc[1], loc[2], 5, 169, true, false);
-					removeMember(pc);
-				}
-				clearColosseum();
-				setActive(false);
-				setNowUb(false);
-			} catch (Exception e) {
-			//	_log.log(Level.SEVERE, "L1UltimateBattle[]Error", e);
-			}
-		}
-	}
-
-	public void start() {
-		switch(getUbId()){
-		case 1: L1World.getInstance().broadcastServerMessage("5분 후 기란 마을의 무한대전이 시작됩니다. 지금부터 입장가능합니다."); break;
-//		case 2: L1World.getInstance().broadcastServerMessage("잠시후 웰던 마을의 무한대전이 시작됩니다."); break;
-//		case 3: L1World.getInstance().broadcastServerMessage("잠시후 글루딘 마을의 무한대전이 시작됩니다."); break;
-//		case 4: L1World.getInstance().broadcastServerMessage("잠시후 말하는 섬의 무한대전이 시작됩니다."); break;
-//		case 5: L1World.getInstance().broadcastServerMessage("잠시후 은기사 마을의 무한대전이 시작됩니다."); break;
-		default: break;				
-		}
-		// int patternsMax = UBSpawnTable.getInstance().getMaxPattern(_ubId);
-		// _pattern = random.nextInt(patternsMax) + 1;
-		_pattern = 1;
-		if (_ubId == 4) {
-			ubcount = 3;
-		} else {
-			ubcount = 4;
-		}
-
-		UbThread ub = new UbThread();
-		ThreadPool.getInstance().execute(ub);
-	}
+    public synchronized void stop() {
+        final CUltimateBattleTimer current = battleTimer;
+        battleTimer = null;
+        if (current != null && current.deadline != null) current.deadline.cancel();
+        setActive(false);
+        setNowUb(false);
+    }
 
 	public void addMember(L1PcInstance pc) {
-		if (!_members.contains(pc)) {
-			_members.add(pc);
-		}
+		_members.addIfAbsent(pc);
 	}
 
 	public void removeMember(L1PcInstance pc) {
@@ -510,7 +515,7 @@ for (L1PcInstance pc : getMembersArray()) {
 	}
 
 	public L1PcInstance[] getMembersArray() {
-		return _members.toArray(new L1PcInstance[_members.size()]);
+		return _members.toArray(NO_MEMBERS);
 	}
 
 	public int getMembersCount() {

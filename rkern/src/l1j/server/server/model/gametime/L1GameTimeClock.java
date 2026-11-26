@@ -3,11 +3,10 @@ package l1j.server.server.model.gametime;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 
 public class L1GameTimeClock {
     private static final Logger _log = Logger.getLogger(L1GameTimeClock.class.getName());
@@ -15,7 +14,7 @@ public class L1GameTimeClock {
 
     private static volatile L1GameTimeClock _instance;
 
-    private final ScheduledFuture<?> _future;
+    private volatile CServerTimer _future;
 
     private volatile L1GameTime _currentTime = new L1GameTime();
 
@@ -79,24 +78,28 @@ public class L1GameTimeClock {
         }
     }
 
-    private L1GameTimeClock() {
-        final ScheduledFuture<?> future = ThreadPool.getInstance().scheduleAtFixedRate(
-                new TimeUpdater(), 0L, TIMER_INTERVAL);
-        if (future == null) {
-            throw new IllegalStateException("L1GameTimeClock timer admission failed");
-        }
-        _future = future;
+    private L1GameTimeClock() {}
+
+    public static synchronized void prepare() {
+        if (_instance == null) _instance = new L1GameTimeClock();
     }
 
-    public static synchronized void init() {
-        if (_instance == null) _instance = new L1GameTimeClock();
+    public static synchronized void start() {
+        prepare();
+        final L1GameTimeClock clock = _instance;
+        if (clock._future != null) return;
+        clock._currentTime = new L1GameTime();
+        clock._future = CServerTimer.fixedRate(
+                clock.new TimeUpdater(), 0L, TIMER_INTERVAL);
+        if (clock._future == null) throw new IllegalStateException("Game clock timer rejected");
     }
 
     public static synchronized void stop() {
         final L1GameTimeClock clock = _instance;
         _instance = null;
         if (clock != null) {
-            clock._future.cancel(false);
+            final CServerTimer future = clock._future;
+            if (future != null) future.cancel();
             clock._listeners.clear();
         }
     }
@@ -106,7 +109,7 @@ public class L1GameTimeClock {
     }
 
     public L1GameTime getGameTime() {
-        return _currentTime;
+        return _future == null ? new L1GameTime() : _currentTime;
     }
 
     public void addListener(L1GameTimeListener listener) {

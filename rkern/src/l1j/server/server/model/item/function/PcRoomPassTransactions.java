@@ -58,7 +58,7 @@ public final class PcRoomPassTransactions {
         final long now = System.currentTimeMillis();
         final Timestamp expiration = new Timestamp(now + 86400000L * day + 10000L);
         final String accountName = pc.getAccount().getName();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         CacheD.accountOrderKey("pcroom:", pc.getId()))) {
             if (!tx.debit(useItem, 1)) return;

@@ -503,6 +503,10 @@ public final class CIOThreadCallback {
                 task, null, null);
     }
 
+    void cancelDistantServerTimer(CServerTimer timer) {
+        shards[0].threadLocalTimer.cancelDistant(timer);
+    }
+
     /** Existing owner wheel drives connection deadlines; no extra worker or queue. */
     public boolean scheduleNetworkTimeout(int shardIndex, WheelTask task, long delayMs) {
         if (task == null || delayMs <= 0L || shardIndex < 0
@@ -994,12 +998,6 @@ public final class CIOThreadCallback {
     private static final byte SKILL_OP_REPLACE = 6;
 	private static final byte SKILL_OP_ARM = 5;
 
-	/**
-     * Timer admission is direct from any producer, serialized by the shard monitor.
-     * The packet RECV path never posts an owner event; encrypted READ data stays
-     * in the existing socket buffer until OnRead gets the shard lease.
-     * Independent owner events use the existing completion transport, separate from reference server socket/controller serializers.
-	 */
 
 
 	public interface WheelTask {
@@ -1029,7 +1027,6 @@ public final class CIOThreadCallback {
 		final int sessionStamp;
 		final TaskHandle h;
 		final CIOThread owner;
-		// NC User::TimerExpired: the existing CIO timer decides when a save is due.
 		// Persistence snapshots run on the existing bounded ThreadPool, not under
 		// the CIO shard monitor. Only one save job is pending per user/session.
 		final long charSaveIntervalNs;

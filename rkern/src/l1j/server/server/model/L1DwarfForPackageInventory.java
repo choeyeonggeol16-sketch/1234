@@ -11,11 +11,12 @@ import java.util.List;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
-import l1j.server.server.model.Warehouse.Warehouse;
+import l1j.server.server.model.inventory.warehouse.Warehouse;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.utils.SQLUtil;
+import l1j.server.server.model.inventory.CInventory;
 
 public class L1DwarfForPackageInventory extends Warehouse {
     private static final long serialVersionUID = 1L;

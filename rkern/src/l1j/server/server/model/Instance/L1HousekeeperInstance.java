@@ -20,14 +20,14 @@ package l1j.server.server.model.Instance;
 
 import l1j.server.server.model.character.action.CAttackAction;
 
-import l1j.server.server.datatables.HouseTable;
+import l1j.server.server.model.world.residence.HouseTable;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1NpcTalkData;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
-import l1j.server.server.templates.L1House;
+import l1j.server.server.model.world.residence.L1House;
 import l1j.server.server.templates.L1Npc;
 
 public class L1HousekeeperInstance extends L1NpcInstance {
@@ -58,7 +58,7 @@ public class L1HousekeeperInstance extends L1NpcInstance {
 		boolean isOwner = false;
 		
 		//System.out.println("내 클릭 NPC ID: " + npcid); 
-	    for (l1j.server.server.templates.L1House h : HouseTable.getInstance().getHouseTableList()) {
+	    for (l1j.server.server.model.world.residence.L1House h : HouseTable.getInstance().getHouseTableList()) {
 	        //System.out.println("메모리 로드된 House ID: " + h.getHouseId() + ", 설정된 Keeper ID: " + h.getKeeperId());
 	    }
 

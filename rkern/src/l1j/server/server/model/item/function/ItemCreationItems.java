@@ -1,7 +1,7 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.server.datatables.CObjectDB;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;

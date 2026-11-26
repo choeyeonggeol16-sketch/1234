@@ -43,8 +43,8 @@ public final class LawfulPotionTransactions {
             // receipt so a delayed save cannot restore the old lawful value.
             CacheD.getInstance().saveCharacter(
                     new l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot(pc));
-            try (l1j.server.server.model.L1InventoryTransaction tx =
-                    l1j.server.server.model.L1InventoryTransaction.begin(pc, input.getId())) {
+            try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                    l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, input.getId())) {
                 if (!tx.debit(input, 1)) return;
                 tx.requireTables("characters");
                 tx.sql(con -> {

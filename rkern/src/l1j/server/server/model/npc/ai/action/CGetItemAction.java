@@ -1,7 +1,7 @@
 package l1j.server.server.model.npc.ai.action;
 
-import l1j.server.server.model.L1GroundInventory;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.L1GroundInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -107,9 +107,6 @@ public final class CGetItemAction {
         return type == 6 || type == 7;
     }
 
-    /** L1 feeding condition; owner-side selection of an explicit GET_ITEM target.
-     * NC MakeGetItem/SetAsGetItem provides the action split, not this L1 food rule.
-     */
     static void searchItemFromAir(final L1NpcInstance npc) {
         if (!canSearchFromAir(npc)) return;
         final CInventory inventory = npc.getInventory();
@@ -323,8 +320,6 @@ public final class CGetItemAction {
             return;
         }
 
-        // Monster GET_ITEM uses the same NC-style point/segment mover as
-        // scripted movement. Pickup adjacency is checked before every step.
         // Keep pet/companion's established command movement unchanged.
         if (creature instanceof L1MonsterInstance) {
             final int oldX = creature.getX(), oldY = creature.getY();
@@ -416,8 +411,6 @@ public final class CGetItemAction {
                         targetItem.getY(),
                         targetItem.getMapId());
 
-        // NC dGetItem completes only its captured GET_ITEM key. A stale
-        // pointer must never consume a replacement object with the same ID.
         if (groundInventory == null
                 || groundInventory.GetByServerID(targetItem.getId()) != targetItem) {
             dGetItem.GetItemFinished(creature, targetItem, null);
@@ -460,7 +453,6 @@ public final class CGetItemAction {
             }
         }
 
-        // Synchronous L1 commit now supplies NC GetItemFinished outcome.
         // onGetItem only runs after successful inventory transfer.
         dGetItem.GetItemFinished(creature, targetItem, transferred, acquiredCount);
     }

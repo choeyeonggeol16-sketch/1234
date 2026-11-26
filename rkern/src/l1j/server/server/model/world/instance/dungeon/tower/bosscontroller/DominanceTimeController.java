@@ -3,7 +3,6 @@ package l1j.server.server.model.world.instance.dungeon.tower.bosscontroller;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
@@ -12,6 +11,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.world.instance.dungeon.tower.DominanceBoss;
 import l1j.server.server.model.world.instance.dungeon.tower.DominanceDataLoader;
 import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 
 public class DominanceTimeController implements Runnable {
 	private static volatile DominanceTimeController instance;
@@ -20,7 +20,8 @@ public class DominanceTimeController implements Runnable {
     private final java.util.concurrent.atomic.AtomicLong pendingSpawnMinute =
             new java.util.concurrent.atomic.AtomicLong(-1L);
     private volatile long lastProcessedMinute = -1L;
-    private volatile ScheduledFuture<?> timer;
+    private long observedMinute = System.currentTimeMillis() / 60_000L;
+    private volatile CServerTimer timer;
 	private static final ConcurrentHashMap<Integer, Integer> _bossnum = new ConcurrentHashMap<Integer, Integer>(256);
 
 	public static DominanceTimeController getInstance() {
@@ -31,7 +32,7 @@ public class DominanceTimeController implements Runnable {
                 DominanceTimeController created = new DominanceTimeController();
                 // The scheduler only signals work; boss/game mutations stay on
                 // the existing bounded instant pool, never on a timer thread.
-                ScheduledFuture<?> future = ThreadPool.getInstance().scheduleWithFixedDelay(
+                CServerTimer future = CServerTimer.fixedDelaySignal(
                         created::signalTick, 0L, 1000L);
                 if (future == null) {
                     throw new IllegalStateException("Dominance spawn timer admission failed");
@@ -43,12 +44,18 @@ public class DominanceTimeController implements Runnable {
         }
     }
 
+    public static void stop() {
+        final DominanceTimeController current = instance;
+        if (current != null) current.timer.cancel();
+    }
+
     private void signalTick() {
         final long currentSeconds = System.currentTimeMillis() / 1000L;
-        if (currentSeconds % 60L == 0L) {
-            final long minute = currentSeconds / 60L;
+        final long minute = currentSeconds / 60L;
+        if (minute > observedMinute || currentSeconds % 60L == 0L) {
             if (minute > lastProcessedMinute) pendingSpawnMinute.set(minute);
         }
+        observedMinute = minute;
         // Keep a missed spawn-minute while an instant worker is saturated.
         // When it recovers, the boss logic receives the original due minute.
         if (pendingSpawnMinute.get() <= lastProcessedMinute

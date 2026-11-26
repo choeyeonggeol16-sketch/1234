@@ -8,7 +8,7 @@ import l1j.server.server.datatables.ShopTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Warehouse.CWareHouseRequest;
+import l1j.server.server.model.inventory.warehouse.CWareHouseRequest;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;

@@ -5,24 +5,18 @@ import java.util.ArrayList;
 import java.util.concurrent.RejectedExecutionException;
 
 import l1j.server.Config;
-import l1j.server.server.model.item.pride.PrideInfo;
-import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.server.ThreadPool; //CrockController
-import l1j.server.server.model.L1EquipmentTimer;
-import l1j.server.server.model.L1GroundInventory;
-import l1j.server.server.model.L1HouseLocation;
+import l1j.server.server.model.inventory.CEquipmentTimer;
+import l1j.server.server.model.inventory.L1GroundInventory;
+import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.item.L1ItemId;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.assembly.CItemAssembler;
 import l1j.server.server.model.item.assembly.CItemEnchantOption;
-import l1j.server.server.model.item.collection.CollectionObject;
-import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
-import l1j.server.server.model.item.collection.loader.CollectionSystemLoader;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.world.instance.inn.InnHelper;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.CItemBookmark;
@@ -934,57 +928,9 @@ public class L1ItemInstance extends L1Object {
 		return column;
 	}
 
-	public String getNumberedViewName(int count) {
-		if (PrideLoadManager.USE_PRIDE_SYSTEM && _itemId == PrideLoadManager.PRIDE_ITEM_ID) {
-			PrideInfo pInfo = PrideLoadManager.getInstance().get_pride(getId());
-			if (pInfo != null)
-				return pInfo.get_target_name() + "의 자존심";
-		}
-
-		StringBuilder name = new StringBuilder(64);
-
-		if (isSpecialEnchantable()) {
-			name.append("\\f3");
-		}
-		appendNumberedName(name, count);
-		int itemType2 = getItem().getType2();
-		int itemId = getItem().getItemId();
-
-
-		if (getItem().getType2() == 0 && getItem().getType() == 2) { // light
-			if (isNowLighting()) {
-				name.append(" ($10)");
-			}
-			if (itemId == 40001 || itemId == 40002 || itemId == 7005) {
-				if (getRemainingTime() <= 0) {
-					name.append(" ($11)");
-				}
-			}
-		}
-
-		if (itemId == InnHelper.INN_KEYID) {
-			name.append(" (").append(getHotel_Town()).append(')');
-		}
-
-
-		if (isEquipped()) {
-			if (itemType2 == 1) {
-				name.append(" ($9)");
-			} else if (itemType2 == 2) {
-				name.append(" ($117)");
-			} else if (itemType2 == 0 && getItem().getType() == 11) { // petitem
-				name.append(" ($117)");
-			}
-		}
-
-		if (itemType2 == 0 && getItem().getType() == 0) {
-			if (_cha != null && _cha.getInventory().getArrowItemId() == getItemId()) {
-				name.append(" ($117)");
-			}
-		}
-
-		return name.toString();
-	}
+    public String getNumberedViewName(int count) {
+        return CItemAssembler.AssembleViewName(this, count);
+    }
 
 	public String getViewName() {
 		return getNumberedViewName(_count);
@@ -994,113 +940,9 @@ public class L1ItemInstance extends L1Object {
 		return getNumberedName(_count);
 	}
 
-	/** 속성 인챈트 **/
-	public String getNumberedName(int count) {
-		StringBuilder name = new StringBuilder(48);
-		appendNumberedName(name, count);
-		return name.toString();
-	}
-
-	private void appendNumberedName(StringBuilder name, int count) {
-
-		if (isIdentified()) {
-			if (getItem().getType2() == 1 || getItem().getType2() == 2) {
-				
-				name.append(get_attribute_enchant_description(getAttrEnchantLevel()));
-				if (getEnchantLevel() >= 0) {
-					name.append('+').append(getEnchantLevel()).append(' ');
-				} else if (getEnchantLevel() < 0) {
-					name.append(getEnchantLevel()).append(' ');
-				}
-			}
-		}
-		// TODO 미확인상태 이름 확인후 이름 변경
-		if (!isIdentified() && getItem().getItemId() == 900075) {
-			name.append("$25459");
-		} else if (!isIdentified() && getItem().getItemId() == 40008
-				|| !isIdentified() && getItem().getItemId() == 140008) {
-			name.append("$27");
-		} else if (!isIdentified() && getItem().getItemId() == 40007) {
-			name.append("$263");
-		} else if (!isIdentified() && getItem().getItemId() == 40006) {
-			name.append("$28");
-		} else if (!isIdentified() && getItem().getItemId() == 40015
-				|| !isIdentified() && getItem().getItemId() == 140015) {
-			name.append("$232");
-		} else if (!isIdentified() && getItem().getItemId() == 40012) {
-			name.append("$238");
-		} else if (!isIdentified() && getItem().getItemId() == 40011) {
-			name.append("$235");
-		} else if (!isIdentified() && getItem().getItemId() == 40010
-				|| !isIdentified() && getItem().getItemId() == 140010) {
-			name.append("$237");
-
-			/** MJCTSystem **/
-		} else if (getItem().getItemId() == CollectionLoadManager.CTSYSTEM_LOAD_ID) {
-			CollectionObject obj = CollectionSystemLoader.getInstance().get(getId());
-			if (obj == null)
-				name.append(_item.getNameId());
-			else
-				name.append("[").append(obj.name).append("]봉인 구슬");
-		} else {
-			name.append(_item.getNameId());
-		}
-
-		if (isSpecialEnchantable()) {
-			for (int i = 1; i <= 3; ++i) {
-				if (getSpecialEnchant(i) == 0) {
-					break;
-				}
-				switch (getSpecialEnchant(i)) {
-				case CHAOS_SPIRIT:
-					name.append("[혼돈] ");
-					break;
-				case CORRUPT_SPIRIT:
-					name.append("[타락] ");
-					break;
-				case BALLACAS_SPIRIT:
-					name.append("[발라카스] ");
-					break;
-				case ANTARAS_SPIRIT:
-					name.append("[안타라스] ");
-					break;
-				case LINDBIOR_SPIRIT:
-					name.append("[린드비오르] ");
-					break;
-				case PAPURION_SPIRIT:
-					name.append("[파푸리온] ");
-					break;
-				case DEATHKNIGHT_SPIRIT:
-					name.append("[데스나이트] ");
-					break;
-				case BAPPOMAT_SPIRIT:
-					name.append("[바포메트] ");
-					break;
-				case BALLOG_SPIRIT:
-					name.append("[발록] ");
-					break;
-				case ARES_SPIRIT:
-					name.append("[아레스] ");
-					break;
-				}
-			}
-		}
-
-		if (isIdentified()) {
-			if (getItem().getMaxChargeCount() > 0) {
-				name.append(" (").append(getChargeCount()).append(')');
-			}
-			if (getItem().getItemId() == 20383) {
-				name.append(" (").append(getChargeCount()).append(')');
-			}
-			if (getItem().getMaxUseTime() > 0 && getItem().getType2() != 0) {
-				name.append(" [").append(getRemainingTime()).append(']');
-			}
-		}
-		if (count > 1) {
-			name.append(" (").append(count).append(')');
-		}
-	}
+    public String getNumberedName(int count) {
+        return CItemAssembler.AssembleNumberedName(this, count);
+    }
 
 	public static int presentationCode = 0;
 
@@ -1147,15 +989,15 @@ public class L1ItemInstance extends L1Object {
 		CItemEnchantOption.AssemblePotentialOption(this, 템);
 	}
 	
-	private volatile L1EquipmentTimer _equipmentTimer;
+	private volatile CEquipmentTimer _equipmentTimer;
 
 	public boolean startEquipmentTimer(L1PcInstance pc) {
 		if (getRemainingTime() <= 0) return getItem().getMaxUseTime() <= 0;
 		if (pc.isLogoutStarted()) return false;
-		final L1EquipmentTimer timer;
+		final CEquipmentTimer timer;
 		synchronized (this) {
 			if (_equipmentTimer != null && _equipmentTimer.isActive()) return true;
-			timer = new L1EquipmentTimer(pc, this);
+			timer = new CEquipmentTimer(pc, this);
 			_equipmentTimer = timer;
 		}
 		try {
@@ -1168,7 +1010,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void stopEquipmentTimer() {
 		if (_equipmentTimer == null) return;
-		final L1EquipmentTimer timer;
+		final CEquipmentTimer timer;
 		synchronized (this) {
 			timer = _equipmentTimer;
 			_equipmentTimer = null;
@@ -1176,11 +1018,11 @@ public class L1ItemInstance extends L1Object {
 		if (timer != null) timer.cancel();
 	}
 
-	public boolean ownsEquipmentTimer(L1EquipmentTimer timer) {
+	public boolean ownsEquipmentTimer(CEquipmentTimer timer) {
 		return _equipmentTimer == timer;
 	}
 
-	public synchronized void clearEquipmentTimer(L1EquipmentTimer timer) {
+	public synchronized void clearEquipmentTimer(CEquipmentTimer timer) {
 		if (_equipmentTimer == timer) _equipmentTimer = null;
 	}
 

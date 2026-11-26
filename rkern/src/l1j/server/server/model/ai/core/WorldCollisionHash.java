@@ -6,20 +6,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
 
-/**
- * Runtime dynamic creature collision / occupancy facade.
- *
- * Static terrain belongs to L1Map / PathNodeWorld. This class owns only the
- * dynamic part of movement: player occupancy, NPC occupancy, NPC movement
- * reservations and occupancy commit/teleport operations.
- *
- * The moveCreatureProbe() path mirrors the responsibility of native
- * CWorldCollisionHash::MoveCreature: select the nearest body contact from the
- * swept step and return its collision-response direction. The response math is
- * the horizontal double-cross/tangent projection recovered from L2Server. L1's
- * exact tile-center collinear case uses only a deterministic pair-stable tangent
- * as the grid seam; there is no target scoring or random sidestep here.
- */
 public final class WorldCollisionHash {
 
     public static final int MOVE_CLEAR = 0;

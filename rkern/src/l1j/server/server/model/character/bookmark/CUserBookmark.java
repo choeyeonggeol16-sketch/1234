@@ -11,8 +11,8 @@ import java.util.logging.Logger;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1CastleLocation;
-import l1j.server.server.model.L1HouseLocation;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.world.residence.L1HouseLocation;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
@@ -25,13 +25,6 @@ import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.templates.CItemBookmark;
 
-/**
- * User-owned NC CUserBookmark role adapted to the L1 wire protocol.
- * Stable database row IDs, session-local wire indices, persistent display order,
- * and five shortcut positions are distinct. CacheD's existing owner receipt
- * serializes mutations with orb/slot expansion and replays only after COMMIT.
- * No new executor, queue, or separate per-slot container.
- */
 public final class CUserBookmark {
     private static final Logger LOG = Logger.getLogger(CUserBookmark.class.getName());
     public static final int MAX_SLOT = 100, SHORTCUTS = 5;
@@ -186,8 +179,6 @@ public final class CUserBookmark {
             SC_ServerMessage.send(pc, 1655);
             return;
         }
-        // NC allocates the first vacant slot. L1 uses dense wire IDs but its
-        // persistent ordering can be sparse. Choose a free display position.
         int next = 0;
         for (int i = 0; i < count; i++) {
             int pos = slots.get(i).getTemp_id();

@@ -73,8 +73,8 @@ final class ClanRewardScrollItems {
 			}
 			final int points = java.util.concurrent.ThreadLocalRandom.current().nextInt(pointRange) + Config.혈맹포인트최소;
 			if (points <= 0) return;
-			try (l1j.server.server.model.L1InventoryTransaction tx =
-					l1j.server.server.model.L1InventoryTransaction.begin(pc,
+			try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+					l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc,
 						l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
 				if (!tx.debit(l1iteminstance, 1)) return;
 				ClanTable.stageWarPointDelta(tx, pointsClan, points);

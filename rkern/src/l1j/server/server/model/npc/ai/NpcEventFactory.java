@@ -139,15 +139,6 @@ public final class NpcEventFactory {
 	 */
 	private static final ThreadLocal<ArrayList<L1Object>> OBJECT_BUFFER = ThreadLocal.withInitial(() -> new ArrayList<>(64));
 
-    /*
-     * L2Server retail:
-     *   m_nClanHelpRange default = 500 world units
-     *   candidate collection -> exact distance gate -> clan-help relation table
-     *
-     * L1 does not expose the original world-unit scale nor reference server's per-template
-     * clan-help relation list.  12 tiles is the single cross-engine scale
-     * adapter; the event topology itself remains retail-style.
-     */
     private static final int RETAIL_CLAN_HELP_RANGE_WORLD = 500;
     private static final int CLAN_HELP_RANGE_TILES = 12;
     private static final int CLAN_HELP_RANGE_SQ =
@@ -251,12 +242,6 @@ public final class NpcEventFactory {
 
 
 
-	/**
-	 * NC식 SEE_CREATURE 진입점.
-	 *
-	 * 외부/world thread에서는 target/hate를 직접 변경하지 않는다.
-	 * candidate만 CNPCEvent inbox에 싣고 실제 판정/반영은 AI owner에서 한다.
-	 */
 	public static void seeCreature(
 			L1NpcInstance npc,
 			L1Character creature) {
@@ -993,7 +978,6 @@ public final class NpcEventFactory {
 	}
 
 
-    /** L1 awareness notification, not the damage-scaled NC CLAN_ATTACKED event. */
     public static CNPCEvent CreateHelpEvent(final L1NpcInstance helper,
             final L1Character attacker) {
         return CNPCEvent.Create(attacker, L1NpcInstance.HATE_EVENT_GROUP_LINK,
@@ -1019,11 +1003,6 @@ public final class NpcEventFactory {
         onPartyAttacked(source, attacker);
     }
 
-    /**
-     * NC clan-help topology: source-centered spatial candidates -> range ->
-     * family relation -> per-helper CLAN_ATTACKED. Preserve the L1 distinction
-     * between damage-scaled events and zero-hate awareness.
-     */
     public static void onClanAttacked(final L1MonsterInstance source,
             final L1Character attacker, final int damage) {
         if (damage <= 0 || !CanRequestHelp(source, attacker)) return;
@@ -1078,18 +1057,11 @@ public final class NpcEventFactory {
                         || (damage == 0 && helper instanceof L1GuardianInstance))) return false;
         final long dx = (long) helper.getX() - sx;
         final long dy = (long) helper.getY() - sy;
-        // Existing L1 zero-hate awareness uses tile-line distance. The NC
-        // damage-scaled path uses a circular range. Do not change either.
         if (damage > 0 ? dx * dx + dy * dy > CLAN_HELP_RANGE_SQ
                 : Math.max(Math.abs(dx), Math.abs(dy)) > CLAN_HELP_RANGE_TILES) return false;
         return isClanHelpRelation(sourceTemplate, helper.getNpcTemplate());
     }
 
-    /**
-     * L1 mobGroup is kept as the closest equivalent of reference server's explicit
-     * party/private list, but it is deliberately NOT converted into
-     * CLAN_ATTACKED.
-     */
     public static void onPartyAttacked(
             final L1NpcInstance source,
             final L1Character attacker) {
@@ -1152,15 +1124,6 @@ public final class NpcEventFactory {
         }
     }
 
-    /**
-     * reference server has a precomputed per-template clan-help relation matrix.
-     * L1 only has family/agrofamily, so use the conservative subset that is
-     * actually representable: helper opted into agro-family behavior AND
-     * helper/source share the same non-zero family.
-     *
-     * This intentionally removes the legacy "agrofamily > 1 => help anyone"
-     * broadcast behavior.
-     */
     private static boolean isClanHelpRelation(
             final L1Npc source,
             final L1Npc helper) {

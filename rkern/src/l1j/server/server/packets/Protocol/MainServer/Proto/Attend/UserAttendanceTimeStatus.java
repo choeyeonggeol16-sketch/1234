@@ -1,7 +1,6 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto.Attend;
 
 
-// TODO : 자동으로 생성된 PROTO 코드입니다. made by MJSoft.
 public enum UserAttendanceTimeStatus{
 	ATTENDANCE_NORMAL(0),
 	ATTENDANCE_NO_MORE_TIME(1),

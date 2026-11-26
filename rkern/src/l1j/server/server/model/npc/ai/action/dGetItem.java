@@ -3,16 +3,6 @@ package l1j.server.server.model.npc.ai.action;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 
-/**
- * NC CNPC::dGetItem (L2NPC.exe 0x0046bf30), adapted to L1.
- *
- * Native dGetItem sends the pickup request to L2Server (0x17) and later
- * removes the exact GET_ITEM desire and publishes GetItemFinished (0x3c).
- * L1 already owns the pickup request and transaction in CGetItemAction /
- * CInventory.tradeItem; the CIO owner receives the transfer result
- * synchronously and completes the same captured item without a second
- * event queue, worker, item allocation or speculative DB mutation.
- */
 public final class dGetItem {
     private static final long FINISHED_MS = 1_000L;
     private static final long FAILED_MS = 500L;
@@ -32,8 +22,6 @@ public final class dGetItem {
             return CCreatureController.RESULT_DONE;
         }
         if (creature.isDead() || creature.getCurrentHp() <= 0) {
-            // NC dGetItem drops pending desires when its actor becomes dead
-            // or inactive. Retire only the captured L1 item request.
             CGetItemAction.retireItem(creature, capturedItem);
             return CCreatureController.RESULT_INVALID;
         }
@@ -52,13 +40,6 @@ public final class dGetItem {
                 : CCreatureController.RESULT_DONE;
     }
 
-    /**
-     * NC GetItemFinished adaptation. A non-null transferred item means that
-     * the authoritative inventory transfer committed and the L1 onGetItem
-     * callback may now run; null means failure/item disappeared.
-     *
-     * Crucially, completing item A never erases the newly selected item B.
-     */
     public static void GetItemFinished(
             final L1NpcInstance creature,
             final L1ItemInstance requested,

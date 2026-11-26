@@ -24,6 +24,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.types.Point;
+import l1j.server.server.model.world.residence.L1HouseLocation;
 
 public class L1Location extends Point {
 	private static Random _random = new Random(System.nanoTime());

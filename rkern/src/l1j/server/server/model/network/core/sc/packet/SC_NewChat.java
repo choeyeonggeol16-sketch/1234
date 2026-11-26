@@ -67,9 +67,6 @@ public final class SC_NewChat {
 			nameStr = "******";
 //		} else if (pc.is_shift_battle()) {
 //			String serverDescription = pc.get_server_description();
-//			MJThebeCharacterInfo cInfo = pc.get_thebe_info();
-//			if (GameUtils.isNullOrEmpty(serverDescription) || cInfo == null) {
-//				nameStr = "미지인";
 //			} else {
 //				nameStr = cInfo.to_name_pair();
 //			}

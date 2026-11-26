@@ -101,7 +101,6 @@ public class ThreadPool {
         _scheduler.setRemoveOnCancelPolicy(true);
         _scheduler.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
         _scheduler.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
-		_scheduler.prestartAllCoreThreads();
 
 		// General instant work only. CIO shards, scheduler wheels and CacheD
 		// keep their existing owners. Never run a rejected job on its submitter.
@@ -112,7 +111,6 @@ public class ThreadPool {
 			workerFactory("InstantThread", Thread.NORM_PRIORITY),
 			new ThreadPoolExecutor.AbortPolicy()
 		);
-		_instantPool.prestartAllCoreThreads();
 
 		// Both scheduled pools remove cancelled futures immediately; do not
 		// scan the entire delayed queue once per minute just to purge it.

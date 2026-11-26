@@ -27,6 +27,8 @@ import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.types.Point;
+import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.inventory.L1GroundInventory;
 
 public class L1World {
     private static Logger _log = Logger.getLogger(L1World.class.getName());

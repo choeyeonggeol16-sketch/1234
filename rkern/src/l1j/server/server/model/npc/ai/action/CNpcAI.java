@@ -245,16 +245,6 @@ public final class CNpcAI {
 
             final L1Character requested = npc.npcChaseRetargetConsume();
             if (requested != null) {
-                /*
-                 * NC picks the current CDesirePQ top when deciding an ATTACK.
-                 * A queued retarget is only a wake-up signal: its candidate
-                 * can lose priority, die, become invisible, or be removed
-                 * before this CIO owner tick consumes the request.
-                 *
-                 * Re-arbitrate at the commit point instead of blindly
-                 * installing the earlier snapshot. No additional queue
-                 * or target scan: topAttackTarget owns native desire order.
-                 */
                 final L1MonsterInstance monster = (L1MonsterInstance) npc;
                 final L1Character winner =
                         CDesirePQ.topAttackTarget(monster, nowMs);
@@ -504,8 +494,6 @@ public final class CNpcAI {
                 target = CDesirePQ.topAttackTarget(monster, nowMs);
 
                 if (target == null) {
-                    // NC cannot execute an ATTACK whose desire target has
-                    // already disappeared. Never fall through to a stale
                     // L1 _target captured by the previous action.
                     if (moveAroundRunnable
                             && CDesirePQ.isMoveAroundTop(monster, nowMs)) {
@@ -593,15 +581,6 @@ public final class CNpcAI {
             return;
         }
 
-        /*
-         * NC DESIRE_PET_DEFAULT selects the owner's default action after
-         * ATTACK / USE_SKILL have been considered. In L1 this is the
-         * existing noTarget() virtual command hook on the CIO owner.
-         *
-         * Pet/Summon stay, extend and alert must not be preempted by the
-         * generic FOLLOW_MASTER shortcut below. Dolls retain their 40-tile
-         * teleport and owner-visibility policy; companions retain item mode.
-         */
         if (creature instanceof L1CompanionInstance
                 || creature instanceof L1SummonInstance
                 || creature instanceof L1DollInstance) {
@@ -712,9 +691,6 @@ public final class CNpcAI {
         CNPCServer.getInstance().unregister(npc);
     }
 
-    /** NC ChangeNPCState split: L1 policy is selected by the caller;
-     * the owner alone retires the current action and publishes the state.
-     */
     private static boolean ChangeNPCState(final L1NpcInstance npc, final int event) {
         if (!(npc instanceof L1MonsterInstance)
                 || npc.getMaxHp() / 3 <= npc.getCurrentHp()) {
@@ -988,15 +964,10 @@ public final class CNpcAI {
                     final L1MonsterInstance monster =
                             (L1MonsterInstance) npc;
 
-                    // NC keeps the target when this NPC can detect hidden
-                    // creatures. A bystander must not trigger a target switch
-                    // merely because it was present when invisibility began.
                     if (monster.getNpcTemplate().is_agrocoi()) {
                         continue;
                     }
 
-                    // NC desire arbitration removes an invalid ATTACK key
-                    // and selects the highest remaining admitted desire.
                     // Do not manufacture +200 hate for the nearest visible
                     // player or override the recorded desire priorities.
                     CDesirePQ.removeAttack(monster, cha);

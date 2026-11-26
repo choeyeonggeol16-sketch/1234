@@ -41,7 +41,7 @@ import com.sun.management.OperatingSystemMXBean;
 
 import l1j.server.Config;
 import l1j.server.Server;
-import l1j.server.server.Controller.LoginController;
+import l1j.server.server.auth.login.LoginController;
 import l1j.server.server.GameServer;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.model.Instance.L1PcInstance;

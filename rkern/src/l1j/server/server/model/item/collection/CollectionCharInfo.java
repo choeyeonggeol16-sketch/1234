@@ -3,11 +3,6 @@ package l1j.server.server.model.item.collection;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-/** 
- * CollectionCharInfo
- * MJSoft Character TradeSystem - Character Info
- * made by mjsoft, 2016.
- **/
 public class CollectionCharInfo {
 	private static final SimpleDateFormat _dateFormat = new SimpleDateFormat("MM-dd HH:mm", Locale.KOREA);
 	

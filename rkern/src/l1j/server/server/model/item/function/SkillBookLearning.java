@@ -2,8 +2,8 @@ package l1j.server.server.model.item.function;
 
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.SkillCheck;
-import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.storage.CacheD;

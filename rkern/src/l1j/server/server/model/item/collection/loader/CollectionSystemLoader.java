@@ -19,12 +19,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_CTPacket;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.utils.SQLUtil;
-/** 
- * CollectionCharInfo
- * MJSoft Character TradeSystem - System Loader
- * boxing character information load.
- * made by mjsoft, 2016.
- **/
 public class CollectionSystemLoader {
 	private static final Object 	_lock = new Object();
 	private static volatile CollectionSystemLoader _instance;

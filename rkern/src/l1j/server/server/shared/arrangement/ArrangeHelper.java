@@ -1,8 +1,4 @@
 package l1j.server.server.shared.arrangement;
-/** 
- * ArrangeHelper
- * made by mjsoft, 2017.
- **/
 public class ArrangeHelper {
 	public static void cleanup(Object[] arr){
 		if(arr != null){

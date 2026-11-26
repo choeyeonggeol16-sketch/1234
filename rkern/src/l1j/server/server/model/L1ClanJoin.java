@@ -29,8 +29,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.Warehouse.ClanWarehouse;
-import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.inventory.warehouse.ClanWarehouse;
+import l1j.server.server.model.inventory.warehouse.WarehouseManager;
 
 import java.util.concurrent.RejectedExecutionException;
 import l1j.server.server.datatables.CharacterTable;
@@ -39,6 +39,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.utils.ServerMessage;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 
 public class L1ClanJoin {
 
@@ -910,8 +911,8 @@ public class L1ClanJoin {
         final int oldClanId = clan.getClanId();
         final String playerName = player.getName();
         final String clanName = clan.getClanName();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(player,
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(player,
                         l1j.server.server.storage.CacheD.accountOrderKey("$clan-membership"))) {
             tx.requireTables("characters");
             tx.sql(con -> {

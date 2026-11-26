@@ -110,8 +110,8 @@ public final class CS_Deposit {
             return;
         }
 
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(player, CastleWarBusiness.TREASURY_ORDER_KEY)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(player, CastleWarBusiness.TREASURY_ORDER_KEY)) {
             if (!tx.debit(L1ItemId.ADENA, amount)) return;
             final Runnable treasury = business.stageTreasury(tx, castleId, amount);
             tx.commit(treasury);

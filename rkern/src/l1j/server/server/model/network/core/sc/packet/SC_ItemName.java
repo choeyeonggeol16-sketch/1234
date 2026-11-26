@@ -36,6 +36,6 @@ public final class SC_ItemName {
     public static boolean send(L1PcInstance pc, L1ItemInstance item) {
         if (pc == null) return false;
         return send(pc.getNetConnection(), item == null ? 0 : item.getId(),
-                item == null || item.getViewName() == null ? "" : item.getViewName());
+                item == null ? null : item.getViewName());
     }
 }

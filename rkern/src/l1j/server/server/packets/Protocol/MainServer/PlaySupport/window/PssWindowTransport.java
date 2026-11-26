@@ -17,6 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.LongSupplier;
 
+import l1j.server.server.model.network.thread.CServerTimer;
+
 /** Authenticated, window-only companion channel; never accepts gameplay commands. */
 public final class PssWindowTransport implements AutoCloseable {
     public static final byte OPEN = 1, PING = 2, BOUND = 16;
@@ -50,7 +52,7 @@ public final class PssWindowTransport implements AutoCloseable {
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AsynchronousChannelGroup group;
     private final AsynchronousServerSocketChannel listener;
-    private final ScheduledExecutorService sweeper;
+    private final Runnable cancelSweep;
     private final LongSupplier clock;
     private final int capacity;
 
@@ -59,6 +61,15 @@ public final class PssWindowTransport implements AutoCloseable {
     }
 
     PssWindowTransport(InetSocketAddress address, int capacity, LongSupplier clock) throws IOException {
+        this(address, capacity, clock, false);
+    }
+
+    static PssWindowTransport bindToGameServer(InetSocketAddress address, int capacity) throws IOException {
+        return new PssWindowTransport(address, capacity, System::nanoTime, true);
+    }
+
+    private PssWindowTransport(InetSocketAddress address, int capacity, LongSupplier clock,
+            boolean useGameTimer) throws IOException {
         if (capacity < 1) throw new IllegalArgumentException("capacity");
         this.capacity = capacity;
         this.clock = clock;
@@ -73,12 +84,25 @@ public final class PssWindowTransport implements AutoCloseable {
             group.shutdownNow();
             throw failure;
         }
-        sweeper = Executors.newSingleThreadScheduledExecutor(task -> {
-            Thread thread = new Thread(task, "RKern-PSS-UI-expiry");
-            thread.setDaemon(true);
-            return thread;
-        });
-        sweeper.scheduleWithFixedDelay(this::sweep, 1, 1, TimeUnit.SECONDS);
+        if (useGameTimer) {
+            try {
+                final CServerTimer expiry = CServerTimer.fixedDelay(this::sweep, 1_000L, 1_000L);
+                if (expiry == null) throw new IOException("PSS expiry timer admission rejected");
+                cancelSweep = expiry::cancel;
+            } catch (IOException | RuntimeException failure) {
+                try { group.shutdownNow(); }
+                catch (IOException closing) { failure.addSuppressed(closing); }
+                throw failure;
+            }
+        } else {
+            final ScheduledExecutorService sweeper = Executors.newSingleThreadScheduledExecutor(task -> {
+                Thread thread = new Thread(task, "RKern-PSS-UI-expiry");
+                thread.setDaemon(true);
+                return thread;
+            });
+            sweeper.scheduleWithFixedDelay(this::sweep, 1, 1, TimeUnit.SECONDS);
+            cancelSweep = sweeper::shutdownNow;
+        }
         accept();
     }
 
@@ -171,6 +195,7 @@ public final class PssWindowTransport implements AutoCloseable {
     }
 
     void sweep() {
+        if (closed.get()) return;
         long now = clock.getAsLong();
         pending.forEach((token, registration) -> {
             if (now >= registration.expires() || !registration.owner().valid())
@@ -188,11 +213,11 @@ public final class PssWindowTransport implements AutoCloseable {
 
     @Override public void close() {
         if (!closed.compareAndSet(false, true)) return;
+        cancelSweep.run();
         try { listener.close(); } catch (IOException ignored) { }
         for (Peer peer : peers) peer.close();
         pending.clear();
         waiting.clear();
-        sweeper.shutdownNow();
         try { group.shutdownNow(); } catch (IOException ignored) { }
     }
 

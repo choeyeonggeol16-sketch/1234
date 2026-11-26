@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import static l1j.server.server.model.network.core.cs.packet.HtmlCmdHandler._random;
 
 import l1j.server.server.model.world.instance.dungeon.hadin.HadinSystem;
-import l1j.server.server.datatables.HouseTable;
+import l1j.server.server.model.world.residence.HouseTable;
 import l1j.server.server.datatables.TownTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1HousekeeperInstance;
@@ -14,13 +14,13 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1HouseLocation;
+import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Warehouse.CWareHouseWithdraw;
+import l1j.server.server.model.inventory.warehouse.CWareHouseWithdraw;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.item.L1ItemId;
@@ -40,7 +40,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_TaxRate;
 import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
-import l1j.server.server.templates.L1House;
+import l1j.server.server.model.world.residence.L1House;
 import l1j.server.server.templates.L1Town;
 import l1j.server.server.utils.CommonUtil;
 
@@ -501,7 +501,7 @@ final class NpcServiceHtmlCommands {
                             if (house.isPurchaseBasement()) {
                                 SC_ServerMessage.send(pc, 1135);
                             } else {
-                                if (l1j.server.server.model.L1AuctionTransaction.upgradeBasement(pc, house)) {
+                                if (l1j.server.server.model.world.residence.L1AuctionTransaction.upgradeBasement(pc, house)) {
                                     SC_ServerMessage.send(pc, 1099);
                                 } else {
                                     SC_SystemMessage.send(pc, "지하실 확장을 완료하지 못했습니다. 아데나와 소유권을 확인해 주세요.");

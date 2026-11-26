@@ -1,9 +1,5 @@
 package l1j.server.server.shared.frame;
 
-/** 
- * FrameElement
- * made by mjsoft, 2017.
- **/
 public class FrameElement {
 	private static final double BASIC_MILLIS = 1000.0D;
 	

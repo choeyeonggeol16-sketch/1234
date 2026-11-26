@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 root = Path(__file__).resolve().parents[2]
-source = (root / "src/l1j/server/server/model/L1EquipmentSlot.java").read_text(encoding="utf-8")
+source = (root / "src/l1j/server/server/model/inventory/L1EquipmentSlot.java").read_text(encoding="utf-8")
 a = source.index("private void applyStatBonus(")
 b = source.index("private void applyArmorBlessBonus(", a)
 method = source[a:b]

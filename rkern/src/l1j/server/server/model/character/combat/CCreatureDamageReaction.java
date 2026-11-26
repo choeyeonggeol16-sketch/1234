@@ -10,9 +10,6 @@ import l1j.server.server.model.character.combat.mortalbody.MortalBodyProcEngine;
 import l1j.server.server.model.character.combat.titan.TitanProcEngine;
 import l1j.server.server.model.character.action.CAttackAction.AttackTargetData;
 
-/** Victim reaction boundary, corresponding to the damage-receive responsibility
- * in reference server CCreature. CAttackAction still owns the attack result and its commit.
- * No additional queue, worker, callback allocation or duplicate HP commit. */
 public final class CCreatureDamageReaction {
     private CCreatureDamageReaction() {}
 

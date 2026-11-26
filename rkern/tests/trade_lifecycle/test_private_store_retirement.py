@@ -4,7 +4,7 @@ import tempfile
 import subprocess
 
 root = Path(__file__).resolve().parents[2] / "src/l1j/server/server/model"
-owners = (root / "InventoryTransactionOwners.java").read_text(encoding="utf-8")
+owners = (root / "inventory/InventoryTransactionOwners.java").read_text(encoding="utf-8")
 owners = owners[owners.index("final class InventoryTransactionOwners"):]
 owners = owners.replace("final class InventoryTransactionOwners", "static final class InventoryTransactionOwners", 1)
 login = (root / "network/core/cs/packet/CS_EnterWorld.java").read_text(encoding="utf-8")

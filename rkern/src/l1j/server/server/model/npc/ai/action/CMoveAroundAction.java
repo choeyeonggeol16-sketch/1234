@@ -263,7 +263,6 @@ public final class CMoveAroundAction {
                         MIN_MOVE_DISTANCE,
                         MAX_MOVE_DISTANCE + 1);
 
-        // L2NPC CNPC::dMoveAround generates its own random angular vector.
         // A blocked ATTACK must not bias the entire random walk away from the
         // target: current ATTACK viability is rechecked before every step.
         final double angle = rnd.nextDouble(TWO_PI);

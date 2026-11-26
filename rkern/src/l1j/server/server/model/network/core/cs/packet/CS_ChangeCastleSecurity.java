@@ -80,8 +80,8 @@ public final class CS_ChangeCastleSecurity {
             return;
         }
 
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(pc, CastleWarBusiness.TREASURY_ORDER_KEY)) {
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, CastleWarBusiness.TREASURY_ORDER_KEY)) {
             Runnable treasury = type == 1 ? business.stageTreasury(tx, castleId, -100000) : () -> {};
             if (type != 1) tx.sql(con -> { /* owner/FIFO receipt for the state transition */ });
             tx.commit(() -> {

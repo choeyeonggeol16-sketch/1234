@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 /** L1 digest policy, dispatched by the existing NPC object timer. */

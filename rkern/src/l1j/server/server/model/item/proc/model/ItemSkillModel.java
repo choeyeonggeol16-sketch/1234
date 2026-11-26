@@ -9,12 +9,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.GameUtils;
 
-/**********************************
- * 
- * server Item Skill Model.
- * made by mjsoft, 2017.
- *  
- **********************************/
 public abstract class ItemSkillModel {
 	protected static Random _rnd = new Random(System.nanoTime());
 	

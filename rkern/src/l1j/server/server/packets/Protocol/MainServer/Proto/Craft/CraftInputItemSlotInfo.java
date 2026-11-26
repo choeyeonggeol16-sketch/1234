@@ -3,7 +3,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto.Craft;
 import java.util.LinkedList;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.CInventory;
 
 /**
  * 유저가 제작 요청 시 보낸 재료 슬롯 정보 (CS_CRAFT_MAKE_REQ repeated slotInfo 항목).

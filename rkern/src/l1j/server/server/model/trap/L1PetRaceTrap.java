@@ -8,7 +8,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_GameRap;
 import java.util.Random;
 
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;

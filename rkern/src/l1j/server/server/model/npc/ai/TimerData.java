@@ -5,13 +5,8 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
-import l1j.server.server.templates.L1NpcChat;
+import l1j.server.server.model.npc.chat.L1NpcChat;
 
-/**
- * Active dialogue sequence, not a scheduled Runnable.
- * CNPC::AddTimer / TimerExpired split: the existing NPC wheel owns the
- * deadline, the NPC owner executes the line, and the DB template owns text.
- */
 public final class TimerData {
     private final L1NpcChat _npcChat;
     private final int _lifeEpoch;

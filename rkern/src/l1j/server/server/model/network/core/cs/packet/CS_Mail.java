@@ -23,7 +23,7 @@ import l1j.server.server.datatables.SpamTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Clan.ClanMember;
 import l1j.server.server.model.L1ExcludingList;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;

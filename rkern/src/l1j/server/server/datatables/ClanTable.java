@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.UUID;
 import java.util.function.Consumer;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.storage.cached.CTransaction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,8 +22,8 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ManagerInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Warehouse.ClanWarehouse;
-import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.inventory.warehouse.ClanWarehouse;
+import l1j.server.server.model.inventory.warehouse.WarehouseManager;
 import l1j.server.server.storage.CacheD;
 
 public class ClanTable {

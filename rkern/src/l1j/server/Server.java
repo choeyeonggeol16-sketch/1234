@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.logging.LogManager;
 import l1j.server.server.GameServer;
+import l1j.server.server.appcenter.AppCenterService;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.config.CIOConfig;
@@ -68,8 +69,6 @@ public class Server {
 
 
     public static synchronized boolean startLoginServer() {
-        // PSS has a dedicated listener/group. Failure and shutdown stay separate.
-        l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.startIndependent();
         if (gameListener != null) {
             return false;
         }
@@ -101,6 +100,7 @@ public class Server {
                     sendSlots, largeRecvSlots, largeSlots, owners);
             gameListener = new l1j.server.server.model.network.core.connection.CIOServer(address, connectionCapacity,
                     owners, backlog, pool, scheduler, config);
+            l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow.startIndependent();
             System.out.println("네트워크 서버 연결이 완료되었습니다.");
             return true;
         } catch (Exception e) {
@@ -167,7 +167,6 @@ public class Server {
     }
 
     public void changePort(int port) {
-        // MJNetServerLoadManager.reload();
     }
 
     public void shutdown() {
@@ -269,6 +268,8 @@ public class Server {
             GameServer
                     .getInstance()
                     .initialize();
+            if (!startLoginServer()) return false;
+            AppCenterService.start();
             System.out.println("게임서버 연결이 완료되었습니다.");
             return true;
 

@@ -6,17 +6,6 @@ import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.npc.ai.CNPCServer;
 
-/**
- * NC CNPC::dMoveToTarget (0x004972ac), general-purpose scripted target
- * movement. Distinct from L1's ATTACK/CHASE CMoveToTargetAction.
- *
- * Native: drop invisible/missing target, abort beyond 4000 world units,
- * stop within stopDistance + collision radii, send midpoint destination,
- * retry every 1000ms and retire after >15 path troubles. L1 adaptation:
- * 4000 units -> 40 tiles; character occupied tile -> one-tile radius;
- * midpoint -> Chebyshev grid midpoint; all physical steps use the existing
- * L1 movement/occupancy commit. No per-tick objects or new workers.
- */
 public final class dMoveToTarget {
     private static final long NEXT_MS = 1_000L;
     private static final int MAX_DISTANCE_TILES = 40;
@@ -63,7 +52,6 @@ public final class dMoveToTarget {
         return dMoveToTarget(npc, target, npc._scriptMoveStopDistance);
     }
 
-    /** One step of NC noncombat dMoveToTarget; does not alter combat hate. */
     public static byte dMoveToTarget(
             final L1NpcInstance npc,
             final L1Object target,

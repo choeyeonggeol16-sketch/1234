@@ -54,8 +54,8 @@ public final class ElixirStatTransactions {
             // it must not overwrite the new stat and ElixirStatus afterward.
             CacheD.getInstance().saveCharacter(
                     new l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot(pc));
-            try (l1j.server.server.model.L1InventoryTransaction tx =
-                    l1j.server.server.model.L1InventoryTransaction.begin(pc, item.getId())) {
+            try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                    l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, item.getId())) {
                 if (!tx.debit(item, 1)) return;
                 tx.requireTables("characters");
                 tx.sql(con -> {

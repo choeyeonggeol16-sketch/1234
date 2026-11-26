@@ -8,17 +8,6 @@ import l1j.server.server.model.npc.ai.CNPCEvent;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.npc.ai.CNPCServer;
 
-/**
- * NC CNPC::dMoveTo (0x004934a4), adapted to L1's 2D eight-direction tiles.
- *
- * NC continuous-world distances of 8192 and sqrt(1000) map to an 82-tile
- * long jump and an exact-tile arrival respectively (100 world units/tile).
- * Existing L1 movement and teleport commits own collision, broadcasts,
- * visibility, destination reservation and world changes.
- *
- * The request API is strictly CIO-owner-only. Its payload lives in the
- * NPC's primitive fields, not an allocated command or a second work queue.
- */
 public final class dMoveTo {
     private static final long NEXT_MS = 1_000L;
     private static final long TELEPORT_MS = 3_000L;
@@ -76,7 +65,6 @@ public final class dMoveTo {
         return mode == RETURN_WALK || mode == RETURN_TELEPORT;
     }
 
-    /** NC absolute return, using the existing spawn radius and positional action. */
     public static boolean ReturnStartPoint(final L1NpcInstance npc) {
         if (!(npc instanceof L1MonsterInstance)
                 || !CNPCServer.getInstance().isOwnerThread(npc)
@@ -99,7 +87,6 @@ public final class dMoveTo {
         final L1Map map = npc.getMap();
         if (map == null) return false;
         if (!map.isInMap(x, y)) {
-            // Invalid spawn coordinates, as in NC: adopt the current position.
             npc.setHomeX(npc.getX());
             npc.setHomeY(npc.getY());
             return false;
@@ -159,7 +146,6 @@ public final class dMoveTo {
                 return CCreatureController.RESULT_DONE;
             }
             // Do not leave an untargetable NPC stranded at an occupied home.
-            // NC also renews its spawn position after repeated failed returns.
             if (++npc._pathFindFailCount >= RETURN_RETRY_LIMIT) {
                 npc.setHomeX(npc.getX());
                 npc.setHomeY(npc.getY());
@@ -186,8 +172,6 @@ public final class dMoveTo {
         final long dy = (long) y - npc.getY();
         final long distanceSq = dx * dx + dy * dy;
 
-        // NC dMoveTo: completion radius sqrt(1000) = 31.62 units;
-        // on L1's 100-unit tiles, only the exact destination is inside.
         if (distanceSq == 0L) {
             npc._pathFindFailCount = 0;
             return CCreatureController.RESULT_DONE;
@@ -239,7 +223,6 @@ public final class dMoveTo {
 
         if (dir == CMoveAction.DIR_HARD_BLOCK) {
             if (++npc._pathFindFailCount > PATH_FAIL_TELEPORT) {
-                // NC teleports after >20 consecutive path troubles.
                 // L1 may teleport only into a genuinely free map cell.
                 if (teleportIfFree(npc, x, y)) {
                     npc._pathFindFailCount = 0;
@@ -254,7 +237,6 @@ public final class dMoveTo {
             return CCreatureController.RESULT_INVALID;
         }
 
-        // NC uses 1000ms both for a move request and a blocked route pass.
         CCreatureController.sleep(npc, NEXT_MS);
         return CCreatureController.RESULT_RUNNING;
     }

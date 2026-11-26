@@ -6,11 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 
 public class RealTimeClock {
     public static final int DAY_TO_HOURS = 24;
@@ -22,7 +21,7 @@ public class RealTimeClock {
     private static final long TICK_MS = 500L;
 
     private static volatile RealTimeClock _instance;
-    private final ScheduledFuture<?> _future;
+    private volatile CServerTimer _future;
 
     private volatile RealTime _currentTime = new RealTime();
     private RealTime _previousTime = null;
@@ -35,14 +34,6 @@ public class RealTimeClock {
         _listeners.put(Calendar.HOUR_OF_DAY, new CopyOnWriteArrayList<>());
         _listeners.put(Calendar.MINUTE, new CopyOnWriteArrayList<>());
         _listeners.put(Calendar.SECOND, new CopyOnWriteArrayList<>());
-        // One periodic task, not an unbounded chain of independent reservations.
-        // Losing any old per-tick schedule stopped ALL time listeners permanently.
-        final ScheduledFuture<?> future = ThreadPool.getInstance().scheduleWithFixedDelay(
-                new TimeUpdater(), 0L, TICK_MS);
-        if (future == null) {
-            throw new IllegalStateException("RealTimeClock timer admission failed");
-        }
-        _future = future;
     }
 
     public void print() {
@@ -125,15 +116,26 @@ public class RealTimeClock {
             }
         }
     }
-    public static synchronized void init() {
+    public static synchronized void prepare() {
         if (_instance == null) _instance = new RealTimeClock();
+    }
+
+    public static synchronized void start() {
+        prepare();
+        final RealTimeClock clock = _instance;
+        if (clock._future != null) return;
+        clock._currentTime = new RealTime();
+        clock._future = CServerTimer.fixedDelay(
+                clock.new TimeUpdater(), 0L, TICK_MS);
+        if (clock._future == null) throw new IllegalStateException("Real-time clock timer rejected");
     }
 
     public static synchronized void stop() {
         final RealTimeClock clock = _instance;
         _instance = null;
         if (clock != null) {
-            clock._future.cancel(false);
+            final CServerTimer future = clock._future;
+            if (future != null) future.cancel();
             for (List<TimeListener> listeners : clock._listeners.values()) listeners.clear();
         }
     }
@@ -143,7 +145,7 @@ public class RealTimeClock {
     }
 
     public RealTime getRealTime() {
-        return _currentTime;
+        return _future == null ? new RealTime() : _currentTime;
     }
 
     public void addListener(TimeListener listener, int type) {

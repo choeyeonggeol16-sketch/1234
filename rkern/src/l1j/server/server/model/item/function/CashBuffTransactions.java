@@ -83,7 +83,7 @@ public final class CashBuffTransactions {
             final int characterId=pc.getId(),accountId=pc.getAccount().getAccountId(),saveBuffId=buffId;
             final String characterName=pc.getName();
             final Timestamp expiration=new Timestamp(System.currentTimeMillis()+durationMillis);
-            try(l1j.server.server.model.L1InventoryTransaction tx=
+            try(l1j.server.server.model.inventory.L1InventoryTransaction tx=
                     User.CheckAndSetPendingUseETCItem(pc,CacheD.accountOrderKey("nshop:", characterId))) {
                 if(!tx.debit(useItem,1))return;
                 tx.requireTables("character_tams");
@@ -109,7 +109,7 @@ public final class CashBuffTransactions {
             }
         } else if (itemId == 600218) {
             final int characterId=pc.getId();
-            try(l1j.server.server.model.L1InventoryTransaction tx=
+            try(l1j.server.server.model.inventory.L1InventoryTransaction tx=
                     User.CheckAndSetPendingUseETCItem(pc,CacheD.accountOrderKey("nshop:", characterId))) {
                 if(!tx.debit(useItem,1))return;
                 tx.requireTables("character_tams");

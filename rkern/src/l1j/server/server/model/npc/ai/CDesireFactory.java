@@ -4,11 +4,6 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Character;
 
-/**
- * reference server CDesireFactory::MakeUseSkill, adapted to primitive slots in CDesirePQ.
- * reference server MakeUseSkill initializes state 10, target ID, skill ID, move type,
- * boost, flag and desire value. L1 retains its 2-D skill executor.
- */
 public final class CDesireFactory {
     private CDesireFactory() { }
 
@@ -26,12 +21,6 @@ public final class CDesireFactory {
                 npc, target, desireValue, nowMs);
     }
 
-    /**
-     * CDesireFactory::MakeAttack(int, NpcAttackMoveType, bool,
-     * float, float, int) at 0x0041B520.
-     * Per-desire boost and level difference retain the NC field semantics.
-     * L1's default warrior Attack_BoostValue remains 300.
-     */
     public static boolean MakeAttack(
             final L1MonsterInstance npc,
             final L1Character target,
@@ -45,7 +34,6 @@ public final class CDesireFactory {
                 flag, desireValue, boost, levelDifference, nowMs);
     }
 
-    /** NC MakeGetItem: exact item identity and a desire value. */
     public static boolean MakeGetItem(final L1MonsterInstance npc,
             final L1ItemInstance item, final float value, final long nowMs) {
         return CDesirePQ.addGetItem(npc, item, value, nowMs);

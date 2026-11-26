@@ -3,16 +3,6 @@ package l1j.server.server.model.npc.ai.action;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
 
-/**
- * NC CNPC::dFollow + GetFollowPosition, adapted to the L1 2D tile world.
- *
- * All follower types use the existing CIO-owned CMoveAction path and
- * movement action state instead of choosing a new random destination each tick.
- * Real occupancy remains owned by WorldCollisionHash/TileOccupancyNpc.
- *
- * L1 pet/summon/companion command modes are handled by their existing
- * noTarget() implementations; this class only performs normal following.
- */
 public final class dFollow {
     private dFollow() {
     }
@@ -52,8 +42,6 @@ public final class dFollow {
         return CMoveAction.followPosition(follower, master);
     }
 
-    /** Release the previous NC GetFollowPosition intention without allocating
-     *  a new collection or adding a worker. The caller owns the NPC CIO tick. */
     public static void clear(final L1NpcInstance follower) {
         if (follower == null) return;
         final boolean hadFollowGoal =

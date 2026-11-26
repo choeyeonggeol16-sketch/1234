@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -133,8 +134,7 @@ public final class AppCenterService {
 
     private static volatile HttpServer listener;
     private static volatile ThreadPoolExecutor httpPool;
-    private static volatile Thread snapshotWorker;
-    private static volatile boolean running;
+    private static CServerTimer snapshotTimer;
 
     /** Start after the existing DB pool, world and CIO have initialized.
      * Never fail game startup if HTTP port is unavailable. */
@@ -153,54 +153,64 @@ public final class AppCenterService {
             // Public read-only endpoints, one additional TCP port on SAME server.
             // No reverse proxy or second JVM is required. No secrets enter HTTP.
             HttpServer service=HttpServer.create(new InetSocketAddress("0.0.0.0",18085),64);
+            listener=service;
             ThreadPoolExecutor executor=new ThreadPoolExecutor(8,8,0,TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>(256),new NamedThread("app-http-"),new ThreadPoolExecutor.AbortPolicy());
+            httpPool=executor;
             service.createContext("/",new Handler(HTML,CSS,JS));
             service.setExecutor(executor);
             service.start();
-            listener=service;
-            httpPool=executor;
-            running=true;
-            Thread worker=new Thread(()->{
-                long nextDatabase=0L;
-                while(running&&!Thread.currentThread().isInterrupted()){
-                    try {liveProfiles=refreshProfiles();}
-                    catch(RuntimeException ignored){liveProfiles=Map.of();}
-                    try {liveMarkets=refreshMarket();}
-                    catch(RuntimeException ignored){/* retain last complete snapshot */}
-                    if (!pendingMarketSearch.isEmpty()) {
-                        long time=System.nanoTime();
-                        pendingMarketSearch.entrySet().removeIf(e -> time-e.getValue().deadlineNanos() >= 0);
-                    }
-                    long now=System.nanoTime();
-                    if(now>=nextDatabase){
-                        try {
-                            Snapshot s=refresh();
-                            if(running)snapshot=s;
-                        }catch(Exception e){
-                            if(running)System.err.println("[AppCenter] Snapshot unavailable: " +
-                                e.getClass().getSimpleName());
-                        }
-                        nextDatabase=System.nanoTime()+CACHE_INTERVAL_SEC*NANO;
-                    }
-                    try{Thread.sleep(5_000L);}
-                    catch(InterruptedException e){Thread.currentThread().interrupt();break;}
-                }
-            },"app-db-snapshot");
-            worker.setDaemon(true);
-            snapshotWorker=worker;
-            worker.start();
+            snapshotTimer=CServerTimer.fixedDelay(new SnapshotTimer(service),0L,5_000L);
+            if(snapshotTimer==null)throw new IllegalStateException("AppCenter snapshot timer rejected");
             System.out.println("앱센터 서버가 연결되었습니다.");
         }catch(IOException|RuntimeException e){
             System.err.println("[AppCenter] Disabled (game server continues): "+e.getClass().getSimpleName());
-            running=false;
+            stop();
         }
     }
+
+    private static final class SnapshotTimer implements Runnable {
+        private final HttpServer owner;
+        private long nextDatabase;
+
+        private SnapshotTimer(HttpServer owner) {
+            this.owner=owner;
+            nextDatabase=System.nanoTime();
+        }
+
+        @Override public void run() {
+            if(listener!=owner)return;
+            try {
+                final var profiles=refreshProfiles();
+                synchronized(AppCenterService.class){if(listener==owner)liveProfiles=profiles;}
+            } catch(RuntimeException ignored){
+                synchronized(AppCenterService.class){if(listener==owner)liveProfiles=Map.of();}
+            }
+            try {
+                final var markets=refreshMarket();
+                synchronized(AppCenterService.class){if(listener==owner)liveMarkets=markets;}
+            } catch(RuntimeException ignored){/* retain last complete snapshot */}
+            if (!pendingMarketSearch.isEmpty()) {
+                final long now=System.nanoTime();
+                pendingMarketSearch.entrySet().removeIf(e -> now-e.getValue().deadlineNanos() >= 0);
+            }
+            if(listener!=owner || System.nanoTime()-nextDatabase<0L)return;
+            try {
+                final Snapshot result=refresh();
+                synchronized(AppCenterService.class){if(listener==owner)snapshot=result;}
+            } catch(Exception failure){
+                if(listener==owner)System.err.println("[AppCenter] Snapshot unavailable: " +
+                        failure.getClass().getSimpleName());
+            } finally {
+                nextDatabase=System.nanoTime()+CACHE_INTERVAL_SEC*NANO;
+            }
+        }
+    }
+
     /** No new requests or snapshots after shutdown begins. */
     public static synchronized void stop(){
-        running=false;
-        Thread t=snapshotWorker;snapshotWorker=null;
-        if(t!=null)t.interrupt();
+        if(snapshotTimer!=null)snapshotTimer.cancel();
+        snapshotTimer=null;
         HttpServer s=listener;listener=null;
         if(s!=null)s.stop(0);
         ThreadPoolExecutor e=httpPool;httpPool=null;

@@ -10,7 +10,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1HouseLocation;
+import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;

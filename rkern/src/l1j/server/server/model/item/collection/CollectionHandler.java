@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.item.collection.loader.CollectionSystemLoader;

@@ -8,7 +8,7 @@ import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import l1j.server.server.model.L1ClanRanking.RankData;
+import l1j.server.server.model.rank.L1ClanRanking.RankData;
 import l1j.server.server.utils.BinaryOutputStream;
 
 public final class SC_RankingClan {

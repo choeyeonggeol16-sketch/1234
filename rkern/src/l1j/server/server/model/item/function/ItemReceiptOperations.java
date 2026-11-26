@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
@@ -48,7 +48,7 @@ public final class ItemReceiptOperations {
             return;
         }
         final int previousLevel = target.getEnchantLevel();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(scroll, 1)) return;
@@ -110,7 +110,7 @@ public final class ItemReceiptOperations {
 
 	public static void UseDurableExchange(L1PcInstance pc, L1ItemInstance input, int rewardId,
 			int rewardCount, Runnable afterCommitted) {
-		try (l1j.server.server.model.L1InventoryTransaction tx =
+		try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
 				User.CheckAndSetPendingUseETCItem(pc,
 						l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
 			if (!tx.debit(input, 1)) return;
@@ -135,7 +135,7 @@ public final class ItemReceiptOperations {
 			L1ItemInstance target, int rewardId, int rewardCount, Runnable afterCommitted) {
 		if (catalyst == null || target == null || catalyst == target || rewardCount <= 0)
 			return;
-		try (l1j.server.server.model.L1InventoryTransaction tx =
+		try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
 				User.CheckAndSetPendingUseETCItem(pc,
 						l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
 			if (!tx.debit(catalyst, 1) || !tx.debit(target, 1)) {

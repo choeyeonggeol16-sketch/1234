@@ -9,6 +9,7 @@ import gnu.trove.map.hash.TLongObjectHashMap;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.inventory.L1GroundInventory;
 
 /**
  * Concurrent canonical 8x8 world map. No CIO shard replica, spatial delta pipe,
@@ -175,7 +176,6 @@ public final class LocalWorldMap {
         private int _playerCount;
 
 
-        // reference server CTL_Map2 uses an object-indexed linkage instead of scanning a cell.
         // On L1 maps the usual 8x8 cell is sparse: keep its compact linear array.
         // Only dense cells build an allocation-free int -> array-slot index.
         private static final int DENSE_THRESHOLD = 128;

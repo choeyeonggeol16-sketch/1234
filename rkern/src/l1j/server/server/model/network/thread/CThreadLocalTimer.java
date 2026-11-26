@@ -57,14 +57,14 @@ public final class CThreadLocalTimer {
         if (node == null) node = new Node();
         final long now = CIOThread.nowMs();
         final long delay = Math.max(1L, delayMs);
-        node.dueMs = delay > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + delay;
+        node.dueMs = now > Long.MAX_VALUE - delay ? Long.MAX_VALUE : now + delay;
         return node;
     }
 
     /** Must be called with wheel monitor held after full node initialization. */
     private void publish(Node node) {
-        if (closed || !owner.running ||
-                (node.handle != null && node.handle.isCancelled())) {
+        if (closed || !owner.running || (node.handle != null && node.handle.isCancelled())
+                || (node.payload instanceof CServerTimer timer && timer.isCancelled())) {
             if (node.handle != null) node.handle.cancel();
             recycleNode(node);
             return;
@@ -96,22 +96,36 @@ public final class CThreadLocalTimer {
             distant = extended;
         }
         distantSize = i + 1;
+        siftDistantUp(i, node);
+    }
+
+    private void setDistant(int index, Node node) {
+        distant[index] = node;
+        if (node.payload instanceof CServerTimer timer) timer.distantIndex = index;
+    }
+
+    private void siftDistantUp(int i, Node node) {
         while (i != 0) {
             final int parent = (i - 1) >>> 1;
             Node other = distant[parent];
             if (other.dueMs <= node.dueMs) break;
-            distant[i] = other;
+            setDistant(i, other);
             i = parent;
         }
-        distant[i] = node;
+        setDistant(i, node);
     }
 
-    private Node popDistant() {
-        final Node first = distant[0];
+    private Node removeDistant(int index) {
+        final Node removed = distant[index];
+        if (removed.payload instanceof CServerTimer timer) timer.distantIndex = -1;
         final Node last = distant[--distantSize];
         distant[distantSize] = null;
-        if (distantSize == 0) return first;
-        int i = 0;
+        if (index == distantSize) return removed;
+        if (index > 0 && last.dueMs < distant[(index - 1) >>> 1].dueMs) {
+            siftDistantUp(index, last);
+            return removed;
+        }
+        int i = index;
         while (true) {
             final int left = (i << 1) + 1;
             if (left >= distantSize) break;
@@ -119,11 +133,16 @@ public final class CThreadLocalTimer {
             final int child = right < distantSize && distant[right].dueMs < distant[left].dueMs
                     ? right : left;
             if (last.dueMs <= distant[child].dueMs) break;
-            distant[i] = distant[child];
+            setDistant(i, distant[child]);
             i = child;
         }
-        distant[i] = last;
-        return first;
+        setDistant(i, last);
+        return removed;
+    }
+
+    synchronized void cancelDistant(CServerTimer timer) {
+        final int index = timer.distantIndex;
+        if (index >= 0) recycleNode(removeDistant(index));
     }
 
     /** Long-timer -> near wheel promotion during this shard's tick. */
@@ -141,13 +160,13 @@ public final class CThreadLocalTimer {
                 final Object object = L1World.getInstance().findObjectBySmartId(head.l0);
                 if (!(object instanceof L1ItemInstance item)
                         || !item.isItemTimerCurrent(head.p0, head.p1)) {
-                    recycleNode(popDistant());
+                    recycleNode(removeDistant(0));
                     staleBudget--;
                     continue;
                 }
             }
             if (head.dueMs > threshold) break;
-            Node node = popDistant();
+            Node node = removeDistant(0);
             if (node.handle != null && node.handle.isCancelled()) {
                 recycleNode(node);
             } else {
@@ -280,6 +299,7 @@ public final class CThreadLocalTimer {
 		node.kind = KIND_CHARACTER_SKILL;
 		node.payload = actor;
 		node.p0 = generation;
+		if (actor instanceof L1PcInstance pc) node.p1 = pc.getSessionStamp();
         publish(node);
     }
 
@@ -300,6 +320,7 @@ public final class CThreadLocalTimer {
                 slot.entries[i] = null;
             if (!owner.running) {
                 if (cur.handle != null) cur.handle.cancel();
+                if (cur.payload instanceof CServerTimer timer) timer.discard();
                 recycleNode(cur);
                 continue;
             }
@@ -382,42 +403,25 @@ public final class CThreadLocalTimer {
 			return false;
 		}
 
-		case KIND_ACTION: {
-			final CCreatureController controller =
-					(CCreatureController) node.payload;
-
-			if (controller != null) {
-				controller.TimerExpired(
-						node.p0,
-						node.p1);
-			}
-			return false;
-		}
-
         case KIND_PC_TELEPORT: {
             final Object obj = L1World.getInstance().findObjectBySmartId(node.l0);
-            if (obj instanceof L1PcInstance) {
-                final L1PcInstance pc = (L1PcInstance) obj;
-                if (pc.getSessionStamp() == node.p0
-                        && pc.teleportTimerEpoch() == node.p1
-                        && CIOThreadCallback.getInstance().shardOf(pc) == owner) {
-                    final CCreatureController controller = pc.getCreatureController();
-                    if (controller != null && controller.actor() == pc) {
-                        controller.AddExecutableTeleport(node.p1);
-                    }
-                }
+            if (obj instanceof L1PcInstance pc && pc.getSessionStamp() == node.p0
+                    && pc.teleportTimerEpoch() == node.p1
+                    && CIOThreadCallback.getInstance().shardOf(pc) == owner) {
+                final CCreatureController controller = pc.getCreatureController();
+                return controller != null && controller.actor() == pc
+                        && !controller.AddExecutableTeleport(pc, node.p0, node.p1);
             }
             return false;
         }
 
 		case KIND_PC_ITEM_DELAY: {
             final Object obj = L1World.getInstance().findObjectBySmartId(node.l0);
-            if (obj instanceof L1PcInstance) {
-                final L1PcInstance pc = (L1PcInstance) obj;
+			if (obj instanceof L1PcInstance pc
+                    && CIOThreadCallback.getInstance().shardOf(pc) == owner) {
                 final CCreatureController controller = pc.getCreatureController();
-                if (controller != null && controller.actor() == pc) {
-                    controller.AddExecutableItemDelay(node.p0, node.p1);
-                }
+                return controller != null && controller.actor() == pc
+                        && !controller.AddExecutableItemDelay(pc, node.p0, node.p1);
             }
             return false;
         }
@@ -458,13 +462,12 @@ public final class CThreadLocalTimer {
 
             if (actor == null || owner == null
                     || !actor.skillEffectHeartbeatValid(generation)) return false;
-            if (actor instanceof L1PcInstance) {
-                final L1PcInstance pc = (L1PcInstance) actor;
+            if (actor instanceof L1PcInstance pc) {
+                if (pc.getSessionStamp() != node.p1
+                        || CIOThreadCallback.getInstance().shardOf(pc) != owner) return false;
                 final CCreatureController controller = pc.getCreatureController();
-                if (controller != null && controller.actor() == pc) {
-                    controller.AddExecutableSkillHeartbeat(generation);
-                }
-                return false;
+                return controller != null && controller.actor() == pc
+                        && !controller.AddExecutableSkillHeartbeat(pc, node.p1, generation);
             }
 
             if (actor instanceof L1NpcInstance) {
@@ -525,6 +528,7 @@ public final class CThreadLocalTimer {
                     final Node node = slot.entries[j];
                     slot.entries[j] = null;
                     if (node.handle != null) node.handle.cancel();
+                    if (node.payload instanceof CServerTimer timer) timer.discard();
                     recycleNode(node);
                 }
                 slot.clear();
@@ -533,8 +537,9 @@ public final class CThreadLocalTimer {
             }
         }
         while (distantSize != 0) {
-            Node node = popDistant();
+            Node node = removeDistant(0);
             if (node.handle != null) node.handle.cancel();
+            if (node.payload instanceof CServerTimer timer) timer.discard();
             recycleNode(node);
         }
     }
@@ -564,7 +569,7 @@ public final class CThreadLocalTimer {
 		}
 	}
 
-    // reference server CThreadLocalTimer::CSlot stores up to 1000 callbacks.
+    // Each slot stores up to 1,000 callbacks.
     // Allocate backing references lazily, preserving memory at low load.
     static final class CSlot {
         CThreadLocalTimer.Node[] entries = new CThreadLocalTimer.Node[16];

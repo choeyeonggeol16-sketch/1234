@@ -1,11 +1,11 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.NeigeCard;
-import l1j.server.server.NeigeCard2;
-import l1j.server.server.NeigeCard3;
-import l1j.server.server.NeigeLow;
-import l1j.server.server.NeigeNormal;
+import l1j.server.server.model.item.Card.command.NeigeCard;
+import l1j.server.server.model.item.Card.command.NeigeCard2;
+import l1j.server.server.model.item.Card.command.NeigeCard3;
+import l1j.server.server.model.item.Card.command.NeigeLow;
+import l1j.server.server.model.item.Card.command.NeigeNormal;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.action.ActionControlHandler;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
@@ -14,7 +14,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;

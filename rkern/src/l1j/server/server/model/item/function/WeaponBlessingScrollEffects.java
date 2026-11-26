@@ -91,7 +91,7 @@ final class WeaponBlessingScrollEffects {
                 : level == 3 ? roll < Config.축복4단
                 : roll < Config.축복5단);
         final String itemName = target.getLogName();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(scroll, 1)) return;
@@ -143,7 +143,7 @@ final class WeaponBlessingScrollEffects {
         }
         if (level < 0 || level > 5) return;
         final String itemName = target.getLogName();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (!tx.debit(scroll, 1)) return;

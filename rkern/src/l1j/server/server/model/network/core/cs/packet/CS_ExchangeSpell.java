@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import l1j.server.server.model.network.core.sc.packet.SC_HorunOK;
 
 import l1j.server.server.datatables.SkillsTable;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;

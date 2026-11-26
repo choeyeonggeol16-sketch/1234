@@ -6,7 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.FishingTimeController;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
 import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
@@ -18,11 +18,11 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
-import l1j.server.server.model.CTrade;
+import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.datatables.LetterTable;
-import l1j.server.server.model.CInventory;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.CInventory;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
@@ -153,12 +153,10 @@ public final class User {
         pc.getLight().turnOnOffLight();
     }
 
-    // L1 adaptation of reference server pending admission: the existing inventory transaction
-    // atomically reserves the owner. Its CIO/CacheD completion releases the gate.
     // Do not add a second pending flag or release it on DB submission.
-    public static l1j.server.server.model.L1InventoryTransaction CheckAndSetPendingUseETCItem(
+    public static l1j.server.server.model.inventory.L1InventoryTransaction CheckAndSetPendingUseETCItem(
             L1PcInstance pc, int resourceKey) {
-        return l1j.server.server.model.L1InventoryTransaction.begin(pc, resourceKey);
+        return l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, resourceKey);
     }
 
     // Called only after the existing CacheD receipt and owner-CIO replay succeed.

@@ -8,11 +8,6 @@ import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
 
-/** 
- * DynamicShopItem
- * Dynamic Shop Item.
- * made by mjsoft, 2016.
- *  **/
 /** 샵 아이템에 대한 정보를 가진다. **/
 public class DynamicShopItem {
 	public int 		objId;		// 오브젝트 ID

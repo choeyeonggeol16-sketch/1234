@@ -29,7 +29,7 @@ final class TransformationCollectionCards {
         final String accountName = account.getName();
         // Keep the original unique-score assignment (=1), not an increment.
         // Both account fields and the card debit must commit in one receipt.
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 l1j.server.server.model.network.core.cs.packet.User.CheckAndSetPendingUseETCItem(
                         pc, l1j.server.server.storage.CacheD.accountOrderKey(accountName))) {
             // The account snapshot above precedes the inventory owner gate.

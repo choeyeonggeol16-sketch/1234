@@ -46,24 +46,25 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1ChatParty;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1DwarfForPackageInventory;
-import l1j.server.server.model.L1EquipmentSlot;
+import l1j.server.server.model.inventory.L1EquipmentSlot;
 import l1j.server.server.model.L1HauntedHouse;
-import l1j.server.server.model.L1GroundInventory;
+import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.L1Karma;
 import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserEquipment;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1PinkName;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.L1ReturnStatTemp;
 import l1j.server.server.model.L1SmallIntMap;
 import l1j.server.server.model.L1StatReset;
 import l1j.server.server.model.L1TownLocation;
-import l1j.server.server.model.CTrade;
-import l1j.server.server.model.CTradeManager;
+import l1j.server.server.model.inventory.CTrade;
+import l1j.server.server.model.inventory.CTradeManager;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.ReportDeley;
 import l1j.server.server.model.character.CYieldLock;
@@ -107,8 +108,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_Fishing;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;
-import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
-import l1j.server.server.templates.L1Item;
 import l1j.server.server.model.network.core.sc.packet.SC_Invis;
 import l1j.server.server.model.network.core.sc.packet.SC_Lawful;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
@@ -177,7 +176,7 @@ public class L1PcInstance extends L1Character {
     public synchronized long beginWarehouseCacheLease() {
         if (isLogoutStarted()) throw new IllegalStateException("Warehouse restore after logout");
         if (warehouseCacheLease == 0L) {
-            warehouseCacheLease = l1j.server.server.model.Warehouse.WarehouseManager.nextSessionLease();
+            warehouseCacheLease = l1j.server.server.model.inventory.warehouse.WarehouseManager.nextSessionLease();
         }
         return warehouseCacheLease;
     }
@@ -2486,7 +2485,7 @@ public class L1PcInstance extends L1Character {
             final long warehouseLease = warehouseCacheLease;
             if (warehouseLease != 0L) {
                 try {
-                    l1j.server.server.model.Warehouse.WarehouseManager.getInstance()
+                    l1j.server.server.model.inventory.warehouse.WarehouseManager.getInstance()
                             .releaseSessionWarehouses(getAccountName(), getName(), warehouseLease);
                 } catch (RuntimeException e) {
                     _log.log(Level.SEVERE, "Logout warehouse cache release failed: " + getId(), e);
@@ -2552,7 +2551,7 @@ public class L1PcInstance extends L1Character {
         final long lease = warehouseCacheLease;
         if (lease != 0L) {
             try {
-                l1j.server.server.model.Warehouse.WarehouseManager.getInstance()
+                l1j.server.server.model.inventory.warehouse.WarehouseManager.getInstance()
                         .releaseSessionWarehouses(getAccountName(), getName(), lease);
             } catch (RuntimeException e) { _log.log(Level.WARNING, "Offline shop warehouse cache cleanup failed", e); }
         }
@@ -3378,8 +3377,6 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
                     damage = 10; // Preserve the existing armor-proc minimum.
                     applyMagicStack = false; // A blocked hit must not advance the window.
                 }
-//				if (getAI() != null && getAI().getBotType() == MJBotType.REDKNIGHT) {
-//					damage += (getMaxHp() / Config.RedKnight_dieCount);
 //				}
 
 				if (hasSkillEffect(L1SkillId.FOG_OF_SLEEPING)) {
@@ -3569,10 +3566,6 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 
 	        // AI / 봇 처리
 //	        if (getAI() != null) {
-//	            MJBotType type = getAI().getBotType();
-//	            if (type == MJBotType.REDKNIGHT || type == MJBotType.PROTECTOR) {
-//	                broadcastPacket(new S_SkillSound(getId(), 2236));
-//	                return;
 //	            }
 //	        }
 
@@ -4263,181 +4256,29 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		return _equipSlot;
 	}
 
-	private long equipmentTimeVisible;
+    public void RestoreEquippedItems(List<L1ItemInstance> loadedEquipment) {
+        CUserEquipment.RestoreEquippedItems(this, loadedEquipment);
+    }
 
-	/** Restore only the persisted equipment selected during inventory installation. */
-	public void RestoreEquippedItems(List<L1ItemInstance> loadedEquipment) {
-		final CUserInventory inv = getInventory();
-		if (!inv.tryBeginEquipmentChange())
-			throw new IllegalStateException("Equipment restore busy: " + getId());
-		try {
-			for (int i = 0, n = loadedEquipment.size(); i < n; i++) {
-				final L1ItemInstance item = loadedEquipment.get(i);
-				if (!item.isEquipped() || inv.GetRegisteredItemByServerID(item.getId()) != item) continue;
-				item.setEquipped(false);
-				final L1Item template = item.getItem();
-				if (template == null || (template.getType2() != 1 && template.getType2() != 2)) {
-					_log.warning("Invalid persisted equipment: " + item.getId());
-					continue;
-				}
-				EquipItem(item, true, false);
-			}
-		} finally {
-			inv.endEquipmentChange();
-		}
-	}
+    public void EquipItem(L1ItemInstance item) {
+        EquipItem(item, false, false);
+    }
 
-	public void EquipItem(L1ItemInstance item) {
-		EquipItem(item, false, false);
-	}
+    public void EquipItem(L1ItemInstance item, boolean loaded, boolean changeWeapon) {
+        CUserEquipment.ChangeEquipment(this, item, true, loaded, changeWeapon);
+    }
 
-	public void EquipItem(L1ItemInstance item, boolean loaded, boolean changeWeapon) {
-		changeEquipment(item, true, loaded, changeWeapon);
-	}
+    public void UnequipItem(L1ItemInstance item) {
+        UnequipItem(item, false, false);
+    }
 
-	public void UnequipItem(L1ItemInstance item) {
-		UnequipItem(item, false, false);
-	}
+    public void UnequipItem(L1ItemInstance item, boolean loaded, boolean changeWeapon) {
+        CUserEquipment.ChangeEquipment(this, item, false, loaded, changeWeapon);
+    }
 
-	public void UnequipItem(L1ItemInstance item, boolean loaded, boolean changeWeapon) {
-		changeEquipment(item, false, loaded, changeWeapon);
-	}
-
-	private void changeEquipment(L1ItemInstance item, boolean equipped, boolean loaded, boolean changeWeapon) {
-		if (item == null) return;
-		final CUserInventory inv = getInventory();
-		// A committed replay already holds the inventory reservation.
-		final boolean reserve = !l1j.server.server.storage.CacheD.isItemTransferReplaying();
-		if (reserve && !inv.tryBeginEquipmentChange()) return;
-		try {
-			if (inv.GetByServerID(item.getId()) != item || item.isEquipped() == equipped) return;
-			final L1Item template = item.getItem();
-			if (template == null) return;
-			final L1EquipmentSlot slot = this.getEquipSlot();
-			final int itemId = item.getItemId();
-			final int type = template.getType2();
-			final boolean weapon = type == 1;
-			if (equipped) {
-				if (weapon && !slot.hasRoomForWeapon(item)) return;
-				if (type == 2 && slot.getSecondWeapon() != null
-						&& (template.getType() == 7 || template.getType() == 13)) return;
-				if (isInvisibilityGear(itemId) && System.currentTimeMillis() - equipmentTimeVisible < 3000L) return;
-				if (type != 0 && !item.startEquipmentTimer(this)) return;
-				try {
-					if (template.getType() != 4) clearArrowSelection();
-					item.setEquipped(true);
-					inv.SetEquippedCount(itemId, true);
-					slot.equipItem(item);
-				} finally {
-					if (!item.isEquipped()) item.stopEquipmentTimer();
-				}
-				if (!item.isEquipped()) return; // Polymorph can remove the just-equipped item.
-				if (!loaded && weapon && slot.getWeaponCount() == 2) {
-					try { SC_SkillSound.send(this, this.getId(), 12534); }
-					catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-				}
-			} else {
-				beforeUnequip(template, itemId, loaded, weapon);
-				item.setEquipped(false);
-				item.stopEquipmentTimer();
-				inv.SetEquippedCount(itemId, false);
-				slot.unequipItem(item);
-			}
-
-			if (!loaded) {
-				this.setCurrentHp(this.getCurrentHp());
-				this.setCurrentMp(this.getCurrentMp());
-				try { inv.updateItem(item, CUserInventory.COL_EQUIPPED); }
-				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-				if (weapon && !changeWeapon) {
-					final long visual = SC_CharVisualUpdate.pack(this);
-					try { SC_CharVisualUpdate.sendPacked(this, visual); }
-					catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-					try { SC_CharVisualUpdate.broadcastFastPacked(this, visual); }
-					catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-				}
-			}
-			if (weapon) {
-				try { SC_PacketBox.send(this, SC_PacketBox.공격가능거리, this, item); }
-				catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-			}
-			try { inv.updateEquipmentWindow(item); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		} finally {
-			if (reserve) inv.endEquipmentChange();
-		}
-	}
-
-	private static boolean isInvisibilityGear(int itemId) {
-		return itemId == 20077 || itemId == 20062 || itemId == 120077;
-	}
-
-	private void clearArrowSelection() {
-		final CUserInventory inv = getInventory();
-		final int arrowId = inv.getArrowItemId();
-		if (arrowId == 0) return;
-		final L1ItemInstance arrow = inv.GetFirstItemByClassID(arrowId);
-		inv.setArrow(0);
-		if (arrow != null) {
-			try { SC_ItemName.send(this, arrow); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-	}
-
-	private void beforeUnequip(L1Item template, int itemId, boolean loaded, boolean weapon) {
-		if (!loaded && isInvisibilityGear(itemId)) {
-			if (this.isInvisble()) {
-				this.delInvis();
-				this.beginInvisTimer();
-			}
-			equipmentTimeVisible = System.currentTimeMillis();
-		}
-		if (weapon && template.getType1() == 4 && this.hasSkillEffect(L1SkillId.INFERNO)) {
-			this.removeSkillEffect(L1SkillId.INFERNO);
-		}
-		if (template.isTwohandedWeapon() && this.hasSkillEffect(L1SkillId.COUNTER_BARRIER)) {
-			this.removeSkillEffect(L1SkillId.COUNTER_BARRIER);
-			try { SC_PacketBox.send(this, SC_PacketBox.UNLIMITED_ICON1, 71, false); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (weapon) {
-			this.remove_elf_second_brave();
-			if (template.getType() == 4) clearArrowSelection();
-		}
-	}
-
-	private void equipmentNoticeFailed(RuntimeException notice) {
-		_log.log(Level.WARNING, "Equipment notification failed: " + getId(), notice);
-	}
-
-	public void TakeOffItems(int polyid) {
-		takeoffWeapon(polyid);
-		takeoffArmor(polyid);
-	}
-
-	private void takeoffWeapon(int polyid) {
-		final L1ItemInstance primary = this.getWeapon();
-		final L1ItemInstance secondary = this.getSecondWeapon();
-		if (primary != null && !L1PolyMorph.isEquipableWeapon(polyid, primary.getItem().getType())) {
-			UnequipItem(primary);
-		}
-		if (secondary != null && !L1PolyMorph.isEquipableWeapon(polyid, secondary.getItem().getType())) {
-			UnequipItem(secondary);
-		}
-	}
-
-	private void takeoffArmor(int polyid) {
-		final L1EquipmentSlot equipment = this.getEquipSlot();
-		for (int type = 0; type <= 12; type++) {
-			if (L1PolyMorph.isEquipableArmor(polyid, type)) continue;
-			L1ItemInstance armor;
-			while ((armor = equipment.getAppliedArmor(type)) != null) {
-				UnequipItem(armor);
-				// Reservation refusal must not spin or repeatedly retire effects.
-				if (armor.isEquipped()) break;
-			}
-		}
-	}
+    public void TakeOffItems(int polyId) {
+        CUserEquipment.TakeOffItems(this, polyId);
+    }
 
 
 	public static L1PcInstance load(String charName) {
@@ -4712,8 +4553,8 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
             else due.add(lv);
         }
         if (!hasEligible || (due.isEmpty() && legacy.isEmpty() && !migrate)) return;
-        try (l1j.server.server.model.L1InventoryTransaction tx =
-                l1j.server.server.model.L1InventoryTransaction.begin(this,
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(this,
                         CacheD.accountOrderKey("level-gifts:" + characterId))) {
             for (int lv : due) {
                 CharactersGiftItemTable.Item[] gifts = CharactersGiftItemTable.getInstance().getItems(lv);

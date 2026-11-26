@@ -146,7 +146,7 @@ public final class CS_CharSelect {
         if (!pc.isItemTransferSession(client, pc.getSessionStamp()) || !pc.isPrivateShop()
                 || pc.getMapId() != 800 || pc.isDead() || pc.isGhost() || pc.get_teleport()
                 || pc.is무인상점() || pc.GetTrade() != null
-                || l1j.server.server.model.CTrade.HasPendingTradeBlocker(pc)
+                || l1j.server.server.model.inventory.CTrade.HasPendingTradeBlocker(pc)
                 || l1j.server.server.storage.CacheD.getInstance().hasPendingOwnerApply(pc.getId())) return;
         for (L1PcInstance target : L1World.getInstance().getAllPlayers3()) {
             if (target.getId() != pc.getId()

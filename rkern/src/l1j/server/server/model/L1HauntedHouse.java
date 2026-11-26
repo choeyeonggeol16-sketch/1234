@@ -19,6 +19,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Npc;
+import l1j.server.server.model.inventory.CInventory;
 
 public class L1HauntedHouse implements Runnable {
     /** Optional game notices must not terminate the timed game-state transition. */

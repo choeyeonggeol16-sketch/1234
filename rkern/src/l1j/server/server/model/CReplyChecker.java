@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** NC-style two-sided reply ownership for pledge, party, chat party and duel requests.
+/** Two-sided reply ownership for pledge, party, chat party and duel requests.
  * The existing CIO wheel drives expiration; the registry never locks a PC or
  * socket and never invokes game logic while holding its monitor.
  */

@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 
 import l1j.server.Server;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.world.announcement.Announcements;
 
 /**
  * 

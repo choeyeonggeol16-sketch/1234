@@ -7,6 +7,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 
 /** Class-specific reward boxes: original box debit and reward grant share a receipt. */
 public final class L1NeigeItemBox {

@@ -44,7 +44,7 @@ import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
@@ -81,7 +81,7 @@ public final class NpcWandAndSpawnItems {
                     .log(java.util.logging.Level.WARNING, "NPC wand prior state flush failed", saveFailure);
             return;
         }
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc, CacheD.accountOrderKey("item-use:", pc.getId()))) {
             if (pc.getInventory().GetByServerID(item.getId()) != item) return;
             final int chargeCount = item.getChargeCount();

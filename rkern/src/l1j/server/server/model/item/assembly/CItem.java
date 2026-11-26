@@ -9,8 +9,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1Armor;
 import l1j.server.server.utils.ItemPresentOutStream;
 
-/** reference server CItem assembly responsibility adapted to L1 option wire format.
- * The existing item-ID option order is preserved. */
 public final class CItem {
     // Origin of the L1 legacy time field; evaluated once instead of per item.
     @SuppressWarnings("deprecation")
@@ -70,23 +68,7 @@ public final class CItem {
 				}
 			}
 		
-			// TODO 라이브형식 자동삭제 표기
-			/*
-			 * if (itemId == 40312 && getEndTime() != null) { os.writeC(112);
-			 * os.writeD((getEndTime().getTime() / 1000)); }
-			 */
-			if (item.getEndTime() != null) {
-				if (item.isIdentified()) {
-					long temp = LEGACY_TIME_ORIGIN_MS;
-					os.writeC(61);
-					os.writeD((item.getEndTime().getTime() - temp) / 1000 * 6);
-				}
-
-				// long temp = Date.parse("January 1, 2017 19:00:00");
-
-				// os.writeC(112);
-				// os.writeD((getEndTime().getTime() / 1000));
-			}
+            appendExpiry(item, os);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -138,18 +120,7 @@ public final class CItem {
 				
 			}
 			}
-			if (item.getEndTime() != null) {
-				if (item.isIdentified()) {
-					long temp = LEGACY_TIME_ORIGIN_MS;
-					os.writeC(61);
-					os.writeD((item.getEndTime().getTime() - temp) / 1000 * 6);
-				}
-
-				// long temp = Date.parse("January 1, 2017 19:00:00");
-
-				// os.writeC(112);
-				// os.writeD((getEndTime().getTime() / 1000));
-			}
+            appendExpiry(item, os);
 
 		} catch (
 
@@ -164,6 +135,14 @@ public final class CItem {
 		}
 		return os.getBytes();
 	
+    }
+
+    private static void appendExpiry(L1ItemInstance item, ItemPresentOutStream output) {
+        final var endTime = item.getEndTime();
+        if (endTime != null && item.isIdentified()) {
+            output.writeC(61);
+            output.writeD((endTime.getTime() - LEGACY_TIME_ORIGIN_MS) / 1_000L * 6L);
+        }
     }
 
     static byte[] AssembleItemForPc(L1ItemInstance item, L1PcInstance pc) {

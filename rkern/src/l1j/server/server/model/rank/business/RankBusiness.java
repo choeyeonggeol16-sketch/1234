@@ -2,7 +2,7 @@ package l1j.server.server.model.rank.business;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;

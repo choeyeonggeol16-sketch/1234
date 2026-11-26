@@ -5,7 +5,7 @@ import java.util.List;
 
 import l1j.server.Config;
 import l1j.server.server.model.L1TaxCalculator;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1ShopItem;
 

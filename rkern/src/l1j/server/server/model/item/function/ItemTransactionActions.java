@@ -4,8 +4,8 @@ import java.util.logging.Level;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1InventoryTransaction;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;

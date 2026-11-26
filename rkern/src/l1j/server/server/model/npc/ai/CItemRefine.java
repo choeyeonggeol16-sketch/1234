@@ -1,10 +1,9 @@
 package l1j.server.server.model.npc.ai;
 
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 
-/** L1 NPC self-inventory refinement; NC-style responsibility split. */
 public final class CItemRefine {
     private CItemRefine() {}
 

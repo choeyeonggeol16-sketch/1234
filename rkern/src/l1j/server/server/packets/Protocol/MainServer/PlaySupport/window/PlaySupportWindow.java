@@ -124,7 +124,7 @@ public final class PlaySupportWindow {
         try {
             if (port < 1 || port > 65535 || port == Config.GAME_SERVER_PORT)
                 throw new IOException("PSS companion requires a separate valid port");
-            created = new PssWindowTransport(new InetSocketAddress(port), 4096);
+            created = PssWindowTransport.bindToGameServer(new InetSocketAddress(port), 4096);
             if (!shutdownHookInstalled) {
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     stopIndependent();

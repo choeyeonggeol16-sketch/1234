@@ -4,11 +4,11 @@ import java.util.List;
 
 import l1j.server.Config;
 import l1j.server.server.ThreadPool; //CrockController
-import l1j.server.server.model.EquipmentEnchantOptions;
+import l1j.server.server.model.inventory.EquipmentEnchantOptions;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1EquipmentSlot;
-import l1j.server.server.model.L1EquipmentSlot.ClassArmorBonus;
+import l1j.server.server.model.inventory.L1EquipmentSlot;
+import l1j.server.server.model.inventory.L1EquipmentSlot.ClassArmorBonus;
 import l1j.server.server.model.item.ItemEffectRegistry;
 import l1j.server.server.model.item.ItemStat;
 import l1j.server.server.model.item.doll.DollOption;

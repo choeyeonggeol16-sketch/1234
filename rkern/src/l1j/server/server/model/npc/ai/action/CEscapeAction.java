@@ -3,12 +3,6 @@ package l1j.server.server.model.npc.ai.action;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
 
-/**
- * CIO lifecycle bridge for native CNPC::dFlee / dFleeEx.
- *
- * The native distance and movement rules live in dFlee; this adapter keeps
- * the existing L1 ACTION_ESCAPE and target/action hand-off semantics.
- */
 public final class CEscapeAction {
 
     private CEscapeAction() {
@@ -81,9 +75,6 @@ public final class CEscapeAction {
         switch (result) {
         case CCreatureController.RESULT_DONE:
         case CCreatureController.RESULT_INVALID:
-            // NC removes only the finished FLEE's target key. Never wipe a
-            // newly chosen target B when stale flee A finishes on the CIO
-            // owner. targetRemove() retires A's hate/desire exclusively.
             if (target != null) {
                 creature.targetRemove(target);
             }

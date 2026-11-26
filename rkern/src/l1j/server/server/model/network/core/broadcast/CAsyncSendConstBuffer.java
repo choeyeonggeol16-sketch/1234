@@ -40,10 +40,6 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         this.largeFrameLength = largeFrameLength;
     }
 
-    /**
-     * reference server pool ownership path. Source is constructed from a freshly formatted
-     * CIOBufferEx slab, and this object takes exactly the initial producer ref.
-     */
     protected CAsyncSendConstBuffer(Source pooled, int senderId, int pendingLimit) {
         if (pooled == null || pooled.wire.remaining() < 3
                 || pooled.wire.remaining() > 16384 || pendingLimit <= 0)

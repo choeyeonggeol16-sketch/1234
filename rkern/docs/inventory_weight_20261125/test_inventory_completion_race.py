@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 root = Path(__file__).resolve().parents[2]
-source = (root / "src/l1j/server/server/model/L1InventoryTransaction.java").read_text(encoding="utf-8")
+source = (root / "src/l1j/server/server/model/inventory/L1InventoryTransaction.java").read_text(encoding="utf-8")
 a = source.index("private void post(Runnable action,Consumer<Throwable> done)")
 b = source.index("@Override public void accept(Throwable failure)", a)
 methods = source[a:b]

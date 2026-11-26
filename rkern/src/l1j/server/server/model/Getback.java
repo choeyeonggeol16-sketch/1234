@@ -13,6 +13,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.GetBackRestartTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1GetBackRestart;
+import l1j.server.server.model.world.residence.L1HouseLocation;
 
 public class Getback {
 

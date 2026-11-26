@@ -14,7 +14,6 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 public final class CSharedBroadcast {
     private CSharedBroadcast() {}
     // L1-specific formatting selectors for the existing Native Assemble bridge.
-    // These are RKern tags, NOT reference server opcode/ABI identifiers.
     public static final int FORMAT_HEADING = 3;
     public static final int FORMAT_SOUND = 4;
     public static final int FORMAT_ONLY_EFFECT = 5;

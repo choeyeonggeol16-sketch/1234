@@ -5,12 +5,6 @@ import java.util.ArrayDeque;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.collection.CollectionObject;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-/** 
- * CollectionCharInfo
- * MJSoft Character TradeSystem - Load Manager
- * CTSystem managed class.
- * made by mjsoft, 2016.
- **/
 public class CollectionLoadManager {
 	public static final int CTSYSTEM_STORE_ID = 3000468;	
 	public static final int CTSYSTEM_LOAD_ID = 3000469;

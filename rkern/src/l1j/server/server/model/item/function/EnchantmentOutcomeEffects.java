@@ -1,7 +1,7 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.Config;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;

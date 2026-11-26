@@ -5,7 +5,7 @@ import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1EffectInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1EffectSpawn;
+import l1j.server.server.model.world.effect.L1EffectSpawn;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.network.core.sc.packet.SC_InventoryIcon;

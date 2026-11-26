@@ -1,10 +1,4 @@
 package l1j.server.server.model.character.combat.statistics;
-/**********************************
- * 
- * server Kill Death Assist Object Loader.
- * made by mjsoft, 2017.
- *  
- **********************************/
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

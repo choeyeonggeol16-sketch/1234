@@ -18,7 +18,7 @@ import l1j.server.server.model.world.instance.dungeon.fanstasyisland.FantasyIsla
 
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.datatables.UBTable;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1Location;

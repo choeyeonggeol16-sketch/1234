@@ -1,11 +1,6 @@
 package l1j.server.server.model.item.collection;
 
 import l1j.server.server.model.network.core.sc.packet.SC_CTPacket;
-/** 
- * CollectionCharInfo
- * MJSoft Character TradeSystem - Object
- * made by mjsoft, 2016.
- **/
 public class CollectionObject {
 	public int			marbleId;
 	public int			charId;

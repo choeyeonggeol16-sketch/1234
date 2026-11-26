@@ -53,7 +53,6 @@ public final class CDesirePQ {
     public static final byte PS_MOVE_FREEWAY      = 17;
     public static final byte PS_MOVE_FORMATION    = 18;
 
-    // NC Desire.h: CDesire::IsOneTimeAction / IsInterruptable.
     public static final int DF_ONE_TIME_METHOD = 0x20000000;
     public static final int DF_NOT_INTERRUPTABLE = 0x40000000;
 
@@ -61,8 +60,6 @@ public final class CDesirePQ {
     public static final byte BLOCKED_ATTACK_LANE = 1;
     public static final byte BLOCKED_ATTACK_RING = 2;
 
-    /** reference server DesirePqSize is a warning threshold, not a hard eviction limit. */
-    /** reference server value saturation at 0x005A5D70 in CDesirePQ::AddValue. */
     private static final float MAX_DESIRE_VALUE = 3.3e30f;
     private static final float IMMEDIATE_VALUE = -1.0f;
     private static final int IMMEDIATE_INDEX = -2;
@@ -88,11 +85,8 @@ public final class CDesirePQ {
     private byte[] states = new byte[INITIAL_SIZE];
     private int[] targetIds = new int[INITIAL_SIZE];
     private float[] values = new float[INITIAL_SIZE];
-    // NC CDesire::boosted belongs to each heap entry, not to the current
-    // action. Allocate only after an NPC actually executes a boosted desire.
     private boolean[] boosted;
 
-    // NC MakeAttack: move type, force, per-desire boost (+0x7c), level difference.
     // Flat optional payload: ordinary warrior ATTACK desires retain the
     // default 300 boost without allocating this array. Four ints per slot.
     private int[] attackPayload;
@@ -111,7 +105,6 @@ public final class CDesirePQ {
 
     private int size;
 
-    // reference server CDesirePQ keeps its ordinary CDesire[] as a max-heap ordered by
     // CDesire::value (+0xA0).  Heap rebuilding is deferred until the next
     // selection so that several changes in the same AI tick cost one pass.
     private boolean heapDirty;
@@ -479,8 +472,6 @@ public final class CDesirePQ {
 
         final CDesirePQ pq = ensure(npc, nowMs);
         final int id = target.getId();
-        // reference server AddValue merges keys by identity and copies only its flag
-        // (+0x80) and cumulative value (+0xA0) on duplicate registration.
         pq.decay(nowMs);
         final int previous = pq.findKey(PS_ATTACK, id);
         pq.addValue(PS_ATTACK, id, desireValue, nowMs);
@@ -506,13 +497,6 @@ public final class CDesirePQ {
         return true;
     }
 
-    /**
-     * CNPC::AddAttackDesireEx (0x00485A04), confirmed master branch.
-     * A creature with a resolved GetMaster() receives a separate owner
-     * desire of +5 for nonnegative input or -5 for negative input.
-     * The original function separately tests other NPC conditions; only
-     * its verified master and MakeAttack paths are adapted here.
-     */
     public static boolean addAttackDesireEx(
             final L1MonsterInstance npc,
             final L1Character target,
@@ -533,7 +517,6 @@ public final class CDesirePQ {
                 master = ((L1NpcInstance) target).getMaster();
             }
             if (master != null && validActorTarget(npc, master)) {
-                // reference server compares the *signed* original input with 0.0f.
                 CDesireFactory.MakeAttack(npc, master,
                         desireValue >= 0.0f ? 5.0f : -5.0f, nowMs);
             }
@@ -609,7 +592,6 @@ public final class CDesirePQ {
                 ? pq.attackPayload[(i << 2) + 3] : 0;
     }
 
-    /** reference server CDesireFactory::MakeUseSkill -> CDesirePQ::AddValue bridge. */
     public static boolean addUseSkillDesire(
             final L1MonsterInstance npc,
             final int targetId,
@@ -679,17 +661,6 @@ public final class CDesirePQ {
         return true;
     }
 
-    /**
-     * NC CNPC::UseSkillFinished(targetId, skillNameId, well).
-     *
-     * L1's selected skill executor currently reports acceptance immediately,
-     * so normal accepted casts still consume their exact key. This entry
-     * also preserves the native rule for a future delayed failure callback:
-     * one-time methods are removed; reusable methods keep their desire and
-     * lose only their own previously applied boost.
-     *
-     * Call only from the owning NPC Action executor; no new event thread.
-     */
     public static boolean UseSkillFinished(
             final L1MonsterInstance npc,
             final int targetId,
@@ -703,8 +674,6 @@ public final class CDesirePQ {
             return removeUseSkillDesire(npc, targetId, skillId);
         }
 
-        // The ordinary heap is where NC _BoostDown searches. An absolute
-        // desire is not a member of that heap.
         final int index = pq.findSkillKey(targetId, skillId);
         if (index < 0) return false;
 
@@ -989,12 +958,6 @@ public final class CDesirePQ {
         return true;
     }
 
-    /**
-     * NC CDesirePQ::GetTopDesire, L1 blocked-target exclusion variant.
-     * Return the highest-valued EXISTING runnable attack desire without
-     * manufacturing hate for a bystander or changing a captured action target.
-     * The AI owner performs the actual target hand-off after blocking old A.
-     */
     public static L1Character GetTopDesire(
             final L1MonsterInstance npc,
             final int excludedTargetId) {
@@ -1039,11 +1002,6 @@ public final class CDesirePQ {
         return GetTopDesire(npc, excludedTargetId) != null;
     }
 
-    /**
-     * NC RemoveAttackDesire removes one captured key. A blocked gate for
-     * target A must NOT cancel an already published melee claim for B.
-     * Keep claim and temporary gate lifetime tied to their own target IDs.
-     */
     private static void retireAttackHandoff(
             final L1MonsterInstance npc,
             final int targetId) {
@@ -1147,8 +1105,6 @@ public final class CDesirePQ {
 
         decay(nowMs);
 
-        // reference server 0x0041EE63..0x0041EE96: -1.0f replaces the separate
-        // immediate desire; it neither enters nor modifies the ordinary heap.
         if (value == IMMEDIATE_VALUE) {
             immediateAttackMoveType = immediateAttackFlag =
                     immediateAttackEffectPointBits = immediateAttackOffset = 0;
@@ -1175,7 +1131,6 @@ public final class CDesirePQ {
             return;
         }
 
-        // The reference server implementation does not replace the lowest-value desire at
         // DesirePqSize (50). It inserts the new key and may issue a warning
         // when the configured threshold is exceeded. Keep every distinct key.
         ensureCapacity(size + 1);
@@ -1242,9 +1197,6 @@ public final class CDesirePQ {
             values[index] = value;
             if (boosted != null) boosted[index] = false;
             skillIds[index] = skillId;
-            // NC CDesirePQ::_AddValue updates only the accumulated value
-            // and force on a duplicate key. Preserve the first skill's
-            // move type, flags, boost, and action payload.
             skillMoveTypes[index] = moveType;
             skillFlags[index] = flags;
             skillBoosts[index] = boost;
@@ -1323,9 +1275,6 @@ public final class CDesirePQ {
             return topState;
         }
 
-        // NC _BoostUp persists on the individual desire. Merely selecting
-        // another target/action never calls _BoostDown; only explicit NC
-        // completion/failure paths do that. Keep the stored heap value.
 
         activeState = -1;
         activeTargetId = 0;
@@ -1361,7 +1310,6 @@ public final class CDesirePQ {
     private int findTopRunnableIndex(
             final L1MonsterInstance npc) {
 
-        // reference server _GetTopDesire: the dedicated immediate desire normally wins.
         // The L1 body-occupancy adapter must still suppress an ATTACK whose
         // target is temporarily blocked, or immediate A would endlessly
         // override the fallback heap without a runnable action.
@@ -1405,12 +1353,6 @@ public final class CDesirePQ {
         return true;
     }
 
-    /**
-     * CDesirePQ::AddValue in reference server calls 0x0041CC0C after adding or modifying
-     * ordinary desires. That routine constructs a max heap using comparator
-     * 0x0041ABC8, which compares the +0xA0 float desire value. Reconstruct
-     * the same ordering with parallel primitive arrays (no CDesire objects).
-     */
     private void makeHeapIfDirty() {
         if (!heapDirty) {
             return;
@@ -1809,7 +1751,6 @@ public final class CDesirePQ {
         if (next < wanted) {
             next = wanted;
         }
-        // Array-backed L1 representation of reference server's growable desire sequence.
         // Retaining >50 entries is essential: DesirePqSize is not a cap.
 
         final byte[] newStates = new byte[next];
@@ -1836,12 +1777,6 @@ public final class CDesirePQ {
         }
     }
 
-    /**
-     * NC AsyncTimerExpired1 -> dPAttack -> CDesirePQ::BoostUp.
-     * Execute on the NPC CIO owner, after validating the captured target.
-     * This changes only the exact ATTACK key; switching targets does not
-     * remove its boost. An immediate desire is not part of the heap.
-     */
     public static void boostExecutedAttack(
             final L1MonsterInstance npc,
             final L1Character capturedTarget) {

@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import l1j.server.Config;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
-import l1j.server.server.model.L1InventoryTransaction;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1ItemDelay;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1EtcItem;

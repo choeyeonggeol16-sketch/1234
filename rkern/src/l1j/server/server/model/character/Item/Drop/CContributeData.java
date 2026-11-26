@@ -3,7 +3,7 @@ package l1j.server.server.model.character.Item.Drop;
 import java.util.ArrayList;
 import java.util.Arrays;
 import l1j.server.Config;
-import l1j.server.server.datatables.BossMonsterSpawnList;
+import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Location;
@@ -48,7 +48,6 @@ public final class CContributeData {
         final L1Location origin = victim.getLocation();
         for (int i = 0; i < n; i++) {
             if (!(actors.get(i) instanceof L1Character actor)) continue;
-            // L1 automatic-loot selection remains distinct from NC ground priority.
             if (hates.get(i) instanceof Integer hate && hate > 0
                     && !(Config.AUTO_LOOT == 0 && (actor instanceof L1SummonInstance || actor instanceof L1CompanionInstance))
                     && actor.getMapId() == victim.getMapId() && actor.getLocation() != null

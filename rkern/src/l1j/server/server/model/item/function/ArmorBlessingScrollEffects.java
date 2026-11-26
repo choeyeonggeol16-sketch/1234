@@ -83,7 +83,7 @@ final class ArmorBlessingScrollEffects {
     final int nextLevel;
     if (roll < Config.방어구축복6단) nextLevel = 6; else if (roll < Config.방어구축복5단) nextLevel = 5; else nextLevel = 4;
     final String targetName = target.getLogName();
-    try (l1j.server.server.model.L1InventoryTransaction tx =
+    try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
             User.CheckAndSetPendingUseETCItem(pc,
                     l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
         if (!tx.debit(scroll, 1)) return;
@@ -133,7 +133,7 @@ final class ArmorBlessingScrollEffects {
     final int nextLevel;
     if (roll < Config.방어구축복1단) nextLevel = 1; else if (roll < Config.방어구축복2단) nextLevel = 2; else if (roll < Config.방어구축복3단) nextLevel = 3; else nextLevel = 0;
     final String targetName = target.getLogName();
-    try (l1j.server.server.model.L1InventoryTransaction tx =
+    try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
             User.CheckAndSetPendingUseETCItem(pc,
                     l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
         if (!tx.debit(scroll, 1)) return;

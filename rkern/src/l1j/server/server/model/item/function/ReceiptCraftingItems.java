@@ -18,7 +18,7 @@ public final class ReceiptCraftingItems {
 
 	public static void UseDurableCraft(L1PcInstance pc, int inputId, int inputCount,
 			int rewardId, Runnable afterCommitted) {
-		try (l1j.server.server.model.L1InventoryTransaction tx =
+		try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
 				User.CheckAndSetPendingUseETCItem(pc,
 						l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
 			if (!tx.debit(inputId, inputCount)) {

@@ -27,7 +27,7 @@ import javolution.util.FastTable;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightCommandExecutor;
-import l1j.server.server.Controller.BossController;
+import l1j.server.server.model.npc.spawn.boss.BossController;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.command.BuilderCmdPairType;
@@ -38,7 +38,7 @@ import l1j.server.server.datatables.AutoLoot;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.HouseTable;
+import l1j.server.server.model.world.residence.HouseTable;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.datatables.ShopTable;
@@ -52,13 +52,13 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1ClanRanking;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.rank.L1ClanRanking;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1NeigeSaveChar;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1World;
-import l1j.server.server.model.Warehouse.Warehouse;
+import l1j.server.server.model.inventory.warehouse.Warehouse;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
@@ -111,7 +111,7 @@ import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 import l1j.server.server.storage.sql.handler.Handler;
 import l1j.server.server.storage.sql.handler.SelectorHandler;
 import l1j.server.server.templates.L1BoardPost;
-import l1j.server.server.templates.L1House;
+import l1j.server.server.model.world.residence.L1House;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.FullStater;
@@ -125,8 +125,6 @@ import l1j.server.server.model.character.skill.L1BuffUtil;
 import l1j.server.server.model.network.core.sc.packet.SC_WhoAmount;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.L1Location;
-import l1j.server.server.Account;
-import l1j.server.server.ThreadPool;
 
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.core.sc.packet.SC_Invis;
@@ -137,7 +135,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 
 import l1j.server.server.model.trap.L1WorldTraps;
 import java.lang.reflect.Constructor;
-import l1j.server.server.IdFactory;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 
@@ -165,9 +162,8 @@ import java.io.File;
 import l1j.server.server.utils.DateUtil;
 import java.util.NoSuchElementException;
 
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.network.core.sc.packet.SC_Lawful;
-import l1j.server.server.GameServer;
 import l1j.server.server.model.npc.shop.NpcShopManager;
 import l1j.server.server.Controller.HomeTownTimeController;
 
@@ -194,7 +190,6 @@ import l1j.server.server.model.world.instance.raid.loader.RaidCompensatorLoader;
 import l1j.server.server.task.automation.ServerMacroLoader;
 import l1j.server.server.task.calendar.MinuteScheduler;
 import l1j.server.server.model.item.pride.PrideLoadManager;
-import l1j.server.server.Announcecycle;
 import l1j.server.server.datatables.AccessoryEnchantInformationTable;
 import l1j.server.server.datatables.AdenShopTable;
 import l1j.server.server.datatables.AlchemyProbability;
@@ -214,7 +209,7 @@ import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.datatables.NoShopAndWare;
 import l1j.server.server.datatables.NpcCashShopSpawnTable;
-import l1j.server.server.datatables.NpcChatTable;
+import l1j.server.server.model.npc.chat.NpcChatTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.ResolventTable;
 import l1j.server.server.datatables.UBTable;
@@ -237,11 +232,11 @@ import l1j.server.server.model.CParty;
 
 import l1j.server.server.model.network.core.sc.packet.SC_LetterList;
 import l1j.server.server.model.rank.loader.RankUserLoader;
-import l1j.server.server.ActionCodes;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import gnu.trove.list.array.TLongArrayList;
+import l1j.server.server.model.world.announcement.CAnnounceTimer;
 
 public final class BuilderCmdHandler {
  
@@ -1791,9 +1786,9 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			      L1House pobyhouse = HouseTable.getInstance().getHouseTable(pobyhouseid);
 			      if (pobyhouseid != 0 && pobyhouse == null) return;
                   final int expectedHouse = TargetClan.getHouseId();
-                  try (l1j.server.server.model.L1InventoryTransaction tx =
-                          l1j.server.server.model.L1InventoryTransaction.begin(gm,
-                              l1j.server.server.model.L1AuctionTransaction.ORDER_KEY)) {
+                  try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
+                          l1j.server.server.model.inventory.L1InventoryTransaction.begin(gm,
+                              l1j.server.server.model.world.residence.L1AuctionTransaction.ORDER_KEY)) {
                       tx.requireTables("clan_data");
                       tx.sql(con -> {
                           try (java.sql.PreparedStatement ps = con.prepareStatement(
@@ -6613,8 +6608,9 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			ActionListenerLinkageLoader.reload();
 			gm.sendPackets("액션 리스너가 리로드 되었습니다.");
 		} else if(arg.equalsIgnoreCase("자동공지")){
-			Announcecycle.getInstance().reloadAnnouncecycle();
-			gm.sendPackets("Announcecycle이 리로드 되었습니다.");
+			gm.sendPackets(CAnnounceTimer.getInstance().reload()
+					? "Announcecycle이 리로드 되었습니다."
+					: "Announcecycle을 리로드하지 못했습니다. 서버 로그를 확인하세요.");
 		} else if(arg.equalsIgnoreCase("제작확률")){
 			CraftProbability.reload();
 			gm.sendPackets("craft_probability 테이블이 리로드 되었습니다.");
@@ -7991,8 +7987,8 @@ for (L1PcInstance pc2 : players) {
 					target.getName() + ": 요청 실패 또는 인벤토리 처리 중입니다.");
 		});
 	}
-	private static l1j.server.server.model.L1InventoryTransaction builderItemTransaction(L1PcInstance target) {
-		return l1j.server.server.model.L1InventoryTransaction.begin(target,
+	private static l1j.server.server.model.inventory.L1InventoryTransaction builderItemTransaction(L1PcInstance target) {
+		return l1j.server.server.model.inventory.L1InventoryTransaction.begin(target,
 				CacheD.accountOrderKey("$builder-item", target.getId()));
 	}
 	private static void builderValidateGrant(L1Item template, int count, int enchant, int attribute, int bless) {
@@ -8001,7 +7997,7 @@ for (L1PcInstance pc2 : players) {
 				|| enchant < -128 || enchant > 127 || attribute < 0 || attribute > 20
 				|| (bless != 0 && bless != 129)) throw new IllegalArgumentException("Invalid GM item grant");
 	}
-	private static void builderStageGrant(l1j.server.server.model.L1InventoryTransaction tx,
+	private static void builderStageGrant(l1j.server.server.model.inventory.L1InventoryTransaction tx,
 			L1Item template, int count, int enchant, int attribute, int bless) {
 		builderValidateGrant(template, count, enchant, attribute, bless);
 		final L1ItemInstance image = new L1ItemInstance(template, count);

@@ -4,7 +4,7 @@ import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1World;
 
 import java.util.ArrayList;
@@ -33,15 +33,6 @@ import l1j.server.server.templates.L1MobSkill.SkillEntry;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.templates.L1Skills;
 
-/**
- * 몬스터 스킬 stateless executor.
- *
- * NC식 소유 구조:
- * - MobSkillTable/L1MobSkill : 서버 공용 스킬/조건 정의
- * - L1NpcInstance           : 개체별 최소 runtime state(count/sleep)
- * - CSkillAction2           : 상태 없는 실행 함수
- *
- */
 public final class CSkillAction2 {
 
     /**
@@ -121,7 +112,6 @@ public final class CSkillAction2 {
         return skillUseImpl(attacker, tg, 0);
     }
 
-    /** reference server PS_USE_SKILL executes the selected skill, not any available entry. */
     public static boolean skillUseSelected(
             final L1NpcInstance attacker,
             final L1Character tg,

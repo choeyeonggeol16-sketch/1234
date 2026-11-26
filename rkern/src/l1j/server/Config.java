@@ -980,7 +980,6 @@ public final class Config {
 	public static String 오탑9;
 	public static String 오탑10;
 	public static String 오탑11;
-	// TODO mjbot.properties 컨피그
 	public static int RedKnight_dieCount;
 	public static boolean 보스아이템지급여부;
 	public static boolean 보스아이템지급여부1;

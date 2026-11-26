@@ -56,7 +56,7 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
         public static Member from(L1PcInstance pc, int markNo) {
             return new Member(
                     pc.getName(),
-                    0,                          // accountid: MJ도 0 고정
+                    0,
                     pc.getId(),
                     pc.getClassNumber(),
                     pc.get_sex(),
@@ -66,7 +66,7 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
                     pc.getLongLocation(),
                     markNo,
                     System.currentTimeMillis(),
-                    0);                         // server_no: MJ도 0 고정
+                    0);
         }
 
         /** LIST(필드2) / CHANGE(필드4) 공용 직렬화 */

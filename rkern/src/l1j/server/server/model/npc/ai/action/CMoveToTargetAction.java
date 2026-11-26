@@ -17,21 +17,6 @@ import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 
-/**
- * Native-first target chase.
- *
- * DesirePQ decides WHICH target/action wins.
- * SetMoving owns HOW movement is performed.
- *
- * L1 movement-failure safety policy:
- * - SetMoving.PATH_FAILED increments an L1 navigation-failure counter.
- * - non-failed movement resets this counter; body collision does not count.
- * - after 30 failures the failed target is retired and desires reselected.
- *
- * reference server CNPC::dPAttack has separate 30/100 CheckTerritory-failure counters;
- * these are NOT the same as SetMoving.PATH_FAILED. Keep the L1 safety policy
- * separate from reference server territory recovery and the existing wander rules.
- */
 public final class CMoveToTargetAction {
 
     private static final int PATH_FAIL_LIMIT = 30;
@@ -95,11 +80,6 @@ public final class CMoveToTargetAction {
             return;
         }
 
-        /*
-         * Preserve the existing L1 consecutive navigation-failure count
-         * across action re-entry. SetMoving.clear() also resets this field;
-         * the CheckTerritory counters in reference server dPAttack are separate state.
-         */
         final int pathFindFailCount =
                 creature._pathFindFailCount;
 
@@ -166,10 +146,6 @@ public final class CMoveToTargetAction {
                                     target.getLocation());
 
             if (targetDistance >= TARGET_CLEAR_DISTANCE) {
-                // NC dPAttack returns failure beyond its leash; the NPC
-                // timer then removes that exact ATTACK desire. Returning
-                // generic INVALID here kept a still-living remote target
-                // in the desire PQ and caused endless THINK -> CHASE retries.
                 // The onEnd guard protects a newer target's ownership.
                 return RESULT_TARGET_TOO_FAR;
             }
@@ -179,8 +155,6 @@ public final class CMoveToTargetAction {
             return CCreatureController.RESULT_INVALID;
         }
 
-        // L1 chase/attack is a split Action. NC dPAttack covers both
-        // attack initiation and movement-to-attack in one dispatch.
         // Boost the captured ATTACK key once on this verified chase tick.
         if (creature instanceof L1MonsterInstance) {
             CDesirePQ.boostExecutedAttack((L1MonsterInstance) creature, target);
@@ -379,17 +353,6 @@ public final class CMoveToTargetAction {
                     return CCreatureController.RESULT_RUNNING;
                 }
 
-                /*
-                 * NC keeps target arbitration in CDesirePQ. The L1 2D choke
-                 * adapter admits a NEW candidate only when an actual
-                 * occupancy body blocks this step and no existing ATTACK
-                 * desire can take over. Never scan arbitrary nearby players
-                 * or create hate from an unrelated path-finding failure.
-                 *
-                 * In particular, a pet/summon/companion physically occupying
-                 * a one-tile doorway can become the next attack target.
-                 * The same event is committed on the current CIO owner.
-                 */
                 if (NpcEventFactory.addBlockedBodyAttackDesire(
                         monster, target, blockedX, blockedY,
                         System.currentTimeMillis()) != null) {
@@ -651,8 +614,6 @@ public final class CMoveToTargetAction {
         }
         if (creature instanceof L1MonsterInstance) {
             final L1MonsterInstance monster = (L1MonsterInstance) creature;
-            // ACTION_ATTACK may remain eligible as an NC attack leader;
-            // retire this chase leader only on an actual target departure.
             AbandonObsoleteAttackLeader(monster, creature.getTarget());
             clearReservedAttackSlot(monster);
         }
@@ -698,11 +659,6 @@ public final class CMoveToTargetAction {
         creature._pathFindFailCount = 0;
     }
 
-    /**
-     * NC CCreature::GetPassingPosOnSight lives on L1Character. The L1 action
-     * tries an exact occupied-body melee route first, then stages the target's
-     * recent or attack-leader passing point for the NEXT movement tick.
-     */
     private static byte tryPassBlockedChase(
             final L1MonsterInstance monster,
             final L1Character target,
@@ -948,11 +904,6 @@ public final class CMoveToTargetAction {
         monster._desireResumeAttackBlockedRetries = 0;
     }
 
-    /**
-     * NC CCreature::AbandonAttackLeaderOf target-change handoff.
-     * The old target may be gone: compare-and-set only this NPC's ID so a
-     * successor leader in that direction is never cleared accidentally.
-     */
     private static void AbandonObsoleteAttackLeader(
             final L1MonsterInstance monster, final L1Character currentTarget) {
         final int oldId = monster._ncAttackLeaderTargetId;
@@ -967,11 +918,6 @@ public final class CMoveToTargetAction {
         monster._ncAttackLeaderTargetId = 0;
     }
 
-    /**
-     * NC CMoveToTargetAction::SetMoving leader election. Called only after an
-     * actual L1 tile movement commit; not on a probe, timer wake, or blocked
-     * retry. Directional CAS preserves leadership across CIO owners.
-     */
     private static void UpdateAttackLeaderRelated(
             final L1MonsterInstance monster, final L1Character target) {
         if (target == null || monster.isDead() || monster.getCurrentHp() <= 0
@@ -1200,9 +1146,6 @@ public final class CMoveToTargetAction {
         return true;
     }
 
-    /** NC OnTeleport role: retire the pre-jump movement, but preserve the
-     * current attack desire and L1 cadence. The next existing tick rebases.
-     */
     private static void OnTeleport(L1NpcInstance npc) {
         clearBlocked(npc);
         SetMoving.clearActionMoveState(npc);

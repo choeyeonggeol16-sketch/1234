@@ -60,8 +60,6 @@ public final class CAttackAction {
             return CCreatureController.RESULT_INVALID;
         }
 
-        // reference server dPAttack rejects an attacker with no health. The first CIO
-        // action tick skips AI preflight, so preserve its hidden-state gate.
         if (creature.isDead()
                 || creature.getCurrentHp() <= 0
                 || creature.getHiddenStatus()
@@ -77,7 +75,6 @@ public final class CAttackAction {
             return CCreatureController.RESULT_INVALID;
         }
 
-        // NC dPAttack finishes its desire execution by boosting that
         // ATTACK key once. No BoostDown occurs merely on retarget.
         if (creature instanceof L1MonsterInstance) {
             CDesirePQ.boostExecutedAttack((L1MonsterInstance) creature, target);

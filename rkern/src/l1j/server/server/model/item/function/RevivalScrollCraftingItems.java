@@ -20,7 +20,7 @@ public final class RevivalScrollCraftingItems {
 
 	public static void UseDurableRevive(L1PcInstance pc, int inputId, int rewardId,
 			String missingMessage, String successMessage) {
-		try (l1j.server.server.model.L1InventoryTransaction tx =
+		try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
 				User.CheckAndSetPendingUseETCItem(pc,
 						l1j.server.server.storage.CacheD.accountOrderKey("item-use:", pc.getId()))) {
 			if (!tx.debit(inputId, 8)) {

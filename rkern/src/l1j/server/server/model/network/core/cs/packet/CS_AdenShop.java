@@ -3,8 +3,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_AdenShop;
 
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Warehouse.SupplementaryService;
-import l1j.server.server.model.Warehouse.WarehouseManager;
+import l1j.server.server.model.inventory.warehouse.SupplementaryService;
+import l1j.server.server.model.inventory.warehouse.WarehouseManager;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
 

@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,6 +15,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.ThreadPool;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatMessageNoti;
@@ -51,7 +51,7 @@ public class ServerMacroLoader implements Runnable{
 	
     private volatile boolean _isrun;
     private volatile ArrayList<ServerMacroObject> _workList;
-    private volatile ScheduledFuture<?> heartbeat;
+    private volatile CServerTimer heartbeat;
     private final AtomicBoolean tickPending = new AtomicBoolean();
 	private ServerMacroLoader(){
 		_isrun	= false;
@@ -92,7 +92,7 @@ public class ServerMacroLoader implements Runnable{
 
 			_isrun = true;
 			Collections.sort(_workList);
-            heartbeat = ThreadPool.getInstance().scheduleWithFixedDelay(
+            heartbeat = CServerTimer.fixedDelaySignal(
                     this::signalTick, 0L, 1000L);
             if (heartbeat == null) {
                 _isrun = false;
@@ -107,9 +107,9 @@ public class ServerMacroLoader implements Runnable{
 	
     public void clear() {
         _isrun = false;
-        ScheduledFuture<?> previous = heartbeat;
+        CServerTimer previous = heartbeat;
         heartbeat = null;
-        if (previous != null) previous.cancel(false);
+        if (previous != null) previous.cancel();
         // The running owner may still hold the old list; do not mutate it
         // concurrently. Retired lists become collectible when run() exits.
         _workList = null;

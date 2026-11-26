@@ -1,6 +1,6 @@
 package l1j.server.server.model.item.function;
 
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.cs.packet.CDB;
@@ -46,7 +46,7 @@ final class IdentificationAndScrollItems {
                 pc.getInventory().saveItem(scroll, CUserInventory.COL_SAVE_ALL);
             if (target.getRecordingColumns() != 0)
                 pc.getInventory().saveItem(target, CUserInventory.COL_SAVE_ALL);
-            try (l1j.server.server.model.L1InventoryTransaction tx =
+            try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                     User.CheckAndSetPendingUseETCItem(pc, CacheD.accountOrderKey("item-use:", pc.getId()))) {
                 if (!tx.debit(scroll, 1)) return ItemActionResult.COMPLETE;
                 if (!target.isIdentified()) tx.identify(target);

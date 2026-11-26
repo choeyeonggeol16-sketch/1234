@@ -3,7 +3,7 @@ package l1j.server.server.model.network.core.cs.packet;
 import java.util.Random;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.datatables.HouseTable;
+import l1j.server.server.model.world.residence.HouseTable;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -16,7 +16,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.shared.L1Type;
-import l1j.server.server.templates.L1House;
+import l1j.server.server.model.world.residence.L1House;
 
 /**
  * C_OPEN / 기존 C_Door의 네트워크 이관본.

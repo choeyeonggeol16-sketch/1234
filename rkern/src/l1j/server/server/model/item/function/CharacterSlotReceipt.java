@@ -39,7 +39,7 @@ final class CharacterSlotReceipt {
         if (before < 0) return;
         final int after = before + 1;
         final String accountName = client.getAccount().getName();
-        try (l1j.server.server.model.L1InventoryTransaction tx =
+        try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
                         l1j.server.server.storage.CacheD.accountOrderKey(accountName))) {
             if (!tx.debit(input, 1)) return;

@@ -11,7 +11,7 @@ SRC = ROOT / "src/l1j/server/server"
 M = "l1j.server.server.model"
 P = M + ".network.core.cs.packet"
 U = SRC / "model/network/core/cs/packet/User.java"
-T = SRC / "model/L1InventoryTransaction.java"
+T = SRC / "model/inventory/L1InventoryTransaction.java"
 
 def extract(text, marker):
     start = text.index(marker)

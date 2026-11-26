@@ -3,7 +3,7 @@ package l1j.server.server.model.character.action;
 import l1j.server.server.model.Dungeon;
 import l1j.server.server.model.DungeonRandom;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1NeigeShip;
+import l1j.server.server.model.world.transport.L1NeigeShip;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.ai.core.WorldCollisionHash;

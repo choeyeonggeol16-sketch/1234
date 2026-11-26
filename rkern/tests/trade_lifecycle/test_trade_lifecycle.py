@@ -5,8 +5,9 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src/l1j/server/server/model"
+SRC = ROOT / "src/l1j/server/server/model/inventory"
 M = "l1j.server.server.model"
+I = M + ".inventory"
 S = {}
 def stub(pkg, name, body, imports=""):
     S[pkg.replace(".", "/") + "/" + name + ".java"] = f"package {pkg};\n{imports}\n{body}\n"
@@ -16,8 +17,8 @@ public class Int2ObjectOpenHashMap<V> extends java.util.HashMap<Integer,V> {
     public Int2ObjectOpenHashMap(int n) { super(n); }
 }
 """)
-stub(M, "CInventory", "public class CInventory { public static final int MAX_AMOUNT=2000000000, OK=0; }")
-stub(M, "CUserInventory", """
+stub(I, "CInventory", "public class CInventory { public static final int MAX_AMOUNT=2000000000, OK=0; }")
+stub(I, "CUserInventory", """
 public class CUserInventory extends CInventory {
     public static final int MAX_SIZE=180;
     public final java.util.HashMap<Integer,L1ItemInstance> items=new java.util.HashMap<>();
@@ -114,13 +115,13 @@ public class L1PcInstance {
     public Light getLight(){return new Light();}
     public static class Light { public void turnOnOffLight(){} }
 }
-""", f"import {M}.*; import {M}.network.core.connection.CUserSocket;")
+""", f"import {I}.*; import {M}.network.core.connection.CUserSocket;")
 stub(M+".Instance", "L1DollInstance", "public class L1DollInstance { public int getItemObjId(){return 0;} }")
 stub(M+".Instance", "L1CompanionInstance", "public class L1CompanionInstance { public int control; public int get_control_object_id(){return control;} }")
 stub("l1j.server.server.datatables","NoTradable","public class NoTradable { public static NoTradable getInstance(){return new NoTradable();} public boolean isNoTradable(int id){return false;} }")
 stub(M+".character.companion.instance","CompanionInstanceCache","public class CompanionInstanceCache { public static boolean is_companion_oblivion(int id){return true;} }")
 stub(M+".item","L1ItemId","public class L1ItemId { public static final int HIGH_CHARACTER_TRADE=999,LOW_CHARACTER_TRADE=998; }")
-stub(M+".Warehouse","Warehouse","public class Warehouse { public static L1ItemInstance transferCopy(L1ItemInstance v,int id,int n,int charge){return v.copy(n);} }",f"import {M}.Instance.L1ItemInstance;")
+stub(I+".warehouse","Warehouse","public class Warehouse { public static L1ItemInstance transferCopy(L1ItemInstance v,int id,int n,int charge){return v.copy(n);} }",f"import {M}.Instance.L1ItemInstance;")
 stub("l1j.server.server.monitor","LoggerInstance","public class LoggerInstance { public static LoggerInstance getInstance(){return new LoggerInstance();} public void addTrade(boolean b,L1PcInstance a,L1PcInstance z,L1ItemInstance v,int n){} public void 수표(boolean b,L1PcInstance a,L1PcInstance z,L1ItemInstance v,int n){} }",f"import {M}.Instance.*;")
 P=M+".network.core.sc.packet"
 imports=f"import {M}.Instance.*; import {M}.network.core.connection.CUserSocket;"
@@ -143,7 +144,7 @@ public class CIOThreadCallback {
     public synchronized WheelTask last(){return timers.get(timers.size()-1);}
 }
 """)
-stub(M,"L1InventoryTransaction","""
+stub(I,"L1InventoryTransaction","""
 public class L1InventoryTransaction implements AutoCloseable {
     public static volatile L1InventoryTransaction pending;
     public static int submitted;
@@ -190,7 +191,7 @@ public class L1InventoryTransaction implements AutoCloseable {
     }
 }
 """, f"import {M}.Instance.*;")
-stub(M, "TradeLifecycleTest", """
+stub(I, "TradeLifecycleTest", """
 public class TradeLifecycleTest {
     static final CTradeManager MGR=CTradeManager.getInstance();
     static final CIOThreadCallback WHEEL=CIOThreadCallback.getInstance();
@@ -362,4 +363,4 @@ with tempfile.TemporaryDirectory() as directory:
     out.mkdir()
     files=[str(p) for p in tmp.rglob("*.java")] + [str(SRC/"CTrade.java"), str(SRC/"CTradeManager.java")]
     subprocess.run(["javac","-encoding","UTF-8","--release","21","-d",str(out),*files],check=True)
-    subprocess.run(["java","-cp",str(out),M+".TradeLifecycleTest"],check=True,timeout=30)
+    subprocess.run(["java","-cp",str(out),I+".TradeLifecycleTest"],check=True,timeout=30)

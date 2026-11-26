@@ -12,7 +12,7 @@ import java.util.Set;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.Config;
-import l1j.server.server.Controller.LoginController;
+import l1j.server.server.auth.login.LoginController;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;

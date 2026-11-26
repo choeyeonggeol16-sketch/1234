@@ -9,25 +9,23 @@ import l1j.server.server.model.item.pride.PrideLoadManager;
 import l1j.server.Server;
 import l1j.server.server.model.world.instance.dungeon.tower.bosscontroller.DominanceTimeController;
 import l1j.server.server.model.world.instance.dungeon.tower.DominanceDataLoader;
-import l1j.server.server.Controller.AuctionTimeController;
+import l1j.server.server.model.world.residence.CWorldAgitTimer;
 import l1j.server.server.Controller.AuraController;
-import l1j.server.server.Controller.BossController;
+import l1j.server.server.model.npc.spawn.boss.BossController;
 import l1j.server.server.Controller.BugRaceController;
-import l1j.server.server.Controller.HouseTaxTimeController;
-import l1j.server.server.Controller.NpcChatTimeController;
+import l1j.server.server.model.npc.chat.NpcChatTimeController;
 import l1j.server.server.Controller.OneTimeController;
-import l1j.server.server.Controller.ShipTimeController;
+import l1j.server.server.model.world.transport.ShipTimeController;
 import l1j.server.server.appcenter.AppCenterService;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
-import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.datatables.AccessoryEnchantInformationTable;
 import l1j.server.server.datatables.AlchemyProbability;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
 import l1j.server.server.datatables.ArmorEnchantInformationTable;
 import l1j.server.server.datatables.ArmorEnchantList;
 import l1j.server.server.datatables.CObjectDB;
-import l1j.server.server.datatables.AuctionBoardTable;
-import l1j.server.server.datatables.BossMonsterSpawnList;
+import l1j.server.server.model.world.residence.AuctionBoardTable;
+import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanBuffTable;
 import l1j.server.server.datatables.ClanTable;
@@ -37,7 +35,7 @@ import l1j.server.server.datatables.DropItemTable;
 import l1j.server.server.datatables.DropTable;
 import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.datatables.GetBackRestartTable;
-import l1j.server.server.datatables.HouseTable;
+import l1j.server.server.model.world.residence.HouseTable;
 import l1j.server.server.datatables.IncreaseEinhasadMap;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.datatables.KeyTable;
@@ -50,7 +48,7 @@ import l1j.server.server.datatables.MonsterParalyzeDelay;
 import l1j.server.server.datatables.NPCTalkDataTable;
 import l1j.server.server.datatables.NpcActionTable;
 import l1j.server.server.datatables.NpcCashShopSpawnTable;
-import l1j.server.server.datatables.NpcChatTable;
+import l1j.server.server.model.npc.chat.NpcChatTable;
 import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.datatables.NpcSpawnTable;
 import l1j.server.server.datatables.PolyTable;
@@ -73,8 +71,8 @@ import l1j.server.server.model.Getback;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
-import l1j.server.server.model.L1ClanRanking;
-import l1j.server.server.model.L1HouseLocation;
+import l1j.server.server.model.rank.L1ClanRanking;
+import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
@@ -114,6 +112,7 @@ import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftLoader;
+import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ALCHEMY_DESIGN_ACK;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
 import l1j.server.server.shared.observer.CopyMapObservable;
@@ -121,6 +120,8 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.task.automation.ServerMacroLoader;
 import l1j.server.server.task.calendar.DateSchedulerLoader;
 import l1j.server.server.utils.GameUtils;
+import l1j.server.server.model.world.announcement.Announcements;
+import l1j.server.server.model.world.announcement.CAnnounceTimer;
 
 public class GameServer {
 	private static GameServer _instance;
@@ -139,6 +140,13 @@ public class GameServer {
 	}
 
 	public void initialize() throws Exception {
+		loadGameData();
+		System.gc();
+		Runtime.getRuntime().addShutdownHook(Shutdown.getInstance());
+		startRuntimeServices();
+	}
+
+	private void loadGameData() throws Exception {
 		ThreadPool.getInstance();
 		
 		CPacketFilter.getInstance().load();
@@ -166,10 +174,9 @@ public class GameServer {
 		SprBoundary.do_load();
 		// 온라인 상태 리셋트
 		CharacterTable.clearOnlineStatus();
-		// 게임 시간 시계
-		L1GameTimeClock.init();
-		// 현재 시간 시계
-		RealTimeClock.init();
+		// Loaders can read time and register listeners before callbacks start.
+		L1GameTimeClock.prepare();
+		RealTimeClock.prepare();
 		
 		KeyTable.initBossKey();
 
@@ -185,18 +192,7 @@ public class GameServer {
 		/** 로그파일저장 **/
 		LoggerInstance.getInstance();
 
-		OneTimeController.start();
-		
 		AuctionBoardTable.getInstance();
-		// 아지트 경매
-		AuctionTimeController.getInstance();
-		// 아지트 세금
-		HouseTaxTimeController.getInstance();
-
-		// 실행
-		NpcChatTimeController.getInstance().start();
-
-		BugRaceController.getInstance().start();
 
 //		L1HauntedHouse hauntedHouse = L1HauntedHouse.getInstance();
 //		ThreadPool.getInstance().execute(hauntedHouse);
@@ -246,7 +242,6 @@ public class GameServer {
 		L1TreasureBox.load();
 		L1HealingPotion.load();
 		DominanceDataLoader.getInstance();
-		DominanceTimeController.getInstance();
 		RaceTable.getInstance();
 		ResolventTable.getInstance();
 		FurnitureSpawnTable.getInstance();
@@ -263,14 +258,7 @@ public class GameServer {
 		AccessoryEnchantInformationTable.getInstance();
 
 
-		ShipTimeController.getInstance().start();//배표
-
-		if (Config.Use_Show_Announcecycle) { // 자동 공지사항
-			Announcecycle.getInstance();
-		}
 		ReportTable.getInstance(); // 신고 테이블
-		
-		L1ClanRanking.getInstance().start();
 		
 		RankLoadManager.getInstance().load();
 
@@ -285,8 +273,6 @@ public class GameServer {
 
 		/** 2016.11.26 server 앱센터 LFC **/
 		InstanceLoadManager.getInstance().load();
-
-		ServerMacroLoader.getInstance().start();
 
 		CopyMapObservable.getInstance();
 		InnHelperLoader.getInstance();
@@ -308,7 +294,6 @@ public class GameServer {
 		DesignatedTeleportLoader.getInstance();
 
 		DungeonTimeLoadManager.getInstance().load();
-		//MJItemExChangeLoader.getInstance();
 		IncreaseEinhasadMap.getInstance();
 		UserProtectMonsterTable.getInstance();
 
@@ -321,7 +306,6 @@ public class GameServer {
 		
 		CastleWarBusiness.getInstance().run();
 
-		/** MJCTSystem **/
 		CollectionLoadManager.getInstance().load();
 		
 		HouseTable.getInstance();       // 캐시 로드
@@ -330,43 +314,35 @@ public class GameServer {
 		// 아이템 정보 등록 처리 
 		ItemEffectBootstrap.loadAll();
 		
-		// 보스몬스터 스폰 처리
 		BossMonsterSpawnList.init();
-		BossController.start();
+	}
 
-
-		
-		// 스킬 아우라 쓰레드 처리
-		AuraController.getInstance().start();
-
-		// 캐릭터 시간제 아이템 삭제 쓰레드 로직 처리 (/
-		CInventoryExpiry.getInstance().start();
-		
-		// CIOThreadCallback 각종 모니터 스레드 처리
+	private void startRuntimeServices() {
 		CIOThreadCallback.getInstance();
-		
-		UBTable.getInstance().getUb(1).start();
-		
+		CNPCServer.getInstance().start();
+		System.out.println("엔피시 서버 연결이 완료되었습니다.");
 
+		OneTimeController.start();
+		NpcChatTimeController.getInstance().start();
+		BugRaceController.getInstance().start();
+		ShipTimeController.getInstance().start();
+		L1ClanRanking.getInstance().start();
+		ServerMacroLoader.getInstance().start();
+		DominanceTimeController.getInstance();
+		BossController.start();
+		CWorldAgitTimer.start();
+		DogFightLoader.getInstance().startAutomaticReservation();
+		AuraController.getInstance().start();
+		CInventoryExpiry.getInstance().start();
+		if (Config.Use_Show_Announcecycle) {
+			CAnnounceTimer.getInstance().reload();
+		}
+		UBTable.getInstance().getUb(1).start();
 		if (Config.AUTO_GM_SHOP) {
 			NpcShopManager.getInstance().start();
 		}
-		
-//		
-//		PathNodeWorld.getInstance().dumpPathNodes(
-//		        4,
-//		        32639,
-//		        32872,
-//		        24);
-//		
-		// ai용 맵데이터 읽기 처리
-	//	PathNodeMaps.prepare();
-		
-		System.gc();
-		Runtime.getRuntime().addShutdownHook(Shutdown.getInstance());
-		CNPCServer.getInstance();
-		System.out.println("엔피시 서버 연결이 완료되었습니다.");
-		AppCenterService.start();
+		L1GameTimeClock.start();
+		RealTimeClock.start();
 	}
 
     public void disconnectAllCharacters() {
@@ -514,6 +490,18 @@ public class GameServer {
 	    Throwable fatal = null;
 	    try {
 	        Server.stopNewConnections();
+	        PlaySupportWindow.stopIndependent();
+	        CAnnounceTimer.getInstance().stop();
+	        CWorldAgitTimer.stop();
+	        DogFightLoader.getInstance().stopTimers();
+	        UBTable.getInstance().getAllUb().forEach(battle -> battle.stop());
+	        BossController.stop();
+	        DominanceTimeController.stop();
+	        AuraController.getInstance().stop();
+	        ShipTimeController.getInstance().stop();
+	        L1ClanRanking.getInstance().stop();
+	        ServerMacroLoader.release();
+	        NpcShopManager.getInstance().cancelRefill();
 	        AppCenterService.stop();
 	        OneTimeController.stop();
 	        NpcChatTimeController.getInstance().stop();
@@ -549,13 +537,13 @@ public class GameServer {
 	        RankUserLoader.getInstance().release();
 
 	        LoggerInstance.getInstance().flushImmediately();
-	        TileOccupancyNpc.getInstance().destroy();
-	        TileOccupancy.getInstance().destroy();
-
-	        // Release any delayed MJEffect cast before NPC owner/shard shutdown.
-        EffectModelLoader.release();
-        CNPCServer.getInstance().shutdown();
-	        l1j.server.Server.printShutdownStatus("엔피시 서버가 종료되었습니다.");
+	        // Release delayed effect casts before closing their NPC owners.
+	        EffectModelLoader.release();
+	        CNPCServer npcServer = CNPCServer.getInstance();
+	        npcServer.shutdown();
+	        if (!npcServer.awaitTermination(30L, java.util.concurrent.TimeUnit.SECONDS))
+	            throw new IllegalStateException("NPC owner termination exceeded 30 seconds");
+	        Server.printShutdownStatus("엔피시 서버가 종료되었습니다.");
 
 	        CIOThreadCallback.getInstance().shutdown();
             // No game owner may still be running a packet or actor timer when
@@ -563,6 +551,8 @@ public class GameServer {
             if (!CIOThreadCallback.getInstance().awaitTermination(
                     30L, java.util.concurrent.TimeUnit.SECONDS))
                 throw new IllegalStateException("CIO game shard termination exceeded 30 seconds");
+	        TileOccupancyNpc.getInstance().destroy();
+	        TileOccupancy.getInstance().destroy();
 
 	        // Cancel clock futures before destroying the shared scheduler;
 	        // stale periodic callbacks must not retain listeners/game objects.

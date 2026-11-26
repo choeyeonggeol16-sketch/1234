@@ -18,10 +18,10 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.L1GroundInventory;
-import l1j.server.server.model.CInventory;
+import l1j.server.server.model.inventory.L1GroundInventory;
+import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.action.CAttackAction;
@@ -978,8 +978,6 @@ public class L1CompanionInstance extends L1NpcInstance{
     @Override
     public void searchTargetItem() {
         if (m_master == null) return;
-        // NC GetItem desire scan: the original ten-tile bound, with
-        // unowned or master-owned item restriction in CGetItemAction.
         CGetItemAction.searchTarget(this, 10);
     }
 
@@ -1220,9 +1218,6 @@ public class L1CompanionInstance extends L1NpcInstance{
 
         final boolean awayFromMaster =
                 getLocation().getTileLineDistance(m_master.getLocation()) > 2;
-        // The NC-style dFollow must also run on arrival: it clears the
-        // owner-local cached destination at <=2 tiles, preventing a stale
-        // goal from pulling this companion away on the next follow tick.
         dPetDefault.follow(this, m_master);
         if (awayFromMaster && m_command_state.equals(eCommand.TM_GetItem)) {
             do_drain_items();

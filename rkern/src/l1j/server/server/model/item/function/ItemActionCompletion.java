@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1ItemDelay;
-import l1j.server.server.model.CUserInventory;
+import l1j.server.server.model.inventory.CUserInventory;
 
 /** Legacy normal-return charge, last-used and item-delay tail. Early exits never call this. */
 final class ItemActionCompletion {

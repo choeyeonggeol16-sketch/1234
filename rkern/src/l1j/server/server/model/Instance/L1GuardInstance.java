@@ -63,7 +63,6 @@ public class L1GuardInstance extends L1NpcInstance {
 		final int homeX = getHomeX();
 		final int homeY = getHomeY();
 
-		// NC dMoveTo owns the return trip. Never teleport onto a reserved
 		// PC/NPC tile when a path is briefly blocked by another character.
 		// Existing CIO action timer retries without a new worker or queue.
 		if (getX() != homeX || getY() != homeY) {
@@ -377,9 +376,6 @@ public class L1GuardInstance extends L1NpcInstance {
 
 	@Override
 	public void checkTarget() {
-		// Avoid recursive hate traversal when multiple dead/invisible
-		// attackers disappear together. NC's event owner retires one
-		// target at a time and then checks the next available desire.
 		for (int inspected = 0; inspected < 128; inspected++) {
 			final L1Character candidate = _target;
 			if (candidate != null

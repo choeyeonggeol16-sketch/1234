@@ -1,12 +1,17 @@
-package l1j.server.server.model;
+package l1j.server.server.model.inventory;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
+
 import l1j.server.Config;
+import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.Instance.CItemList;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.templates.L1EtcItem;
+import sun.misc.Unsafe;
 
 public final class TestCarryingWeight {
     private static int checks;
@@ -64,8 +69,8 @@ public final class TestCarryingWeight {
         check(0, nonPlayer.tradeWarehouseWithdrawalBatch(ids, counts, null, 0, 0, null, null) ? 1 : 0);
         check(0, nonPlayer.tradeWarehouseDepositBatch(null, null, null, null) ? 1 : 0);
         check(0, nonPlayer.tradeWarehouseWithdrawalBatch(null, null, null, 0, 0, null, null) ? 1 : 0);
-        check(1, nonPlayer.tradeItem(1, 1, (l1j.server.server.model.Warehouse.Warehouse) null) == null ? 1 : 0);
-        check(1, nonPlayer.tradeItem((L1ItemInstance) null, 1, (l1j.server.server.model.Warehouse.Warehouse) null) == null ? 1 : 0);
+        check(1, nonPlayer.tradeItem(1, 1, (l1j.server.server.model.inventory.warehouse.Warehouse) null) == null ? 1 : 0);
+        check(1, nonPlayer.tradeItem((L1ItemInstance) null, 1, (l1j.server.server.model.inventory.warehouse.Warehouse) null) == null ? 1 : 0);
         check(0, nonPlayer.getSize());
         System.out.println("PASS warehouse invalid-request delegation checks");
     }
@@ -96,7 +101,7 @@ public final class TestCarryingWeight {
             boolean expected = false;
             for (int value : refill) if (value == id) { expected = true; break; }
             check(expected ? 1 : 0,
-                l1j.server.server.model.Warehouse.Warehouse.chargeMergeItem(id) ? 1 : 0);
+                l1j.server.server.model.inventory.warehouse.Warehouse.chargeMergeItem(id) ? 1 : 0);
         }
         L1EtcItem t = template(20383, 0);
         L1ItemInstance item = new L1ItemInstance(t, 1);
@@ -138,7 +143,7 @@ public final class TestCarryingWeight {
             check(1, dst.getEndTime() == (end ? expiry : oldEnd) ? 1 : 0);
             check(11, dst.getId()); check(88, dst.getKeyId()); check(0, dst.isEquipped() ? 1 : 0);
         }
-        L1ItemInstance detached = l1j.server.server.model.Warehouse.Warehouse.transferCopy(src, 12, 2, 8);
+        L1ItemInstance detached = l1j.server.server.model.inventory.warehouse.Warehouse.transferCopy(src, 12, 2, 8);
         check(12, detached.getId()); check(2, detached.getCount()); check(8, detached.getChargeCount());
         check(77, detached.getKeyId()); check(0, detached.isEquipped() ? 1 : 0);
         check(1, expiry.equals(detached.getEndTime()) && expiry != detached.getEndTime() ? 1 : 0);
@@ -250,7 +255,7 @@ public final class TestCarryingWeight {
                 CItemList.requireDetached(image);
                 boolean rejected = false;
                 try {
-                    l1j.server.server.model.Warehouse.Warehouse.transferCopy(src, id, count, 7);
+                    l1j.server.server.model.inventory.warehouse.Warehouse.transferCopy(src, id, count, 7);
                 } catch (IllegalArgumentException expected) { rejected = true; }
                 check(id <= 0 || count <= 0 ? 1 : 0, rejected ? 1 : 0);
             }
@@ -279,7 +284,23 @@ public final class TestCarryingWeight {
                     }
         System.out.println("PASS prepared row identity, count and equipment guards");
     }
+    private static void installEmptyMapTable() throws ReflectiveOperationException {
+        // The item lookup still uses the real world index and list fallback.
+        // Seed its map catalog so this isolated fixture needs no database.
+        final Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+        final MapsTable table = (MapsTable) unsafe.allocateInstance(MapsTable.class);
+        final Field maps = MapsTable.class.getDeclaredField("_maps");
+        maps.setAccessible(true);
+        maps.set(table, Map.of());
+        final Field instance = MapsTable.class.getDeclaredField("_instance");
+        instance.setAccessible(true);
+        instance.set(null, table);
+    }
+
     public static void main(String[] args) throws Exception {
+        installEmptyMapTable();
         checkPreparedRowIdentity();
         checkDetachedRewardCopy();
         checkDeleteAmount();

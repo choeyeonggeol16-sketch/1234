@@ -13,7 +13,7 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 
 public class PolyTable {
 	private static final Logger _log = Logger.getLogger(PolyTable.class.getName());

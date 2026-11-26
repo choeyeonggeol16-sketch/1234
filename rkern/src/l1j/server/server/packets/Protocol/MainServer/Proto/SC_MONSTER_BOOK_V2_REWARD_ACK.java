@@ -19,7 +19,6 @@ public final class SC_MONSTER_BOOK_V2_REWARD_ACK extends ProtoPacket {
 
     private SC_MONSTER_BOOK_V2_REWARD_ACK() {}
 
-    // ── MJ와 동일 시그니처 (호출부 import 교체만으로 호환) ──
     public static SC_MONSTER_BOOK_V2_REWARD_ACK newInstance() {
         return new SC_MONSTER_BOOK_V2_REWARD_ACK();
     }

@@ -8,7 +8,7 @@ body=s[s.index("    public static void RequestOfflinePrivateStore("):s.rfind("}"
 assert 'case "무인상점" -> CS_CharSelect.RequestOfflinePrivateStore(pc);' in (root/"UserCommands.java").read_text(encoding="utf-8")
 assert '"무인상점".equals(tcmd)' in (root/"model/network/core/cs/packet/CS_Craft.java").read_text(encoding="utf-8")
 assert '".무인상점".equals(chatText.trim())' in (root/"model/network/core/cs/packet/CS_Chat.java").read_text(encoding="utf-8")
-body=body.replace("l1j.server.server.model.CTrade","CTrade").replace("l1j.server.server.storage.CacheD","CacheD")
+body=body.replace("l1j.server.server.model.inventory.CTrade","CTrade").replace("l1j.server.server.storage.CacheD","CacheD")
 fixture=r"""
 import java.util.*;
 import java.util.logging.*;

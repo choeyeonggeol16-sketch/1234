@@ -26,7 +26,7 @@
 //import l1j.server.server.IdFactory;
 //import l1j.server.server.datatables.NpcTable;
 //import l1j.server.server.datatables.TrapTable;
-//import l1j.server.server.model.CInventory;
+//import l1j.server.server.model.inventory.CInventory;
 //import l1j.server.server.model.L1Location;
 //import l1j.server.server.model.L1Object;
 //import l1j.server.server.model.L1OrimQuest;

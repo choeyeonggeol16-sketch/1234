@@ -23,7 +23,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ScarecrowInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.L1PolyMorph;
+import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.Attack.Helper.DamageReductionHelper;
 import l1j.server.server.model.character.Attack.Helper.HitEvasionModel;
@@ -560,12 +560,6 @@ public final class CAttackAction extends CNewAction {
         }
     }
 
-    /*
-     * reference server CAttackAction execution / AttackTargetData dispatch phases.
-     * Full V4 reward, counter, damage, packet and commit ordering preserved.
-     * Instance implementations must call this action owner, not a duplicate
-     * combat dispatcher. NPC-specific rule checks remain on their instances.
-     */
 /**
      * reference design centralized PC -> NPC execution for ordinary target entities.
      * Target-specific permission checks stay at the entity boundary.
@@ -1056,8 +1050,6 @@ public final class CAttackAction extends CNewAction {
 
 	/* ■■■■■■■■■■■■■■■■ 명중 판정 ■■■■■■■■■■■■■■■■ */
 
-    // src22/L1Attack PC/NPC hit/damage rules, retained under the existing
-    // reference server CAttackAction ownership and per-character context. No L1Attack class.
     private boolean _edoryuDouble;
     private boolean _doubleBreak;
     private boolean _burning;

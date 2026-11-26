@@ -52,12 +52,8 @@ public final class dUseSkill {
                 && CSkillAction2.skillUseSelected(monster, target, skillId)) {
             CCreatureController.sleep(monster, CSkillAction2.getSleepTime(monster));
             // CSkillAction2 returns the final accepted result synchronously.
-            // This is NC UseSkillFinished(well=true): remove the exact skill
-            // key, never its ATTACK/other USE_SKILL siblings.
             CDesirePQ.UseSkillFinished(monster, targetId, skillId, true);
         } else {
-            // NC dUseSkill returning zero removes the rejected request
-            // immediately; it is not a delayed UseSkillFinished(false).
             CDesirePQ.removeUseSkillDesire(monster, targetId, skillId);
         }
         if (CCreatureController.currentAction(creature)

@@ -6,7 +6,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.CriteriaProgress;
 
 /**
- * 캐릭터 도감 진행도 — 도메인 + DB 저장 코덱 (구 MJIProtoMessage 대체)
+ * 캐릭터 도감 진행도 — 도메인 + DB 저장 코덱
  * 저장 스키마 (BQSCharacterData blob field 2 서브메시지):
  *  [1]=current_achievement_level uint32, [2]=progress CriteriaProgress 서브메시지
  */
