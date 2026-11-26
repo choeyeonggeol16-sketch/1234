@@ -28,7 +28,7 @@ final class PlayerShopTransactions {
     private PlayerShopTransactions() {}
 
     static boolean canReach(L1PcInstance customer, L1PcInstance shop) {
-        return customer != shop && customer.getId() != shop.getId()
+        return customer != null && shop != null && customer != shop && customer.getId() != shop.getId()
                 && User.CanUsePrivateStore(customer) && shop.isPrivateShop()
                 && !shop.isDead() && !shop.isGhost() && !shop.get_teleport() && !shop.isLogoutStarted()
                 && shop.GetTrade() == null && !CTrade.HasPendingTradeBlocker(shop)
@@ -158,8 +158,7 @@ final class PlayerShopTransactions {
         final int itemId = purchase ? CS_Result.param1(first, null, 0) : listingId;
         if (purchase && itemId != view.customerItemId(row)) return;
         final L1ItemInstance item = seller.getInventory().GetByServerID(itemId);
-        if (!canTransfer(seller, item, listing, count, System.currentTimeMillis())
-                || count > item.getCount()) return;
+        if (!canTransfer(seller, item, listing, count, System.currentTimeMillis())) return;
         final long total = (long) listing.price * count;
         if (total > CInventory.MAX_AMOUNT) return;
         final L1ItemInstance adena = buyer.getInventory().GetFirstItemByClassID(L1ItemId.ADENA);
@@ -229,7 +228,8 @@ final class PlayerShopTransactions {
 
     private static boolean canTransfer(L1PcInstance seller, L1ItemInstance item, DynamicShopItem listing,
             int count, long now) {
-        return item != null && item.getItem() != null && !item.isEquipped() && item.getItem().isTradable() && item.getBless() < 128
+        return seller != null && listing != null && item != null && count > 0 && count <= item.getCount()
+                && item.getItem() != null && !item.isEquipped() && item.getItem().isTradable() && item.getBless() < 128
                 && (item.isIdentified() ? item.getBless() : -1) == listing.iden
                 && item.getItemdelay3() < now && item.getItemId() == listing.itemId
                 && item.getEnchantLevel() == listing.enchant && item.getAttrEnchantLevel() == listing.attr
