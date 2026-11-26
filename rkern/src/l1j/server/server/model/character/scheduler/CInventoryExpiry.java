@@ -3,14 +3,9 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
-import java.util.concurrent.ArrayBlockingQueue;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.ArrayList;
-import java.util.concurrent.Delayed;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
@@ -19,6 +14,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.L1InventoryTransaction;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.network.thread.CIOThreadCallback.WheelTask;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -26,15 +22,15 @@ import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.item.L1ItemId;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
-public final class PcInventoryExpiryScheduler {
+public final class CInventoryExpiry {
 
-	private static final Logger LOG = Logger.getLogger(PcInventoryExpiryScheduler.class.getName());
-	private static volatile PcInventoryExpiryScheduler INSTANCE;
+	private static final Logger LOG = Logger.getLogger(CInventoryExpiry.class.getName());
+	private static volatile CInventoryExpiry INSTANCE;
 
-	public static PcInventoryExpiryScheduler getInstance() {
+	public static CInventoryExpiry getInstance() {
 		if (INSTANCE == null) {
-			synchronized (PcInventoryExpiryScheduler.class) {
-				if (INSTANCE == null) INSTANCE = new PcInventoryExpiryScheduler();
+			synchronized (CInventoryExpiry.class) {
+				if (INSTANCE == null) INSTANCE = new CInventoryExpiry();
 			}
 		}
 		return INSTANCE;
@@ -62,82 +58,55 @@ public final class PcInventoryExpiryScheduler {
     }
 
     private void endRegistration() { activeRegistrations.decrementAndGet(); }
-	private ThreadPoolExecutor workerPool;
-	private Thread dispatcher;
+    private static final int MAX_EXPIRY_PER_TICK = 32;
+    private static final long TIMER_IDLE_MS = 250L;
+    private volatile ExpiryTimer timer;
 
-	private PcInventoryExpiryScheduler() {}
+    private CInventoryExpiry() {}
 
-	/**
-	 * 스케줄러 시작
-	 */
-	public synchronized void start() {
-		if (!running.compareAndSet(false, true)) return;
+    /** L1 inventory expiry uses the existing CIO timer; no dedicated threads. */
+    public synchronized void start() {
+        if (!running.compareAndSet(false, true)) return;
         accepting = true;
+        final ExpiryTimer next = new ExpiryTimer();
+        timer = next;
+        if (!CIOThreadCallback.getInstance().scheduleServerTimer(next, TIMER_IDLE_MS)) {
+            timer = null;
+            running.set(false);
+            accepting = false;
+            throw new IllegalStateException("Inventory expiry timer admission failed");
+        }
+    }
 
-		workerPool = new ThreadPoolExecutor(
-				2, 4, 60L, TimeUnit.SECONDS,
-				new ArrayBlockingQueue<>(2000),
-				r -> {
-					Thread t = new Thread(r, "InventoryExpiryWorker");
-					t.setDaemon(true);
-					return t;
-				}
-				);
-
-		dispatcher = new Thread(this::dispatchLoop, "InventoryExpiryDispatcher");
-		dispatcher.setDaemon(true);
-		dispatcher.start();
-
-	//	System.out.println("[PcInventoryExpiryScheduler] 가동 시작 (인벤토리 아이템 삭제 시스템)");
-	}
-
-	/**
-	 * 스케줄러 중단 (서버 종료 시 호출)
-	 */
-	public synchronized void stop() {
-        // Close admission before draining. An admitted compute may still be
-        // blocked inside a CHM bucket when shutdown begins.
+    public synchronized void stop() {
         accepting = false;
         running.set(false);
-
-	//	System.out.println("[PcInventoryExpiryScheduler] 시스템 중단 중...");
-
-		// 1. 디스패처 쓰레드 중단
-		if (dispatcher != null) {
-			dispatcher.interrupt();
-			dispatcher = null;
-		}
-
-		// 2. 워커 풀 종료
-		if (workerPool != null) {
-			workerPool.shutdown();
-			try {
-				if (!workerPool.awaitTermination(5, TimeUnit.SECONDS)) {
-					workerPool.shutdownNow();
-				}
-			} catch (InterruptedException e) {
-				workerPool.shutdownNow();
-				Thread.currentThread().interrupt();
-			}
-			workerPool = null;
-		}
-
-        // Every admitted scheduleItem/retryExpiry must finish publishing (or
-        // abandoning) its task before the final clear. Merely checking
-        // accepting again still leaves a check-then-offer race.
+        timer = null;
         boolean interrupted = false;
         while (activeRegistrations.get() != 0) {
             LockSupport.parkNanos(1_000_000L);
             if (Thread.interrupted()) interrupted = true;
         }
         if (interrupted) Thread.currentThread().interrupt();
-
-		// 3. 큐 비우기 — no producer can publish after this point.
         queue.clear();
         scheduled.clear();
         byPc.clear();
-	//	System.out.println("[PcInventoryExpiryScheduler] 시스템 중단 완료.");
-	}
+    }
+
+    private final class ExpiryTimer implements WheelTask {
+        @Override public boolean isCancelled() { return timer != this || !running.get(); }
+        @Override public void run() {
+            if (isCancelled()) return;
+            try {
+                TimerExpired(this);
+            } finally {
+                if (!isCancelled() && !CIOThreadCallback.getInstance().scheduleServerTimer(
+                        this, queue.nextDelayMs(TIMER_IDLE_MS))) {
+                    if (!isCancelled()) LOG.severe("Inventory expiry timer rearm rejected");
+                }
+            }
+        }
+    }
 
 	/**
 	 * 유저의 모든 기간제 아이템 등록
@@ -191,7 +160,7 @@ public final class PcInventoryExpiryScheduler {
                 final int itemId = item.getId();
                 final long end = item.getEndTime().getTime();
                 final int session = pc.getSessionStamp();
-                scheduled.compute(itemId, (key, previous) -> {
+                final ExpiryTask published = scheduled.compute(itemId, (key, previous) -> {
                     if (previous != null && previous.pc == pc && previous.item == item
                             && previous.endTime == end && previous.sessionStamp == session) return previous;
                     if (previous != null) {
@@ -203,13 +172,21 @@ public final class PcInventoryExpiryScheduler {
                     final ExpiryTask task = new ExpiryTask(pc, item, end,
                             Math.max(1000L, end - System.currentTimeMillis()), session);
                     indexTask(task);
-                    queue.offer(task);
                     return task;
                 });
+                if (published != null && published.heapIndex == -1 && published.pendingPublication) publish(published);
             } finally {
                 endRegistration();
             }
         }
+    }
+
+    /** Publish only after the scheduled identity is visible; cancellation or
+     * replacement between map publication and heap insertion is rechecked. */
+    private void publish(ExpiryTask task) {
+        task.pendingPublication = false;
+        queue.offer(task);
+        if (scheduled.get(task.item.getId()) != task) queue.remove(task);
     }
 
     public void cancelItem(L1PcInstance pc, L1ItemInstance item) {
@@ -250,7 +227,7 @@ public final class PcInventoryExpiryScheduler {
                 return;
             }
             try {
-                scheduled.computeIfPresent(task.item.getId(), (key, current) -> {
+                final ExpiryTask published = scheduled.computeIfPresent(task.item.getId(), (key, current) -> {
                     if (current != task) return current;
                     if (!accepting || task.pc.isLogoutStarted() || task.pc.is무인상점()
                             || task.pc.getSessionStamp() != task.sessionStamp) {
@@ -260,53 +237,35 @@ public final class PcInventoryExpiryScheduler {
                     final ExpiryTask retry = new ExpiryTask(task.pc, task.item, task.endTime,
                             delayMs, task.sessionStamp);
                     indexTask(retry);
-                    queue.offer(retry);
                     return retry;
                 });
+                if (published != null && published != task && published.pendingPublication) publish(published);
             } finally {
                 endRegistration();
             }
         }
     }
 
-    private void dispatchLoop() {
-        while (running.get() && !Thread.currentThread().isInterrupted()) {
+    /** Bounded deadline dispatch outside the timer's monitor. Cross-shard
+     * mutations still go through the original owner-completion API. */
+    private void TimerExpired(ExpiryTimer current) {
+        for (int i = 0; i < MAX_EXPIRY_PER_TICK && !current.isCancelled(); i++) {
+            final ExpiryTask task = queue.poll();
+            if (task == null) break;
+            if (scheduled.get(task.item.getId()) != task) continue;
             try {
-                final ExpiryTask task = queue.take();
-                if (scheduled.get(task.item.getId()) != task) continue;
-                final ThreadPoolExecutor pool = workerPool;
-                if (pool == null || pool.isShutdown()) {
-                    if (running.get()) retryExpiry(task, 2000L);
-                    continue;
-                }
-                try {
-                    pool.execute(() -> {
-                        // All gameplay mutations (and receipt replay) belong to
-                        // the existing CIO owner, not a free-running expiry worker.
-                        try {
-                            CIOThreadCallback.getInstance().completeWarehouseMove(
-                                    task.pc, task.sessionStamp,
-                                    () -> processExpiry(task),
-                                    failure -> {
-                                        if (failure != null) {
-                                            LOG.log(Level.WARNING, "Expiry owner admission failed: " + task.item.getId(), failure);
-                                            retryExpiry(task, 2000L);
-                                        }
-                                    });
-                        } catch (RuntimeException admissionFailure) {
-                            LOG.log(Level.WARNING, "Expiry owner dispatch rejected: " + task.item.getId(), admissionFailure);
-                            retryExpiry(task, 2000L);
-                        }
-                    });
-                } catch (RejectedExecutionException rejection) {
-                    // A taken task must be returned to delayed admission on saturation.
-                    retryExpiry(task, 2000L);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            } catch (RuntimeException e) {
-                LOG.log(Level.SEVERE, "Expiry dispatch error", e);
+                CIOThreadCallback.getInstance().completeWarehouseMove(
+                        task.pc, task.sessionStamp,
+                        () -> processExpiry(task),
+                        failure -> {
+                            if (failure != null) {
+                                if (running.get()) LOG.log(Level.WARNING, "Expiry owner admission failed: " + task.item.getId(), failure);
+                                retryExpiry(task, 2000L);
+                            }
+                        });
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Expiry owner dispatch rejected: " + task.item.getId(), failure);
+                retryExpiry(task, 2000L);
             }
         }
     }
@@ -314,7 +273,7 @@ public final class PcInventoryExpiryScheduler {
     private void processExpiry(ExpiryTask task) {
         final L1PcInstance pc = task.pc;
         final L1ItemInstance item = task.item;
-        if (scheduled.get(item.getId()) != task) return;
+        if (!running.get() || scheduled.get(item.getId()) != task) return;
         if (pc.getSessionStamp() != task.sessionStamp) {
             removeTask(task);
             return;
@@ -479,9 +438,7 @@ public final class PcInventoryExpiryScheduler {
 		}
 	}
 
-    /** Indexed min-heap. Removing an item is O(log N), not DelayQueue O(N).
-     * The original dispatcher thread still owns timed waits and admission;
-     * no additional thread/queue is introduced. */
+    /** Indexed deadline store with immediate O(log N) cancellation. The shared CIO timer drives it. */
     private static final class IndexedExpiryHeap {
         private final ArrayList<ExpiryTask> heap = new ArrayList<>();
 
@@ -489,7 +446,6 @@ public final class PcInventoryExpiryScheduler {
             task.heapIndex = heap.size();
             heap.add(task);
             siftUp(task.heapIndex);
-            notifyAll();
         }
 
         synchronized boolean remove(ExpiryTask task) {
@@ -497,7 +453,6 @@ public final class PcInventoryExpiryScheduler {
             if (index < 0 || index >= heap.size() || heap.get(index) != task)
                 return false;
             removeAt(index);
-            notifyAll();
             return true;
         }
 
@@ -510,26 +465,14 @@ public final class PcInventoryExpiryScheduler {
             return first;
         }
 
-        synchronized ExpiryTask take() throws InterruptedException {
-            for (;;) {
-                if (heap.isEmpty()) {
-                    wait();
-                    continue;
-                }
-                final ExpiryTask first = heap.get(0);
-                final long waitMs = first.expiryTime - System.currentTimeMillis();
-                if (waitMs <= 0L) {
-                    removeAt(0);
-                    return first;
-                }
-                wait(waitMs);
-            }
+        synchronized long nextDelayMs(long idleMs) {
+            if (heap.isEmpty()) return idleMs;
+            return Math.max(1L, Math.min(idleMs, heap.get(0).expiryTime - System.currentTimeMillis()));
         }
 
         synchronized void clear() {
             for (int i = 0; i < heap.size(); i++) heap.get(i).heapIndex = -1;
             heap.clear();
-            notifyAll();
         }
 
         private void removeAt(int index) {
@@ -578,13 +521,14 @@ public final class PcInventoryExpiryScheduler {
         }
     }
 
-	private static class ExpiryTask implements Delayed {
+	private static final class ExpiryTask {
 		final L1PcInstance pc;
 		final L1ItemInstance item;
         final long expiryTime;
         final long endTime;
         final int sessionStamp;
         int heapIndex = -1;
+        boolean pendingPublication = true;
 
         ExpiryTask(L1PcInstance pc, L1ItemInstance item, long endTime, long delayMs) {
             this(pc, item, endTime, delayMs, pc.getSessionStamp());
@@ -601,14 +545,5 @@ public final class PcInventoryExpiryScheduler {
                     ? Long.MAX_VALUE : now + delayMs;
         }
 
-		@Override
-		public long getDelay(TimeUnit unit) {
-			return unit.convert(expiryTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
-		}
-
-		@Override
-		public int compareTo(Delayed o) {
-			return Long.compare(this.expiryTime, ((ExpiryTask) o).expiryTime);
-		}
 	}
 }

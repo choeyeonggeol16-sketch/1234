@@ -134,7 +134,7 @@ public class CUserInventory extends CInventory {
                 removeItemCountCache(original.getItemId(), original.getCount());
                 _items.Pop(original);
                 if (original.getEndTime() != null) {
-                    l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
+                    l1j.server.server.model.character.scheduler.CInventoryExpiry
                             .getInstance().cancelItem(_owner, original);
                 }
                 L1World.getInstance().removeObject(original);
@@ -186,13 +186,13 @@ public class CUserInventory extends CInventory {
             final boolean expiryChanged = !java.util.Objects.equals(
                     original.getEndTime(), image.getEndTime());
             if (expiryChanged && original.getEndTime() != null) {
-                l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
+                l1j.server.server.model.character.scheduler.CInventoryExpiry
                         .getInstance().cancelItem(_owner, original);
             }
             original.setEndTime(image.getEndTime());
             original._cha = _owner;
             if (original.getEndTime() != null && !_owner.isLogoutStarted()) {
-                l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
+                l1j.server.server.model.character.scheduler.CInventoryExpiry
                         .getInstance().scheduleItem(_owner, original);
             }
             if (recalcEquipped) {
@@ -247,7 +247,7 @@ public class CUserInventory extends CInventory {
             }
             if (image.getItemId() == 700024) notifyEconomyBookmark(image);
             if (image.getEndTime() != null && !_owner.isLogoutStarted()) {
-                l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
+                l1j.server.server.model.character.scheduler.CInventoryExpiry
                         .getInstance().scheduleItem(_owner, image);
             }
         }
@@ -628,7 +628,7 @@ public class CUserInventory extends CInventory {
         if (item.getEndTime() != null && !_owner.isLogoutStarted()
                 && GetByServerID(item.getId()) == item) {
             try {
-                l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
+                l1j.server.server.model.character.scheduler.CInventoryExpiry
                         .getInstance().scheduleItem(_owner, item);
             } catch (RuntimeException expiry) {
                 RECEIPT_NOTICE_LOG.log(java.util.logging.Level.SEVERE, "Accepted inventory expiry registration failed", expiry);
@@ -867,7 +867,7 @@ public class CUserInventory extends CInventory {
 
         if (item.getEndTime() != null) {
             try {
-                l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler
+                l1j.server.server.model.character.scheduler.CInventoryExpiry
                         .getInstance().cancelItem(_owner, item);
             } catch (RuntimeException failure) {
                 RECEIPT_NOTICE_LOG.log(java.util.logging.Level.SEVERE,

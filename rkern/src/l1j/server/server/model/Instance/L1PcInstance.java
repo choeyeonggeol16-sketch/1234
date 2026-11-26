@@ -80,7 +80,7 @@ import l1j.server.server.model.character.effect.PcWantedEffects;
 import l1j.server.server.model.character.experience.amplifier.ExpAmplifier;
 import l1j.server.server.model.character.scheduler.CRegenController;
 import l1j.server.server.model.character.scheduler.CharTamScheduler;
-import l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler;
+import l1j.server.server.model.character.scheduler.CInventoryExpiry;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.character.skill.passive.PassiveID;
@@ -1814,8 +1814,8 @@ public class L1PcInstance extends L1Character {
 
 	public void startObjectAutoUpdate() { 
 		CharTamScheduler.getInstance().onEnterWorld(this);
-		PcInventoryExpiryScheduler.getInstance().register(this);
 		nextSessionStamp();
+		CInventoryExpiry.getInstance().register(this);
 		CIOThreadCallback.getInstance().clearPcState(this);
 		CIOThreadCallback.getInstance().registerPc(this);
 	}
@@ -2417,7 +2417,7 @@ public class L1PcInstance extends L1Character {
                 final CUserSocket warehouseSession = getNetConnection();
                 if (warehouseSession != null) warehouseSession.ClearWarehouseViewFor(this);
             } catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout warehouse view release failed: " + getId(), e); }
-            try { PcInventoryExpiryScheduler.getInstance().unregister(this); }
+            try { CInventoryExpiry.getInstance().unregister(this); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout expiry unregister failed: " + getId(), e); }
             // Optional teardown/persistence steps must not suppress each other.
             try { remove_companion(); }
@@ -2548,7 +2548,7 @@ public class L1PcInstance extends L1Character {
         stopEinhasadTimer();
         try { l1j.server.server.model.CReplyChecker.FinishWaitingReplyByRequester(this); }
         catch (RuntimeException e) { _log.log(Level.WARNING, "Offline shop reply cleanup failed", e); }
-        try { PcInventoryExpiryScheduler.getInstance().unregister(this); }
+        try { CInventoryExpiry.getInstance().unregister(this); }
         catch (RuntimeException e) { _log.log(Level.WARNING, "Offline shop expiry cleanup failed", e); }
         try { InvalidateWarehouseAccess(); }
         catch (RuntimeException e) { _log.log(Level.WARNING, "Offline shop warehouse view cleanup failed", e); }

@@ -492,6 +492,15 @@ public final class CIOThreadCallback {
         return owner.admitTimer(TimerOp.RAW_TIMER, 0, boundedDelay, task, null, null);
     }
 
+    /** Server-owned timer callbacks share the existing CIO wheel on shard zero.
+     * No transport configuration, additional dispatcher or executor is required. */
+    public boolean scheduleServerTimer(WheelTask task, long delayMs) {
+        if (task == null || task.isCancelled() || delayMs <= 0L) return false;
+        final CIOThread owner = shards[0];
+        return owner.running && owner.admitTimer(TimerOp.RAW_TIMER, 0, delayMs,
+                task, null, null);
+    }
+
     /** Existing owner wheel drives connection deadlines; no extra worker or queue. */
     public boolean scheduleNetworkTimeout(int shardIndex, WheelTask task, long delayMs) {
         if (task == null || delayMs <= 0L || shardIndex < 0

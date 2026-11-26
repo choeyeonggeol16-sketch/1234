@@ -89,7 +89,7 @@ import l1j.server.server.model.character.companion.CompanionLoader;
 import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
 import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
 import l1j.server.server.model.character.scheduler.CharTamScheduler;
-import l1j.server.server.model.character.scheduler.PcInventoryExpiryScheduler;
+import l1j.server.server.model.character.scheduler.CInventoryExpiry;
 import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1TreasureBox;
@@ -343,7 +343,7 @@ public class GameServer {
 		AuraController.getInstance().start();
 
 		// 캐릭터 시간제 아이템 삭제 쓰레드 로직 처리 (/
-		PcInventoryExpiryScheduler.getInstance().start();
+		CInventoryExpiry.getInstance().start();
 		
 		// CIOThreadCallback 각종 모니터 스레드 처리
 		CIOThreadCallback.getInstance();
@@ -543,7 +543,7 @@ public class GameServer {
 
 	        CharTamScheduler.getInstance().stop();
 
-	        PcInventoryExpiryScheduler.getInstance().stop();
+	        CInventoryExpiry.getInstance().stop();
 
 
 	        BugRaceController.getInstance().stop();
