@@ -58,7 +58,6 @@ import l1j.server.server.command.executor.L1BanIp;
 import l1j.server.server.command.executor.L1Buff;
 import l1j.server.server.command.executor.L1BuffIcon;
 import l1j.server.server.command.executor.L1Poly;
-import l1j.server.server.command.executor.L1Visible;
 import l1j.server.server.command.executor.L1Summon;
 import l1j.server.server.command.executor.L1Present;
 import l1j.server.server.command.executor.L1GMQuestion;
@@ -67,8 +66,6 @@ import l1j.server.server.command.executor.L1ImPactGfxid1;
 import l1j.server.server.command.executor.L1ImPactGfxid;
 import l1j.server.server.command.executor.L1Status;
 import l1j.server.server.command.executor.L1Ress;
-import l1j.server.server.command.executor.L1Recall;
-import l1j.server.server.command.executor.L1Speed;
 import l1j.server.server.command.executor.L1ShowTrap;
 import l1j.server.server.command.executor.L1Thread;
 import l1j.server.server.command.executor.L1Burf;
@@ -78,13 +75,9 @@ import l1j.server.server.command.executor.L1EventSpawn;
 import l1j.server.server.command.executor.L1Favorite;
 import l1j.server.server.command.executor.L1ItemDelete;
 import l1j.server.server.command.executor.L1SKick;
-import l1j.server.server.command.executor.L1Action;
-import l1j.server.server.command.executor.L1Echo;
 import l1j.server.server.command.executor.L1NpcDown;
 import l1j.server.server.command.executor.L1PowerKick;
 import l1j.server.server.command.executor.L1NpcShopSwitch;
-import l1j.server.server.command.executor.L1Loc;
-import l1j.server.server.command.executor.L1Move;
 import l1j.server.server.command.executor.L1ServerName;
 import l1j.server.server.command.executor.L1GfxId;
 import l1j.server.server.command.executor.L1SkillEffect;
@@ -99,10 +92,6 @@ import l1j.server.server.command.executor.L1Search;
 import l1j.server.server.command.executor.L1ChatNG;
 import l1j.server.server.command.executor.L1Chat;
 import l1j.server.server.command.executor.L1DeleteGroundItem;
-import l1j.server.server.command.executor.L1Kick;
-import l1j.server.server.command.executor.L1ToPC;
-import l1j.server.server.command.executor.L1Kill;
-import l1j.server.server.command.executor.L1Invisible;
 import l1j.server.server.command.executor.L1PartyRecall;
 import l1j.server.server.command.executor.L1RemoveLetter;
 import l1j.server.server.command.executor.L1HpBar;
@@ -204,6 +193,13 @@ import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.Account;
 import l1j.server.server.ThreadPool;
+
+import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.network.core.sc.packet.SC_Invis;
+import l1j.server.server.model.Instance.L1ClanJoinInstance;
+import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
+import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 
 public final class BuilderCmdHandler {
  
@@ -366,7 +362,7 @@ public final class BuilderCmdHandler {
 		registerExisting(loaded, "버프", L1Buff::getInstance);
 		registerExisting(loaded, "버프아이콘", L1BuffIcon::getInstance);
 		registerExisting(loaded, "변신", L1Poly::getInstance);
-		registerExisting(loaded, "불투명", L1Visible::getInstance);
+		registerLegacy(loaded, "불투명", BuilderCmdHandler::BuilderCmd_visible);
 		registerExisting(loaded, "서먼", L1Summon::getInstance);
 		registerExisting(loaded, "선물", L1Present::getInstance);
 		registerExisting(loaded, "설문", L1GMQuestion::getInstance);
@@ -375,8 +371,8 @@ public final class BuilderCmdHandler {
 		registerExisting(loaded, "셀이펙트", L1ImPactGfxid::getInstance);
 		registerExisting(loaded, "셋팅", L1Status::getInstance);
 		registerExisting(loaded, "소생", L1Ress::getInstance);
-		registerExisting(loaded, "소환", L1Recall::getInstance);
-		registerExisting(loaded, "속도", L1Speed::getInstance);
+		registerLegacy(loaded, "소환", BuilderCmdHandler::BuilderCmd_recall);
+		registerLegacy(loaded, "속도", BuilderCmdHandler::BuilderCmd_speed);
 		registerExisting(loaded, "쇼트랩", L1ShowTrap::getInstance);
 		registerExisting(loaded, "스레드", L1Thread::getInstance);
 		registerExisting(loaded, "스킬", L1Burf::getInstance);
@@ -386,13 +382,13 @@ public final class BuilderCmdHandler {
 		registerExisting(loaded, "실행", L1Favorite::getInstance);
 		registerExisting(loaded, "아이템삭제", L1ItemDelete::getInstance);
 		registerExisting(loaded, "아이피추방", L1SKick::getInstance);
-		registerExisting(loaded, "액션", L1Action::getInstance);
-		registerExisting(loaded, "에코", L1Echo::getInstance);
+		registerLegacy(loaded, "액션", BuilderCmdHandler::BuilderCmd_action);
+		registerLegacy(loaded, "에코", BuilderCmdHandler::BuilderCmd_echo);
 		registerExisting(loaded, "엔피씨다운", L1NpcDown::getInstance);
 		registerExisting(loaded, "영구추방", L1PowerKick::getInstance);
 		registerExisting(loaded, "영자상점1", L1NpcShopSwitch::getInstance);
-		registerExisting(loaded, "위치", L1Loc::getInstance);
-		registerExisting(loaded, "이동", L1Move::getInstance);
+		registerLegacy(loaded, "위치", BuilderCmdHandler::BuilderCmd_show_loc);
+		registerLegacy(loaded, "이동", BuilderCmdHandler::BuilderCmd_move);
 		registerExisting(loaded, "이름", L1ServerName::getInstance);
 		registerExisting(loaded, "이미지", L1GfxId::getInstance);
 		registerExisting(loaded, "이펙트", L1SkillEffect::getInstance);
@@ -407,10 +403,10 @@ public final class BuilderCmdHandler {
 		registerExisting(loaded, "채금", L1ChatNG::getInstance);
 		registerExisting(loaded, "채팅", L1Chat::getInstance);
 		registerExisting(loaded, "청소", L1DeleteGroundItem::getInstance);
-		registerExisting(loaded, "추방", L1Kick::getInstance);
-		registerExisting(loaded, "출두", L1ToPC::getInstance);
-		registerExisting(loaded, "킬", L1Kill::getInstance);
-		registerExisting(loaded, "투명", L1Invisible::getInstance);
+		registerLegacy(loaded, "추방", BuilderCmdHandler::BuilderCmd_kick);
+		registerLegacy(loaded, "출두", BuilderCmdHandler::BuilderCmd_to_pc);
+		registerLegacy(loaded, "킬", BuilderCmdHandler::BuilderCmd_kill);
+		registerLegacy(loaded, "투명", BuilderCmdHandler::BuilderCmd_invisible);
 		registerExisting(loaded, "파티소환", L1PartyRecall::getInstance);
 		registerExisting(loaded, "편지삭제", L1RemoveLetter::getInstance);
 		registerExisting(loaded, "피바", L1HpBar::getInstance);
@@ -4960,6 +4956,214 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 		} catch (Exception e) {
 			SC_SystemMessage.send(pc, ".계정압류 [캐릭터명] [압류사유번호] 으로 입력해 주세요.");
 			SC_SystemMessage.send(pc, "[압류사유]: 1(고정). 미풍양속으로.. 그외 없음");
+		}
+	}
+
+	private static void BuilderCmd_visible(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			pc.setGmInvis(false);
+			pc.killSkillEffectTimer(L1SkillId.INVISIBILITY);
+			SC_Invis.send(pc, pc.getId(), 0);
+
+			SC_WorldPutObject.broadcastPc(
+					pc,
+					"",
+					false);
+
+			SC_SystemMessage.send(pc, "투명상태를 해제했습니다. ");
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " 커멘드 에러");
+		}
+	}
+
+	private static void BuilderCmd_recall(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			Collection<L1PcInstance> targets = null;
+			
+			
+			
+			
+			if (arg.equalsIgnoreCase("소환")) {
+				targets = L1World.getInstance().getAllPlayers();
+			} else {
+				targets = new ArrayList<L1PcInstance>();
+				L1PcInstance tg = L1World.getInstance().getPlayer(arg);
+				if (tg == null) {
+					SC_SystemMessage.send(pc, "그러한 캐릭터는 없습니다. ");
+					return;
+				}
+				targets.add(tg);
+			}
+
+			try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+       SC_SystemMessage.nativeWriter("\\f:운영자님께서 당신을 소환 하였습니다."),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+for (L1PcInstance target : targets) {
+				
+
+				
+				
+				if (target.isPrivateShop() || target.isAutoClanjoin() /*|| target.isAutoFish()*/) {
+					SC_SystemMessage.send(pc, target.getName() + " 님은 상점모드 or 무인가입 중 입니다.");
+					return;
+				}
+				if (pc.getMapId() == 5554) {
+					SC_Ability.send(target, 3, true);
+				}
+				
+				L1Location loc = L1Teleport.getInstance().소환텔레포트(pc, 1);
+				target.start_teleportForGM(loc.getX(), loc.getY(), loc.getMapId(), target.getHeading(), 169, true, true);
+				SC_SystemMessage.send(pc, "\\f:캐릭터: ["+target.getName()+"]님을 소환하였습니다. ");
+				l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,target);
+			}
+}
+			
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + ".소환 캐릭터명 으로 입력해 주세요.]");
+		}
+	}
+
+	private static void BuilderCmd_kick(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			L1PcInstance target = L1World.getInstance().getPlayer(arg);
+
+			if (target != null) {
+				SC_SystemMessage.send(pc, (new StringBuilder()).append(target.getName()).append(" 를 추방 했습니다. ").toString());
+				L1ClanJoinInstance.ban_user(target);
+				target.getNetConnection().kick();	//만일의 경우를 대비
+				target.getNetConnection().close();	//만일의 경우를 대비
+				SC_Disconnect.send(target);
+			} else {
+				SC_SystemMessage.send(pc, "그러한 이름의 캐릭터는 월드내에는 존재하지 않습니다. ");
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " 캐릭명으로 입력. ");
+		}
+	}
+
+	private static void BuilderCmd_show_loc(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			
+			int locx = pc.getX();
+			int locy = pc.getY();
+			short mapid = pc.getMapId();
+			int gab = L1WorldMap.getInstance(). getMap(mapid).getOriginalTile(locx, locy);
+			int g2 = L1WorldMap.getInstance().getMap(mapid).getTestTile(locx, locy);
+			String msg = String.format("좌표 (%d, %d, %d) %d %d, %s", locx, locy, mapid, gab, g2, String.valueOf(L1WorldMap.getInstance().getMap(mapid).isPassable(locx, locy)));
+			SC_SystemMessage.send(pc, msg);
+			//pc.sendPackets(new SC_SystemMessage("타일번호: "+pc.getMap().getOriginalTile(locx, locy)));
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void BuilderCmd_move(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			int locx = Integer.parseInt(st.nextToken());
+			int locy = Integer.parseInt(st.nextToken());
+			short mapid;
+			if (st.hasMoreTokens()) {
+				mapid = Short.parseShort(st.nextToken());
+			} else {
+				mapid = pc.getMapId();
+			}
+//			L1Teleport.teleport(pc, locx, locy, mapid, 5, false);
+			pc.do_simple_teleport(locx, locy, mapid);
+			//pc.start_teleport(locx, locy, mapid, 5, 169, false, false);
+			SC_SystemMessage.send(pc, "좌표 " + locx + ", " + locy
+					+ ", " + mapid + "로 이동했습니다. ");
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName
+					+ " [X좌표] [Y좌표] [맵ID] 라고 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_invisible(L1PcInstance pc, String cmdName, String arg) {
+		try {
+
+			if (!pc.hasSkillEffect(L1SkillId.INVISIBILITY)) {
+				pc.setGmInvis(true);
+				SC_Invis.send(pc, pc.getId(), 1);
+				SC_Invis.broadcast(pc, pc.getId(), 1);
+
+				SC_RemoveObject.broadcast(pc);
+
+				pc.setSkillEffect(L1SkillId.INVISIBILITY, 0);
+			} else {
+				pc.setGmInvis(false);
+				pc.killSkillEffectTimer(L1SkillId.INVISIBILITY);
+				SC_Invis.send(pc, pc.getId(), 0);
+
+				SC_WorldPutObject.broadcastPc(pc);
+			}
+
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " 커멘드 에러");
+		}
+	}
+
+	private static void BuilderCmd_kill(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			L1PcInstance target = L1World.getInstance(). getPlayer(arg);
+			if(pc.getName().equalsIgnoreCase(target.getName())) {
+				SC_SystemMessage.send(pc, "본인은 죽일 수 없습니다.");
+				return;
+			}
+			if(target.isGm()) {
+				SC_SystemMessage.send(pc, "운영자는 죽일 수 없습니다.");
+				return;
+			}
+			if (target != null) {
+				target.setCurrentHp(0);
+				target.death(null, true);
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " [캐릭터명]으로 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_to_pc(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			L1PcInstance target = L1World.getInstance(). getPlayer(arg);
+
+			if (target != null) {
+
+				 
+				 
+//				L1Teleport.teleport(pc, target.getX(), target.getY(), target
+//						. getMapId(), 5, false);
+				pc.start_teleport(target.getX(), target.getY(), target.getMapId(), 5, 169, false, false);
+			} else {
+				SC_SystemMessage.send(pc, (new StringBuilder())
+						. append(arg). append(" : 해당 캐릭터는 없습니다. "). toString());
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " [캐릭터명]으로 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_echo(L1PcInstance pc, String cmdName, String arg) {
+		SC_SystemMessage.send(pc, arg);
+	}
+
+	private static void BuilderCmd_action(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			int actId = Integer.parseInt(st.nextToken(), 10);
+			SC_DoActionGFX.send(pc.getNetConnection(), pc.getId(), actId);
+		} catch (Exception exception) {
+			SC_SystemMessage.send(pc, cmdName + " [actid] 라고 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_speed(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			L1BuffUtil.haste(pc, 9999 * 1000);
+			L1BuffUtil.brave(pc, 9999 * 1000);
+		} catch (Exception e) {
+			e.printStackTrace();
+			SC_SystemMessage.send(pc, ".속도 커멘드 에러");
 		}
 	}
 }
