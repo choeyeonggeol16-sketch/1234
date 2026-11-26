@@ -361,7 +361,7 @@ public final class User {
 
             final L1ItemInstance item = pc.getInventory().GetByServerID(objectId);
 
-            if (price <= 0 || item == null || objectId <= 0 || objectId != item.getId() || item.isEquipped()
+            if (price <= 0 || item == null || item.getItem() == null || objectId <= 0 || objectId != item.getId() || item.isEquipped()
                     || item.getItemId() == L1ItemId.ADENA || (long) price * count > CInventory.MAX_AMOUNT
                     || (!item.isStackable() && count != 1) || item.getCount() < count || count <= 0
                     || containsListing(sells, objectId)) {
@@ -426,7 +426,7 @@ public final class User {
 
             final L1ItemInstance item = pc.getInventory().GetByServerID(objectId);
 
-            if (price <= 0 || item == null || objectId <= 0 || objectId != item.getId()
+            if (price <= 0 || item == null || item.getItem() == null || objectId <= 0 || objectId != item.getId()
                     || item.getItemId() == L1ItemId.ADENA || item.getBless() >= 128
                     || (long) price * count > CInventory.MAX_AMOUNT || (!item.isStackable() && count != 1) || count <= 0 || item.getCount() <= 0
                     || containsListing(sells, objectId) || containsListing(buys, objectId)) {
