@@ -26,48 +26,13 @@ public final class CItem {
 			if (itemType2 == 0) {
                 CItemConstInfo.AssembleEtcItem(item, os, itemType2, itemId, itemgrade);
             } else if (itemType2 == 1 || itemType2 == 2) {
-                CItemEnchantOption.AssembleEquipmentItem(item, os, itemType2, itemId, itemgrade);
+                EquipmentOptionPresentation.write(item, os, itemType2, itemId, itemgrade);
             }
 
-			// 원거리 치명타
-			if (itemId == 900082) {
-				switch (item.getEnchantLevel()) {
-				case 6:
-					os.writeLongCritical(1);
-					break;
-				case 7:
-					os.writeLongCritical(3);
-					break;
-				case 8:
-					os.writeLongCritical(5);
-					break;
-				case 9:
-					os.writeLongCritical(7);
-					break;
-				}
-			}
+            if (itemId == 203019 && item.getEnchantLevel() >= 0 && item.getEnchantLevel() <= 15) {
+                os.writeShortCritical(10);
+            }
 
-			// 근거리 치명타
-			if (itemId == 203019) { /** 포르세의 검 **/
-				if (item.getEnchantLevel() >= 0 && item.getEnchantLevel() <= 15)
-					os.writeShortCritical(10);
-			} else if (itemId == 900081) {
-				switch (item.getEnchantLevel()) {
-				case 6:
-					os.writeShortCritical(1);
-					break;
-				case 7:
-					os.writeShortCritical(3);
-					break;
-				case 8:
-					os.writeShortCritical(5);
-					break;
-				case 9:
-					os.writeShortCritical(7);
-					break;
-				}
-			}
-		
             appendExpiry(item, os);
 
 		} catch (Exception e) {

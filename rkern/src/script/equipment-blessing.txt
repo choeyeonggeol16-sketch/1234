@@ -1,0 +1,28 @@
+# Armor blessing options. Fields are separated by tabs.
+# BLESS_LEVEL STAT VALUE TOOLTIP_LABEL
+
+1	MAX_HP	30	최대HP
+2	MAX_HP	20	최대HP
+3	MAX_HP	10	최대HP
+4	MAX_HP	30	최대HP
+5	MAX_HP	40	최대HP
+6	MAX_HP	50	최대HP
+7	DMG_RED	1	리덕션
+8	DMG_RED	2	리덕션
+10	ABILITY_PLERCE	1	기술적중
+11	FEAR_PLERCE	1	공포적중
+12	DRAGON_SPELL_PLERCE	1	용언적중
+13	SPIRIT_PLERCE	1	정령적중
+14	MAGIC_HIT	1	마법적중
+15	ABILITY_RESIS	1	기술내성
+16	FEAR_RESIS	1	공포내성
+17	DRAGON_SPELL_RESIS	1	용언내성
+18	SPIRIT_RESIS	1	정령내성
+19	DMG_RATE	1	근거리대미지
+20	BOW_DMG	1	원거리대미지
+21	HIT	1	근거리명중
+22	BOW_HIT	1	원거리명중
+23	DMG_RED	1	리덕션
+24	AC	-1	추가방어력
+25	MR	3	MR
+26	SP	1	SP

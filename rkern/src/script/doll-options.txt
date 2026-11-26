@@ -1,0 +1,620 @@
+# Doll definitions. UTF-8. Fields are separated by tabs.
+# doll <item-id> <NPC-id> <profile-id> <name> <crystals> <exclusive-max-level>
+# both/runtime <option> <value>; setting <option> <Config key>; magic <mode> <display text>
+# hp-tick/mp-tick <value>; proc <combat-effect>
+
+doll	210070	200017	1	돌 골렘	50	0
+both	DAMAGE_REDUCTION	1
+
+doll	41250	80108	2	늑대인간	50	0
+proc	WOLF
+both	PERCENT_DMG	15
+
+doll	41248	80106	3	버그베어	50	0
+both	WEIGHT_REDUCTION	10
+
+doll	210072	200019	4	크러스트 시안	50	0
+proc	WOLF
+both	PERCENT_DMG	15
+
+doll	210096	200074	5	에티	50	0
+both	AC	3
+runtime	SPIRIT_RESIS	7
+
+doll	740	507	6	목각	50	0
+both	MAX_HP	50
+
+doll	41249	80107	7	서큐버스	50	0
+mp-tick	15
+runtime	MP_UP	15
+
+doll	210071	200018	8	장로	50	0
+mp-tick	15
+runtime	MP_UP	15
+
+doll	210105	200012	9	코카트리스	50	0
+both	BOW_DMG	1
+both	BOW_HIT	1
+
+doll	750	900233	10	눈사람	50	0
+runtime	MELEE_DMG	1
+runtime	MELEE_HIT	1
+
+doll	510216	900226	11	눈사람(A)	50	0
+runtime	BOW_HIT	5
+
+doll	510217	900227	12	눈사람(B)	50	0
+
+doll	510218	900228	13	눈사람(C)	50	0
+hp-tick	5
+
+doll	410172	81212	14	인어	50	0
+both	EXP_RATE	1
+
+doll	741	508	15	라바 골렘	50	0
+both	MELEE_DMG	1
+both	DAMAGE_REDUCTION	1
+
+doll	510219	900229	16	자이언트	50	0
+both	DAMAGE_REDUCTION	1
+both	BLESS_RATE	5
+both	EXP_RATE	10
+
+doll	510221	900231	17	흑장로	50	0
+mp-tick	15
+proc	BLACK
+runtime	MP_UP	15
+magic	MAGIC2	콜 라이트닝
+
+doll	510222	900232	18	서큐버스 퀸	50	0
+mp-tick	15
+both	SP	1
+runtime	MP_UP	15
+
+doll	447017	900225	19	드레이크	50	0
+both	BOW_DMG	2
+runtime	MP_UP	6
+
+doll	410173	81213	20	킹 버그베어	50	0
+mp-tick	10
+both	ABILITY_RESIS	8
+runtime	MP_UP	10
+
+doll	742	509	21	다이아몬드 골렘	50	0
+both	DAMAGE_REDUCTION	2
+
+doll	447016	900224	22	리치	50	0
+both	MAX_HP	80
+both	SP	2
+
+doll	510220	900230	23	사이클롭스	50	0
+both	MELEE_DMG	2
+both	MELEE_HIT	2
+both	ABILITY_RESIS	12
+
+doll	743	510	24	나이트발드	50	0
+both	MELEE_DMG	2
+both	MELEE_HIT	2
+both	ABILITY_PIERCE	5
+
+doll	744	511	25	시어	50	0
+both	BOW_DMG	5
+runtime	HP_UP	30
+
+doll	3000086	7310082	26	아이리스	50	0
+both	PC_DEFENSE	3
+both	FOU_DMG	10
+
+doll	3000087	7310083	27	뱀파이어	50	0
+both	MELEE_DMG	2
+both	MELEE_HIT	2
+both	FEAR_PIERCE	3
+both	ABILITY_RESIS	5
+
+doll	3000351	7320069	28	머미로드	50	0
+mp-tick	15
+both	BLESS_RATE	8
+both	DAMAGE_REDUCTION	2
+both	EXP_RATE	10
+runtime	MPR	15
+
+doll	745	512	29	데몬	50	0
+both	ABILITY_RESIS	12
+both	ABILITY_PIERCE	10
+
+doll	746	513	30	데스나이트	50	0
+proc	DEATH
+both	BLESS_RATE	10
+both	DAMAGE_REDUCTION	5
+both	EXP_RATE	20
+magic	MAGIC2	헬 파이어
+
+doll	3000088	7310084	31	바란카	50	0
+both	ABILITY_RESIS	12
+both	SPIRIT_PIERCE	10
+
+doll	3000352	7320070	32	타락	50	0
+both	SP	3
+both	ABILITY_RESIS	10
+both	DRAGON_PIERCE	5
+both	MAGIC_HIT	5
+
+doll	755	514	33	바포메트	50	0
+both	FEAR_PIERCE	5
+both	ABILITY_RESIS	10
+
+doll	756	515	34	얼음여왕	50	0
+both	BOW_DMG	5
+both	BOW_HIT	5
+both	ABILITY_RESIS	10
+both	SPIRIT_PIERCE	5
+
+doll	757	516	35	커츠	50	0
+both	AC	2
+both	PC_DEFENSE	3
+both	ABILITY_RESIS	10
+both	DRAGON_PIERCE	5
+both	FOU_DMG	10
+
+doll	4100007	7320200	59	안타라스	50	0
+mp-tick	15
+both	AC	3
+both	PVP_DMG	4
+both	PVP_DMG_RED	2
+both	ALL_RESIS	8
+both	BLESS_RATE	7
+both	DAMAGE_REDUCTION	6
+both	EXP_RATE	25
+runtime	MP_UP	15
+magic	MAGIC	\fe드래곤 피어
+
+doll	4100008	7320201	60	파푸리온	50	0
+mp-tick	5
+both	AC	3
+both	PVP_DMG	4
+both	PVP_DMG_RED	2
+both	ALL_RESIS	8
+both	ALL_PIERCE	3
+both	SP	4
+both	MAGIC_HIT	8
+runtime	MP_UP	5
+magic	MAGIC2	\fe드래곤 피어
+
+doll	4100009	7320202	61	린드비오르	50	0
+mp-tick	5
+both	AC	3
+both	PVP_DMG	4
+both	PVP_DMG_RED	2
+both	ALL_RESIS	8
+both	ALL_PIERCE	3
+both	BOW_HIT	8
+both	BOW_DMG	4
+runtime	MP_UP	5
+magic	MAGIC2	\fe드래곤 피어
+
+doll	4100010	7320203	62	발라카스	50	0
+mp-tick	5
+both	AC	3
+both	PVP_DMG	4
+both	PVP_DMG_RED	2
+both	ALL_RESIS	8
+both	ALL_PIERCE	3
+both	MELEE_DMG	4
+both	MELEE_HIT	8
+runtime	MP_UP	5
+magic	MAGIC2	\fe드래곤 피어
+
+doll	4100134	7320261	63	진 데스나이트	50	0
+mp-tick	15
+both	AC	3
+both	ALL_RESIS	9
+both	ALL_PIERCE	4
+both	MELEE_DMG	5
+both	MELEE_HIT	9
+both	SP	6
+both	BOW_HIT	8
+both	BOW_DMG	4
+both	MAGIC_HIT	8
+both	PVP_DMG	3
+both	PVP_DMG_RED	5
+both	BLESS_RATE	10
+both	EXP_RATE	20
+
+doll	4200010	7420201	85	피닉스	50	0
+mp-tick	15
+both	AC	3
+both	PVP_DMG	3
+both	PVP_DMG_RED	5
+both	ALL_RESIS	9
+both	ALL_PIERCE	4
+both	BOW_HIT	8
+both	BOW_DMG	4
+both	BLESS_RATE	10
+both	EXP_RATE	20
+both	MELEE_DMG	5
+both	MELEE_HIT	9
+both	SP	6
+both	MAGIC_HIT	8
+
+doll	4200020	7420202	86	블랙리치	50	0
+mp-tick	15
+both	AC	3
+both	PVP_DMG	3
+both	PVP_DMG_RED	5
+both	SP	6
+both	ALL_RESIS	9
+both	ALL_PIERCE	4
+both	MAGIC_HIT	8
+both	BLESS_RATE	10
+both	EXP_RATE	20
+both	MELEE_DMG	5
+both	MELEE_HIT	9
+both	BOW_HIT	8
+both	BOW_DMG	4
+
+doll	4200030	7420203	87	베히모스	50	0
+mp-tick	15
+proc	BEHE
+setting	AC	베히추방
+setting	ALL_RESIS	베히올레즈
+setting	ALL_PIERCE	베히올적중
+setting	MELEE_DMG	베히근뎀
+setting	MELEE_HIT	베히근명
+setting	SP	베히스펠
+setting	BOW_HIT	베히원명
+setting	BOW_DMG	베히원뎀
+setting	PVP_DMG	베히pvp뎀
+setting	MAX_HP	베히맥스피
+setting	MAX_MP	베히맥스엠피
+setting	MAGIC_HIT	베히마법명중
+setting	PVP_DMG_RED	베히pvp리덕
+setting	BLESS_RATE	베히축복효율
+setting	EXP_RATE	베히추가경험치
+magic	MAGIC	베히모스의 질투
+
+doll	4200040	7420204	88	아우라키아	50	0
+mp-tick	15
+proc	AU
+setting	AC	아우라추방
+setting	ALL_RESIS	아우라올레즈
+setting	ALL_PIERCE	아우라올적중
+setting	MELEE_DMG	아우라근뎀
+setting	MELEE_HIT	아우라근명
+setting	SP	아우라스펠
+setting	BOW_HIT	아우라원명
+setting	BOW_DMG	아우라원뎀
+setting	PVP_DMG	아우라pvp뎀
+setting	MAX_HP	아우라맥스피
+setting	MAX_MP	아우라맥스엠피
+setting	MAGIC_HIT	아우라마법명중
+setting	PVP_DMG_RED	아우라pvp리덕
+setting	BLESS_RATE	아우라축복효율
+setting	EXP_RATE	아우라추가경험치
+magic	MAGIC	아우라키아의 심판
+
+doll	4200050	7420205	89	할파스	50	0
+mp-tick	15
+proc	HAL
+setting	AC	할파스추방
+setting	ALL_RESIS	할파스올레즈
+setting	ALL_PIERCE	할파스올적중
+setting	MELEE_DMG	할파스근뎀
+setting	MELEE_HIT	할파스근명
+setting	SP	할파스스펠
+setting	BOW_HIT	할파스원명
+setting	BOW_DMG	할파스원뎀
+setting	PVP_DMG	할파스pvp뎀
+setting	MAX_HP	할파스맥스피
+setting	MAX_MP	할파스맥스엠피
+setting	MAGIC_HIT	할파스마법명중
+setting	PVP_DMG_RED	할파스pvp리덕
+setting	BLESS_RATE	할파스축복효율
+setting	EXP_RATE	할파스추가경험치
+magic	MAGIC	할파스의 분노
+
+doll	4200060	7420206	90	드래곤슬레이어	50	0
+proc	DESEL
+setting	AC	드슬추방
+setting	ALL_RESIS	드슬올레즈
+setting	ALL_PIERCE	드슬올적중
+setting	MELEE_DMG	드슬근뎀
+setting	MELEE_HIT	드슬근명
+setting	SP	드슬스펠
+setting	BOW_HIT	드슬원명
+setting	BOW_DMG	드슬원뎀
+setting	PVP_DMG	드슬pvp뎀
+setting	MAX_HP	드슬맥스피
+setting	MAX_MP	드슬맥스엠피
+setting	MAGIC_HIT	드슬마법명중
+setting	PVP_DMG_RED	드슬pvp리덕
+setting	BLESS_RATE	드슬축복효율
+setting	EXP_RATE	드슬추가경험치
+magic	MAGIC	드래곤슬레이어의 절단
+
+doll	4200051	7420207	95	기르타스	50	0
+mp-tick	10
+both	AC	10
+both	ALL_RESIS	10
+both	ALL_PIERCE	10
+both	MELEE_DMG	10
+both	MELEE_HIT	10
+both	MELEE_CRIT	10
+both	PVP_DMG	8
+both	PVP_DMG_RED	8
+both	DAMAGE_REDUCTION	8
+both	BLESS_RATE	10
+runtime	MPR	10
+both	EXP_RATE	50
+
+doll	950000	410124	64	서큐버스 퀸	50	0
+mp-tick	15
+both	AC	2
+both	SP	1
+runtime	MP_UP	15
+
+doll	950001	410125	65	흑장로	50	0
+mp-tick	15
+proc	BLACK
+both	AC	2
+runtime	MP_UP	15
+magic	MAGIC2	콜 라이트닝
+
+doll	950002	410126	66	자이언트	50	0
+both	AC	2
+both	BLESS_RATE	5
+both	DAMAGE_REDUCTION	1
+both	EXP_RATE	10
+
+doll	950003	410127	67	드레이크	50	0
+both	AC	2
+both	BOW_DMG	2
+runtime	MP_UP	6
+
+doll	950004	410128	68	킹 버그베어	50	0
+both	AC	2
+both	ABILITY_RESIS	8
+runtime	MP_UP	10
+
+doll	950005	410129	69	다이아몬드 골렘	50	0
+both	AC	2
+both	DAMAGE_REDUCTION	2
+
+doll	950006	410130	70	사이클롭스	50	0
+both	AC	2
+both	PVP_DMG	2
+both	MELEE_DMG	2
+both	MELEE_HIT	2
+both	ABILITY_RESIS	12
+
+doll	950007	410131	71	리치	50	0
+both	AC	2
+both	PVP_DMG	2
+both	MAX_HP	80
+both	SP	2
+
+doll	950008	410132	72	나이트발드	50	0
+both	AC	2
+both	PVP_DMG	2
+both	MELEE_DMG	2
+both	MELEE_HIT	2
+both	ABILITY_PIERCE	5
+
+doll	950009	410133	73	시어	50	0
+both	AC	2
+both	PVP_DMG	2
+both	BOW_DMG	5
+runtime	HP_UP	30
+
+doll	950010	410134	74	아이리스	50	0
+both	AC	2
+both	PVP_DMG	2
+both	PC_DEFENSE	3
+both	FOU_DMG	10
+
+doll	950011	410135	75	뱀파이어	50	0
+both	AC	2
+both	PVP_DMG	2
+both	MELEE_DMG	2
+both	MELEE_HIT	2
+both	FEAR_PIERCE	3
+both	ABILITY_RESIS	5
+
+doll	950012	410136	76	머미로드	50	0
+mp-tick	15
+both	AC	2
+both	PVP_DMG	2
+both	BLESS_RATE	8
+both	DAMAGE_REDUCTION	2
+both	EXP_RATE	10
+runtime	MPR	15
+
+doll	950013	410137	77	데몬	50	0
+both	AC	3
+both	PVP_DMG	2
+both	PVP_DMG_RED	4
+both	ABILITY_RESIS	12
+both	ABILITY_PIERCE	10
+
+doll	950014	420138	78	데스나이트	50	0
+proc	DEATH
+both	AC	3
+both	PVP_DMG	2
+both	PVP_DMG_RED	4
+both	BLESS_RATE	10
+both	DAMAGE_REDUCTION	5
+both	EXP_RATE	20
+magic	MAGIC2	헬 파이어
+
+doll	950015	410139	79	바란카	50	0
+both	AC	3
+both	PVP_DMG	2
+both	PVP_DMG_RED	4
+both	ABILITY_RESIS	12
+both	SPIRIT_PIERCE	10
+
+doll	950016	410140	80	타락	50	0
+both	AC	3
+both	PVP_DMG	2
+both	PVP_DMG_RED	4
+both	SP	3
+both	ABILITY_RESIS	10
+both	DRAGON_PIERCE	5
+both	MAGIC_HIT	5
+
+doll	950017	410141	81	바포메트	50	0
+both	AC	3
+both	PVP_DMG	2
+both	PVP_DMG_RED	4
+both	FEAR_PIERCE	5
+both	ABILITY_RESIS	10
+
+doll	950018	410142	82	얼음여왕	50	0
+both	AC	3
+both	PVP_DMG	2
+both	PVP_DMG_RED	4
+both	BOW_DMG	5
+both	BOW_HIT	5
+both	ABILITY_RESIS	10
+both	SPIRIT_PIERCE	5
+
+doll	950019	410143	83	커츠	50	0
+both	AC	5
+both	PVP_DMG	2
+both	PVP_DMG_RED	4
+both	PC_DEFENSE	3
+both	ABILITY_RESIS	10
+both	DRAGON_PIERCE	5
+both	FOU_DMG	10
+
+doll	210086	200068	36	시댄서	50	0
+hp-tick	5
+
+doll	500214	900179	37	스파토이	50	0
+both	MELEE_DMG	2
+both	BLESS_RATE	5
+
+doll	500215	900180	38	허수아비	50	0
+both	BOW_DMG	2
+both	BOW_HIT	2
+both	MAX_HP	50
+both	MAX_MP	30
+
+doll	500213	900178	39	에틴	50	0
+
+doll	30022	5074	40	블레그	50	0
+both	SP	1
+both	MELEE_DMG	2
+both	BOW_DMG	2
+
+doll	30023	5075	41	레더그	50	0
+both	SP	1
+both	MELEE_DMG	2
+both	BOW_DMG	2
+
+doll	30024	5076	42	엘레그	50	0
+both	SP	1
+both	MELEE_DMG	2
+both	BOW_DMG	2
+
+doll	30025	5077	43	그레그	50	0
+both	SP	1
+both	MELEE_DMG	2
+both	BOW_DMG	2
+
+doll	210106	200008	44	해츨링	500	0
+mp-tick	5
+
+doll	210107	200009	44	해츨링	500	0
+
+doll	210108	200010	44	해츨링	500	0
+
+doll	210109	200011	44	해츨링	500	0
+
+doll	447012	900220	45	싸이 챔피언	50	0
+mp-tick	15
+both	MAX_HP	30
+both	MELEE_DMG	2
+
+doll	447013	900221	46	싸이 버드	50	0
+mp-tick	15
+both	BOW_HIT	2
+both	MAX_HP	30
+
+doll	447014	900222	47	싸이 강남스타일	50	0
+mp-tick	15
+both	SP	1
+both	MAX_HP	30
+
+doll	447015	900223	48	그렘린	50	0
+mp-tick	10
+both	MAX_HP	30
+both	SP	1
+both	MELEE_DMG	2
+both	BOW_DMG	2
+
+doll	500212	900176	49	다이노스	50	0
+mp-tick	15
+both	SP	1
+
+doll	758	503	51	지배자의 현신 1등급	50	0
+proc	RULER1
+both	AC	3
+both	SP	3
+both	BLESS_RATE	30
+both	EXP_RATE	30
+both	ABILITY_PIERCE	10
+both	FEAR_PIERCE	10
+both	ABILITY_RESIS	10
+both	FEAR_RESIS	10
+magic	MAGIC2	파이어 밤
+
+doll	759	504	52	지배자의 현신 2등급	50	0
+proc	RULER2
+both	BLESS_RATE	4
+both	DAMAGE_REDUCTION	3
+both	EXP_RATE	10
+magic	MAGIC2	파이어 밤
+
+doll	760	505	53	지배자의 현신 3등급	50	0
+proc	RULER3
+both	BLESS_RATE	3
+both	DAMAGE_REDUCTION	2
+both	EXP_RATE	5
+magic	MAGIC2	파이어 밤
+
+doll	761	506	54	지배자의 현신 4등급	50	0
+proc	RULER4
+both	BLESS_RATE	2
+both	EXP_RATE	2
+magic	MAGIC2	파이어 밤
+
+doll	772	537	55	지배자의 현신 1등급(1일)	50	0
+proc	RULER1_DAILY
+both	DAMAGE_REDUCTION	4
+both	EXP_RATE	15
+both	BLESS_RATE	5
+magic	MAGIC2	파이어 밤
+
+doll	773	538	56	지배자의 현신 2등급(1일)	50	0
+proc	RULER2_DAILY
+both	DAMAGE_REDUCTION	3
+both	EXP_RATE	10
+both	BLESS_RATE	4
+magic	MAGIC2	파이어 밤
+
+doll	774	539	57	지배자의 현신 3등급(1일)	50	0
+proc	RULER3_DAILY
+both	DAMAGE_REDUCTION	2
+both	EXP_RATE	5
+both	BLESS_RATE	3
+magic	MAGIC2	파이어 밤
+
+doll	775	540	58	지배자의 현신 4등급(1일)	50	0
+proc	RULER4_DAILY
+both	EXP_RATE	2
+both	BLESS_RATE	2
+magic	MAGIC2	파이어 밤
+
+doll	42654	203073	50	수련자 마법인형	50	82
+both	AC	1
+both	PC_DEFENSE	1

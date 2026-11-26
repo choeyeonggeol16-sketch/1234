@@ -1,0 +1,1783 @@
+# Base equipment options copied from the supplied 2026-10-31 DB snapshot (UTF-8).
+# Tab-separated fields. Each row is weapon/armor, item ID, then key=value fields.
+# Numeric fields omitted within a row are zero. Omitted Magic_name is SQL NULL.
+# A row supplies the base values for that item. Unlisted IDs continue to read the database.
+# The database still provides template identity, item type, grade, restrictions and graphics.
+# Additional enchant and class effects are defined in equipment-options.txt.
+
+# weapon (576 definitions)
+weapon	1	dmg_small=2	dmg_large=3	safenchant=6	hitmodifier=2	canbedmg=1
+weapon	2	dmg_small=1	dmg_large=3	safenchant=6	hitmodifier=-1	canbedmg=1
+weapon	3	dmg_small=2	dmg_large=2	safenchant=6	canbedmg=1
+weapon	4	dmg_small=4	dmg_large=2	safenchant=6	hitmodifier=2	canbedmg=1
+weapon	5	dmg_small=4	dmg_large=3	safenchant=6	hitmodifier=2	canbedmg=1
+weapon	6	dmg_small=4	dmg_large=3	safenchant=6	hitmodifier=2	canbedmg=1
+weapon	7	dmg_small=4	dmg_large=4	safenchant=6	hitmodifier=5	dmgmodifier=1	canbedmg=1	Magic_name=플라즈마
+weapon	8	dmg_small=6	dmg_large=5	safenchant=6	add_mpr=3	add_sp=1	canbedmg=1
+weapon	9	dmg_small=7	dmg_large=7	safenchant=6	dmgmodifier=2
+weapon	10	dmg_small=8	dmg_large=8	safenchant=6	hitmodifier=1	canbedmg=1
+weapon	11	dmg_small=10	dmg_large=4	safenchant=6	dmgmodifier=1	canbedmg=1
+weapon	12	dmg_small=25	dmg_large=19	hitmodifier=15	dmgmodifier=10	add_str=1	add_cha=1	add_hp=100	Magic_name=윈드 포스
+weapon	13	dmg_small=17	dmg_large=15	safenchant=6	hitmodifier=3	dmgmodifier=2	min_lvl=50
+weapon	14	dmg_small=18	dmg_large=2	dmgmodifier=2	canbedmg=1	min_lvl=45
+weapon	15	safenchant=6	canbedmg=1
+weapon	16	dmg_small=4	dmg_large=36	hitmodifier=3	dmgmodifier=3	canbedmg=1
+weapon	17	dmg_small=5	dmg_large=6	hitmodifier=3	dmgmodifier=3	canbedmg=1	min_lvl=45
+weapon	18	dmg_small=3	dmg_large=2	hitmodifier=5	canbedmg=1	min_lvl=45
+weapon	19	dmg_small=3	dmg_large=3	safenchant=6	canbedmg=1
+weapon	20	dmg_small=4	dmg_large=4	safenchant=6	canbedmg=1
+weapon	21	dmg_small=4	dmg_large=4	safenchant=6	canbedmg=1
+weapon	22	dmg_small=4	dmg_large=5	safenchant=6	hitmodifier=10	canbedmg=1
+weapon	23	dmg_small=4	dmg_large=6	safenchant=6	canbedmg=1
+weapon	24	dmg_small=6	dmg_large=8	safenchant=6	canbedmg=1
+weapon	25	dmg_small=7	dmg_large=7	safenchant=6	canbedmg=1
+weapon	26	dmg_small=7	dmg_large=8	safenchant=6	canbedmg=1
+weapon	27	dmg_small=8	dmg_large=8	safenchant=6	canbedmg=1
+weapon	28	dmg_small=8	dmg_large=8	safenchant=6	canbedmg=1
+weapon	29	dmg_small=8	dmg_large=12	safenchant=6	canbedmg=1
+weapon	30	dmg_small=15	dmg_large=13	safenchant=6	dmgmodifier=3	add_str=1	canbedmg=1
+weapon	31	dmg_small=8	dmg_large=12	safenchant=6	canbedmg=1
+weapon	32	dmg_small=9	dmg_large=11	safenchant=6	canbedmg=1
+weapon	33	dmg_small=9	dmg_large=12	safenchant=6	dmgmodifier=2	canbedmg=1
+weapon	34	dmg_small=10	dmg_large=8	safenchant=6	add_hpr=-3	canbedmg=1
+weapon	35	dmg_small=8	dmg_large=8	safenchant=6	hitmodifier=5	canbedmg=1	Magic_name=플라즈마	isEndedTimeMessage=1
+weapon	36	dmg_small=10	dmg_large=10	safenchant=6	canbedmg=1
+weapon	37	dmg_small=10	dmg_large=11	safenchant=6
+weapon	38	dmg_small=10	dmg_large=12	safenchant=6	hitmodifier=1	canbedmg=1
+weapon	39	dmg_small=10	dmg_large=12	safenchant=6	hitmodifier=1
+weapon	40	dmg_small=13	dmg_large=15	safenchant=6	dmgmodifier=3	canbedmg=1
+weapon	41	dmg_small=8	dmg_large=10	safenchant=6	hitmodifier=1	dmgmodifier=1	canbedmg=1
+weapon	42	dmg_small=11	dmg_large=6	safenchant=6	canbedmg=1
+weapon	43	dmg_small=11	dmg_large=6	safenchant=6	hitmodifier=1	canbedmg=1
+weapon	44	dmg_small=12	dmg_large=12	safenchant=6	hitmodifier=3	dmgmodifier=1	add_dex=1	add_hp=50	canbedmg=1	Magic_name=커스 포이즌
+weapon	45	dmg_small=11	dmg_large=12	safenchant=9	canbedmg=1
+weapon	46	dmg_small=11	dmg_large=12	safenchant=9	hitmodifier=1	canbedmg=1
+weapon	47	dmg_small=12	dmg_large=12	safenchant=6	hitmodifier=2	canbedmg=1	Magic_name=사일런스
+weapon	48	dmg_small=15	dmg_large=15	safenchant=6	hitmodifier=1	dmgmodifier=3	canbedmg=1	Magic_name=플라즈마	isEndedTimeMessage=1
+weapon	49	dmg_small=13	dmg_large=10	safenchant=6	hitmodifier=1	dmgmodifier=2	canbedmg=1
+weapon	50	dmg_small=14	dmg_large=6	safenchant=6	hitmodifier=4	canbedmg=1	min_lvl=50
+weapon	51	dmg_small=14	dmg_large=20	safenchant=6	hitmodifier=5	min_lvl=50
+weapon	52	dmg_small=17	dmg_large=19	safenchant=6	dmgmodifier=3	canbedmg=1
+weapon	53	dmg_small=17	dmg_large=21	safenchant=6	dmgmodifier=3	canbedmg=1
+weapon	54	dmg_small=18	dmg_large=11	safenchant=6	hitmodifier=9	dmgmodifier=5	Magic_name=라이트닝 스트라이크
+weapon	55	dmg_small=15	dmg_large=12	safenchant=6	dmgmodifier=1	canbedmg=1
+weapon	56	dmg_small=16	dmg_large=10	safenchant=6	hitmodifier=2	min_lvl=50
+weapon	57	dmg_small=16	dmg_large=13	safenchant=6	hitmodifier=2	dmgmodifier=3
+weapon	58	dmg_small=20	dmg_large=9	safenchant=6	hitmodifier=8	dmgmodifier=3	canbedmg=1	Magic_name=헬 파이어
+weapon	59	dmg_small=28	dmg_large=36	safenchant=6	hitmodifier=7	dmgmodifier=6	add_str=1	canbedmg=1
+weapon	60	dmg_small=99	dmg_large=100	safenchant=6	hitmodifier=100	dmgmodifier=120	add_str=10	add_dex=10	add_con=10	add_int=10	add_wis=10	add_cha=10	add_hp=100	add_mp=100	add_hpr=100	add_mpr=100	add_sp=10	m_def=10	min_lvl=52	Magic_name=헬 미티어
+weapon	61	dmg_small=35	dmg_large=46	hitmodifier=15	dmgmodifier=22	add_str=2	Magic_name=저지먼트 블로우	melee_critical_probability=1
+weapon	62	dmg_small=19	dmg_large=23	safenchant=6	hitmodifier=1	dmgmodifier=5	canbedmg=1
+weapon	63	dmg_small=17	dmg_large=9	safenchant=6	hitmodifier=4	haste_item=1
+weapon	64	dmg_small=20	dmg_large=17	safenchant=6	dmgmodifier=3	canbedmg=1
+weapon	65	dmg_small=17	dmg_large=19	safenchant=-1	canbedmg=1	min_lvl=50
+weapon	66	dmg_small=33	dmg_large=40	hitmodifier=9	dmgmodifier=12	add_str=2	Magic_name=드래곤의 일격	melee_critical_probability=3
+weapon	67	dmg_small=27	dmg_large=45	safenchant=-1	hitmodifier=3	dmgmodifier=3	canbedmg=1	min_lvl=45
+weapon	68	dmg_small=35	dmg_large=20	safenchant=-1	hitmodifier=5	canbedmg=1	min_lvl=45
+weapon	69	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=2	double_dmg_chance=20	canbedmg=1
+weapon	70	dmg_small=8	dmg_large=8	safenchant=6	dmgmodifier=3	double_dmg_chance=20
+weapon	71	dmg_small=10	dmg_large=7	safenchant=6	hitmodifier=1	double_dmg_chance=20	canbedmg=1
+weapon	72	dmg_small=11	dmg_large=7	safenchant=6	hitmodifier=1	double_dmg_chance=20	canbedmg=1
+weapon	73	dmg_small=11	dmg_large=8	safenchant=6	hitmodifier=5	double_dmg_chance=20	canbedmg=1	Magic_name=플라즈마	isEndedTimeMessage=1
+weapon	74	dmg_small=11	dmg_large=8	safenchant=6	hitmodifier=3	double_dmg_chance=20	canbedmg=1
+weapon	75	dmg_small=12	dmg_large=8	safenchant=6	hitmodifier=3	double_dmg_chance=20
+weapon	76	dmg_small=18	dmg_large=8	safenchant=6	hitmodifier=7	dmgmodifier=2	double_dmg_chance=32	Magic_name=리벤지
+weapon	77	dmg_small=13	dmg_large=8	safenchant=6	hitmodifier=2	double_dmg_chance=20	canbedmg=1
+weapon	78	dmg_small=13	dmg_large=13	safenchant=6	dmgmodifier=2	double_dmg_chance=20
+weapon	79	dmg_small=14	dmg_large=10	safenchant=6	double_dmg_chance=20
+weapon	80	dmg_small=15	dmg_large=9	safenchant=6	double_dmg_chance=20
+weapon	81	dmg_small=15	dmg_large=10	safenchant=6	hitmodifier=4	dmgmodifier=1	add_str=1	double_dmg_chance=20
+weapon	82	dmg_small=15	dmg_large=10	safenchant=6	double_dmg_chance=20
+weapon	83	dmg_small=15	dmg_large=11	safenchant=6	double_dmg_chance=20
+weapon	84	dmg_small=18	dmg_large=14	safenchant=6	hitmodifier=4	dmgmodifier=3	add_str=1	double_dmg_chance=25
+weapon	85	dmg_small=18	dmg_large=13	safenchant=6	hitmodifier=3	dmgmodifier=1	double_dmg_chance=20	haste_item=1
+weapon	86	dmg_small=32	dmg_large=22	hitmodifier=15	dmgmodifier=12	add_str=2	double_dmg_chance=20	Magic_name=스위프트
+weapon	87	canbedmg=1
+weapon	88	dmg_small=3	dmg_large=4	safenchant=6	canbedmg=1
+weapon	89	dmg_small=4	dmg_large=4	safenchant=6	canbedmg=1
+weapon	90	dmg_small=10	dmg_large=12	safenchant=6	canbedmg=1
+weapon	91	dmg_small=4	dmg_large=6	safenchant=6	canbedmg=1
+weapon	92	dmg_small=10	dmg_large=17	safenchant=6	canbedmg=1
+weapon	93	dmg_small=5	dmg_large=4	safenchant=6	canbedmg=1
+weapon	94	dmg_small=6	dmg_large=6	safenchant=6	canbedmg=1
+weapon	95	dmg_small=6	dmg_large=8	safenchant=6	canbedmg=1
+weapon	96	dmg_small=6	dmg_large=8	safenchant=6	canbedmg=1
+weapon	97	dmg_small=12	dmg_large=14	safenchant=6	canbedmg=1
+weapon	98	dmg_small=12	dmg_large=16	safenchant=6	canbedmg=1
+weapon	99	dmg_small=7	dmg_large=8	safenchant=6	canbedmg=1
+weapon	100	dmg_small=7	dmg_large=8	safenchant=6	canbedmg=1
+weapon	101	dmg_small=8	dmg_large=8	safenchant=6	canbedmg=1
+weapon	102	dmg_small=15	dmg_large=17	safenchant=6	hitmodifier=3
+weapon	103	dmg_small=16	dmg_large=12	safenchant=6
+weapon	104	dmg_small=16	dmg_large=16	safenchant=6	hitmodifier=3
+weapon	105	dmg_small=20	dmg_large=19	safenchant=6	hitmodifier=3	dmgmodifier=3	Magic_name=디지즈
+weapon	106	dmg_small=15	dmg_large=15	safenchant=6	hitmodifier=2	dmgmodifier=1
+weapon	107	dmg_small=21	dmg_large=21	safenchant=6	hitmodifier=4	add_hp=50
+weapon	108
+weapon	109
+weapon	110
+weapon	111
+weapon	112	dmg_small=8	dmg_large=8	safenchant=6	min_lvl=15
+weapon	113	dmg_small=8	dmg_large=8	safenchant=6	add_dex=1	add_int=-1	add_hp=-15	min_lvl=15
+weapon	114	dmg_small=14	dmg_large=16	safenchant=6	dmgmodifier=1	min_lvl=40
+weapon	115	dmg_small=1	dmg_large=1	safenchant=6	add_mpr=10
+weapon	116	dmg_small=1	dmg_large=1	safenchant=6	add_mpr=5	add_sp=2
+weapon	117	dmg_small=1	dmg_large=1	safenchant=6	hitmodifier=-3	add_mpr=10	add_sp=-2	haste_item=1
+weapon	118	dmg_small=1	dmg_large=1	safenchant=6	add_cha=2	add_sp=1
+weapon	119	dmg_small=1	dmg_large=1	add_sp=5
+weapon	120	dmg_small=10	dmg_large=12	safenchant=6	hitmodifier=5	dmgmodifier=1	add_mpr=7	Magic_name=플라즈마
+weapon	121	dmg_small=8	dmg_large=9	safenchant=6	hitmodifier=5	dmgmodifier=1	Magic_name=콘 오브 콜드
+weapon	122	dmg_small=2	dmg_large=3	safenchant=6	add_mpr=8	add_sp=1
+weapon	123	dmg_small=2	dmg_large=3	add_mpr=10	add_sp=2
+weapon	124	dmg_small=7	dmg_large=6	hitmodifier=8	dmgmodifier=5	Magic_name=레이징 이럽션
+weapon	125	dmg_small=2	dmg_large=3	safenchant=6	add_sp=1
+weapon	126	dmg_small=7	dmg_large=7	safenchant=6	hitmodifier=-3	add_sp=1
+weapon	127	dmg_small=15	dmg_large=15	safenchant=6	hitmodifier=3	dmgmodifier=6	add_str=3	add_sp=3
+weapon	128	dmg_small=3	dmg_large=4	safenchant=6	magicdmgmodifier=1
+weapon	129	dmg_small=4	dmg_large=5	safenchant=6	magicdmgmodifier=3
+weapon	130	dmg_small=8	dmg_large=8	safenchant=6	add_int=1	add_wis=1	add_mpr=5	min_lvl=40
+weapon	131	dmg_small=9	dmg_large=9	safenchant=6	dmgmodifier=3	add_str=3	add_sp=-2
+weapon	132	dmg_small=9	dmg_large=9	safenchant=6
+weapon	133	dmg_small=10	dmg_large=10	safenchant=-1	min_lvl=50
+weapon	134	dmg_small=23	dmg_large=21	hitmodifier=13	dmgmodifier=4	add_int=2	add_sp=8	Magic_name=라이트닝 스트라이크
+weapon	135	safenchant=6
+weapon	136	dmg_small=3	dmg_large=5	safenchant=6
+weapon	137	dmg_small=4	dmg_large=4	safenchant=6	hitmodifier=2
+weapon	138	dmg_small=6	dmg_large=3	safenchant=6
+weapon	139	dmg_small=6	dmg_large=4	safenchant=6
+weapon	140	dmg_small=6	dmg_large=8	safenchant=6
+weapon	141	dmg_small=17	dmg_large=19	safenchant=6
+weapon	142	dmg_small=17	dmg_large=24	safenchant=6
+weapon	143	dmg_small=18	dmg_large=18	safenchant=6
+weapon	144	dmg_small=18	dmg_large=24	safenchant=6
+weapon	145	dmg_small=19	dmg_large=19	safenchant=6	dmgmodifier=1	haste_item=1
+weapon	146	dmg_small=9	dmg_large=10	safenchant=6
+weapon	147	dmg_small=22	dmg_large=24	safenchant=6	hitmodifier=3	add_hp=30	Magic_name=디지즈
+weapon	148	dmg_small=20	dmg_large=26	safenchant=6
+weapon	149	dmg_small=22	dmg_large=24	safenchant=6	haste_item=1
+weapon	150	dmg_small=15	dmg_large=16	safenchant=6	dmgmodifier=5
+weapon	151	dmg_small=30	dmg_large=30	hitmodifier=-2
+weapon	152	dmg_small=8	dmg_large=7	safenchant=6	hitmodifier=2	double_dmg_chance=33
+weapon	153	dmg_small=10	dmg_large=8	safenchant=6	hitmodifier=1	double_dmg_chance=33
+weapon	154	dmg_small=12	dmg_large=10	safenchant=6	hitmodifier=1	double_dmg_chance=33
+weapon	155	dmg_small=12	dmg_large=12	safenchant=6	dmgmodifier=2	double_dmg_chance=33
+weapon	156	dmg_small=12	dmg_large=10	safenchant=6	hitmodifier=5	dmgmodifier=1	double_dmg_chance=10	Magic_name=플라즈마
+weapon	157	dmg_small=13	dmg_large=10	safenchant=6	dmgmodifier=2	double_dmg_chance=33
+weapon	158	dmg_small=14	dmg_large=11	safenchant=6	dmgmodifier=2	double_dmg_chance=33
+weapon	159	dmg_small=14	dmg_large=12	safenchant=6	hitmodifier=2	double_dmg_chance=33
+weapon	160	dmg_small=25	dmg_large=20	dmgmodifier=10	add_dex=2	double_dmg_chance=33
+weapon	161	dmg_small=17	dmg_large=13	safenchant=6	double_dmg_chance=33
+weapon	162	dmg_small=17	dmg_large=15	safenchant=6	hitmodifier=2	dmgmodifier=3	add_str=1	double_dmg_chance=33
+weapon	163	dmg_small=18	dmg_large=18	safenchant=6	dmgmodifier=8	double_dmg_chance=33
+weapon	164	dmg_small=22	dmg_large=18	safenchant=6	hitmodifier=4	dmgmodifier=5	double_dmg_chance=34
+weapon	165	dmg_small=20	dmg_large=18	safenchant=6	dmgmodifier=3	double_dmg_chance=33	haste_item=1
+weapon	166	dmg_small=26	dmg_large=15	hitmodifier=2	dmgmodifier=5	double_dmg_chance=33
+weapon	167	dmg_small=1	dmg_large=1	safenchant=6	min_lvl=45
+weapon	168	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=4
+weapon	169	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=5	dmgmodifier=1
+weapon	170	dmg_small=2	dmg_large=2	safenchant=6	dmgmodifier=1
+weapon	171	dmg_small=8	dmg_large=6	safenchant=6	dmgmodifier=-1
+weapon	172	dmg_small=8	dmg_large=6	safenchant=6
+weapon	173	dmg_small=8	dmg_large=6	safenchant=6	dmgmodifier=-1
+weapon	174	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=5	Magic_name=플라즈마
+weapon	175	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=2	dmgmodifier=1	Magic_name=플라즈마	isEndedTimeMessage=1
+weapon	176	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=2	dmgmodifier=2
+weapon	177	dmg_small=9	dmg_large=6	safenchant=6	hitmodifier=5	dmgmodifier=2
+weapon	178	dmg_small=7	dmg_large=8	safenchant=6	hitmodifier=1	dmgmodifier=1
+weapon	179	dmg_small=7	dmg_large=9	safenchant=6	hitmodifier=1	dmgmodifier=2	add_dex=1
+weapon	180	dmg_small=9	dmg_large=6	safenchant=6	hitmodifier=2	dmgmodifier=3
+weapon	181	dmg_small=14	dmg_large=12	safenchant=6	dmgmodifier=4
+weapon	182	dmg_small=7	dmg_large=9	safenchant=6	hitmodifier=5	dmgmodifier=2	min_lvl=45
+weapon	183	dmg_small=8	dmg_large=8	safenchant=6	hitmodifier=5	dmgmodifier=8	add_dex=2	max_use_time=300
+weapon	184	dmg_small=14	dmg_large=12	safenchant=6	hitmodifier=2	dmgmodifier=3	min_lvl=50
+weapon	185	dmg_small=12	dmg_large=10	safenchant=6	hitmodifier=2	dmgmodifier=4	haste_item=1
+weapon	186	dmg_small=9	dmg_large=7	safenchant=6	hitmodifier=2	dmgmodifier=1	add_dex=1
+weapon	187	dmg_small=9	dmg_large=7	safenchant=6	hitmodifier=2	dmgmodifier=2
+weapon	188	dmg_small=9	dmg_large=7	safenchant=6	hitmodifier=2	dmgmodifier=3
+weapon	189	dmg_small=21	dmg_large=17	safenchant=6	hitmodifier=6	dmgmodifier=5	missile_critical_probability=3
+weapon	190	dmg_small=16	dmg_large=14	safenchant=6	hitmodifier=2	dmgmodifier=4
+weapon	191	dmg_small=13	dmg_large=12	safenchant=6	hitmodifier=2	dmgmodifier=2	add_dex=2	add_con=2	Magic_name=엘븐 애로우
+weapon	192	dmg_small=10	dmg_large=9	safenchant=-1	min_lvl=50
+weapon	193	dmg_small=6	dmg_large=8	safenchant=6	hitmodifier=1
+weapon	194	dmg_small=6	dmg_large=8	safenchant=6	hitmodifier=3	dmgmodifier=1
+weapon	195	dmg_small=19	dmg_large=22	safenchant=6	hitmodifier=4	add_hpr=-30	min_lvl=50
+weapon	196	dmg_small=6	dmg_large=8	hitmodifier=1	dmgmodifier=4
+weapon	197	dmg_small=7	dmg_large=9	hitmodifier=2	dmgmodifier=5
+weapon	198	dmg_small=8	dmg_large=10	hitmodifier=3	dmgmodifier=6
+weapon	199	dmg_small=9	dmg_large=11	hitmodifier=4	dmgmodifier=7
+weapon	200	dmg_small=10	dmg_large=12	hitmodifier=5	dmgmodifier=8
+weapon	201	dmg_small=11	dmg_large=13	hitmodifier=6	dmgmodifier=9
+weapon	202	dmg_small=12	dmg_large=14	hitmodifier=7	dmgmodifier=10
+weapon	203	dmg_small=13	dmg_large=15	hitmodifier=8	dmgmodifier=11	Magic_name=미티어
+weapon	204	dmg_small=9	dmg_large=7	safenchant=6	hitmodifier=1	min_lvl=40	Magic_name=홀드
+weapon	205	dmg_small=19	dmg_large=15	safenchant=6	hitmodifier=5	dmgmodifier=3	Magic_name=문라이트 이럽션
+weapon	206	dmg_small=7	dmg_large=8	canbedmg=1
+weapon	207	dmg_small=14	dmg_large=12	hitmodifier=-5	dmgmodifier=4	double_dmg_chance=33
+weapon	208	dmg_small=8	dmg_large=8	safenchant=6	add_hp=-15	add_sp=1	canbedmg=1	min_lvl=15
+weapon	209	dmg_small=8	dmg_large=8	safenchant=6	add_con=1	canbedmg=1	min_lvl=15
+weapon	210	dmg_small=11	dmg_large=26	safenchant=6	hitmodifier=3	add_hp=80
+weapon	211	dmg_small=12	dmg_large=12	safenchant=6	canbedmg=1
+weapon	212	dmg_small=24	dmg_large=22	safenchant=6	hitmodifier=4	dmgmodifier=2
+weapon	213	dmg_small=15	dmg_large=15	add_int=2	add_wis=2	add_mpr=15	add_sp=10
+weapon	214	dmg_small=9	dmg_large=7	safenchant=6	hitmodifier=2	dmgmodifier=2
+weapon	215	dmg_small=8	dmg_large=6	safenchant=6	dmgmodifier=1	add_dex=1	min_lvl=15
+weapon	216	dmg_small=2	dmg_large=2	dmgmodifier=1
+weapon	217	dmg_small=43	dmg_large=53	hitmodifier=7	dmgmodifier=33	add_str=2	add_con=1	add_cha=2
+weapon	218	dmg_small=26	dmg_large=26	safenchant=6	haste_item=1
+weapon	219	dmg_small=16	dmg_large=18	safenchant=6
+weapon	220	dmg_small=4	dmg_large=5
+weapon	223
+weapon	224	dmg_small=3	dmg_large=3	safenchant=6	hitmodifier=2	dmgmodifier=1	add_mpr=7
+weapon	225	dmg_small=7	dmg_large=8	canbedmg=1
+weapon	226	dmg_small=8	dmg_large=8	canbedmg=1
+weapon	228	dmg_small=8	dmg_large=8	safenchant=6
+weapon	231	dmg_small=8	dmg_large=6	safenchant=-1	hitmodifier=12	dmgmodifier=5	canbedmg=1	max_use_time=300000
+weapon	232	dmg_small=12	dmg_large=12	safenchant=-1	hitmodifier=2	dmgmodifier=5	canbedmg=1
+weapon	233	dmg_small=18	dmg_large=22	safenchant=-1	hitmodifier=1	dmgmodifier=6	canbedmg=1
+weapon	234	dmg_small=14	dmg_large=12	safenchant=-1	hitmodifier=2	dmgmodifier=2	canbedmg=1
+weapon	235	dmg_small=14	dmg_large=10	safenchant=-1	dmgmodifier=5	canbedmg=1
+weapon	236	dmg_small=16	dmg_large=10	safenchant=-1	hitmodifier=2	dmgmodifier=5	double_dmg_chance=20
+weapon	237	dmg_small=18	dmg_large=14	safenchant=-1	dmgmodifier=6	double_dmg_chance=33
+weapon	238	dmg_small=8	dmg_large=5	safenchant=-1	dmgmodifier=5	add_mpr=8	add_sp=1
+weapon	239	dmg_small=3	dmg_large=3	safenchant=-1	hitmodifier=2	dmgmodifier=8
+weapon	240	dmg_small=3	dmg_large=3	safenchant=-1	hitmodifier=4	dmgmodifier=5
+weapon	241	dmg_small=10	dmg_large=12	safenchant=-1	hitmodifier=4	dmgmodifier=7
+weapon	242	dmg_small=3	dmg_large=2	safenchant=-1	hitmodifier=3	dmgmodifier=8
+weapon	243	dmg_small=1	dmg_large=1	safenchant=-1	add_mpr=10
+weapon	244	dmg_small=17	dmg_large=15	safenchant=-1	hitmodifier=4	dmgmodifier=10	double_dmg_chance=33
+weapon	245	dmg_small=1	dmg_large=1	safenchant=6
+weapon	246	dmg_small=10	dmg_large=10	safenchant=5
+weapon	247	dmg_small=10	dmg_large=10	safenchant=5
+weapon	248	dmg_small=10	dmg_large=10	safenchant=5
+weapon	249	dmg_small=10	dmg_large=10	safenchant=5
+weapon	250	dmg_small=16	dmg_large=4	safenchant=4	hitmodifier=5	dmgmodifier=5	canbedmg=1
+weapon	251	dmg_small=14	dmg_large=26	safenchant=4	hitmodifier=5	dmgmodifier=5	canbedmg=1
+weapon	252	dmg_small=10	dmg_large=10	safenchant=4	hitmodifier=5	dmgmodifier=5	canbedmg=1
+weapon	253	dmg_small=12	dmg_large=15	safenchant=4	dmgmodifier=2	canbedmg=1
+weapon	254	dmg_small=15	dmg_large=10	safenchant=4	dmgmodifier=3	double_dmg_chance=20	canbedmg=1
+weapon	255	dmg_small=13	dmg_large=13	safenchant=4	hitmodifier=5	dmgmodifier=5
+weapon	256	dmg_small=10	dmg_large=10	safenchant=6	hitmodifier=3	dmgmodifier=1	Magic_name=펌프킨 락 다운
+weapon	257	dmg_small=10	dmg_large=10	safenchant=6	dmgmodifier=1	canbedmg=1
+weapon	258	dmg_small=8	dmg_large=8	safenchant=6	dmgmodifier=3	Magic_name=
+weapon	283	dmg_small=30	dmg_large=32	hitmodifier=3	dmgmodifier=5	add_int=1	add_cha=1	add_sp=2	m_def=1	Magic_name=라이트닝 스트라이크
+weapon	290	dmg_small=28	dmg_large=28	safenchant=1	add_cha=1	m_def=1	Magic_name=
+weapon	294	dmg_small=22	dmg_large=25	hitmodifier=8	dmgmodifier=13	add_str=2	add_con=1	add_mp=100	add_mpr=5	magicdmgmodifier=15	Magic_name=라이트닝 스트라이크
+weapon	300	dmg_small=15	dmg_large=20	safenchant=6	hitmodifier=5	dmgmodifier=3	add_dex=3	canbedmg=1
+weapon	301	dmg_small=15	dmg_large=20	safenchant=6	hitmodifier=5	dmgmodifier=3	add_dex=3	canbedmg=1
+weapon	302	dmg_small=20	dmg_large=23	safenchant=6	hitmodifier=5	dmgmodifier=3	add_dex=3	double_dmg_chance=5	canbedmg=1
+weapon	303	dmg_small=15	dmg_large=20	safenchant=6	hitmodifier=5	dmgmodifier=3	add_dex=3	add_mpr=7
+weapon	304	dmg_small=15	dmg_large=20	safenchant=6	hitmodifier=5	dmgmodifier=3	add_dex=3
+weapon	305	dmg_small=3	dmg_large=3	safenchant=6	hitmodifier=5	dmgmodifier=3	add_dex=3
+weapon	306	dmg_small=15	dmg_large=20	safenchant=6	hitmodifier=5	dmgmodifier=3	add_dex=3
+weapon	307	dmg_small=23	dmg_large=35	safenchant=6	hitmodifier=7	dmgmodifier=6	add_str=2	Magic_name=블레이즈 쇼크
+weapon	308	dmg_small=4	dmg_large=4	safenchant=6	hitmodifier=5	dmgmodifier=3	add_int=1	add_sp=5	Magic_name=블레이즈 쇼크
+weapon	309	dmg_small=23	dmg_large=25	safenchant=6	hitmodifier=8	dmgmodifier=4	add_str=1	add_con=2	Magic_name=블레이즈 쇼크
+weapon	310	dmg_small=2	dmg_large=2	safenchant=6	hitmodifier=7	dmgmodifier=6	add_dex=2	Magic_name=블레이즈 쇼크
+weapon	311	dmg_small=22	dmg_large=24	safenchant=6	hitmodifier=6	dmgmodifier=4	add_dex=1	add_con=1	double_dmg_chance=20	Magic_name=블레이즈 쇼크
+weapon	312	dmg_small=25	dmg_large=28	safenchant=6	hitmodifier=7	dmgmodifier=4	add_dex=1	add_con=1	Magic_name=블레이즈 쇼크
+weapon	313	dmg_small=28	dmg_large=28	safenchant=6	add_int=1	add_sp=5	Magic_name=블레이즈 쇼크
+weapon	314	dmg_small=25	dmg_large=30	safenchant=6	hitmodifier=10	dmgmodifier=4	add_str=1	Magic_name=블레이즈 쇼크
+weapon	315	dmg_small=20	dmg_large=20	hitmodifier=8	dmgmodifier=10	add_int=2	add_sp=5	Magic_name=MP 흡수
+weapon	316	dmg_small=31	dmg_large=30	hitmodifier=4	dmgmodifier=17	add_con=1
+weapon	317	dmg_small=20	dmg_large=14	hitmodifier=3	dmgmodifier=10	add_hp=100	Magic_name=HP 흡수
+weapon	318	dmg_small=28	dmg_large=18	hitmodifier=6	dmgmodifier=9	double_dmg_chance=25	Magic_name=필살
+weapon	319	dmg_small=24	dmg_large=21	hitmodifier=4	dmgmodifier=9	Magic_name=낙뢰
+weapon	320	dmg_small=23	dmg_large=26	hitmodifier=3	dmgmodifier=5	add_str=1
+weapon	321	dmg_small=23	dmg_large=15	safenchant=-1	add_hp=100	Magic_name=디스인티그레이트
+weapon	322	dmg_small=34	dmg_large=37	safenchant=-1	hitmodifier=5	Magic_name=미티어 스트라이크
+weapon	323	dmg_small=6	dmg_large=6	safenchant=-1	hitmodifier=7	Magic_name=아이스 미티어 스트라이크
+weapon	324	dmg_small=5	dmg_large=5	safenchant=-1	hitmodifier=12	add_int=2	add_sp=10	Magic_name=디스인티그레이트
+weapon	325	dmg_small=30	dmg_large=20	safenchant=-1	hitmodifier=7	double_dmg_chance=30	Magic_name=미티어 스트라이크
+weapon	326	dmg_small=32	dmg_large=23	safenchant=-1	hitmodifier=5	double_dmg_chance=25	Magic_name=미티어 스트라이크
+weapon	327	dmg_small=33	dmg_large=25	safenchant=-1	hitmodifier=9	add_str=2	Magic_name=미티어 스트라이크
+weapon	328	dmg_small=33	dmg_large=33	safenchant=-1	add_int=3	add_sp=3	Magic_name=아이스 미티어 스트라이크
+weapon	329	dmg_small=36	dmg_large=39	safenchant=-1	hitmodifier=2	add_str=2	Magic_name=천둥번개
+weapon	500	dmg_small=17	dmg_large=13	safenchant=6	hitmodifier=5	dmgmodifier=3	canbedmg=1
+weapon	501	dmg_small=21	dmg_large=17	safenchant=6	hitmodifier=5	dmgmodifier=3	add_str=1	canbedmg=1
+weapon	502	dmg_small=19	dmg_large=17	safenchant=6	hitmodifier=4	dmgmodifier=2
+weapon	503	dmg_small=26	dmg_large=26	safenchant=6	add_mp=20
+weapon	504	dmg_small=26	dmg_large=26	safenchant=6	add_wis=1	add_sp=1
+weapon	505	dmg_small=10	dmg_large=10	safenchant=6	hitmodifier=3	add_mpr=1
+weapon	506	dmg_small=21	dmg_large=26	safenchant=6	hitmodifier=5	add_str=1	add_con=2	Magic_name=테베 체이서
+weapon	507	dmg_small=16	dmg_large=11	safenchant=6	dmgmodifier=1	add_dex=2	add_wis=1	double_dmg_chance=21	Magic_name=테베 체이서
+weapon	508	dmg_small=14	dmg_large=11	safenchant=6	dmgmodifier=1	add_int=2	add_wis=1	Magic_name=테베 체이서
+weapon	509	dmg_small=20	dmg_large=18	safenchant=6	hitmodifier=2	dmgmodifier=3	add_str=2	add_mpr=7	add_sp=2	Magic_name=테베 체이서
+weapon	510	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=12	dmgmodifier=5	canbedmg=1	max_use_time=21600
+weapon	511	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=12	dmgmodifier=5	canbedmg=1	max_use_time=64800
+weapon	512	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=12	dmgmodifier=5	canbedmg=1	max_use_time=108000
+weapon	513	dmg_small=18	dmg_large=22	safenchant=6	hitmodifier=1	dmgmodifier=6	canbedmg=1	max_use_time=21600
+weapon	514	dmg_small=18	dmg_large=22	safenchant=6	hitmodifier=1	dmgmodifier=6	canbedmg=1	max_use_time=64800
+weapon	515	dmg_small=18	dmg_large=22	safenchant=6	hitmodifier=1	dmgmodifier=6	canbedmg=1	max_use_time=108000
+weapon	516	dmg_small=14	dmg_large=12	safenchant=6	hitmodifier=2	dmgmodifier=2	canbedmg=1	max_use_time=21600
+weapon	517	dmg_small=14	dmg_large=12	safenchant=6	hitmodifier=2	dmgmodifier=2	canbedmg=1	max_use_time=64800
+weapon	518	dmg_small=14	dmg_large=12	safenchant=6	hitmodifier=2	dmgmodifier=2	canbedmg=1	max_use_time=108000
+weapon	519	dmg_small=14	dmg_large=10	safenchant=6	dmgmodifier=5	canbedmg=1	max_use_time=21600
+weapon	520	dmg_small=14	dmg_large=10	safenchant=6	dmgmodifier=5	canbedmg=1	max_use_time=64800
+weapon	521	dmg_small=14	dmg_large=10	safenchant=6	dmgmodifier=5	canbedmg=1	max_use_time=108000
+weapon	522	dmg_small=16	dmg_large=10	safenchant=6	hitmodifier=2	dmgmodifier=5	double_dmg_chance=20	max_use_time=21600
+weapon	523	dmg_small=16	dmg_large=10	safenchant=6	hitmodifier=2	dmgmodifier=5	double_dmg_chance=20	max_use_time=64800
+weapon	524	dmg_small=16	dmg_large=10	safenchant=6	hitmodifier=2	dmgmodifier=5	double_dmg_chance=20	max_use_time=108000
+weapon	525	dmg_small=18	dmg_large=14	safenchant=6	dmgmodifier=6	double_dmg_chance=33	max_use_time=21600
+weapon	526	dmg_small=18	dmg_large=14	safenchant=6	dmgmodifier=6	double_dmg_chance=33	max_use_time=64800
+weapon	527	dmg_small=18	dmg_large=14	safenchant=6	dmgmodifier=6	double_dmg_chance=33	max_use_time=108000
+weapon	528	dmg_small=8	dmg_large=5	safenchant=6	dmgmodifier=5	add_mpr=8	add_sp=1	max_use_time=21600
+weapon	529	dmg_small=8	dmg_large=5	safenchant=6	dmgmodifier=5	add_mpr=8	add_sp=1	max_use_time=64800
+weapon	530	dmg_small=8	dmg_large=5	safenchant=6	dmgmodifier=5	add_mpr=8	add_sp=1	max_use_time=108000
+weapon	531	dmg_small=3	dmg_large=3	safenchant=6	hitmodifier=2	dmgmodifier=8	max_use_time=21600
+weapon	532	dmg_small=3	dmg_large=3	safenchant=6	hitmodifier=2	dmgmodifier=8	max_use_time=64800
+weapon	533	dmg_small=3	dmg_large=3	safenchant=6	hitmodifier=2	dmgmodifier=8	max_use_time=108000
+weapon	534	dmg_small=3	dmg_large=3	safenchant=6	hitmodifier=4	dmgmodifier=5	max_use_time=21600
+weapon	535	dmg_small=3	dmg_large=3	safenchant=6	hitmodifier=4	dmgmodifier=5	max_use_time=64800
+weapon	536	dmg_small=3	dmg_large=3	safenchant=6	hitmodifier=4	dmgmodifier=5	max_use_time=108000
+weapon	537	dmg_small=14	dmg_large=12	safenchant=6	hitmodifier=2	dmgmodifier=2	max_use_time=21600
+weapon	538	dmg_small=14	dmg_large=12	safenchant=6	hitmodifier=2	dmgmodifier=2	max_use_time=64800
+weapon	539	dmg_small=14	dmg_large=12	safenchant=6	hitmodifier=2	dmgmodifier=2	max_use_time=108000
+weapon	540	dmg_small=23	dmg_large=15	safenchant=-1	add_hp=100	Magic_name=HP 흡수
+weapon	541	dmg_small=34	dmg_large=37	safenchant=-1	hitmodifier=5
+weapon	542	dmg_small=6	dmg_large=6	safenchant=-1	hitmodifier=7	Magic_name=이블트릭
+weapon	543	dmg_small=5	dmg_large=5	safenchant=-1	hitmodifier=12	add_int=2	add_sp=10	Magic_name=라이트닝 스트라이크
+weapon	544	dmg_small=30	dmg_large=20	safenchant=-1	hitmodifier=7	double_dmg_chance=30	Magic_name=홀드
+weapon	545	dmg_small=33	dmg_large=25	safenchant=-1	hitmodifier=9	add_str=2	Magic_name=HP 흡수
+weapon	546	dmg_small=38	dmg_large=38	safenchant=-1	add_int=3	add_sp=3	Magic_name=다크 미티어
+weapon	547	dmg_small=36	dmg_large=39	safenchant=-1	hitmodifier=2	add_str=2
+weapon	600	dmg_small=13	dmg_large=12	safenchant=6	hitmodifier=1	dmgmodifier=1	Magic_name=일렉트릭 쇼크
+weapon	601	dmg_small=19	dmg_large=18	safenchant=6	dmgmodifier=3	canbedmg=1
+weapon	602	dmg_small=5	dmg_large=4	safenchant=6	dmgmodifier=1	add_str=1	add_mpr=1	Magic_name=MP 흡수
+weapon	603	dmg_small=12	dmg_large=12	safenchant=6	hitmodifier=5	Magic_name=턴 언데드
+weapon	604	dmg_small=15	dmg_large=15	safenchant=6	dmgmodifier=1	Magic_name=콜드 체이서
+weapon	605	dmg_small=23	dmg_large=23	safenchant=6	dmgmodifier=2	Magic_name=다크 라이트닝
+weapon	614	dmg_small=24	dmg_large=20	safenchant=6	hitmodifier=5	add_dex=2	add_mpr=5	Magic_name=쿠쿨칸 체이서
+weapon	615	dmg_small=7	dmg_large=9	safenchant=6	dmgmodifier=4	add_dex=1	add_hp=30	Magic_name=쿠쿨칸 체이서
+weapon	616	dmg_small=28	dmg_large=30	safenchant=6	hitmodifier=4	dmgmodifier=5	add_str=1	add_hp=100	Magic_name=나락	melee_critical_probability=5
+weapon	617	dmg_small=28	dmg_large=36	safenchant=6	hitmodifier=7	dmgmodifier=6	add_str=1	canbedmg=1	melee_critical_probability=5
+weapon	618	dmg_small=27	dmg_large=22	safenchant=6	hitmodifier=6	dmgmodifier=5	melee_critical_probability=5
+weapon	619	dmg_small=15	dmg_large=11	safenchant=6	hitmodifier=9	dmgmodifier=5	Magic_name=라이트닝 스트라이크	melee_critical_probability=5
+weapon	620	dmg_small=16	dmg_large=16	safenchant=6	hitmodifier=8	dmgmodifier=3	add_int=1	add_sp=5	Magic_name=크리티컬 선 버스트
+weapon	621	dmg_small=20	dmg_large=16	safenchant=6	hitmodifier=7	dmgmodifier=3	missile_critical_probability=2	melee_critical_probability=5
+weapon	622	dmg_small=24	dmg_large=19	safenchant=6	hitmodifier=7	dmgmodifier=6	add_dex=2	Magic_name=악몽	missile_critical_probability=8
+weapon	623	dmg_small=20	dmg_large=16	safenchant=6	hitmodifier=6	dmgmodifier=4	add_str=2	double_dmg_chance=22	melee_critical_probability=5
+weapon	624	dmg_small=24	dmg_large=27	safenchant=6	hitmodifier=7	dmgmodifier=5	isEndedTimeMessage=1
+weapon	625	dmg_small=18	dmg_large=10	safenchant=6	hitmodifier=7	dmgmodifier=2	canbedmg=1	Magic_name=헬 파이어	melee_critical_probability=5
+weapon	626	dmg_small=18	dmg_large=8	safenchant=6	hitmodifier=7	dmgmodifier=2	double_dmg_chance=32	Magic_name=리벤지	melee_critical_probability=5
+weapon	1000	dmg_small=16	dmg_large=12	safenchant=6	hitmodifier=2
+weapon	1001	dmg_small=19	dmg_large=24	safenchant=6	hitmodifier=2	dmgmodifier=2
+weapon	1002	dmg_small=7	dmg_large=7	safenchant=6	hitmodifier=2	dmgmodifier=3
+weapon	1003	dmg_small=1	dmg_large=1	safenchant=6
+weapon	1004	dmg_small=22	dmg_large=22	safenchant=6	hitmodifier=3	dmgmodifier=3
+weapon	1005	dmg_small=20	dmg_large=14	safenchant=6	hitmodifier=2	dmgmodifier=2	double_dmg_chance=33
+weapon	1006	dmg_small=15	dmg_large=13	safenchant=6	hitmodifier=5	dmgmodifier=1
+weapon	1007	dmg_small=3	dmg_large=3	safenchant=6	hitmodifier=5	dmgmodifier=4
+weapon	1010	dmg_small=23	dmg_large=24	safenchant=6	hitmodifier=1	dmgmodifier=5	Magic_name=디지즈
+weapon	1011	dmg_small=18	dmg_large=16	safenchant=6	hitmodifier=5	dmgmodifier=3	double_dmg_chance=20	Magic_name=디지즈
+weapon	1012	dmg_small=12	dmg_large=12	safenchant=6	hitmodifier=6	dmgmodifier=2	add_mpr=10	add_sp=2	Magic_name=디지즈
+weapon	1013	dmg_small=25	dmg_large=25	safenchant=6	hitmodifier=2	dmgmodifier=3	Magic_name=디지즈
+weapon	1014	dmg_small=20	dmg_large=18	safenchant=6	hitmodifier=4	dmgmodifier=4	Magic_name=디지즈	missile_critical_probability=1
+weapon	1100	dmg_small=5	dmg_large=6	safenchant=-1	hitmodifier=3	dmgmodifier=8	add_str=1	add_hpr=1	max_use_time=36000
+weapon	1101	dmg_small=13	dmg_large=15	safenchant=-1	hitmodifier=5	dmgmodifier=6	add_str=1	max_use_time=36000
+weapon	1102	dmg_small=17	dmg_large=20	safenchant=-1	dmgmodifier=10	max_use_time=36000
+weapon	1103	dmg_small=7	dmg_large=4	safenchant=-1	hitmodifier=5	dmgmodifier=7	add_mpr=5	add_sp=3	max_use_time=36000
+weapon	1104	dmg_small=30	dmg_large=23	hitmodifier=10	dmgmodifier=20
+weapon	1105	dmg_small=17	dmg_large=16	safenchant=-1	hitmodifier=4	dmgmodifier=7	double_dmg_chance=33	max_use_time=36000
+weapon	1106	dmg_small=15	dmg_large=16	safenchant=-1	hitmodifier=3	dmgmodifier=8	add_mp=35	add_mpr=3
+weapon	1107	dmg_small=7	dmg_large=8	safenchant=-1	hitmodifier=4	dmgmodifier=8	max_use_time=36000
+weapon	1108	dmg_small=25	dmg_large=28	hitmodifier=8	dmgmodifier=1	Magic_name=이블 리버스
+weapon	1109	dmg_small=24	dmg_large=26	hitmodifier=3	add_hpr=1	double_dmg_chance=34	Magic_name=이블 리버스
+weapon	1110	dmg_small=15	dmg_large=16	hitmodifier=4	add_mpr=3	add_sp=1	Magic_name=이블 트릭
+weapon	1111	dmg_small=18	dmg_large=16	hitmodifier=3	dmgmodifier=4	Magic_name=이블 트릭
+weapon	1112	dmg_small=28	dmg_large=28	add_mpr=1	add_sp=1	Magic_name=이블 트릭
+weapon	1113	dmg_small=23	dmg_large=25	hitmodifier=3	add_hp=30	Magic_name=이블 리버스
+weapon	1114	dmg_small=25	dmg_large=27	hitmodifier=1	dmgmodifier=3	Magic_name=
+weapon	1115	dmg_small=22	dmg_large=23	hitmodifier=3	add_hp=30	Magic_name=이블 리버스
+weapon	1116	dmg_small=15	dmg_large=16	hitmodifier=4	add_mpr=3	add_sp=1	Magic_name=이블 트릭
+weapon	1117	dmg_small=23	dmg_large=25	hitmodifier=3	add_hpr=1	double_dmg_chance=34	Magic_name=이블 리버스
+weapon	1118	dmg_small=18	dmg_large=16	hitmodifier=3	dmgmodifier=4	Magic_name=이블 트릭
+weapon	1119	dmg_small=24	dmg_large=20	safenchant=6	hitmodifier=4	dmgmodifier=3	Magic_name=아이스 이럽션
+weapon	1120	dmg_small=32	dmg_large=32	safenchant=6	add_int=1	add_sp=1	Magic_name=마인드 브레이크
+weapon	1122	dmg_small=20	dmg_large=16	safenchant=6	hitmodifier=7	dmgmodifier=3	missile_critical_probability=2
+weapon	1123	dmg_small=21	dmg_large=20	safenchant=6	hitmodifier=5	dmgmodifier=3
+weapon	1124	dmg_small=19	dmg_large=18	safenchant=6	hitmodifier=6	dmgmodifier=1	add_str=1	add_wis=2	double_dmg_chance=34	Magic_name=베놈 블레이즈
+weapon	1125	dmg_small=16	dmg_large=10	safenchant=6	hitmodifier=6	dmgmodifier=1	add_str=1	add_wis=2	double_dmg_chance=21	Magic_name=베놈 블레이즈
+weapon	1126	dmg_small=5	dmg_large=6	safenchant=-1	hitmodifier=3	dmgmodifier=8	add_str=1	add_hpr=1
+weapon	1127	dmg_small=13	dmg_large=15	safenchant=-1	hitmodifier=5	dmgmodifier=6	add_str=1
+weapon	1128	dmg_small=17	dmg_large=20	safenchant=-1	dmgmodifier=10
+weapon	1129	dmg_small=3	dmg_large=2	safenchant=-1	hitmodifier=4	dmgmodifier=8
+weapon	1130	dmg_small=7	dmg_large=4	safenchant=-1	hitmodifier=5	dmgmodifier=6	add_mpr=5	add_sp=3
+weapon	1131	dmg_small=17	dmg_large=16	safenchant=-1	hitmodifier=7	dmgmodifier=4	double_dmg_chance=20
+weapon	1133	dmg_small=33	dmg_large=33	safenchant=-1	add_mp=35	add_mpr=3
+weapon	1134	dmg_small=1	dmg_large=1	safenchant=6	add_mpr=3	add_sp=1
+weapon	1135	dmg_small=25	dmg_large=25	safenchant=6	add_wis=3	add_sp=1	Magic_name=팬텀 쇼크
+weapon	1136	dmg_small=24	dmg_large=19	safenchant=6	hitmodifier=7	dmgmodifier=6	add_dex=2	Magic_name=악몽	missile_critical_probability=3
+weapon	1137	dmg_small=24	dmg_large=20	safenchant=6	hitmodifier=6	dmgmodifier=6	add_str=2	double_dmg_chance=35
+weapon	1509	dmg_small=20	dmg_large=18	safenchant=6	hitmodifier=2	dmgmodifier=3	add_str=2	add_mpr=7	add_sp=2
+weapon	9000	dmg_small=4	dmg_large=4	safenchant=6	dmgmodifier=1	Magic_name=플라즈마
+weapon	9001	dmg_small=8	dmg_large=8	safenchant=6	hitmodifier=5	Magic_name=플라즈마
+weapon	9002	dmg_small=10	dmg_large=10	safenchant=6	Magic_name=플라즈마
+weapon	9003	dmg_small=18	dmg_large=21	safenchant=6	dmgmodifier=1	Magic_name=플라즈마
+weapon	10011	dmg_small=10	dmg_large=4	safenchant=6	dmgmodifier=1	canbedmg=1
+weapon	10031	dmg_small=9	dmg_large=9	safenchant=6	dmgmodifier=3	add_str=3	add_sp=-2
+weapon	11121	dmg_small=28	dmg_large=36	safenchant=6	hitmodifier=7	dmgmodifier=6	add_str=1	canbedmg=1	melee_critical_probability=5
+weapon	11125	dmg_small=16	dmg_large=10	safenchant=6	hitmodifier=6	dmgmodifier=1	add_str=1	add_wis=2	double_dmg_chance=21
+weapon	13100	dmg_small=30	dmg_large=30	safenchant=-1	hitmodifier=15	dmgmodifier=10	haste_item=1
+weapon	14012	dmg_small=25	dmg_large=17	hitmodifier=14	dmgmodifier=11
+weapon	14061	dmg_small=37	dmg_large=46	hitmodifier=13	dmgmodifier=21	add_str=3	melee_critical_probability=1
+weapon	14086	dmg_small=33	dmg_large=23	hitmodifier=11	dmgmodifier=13	add_str=2	double_dmg_chance=20
+weapon	14134	dmg_small=16	dmg_large=11	hitmodifier=14	dmgmodifier=5	add_int=3	add_sp=8	Magic_name=라이트닝 스트라이크
+weapon	100004	dmg_small=4	dmg_large=2	safenchant=6	hitmodifier=2	canbedmg=1
+weapon	100005	dmg_small=4	dmg_large=3	safenchant=6	hitmodifier=2	canbedmg=1
+weapon	100008	dmg_small=6	dmg_large=5	safenchant=6	add_mpr=3	add_sp=1	canbedmg=1
+weapon	100009	dmg_small=7	dmg_large=7	safenchant=6	dmgmodifier=2
+weapon	100025	dmg_small=7	dmg_large=7	safenchant=6	canbedmg=1
+weapon	100027	dmg_small=8	dmg_large=8	safenchant=6	canbedmg=1
+weapon	100028	dmg_small=8	dmg_large=8	safenchant=6	canbedmg=1
+weapon	100029	dmg_small=8	dmg_large=12	safenchant=6	canbedmg=1
+weapon	100037	dmg_small=10	dmg_large=11	safenchant=6
+weapon	100041	dmg_small=10	dmg_large=12	safenchant=6	hitmodifier=1	canbedmg=1
+weapon	100042	dmg_small=11	dmg_large=6	safenchant=6	canbedmg=1
+weapon	100049	dmg_small=13	dmg_large=10	safenchant=6	hitmodifier=1	dmgmodifier=2	canbedmg=1
+weapon	100052	dmg_small=17	dmg_large=19	safenchant=6	dmgmodifier=3	canbedmg=1
+weapon	100057	dmg_small=16	dmg_large=10	safenchant=6	hitmodifier=2	canbedmg=1
+weapon	100062	dmg_small=19	dmg_large=23	safenchant=6	hitmodifier=1	dmgmodifier=5	canbedmg=1
+weapon	100064	dmg_small=20	dmg_large=17	safenchant=6	dmgmodifier=3	canbedmg=1
+weapon	100074	dmg_small=11	dmg_large=8	safenchant=6	hitmodifier=3	double_dmg_chance=20	canbedmg=1
+weapon	100084	dmg_small=18	dmg_large=14	safenchant=6	hitmodifier=4	dmgmodifier=3	double_dmg_chance=28
+weapon	100095	dmg_small=6	dmg_large=8	safenchant=6	canbedmg=1
+weapon	100098	dmg_small=12	dmg_large=16	safenchant=6	canbedmg=1
+weapon	100099	dmg_small=7	dmg_large=8	safenchant=6	canbedmg=1
+weapon	100102	dmg_small=15	dmg_large=17	safenchant=6	hitmodifier=3
+weapon	100103	dmg_small=16	dmg_large=12	safenchant=6
+weapon	100107	dmg_small=21	dmg_large=21	safenchant=6	hitmodifier=4	add_hp=50
+weapon	100114	dmg_small=14	dmg_large=16	safenchant=6	dmgmodifier=1	min_lvl=40
+weapon	100132	dmg_small=9	dmg_large=9	safenchant=6
+weapon	100143	dmg_small=18	dmg_large=18	safenchant=6
+weapon	100146	dmg_small=9	dmg_large=10	safenchant=6
+weapon	100151	dmg_small=30	dmg_large=30	hitmodifier=-2
+weapon	100157	dmg_small=13	dmg_large=10	safenchant=6	dmgmodifier=2	double_dmg_chance=33
+weapon	100164	dmg_small=22	dmg_large=18	safenchant=6	hitmodifier=4	dmgmodifier=5	add_str=1	double_dmg_chance=34
+weapon	100169	dmg_small=8	dmg_large=6	safenchant=6	hitmodifier=5	dmgmodifier=1
+weapon	100170	dmg_small=2	dmg_large=2	safenchant=6	dmgmodifier=1
+weapon	100172	dmg_small=2	dmg_large=2	safenchant=6
+weapon	100180	dmg_small=9	dmg_large=6	safenchant=6	hitmodifier=3	dmgmodifier=2
+weapon	100181	dmg_small=9	dmg_large=7	safenchant=6	dmgmodifier=3
+weapon	100189	dmg_small=21	dmg_large=17	safenchant=6	hitmodifier=1	dmgmodifier=6
+weapon	100204	dmg_small=9	dmg_large=7	safenchant=6	hitmodifier=1	min_lvl=40
+weapon	100207	dmg_small=14	dmg_large=12	hitmodifier=-5	dmgmodifier=4	double_dmg_chance=33
+weapon	100212	dmg_small=20	dmg_large=22	safenchant=6	hitmodifier=4	dmgmodifier=1
+weapon	101134	dmg_small=1	dmg_large=1	safenchant=6	add_mpr=3
+weapon	101135	dmg_small=1	dmg_large=1	safenchant=-1	add_mpr=10	isEndedTimeMessage=1
+weapon	101136	dmg_small=2	dmg_large=3	safenchant=-1	add_mpr=10	add_sp=2	isEndedTimeMessage=1
+weapon	101137	dmg_small=25	dmg_large=25	safenchant=-1	add_wis=3	add_sp=1	Magic_name=팬텀 쇼크	isEndedTimeMessage=1
+weapon	101138	dmg_small=3	dmg_large=4	safenchant=-1	hitmodifier=3	dmgmodifier=4	Magic_name=문라이트 이럽션	isEndedTimeMessage=1
+weapon	101139	dmg_small=7	dmg_large=7	safenchant=6	dmgmodifier=2
+weapon	101140	dmg_small=16	dmg_large=10	safenchant=-1	hitmodifier=6	dmgmodifier=1	add_str=1	add_wis=2	double_dmg_chance=21	Magic_name=베놈 블레이즈	isEndedTimeMessage=1
+weapon	101141	dmg_small=13	dmg_large=12	safenchant=-1	hitmodifier=1	dmgmodifier=1	Magic_name=일렉트릭 쇼크	isEndedTimeMessage=1
+weapon	101142	dmg_small=21	dmg_large=17	safenchant=-1	hitmodifier=5	dmgmodifier=3	add_str=1	canbedmg=1	isEndedTimeMessage=1
+weapon	101143	dmg_small=19	dmg_large=18	safenchant=-1	dmgmodifier=3	canbedmg=1	Magic_name=HP \t흡수	isEndedTimeMessage=1
+weapon	101144	dmg_small=15	dmg_large=15	safenchant=-1	dmgmodifier=1	Magic_name=콜드 체이서	isEndedTimeMessage=1
+weapon	101145	dmg_small=16	dmg_large=16	safenchant=-1	dmgmodifier=1	Magic_name=다크 라이트닝	isEndedTimeMessage=1
+weapon	123001	dmg_small=33	dmg_large=22	safenchant=6	hitmodifier=13	dmgmodifier=10	add_str=1	Magic_name=발라카스의 혼 (+10~)
+weapon	123002	dmg_small=31	dmg_large=39	safenchant=6	hitmodifier=9	dmgmodifier=14	add_str=2	Magic_name=발라카스의 혼 (+10~)
+weapon	123003	dmg_small=25	dmg_large=22	safenchant=6	hitmodifier=7	dmgmodifier=10	add_dex=2	Magic_name=파푸리온의 혼 (+10~)
+weapon	123004	dmg_small=26	dmg_large=18	safenchant=6	hitmodifier=8	dmgmodifier=7	add_str=2	Magic_name=파푸리온의 혼 (+10~)
+weapon	123005	dmg_small=10	dmg_large=10	safenchant=6	hitmodifier=9	dmgmodifier=4	add_sp=5	Magic_name=안타라스의 혼
+weapon	123006	dmg_small=33	dmg_large=36	safenchant=6	hitmodifier=5	dmgmodifier=9	add_str=1	add_wis=1	Magic_name=안타라스의 혼 (+10~)
+weapon	123007	dmg_small=30	dmg_large=24	safenchant=6	hitmodifier=8	dmgmodifier=11	add_str=1	Magic_name=린드비오르의 혼 (+10~)
+weapon	123008	dmg_small=36	dmg_large=36	safenchant=6	add_int=2	add_hp=50	Magic_name=린드비오르의 혼
+weapon	123333	dmg_small=44	dmg_large=44	add_int=3	add_wis=2	add_hp=500	add_sp=16	Magic_name=테이아의 일격/분노
+weapon	123444	dmg_small=41	dmg_large=31	hitmodifier=21	dmgmodifier=36	add_str=3	add_con=2	add_wis=1	double_dmg_chance=25	Magic_name=단테스의 일격/분노	melee_critical_probability=7
+weapon	123555	dmg_small=46	dmg_large=50	hitmodifier=20	dmgmodifier=44	add_str=3	Magic_name=파아그리오의 일격/분노	melee_critical_probability=7
+weapon	123666	dmg_small=32	dmg_large=32	hitmodifier=22	dmgmodifier=25	add_str=2	add_int=2	add_wis=2	add_sp=20	magicdmgmodifier=15	Magic_name=에바의 일격/분노
+weapon	123777	dmg_small=50	dmg_large=40	hitmodifier=22	dmgmodifier=40	add_str=3	Magic_name=아인하사드의 일격/분노	melee_critical_probability=7
+weapon	123800	dmg_small=37	dmg_large=35	hitmodifier=18	dmgmodifier=39	add_dex=3	add_wis=2	Magic_name=사이하의 일격/분노	missile_critical_probability=10
+weapon	123888	dmg_small=46	dmg_large=60	hitmodifier=18	dmgmodifier=44	add_str=3	Magic_name=그랑카인의 일격/분노	melee_critical_probability=7
+weapon	123900	dmg_small=34	dmg_large=32	hitmodifier=20	dmgmodifier=36	add_str=2	add_cha=2	add_hp=300	Magic_name=실렌의 일격/분노	melee_critical_probability=7
+weapon	123999	dmg_small=35	dmg_large=28	safenchant=6	hitmodifier=17	dmgmodifier=19	add_str=1	add_con=2	Magic_name=웨폰 어택	melee_critical_probability=1
+weapon	124111	dmg_small=46	dmg_large=40	hitmodifier=19	dmgmodifier=41	add_str=3	Magic_name=아우라키아의 일격/분노	melee_critical_probability=7
+weapon	200001	dmg_small=2	dmg_large=3	safenchant=6	hitmodifier=2	canbedmg=1
+weapon	200002	dmg_small=1	dmg_large=3	safenchant=6	hitmodifier=-1	canbedmg=1
+weapon	200027	dmg_small=8	dmg_large=8	safenchant=6	canbedmg=1
+weapon	200032	dmg_small=9	dmg_large=11	safenchant=6	canbedmg=1
+weapon	200041	dmg_small=10	dmg_large=12	safenchant=6	hitmodifier=1	canbedmg=1
+weapon	200052	dmg_small=17	dmg_large=19	safenchant=6	dmgmodifier=3	canbedmg=1
+weapon	200171	dmg_small=8	dmg_large=6	safenchant=6	dmgmodifier=-1
+weapon	200172	dmg_small=14	dmg_large=12	safenchant=6	dmgmodifier=2	add_str=2	add_hp=50	add_mp=20	canbedmg=1
+weapon	202000	dmg_small=22	dmg_large=25	safenchant=6	hitmodifier=5	dmgmodifier=5	add_str=2	add_dex=2	add_hp=100	add_mp=50	canbedmg=1	min_lvl=52
+weapon	202001	dmg_small=21	dmg_large=20	safenchant=6	hitmodifier=6	dmgmodifier=3	add_str=1	add_wis=2	Magic_name=레져넌스 쇼크
+weapon	202002	dmg_small=22	dmg_large=23	safenchant=6	hitmodifier=2	dmgmodifier=2	add_con=1
+weapon	202003	dmg_small=16	dmg_large=16	safenchant=6	hitmodifier=8	dmgmodifier=3	add_int=1	add_sp=5	Magic_name=크리티컬 선 버스트
+weapon	202011	dmg_small=29	dmg_large=27	hitmodifier=12	dmgmodifier=17	add_dex=3	Magic_name=어스 레인지	missile_critical_probability=1
+weapon	202012	dmg_small=38	dmg_large=38	add_int=3	add_hp=100	add_hpr=100	Magic_name=다크 미티어
+weapon	202013	dmg_small=34	dmg_large=26	hitmodifier=14	dmgmodifier=19	add_str=2	Magic_name=페이탈	melee_critical_probability=1
+weapon	202014	dmg_small=39	dmg_large=42	hitmodifier=15	dmgmodifier=20	add_str=2	Magic_name=타이탄의 분노	melee_critical_probability=3
+weapon	202015	dmg_small=1	dmg_large=1
+weapon	203002	dmg_small=22	dmg_large=23	safenchant=6	hitmodifier=2	dmgmodifier=2	add_con=1
+weapon	203003	dmg_small=25	dmg_large=25	safenchant=-1	hitmodifier=5	dmgmodifier=15	add_hp=250	m_def=25	Magic_name=헬 파이어
+weapon	203004	dmg_small=19	dmg_large=23	safenchant=6	hitmodifier=1	dmgmodifier=1
+weapon	203005	dmg_small=23	dmg_large=26	safenchant=6	hitmodifier=3	dmgmodifier=4	add_wis=1	add_hp=30
+weapon	203006	dmg_small=28	dmg_large=30	safenchant=6	hitmodifier=4	dmgmodifier=5	add_str=1	add_hp=100	Magic_name=나락
+weapon	203007	dmg_small=22	dmg_large=24	safenchant=6	hitmodifier=5	dmgmodifier=4	add_str=1
+weapon	203008	safenchant=6
+weapon	203009	dmg_small=14	dmg_large=14	safenchant=-1	hitmodifier=2	dmgmodifier=7
+weapon	203011	dmg_small=25	dmg_large=20	dmgmodifier=2	Magic_name=이블 리버스
+weapon	203012	dmg_small=10	dmg_large=10	safenchant=6
+weapon	203013	dmg_small=13	dmg_large=13	safenchant=6
+weapon	203014	dmg_small=15	dmg_large=15	safenchant=6	dmgmodifier=1
+weapon	203015	dmg_small=16	dmg_large=16	safenchant=6	dmgmodifier=1	Magic_name=다크 라이트닝
+weapon	203016	dmg_small=18	dmg_large=18	hitmodifier=-1
+weapon	203017	dmg_small=27	dmg_large=22	safenchant=6	hitmodifier=6	dmgmodifier=5	Magic_name=섬멸
+weapon	203018	dmg_small=20	dmg_large=16	safenchant=6	hitmodifier=6	dmgmodifier=4	add_str=2	double_dmg_chance=22
+weapon	203019	dmg_small=28	dmg_large=23	safenchant=6	hitmodifier=6	dmgmodifier=3
+weapon	203020	dmg_small=21	dmg_large=13	safenchant=6	hitmodifier=10	dmgmodifier=7	haste_item=1	Magic_name=HP 흡수
+weapon	203021	dmg_small=25	dmg_large=28	safenchant=6	hitmodifier=3	dmgmodifier=8
+weapon	203022	dmg_small=27	dmg_large=30	safenchant=6	hitmodifier=3	dmgmodifier=5
+weapon	505001	dmg_small=28	dmg_large=36	hitmodifier=2	dmgmodifier=5	add_hp=30
+weapon	505002	dmg_small=15	dmg_large=11	safenchant=6	hitmodifier=9	dmgmodifier=5	Magic_name=라이트닝 스트라이크
+weapon	505003	dmg_small=34	dmg_large=37	hitmodifier=8	dmgmodifier=26	add_str=2
+weapon	505004	dmg_small=30	dmg_large=23	hitmodifier=10	dmgmodifier=20
+weapon	505005	dmg_small=5	dmg_large=5	hitmodifier=15	dmgmodifier=10	add_int=2	add_sp=10	Magic_name=라이트닝 스트라이크
+weapon	505006	dmg_small=30	dmg_large=30	dmgmodifier=15	add_mpr=15	add_sp=3
+weapon	505007	dmg_small=3	dmg_large=3	hitmodifier=8	dmgmodifier=24	add_dex=1	add_mp=3
+weapon	505008	dmg_small=30	dmg_large=20	hitmodifier=10	dmgmodifier=18	double_dmg_chance=30	Magic_name=홀드
+weapon	505009	dmg_small=16	dmg_large=14	safenchant=6	hitmodifier=4	dmgmodifier=3
+weapon	505010	dmg_small=26	dmg_large=29	safenchant=6	hitmodifier=9	dmgmodifier=5	Magic_name=싸울 혼
+weapon	505011	dmg_small=16	dmg_large=14	safenchant=6	hitmodifier=4	dmgmodifier=3
+weapon	505012	dmg_small=26	dmg_large=29	safenchant=6	hitmodifier=9	dmgmodifier=5	Magic_name=싸울 혼	melee_critical_probability=5
+weapon	505013	dmg_small=20	dmg_large=19	safenchant=6	hitmodifier=3	dmgmodifier=3	Magic_name=디지즈
+weapon	505014	dmg_small=21	dmg_large=17	safenchant=6	dmgmodifier=3	canbedmg=1
+weapon	505015	dmg_small=35	dmg_large=35	safenchant=6	add_int=1	add_sp=2	Magic_name=소울 커터	melee_critical_probability=5
+weapon	2202011	dmg_small=29	dmg_large=27	hitmodifier=9	dmgmodifier=18	add_dex=4
+weapon	2202012	dmg_small=39	dmg_large=39	add_int=4	add_hp=100	add_sp=3	Magic_name=다크 미티어
+weapon	2202013	dmg_small=35	dmg_large=27	hitmodifier=11	dmgmodifier=20	add_str=3	melee_critical_probability=1
+weapon	2202014	dmg_small=39	dmg_large=42	hitmodifier=4	dmgmodifier=13	add_str=2	melee_critical_probability=1
+weapon	7000061	dmg_small=30	dmg_large=37	hitmodifier=8	dmgmodifier=26	add_str=2	max_use_time=300
+weapon	7000086	dmg_small=30	dmg_large=20	dmgmodifier=18	double_dmg_chance=25	max_use_time=300	Magic_name=홀드
+weapon	7000134	dmg_small=5	dmg_large=5	hitmodifier=15	dmgmodifier=10	add_int=2	add_sp=10	max_use_time=300	Magic_name=라이트닝 스트라이크
+weapon	7000136	dmg_small=22	dmg_large=20	hitmodifier=4	dmgmodifier=8	add_dex=1	Magic_name=폭풍
+weapon	7000137	dmg_small=13	dmg_large=12	safenchant=-1	hitmodifier=1	dmgmodifier=1	Magic_name=일렉트릭 쇼크
+weapon	7000138	dmg_small=19	dmg_large=23	safenchant=-1	hitmodifier=1	dmgmodifier=5
+weapon	7000139	dmg_small=3	dmg_large=4	safenchant=-1	hitmodifier=2	dmgmodifier=2	add_dex=2	add_con=2
+weapon	7000140	dmg_small=25	dmg_large=25	safenchant=-1	add_wis=3	add_sp=1	Magic_name=팬텀 쇼크
+weapon	7000141	dmg_small=21	dmg_large=20	safenchant=-1	hitmodifier=6	dmgmodifier=3	add_str=1	add_wis=2	Magic_name=레져넌스 쇼크
+weapon	7000142	dmg_small=16	dmg_large=10	safenchant=-1	hitmodifier=6	dmgmodifier=1	add_str=1	add_wis=2	double_dmg_chance=21	Magic_name=베놈 블레이즈
+weapon	7000143	dmg_small=15	dmg_large=15	safenchant=-1	hitmodifier=3	dmgmodifier=6	add_str=3	add_sp=3
+weapon	7000144	dmg_small=19	dmg_large=23	safenchant=-1	hitmodifier=1	dmgmodifier=1
+weapon	7000213	dmg_small=35	dmg_large=35	add_int=1	add_sp=3	magicdmgmodifier=5	Magic_name=심판
+weapon	7000214	dmg_small=23	dmg_large=35	safenchant=6	hitmodifier=7	dmgmodifier=6	Magic_name=블레이즈 쇼크
+weapon	7000215	dmg_small=4	dmg_large=4	safenchant=6	hitmodifier=5	dmgmodifier=3	add_int=1	add_sp=5	Magic_name=블레이즈 쇼크
+weapon	7000216	dmg_small=23	dmg_large=25	safenchant=6	hitmodifier=8	dmgmodifier=4	add_str=1	add_con=2	Magic_name=블레이즈 쇼크
+weapon	7000217	dmg_small=2	dmg_large=2	safenchant=6	hitmodifier=7	dmgmodifier=6	Magic_name=블레이즈 쇼크
+weapon	7000218	dmg_small=22	dmg_large=24	safenchant=6	hitmodifier=6	dmgmodifier=4	add_str=1	add_dex=1	Magic_name=블레이즈 쇼크
+weapon	7000219	dmg_small=21	dmg_large=20	safenchant=6	add_int=1	add_sp=5	Magic_name=블레이즈 쇼크
+weapon	7000220	dmg_small=28	dmg_large=28	safenchant=6	add_int=1	add_sp=5	Magic_name=블레이즈 쇼크
+weapon	7000221	dmg_small=25	dmg_large=30	safenchant=6	hitmodifier=10	dmgmodifier=4	add_str=1	Magic_name=블레이즈 쇼크
+weapon	7000222	dmg_small=12	dmg_large=15	safenchant=6	isEndedTimeMessage=1
+weapon	7000223	dmg_small=35	dmg_large=35	safenchant=6	add_int=1	add_sp=2	Magic_name=소울 커터
+weapon	7000224	dmg_small=17	dmg_large=11	safenchant=6	isEndedTimeMessage=1
+weapon	7000225	dmg_small=22	dmg_large=21	safenchant=6	hitmodifier=3	add_str=1	isEndedTimeMessage=1
+weapon	7000226	dmg_small=26	dmg_large=26	safenchant=6	add_wis=1	add_sp=1	Magic_name=SP+1	isEndedTimeMessage=1
+weapon	7000227	dmg_small=10	dmg_large=10	safenchant=6	hitmodifier=4	dmgmodifier=3	add_str=2	Magic_name=MP흡수	isEndedTimeMessage=1
+weapon	7000228	dmg_small=6	dmg_large=6	safenchant=6	hitmodifier=1	dmgmodifier=1	add_str=1	isEndedTimeMessage=1
+weapon	7000229	dmg_small=19	dmg_large=16	safenchant=6	hitmodifier=2	dmgmodifier=3	isEndedTimeMessage=1
+weapon	7000230	dmg_small=21	dmg_large=23	safenchant=6	dmgmodifier=1	add_str=1	isEndedTimeMessage=1
+weapon	7000231	dmg_small=19	dmg_large=23	safenchant=6	hitmodifier=1	dmgmodifier=5	canbedmg=1	isEndedTimeMessage=1
+weapon	70002319	dmg_small=22	dmg_large=24	safenchant=6	Magic_name=디지즈
+weapon	70002320	dmg_small=20	dmg_large=19	safenchant=6	Magic_name=디지즈
+weapon	70002321	dmg_small=22	dmg_large=24	safenchant=6	Magic_name=디지즈
+
+# armor (1197 definitions)
+armor	9961	ac=-3	safenchant=-1	add_sp=2	m_def=5	dmg_rate=2	bow_dmg_rate=2
+armor	9962	ac=-3	safenchant=-1	add_sp=3	m_def=10	dmg_rate=3	bow_dmg_rate=3
+armor	10000	ac=-1	safenchant=-1
+armor	10001	ac=-4	safenchant=-1	add_sp=1	m_def=5	PVPweaponTotalDamage=3
+armor	19963	safenchant=-1	weight_reduction=1500
+armor	19964	safenchant=-1	weight_reduction=1500
+armor	19965	safenchant=-1	weight_reduction=1500
+armor	19966	safenchant=-1	weight_reduction=1500
+armor	19967	safenchant=-1	weight_reduction=1500
+armor	19968	ac=-3	safenchant=-1	add_str=1	add_dex=1	add_int=1	m_def=7	damage_reduction=1
+armor	19969	ac=-3	safenchant=-1	add_str=1	add_dex=1	add_int=1	m_def=7	damage_reduction=1
+armor	19970	ac=-3	safenchant=-1	damage_reduction=2
+armor	19971	ac=-3	safenchant=-1	damage_reduction=2
+armor	19972	ac=-3	safenchant=-1	damage_reduction=2
+armor	19973	ac=-3	safenchant=-1	damage_reduction=2
+armor	19974	ac=-3	safenchant=-1	add_hp=20	add_mpr=4	m_def=2
+armor	19975	ac=-3	safenchant=-1	add_hp=20	add_mpr=4	m_def=2
+armor	19976	ac=-3	safenchant=-1	add_hp=20	add_mpr=4	m_def=2
+armor	19977	ac=-3	safenchant=-1	add_hp=20	add_mpr=4	m_def=2
+armor	19978	ac=-3	safenchant=-1	add_hp=20	add_mpr=4	m_def=2
+armor	19979	ac=-4	safenchant=-1
+armor	19980	ac=-4	safenchant=-1
+armor	19981	ac=-4	safenchant=-1
+armor	19982	ac=-4	safenchant=-1
+armor	19984	ac=-4	safenchant=-1
+armor	19985	ac=-5	safenchant=-1	add_int=2	add_mp=30	add_mpr=10	add_sp=2
+armor	19986	ac=-5	safenchant=-1
+armor	19987	ac=-5	safenchant=-1	add_str=2	add_hp=20	add_mp=5	add_hpr=5	add_mpr=3
+armor	19988	ac=-5	safenchant=-1	add_str=2	add_hp=20	add_mp=10	add_hpr=3	add_mpr=2
+armor	19989	ac=-5	safenchant=-1	add_str=2	add_hp=20	add_mp=10	add_hpr=3	add_mpr=2
+armor	19990	ac=-15	safenchant=-1	add_int=5	add_hp=30	add_mp=70	add_mpr=5	add_sp=4	defense_fire=50	Magic_name=
+armor	19991	ac=-15	safenchant=-1	add_dex=3	add_hp=40	add_mp=50	add_hpr=3	add_mpr=4	add_sp=2	defense_fire=50	Magic_name=
+armor	19992	ac=-15	safenchant=-1	add_str=4	add_dex=1	add_hp=50	add_mp=20	add_mpr=4	m_def=3	bow_dmg_rate=3	defense_fire=50	Magic_name=
+armor	19993	ac=-15	safenchant=-1	add_str=3	add_hp=50	add_mp=30	add_hpr=20	add_mpr=4	add_sp=3	dmg_rate=3	defense_fire=50	Magic_name=
+armor	19994	ac=-15	safenchant=-1	add_str=2	add_hp=100	add_mpr=4	dmg_rate=3	defense_fire=50	Magic_name=
+armor	19995	ac=-7	safenchant=-1	add_str=3	add_hp=50	add_mp=20	add_mpr=3
+armor	19996	ac=-7	safenchant=-1	add_str=5	add_hp=30	add_hpr=10	add_mpr=5	add_sp=2	m_def=3
+armor	19997	ac=-7	safenchant=-1	add_str=3	add_hp=20	add_mp=5	m_def=7
+armor	19998	ac=-7	safenchant=-1	add_dex=3	add_mp=20	add_hpr=5	m_def=5
+armor	19999	ac=-7	safenchant=-1	add_int=3	add_mpr=5	add_sp=5
+armor	20001	safenchant=4
+armor	20002	ac=-1	safenchant=4
+armor	20003	ac=-3	safenchant=4
+armor	20004	ac=-2	safenchant=6	Magic_name=
+armor	20005	ac=-1
+armor	20006	ac=-3	safenchant=4
+armor	20007	ac=-2	safenchant=4
+armor	20008	ac=-1	safenchant=4	Magic_name=
+armor	20009	ac=-2	safenchant=4	Magic_name=
+armor	20010	ac=-3	safenchant=4
+armor	20011	ac=-2	safenchant=4	m_def=4
+armor	20012	ac=-2	safenchant=4
+armor	20013	ac=-1	safenchant=4
+armor	20014	ac=-1	safenchant=4
+armor	20015	ac=-1	safenchant=4
+armor	20016	ac=1	safenchant=4	add_cha=1
+armor	20017	ac=-2	safenchant=6	add_dex=2	add_hpr=3	all_resis=2
+armor	20018	ac=-2	safenchant=4	add_int=1
+armor	20019	ac=-3	safenchant=4	add_wis=1	add_cha=2
+armor	20020	ac=-2	safenchant=6	add_mp=10	m_def=4	Magic_name=
+armor	20021	ac=-1	safenchant=6	add_dex=1
+armor	20022	ac=-2	safenchant=4	add_con=1	add_cha=-1
+armor	20023	ac=-2	safenchant=4	Magic_name=
+armor	20024	ac=-3	safenchant=4
+armor	20025	ac=-2	safenchant=4	add_mpr=5
+armor	20026
+armor	20027	ac=-2	safenchant=6
+armor	20028	ac=-3	safenchant=4
+armor	20029	ac=-2	safenchant=4	add_mp=15	add_mpr=2
+armor	20030	ac=-1	safenchant=6	add_hp=10	add_mpr=1	m_def=4	Magic_name=
+armor	20031	Magic_name=
+armor	20032	ac=-1	safenchant=4	add_mpr=3
+armor	20033	ac=-2	safenchant=6	add_dex=1
+armor	20034	ac=-1	safenchant=4
+armor	20035	ac=-1	safenchant=6
+armor	20036	ac=-1	safenchant=4
+armor	20037
+armor	20038	ac=-2	safenchant=4
+armor	20039	ac=-1	safenchant=6	add_con=1
+armor	20040	ac=-2	safenchant=4	add_mp=25
+armor	20041	ac=-3	safenchant=4
+armor	20042	ac=-3	safenchant=4
+armor	20043	ac=-1	safenchant=4
+armor	20044	ac=-2	safenchant=4
+armor	20045	ac=-3
+armor	20046	safenchant=4
+armor	20047	safenchant=4
+armor	20048	ac=-1	ability_resis=9	Magic_name=
+armor	20049	ac=-4	safenchant=4	add_hp=50	m_def=6
+armor	20050	ac=-2	safenchant=4	add_mp=70	add_mpr=5	m_def=5
+armor	20051	ac=-3	safenchant=4	add_str=1	add_con=1	add_dex=1	add_int=1	add_wis=1	add_cha=1	Magic_name=
+armor	20052	safenchant=4
+armor	20053	ac=-3	safenchant=4
+armor	20054	ac=-3	safenchant=4	add_mpr=2	defense_earth=10
+armor	20055	ac=-2	safenchant=4	add_mpr=5	Magic_name=
+armor	20056	ac=-1	safenchant=4	m_def=10
+armor	20057	ac=-5	safenchant=4
+armor	20058	ac=-2	safenchant=4	add_hp=20	add_hpr=3	m_def=6	Magic_name=
+armor	20059	ac=-3	safenchant=4	add_mpr=2	defense_water=10
+armor	20060	ac=-2	safenchant=4	add_cha=1
+armor	20061	ac=-3	safenchant=4	add_mpr=2	defense_wind=10
+armor	20062	ac=-5	safenchant=4	Magic_name=
+armor	20063	ac=-3	safenchant=4
+armor	20064	ac=-1	safenchant=4	add_cha=1	Magic_name=
+armor	20065	ac=-2	safenchant=4	add_cha=1	Magic_name=
+armor	20066	ac=-3	safenchant=4	add_hpr=2
+armor	20067	ac=-2	safenchant=4	add_hp=10	add_mpr=3	m_def=6	Magic_name=
+armor	20068	ac=-3	safenchant=4
+armor	20069	Magic_name=
+armor	20070	ac=-3	safenchant=4	add_hp=30
+armor	20071	ac=-3	safenchant=4	add_mpr=2	defense_fire=10
+armor	20072	safenchant=4
+armor	20073	ac=-1	safenchant=6
+armor	20074	ac=-2	safenchant=4	add_hp=20	add_mpr=4	m_def=6
+armor	20075	ac=-3	add_str=1	add_hp=100	add_mp=50	add_hpr=-10	Magic_name=
+armor	20076	ac=-2	safenchant=4	add_con=1	add_hp=100
+armor	20077	ac=-1	safenchant=4	Magic_name=
+armor	20078	ac=-3	m_def=10	Magic_name=
+armor	20079	ac=-4	safenchant=6	add_hp=60	add_hpr=4	m_def=3
+armor	20080	ac=-2	safenchant=4	add_hp=-5	add_mp=15
+armor	20081	ac=-2	safenchant=4	add_hp=10
+armor	20082	ac=-1	safenchant=4
+armor	20083	Magic_name=
+armor	20084	safenchant=6
+armor	20085	safenchant=4
+armor	20086	ac=-2	add_str=-1	add_int=1
+armor	20087	ac=-2	add_con=-1	add_dex=1
+armor	20088	ac=-2	add_str=1	add_dex=-1
+armor	20089	ac=-2	safenchant=4
+armor	20090	ac=-1	safenchant=4
+armor	20091	ac=-7	safenchant=4
+armor	20092	ac=-14	safenchant=-1	add_hpr=4	add_mpr=8	m_def=3	damage_reduction=1	Magic_name=
+armor	20093	ac=-12	safenchant=-1	add_mpr=12	m_def=3	Magic_name=
+armor	20094	ac=-14	safenchant=-1	add_hpr=8	add_mpr=4	m_def=3	damage_reduction=1	Magic_name=
+armor	20095	ac=-16	safenchant=-1	add_hpr=1	m_def=3	damage_reduction=1	Magic_name=
+armor	20096	ac=-3	safenchant=4
+armor	20097	ac=-3	safenchant=4
+armor	20098	ac=-4	safenchant=4	add_mp=10
+armor	20099	ac=-6	safenchant=4	Magic_name=
+armor	20100	ac=-7	safenchant=4	Magic_name=
+armor	20101	ac=-6	safenchant=4
+armor	20102	ac=-3	safenchant=4
+armor	20103	ac=-4	safenchant=4	add_mpr=5
+armor	20104	ac=-4	safenchant=4
+armor	20105	ac=-6	safenchant=4
+armor	20106	ac=-2	safenchant=4	add_mp=100
+armor	20107	ac=-7	safenchant=4	add_mp=50	add_mpr=15
+armor	20108	ac=-11	safenchant=4	add_hpr=2	defense_wind=50
+armor	20109	ac=-8	safenchant=6
+armor	20110	ac=-5	safenchant=4	m_def=4
+armor	20111	ac=-3	safenchant=4
+armor	20112	ac=-3	safenchant=4	add_str=-1	add_cha=2	defense_water=10	defense_fire=-10
+armor	20113	ac=-7	safenchant=6	add_hp=20	add_hpr=5	m_def=4	Magic_name=
+armor	20114	ac=-2	safenchant=4	m_def=4
+armor	20115	ac=-6	safenchant=4
+armor	20116	ac=-8	safenchant=4	add_str=1	add_dex=1	add_cha=-2
+armor	20117	ac=-8	safenchant=4	damage_reduction=2
+armor	20118	ac=-8	safenchant=4
+armor	20119	ac=-11	safenchant=4	add_hpr=2	defense_fire=50
+armor	20120	ac=-3	safenchant=4
+armor	20121	ac=-4	safenchant=4	add_mp=10	add_mpr=5
+armor	20122	ac=-4	safenchant=4
+armor	20123	ac=-4	safenchant=4	add_hp=10	add_mpr=5
+armor	20124	ac=-5
+armor	20125	ac=-5	safenchant=4
+armor	20126	ac=-6	safenchant=4
+armor	20127	ac=-9	safenchant=4	defense_water=20
+armor	20128	ac=-8	safenchant=4
+armor	20129	ac=-6	safenchant=6	add_mp=20	add_mpr=6	m_def=4	Magic_name=
+armor	20130	ac=-11	safenchant=4	add_hpr=2	defense_earth=50
+armor	20131	Magic_name=
+armor	20132	ac=-5	safenchant=6	add_hpr=5
+armor	20133	ac=-15	add_dex=1	add_hpr=2	Magic_name=
+armor	20134	ac=-7	safenchant=4
+armor	20135	ac=-2	safenchant=4
+armor	20136	ac=-4	safenchant=4
+armor	20137	ac=-5	safenchant=6
+armor	20138	ac=-6	safenchant=6
+armor	20139	ac=-4	safenchant=6
+armor	20140	ac=-1	Magic_name=
+armor	20141	ac=-1	Magic_name=
+armor	20142	ac=-1	Magic_name=
+armor	20143	ac=-1	Magic_name=
+armor	20144	ac=-8	add_str=2	add_dex=2	add_wis=-2	add_cha=-2	add_hpr=5	Magic_name=
+armor	20145	ac=-3	safenchant=4
+armor	20146	ac=-9	safenchant=4	defense_earth=20
+armor	20147	ac=-3	safenchant=4
+armor	20148	ac=-2	safenchant=4
+armor	20149	ac=-6	safenchant=4
+armor	20150	ac=-7	safenchant=4
+armor	20151	ac=-5	safenchant=4
+armor	20152	ac=-13	add_mp=100	add_mpr=5	Magic_name=
+armor	20153	ac=-11	safenchant=4	add_hpr=2	defense_water=50
+armor	20154	ac=-7	safenchant=4
+armor	20155	ac=-5	safenchant=4
+armor	20156	ac=-9	safenchant=4	defense_wind=20
+armor	20157	ac=-8	safenchant=4
+armor	20158	ac=-6	add_mpr=12	Magic_name=
+armor	20159	ac=-9	safenchant=4	defense_fire=20
+armor	20160	ac=-7	safenchant=4	add_mp=50	add_mpr=12	add_sp=1
+armor	20161	ac=-7	safenchant=4
+armor	20162	safenchant=4
+armor	20163	ac=-1	safenchant=4
+armor	20164	ac=-1	safenchant=6	add_con=1	Magic_name=
+armor	20165	ac=-2	safenchant=4	Magic_name=
+armor	20166	ac=-2	safenchant=4
+armor	20167	ac=-2	add_dex=1	add_cha=-2	bow_hit_rate=1
+armor	20168	ac=-1	safenchant=6	add_str=1	add_hp=10	Magic_name=
+armor	20169	ac=-3	safenchant=4
+armor	20170	ac=-2	safenchant=4
+armor	20171	safenchant=4	add_hp=20	add_mp=10	Magic_name=
+armor	20172	safenchant=4	add_str=1	add_mpr=1	defense_water=4
+armor	20173	ac=-2	safenchant=4
+armor	20174	ac=-1	safenchant=4	add_hp=5
+armor	20175	ac=-3	safenchant=4	defense_water=4
+armor	20176	ac=-1	safenchant=6	add_mp=10	add_mpr=1	Magic_name=
+armor	20177	safenchant=4	add_str=1	add_mpr=1	defense_earth=4
+armor	20178	ac=-4	safenchant=6
+armor	20179	Magic_name=
+armor	20180	ac=-1	safenchant=4	bow_hit_rate=2
+armor	20181	safenchant=4	add_str=1	add_mpr=1	defense_fire=4
+armor	20182	safenchant=4
+armor	20183	ac=-3	add_str=1	add_dex=1	add_cha=-2	Magic_name=
+armor	20184	ac=-2	safenchant=4
+armor	20185	ac=-1	safenchant=4
+armor	20186	ac=-2	safenchant=4	add_con=1	add_hp=100
+armor	20187	safenchant=4	add_str=2
+armor	20188	ac=-1	safenchant=4
+armor	20189	safenchant=4	add_str=1	add_mpr=1	defense_wind=4
+armor	20190	ac=-3	add_str=1	bow_hit_rate=5	Magic_name=
+armor	20191	safenchant=4	bow_hit_rate=2
+armor	20192	ac=-2	safenchant=4
+armor	20193	safenchant=4
+armor	20194	ac=-3	safenchant=4
+armor	20195	ac=-2	safenchant=4	add_str=1	add_hp=50	add_hpr=4	Magic_name=
+armor	20196	ac=-2	safenchant=4	add_hp=30
+armor	20197	ac=-3	safenchant=4	Magic_name=
+armor	20198	ac=-3	safenchant=4
+armor	20199	ac=-2	safenchant=4
+armor	20200	ac=-4	safenchant=6
+armor	20201	ac=-2	safenchant=6	add_hp=20	Magic_name=
+armor	20202	ac=-3	safenchant=4
+armor	20203	ac=-3	safenchant=4
+armor	20204	ac=-2	safenchant=6	add_str=1
+armor	20205	ac=-2	safenchant=4
+armor	20206	ac=-3	safenchant=4
+armor	20207	ac=-2	safenchant=4
+armor	20208	ac=-2	safenchant=6	add_mp=10	Magic_name=
+armor	20209	Magic_name=
+armor	20210	ac=-2	safenchant=6	add_dex=1
+armor	20211	ac=-3	safenchant=4
+armor	20212	ac=-1	safenchant=4
+armor	20213	ac=-1	safenchant=4
+armor	20214	ac=-3	safenchant=4
+armor	20215	ac=-2	safenchant=4
+armor	20216	ac=-2	safenchant=4	add_hp=100
+armor	20217	ac=-2	safenchant=4
+armor	20218	ac=-3	safenchant=4	add_int=1	add_mpr=5
+armor	20219	ac=-1	safenchant=4
+armor	20220	ac=-3	safenchant=4
+armor	20221	ac=-3
+armor	20222	ac=-1	safenchant=4
+armor	20223	ac=-2	safenchant=4
+armor	20224	ac=-2	safenchant=4
+armor	20225	ac=-2	safenchant=4	add_int=1	add_mp=100	Magic_name=
+armor	20226	ac=-2	safenchant=4	add_int=1
+armor	20227	ac=-2	safenchant=4	spirit_resis=30
+armor	20228	ac=-3	safenchant=6	add_hp=10	add_hpr=4	Magic_name=
+armor	20229	ac=-2	safenchant=4	spirit_resis=20
+armor	20230	ac=-2	safenchant=4	m_def=2	damage_reduction=1
+armor	20231	ac=-3	safenchant=4
+armor	20232	ac=-3	safenchant=4
+armor	20233	ac=-3	safenchant=6	add_mp=50	add_mpr=3	Magic_name=
+armor	20234	ac=-3	safenchant=6	add_cha=2	damage_reduction=2
+armor	20235	ac=-3	safenchant=4	add_hp=20	haste_item=1	Magic_name=
+armor	20236	ac=-2	safenchant=6
+armor	20237	ac=-1	safenchant=4
+armor	20238	ac=-2	safenchant=4	m_def=4	Magic_name=
+armor	20239	ac=-1	safenchant=4
+armor	20240	ac=-1	ability_resis=3	Magic_name=
+armor	20241	ac=-2	safenchant=4
+armor	20242	ac=-2	safenchant=4
+armor	20243	safenchant=-1	add_hp=5	add_mp=5	Magic_name=
+armor	20244	add_int=-2	add_cha=1
+armor	20245	add_con=-2	add_dex=1
+armor	20246	add_str=1	add_dex=-2
+armor	20247	add_int=1	add_wis=-2
+armor	20248	add_wis=1	add_cha=-2
+armor	20249	add_str=-2	add_con=1
+armor	20250	ac=-3	ability_resis=6	all_resis=1
+armor	20251
+armor	20252	add_con=-2	add_int=1	add_wis=1
+armor	20253	add_mp=15	add_mpr=5
+armor	20254	add_cha=1
+armor	20255	add_cha=3
+armor	20256	add_dex=1
+armor	20257	add_con=-1	add_int=2
+armor	20258	add_wis=-1	add_cha=2
+armor	20259	safenchant=-1	add_hp=5	add_mp=5	Magic_name=
+armor	20260	add_cha=3
+armor	20261	Magic_name=
+armor	20262	Magic_name=
+armor	20263	add_hp=20	Magic_name=
+armor	20264	add_str=1
+armor	20265	add_hp=10	add_mp=5
+armor	20266	add_int=1
+armor	20267	add_wis=1
+armor	20268	add_con=1
+armor	20269	ac=-2
+armor	20270
+armor	20271	ac=-2	add_dex=2	add_hp=40	add_mp=20	bow_hit_rate=2	fear_resis=5
+armor	20272	add_dex=1	add_mpr=1	weight_reduction=450	bow_hit_rate=3
+armor	20273	ac=-1	safenchant=4	add_int=1	add_mp=25	weight_reduction=3
+armor	20274	safenchant=4	add_int=1	add_sp=1
+armor	20277	ac=-2	ability_resis=7
+armor	20278	ac=-2	ability_resis=7
+armor	20279	ac=-5	all_resis=5
+armor	20280	m_def=10
+armor	20281
+armor	20282	ac=-1	safenchant=-1
+armor	20283	ac=-2	safenchant=4	add_hp=10	add_mp=10
+armor	20284	add_cha=30
+armor	20285	defense_water=30
+armor	20286	ac=-1
+armor	20287	add_hp=30	add_mp=20	Magic_name=
+armor	20288
+armor	20289	add_mpr=1
+armor	20290	Magic_name=
+armor	20291
+armor	20293	add_con=-1	add_wis=-1	m_def=10
+armor	20294	ac=2	add_hpr=1	add_mpr=1
+armor	20295	defense_earth=-10	defense_water=-10	defense_wind=-10	defense_fire=-10	spirit_resis=5
+armor	20296	add_hp=25	m_def=-10
+armor	20297	add_mp=10
+armor	20298
+armor	20299	ac=-1	add_hpr=2	add_mpr=-2	Magic_name=
+armor	20300	defense_earth=30
+armor	20301	add_hp=20
+armor	20302	defense_wind=30
+armor	20303	m_def=5
+armor	20304	defense_fire=30
+armor	20305
+armor	20306	add_hp=30	Magic_name=
+armor	20307	add_hp=15	add_mp=15	Magic_name=
+armor	20308	add_mp=30	Magic_name=
+armor	20309	add_hp=50	add_hpr=1	Magic_name=
+armor	20310	add_hp=20	add_mp=20	add_hpr=1	add_mpr=1	Magic_name=
+armor	20311	add_mp=50	add_mpr=1	Magic_name=
+armor	20312	add_hp=50	Magic_name=
+armor	20313	ac=-1	add_dex=3
+armor	20314	ac=-2	add_str=2	weight_reduction=1000	damage_reduction=1	all_resis=2
+armor	20315
+armor	20316	add_hp=25	add_mp=25	Magic_name=
+armor	20317	weight_reduction=1000
+armor	20318	ac=-1	add_hp=30	Magic_name=
+armor	20319	add_mp=50	Magic_name=
+armor	20320	weight_reduction=1500
+armor	20321	weight_reduction=500
+armor	20322	ac=-1
+armor	20342	safenchant=4
+armor	20343	safenchant=4	add_hpr=2	add_mpr=2
+armor	20345
+armor	20346
+armor	20347
+armor	20348
+armor	20349
+armor	20350
+armor	20351	safenchant=-1
+armor	20352	safenchant=-1
+armor	20353	ac=-6	safenchant=4	m_def=10
+armor	20354	ac=-2	safenchant=4	m_def=10
+armor	20355	safenchant=4	m_def=10
+armor	20356	ac=-1	safenchant=6	m_def=10
+armor	20357	ac=-1	safenchant=4	m_def=10
+armor	20358	add_mp=25
+armor	20359	add_hp=25	add_mp=25
+armor	20360	add_hp=25	add_mp=50
+armor	20361	add_hp=50	add_mp=50
+armor	20362	add_hp=60	add_mp=50	add_mpr=1
+armor	20363	add_hp=70	add_mp=50	add_hpr=2	add_mpr=1
+armor	20364	add_hp=80	add_mp=50	add_hpr=3	add_mpr=2
+armor	20365	add_hp=100	add_mp=50	add_hpr=4	add_mpr=3	spirit_resis=20
+armor	20366	ac=-12	safenchant=-1	add_hpr=3	add_mpr=2
+armor	20367	ac=-13	safenchant=-1	add_hpr=5
+armor	20368	ac=-12	safenchant=-1	add_hpr=2	add_mpr=3
+armor	20369	ac=-9	safenchant=-1	add_mpr=5
+armor	20370	ac=-6	safenchant=-1	m_def=20
+armor	20371	ac=-9	safenchant=-1
+armor	20372	ac=-6	safenchant=-1
+armor	20373	ac=-7	safenchant=-1	m_def=15
+armor	20374	ac=-9	safenchant=-1
+armor	20375	ac=-5	safenchant=-1
+armor	20376	add_hpr=2	add_mpr=1
+armor	20377	add_hpr=3
+armor	20378	add_hpr=1	add_mpr=2
+armor	20379	add_mpr=3
+armor	20380	ac=-1	safenchant=-1	add_hpr=1	add_mpr=1
+armor	20381	safenchant=4
+armor	20382	safenchant=4
+armor	20383	safenchant=6
+armor	20384	ac=-2	safenchant=-1
+armor	20385	ac=-2	safenchant=-1
+armor	20386	ac=-2	safenchant=-1
+armor	20387	ac=-2	safenchant=-1
+armor	20388	ac=-2	safenchant=-1
+armor	20389	ac=-2	safenchant=4
+armor	20390	ac=-6
+armor	20391	ac=-4	safenchant=-1
+armor	20392	ac=-4	safenchant=-1
+armor	20393	ac=-4	safenchant=4
+armor	20394	ac=-5	safenchant=-1
+armor	20395	ac=-10
+armor	20396	ac=-1	safenchant=4	add_hp=50	ability_resis=3
+armor	20397	ac=-2	safenchant=-1
+armor	20398	ac=-2	safenchant=-1
+armor	20399	ac=-2	safenchant=-1
+armor	20400	ac=-2	safenchant=-1
+armor	20401	ac=-2	safenchant=4
+armor	20402	ac=-7
+armor	20403	ac=-2	safenchant=-1
+armor	20404	ac=-2	safenchant=-1
+armor	20405	ac=-2	safenchant=-1
+armor	20406	ac=-2	safenchant=4
+armor	20407	ac=-2	safenchant=4	add_hp=10	add_mp=5
+armor	20408	ac=-7
+armor	20409	ac=-1	safenchant=4
+armor	20410	ac=-5
+armor	20411	add_hpr=-5	ability_resis=5
+armor	20412	add_mpr=-5
+armor	20413
+armor	20414
+armor	20415
+armor	20416
+armor	20417
+armor	20418
+armor	20419
+armor	20420
+armor	20421	add_str=1	add_dex=1	add_cha=-1	Magic_name=
+armor	20422	add_str=1	add_hp=30	add_mp=50
+armor	20423
+armor	20424
+armor	20425
+armor	20426	ac=-1
+armor	20427	ac=-3	defense_earth=3	defense_water=3	defense_wind=3	defense_fire=3
+armor	20428
+armor	20429
+armor	20430
+armor	20431
+armor	20432
+armor	20433
+armor	20434	add_hp=15	m_def=5
+armor	20435	add_hp=5	defense_earth=5
+armor	20436	add_hp=5	defense_water=5
+armor	20437	add_hp=5	defense_fire=5
+armor	20438	add_hp=5	defense_wind=5
+armor	20439	add_hp=10	defense_earth=10
+armor	20440	add_hp=10	defense_water=10
+armor	20441	add_hp=10	defense_fire=10
+armor	20442	add_hp=10	defense_wind=10
+armor	20443	add_hp=15	defense_earth=15
+armor	20444	add_hp=15	defense_water=15
+armor	20445	add_hp=15	defense_fire=15	ability_resis=1
+armor	20446	add_hp=15	defense_wind=15
+armor	20447	add_hp=20	add_hpr=1	defense_earth=20
+armor	20448	add_hp=20	add_hpr=1	defense_water=20
+armor	20449	add_hp=20	add_hpr=1	defense_fire=20	ability_resis=3
+armor	20450	add_hp=20	add_hpr=1	defense_wind=20
+armor	20451
+armor	20452	safenchant=-1
+armor	20453	safenchant=-1
+armor	20454	safenchant=-1
+armor	20455	safenchant=-1
+armor	20456	safenchant=-1
+armor	20457	safenchant=-1
+armor	20458	safenchant=4
+armor	20459	add_hpr=3	add_mpr=3
+armor	20460	add_cha=2
+armor	20461	safenchant=-1	max_use_time=36000
+armor	20462	safenchant=-1	max_use_time=36000
+armor	20500	ac=-1	safenchant=4
+armor	20501	safenchant=4
+armor	20502	ac=-1	safenchant=4
+armor	20503	ac=-1	safenchant=4
+armor	20504	ac=-3	safenchant=4
+armor	20505	ac=-2	safenchant=4	add_mp=10	add_hpr=10
+armor	21000
+armor	21001
+armor	21002
+armor	21003	add_hpr=1
+armor	21004	add_hpr=2
+armor	21005	add_hpr=2	add_mpr=1
+armor	21006	add_hp=10
+armor	21007	add_hp=10
+armor	21008	add_hp=10	add_mp=5
+armor	21009	add_hp=20
+armor	21010	add_hp=20	add_mp=5
+armor	21011	add_hp=20	add_mp=10
+armor	21012	add_hp=30
+armor	21013	add_hp=40	add_hpr=3
+armor	21014	add_mp=5
+armor	21015	add_mp=10
+armor	21016	add_mp=20	add_mpr=1
+armor	21017	add_mp=30	add_mpr=2
+armor	21018	m_def=5
+armor	21019
+armor	21020	ac=-1	Magic_name=
+armor	21021	ac=-2	Magic_name=
+armor	21022	ac=-3	Magic_name=
+armor	21023	ac=-3	add_hp=25	add_mp=10	Magic_name=
+armor	21024	ac=-3	add_hp=50	add_mp=20	Magic_name=
+armor	21025	ac=-3	add_hp=50	add_mp=20	weight_reduction=2	Magic_name=
+armor	21026	ac=-3	add_hp=50	add_mp=20	weight_reduction=300	Magic_name=
+armor	21027	ac=-3	add_hp=50	add_mp=20	weight_reduction=600	Magic_name=
+armor	21028	safenchant=4	add_str=1
+armor	21029	safenchant=4	add_dex=1
+armor	21030	safenchant=4	add_cha=1
+armor	21031	safenchant=4	add_int=1
+armor	21032	safenchant=4	add_hp=50
+armor	21033	safenchant=4	add_mp=30
+armor	21034	ac=-2
+armor	21035	ac=-4	safenchant=4
+armor	21036	ac=-2	safenchant=4
+armor	21037	ac=-4	safenchant=4
+armor	21038	ac=-4	safenchant=4
+armor	21039	ac=-3	safenchant=-1	m_def=5
+armor	21040	ac=-7	safenchant=-1	defense_water=10
+armor	21041	ac=-7	safenchant=-1	defense_wind=10
+armor	21042	ac=-6	safenchant=-1	defense_earth=10
+armor	21043	ac=-2	add_hpr=16
+armor	21044	ac=-2	add_mpr=8
+armor	21045	ac=-2	add_hpr=10	add_mpr=3
+armor	21046	ac=-2	add_hpr=6	add_mpr=5
+armor	21047	add_hpr=2	add_mpr=2
+armor	21048	add_mp=5
+armor	21049	ac=-1
+armor	21050	add_hp=10
+armor	21051	ac=-2	safenchant=4	Magic_name=
+armor	21052	ac=-2	safenchant=4	add_hp=12	add_mp=12	Magic_name=
+armor	21053	ac=-4	safenchant=4	Magic_name=
+armor	21054	ac=-1	safenchant=4	Magic_name=
+armor	21055	ac=-2	safenchant=4	Magic_name=
+armor	21056	ac=-2	safenchant=4	Magic_name=
+armor	21057	ac=-1	safenchant=4	add_hp=3
+armor	21058	ac=-2	safenchant=4	add_hp=5	add_hpr=1
+armor	21059	ac=-4	safenchant=4	add_hp=10	add_hpr=3
+armor	21060	ac=-6	safenchant=6	add_hp=10	add_mp=31	add_hpr=6	add_mpr=6
+armor	21061	safenchant=-1
+armor	21062	safenchant=-1
+armor	21063	safenchant=-1
+armor	21064	safenchant=-1
+armor	21065	safenchant=-1
+armor	21066	safenchant=-1
+armor	21067	ac=-6	safenchant=4	add_hp=10	add_mp=10	add_hpr=2	add_mpr=2
+armor	21068	ac=-6	safenchant=6	add_hpr=5	add_mpr=5
+armor	21069	ac=-1	add_hp=12	add_mp=12	m_def=3	weight_reduction=300
+armor	21070	ac=-1	add_hp=12	add_mp=12	m_def=3	weight_reduction=300	defense_water=-10
+armor	21071	ac=-1	add_hp=12	add_mp=12	m_def=3	weight_reduction=300	defense_wind=-10
+armor	21072	ac=-1	add_hp=12	add_mp=12	m_def=3	weight_reduction=300	defense_fire=-10
+armor	21073	ac=-1	add_hp=12	add_mp=12	m_def=3	weight_reduction=300	defense_earth=-10
+armor	21074	weight_reduction=300
+armor	21075	ac=-1	add_hp=20	weight_reduction=300
+armor	21076	ac=-1	add_mp=10	weight_reduction=300
+armor	21077	ac=-1	add_hp=10	add_mp=5	weight_reduction=300
+armor	21078	add_hp=20	m_def=2	weight_reduction=300
+armor	21079	add_mp=10	m_def=2	weight_reduction=300
+armor	21080	add_hp=10	add_mp=5	m_def=2	weight_reduction=300
+armor	21081
+armor	21082	safenchant=-1	add_hp=10
+armor	21083	add_hp=10	add_mp=5
+armor	21084	add_hp=15	add_mp=5
+armor	21085	add_hp=15	add_mp=5	add_hpr=1
+armor	21086	add_hp=15	add_mp=10	add_hpr=1
+armor	21087	add_hp=15	add_mp=10	add_hpr=1	add_mpr=1
+armor	21088	add_hp=20	add_mp=10	add_hpr=2	add_mpr=1
+armor	21089	add_str=1	add_hp=20	add_mp=10	add_hpr=2	add_mpr=1
+armor	21090	add_dex=1	add_hp=20	add_mp=10	add_hpr=2	add_mpr=1
+armor	21091	add_int=1	add_hp=20	add_mp=10	add_hpr=2	add_mpr=1
+armor	21093	ac=-1	safenchant=4	Magic_name=
+armor	21094	ac=-1	safenchant=4	Magic_name=
+armor	21095	ac=-3	safenchant=6	add_str=2	add_con=2	add_dex=2	add_int=2	add_wis=2	add_cha=2
+armor	22000	add_hp=80
+armor	22001	hit_rate=1	dmg_rate=1	bow_hit_rate=1	bow_dmg_rate=1
+armor	22002	hit_rate=1	dmg_rate=1
+armor	22003	defense_earth=5	defense_water=5	defense_wind=5	defense_fire=5
+armor	22004	ac=-1	safenchant=6	add_hp=30	add_hpr=1
+armor	22005	ac=-1	safenchant=6	add_mp=20	add_mpr=4
+armor	22006	ac=-2	safenchant=6	add_int=1	add_wis=1	add_hp=20	add_mp=20
+armor	22007	add_mp=10	add_mpr=2	weight_reduction=750
+armor	22008	add_int=1	add_mpr=1	add_sp=2
+armor	22009	add_str=1	add_hp=15	ability_resis=5
+armor	22010	safenchant=-1
+armor	22011	safenchant=-1
+armor	22012	safenchant=-1
+armor	22013	safenchant=-1	max_use_time=10800
+armor	22014	safenchant=-1	max_use_time=18000
+armor	22015	safenchant=-1	max_use_time=36000
+armor	22016	safenchant=-1	max_use_time=10800
+armor	22017	safenchant=-1	max_use_time=18000
+armor	22018	safenchant=-1	max_use_time=36000
+armor	22019	safenchant=-1	max_use_time=10800
+armor	22020	safenchant=-1	max_use_time=18000
+armor	22021	safenchant=-1	max_use_time=36000
+armor	22022	safenchant=-1	max_use_time=10800
+armor	22023	safenchant=-1	max_use_time=18000
+armor	22024	safenchant=-1	max_use_time=36000
+armor	22025	safenchant=-1	max_use_time=10800
+armor	22026	safenchant=-1	max_use_time=16000
+armor	22027	safenchant=-1	max_use_time=36000
+armor	22028	safenchant=-1	max_use_time=10800
+armor	22029	safenchant=-1	max_use_time=16000
+armor	22030	safenchant=-1	max_use_time=36000
+armor	22031	safenchant=-1	max_use_time=10800
+armor	22032	safenchant=-1	max_use_time=18000
+armor	22033	safenchant=-1	max_use_time=36000
+armor	22034	ac=-3	safenchant=4
+armor	22035	ac=-2	safenchant=4	defense_earth=10	defense_water=10	defense_wind=10	defense_fire=10
+armor	22036	ac=-3	safenchant=4
+armor	22037	ac=-4	safenchant=4	add_mpr=6
+armor	22038	ac=-8	safenchant=4	add_hp=50	add_hpr=5
+armor	22039	ac=-6	safenchant=6	add_hp=10	add_mpr=3
+armor	22040	ac=-3	safenchant=4
+armor	22041	ac=-3	safenchant=4	max_use_time=21600
+armor	22042	ac=-3	safenchant=4	max_use_time=64800
+armor	22043	ac=-3	safenchant=4	max_use_time=108000
+armor	22044	ac=-2	safenchant=4	defense_earth=10	defense_water=10	defense_wind=10	defense_fire=10	max_use_time=21600
+armor	22045	ac=-2	safenchant=4	defense_earth=10	defense_water=10	defense_wind=10	defense_fire=10	max_use_time=64800
+armor	22046	ac=-2	safenchant=4	defense_earth=10	defense_water=10	defense_wind=10	defense_fire=10	max_use_time=108000
+armor	22047	ac=-3	safenchant=4	max_use_time=21600
+armor	22048	ac=-3	safenchant=4	max_use_time=64800
+armor	22049	ac=-3	safenchant=4	max_use_time=108000
+armor	22050	ac=-4	safenchant=4	add_mpr=6	max_use_time=21600
+armor	22051	ac=-4	safenchant=4	add_mpr=6	max_use_time=64800
+armor	22052	ac=-4	safenchant=4	add_mpr=6	max_use_time=108000
+armor	22053	ac=-8	safenchant=4	add_hp=50	add_hpr=5	max_use_time=21600
+armor	22054	ac=-8	safenchant=4	add_hp=50	add_hpr=5	max_use_time=64800
+armor	22055	ac=-8	safenchant=4	add_hp=50	add_hpr=5	max_use_time=108000
+armor	22056	ac=-6	safenchant=4	add_hp=10	add_mpr=3	max_use_time=21600
+armor	22057	ac=-6	safenchant=4	add_hp=10	add_mpr=3	max_use_time=64800
+armor	22058	ac=-6	safenchant=4	add_hp=10	add_mpr=3	max_use_time=108000
+armor	22059	ac=-3	safenchant=4	max_use_time=21600
+armor	22060	ac=-3	safenchant=4	max_use_time=64800
+armor	22061	ac=-3	safenchant=4	max_use_time=108000
+armor	22062	safenchant=-1	m_def=5	defense_earth=5	defense_water=5	defense_wind=5	defense_fire=5
+armor	22063	safenchant=-1	add_hpr=1	add_mpr=1
+armor	22064	ac=-1	safenchant=-1	add_hp=15	add_mp=15
+armor	22065	safenchant=6	defense_earth=10	defense_water=10	defense_wind=10	defense_fire=10
+armor	22066	safenchant=6	defense_earth=5	defense_water=5	defense_wind=5	defense_fire=5
+armor	22067	ac=-2
+armor	22068	ac=-2
+armor	22069	ac=-2	safenchant=6
+armor	22070	ac=-2	safenchant=6
+armor	22071	ac=-2	safenchant=6
+armor	22072	ac=-2	safenchant=6
+armor	22073	safenchant=4	add_hpr=1	add_mpr=1
+armor	22074	m_def=10
+armor	22075	defense_earth=10	defense_water=10	defense_wind=10	defense_fire=10
+armor	22076	add_hp=10	add_mp=10
+armor	22167	safenchant=-1
+armor	22192	ac=-3	safenchant=6	damage_reduction=2
+armor	22193	ac=-3	safenchant=4	add_mpr=4	m_def=10
+armor	22194	add_str=1	add_dex=1	add_hp=30
+armor	22195	ac=-1	add_con=1	add_int=1	add_mp=10	add_sp=2
+armor	22196	ac=-10	safenchant=4	add_hpr=4	defense_earth=50	Magic_name=
+armor	22197	ac=-9	safenchant=4	add_hpr=9	add_mpr=3	defense_earth=50	Magic_name=
+armor	22198	ac=-8	safenchant=4	add_hpr=7	add_mpr=8	defense_earth=50	Magic_name=
+armor	22199	ac=-6	safenchant=4	add_hpr=2	add_mpr=10	defense_earth=50	Magic_name=
+armor	22200	ac=-10	safenchant=4	add_hp=50	add_hpr=6	defense_water=50	Magic_name=결속된 파푸리온의 가호
+armor	22201	ac=-9	safenchant=4	add_hp=30	add_mp=20	add_hpr=11	add_mpr=4	defense_water=50	Magic_name=결속된 파푸리온의 가호
+armor	22202	ac=-8	safenchant=4	add_hp=20	add_mp=30	add_hpr=9	add_mpr=9	defense_water=50	Magic_name=결속된 파푸리온의 가호
+armor	22203	ac=-6	safenchant=4	add_mp=50	add_mpr=11	defense_water=50	Magic_name=결속된 파푸리온의 가호
+armor	22204	ac=-12	safenchant=4	add_hp=80	add_hpr=4	m_def=8	defense_wind=50	Magic_name=마력의 린드비오르의 가호
+armor	22205	ac=-10	safenchant=4	add_hp=70	add_mp=10	add_hpr=9	add_mpr=3	m_def=8	defense_wind=50	Magic_name=마력의 린드비오르의 가호
+armor	22206	ac=-9	safenchant=4	add_hp=60	add_mp=20	add_hpr=7	add_mpr=8	m_def=8	defense_wind=50	Magic_name=마력의 린드비오르의 가호
+armor	22207	ac=-7	safenchant=4	add_hp=40	add_mp=40	add_hpr=2	add_mpr=10	m_def=8	defense_wind=50	Magic_name=마력의 린드비오르의 가호
+armor	22208	ac=-13	safenchant=4	add_str=1	add_hp=100	add_mpr=4	dmg_rate=3	defense_fire=50	Magic_name=발라카스의 일격
+armor	22209	ac=-11	safenchant=4	add_str=1	add_hp=80	add_mpr=4	dmg_rate=3	defense_fire=50	Magic_name=발라카스의 일격
+armor	22210	ac=-10	safenchant=4	add_dex=1	add_hp=70	add_mp=30	add_mpr=4	bow_dmg_rate=3	defense_fire=50	Magic_name=발라카스의 일격
+armor	22211	ac=-8	safenchant=4	add_int=1	add_hp=50	add_mp=50	add_mpr=4	add_sp=3	defense_fire=50	Magic_name=발라카스의 일격
+armor	22212	ac=-1	safenchant=4	add_str=2	add_mpr=1
+armor	22213	ac=-4	safenchant=4	m_def=1
+armor	22214	ac=-2	safenchant=6	add_int=2	add_mp=100	add_mpr=2	damage_reduction=2
+armor	22215	safenchant=6	add_str=1	add_hpr=1	add_mpr=1
+armor	22216	safenchant=6	add_dex=1	add_hpr=1	add_mpr=1
+armor	22217	safenchant=6	add_cha=1	add_hpr=1	add_mpr=1
+armor	22218	safenchant=6	add_int=1	add_hpr=1	add_mpr=1
+armor	22219	safenchant=6	add_hp=50	add_hpr=1	add_mpr=1
+armor	22220	safenchant=6	add_mp=30	add_hpr=1	add_mpr=1
+armor	22221	safenchant=6	add_hpr=1	add_mpr=1	ability_resis=10
+armor	22222	safenchant=6	add_hpr=1	add_mpr=1
+armor	22223	safenchant=6	add_hpr=1	add_mpr=1
+armor	22224	ac=-1	add_hpr=2	weight_reduction=360	Magic_name=
+armor	22225	ac=-1	add_mpr=1	weight_reduction=360	Magic_name=
+armor	22226	ac=-1	add_hp=50	weight_reduction=360	Magic_name=
+armor	22227	ac=-1	add_mp=30	weight_reduction=360	Magic_name=
+armor	22228	ac=-1	weight_reduction=360	Magic_name=
+armor	22229	add_hp=10
+armor	22230
+armor	22231	add_mp=5
+armor	22232	safenchant=-1	dmg_rate=1	max_use_time=600
+armor	22233	safenchant=-1	bow_dmg_rate=1	max_use_time=600
+armor	22234	safenchant=-1	add_sp=1	max_use_time=600
+armor	22235	safenchant=-1	hit_rate=1	max_use_time=600
+armor	22236	safenchant=-1	bow_hit_rate=1	max_use_time=600
+armor	22237	safenchant=-1	add_int=1	max_use_time=600
+armor	22238	safenchant=-1	dmg_rate=2	max_use_time=600
+armor	22239	safenchant=-1	hit_rate=2	max_use_time=600
+armor	22240	safenchant=-1	bow_dmg_rate=2	max_use_time=600
+armor	22241	safenchant=-1	bow_hit_rate=2	max_use_time=600
+armor	22242	safenchant=-1	add_sp=2	max_use_time=600
+armor	22243	safenchant=-1	add_int=2	max_use_time=600
+armor	22244	safenchant=-1	ability_resis=3	max_use_time=600
+armor	22245	safenchant=-1	max_use_time=600
+armor	22246	ac=-1	safenchant=-1	defense_fire=3	max_use_time=600
+armor	22247	ac=-1	safenchant=-1	defense_wind=3	max_use_time=600
+armor	22248	ac=-1	safenchant=-1	defense_water=3	max_use_time=600
+armor	22249	ac=-1	safenchant=-1	defense_earth=3	max_use_time=600
+armor	22250	ac=-3	add_mp=15	add_hpr=3	add_mpr=3	m_def=15
+armor	22251	ac=-2	add_str=1	add_mp=10	add_hpr=1
+armor	22252	ac=-2	add_dex=1	add_mpr=2	bow_hit_rate=2
+armor	22253	ac=-4	safenchant=-1	add_hpr=2	add_mpr=2	max_use_time=10800
+armor	22254	ac=-1	fear_resis=5
+armor	22255	ac=-2	add_int=2
+armor	22256	add_hp=50	spirit_resis=5
+armor	22257	ac=-4	safenchant=4
+armor	22258	ac=-8	safenchant=4
+armor	22259	ac=-4	safenchant=4
+armor	22260	ac=-3	safenchant=4
+armor	22261	ac=-3	safenchant=4	damage_reduction=1
+armor	22262	safenchant=4	add_hp=10	bow_dmg_rate=1
+armor	22263	ac=-4	safenchant=4	all_resis=2
+armor	22300	ac=-1	safenchant=6	add_hp=10
+armor	22301	ac=-4	safenchant=6	add_hp=20	add_mp=5
+armor	22302	ac=-2	safenchant=6	add_hp=10	add_hpr=2
+armor	22303	safenchant=6	add_hp=10
+armor	22304	ac=-2	safenchant=6	add_hp=10
+armor	22305	ac=-2	safenchant=6	add_hpr=3
+armor	22306	ac=-1	safenchant=6	add_hp=5	add_mpr=1
+armor	22307	ac=-4	safenchant=6	add_hp=10	add_mpr=4
+armor	22308	ac=-2	safenchant=6	add_hp=10	add_mpr=2
+armor	22309	safenchant=6	add_mpr=1
+armor	22310	ac=-1	safenchant=6	add_hp=5
+armor	22311	ac=-1	safenchant=6	add_hp=20	add_mpr=1
+armor	22312	safenchant=4
+armor	22320	ac=-1	safenchant=-1	add_hp=8	add_mp=8	add_hpr=1	add_mpr=1	max_use_time=10800
+armor	22321	ac=-1	safenchant=-1	add_hp=8	add_mp=8	add_hpr=1	add_mpr=1	ability_resis=3	max_use_time=10800
+armor	22322	safenchant=-1	m_def=8	max_use_time=10800
+armor	22323	safenchant=-1	add_hpr=2	add_mpr=2	max_use_time=10800
+armor	22324	ac=-1	safenchant=-1	add_hp=30	add_mp=10	m_def=2	weight_reduction=750	defense_earth=5	max_use_time=10800
+armor	22325	safenchant=-1	add_mp=40	m_def=2	weight_reduction=750	defense_water=5	max_use_time=10800
+armor	22326	safenchant=-1	add_hp=10	add_mp=30	m_def=5	weight_reduction=750	defense_wind=5	max_use_time=10800
+armor	22327	safenchant=-1	add_hp=40	m_def=2	weight_reduction=650	defense_fire=5	max_use_time=10800
+armor	22328	ac=-13	add_hp=25	add_hpr=6	m_def=8
+armor	22329	ac=-10	add_mp=25	add_hpr=3	add_mpr=6
+armor	22330	ac=-10	add_mp=30	add_hpr=1	add_mpr=9
+armor	22331	ac=-3	add_hp=35	add_hpr=5	damage_reduction=2
+armor	22332	ac=-4
+armor	22333	ac=-7
+armor	22334	ac=-7	m_def=8
+armor	22335	ac=-6	m_def=18
+armor	22336	ac=-3	safenchant=-1	add_sp=3	m_def=10	dmg_rate=3	bow_dmg_rate=3	max_use_time=1800
+armor	22337	safenchant=4	add_hp=15	add_mp=15
+armor	22338	ac=-1	safenchant=4
+armor	22339	ac=-2	safenchant=4
+armor	22340	safenchant=-1	add_str=1	m_def=10
+armor	22341	safenchant=-1	add_dex=1	m_def=10
+armor	22342	safenchant=-1	add_int=1	m_def=10
+armor	22343	safenchant=-1	add_str=1	ability_resis=10
+armor	22344	safenchant=-1	add_dex=1	ability_resis=10
+armor	22345	safenchant=-1	add_int=1	ability_resis=10
+armor	22346	safenchant=-1	add_str=1
+armor	22347	safenchant=-1	add_dex=1
+armor	22348	safenchant=-1	add_int=1
+armor	22349	safenchant=-1	add_str=1	m_def=10
+armor	22350	safenchant=-1	add_dex=1	m_def=10
+armor	22351	safenchant=-1	add_int=1	m_def=10
+armor	22352	safenchant=-1	add_str=1	ability_resis=10
+armor	22353	safenchant=-1	add_dex=1	ability_resis=10
+armor	22354	safenchant=-1	add_int=1	ability_resis=10
+armor	22355	safenchant=-1	add_str=1
+armor	22356	safenchant=-1	add_dex=1
+armor	22357	safenchant=-1	add_int=1
+armor	22358	add_int=1	add_wis=1	add_hp=30
+armor	22359	ac=-3	safenchant=4	add_wis=1
+armor	22360	ac=-4	safenchant=4	ability_resis=3	all_resis=1
+armor	22361	ac=-2	add_con=1	add_hp=20
+armor	22362	ac=-2	add_wis=1	add_mp=10
+armor	22363	add_str=1	add_wis=1	add_hp=30
+armor	22364	add_dex=1	add_wis=1	add_hp=30
+armor	22365	ac=-2	safenchant=4	add_hp=30
+armor	22366	ac=-3	safenchant=-1	add_sp=3	m_def=10	dmg_rate=3	bow_dmg_rate=3	max_use_time=1800
+armor	22367	ac=-2	add_mpr=2	weight_reduction=1000
+armor	22368	ac=-2	add_mpr=2	weight_reduction=1000
+armor	22369	weight_reduction=1000
+armor	30000	safenchant=6	add_wis=1	add_hp=20
+armor	30001	ac=-6	safenchant=6	add_hp=10	add_mp=31	add_hpr=6	add_mpr=6
+armor	30002	ac=-2	safenchant=-1
+armor	30009	ac=-5	add_str=1	add_hp=100	Magic_name=
+armor	30099	ac=-16	add_str=2	Magic_name=
+armor	30165	ac=-4	add_str=2	Magic_name=
+armor	30177	add_str=1	add_hp=50	weight_reduction=1000
+armor	30178	add_int=1	add_hp=50	weight_reduction=1000
+armor	30179	add_dex=1	add_hp=50	weight_reduction=1000
+armor	30180	add_wis=1	add_hp=50	weight_reduction=1000
+armor	30181	ac=-2	add_str=1	add_hp=30	m_def=2
+armor	30182	ac=-2	add_dex=1	add_hp=30	m_def=2
+armor	30183	ac=-2	add_int=1	add_hp=30	m_def=2
+armor	30184	ac=-2	add_str=1	add_hp=15	hit_rate=2	ability_resis=5
+armor	30185	ac=-2	add_int=1	add_mpr=1	add_sp=2	ability_resis=4
+armor	30197	ac=-5	add_str=2	add_hp=100	Magic_name=
+armor	50041	ac=-4	add_dex=1	add_hp=100	Magic_name=
+armor	50150	ac=-15	add_dex=2	add_mp=100	Magic_name=
+armor	50184	ac=-3	add_dex=2	Magic_name=
+armor	50214	ac=-4	add_dex=2	add_hp=100	Magic_name=
+armor	90015	add_int=1	add_wis=1	add_hp=30
+armor	90016	ac=-7	safenchant=4	add_dex=1	add_mpr=5
+armor	90017	ac=-6	safenchant=4	add_mp=50	add_mpr=10
+armor	90018	ac=-1	safenchant=4	defense_earth=10	defense_water=10	defense_wind=10	defense_fire=10
+armor	90019	ac=-1	safenchant=4	add_hp=20	add_mp=10	m_def=10
+armor	90020	ac=-1	safenchant=4	add_int=1	m_def=10
+armor	90021	ac=-1	safenchant=4
+armor	90022	ac=-1	safenchant=4	bow_hit_rate=3
+armor	90023	ac=-1	safenchant=4	m_def=5
+armor	91000	ac=-10	safenchant=-1	add_mp=25	add_hpr=3	add_mpr=6	max_use_time=36000
+armor	91001	ac=-10	safenchant=-1	add_mp=30	add_hpr=1	add_mpr=9	max_use_time=36000
+armor	91002	ac=-13	safenchant=-1	add_hp=25	add_hpr=6	ability_resis=10	max_use_time=36000
+armor	91003	ac=-2	weight_reduction=4
+armor	91004	ac=-1	add_mpr=1	weight_reduction=4
+armor	91005	ac=-1	m_def=5	weight_reduction=4
+armor	91006	ac=-1	add_hp=50	add_mp=10	weight_reduction=4
+armor	91007	ac=-1	add_hp=20	add_mp=30	weight_reduction=4
+armor	91008	ac=-1	add_hpr=2	weight_reduction=4
+armor	93001	ac=-2	safenchant=-1	m_def=4
+armor	93002	ac=-1	safenchant=-1	m_def=10
+armor	93003	ac=-3	safenchant=-1
+armor	93004	safenchant=-1	add_str=1	add_mpr=1	defense_fire=4
+armor	93008	ac=-2	safenchant=-1
+armor	93009	safenchant=4
+armor	120011	ac=-2	safenchant=4	m_def=4
+armor	120016	ac=1	safenchant=4	add_cha=1
+armor	120043	ac=-1	safenchant=4
+armor	120054	ac=-3	safenchant=4	add_mpr=2	defense_earth=10
+armor	120056	ac=-1	safenchant=4	m_def=10
+armor	120059	ac=-3	safenchant=4	add_mpr=2	defense_water=10
+armor	120074	ac=-2	safenchant=4	add_hp=20	add_mpr=4	m_def=6
+armor	120077	ac=-1	safenchant=4	Magic_name=
+armor	120085	safenchant=4
+armor	120101	ac=-6	safenchant=4
+armor	120110	ac=-5	safenchant=4	m_def=4
+armor	120112	ac=-3	safenchant=4	add_str=-1	add_cha=2	defense_water=10	defense_fire=-10
+armor	120128	ac=-8	safenchant=4
+armor	120137	ac=-5	safenchant=6
+armor	120149	ac=-6	safenchant=4
+armor	120154	ac=-7	safenchant=4
+armor	120182	safenchant=4
+armor	120242	ac=-2	safenchant=4
+armor	120244	add_int=-2	add_cha=1
+armor	120245	add_con=-2	add_dex=1
+armor	120246	add_str=1	add_dex=-2
+armor	120247	add_int=1	add_wis=-2
+armor	120248	add_wis=1	add_cha=-2
+armor	120249	add_str=-2	add_con=1
+armor	120254	add_cha=1
+armor	120256	add_dex=1
+armor	120264	add_str=1
+armor	120266	add_int=1
+armor	120267	add_wis=1
+armor	120268	add_con=1
+armor	120280	m_def=10
+armor	120285	defense_water=30
+armor	120289	add_mpr=1
+armor	120300	defense_earth=30
+armor	120302	defense_wind=30
+armor	120304	defense_fire=30
+armor	120306	add_hp=30	Magic_name=
+armor	120307	add_hp=15	add_mp=15	Magic_name=
+armor	120308	add_mp=30	Magic_name=
+armor	120309	add_hp=50	add_hpr=1	Magic_name=
+armor	120310	add_hp=20	add_mp=20	add_hpr=1	add_mpr=1	Magic_name=
+armor	120311	add_mp=50	add_mpr=1	Magic_name=
+armor	120312	add_hp=50	Magic_name=
+armor	120316	add_hp=25	add_mp=25	Magic_name=
+armor	120317	weight_reduction=1000
+armor	120319	add_mp=50	Magic_name=
+armor	120320	weight_reduction=1500
+armor	120321	weight_reduction=750
+armor	122358	add_int=1	add_wis=1	add_hp=30
+armor	122363	add_str=1	add_wis=1	add_hp=30
+armor	122364	add_dex=1	add_wis=1	add_hp=30
+armor	123111	ac=-20	add_int=2	add_mp=200	add_mpr=5	add_sp=5	m_def=15	all_resis=10	Magic_name=할파스의 가호/신의
+armor	123112	ac=-22	add_dex=2	add_hp=300	add_mpr=5	m_def=15	bow_dmg_rate=5	all_resis=10	Magic_name=할파스의 가호/신의
+armor	123113	ac=-24	add_str=2	add_hp=100	add_mpr=5	m_def=15	dmg_rate=5	all_resis=10	Magic_name=할파스의 가호/신의
+armor	202022	ac=-2	safenchant=4	add_int=1	add_mp=10	add_mpr=5
+armor	220034	ac=-1	safenchant=4
+armor	220043	ac=-1	safenchant=4
+armor	220056	ac=-1	safenchant=4	m_def=10
+armor	220101	ac=-6	safenchant=4
+armor	220115	ac=-6	safenchant=4
+armor	220122	ac=-4	safenchant=4
+armor	220125	ac=-5	safenchant=4
+armor	220135	ac=-2	safenchant=4
+armor	220136	ac=-4	safenchant=4
+armor	220147	ac=-3	safenchant=4
+armor	220154	ac=-7	safenchant=4
+armor	220213	ac=-1	safenchant=4
+armor	220237	ac=-1	safenchant=4
+armor	220293	add_con=-1	add_wis=-1	m_def=10
+armor	220294	ac=2	add_hpr=1	add_mpr=1
+armor	220295	defense_earth=-10	defense_water=-10	defense_wind=-10	defense_fire=-10
+armor	220296	add_hp=25	m_def=-10
+armor	222290	ac=-1	add_mpr=1	weight_reduction=360
+armor	222291	ac=-1	add_hpr=2	weight_reduction=360
+armor	222295	safenchant=-1	add_dex=1	min_lvl=55
+armor	222296	safenchant=-1	add_con=1	min_lvl=55
+armor	222297	safenchant=-1	add_int=1	min_lvl=55
+armor	222298	safenchant=-1	add_wis=1	min_lvl=55
+armor	222299	safenchant=-1	add_str=1	min_lvl=55
+armor	222300	ac=-15	add_hp=20	add_hpr=1	min_lvl=45	m_def=7
+armor	222301	ac=-14	add_hp=20	add_hpr=8	add_mpr=4	min_lvl=45	m_def=7
+armor	222302	ac=-13	add_hp=20	add_hpr=4	add_mpr=8	min_lvl=45	m_def=7
+armor	222303	ac=-11	add_hp=20	add_mpr=12	min_lvl=45	m_def=7
+armor	222304	ac=-2	add_str=2	add_hp=40	add_mp=20	hit_rate=2	fear_resis=5
+armor	222305	ac=-3	safenchant=4	add_str=1
+armor	222306	ac=-2	add_int=2	add_hp=40	add_mp=20	fear_resis=5	magic_hit_up=2
+armor	222307	ac=-3	safenchant=4	add_str=1
+armor	222308	ac=-3	safenchant=4	add_dex=1
+armor	222309	ac=-3	safenchant=4	add_int=1
+armor	222310	safenchant=-1
+armor	222311	safenchant=-1
+armor	222312	ac=-1	safenchant=-1	add_dex=1	min_lvl=70
+armor	222313	ac=-1	safenchant=-1	add_con=1	min_lvl=70
+armor	222314	ac=-1	safenchant=-1	add_int=1	min_lvl=70
+armor	222315	ac=-1	safenchant=-1	add_wis=1	min_lvl=70
+armor	222316	ac=-1	safenchant=-1	add_str=1	min_lvl=70
+armor	222317	ac=-3	safenchant=6	add_str=2
+armor	222318	add_hp=10	add_mp=10	add_hpr=1	ability_resis=7
+armor	222319	add_hp=10	add_mp=10	add_hpr=1
+armor	222320	add_hp=10	add_mp=10	add_hpr=1
+armor	222321	add_hp=10	add_mp=10	add_hpr=1
+armor	222322	add_hp=10	add_mp=10	add_hpr=1
+armor	222323	add_hp=10	add_mp=10	add_hpr=1
+armor	222324	ac=-4	safenchant=4	m_def=1
+armor	222325	ac=-4	safenchant=4	m_def=1
+armor	222326	ac=-4	safenchant=4
+armor	222327	ac=-4	safenchant=4
+armor	222328	ac=-4	safenchant=4	m_def=2
+armor	222329	ac=-5	add_str=3	add_dex=3	add_int=3	add_sp=10	m_def=10	bow_hit_rate=10	bow_dmg_rate=10
+armor	222330	ac=-2	add_hpr=2	weight_reduction=360
+armor	222331	ac=-2	add_mpr=1	weight_reduction=360
+armor	222332	ac=-2	add_hp=50	weight_reduction=360
+armor	222333	ac=-2	add_mp=30	weight_reduction=360
+armor	222334	ac=-2	weight_reduction=360
+armor	222335	ac=-2	add_mpr=1	weight_reduction=360
+armor	222336	ac=-2	add_hpr=2	weight_reduction=360
+armor	222337	add_hp=10
+armor	222338
+armor	222339	add_mp=5
+armor	222340	ac=-1
+armor	222341	ac=-1
+armor	222342	ac=-1	add_dex=2	add_mpr=2	weight_reduction=450	bow_hit_rate=3	ability_resis=4
+armor	223681	ac=-8	add_hp=390	add_mp=100	add_sp=4	m_def=6	damage_reduction=2	hit_rate=2	dmg_rate=2	bow_hit_rate=2	bow_dmg_rate=2	all_resis=5	all_pierce=5	PVPcalcPcDefense=6	Magic_name=
+armor	321515	ac=-1	safenchant=4
+armor	425106	safenchant=4	ability_resis=5
+armor	474700	ac=-5	safenchant=4	PVPcalcPcDefense=3
+armor	474701	ac=-3	hit_rate=3	bow_hit_rate=3	all_resis=4	all_pierce=7	PVPweaponTotalDamage=3
+armor	474702	safenchant=4
+armor	474703	ac=-1	safenchant=4
+armor	474704	ac=-1	safenchant=4
+armor	474705	ac=-7	safenchant=4
+armor	490000	safenchant=4	add_str=1
+armor	490001	safenchant=4	add_dex=1
+armor	490002	safenchant=4	add_cha=1
+armor	490003	safenchant=4	add_int=1
+armor	490004	safenchant=4	add_hp=50
+armor	490005	safenchant=4	add_mp=30
+armor	490006	safenchant=4	ability_resis=10
+armor	490007	safenchant=4
+armor	490008	safenchant=4
+armor	555000	ac=-3	safenchant=-1	add_sp=2	hit_rate=2	dmg_rate=2	bow_hit_rate=2	bow_dmg_rate=2	magic_hit_up=2
+armor	555001	ac=-4	safenchant=-1	add_str=1	add_sp=2	add_einhasadper=5	hit_rate=6	dmg_rate=4	all_resis=3
+armor	555002	ac=-4	safenchant=-1	add_sp=2	add_einhasadper=5	bow_hit_rate=6	bow_dmg_rate=4	all_resis=3
+armor	555003	ac=-4	safenchant=-1	add_int=1	add_sp=4	add_einhasadper=5	all_resis=3	magic_hit_up=3
+armor	600259
+armor	666000	ac=-3	safenchant=-1	add_sp=2	hit_rate=2	dmg_rate=2	bow_hit_rate=2	bow_dmg_rate=2	magic_hit_up=2
+armor	666001	ac=-4	safenchant=-1	add_str=1	add_sp=2	add_einhasadper=5	hit_rate=6	dmg_rate=4	all_resis=3
+armor	666002	ac=-4	safenchant=-1	add_sp=2	add_einhasadper=5	bow_hit_rate=6	bow_dmg_rate=4	all_resis=3
+armor	666003	ac=-4	safenchant=-1	add_int=1	add_sp=4	add_einhasadper=5	all_resis=3	magic_hit_up=3
+armor	787800
+armor	787801
+armor	787802
+armor	800110	weight_reduction=300	Magic_name=
+armor	845554	safenchant=-1	dmg_rate=1	bow_dmg_rate=1	defense_earth=5	defense_water=5	defense_wind=5	defense_fire=5
+armor	899996	ac=-4	add_str=3	ability_resis=7	ability_pierce=7
+armor	899997	ac=-5	dmg_rate=3	ability_pierce=7	Magic_name=확률 원거리 대미지 리덕션
+armor	899998	ac=-8	safenchant=4	add_hp=200
+armor	899999	ac=-8	safenchant=4	add_hp=100	Magic_name=
+armor	900000	ac=-4	add_dex=3	ability_resis=7	ability_pierce=7
+armor	900002	ac=-5	Magic_name=이자벨의 질투
+armor	900003	ac=-5	safenchant=4	add_hp=100	add_sp=5	magic_hit_up=3
+armor	900004	ac=-7	safenchant=4	add_hp=150	hit_rate=3	dmg_rate=5
+armor	900005	ac=-3	add_mpr=1	ability_resis=5	fear_resis=5
+armor	900006	ac=-3	safenchant=-1	add_sp=3	m_def=10	dmg_rate=3	bow_dmg_rate=3
+armor	900007	fear_resis=8
+armor	900008	fear_pierce=6
+armor	900010
+armor	900011	ac=-4	safenchant=4	PVPcalcPcDefense=2
+armor	900012	ac=-5	safenchant=4	PVPcalcPcDefense=2
+armor	900013	ac=-5	safenchant=4	PVPcalcPcDefense=2
+armor	900014	ac=-4	safenchant=4	PVPcalcPcDefense=2
+armor	900015	ac=-4	safenchant=4	PVPweaponTotalDamage=2
+armor	900016	ac=-4	safenchant=4	PVPweaponTotalDamage=2
+armor	900017	ac=-5	safenchant=4	PVPweaponTotalDamage=2
+armor	900018	ac=-5	safenchant=4	PVPweaponTotalDamage=2
+armor	900019	ac=-3	safenchant=4	add_str=1	add_dex=1	add_int=1
+armor	900020
+armor	900021
+armor	900022	ac=-2	safenchant=-1
+armor	900023	ac=-4	safenchant=4
+armor	900024	hit_rate=3	bow_hit_rate=3
+armor	900025	ac=-2	safenchant=4	add_wis=1
+armor	900026	ac=-2	safenchant=4	add_str=1
+armor	900027	ac=-2	safenchant=4	add_dex=1
+armor	900028	ac=-2	safenchant=4	add_int=1
+armor	900029	ac=-5	safenchant=4	add_hp=31	add_mp=6	add_hpr=10	add_mpr=6	damage_reduction=1	Magic_name=할로윈의 가호
+armor	900030	ac=-4	safenchant=4	add_str=1
+armor	900031	ac=-4	safenchant=4	add_dex=1
+armor	900032	ac=-4	safenchant=4	add_int=1
+armor	900033	ac=-3	safenchant=-1	add_sp=2	m_def=5	dmg_rate=2	bow_dmg_rate=2	max_use_time=1800
+armor	900034	ac=-2	add_hp=20
+armor	900035	ac=-2	safenchant=6	add_dex=1	bow_dmg_rate=1	spirit_resis=2
+armor	900036	ac=-1	safenchant=4	add_str=2
+armor	900037	safenchant=4	add_dex=2
+armor	900038	ac=-5	safenchant=4	damage_reduction=1
+armor	900039	ac=-1	add_str=1	m_def=5
+armor	900040	ac=-1	add_dex=1	m_def=5
+armor	900041	ac=-1	add_int=1	m_def=5
+armor	900042	ac=-2	ability_resis=6	all_resis=1
+armor	900043	ac=-1	safenchant=4	m_def=10
+armor	900044	ac=-1	safenchant=4	m_def=10
+armor	900045	ac=-7	safenchant=6	add_mpr=6	m_def=5	damage_reduction=1	dragonS_resis=2	Magic_name=페어리의 가호
+armor	900046	ac=-3	safenchant=6	damage_reduction=2
+armor	900047	ac=-3	safenchant=4	add_hp=20	add_mpr=4	m_def=2
+armor	900048	ac=-3	add_hp=20	weight_reduction=1500	damage_reduction=2	all_resis=1
+armor	900049	add_str=1
+armor	900050	add_dex=1
+armor	900051	add_int=1
+armor	900052	safenchant=-1
+armor	900053	safenchant=-1
+armor	900054	ac=-5	safenchant=4	damage_reduction=1
+armor	900055	ac=-3	safenchant=4	add_hp=20	add_mpr=4	m_def=2
+armor	900056	ac=-2	safenchant=4	add_mp=70	add_mpr=5	m_def=5
+armor	900057	ac=-4	safenchant=4	add_hp=50	m_def=6
+armor	900058	ac=-5	safenchant=4
+armor	900059	ac=-8	safenchant=6
+armor	900060	ac=-13	add_mp=100	add_mpr=5	min_lvl=45
+armor	900061	ac=-2	safenchant=4	add_con=1	add_hp=100
+armor	900062	ac=-2	safenchant=4	add_mp=25
+armor	900063	ac=-2	safenchant=4	add_int=1
+armor	900064	ac=-2	safenchant=4	add_mpr=5
+armor	900065	ac=-2	safenchant=4	add_mp=15	add_mpr=2
+armor	900066	ac=-4	safenchant=6
+armor	900067	ac=-4	safenchant=6
+armor	900068	ac=-2	safenchant=4	add_con=1	add_hp=100
+armor	900069	ac=-2	safenchant=4	add_hp=100
+armor	900070	ac=-7	safenchant=6	add_mpr=6	m_def=5	damage_reduction=1	dragonS_resis=2	Magic_name=페어리의 가호
+armor	900071	ac=-3	safenchant=6	damage_reduction=2
+armor	900072	ac=-2	safenchant=6	add_dex=1	bow_dmg_rate=1	spirit_resis=2
+armor	900073	ac=-1	safenchant=4	add_str=2
+armor	900074	safenchant=4	add_dex=2
+armor	900076	ac=-1	safenchant=4	add_mpr=2
+armor	900077	ac=-12	safenchant=-1	add_hpr=10	add_mpr=10	add_einhasadper=30	isEndedTimeMessage=1
+armor	900078	ac=4	safenchant=4	add_mp=50	weight_reduction=180	damage_reduction=1	hit_rate=1
+armor	900079	ac=4	safenchant=4	add_mp=50	weight_reduction=180	damage_reduction=1	bow_hit_rate=1
+armor	900080	ac=4	safenchant=4	add_mp=50	weight_reduction=180	damage_reduction=1
+armor	900081
+armor	900082
+armor	900083
+armor	900084
+armor	900090	ac=-3	safenchant=4	m_def=2
+armor	900091	ac=-2
+armor	900092	ac=-1	add_hp=50	add_mpr=2	weight_reduction=1000
+armor	900093	add_str=1
+armor	900094	add_dex=1
+armor	900095	add_int=1
+armor	900096	add_str=1
+armor	900097	add_dex=1
+armor	900098	add_int=1
+armor	900099
+armor	900100	ac=-2	safenchant=-1	m_def=4	isEndedTimeMessage=1
+armor	900101	safenchant=-1	isEndedTimeMessage=1
+armor	900102	ac=-3	safenchant=4	isEndedTimeMessage=1
+armor	900103	ac=-3	safenchant=-1	isEndedTimeMessage=1
+armor	900104	ac=-1	safenchant=-1	isEndedTimeMessage=1
+armor	900105	ac=-11	safenchant=-1	add_hp=20	add_mpr=12	min_lvl=45	m_def=7	isEndedTimeMessage=1
+armor	900106	ac=-2	safenchant=-1	add_mpr=5	min_lvl=45	isEndedTimeMessage=1
+armor	900107	ac=-13	safenchant=-1	add_hp=20	add_hpr=4	add_mpr=8	min_lvl=45	m_def=7	isEndedTimeMessage=1
+armor	900108	ac=-14	safenchant=-1	add_hp=20	add_hpr=8	add_mpr=4	min_lvl=45	m_def=7	isEndedTimeMessage=1
+armor	900109	ac=-15	safenchant=-1	add_hp=20	add_hpr=1	min_lvl=45	m_def=7	isEndedTimeMessage=1
+armor	900110	ac=-2	safenchant=-1	add_hp=30	isEndedTimeMessage=1
+armor	900111
+armor	900112	ac=-3	hit_rate=2	dmg_rate=2	dragonS_resis=2
+armor	900113	ac=-3	bow_hit_rate=2	bow_dmg_rate=2	dragonS_resis=2
+armor	900114	ac=-3	add_sp=2	dragonS_resis=2
+armor	900115	ac=-3	damage_reduction=2	dragonS_resis=2
+armor	900116
+armor	900117	ac=2	safenchant=4
+armor	900118	ac=2	safenchant=4
+armor	900119	ac=2	safenchant=4
+armor	900120	ac=2	safenchant=4
+armor	900121	ac=-5	add_sp=3	add_einhasadper=20	m_def=3	weight_reduction=1000	damage_reduction=3	dmg_rate=2	bow_dmg_rate=2	PVPcalcPcDefense=3	PVPweaponTotalDamage=3	magic_hit_up=3
+armor	900122	ac=-11	add_str=2	add_dex=2	add_int=2	add_hp=30	add_mp=20	add_hpr=3	add_mpr=3	m_def=3	weight_reduction=300	damage_reduction=3	PVPweaponTotalDamage=2
+armor	900123	ac=-5	add_sp=2	add_einhasadper=10	m_def=3	PVPcalcPcDefense=1	PVPweaponTotalDamage=1
+armor	900124	add_str=1
+armor	900125	add_dex=1
+armor	900126	add_int=1
+armor	900127	add_str=1
+armor	900128	add_dex=1
+armor	900129	add_int=1
+armor	900130	ac=-1
+armor	900131	ac=-1	add_str=2	add_hp=50	weight_reduction=1000	damage_reduction=1
+armor	900132	ac=-1	add_int=2	add_hp=50	weight_reduction=1000	damage_reduction=1
+armor	900133	ac=-1	add_dex=2	add_hp=50	weight_reduction=1000	damage_reduction=1
+armor	900134	ac=-1	add_wis=2	add_hp=50	weight_reduction=1000	damage_reduction=1
+armor	900135	ac=-2	safenchant=-1	add_str=1	add_einhasadper=5	min_lvl=80
+armor	900136	ac=-2	safenchant=-1	add_dex=1	add_einhasadper=5	min_lvl=80
+armor	900137	ac=-2	safenchant=-1	add_con=1	add_einhasadper=5	min_lvl=80
+armor	900138	ac=-2	safenchant=-1	add_int=1	add_einhasadper=5	min_lvl=80
+armor	900139	ac=-2	safenchant=-1	add_wis=1	add_einhasadper=5	min_lvl=80
+armor	900140	ac=-3	safenchant=-1	add_str=1	add_einhasadper=5	min_lvl=80
+armor	900141	ac=-3	safenchant=-1	add_dex=1	add_einhasadper=5	min_lvl=80
+armor	900142	ac=-3	safenchant=-1	add_con=1	add_einhasadper=5	min_lvl=80
+armor	900143	ac=-3	safenchant=-1	add_int=1	add_einhasadper=5	min_lvl=80
+armor	900144	ac=-3	safenchant=-1	add_wis=1	add_einhasadper=5	min_lvl=80
+armor	900145	ac=-5	safenchant=-1	add_str=1	add_einhasadper=5	min_lvl=80
+armor	900146	ac=-5	safenchant=-1	add_dex=1	add_einhasadper=5	min_lvl=80
+armor	900147	ac=-5	safenchant=-1	add_con=1	add_einhasadper=5	min_lvl=80
+armor	900148	ac=-5	safenchant=-1	add_int=1	add_einhasadper=5	min_lvl=80
+armor	900149	ac=-5	safenchant=-1	add_wis=1	add_einhasadper=5	min_lvl=80
+armor	900152
+armor	900153
+armor	900154
+armor	900155	ac=-3	safenchant=4	add_dex=2	add_hp=100
+armor	900156	ac=-1	safenchant=4	add_int=2	weight_reduction=500
+armor	900157	ac=2	safenchant=4	dmg_rate=3	ability_resis=5
+armor	900158	ac=2	safenchant=4	bow_dmg_rate=3
+armor	900159	ac=-4	safenchant=4	add_str=2	add_hp=50
+armor	900160	ac=-3	safenchant=4	add_dex=2	add_hp=50
+armor	900161	ac=-3	safenchant=4	add_int=2	add_mp=50
+armor	900162	ac=-5	add_str=2	add_hp=100	hit_rate=2	ability_resis=3	ability_pierce=5	PVPcalcPcDefense=1
+armor	900163	ac=-3	add_int=2	all_resis=3
+armor	900164	ac=-4	safenchant=4	add_mp=50	weight_reduction=180	damage_reduction=1	hit_rate=1
+armor	900165	ac=-2	safenchant=4	add_int=1	add_mp=100	min_lvl=50
+armor	900166	ac=-4	safenchant=4	add_str=2	add_hp=50
+armor	900167	ac=-3	add_str=1	add_dex=3	add_int=1	add_hp=50	bow_hit_rate=3	spirit_pierce=5	PVPcalcPcDefense=1
+armor	900168	ac=-3	safenchant=4	add_dex=2	add_hp=100
+armor	900169	ac=-2	safenchant=6	add_int=2	add_mp=100	add_mpr=2
+armor	900170	ac=-3	safenchant=-1	add_sp=2	add_einhasadper=10	hit_rate=2	dmg_rate=2	bow_hit_rate=2	bow_dmg_rate=2	max_use_time=3600	magic_hit_up=2
+armor	900171	ac=-4	safenchant=4	isEndedTimeMessage=1
+armor	900172	ac=-3	safenchant=4	m_def=5	isEndedTimeMessage=1
+armor	900173	ac=-10	safenchant=4	m_def=5	isEndedTimeMessage=1
+armor	900174	ac=-8	safenchant=4	add_hpr=5	add_mpr=5	isEndedTimeMessage=1
+armor	900175	ac=-6	safenchant=4	add_mpr=8	isEndedTimeMessage=1
+armor	900176	ac=-2	safenchant=4	isEndedTimeMessage=1
+armor	900177	ac=-2	safenchant=4	add_hp=20	add_mpr=2	m_def=10	isEndedTimeMessage=1
+armor	900178	ac=-2	safenchant=4	isEndedTimeMessage=1
+armor	900179	ac=-3	safenchant=4	damage_reduction=1	isEndedTimeMessage=1
+armor	900180	ac=-2	m_def=2	isEndedTimeMessage=1
+armor	900181	ac=-1	add_hp=20	m_def=3	isEndedTimeMessage=1
+armor	900182	ac=-1	add_hp=20	weight_reduction=750	isEndedTimeMessage=1
+armor	900183	ac=-2	add_hp=20	isEndedTimeMessage=1
+armor	900184	ac=-2	safenchant=4	add_wis=1
+armor	900185	ac=-2	safenchant=4	add_str=1
+armor	900186	ac=-2	safenchant=4	add_dex=1
+armor	900187	ac=-2	safenchant=4	add_int=1
+armor	900188	ac=-5	add_hp=20	add_mp=18	add_sp=3	add_einhasadper=20	m_def=3	damage_reduction=3	all_resis=3	all_pierce=3	PVPcalcPcDefense=5	PVPweaponTotalDamage=5	magic_hit_up=3
+armor	900189	ac=-5	add_hp=50	add_mp=30	add_einhasadper=10	m_def=5	weight_reduction=1000	damage_reduction=5	haste_item=1	all_resis=1	all_pierce=1	PVPcalcPcDefense=2	PVPweaponTotalDamage=2
+armor	900190	add_hpr=3	add_mpr=1	weight_reduction=300
+armor	900191
+armor	900192
+armor	900193
+armor	900194	ac=-12	safenchant=4	PVPcalcPcDefense=5	PVPweaponTotalDamage=5	Magic_name=램페이지
+armor	900195	ac=-5	safenchant=4	add_int=5	add_sp=10	ability_resis=10
+armor	900196	ac=-9
+armor	900197	ac=-10	safenchant=4	damage_reduction=5	ability_resis=10	PVPcalcPcDefense=5	Magic_name=확률 대미지 리덕션
+armor	910200	ac=1	Magic_name=
+armor	911154	ac=-1	safenchant=-1	add_hpr=3	add_mpr=2	m_def=5
+armor	987654	ac=-7	safenchant=-1	add_str=1	add_con=1	add_dex=1	add_int=1	add_wis=1	add_cha=1	add_hp=300	add_sp=4	damage_reduction=3	hit_rate=3	bow_hit_rate=3	all_pierce=3	PVPcalcPcDefense=3	PVPweaponTotalDamage=5	magic_hit_up=4
+armor	987655	ac=-5	safenchant=-1	add_str=1	add_con=1	add_dex=1	add_int=1	add_wis=1	add_cha=1	add_hp=50	spirit_resis=100	spirit_pierce=100	PVPcalcPcDefense=1	PVPweaponTotalDamage=2
+armor	988171	ac=-7	add_str=2	add_con=2	add_dex=2	add_int=2	add_wis=2	add_cha=2	Magic_name=
+armor	998171	ac=-3	safenchant=4	add_str=1	add_dex=1	add_int=1	damage_reduction=1	ability_resis=11
+armor	999443	ac=-10	safenchant=6	add_hp=2500	damage_reduction=15	hit_rate=15	dmg_rate=15	bow_hit_rate=15	bow_dmg_rate=15	PVPcalcPcDefense=35	PVPweaponTotalDamage=35	Magic_name=
+armor	999666	add_hp=1500	add_mp=1500	hit_rate=15	dmg_rate=15	bow_hit_rate=15	bow_dmg_rate=15	PVPcalcPcDefense=30	PVPweaponTotalDamage=30	Magic_name=할파스의룬 위에등급
+armor	999777	ac=-8	add_str=3	add_dex=3	add_int=3	add_hp=1000	add_sp=6	add_einhasadper=5	hit_rate=5	dmg_rate=5	bow_hit_rate=5	bow_dmg_rate=5	all_resis=6	PVPcalcPcDefense=5	PVPweaponTotalDamage=5	Magic_name=
+armor	4028001	ac=-4	add_int=1	add_hp=100	Magic_name=
+armor	4028002	ac=-14	add_int=2	add_mp=200	Magic_name=
+armor	4028003	ac=-3	add_int=2	Magic_name=
+armor	4028004	ac=-3	add_int=2	add_hp=100	Magic_name=
+armor	9000241	ac=-8	safenchant=-1	add_hp=390	add_mp=100	add_sp=4	m_def=6	damage_reduction=2	hit_rate=2	dmg_rate=2	bow_hit_rate=2	bow_dmg_rate=2	all_resis=5	all_pierce=5	PVPcalcPcDefense=6	Magic_name=

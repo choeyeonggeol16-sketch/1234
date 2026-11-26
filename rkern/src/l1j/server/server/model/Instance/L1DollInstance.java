@@ -6,6 +6,7 @@ import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.item.doll.DollPotentialEffects;
 import l1j.server.server.model.item.doll.DollRegistry;
 import l1j.server.server.model.item.function.ItemBonusHooks;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
@@ -26,7 +27,6 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_DOLL_ON_OFF;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
-import l1j.server.server.utils.eKind;
 
 public class L1DollInstance extends L1NpcInstance {
 	private static final long serialVersionUID = 1L;
@@ -146,6 +146,8 @@ public class L1DollInstance extends L1NpcInstance {
 	private static final int TIMER_LIFETIME_GENERATION = 1;
 
 	private int _dollType;
+	private int appliedPotential;
+	private int[] appliedDollOptions;
 	private int _dollLevel;
 	private int _itemObjId;
 	
@@ -243,171 +245,17 @@ public class L1DollInstance extends L1NpcInstance {
 		L1PcInstance pc = (L1PcInstance) _master;
 		if (pc == null) return;
 
-		//  잠재력 옵션 (level 기반)
-		if (Config.잠재력활성화) {
-			int level = getDollLevel();
-			switch (level) {
-			case 1: pc.add_melee_critical_rate(1 * f); break;
-			case 2: pc.add_missile_critical_rate(1 * f); break;
-			case 3: pc.add_magic_critical_rate(1 * f); break;
-			case 4: pc.addDmgup(1 * f); break;
-			case 5: pc.addBowDmgup(1 * f); break;
-			case 6: pc.addHitup(1 * f); break;
-			case 7: pc.addBowHitup(1 * f); break;
-			case 8: pc.addDamageReductionByArmor(1 * f); break;
-			case 9: pc.addAc(-1 * f); break;
-			case 10: pc.AddMDefend(3 * f); break;
-			case 11: pc.addMaxHp(30 * f); break;
-			case 12: pc.addMaxMp(20 * f); break;
-			case 13: pc.AddPvpDamage(1 * f); break;
-			case 14: pc.AddPvpDamageReduction(1 * f); break;
-			case 15: pc.AddFireResist(10 * f); break;
-			case 16: pc.AddEarthResist(10 * f); break;
-			case 17: pc.AddWaterResist(10 * f); break;
-			case 18: pc.AddWindResist(10 * f); break;
-			case 19: pc.addWeightReduction(100 * f); break;
-			case 20: pc.add_melee_critical_rate(3 * f); break;
-			case 21: pc.add_missile_critical_rate(3 * f); break;
-			case 22: pc.add_magic_critical_rate(3 * f); break;
-			case 23: pc.addDmgup(2 * f); break;
-			case 24: pc.addBowDmgup(2 * f); break;
-			case 25: pc.addHitup(2 * f); break;
-			case 26: pc.addBowHitup(2 * f); break;
-			case 27: 
-				pc.addDamageReductionByArmor(2 * f);
-				break;
-			case 28: pc.addAc(-2 * f); break;
-			case 29: pc.AddMDefend(6 * f); break;
-			case 30: pc.addMaxHp(60 * f); break;
-			case 31: pc.addMaxMp(40 * f); break;
-			case 32: pc.addDg(3 * f); break;
-			case 35: pc.addEffectedER(3 * f); break;
-			case 36: pc.AddPvpDamage(2 * f); break;
-			case 37: pc.AddPvpDamageReduction(2 * f); break;
-			case 38: handleSkillEffect(L1SkillId.잠재력pvp마법감소3, f); break;
-			case 39: pc.AddSpecialResistance(eKind.ABILITY, 3 * f); break;
-			case 40: pc.AddSpecialResistance(eKind.SPIRIT, 3 * f); break;
-			case 41: pc.AddSpecialResistance(eKind.DRAGON_SPELL, 3 * f); break;
-			case 42: pc.AddSpecialResistance(eKind.FEAR, 3 * f); break;
-			case 43: pc.AddFireResist(20 * f); break;
-			case 44: pc.AddEarthResist(20 * f); break;
-			case 45: pc.AddWaterResist(20 * f); break;
-			case 46: pc.AddWindResist(20 * f); break;
-			case 47: pc.AddStatBonusStr((byte) (1 * f)); break;
-			case 48: pc.AddStatBonusDex((byte) (1 * f)); break;
-			case 49: pc.AddStatBonusCon((byte) (1 * f)); break;
-			case 50: pc.AddStatBonusWis((byte) (1 * f)); break;
-			case 51: pc.AddStatBonusInt((byte) (1 * f)); break;
-			case 52: pc.addWeightReduction(200 * f); break;
-			case 53: pc.add_melee_critical_rate(5 * f); break;
-			case 54: pc.add_missile_critical_rate(5 * f); break;
-			case 55: pc.add_magic_critical_rate(5 * f); break;
-			case 56: pc.addDmgup(3 * f); break;
-			case 57: pc.addBowDmgup(3 * f); break;
-			case 58: pc.addHitup(3 * f); break;
-			case 59: pc.addBowHitup(3 * f); break;
-			case 60: pc.AddStatSp(3 * f); break;
-			case 61: pc.addBaseMagicHitUp(3 * f); break;
-			case 62:
-				pc.addDamageReductionByArmor(3 * f);
-				break;
-			case 63: pc.addAc(-3 * f); break;
-			case 64: pc.AddMDefend(10 * f); break;
-			case 65: pc.addMaxHp(150 * f); break;
-			case 66: pc.addMaxMp(100 * f); break;
-			case 67: pc.addDg(5 * f); break;
-			case 70: pc.addEffectedER(5 * f); break;
-			case 71: 
-				pc.AddPvpDamage(3 * f);
-
-				break;
-			case 72: pc.AddPvpDamageReduction(3 * f); break;
-			case 73: handleSkillEffect(L1SkillId.잠재력pvp마법감소2, f); break;
-			case 74: pc.AddSpecialResistance(eKind.ABILITY, 5 * f); break;
-			case 75: pc.AddSpecialResistance(eKind.SPIRIT, 5 * f); break;
-			case 76: pc.AddSpecialResistance(eKind.DRAGON_SPELL, 5 * f); break;
-			case 77: pc.AddSpecialResistance(eKind.FEAR, 5 * f); break;
-			case 78: pc.AddSpecialPierce(eKind.ABILITY, 3 * f); break;
-			case 79: pc.AddSpecialPierce(eKind.SPIRIT, 3 * f); break;
-			case 80: pc.AddSpecialPierce(eKind.DRAGON_SPELL, 3 * f); break;
-			case 81: pc.AddSpecialPierce(eKind.FEAR, 3 * f); break;
-			case 82: pc.AddFireResist(30 * f); break;
-			case 83: pc.AddEarthResist(30 * f); break;
-			case 84: pc.AddWaterResist(30 * f); break;
-			case 85: pc.AddWindResist(30 * f); break;
-			case 86: pc.AddAllNaturalResistance(10 * f); break;
-			case 87: pc.AddStatBonusStr((byte) (2 * f)); break;
-			case 88: pc.AddStatBonusDex((byte) (2 * f)); break;
-			case 89: pc.AddStatBonusCon((byte) (2 * f)); break;
-			case 90: pc.AddStatBonusWis((byte) (2 * f)); break;
-			case 91: pc.AddStatBonusInt((byte) (2 * f)); break;
-			case 92: pc.addWeightReduction(300 * f); break;
-			case 93: pc.addDmgup(5 * f); break;
-			case 94: pc.addBowDmgup(5 * f); break;
-			case 95: pc.addHitup(5 * f); break;
-			case 96: pc.addBowHitup(5 * f); break;
-			case 97: pc.AddStatSp(5 * f); break;
-			case 98: pc.addBaseMagicHitUp(5 * f); break;
-			case 99: pc.addDamageReductionByArmor(5 * f); break;
-			case 100: pc.addAc(-5 * f); break;
-			case 101: pc.AddMDefend(15 * f); break;
-			case 102: pc.addMaxHp(300 * f); break;
-			case 103: pc.addMaxMp(200 * f); break;
-			case 104: pc.addDg(10 * f); break;
-			case 107: pc.addEffectedER(12 * f); break;
-			case 108: pc.AddPvpDamage(7 * f); break;
-			case 109: pc.AddPvpDamageReduction(7 * f); break;
-			case 110: handleSkillEffect(L1SkillId.잠재력pvp마법감소1, f); break;
-			case 111: handleSkillEffect(L1SkillId.잠재력pvp감소무시, f); break;
-			case 112: pc.AddSpecialResistance(eKind.ABILITY, 8 * f); break;
-			case 113: pc.AddSpecialResistance(eKind.SPIRIT, 8 * f); break;
-			case 114: pc.AddSpecialResistance(eKind.DRAGON_SPELL, 8 * f); break;
-			case 115: pc.AddSpecialResistance(eKind.FEAR, 8 * f); break;
-			case 116: pc.AddSpecialResistance(eKind.ALL, 3 * f); break;
-			case 117: pc.AddSpecialPierce(eKind.ABILITY, 5 * f); break;
-			case 118: pc.AddSpecialPierce(eKind.SPIRIT, 5 * f); break;
-			case 119: pc.AddSpecialPierce(eKind.DRAGON_SPELL, 5 * f); break;
-			case 120: pc.AddSpecialPierce(eKind.FEAR, 5 * f); break;
-			case 121: pc.AddSpecialPierce(eKind.ALL, 3 * f); break;
-			case 122: pc.AddAllNaturalResistance(30 * f); break;
-			case 123: pc.AddStatBonusStr((byte) (3 * f)); break;
-			case 124: pc.AddStatBonusDex((byte) (3 * f)); break;
-			case 125: pc.AddStatBonusCon((byte) (3 * f)); break;
-			case 126: pc.AddStatBonusWis((byte) (3 * f)); break;
-			case 127: pc.AddStatBonusInt((byte) (3 * f)); break;
-			case 128:
-				pc.AddStatBonusStr((byte) (1 * f)); pc.AddStatBonusDex((byte) (1 * f));
-				pc.AddStatBonusCon((byte) (1 * f)); pc.AddStatBonusWis((byte) (1 * f));
-				pc.AddStatBonusInt((byte) (1 * f)); break;
-			case 129: handleSkillEffect(L1SkillId.잠재력영웅마나, f); break;
-			case 130: pc.addWeightReduction(500 * f); break;
-			case 131: handleSkillEffect(L1SkillId.잠재력디케이, f); break;
-			case 132: handleSkillEffect(L1SkillId.잠재력pvp감소무시1, f); break;
-			case 133:
-				pc.AddStatBonusStr((byte) (3 * f)); pc.AddStatBonusDex((byte) (3 * f));
-				pc.AddStatBonusCon((byte) (3 * f)); pc.AddStatBonusWis((byte) (3 * f));
-				pc.AddStatBonusInt((byte) (3 * f)); break;
-			case 134: handleSkillEffect(L1SkillId.잠재력전설피, f); break;
-			case 135: handleSkillEffect(L1SkillId.잠재력전설마나, f); break;
-			case 136: handleSkillEffect(L1SkillId.잠재력소울, f); break;
-			case 137: handleSkillEffect(L1SkillId.잠재력이뮨무시, f); break;
-			case 138: handleSkillEffect(L1SkillId.잠재력저지먼트, f); break;
-			case 139: // 진주 잠재력 (특수)
-				if (f > 0) { pc.setSkillEffect(L1SkillId.잠재력진주, 3600 * 1000); SC_SystemMessage.send(pc, "\\f4이미 3단 가속효과가 적용중입니다."); }
-				else { pc.removeSkillEffect(L1SkillId.잠재력진주); SC_SystemMessage.send(pc, "\\f4마법 인형의 효과가 사라졌습니다."); }
-				break;
-			}
-		}
+        if (f > 0) appliedPotential = Config.잠재력활성화 ? getDollLevel() : 0;
+        if (appliedPotential != 0) {
+            final int potential = appliedPotential;
+            if (f < 0) appliedPotential = 0;
+            DollPotentialEffects.apply(pc, potential, f);
+        }
 
 		// 인형 타입별 고유 옵션 - 단일 Registry
-		DollRegistry.applyDirect(pc, getDollType(), f);
+		appliedDollOptions = DollRegistry.applyDirect(pc, getDollType(), f, appliedDollOptions);
 
 		updateClientPackets(pc);
-	}
-
-	private void handleSkillEffect(int skillId, int f) {
-		if (f > 0) _master.setSkillEffect(skillId, 3600 * 1000);
-		else _master.removeSkillEffect(skillId);
 	}
 
 	private void updateClientPackets(L1PcInstance pc) {

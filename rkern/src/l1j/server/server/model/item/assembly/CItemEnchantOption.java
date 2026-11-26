@@ -14,6 +14,7 @@ import l1j.server.server.model.inventory.L1EquipmentSlot.ClassArmorBonus;
 import l1j.server.server.model.item.ItemEffectRegistry;
 import l1j.server.server.model.item.ItemStat;
 import l1j.server.server.model.item.doll.DollOption;
+import l1j.server.server.model.item.doll.DollPotentialEffects;
 import l1j.server.server.model.item.doll.DollRegistry;
 import l1j.server.server.templates.L1Armor;
 import l1j.server.server.utils.ItemPresentOutStream;
@@ -43,9 +44,7 @@ public final class CItemEnchantOption {
 				        if (stat.wt != ItemStat.WType.B && stat.wt != ItemStat.WType.H) continue;
 				        final int value = regDef.statValue(stat, ctype, enchantLevel);
 				        if (value == 0) continue;
-				        os.writeC(stat.opcode);
-				        if (stat.wt == ItemStat.WType.B) os.writeC(value);
-				        else os.writeH(value);
+				        os.writeNumericOption(stat.opcode, value, stat.wt == ItemStat.WType.B ? 1 : 2);
 				    }
 				    for (int i = 0; i < stats.size(); i++) {
 				        final ItemStat stat = stats.get(i);
@@ -141,6 +140,9 @@ public final class CItemEnchantOption {
 	            writeDollOption(os, e.getOption(), value);
 	        }
 	    }
+
+	    os.writeaHPUP(p.hpTick());
+	    os.writeaMPUP(p.mpTick());
 
 	    final String magic = p.getMagicText();
 	    if (magic != null && !magic.isEmpty()) {
@@ -273,667 +275,8 @@ public final class CItemEnchantOption {
 	
     }
 
-    public static void AssemblePotentialOption(L1ItemInstance item, ItemPresentOutStream 템) {
-		
-		if (Config.잠재력활성화) {
-			switch (item.get_item_level()) {
-			case 1:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH근거리 치명타: \\aA+1%");break;
-			case 2:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH원거리 치명타: \\aA+1%");break;
-			case 3:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH마법 치명타: \\aA+1%");break;
-			case 4:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH근거리 대미지: \\aA+1");break;
-			case 5:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH원거리 대미지: \\aA+1");break;
-			case 6:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH근거리 명중: \\aA+1");break;
-			case 7:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH원거리 명중: \\aA+1");break;
-			case 8:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH대미지 감소: \\aA+1");break;
-			case 9:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH추가 방어력: \\aA+1");break;
-			case 10:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fHMR: \\aA+3");break;
-			case 11:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH최대 HP: \\aA+30");break;
-			case 12:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH최대 MP: \\aA+20");break;
-			case 13:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fHPVP 추가 대미지: \\aA+1");break;
-			case 14:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fHPVP 대미지 감소: \\aA+1");break;
-			case 15:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH속성 저항: \\aA불 +10");break;
-			case 16:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH속성 저항: \\aA땅 +10");break;
-			case 17:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH속성 저항: \\aA물 +10");break;
-			case 18:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH속성 저항: \\aA바람 +10");break;
-			case 19:
-				템.writeC(39);템.writeS("\\fH[잠재력 강화: 일반]");
-				템.writeC(39);템.writeS("\\fH소지 무게 증가: \\aA+100");break;
-			case 20:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH근거리 치명타: \\aA+3%");break;
-			case 21:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH원거리 치명타: \\aA+3%");break;
-			case 22:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH마법 치명타: \\aA+3%");break;
-			case 23:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH근거리 대미지: \\aA+2");break;
-			case 24:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH원거리 대미지: \\aA+2");break;
-			case 25:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH근거리 명중: \\aA+2");break;
-			case 26:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH원거리 명중: \\aA+2");break;
-			case 27:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH대미지 감소: \\aA+2");break;
-			case 28:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH추가 방어력: \\aA+2");break;
-			case 29:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aHMR: \\aA+6");break;
-			case 30:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH최대 HP: \\aA+60");break;
-			case 31:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH최대 MP: \\aA+40");break;
-			case 32:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aHDG: \\aA+3");break;
-			case 33:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aHHP 절대 회복: \\aA+30(32초)");break;
-			case 34:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aHMP 절대 회복: \\aA+10(64초)");break;
-			case 35:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aHER: \\aA+3");break;
-			case 36:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aHPVP 추가 대미지: \\aA+2");break;
-			case 37:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aHPVP 대미지 감소: \\aA+2");break;
-			case 38:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aHPVP마법대미지 감소: \\aA+2%");break;
-			case 39:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH내성 :\\aA기술 +3");break;
-			case 40:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH내성 :\\aA정령 +3");break;
-			case 41:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH내성 :\\aA용언 +3");break;
-			case 42:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH내성 :\\aA공포 +3");break;
-				
-			case 43:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH속성 저항: \\aA불+20");break;
-			case 44:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH속성 저항: \\aA땅+20");break;
-			case 45:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH속성 저항: \\aA물+20");break;
-			case 46:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH속성 저항: \\aA바람+20");break;
-			case 47:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH스탯: \\aASTR +1");break;
-			case 48:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH스탯: \\aADEX +1");break;
-			case 49:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH스탯: \\aACON +1");break;
-			case 50:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH스탯: \\aAWIS +1");break;
-			case 51:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH스탯: \\aAINT +1");break;
-			case 52:
-				템.writeC(39);템.writeS("\\aH[잠재력 강화: 고급]");
-				템.writeC(39);템.writeS("\\aH소지 무게 증가: \\aA+200");break;
-			case 53:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);템.writeS("\\aL근거리 치명타: \\aA+5%");break;
-			case 54:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);템.writeS("\\aL원거리 치명타: \\aA+5%");break;
-			case 55:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);템.writeS("\\aL마법 치명타: \\aA+5%");break;
-			case 56:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);템.writeS("\\aL근거리 대미지: \\aA+3");break;
-			case 57:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);템.writeS("\\aL원거리 대미지: \\aA+3");break;
-			case 58:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);템.writeS("\\aL근거리 명중: \\aA+3");break;
-			case 59:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);템.writeS("\\aL원거리 명중: \\aA+3");break;
-			case 60:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);템.writeS("\\aLSP: \\aA+3");break;
-			case 61:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);템.writeS("\\aL마법적중: \\aA+3");break;
-			case 62:
-				템.writeC(39);템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL대미지감소: \\aA+3");
-				break;
-			case 63:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL추가 방어력: \\aA+3");
-				break;
-			case 64:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aLMR: \\aA+10");
-				break;
-			case 65:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL최대 HP: \\aA+150");
-				break;
-			case 66:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL최대 MP: \\aA+100");
-				break;
-			case 67:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aLDG: \\aA+5");
-				break;
-			case 68:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aLHP절대 회복: \\aA+50(32초)");
-				break;
-			case 69:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aLMP절대 회복: \\aA+12(64초)");
-				break;
-			case 70:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aLER: \\aA+5");
-				break;
-			case 71:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aLPVP 추가 대미지: \\aA+3");
-				break;
-			case 72:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aLPVP 대미지 감소: \\aA+3");
-				break;
-			case 73:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aLPVP마법대미지 감소 :\\aA+5%");
-				break;
-			case 74:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL내성 :\\aA기술 +5");
-				break;
-			case 75:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL내성 :\\aA정령 +5");
-				break;
-			case 76:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL내성 :\\aA용언 +5");
-				break;
-			case 77:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL내성 :\\aA공포 +5");
-				break;
-			case 78:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL적중 :\\aA기술 +3");
-				break;
-			case 79:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL적중 :\\aA정령 +3");
-				break;
-			case 80:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL적중 :\\aA용언 +3");
-				break;
-			case 81:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL적중 :\\aA공포 +3");
-				break;
-			case 82:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL속성 저항: \\aA불+30");
-				break;
-			case 83:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL속성 저항: \\aA땅+30");
-				break;
-			case 84:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL속성 저항: \\aA물+30");
-				break;
-			case 85:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL속성 저항: \\aA바람+30");
-				break;
-			case 86:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL모든 속성 저항: \\aA+10");
-				break;
-			case 87:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL스탯: \\aASTR+2");
-				break;
-			case 88:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL스탯: \\aADEX+2");
-				break;
-			case 89:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL스탯: \\aACON+2");
-				break;
-			case 90:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL스탯: \\aAWIS+2");
-				break;
-			case 91:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL스탯: \\aAINT+2");
-				break;
-			case 92:
-				템.writeC(39);
-				템.writeS("\\aL[잠재력 강화: 희귀]");
-				템.writeC(39);
-				템.writeS("\\aL소지 무게 증가: \\aA+200");
-				break;
-			case 93:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3근거리 대미지: \\aA+5");
-				break;
-			case 94:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3원거리 대미지: \\aA+5");
-				break;
-			case 95:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3근거리 명중: \\aA+5");
-				break;
-			case 96:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3원거리 명중: \\aA+5");
-				break;
-			case 97:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3SP: \\aA+5");
-				break;
-			case 98:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3마법적중: \\aA+5");
-				break;
-			case 99:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3대미지감소: \\aA+5");
-				break;
-			case 100:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3추가 방어력: \\aA+5");
-				break;
-			case 101:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3MR: \\aA+15");
-				break;
-			case 102:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3최대 HP: \\aA+300");
-				break;
-			case 103:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3최대 MP: \\aA+200");
-				break;
-			case 104:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3DG: \\aA+10");
-				break;
-			case 105:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3HP절대 회복: \\aA+150(32초)");
-				break;
-			case 106:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3MP절대 회복: \\aA+30(64초)");
-				break;
-			case 107:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3ER: \\aA+12");
-				break;
-			case 108:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3PVP 추가 대미지: \\aA+7");
-				break;
-			case 109:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3PVP 대미지 감소: \\aA+7");
-				break;
-			case 110:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3PVP마법대미지 감소 :\\aA+10%");
-				break;
-			case 111:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3PVP대미지감소무시 :\\aA+10");
-				break;
-			case 112:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3내성 :\\aA기술 +8");
-				break;
-			case 113:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3내성 :\\aA정령 +8");
-				break;
-			case 114:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3내성 :\\aA용언 +8");
-				break;
-			case 115:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3내성 :\\aA공포 +8");
-				break;
-			case 116:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3모든 내성 :\\aA+3");
-				break;
-			case 117:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3적중 :\\aA기술 +5");
-				break;
-			case 118:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3적중 :\\aA정령 +5");
-				break;
-			case 119:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3적중 :\\aA용언 +5");
-				break;
-			case 120:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3적중 :\\aA공포 +5");
-				break;
-			case 121:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3모든 적중 :\\aA+3");
-				break;
-		case 122:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3모든 속성 저항: \\aA+30");;
-				break;
-			case 123:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3스탯: \\aASTR +3");
-				break;
-			case 124:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3스탯: \\aADEX +3");
-				break;
-			case 125:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3스탯: \\aACON +3");
-				break;
-			case 126:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3스탯: \\aAWIS +3");
-				break;
-			case 127:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3스탯: \\aAINT +3");
-				break;
-			case 128:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3모든 스탯: \\aA+1");
-				break;
-			case 129:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3MP 흡수");
-				break;
-			case 130:
-				템.writeC(39);
-				템.writeS("\\f3[잠재력 강화: 영웅]");
-				템.writeC(39);
-				템.writeS("\\f3소지 무게 증가: \\aA+500");
-				break;
-			case 131:
-				템.writeC(39);
-				템.writeS("\\f4[잠재력 강화: 전설]");
-				템.writeC(39);
-				템.writeS("\\f4디케이 포션 발동");
-				break;
-			case 132:
-				템.writeC(39);
-				템.writeS("\\f4[잠재력 강화: 전설]");
-				템.writeC(39);
-				템.writeS("\\f4PVP대미지감소무시 :\\aA+"+Config.인형PVP감소수치);
-				break;
-			case 133:
-				템.writeC(39);
-				템.writeS("\\f4[잠재력 강화: 전설]");
-				템.writeC(39);
-				템.writeS("\\f4모든 스탯 :\\aA+3");
-				break;
-			case 134:
-				템.writeC(39);
-				템.writeS("\\f4[잠재력 강화: 전설]");
-				템.writeC(39);
-				템.writeS("\\f4HP 흡수");
-				break;
-			case 135:
-				템.writeC(39);
-				템.writeS("\\f4[잠재력 강화: 전설]");
-				템.writeC(39);
-				템.writeS("\\f4MP 흡수");
-				break;
-			case 136:
-				템.writeC(39);
-				템.writeS("\\f4[잠재력 강화: 전설]");
-				템.writeC(39);
-				템.writeS("\\f4소울오브프레임 발동");
-				break;
-			case 137:
-				int aa = (int) ((double) Config.잠재력이뮨 * 100);
-				템.writeC(39);
-				템.writeS("\\f4[잠재력 강화: 전설]");
-				템.writeC(39);
-				템.writeS("\\f4이뮨투함 무시 \\aA+"+aa+"%");
-				break;
-			case 138:
-				템.writeC(39);
-				템.writeS("\\f4[잠재력 강화: 전설]");
-				템.writeC(39);
-				템.writeS("\\f4저지먼트 발동");
-				break;
-			case 139:
-				템.writeC(39);
-				템.writeS("\\f4[잠재력 강화: 전설]");
-				템.writeC(39);
-				템.writeS("\\f43단가속 상시 효과");
-				break;
-			}
-			}
-		
-		
-	
+    public static void AssemblePotentialOption(L1ItemInstance item, ItemPresentOutStream out) {
+        if (Config.잠재력활성화) DollPotentialEffects.writeTooltip(out, item.get_item_level());
     }
 
     /** Weapon and armor attribute/enchant rendering in original L1 packet order.
@@ -954,7 +297,7 @@ public final class CItemEnchantOption {
     }
 
     static void AssembleEquipmentItem(L1ItemInstance item, ItemPresentOutStream os,
-                                      int itemType2, int itemId, int itemgrade) throws Exception { // weapon | armor
+                                      int itemType2, int itemId, int itemgrade, int[] optionTotals) throws Exception { // weapon | armor
 
 				int op_addAc = 0;
                 // Compute the shared accessory effects only once per item.
@@ -1148,48 +491,41 @@ public final class CItemEnchantOption {
 					switch (item.getEnchantLevel()) {
 					case 0:
 					case 1:
-						os.writeC(32);
-						os.writeH(15);
+						os.writeNumericOption(32, 15, 2);
 						break;
 					case 2:
 						os.writeC(2);
 						os.writeC(1 + op_addAc);
-						os.writeC(32);
-						os.writeH(15);
+						os.writeNumericOption(32, 15, 2);
 						break;
 					case 3:
 						os.writeC(2);
 						os.writeC(2 + op_addAc);
-						os.writeC(32);
-						os.writeH(15);
+						os.writeNumericOption(32, 15, 2);
 						break;
 					case 4:
 					case 5:
 						os.writeC(2);
 						os.writeC(3 + op_addAc);
-						os.writeC(32);
-						os.writeH(15);
+						os.writeNumericOption(32, 15, 2);
 						break;
 					case 6:
 						os.writeC(2);
 						os.writeC(4 + op_addAc);
-						os.writeC(32);
-						os.writeH(15);
+						os.writeNumericOption(32, 15, 2);
 						os.writeability_resis(5);
 						break;
 					case 7:
 						os.writeC(2);
 						os.writeC(4 + op_addAc);
-						os.writeC(32);
-						os.writeH(15);
+						os.writeNumericOption(32, 15, 2);
 						os.writeMagicHIT(1);
 						os.writeability_resis(7);
 						break;
 					case 8:
 						os.writeC(2);
 						os.writeC(6 + op_addAc);
-						os.writeC(32);
-						os.writeH(30);
+						os.writeNumericOption(32, 30, 2);
 						os.writeMagicHIT(3);
 						os.writeability_resis(9);
 						os.writeafear_resis(1);
@@ -1197,8 +533,7 @@ public final class CItemEnchantOption {
 					case 9:
 						os.writeC(2);
 						os.writeC(8 + op_addAc);
-						os.writeC(32);
-						os.writeH(70);
+						os.writeNumericOption(32, 70, 2);
 						os.writeMagicHIT(5);
 						os.writeability_resis(9);
 						os.writeafear_resis(2);
@@ -1524,17 +859,13 @@ public final class CItemEnchantOption {
                     if (pvp > 0) os.writePVPAddDMG(pvp);
                 } else if (itemId >= 307 && itemId <= 314) {
 					if (item.getEnchantLevel() == 7) {
-						os.writeC(59);
-						os.writeC(item.getEnchantLevel() - 4);
+						os.writeNumericOption(59, item.getEnchantLevel() - 4, 1);
 					} else if (item.getEnchantLevel() == 8) {
-						os.writeC(59);
-						os.writeC(item.getEnchantLevel() - 3);
+						os.writeNumericOption(59, item.getEnchantLevel() - 3, 1);
 					} else if (item.getEnchantLevel() == 9) {
-						os.writeC(59);
-						os.writeC(item.getEnchantLevel() - 2);
+						os.writeNumericOption(59, item.getEnchantLevel() - 2, 1);
 					} else if (item.getEnchantLevel() == 10) {
-						os.writeC(59);
-						os.writeC(item.getEnchantLevel());
+						os.writeNumericOption(59, item.getEnchantLevel(), 1);
 					}
 				}
 
@@ -1545,40 +876,31 @@ public final class CItemEnchantOption {
                 } else if (itemType2 == 2 && itemId == 222332 && item.getEnchantLevel() > 0) {
 					switch (item.getEnchantLevel()) {
 					case 1:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 15);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 15, 2);
 						break;
 					case 2:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 20);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 20, 2);
 						break;
 					case 3:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 30);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 30, 2);
 						break;
 					case 4:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 35);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 35, 2);
 						break;
 					case 5:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 40);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 40, 2);
 						break;
 					case 6:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 45);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 45, 2);
 						break;
 					case 7:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 55);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 55, 2);
 						break;
 					case 8:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 65);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 65, 2);
 						break;
 					case 9:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 75);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 75, 2);
 						break;
 					default:
 						break;
@@ -1588,37 +910,29 @@ public final class CItemEnchantOption {
 						|| itemId >= 222333 && itemId <= 222334 && item.getEnchantLevel() > 0) {
 					switch (item.getEnchantLevel()) {
 					case 1:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 15);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 15, 2);
 						break;
 					case 2:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 20);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 20, 2);
 						break;
 					case 3:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 30);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 30, 2);
 						break;
 					case 4:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 35);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 35, 2);
 						break;
 					case 5:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 40);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 40, 2);
 						break;
 					case 6:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 45);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 45, 2);
 						break;
 					case 7:
 					case 8:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 50);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 50, 2);
 						break;
 					case 9:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 60);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 60, 2);
 						break;
 					default:
 						break;
@@ -1627,72 +941,60 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 2 && itemId == 222290) {
 					if (item.getEnchantLevel() > 0 && item.getEnchantLevel() <= 8) {
 					int 지혜반지HP증가 = (item.getEnchantLevel() * 5);
-					os.writeC(14);
-					os.writeH(item.getItem().get_addhp() + 지혜반지HP증가);
+					os.writeNumericOption(14, item.getItem().get_addhp() + 지혜반지HP증가, 2);
 					} else if (item.getEnchantLevel() >= 9) {
-						os.writeC(14);
-						os.writeH(50);
+						os.writeNumericOption(14, 50, 2);
 					}
 					/** 축복받은 스냅퍼의 지혜 반지 HP증가 표시 **/
 				} else if (itemType2 == 2 && itemId == 222335 && item.getEnchantLevel() >= 0) {
 					switch (item.getEnchantLevel()) {
 					case 0:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 15);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 15, 2);
 						break;
 					case 1:
 						//os.writeC(14);
 						//os.writeH(getItem().get_addhp() + 5);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 15);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 15, 2);
 						break;
 					case 2:
 						//os.writeC(14);
 						//os.writeH(getItem().get_addhp() + 10);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 15);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 15, 2);
 						break;
 					case 3:
 						//os.writeC(14);
 						//os.writeH(getItem().get_addhp() + 20);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 15);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 15, 2);
 						break;
 					case 4:
 						//os.writeC(14);
 						//os.writeH(getItem().get_addhp() + 25);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 15);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 15, 2);
 						break;
 					case 5:
 						//os.writeC(14);
 						//os.writeH(getItem().get_addhp() + 30);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 15);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 15, 2);
 						break;
 					case 6:
 						//os.writeC(14);
 						//os.writeH(getItem().get_addhp() + 35);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 15);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 15, 2);
 						break;
 					case 7:
 						//os.writeC(14);
 						//os.writeH(getItem().get_addhp() + 40);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 30);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 30, 2);
 						break;
 					case 8:
 						//os.writeC(14);
 						//os.writeH(getItem().get_addhp() + 50);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 35);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 35, 2);
 						break;
 					case 9:
 						//os.writeC(14);
 						//os.writeH(getItem().get_addhp() + 50);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 80);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 80, 2);
 						break;
 					default:
 						break;
@@ -1702,40 +1004,32 @@ public final class CItemEnchantOption {
 					if (item.getEnchantLevel() >= 3 && item.getEnchantLevel() <= 8) {
 				
 					int 용사반지HP증가 = (item.getEnchantLevel() - 2) * 5;
-					os.writeC(14);
-					os.writeH(item.getItem().get_addhp() + 용사반지HP증가);
+					os.writeNumericOption(14, item.getItem().get_addhp() + 용사반지HP증가, 2);
 					} else if (item.getEnchantLevel() >= 9) {
 						
-						os.writeC(14);
-						os.writeH(40);
+						os.writeNumericOption(14, 40, 2);
 					}
 					/** 축복받은 스냅퍼의 용사 반지 HP증가 표시 **/
 				} else if (itemType2 == 2 && itemId == 222336 && item.getEnchantLevel() > 2) {
 					switch (item.getEnchantLevel()) {
 					case 3:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 10);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 10, 2);
 						break;
 					case 4:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 15);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 15, 2);
 						break;
 					case 5:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 20);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 20, 2);
 						break;
 					case 6:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 25);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 25, 2);
 						break;
 					case 7:
 					case 8:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 30);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 30, 2);
 						break;
 					case 9:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 40);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 40, 2);
 						break;
 					default:
 						break;
@@ -1743,46 +1037,36 @@ public final class CItemEnchantOption {
 					/** 룸티스 붉은빛 귀걸이 HP증가 표시 **/
 				} else if (itemType2 == 2 && itemId == 22229 && item.getEnchantLevel() > 0) {
 					int 붉귀HP증가 = (item.getEnchantLevel() * 10) + 10;
-					os.writeC(14);
-					os.writeH(item.getItem().get_addhp() + 붉귀HP증가);
+					os.writeNumericOption(14, item.getItem().get_addhp() + 붉귀HP증가, 2);
 					/** 축복받은 룸티스 붉은빛 귀걸이 HP증가 표시 **/
 				} else if (itemType2 == 2 && itemId == 222337 && item.getEnchantLevel() > 0) {
 					switch (item.getEnchantLevel()) {
 					case 1:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 20);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 20, 2);
 						break;
 					case 2:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 30);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 30, 2);
 						break;
 					case 3:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 50);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 50, 2);
 						break;
 					case 4:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 60);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 60, 2);
 						break;
 					case 5:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 70);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 70, 2);
 						break;
 					case 6:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 80);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 80, 2);
 						break;
 					case 7:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 90);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 90, 2);
 						break;
 					case 8:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 140);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 140, 2);
 						break;
 					case 9:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 150);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 150, 2);
 						break;
 					default:
 						break;
@@ -1792,18 +1076,15 @@ public final class CItemEnchantOption {
 					switch (item.getEnchantLevel()) {
 					case 5:
 					case 6:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 25);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 25, 2);
 						break;
 					case 7:
 					case 8:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 50);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 50, 2);
 						break;
 					case 9:
 					case 10:
-						os.writeC(14);
-						os.writeH(item.getItem().get_addhp() + 75);
+						os.writeNumericOption(14, item.getItem().get_addhp() + 75, 2);
 						break;
 					default:
 						break;
@@ -1817,51 +1098,40 @@ public final class CItemEnchantOption {
                         os.writeAddMaxHP(item.getItem().get_addhp());
                     }
                 } else if (item.getItem().get_addhp() != 0) {
-					os.writeC(14);
-					os.writeH(item.getItem().get_addhp());
+					os.writeNumericOption(14, item.getItem().get_addhp(), 2);
 				}
 				// TODO 벨트 인챈에 대한 MP증가 표기
 				if (itemType2 == 2 && item.getItem().getType() == 10 && item.getEnchantLevel() > 0) {
 					switch (item.getEnchantLevel()) {
 					case 1:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 5);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 5, 2);
 						break;
 					case 2:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 10);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 10, 2);
 						break;
 					case 3:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 20);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 20, 2);
 						break;
 					case 4:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 30);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 30, 2);
 						break;
 					case 5:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 40);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 40, 2);
 						break;
 					case 6:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 40);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 40, 2);
 						break;
 					case 7:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 50);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 50, 2);
 						break;
 					case 8:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 50);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 50, 2);
 						break;
 					case 9:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 60);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 60, 2);
 						break;
 					case 10:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 70);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 70, 2);
 						break;
 					default:
 						break;
@@ -1870,44 +1140,35 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 2 && itemId == 22231 && item.getEnchantLevel() > 0) {
 					switch (item.getEnchantLevel()) {
 					case 1:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 10);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 10, 2);
 						break;
 					case 2:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 15);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 15, 2);
 						break;
 					case 3:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 30);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 30, 2);
 						break;
 					case 4:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 35);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 35, 2);
 						break;
 					case 5:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 50);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 50, 2);
 						break;
 					case 6:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 55);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 55, 2);
 						break;
 					case 7:
 						os.writeMagicHIT(1);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 70);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 70, 2);
 						break;
 					case 8:
 						os.writeMagicHIT(5);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 95);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 95, 2);
 						os.writeAddMaxHP(50);
 						break;
 					case 9:
 						os.writeMagicHIT(9);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 125);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 125, 2);
 						os.writeAddMaxHP(100);
 						break;
 					default:
@@ -1917,60 +1178,48 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 2 && itemId == 222339 && item.getEnchantLevel() > 0) {
 					switch (item.getEnchantLevel()) {
 					case 1:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 10);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 10, 2);
 						break;
 					case 2:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 15);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 15, 2);
 						break;
 					case 3:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 35);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 35, 2);
 						break;
 					case 4:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 50);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 50, 2);
 						break;
 					case 5:
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 55);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 55, 2);
 						break;
 					case 6:
 						os.writeMagicHIT(1);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 70);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 70, 2);
 						break;
 					case 7:
 						os.writeMagicHIT(3);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 95);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 95, 2);
 						break;
 					case 8:
 						os.writeAddMaxHP(100);
 						os.writeMagicHIT(7);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 125);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 125, 2);
 						break;
 					case 9:
 						os.writeAddMaxHP(150);
 						os.writeMagicHIT(12);
-						os.writeC(32);
-						os.writeH(item.getItem().get_addmp() + 155);
+						os.writeNumericOption(32, item.getItem().get_addmp() + 155, 2);
 						break;
 					default:
 						break;
 					}
 					/** 대마법사의 모자 인챈트 MP증가 표시 **/
 				} else if (itemId == 202022) {
-					os.writeC(32);
-					os.writeH(item.getItem().get_addmp() + (item.getEnchantLevel() * 10));
-					os.writeC(15);
-					os.writeH(item.getMr() + (item.getEnchantLevel() * 2));
+					os.writeNumericOption(32, item.getItem().get_addmp() + (item.getEnchantLevel() * 10), 2);
+					os.writeNumericOption(15, item.getMr() + (item.getEnchantLevel() * 2), 2);
 					/** MP패킷변경됨 C/H **/
 				} else if (item.addmp() != 0) {
-					os.writeC(32);
-					os.writeH(item.addmp());// mp부분패킷변경됨
+					os.writeNumericOption(32, item.addmp(), 2);// mp부분패킷변경됨
 				}
 				// 피틱 표시
 				if (item.getItem().get_addhpr() != 0) {
@@ -1979,11 +1228,9 @@ public final class CItemEnchantOption {
 				}
 				// 엠틱 표시
 				if (itemId == 1134 || itemId == 101134) {
-					os.writeC(38);
-					os.writeC(item.getItem().get_addmpr() + item.getEnchantLevel()); // 명상의
+					os.writeNumericOption(38, item.getItem().get_addmpr() + item.getEnchantLevel(), 1); // 명상의
 				} else if (item.getItem().get_addmpr() != 0) {
-					os.writeC(38);
-					os.writeC(item.getItem().get_addmpr());
+					os.writeNumericOption(38, item.getItem().get_addmpr(), 1);
 				}
 	
 				if (item.getItem().getType2() == 2 && ((itemgrade >= 0 && itemgrade <= 2) || itemgrade == 5)
@@ -2030,69 +1277,55 @@ public final class CItemEnchantOption {
 				if (itemType2 == 2 && itemId == 222340 || itemId == 222341) {
 					if (item.getEnchantLevel() == 3) {
 						if (item.getItemId() == 222341) {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 2);
+							os.writeNumericOption(6, item.getEnchantLevel() - 2, 1);
 						} else {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 2);
+							os.writeNumericOption(6, item.getEnchantLevel() - 2, 1);
 						}
 					} else if (item.getEnchantLevel() == 4) {
 						if (item.getItemId() == 222341) {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 2);
+							os.writeNumericOption(6, item.getEnchantLevel() - 2, 1);
 							os.writeAddDmgPer(2, 20);
 						} else {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 3);
+							os.writeNumericOption(6, item.getEnchantLevel() - 3, 1);
 						}
 					} else if (item.getEnchantLevel() == 5) {
 						if (item.getItemId() == 222341) {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 2);
+							os.writeNumericOption(6, item.getEnchantLevel() - 2, 1);
 							os.writeAddDmgPer(3, 20);
 						} else {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 3);
+							os.writeNumericOption(6, item.getEnchantLevel() - 3, 1);
 							os.writeAddDmgPer(2, 20);
 						}
 					} else if (item.getEnchantLevel() == 6) {
 						if (item.getItemId() == 222341) {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 2);
+							os.writeNumericOption(6, item.getEnchantLevel() - 2, 1);
 							os.writeAddDmgPer(4, 20);
 						} else {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 3);
+							os.writeNumericOption(6, item.getEnchantLevel() - 3, 1);
 							os.writeAddDmgPer(3, 20);
 						}
 					} else if (item.getEnchantLevel() == 7) {
 						if (item.getItemId() == 222341) {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 2);
+							os.writeNumericOption(6, item.getEnchantLevel() - 2, 1);
 							os.writeAddDmgPer(5, 20);
 						} else {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 3);
+							os.writeNumericOption(6, item.getEnchantLevel() - 3, 1);
 							os.writeAddDmgPer(4, 20);
 						}
 					} else if (item.getEnchantLevel() == 8) {
 						if (item.getItemId() == 222341) {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() + 1);
+							os.writeNumericOption(6, item.getEnchantLevel() + 1, 1);
 							os.writeAddDmgPer(6, 30);
 						} else {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() - 1);
+							os.writeNumericOption(6, item.getEnchantLevel() - 1, 1);
 							os.writeAddDmgPer(5, 25);
 						}
 					}else if (item.getEnchantLevel() == 9) {
 						if (item.getItemId() == 222341) {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel() + 3);
+							os.writeNumericOption(6, item.getEnchantLevel() + 3, 1);
 							os.writeAddDmgPer(8, 30);
 						} else {
-							os.writeC(6);
-							os.writeC(item.getEnchantLevel());
+							os.writeNumericOption(6, item.getEnchantLevel(), 1);
 							os.writeAddDmgPer(7, 25);
 						}
 					}
@@ -2107,24 +1340,19 @@ public final class CItemEnchantOption {
 					case 3:
 					case 4:
 					case 5:
-						os.writeC(15);
-						os.writeH(7);
+						os.writeNumericOption(15, 7, 2);
 						break;
 					case 6:
-						os.writeC(15);
-						os.writeH(8);
+						os.writeNumericOption(15, 8, 2);
 						break;
 					case 7:
-						os.writeC(15);
-						os.writeH(9);
+						os.writeNumericOption(15, 9, 2);
 						break;
 					case 8:
-						os.writeC(15);
-						os.writeH(12);
+						os.writeNumericOption(15, 12, 2);
 						break;
 					case 9:
-						os.writeC(15);
-						os.writeH(15);
+						os.writeNumericOption(15, 15, 2);
 						break;
 					default:
 						break;
@@ -2133,44 +1361,34 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 2 && itemId == 22231 && item.getEnchantLevel() > 0) {
 					switch (item.getEnchantLevel()) {
 					case 0:
-						os.writeC(15);
-						os.writeH(item.getMr() + 2);
+						os.writeNumericOption(15, item.getMr() + 2, 2);
 						break;
 					case 1:
-						os.writeC(15);
-						os.writeH(item.getMr() + 5);
+						os.writeNumericOption(15, item.getMr() + 5, 2);
 						break;
 					case 2:
-						os.writeC(15);
-						os.writeH(item.getMr() + 6);
+						os.writeNumericOption(15, item.getMr() + 6, 2);
 						break;
 					case 3:
-						os.writeC(15);
-						os.writeH(item.getMr() + 7);
+						os.writeNumericOption(15, item.getMr() + 7, 2);
 						break;
 					case 4:
-						os.writeC(15);
-						os.writeH(item.getMr() + 8);
+						os.writeNumericOption(15, item.getMr() + 8, 2);
 						break;
 					case 5:
-						os.writeC(15);
-						os.writeH(item.getMr() + 9);
+						os.writeNumericOption(15, item.getMr() + 9, 2);
 						break;
 					case 6:
-						os.writeC(15);
-						os.writeH(item.getMr() + 10);
+						os.writeNumericOption(15, item.getMr() + 10, 2);
 						break;
 					case 7:
-						os.writeC(15);
-						os.writeH(item.getMr() + 12);
+						os.writeNumericOption(15, item.getMr() + 12, 2);
 						break;
 					case 8:
-						os.writeC(15);
-						os.writeH(item.getMr() + 17);
+						os.writeNumericOption(15, item.getMr() + 17, 2);
 						break;
 					case 9:
-						os.writeC(15);
-						os.writeH(item.getMr() + 20);
+						os.writeNumericOption(15, item.getMr() + 20, 2);
 						break;
 					default:
 						break;
@@ -2179,32 +1397,25 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 2 && itemId == 222339 && item.getEnchantLevel() > 0) {
 					switch (item.getEnchantLevel()) {
 					case 3:
-						os.writeC(15);
-						os.writeH(item.getMr() + 8);
+						os.writeNumericOption(15, item.getMr() + 8, 2);
 						break;
 					case 4:
-						os.writeC(15);
-						os.writeH(item.getMr() + 9);
+						os.writeNumericOption(15, item.getMr() + 9, 2);
 						break;
 					case 5:
-						os.writeC(15);
-						os.writeH(item.getMr() + 10);
+						os.writeNumericOption(15, item.getMr() + 10, 2);
 						break;
 					case 6:
-						os.writeC(15);
-						os.writeH(item.getMr() + 12);
+						os.writeNumericOption(15, item.getMr() + 12, 2);
 						break;
 					case 7:
-						os.writeC(15);
-						os.writeH(item.getMr() + 15);
+						os.writeNumericOption(15, item.getMr() + 15, 2);
 						break;
 					case 8:
-						os.writeC(15);
-						os.writeH(item.getMr() + 20);
+						os.writeNumericOption(15, item.getMr() + 20, 2);
 						break;
 					case 9:
-						os.writeC(15);
-						os.writeH(item.getMr() + 23);
+						os.writeNumericOption(15, item.getMr() + 23, 2);
 						break;
 					default:
 						break;
@@ -2232,34 +1443,27 @@ public final class CItemEnchantOption {
 					if (item.getEnchantLevel() >= 10) {
 						enchantMr = 9;
 					}
-					os.writeC(15);
-					os.writeH(item.getMr() + enchantMr);
+					os.writeNumericOption(15, item.getMr() + enchantMr, 2);
 				} else if (item.getMr() != 0) { // MR
-					os.writeC(15);
-					os.writeH(item.getMr());
+					os.writeNumericOption(15, item.getMr(), 2);
 				}
 				/** 스냅퍼의 지혜 반지 SP표시 **/
 				if (itemType2 == 2 && itemId == 222290 && item.getEnchantLevel() > 4) {
 					switch (item.getEnchantLevel()) {
 					case 5:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 1);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 1, 1);
 						break;
 					case 6:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 2);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 2, 1);
 						break;
 					case 7:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 3);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 3, 1);
 						break;
 					case 8:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 5);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 5, 1);
 						break;
 					case 9:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 7);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 7, 1);
 						break;
 					default:
 						break;
@@ -2268,28 +1472,22 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 2 && itemId == 222335 && item.getEnchantLevel() > 3) {
 					switch (item.getEnchantLevel()) {
 					case 4:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 1);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 1, 1);
 						break;
 					case 5:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 2);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 2, 1);
 						break;
 					case 6:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 3);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 3, 1);
 						break;
 					case 7:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 4);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 4, 1);
 						break;
 					case 8:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 7);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 7, 1);
 						break;
 					case 9:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 9);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 9, 1);
 						break;
 					default:
 						break;
@@ -2298,32 +1496,25 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 2 && itemId == 22231 && item.getEnchantLevel() > 2) {
 					switch (item.getEnchantLevel()) {
 					case 3:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 1);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 1, 1);
 						break;
 					case 4:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 1);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 1, 1);
 						break;
 					case 5:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 2);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 2, 1);
 						break;
 					case 6:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 2);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 2, 1);
 						break;
 					case 7:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 3);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 3, 1);
 						break;
 					case 8:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 5);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 5, 1);
 						break;
 					case 9:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 7);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 7, 1);
 						break;
 					default:
 						break;
@@ -2332,26 +1523,21 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 2 && itemId == 222339 && item.getEnchantLevel() > 2) {
 					switch (item.getEnchantLevel()) {
 					case 3:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 1);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 1, 1);
 						break;
 					case 4:
 					case 5:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 2);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 2, 1);
 						break;
 					case 6:
 					case 7:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 3);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 3, 1);
 						break;
 					case 8:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 5);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 5, 1);
 						break;
 					case 9:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 9);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 9, 1);
 						break;
 					default:
 						break;
@@ -2523,25 +1709,20 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 2 && itemId == 22255 && item.getEnchantLevel() > 4) {
 					switch (item.getEnchantLevel()) {
 					case 5:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 1);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 1, 1);
 						break;
 					case 6:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 1);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 1, 1);
 						break;
 					case 7:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 2);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 2, 1);
 						break;
 					case 8:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 2);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 2, 1);
 						break;
 					case 9:
 					case 10:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 3);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 3, 1);
 						break;
 					default:
 						break;
@@ -2550,12 +1731,10 @@ public final class CItemEnchantOption {
 				} else if (itemType2 == 1 && itemId == 124 && item.getEnchantLevel() > 6) {
 					switch (item.getEnchantLevel()) {
 					case 7:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 1);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 1, 1);
 						break;
 					case 8:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 2);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 2, 1);
 						break;
 					case 9:
 					case 10:
@@ -2564,16 +1743,14 @@ public final class CItemEnchantOption {
 					case 13:
 					case 14:
 					case 15:
-						os.writeC(17);
-						os.writeC(item.getItem().get_addsp() + 3);
+						os.writeNumericOption(17, item.getItem().get_addsp() + 3, 1);
 						break;
 					default:
 						break;
 					}
 					/** 리치 로브 SP표시 **/
 				} else if (itemType2 == 2 && itemId == 20107 && item.getEnchantLevel() >= 3) {
-					os.writeC(17);
-					os.writeC(item.getItem().get_addsp() + item.getEnchantLevel() - 2);
+					os.writeNumericOption(17, item.getItem().get_addsp() + item.getEnchantLevel() - 2, 1);
 				} else if (itemType2 == 2 && ((itemgrade >= 0 && itemgrade <= 2) || itemgrade == 5)
 						&& (item.getItem().get장신구처리() == 9 || item.getItem().get장신구처리() == 11) && item.getEnchantLevel() >= 7) {
 					int enchantSp = item.getEnchantLevel() - 6;
@@ -3426,28 +2603,22 @@ public final class CItemEnchantOption {
 				if (itemId == 900035 || itemId == 900072 && item.getEnchantLevel() >= 5) {
 					switch (item.getEnchantLevel()) {
 					case 5:
-						os.writeC(15);
-						os.writeH(item.getMr() + 4);
+						os.writeNumericOption(15, item.getMr() + 4, 2);
 						break;
 					case 6:
-						os.writeC(15);
-						os.writeH(item.getMr() + 8);
+						os.writeNumericOption(15, item.getMr() + 8, 2);
 						break;
 					case 7:
-						os.writeC(15);
-						os.writeH(item.getMr() + 12);
+						os.writeNumericOption(15, item.getMr() + 12, 2);
 						break;
 					case 8:
-						os.writeC(15);
-						os.writeH(item.getMr() + 16);
+						os.writeNumericOption(15, item.getMr() + 16, 2);
 						break;
 					case 9:
-						os.writeC(15);
-						os.writeH(item.getMr() + 20);
+						os.writeNumericOption(15, item.getMr() + 20, 2);
 						break;
 					case 10:
-						os.writeC(15);
-						os.writeH(item.getMr() + 24);
+						os.writeNumericOption(15, item.getMr() + 24, 2);
 						break;
 					default:
 						break;
@@ -3457,28 +2628,22 @@ public final class CItemEnchantOption {
 				if (itemId == 900038 || itemId == 900054 && item.getEnchantLevel() >= 5) {
 					switch (item.getEnchantLevel()) {
 					case 5:
-						os.writeC(15);
-						os.writeH(item.getMr() + 4);
+						os.writeNumericOption(15, item.getMr() + 4, 2);
 						break;
 					case 6:
-						os.writeC(15);
-						os.writeH(item.getMr() + 8);
+						os.writeNumericOption(15, item.getMr() + 8, 2);
 						break;
 					case 7:
-						os.writeC(15);
-						os.writeH(item.getMr() + 12);
+						os.writeNumericOption(15, item.getMr() + 12, 2);
 						break;
 					case 8:
-						os.writeC(15);
-						os.writeH(item.getMr() + 16);
+						os.writeNumericOption(15, item.getMr() + 16, 2);
 						break;
 					case 9:
-						os.writeC(15);
-						os.writeH(item.getMr() + 20);
+						os.writeNumericOption(15, item.getMr() + 20, 2);
 						break;
 					case 10:
-						os.writeC(15);
-						os.writeH(item.getMr() + 24);
+						os.writeNumericOption(15, item.getMr() + 24, 2);
 						break;
 					default:
 						break;
@@ -5557,17 +4722,14 @@ public final class CItemEnchantOption {
 				if (itemId == 20051) {
 					switch (item.getEnchantLevel()) {
 					case 0:
-						os.writeC(15);
-						os.writeH(item.getMr() + 4);
+						os.writeNumericOption(15, item.getMr() + 4, 2);
 						break;
 					case 1:
-						os.writeC(15);
-						os.writeH(item.getMr() + 6);
+						os.writeNumericOption(15, item.getMr() + 6, 2);
 						break;
 					default:
 						if (item.getEnchantLevel() > 1) {
-							os.writeC(15);
-							os.writeH(item.getMr() + item.getEnchantLevel() * 2 + 4);
+							os.writeNumericOption(15, item.getMr() + item.getEnchantLevel() * 2 + 4, 2);
 						}
 						break;
 					}
@@ -5579,14 +4741,12 @@ public final class CItemEnchantOption {
 					case 2:
 					case 3:
 					case 4:
-						os.writeC(15);
-						os.writeH(1);
+						os.writeNumericOption(15, 1, 2);
 						break;
 
 					default:
 						if (item.getEnchantLevel() > 4) {
-							os.writeC(15);
-							os.writeH(((item.getEnchantLevel() - 4) * 2 )+ 1);
+							os.writeNumericOption(15, ((item.getEnchantLevel() - 4) * 2 )+ 1, 2);
 						}
 						break;
 					}
@@ -5919,47 +5079,40 @@ public final class CItemEnchantOption {
 					}
 
 					if (pierce > 0) {
-						os.writeC(122);
-						os.writeC(pierce);
+						os.writeNumericOption(122, pierce, 1);
 					}
 
 					pierce = item.getItem().getSpecialStats().getPierce(eKind.SPIRIT);
 					if (pierce > 0) {
-						os.writeC(123);
-						os.writeC(pierce);
+						os.writeNumericOption(123, pierce, 1);
 					}
 
 					pierce = item.getItem().getSpecialStats().getPierce(eKind.DRAGON_SPELL);
 					if (pierce > 0) {
-						os.writeC(124);
-						os.writeC(pierce);
+						os.writeNumericOption(124, pierce, 1);
 					}
 
 					pierce = item.getItem().getSpecialStats().getPierce(eKind.FEAR);
 					if (pierce > 0) {
-						os.writeC(125);
-						os.writeC(pierce);
+						os.writeNumericOption(125, pierce, 1);
 					}
 
 					pierce = item.getItem().getSpecialStats().getPierce(eKind.ALL);
 					if (pierce > 0) {
-						os.writeC(126);
-						os.writeC(pierce);
+						os.writeNumericOption(126, pierce, 1);
 					}
 				}
 
 				// 정령내성
 				int resistance = item.getItem().getSpecialStats().getResist(eKind.SPIRIT);
 				if (resistance > 0) {
-					os.writeC(118);
-					os.writeC(resistance);
+					os.writeNumericOption(118, resistance, 1);
 				}
 
 				// 용언내성
 				resistance = item.getItem().getSpecialStats().getResist(eKind.DRAGON_SPELL);
 				if (resistance > 0) {
-					os.writeC(119);
-					os.writeC(resistance);
+					os.writeNumericOption(119, resistance, 1);
 				}
 
 				// 공포내성
@@ -5983,8 +5136,7 @@ public final class CItemEnchantOption {
 					resistance += tempval;
 				}
 				if (resistance > 0) {
-					os.writeC(120);
-					os.writeC(resistance);
+					os.writeNumericOption(120, resistance, 1);
 				}
 
 				// 전체내성
@@ -6005,8 +5157,7 @@ public final class CItemEnchantOption {
 					}
 				}
 				if (resistance > 0) {
-					os.writeC(121);
-					os.writeC(resistance);
+					os.writeNumericOption(121, resistance, 1);
 				}
 
 				// 기술내성
@@ -6027,11 +5178,11 @@ public final class CItemEnchantOption {
 				}
 
 				if (resistance > 0) {
-					os.writeC(117);
-					os.writeC(resistance);
+					os.writeNumericOption(117, resistance, 1);
 				}
 
 
+				EquipmentOptionPresentation.writeTotals(os, optionTotals, snapper);
 				writeBlessingOptions(item, os);
 				/** 특수 인챈트 시스템 **/
 

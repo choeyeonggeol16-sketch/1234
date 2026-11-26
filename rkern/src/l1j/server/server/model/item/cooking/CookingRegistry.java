@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.item.ItemScript;
 
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -277,7 +277,9 @@ public final class CookingRegistry {
         ProfileDraft profile(String name, int durationSec, int iconType,
                              Group group, boolean requireFood225) {
             if (name == null || name.length() == 0) throw new IllegalArgumentException("empty name");
-            if (durationSec <= 0) throw new IllegalArgumentException("durationSec <= 0: " + durationSec);
+            if (durationSec <= 0 || durationSec > Integer.MAX_VALUE / 1000) {
+                throw new IllegalArgumentException("Invalid cooking duration " + durationSec);
+            }
             if (iconType < 0) throw new IllegalArgumentException("iconType < 0: " + iconType);
             if (group == null) throw new NullPointerException("group");
 
@@ -330,261 +332,51 @@ public final class CookingRegistry {
     private static final Map<Integer, Def> BY_SKILL_ID;
 
     static {
-        final int T15 = 15 * 60;
-        final int T30 = 30 * 60;
+        final BuildResult catalog = ItemScript.load("cooking-options.txt", "rkern.cooking.options",
+                (source, reader) -> {
+                    final Builder builder = new Builder();
+                    final ItemScript.RowReader parser = new ItemScript.RowReader() {
+                        private ProfileDraft profile;
 
-        Builder b = new Builder();
+                        @Override
+                        public void read(String[] row) {
+                            if ("profile".equals(row[0])) {
+                                ItemScript.requireFields(row, 6);
+                                if (!"true".equals(row[5]) && !"false".equals(row[5])) {
+                                    throw new IllegalArgumentException("Invalid full-food flag " + row[5]);
+                                }
+                                profile = builder.profile(row[1], Integer.parseInt(row[2]),
+                                        Integer.parseInt(row[3]), Group.valueOf(row[4]), Boolean.parseBoolean(row[5]));
+                                return;
+                            }
+                            if (profile == null) throw new IllegalArgumentException("Entry without a cooking profile");
+                            switch (row[0]) {
+                                case "effect" -> {
+                                    ItemScript.requireFields(row, 3);
+                                    profile.add(Option.valueOf(row[1]), Integer.parseInt(row[2]));
+                                }
+                                case "item" -> {
+                                    ItemScript.requireFields(row, 3);
+                                    profile.bind(Integer.parseInt(row[1]), Integer.parseInt(row[2]));
+                                }
+                                case "skill" -> {
+                                    ItemScript.requireFields(row, 2);
+                                    profile.bindSkillOnly(Integer.parseInt(row[1]));
+                                }
+                                default -> throw new IllegalArgumentException("Unknown cooking entry " + row[0]);
+                            }
+                        }
+                    };
+                    ItemScript.readRows(source, reader, parser);
+                    if (builder.drafts.isEmpty()) throw new IllegalStateException("Empty cooking script " + source);
+                    return builder.freeze();
+                });
+        BY_ITEM_ID = catalog.byItem;
+        BY_SKILL_ID = catalog.bySkill;
+    }
 
-        // =================================================================
-        // 1차 일반/환상
-        // =================================================================
-        b.profile("1차 요리 0", T15, 0, Group.COOKING, false)
-                .add(Option.ATTR_RESIS, 10)
-                .add(Option.DMG_RED, 5)
-                .bind(41277, L1SkillId.COOKING_1_0_N)
-                .bind(41285, L1SkillId.COOKING_1_0_S);
-
-        b.profile("1차 요리 1", T15, 1, Group.COOKING, false)
-                .add(Option.MAX_HP, 30)
-                .add(Option.DMG_RED, 5)
-                .bind(41278, L1SkillId.COOKING_1_1_N)
-                .bind(41286, L1SkillId.COOKING_1_1_S);
-
-        b.profile("1차 요리 2", T15, 2, Group.COOKING, false)
-                .bind(41279, L1SkillId.COOKING_1_2_N)
-                .bind(41287, L1SkillId.COOKING_1_2_S);
-
-        b.profile("1차 요리 3", T15, 3, Group.COOKING, false)
-                .add(Option.AC, -1)
-                .add(Option.DMG_RED, 5)
-                .bind(41280, L1SkillId.COOKING_1_3_N)
-                .bind(41288, L1SkillId.COOKING_1_3_S);
-
-        b.profile("1차 요리 4", T15, 4, Group.COOKING, false)
-                .add(Option.MAX_MP, 20)
-                .add(Option.DMG_RED, 5)
-                .bind(41281, L1SkillId.COOKING_1_4_N)
-                .bind(41289, L1SkillId.COOKING_1_4_S);
-
-        b.profile("1차 요리 5", T15, 5, Group.COOKING, false)
-                .bind(41282, L1SkillId.COOKING_1_5_N)
-                .bind(41290, L1SkillId.COOKING_1_5_S);
-
-        b.profile("1차 요리 6", T15, 6, Group.COOKING, false)
-                .add(Option.MR, 5)
-                .add(Option.DMG_RED, 5)
-                .bind(41283, L1SkillId.COOKING_1_6_N)
-                .bind(41291, L1SkillId.COOKING_1_6_S);
-
-        b.profile("1차 스프", T15, 7, Group.DESSERT, true)
-                .bind(41284, L1SkillId.COOKING_1_7_N)
-                .bind(41292, L1SkillId.COOKING_1_7_S);
-
-        // =================================================================
-        // 2차
-        // =================================================================
-        b.profile("2차 요리 8", T15, 16, Group.COOKING, false)
-                .add(Option.BOW_HIT_RATE, 2)
-                .add(Option.BOW_DMG, 1)
-                .add(Option.DMG_RED, 5)
-                .bind(49049, L1SkillId.COOKING_1_8_N)
-                .bind(49057, L1SkillId.COOKING_1_8_S);
-
-        b.profile("2차 요리 9", T15, 17, Group.COOKING, false)
-                .add(Option.MAX_HP, 30)
-                .add(Option.MAX_MP, 30)
-                .add(Option.DMG_RED, 5)
-                .bind(49050, L1SkillId.COOKING_1_9_N)
-                .bind(49058, L1SkillId.COOKING_1_9_S);
-
-        b.profile("2차 요리 10", T15, 18, Group.COOKING, false)
-                .add(Option.AC, -2)
-                .add(Option.DMG_RED, 5)
-                .bind(49051, L1SkillId.COOKING_1_10_N)
-                .bind(49059, L1SkillId.COOKING_1_10_S);
-
-        b.profile("2차 요리 11", T15, 19, Group.COOKING, false)
-                .bind(49052, L1SkillId.COOKING_1_11_N)
-                .bind(49060, L1SkillId.COOKING_1_11_S);
-
-        b.profile("2차 요리 12", T15, 20, Group.COOKING, false)
-                .bind(49053, L1SkillId.COOKING_1_12_N)
-                .bind(49061, L1SkillId.COOKING_1_12_S);
-
-        b.profile("2차 요리 13", T15, 21, Group.COOKING, false)
-                .add(Option.MR, 10)
-                .add(Option.DMG_RED, 5)
-                .bind(49054, L1SkillId.COOKING_1_13_N)
-                .bind(49062, L1SkillId.COOKING_1_13_S);
-
-        b.profile("2차 요리 14", T15, 22, Group.COOKING, false)
-                .add(Option.SP, 1)
-                .add(Option.DMG_RED, 5)
-                .bind(49055, L1SkillId.COOKING_1_14_N)
-                .bind(49063, L1SkillId.COOKING_1_14_S);
-
-        b.profile("2차 스프", T15, 23, Group.DESSERT, true)
-                .bind(49056, L1SkillId.COOKING_1_15_N)
-                .bind(49064, L1SkillId.COOKING_1_15_S);
-
-        // =================================================================
-        // 3차
-        // =================================================================
-        b.profile("3차 요리 16", T15, 45, Group.COOKING, false)
-                .add(Option.BOW_HIT_RATE, 2)
-                .add(Option.BOW_DMG, 1)
-                .add(Option.DMG_RED, 5)
-                .bind(210048, L1SkillId.COOKING_1_16_N)
-                .bind(210056, L1SkillId.COOKING_1_16_S);
-
-        b.profile("3차 요리 17", T15, 46, Group.COOKING, false)
-                .add(Option.MAX_HP, 50)
-                .add(Option.MAX_MP, 50)
-                .add(Option.DMG_RED, 5)
-                .bind(210049, L1SkillId.COOKING_1_17_N)
-                .bind(210057, L1SkillId.COOKING_1_17_S);
-
-        b.profile("3차 요리 18", T15, 47, Group.COOKING, false)
-                .add(Option.HIT, 2)
-                .add(Option.DMG, 1)
-                .add(Option.DMG_RED, 5)
-                .bind(210050, L1SkillId.COOKING_1_18_N)
-                .bind(210058, L1SkillId.COOKING_1_18_S);
-
-        b.profile("3차 요리 19", T15, 48, Group.COOKING, false)
-                .add(Option.AC, -3)
-                .add(Option.DMG_RED, 5)
-                .bind(210051, L1SkillId.COOKING_1_19_N)
-                .bind(210059, L1SkillId.COOKING_1_19_S);
-
-        b.profile("3차 요리 20", T15, 49, Group.COOKING, false)
-                .add(Option.ATTR_RESIS, 10)
-                .add(Option.MR, 15)
-                .add(Option.DMG_RED, 5)
-                .bind(210052, L1SkillId.COOKING_1_20_N)
-                .bind(210060, L1SkillId.COOKING_1_20_S);
-
-        b.profile("3차 요리 21", T15, 50, Group.COOKING, false)
-                .add(Option.SP, 2)
-                .add(Option.DMG_RED, 5)
-                .bind(210053, L1SkillId.COOKING_1_21_N)
-                .bind(210061, L1SkillId.COOKING_1_21_S);
-
-        b.profile("3차 요리 22", T15, 51, Group.COOKING, false)
-                .add(Option.MAX_HP, 30)
-                .add(Option.DMG_RED, 5)
-                .bind(210054, L1SkillId.COOKING_1_22_N)
-                .bind(210062, L1SkillId.COOKING_1_22_S);
-
-        b.profile("3차 스프", T15, 52, Group.DESSERT, true)
-                .bind(210055, L1SkillId.COOKING_1_23_N);
-
-        b.profile("3차 스프", T15, 52, Group.DESSERT, true)
-                .add(Option.DMG_RED, 5)    
-                .bind(210063, L1SkillId.COOKING_1_23_S);
-
-        // =================================================================
-        // 리뉴얼
-        // =================================================================
-        b.profile("힘센 한우 스테이크", T30, 157, Group.COOKING, false)
-                .add(Option.DMG, 2)
-                .add(Option.HIT, 1)
-                .add(Option.HPR, 2)
-                .add(Option.MPR, 2)
-                .add(Option.MR, 10)
-                .add(Option.ATTR_RESIS, 10)
-                .add(Option.DMG_RED, 2)
-                .bind(30051, L1SkillId.COOK_STR)
-                .bind(42650, L1SkillId.수련자의한우스테이크);
-        
-        b.profile("날쌘 연어 찜", T30, 158, Group.COOKING, false)
-                .add(Option.BOW_DMG, 2)
-                .add(Option.BOW_HIT, 1)
-                .add(Option.HPR, 2)
-                .add(Option.MPR, 2)
-                .add(Option.MR, 10)
-                .add(Option.ATTR_RESIS, 10)
-                .add(Option.DMG_RED, 2)
-                .bind(30052, L1SkillId.COOK_DEX)
-                .bind(42651, L1SkillId.수련자의연어찜);
-
-        b.profile("영리한 칠면조 구이", T30, 159, Group.COOKING, false)
-                .add(Option.SP, 2)
-                .add(Option.HPR, 2)
-                .add(Option.MPR, 3)
-                .add(Option.MR, 10)
-                .add(Option.ATTR_RESIS, 10)
-                .add(Option.DMG_RED, 2)
-                .bind(30053, L1SkillId.COOK_INT)
-                .bind(42652, L1SkillId.수련자의칠면조구이);
-
-        b.profile("힘센 한우 스테이크 강화", T30, 215, Group.COOKING, false)
-                .add(Option.DMG, 2)
-                .add(Option.HIT, 1)
-                .add(Option.HPR, 2)
-                .add(Option.MPR, 2)
-                .add(Option.MR, 10)
-                .add(Option.ATTR_RESIS, 10)
-                .add(Option.ALL_PIERCE, 3)
-                .add(Option.DMG_RED, 2)
-                .bind(4100156, L1SkillId.COOK_STR_1);
-
-        b.profile("날쌘 연어 찜 강화", T30, 216, Group.COOKING, false)
-                .add(Option.BOW_DMG, 2)
-                .add(Option.BOW_HIT, 1)
-                .add(Option.HPR, 2)
-                .add(Option.MPR, 2)
-                .add(Option.MR, 10)
-                .add(Option.ATTR_RESIS, 10)
-                .add(Option.ALL_PIERCE, 3)
-                .add(Option.DMG_RED, 2)
-                .bind(4100157, L1SkillId.COOK_DEX_1);
-
-        b.profile("영리한 칠면조 구이 강화", T30, 217, Group.COOKING, false)
-                .add(Option.SP, 2)
-                .add(Option.HPR, 2)
-                .add(Option.MPR, 3)
-                .add(Option.MR, 10)
-                .add(Option.ATTR_RESIS, 10)
-                .add(Option.ALL_PIERCE, 3)
-                .add(Option.DMG_RED, 2)
-                .bind(4100158, L1SkillId.COOK_INT_1);
-
-        b.profile("수련의 닭고기 스프", T30, 160, Group.DESSERT, false)
-                .add(Option.DMG_RED, 2)
-                .bind(30054, L1SkillId.COOK_GROW)
-                .bind(42653, L1SkillId.수련자의닭고기스프);
-
-        b.profile("수련의 닭고기 스프 강화", T30, 218, Group.DESSERT, false)
-                .add(Option.DMG_RED, 2)
-                .add(Option.ALL_RESIS, 2)
-                .add(Option.PVP_DMG_RED, 2)
-                .bind(4100159, L1SkillId.COOK_GROW_1);
-
-        b.profile("메티스의 정성스런 요리", T30, 151, Group.COOKING, false)
-                .add(Option.HIT, 2)
-                .add(Option.DMG, 2)
-                .add(Option.BOW_HIT, 2)
-                .add(Option.BOW_DMG, 2)
-                .add(Option.SP, 2)
-                .add(Option.HPR, 3)
-                .add(Option.MPR, 4)
-                .add(Option.MR, 15)
-                .add(Option.ATTR_RESIS, 10)
-                .add(Option.DMG_RED, 5)
-                .bind(3000130, L1SkillId.메티스정성요리);
-
-        b.profile("메티스의 정성스런 스프", T30, 162, Group.DESSERT, false)
-                .add(Option.DMG_RED, 5)
-                .bind(3000129, L1SkillId.메티스정성스프);
-
-        b.profile("천하장사 버프", T30, 187, Group.NONE, false)
-                .add(Option.DMG_RED, 5)
-                .bindSkillOnly(L1SkillId.천하장사버프);
-
-        BuildResult r = b.freeze();
-        BY_ITEM_ID = r.byItem;
-        BY_SKILL_ID = r.bySkill;
+    public static void initialize() {
+        // Compile the cooking definitions and bind the skill IDs at startup.
     }
 
     // ---------------------------------------------------------------------
