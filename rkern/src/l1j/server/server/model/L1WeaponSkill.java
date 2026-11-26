@@ -17,7 +17,6 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
@@ -154,8 +153,8 @@ public class L1WeaponSkill {
 						if (targetPc.getZoneType() == 1) continue;
 					}
 					if (cha instanceof L1MonsterInstance && !(object instanceof L1MonsterInstance)) continue;
-					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
-						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) continue;
+					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance) {
+						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1MonsterInstance)) continue;
 					}
 					if (dmg <= 0) continue;
 					
@@ -164,7 +163,7 @@ public class L1WeaponSkill {
 						SC_DoActionGFX.send(targetPc.getNetConnection(), targetPc.getId(), ActionCodes.ACTION_Damage);
 						SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);
 						targetPc.receiveDamage(pc, 0);
-					} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance) {
+					} else if (object instanceof L1SummonInstance || object instanceof L1MonsterInstance) {
 						targetNpc = (L1NpcInstance) object;
 						SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);
 						targetNpc.receiveDamage(pc, (int) dmg);
@@ -209,8 +208,8 @@ public class L1WeaponSkill {
 						if (targetPc.getZoneType() == 1) continue;
 					}
 					if (cha instanceof L1MonsterInstance && !(object instanceof L1MonsterInstance)) continue;
-					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
-						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) continue;
+					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance) {
+						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1MonsterInstance)) continue;
 					}
 					if (dmg <= 0) continue;
 					
@@ -219,7 +218,7 @@ public class L1WeaponSkill {
 						SC_DoActionGFX.send(targetPc.getNetConnection(), targetPc.getId(), ActionCodes.ACTION_Damage);
 						SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);
 						targetPc.receiveDamage(pc, 0);
-					} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance) {
+					} else if (object instanceof L1SummonInstance || object instanceof L1MonsterInstance) {
 						targetNpc = (L1NpcInstance) object;
 						SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);
 						targetNpc.receiveDamage(pc, (int) dmg);
@@ -311,7 +310,7 @@ public class L1WeaponSkill {
 				SC_SkillSound.send(targetPc, targetPc.getId(), 4184);
 				SC_SkillSound.broadcast(targetPc, targetPc.getId(), 4184);
 				SC_Paralysis.send(targetPc, SC_Paralysis.TYPE_BIND, true);
-			} else if (cha instanceof L1MonsterInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance || cha instanceof L1CompanionInstance) {
+			} else if (cha instanceof L1MonsterInstance || cha instanceof L1SummonInstance || cha instanceof L1CompanionInstance) {
 				L1NpcInstance npc = (L1NpcInstance) cha;
                 if (!npc.trySetSkillEffect(STATUS_FREEZE, fettersTime)) {
                     throw new java.util.concurrent.RejectedExecutionException("NPC weapon bind admission exhausted");
@@ -502,8 +501,8 @@ public class L1WeaponSkill {
 						if (targetPc.getZoneType() == 1) continue;
 					}
 					if (cha instanceof L1MonsterInstance && !(object instanceof L1MonsterInstance)) continue;
-					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
-						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) continue;
+					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance) {
+						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1MonsterInstance)) continue;
 					}
 					if (dmg <= 0) continue;
 					
@@ -512,7 +511,7 @@ public class L1WeaponSkill {
 						SC_DoActionGFX.send(targetPc.getNetConnection(), targetPc.getId(), ActionCodes.ACTION_Damage);
 						SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);
 						targetPc.receiveDamage(pc, 0);
-					} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance) {
+					} else if (object instanceof L1SummonInstance || object instanceof L1MonsterInstance) {
 						targetNpc = (L1NpcInstance) object;
 						SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);
 						targetNpc.receiveDamage(pc, (int) dmg);
@@ -567,8 +566,8 @@ public class L1WeaponSkill {
 						if (targetPc.getZoneType() == 1) continue; // 세이프존 무시
 					}
 					if (cha instanceof L1MonsterInstance && !(object instanceof L1MonsterInstance)) continue;
-					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
-						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) continue;
+					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance) {
+						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1MonsterInstance)) continue;
 					}
 					
 					if (dmg <= 0) continue;
@@ -578,7 +577,7 @@ public class L1WeaponSkill {
 						SC_DoActionGFX.send(targetPc.getNetConnection(), targetPc.getId(), ActionCodes.ACTION_Damage);
 						SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);
 						targetPc.receiveDamage(pc, 0);
-					} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance) {
+					} else if (object instanceof L1SummonInstance || object instanceof L1MonsterInstance) {
 						targetNpc = (L1NpcInstance) object;
 						SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);
 						targetNpc.receiveDamage(pc, (int) dmg);
@@ -652,8 +651,8 @@ public class L1WeaponSkill {
 					if (cha instanceof L1MonsterInstance) {
 						if (!(object instanceof L1MonsterInstance)) continue;
 					}
-					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
-						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) {
+					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance) {
+						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1MonsterInstance)) {
 							continue;
 						}
 					}
@@ -665,7 +664,7 @@ public class L1WeaponSkill {
 						SC_DoActionGFX.send(targetPc.getNetConnection(), targetPc.getId(), ActionCodes.ACTION_Damage);
 						SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);
 						targetPc.receiveDamage(pc, 0);
-					} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance) {
+					} else if (object instanceof L1SummonInstance || object instanceof L1MonsterInstance) {
 						targetNpc = (L1NpcInstance) object;
 						SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);
 						targetNpc.receiveDamage(pc, (int) dmg);
@@ -740,8 +739,8 @@ public class L1WeaponSkill {
 					if (cha instanceof L1MonsterInstance) {
 						if (!(object instanceof L1MonsterInstance)) continue;
 					}
-					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
-						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) {
+					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance) {
+						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1MonsterInstance)) {
 							continue;
 						}
 					}
@@ -753,7 +752,7 @@ public class L1WeaponSkill {
 						SC_DoActionGFX.send(targetPc.getNetConnection(), targetPc.getId(), ActionCodes.ACTION_Damage);
 						SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);
 						targetPc.receiveDamage(pc, 0);
-					} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance) {
+					} else if (object instanceof L1SummonInstance || object instanceof L1MonsterInstance) {
 						targetNpc = (L1NpcInstance) object;
 						SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);
 						targetNpc.receiveDamage(pc, (int) dmg);
@@ -801,8 +800,8 @@ public class L1WeaponSkill {
 						if (targetPc.getZoneType() == 1) continue;
 					}
 					if (cha instanceof L1MonsterInstance && !(object instanceof L1MonsterInstance)) continue;
-					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
-						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) continue;
+					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance) {
+						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1MonsterInstance)) continue;
 					}
 					
 					if (dmg <= 0) continue;
@@ -812,7 +811,7 @@ public class L1WeaponSkill {
 						SC_DoActionGFX.send(targetPc.getNetConnection(), targetPc.getId(), ActionCodes.ACTION_Damage);
 						SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);
 						targetPc.receiveDamage(pc, 0);
-					} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance) {
+					} else if (object instanceof L1SummonInstance || object instanceof L1MonsterInstance) {
 						targetNpc = (L1NpcInstance) object;
 						SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);
 						targetNpc.receiveDamage(pc, (int) dmg);
@@ -886,8 +885,8 @@ public class L1WeaponSkill {
 					if (cha instanceof L1MonsterInstance) {
 						if (!(object instanceof L1MonsterInstance)) continue;
 					}
-					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
-						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) {
+					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance) {
+						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1MonsterInstance)) {
 							continue;
 						}
 					}
@@ -899,7 +898,7 @@ public class L1WeaponSkill {
 						SC_DoActionGFX.send(targetPc.getNetConnection(), targetPc.getId(), ActionCodes.ACTION_Damage);
 						SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);
 						targetPc.receiveDamage(pc, 0);
-					} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance) {
+					} else if (object instanceof L1SummonInstance || object instanceof L1MonsterInstance) {
 						targetNpc = (L1NpcInstance) object;
 						SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);
 						targetNpc.receiveDamage(pc, (int) dmg);
@@ -953,8 +952,8 @@ public class L1WeaponSkill {
 						if (targetPc.getZoneType() == 1) continue; // 세이프존 무시
 					}
 					if (cha instanceof L1MonsterInstance && !(object instanceof L1MonsterInstance)) continue;
-					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
-						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance)) continue;
+					if (cha instanceof L1PcInstance || cha instanceof L1SummonInstance) {
+						if (!(object instanceof L1PcInstance || object instanceof L1SummonInstance || object instanceof L1MonsterInstance)) continue;
 					}
 					if (dmg <= 0) continue;
 					
@@ -963,7 +962,7 @@ public class L1WeaponSkill {
 						SC_DoActionGFX.send(targetPc.getNetConnection(), targetPc.getId(), ActionCodes.ACTION_Damage);
 						SC_DoActionGFX.broadcast(targetPc, ActionCodes.ACTION_Damage);
 						targetPc.receiveDamage(pc, 0);
-					} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance || object instanceof L1MonsterInstance) {
+					} else if (object instanceof L1SummonInstance || object instanceof L1MonsterInstance) {
 						targetNpc = (L1NpcInstance) object;
 						SC_DoActionGFX.broadcast(targetNpc, ActionCodes.ACTION_Damage);
 						targetNpc.receiveDamage(pc, (int) dmg);

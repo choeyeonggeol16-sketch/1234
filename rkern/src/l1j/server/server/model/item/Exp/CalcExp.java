@@ -7,11 +7,9 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.GameServerSetting;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
@@ -20,7 +18,6 @@ import l1j.server.server.model.character.companion.CompanionSettings;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
-import l1j.server.server.templates.L1Pet;
 import l1j.server.server.utils.IntRange;
 
 public class CalcExp {
@@ -53,56 +50,6 @@ public class CalcExp {
 		pc.addMonsterKill(1);
 	}
 
-	private static void AddExpPet(L1PetInstance pet, int exp) {
-		if (pet == null) return;
-		if (exp <= 0) return;
-
-		if (!(pet.getMaster() instanceof L1PcInstance)) return;
-		final L1PcInstance pc = (L1PcInstance) pet.getMaster();
-
-		final int petItemObjId = pet.getItemObjId();
-		final int levelBefore = pet.getLevel();
-
-		int totalExp = (int) (exp * 50L + pet.getExp());
-		final int cap = ExpTable.getExpByLevel(51) - 1;
-		if (totalExp > cap) totalExp = cap;
-
-		pet.setExp(totalExp);
-		pet.setLevel(ExpTable.getLevelByExp(totalExp));
-
-		final int expPercentage = ExpTable.getExpPercentage(pet.getLevel(), totalExp);
-		final int gap = pet.getLevel() - levelBefore;
-
-		for (int i = 1; i <= gap; i++) {
-			final IntRange hpUpRange = pet.getPetType().getHpUpRange();
-			final IntRange mpUpRange = pet.getPetType().getMpUpRange();
-			pet.addMaxHp(hpUpRange.randomValue());
-			pet.addMaxMp(mpUpRange.randomValue());
-		}
-
-		pet.setExpPercent(expPercentage);
-
-		byte[] data = SC_WORLD_PUT_OBJECT_NOTI.newInstance(pet).encode();
-		l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);
-
-		if (gap != 0) {
-			SC_SkillSound.send(pc, pet.getId(), 6353);
-			SC_SkillSound.broadcast(pc, pet.getId(), 6353);
-
-			final L1Pet petTemplate = PetTable.getInstance().getTemplate(petItemObjId);
-			if (petTemplate == null) {
-				_log.warning("L1Pet == null");
-				return;
-			}
-			petTemplate.set_exp(pet.getExp());
-			petTemplate.set_level(pet.getLevel());
-			petTemplate.set_hp(pet.getMaxHp());
-			petTemplate.set_mp(pet.getMaxMp());
-			PetTable.getInstance().storePet(petTemplate);
-
-			SC_ServerMessage.send(pc, 320, pet.getName());
-		}
-	}
 
 	/**
 	 * 클라우디아 경험치 지급용
@@ -213,7 +160,7 @@ public class CalcExp {
 		if (!(obj instanceof L1NpcInstance)) return;
 		final L1NpcInstance npc = (L1NpcInstance) obj;
 
-		if (npc instanceof L1PetInstance || npc instanceof L1SummonInstance) return;
+		if (npc instanceof L1SummonInstance) return;
 
 		// 저레벨 즉시 지급
 		if (killerPc.getLevel() < 10) {
@@ -396,9 +343,6 @@ public class CalcExp {
 						}
 						AddExp((L1PcInstance) a, acquireExp, acquireLawful);
 
-					} else if (a instanceof L1PetInstance) {
-						AddExpPet((L1PetInstance) a, acquireExp);
-
 					} else if (a instanceof L1SummonInstance) {
 						final L1SummonInstance s = (L1SummonInstance) a;
 						if (s.getNpcTemplate() != null && s.getNpcTemplate().get_npcId() == 7320000) {
@@ -463,27 +407,6 @@ public class CalcExp {
 					AddExp(pc, acquireExp, acquireLawful);
 				}
 
-			} else if (a instanceof L1PetInstance) {
-				final L1PetInstance pet = (L1PetInstance) a;
-				final L1PcInstance master = ownerPc;
-
-				if (master != null && psi.isPartyMember(master)) {
-					partyHateExp += (long) ht;
-
-					// 화면 내 소유자면 기록 (펫도 소유자 그룹에 포함)
-					final int idx = psi.indexOfInScreen(master);
-					if (idx >= 0) {
-						ownerIdxOfAcq[i] = idx;
-						w.ownedHateSum[idx] += (long) ht;
-					} else {
-						ownerIdxOfAcq[i] = -1;
-					}
-				} else {
-					ownerIdxOfAcq[i] = -1;
-					final int acquireExp = (totalHateExp > 0L) ? (int) (((long) exp * (long) ht) / totalHateExp) : 0;
-					AddExpPet(pet, acquireExp);
-				}
-
 			} else if (a instanceof L1SummonInstance) {
 
 				final L1PcInstance master = ownerPc;
@@ -544,9 +467,6 @@ public class CalcExp {
 
 			if (a instanceof L1PcInstance) {
 				AddExp((L1PcInstance) a, acquireExp, memberLawful);
-
-			} else if (a instanceof L1PetInstance) {
-				AddExpPet((L1PetInstance) a, acquireExp);
 
 			} else if (a instanceof L1SummonInstance) {
 				final L1SummonInstance s = (L1SummonInstance) a;
@@ -617,23 +537,6 @@ public class CalcExp {
 					AddExp(pc, acquireExp, acquireLawful);
 				}
 
-			} else if (a instanceof L1PetInstance) {
-				final L1PetInstance pet = (L1PetInstance) a;
-				final L1PcInstance master = ownerPc;
-
-				if (master != null && psi.isPartyMember(master)) {
-					partyHateExp += (long) ht;
-
-					final int idx = psi.indexOfInScreen(master);
-					if (idx >= 0) {
-						ownerIdxOfAcq[i] = idx;
-						ownedHateSum[idx] += (long) ht;
-					}
-				} else {
-					final int acquireExp = (totalHateExp > 0L) ? (int) (((long) exp * (long) ht) / totalHateExp) : 0;
-					AddExpPet(pet, acquireExp);
-				}
-
 			} else if (a instanceof L1SummonInstance) {
 
 				final L1PcInstance master = ownerPc;
@@ -686,9 +589,6 @@ public class CalcExp {
 			if (a instanceof L1PcInstance) {
 				AddExp((L1PcInstance) a, acquireExp, memberLawful);
 
-			} else if (a instanceof L1PetInstance) {
-				AddExpPet((L1PetInstance) a, acquireExp);
-
 			} else if (a instanceof L1SummonInstance) {
 				final L1SummonInstance s = (L1SummonInstance) a;
 				if (s.getNpcTemplate() != null && s.getNpcTemplate().get_npcId() == 7320000) {
@@ -713,10 +613,6 @@ public class CalcExp {
 	private static L1PcInstance getOwnerPcOrNull(L1Character a) {
 		if (a instanceof L1PcInstance) return (L1PcInstance) a;
 
-		if (a instanceof L1PetInstance) {
-			final L1PetInstance p = (L1PetInstance) a;
-			return (p.getMaster() instanceof L1PcInstance) ? (L1PcInstance) p.getMaster() : null;
-		}
 		if (a instanceof L1SummonInstance) {
 			final L1SummonInstance s = (L1SummonInstance) a;
 			return (s.getMaster() instanceof L1PcInstance) ? (L1PcInstance) s.getMaster() : null;

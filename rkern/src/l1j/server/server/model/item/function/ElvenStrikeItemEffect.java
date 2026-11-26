@@ -15,7 +15,6 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1EffectSpawn;
@@ -264,9 +263,7 @@ final class ElvenStrikeItemEffect {
         if (!(ch instanceof L1NpcInstance npc) || npc.getNpcTemplate() == null
                 || !L1AttackHelper.isAttackableNpcTarget(npc)) return false;
         if (npc instanceof L1MonsterInstance) return true;
-        if (npc instanceof L1PetInstance pet) {
-            if (pet.getMaster() == pc) return false;
-        } else if (npc instanceof L1SummonInstance summon) {
+        if (npc instanceof L1SummonInstance summon) {
             if (summon.getMaster() == pc) return false;
         } else if (npc instanceof L1CompanionInstance companion) {
             if (companion.get_master_id() == pc.getId()) return false;

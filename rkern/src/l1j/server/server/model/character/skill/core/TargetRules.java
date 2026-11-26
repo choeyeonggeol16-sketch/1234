@@ -6,7 +6,6 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
@@ -42,10 +41,7 @@ public enum TargetRules {
 
         final int userId = (su.hdUser() != null ? su.hdUser().getId() : 0);
 
-        if (cha instanceof L1PetInstance) {
-            final L1PetInstance pet = (L1PetInstance) cha;
-            if (pet.getMaster() != null && userId == pet.getMaster().getId()) return false;
-        } else if (cha instanceof L1CompanionInstance) {
+        if (cha instanceof L1CompanionInstance) {
             if (userId == ((L1CompanionInstance) cha).get_master_id()) return false;
         }
 
@@ -126,6 +122,6 @@ public enum TargetRules {
         if (cha instanceof L1SummonInstance) {
             return ((L1SummonInstance) cha).isExsistMaster();
         }
-        return (cha instanceof L1PetInstance) || (cha instanceof L1CompanionInstance) || (cha instanceof L1SupportInstance);
+        return (cha instanceof L1CompanionInstance) || (cha instanceof L1SupportInstance);
     }
 }

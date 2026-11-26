@@ -10,7 +10,6 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.npc.ai.CDesireFactory;
 import l1j.server.server.model.npc.ai.CDesirePQ;
 import l1j.server.server.model.Instance.L1CompanionInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 /**
@@ -529,10 +528,6 @@ public final class CGetItemAction {
             return false;
         }
         if (!item.TryPickContributedItem(creature)) return false;
-        if (creature instanceof L1PetInstance
-                && item.getItem().isUseHighPet()) {
-            return false;
-        }
         if (creature instanceof L1CompanionInstance) {
             final L1PcInstance master =
                     ((L1CompanionInstance) creature).get_master();

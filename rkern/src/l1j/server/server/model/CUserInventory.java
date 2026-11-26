@@ -9,7 +9,6 @@ import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.character.equip.EquipType;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -1084,11 +1083,8 @@ public class CUserInventory extends CInventory {
 		if(!CompanionInstanceCache.is_companion_oblivion(penaltyItem.getId()))			
 			return null;
 		
-        for (Object petObject : _owner.getPetList().values()) {
-            if (petObject instanceof L1PetInstance) {
-                if (penaltyItem.getId() == ((L1PetInstance) petObject).getItemObjId()) return null;
-            }
-        }
+        final var companion = _owner.get_companion();
+        if (companion != null && companion.get_control_object_id() == penaltyItem.getId()) return null;
         for (Object dollObject : _owner.getDollList().values()) {
             if (dollObject instanceof L1DollInstance) {
                 if (penaltyItem.getId() == ((L1DollInstance) dollObject).getItemObjId()) return null;

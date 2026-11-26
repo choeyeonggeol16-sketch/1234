@@ -292,8 +292,6 @@ public class L1GuardianInstance extends L1NpcInstance {
 			player = (L1PcInstance) lastAttacker;
 		} else if (lastAttacker instanceof L1CompanionInstance) {
 			player = ((L1CompanionInstance) lastAttacker).get_master();
-		} else if (lastAttacker instanceof L1PetInstance) {
-			player = (L1PcInstance) ((L1PetInstance) lastAttacker).getMaster();
 		} else if (lastAttacker instanceof L1SummonInstance) {
 			player = (L1PcInstance) ((L1SummonInstance) lastAttacker).getMaster();
 		}

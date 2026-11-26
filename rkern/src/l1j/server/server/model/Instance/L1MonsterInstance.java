@@ -1133,8 +1133,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 			pc = (L1PcInstance) lastAttacker;
 		} else if(lastAttacker instanceof L1CompanionInstance){
 			pc = ((L1CompanionInstance) lastAttacker).get_master();
-		} else if (lastAttacker instanceof L1PetInstance) {
-			pc = (L1PcInstance) ((L1PetInstance) lastAttacker).getMaster();
 		} else if (lastAttacker instanceof L1SummonInstance) {
 			pc = (L1PcInstance) ((L1SummonInstance) lastAttacker).getMaster();
 		}
@@ -1166,8 +1164,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 					pc = (L1PcInstance) lastAttacker;
 				} else if(lastAttacker instanceof L1CompanionInstance){
 					pc = ((L1CompanionInstance) lastAttacker).get_master();
-				} else if (lastAttacker instanceof L1PetInstance) {
-					pc = (L1PcInstance) ((L1PetInstance) lastAttacker).getMaster();
 				} else if (lastAttacker instanceof L1SummonInstance) {
 					pc = (L1PcInstance) ((L1SummonInstance) lastAttacker).getMaster();
 				}

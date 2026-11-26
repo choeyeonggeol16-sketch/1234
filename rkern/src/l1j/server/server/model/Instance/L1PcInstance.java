@@ -2297,13 +2297,8 @@ public class L1PcInstance extends L1Character {
 
 		try {
 			Object[] petList = getPetList().values().toArray();
-			L1PetInstance pet = null;
 			// L1SummonInstance summon = null;
 			for (Object petObject : petList) {
-				if (petObject instanceof L1PetInstance) {
-					pet = (L1PetInstance) petObject;
-					pet.unloadMaster();
-				}
 				// 서먼
 				if (petObject instanceof L1SummonInstance) {
 					L1SummonInstance summon = (L1SummonInstance) petObject;
@@ -2918,8 +2913,6 @@ public class L1PcInstance extends L1Character {
 			targetpc = (L1PcInstance) target;
 		} else if (target instanceof L1CompanionInstance) {
 			targetpc = ((L1CompanionInstance) target).get_master();
-		} else if (target instanceof L1PetInstance) {
-			targetpc = (L1PcInstance) ((L1PetInstance) target).getMaster();
 		} else if (target instanceof L1SummonInstance) {
 			targetpc = (L1PcInstance) ((L1SummonInstance) target).getMaster();
 		}
@@ -2965,15 +2958,11 @@ public class L1PcInstance extends L1Character {
 
 	public void setPetTarget(L1Character target) {
 		Object[] petList = getPetList().values().toArray();
-		L1PetInstance pets = null;
 		L1SummonInstance summon = null;
 		for (Object pet : petList) {
 			if (pet == null)
 				continue;
-			if (pet instanceof L1PetInstance) {
-				pets = (L1PetInstance) pet;
-				pets.setMasterTarget(target);
-			} else if (pet instanceof L1SummonInstance) {
+			if (pet instanceof L1SummonInstance) {
 				summon = (L1SummonInstance) pet;
 				summon.setMasterTarget(target);
 			}
@@ -3773,7 +3762,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 		private L1PcInstance getAttackerPlayer(L1Character attacker) {
 			if (attacker instanceof L1PcInstance) return (L1PcInstance) attacker;
 			if (attacker instanceof L1CompanionInstance) return ((L1CompanionInstance) attacker).get_master();
-			if (attacker instanceof L1PetInstance) return (L1PcInstance) ((L1PetInstance) attacker).getMaster();
+
 			if (attacker instanceof L1SummonInstance) return (L1PcInstance) ((L1SummonInstance) attacker).getMaster();
 			return null;
 		}
@@ -3879,8 +3868,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			attacker = (L1PcInstance) lastAttacker;
 		} else if (lastAttacker instanceof L1CompanionInstance) {
 			attacker = ((L1CompanionInstance) lastAttacker).get_master();
-		} else if (lastAttacker instanceof L1PetInstance) {
-			attacker = (L1PcInstance) ((L1PetInstance) lastAttacker).getMaster();
 		} else if (lastAttacker instanceof L1SummonInstance) {
 			attacker = (L1PcInstance) ((L1SummonInstance) lastAttacker).getMaster();
 		} else {
@@ -8242,9 +8229,6 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 			return true;
 		}
 		if (obj instanceof L1SummonInstance) {
-			return true;
-		}
-		if (obj instanceof L1PetInstance) {
 			return true;
 		}
 		if (obj instanceof L1CompanionInstance) {

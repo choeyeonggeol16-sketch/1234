@@ -11,7 +11,6 @@ import l1j.server.server.model.Instance.L1GuardianInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1ScarecrowInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
@@ -529,8 +528,7 @@ public final class NpcEventFactory {
 				L1World.getInstance()
 						.findObject(occupierId);
 
-		if (!(obj instanceof L1PetInstance)
-				&& !(obj instanceof L1SummonInstance)
+		if (!(obj instanceof L1SummonInstance)
 				&& !(obj instanceof L1CompanionInstance)) {
 
 			return null;
@@ -919,8 +917,7 @@ public final class NpcEventFactory {
 					nowMs);
 		}
 
-		if (target instanceof L1PetInstance
-				|| target instanceof L1SummonInstance
+		if (target instanceof L1SummonInstance
 				|| target instanceof L1CompanionInstance) {
 			return true;
 		}

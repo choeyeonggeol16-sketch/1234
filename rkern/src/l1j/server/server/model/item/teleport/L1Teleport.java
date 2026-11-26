@@ -10,7 +10,6 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.L1Character;
@@ -292,8 +291,7 @@ public class L1Teleport {
 					continue;
 				}
 
-				if (npc instanceof L1PetInstance
-						|| npc instanceof L1SummonInstance) {
+				if (npc instanceof L1SummonInstance) {
 					npc.allTargetClear();
 				}
 			}
@@ -320,8 +318,6 @@ public class L1Teleport {
 					moveFollower(pc, petNpc, mapid, subjects);
 					if (petNpc instanceof L1SummonInstance) {
 						SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(pc, (L1SummonInstance) petNpc, pc);
-					} else if (petNpc instanceof L1PetInstance) {
-					    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),SC_WORLD_PUT_OBJECT_NOTI.newInstance(petNpc).encode());
 					}
 				} else {
 					removePetGracefully(pc, petNpc);
@@ -411,12 +407,7 @@ public class L1Teleport {
 	}
 
 	private void removePetGracefully(L1PcInstance owner, L1NpcInstance petNpc) {
-		if (petNpc instanceof L1PetInstance) {
-			L1PetInstance pet = (L1PetInstance) petNpc;
-			pet.dropItem();
-			owner.getPetList().remove(pet.getId());
-			pet.deleteMe();
-		} else if (petNpc instanceof L1SummonInstance) {
+		if (petNpc instanceof L1SummonInstance) {
 			L1SummonInstance summon = (L1SummonInstance) petNpc;
 			for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayerFast(summon)) {
 				SC_WORLD_PUT_OBJECT_NOTI.sendNewInstance(visiblePc, summon, visiblePc);

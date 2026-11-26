@@ -188,6 +188,8 @@ public final class CObjectDB {
 
     public static int ResolveNPCType(String impl) {
         if (impl == null) return NPC_UNSET;
+        // Legacy pet prototypes must not silently become monsters through the fallback.
+        if ("L1Pet".equals(impl) || "L1PetInstance".equals(impl)) return NPC_CONTEXT_REQUIRED;
         return switch (impl) {
             case "L1Monster", "L1MonsterInstance" -> NPC_L1MONSTER;
             case "L1Merchant", "L1MerchantInstance" -> NPC_L1MERCHANT;
@@ -219,7 +221,7 @@ public final class CObjectDB {
             case "L1NpcCashShop", "L1NpcCashShopInstance" -> NPC_L1NPCCASHSHOP;
             case "L1MobTrap", "L1MobTrapInstance" -> NPC_L1MOBTRAP;
             case "Messenger", "MessengerInstance" -> NPC_MESSENGER;
-            case "L1Doll", "L1DollInstance", "L1Support", "L1SupportInstance", "L1Pet", "L1PetInstance", "L1Summon", "L1SummonInstance", "L1Companion", "L1CompanionInstance", "L1Follower", "L1FollowerInstance", "L1ClanJoin", "L1ClanJoinInstance", "L1Manager", "L1ManagerInstance", "L1Trap", "L1TrapInstance", "L1Pc", "L1PcInstance", "L1Item", "L1ItemInstance" -> NPC_CONTEXT_REQUIRED;
+            case "L1Doll", "L1DollInstance", "L1Support", "L1SupportInstance", "L1Summon", "L1SummonInstance", "L1Companion", "L1CompanionInstance", "L1Follower", "L1FollowerInstance", "L1ClanJoin", "L1ClanJoinInstance", "L1Manager", "L1ManagerInstance", "L1Trap", "L1TrapInstance", "L1Pc", "L1PcInstance", "L1Item", "L1ItemInstance" -> NPC_CONTEXT_REQUIRED;
             // Missing classes in the 2026-11-05 DB: preserve the old
             // ClassNotFoundException -> monster fallback, not guessed aliases.
             case "L1EventTower", "L1EventTowerInstance", "MJL1Tower", "MJL1TowerInstance", "MJMessenger", "MJMessengerInstance", "L1EventCrown", "L1EventCrownInstance", "L1EventTower1", "L1EventTower1Instance", "L1EventCrown1", "L1EventCrown1Instance", "L1MJRaidPoison", "L1MJRaidPoisonInstance", "L1MagicScarecrow", "L1MagicScarecrowInstance" -> NPC_L1MONSTER;

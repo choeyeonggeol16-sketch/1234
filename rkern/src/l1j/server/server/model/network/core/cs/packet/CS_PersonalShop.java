@@ -10,7 +10,6 @@ import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -344,18 +343,8 @@ public final class CS_PersonalShop {
     }
 
     public static boolean isPetItem(L1PcInstance pc, int itemObjectId) {
-
-        for (Object value : pc.getPetList().values()) {
-            if (value instanceof L1PetInstance) {
-                final L1PetInstance pet = (L1PetInstance) value;
-
-                if (pet.getItemObjId() == itemObjectId) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        final var companion = pc.get_companion();
+        return companion != null && companion.get_control_object_id() == itemObjectId;
     }
 
     public static boolean isDollItem(L1PcInstance pc, int itemObjectId) {

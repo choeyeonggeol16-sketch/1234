@@ -24,7 +24,6 @@ public final class SC_PetCtrlMenu {
 		final int petListSize = pc.getPetList() == null ? 0 : pc.getPetList().size();
 		final int npcObjId = npc.getId();
 		final int mapId = npc.getMapId(), x = npc.getX(), y = npc.getY();
-		final boolean isPet = npc instanceof L1PetInstance;
 		final String nameId = npc.getNameId() == null ? "" : npc.getNameId();
 		final CIOFrame frame = connection.beginDirectFrame(44 + (nameId.length() << 1));
 		if (frame == null) return false;
@@ -44,7 +43,7 @@ public final class SC_PetCtrlMenu {
 				buffer.writeH(0x0000);
 				buffer.writeH(x);
 				buffer.writeH(y);
-				buffer.writeC(isPet ? 0x01 : 0x00);
+				buffer.writeC(0x00);
 				buffer.writeS(nameId);
 			} else {
 				buffer.writeH(petListSize * 3 - 3);

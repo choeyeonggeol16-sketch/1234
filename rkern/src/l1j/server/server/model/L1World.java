@@ -20,7 +20,6 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
@@ -38,7 +37,6 @@ public class L1World {
     private final L1IntRegistry<L1Object>[] _visibleObjects =
             (L1IntRegistry<L1Object>[]) new L1IntRegistry<?>[MAX_MAP_ID + 1];
     final ConcurrentHashMap<String, L1PcInstance> 			_allPlayers;
-    final L1IntRegistry<L1PetInstance> _allPets;
     final L1IntRegistry<L1CompanionInstance> _allCompanions;
     final L1IntRegistry<L1SummonInstance> _allSummons;
     final L1IntRegistry<L1SupportInstance> _allSupports;
@@ -68,7 +66,6 @@ public class L1World {
 
     private L1World() {
         _allPlayers = new ConcurrentHashMap<String, L1PcInstance>(8192);       
-        _allPets = new L1IntRegistry<L1PetInstance>();      
         _allCompanions = new L1IntRegistry<L1CompanionInstance>(); 
         _allSummons = new L1IntRegistry<L1SummonInstance>();  
         _allSupports = new L1IntRegistry<L1SupportInstance>();
@@ -641,12 +638,6 @@ public class L1World {
         return (vs != null) ? vs : (_allShopNpcValues = Collections.unmodifiableCollection(_allShopNpc.values()));
     }
 
-    private Collection<L1PetInstance> _allPetValues;
-
-    public Collection<L1PetInstance> getAllPets() {
-        Collection<L1PetInstance> vs = _allPetValues;
-        return (vs != null) ? vs : (_allPetValues = Collections.unmodifiableCollection(_allPets.values()));
-    }
     
     private Collection<L1CompanionInstance> _allCompanionValues;
     public Collection<L1CompanionInstance> getAllCompanions() {

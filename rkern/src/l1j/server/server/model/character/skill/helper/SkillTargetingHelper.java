@@ -6,7 +6,6 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -69,7 +68,6 @@ public final class SkillTargetingHelper {
         if (calcType == su.tfCalcTypeNpcPc()) {
 
             if (cha instanceof L1PcInstance
-                    || cha instanceof L1PetInstance
                     || cha instanceof L1SummonInstance
                     || cha instanceof L1CompanionInstance) {
 
@@ -101,7 +99,6 @@ public final class SkillTargetingHelper {
             if (cha instanceof L1MonsterInstance
                     || cha instanceof L1NpcInstance
                     || cha instanceof L1SummonInstance
-                    || cha instanceof L1PetInstance
                     || cha instanceof L1CompanionInstance) {
 
                 ok = true;
@@ -155,8 +152,7 @@ public final class SkillTargetingHelper {
     public static boolean isControllable(
             final L1Object obj) {
 
-        return obj instanceof L1PetInstance
-                || obj instanceof L1SummonInstance
+        return obj instanceof L1SummonInstance
                 || obj instanceof L1CompanionInstance;
     }
 
@@ -190,15 +186,6 @@ public final class SkillTargetingHelper {
                         : 0;
             }
 
-            if (obj instanceof L1PetInstance) {
-
-                final L1PetInstance pet =
-                        (L1PetInstance) obj;
-
-                return pet.getMaster() != null
-                        ? pet.getMaster().getId()
-                        : 0;
-            }
 
             if (obj instanceof L1SupportInstance) {
 

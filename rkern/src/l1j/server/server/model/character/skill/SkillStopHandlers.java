@@ -18,7 +18,6 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.effect.PcClanBuffEffects;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.item.tam.TamFruitUseService;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPELL_BUFF_NOTI;
@@ -1272,7 +1271,7 @@ public final class SkillStopHandlers {
 			if (ControlSkillEffects.isSkillFreeze(skillId))
 				SC_Paralysis.send(pc, SC_Paralysis.TYPE_FREEZE, false);
 		} else if (target instanceof L1MonsterInstance || target instanceof L1SummonInstance
-				|| target instanceof L1PetInstance || target instanceof L1CompanionInstance) {
+				 || target instanceof L1CompanionInstance) {
 			SC_Poison.broadcastFast(target, target.getId(), 0);
 		}
 		return StopResult.HANDLED;
@@ -2394,7 +2393,7 @@ public final class SkillStopHandlers {
 
 	    if (cha instanceof L1MonsterInstance
 	            || cha instanceof L1SummonInstance
-	            || cha instanceof L1PetInstance
+	            
 	            || cha instanceof L1CompanionInstance) {
 	        return StopResult.HANDLED;
 	    }

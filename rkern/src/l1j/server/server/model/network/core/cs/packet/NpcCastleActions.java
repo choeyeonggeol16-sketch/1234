@@ -15,7 +15,6 @@ import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1EffectInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
@@ -634,7 +633,7 @@ final class NpcCastleActions {
 						targetPc,
 						ActionCodes.ACTION_Damage);
 				targetPc.receiveDamage(targetPc, 100, 3);
-			} else if (object instanceof L1SummonInstance || object instanceof L1PetInstance) {
+			} else if (object instanceof L1SummonInstance) {
 				targetNpc = (L1NpcInstance) object;
 				SC_DoActionGFX.broadcast(
 						targetNpc,

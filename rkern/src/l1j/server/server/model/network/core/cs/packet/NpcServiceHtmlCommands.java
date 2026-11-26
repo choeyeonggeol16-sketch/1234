@@ -11,7 +11,6 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MerchantInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
@@ -391,25 +390,7 @@ final class NpcServiceHtmlCommands {
             NpcBuffCommands.paidEquipmentBuff(pc, false);
             htmlid = "";
         } else if (s.equalsIgnoreCase("depositnpc")) {
-            Object[] petList = pc.getPetList().values().toArray();
-            L1PetInstance pet = null;
-            for (Object petObject : petList) {
-                if (petObject instanceof L1PetInstance) {
-                    pet = (L1PetInstance) petObject;
-                    if (pet.getArmor() != null) {
-                        pet.removePetArmor(pet.getArmor());
-                    }
-                    if (pet.getWeapon() != null) {
-                        pet.removePetWeapon(pet.getWeapon());
-                    }
-                    /** ui6 관련 펫파티,컨트롤 **/
-                    l1j.server.server.model.network.core.sc.packet.SC_PetCtrlMenu.send(pc, pet, false);
-
-                    pet.collect();
-                    pet.deleteMe();
-                    pc.getPetList().remove(Integer.valueOf(pet.getId()));
-                }
-            }
+            SC_SystemMessage.send(pc, "구형 펫 보관 기능은 이용할 수 없습니다.");
             htmlid = "";
         } else if (s.equalsIgnoreCase("dismissnpc")) {
             SC_SystemMessage.send(pc, "당분간 양도는 불가능 합니다.");

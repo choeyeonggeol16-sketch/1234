@@ -1,18 +1,14 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.server.datatables.CObjectDB;
-import static l1j.server.server.model.item.function.CreatureItemActions.ITEM_USE2_LOG;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableTwoInput;
-import static l1j.server.server.model.item.function.PetWithdrawalItems.withdrawPet;
 import static l1j.server.server.model.item.function.PotionEffects.useFruit;
 import static l1j.server.server.model.item.function.SpecialEnchantScrolls.isOwnedScrollTarget;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.model.network.core.sc.packet.SC_Sound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.CommonUtil;
@@ -26,57 +22,13 @@ final class PetAndSummonItems {
     private PetAndSummonItems() {}
 
     static ItemActionResult handlePlayRaceFlute(ItemActionContext use) {
-        final L1PcInstance pc = use.player();
-        final int petAmuletId = use.itemObjectId();
-        final L1ItemInstance amulet = use.item();
-        // The object id in this use request must refer to the selected amulet.
-        if (pc.getInventory().GetByServerID(petAmuletId) != amulet)
-            return ItemActionResult.STOP;
-        final L1ItemInstance flute = pc.getInventory().GetFirstItemByClassID(41160);
-        if (flute == null || flute.getCount() <= 0) {
-            SC_ServerMessage.send(pc, 79);
-            return ItemActionResult.STOP;
-        }
-        if (!PetWithdrawalItems.canWithdrawPet(pc, petAmuletId))
-            return ItemActionResult.STOP;
-
-        // The flute is the consumed material, not the selected pet amulet.
-        // Reserve its exact instance and debit durably before creating a world pet.
-        ItemReceiptOperations.UseDurableConsume(pc, flute, () -> {
-            try {
-                // A pet amulet can be moved or replaced while the flute debit
-                // is in flight. Never spawn against a stale item reference.
-                if (pc.getInventory().GetByServerID(petAmuletId) == amulet)
-                    withdrawPet(pc, petAmuletId);
-            } finally {
-                // The amulet itself survives. Its normal item-use delay belongs
-                // after the flute debit, never to the asynchronous submit path.
-                ItemActionCompletion.finishCommittedConsumable(pc, amulet);
-            }
-        });
+        SC_SystemMessage.send(use.player(), "구형 펫 기능은 이용할 수 없습니다.");
         return ItemActionResult.STOP;
     }
 
     static ItemActionResult handleSpecialFlute(ItemActionContext use) {
-        L1PcInstance pc = use.player();
-        Object[] petList = pc.getPetList().values().toArray();
-        for (Object petObject : petList) {
-            if (petObject instanceof L1PetInstance) {
-                L1PetInstance pet = (L1PetInstance) petObject;
-                pet.call();
-            }
-        }
-        try {
-            SC_Sound.send(pc, 437);
-        } catch (RuntimeException packetFailure) {
-            ITEM_USE2_LOG.log(java.util.logging.Level.WARNING, "Pet call sound packet failed", packetFailure);
-        }
-        try {
-            SC_Sound.broadcast(pc, 437);
-        } catch (RuntimeException packetFailure) {
-            ITEM_USE2_LOG.log(java.util.logging.Level.WARNING, "Pet call broadcast sound failed", packetFailure);
-        }
-        return ItemActionResult.COMPLETE;
+        SC_SystemMessage.send(use.player(), "구형 펫 기능은 이용할 수 없습니다.");
+        return ItemActionResult.STOP;
     }
 
     static ItemActionResult handleSummonMonster(ItemActionContext use) {

@@ -14,7 +14,6 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.L1CastleLocation;
@@ -894,12 +893,11 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 				}
 
 				if (npc.getNpcTemplate().isCantResurrect()
-						&& !(npc instanceof L1PetInstance)
 						&& !(npc instanceof L1CompanionInstance)) {
 					return HandlerResult.RETURN;
 				}
 
-				if ((npc instanceof L1CompanionInstance || npc instanceof L1PetInstance)
+				if ((npc instanceof L1CompanionInstance )
 						&& L1World.getInstance().getVisiblePlayer(npc, 0).size() > 0) {
 
 					for (L1PcInstance visiblePc : L1World.getInstance().getVisiblePlayer(npc, 0)) {
@@ -1064,7 +1062,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 	static HandlerResult castGuardBreakOnNpc(L1SkillUse su, L1Character target, L1Magic magic,
 			int undeadType, Iterator<?> targets) {
 		if (target instanceof L1MonsterInstance || target instanceof L1SummonInstance
-				|| target instanceof L1PetInstance || target instanceof L1CompanionInstance) {
+				 || target instanceof L1CompanionInstance) {
 			sendSkillSoundBroadcast(target, 9801);
 			return HandlerResult.HANDLED;
 		}
@@ -1829,7 +1827,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 		} else if (target instanceof L1MonsterInstance
 				|| target instanceof L1SummonInstance
-				|| target instanceof L1PetInstance
+				
 				|| target instanceof L1CompanionInstance) {
 
 			final L1NpcInstance npc = (L1NpcInstance) target;
@@ -2346,7 +2344,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 					? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 		} else if (target instanceof L1MonsterInstance
 				|| target instanceof L1SummonInstance
-				|| target instanceof L1PetInstance
+				
 				|| target instanceof L1CompanionInstance) {
 
 			L1NpcInstance npc = (L1NpcInstance) target;
@@ -2386,7 +2384,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		}
 
 		// NPC/소환/펫/동료
-		if (cha instanceof L1MonsterInstance || cha instanceof L1SummonInstance || cha instanceof L1PetInstance || cha instanceof L1CompanionInstance) {
+		if (cha instanceof L1MonsterInstance || cha instanceof L1SummonInstance  || cha instanceof L1CompanionInstance) {
 			final L1NpcInstance npc = (L1NpcInstance) cha;
 
 			if (!npc.trySetSkillEffect(L1SkillId.STATUS_FREEZE, shockDur)) {
@@ -2460,7 +2458,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 	private static boolean canFreezeNpc(L1NpcInstance target) {
 		return target instanceof L1MonsterInstance || target instanceof L1SummonInstance
-				|| target instanceof L1PetInstance || target instanceof L1CompanionInstance;
+				 || target instanceof L1CompanionInstance;
 	}
 
 	private static void sendFreeze(L1Character target) {
@@ -2561,7 +2559,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 			if (cha instanceof L1TowerInstance) return HandlerResult.HANDLED;
 
 			final L1NpcInstance npc = (L1NpcInstance) cha;
-			if ((npc instanceof L1PetInstance || npc instanceof L1CompanionInstance)
+			if ((npc instanceof L1CompanionInstance)
 					&& L1World.getInstance().getVisiblePlayer(npc, 0).size() > 0) {
 				for (L1PcInstance v : L1World.getInstance().getVisiblePlayer(npc, 0)) {
 					if (!v.isDead()) {
@@ -2991,7 +2989,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 		final int effectDuration = primary.hasSkillEffect(L1SkillId.리버레이션)
 				? (int) (duration * Config.리버레이션절감) : duration;
 		if ((target instanceof L1MonsterInstance || target instanceof L1SummonInstance
-				|| target instanceof L1PetInstance || target instanceof L1CompanionInstance)
+				 || target instanceof L1CompanionInstance)
 				&& !admitNpcControl(su, (L1NpcInstance) target, duration)) return HandlerResult.CONTINUE;
 		L1EffectSpawn.getInstance().spawnEffect(81162, effectDuration, target.getX(), target.getY(), target.getMapId());
 		if (target instanceof L1PcInstance pc) SC_Paralysis.send(pc, SC_Paralysis.TYPE_STUN, true);

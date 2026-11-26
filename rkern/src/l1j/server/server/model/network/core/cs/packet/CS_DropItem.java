@@ -6,7 +6,6 @@ import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.L1GroundInventory;
 import l1j.server.server.model.CInventory;
 import l1j.server.server.model.L1World;
@@ -333,23 +332,9 @@ public final class CS_DropItem {
         return true;
     }
 
-    private static boolean isPetItem(
-            L1PcInstance pc,
-            int objectId) {
-
-        for (Object value : pc.getPetList().values()) {
-            if (!(value instanceof L1PetInstance)) {
-                continue;
-            }
-
-            final L1PetInstance pet = (L1PetInstance) value;
-
-            if (pet.getItemObjId() == objectId) {
-                return true;
-            }
-        }
-
-        return false;
+    private static boolean isPetItem(L1PcInstance pc, int objectId) {
+        final var companion = pc.get_companion();
+        return companion != null && companion.get_control_object_id() == objectId;
     }
 
     private static boolean isDollItem(

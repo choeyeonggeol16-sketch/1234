@@ -10,7 +10,6 @@ import l1j.server.server.model.L1Location;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 
 /** Shared per-death contribution data. Only the temporary routing phase retains a PC reference. */
@@ -51,8 +50,7 @@ public final class CContributeData {
             if (!(actors.get(i) instanceof L1Character actor)) continue;
             // L1 automatic-loot selection remains distinct from NC ground priority.
             if (hates.get(i) instanceof Integer hate && hate > 0
-                    && !(Config.AUTO_LOOT == 0 && (actor instanceof L1PetInstance
-                            || actor instanceof L1SummonInstance || actor instanceof L1CompanionInstance))
+                    && !(Config.AUTO_LOOT == 0 && (actor instanceof L1SummonInstance || actor instanceof L1CompanionInstance))
                     && actor.getMapId() == victim.getMapId() && actor.getLocation() != null
                     && actor.getLocation().getTileLineDistance(origin) <= Config.PARTY_LOOT_RANGE) {
                 hasRouteCandidates = true;
@@ -128,10 +126,6 @@ public final class CContributeData {
     public static L1PcInstance GetUserOrMaster(L1Character creature) {
         if (creature instanceof L1PcInstance pc) return pc;
         if (creature instanceof L1CompanionInstance companion) return companion.get_master();
-        if (creature instanceof L1PetInstance pet) {
-            final L1Character master = pet.getMaster();
-            return master instanceof L1PcInstance pc ? pc : null;
-        }
         if (creature instanceof L1SummonInstance summon) {
             final L1Character master = summon.getMaster();
             return master instanceof L1PcInstance pc ? pc : null;

@@ -17,7 +17,6 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.ai.core.PathNodeWorld;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.animation.SpriteInformation;
@@ -2287,14 +2286,7 @@ public class L1Character extends L1Object {
 	}
 
 	public void sendPetCtrlMenu(L1NpcInstance npc, boolean type) {
-		if (npc instanceof L1PetInstance) {
-			L1PetInstance pet = (L1PetInstance) npc;
-			L1Character cha = pet.getMaster();
-			if (cha instanceof L1PcInstance) {
-				L1PcInstance pc = (L1PcInstance) cha;
-				l1j.server.server.model.network.core.sc.packet.SC_PetCtrlMenu.send(pc, npc, type);
-			}
-		} else if (npc instanceof L1SummonInstance) {
+		if (npc instanceof L1SummonInstance) {
 			L1SummonInstance summon = (L1SummonInstance) npc;
 			L1Character cha = summon.getMaster();
 			if (cha instanceof L1PcInstance) {

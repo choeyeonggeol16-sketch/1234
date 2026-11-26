@@ -7,7 +7,6 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -319,8 +318,7 @@ public final class L1AttackHelper {
 	}
 
 	public static boolean isPetSummonOrCompanion(L1Character attacker) {
-		return (attacker instanceof L1PetInstance)
-				|| (attacker instanceof L1SummonInstance)
+		return (attacker instanceof L1SummonInstance)
 				|| (attacker instanceof L1CompanionInstance);
 	}
 

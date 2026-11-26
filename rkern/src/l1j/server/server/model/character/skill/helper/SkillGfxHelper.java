@@ -5,7 +5,6 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MerchantInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.L1Character;
@@ -388,8 +387,7 @@ public final class SkillGfxHelper {
         if (cha instanceof L1SummonInstance pet) {
             return pet.isExsistMaster();
         }
-        return (cha instanceof L1PetInstance)
-                || (cha instanceof L1CompanionInstance)
+        return (cha instanceof L1CompanionInstance)
                 || (cha instanceof L1SupportInstance);
     }
 

@@ -13,7 +13,6 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1SupportInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
@@ -533,9 +532,7 @@ public final class CWorld {
         } else if (object instanceof L1NpcInstance) {
             final L1NpcInstance npc = (L1NpcInstance) object;
             world._allNpc.put(npc.getId(), npc);
-            if (object instanceof L1PetInstance) {
-                world._allPets.put(object.getId(), (L1PetInstance) object);
-            } else if (object instanceof L1SummonInstance) {
+            if (object instanceof L1SummonInstance) {
                 world._allSummons.put(object.getId(), (L1SummonInstance) object);
             } else if (object instanceof L1SupportInstance) {
                 world._allSupports.put(object.getId(), (L1SupportInstance) object);
@@ -556,9 +553,7 @@ public final class CWorld {
         } else if (object instanceof L1NpcInstance) {
             final L1NpcInstance npc = (L1NpcInstance) object;
             world._allNpc.remove(npc.getId(), npc);
-            if (object instanceof L1PetInstance) {
-                world._allPets.remove(object.getId(), (L1PetInstance) object);
-            } else if (object instanceof L1SummonInstance) {
+            if (object instanceof L1SummonInstance) {
                 world._allSummons.remove(object.getId(), (L1SummonInstance) object);
             } else if (object instanceof L1SupportInstance) {
                 world._allSupports.remove(object.getId(), (L1SupportInstance) object);

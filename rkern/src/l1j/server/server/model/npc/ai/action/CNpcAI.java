@@ -11,7 +11,6 @@ import l1j.server.server.model.Instance.L1GuardianInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
@@ -604,7 +603,6 @@ public final class CNpcAI {
          * teleport and owner-visibility policy; companions retain item mode.
          */
         if (creature instanceof L1CompanionInstance
-                || creature instanceof L1PetInstance
                 || creature instanceof L1SummonInstance
                 || creature instanceof L1DollInstance) {
             CCreatureController.submit(

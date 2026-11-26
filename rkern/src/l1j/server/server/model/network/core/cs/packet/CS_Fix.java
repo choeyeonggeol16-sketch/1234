@@ -1,19 +1,14 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.datatables.CObjectDB;
-import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CUserInventory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
-import l1j.server.server.templates.L1Npc;
-import l1j.server.server.templates.L1Pet;
 
 public final class CS_Fix {
 
@@ -49,9 +44,7 @@ public final class CS_Fix {
         }
 
  
-        withdrawPet(
-                pc,
-                itemObjectId);
+        // Old pet retrieval is retired; normal equipment repair remains above.
     }
 
     private static void repairItem(
@@ -80,75 +73,4 @@ public final class CS_Fix {
         }
     }
 
-    private static void withdrawPet(
-            L1PcInstance pc,
-            int itemObjectId) {
-
-        int petCost = 0;
-
-        /*
-         * 현재 소환되어 있는 펫들이 차지하는 CHA 비용 계산.
-         */
-        for (Object petObject :
-                pc.getPetList().values()) {
-
-            if (petObject
-                    instanceof L1NpcInstance) {
-
-                petCost +=
-                        ((L1NpcInstance) petObject)
-                                .getPetcost();
-            }
-        }
-
-        int charisma =
-                pc.GetTotalStatCha();
-
-        if (pc.isElf()) {
-
-            charisma += 12;
-
-        } else {
-
-            charisma += 6;
-        }
-
-        charisma -= petCost;
-
-        final int petCount =
-                charisma / 6;
-
-        if (petCount <= 0) {
-
-            SC_ServerMessage.send(pc, 489);
-
-            return;
-        }
-
-        final L1Pet petTemplate =
-                PetTable
-                        .getInstance()
-                        .getTemplate(
-                                itemObjectId);
-
-        if (petTemplate == null) {
-            return;
-        }
-
-        final L1Npc npcTemplate =
-                CObjectDB.GetNPC(
-                                petTemplate.get_npcid());
-
-        if (npcTemplate == null) {
-            return;
-        }
-
-        final L1PetInstance pet =
-                new L1PetInstance(
-                        npcTemplate,
-                        pc,
-                        petTemplate);
-
-        pet.setPetcost(6);
-    }
 }

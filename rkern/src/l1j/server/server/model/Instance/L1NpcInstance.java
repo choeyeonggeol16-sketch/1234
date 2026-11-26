@@ -688,10 +688,6 @@ public class L1NpcInstance extends L1Character {
             return false;
         }
 
-        if (t instanceof L1PetInstance
-                && ((L1PetInstance) t).isDestroyed()) {
-            return false;
-        }
 
         if (t instanceof L1CompanionInstance
                 && ((L1CompanionInstance) t).isDestroyed()) {
@@ -977,9 +973,7 @@ public class L1NpcInstance extends L1Character {
         }
         //  펫, 소환수, 컴패니언, 서포트인 경우 마스터 확인
         L1Character master = null;
-        if (cha instanceof L1PetInstance) {
-            master = ((L1PetInstance) cha).getMaster();
-        } else if (cha instanceof L1SummonInstance) {
+        if (cha instanceof L1SummonInstance) {
             master = ((L1SummonInstance) cha).getMaster();
         } else if (cha instanceof L1CompanionInstance) {
             master = ((L1CompanionInstance) cha).get_master();
@@ -2749,7 +2743,7 @@ public class L1NpcInstance extends L1Character {
     }
 
     public static final Class<?>[] OCCUPANCY_CLASSES = {
-            L1MonsterInstance.class, L1PetInstance.class, L1SummonInstance.class,  L1CastleGuardInstance.class, L1GuardianInstance.class, L1GuardInstance.class,
+            L1MonsterInstance.class, L1SummonInstance.class,  L1CastleGuardInstance.class, L1GuardianInstance.class, L1GuardInstance.class,
             L1MerchantInstance.class, L1TeleporterInstance.class, L1DwarfInstance.class, L1CompanionInstance.class, L1PeopleInstance.class
     };
     

@@ -39,7 +39,6 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1EffectSpawn;
@@ -120,7 +119,7 @@ final class CrownAreaStunItemEffect {
                                 SC_SkillSound.broadcast(target, target.getId(), 15101);
                             }
                         }
-                    } else if (obj instanceof L1MonsterInstance || obj instanceof L1SummonInstance || obj instanceof L1PetInstance) {
+                    } else if (obj instanceof L1MonsterInstance || obj instanceof L1SummonInstance) {
                         L1NpcInstance targetnpc = (L1NpcInstance) obj;
                         if (!targetnpc.trySetSkillEffect(SHOCK_STUN, _shockStunDuration)) {
                             throw new java.util.concurrent.RejectedExecutionException("NPC SHOCK_STUN admission exhausted");

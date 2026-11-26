@@ -12,7 +12,6 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.character.combat.CCreatureDamageReaction;
 import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs;
@@ -2112,9 +2111,6 @@ public class L1Magic {
 				isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
 			}
 			if (!isNowWar) {
-				if (_npc instanceof L1PetInstance) {
-					dmg /= 8;
-				}
 				if (_npc instanceof L1SummonInstance) {
 					L1SummonInstance summon = (L1SummonInstance) _npc;
 					if (summon.isExsistMaster()) {
@@ -2301,9 +2297,6 @@ public class L1Magic {
 				isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
 			}
 			if (!isNowWar) {
-				if (_targetNpc instanceof L1PetInstance) {
-					dmg /= 8;
-				}
 				if (_targetNpc instanceof L1SummonInstance) {
 					L1SummonInstance summon = (L1SummonInstance) _targetNpc;
 					if (summon.isExsistMaster()) {

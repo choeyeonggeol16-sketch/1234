@@ -203,11 +203,6 @@ public class L1TowerInstance extends L1NpcInstance {
 
 				pc = ((L1CompanionInstance) attacker).get_master();
 
-			} else if (attacker instanceof L1PetInstance) {
-
-				pc = (L1PcInstance)
-						((L1PetInstance) attacker).getMaster();
-
 			} else if (attacker instanceof L1SummonInstance) {
 
 				pc = (L1PcInstance)

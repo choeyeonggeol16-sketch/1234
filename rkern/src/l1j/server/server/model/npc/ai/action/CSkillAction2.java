@@ -19,7 +19,6 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.character.animation.EActionCodes;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -877,7 +876,6 @@ public final class CSkillAction2 {
         final boolean playerSide =
                 (mainTarget instanceof L1PcInstance)
                 || (mainTarget instanceof L1SummonInstance)
-                || (mainTarget instanceof L1PetInstance)
                 || (mainTarget instanceof L1CompanionInstance);
 
         if (playerSide) {
@@ -890,7 +888,6 @@ public final class CSkillAction2 {
                 }
 
                 if ((attacker instanceof L1SummonInstance)
-                        || (attacker instanceof L1PetInstance)
                         || (mainTarget instanceof L1CompanionInstance)) {
 
                     if (attacker.getMaster() != null) {
@@ -909,7 +906,6 @@ public final class CSkillAction2 {
             }
 
             return (cha instanceof L1SummonInstance)
-                    || (cha instanceof L1PetInstance)
                     || (cha instanceof L1CompanionInstance);
         }
 
@@ -1203,7 +1199,6 @@ public final class CSkillAction2 {
                 }
 
                 if (!(obj instanceof L1PcInstance
-                        || obj instanceof L1PetInstance
                         || obj instanceof L1SummonInstance
                         || obj instanceof L1CompanionInstance)) {
                     continue;

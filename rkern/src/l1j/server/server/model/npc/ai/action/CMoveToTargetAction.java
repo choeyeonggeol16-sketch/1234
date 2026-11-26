@@ -7,7 +7,6 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1GuardInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
@@ -1148,8 +1147,7 @@ public final class CMoveToTargetAction {
     private static boolean isPetFamily(
             final L1NpcInstance creature) {
 
-        return creature instanceof L1PetInstance
-                || creature instanceof L1SummonInstance
+        return creature instanceof L1SummonInstance
                 || creature instanceof L1CompanionInstance;
     }
 

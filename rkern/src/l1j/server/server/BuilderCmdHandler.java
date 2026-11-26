@@ -241,7 +241,6 @@ import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
 import l1j.server.server.model.Instance.L1CompanionInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import gnu.trove.list.array.TLongArrayList;
 

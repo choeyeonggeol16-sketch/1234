@@ -19,7 +19,17 @@ jobs:
             rkern/tests/trade_lifecycle
       - name: Audit legacy pet instance references
         run: |
-          git grep -n -w L1PetInstance -- rkern/src || true
+          # The only surviving name is a rejected legacy DB discriminator, not a Java type.
+          test ! -f rkern/src/l1j/server/server/model/Instance/L1PetInstance.java
+          status=0
+          if matches=$(git grep -n -w -E 'L1PetInstance|SC_PetInventory|SC_PetPack|SC_PetList|_allPets|getAllPets' -- rkern/src); then
+            matches=$(printf '%s\n' "$matches" | grep -vE '^rkern/src/l1j/server/server/datatables/CObjectDB.java:[0-9]+:.*"L1PetInstance".*NPC_CONTEXT_REQUIRED;' || true)
+            if [ -n "$matches" ]; then printf '%s\n' "$matches"; status=1; fi
+          else
+            result=$?
+            if [ "$result" -ne 1 ]; then exit "$result"; fi
+          fi
+          exit "$status"
       - name: Assert obsolete command classes and references removed
         run: |
           git grep -n 'BuilderCmd2Handler(' -- rkern/src

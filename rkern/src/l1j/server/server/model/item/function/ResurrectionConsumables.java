@@ -6,7 +6,6 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
@@ -91,7 +90,7 @@ final class ResurrectionConsumables {
                             return ItemActionResult.STOP;
                         }
 
-                        if (npc instanceof L1PetInstance || npc instanceof L1CompanionInstance) {
+                        if (npc instanceof L1CompanionInstance) {
                             if (hasLivingOccupant(npc)) {
                                 SC_ServerMessage.send(pc, 592);
                                 return ItemActionResult.STOP;

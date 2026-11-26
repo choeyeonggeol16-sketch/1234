@@ -18,7 +18,6 @@ import l1j.server.server.datatables.PetTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.CFriends;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
@@ -481,15 +480,7 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 			}
 			break;
 		case 325:
-			int len = name.length();
-			if(len > 6 || len < 1){
-				pc.sendPackets("펫 이름 길이를 확인해주세요.");
-				pc.setTempID(0);
-				break;
-			}
-			L1PetInstance pet = (L1PetInstance) L1World.getInstance().findObject(pc.getTempID());
 			pc.setTempID(0);
-			renamePet(pet, name);
 			break;
 		case 512:
 			int houseId = pc.getTempID();
@@ -665,45 +656,7 @@ for (L1PcInstance member : targetClan.getOnlineClanMember()) {
 	}
 
 
-	private static void renamePet(L1PetInstance pet, String name) {
-		if (pet == null || name == null) {
-			throw new NullPointerException();
-		}
-
-		int petItemObjId = pet.getItemObjId();
-		L1Pet petTemplate = PetTable.getInstance().getTemplate(petItemObjId);
-		if (petTemplate == null) {
-			throw new NullPointerException();
-		}
-
-		L1PcInstance pc = (L1PcInstance) pet.getMaster();
-		if (PetTable.isNameExists(name)) {
-			SC_ServerMessage.send(pc, 327);
-			return;
-		}
-		L1Npc l1npc = CObjectDB.GetNPC(pet.getNpcId());
-		if (!(pet.getName().equalsIgnoreCase(l1npc.get_name()))) {
-			L1ItemInstance removedItem = pc.getInventory().GetFirstItemByClassID(410016);
-			if(removedItem == null){
-				SC_ServerMessage.send(pc, 326);
-				return;
-			}else{
-				pc.getInventory().DeleteItemAmount(removedItem, 1);
-			}
-		}
-
-		pet.setName(name);
-		petTemplate.set_name(name);
-		PetTable.getInstance().storePet(petTemplate);
-		L1ItemInstance item = pc.getInventory().GetByServerID(pet.getItemObjId());
-		pc.getInventory().updateItem(item);
-
-		SC_RemoveObject.send(pc.getNetConnection(), pet);
-		SC_RemoveObject.broadcast(pc, pet.getId());
-
-		byte[] data = SC_WORLD_PUT_OBJECT_NOTI.newInstance(pet).encode();
-		l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRawRecipients(l1j.server.server.model.L1World.getInstance().getVisiblePlayer(pc),data);
-	}
+	
 
 	private static void callClan(L1PcInstance pc) {
 		L1PcInstance callClanPc = (L1PcInstance) L1World.getInstance().findObject(pc.getTempID());
