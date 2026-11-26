@@ -804,6 +804,17 @@ public class L1ClanJoin {
                             throw new IllegalStateException("Duplicate pledge member ID");
                     try (CacheD.WarehouseMove tx = CacheD.beginPledgeDismissMove(
                             leaderId, vault.transferOrderKey(), owners, ids, names, online)) {
+                        // A member can disconnect after the roster was captured.
+                        // Once the lanes are reserved, later logouts wait for this receipt.
+                        for (int i = 0; i < live.length; i++) {
+                            final L1PcInstance pc = live[i];
+                            if (pc == null) continue;
+                            final CUserSocket socket = pc.getNetConnection();
+                            if (pc.isLogoutStarted() || pc.isItemTransferBusy() || pc.getSessionStamp() != stamps[i]
+                                    || socket == null || !socket.isGameSessionReady()
+                                    || socket.getActiveChar() != pc)
+                                throw new RejectedExecutionException("Pledge member went offline before reservation");
+                        }
                         ClanTable.stageDeletePledge(tx, clan, sqlIds);
                         tx.onError(failure -> {
                             // A confirmed SQL rejection can reopen the pledge.

@@ -18,6 +18,8 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
 import l1j.server.server.shared.observer.CopyMapObservable;
+import l1j.server.server.storage.CacheD;
+
 public final class CS_CharSelect {
 
     private static final Logger LOGGER = Logger.getLogger(CS_CharSelect.class.getName());
@@ -46,23 +48,7 @@ public final class CS_CharSelect {
             return;
         }
 
-        /*
-         * 전투장 이탈.
-         */
-        if (pc.is_combat_field()) {
-            final CombatObserver observer = CombatLoadManager.getInstance().get_current_observer(pc.get_current_combat_id());
-
-            if (observer != null) {
-                observer.remove(pc);
-            }
-        }
-
-        CopyMapObservable.getInstance().resetPosition(pc);
-
-
-        RaidSpace.getInstance().getBackPc(pc);
-
-        restartProcess(pc);
+        restartProcess(pc, client, true);
     }
 
     /**
@@ -71,7 +57,7 @@ public final class CS_CharSelect {
      * 다른 게임 로직에서도 직접 사용하므로 public static 유지.
      */
     public static void restartProcess(L1PcInstance pc) {
-        if (pc != null) restartProcess(pc, pc.getNetConnection());
+        if (pc != null) restartProcess(pc, pc.getNetConnection(), false);
     }
 
     /** A class/appearance change retires the original session after its final visual frame. */
@@ -86,8 +72,7 @@ public final class CS_CharSelect {
             try {
                 CSessionLifecycle.retireCharacter(() -> {
                     if (!isCurrentRestart(pc, client, stamp)) return;
-                    restartProcess(pc, client);
-                    CS_CommonClick.sendCharAmountAndPacks(client);
+                    if (restartProcess(pc, client, false)) CS_CommonClick.sendCharAmountAndPacks(client);
                 });
             } catch (RejectedExecutionException rejected) {
                 LOGGER.log(Level.WARNING, "Character restart queue unavailable", rejected);
@@ -103,21 +88,27 @@ public final class CS_CharSelect {
                 && pc.getSessionStamp() == stamp && client.ownsReadyGameSession();
     }
 
-    private static void restartProcess(L1PcInstance pc, CUserSocket client) {
-        if (client == null || pc.getNetConnection() != client) return;
+    private static boolean restartProcess(L1PcInstance pc, CUserSocket client, boolean selectionRequest) {
+        final int stamp = pc.getSessionStamp();
+        if (!pc.isItemTransferSession(client, stamp)) return false;
 
         final boolean privateStore = pc.isPrivateShop();
-        if (privateStore && !pc.getInventory().tryBeginEquipmentChange()) {
-            pc.sendPackets("상점 거래 처리 중입니다. 잠시 후 다시 시도해 주세요.");
-            return;
+        if (!pc.getInventory().tryBeginEquipmentChange()) {
+            pc.sendPackets("아이템 거래 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+            return false;
         }
         try {
-            if (privateStore && !pc.isItemTransferSession(client, pc.getSessionStamp())) return;
+            if (!pc.isItemTransferSession(client, stamp)) return false;
+            if (pc.hasItemTransferContinuation() || CacheD.getInstance().hasPendingOwnerApply(pc.getId())) {
+                pc.sendPackets("아이템 거래 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+                return false;
+            }
+            if (selectionRequest) prepareSelection(pc);
             if (privateStore && pc.isPrivateReady()) {
                 detachPrivateShop(pc, client);
-                return;
+                return false;
             }
-            if (privateStore && !User.RemovePrivateStoreList(pc)) return;
+            if (privateStore && !User.RemovePrivateStoreList(pc)) return false;
 
             final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
@@ -128,6 +119,7 @@ public final class CS_CharSelect {
 
             client.clearGameSessionReady();
             pc.logout();
+            if (!pc.isLogoutComplete()) return false;
 
             client.setActiveChar(null);
             client.setConnectionState(CConnectionState.AUTHENTICATED);
@@ -136,13 +128,23 @@ public final class CS_CharSelect {
             if (client.getAccount() != null && client.getAccount().is_changed_slot()) {
                 CS_CommonClick.sendCharAmountAndPacks(client);
             }
-
+            return true;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "restartProcess 처리 중 예외 발생: " + pc.getName(), e);
+            return false;
         } finally {
-            if (privateStore) pc.getInventory().endEquipmentChange();
+            pc.getInventory().endEquipmentChange();
         }
+    }
 
+    private static void prepareSelection(L1PcInstance pc) {
+        if (pc.is_combat_field()) {
+            final CombatObserver observer = CombatLoadManager.getInstance()
+                    .get_current_observer(pc.get_current_combat_id());
+            if (observer != null) observer.remove(pc);
+        }
+        CopyMapObservable.getInstance().resetPosition(pc);
+        RaidSpace.getInstance().getBackPc(pc);
     }
     /** Explicit .무인상점 command: keep the merchant and inventory, retire only its session. */
     public static void RequestOfflinePrivateStore(L1PcInstance pc) {

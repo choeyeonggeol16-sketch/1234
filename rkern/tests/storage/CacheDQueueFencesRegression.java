@@ -1,4 +1,4 @@
-// Run each of expedite, quarantine, release and reload in a fresh JVM.
+// Run each of expedite, quarantine, release, reload and logout in a fresh JVM.
 import com.zaxxer.hikari.HikariDataSource;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -16,6 +16,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntConsumer;
+import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -45,9 +47,74 @@ public class CacheDQueueFencesRegression {
             case "quarantine" -> quarantine(cache);
             case "release" -> release(cache);
             case "reload" -> reload(cache);
-            default -> throw new IllegalArgumentException("expected expedite, quarantine, release or reload");
+            case "logout" -> logout(cache);
+            default -> throw new IllegalArgumentException("expected expedite, quarantine, release, reload or logout");
         }
         System.out.println("PASS actual CacheD " + args[0]);
+    }
+
+    private static void logout(CacheD cache) throws Exception {
+        Object lock = field(CacheD.class, "lock").get(cache);
+        CountDownLatch aborted = new CountDownLatch(2);
+        Runnable resume = () -> {
+            check(!Thread.holdsLock(lock), "resume runs outside CacheD lock");
+            aborted.countDown();
+        };
+        try (var reservation = CacheD.beginWarehouseMove(101, 102)) {
+            check(cache.deferLogoutForOwnerApply(101, resume), "unprepared primary waits");
+            check(cache.deferLogoutForOwnerApply(102, resume), "unprepared secondary waits");
+            check(!cache.deferLogoutForOwnerApply(103, resume), "unrelated logout proceeds");
+        }
+        await(aborted);
+
+        // Deliver ACK while the worker is still inside the receipt dispatch.
+        // Follow-up effects must wait until both lanes can accept a new write.
+        Class<?> type = Class.forName(CacheD.class.getName() + "$DbJob");
+        Method submit = CacheD.class.getDeclaredMethod("submitDbJobInternal",
+                int.class, int.class, Runnable.class, boolean.class, boolean.class);
+        Method require = CacheD.class.getDeclaredMethod("requireOwnerApply", type);
+        Method finish = CacheD.class.getDeclaredMethod("finishOwnerApply",
+                type, Throwable.class, Consumer.class);
+        for (Method method : new Method[]{submit, require, finish}) method.setAccessible(true);
+        for (boolean fail : new boolean[]{false, true}) {
+            int owner = fail ? 301 : 201;
+            CountDownLatch acked = new CountDownLatch(1);
+            CountDownLatch leaveWorker = new CountDownLatch(1);
+            CountDownLatch observers = new CountDownLatch(2);
+            AtomicReference<Object> job = new AtomicReference<>();
+            AtomicReference<Throwable> bad = new AtomicReference<>();
+            Runnable worker = () -> {
+                try {
+                    Consumer<Throwable> next = cause -> {
+                        try {
+                            check(!Thread.holdsLock(lock), "post-release effect outside CacheD lock");
+                            check((cause != null) == fail, "effect receives actual final outcome");
+                            check(cache.hasPendingOwnerApply(owner) == fail, "SQL barrier published before effect");
+                            check(cache.isOwnerPersistenceQuarantined(owner) == fail, "correct quarantine");
+                        } catch (Throwable error) { bad.set(error); }
+                        finally { observers.countDown(); }
+                    };
+                    field(type, "commitConfirmed").setBoolean(job.get(), true);
+                    finish.invoke(cache, job.get(), null, next);
+                    acked.countDown();
+                    await(leaveWorker);
+                } catch (ReflectiveOperationException e) { throw new AssertionError(e); }
+                if (fail) throw new IllegalStateException("fixture failure after dispatch");
+            };
+            synchronized (lock) {
+                job.set(submit.invoke(cache, owner, owner+1, worker, false, true));
+                require.invoke(cache, job.get());
+                check(cache.deferLogoutForOwnerApply(owner+1, observers::countDown),
+                        "secondary logout waits for final outcome");
+            }
+            await(acked);
+            check(observers.getCount() == 2 && cache.hasPendingOwnerApply(owner), "early ACK kept both callbacks");
+            leaveWorker.countDown();
+            await(observers);
+            if (bad.get() != null) throw new AssertionError(bad.get());
+            check(!cache.deferLogoutForOwnerApply(owner, resume), "retired or quarantined owner can detach");
+        }
+        check(field(CacheD.class, "logoutWaiters").get(cache) == null, "no retained logout listeners");
     }
 
     private static void expedite(CacheD cache) throws Exception {
@@ -296,7 +363,7 @@ public class CacheDQueueFencesRegression {
         return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type }, handler));
     }
 
-    private static Field field(Class<?> type, String name) throws Exception {
+    private static Field field(Class<?> type, String name) throws ReflectiveOperationException {
         Field field = type.getDeclaredField(name);
         field.setAccessible(true);
         return field;

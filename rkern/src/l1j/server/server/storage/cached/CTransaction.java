@@ -67,14 +67,20 @@ public final class CTransaction {
 
     private static void insertReceipt(Connection con, String txId, String kind,
                                       int firstOwner, int secondOwner) throws SQLException {
-        try (PreparedStatement ps = con.prepareStatement(
-                "INSERT INTO cached_transaction_receipts (tx_id,kind,owner_a,owner_b) VALUES (?,?,?,?)")) {
+        // Guard the receipt engine and claim the unique ID in one statement.
+        // No gameplay operation executes if the receipt cannot join its commit.
+        try (PreparedStatement ps = con.prepareStatement("""
+                INSERT INTO cached_transaction_receipts (tx_id,kind,owner_a,owner_b)
+                SELECT ?,?,?,? FROM information_schema.TABLES
+                WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='cached_transaction_receipts'
+                  AND ENGINE='InnoDB'
+                """)) {
             ps.setString(1, txId);
             ps.setString(2, kind);
             ps.setInt(3, firstOwner);
             ps.setInt(4, secondOwner);
             if (ps.executeUpdate() != 1)
-                throw new SQLException("Transaction receipt was not inserted: " + txId);
+                throw new SQLException("InnoDB transaction receipt was not inserted: " + txId);
         }
     }
 
@@ -277,7 +283,6 @@ public final class CTransaction {
             final boolean autoCommit = con.getAutoCommit();
             con.setAutoCommit(false);
             try {
-                requireTransactionalTables(con, "cached_transaction_receipts");
                 if (!claimReceipt(con, txId, kind, firstOwner, secondOwner)) {
                     // The matching durable receipt proves the original commit.
                     // The current connection owns only the receipt read lock.

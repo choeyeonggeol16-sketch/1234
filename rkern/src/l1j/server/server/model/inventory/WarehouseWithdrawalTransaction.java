@@ -6,7 +6,6 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.Warehouse;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
 
 /** Warehouse withdrawal batch execution; SQL commit precedes owner replay. */
@@ -183,12 +182,12 @@ final class WarehouseWithdrawalTransaction {
                                 .transferCopy(fee, fee.getId(), (int) (feeCount - totalFee),
                                         fee.getChargeCount()), false);
                     }
-                    move.commit(() -> CIOThreadCallback.getInstance().completeWarehouseMove(pc,
-                            stamp, () -> {
+                    move.commit(() -> Warehouse.replayCommittedMove(pc,
+                            stamp, token, move, () -> {
                         synchronized (session) {
                             synchronized (ownerInventory) {
                                 synchronized (source) {
-                                    if (!pc.isItemTransferSession(session, stamp))
+                                    if (!pc.isItemTransferReplaySession(session, stamp, token))
                                         throw new IllegalStateException("Stale warehouse withdrawal batch session");
                                     if (fee != null && (ownerInventory.GetByServerID(fee.getId()) != fee || fee.getCount() != feeCount))
                                         throw new IllegalStateException("Withdrawal batch fee preimage changed");
@@ -221,7 +220,6 @@ final class WarehouseWithdrawalTransaction {
                                     for (int i = 0; i < size; i++)
                                         l1j.server.server.model.inventory.warehouse.Warehouse.recordCommittedMove(
                                                 pc, source, false, sources[i], counts[i]);
-                                    pc.endItemTransfer(token);
                                     if (onCommitted != null) {
                                         try { onCommitted.run(); }
                                         catch (RuntimeException auditFailure) {
@@ -233,7 +231,7 @@ final class WarehouseWithdrawalTransaction {
                                 }
                             }
                         }
-                    }, move::finishOwnerApply));
+                    }));
                     submitted = true;
                     return true;
                 }

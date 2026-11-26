@@ -719,7 +719,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
             durableCommitAction = null;
             if (durable != null) durable.run();
             post(()->{
-                validateLive();
+                validateLiveRows();
                 if (beforeInventoryReplay != null) beforeInventoryReplay.run();
                 CacheD.applyCommittedWarehouseMove(move,()->{
                     for (int i = 0; i < orderedCount; i++) {
@@ -736,6 +736,10 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                 if (releaseBeforeEffects) {
                     try {
                         if (publish != null) publish.run();
+                        // Keep admitted actors published until the effect completes,
+                        // including party members when the effect starts a dungeon.
+                        if (afterCommitted != null && !owners.beginContinuations())
+                            throw new IllegalStateException("Stale inventory effect session");
                     } finally {
                         releaseGates();
                     }
@@ -749,27 +753,58 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
                         releaseGates();
                     }
                 }
-            },failure->{
-                move.finishOwnerApply(failure);
-                if (failure != null) {
-                    try { notifyTerminalFailure(); }
-                    finally { quarantine(failure); }
-                } else if(releaseBeforeEffects && afterCommitted!=null) {
-                    // On success this completion executes on the same CIO owner,
-                    // AFTER CacheD has released its pending owner-apply barrier.
-                    // Otherwise onChangeExp()'s character save would be dropped.
-                    try {
-                        if(!owners.current(primary))
-                            throw new IllegalStateException("Stale inventory effect session");
-                        synchronized(owners.monitor(primary)) { afterCommitted.run(); }
-                    } catch(Throwable effectFailure) {
-                        try { notifyTerminalFailure(); }
-                        finally { quarantine(effectFailure); } // A committed debit is never retried.
-                    }
-                }
-            });
+            }, failure -> finishReplay(releaseBeforeEffects ? afterCommitted : null, failure));
         });
         submitted=true;
+    }
+
+    private void finishReplay(Runnable afterCommitted, Throwable failure) {
+        if (afterCommitted == null) {
+            move.finishOwnerApply(failure);
+            if (failure != null) failReplay(failure);
+            return;
+        }
+        if (failure != null) {
+            try { move.finishOwnerApply(failure); }
+            finally { finishReleasedEffect(failure); }
+            return;
+        }
+        try {
+            move.finishOwnerApply(null, barrierFailure -> {
+                if (barrierFailure != null) finishReleasedEffect(barrierFailure);
+                else dispatchReleasedEffect(afterCommitted);
+            });
+        } catch (RuntimeException acknowledgementFailure) {
+            finishReleasedEffect(acknowledgementFailure);
+        }
+    }
+
+    /** The barrier can retire on the DB worker when CIO acknowledged early. */
+    private void dispatchReleasedEffect(Runnable afterCommitted) {
+        try {
+            CIOThreadCallback.getInstance().completeWarehouseMove(primary, owners.stamp(primary), () -> {
+                synchronized (owners.monitor(primary)) {
+                    if (!owners.startContinuations())
+                        throw new IllegalStateException("Stale inventory effect session");
+                    afterCommitted.run();
+                }
+            }, this::finishReleasedEffect);
+        } catch (RuntimeException rejected) {
+            finishReleasedEffect(rejected);
+        }
+    }
+
+    private void finishReleasedEffect(Throwable failure) {
+        try {
+            if (failure != null) failReplay(failure);
+        } finally {
+            owners.endContinuations();
+        }
+    }
+
+    private void failReplay(Throwable failure) {
+        try { notifyTerminalFailure(); }
+        finally { quarantine(failure); }
     }
     /** The immutable row key and replay equipment policy must agree with
      * the detached image before any SQL mutation is staged.
@@ -803,6 +838,10 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
             L1PcInstance pc=owners.get(i);
             if (!owners.current(pc)) throw new IllegalStateException("Stale economy session");
         }
+        validateLiveRows();
+    }
+
+    private void validateLiveRows() {
         for (int i = 0; i < entryCount; i++) {
             Entry e = entryAt(i);
             if (e.before == null) continue;
@@ -883,7 +922,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
      */
     private void runCurrentOwners(Runnable action) {
         for (int i = 0; i < owners.size(); i++) {
-            if (!owners.current(owners.get(i)))
+            if (!owners.currentForReplay(owners.get(i)))
                 throw new IllegalStateException("Stale economy completion participant");
         }
         action.run();
@@ -911,7 +950,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
         if (uncertainFailure) {
             // Quarantine the still-connected participants even if the original
             // coordinator has already disappeared and CIO cannot admit replay.
-            if (!owners.current(primary)) quarantine(failure);
+            if (!owners.currentForReplay(primary)) quarantine(failure);
             else post(() -> quarantine(failure), rejected -> {
                 if (rejected != null) quarantine(failure);
             });

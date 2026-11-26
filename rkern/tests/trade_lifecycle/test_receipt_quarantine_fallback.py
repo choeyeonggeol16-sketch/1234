@@ -14,7 +14,7 @@ def section(path, start, end):
 socket = section("network/core/connection/CUserSocket.java", "    public void closeIfCurrentCharacter(",
                  "    private void finishClose(boolean graceful)")
 actor = section("Instance/L1PcInstance.java", "    public boolean isItemTransferSession(",
-                "    public int tryReserveItemTransfer(CUserSocket session, int stamp)")
+                "    public boolean ownsItemTransferToken(")
 quarantine = section("Instance/L1PcInstance.java", "    public void quarantineItemTransferSession(",
                      "    public boolean tryBeginItemTransfer()")
 
@@ -35,6 +35,8 @@ public final class ReceiptQuarantineFallback {
         L1PcInstance actor;
         int closes, kicks;
         boolean isConnected() { return closed == 0; }
+        boolean isRetiringItemTransfers() { return closed != 0; }
+        void onItemTransferFinished(L1PcInstance pc) { }
         L1PcInstance getActiveChar() { return actor; }
         synchronized void setActor(L1PcInstance actor) { this.actor = actor; }
         void kick() { kicks++; closed = 1; }
@@ -47,7 +49,7 @@ public final class ReceiptQuarantineFallback {
     }
     static class L1PcInstance {
         int stamp = 1;
-        boolean logout;
+        boolean logout, forcedItemTransferRetirement;
         CUserSocket socket;
         L1PcInstance(CUserSocket socket) { this.socket = socket; socket.setActor(this); }
         int getSessionStamp() { return stamp; }

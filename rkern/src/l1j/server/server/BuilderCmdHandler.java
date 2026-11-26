@@ -1305,8 +1305,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 				iptable.banIp(player.getNetConnection().getIp()); // BAN 리스트에
 				// IP를 추가한다.
 				pc.sendPackets(player.getName() + ", (" + player.getAccountName() + ")");
-				player.logout();
-				player.getNetConnection().kick();
+				GameServer.disconnectChar(player);
 				count++;
 			}
 			pc.sendPackets("주변의 유저 " + count + "명을 영구추 시키셨습니다.");
@@ -1681,8 +1680,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 				pc.sendPackets("----------------------------------------------------");
 				Account.ban(player.getAccountName(), SC_LoginResult.BANNED_REASON_NOMANNER); // 계정을
 																							// BAN시킨다.
-				player.logout();
-				player.getNetConnection().kick();
+				GameServer.disconnectChar(player);
 				for (int i = 1; i <= 255; i++) {
 					iptable.banIp(banIpArr[0] + "." + banIpArr[1] + "." + banIpArr[2] + "." + i);
 				}

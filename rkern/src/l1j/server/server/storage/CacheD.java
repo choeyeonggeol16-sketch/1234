@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,6 +99,7 @@ public final class CacheD {
         boolean awaitingOwnerApply;
         boolean ownerApplyFinished;
         Throwable ownerApplyFailure;
+        Consumer<Throwable> afterOwnerReleased;
 
         DbJob(int ownerId, int secondaryOwnerId, Runnable task, boolean retryOnFailure) {
             this.ownerId = ownerId;
@@ -586,6 +588,7 @@ public final class CacheD {
             if (submitted || closed || operations.size() < (economy ? 1 : 2))
                 throw new IllegalStateException("Incomplete warehouse transfer persistence");
             final CacheD cache = CacheD.getInstance();
+            final ArrayList<Runnable> logouts;
             synchronized (cache.lock) {
                 committedOperations = operations.toArray(new CTransaction.Mutation[0]);
                 committedAction = onCommitted;
@@ -594,12 +597,20 @@ public final class CacheD {
                 reservedJob.prepared = true;
                 cache.ready.refresh(reservedJob);
                 cache.uncountUnpreparedWarehouse(reservedJob);
+                logouts = cache.takeReadyLogouts(reservedJob);
                 cache.signalReadyChange();
             }
+            resumeLogouts(logouts);
         }
 
         /** Retire/quarantine the reserved FIFO job after CIO memory replay. */
         public void finishOwnerApply(Throwable failure) {
+            finishOwnerApply(failure, null);
+        }
+
+        /** The first acknowledgement owns the optional post-release callback.
+         * It can run on either the CIO or SQL worker, always outside the queue lock. */
+        public void finishOwnerApply(Throwable failure, Consumer<Throwable> afterReleased) {
             final CacheD cache = CacheD.getInstance();
             if (failure != null) {
                 final Runnable action = failureAction;
@@ -609,7 +620,7 @@ public final class CacheD {
                     catch (Throwable notification) { failure.addSuppressed(notification); }
                 }
             } else failureAction = null;
-            cache.finishOwnerApply(reservedJob, failure);
+            cache.finishOwnerApply(reservedJob, failure, afterReleased);
         }
 
         @Override public void close() {
@@ -621,13 +632,16 @@ public final class CacheD {
             WAREHOUSE_MOVE_CONTEXT.remove();
             if (!submitted) {
                 final CacheD cache = CacheD.getInstance();
+                final ArrayList<Runnable> logouts;
                 synchronized (cache.lock) {
                     if (!cache.ready.remove(reservedJob))
                         throw new IllegalStateException("Warehouse move reservation lost");
                     cache.uncountUnpreparedWarehouse(reservedJob);
                     cache.completeDbJob(reservedJob);
+                    logouts = cache.takeReadyLogouts(reservedJob);
                     cache.signalReadyChange();
                 }
+                resumeLogouts(logouts);
             }
         }
     }
@@ -794,6 +808,8 @@ public final class CacheD {
     // Allocated only after an unresolved transaction. Independent of FIFO heads,
     // which can change if a dirty item changes owner while it is being written.
     private IntOpenHashSet quarantinedOwnerIds;
+    // Allocated only for a logout that overlaps a durable owner operation.
+    private Int2ObjectOpenHashMap<ArrayList<Runnable>> logoutWaiters;
     // Only non-economy warehouse reservations that are still unprepared.
     // Avoid a linear ready-queue scan on every owner/session boundary check.
     private final Int2IntOpenHashMap unpreparedWarehouseJobsByOwner = new Int2IntOpenHashMap();
@@ -1283,15 +1299,22 @@ public final class CacheD {
      * The acknowledgement may race the DB worker's return from task.run().
      */
     private void finishOwnerApply(DbJob job, Throwable failure) {
+        finishOwnerApply(job, failure, null);
+    }
+
+    private void finishOwnerApply(DbJob job, Throwable failure, Consumer<Throwable> afterReleased) {
         String diagnostic = null;
         SQLException persistenceFailure = null;
+        final ArrayList<Runnable> logouts;
         synchronized (lock) {
             if (job == null || !job.ownerApplyRequired)
                 throw new IllegalStateException("No pending owner replay");
             if (job.ownerApplyFinished) return; // duplicate completion cannot decrement twice
             job.ownerApplyFinished = true;
             job.ownerApplyFailure = failure;
-            if (job.awaitingOwnerApply) {
+            if (job.outcomeUnknown) {
+                if (failure == null) failure = new IllegalStateException("Receipt outcome is quarantined");
+            } else if (job.awaitingOwnerApply) {
                 if (!ready.remove(job)) throw new IllegalStateException("Owner replay reservation lost");
                 job.queued = false;
                 job.awaitingOwnerApply = false;
@@ -1301,9 +1324,17 @@ public final class CacheD {
                     persistenceFailure = new SQLException("Committed owner replay failed", failure);
                     diagnostic = quarantineDbJob(job, persistenceFailure);
                 }
+            } else {
+                // The CIO replied before the DB worker returned from dispatch.
+                // That worker still owns the SQL lanes and retires them in run().
+                job.afterOwnerReleased = afterReleased;
+                afterReleased = null;
             }
+            logouts = takeReadyLogouts(job);
             signalReadyChange();
         }
+        notifyOwnerRelease(afterReleased, failure);
+        resumeLogouts(logouts);
         reportFailure(diagnostic, persistenceFailure);
     }
 
@@ -1336,9 +1367,69 @@ public final class CacheD {
      * Both counters share lock with warehouse reservation commit/abort.
      */
     public boolean hasPendingOwnerApply(int ownerId) {
+        synchronized (lock) { return pendingOwnerReplay(ownerId); }
+    }
+
+    private boolean pendingOwnerReplay(int ownerId) {
+        return ownerApplyJobsByOwner.get(ownerId) != 0
+                || unpreparedWarehouseJobsByOwner.get(ownerId) != 0;
+    }
+
+    public boolean isOwnerPersistenceQuarantined(int ownerId) {
+        synchronized (lock) { return isOwnerQuarantined(ownerId); }
+    }
+
+    /** Register a terminal-session continuation atomically with the replay check.
+     * A quarantined owner may detach, while its SQL lane remains fenced. */
+    public boolean deferLogoutForOwnerApply(int ownerId, Runnable resume) {
+        Objects.requireNonNull(resume);
         synchronized (lock) {
-            return ownerApplyJobsByOwner.get(ownerId) != 0
-                    || unpreparedWarehouseJobsByOwner.get(ownerId) != 0;
+            if (isOwnerQuarantined(ownerId) || !pendingOwnerReplay(ownerId)) return false;
+            if (logoutWaiters == null) logoutWaiters = new Int2ObjectOpenHashMap<>();
+            ArrayList<Runnable> waiting = logoutWaiters.get(ownerId);
+            if (waiting == null) {
+                waiting = new ArrayList<>(1);
+                logoutWaiters.put(ownerId, waiting);
+            }
+            waiting.add(resume);
+            return true;
+        }
+    }
+
+    // Collect under the CacheD monitor. Schedule the terminal work after unlocking.
+    private ArrayList<Runnable> takeReadyLogouts(DbJob job) {
+        if (logoutWaiters == null) return null;
+        ArrayList<Runnable> ready = takeReadyLogouts(job.ownerId, null);
+        if (job.secondaryOwnerId != job.ownerId)
+            ready = takeReadyLogouts(job.secondaryOwnerId, ready);
+        for (int extra : job.extraOwnerIds) ready = takeReadyLogouts(extra, ready);
+        if (logoutWaiters.isEmpty()) logoutWaiters = null;
+        return ready;
+    }
+
+    private ArrayList<Runnable> takeReadyLogouts(int ownerId, ArrayList<Runnable> ready) {
+        if (ownerId <= 0 || (pendingOwnerReplay(ownerId) && !isOwnerQuarantined(ownerId))) return ready;
+        ArrayList<Runnable> waiting = logoutWaiters.remove(ownerId);
+        if (ready == null) return waiting;
+        if (waiting != null) ready.addAll(waiting);
+        return ready;
+    }
+
+    private static void notifyOwnerRelease(Consumer<Throwable> callback, Throwable failure) {
+        if (callback == null) return;
+        try { callback.accept(failure); }
+        catch (RuntimeException | Error callbackFailure) {
+            reportFailure("CacheD owner release callback failed", callbackFailure);
+        }
+    }
+
+    private static void resumeLogouts(ArrayList<Runnable> logouts) {
+        if (logouts == null) return;
+        for (Runnable resume : logouts) {
+            try { resume.run(); }
+            catch (RuntimeException | Error failure) {
+                reportFailure("Cannot resume deferred character logout", failure);
+            }
         }
     }
 
@@ -2255,6 +2346,8 @@ public final class CacheD {
             }
 
             String diagnostic = null;
+            ArrayList<Runnable> logouts = null;
+            Consumer<Throwable> afterReleased = null;
             synchronized (lock) {
                 selected.writing = false;
                 if (selected instanceof CAccount) {
@@ -2317,6 +2410,9 @@ public final class CacheD {
                             diagnostic = "CacheD async DB request failed";
                         }
                     }
+                    afterReleased = state.afterOwnerReleased;
+                    state.afterOwnerReleased = null;
+                    logouts = takeReadyLogouts(state);
                 } else if (selected instanceof CItem) {
                     CItem state = (CItem) selected;
                     if (items.get(state.id) == state) {
@@ -2355,6 +2451,8 @@ public final class CacheD {
                 releaseResources(selectedOwnerId, selectedPreviousOwnerId, selectedItemId, selected);
                 signalReadyChange();
             }
+            notifyOwnerRelease(afterReleased, failure);
+            resumeLogouts(logouts);
             reportFailure(diagnostic, failure);
         }
     }

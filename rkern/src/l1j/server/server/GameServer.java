@@ -1,6 +1,7 @@
 package l1j.server.server;
 
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -359,7 +360,7 @@ public class GameServer {
         final L1PcInstance[] pcs = CWorld.getInstance().getAllPlayers()
                 .toArray(new L1PcInstance[0]);
         final CUserSocket[] clients = new CUserSocket[pcs.length];
-        final long started = System.nanoTime();
+        long teardownDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
         for (int i = 0; i < pcs.length; i++) {
             final L1PcInstance pc = pcs[i];
             if (pc == null || pc.noPlayerck2) continue;
@@ -371,10 +372,17 @@ public class GameServer {
             final L1PcInstance pc = pcs[i];
             if (pc == null || pc.noPlayerck2) continue;
             final CUserSocket client = clients[i];
+            // Physical input has stopped. An offline merchant may still be a
+            // participant in another actor's admitted receipt.
+            if (awaitShutdownReceipt(pc))
+                teardownDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
             if (client != null) {
                 while (!client.isLogoutComplete()) {
-                    if (System.nanoTime() - started >= 30_000_000_000L)
-                        throw new IllegalStateException("CIO logout drain incomplete after 30s; PC=" + pc.getId());
+                    if (System.nanoTime() - teardownDeadline >= 0L) {
+                        if (!awaitShutdownReceipt(pc))
+                            throw new IllegalStateException("CIO logout drain incomplete after 30s; PC=" + pc.getId());
+                        teardownDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+                    }
                     java.util.concurrent.locks.LockSupport.parkNanos(1_000_000L);
                     if (Thread.interrupted()) {
                         Thread.currentThread().interrupt();
@@ -387,7 +395,7 @@ public class GameServer {
             // them after all packet owners have been released.
             if (!pc.isLogoutStarted()) pc.logout();
             while (!pc.isLogoutComplete()) {
-                if (System.nanoTime() - started >= 30_000_000_000L)
+                if (System.nanoTime() - teardownDeadline >= 0L)
                     throw new IllegalStateException("PC logout teardown incomplete after 30s; PC=" + pc.getId());
                 java.util.concurrent.locks.LockSupport.parkNanos(1_000_000L);
                 if (Thread.interrupted()) {
@@ -395,6 +403,36 @@ public class GameServer {
                     throw new IllegalStateException("PC logout teardown interrupted");
                 }
             }
+        }
+    }
+
+    private static boolean awaitShutdownReceipt(L1PcInstance pc) {
+        final CacheD cache = CacheD.getInstance();
+        final int id = pc.getId();
+        boolean waited = false;
+        long nextReport = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+        try {
+            while (true) {
+                if (cache.hasPendingOwnerApply(id) && !cache.isOwnerPersistenceQuarantined(id)) {
+                    CountDownLatch retired = new CountDownLatch(1);
+                    if (cache.deferLogoutForOwnerApply(id, retired::countDown)) {
+                        waited = true;
+                        while (!retired.await(30, TimeUnit.SECONDS))
+                            System.err.println("[CacheD] Waiting for character receipt before logout: " + id);
+                    }
+                }
+                if (!pc.hasItemTransferContinuation()
+                        && (!pc.isItemTransferBusy() || cache.isOwnerPersistenceQuarantined(id))) return waited;
+                waited = true;
+                if (System.nanoTime() - nextReport >= 0L) {
+                    System.err.println("[CacheD] Waiting for character inventory callback before logout: " + id);
+                    nextReport = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+                }
+                TimeUnit.MILLISECONDS.sleep(10);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while draining character receipt: " + id, e);
         }
     }
 

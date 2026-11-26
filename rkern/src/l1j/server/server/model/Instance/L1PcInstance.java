@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -761,22 +762,107 @@ public class L1PcInstance extends L1Character {
     private volatile int itemTransferBusy;
     private static final AtomicIntegerFieldUpdater<L1PcInstance> ITEM_TRANSFER_BUSY =
             AtomicIntegerFieldUpdater.newUpdater(L1PcInstance.class, "itemTransferBusy");
+    private record ItemTransferContinuation(int token, Thread runner) { }
+    private volatile ItemTransferContinuation itemTransferContinuation;
+    private static final AtomicReferenceFieldUpdater<L1PcInstance, ItemTransferContinuation> ITEM_TRANSFER_CONTINUATION =
+            AtomicReferenceFieldUpdater.newUpdater(L1PcInstance.class, ItemTransferContinuation.class,
+                    "itemTransferContinuation");
+    private volatile boolean forcedItemTransferRetirement;
 
     /** Low bit is the existing busy gate; high bits identify its acquisition.
      * Zero is the failed-admission token. No extra per-PC field or lock.
      */
     public int tryReserveItemTransfer() {
         final int state = itemTransferBusy;
-        if ((state & 1) != 0) return 0;
+        if ((state & 1) != 0 || !acceptsItemTransfer()) return 0;
         final int token = state | 1;
-        return ITEM_TRANSFER_BUSY.compareAndSet(this, state, token) ? token : 0;
+        if (!ITEM_TRANSFER_BUSY.compareAndSet(this, state, token)) return 0;
+        if (acceptsItemTransfer()) return token;
+        endItemTransfer(token);
+        return 0;
+    }
+
+    private boolean acceptsItemTransfer() {
+        final Object logout = logoutOwner;
+        if (logout != null) return logout == Thread.currentThread();
+        if (hasBlockingItemTransferContinuation()) return false;
+        return !hasItemTransferRetirementFence();
+    }
+
+    private boolean hasItemTransferRetirementFence() {
+        final CUserSocket session = getNetConnection();
+        return forcedItemTransferRetirement || (session != null && session.isRetiringItemTransfers());
+    }
+
+    private boolean hasBlockingItemTransferContinuation() {
+        final ItemTransferContinuation continuation = itemTransferContinuation;
+        return continuation != null && continuation.runner() != Thread.currentThread();
+    }
+
+    /** Prevent a concurrent passive private-shop detach from reopening admission. */
+    public void fenceForcedItemTransferRetirement() {
+        forcedItemTransferRetirement = true;
     }
 
     /** Durable online transfer admission captures both socket and character epoch. */
     public boolean isItemTransferSession(CUserSocket session, int stamp) {
+        return isOriginalItemTransferActor(session, stamp) && session.isConnected()
+                && !session.isRetiringItemTransfers() && !forcedItemTransferRetirement;
+    }
+
+    private boolean isOriginalItemTransferActor(CUserSocket session, int stamp) {
         return session != null && !isLogoutStarted() && getSessionStamp() == stamp
-                && getNetConnection() == session && session.getActiveChar() == this
-                && session.isConnected();
+                && getNetConnection() == session && session.getActiveChar() == this;
+    }
+
+    public boolean ownsItemTransferToken(int token) {
+        return (token & 1) != 0 && itemTransferBusy == token;
+    }
+
+    private boolean isCurrentReplayActor(CUserSocket session, int stamp) {
+        return isOriginalItemTransferActor(session, stamp) && CWorld.getInstance().findObject(getId()) == this;
+    }
+
+    /** A receipt already reserved by this exact actor may replay while its socket drains. */
+    public boolean isItemTransferReplaySession(CUserSocket session, int stamp, int token) {
+        return ownsItemTransferToken(token) && isCurrentReplayActor(session, stamp);
+    }
+
+    /** Hold teardown across a terminal game effect that runs after releasing the gate. */
+    public boolean tryBeginItemTransferContinuation(CUserSocket session, int stamp, int token) {
+        if (!isItemTransferReplaySession(session, stamp, token)
+                || !ITEM_TRANSFER_CONTINUATION.compareAndSet(this, null, new ItemTransferContinuation(token, null)))
+            return false;
+        if (isItemTransferReplaySession(session, stamp, token)) return true;
+        endItemTransferContinuation(token);
+        return false;
+    }
+
+    public boolean isItemTransferContinuationSession(CUserSocket session, int stamp, int token) {
+        final ItemTransferContinuation continuation = itemTransferContinuation;
+        return continuation != null && continuation.token() == token && isCurrentReplayActor(session, stamp);
+    }
+
+    /** Only the active terminal-effect runner can admit a nested transfer. */
+    public boolean beginRunningItemTransferContinuation(CUserSocket session, int stamp, int token) {
+        final ItemTransferContinuation continuation = itemTransferContinuation;
+        return continuation != null && continuation.token() == token && continuation.runner() == null
+                && isCurrentReplayActor(session, stamp)
+                && ITEM_TRANSFER_CONTINUATION.compareAndSet(this, continuation,
+                        new ItemTransferContinuation(token, Thread.currentThread()));
+    }
+
+    public boolean hasItemTransferContinuation() {
+        return itemTransferContinuation != null;
+    }
+
+    public void endItemTransferContinuation(int token) {
+        ItemTransferContinuation continuation;
+        do {
+            continuation = itemTransferContinuation;
+            if (continuation == null || continuation.token() != token) return;
+        } while (!ITEM_TRANSFER_CONTINUATION.compareAndSet(this, continuation, null));
+        signalItemTransferFinished();
     }
 
     public int tryReserveItemTransfer(CUserSocket session, int stamp) {
@@ -791,6 +877,8 @@ public class L1PcInstance extends L1Character {
 
     /** Failure callback for an old receipt must never kick a replacement character. */
     public void quarantineItemTransferSession(CUserSocket session, int stamp) {
+        if (!isOriginalItemTransferActor(session, stamp)) return;
+        session.onItemTransferFinished(this);
         if (!isItemTransferSession(session, stamp)) return;
         try {
             CIOThreadCallback.getInstance().completeSession(session, () -> {
@@ -809,8 +897,13 @@ public class L1PcInstance extends L1Character {
 
     /** Release only the exact asynchronous reservation, even across a session change. */
     public void endItemTransfer(int token) {
-        if ((token & 1) != 0)
-            ITEM_TRANSFER_BUSY.compareAndSet(this, token, token + 1);
+        if ((token & 1) != 0 && ITEM_TRANSFER_BUSY.compareAndSet(this, token, token + 1))
+            signalItemTransferFinished();
+    }
+
+    private void signalItemTransferFinished() {
+        final CUserSocket session = getNetConnection();
+        if (session != null) session.onItemTransferFinished(this);
     }
 
     public void endItemTransfer() {
@@ -819,6 +912,14 @@ public class L1PcInstance extends L1Character {
     }
 
     public boolean isItemTransferBusy() {
+        if (hasReservedItemTransfer()) return true;
+        final ItemTransferContinuation continuation = itemTransferContinuation;
+        if (continuation != null) return continuation.runner() != Thread.currentThread();
+        final Object logout = logoutOwner;
+        return logout != null ? logout != Thread.currentThread() : hasItemTransferRetirementFence();
+    }
+
+    public boolean hasReservedItemTransfer() {
         return (itemTransferBusy & 1) != 0;
     }
 
@@ -2387,29 +2488,37 @@ public class L1PcInstance extends L1Character {
 
 
         synchronized (_autoSaveLifecycleLock) {
-            try { save(); }
-            catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout character save admission failed: " + getId(), e); }
-            try { saveInventory(); }
-            catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout item save admission failed: " + getId(), e); }
+            if (!CacheD.getInstance().isOwnerPersistenceQuarantined(getId())) {
+                try { save(); }
+                catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout character save admission failed: " + getId(), e); }
+                try { saveInventory(); }
+                catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout item save admission failed: " + getId(), e); }
+            }
         }
         // Bookmark mutations are durable receipts at request time; never overwrite them on logout.
 	}
 
-	private final AtomicBoolean _destroyed = new AtomicBoolean(false);
+    private static final Object LOGOUT_COMPLETE = new Object();
+    private static final AtomicReferenceFieldUpdater<L1PcInstance, Object> LOGOUT_OWNER =
+            AtomicReferenceFieldUpdater.newUpdater(L1PcInstance.class, Object.class, "logoutOwner");
+    private volatile Object logoutOwner;
 	// Serializes in-flight periodic snapshots with logout's final persistence.
 	private final Object _autoSaveLifecycleLock = new Object();
 	public final Object autoSaveLifecycleLock() { return _autoSaveLifecycleLock; }
-    private volatile boolean _logoutComplete;
-
 	public boolean isLogoutStarted() {
-		return _destroyed.get();
+		return logoutOwner != null;
 	}
 
     /** True only after all PC logout finally/teardown steps have finished. */
-    public boolean isLogoutComplete() { return _logoutComplete; }
+    public boolean isLogoutComplete() { return logoutOwner == LOGOUT_COMPLETE; }
 
 	public void logout() {
-        if (!_destroyed.compareAndSet(false, true)) return;
+        final CUserSocket session = getNetConnection();
+        if (session != null && session.requiresTransportLogout(this)) {
+            session.kickAndLogout(this, getSessionStamp());
+            return;
+        }
+        if (!LOGOUT_OWNER.compareAndSet(this, null, Thread.currentThread())) return;
         try {
             try { l1j.server.server.model.CReplyChecker.FinishWaitingReplyByRequester(this); }
             catch (RuntimeException e) { _log.log(Level.WARNING, "Logout waiting reply cleanup failed: " + getId(), e); }
@@ -2511,7 +2620,8 @@ public class L1PcInstance extends L1Character {
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout AC cleanup failed: " + getId(), e); }
             try { dispose(); }
             catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout dispose failed: " + getId(), e); }
-            _logoutComplete = true;
+            logoutOwner = LOGOUT_COMPLETE;
+            if (session != null) session.onItemTransferFinished(this);
         }
 	}
 
@@ -2572,6 +2682,7 @@ public class L1PcInstance extends L1Character {
 		if (previous != clientthread) suspendGroundSight();
 		_netConnection = clientthread;
 		if (previous != null && previous != clientthread) {
+            previous.onItemTransferFinished(this);
             previous.clearNpcShopViewFor(this);
             previous.ClearWarehouseViewFor(this);
         }

@@ -102,12 +102,12 @@ final class WarehouseDepositTransaction {
                                     newCount, carry[i].getChargeCount()));
                         }
                     }
-                    move.commit(() -> CIOThreadCallback.getInstance().completeWarehouseMove(pc,
-                            stamp, () -> {
+                    move.commit(() -> Warehouse.replayCommittedMove(pc,
+                            stamp, token, move, () -> {
                         synchronized (session) {
                             synchronized (ownerInventory) {
                                 synchronized (dest) {
-                                    if (!pc.isItemTransferSession(session, stamp))
+                                    if (!pc.isItemTransferReplaySession(session, stamp, token))
                                         throw new IllegalStateException("Stale warehouse batch session");
                                     for (int i = 0; i < size; i++) {
                                         if (ownerInventory.GetByServerID(ids[i]) != sources[i]
@@ -129,7 +129,6 @@ final class WarehouseDepositTransaction {
                                     });
                                     for (int i = 0; i < size; i++)
                                         Warehouse.recordCommittedMove(pc, dest, true, sources[i], counts[i]);
-                                    pc.endItemTransfer(token);
                                     if (onCommitted != null) {
                                         try { onCommitted.run(); }
                                         catch (RuntimeException auditFailure) {
@@ -147,7 +146,7 @@ final class WarehouseDepositTransaction {
                                 }
                             }
                         }
-                    }, move::finishOwnerApply));
+                    }));
                     submitted = true;
                     return true;
                 }
@@ -196,13 +195,13 @@ final class WarehouseDepositTransaction {
             } else {
                 dest.insertItem(carry);
             }
-            move.commit(() -> CIOThreadCallback.getInstance().completeWarehouseMove(pc,
-                    sessionStamp, () -> {
+            move.commit(() -> Warehouse.replayCommittedMove(pc,
+                    sessionStamp, token, move, () -> {
                 // RECV packet handling uses this same session monitor.
                 synchronized (session) {
                     synchronized (ownerInventory) {
                         synchronized (dest) {
-                            if (!pc.isItemTransferSession(session, sessionStamp)
+                            if (!pc.isItemTransferReplaySession(session, sessionStamp, token)
                                     || ownerInventory.GetByServerID(item.getId()) != item
                                     || item.getCount() != sourceCount
                                     || (destStack != null && (dest.GetByServerID(destStack.getId()) != destStack
@@ -218,7 +217,6 @@ final class WarehouseDepositTransaction {
                         }
                     }
                     Warehouse.recordCommittedMove(pc, dest, true, item, count);
-                    pc.endItemTransfer(token);
                     try { pc.refreshLight(); }
                     catch (RuntimeException lightFailure) {
                         java.util.logging.Logger.getLogger(CInventory.class.getName())
@@ -226,7 +224,7 @@ final class WarehouseDepositTransaction {
                     }
                     if (onCommitted != null) onCommitted.run();
                 }
-            }, move::finishOwnerApply));
+            }));
             submitted = true;
             return item; // accepted; game memory changes ONLY in post-COMMIT callback
         }

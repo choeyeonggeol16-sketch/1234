@@ -13,10 +13,8 @@ import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.item.collection.loader.CollectionSystemLoader;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
-import l1j.server.server.model.network.core.cs.packet.CS_CommonClick;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_ItemName;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -246,8 +244,6 @@ public final class CollectionHandler {
     }
 
     private static void updateCharacterStatus(L1PcInstance pc) {
-        CUserSocket client = pc.getNetConnection();
-        CS_CharSelect.restartProcess(pc);
-        if (client != null) CS_CommonClick.sendCharAmountAndPacks(client);
+        CS_CharSelect.requestRestartAfter(pc, 1L);
     }
 }

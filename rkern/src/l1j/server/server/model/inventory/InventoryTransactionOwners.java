@@ -177,6 +177,20 @@ final class InventoryTransactionOwners {
     private boolean current(L1PcInstance pc, CUserSocket session, int stamp) {
         if (pc.isLogoutStarted() || pc.getSessionStamp() != stamp) return false;
         if (session != null && pc.isItemTransferSession(session, stamp)) return true;
+        return isDetachedMerchant(pc, session);
+    }
+
+    /** Replay is allowed to finish while transport drains the admitted session. */
+    boolean currentForReplay(L1PcInstance pc) {
+        if (pc.isLogoutStarted() || CWorld.getInstance().findObject(pc.getId()) != pc) return false;
+        final CUserSocket session = session(pc);
+        final int stamp = stamp(pc);
+        final int token = token(pc);
+        if (session != null && pc.isItemTransferReplaySession(session, stamp, token)) return true;
+        return pc.getSessionStamp() == stamp && pc.ownsItemTransferToken(token) && isDetachedMerchant(pc, session);
+    }
+
+    private boolean isDetachedMerchant(L1PcInstance pc, CUserSocket session) {
         // A disconnected merchant still owns the reserved world inventory.
         // The customer remains bound to its original online session.
         final CUserSocket current = pc.getNetConnection();
@@ -185,6 +199,45 @@ final class InventoryTransactionOwners {
                 && (session == null || current == null || current == session)
                 && captureSession(pc) == null
                 && CWorld.getInstance().findObject(pc.getId()) == pc;
+    }
+
+    private int token(L1PcInstance pc) {
+        if (pc == first) return firstToken;
+        if (pc != null && pc == second) return secondToken;
+        if (additional != null) for (int i = 0; i < additional.length; i++)
+            if (pc == additional[i]) return additionalTokens[i];
+        throw new IllegalArgumentException("Unreserved inventory owner");
+    }
+
+    boolean beginContinuations() {
+        for (int i = 0; i < size(); i++) {
+            final L1PcInstance pc = get(i);
+            final CUserSocket session = session(pc);
+            final int stamp = stamp(pc);
+            final int token = token(pc);
+            if (pc != primary && !pc.isItemTransferReplaySession(session, stamp, token)
+                    && isDetachedMerchant(pc, session)) continue;
+            if (!pc.tryBeginItemTransferContinuation(session, stamp, token)) return false;
+        }
+        return true;
+    }
+
+    boolean startContinuations() {
+        for (int i = 0; i < size(); i++) {
+            final L1PcInstance pc = get(i);
+            if (CWorld.getInstance().findObject(pc.getId()) != pc) return false;
+            final CUserSocket session = session(pc);
+            if (!pc.isItemTransferContinuationSession(session, stamp(pc), token(pc))
+                    && !isDetachedMerchant(pc, session)) return false;
+        }
+        return primary.beginRunningItemTransferContinuation(session(primary), stamp(primary), token(primary));
+    }
+
+    void endContinuations() {
+        first.endItemTransferContinuation(firstToken);
+        if (second != null) second.endItemTransferContinuation(secondToken);
+        if (additional != null) for (int i = 0; i < additional.length; i++)
+            additional[i].endItemTransferContinuation(additionalTokens[i]);
     }
 
     void release() {

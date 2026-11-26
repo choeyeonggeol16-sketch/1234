@@ -95,6 +95,14 @@ public final class RetirementCheck {
         int tryReserveItemTransfer(){int v=gate.get();return (v&1)==0&&gate.compareAndSet(v,v|1)?v|1:0;}
         void endItemTransfer(int t){gate.compareAndSet(t,t+1);}
         boolean isItemTransferSession(CUserSocket s,int st){return s!=null&&!dead&&stamp==st&&socket==s&&s.pc==this&&s.connected;}
+        boolean ownsItemTransferToken(int t){return (t&1)!=0&&gate.get()==t;}
+        boolean isItemTransferReplaySession(CUserSocket s,int st,int t){
+            return ownsItemTransferToken(t)&&!dead&&s!=null&&socket==s&&s.pc==this&&stamp==st;
+        }
+        boolean tryBeginItemTransferContinuation(CUserSocket s,int st,int t){return false;}
+        boolean isItemTransferContinuationSession(CUserSocket s,int st,int t){return false;}
+        boolean beginRunningItemTransferContinuation(CUserSocket s,int st,int t){return false;}
+        void endItemTransferContinuation(int t){}
         void quarantineItemTransferSession(CUserSocket s,int st){quarantined=true;}
         void logout(){check(isItemTransferBusy(),"logout must own inventory gate");dead=true;done=true;logouts++;CWorld.world.players.remove(id,this);}
     }

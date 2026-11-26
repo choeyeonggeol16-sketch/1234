@@ -4,11 +4,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,7 +33,6 @@ import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.safe.CPacketFilter;
-import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.shop.NpcShopView;
 import l1j.server.server.model.shop.PlayerShopView;
@@ -44,6 +41,7 @@ import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PssConfig;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoOutputStream;
+import l1j.server.server.storage.CacheD;
 
 /**
  * Game packet framing and the per-socket 512-slot callback serializer.
@@ -524,11 +522,29 @@ public final class CUserSocket extends CSocket {
     private volatile int socketLifecycle;
     private record ForcedLogout(L1PcInstance pc, int stamp) { }
     private volatile ForcedLogout forcedLogout;
+    private volatile CUserSocketReleaseTask terminalRelease;
     private static final AtomicReferenceFieldUpdater<CUserSocket, ForcedLogout> FORCED_LOGOUT =
             AtomicReferenceFieldUpdater.newUpdater(CUserSocket.class, ForcedLogout.class, "forcedLogout");
 
     private boolean markLifecycle(int event) {
         return ((int) LIFECYCLE.getAndBitwiseOr(this, event) & event) == 0;
+    }
+
+    public boolean isRetiringItemTransfers() {
+        return !isClientCleanupComplete() && (_closed != 0 || _closing != 0
+                || (socketLifecycle & (CLOSE_STARTED | LOGOUT_STARTED | FORCED_CHARACTER_CLOSE)) != 0);
+    }
+
+    public void onItemTransferFinished(L1PcInstance pc) {
+        final CUserSocketReleaseTask release = terminalRelease;
+        if (release != null && release.pc == pc) release.requestRelease();
+    }
+
+    /** An already closing actor is retired by the exact socket's release task. */
+    public boolean requiresTransportLogout(L1PcInstance pc) {
+        if (_activeChar != pc || !isRetiringItemTransfers()) return false;
+        final CUserSocketReleaseTask release = terminalRelease;
+        return release == null || release.pc != pc || release.logoutThread != Thread.currentThread();
     }
 
     boolean markServerDrainReported() { return markLifecycle(SERVER_DRAIN_REPORTED); }
@@ -2698,6 +2714,7 @@ public final class CUserSocket extends CSocket {
         final boolean startClose;
         synchronized (this) {
             if (_activeChar != pc || pc.getNetConnection() != this || pc.getSessionStamp() != stamp) return;
+            pc.fenceForcedItemTransferRetirement();
             FORCED_LOGOUT.compareAndSet(this, null, new ForcedLogout(pc, stamp));
             markLifecycle(FORCED_CHARACTER_CLOSE);
             startClose = beginClientClose();
@@ -2737,16 +2754,13 @@ public final class CUserSocket extends CSocket {
         automationSession = null;
 		final L1PcInstance pc = _activeChar;
 
-        // The original deferred close owns the socket until its state-dependent
-        // work finishes. L1 uses its own private-shop/auto-clan rules and DB pool;
-        // L2's state numbers and fixed 5/15 second delays are not copied.
-        final int stamp = pc == null ? 0 : pc.getSessionStamp();
-        final CUserSocketReleaseTask task = new CUserSocketReleaseTask(
-                () -> pc != null && pc.getNetConnection() == this && pc.getSessionStamp() == stamp
-                        && ((!pc.isPrivateShop() && !pc.isAutoClanjoin()) || matchesForcedLogout(pc, stamp)),
-                () -> logoutPlayer(pc), () -> cleanupAfterLogout(pc));
-        if (pc == null) { task.run(); return; }
-        submitTerminalRelease(task);
+        if (pc == null) {
+            cleanupAfterLogout(null);
+            return;
+        }
+        final CUserSocketReleaseTask task = new CUserSocketReleaseTask(pc);
+        terminalRelease = task;
+        task.requestRelease();
     }
 
     private boolean matchesForcedLogout(L1PcInstance pc, int stamp) {
@@ -2779,11 +2793,10 @@ public final class CUserSocket extends CSocket {
             CSessionLifecycle.release(task);
         } catch (Exception failure) {
             LOG.log(Level.SEVERE, "[GameClient Close] deferred logout admission failed", failure);
-            if (CIOThreadCallback.currentShardIndex() >= 0 || isTransportOwnerThread()) {
-                try { Thread.ofVirtual().name("CIO-logout-recovery").start(task); return; }
-                catch (Throwable startFailure) {
-                    LOG.log(Level.SEVERE, "[GameClient Close] emergency logout thread unavailable", startFailure);
-                }
+            // Wakes may come from CacheD or a game owner as well as the transport.
+            try { Thread.ofVirtual().name("CIO-logout-recovery").start(task); return; }
+            catch (Throwable startFailure) {
+                LOG.log(Level.SEVERE, "[GameClient Close] emergency logout thread unavailable", startFailure);
             }
             task.run();
         }
@@ -2802,11 +2815,11 @@ public final class CUserSocket extends CSocket {
 
 		try {
 			if (_activeChar == pc) {
+                final boolean detachPrivateStore = pc != null && pc.isPrivateShop() && pc.getNetConnection() == this;
                 try {
-                    if (pc != null && pc.isPrivateShop() && pc.getNetConnection() == this)
-                        pc.setNetConnection(null);
-                } finally {
                     setActiveChar(null);
+                } finally {
+                    if (detachPrivateStore && pc.getNetConnection() == this) pc.setNetConnection(null);
                 }
 			}
 		} catch (Throwable ignored) {
@@ -3536,22 +3549,89 @@ public final class CUserSocket extends CSocket {
 	}
 
 
-    /** One deferred close owns its captured session through final L1 cleanup. */
-    private static final class CUserSocketReleaseTask implements Runnable {
-        private final BooleanSupplier ownsSession;
-        private final Runnable logout, cleanup;
-        private static final AtomicIntegerFieldUpdater<CUserSocketReleaseTask> STARTED =
-                AtomicIntegerFieldUpdater.newUpdater(CUserSocketReleaseTask.class, "started");
-        private volatile int started;
-        public CUserSocketReleaseTask(BooleanSupplier ownsSession, Runnable logout, Runnable cleanup) {
-            this.ownsSession = Objects.requireNonNull(ownsSession);
-            this.logout = Objects.requireNonNull(logout);
-            this.cleanup = Objects.requireNonNull(cleanup);
+    /** Keep exact actor ownership until admitted receipt work has settled. */
+    private final class CUserSocketReleaseTask implements Runnable {
+        private final L1PcInstance pc;
+        private final int stamp;
+        private volatile boolean waitingForCacheD;
+        private volatile Thread logoutThread;
+        private boolean scheduled;
+        private boolean signaled;
+        private boolean complete;
+
+        private CUserSocketReleaseTask(L1PcInstance pc) {
+            this.pc = pc;
+            stamp = pc.getSessionStamp();
         }
+
+        private void requestRelease() {
+            synchronized (this) {
+                if (complete) return;
+                if (scheduled) {
+                    signaled = true;
+                    return;
+                }
+                scheduled = true;
+            }
+            submitTerminalRelease(this);
+        }
+
+        private void ownerApplyFinished() {
+            waitingForCacheD = false;
+            requestRelease();
+        }
+
+        private boolean ownsActor() {
+            return _activeChar == pc && pc.getNetConnection() == CUserSocket.this
+                    && pc.getSessionStamp() == stamp;
+        }
+
+        private boolean awaitItemTransfers() {
+            if (waitingForCacheD) return true;
+            final CacheD cache = CacheD.getInstance();
+            final int ownerId = pc.getId();
+            waitingForCacheD = true;
+            if (cache.deferLogoutForOwnerApply(ownerId, this::ownerApplyFinished)) return true;
+            waitingForCacheD = false;
+            // A terminal effect acquires its continuation hold before releasing
+            // the item gate. Read the gate first to observe that handoff.
+            return (pc.hasReservedItemTransfer() && !cache.isOwnerPersistenceQuarantined(ownerId))
+                    || pc.hasItemTransferContinuation();
+        }
+
+        private boolean releaseActor() {
+            if (pc.isLogoutStarted() && !pc.isLogoutComplete()) return false;
+            if (ownsActor() && awaitItemTransfers()) return false;
+            try {
+                if (ownsActor() && ((!pc.isPrivateShop() && !pc.isAutoClanjoin())
+                        || matchesForcedLogout(pc, stamp)
+                        || CacheD.getInstance().isOwnerPersistenceQuarantined(pc.getId()))) {
+                    logoutThread = Thread.currentThread();
+                    try { logoutPlayer(pc); }
+                    finally { logoutThread = null; }
+                }
+            } finally {
+                try { cleanupAfterLogout(pc); }
+                catch (RuntimeException failure) { LOG.log(Level.SEVERE, "Terminal session cleanup failed", failure); }
+                finally { terminalRelease = null; }
+            }
+            return true;
+        }
+
         @Override public void run() {
-            if (!STARTED.compareAndSet(this, 0, 1)) return;
-            try { if (ownsSession.getAsBoolean()) logout.run(); }
-            finally { cleanup.run(); }
+            boolean released = false;
+            try {
+                released = releaseActor();
+            } finally {
+                final boolean repeat;
+                synchronized (this) {
+                    complete = released;
+                    scheduled = false;
+                    repeat = !released && signaled;
+                    signaled = false;
+                }
+                if (repeat) requestRelease();
+            }
         }
     }
 }

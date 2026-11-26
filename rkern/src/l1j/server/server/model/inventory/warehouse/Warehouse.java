@@ -16,6 +16,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.CItemList;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
@@ -382,6 +383,16 @@ public abstract class Warehouse extends L1Object {
         return transferCopy(source, IdFactory.getInstance().nextId(), count, source.getChargeCount());
     }
 
+    /** Keep the original actor until the owner has applied and acknowledged
+     * this receipt. A failed replay retains its gate for reconciliation. */
+    public static void replayCommittedMove(L1PcInstance pc, int stamp, int token,
+            CacheD.WarehouseMove move, Runnable replay) {
+        CIOThreadCallback.getInstance().completeWarehouseMove(pc, stamp, replay, failure -> {
+            move.finishOwnerApply(failure);
+            if (failure == null) pc.endItemTransfer(token);
+        });
+    }
+
     public static void recordCommittedMove(l1j.server.server.model.Instance.L1PcInstance pc,
                                            Warehouse target, boolean deposit,
                                            L1ItemInstance source, int count) {
@@ -594,12 +605,12 @@ public abstract class Warehouse extends L1Object {
                             feeCount - feeAmount, fee.getChargeCount()), false);
                 }
             }
-            move.commit(() -> CIOThreadCallback.getInstance().completeWarehouseMove(pc,
-                    stamp, () -> {
+            move.commit(() -> Warehouse.replayCommittedMove(pc,
+                    stamp, token, move, () -> {
                 synchronized (session) {
                     synchronized (inventory) {
                         synchronized (Warehouse.this) {
-                            if (!pc.isItemTransferSession(session, stamp)
+                            if (!pc.isItemTransferReplaySession(session, stamp, token)
                                     || GetByServerID(item.getId()) != item
                                     || item.getCount() != sourceCount
                                     || (destStack != null && (inventory.GetByServerID(destStack.getId()) != destStack
@@ -619,12 +630,11 @@ public abstract class Warehouse extends L1Object {
                         }
                     }
                     recordCommittedMove(pc, Warehouse.this, false, item, count);
-                    pc.endItemTransfer(token);
                     // Defer the next selected item until CacheD releases this
                     // item's durable owner lanes; never recursively submit it here.
                     if (onCommitted != null) onCommitted.run();
                 }
-            }, move::finishOwnerApply));
+            }));
             submitted = true;
             return item;
         }
