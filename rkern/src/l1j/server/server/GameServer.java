@@ -93,6 +93,7 @@ import l1j.server.server.model.item.L1TreasureBox;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.inventory.EquipmentEnchantOptions;
 import l1j.server.server.model.item.EquipmentBlessing;
+import l1j.server.server.model.item.assembly.CItemAssembler;
 import l1j.server.server.model.item.cooking.CookingRegistry;
 import l1j.server.server.model.item.doll.DollRegistry;
 import l1j.server.server.model.item.doll.DollPotentialEffects;
@@ -158,6 +159,7 @@ public class GameServer {
 		CookingRegistry.initialize();
 		DollRegistry.initialize();
 		DollPotentialEffects.initialize();
+		CItemAssembler.initialize();
 		ThreadPool.getInstance();
 		
 		CPacketFilter.getInstance().load();

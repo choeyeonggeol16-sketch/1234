@@ -6,6 +6,10 @@ import l1j.server.server.model.Instance.L1PcInstance;
 public final class CItemAssembler {
     private CItemAssembler() {}
 
+    public static void initialize() {
+        EtcItemPresentation.initialize();
+    }
+
     public static String AssembleViewName(L1ItemInstance item, int count) {
         return CItemName.view(item, count);
     }
@@ -20,7 +24,14 @@ public final class CItemAssembler {
 
     public static byte[] AssembleBriefImpl(L1ItemInstance item) {
         return item.getItem().getType2() == 0
-                ? CItem.AssembleBriefItem(item) : CItem.assemble(item, item._cha, true);
+                ? CItem.assembleBriefItem(item) : CItem.assemble(item, item._cha, true);
+    }
+
+    public static byte[] assembleInventoryStatus(L1ItemInstance item) {
+        if (item.getItem().getType2() == 0 && EtcItemPresentation.hasBrief(item.getItemId())) {
+            return CItem.assembleBriefItem(item);
+        }
+        return AssembleImpl(item);
     }
 
     public static byte[] AssembleItemForPc(L1ItemInstance item, L1PcInstance pc) {

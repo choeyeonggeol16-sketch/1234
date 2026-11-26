@@ -1,6 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Inventory.Proto;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.item.assembly.CItemAssembler;
 import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
@@ -106,13 +107,7 @@ public final class ItemInfo {
         i.isMerging     = false;
         i.description   = viewName;
         if (item.isIdentified()) {
-            if (itemT.getType2() == 0 && itemT.getItemId() >= 875640331 && itemT.getItemId() <= 875640341) {
-                i.extraDescription = item.getStatusBytes2();
-            } else if (itemT.getType2() == 0 && itemT.getItemId() >= 875640446 && itemT.getItemId() <= 875640448) {
-                i.extraDescription = item.getStatusBytes2();
-            } else {
-                i.extraDescription = item.getStatusBytes();
-            }
+            i.extraDescription = CItemAssembler.assembleInventoryStatus(item);
         }
 
         CompanionClassInfo cInfo = CompanionClassInfo.from_item_id(item.getItemId());
@@ -330,13 +325,7 @@ public final class ItemInfo {
         boolean identified = item.isIdentified();
         byte[] extra = null;
         if (item.isIdentified()) {
-            if (template.getType2() == 0 && template.getItemId() >= 875640331 && template.getItemId() <= 875640341) {
-                extra = item.getStatusBytes2();
-            } else if (template.getType2() == 0 && template.getItemId() >= 875640446 && template.getItemId() <= 875640448) {
-                extra = item.getStatusBytes2();
-            } else {
-                extra = item.getStatusBytes();
-            }
+            extra = CItemAssembler.assembleInventoryStatus(item);
         }
         CompanionClassInfo companion = CompanionClassInfo.from_item_id(item.getItemId());
         boolean oblivion = false, dead = false, summoned = false;
