@@ -40,23 +40,15 @@ import l1j.server.server.command.executor.L1CheckPassword;
 import l1j.server.server.command.executor.L1ToSpawn;
 import l1j.server.server.command.executor.L1RangeKick;
 import l1j.server.server.command.executor.L1LetterCommand;
-import l1j.server.server.command.executor.L1DescIdWeapon;
-import l1j.server.server.command.executor.L1DescIdArmor;
-import l1j.server.server.command.executor.L1DescId;
 import l1j.server.server.command.executor.L1DatabaseInit;
-import l1j.server.server.command.executor.L1Level;
 import l1j.server.server.command.executor.L1LevelPresent;
 import l1j.server.server.command.executor.L1SpawnRobot;
 import l1j.server.server.command.executor.L1Reload;
-import l1j.server.server.command.executor.L1ReloadTrap;
-import l1j.server.server.command.executor.L1ResetTrap;
-import l1j.server.server.command.executor.L1ServerMessage;
 import l1j.server.server.command.executor.L1SpawnCmd;
 import l1j.server.server.command.executor.L1FakeCharacter;
 import l1j.server.server.command.executor.L1InsertSpawn;
 import l1j.server.server.command.executor.L1BanIp;
 import l1j.server.server.command.executor.L1Buff;
-import l1j.server.server.command.executor.L1BuffIcon;
 import l1j.server.server.command.executor.L1Poly;
 import l1j.server.server.command.executor.L1Summon;
 import l1j.server.server.command.executor.L1Present;
@@ -65,12 +57,10 @@ import l1j.server.server.command.executor.L1CreateItemSet;
 import l1j.server.server.command.executor.L1ImPactGfxid1;
 import l1j.server.server.command.executor.L1ImPactGfxid;
 import l1j.server.server.command.executor.L1Status;
-import l1j.server.server.command.executor.L1Ress;
 import l1j.server.server.command.executor.L1ShowTrap;
 import l1j.server.server.command.executor.L1Thread;
 import l1j.server.server.command.executor.L1Burf;
 import l1j.server.server.command.executor.L1AddSkill;
-import l1j.server.server.command.executor.L1SkillIcon;
 import l1j.server.server.command.executor.L1EventSpawn;
 import l1j.server.server.command.executor.L1Favorite;
 import l1j.server.server.command.executor.L1ItemDelete;
@@ -79,9 +69,7 @@ import l1j.server.server.command.executor.L1NpcDown;
 import l1j.server.server.command.executor.L1PowerKick;
 import l1j.server.server.command.executor.L1NpcShopSwitch;
 import l1j.server.server.command.executor.L1ServerName;
-import l1j.server.server.command.executor.L1GfxId;
 import l1j.server.server.command.executor.L1SkillEffect;
-import l1j.server.server.command.executor.L1InvGfxId;
 import l1j.server.server.command.executor.L1AdShop;
 import l1j.server.server.command.executor.L1Clear;
 import l1j.server.server.command.executor.L1Describe;
@@ -89,8 +77,6 @@ import l1j.server.server.command.executor.L1QueryCharacter;
 import l1j.server.server.command.executor.L1Shutdown;
 import l1j.server.server.command.executor.L1GM;
 import l1j.server.server.command.executor.L1Search;
-import l1j.server.server.command.executor.L1ChatNG;
-import l1j.server.server.command.executor.L1Chat;
 import l1j.server.server.command.executor.L1DeleteGroundItem;
 import l1j.server.server.command.executor.L1PartyRecall;
 import l1j.server.server.command.executor.L1RemoveLetter;
@@ -200,6 +186,12 @@ import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+
+import l1j.server.server.model.trap.L1WorldTraps;
+import java.lang.reflect.Constructor;
+import l1j.server.server.IdFactory;
+import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_WAREHOUSE_ITEM_LIST_NOTI;
+import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 
 public final class BuilderCmdHandler {
  
@@ -344,23 +336,23 @@ public final class BuilderCmdHandler {
 		registerLegacy(loaded, "날씨", BuilderCmdHandler::BuilderCmd_change_weather);
 		registerLegacy(loaded, "누구", BuilderCmdHandler::BuilderCmd_who);
 		registerExisting(loaded, "답장", L1LetterCommand::getInstance);
-		registerExisting(loaded, "데무", L1DescIdWeapon::getInstance);
-		registerExisting(loaded, "데방", L1DescIdArmor::getInstance);
-		registerExisting(loaded, "데스크", L1DescId::getInstance);
+		registerLegacy(loaded, "데무", BuilderCmdHandler::BuilderCmd_desc_weapon);
+		registerLegacy(loaded, "데방", BuilderCmdHandler::BuilderCmd_desc_armor);
+		registerLegacy(loaded, "데스크", BuilderCmdHandler::BuilderCmd_desc_etc);
 		registerExisting(loaded, "디비초기화", L1DatabaseInit::getInstance);
-		registerExisting(loaded, "레벨", L1Level::getInstance);
+		registerLegacy(loaded, "레벨", BuilderCmdHandler::BuilderCmd_level);
 		registerExisting(loaded, "렙선물", L1LevelPresent::getInstance);
 		registerExisting(loaded, "로보트", L1SpawnRobot::getInstance);
 		registerExisting(loaded, "리로드", L1Reload::getInstance);
-		registerExisting(loaded, "리로드트랩", L1ReloadTrap::getInstance);
-		registerExisting(loaded, "리셋트랩", L1ResetTrap::getInstance);
-		registerExisting(loaded, "메세지", L1ServerMessage::getInstance);
+		registerLegacy(loaded, "리로드트랩", BuilderCmdHandler::BuilderCmd_reload_trap);
+		registerLegacy(loaded, "리셋트랩", BuilderCmdHandler::BuilderCmd_reset_trap);
+		registerLegacy(loaded, "메세지", BuilderCmdHandler::BuilderCmd_server_message);
 		registerExisting(loaded, "몬스터", L1SpawnCmd::getInstance);
 		registerExisting(loaded, "무인", L1FakeCharacter::getInstance);
 		registerExisting(loaded, "배치", L1InsertSpawn::getInstance);
 		registerExisting(loaded, "밴아이피", L1BanIp::getInstance);
 		registerExisting(loaded, "버프", L1Buff::getInstance);
-		registerExisting(loaded, "버프아이콘", L1BuffIcon::getInstance);
+		registerLegacy(loaded, "버프아이콘", BuilderCmdHandler::BuilderCmd_buff_icon);
 		registerExisting(loaded, "변신", L1Poly::getInstance);
 		registerLegacy(loaded, "불투명", BuilderCmdHandler::BuilderCmd_visible);
 		registerExisting(loaded, "서먼", L1Summon::getInstance);
@@ -370,14 +362,14 @@ public final class BuilderCmdHandler {
 		registerExisting(loaded, "셀엔피씨", L1ImPactGfxid1::getInstance);
 		registerExisting(loaded, "셀이펙트", L1ImPactGfxid::getInstance);
 		registerExisting(loaded, "셋팅", L1Status::getInstance);
-		registerExisting(loaded, "소생", L1Ress::getInstance);
+		registerLegacy(loaded, "소생", BuilderCmdHandler::BuilderCmd_ress);
 		registerLegacy(loaded, "소환", BuilderCmdHandler::BuilderCmd_recall);
 		registerLegacy(loaded, "속도", BuilderCmdHandler::BuilderCmd_speed);
 		registerExisting(loaded, "쇼트랩", L1ShowTrap::getInstance);
 		registerExisting(loaded, "스레드", L1Thread::getInstance);
 		registerExisting(loaded, "스킬", L1Burf::getInstance);
 		registerExisting(loaded, "스킬마스터", L1AddSkill::getInstance);
-		registerExisting(loaded, "스킬아이콘", L1SkillIcon::getInstance);
+		registerLegacy(loaded, "스킬아이콘", BuilderCmdHandler::BuilderCmd_skill_icon);
 		registerExisting(loaded, "스폰이벤트", L1EventSpawn::getInstance);
 		registerExisting(loaded, "실행", L1Favorite::getInstance);
 		registerExisting(loaded, "아이템삭제", L1ItemDelete::getInstance);
@@ -390,9 +382,9 @@ public final class BuilderCmdHandler {
 		registerLegacy(loaded, "위치", BuilderCmdHandler::BuilderCmd_show_loc);
 		registerLegacy(loaded, "이동", BuilderCmdHandler::BuilderCmd_move);
 		registerExisting(loaded, "이름", L1ServerName::getInstance);
-		registerExisting(loaded, "이미지", L1GfxId::getInstance);
+		registerLegacy(loaded, "이미지", BuilderCmdHandler::BuilderCmd_gfx_id);
 		registerExisting(loaded, "이펙트", L1SkillEffect::getInstance);
-		registerExisting(loaded, "인벤이미지", L1InvGfxId::getInstance);
+		registerLegacy(loaded, "인벤이미지", BuilderCmdHandler::BuilderCmd_inv_gfx_id);
 		registerExisting(loaded, "장사", L1AdShop::getInstance);
 		registerExisting(loaded, "정리", L1Clear::getInstance);
 		registerExisting(loaded, "정보", L1Describe::getInstance);
@@ -400,8 +392,8 @@ public final class BuilderCmdHandler {
 		registerExisting(loaded, "종료", L1Shutdown::getInstance);
 		registerExisting(loaded, "지엠", L1GM::getInstance);
 		registerExisting(loaded, "찾기", L1Search::getInstance);
-		registerExisting(loaded, "채금", L1ChatNG::getInstance);
-		registerExisting(loaded, "채팅", L1Chat::getInstance);
+		registerLegacy(loaded, "채금", BuilderCmdHandler::BuilderCmd_chat_ban);
+		registerLegacy(loaded, "채팅", BuilderCmdHandler::BuilderCmd_world_chat);
 		registerExisting(loaded, "청소", L1DeleteGroundItem::getInstance);
 		registerLegacy(loaded, "추방", BuilderCmdHandler::BuilderCmd_kick);
 		registerLegacy(loaded, "출두", BuilderCmdHandler::BuilderCmd_to_pc);
@@ -5164,6 +5156,405 @@ for (L1PcInstance target : targets) {
 		} catch (Exception e) {
 			e.printStackTrace();
 			SC_SystemMessage.send(pc, ".속도 커멘드 에러");
+		}
+	}
+
+	private static void BuilderCmd_desc_weapon(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			int descid = Integer.parseInt(st.nextToken(), 10);
+			int count = Integer.parseInt(st.nextToken(), 10);
+			int enchant = 0;
+			int attrLevel = 0;
+			if (st.hasMoreTokens()) {
+				enchant = Integer.parseInt(st.nextToken());
+			}
+			
+			if(st.hasMoreTokens()){
+				attrLevel = Integer.parseInt(st.nextToken());
+			}
+			
+			int countA = -1;
+			L1ItemInstance item = null;
+			for (int i = 0; i < count; i++) {
+				if (pc.getInventory().getSize() > 255) {
+					SC_SystemMessage.send(pc, "\\aG인벤보관 아이템의 최대 가짓수는 256개입니다.");
+					break;
+				}
+				countA++;
+				item = CObjectDB.LoadItem().createItem(87);
+				item.getItem().setItemDescId(descid + i);
+				item.getItem().setGfxId(1945);
+				item.setCount(1);
+				item.setEnchantLevel(enchant);
+				item.setAttrEnchantLevel(attrLevel);
+				item.getItem().setName(String.valueOf(descid + i));
+				item.getItem().setNameId(String.valueOf(descid + i));
+				item.setIdentified(true);
+				pc.getInventory().CreateOrAddItem(item);
+			}
+			SC_SystemMessage.send(pc, "\\aH웨폰 " + descid + "~" + String.valueOf(descid + countA) + " 생성 되었습니다.");
+		} catch (Exception exception) {
+			int count = 0;
+			for (L1ItemInstance item : pc.getInventory().getItems()) {
+				if (item.getItemId() == 87) {
+					pc.getInventory().DeleteItemAmount(item);
+					count++;
+				}
+			}
+			if (count > 0) {
+				SC_SystemMessage.send(pc, "\\aA웨폰 확인용 아이템("
+						+ count + ")이 삭제되었습니다.");
+			} else {
+				SC_SystemMessage.send(pc, cmdName + " [id] [출현시키는 수] [인챈]로 입력해 주세요. ");
+			}
+		}
+	}
+
+	private static void BuilderCmd_desc_armor(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			int descid = Integer.parseInt(st.nextToken(), 10);
+			int count = Integer.parseInt(st.nextToken(), 10);
+			int enchant = 0;
+			if (st.hasMoreTokens()) {
+				enchant = Integer.parseInt(st.nextToken());
+			}
+			int countA = -1;
+			L1ItemInstance item = null;
+			for (int i = 0; i < count; i++) {
+				if (pc.getInventory().getSize() > 255) {
+					SC_SystemMessage.send(pc, "\\aG인벤보관 아이템의 최대 가짓수는 256개입니다.");
+					break;
+				}
+				countA++;
+				item = CObjectDB.LoadItem().createItem(20456);
+				item.getItem().setItemDescId(descid + i);
+				item.getItem().setGfxId(1945);
+				item.setCount(1);
+				item.setEnchantLevel(enchant);
+				item.getItem().setName(String.valueOf(descid + i));
+				item.getItem().setNameId(String.valueOf(descid + i));
+				item.setIdentified(true);
+				pc.getInventory().CreateOrAddItem(item);
+			}
+			SC_SystemMessage.send(pc, "\\aH아머 " + descid + "~" + String.valueOf(descid + countA) + " 생성 되었습니다.");
+		} catch (Exception exception) {
+			int count = 0;
+			for (L1ItemInstance item : pc.getInventory().getItems()) {
+				if (item.getItemId() == 20456) {
+					pc.getInventory().DeleteItemAmount(item);
+					count++;
+				}
+			}
+			if (count > 0) {
+				SC_SystemMessage.send(pc, "\\aA아머 확인용 아이템("
+						+ count + ")이 삭제되었습니다.");
+			} else {
+				SC_SystemMessage.send(pc, cmdName + " [id] [출현시키는 수] [인챈]로 입력해 주세요. ");
+			}
+		}
+	}
+
+	private static void BuilderCmd_desc_etc(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			int descid = Integer.parseInt(st.nextToken(), 10);
+			int count = Integer.parseInt(st.nextToken(), 10);
+			int countA = -1;
+			L1ItemInstance item = null;
+			for (int i = 0; i < count; i++) {
+				if (pc.getInventory().getSize() > 255) {
+					SC_SystemMessage.send(pc, "\\aG인벤보관 아이템의 최대 가짓수는 256개입니다.");
+					break;
+				}
+				countA++;
+				item = CObjectDB.LoadItem().createItem(40005);
+				item.getItem().setType2(0);
+				item.getItem().setItemDescId(descid + i);
+				item.getItem().setGfxId(1945);
+				item.setCount(1);
+				item.getItem().setName(String.valueOf(descid + i));
+				item.getItem().setNameId(String.valueOf(descid + i));
+				item.setIdentified(true);
+				pc.getInventory().CreateOrAddItem(item);
+			}
+			SC_SystemMessage.send(pc, "\\aH이티시 " + descid + "~" + String.valueOf(descid + countA) + " 생성 되었습니다.");
+		} catch (Exception exception) {
+			int count = 0;
+			for (L1ItemInstance item : pc.getInventory().getItems()) {
+				if (item.getItemId() == 40005) {
+					pc.getInventory().Pop(item);
+					count++;
+				}
+			}
+			if (count > 0) {
+				SC_SystemMessage.send(pc, "\\aA이티시 확인용 아이템("
+						+ count + ")이 삭제되었습니다.");
+			} else {
+				SC_SystemMessage.send(pc, cmdName + " [id] [출현시키는 수]로 입력해 주세요. ");
+			}
+		}
+	}
+
+	private static void BuilderCmd_level(L1PcInstance pc, String cmdName, String poby) {
+	    try {
+	      StringTokenizer token = new StringTokenizer(poby);
+	      String name = token.nextToken();
+	      int level = Integer.parseInt(token.nextToken());
+
+	      L1PcInstance target = L1World.getInstance().getPlayer(name);
+	      if (target == null) {
+//	        pc.sendPackets(new SC_ServerMessage(73, new String[] { name }));
+	    	SC_SystemMessage.send(pc, "해당 아이가 없습니다.");
+	        return;
+	      }
+
+	      if (!IntRange.includes(level, 1, 127)) {
+	        SC_SystemMessage.send(pc, "입력한 레벨이 범위를 벗어났습니다. (1~99)");
+	        return;
+	      }
+	      int percent = 0;
+	      if (token.hasMoreTokens()) {
+	        percent = Integer.parseInt(token.nextToken());
+	      }
+	      if (!IntRange.includes(percent, 0, 127)) {
+	        SC_SystemMessage.send(pc, "입력한 퍼센트가 범위를 벗어났습니다. (0~99)");
+	        return;
+	      }
+
+	      int exp = ExpTable.getExpByLevel(level);
+	      exp = (int)(exp + percent * 0.01D * ExpTable.getNeedExpNextLevel(level));
+	      target.setExp(exp);
+	      SC_SystemMessage.send(pc, "<레벨 변경> " + target.getName() + " - Lv. " + level + " / Exp. " + percent + "%");
+	    } catch (Exception e) {
+	      SC_SystemMessage.send(pc, "." + cmdName + " <캐릭터명> <레벨:1-127> <퍼센트:0-99>");
+	    }
+	  }
+
+	private static void BuilderCmd_reload_trap(L1PcInstance pc, String cmdName, String arg) {
+		L1WorldTraps.reloadTraps();
+	}
+
+	private static void BuilderCmd_reset_trap(L1PcInstance pc, String cmdName, String arg) {
+		L1WorldTraps.getInstance(). resetAllTraps();
+		SC_SystemMessage.send(pc, "트랩을 재배치했습니다");
+	}
+
+	private static void BuilderCmd_server_message(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			int ment = Integer.parseInt(st.nextToken(), 10);
+			int count = Integer.parseInt(st.nextToken(), 10);
+
+			for (int i = 0; i <= count; i++ ) {
+				SC_ServerMessage.send(pc, ment + i);
+				SC_SystemMessage.send(pc, "(" + (ment + i) +")번의 멘트는 위와 같습니다");
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, ".메세지 [번호] [갯수]을 입력 해주세요.");
+		}
+	}
+
+	private static void BuilderCmd_buff_icon(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			int _sprid = Integer.parseInt(st.nextToken(), 10);
+			int count = Integer.parseInt(st.nextToken(), 10);
+			for (int i = 0; i < count; i++) {
+				try {					
+					Thread.sleep(1000);
+					int num = _sprid + i;
+					SC_PacketBox.send(pc, SC_PacketBox.BUFFICON, _sprid + i, 10000, true, pc);
+					SC_SystemMessage.send(pc, "무제한 아이콘 : "+num+" 번.");
+				} catch (Exception exception) {
+					break;
+				}
+			}
+		} catch (Exception exception) {
+			SC_SystemMessage.send(pc, cmdName
+					+ " [id] [출현시키는 수]로 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_gfx_id(L1PcInstance pc, String cmdName, String param) {
+		try {
+			StringTokenizer st = new StringTokenizer(param);
+			int gfxid = Integer.parseInt(st.nextToken(), 10);
+			int count = Integer.parseInt(st.nextToken(), 10);
+			int loc_x = pc.getX();
+			int loc_y = pc.getY();
+			
+			for (int i = 0; i < count; i++) {
+				L1Npc l1npc = CObjectDB.GetNPC(45001);
+				if (l1npc != null) {
+					String s = l1npc.getImpl();
+					Constructor<?> constructor = Class.forName("l1j.server.server.model.Instance." + s + "Instance").getConstructors()[0];
+					Object aobj[] = { l1npc };
+					L1NpcInstance npc = (L1NpcInstance) constructor.newInstance(aobj);
+					npc.setId(IdFactory.getInstance().nextId());
+					npc.setCurrentSprite(gfxid + i);
+					npc.setNameId("" + (gfxid + i) + "");
+					npc.setMap(pc.getMapId());
+					
+					int k = i % 5;
+					if (k == 0 && i > 0) {
+						loc_x -= 2;
+						loc_y += 2;
+					}
+					npc.setX(loc_x + k * 2);
+					npc.setY(loc_y + k * 2);
+					
+//					npc.setX(pc.getX() + i * 2);
+//					npc.setY(pc.getY() + i * 2);
+					npc.setHomeX(npc.getX());
+					npc.setHomeY(npc.getY());
+					npc.setHeading(5);
+					npc.setStatus(0);
+					L1World.getInstance().storeAndEnterWorld(npc);
+					
+					BuilderCmdHandler.getInstance().add_list(npc);
+				}
+			}
+		} catch (Exception exception) {
+			SC_SystemMessage.send(pc, cmdName + " [id] [출현시키는 수]로 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_inv_gfx_id(L1PcInstance pc, String cmdName, String arg) {
+	    try {
+	        StringTokenizer st = new StringTokenizer(arg);
+	        int gfxid = Integer.parseInt(st.nextToken(), 10);
+	        int count = Integer.parseInt(st.nextToken(), 10);
+	        if(count <= 200){
+	            Proto.send(pc, SC_WAREHOUSE_ITEM_LIST_NOTI.newDisplayInstance(pc.getId(), 0, gfxid, count, true));
+	        }else{
+	            int page = (count / 200) + ((count % 200) > 0 ? 1 : 0);
+	            for(int i=0; i<page; ++i){
+	                int real_index = i * 200;
+	                Proto.send(pc, SC_WAREHOUSE_ITEM_LIST_NOTI.newDisplayInstance(pc.getId(), real_index, gfxid + real_index, 200, (i + 1 == page)));
+	            }
+	        }
+
+	        SC_SystemMessage.send(pc, "\\aHInvGfxId " + gfxid + "~"
+	                + String.valueOf(count) + " 생성 되었습니다.");
+	    } catch (Exception exception) {
+	        int count = 0;
+	        for (L1ItemInstance item : pc.getInventory().getItems()) {
+	            if (item.getItemId() == 40005) {
+	                pc.getInventory().Pop(item);
+	                count++;
+	            }
+	        }
+	        if (count > 0) {
+	            SC_SystemMessage.send(pc, "\\aAInvGfxId 확인용 아이템("
+	                    + count + ")이 삭제되었습니다.");
+	        } else {
+	            SC_SystemMessage.send(pc, "\\aH" + cmdName
+	                    + " [InvGfxId] [갯수]로 입력해 주세요.");
+	        }
+	    }
+	}
+
+	private static void BuilderCmd_skill_icon(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			int _sprid = Integer.parseInt(st.nextToken(), 10);
+			int count = Integer.parseInt(st.nextToken(), 10);
+			for (int i = 0; i < count; i++) {
+				try {					
+					Thread.sleep(1000);
+					int num = _sprid + i;
+					SC_PacketBox.send(pc, SC_PacketBox.UNLIMITED_ICON1, _sprid+i, true);//무제한패킷
+					SC_SystemMessage.send(pc, "무제한 아이콘 : "+num+" 번.");
+				} catch (Exception exception) {
+					break;
+				}
+			}
+		} catch (Exception exception) {
+			SC_SystemMessage.send(pc, cmdName
+					+ " [id] [출현시키는 수]로 입력해 주세요. ");
+		}
+	}
+
+	private static void BuilderCmd_chat_ban(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			String name = st.nextToken();
+			int time = Integer.parseInt(st.nextToken());
+//			String reason = st.nextToken();
+
+			L1PcInstance tg = L1World.getInstance(). getPlayer(name);
+
+			if (tg != null) {
+				tg.setSkillEffect(L1SkillId.STATUS_CHAT_PROHIBITED, time * 60 * 1000);
+				SC_SkillIconGFX.send(tg, 36, time * 60);
+				SC_SystemMessage.send(pc, name + " 채팅금지 : "+ String.valueOf(time) + "분 적용완료.");
+//				tg.sendPackets(new SC_ServerMessage(286, String.valueOf(time))); // \f3게임에 적합하지 않는 행동이기 (위해)때문에, 향후%0분간 채팅을 금지합니다.
+			} else {
+				SC_SystemMessage.send(pc, "해당 캐릭터 미접속.");
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " [캐릭명] [분] 입력.");
+		}
+	}
+
+	private static void BuilderCmd_world_chat(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			StringTokenizer st = new StringTokenizer(arg);
+			if (st.hasMoreTokens()) {
+				String flag = st.nextToken();
+				String msg;
+				if (flag.compareToIgnoreCase("켬") == 0) {
+					L1World.getInstance(). set_worldChatElabled(true);
+					msg = "월드 채팅을 유효하게 했습니다. ";
+				} else if (flag.compareToIgnoreCase("끔") == 0) {
+					L1World.getInstance(). set_worldChatElabled(false);
+					msg = "월드 채팅을 정지했습니다. ";
+				} else {
+					throw new Exception();
+				}
+				SC_SystemMessage.send(pc, msg);
+			} else {
+				String msg;
+				if (L1World.getInstance(). isWorldChatElabled()) {
+					msg = "현재 월드 채팅은 유효합니다.. 채팅 끔 로 정지할 수 있습니다. ";
+				} else {
+					msg = "현재 월드 채팅은 정지하고 있습니다.. 채팅 켬 로 유효하게 할 수 있습니다. ";
+				}
+				SC_SystemMessage.send(pc, msg);
+			}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " [켬, 끔]");
+		}
+	}
+
+	private static void BuilderCmd_ress(L1PcInstance pc, String cmdName, String arg) {
+		try {
+			int objid = pc.getId();
+			//pc.sendPackets(new S_SkillSound(objid, 759));
+			//pc.broadcastPacket(new S_SkillSound(objid, 759));
+			try(var askShared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
+SC_MessageYN.nativeWriter(322,""),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
+for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
+				if (tg.getCurrentHp() == 0 && tg.isDead()) {
+					//tg.sendPackets(new SC_SystemMessage("GM이 부활을 해주었습니다. "));
+					SC_SkillSound.broadcast(tg, tg.getId(), 3944);
+					SC_SkillSound.send(tg, tg.getId(), 3944);
+					// 축복된 부활 스크롤과 같은 효과
+					tg.setTempID(objid);
+					l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(askShared,tg); // 또 부활하고 싶습니까? (Y/N)
+				} else {
+					//tg.sendPackets(new SC_SystemMessage("GM이 HP,MP를 회복해주었습니다."));
+					SC_SkillSound.broadcast(tg, tg.getId(), 832);
+					SC_SkillSound.send(tg, tg.getId(), 832);
+					tg.setCurrentHp(tg.getMaxHp());
+					tg.setCurrentMp(tg.getMaxMp());
+				}
+			}
+}
+		} catch (Exception e) {
+			SC_SystemMessage.send(pc, cmdName + " 커멘드 에러");
 		}
 	}
 }
