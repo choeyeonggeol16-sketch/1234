@@ -114,28 +114,51 @@ public final class PathFinder {
             final int goalY,
             final boolean stopAtGoal,
             final int candidateMask) {
-        final int sx = actor == null ? 0 : actor.getX();
-        final int sy = actor == null ? 0 : actor.getY();
-        // Preserve the cheap local search for ordinary crowds. Failure within
-        // this window does not establish that another entrance is unreachable.
-        scanBodyRouteWindow(actor, goalX, goalY, stopAtGoal, candidateMask,
-                sx, sy, BODY_ROUTE_LOCAL_RADIUS);
-        if (actor == null) return;
-        if (stopAtGoal && bodyRouteDistanceTo(goalX, goalY) >= 0) return;
-        if (!stopAtGoal && candidateMask != 0) {
-            for (int h = 0; h < 8; h++) {
-                if ((candidateMask & (1 << h)) != 0
-                        && bodyRouteDistanceTo(goalX + DX[h], goalY + DY[h]) >= 0) {
+        if (actor == null) {
+            scanBodyRouteWindow(null, goalX, goalY, stopAtGoal, 0,
+                    0, 0, BODY_ROUTE_LOCAL_RADIUS);
+            return;
+        }
+
+        final int sx = actor.getX();
+        final int sy = actor.getY();
+        // A local search cannot reach a goal that lies outside its window.
+        final int localRing = stopAtGoal ? 0 : localBodyRouteRing(sx, sy, goalX, goalY, candidateMask);
+        if (stopAtGoal ? inBodyRouteWindow(sx, sy, goalX, goalY, BODY_ROUTE_LOCAL_RADIUS) : localRing != 0) {
+            scanBodyRouteWindow(actor, goalX, goalY, stopAtGoal, localRing,
+                    sx, sy, BODY_ROUTE_LOCAL_RADIUS);
+            if (stopAtGoal && bodyRouteDistanceTo(goalX, goalY) >= 0) return;
+            for (int heading = 0; heading < 8; heading++) {
+                if ((localRing & (1 << heading)) != 0
+                        && bodyRouteDistanceTo(goalX + DX[heading], goalY + DY[heading]) >= 0) {
                     return;
                 }
             }
         }
-        // Center the larger bounded window between actor and destination so
-        // BOTH ends and opposite-side melee slots remain inside the workspace.
-        // Reuse the same primitive buffers; no queue/nodes allocated per scan.
+        // Keep the original fallback window centered between actor and goal.
         scanBodyRouteWindow(actor, goalX, goalY, stopAtGoal, candidateMask,
                 (int) (((long) sx + goalX) / 2L),
                 (int) (((long) sy + goalY) / 2L), BODY_ROUTE_RADIUS);
+    }
+
+    private static int localBodyRouteRing(
+            final int sx, final int sy, final int x, final int y, final int candidateMask) {
+        if (inBodyRouteWindow(sx, sy, x, y, BODY_ROUTE_LOCAL_RADIUS - 1)) return candidateMask;
+        if (!inBodyRouteWindow(sx, sy, x, y, BODY_ROUTE_LOCAL_RADIUS + 1)) return 0;
+        int local = 0;
+        for (int heading = 0; heading < 8; heading++) {
+            final int bit = 1 << heading;
+            if ((candidateMask & bit) != 0
+                    && inBodyRouteWindow(sx, sy, x + DX[heading], y + DY[heading], BODY_ROUTE_LOCAL_RADIUS)) {
+                local |= bit;
+            }
+        }
+        return local;
+    }
+
+    private static boolean inBodyRouteWindow(
+            final int sx, final int sy, final int x, final int y, final int radius) {
+        return Math.abs((long) x - sx) <= radius && Math.abs((long) y - sy) <= radius;
     }
 
     private void scanBodyRouteWindow(

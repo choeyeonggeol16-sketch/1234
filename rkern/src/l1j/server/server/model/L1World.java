@@ -509,20 +509,20 @@ public class L1World {
     }
     
     public ArrayList<L1PcInstance> getVisiblePlayer(L1Object object, int radius) {
-        final L1Map map = object.getMap();
-        Point pt = object.getLocation();
-        Collection<L1PcInstance> pc = _allPlayers.values();
-        ArrayList<L1PcInstance> result = null;
-        if(radius < 0)
-            result = new ArrayList<L1PcInstance>(19 * 4);
-        else if(radius == 0)
-            result = new ArrayList<L1PcInstance>(2);
-        else
-            result = new ArrayList<L1PcInstance>(radius * 4);
+        final int capacity = radius < 0 ? 19 * 4 : radius == 0 ? 2 : radius * 4;
+        final ArrayList<L1PcInstance> result = new ArrayList<>(capacity);
+        collectVisiblePlayers(object, radius, result);
+        return result;
+    }
 
+    /** Replaces the destination with visible players in world registry order. */
+    public void collectVisiblePlayers(L1Object object, int radius, List<L1PcInstance> result) {
+        result.clear();
+        final L1Map map = object.getMap();
+        final Point pt = object.getLocation();
         final int selfId = object.getId();
 
-        for (L1PcInstance element : pc) {
+        for (L1PcInstance element : _allPlayers.values()) {
             if (element == null || element.getId() == selfId || map != element.getMap())
                 continue;
 
@@ -537,7 +537,6 @@ public class L1World {
                 result.add(element);
             }
         }
-        return result;
     }
 
     public ArrayList<L1Object> getVisiblePlayer(L1Object object, int radius, int i) {

@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
@@ -582,9 +583,13 @@ public final class CSharedBroadcast {
         final L1World world=L1World.getInstance();
         CAsyncSendConstBuffer shared=null;
         try {
-            for(L1PcInstance anchor:world.getVisiblePlayer(origin)) {
+            final List<L1PcInstance> anchors = world.getVisiblePlayer(origin);
+            if (anchors.isEmpty()) return;
+            final List<L1PcInstance> recipients = new ArrayList<>(anchors.size());
+            for(L1PcInstance anchor:anchors) {
                 if(anchor==null)continue;
-                for(L1PcInstance recipient:world.getVisiblePlayer(anchor)) {
+                world.collectVisiblePlayers(anchor, -1, recipients);
+                for(L1PcInstance recipient:recipients) {
                     try {
                         if(!CTLMFilter.sameWorldOther(anchor,recipient))continue;
                         shared=sendWrittenOptionalTo(shared,recipient,writer);
