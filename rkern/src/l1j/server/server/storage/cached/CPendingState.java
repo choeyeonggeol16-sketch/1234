@@ -13,7 +13,7 @@ public abstract class CPendingState {
     public CPendingState readyPrev;
     public CPendingState readyNext;
     public long readyOrder;
-    public boolean readyIndexed;
+    public byte readyBucket;
     public int readyFirstOwner;
     public int readySecondOwner;
     public int readyItemId;

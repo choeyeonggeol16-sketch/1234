@@ -10,12 +10,15 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.network.buffer.Assemble;
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class SC_CommonNews {
 
 	private static final Logger _log = Logger.getLogger(SC_CommonNews.class.getName());
+	private static final String NEXT_NOTICE_SQL =
+			"SELECT id, message FROM notice WHERE id > "
+			+ "COALESCE((SELECT notice FROM accounts WHERE login=?), ?) ORDER BY id ASC LIMIT 1";
 
     private SC_CommonNews() {}
 
@@ -54,93 +57,46 @@ public final class SC_CommonNews {
         }
     }
 
-	/**
-	 * 계정 공지사항 조회 정적 팩토리 (읽음 상태는 전송 요청 이후 갱신)
-	 */
-	public static NoticeData loadNotice(String account) {
-		if (account == null || account.isEmpty()) {
-			return null;
-		}
+    /** Login suppresses notices when the account or its read date is missing. */
+    public static NoticeData loadUnreadNotice(String account) {
+        return loadNotice(account, null);
+    }
 
-		String date = getDate(account);
-		StringBuilder sb = new StringBuilder();
-		String nextDate = null;
-		boolean found = false;
+    /** Preserve the direct lookup's empty-date default. */
+    public static NoticeData loadNotice(String account) {
+        return loadNotice(account, "");
+    }
 
-		String query = "SELECT id, message FROM notice WHERE id > ? ORDER BY id ASC LIMIT 1";
+    private static NoticeData loadNotice(String account, String defaultDate) {
+        if (account == null || account.isEmpty()) return null;
 
-		try (Connection c = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement p = c.prepareStatement(query)) {
+        NoticeData notice = null;
+        try (Connection connection = DatabaseFactory.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(NEXT_NOTICE_SQL)) {
+            statement.setString(1, account);
+            statement.setString(2, defaultDate);
+            try (ResultSet row = statement.executeQuery()) {
+                if (row.next()) {
+                    final String noticeId = row.getString("id");
+                    if (noticeId != null) {
+                        final String message = row.getString("message");
+                        notice = new NoticeData(formatNotice(message), noticeId);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            _log.log(Level.SEVERE, "SC_CommonNews notice DB error - account: " + account, e);
+        }
+        return notice;
+    }
 
-			p.setString(1, date);
-			try (ResultSet r = p.executeQuery()) {
-				if (r.next()) {
-					found = true;
-					nextDate = r.getString("id");
-					String sTemp = r.getString("message");
-
-					if (sTemp != null) {
-						StringTokenizer st = new StringTokenizer(sTemp, "-");
-						while (st.hasMoreTokens()) {
-							sb.append(st.nextToken()).append("\n");
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			_log.log(Level.SEVERE, "SC_CommonNews notice DB error - account: " + account, e);
-		}
-
-		if (found && nextDate != null) {
-			return new NoticeData(sb.toString(), nextDate);
-		}
-		return null;
-	}
-
-	/**
-	 * 계정명으로 읽어야 할 공지 갯수 리턴
-	 */
-	public static int NoticeCount(String account) {
-		if (account == null || account.isEmpty()) {
-			return 0;
-		}
-
-		int count = 0;
-		String query = "SELECT COUNT(id) AS cnt FROM notice WHERE id > (SELECT notice FROM accounts WHERE login=?)";
-
-		try (Connection c = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement p = c.prepareStatement(query)) {
-
-			p.setString(1, account);
-			try (ResultSet r = p.executeQuery()) {
-				if (r.next()) {
-					count = r.getInt("cnt");
-				}
-			}
-		} catch (Exception e) {
-			_log.log(Level.SEVERE, "SC_CommonNews NoticeCount error - account: " + account, e);
-		}
-		return count;
-	}
-
-	private static String getDate(String account) {
-		String sTemp = "";
-		String query = "SELECT notice FROM accounts WHERE login=?";
-
-		try (Connection c = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement p = c.prepareStatement(query)) {
-
-			p.setString(1, account);
-			try (ResultSet r = p.executeQuery()) {
-				if (r.next()) {
-					sTemp = r.getString("notice");
-				}
-			}
-		} catch (Exception e) {
-			_log.log(Level.SEVERE, "SC_CommonNews getDate error - account: " + account, e);
-		}
-		return sTemp != null ? sTemp : "";
-	}
+    private static String formatNotice(String message) {
+        if (message == null || message.isEmpty()) return "";
+        final StringTokenizer tokens = new StringTokenizer(message, "-");
+        final StringBuilder formatted = new StringBuilder(message.length());
+        while (tokens.hasMoreTokens()) formatted.append(tokens.nextToken()).append('\n');
+        return formatted.toString();
+    }
 
 	public static void updateNoticeDate(String account, String date) {
 		String query = "UPDATE accounts SET notice=? WHERE login=?";

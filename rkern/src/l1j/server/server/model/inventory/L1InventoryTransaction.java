@@ -696,9 +696,11 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
             }
             if (hasPreimage)
                 move.stageWarehouseSql(con -> {
-                    for (int i = 0; i < orderedCount; i++) {
-                        final Entry e = singleton != null ? singleton : commitOrder[i];
-                        if (e.before != null) CTransaction.verifyItemPreimage(con, e.before);
+                    try (var check = CTransaction.prepareItemPreimageCheck(con)) {
+                        for (int i = 0; i < orderedCount; i++) {
+                            ItemSnapshot before = commitOrder[i].before;
+                            if (before != null) CTransaction.verifyItemPreimage(check, before);
+                        }
                     }
                 });
         }

@@ -7,6 +7,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.character.bookmark.CUserBookmark;
@@ -208,38 +211,65 @@ public class CItemBookmark {
         return result;
     }
 
+    private static final int MAX_ORBS_PER_QUERY = 64;
+
     public static void LoadItemSlots(L1PcInstance pc, L1ItemInstance item) {
-        final String sql = "SELECT * FROM character_teleport_item WHERE item_id=? ORDER BY num_id ASC,id ASC";
+        loadSavedOrbSlots(List.of(item));
+    }
 
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement pstm = con.prepareStatement(sql)) {
-
-            pstm.setInt(1, item.getId());
-
-            final ArrayList<CItemBookmark> loaded = new ArrayList<>();
-            try (ResultSet rs = pstm.executeQuery()) {
-                int i = 0;
-                while (rs.next()) {
-                    CItemBookmark bookmark = new CItemBookmark();
-                    bookmark.setCharId(rs.getInt("item_id"));
-                    bookmark.setId(rs.getInt("id"));
-                    bookmark.setNumId(i);
-                    bookmark.setTemp_id(i);
-                    bookmark.setSpeed_id(rs.getInt("speed_id"));
-                    bookmark.setName(rs.getString("name"));
-                    bookmark.setLocX(rs.getInt("locx"));
-                    bookmark.setLocY(rs.getInt("locy"));
-                    bookmark.setMapId(rs.getShort("mapid"));
-                    bookmark.setRandomX(rs.getInt("randomX"));
-                    bookmark.setRandomY(rs.getInt("randomY"));
-                    loaded.add(bookmark);
-                    i++;
+    /** Hydrate detached physical bookmark orbs before they are published on CIO. */
+    public static void loadSavedOrbSlots(List<L1ItemInstance> items) {
+        if (items.isEmpty()) return;
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            for (int first = 0; first < items.size(); first += MAX_ORBS_PER_QUERY) {
+                final int count = Math.min(MAX_ORBS_PER_QUERY, items.size() - first);
+                try {
+                    loadSavedOrbBatch(con, items, first, count);
+                } catch (SQLException failure) {
+                    _log.log(Level.WARNING, "Stored bookmark orb load failed", failure);
                 }
             }
-            item.getBookMark().clear();
-            item.getBookMark().addAll(loaded);
-        } catch (SQLException e) {
-            _log.log(Level.WARNING, "bookmarks 예외 발생.", e);
+        } catch (SQLException failure) {
+            _log.log(Level.WARNING, "Stored bookmark connection close failed", failure);
+        }
+    }
+
+    private static void loadSavedOrbBatch(Connection con, List<L1ItemInstance> items,
+                                         int first, int count) throws SQLException {
+        final String sql = "SELECT item_id,id,speed_id,name,locx,locy,mapid,randomX,randomY "
+                + "FROM character_teleport_item WHERE item_id IN (" + "?,".repeat(count - 1) + "?) "
+                + "ORDER BY item_id,num_id,id";
+        final Int2ObjectOpenHashMap<ArrayList<CItemBookmark>> byOrb = new Int2ObjectOpenHashMap<>(count);
+        // item_id is the object ID of the orb, so the list follows a traded orb.
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            for (int i = 0; i < count; i++) ps.setInt(i + 1, items.get(first + i).getId());
+            try (ResultSet rows = ps.executeQuery()) {
+                while (rows.next()) {
+                    final int orbId = rows.getInt("item_id");
+                    final ArrayList<CItemBookmark> loaded = byOrb.computeIfAbsent(orbId, ignored -> new ArrayList<>());
+                    final CItemBookmark bookmark = new CItemBookmark();
+                    bookmark.setCharId(orbId);
+                    bookmark.setId(rows.getInt("id"));
+                    bookmark.setNumId(loaded.size());
+                    bookmark.setTemp_id(loaded.size());
+                    bookmark.setSpeed_id(rows.getInt("speed_id"));
+                    bookmark.setName(rows.getString("name"));
+                    bookmark.setLocX(rows.getInt("locx"));
+                    bookmark.setLocY(rows.getInt("locy"));
+                    bookmark.setMapId(rows.getShort("mapid"));
+                    bookmark.setRandomX(rows.getInt("randomX"));
+                    bookmark.setRandomY(rows.getInt("randomY"));
+                    loaded.add(bookmark);
+                }
+            }
+        }
+
+        for (int i = first; i < first + count; i++) {
+            final L1ItemInstance item = items.get(i);
+            final ArrayList<CItemBookmark> bookmarks = item.getBookMark();
+            final ArrayList<CItemBookmark> loaded = byOrb.get(item.getId());
+            bookmarks.clear();
+            if (loaded != null) bookmarks.addAll(loaded);
         }
     }
 

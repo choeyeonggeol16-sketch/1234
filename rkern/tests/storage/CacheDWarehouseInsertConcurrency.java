@@ -146,6 +146,60 @@ public final class CacheDWarehouseInsertConcurrency {
         }
     }
 
+    private void checkOrderedPreimages() throws SQLException {
+        ItemSnapshot first = snapshot(220, 100, 2), last = snapshot(221, 101, 2);
+        try (Connection con = openTransaction();
+             var check = CTransaction.prepareItemPreimageCheck(con)) {
+            CTransaction.verifyItemPreimage(check, first);
+            CTransaction.verifyItemPreimage(check, first);
+            CTransaction.verifyItemPreimage(check, last);
+            con.rollback();
+
+            for (ItemSnapshot stale : new ItemSnapshot[]{ snapshot(220, 99, 2),
+                    snapshot(220, 100, 9), snapshot(219, 100, 2) }) {
+                execute(con, "UPDATE character_warehouse SET count=1 WHERE id=10");
+                try {
+                    for (ItemSnapshot source : new ItemSnapshot[]{stale, last})
+                        CTransaction.verifyItemPreimage(check, source);
+                    throw new AssertionError("Stale item preimage was accepted");
+                } catch (SQLException expected) {
+                    if (!expected.getMessage().contains("preimage changed: " + stale.id)) throw expected;
+                }
+                // Even while the failed transaction is still open, no later
+                // object may have been locked by reading ahead of the mismatch.
+                try (Connection other = openTransaction()) {
+                    execute(other, "UPDATE character_items SET count=3 WHERE id=221 AND count=2");
+                    other.rollback();
+                } finally {
+                    con.rollback();
+                }
+                if (query(con, "SELECT count FROM character_warehouse WHERE id=10") != 3)
+                    throw new AssertionError("Mutation before stale check survived rollback");
+            }
+            // Detect an omitted value or swapped projection columns. Start
+            // each case with the original committed row and change one field.
+            for (String field : new String[]{"char_id","item_id","count","is_equipped","enchantlvl",
+                    "is_id","durability","charge_count","remaining_time","bless","attr_enchantlvl",
+                    "special_enchant","package","bless_level","bless_level2","item_level",
+                    "last_used","end_time","Hotel_Town"}) {
+                String value = switch (field) {
+                    case "last_used", "end_time" -> "'2024-01-01 12:34:56'";
+                    case "Hotel_Town" -> "'fixture'";
+                    default -> field + "+1";
+                };
+                execute(con, "UPDATE character_items SET " + field + "=" + value + " WHERE id=220");
+                try {
+                    CTransaction.verifyItemPreimage(check, first);
+                    throw new AssertionError("Missed stale field " + field);
+                } catch (SQLException expected) {
+                    if (!expected.getMessage().contains("field=" + field + " ")) throw expected;
+                } finally {
+                    con.rollback();
+                }
+            }
+        }
+    }
+
     private void run() throws Exception {
         try (Connection admin = connect()) {
             execute(admin, "CREATE DATABASE " + schema);
@@ -175,11 +229,12 @@ public final class CacheDWarehouseInsertConcurrency {
                 }
                 checkDuplicateRollbackAndConservation(admin);
                 checkCharacterStackUpdate();
+                checkOrderedPreimages();
             } finally {
                 execute(admin, "DROP DATABASE " + schema);
             }
         }
-        System.out.println("PASS independent warehouse inserts, duplicate rollback and guarded character stack update");
+        System.out.println("PASS independent warehouse inserts, duplicate rollback, guarded stack updates and ordered full preimage checks");
     }
 
     public static void main(String[] arguments) throws Exception {

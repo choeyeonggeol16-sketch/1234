@@ -1,58 +1,92 @@
 package l1j.server.server.model;
 
+import java.util.Arrays;
+
 /** Per-character earned deltas. Save together with level/HP/MP in one characters row.
  * The legacy floor is historical data we do not possess, never a guessed reroll. */
 public final class HpMpGrowthHistory {
     public static final int MAX_LEVEL = 127;
+    private static final int MAX_DELTA = 32767;
+    private static final int[] EMPTY = {};
     private final int floorLevel;
-    private final int[] hp = new int[MAX_LEVEL + 1];
-    private final int[] mp = new int[MAX_LEVEL + 1];
-    private final boolean[] known = new boolean[MAX_LEVEL + 1];
+    // Both deltas fit in 15 bits. Zero is unrecorded, including unused capacity.
+    private int[] gains = EMPTY;
+    private String encoded;
 
     public HpMpGrowthHistory(int baselineLevel) {
-        if (baselineLevel < 1 || baselineLevel > MAX_LEVEL)
-            throw new IllegalArgumentException("Invalid growth baseline level");
+        checkLevel(baselineLevel);
         floorLevel = baselineLevel;
     }
+
     public int floorLevel() { return floorLevel; }
-    public boolean known(int level) { checkLevel(level); return known[level]; }
-    public int hp(int level) { checkKnown(level); return hp[level]; }
-    public int mp(int level) { checkKnown(level); return mp[level]; }
+
+    private int entry(int level) {
+        checkLevel(level);
+        int index = level - floorLevel - 1;
+        return index >= 0 && index < gains.length ? gains[index] : 0;
+    }
+
+    public boolean known(int level) { return entry(level) != 0; }
+    public int hp(int level) { return unpack(level) >>> 15; }
+    public int mp(int level) { return unpack(level) & MAX_DELTA; }
+
+    private int unpack(int level) {
+        int value = entry(level);
+        if (value == 0) throw new IllegalStateException("No historical growth for level " + level);
+        return value - 1;
+    }
+
     public void record(int level, int hpDelta, int mpDelta) {
         checkLevel(level);
-        if (level <= floorLevel || hpDelta < 0 || hpDelta > 32767 || mpDelta < 0 || mpDelta > 32767)
+        if (level <= floorLevel || hpDelta < 0 || hpDelta > MAX_DELTA || mpDelta < 0 || mpDelta > MAX_DELTA)
             throw new IllegalArgumentException("Invalid earned growth delta");
-        if (known[level]) throw new IllegalStateException("Growth already recorded");
-        hp[level] = hpDelta; mp[level] = mpDelta; known[level] = true;
+        int index = level - floorLevel - 1;
+        if (index >= gains.length) {
+            int capacity = Math.max(index + 1, Math.max(4, gains.length * 2));
+            gains = Arrays.copyOf(gains, Math.min(capacity, MAX_LEVEL - floorLevel));
+        } else if (gains[index] != 0) {
+            throw new IllegalStateException("Growth already recorded");
+        }
+        gains[index] = ((hpDelta << 15) | mpDelta) + 1;
+        encoded = null;
     }
+
     private static void checkLevel(int level) {
         if (level < 1 || level > MAX_LEVEL) throw new IllegalArgumentException("Invalid growth level");
     }
-    private void checkKnown(int level) {
-        checkLevel(level);
-        if (!known[level]) throw new IllegalStateException("No historical growth for level " + level);
-    }
+
     public String encode() {
+        if (encoded != null) return encoded;
         StringBuilder out = new StringBuilder("1:").append(floorLevel);
-        for (int i = floorLevel + 1; i <= MAX_LEVEL; i++) {
-            if (known[i]) out.append(';').append(i).append(',').append(hp[i]).append(',').append(mp[i]);
+        for (int i = 0; i < gains.length; i++) {
+            if (gains[i] == 0) continue;
+            int pair = gains[i] - 1;
+            out.append(';').append(floorLevel + 1 + i).append(',').append(pair >>> 15)
+                    .append(',').append(pair & MAX_DELTA);
         }
-        return out.toString();
+        return encoded = out.toString();
     }
+
     public static HpMpGrowthHistory decode(String text) {
         if (text == null || text.isEmpty()) return null;
         if (text.length() > 8192) throw new IllegalArgumentException("Growth history too long");
-        String[] entries = text.split(";", -1);
-        String[] header = entries[0].split(":", -1);
-        if (header.length != 2 || !"1".equals(header[0])) throw new IllegalArgumentException("Unknown growth history version");
-        HpMpGrowthHistory history = new HpMpGrowthHistory(Integer.parseInt(header[1]));
+        if (!text.startsWith("1:")) throw new IllegalArgumentException("Unknown growth history version");
+        int end = text.indexOf(';');
+        if (end < 0) end = text.length();
+        HpMpGrowthHistory history = new HpMpGrowthHistory(Integer.parseInt(text, 2, end, 10));
         int expected = history.floorLevel + 1;
-        for (int i = 1; i < entries.length; i++) {
-            String[] parts = entries[i].split(",", -1);
-            if (parts.length != 3) throw new IllegalArgumentException("Malformed growth history");
-            int level = Integer.parseInt(parts[0]);
+        while (end < text.length()) {
+            int start = end + 1;
+            end = text.indexOf(';', start);
+            if (end < 0) end = text.length();
+            int first = text.indexOf(',', start);
+            int second = first < 0 ? -1 : text.indexOf(',', first + 1);
+            if (first < 0 || second < 0 || second >= end)
+                throw new IllegalArgumentException("Malformed growth history");
+            int level = Integer.parseInt(text, start, first, 10);
             if (level != expected++) throw new IllegalArgumentException("Nonconsecutive growth history");
-            history.record(level, Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+            history.record(level, Integer.parseInt(text, first + 1, second, 10),
+                    Integer.parseInt(text, second + 1, end, 10));
         }
         return history;
     }

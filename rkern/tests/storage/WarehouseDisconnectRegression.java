@@ -260,6 +260,34 @@ public final class WarehouseDisconnectRegression {
         }
     }
 
+    private static void receiptWithoutItemRows(CIOServer server) throws Exception {
+        try (var peer = new Socket()) {
+            CUserSocket socket = accepted(server, peer);
+            Pc pc = publish(socket, 5, "emptyitems");
+            try {
+                int receipts = count("cached_transaction_receipts", "");
+                int items = count("character_items", "");
+                var applied = new CountDownLatch(1);
+                try (var tx = L1InventoryTransaction.begin(pc, FIRST_ID + 490)) {
+                    check(!tx.hasChanges(), "new auxiliary receipt starts empty");
+                    tx.sql(con -> {
+                        try (var ps = con.prepareStatement("SELECT 1"); var rows = ps.executeQuery()) {
+                            check(rows.next() && rows.getInt(1) == 1, "auxiliary SQL");
+                        }
+                    });
+                    tx.commitAfterInventoryRelease(applied::countDown);
+                }
+                check(applied.await(4, TimeUnit.SECONDS) && CacheD.getInstance().flushAll(4000),
+                        "auxiliary receipt with no item rows completed");
+                check(count("cached_transaction_receipts", "") == receipts + 1
+                        && count("character_items", "") == items, "empty preimage set");
+            } finally {
+                socket.close();
+                CWorld.getInstance().removeObject(pc);
+            }
+        }
+    }
+
     private static void verify() throws Exception {
         Config.MAX_ONLINE_USERS = 8;
         Config.MAX_PERSONAL_WAREHOUSE_ITEM = 150;
@@ -281,6 +309,7 @@ public final class WarehouseDisconnectRegression {
             transfer(server, 2, false, true);
             transfer(server, 3, true, true);
             inventoryDebit(server);
+            receiptWithoutItemRows(server);
         } finally {
             owners.shutdown();
             check(owners.awaitTermination(5, TimeUnit.SECONDS), "CIO stopped");
@@ -314,6 +343,6 @@ public final class WarehouseDisconnectRegression {
                 ddl.executeUpdate("DROP DATABASE " + schema);
             }
         }
-        System.out.println("PASS warehouse moves and inventory debit after commit and disconnect");
+        System.out.println("PASS warehouse moves, inventory debit after disconnect and auxiliary receipt with no item rows");
     }
 }

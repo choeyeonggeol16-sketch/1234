@@ -303,37 +303,48 @@ public final class CS_AuthLogin {
             new CS_CommonClick(client);
             return;
         }
+        final Account expectedAccount = client.getAccount();
+        final CConnectionState expectedState = client.getConnectionState();
+        if (!isCurrentNoticeSession(client, expectedAccount, expectedState, account)) return;
         try {
             CacheD.getInstance().submitDbJobOrdered(account, () -> {
                 try {
-                    final SC_CommonNews.NoticeData notice = SC_CommonNews.NoticeCount(account) > 0
-                            ? SC_CommonNews.loadNotice(account) : null;
+                    if (!isCurrentNoticeSession(client, expectedAccount, expectedState, account)) return;
+                    final SC_CommonNews.NoticeData notice = SC_CommonNews.loadUnreadNotice(account);
                     if (!CIOThreadCallback.getInstance().completeSession(client, () -> {
-                        if (!client.isConnected() || !account.equals(client.getAccountName())) return;
-                        if (notice != null) {
-                            SC_CommonNews.send(client, notice.message);
-                            final String noticeId = notice.noticeId;
-                            if (noticeId != null) {
-                                try {
-                                    CacheD.getInstance().submitDbJobOrdered(account, () ->
-                                            SC_CommonNews.updateNoticeDate(account, noticeId));
-                                } catch (RuntimeException e) {
-                                    _log.log(Level.WARNING, "Notice read-state update rejected: " + account, e);
-                                }
-                            }
-                        } else new CS_CommonClick(client);
+                        if (!isCurrentNoticeSession(client, expectedAccount, expectedState, account)) return;
+                        if (notice == null || !SC_CommonNews.send(client, notice.message)) {
+                            if (isCurrentNoticeSession(client, expectedAccount, expectedState, account))
+                                new CS_CommonClick(client);
+                            return;
+                        }
+                        try {
+                            CacheD.getInstance().submitDbJobOrdered(account, () ->
+                                    SC_CommonNews.updateNoticeDate(account, notice.noticeId));
+                        } catch (RuntimeException e) {
+                            _log.log(Level.WARNING, "Notice read-state update rejected: " + account, e);
+                        }
                     })) {
                         _log.warning("Notice DB callback rejected: " + account);
                     }
                 } catch (Exception e) {
                     _log.log(Level.SEVERE, "Notice DB failed: " + account, e);
-                    CIOThreadCallback.getInstance().completeSession(client, client::close);
+                    CIOThreadCallback.getInstance().completeSession(client, () -> {
+                        if (isCurrentNoticeSession(client, expectedAccount, expectedState, account)) client.close();
+                    });
                 }
             });
         } catch (RuntimeException e) {
             _log.log(Level.SEVERE, "Notice DB request rejected: " + account, e);
-            client.close();
+            if (isCurrentNoticeSession(client, expectedAccount, expectedState, account)) client.close();
         }
+    }
+
+    private static boolean isCurrentNoticeSession(
+            CUserSocket client, Account expectedAccount, CConnectionState expectedState, String account) {
+        return expectedAccount != null && client.isConnected()
+                && client.getAccount() == expectedAccount && account.equals(expectedAccount.getName())
+                && client.getConnectionState() == expectedState && client.getActiveChar() == null;
     }
 
     private static boolean isAccountIpQuotaReached(String ip, int limit) {

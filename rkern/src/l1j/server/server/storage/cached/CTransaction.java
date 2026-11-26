@@ -225,34 +225,43 @@ public final class CTransaction {
         }
     }
 
-    /** Compare the complete persisted source image under its row lock. */
+    /** One exact primary-key read for each sorted existing row. Prepare once for a multi-item receipt. */
+    public static PreparedStatement prepareItemPreimageCheck(Connection con) throws SQLException {
+        return con.prepareStatement("SELECT char_id,item_id,count,is_equipped,enchantlvl,is_id,durability,"
+                + "charge_count,remaining_time,bless,attr_enchantlvl,special_enchant,package,bless_level,"
+                + "bless_level2,item_level,last_used,end_time,Hotel_Town FROM character_items WHERE id=? FOR UPDATE");
+    }
+
     public static void verifyItemPreimage(Connection con, ItemSnapshot v) throws SQLException {
-        try (PreparedStatement ps = con.prepareStatement("SELECT * FROM character_items WHERE id=? FOR UPDATE")) {
-            ps.setInt(1, v.id);
-            try (ResultSet r = ps.executeQuery()) {
-                // Keep the strict owner/type/count check: a mismatch here is
-                // never an invitation to replay a debit or overwrite SQL.
-                if (!r.next()) throw preimageFailure(v.id, "missing row", "absent", "present");
-                requirePreimageInt(v.id, "char_id", r.getInt("char_id"), v.ownerId);
-                requirePreimageInt(v.id, "item_id", r.getInt("item_id"), v.itemId);
-                requirePreimageInt(v.id, "count", r.getInt("count"), v.count);
-                requirePreimageInt(v.id, "is_equipped", r.getInt("is_equipped"), v.equipped);
-                requirePreimageInt(v.id, "enchantlvl", r.getInt("enchantlvl"), v.enchant);
-                requirePreimageInt(v.id, "is_id", r.getInt("is_id"), v.identified);
-                requirePreimageInt(v.id, "durability", r.getInt("durability"), v.durability);
-                requirePreimageInt(v.id, "charge_count", r.getInt("charge_count"), v.charge);
-                requirePreimageInt(v.id, "remaining_time", r.getInt("remaining_time"), v.remaining);
-                requirePreimageInt(v.id, "bless", r.getInt("bless"), v.bless);
-                requirePreimageInt(v.id, "attr_enchantlvl", r.getInt("attr_enchantlvl"), v.attr);
-                requirePreimageInt(v.id, "special_enchant", r.getInt("special_enchant"), v.special);
-                requirePreimageInt(v.id, "package", r.getInt("package"), v.pack);
-                requirePreimageInt(v.id, "bless_level", r.getInt("bless_level"), v.blessLevel);
-                requirePreimageInt(v.id, "bless_level2", r.getInt("bless_level2"), v.blessLevel2);
-                requirePreimageInt(v.id, "item_level", r.getInt("item_level"), v.itemLevel);
-                requirePreimageObject(v.id, "last_used", r.getTimestamp("last_used"), v.lastUsed);
-                requirePreimageObject(v.id, "end_time", r.getTimestamp("end_time"), v.endTime);
-                requirePreimageObject(v.id, "Hotel_Town", r.getString("Hotel_Town"), v.hotelTown);
-            }
+        try (PreparedStatement ps = prepareItemPreimageCheck(con)) { verifyItemPreimage(ps, v); }
+    }
+
+    /** Rebind the statement from prepareItemPreimageCheck only after the previous row verified. */
+    public static void verifyItemPreimage(PreparedStatement ps, ItemSnapshot v) throws SQLException {
+        ps.setInt(1, v.id);
+        try (ResultSet r = ps.executeQuery()) {
+            // Keep the strict owner/type/count check: a mismatch here is
+            // never an invitation to replay a debit or overwrite SQL.
+            if (!r.next()) throw preimageFailure(v.id, "missing row", "absent", "present");
+            requirePreimageInt(v.id, "char_id", r.getInt(1), v.ownerId);
+            requirePreimageInt(v.id, "item_id", r.getInt(2), v.itemId);
+            requirePreimageInt(v.id, "count", r.getInt(3), v.count);
+            requirePreimageInt(v.id, "is_equipped", r.getInt(4), v.equipped);
+            requirePreimageInt(v.id, "enchantlvl", r.getInt(5), v.enchant);
+            requirePreimageInt(v.id, "is_id", r.getInt(6), v.identified);
+            requirePreimageInt(v.id, "durability", r.getInt(7), v.durability);
+            requirePreimageInt(v.id, "charge_count", r.getInt(8), v.charge);
+            requirePreimageInt(v.id, "remaining_time", r.getInt(9), v.remaining);
+            requirePreimageInt(v.id, "bless", r.getInt(10), v.bless);
+            requirePreimageInt(v.id, "attr_enchantlvl", r.getInt(11), v.attr);
+            requirePreimageInt(v.id, "special_enchant", r.getInt(12), v.special);
+            requirePreimageInt(v.id, "package", r.getInt(13), v.pack);
+            requirePreimageInt(v.id, "bless_level", r.getInt(14), v.blessLevel);
+            requirePreimageInt(v.id, "bless_level2", r.getInt(15), v.blessLevel2);
+            requirePreimageInt(v.id, "item_level", r.getInt(16), v.itemLevel);
+            requirePreimageObject(v.id, "last_used", r.getTimestamp(17), v.lastUsed);
+            requirePreimageObject(v.id, "end_time", r.getTimestamp(18), v.endTime);
+            requirePreimageObject(v.id, "Hotel_Town", r.getString(19), v.hotelTown);
         }
     }
 
@@ -272,16 +281,22 @@ public final class CTransaction {
             throw preimageFailure(id, field, persisted, expected);
     }
 
+    private static OutcomeUnknownException abandonTransaction(Connection con, String txId,
+            String boundary, Throwable failure) {
+        try { DatabaseFactory.discardConnection(con); }
+        catch (SQLException | RuntimeException | Error discard) { failure.addSuppressed(discard); }
+        return new OutcomeUnknownException(boundary + " uncertain receipt=" + txId, failure);
+    }
+
     private static void persistAtomic(String txId, String kind, int firstOwner, int secondOwner,
                                       Mutation[] operations) throws SQLException {
         if (txId == null || txId.length() != 36)
             throw new SQLException("Invalid durable transaction ID");
         boolean committed = false;
         boolean commitAttempted = false;
-        boolean resetSafe = false;
         try (Connection con = DatabaseFactory.getInstance().getConnection()) {
             final boolean autoCommit = con.getAutoCommit();
-            con.setAutoCommit(false);
+            if (autoCommit) con.setAutoCommit(false);
             try {
                 if (!claimReceipt(con, txId, kind, firstOwner, secondOwner)) {
                     // The matching durable receipt proves the original commit.
@@ -289,33 +304,30 @@ public final class CTransaction {
                     committed = true;
                     try {
                         con.rollback();
-                        resetSafe = true;
+                        if (autoCommit) con.setAutoCommit(true);
                     } catch (SQLException | RuntimeException cleanup) {
                         // Do not restore auto-commit after a failed rollback.
                         // Connection close/pool cleanup owns this read-only scope.
-                        LOG.log(Level.WARNING, "Confirmed receipt rollback cleanup failed", cleanup);
+                        LOG.log(Level.WARNING, "Confirmed receipt connection cleanup failed", cleanup);
                     }
                     return;
                 }
                 for (Mutation operation : operations) operation.apply(con);
                 commitAttempted = true;
-                con.commit();
+                // JDBC commits the active transaction when auto-commit changes
+                // from false to true. This also restores the pooled connection.
+                if (autoCommit) con.setAutoCommit(true);
+                else con.commit();
                 committed = true;
-                resetSafe = true;
             } catch (SQLException | RuntimeException | Error failure) {
                 if (commitAttempted)
-                    throw new OutcomeUnknownException("COMMIT response uncertain receipt=" + txId, failure);
+                    throw abandonTransaction(con, txId, "COMMIT response", failure);
                 try { con.rollback(); }
                 catch (SQLException | RuntimeException | Error rollback) {
                     failure.addSuppressed(rollback);
-                    throw new OutcomeUnknownException("ROLLBACK uncertain receipt=" + txId, failure);
+                    throw abandonTransaction(con, txId, "ROLLBACK", failure);
                 }
                 throw failure;
-            } finally {
-                if (resetSafe) try { con.setAutoCommit(autoCommit); }
-                catch (SQLException | RuntimeException reset) {
-                    LOG.log(Level.WARNING, "Committed connection reset failed", reset);
-                }
             }
         } catch (OutcomeUnknownException uncertain) {
             // ROLLBACK failures are never presumed safe. An existing receipt

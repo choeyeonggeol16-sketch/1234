@@ -30,9 +30,14 @@ public final class CacheDReceiptClaimRegression {
         final AtomicInteger insertClaims = new AtomicInteger();
         final AtomicInteger duplicateReads = new AtomicInteger();
         final AtomicInteger commitFailure = new AtomicInteger();
+        final AtomicInteger explicitCommits = new AtomicInteger();
+        final AtomicInteger autoCommitEnables = new AtomicInteger();
+        final AtomicInteger aborts = new AtomicInteger();
+        volatile boolean initiallyAutoCommit = true;
 
         @Override public Connection getConnection() throws SQLException {
             Connection physical = openSchema();
+            physical.setAutoCommit(initiallyAutoCommit);
             return (Connection) Proxy.newProxyInstance(getClass().getClassLoader(),
                     new Class<?>[] {Connection.class}, (proxy, method, args) -> {
                         String name = method.getName();
@@ -45,11 +50,20 @@ public final class CacheDReceiptClaimRegression {
                             if (sql.startsWith("SELECT kind,owner_a,owner_b FROM cached_transaction_receipts")
                                     && sql.endsWith("LOCK IN SHARE MODE"))
                                 duplicateReads.incrementAndGet();
-                        } else if (name.equals("commit")) {
+                        } else if (name.equals("abort")) {
+                            aborts.incrementAndGet();
+                        } else if (name.equals("commit") || (name.equals("setAutoCommit") && (boolean) args[0])) {
+                            boolean explicit = name.equals("commit");
+                            if (explicit) explicitCommits.incrementAndGet();
+                            else autoCommitEnables.incrementAndGet();
                             int inject = commitFailure.getAndSet(0);
                             if (inject != 0) {
-                                if (inject == LOSE_CONFIRMATION_AFTER_COMMIT) physical.commit();
-                                physical.close();
+                                if (inject == LOSE_CONFIRMATION_AFTER_COMMIT) {
+                                    if (explicit) physical.commit();
+                                    else physical.setAutoCommit(true);
+                                }
+                                // Leave the physical session live. Production must discard it,
+                                // including when a driver fails before reaching the server.
                                 throw new SQLException("Fixture COMMIT response lost", "08S01");
                             }
                         }
@@ -143,6 +157,49 @@ public final class CacheDReceiptClaimRegression {
         }
     }
 
+    static void ambiguousCommits(Connection admin, Pool pool, int before) throws SQLException {
+        pool.commitFailure.set(LOSE_CONFIRMATION_AFTER_COMMIT);
+        String confirmed = UUID.randomUUID().toString();
+        apply(confirmed, 12);
+        apply(confirmed, 12);
+        verify(admin, before + 1, before + 1);
+        pool.commitFailure.set(LOSE_CONNECTION_BEFORE_COMMIT);
+        String unresolved = UUID.randomUUID().toString();
+        check(requireFailure(() -> apply(unresolved, 12)) instanceof CTransaction.OutcomeUnknownException,
+                "Disconnect before commit was treated as success");
+        verify(admin, before + 1, before + 1);
+    }
+
+    static void verifyPooledSession(Connection admin, java.lang.reflect.Field field, Pool prior) throws Exception {
+        try (HikariDataSource pool = new HikariDataSource()) {
+            pool.setJdbcUrl(url);
+            pool.setUsername(user);
+            pool.setPassword(PASSWORD == null ? "" : PASSWORD);
+            pool.setCatalog(schema);
+            pool.setMaximumPoolSize(1);
+            pool.setMinimumIdle(0);
+            pool.setConnectionTimeout(5000);
+            field.set(null, pool);
+
+            apply(UUID.randomUUID().toString(), 12);
+            int discardedId;
+            try (Connection borrowed = DatabaseFactory.getConnectionInstance()) {
+                check(borrowed.getAutoCommit(), "Completed receipt left the pooled session in manual mode");
+                discardedId = number(borrowed, "SELECT CONNECTION_ID()");
+                borrowed.setAutoCommit(false);
+                increment(borrowed);
+                DatabaseFactory.discardConnection(borrowed);
+            }
+            try (Connection clean = DatabaseFactory.getConnectionInstance()) {
+                check(clean.getAutoCommit() && number(clean, "SELECT CONNECTION_ID()") != discardedId,
+                        "Hikari lent out the discarded physical session");
+            }
+            verify(admin, 5, 5);
+        } finally {
+            field.set(null, prior);
+        }
+    }
+
     public static void main(String[] arguments) throws Exception {
         if (arguments.length != 2)
             throw new IllegalArgumentException("Pass the isolated server JDBC URL and user");
@@ -174,6 +231,8 @@ public final class CacheDReceiptClaimRegression {
                     apply(first, 12);
                     check(pool.engineChecks.get() == 0 && pool.insertClaims.get() == 1,
                             "Unexpected number of SQL requests on the first claim");
+                    check(pool.explicitCommits.get() == 0 && pool.autoCommitEnables.get() == 1,
+                            "A fresh receipt should commit and restore auto-commit in one call");
                     verify(admin, 1, 1);
                     apply(first, 12);
                     check(pool.duplicateReads.get() == 1, "Replay missed the current identity check");
@@ -189,27 +248,26 @@ public final class CacheDReceiptClaimRegression {
                     }}));
                     verify(admin, 2, 2);
 
-                    pool.commitFailure.set(LOSE_CONFIRMATION_AFTER_COMMIT);
-                    String confirmed = UUID.randomUUID().toString();
-                    apply(confirmed, 12);
-                    apply(confirmed, 12);
-                    verify(admin, 3, 3);
-                    pool.commitFailure.set(LOSE_CONNECTION_BEFORE_COMMIT);
-                    String unresolved = UUID.randomUUID().toString();
-                    check(requireFailure(() -> apply(unresolved, 12))
-                            instanceof CTransaction.OutcomeUnknownException, "Disconnect was treated as success");
-                    verify(admin, 3, 3);
+                    ambiguousCommits(admin, pool, 2);
+                    pool.initiallyAutoCommit = false;
+                    int priorEnables = pool.autoCommitEnables.get();
+                    ambiguousCommits(admin, pool, 3);
+                    check(pool.explicitCommits.get() == 2 && pool.autoCommitEnables.get() == priorEnables,
+                            "Manual-commit connections must keep their original mode");
+                    check(pool.aborts.get() == 4, "An uncertain transaction connection was reused");
+                    pool.initiallyAutoCommit = true;
+                    verifyPooledSession(admin, field, pool);
 
                     sql(admin, "ALTER TABLE cached_transaction_receipts ENGINE=MyISAM");
                     requireFailure(() -> apply(UUID.randomUUID().toString(), 12));
                     requireFailure(() -> apply(first, 12));
-                    verify(admin, 3, 3);
+                    verify(admin, 5, 5);
                     sql(admin, "ALTER TABLE cached_transaction_receipts ENGINE=InnoDB");
                     apply(UUID.randomUUID().toString(), 12);
-                    verify(admin, 4, 4);
+                    verify(admin, 6, 6);
                     sql(admin, "DROP TABLE cached_transaction_receipts");
                     requireFailure(() -> apply(UUID.randomUUID().toString(), 12));
-                    check(number(admin, "SELECT total FROM fixture_balance WHERE id=1") == 4,
+                    check(number(admin, "SELECT total FROM fixture_balance WHERE id=1") == 6,
                             "Missing receipt table allowed a game mutation");
                     field.set(null, null);
                 }
@@ -218,6 +276,6 @@ public final class CacheDReceiptClaimRegression {
             }
         }
         System.out.println("PASS one-statement receipt claim, concurrent dedup, rollback, "
-                + "COMMIT response loss, engine drift and missing schema");
+                + "manual and auto-commit response loss, Hikari session disposal, engine drift and missing schema");
     }
 }

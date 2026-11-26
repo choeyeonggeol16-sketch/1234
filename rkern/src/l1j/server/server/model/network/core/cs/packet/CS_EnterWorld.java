@@ -341,19 +341,20 @@ public final class CS_EnterWorld {
         data.items = CharactersItemStorage.create().loadItems(data.pc.getId());
         // Bookmark metadata belongs to these detached item images. Its SQL
         // must finish before the CIO installs the inventory/world state.
+        ArrayList<L1ItemInstance> savedOrbs = null;
         for (L1ItemInstance item : data.items) {
-            if (item.getItemId() == 700023) CItemBookmark.LoadItemSlots(data.pc, item);
-            if (item.getItemId() == 700024 && data.templateOrbBookmarks == null)
+            if (item.getItemId() == 700023) {
+                if (savedOrbs == null) savedOrbs = new ArrayList<>();
+                savedOrbs.add(item);
+            } else if (item.getItemId() == 700024 && data.templateOrbBookmarks == null) {
                 data.templateOrbBookmarks = BookmarkSlot.LoadItemSlots(null, 700024);
+            }
         }
+        if (savedOrbs != null) CItemBookmark.loadSavedOrbSlots(savedOrbs);
         data.warehouseItems = readWarehouseItems(data.pc.getAccountName(), data.pc.getName());
         if (Config.USE_ATTENDANCE_SYSTEM && data.pc.getLevel() >= 50)
             data.attendance = SC_ATTENDANCE_USER_DATA_EXTEND.readLoginSnapshot(data.pc.getAccountName());
-        data.mastery = new ArrayList<>();
-        data.skills = loadSkills(data.pc, data.mastery);
-        data.buffs = loadBuff(data.pc);
-        data.unreadMail = hasUnreadMail(data.pc.getName());
-        data.excludes = readExcludeList(data.pc.getId());
+        readLoginSkillsAndInbox(data);
         data.slotItems = CharacterSlotItemTable.getInstance().loadCharSlots(data.pc.getId());
         data.blocked = BuilderCmdHandler.isCharacterBlock(charName);
         data.passiveIds = PassiveUserLoader.readIds(data.pc.getId());
@@ -374,6 +375,18 @@ public final class CS_EnterWorld {
         RankUserLoader.getInstance();
         DungeonRandom.getInstance();
         return data;
+    }
+
+    private static void readLoginSkillsAndInbox(EnterData data) throws SQLException {
+        // Serial reads on one checkout, with the same autocommit and order.
+        final int charId = data.pc.getId();
+        data.mastery = new ArrayList<>();
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            data.skills = loadSkills(con, charId, data.mastery);
+            data.buffs = loadBuff(con, charId);
+            data.unreadMail = hasUnreadMail(con, data.pc.getName());
+            data.excludes = readExcludeList(con, charId);
+        }
     }
 
     private static void discardEnterData(EnterData data) {
@@ -1049,10 +1062,9 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 		}
 	}
 
-    private static boolean hasUnreadMail(String characterName) throws SQLException {
+    private static boolean hasUnreadMail(Connection con, String characterName) throws SQLException {
         final String sql = "SELECT 1 FROM letter WHERE receiver=? AND isCheck=0 LIMIT 1";
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, characterName);
             try (ResultSet rows = ps.executeQuery()) {
                 return rows.next();
@@ -1060,14 +1072,12 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         }
     }
 
-	private static int[] loadSkills(L1PcInstance pc, List<Integer> mastery) throws SQLException {
-		int[] skillList = new int[30]; 
+	private static int[] loadSkills(Connection con, int charId, List<Integer> mastery) throws SQLException {
+		int[] skillList = new int[30];
 
 		String sql = "SELECT skill_id FROM character_skills WHERE char_obj_id = ?";
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-				PreparedStatement pstm = con.prepareStatement(sql)) {
-
-			pstm.setInt(1, pc.getId());
+		try (PreparedStatement pstm = con.prepareStatement(sql)) {
+			pstm.setInt(1, charId);
 			try (ResultSet rs = pstm.executeQuery()) {
 
 				while (rs.next()) {
@@ -1120,14 +1130,12 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 	}
 
 
-	private static List<BuffInfo> loadBuff(L1PcInstance pc) throws SQLException {
+	private static List<BuffInfo> loadBuff(Connection con, int charId) throws SQLException {
 		List<BuffInfo> buffList = new ArrayList<>();
 		String sql = "SELECT skill_id, remaining_time, poly_id FROM character_buff WHERE char_obj_id = ? AND skill_id <> 24447";
 
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-				PreparedStatement pstm = con.prepareStatement(sql)) {
-
-			pstm.setInt(1, pc.getId());
+		try (PreparedStatement pstm = con.prepareStatement(sql)) {
+			pstm.setInt(1, charId);
 			try (ResultSet rs = pstm.executeQuery()) {
 				while (rs.next()) {
 					BuffInfo buffInfo = new BuffInfo();
@@ -1210,10 +1218,9 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 	}
 
 
-    private static List<ExcludeRow> readExcludeList(int charId) throws SQLException {
+    private static List<ExcludeRow> readExcludeList(Connection con, int charId) throws SQLException {
         final ArrayList<ExcludeRow> rows = new ArrayList<>();
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement pstm = con.prepareStatement(
+        try (PreparedStatement pstm = con.prepareStatement(
                      "SELECT type, exclude_name FROM character_exclude WHERE char_id = ?")) {
             pstm.setInt(1, charId);
             try (ResultSet rs = pstm.executeQuery()) {

@@ -836,6 +836,7 @@ public final class CacheD {
      * there is no per-dispatch collection, iterator or scan-array creation.
      */
     private final class ReadyQueue {
+        private static final byte UNLINKED = 0, BLOCKED = 1, SLEEPING = 2, ELIGIBLE = 3;
         CPendingState head;
         private CPendingState tail;
         private int count;
@@ -863,7 +864,7 @@ public final class CacheD {
         int size() { return count; }
 
         void addFirst(CPendingState node) {
-            if (node == head || node.readyPrev != null || node.readyNext != null || node.readyIndexed)
+            if (node == head || node.readyPrev != null || node.readyNext != null || node.readyBucket != UNLINKED)
                 throw new IllegalStateException("CacheD duplicate ready enqueue");
             if (head == null) nextFirstOrder = nextLastOrder = 0;
             node.readyOrder = --nextFirstOrder;
@@ -878,7 +879,7 @@ public final class CacheD {
         }
 
         void addLast(CPendingState node) {
-            if (node == head || node.readyPrev != null || node.readyNext != null || node.readyIndexed)
+            if (node == head || node.readyPrev != null || node.readyNext != null || node.readyBucket != UNLINKED)
                 throw new IllegalStateException("CacheD duplicate ready enqueue");
             if (head == null) nextFirstOrder = nextLastOrder = 0;
             node.readyOrder = ++nextLastOrder;
@@ -901,7 +902,7 @@ public final class CacheD {
         boolean remove(CPendingState node) {
             final CPendingState prev = node.readyPrev;
             final CPendingState next = node.readyNext;
-            if (!node.readyIndexed || (prev == null && head != node)) return false;
+            if (node.readyBucket == UNLINKED || (prev == null && head != node)) return false;
             if (prev != null) prev.readyNext = next;
             else head = next;
             if (next != null) next.readyPrev = prev;
@@ -961,8 +962,7 @@ public final class CacheD {
         }
 
         private void index(CPendingState node, boolean add) {
-            removeCandidate(node);
-            node.readyIndexed = add;
+            moveCandidate(node, add ? BLOCKED : UNLINKED);
             final int first = add ? firstOwner(node) : node.readyFirstOwner;
             final int second = add ? secondOwner(node) : node.readySecondOwner;
             final int item = add ? itemId(node) : node.readyItemId;
@@ -983,11 +983,11 @@ public final class CacheD {
         // the FIFO position, but replace its resource-lane membership.
         void reindexResources(CPendingState node) {
             // DB job owners are fixed at admission; only dirty item ownership changes.
-            if (node instanceof DbJob || !node.readyIndexed) return;
+            if (node instanceof DbJob || node.readyBucket == UNLINKED) return;
             final int first = firstOwner(node), second = secondOwner(node), item = itemId(node);
             if (first == node.readyFirstOwner && second == node.readySecondOwner
                     && item == node.readyItemId) return;
-            removeCandidate(node);
+            moveCandidate(node, BLOCKED);
             updateLane(owners, node.readyFirstOwner, node, false);
             if (node.readySecondOwner > 0 && node.readySecondOwner != node.readyFirstOwner)
                 updateLane(owners, node.readySecondOwner, node, false);
@@ -1002,14 +1002,22 @@ public final class CacheD {
         }
 
         void detachForDeadlineChange(CPendingState node) {
-            removeCandidate(node);
+            if (node.readyBucket != UNLINKED) moveCandidate(node, BLOCKED);
         }
 
-        private void removeCandidate(CPendingState node) {
-            readyJobs.remove(node);
-            readyOther.remove(node);
-            // dueAt never changes without refresh while a node is indexed.
-            sleeping.remove(node);
+        private java.util.TreeSet<CPendingState> eligible(CPendingState node) {
+            return node instanceof DbJob ? readyJobs : readyOther;
+        }
+
+        private void moveCandidate(CPendingState node, byte next) {
+            final byte previous = node.readyBucket;
+            if (previous == next) return;
+            if (previous == ELIGIBLE) eligible(node).remove(node);
+            // Changing dueAt must first detach from this deadline-ordered set.
+            else if (previous == SLEEPING) sleeping.remove(node);
+            if (next == ELIGIBLE) eligible(node).add(node);
+            else if (next == SLEEPING) sleeping.add(node);
+            node.readyBucket = next;
         }
 
         private boolean isLaneHead(Int2ObjectOpenHashMap<Object> map,
@@ -1026,8 +1034,7 @@ public final class CacheD {
         }
 
         void refresh(CPendingState node) {
-            if (!node.readyIndexed) return;
-            removeCandidate(node);
+            if (node.readyBucket == UNLINKED) return;
             final int first = firstOwner(node), second = secondOwner(node), item = itemId(node);
             if (node.writing || !isLaneHead(owners, first, node)
                     || !isLaneHead(owners, second, node)
@@ -1035,22 +1042,26 @@ public final class CacheD {
                     || isOwnerUnavailable(first)
                     || isOwnerUnavailable(second)
                     || !extraLanesReady(node)
-                    || (item > 0 && activeItemIds.contains(item))) return;
+                    || (item > 0 && activeItemIds.contains(item))) {
+                moveCandidate(node, BLOCKED);
+                return;
+            }
             if (node instanceof DbJob) {
                 final DbJob job = (DbJob) node;
-                if (!job.prepared || job.awaitingOwnerApply || job.outcomeUnknown) return;
+                if (!job.prepared || job.awaitingOwnerApply || job.outcomeUnknown) {
+                    moveCandidate(node, BLOCKED);
+                    return;
+                }
             }
-            if (node.dueAt > System.nanoTime() && (!node.urgent || node.failureCount > 0)) {
-                sleeping.add(node);
-            } else if (node instanceof DbJob) readyJobs.add(node);
-            else readyOther.add(node);
+            moveCandidate(node, node.dueAt > System.nanoTime() && (!node.urgent || node.failureCount > 0)
+                    ? SLEEPING : ELIGIBLE);
         }
 
         void activateDue(long now) {
             while (!sleeping.isEmpty() && sleeping.first().dueAt <= now) {
                 final CPendingState state = sleeping.pollFirst();
-                if (state instanceof DbJob) readyJobs.add(state);
-                else readyOther.add(state);
+                eligible(state).add(state);
+                state.readyBucket = ELIGIBLE;
             }
         }
 
@@ -2469,7 +2480,7 @@ public final class CacheD {
         state.failureCount++;
         long retryMillis = Math.min(5000L,
                 250L << Math.min(state.failureCount - 1, 4));
-        if (state.readyIndexed) ready.detachForDeadlineChange(state);
+        ready.detachForDeadlineChange(state);
         state.dueAt = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(retryMillis);
         state.urgent = false;
         if (!state.queued) {

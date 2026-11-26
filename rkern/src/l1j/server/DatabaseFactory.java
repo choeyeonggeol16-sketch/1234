@@ -272,6 +272,20 @@ public class DatabaseFactory {
         return getConnectionInstance();
     }
 
+    /** An uncertain commit or rollback must never leave a reusable transaction. */
+    public static void discardConnection(Connection connection) throws SQLException {
+        if (Proxy.isProxyClass(connection.getClass())
+                && Proxy.getInvocationHandler(connection) instanceof ConnectionTrace trace) {
+            connection = trace.connection;
+        }
+        HikariDataSource pool = DATABASE_POOL;
+        try {
+            if (pool != null) pool.evictConnection(connection);
+        } finally {
+            connection.abort(Runnable::run);
+        }
+    }
+
     public static synchronized void close() {
         if ((DATABASE_POOL != null) && !DATABASE_POOL.isClosed()) {
             try {
