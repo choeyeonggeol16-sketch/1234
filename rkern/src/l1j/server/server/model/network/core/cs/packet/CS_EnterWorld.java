@@ -170,7 +170,7 @@ public final class CS_EnterWorld {
         List<Integer> mastery;
         List<BuffInfo> buffs;
         List<ExcludeRow> excludes;
-        int mailCount;
+        boolean unreadMail;
         int[] slotItems;
         int[] passiveIds;
         List<DungeonTimeProgress<?>> dungeonProgress;
@@ -352,7 +352,7 @@ public final class CS_EnterWorld {
         data.mastery = new ArrayList<>();
         data.skills = loadSkills(data.pc, data.mastery);
         data.buffs = loadBuff(data.pc);
-        data.mailCount = CheckMail(data.pc);
+        data.unreadMail = hasUnreadMail(data.pc.getName());
         data.excludes = readExcludeList(data.pc.getId());
         data.slotItems = CharacterSlotItemTable.getInstance().loadCharSlots(data.pc.getId());
         data.blocked = BuilderCmdHandler.isCharacterBlock(charName);
@@ -716,7 +716,6 @@ public final class CS_EnterWorld {
     
     private static void postEnterProcess(L1PcInstance pc, CUserSocket client, EnterData data) {
     	
-        final int mailCount = data.mailCount;
         if (data.excludes != null && !data.excludes.isEmpty())
             applyExcludeList(SpamTable.getInstance().getExcludeTable(pc.getId()), data.excludes);
 
@@ -830,7 +829,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 
         SC_SlotOpen.send(pc, SC_ReturnedStat.SUBTYPE_RING, computeSlotOpenStatus(pc));
 
-        if (mailCount > 0) {
+        if (data.unreadMail) {
             SC_SkillSound.send(pc, pc.getId(), 1091);
             SC_ServerMessage.send(pc, 428);
         }
@@ -1050,23 +1049,16 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 		}
 	}
 
-	private static int CheckMail(L1PcInstance pc) throws SQLException {
-		int count = 0;
-		String sql = "SELECT count(*) as cnt FROM letter WHERE receiver = ? AND isCheck = 0";
-
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-				PreparedStatement pstm = con.prepareStatement(sql)) {
-
-			pstm.setString(1, pc.getName());
-			try (ResultSet rs = pstm.executeQuery()) {
-				if (rs.next()) {
-					count = rs.getInt("cnt");
-				}
-			}
-		}
-
-		return count;
-	}
+    private static boolean hasUnreadMail(String characterName) throws SQLException {
+        final String sql = "SELECT 1 FROM letter WHERE receiver=? AND isCheck=0 LIMIT 1";
+        try (Connection con = DatabaseFactory.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, characterName);
+            try (ResultSet rows = ps.executeQuery()) {
+                return rows.next();
+            }
+        }
+    }
 
 	private static int[] loadSkills(L1PcInstance pc, List<Integer> mastery) throws SQLException {
 		int[] skillList = new int[30]; 

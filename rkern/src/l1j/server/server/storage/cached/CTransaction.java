@@ -337,23 +337,7 @@ public final class CTransaction {
             MySqlCharactersItemStorage.insertTradeSnapshot(con, snapshot);
             return;
         }
-        if (previousCount <= 0)
-            throw new SQLException("Missing character move original count: " + snapshot.id);
-        try (PreparedStatement ps = con.prepareStatement(
-                "SELECT char_id,item_id,count FROM character_items WHERE id=? FOR UPDATE")) {
-            ps.setInt(1, snapshot.id);
-            try (ResultSet rows = ps.executeQuery()) {
-                if (!rows.next())
-                    throw new SQLException("Character move unexpected row existence: " + snapshot.id);
-                if (rows.getInt(1) != snapshot.ownerId)
-                    throw new SQLException("Character move owner conflict: " + snapshot.id);
-                if (rows.getInt(2) != snapshot.itemId)
-                    throw new SQLException("Character move item type mismatch: " + snapshot.id);
-                if (rows.getInt(3) != previousCount)
-                    throw new SQLException("Character move stale quantity: " + snapshot.id);
-            }
-        }
-        MySqlCharactersItemStorage.updateTradeSnapshot(con, snapshot, snapshot.ownerId);
+        MySqlCharactersItemStorage.updateWarehouseSnapshot(con, snapshot, previousCount);
     }
 
     public static void deleteCharacterMoveRow(Connection con, int id, int ownerId,

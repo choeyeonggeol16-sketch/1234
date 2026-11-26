@@ -20,11 +20,11 @@ import l1j.server.server.storage.sql.handler.SelectorHandler;
 
 public class BQSCharacterDataLoader {
     private static final String LOCK_SNAPSHOT =
-            "SELECT character_data FROM tb_mbook_characterInfo WHERE character_id=? FOR UPDATE";
+            "SELECT character_data FROM tb_mbook_characterinfo WHERE character_id=? FOR UPDATE";
     private static final String UPDATE_SNAPSHOT =
-            "UPDATE tb_mbook_characterInfo SET character_data=? WHERE character_id=?";
+            "UPDATE tb_mbook_characterinfo SET character_data=? WHERE character_id=?";
     private static final String INSERT_SNAPSHOT =
-            "INSERT INTO tb_mbook_characterInfo (character_id, character_data) VALUES (?, ?) "
+            "INSERT INTO tb_mbook_characterinfo (character_id, character_data) VALUES (?, ?) "
                     + "ON DUPLICATE KEY UPDATE character_id=character_id";
 
     public static void in(L1PcInstance pc){
@@ -38,7 +38,7 @@ public class BQSCharacterDataLoader {
     public static BQSCharacterData readSnapshot(int characterId) {
         try (Connection con = DatabaseFactory.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(
-                     "select character_data from tb_mbook_characterInfo where character_id=?")) {
+                     "select character_data from tb_mbook_characterinfo where character_id=?")) {
             ps.setInt(1, characterId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return BQSCharacterData.newInstance(rs);
@@ -67,7 +67,7 @@ public class BQSCharacterDataLoader {
     }
     
     public static BQSCharacterData loadCharacterBqs(L1PcInstance pc){
-        Selector.exec("select * from tb_mbook_characterInfo where character_id=?", new SelectorHandler(){
+        Selector.exec("select * from tb_mbook_characterinfo where character_id=?", new SelectorHandler(){
             @Override
             public void handle(PreparedStatement pstm) throws Exception {
                 pstm.setInt(1, pc.getId());
@@ -101,7 +101,7 @@ public class BQSCharacterDataLoader {
     public static void stageWeeklyReward(L1InventoryTransaction tx, int characterId, long version, int deckIndex) {
         if (characterId <= 0 || version <= 0 || deckIndex < 0)
             throw new IllegalArgumentException("Invalid weekly Monster Book claim");
-        tx.requireTables("tb_mbook_characterInfo");
+        tx.requireTables("tb_mbook_characterinfo");
         tx.sql(con -> {
             final BQSCharacterData saved = lockSnapshot(con, characterId);
             if (saved == null || saved.get_object_id() != characterId || saved.get_decks_version() != version)
@@ -187,7 +187,7 @@ public class BQSCharacterDataLoader {
     }
 
     public static void deleteCharactersBps(Collection<L1PcInstance> col){
-        Updator.exec("truncate table tb_mbook_characterInfo", new Handler(){
+        Updator.exec("truncate table tb_mbook_characterinfo", new Handler(){
             @Override
             public void handle(PreparedStatement pstm) throws Exception {}
         });
@@ -219,7 +219,7 @@ public class BQSCharacterDataLoader {
         CacheD.getInstance().submitDbJobOrdered(object_id, () -> {
             try (Connection con = DatabaseFactory.getInstance().getConnection();
                  PreparedStatement ps = con.prepareStatement(
-                         "delete from tb_mbook_characterInfo where character_id=?")) {
+                         "delete from tb_mbook_characterinfo where character_id=?")) {
                 ps.setInt(1, object_id);
                 ps.executeUpdate();
             } catch (SQLException e) {

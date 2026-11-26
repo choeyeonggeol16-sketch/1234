@@ -9,7 +9,7 @@ public class NoDropItem {
 	private static volatile NoDropItem _instance;
 
 	private final ItemRestrictionTable restrictions =
-			new ItemRestrictionTable("NoDropItem", "드랍 불가", _log);
+			new ItemRestrictionTable("nodropitem", "드랍 불가", _log);
 
 	public static NoDropItem getInstance() {
 		if (_instance == null) {

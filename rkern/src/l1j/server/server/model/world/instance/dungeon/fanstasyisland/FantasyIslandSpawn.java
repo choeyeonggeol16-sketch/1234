@@ -43,7 +43,7 @@ public class FantasyIslandSpawn {
 
 		try {
 			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("SELECT * FROM spawnlist_fantasyIsland");
+			pstm = con.prepareStatement("SELECT * FROM spawnlist_fantasyisland");
 			rs = pstm.executeQuery();
 			int count = 0;
 			while(rs.next()){

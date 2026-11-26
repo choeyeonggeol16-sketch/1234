@@ -67,6 +67,7 @@ public abstract class Warehouse extends L1Object {
 
     // Keep the four existing CacheD SQL workers; no warehouse JDBC work runs
     // on the game/IO completion thread. All table names below are constants.
+    protected static final int PRIVATE_ROWS = 0;
     protected static final int CLAN_ROWS = 1;
     protected static final int ELF_ROWS = 2;
     protected static final int SPECIAL_ROWS = 3;
@@ -74,11 +75,11 @@ public abstract class Warehouse extends L1Object {
     protected static final int PACKAGE_ROWS = 5;
 
     private static final String[] ROW_TABLE = {
-        "", "clan_warehouse", "character_elf_warehouse",
+        "character_warehouse", "clan_warehouse", "character_elf_warehouse",
         "character_special_warehouse", "character_supplementary_service", "character_package_warehouse"
     };
     private static final String[] OWNER_COLUMN = {
-        "", "clan_name", "account_name", "char_name", "account_name", "account_name"
+        "account_name", "clan_name", "account_name", "char_name", "account_name", "account_name"
     };
     private static final String[] INSERT_SQL = {
         "",
@@ -292,24 +293,9 @@ public abstract class Warehouse extends L1Object {
         }
     }
 
-    private static void verifyWarehouseMoveRow(Connection con, int type, String owner,
-                                                int id, int expectedItemId, int expectedCount) throws SQLException {
-        if (expectedCount <= 0) throw new SQLException("Missing warehouse original count: " + id);
-        try (PreparedStatement ps = con.prepareStatement(
-                "SELECT item_id,count FROM " + ROW_TABLE[type] + " WHERE id=? AND "
-                + OWNER_COLUMN[type] + "=? FOR UPDATE")) {
-            ps.setInt(1, id);
-            ps.setString(2, owner);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next() || rs.getInt(1) != expectedItemId || rs.getInt(2) != expectedCount)
-                    throw new SQLException("Warehouse transfer source stale (owner/type/count): " + id);
-            }
-        }
-    }
-
-    private static void updateWarehouseMove(Connection con, int type, String owner,
-                                            int id, int itemId, int before, int count) throws SQLException {
-        verifyWarehouseMoveRow(con, type, owner, id, itemId, before);
+    static void updateWarehouseMove(Connection con, int type, String owner,
+                                    int id, int itemId, int before, int count) throws SQLException {
+        if (before <= 0) throw new SQLException("Missing warehouse original count: " + id);
         try (PreparedStatement ps = con.prepareStatement(
                 "UPDATE " + ROW_TABLE[type] + " SET count=? WHERE id=? AND " + OWNER_COLUMN[type]
                 + "=? AND item_id=? AND count=?")) {
@@ -323,13 +309,16 @@ public abstract class Warehouse extends L1Object {
         }
     }
 
-    private static void deleteWarehouseMove(Connection con, int type, String owner,
-                                            int id, int itemId, int before) throws SQLException {
-        verifyWarehouseMoveRow(con, type, owner, id, itemId, before);
+    static void deleteWarehouseMove(Connection con, int type, String owner,
+                                    int id, int itemId, int before) throws SQLException {
+        if (before <= 0) throw new SQLException("Missing warehouse original count: " + id);
         try (PreparedStatement ps = con.prepareStatement(
-                "DELETE FROM " + ROW_TABLE[type] + " WHERE id=? AND " + OWNER_COLUMN[type] + "=?")) {
+                "DELETE FROM " + ROW_TABLE[type] + " WHERE id=? AND " + OWNER_COLUMN[type]
+                + "=? AND item_id=? AND count=?")) {
             ps.setInt(1, id);
             ps.setString(2, owner);
+            ps.setInt(3, itemId);
+            ps.setInt(4, before);
             if (ps.executeUpdate() != 1)
                 throw new SQLException("Warehouse move delete not applied: " + id);
         }

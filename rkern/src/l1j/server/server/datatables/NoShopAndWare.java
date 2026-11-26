@@ -56,7 +56,7 @@ public class NoShopAndWare {
 		ArrayList<Integer> idlist = new ArrayList<Integer>();
 		try {
 			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("select * from NoShopAndWare");
+			pstm = con.prepareStatement("select * from noshopandware");
 			rs = pstm.executeQuery();
 			while (rs.next()) {
 				idlist.add(rs.getInt("item_id"));
@@ -84,7 +84,7 @@ public class NoShopAndWare {
 
         try {
             con = DatabaseFactory.getInstance().getConnection();
-            pstm = con.prepareStatement("INSERT INTO NoShopAndWare SET item_id=?");
+            pstm = con.prepareStatement("INSERT INTO noshopandware SET item_id=?");
             pstm.setInt(1, itemid);
             pstm.execute();
 			_idlist.add(itemid);
@@ -106,7 +106,7 @@ public class NoShopAndWare {
 	
 		try {
 			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("DELETE FROM NoShopAndWare WHERE item_id=?");
+			pstm = con.prepareStatement("DELETE FROM noshopandware WHERE item_id=?");
 			pstm.setInt(1, itemid);
 			pstm.execute();
 			_idlist.remove(index);

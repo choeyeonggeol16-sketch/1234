@@ -1,9 +1,9 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1BoardInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1BoardPost;
@@ -41,7 +41,8 @@ public final class CS_BoardDelete {
         final L1BoardInstance board =
                 (L1BoardInstance) obj;
 
-        if (board.getNpcId() == 4747470) return;
+        final int npcId = board.getNpcId();
+        if (npcId == 900006 || npcId == 45000178 || npcId == 4747470) return;
 
         final L1BoardPost topic =
                 L1BoardPost.findById(topicId);
@@ -65,9 +66,6 @@ public final class CS_BoardDelete {
 
             return;
         }
-
-        final int npcId =
-                board.getNpcId();
 
         switch (npcId) {
 

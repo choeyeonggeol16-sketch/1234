@@ -18,16 +18,13 @@
  */
 
 package l1j.server.server.model.Instance;
-import l1j.server.server.model.network.core.sc.packet.SC_EnchantRanking1;
-import l1j.server.server.model.network.core.sc.packet.SC_BoardRead;
 
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.model.network.core.sc.packet.SC_Board;
-
+import l1j.server.server.model.network.core.sc.packet.SC_BoardRead;
 import l1j.server.server.model.network.core.sc.packet.SC_EnchantRanking;
-
+import l1j.server.server.model.network.core.sc.packet.SC_EnchantRanking1;
 import l1j.server.server.model.network.core.sc.packet.SC_KillRanking;
-
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.templates.L1Npc;
 
@@ -53,10 +50,6 @@ public class L1BoardInstance extends L1NpcInstance {
 			} else if (BugRaceController.getInstance().getBugState() == 2) { // 다음경기준비중
 				SC_SystemMessage.send(player, "다음 경기를 준비 중 입니다.");
 			}
-		/*} else if(this.getNpcTemplate().get_npcId() == 4200020) {
-			player.sendPackets(S_ShowCmd.getPlayMovieNoti("http://kimsuin123.megaplug.kr/price/pricePreviewGM27.html", -1));
-		} else if(this.getNpcTemplate().get_npcId() == 4200022) {
-			player.sendPackets(S_ShowCmd.getPlayMovieNoti("http://kimsuin123.megaplug.kr/priceuse/pricePreviewuse7.html", -1));*/
 		} else if (this.getNpcTemplate().get_npcId() == 45000178) {
 			return;
 		} else if (this.getNpcTemplate().get_npcId() == 4747470) {
@@ -70,8 +63,6 @@ public class L1BoardInstance extends L1NpcInstance {
 	}
 
 	public void onAction(L1PcInstance player, int number) {
-		/*if(this.getNpcTemplate().get_npcId() == 4200020) { 
-			player.sendPackets(S_ShowCmd.getPlayMovieNoti("http://kimsuin123.megaplug.kr/price/pricePreviewGM27.html", -1));*/
 		if (this.getNpcTemplate().get_npcId() == 45000178) {
 			return;
 		} else if (this.getNpcTemplate().get_npcId() == 4747470) {

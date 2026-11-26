@@ -29,7 +29,7 @@ public class CollectionSpellLoader {
 		_spells						= new HashMap<Integer, CollectionSpell>(256);
 		try{
 			con		= DatabaseFactory.getInstance().getConnection();
-			pstm	= con.prepareStatement("select * from tb_mjct_spellIcon");
+			pstm	= con.prepareStatement("select * from tb_mjct_spellicon");
 			rs		= pstm.executeQuery();
 			while(rs.next()){
 				sp 			= new CollectionSpell();

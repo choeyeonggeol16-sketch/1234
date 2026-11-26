@@ -37,7 +37,7 @@ public class UserProtectMonsterTable {
 		
 		try {
 			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("select * from UserProtectMonster");
+			pstm = con.prepareStatement("select * from userprotectmonster");
 			rs = pstm.executeQuery();
 			while (rs.next()) {
 				_list.add(rs.getInt("monster_id"));

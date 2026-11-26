@@ -6556,9 +6556,6 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 		} else if (arg.equalsIgnoreCase("템드랍아이템")) {
 			DropItemTable.reload();
 			gm.sendPackets("drop_item 테이블이 리로드 되었습니다.");
-//		} else if (arg.equalsIgnoreCase("용해제2")) {
-//			ResolventTable1.reload();
-//			gm.sendPackets("resolvent1 테이블이 리로드 최신화되었습니다.");
 		} else if (arg.equalsIgnoreCase("변신")) {
 			PolyTable.reload();
 			gm.sendPackets("polymorphs 테이블이 리로드 되었습니다.");
@@ -7606,7 +7603,7 @@ for (L1PcInstance pc2 : players) {
 
 			try {
 				con = DatabaseFactory.getInstance().getConnection();
-				pstm = con.prepareStatement("INSERT INTO adShop SET account = ?, name = ?, sex = ?, type = ?, x = ?, y = ?, heading = ?, map_id = ?");
+				pstm = con.prepareStatement("INSERT INTO adshop SET account = ?, name = ?, sex = ?, type = ?, x = ?, y = ?, heading = ?, map_id = ?");
 				pstm.setInt(1, AccountName);
 				pstm.setString(2, name);
 				pstm.setInt(3, sex);

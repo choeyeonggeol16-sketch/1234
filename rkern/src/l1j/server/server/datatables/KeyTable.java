@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,6 +87,25 @@ public class KeyTable {
 			_log.log(Level.SEVERE, "initBossKey error", e);
 		}
 	}
+
+    /** Resolve all loaded boss keys on the inventory connection. A legacy object can
+     * have multiple mappings; its first key in composite primary-key order wins. */
+    public static void loadInventoryKeys(Connection con, int ownerId, Map<Integer, L1ItemInstance> keys) {
+        String sql = "SELECT k.item_obj_id, MIN(k.key_id) FROM character_items i "
+                + "JOIN item_key_boss k ON k.item_obj_id=i.id "
+                + "WHERE i.char_id=? AND i.item_id=80500 GROUP BY k.item_obj_id";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, ownerId);
+            try (ResultSet rows = ps.executeQuery()) {
+                while (rows.next()) {
+                    L1ItemInstance key = keys.get(rows.getInt(1));
+                    if (key != null) key.setKeyId(rows.getInt(2));
+                }
+            }
+        } catch (SQLException failure) {
+            _log.log(Level.SEVERE, "Could not load boss key mappings for char_id=" + ownerId, failure);
+        }
+    }
 
 	public static boolean checkey(L1ItemInstance item) {
 		String sql = "SELECT key_id FROM item_key_boss WHERE item_obj_id=?";

@@ -52,7 +52,7 @@ public class ExpAmplifierLoader {
 		_amps									= new HashMap<Integer, ExpAmplifier>(32);
 		try{
 			con 	= DatabaseFactory.getInstance().getConnection();
-			pstm 	= con.prepareStatement("select * from tb_mjExpAmpSystem");
+			pstm 	= con.prepareStatement("select * from tb_mjexpampsystem");
 			rs 		= pstm.executeQuery();
 			while(rs.next()){
 				String s 	= rs.getString("maps");

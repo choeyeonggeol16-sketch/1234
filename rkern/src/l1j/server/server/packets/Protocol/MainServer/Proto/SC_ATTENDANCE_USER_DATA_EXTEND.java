@@ -29,9 +29,9 @@ import l1j.server.server.storage.CacheD;
  */
 public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
     private static final String READ_SNAPSHOT =
-            "SELECT attendance_data, attendance_indices, attendance_calendar FROM attendance_userInfo WHERE account=?";
+            "SELECT attendance_data, attendance_indices, attendance_calendar FROM attendance_userinfo WHERE account=?";
     private static final String UPDATE_SNAPSHOT =
-            "UPDATE attendance_userInfo SET attendance_data=?, attendance_indices=?, attendance_calendar=? WHERE account=?";
+            "UPDATE attendance_userinfo SET attendance_data=?, attendance_indices=?, attendance_calendar=? WHERE account=?";
 
     // ────────────── 전송 ──────────────
 
@@ -101,7 +101,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         if (slot == null || slot.get_state() != UserAttendanceState.COMPLETE) return false;
         AttendanceRewardClaims.markClaimed(group, slot);
         try (PreparedStatement ps = con.prepareStatement(
-                "UPDATE attendance_userInfo SET attendance_data=? WHERE account=?")) {
+                "UPDATE attendance_userinfo SET attendance_data=? WHERE account=?")) {
             ps.setBytes(1, data.bodyBytes());
             ps.setString(2, account);
             if (ps.executeUpdate() != 1) throw new SQLException("Attendance reward row changed: " + account);
@@ -258,7 +258,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         CacheD.getInstance().submitDbJobOrdered(account, () -> {
             try (Connection con = DatabaseFactory.getInstance().getConnection();
                  PreparedStatement ps = con.prepareStatement(
-                         "INSERT INTO attendance_userInfo (account, attendance_data, attendance_indices, attendance_calendar) "
+                         "INSERT INTO attendance_userinfo (account, attendance_data, attendance_indices, attendance_calendar) "
                          + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE account=VALUES(account)")) {
                 ps.setString(1, account);
                 ps.setBytes(2, bytes);

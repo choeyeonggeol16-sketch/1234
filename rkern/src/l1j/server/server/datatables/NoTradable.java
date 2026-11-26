@@ -9,7 +9,7 @@ public class NoTradable {
 	private static volatile NoTradable _instance;
 
 	private final ItemRestrictionTable restrictions =
-			new ItemRestrictionTable("NoTradable", "거래 불가", _log);
+			new ItemRestrictionTable("notradable", "거래 불가", _log);
 
 	public static NoTradable getInstance() {
 		if (_instance == null) {

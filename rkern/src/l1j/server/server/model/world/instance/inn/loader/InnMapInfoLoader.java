@@ -16,7 +16,7 @@ public class InnMapInfoLoader {
 		ResultSet 			rs 		= null;
 		try{
 			con			= DatabaseFactory.getInstance().getConnection();
-			pstm		= con.prepareStatement("select * from tb_inn_mapInfo where inn_id=?");
+			pstm		= con.prepareStatement("select * from tb_inn_mapinfo where inn_id=?");
 			pstm.setInt(1, innId);
 			rs			= pstm.executeQuery();
 			while(rs.next()){

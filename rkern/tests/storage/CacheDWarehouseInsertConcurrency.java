@@ -126,6 +126,26 @@ public final class CacheDWarehouseInsertConcurrency {
             throw new AssertionError("Concurrent transfer or duplicate rollback changed the item/receipt totals");
     }
 
+    private void checkCharacterStackUpdate() throws SQLException {
+        try (Connection con = openTransaction()) {
+            try {
+                CTransaction.writeCharacterMoveRow(con, snapshot(220, 100, 1), false, 2);
+                for (int[] stale : new int[][] { {100, 2}, {101, 1} }) {
+                    try {
+                        CTransaction.writeCharacterMoveRow(con, snapshot(220, stale[0], 8), false, stale[1]);
+                        throw new AssertionError("Stale character stack update was accepted");
+                    } catch (SQLException expected) {
+                        if (expected.getSQLState() != null) throw expected;
+                    }
+                }
+                if (query(con, "SELECT count FROM character_items WHERE id=220 AND char_id=100") != 1)
+                    throw new AssertionError("Character stack ownership or count changed");
+            } finally {
+                con.rollback();
+            }
+        }
+    }
+
     private void run() throws Exception {
         try (Connection admin = connect()) {
             execute(admin, "CREATE DATABASE " + schema);
@@ -154,11 +174,12 @@ public final class CacheDWarehouseInsertConcurrency {
                     second.get(12, TimeUnit.SECONDS);
                 }
                 checkDuplicateRollbackAndConservation(admin);
+                checkCharacterStackUpdate();
             } finally {
                 execute(admin, "DROP DATABASE " + schema);
             }
         }
-        System.out.println("PASS independent warehouse inserts in one key gap and duplicate rollback");
+        System.out.println("PASS independent warehouse inserts, duplicate rollback and guarded character stack update");
     }
 
     public static void main(String[] arguments) throws Exception {

@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,20 +41,21 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
         try (Connection con = DatabaseFactory.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, objId);
+            ArrayList<L1ItemInstance> items = new ArrayList<>();
+            HashMap<Integer, L1ItemInstance> bossKeys = null;
             try (ResultSet rs = ps.executeQuery()) {
-                ArrayList<L1ItemInstance> items = new ArrayList<>();
                 while (rs.next()) {
                     L1ItemInstance item = rowToItem(rs);
-                    if (item != null) {
-                        cache.registerLoadedItemOwner(objId, item.getId());
-                        if (item.getItemId() == 80500) {
-                            KeyTable.checkey(item);
-                        }
-                        items.add(item);
+                    cache.registerLoadedItemOwner(objId, item.getId());
+                    if (item.getItemId() == 80500) {
+                        if (bossKeys == null) bossKeys = new HashMap<>();
+                        bossKeys.put(item.getId(), item);
                     }
+                    items.add(item);
                 }
-                return items;
             }
+            if (bossKeys != null) KeyTable.loadInventoryKeys(con, objId, bossKeys);
+            return items;
         } catch (SQLException e) {
             _log.log(Level.SEVERE, "loadItems error for char_id: " + objId, e);
             throw e;
@@ -277,7 +279,7 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
     }
 
     public static void storeSnapshot(Connection con, ItemSnapshot v) throws SQLException {
-        if (updateTradeSnapshotRow(con, v, v.ownerId)) return;
+        if (updateTradeSnapshotRow(con, v, v.ownerId, 0)) return;
         // UPDATE can report zero for an unchanged row. Distinguish it from a
         // missing item and a different owner's unique ID before INSERT.
         try (PreparedStatement ps = con.prepareStatement(
@@ -305,17 +307,26 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
         }
     }
 
-    /** Reassignment is conditional on the locked ORIGINAL owner, not the new one. */
-    private static boolean updateTradeSnapshotRow(Connection con, ItemSnapshot v,
-                                                   int previousOwner) throws SQLException {
-        if (previousOwner <= 0 || v.ownerId <= 0 || v.id <= 0 || v.count <= 0)
-            throw new SQLException("Invalid trade item owner/quantity");
-        try (PreparedStatement ps = con.prepareStatement(
-                "UPDATE character_items SET item_id=?,char_id=?,item_name=?,count=?,is_equipped=0,"
+    private static final String UPDATE_TRADE_ROW_SQL =
+            "UPDATE character_items SET item_id=?,char_id=?,item_name=?,count=?,is_equipped=0,"
                 + "enchantlvl=?,is_id=?,durability=?,charge_count=?,remaining_time=?,last_used=?,"
                 + "bless=?,attr_enchantlvl=?,special_enchant=?,end_time=?,package=?,"
                 + "bless_level=?,bless_level2=?,item_level=?,Hotel_Town=? "
-                + "WHERE id=? AND char_id=? AND item_id=?")) {
+                + "WHERE id=? AND char_id=? AND item_id=?";
+
+    /** A warehouse move additionally checks the quantity captured by its owner. */
+    public static void updateWarehouseSnapshot(Connection con, ItemSnapshot v, int before) throws SQLException {
+        if (before <= 0) throw new SQLException("Missing character move original count: " + v.id);
+        if (!updateTradeSnapshotRow(con, v, v.ownerId, before))
+            throw new SQLException("Character move owner/type/count changed: " + v.id);
+    }
+
+    private static boolean updateTradeSnapshotRow(Connection con, ItemSnapshot v,
+                                                   int previousOwner, int previousCount) throws SQLException {
+        if (previousOwner <= 0 || v.ownerId <= 0 || v.id <= 0 || v.count <= 0)
+            throw new SQLException("Invalid trade item owner/quantity");
+        String sql = previousCount > 0 ? UPDATE_TRADE_ROW_SQL + " AND count=?" : UPDATE_TRADE_ROW_SQL;
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             int i = 0;
             ps.setInt(++i, v.itemId);
             ps.setInt(++i, v.ownerId);
@@ -339,13 +350,14 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
             ps.setInt(++i, v.id);
             ps.setInt(++i, previousOwner);
             ps.setInt(++i, v.itemId);
+            if (previousCount > 0) ps.setInt(++i, previousCount);
             return ps.executeUpdate() == 1;
         }
     }
 
     public static void updateTradeSnapshot(Connection con, ItemSnapshot v,
                                            int previousOwner) throws SQLException {
-        if (!updateTradeSnapshotRow(con, v, previousOwner))
+        if (!updateTradeSnapshotRow(con, v, previousOwner, 0))
             throw new SQLException("Trade item UPDATE owner/type changed: " + v.id);
     }
 

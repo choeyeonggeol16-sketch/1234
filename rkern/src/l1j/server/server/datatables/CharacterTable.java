@@ -335,67 +335,76 @@ public class CharacterTable {
 		return clanIdList;
 	}
 
-	public void CharacterAccountCheck(L1PcInstance pc, String charName) {
-		String sql1 = "SELECT login FROM accounts WHERE ip = (SELECT ip FROM accounts WHERE login = (SELECT account_name FROM characters WHERE char_name = ?))";
-		String sql2 = "SELECT char_name, level, highlevel, clanname, onlinestatus FROM characters WHERE account_name = ?";
+    private static final int ACCOUNT_CHECK_BATCH_SIZE = 64;
 
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement pstm1 = con.prepareStatement(sql1)) {
-			pstm1.setString(1, charName);
+    private record AccountCheckRow(String login, String ip) {}
 
-			try (ResultSet loginRs = pstm1.executeQuery()) {
-				SC_SystemMessage.send(pc, "-------------------------------------------------");
-				while (loginRs.next()) {
-					String login = loginRs.getString("login");
-					SC_SystemMessage.send(pc, "\\fYAccounts : " + login);
-					
-					try (PreparedStatement pstm2 = con.prepareStatement(sql2)) {
-						pstm2.setString(1, login);
-						try (ResultSet characterRs = pstm2.executeQuery()) {
-							while (characterRs.next()) {
-								String onlineStatus = characterRs.getInt("onlinestatus") == 0 ? "" : "(접속중)";
-								SC_SystemMessage.send(pc, "* " + characterRs.getString("char_name") + " (Lv:"
-										+ characterRs.getInt("level") + ") (HLv:" + characterRs.getInt("highlevel") + ") " + "(혈맹:"
-										+ characterRs.getString("clanname") + ") " + "\\fY" + onlineStatus);
-							}
-						}
-					}
-				}
-				SC_SystemMessage.send(pc, "-------------------------------------------------");
-			}
-		} catch (SQLException e) {
-			_log.log(Level.SEVERE, e.getLocalizedMessage(), e);
-		}
-	}
+    public void CharacterAccountCheck(L1PcInstance pc, String charName) {
+        checkAccounts(pc, charName, true);
+    }
 
-	public void CharacterAccountCheck1(L1PcInstance pc, String charName) {
-		String sql1 = "SELECT login, ip FROM accounts WHERE login = (SELECT account_name FROM characters WHERE char_name = ?)";
-		String sql2 = "SELECT char_name, level, highlevel, clanname, onlinestatus FROM characters WHERE account_name = ?";
+    public void CharacterAccountCheck1(L1PcInstance pc, String charName) {
+        checkAccounts(pc, charName, false);
+    }
 
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-			 PreparedStatement pstm1 = con.prepareStatement(sql1)) {
-			pstm1.setString(1, charName);
+    private void checkAccounts(L1PcInstance pc, String charName, boolean sameIp) {
+        final String sql = sameIp
+                ? "SELECT login FROM accounts WHERE ip=(SELECT ip FROM accounts WHERE login="
+                        + "(SELECT account_name FROM characters WHERE char_name=?))"
+                : "SELECT login,ip FROM accounts WHERE login=(SELECT account_name FROM characters WHERE char_name=?)";
+        final String separator = (sameIp ? "" : "\\aD") + "-------------------------------------------------";
+        try (Connection con = DatabaseFactory.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, charName);
+            try (ResultSet rows = ps.executeQuery()) {
+                SC_SystemMessage.send(pc, separator);
+                final ArrayList<AccountCheckRow> batch = new ArrayList<>(ACCOUNT_CHECK_BATCH_SIZE);
+                while (rows.next()) {
+                    batch.add(new AccountCheckRow(rows.getString("login"), sameIp ? null : rows.getString("ip")));
+                    if (batch.size() == ACCOUNT_CHECK_BATCH_SIZE) {
+                        sendAccountBatch(pc, con, batch, sameIp);
+                        batch.clear();
+                    }
+                }
+                if (!batch.isEmpty()) sendAccountBatch(pc, con, batch, sameIp);
+                SC_SystemMessage.send(pc, separator);
+            }
+        } catch (SQLException failure) {
+            _log.log(Level.SEVERE, "Character account lookup failed", failure);
+        }
+    }
 
-			try (ResultSet loginRs = pstm1.executeQuery()) {
-				SC_SystemMessage.send(pc, "\\aD-------------------------------------------------");
-				while (loginRs.next()) {
-					String login = loginRs.getString("login");
-					SC_SystemMessage.send(pc, "\\aH계정: " + login + ", IP: " + loginRs.getString("ip"));
-					
-					try (PreparedStatement pstm2 = con.prepareStatement(sql2)) {
-						pstm2.setString(1, login);
-						try (ResultSet characterRs = pstm2.executeQuery()) {
-							while (characterRs.next()) {
-								String onlineStatus = characterRs.getInt("onlinestatus") == 0 ? "" : "(접속중)";
-								SC_SystemMessage.send(pc, "* " + characterRs.getString("char_name") + " (Lv:" + characterRs.getInt("level") + ") (HLv:" + characterRs.getInt("highlevel") + ") " + "(혈맹:" + characterRs.getString("clanname") + ") " + "\\aG" + onlineStatus);
-							}
-						}
-					}
-				}
-				SC_SystemMessage.send(pc, "\\aD-------------------------------------------------");
-			}
-		} catch (SQLException e) {
-			_log.log(Level.SEVERE, e.getLocalizedMessage(), e);
-		}
-	}
+    private void sendAccountBatch(L1PcInstance pc, Connection con, ArrayList<AccountCheckRow> batch,
+                                  boolean sameIp) throws SQLException {
+        // Bind each original login as before. Net uses different charsets for
+        // accounts.login and characters.account_name; a direct join can lose
+        // the character account index. The ordinal also retains empty accounts.
+        final StringBuilder sql = new StringBuilder(batch.size() * 130);
+        for (int i = 0; i < batch.size(); i++) {
+            if (i > 0) sql.append(" UNION ALL ");
+            sql.append("SELECT ").append(i).append(" AS lookup_order, objid, char_name, level, ")
+                    .append("highlevel, clanname, onlinestatus FROM characters WHERE account_name=?");
+        }
+        sql.append(" ORDER BY lookup_order, char_name, objid");
+        try (PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            for (int i = 0; i < batch.size(); i++) ps.setString(i + 1, batch.get(i).login());
+            try (ResultSet rows = ps.executeQuery()) {
+                boolean hasRow = rows.next();
+                for (int i = 0; i < batch.size(); i++) {
+                    final AccountCheckRow account = batch.get(i);
+                    SC_SystemMessage.send(pc, sameIp
+                            ? "\\fYAccounts : " + account.login()
+                            : "\\aH계정: " + account.login() + ", IP: " + account.ip());
+                    while (hasRow && rows.getInt("lookup_order") == i) {
+                        final String onlineStatus = rows.getInt("onlinestatus") == 0 ? "" : "(접속중)";
+                        SC_SystemMessage.send(pc, "* " + rows.getString("char_name") + " (Lv:"
+                                + rows.getInt("level") + ") (HLv:" + rows.getInt("highlevel")
+                                + ") (혈맹:" + rows.getString("clanname") + ") "
+                                + (sameIp ? "\\fY" : "\\aG") + onlineStatus);
+                        hasRow = rows.next();
+                    }
+                }
+            }
+        }
+    }
 }

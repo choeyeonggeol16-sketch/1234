@@ -173,48 +173,6 @@ public class PrivateWarehouse extends Warehouse {
         }
     }
 
-    private static void verifyMoveRow(Connection con, String account, int id,
-                                      int expectedItemId, int expectedCount) throws SQLException {
-        if (expectedCount <= 0) throw new SQLException("Missing private warehouse original count: " + id);
-        try (PreparedStatement ps = con.prepareStatement(
-                "SELECT item_id,count FROM character_warehouse WHERE id=? AND account_name=? FOR UPDATE")) {
-            ps.setInt(1, id);
-            ps.setString(2, account);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next() || rs.getInt(1) != expectedItemId || rs.getInt(2) != expectedCount)
-                    throw new SQLException("Private warehouse move source/type/count mismatch: " + id);
-            }
-        }
-    }
-
-    private static void updateMoveRow(Connection con, String account, int id,
-                                      int itemId, int previousCount, int count) throws SQLException {
-        verifyMoveRow(con, account, id, itemId, previousCount);
-        try (PreparedStatement ps = con.prepareStatement(
-                "UPDATE character_warehouse SET count=? WHERE id=? AND account_name=?"
-                + " AND item_id=? AND count=?")) {
-            ps.setInt(1, count);
-            ps.setInt(2, id);
-            ps.setString(3, account);
-            ps.setInt(4, itemId);
-            ps.setInt(5, previousCount);
-            if (ps.executeUpdate() != 1)
-                throw new SQLException("Private warehouse move count/owner changed: " + id);
-        }
-    }
-
-    private static void deleteMoveRow(Connection con, String account, int id, int itemId,
-                                      int previousCount) throws SQLException {
-        verifyMoveRow(con, account, id, itemId, previousCount);
-        try (PreparedStatement ps = con.prepareStatement(
-                "DELETE FROM character_warehouse WHERE id=? AND account_name=?")) {
-            ps.setInt(1, id);
-            ps.setString(2, account);
-            if (ps.executeUpdate() != 1)
-                throw new SQLException("Private warehouse move delete not applied: " + id);
-        }
-    }
-
     private static void insertRow(Row row) {
         try (Connection con = DatabaseFactory.getInstance().getConnection()) {
             insertRow(con, row);
@@ -321,7 +279,7 @@ public class PrivateWarehouse extends Warehouse {
         final int count = item.getCount();
         final int itemId = item.getItemId();
         final int previousCount = CacheD.warehouseMoveOriginalCount(id);
-        if (CacheD.stageWarehouseMoveSql(con -> updateMoveRow(con, account, id, itemId, previousCount, count))) return;
+        if (CacheD.stageWarehouseMoveSql(con -> updateWarehouseMove(con, PRIVATE_ROWS, account, id, itemId, previousCount, count))) return;
         CacheD.getInstance().submitDbJobRetryOrdered(CacheD.accountOrderKey(account),
                 () -> updateRow(account, id, count));
     }
@@ -333,7 +291,7 @@ public class PrivateWarehouse extends Warehouse {
         final String owner = getName();
         final int id = item.getId(), itemId = item.getItemId();
         final int before = CacheD.warehouseMoveOriginalCount(id);
-        if (!CacheD.stageWarehouseMoveSql(con -> deleteMoveRow(con, owner, id, itemId, before)))
+        if (!CacheD.stageWarehouseMoveSql(con -> deleteWarehouseMove(con, PRIVATE_ROWS, owner, id, itemId, before)))
             throw new IllegalStateException("No warehouse SQL transaction scope");
     }
 
@@ -347,7 +305,7 @@ public class PrivateWarehouse extends Warehouse {
         final int id = item.getId();
         final int itemId = item.getItemId();
         final int previousCount = CacheD.warehouseMoveOriginalCount(id);
-        if (CacheD.stageWarehouseMoveSql(con -> deleteMoveRow(con, account, id, itemId, previousCount))) {
+        if (CacheD.stageWarehouseMoveSql(con -> deleteWarehouseMove(con, PRIVATE_ROWS, account, id, itemId, previousCount))) {
             _items.remove(item);
             return;
         }

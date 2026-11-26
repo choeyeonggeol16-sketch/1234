@@ -144,7 +144,7 @@ public final class CS_AuthLogin {
         if (account == null) {
             result.missing = true;
             if (Config.AUTO_CREATE_ACCOUNTS) {
-                if (getAccountIpCount(ip) >= CIOConfig.NETWORK_ADDRESS2ACCOUNT)
+                if (isAccountIpQuotaReached(ip, CIOConfig.NETWORK_ADDRESS2ACCOUNT))
                     result.errorCode = 1;
                 else if (!GameUtils.isLetterOrDigitString(accountName, 5, 12))
                     result.errorCode = 2;
@@ -336,31 +336,21 @@ public final class CS_AuthLogin {
         }
     }
 
-    private static int getAccountIpCount(String ip) {
-        final String sql =
-                "SELECT count(ip) as cnt FROM accounts WHERE ip=?";
-
-        try (Connection con =
-                     DatabaseFactory.getInstance().getConnection();
-
-             PreparedStatement pstm =
-                     con.prepareStatement(sql)) {
-
-            pstm.setString(1, ip);
-
-            try (ResultSet rs = pstm.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("cnt");
-                }
+    private static boolean isAccountIpQuotaReached(String ip, int limit) {
+        if (limit <= 0) return true;
+        // The row at this offset exists exactly when the quota is reached.
+        final String sql = "SELECT 1 FROM accounts WHERE ip=? LIMIT ?,1";
+        try (Connection con = DatabaseFactory.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, ip);
+            ps.setInt(2, limit - 1);
+            try (ResultSet rows = ps.executeQuery()) {
+                return rows.next();
             }
-
-        } catch (Exception e) {
-            // A failed quota SELECT is not evidence that the IP owns zero
-            // accounts. Abort auto-creation instead of bypassing the limit.
-            throw new IllegalStateException("Account IP quota unavailable: " + ip, e);
+        } catch (Exception failure) {
+            // A failed lookup must never make another account eligible.
+            throw new IllegalStateException("Account IP quota unavailable: " + ip, failure);
         }
-
-        throw new IllegalStateException("Account IP quota query returned no count: " + ip);
     }
 
     private static void processDuplication(
