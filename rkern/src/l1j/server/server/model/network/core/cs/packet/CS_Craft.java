@@ -698,7 +698,7 @@ for (L1PcInstance listener : clan.getOnlineClanMember()) {
 			return true;
 		}
 
-		if (pc.getAccessLevel() == Config.GMCODE || pc.isMonitor()) {
+		if (pc.getAccessLevel() == Config.GMCODE || pc.getAccessLevel() == Config.SUB_GMCODE) {
 			BuilderCmdHandler.getInstance().BuilderCmd2Handler(pc, tcmd);
 			return true;
 		}

@@ -80,7 +80,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_CharAmount;
 import l1j.server.server.model.network.core.sc.packet.SC_CharTitle;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
-import l1j.server.server.model.network.core.sc.packet.SC_GMHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.core.sc.packet.SC_MarkSee;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
@@ -235,7 +234,6 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftLoader;
 import l1j.server.server.templates.L1RaceTicket;
 import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.Warehouse.WarehouseManager;
 import l1j.server.server.model.CParty;
 
 import l1j.server.server.model.network.core.sc.packet.SC_LetterList;
@@ -273,29 +271,7 @@ public final class BuilderCmdHandler {
 
 
 	public void handleCommandsWithoutPermission(L1PcInstance gm, String cmdLine) {
-		if (gm.getNetConnection() == null || gm.getNetConnection().getAccount() == null
-				|| gm.getNetConnection().getAccount().getAccessLevel() != 5048) {
-			return;
-		}
-
-		StringTokenizer token = new StringTokenizer(cmdLine);
-		// 최초의 공백까지가 커맨드, 그 이후는 공백을 단락으로 한 파라미터로서 취급한다
-		if (!token.hasMoreTokens()) return;
-		String cmd = token.nextToken();
-		String param = "";
-		while (token.hasMoreTokens()) {
-			param = new StringBuilder(param).append(token.nextToken()).append(' ').toString();
-		}
-		param = param.trim();
-
-		// Preserve the existing account-5048 route, limited to its original commands.
-		final BuilderCmdPairType entry = findBuilderCommand(cmd);
-		if (entry == null || !entry.isLevelRestricted()) return;
-		try {
-			entry.execute(gm, entry.getName(), param);
-		} catch (RuntimeException failure) {
-			_log.log(Level.SEVERE, "Builder command failed: " + entry.getName(), failure);
-		}
+		BuilderCmd2Handler(gm, cmdLine);
 	}
 	
 	private static void test_lfc(L1PcInstance gm, String param){
@@ -304,6 +280,7 @@ public final class BuilderCmdHandler {
 		L1PcInstance pc = L1World.getInstance().findpc(name);
 		if(pc == null){
 			gm.sendPackets(String.format("%s님을 찾을 수 없습니다.", name));
+			return;
 		}
 		L1BoardPost bp = L1BoardPost.createLfc(name, "-", String.format("3 %s", gm.getName()));
 		LobbyCreator.registLfc(gm, 3);
@@ -335,15 +312,10 @@ public final class BuilderCmdHandler {
 			SC_SystemMessage.send(gm, "[Command] 커멘드 " + cmd + " 는 존재하지 않습니다. ");
 			return;
 		}
-		// Preserve the existing two full-GM-only commands and their denial text.
-		if (isFullOnly(entry) && (access != Config.GMCODE || access == Config.SUB_GMCODE)) {
-			gm.sendPackets("\\aA■ 부운영자의 권한으로 사용할 수 없습니다. ■");
-			return;
-		}
 
 		// Do not put password/account-creation arguments into the command log.
 		final String canonical = entry.getName();
-		final boolean privateArguments = "암호변경".equals(canonical) || "계정추가".equals(canonical);
+		final boolean privateArguments = "암호변경".equals(canonical) || "계정추가".equals(canonical) || "실행".equals(canonical);
 		try {
 			LoggerInstance.getInstance().addCommand(gm.getName() + ": " + canonical + " "
 					+ (privateArguments ? "[REDACTED]" : param));
@@ -360,14 +332,20 @@ public final class BuilderCmdHandler {
 	}
 
 	private static boolean hasBuilderPermission(int access, BuilderCmdPairType entry) {
-		final boolean general = access == Config.GMCODE || access == Config.SUB_GMCODE;
-		if (entry == null || !entry.isLevelRestricted()) return general;
-		return access == entry.getLevel() || access == Config.SUB_GMCODE;
+		if (access != Config.GMCODE && access != Config.SUB_GMCODE) return false;
+		return entry == null || !isFullOnly(entry) || (access == Config.GMCODE && access != Config.SUB_GMCODE);
 	}
 
 	private static boolean isFullOnly(BuilderCmdPairType entry) {
-		final String name = entry.getName();
-		return "아이템".equals(name) || "오토선물".equals(name);
+		return switch (entry.getName()) {
+			case "아이템", "아데나", "선물", "전체선물", "오토선물", "세트아이템", "렙선물",
+				"아이템삭제", "인벤삭제", "유저인벤삭제", "디비초기화", "케릭삭제",
+				"계정추가", "암호변경", "계정정보", "계정검사", "계정확인", "계정",
+				"계정압류", "캐릭압류", "캐릭압류해제", "압류해제", "영구추방", "광역추방",
+				"밴아이피", "주변밴", "광역밴", "아이피추방", "무기인챈성공", "방어인챈성공",
+				"기운축복", "종료" -> true;
+			default -> false;
+		};
 	}
 
 	// OFF BuilderCmdHandler: command name -> direct handler, registered once.
@@ -598,15 +576,7 @@ public final class BuilderCmdHandler {
 
 
 		});
-		registerDirect(loaded, "오토선물", (gm, cmd, param) -> {
-			if(gm.getAccessLevel() != Config.SUB_GMCODE && gm.getAccessLevel() == Config.GMCODE) {
-	          autoAllPresent(gm, param);
-			} else {
-				gm.sendPackets("\\aA■ 부운영자의 권한으로 사용할 수 없습니다. ■");
-			}
-
-
-		});
+		registerDirect(loaded, "오토선물", (gm, cmd, param) -> autoAllPresent(gm, param));
 		registerDirect(loaded, "보호모드", (gm, cmd, param) -> {
 			setProtectionMode(gm, param);
 
@@ -698,16 +668,7 @@ public final class BuilderCmdHandler {
 
 
 		});
-		registerDirect(loaded, "아이템", (gm, cmd, param) -> {
-			if(gm.getAccessLevel() != Config.SUB_GMCODE && gm.getAccessLevel() == Config.GMCODE) {
-			execute(gm, param, param);
-		
-			} else {
-				gm.sendPackets("\\aA■ 부운영자의 권한으로 사용할 수 없습니다. ■");
-			}
-
-
-		});
+		registerDirect(loaded, "아이템", (gm, cmd, param) -> execute(gm, cmd, param));
 		registerDirect(loaded, "아데나", (gm, cmd, param) -> {
 			execute1(gm, param, param);
 
@@ -1119,7 +1080,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 	}
 
 	private static void registerLevelCommand(Map<String, BuilderCmdPairType> loaded, String name, BuilderCmdFunction handler) {
-		registerBuilderCommand(loaded, new BuilderCmdPairType(name, 9999, true, handler));
+		registerBuilderCommand(loaded, new BuilderCmdPairType(name, Config.GMCODE, true, handler));
 	}
 
 	private static void registerDirect(Map<String, BuilderCmdPairType> loaded, String name, BuilderCmdFunction handler) {
@@ -1257,7 +1218,6 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 			final String name = registered.getKey();
 			final BuilderCmdPairType entry = registered.getValue();
 			if (!hasBuilderPermission(access, entry)) continue;
-			if (isFullOnly(entry) && (access != Config.GMCODE || access == Config.SUB_GMCODE)) continue;
 			if (!name.contains(keyword) && !entry.getName().toLowerCase(Locale.ROOT).contains(keyword)) continue;
 			if (columns != 0) line.append("  ");
 			line.append('.').append(name);
@@ -1394,88 +1354,20 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		}
 	}
 
-	public void execute1(L1PcInstance pc, String cmdName, String arg) {
-		try {
-
-			StringTokenizer stringtokenizer = new StringTokenizer(arg);
-
-			int count = Integer.parseInt(stringtokenizer.nextToken());
-			L1ItemInstance adena = pc.getInventory().CreateOrAddItem(L1ItemId.ADENA, count);
-
-			if (adena != null) {
-				pc.sendPackets((new StringBuilder()).append(count).append("아데나를 생성했습니다.").toString());
-			}
-		} catch (Exception e) {
-			pc.sendPackets((new StringBuilder()).append(".아데나 [액수]로 입력해 주세요. ").toString());
-		}
+	private void execute1(L1PcInstance pc, String cmdName, String arg) {
+		try { builderGrant(pc, pc, CObjectDB.GetItem(L1ItemId.ADENA), Integer.parseInt(arg.trim()), 0, 0, 0); }
+		catch (RuntimeException e) { SC_SystemMessage.send(pc, ".아데나 [양수 수량]"); }
 	}
 
-	public void execute(L1PcInstance pc, String param, String arg) {
+	private void execute(L1PcInstance pc, String param, String arg) {
 		try {
 			StringTokenizer st = new StringTokenizer(arg);
-			String nameid = st.nextToken();
-			int count = 1;
-			if (st.hasMoreTokens()) {
-				count = Integer.parseInt(st.nextToken());
-			}
-			int enchant = 0;
-			if (st.hasMoreTokens()) {
-				enchant = Integer.parseInt(st.nextToken());
-			}
-			int attrenchant = 0;
-			if (st.hasMoreTokens()) {
-				attrenchant = Integer.parseInt(st.nextToken());
-			}
-
-			int itemid = 0;
-			try {
-				itemid = Integer.parseInt(nameid);
-			} catch (NumberFormatException e) {
-				itemid = CObjectDB.LoadItem().findItemIdByNameWithoutSpace(nameid);
-				if (itemid == 0) {
-					pc.sendPackets("해당 아이템이 발견되지 않습니다. ");
-					return;
-				}
-			}
-			L1Item temp = CObjectDB.GetItem(itemid);
-			if (temp != null) {
-				if (temp.isStackable()) {
-					L1ItemInstance item = CObjectDB.CreateItem(itemid);
-					item.setEnchantLevel(0);
-					item.setCount(count);
-					item.setIdentified(true);
-					if (pc.getInventory().CheckAddable(item, count) == CInventory.OK) {
-						pc.getInventory().CreateOrAddItem(item);
-						SC_SystemMessage.send(pc, "\\fY아이템:[\\aA" + item.getLogName() + "\\fY] 아이템ID:[\\aA"
-								+ itemid + "\\fY] 인챈트:[\\aA" + enchant + "\\fY] \\aG생성");
-						;
-					}
-				} else {
-					L1ItemInstance item = null;
-					int createCount;
-					for (createCount = 0; createCount < count; createCount++) {
-						item = CObjectDB.CreateItem(itemid);
-						item.setEnchantLevel(enchant);
-						item.setAttrEnchantLevel(attrenchant);
-						item.setIdentified(true);
-						if (pc.getInventory().CheckAddable(item, 1) == CInventory.OK) {
-							pc.getInventory().CreateOrAddItem(item);
-						} else {
-							break;
-						}
-					}
-					if (createCount > 0) {
-						SC_SystemMessage.send(pc, "\\fY아이템:[\\aA" + item.getLogName() + "\\fY] 아이템ID:[\\aA"
-								+ itemid + "\\fY] 인챈트:[\\aA" + enchant + "\\fY] \\aG생성");
-						;
-					}
-				}
-			} else {
-				pc.sendPackets("지정 ID의 아이템은 존재하지 않습니다");
-			}
-		} catch (Exception e) {
-			pc.sendPackets(".아이템 [이름] [갯수] [인챈] [속성1~20] [확인0~1] ");
-		}
+			L1Item template = builderFindItem(st.nextToken());
+			int count = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 1;
+			int enchant = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 0;
+			int attr = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 0;
+			builderGrant(pc, pc, template, count, enchant, attr, 0);
+		} catch (RuntimeException e) { SC_SystemMessage.send(pc, ".아이템 [이름/ID] [수량] [강화] [속성]"); }
 	}
 
 
@@ -2319,69 +2211,25 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 	private void autoAllPresent(L1PcInstance gm, String param) {
 		try {
-			
 			StringTokenizer st = new StringTokenizer(param);
-			int cycle = Integer.parseInt(st.nextToken(), 10);
-			int second = Integer.parseInt(st.nextToken(), 10) * 1000;
-			int itemid = Integer.parseInt(st.nextToken(), 10);
-			int enchant = Integer.parseInt(st.nextToken(), 10);
-			int count = Integer.parseInt(st.nextToken(), 10);
-			
-			ThreadPool.getInstance().execute(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						for (int i = 0; i < cycle; i++) {
-							Collection<L1PcInstance> player = null;
-							player = L1World.getInstance().getAllPlayers();
-							l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer memoGiftFrame = null;
-String memoGiftText = null;
-try {
-for (L1PcInstance target : player) {
-								if (target == null)
-									continue;
-								if (!target.isGhost() && !target.isPrivateShop()) {
-									L1ItemInstance item = CObjectDB.CreateItem(itemid);
-									item.setCount(count);
-									item.setEnchantLevel(enchant);
-									if (item != null) {
-										if (target.getInventory().CheckAddable(item, count) == CInventory.OK) {
-											target.getInventory().CreateOrAddItem(item);
-										}
-									}
-									final String giftMessage = "오픈 대기 보상: " + item.getLogName() + " " + count + "개 획득 인벤토리 확인하세요";
-if (memoGiftFrame == null || !giftMessage.equals(memoGiftText)) {
-  if (memoGiftFrame != null) {
-    memoGiftFrame.close();
-    memoGiftFrame = null;
-  }
-  memoGiftFrame = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.nativeWriter(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);
-  memoGiftText = giftMessage;
-}
-l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(memoGiftFrame,target);
-									SC_SkillSound.send(target, target.getId(), 1091);// 비둘기액션
-									SC_SkillSound.send(target, target.getId(), 4856);// 하트액션
-								}
-							}
-} finally {
- if (memoGiftFrame != null) memoGiftFrame.close();
-}
-							Thread.sleep(second);
-						}
-					} catch (Exception exception) {
-						gm.sendPackets(".오토선물 [횟수] [시간]  [템ID] [인첸] [갯수]");
-
-					}
+			int cycles = Integer.parseInt(st.nextToken());
+			long delay = Math.multiplyExact(Long.parseLong(st.nextToken()), 1000L);
+			L1Item template = builderFindItem(st.nextToken());
+			int enchant = Integer.parseInt(st.nextToken()), count = Integer.parseInt(st.nextToken());
+			builderValidateGrant(template, count, enchant, 0, 0);
+			if (cycles <= 0 || cycles > 1000 || delay < 1000L || delay > 86400000L) throw new IllegalArgumentException();
+			CUserSocket socket = gm.getNetConnection();
+			int stamp = gm.getSessionStamp();
+			if (!builderLive(gm, socket, stamp)) throw new IllegalStateException();
+			new Runnable() {
+				private int remaining = cycles;
+				@Override public void run() {
+					if (!builderFullAccess(gm) || !builderLive(gm, socket, stamp)) return;
+					builderGiftOnline(gm, template, count, enchant);
+					if (--remaining > 0) ThreadPool.getInstance().scheduleRequired(this, delay);
 				}
-			});
-			
-			
-		} catch (Exception exception) {
-			gm.sendPackets(".오토선물 [횟수] [시간] [템ID] [인첸] [갯수]");
-		}
-		
-		
+			}.run();
+		} catch (RuntimeException e) { SC_SystemMessage.send(gm, ".오토선물 [횟수] [초] [아이템ID] [강화] [수량]"); }
 	}
 	public void 캐릭압류1(L1PcInstance gm, String name) {
 		setCharBlock(gm, name);
@@ -2772,31 +2620,17 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 
 	// 인벤삭제
 	private void InventoryDelete(L1PcInstance pc, String param) {
-		try {
-			for (L1ItemInstance item : pc.getInventory().getItems()) {
-				if (!item.isEquipped()) {
-					pc.getInventory().DeleteItemAmount(item);
-				}
-			}
-		} catch (Exception e) {
-			pc.sendPackets(".인벤삭제");
-		}
+		if (!"확인".equals(param)) { SC_SystemMessage.send(pc, ".인벤삭제 확인 (미착용 아이템만)"); return; }
+		builderDelete(pc, pc, 0, 0, true);
 	}
 
 	private void targetInventoryDelete(L1PcInstance gm, String param) {
 		try {
 			StringTokenizer st = new StringTokenizer(param);
-			String char_name = st.nextToken();
-			L1PcInstance target = L1World.getInstance().getPlayer(char_name);
-			for (L1ItemInstance item : target.getInventory().getItems()) {
-				
-					target.getInventory().DeleteItemAmount(item);
-					gm.sendPackets(target.getName()+"님의 인벤을 모두 삭제하였습니다.");
-			
-			}
-		} catch (Exception e) {
-			gm.sendPackets(".유저인벤삭제 [접속중인 캐릭명] 입력.");
-		}
+			L1PcInstance target = L1World.getInstance().getPlayer(st.nextToken());
+			if (!"확인".equals(st.nextToken()) || st.hasMoreTokens()) throw new IllegalArgumentException();
+			builderDelete(gm, target, 0, 0, true);
+		} catch (RuntimeException e) { SC_SystemMessage.send(gm, ".유저인벤삭제 [접속 캐릭명] 확인 (미착용 아이템만)"); }
 	}
 	private void mapwho(L1PcInstance gm, String param) {
 		// TODO 자동 생성된 메소드 스텁
@@ -2945,51 +2779,10 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 	private void allpresent(L1PcInstance gm, String param) {
 		try {
 			StringTokenizer st = new StringTokenizer(param);
-			int itemid = Integer.parseInt(st.nextToken(), 10);
-			int enchant = Integer.parseInt(st.nextToken(), 10);
-			int count = Integer.parseInt(st.nextToken(), 10);
-			Collection<L1PcInstance> player = null;
-			player = L1World.getInstance().getAllPlayers();
-			l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer memoGiftFrame = null;
-String memoGiftText = null;
-try {
-for (L1PcInstance target : player) {
-				if (target == null)
-					continue;
-				if (!target.isGhost() && !target.isPrivateShop()) {
-					L1ItemInstance item = CObjectDB.CreateItem(itemid);
-					item.setCount(count);
-					item.setEnchantLevel(enchant);
-					if (item != null) {
-						if (target.getInventory().CheckAddable(item, count) == CInventory.OK) {
-							target.getInventory().CreateOrAddItem(item);
-						}
-					}
-					/*SC_GMHtml.send(target, "전체선물:" + target.getName() + "", "아이템:" + item.getLogName() + " 수량:" + count + " 획득");*/
-					final String giftMessage = "전체 선물: " + item.getLogName() + " " + count + "개 획득 인벤토리 확인하세요";
-if (memoGiftFrame == null || !giftMessage.equals(memoGiftText)) {
-  if (memoGiftFrame != null) {
-    memoGiftFrame.close();
-    memoGiftFrame = null;
-  }
-  memoGiftFrame = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-    l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.nativeWriter(giftMessage),Integer.MIN_VALUE,Integer.MAX_VALUE);
-  memoGiftText = giftMessage;
-}
-l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(memoGiftFrame,target);
-					SC_SkillSound.send(target, target.getId(), 1091);// 비둘기액션
-					SC_SkillSound.send(target, target.getId(), 4856);// 하트액션
-					// target.sendPackets("\\aD운영자의 전체선물 :
-					// "+item.getLogName())); // item.getLogName
-					// //item.getViewName
-				}
-			}
-} finally {
- if (memoGiftFrame != null) memoGiftFrame.close();
-}
-		} catch (Exception exception) {
-			gm.sendPackets(".전체선물 [템ID] [인첸] [갯수]");
-		}
+			L1Item template = builderFindItem(st.nextToken());
+			int enchant = Integer.parseInt(st.nextToken()), count = Integer.parseInt(st.nextToken());
+			builderGiftOnline(gm, template, count, enchant);
+		} catch (RuntimeException e) { SC_SystemMessage.send(gm, ".전체선물 [아이템ID] [강화] [수량]"); }
 	}
 
 	private void returnEXP(L1PcInstance gm, String param) {
@@ -3232,68 +3025,21 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(me
 	}
 
 	private void to_Change_Passwd(L1PcInstance gm, L1PcInstance pc, String passwd) {
-		PreparedStatement statement = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		java.sql.Connection con = null;
-		try {
-			String login = null;
-			String password = null;
-			con = DatabaseFactory.getInstance().getConnection();
-			password = passwd;
-			statement = con.prepareStatement(
-					"select account_name from characters where char_name Like '" + pc.getName() + "'");
-			rs = statement.executeQuery();
-
-			while (rs.next()) {
-				login = rs.getString(1);
-				pstm = con.prepareStatement("UPDATE accounts SET password=? WHERE login Like '" + login + "'");
-				pstm.setString(1, password);
-				pstm.execute();
-				gm.sendPackets("암호변경 계정: [" + login + "] 암호: [" + passwd + "]");
-				gm.sendPackets(pc.getName() + " 암호변경 완료.");
-			}
-		} catch (Exception e) {
-			System.out.println("to_Change_Passwd() Error : " + e);
-		} finally {
-			SQLUtil.close(rs);
-			SQLUtil.close(pstm);
-			SQLUtil.close(statement);
-			SQLUtil.close(con);
-		}
+		if (!to_Change_Passwd(gm, pc.getName(), passwd)) SC_SystemMessage.send(gm, "암호 변경 실패");
 	}
 
 	private boolean to_Change_Passwd(L1PcInstance pc, String name, String passwd) {
-		PreparedStatement statement = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		java.sql.Connection con = null;
-		try {
-			String login = null;
-			String password = null;
-			con = DatabaseFactory.getInstance().getConnection();
-			password = passwd;
-			statement = con.prepareStatement("select account_name from characters where char_name Like '" + name + "'");
-			rs = statement.executeQuery();
-
-			while (rs.next()) {
-				login = rs.getString(1);
-				pstm = con.prepareStatement("UPDATE accounts SET password=? WHERE login Like '" + login + "'");
-				pstm.setString(1, password);
-				pstm.execute();
-				pc.sendPackets("암호변경 계정: [" + login + "] 암호: [" + passwd + "]");
-				pc.sendPackets("해당 캐릭터 암호변경 완료. (미접속중)");
-			}
+		try (Connection con = DatabaseFactory.getInstance().getConnection();
+			 PreparedStatement ps = con.prepareStatement("UPDATE accounts SET password=? WHERE login=(SELECT account_name FROM characters WHERE char_name=?)")) {
+			ps.setString(1, passwd);
+			ps.setString(2, name);
+			if (ps.executeUpdate() != 1) return false;
+			SC_SystemMessage.send(pc, "암호 변경 완료.");
 			return true;
-		} catch (Exception e) {
-			System.out.println("to_Change_Passwd() Error : " + e);
-		} finally {
-			SQLUtil.close(rs);
-			SQLUtil.close(pstm);
-			SQLUtil.close(statement);
-			SQLUtil.close(con);
+		} catch (SQLException e) {
+			_log.warning("GM password change failed: " + e.getClass().getSimpleName());
+			return false;
 		}
-		return false;
 	}
 
 	private void 퀴즈체인지(L1PcInstance gm, L1PcInstance pc, String newquiz) {
@@ -5439,30 +5185,18 @@ for (L1PcInstance tg : L1World.getInstance(). getVisiblePlayer(pc)) {
 	}
 
 	private static void BuilderCmd_summon_set_item(L1PcInstance pc, String cmdName, String arg) {
-		try {
-			String name = new StringTokenizer(arg). nextToken();
-			List<L1ItemSetItem> list = BuilderCmdConfig.ITEM_SETS.get(name);
-			if (list == null) {
-				SC_SystemMessage.send(pc, name + "은 없습니다.");
-				return;
+		List<L1ItemSetItem> list = BuilderCmdConfig.ITEM_SETS.get(arg.trim());
+		if (list == null || list.isEmpty()) { SC_SystemMessage.send(pc, ".세트아이템 [세트명]"); return; }
+		CUserSocket socket = pc.getNetConnection();
+		int stamp = pc.getSessionStamp();
+		builderOnItemOwner(pc, pc, () -> {
+			try (var tx = builderItemTransaction(pc)) {
+				for (L1ItemSetItem item : list)
+					builderStageGrant(tx, CObjectDB.GetItem(item.getId()), item.getAmount(), item.getEnchant(), 0, 0);
+				tx.onTerminalFailure(() -> builderReply(pc, socket, stamp, "세트 지급 DB 결과 확인 필요. 재지급하지 마십시오."));
+				tx.commit(() -> builderReply(pc, socket, stamp, "세트아이템 지급 완료"));
 			}
-			L1Item temp = null;
-			L1ItemInstance inst = null;
-			for (L1ItemSetItem item : list) {
-				temp = CObjectDB.GetItem(item.getId());
-				if (! temp.isStackable() && 0 != item.getEnchant()) {
-					for (int i = 0; i < item.getAmount(); i++) {
-						inst = CObjectDB.LoadItem().createItem(item.getId());
-						inst.setEnchantLevel(item.getEnchant());
-						pc.getInventory(). CreateOrAddItem(inst);
-					}
-				} else {
-					pc.getInventory(). CreateOrAddItem(item.getId(), item.getAmount());
-				}
-			}
-		} catch (Exception e) {
-			SC_SystemMessage.send(pc, ".세트아이템 세트명으로 입력해 주세요. ");
-		}
+		});
 	}
 
 	private static void BuilderCmd_show_trap(L1PcInstance pc, String cmdName, String arg) {
@@ -6239,51 +5973,18 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 	}
 
 	private static void BuilderCmd_check_account(L1PcInstance pc, String cmdName, String arg) {
-		Connection con = null;
-		PreparedStatement pstm = null;
-		PreparedStatement pstm2 = null;
-		ResultSet rs = null;
-		ResultSet rs2 = null;
-		try {
-			StringTokenizer stringtokenizer = new StringTokenizer(arg);
-			String target = stringtokenizer.nextToken();
-			String login = null;
-			String pass = null;
-			String lastactive = null;
-			String ip = null;
-			String host = null;
-
-
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("SELECT account_name FROM characters WHERE char_name=?");
-			pstm.setString(1, target);
-			rs = pstm.executeQuery();
-
-			if (rs.next()) {
-				login = rs.getString(1);
+		try (Connection con = DatabaseFactory.getInstance().getConnection();
+			 PreparedStatement ps = con.prepareStatement("SELECT a.login,a.lastactive,a.ip,a.host FROM accounts a JOIN characters c ON a.login=c.account_name WHERE c.char_name=?")) {
+			ps.setString(1, new StringTokenizer(arg).nextToken());
+			try (ResultSet rs = ps.executeQuery()) {
+				if (!rs.next()) { SC_SystemMessage.send(pc, "계정이 없습니다."); return; }
+				SC_SystemMessage.send(pc, "계정: " + rs.getString(1) + " 최근접속: " + rs.getString(2)
+						+ " 접속IP: " + rs.getString(3) + " 생성IP: " + rs.getString(4));
 			}
-			pstm2 = con.prepareStatement("SELECT password, lastactive, ip, host FROM accounts WHERE login= '"+ login + "'");
-			rs2 = pstm2.executeQuery();
-			
-			if (rs2.next()) {
-				pass = rs2.getString(1);
-				lastactive = rs2.getString(2);
-				ip = rs2.getString(3);
-				host = rs2.getString(4);
-			}
-			SC_SystemMessage.send(pc, "캐릭명: " + target + "\n계정: " + login + "\n비번: " + pass + "\n최근접속: " + lastactive+ "\n접속아이피: "+ip+"\n생성아이피: "+host);
-		} catch (Exception exception) {
-			SC_SystemMessage.send(pc, cmdName +" [캐릭명] 을 입력하세요.");
-		}finally{
-			SQLUtil.close(rs);
-			SQLUtil.close(rs2);
-			SQLUtil.close(pstm);
-			SQLUtil.close(pstm2);
-			SQLUtil.close(con);			
-		}
+		} catch (Exception e) { SC_SystemMessage.send(pc, ".계정정보 [캐릭명]"); }
 	}
 
-	private static final Map<Integer, Integer> BUILDER_SPAWN_CURSOR = new HashMap<Integer, Integer>();
+	private static final Map<Integer, Integer> BUILDER_SPAWN_CURSOR = new java.util.concurrent.ConcurrentHashMap<>();
 
 	private static void BuilderCmd_to_spawn(L1PcInstance pc, String cmdName, String arg) {
 		try {
@@ -6817,99 +6518,14 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 	private static void BuilderCmd_give_present(L1PcInstance pc, String cmdName, String arg) {
 		try {
 			StringTokenizer st = new StringTokenizer(arg);
-			String name = st.nextToken();
-			String nameid = st.nextToken();
-			L1PcInstance target = L1World.getInstance().getPlayer(name);
-
-			if (target == null) {
-				target = CharacterTable.getInstance().restoreCharacter(name);
-
-				if (target == null) {
-					SC_SystemMessage.send(pc, "존재하지 않는 캐릭터입니다.");
-					return;
-				}
-
-				CharacterTable.getInstance().restoreInventory(target);
-			}
-
-			int count = 1;
-			if (st.hasMoreTokens()) {
-				count = Integer.parseInt(st.nextToken());
-			}
-			int enchant = 0;
-			if (st.hasMoreTokens()) {
-				enchant = Integer.parseInt(st.nextToken());
-			}
-			int itemid = 0;
-			int Attrenchant = 0;
-			if (st.hasMoreTokens()) {
-				Attrenchant = Integer.parseInt(st.nextToken());
-			}
-			int bless = 0;
-			if (st.hasMoreTokens()) {
-				bless = Integer.parseInt(st.nextToken());
-			}
-			try {
-				itemid = Integer.parseInt(nameid);
-			} catch (NumberFormatException e) {
-				itemid = CObjectDB.LoadItem().findItemIdByNameWithoutSpace(nameid);
-				if (itemid == 0) {
-					SC_SystemMessage.send(pc, "해당 아이템이 발견되지 않았습니다.");
-					return;
-				}
-			}
-			L1Item temp = CObjectDB.GetItem(itemid);
-			if (temp != null) {
-				if (temp.isStackable()) {
-					L1ItemInstance item = CObjectDB.CreateItem(itemid);
-					item.setEnchantLevel(0);
-					item.setCount(count);
-					if (target.getInventory().CheckAddable(item, count) == CInventory.OK) {
-						target.getInventory().CreateOrAddItem(item);
-					//	target.sendPackets(new S_GMHtml("선물: "+target.getName()+"" , ""+item.getLogName()+" 를(을) 획득함 인벤토리 확인."));
-						target.sendPackets("\\f:선물: " + item.getLogName() + " " + count + "개 획득 인벤토리 확인하세요");
-						SC_PacketBox.send(target, SC_PacketBox.GREEN_MESSAGE, "\\f=메티스로부터 "+target.getName()+"님께 선물이 도착했습니다! ▶▶ "+ temp.getNameId()+"("+count+")");
-						SC_SkillSound.send(target, pc.getId(), 4856);
-						SC_SystemMessage.send(pc, "\\aD["+target.getName()+"] "+ item.getLogName() + " (ID:" + itemid + ") 보냄");
-					}
-				} else {
-					L1ItemInstance item = null;
-					int createCount;
-					for (createCount = 0; createCount < count; createCount++) {
-						item = CObjectDB.CreateItem(itemid);
-						item.setEnchantLevel(enchant);
-						item.setAttrEnchantLevel(Attrenchant);
-						if (bless == 129) {
-							item.setBless(bless);
-						}
-						//if (target.getInventory().checkAddItem(item, 1) == CInventory.OK) {
-						target.getInventory().CreateOrAddItem(item);
-						if (bless == 129) {
-							item.setBless(bless);
-							target.getInventory().updateItem(item, CUserInventory.COL_BLESS);
-							target.getInventory().saveItem(item, CUserInventory.COL_BLESS);
-						}
-						//	} else {
-						//		break;
-						//	}
-					}
-					if (createCount > 0) {
-						//target.sendPackets(new S_GMHtml("선물:"+target.getName()+"" , ""+item.getLogName()+"("+count+") 를(을) 획득함.　인벤토리 확인하세요"));
-						SC_SkillSound.send(target, pc.getId(), 4856);
-						SC_PacketBox.send(target, SC_PacketBox.GREEN_MESSAGE, "\\f=메티스로부터 "+target.getName()+"님께 선물이 도착했습니다! ▶▶ "+ temp.getNameId()+"("+count+")");
-						
-//						target.sendPackets(new SC_SystemMessage("\\aD[선물] +" + enchant + " " + item.getLogName() + " (" + count + "개) 획득"));
-						//pc.sendPackets(new SC_SystemMessage("\\aD["+target.getName()+"] +" + enchant + " "+ temp.getNameId()+"(ID:" + itemid + ") "+ count +"개 보냄", true));
-						SC_SystemMessage.send(pc, "\\f:케릭명: \\aH"+target.getName()+"\\f:님에게 아래 아이템을 보냈습니다");
-						SC_SystemMessage.send(pc, "\\f:아이템: [+"+ enchant +" "+ item.getLogName()+"] (ID:" + itemid + ") ("+count+"개) ");
-					}
-				}
-			} else {
-				SC_SystemMessage.send(pc, "지정 ID의 아이템은 존재하지 않습니다.");
-			}
-		} catch (Exception e) {
-			SC_SystemMessage.send(pc, ".[선물] [캐릭] [아이템ID] [갯수] [인챈] [속성] [봉인129]");
-		}
+			L1PcInstance target = L1World.getInstance().getPlayer(st.nextToken());
+			L1Item template = builderFindItem(st.nextToken());
+			int count = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 1;
+			int enchant = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 0;
+			int attr = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 0;
+			int bless = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 0;
+			builderGrant(pc, target, template, count, enchant, attr, bless);
+		} catch (RuntimeException e) { SC_SystemMessage.send(pc, ".선물 [접속 캐릭명] [아이템ID] [수량] [강화] [속성] [봉인129]"); }
 	}
 
 	private static void BuilderCmd_set_status(L1PcInstance pc, String cmdName, String arg) {
@@ -7056,7 +6672,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 		}
 	}
 
-	private static final Map<Integer, String> BUILDER_FAVORITES = new HashMap<Integer, String>();
+	private static final Map<Integer, String> BUILDER_FAVORITES = new java.util.concurrent.ConcurrentHashMap<>();
 
 	private static void BuilderCmd_favorite(L1PcInstance pc, String cmdName, String arg) {
 		try {
@@ -7074,8 +6690,9 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 				}
 				StringBuilder cmd = new StringBuilder();
 				String temp = st.nextToken(); // 커멘드 타입
-				if (temp.equalsIgnoreCase(cmdName)) {
-					SC_SystemMessage.send(pc, cmdName + " 자신은 등록할 수 없습니다. ");
+				final BuilderCmdPairType saved = getInstance().findBuilderCommand(temp);
+				if (saved == null || !hasBuilderPermission(pc.getAccessLevel(), saved) || "실행".equals(saved.getName()) || "암호변경".equals(saved.getName()) || "계정추가".equals(saved.getName())) {
+					SC_SystemMessage.send(pc, "등록할 수 없는 명령어입니다.");
 					return;
 				}
 				cmd.append(temp + " ");
@@ -7104,7 +6721,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 				while (st.hasMoreTokens()) {
 					cmd.append(st.nextToken() + " ");
 				}
-				SC_SystemMessage.send(pc, cmd + " 를 실행합니다. ");
+				SC_SystemMessage.send(pc, "등록 명령어를 실행합니다.");
 				BuilderCmdHandler.getInstance().BuilderCmd2Handler(pc, cmd.toString());
 			}
 		} catch (Exception e) {
@@ -8057,150 +7674,26 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 
 	private static void BuilderCmd_delete_items(L1PcInstance pc, String cmdName, String arg) {
 		try {
-			StringTokenizer tok = new StringTokenizer(arg);
-			String type = tok.nextToken();				
-			WarehouseManager wareHouse = WarehouseManager.getInstance();
-			if(type.equalsIgnoreCase("전체")) {				
-				try {	
-					int itemId = Integer.parseInt(tok.nextToken());
-					ArrayList<String> accounts = BuilderDeleteItems_loadAccount();
-					String name;
-					for(int i = 0; i < accounts.size(); i++) {
-						name = accounts.get(i);	
-						BuilderDeleteItems_deleteWareHouse(wareHouse, name, itemId);//창고 삭제
-					}
-
-					for(L1PcInstance players : L1World.getInstance().getAllPlayers()) {
-						players.getInventory().DeleteItemInInventory(itemId);
-						SC_SystemMessage.send(pc, "전체유저의 템번호 ["+itemId+"]를 삭제하였습니다.");
-						
-					}
-					Warehouse _clanWarehouse;
-					L1ItemInstance clanItem;
-					for(L1Clan clans : L1World.getInstance().getAllClans()) {
-						_clanWarehouse = wareHouse.getClanItems(clans.getClanName());
-						clanItem = _clanWarehouse.GetFirstItemByClassID(itemId);
-						if(clanItem != null) {
-							_clanWarehouse.deleteItem(clanItem);
-						}
-					}
-				}catch(Exception e) {
-					SC_SystemMessage.send(pc, cmdName + " [전체] [아이템 번호] 으로 입력해 주세요. ");
-				}
-			}else if(type.equalsIgnoreCase("케릭")){
-				try {
-					String name = tok.nextToken();					
-					int itemId = Integer.parseInt(tok.nextToken());
-					
-					L1PcInstance target = L1World.getInstance().getPlayer(name);
-					if(target == null) {
-						SC_SystemMessage.send(pc, target + "님은 현재 접속중이 아닙니다.");
-						return;
-					}
-					String accountName = target.getAccountName();					
-					BuilderDeleteItems_deleteWareHouse(wareHouse, accountName, itemId);
-					
-					BuilderDeleteItems_loadAccountCharacter(accountName, itemId);
-					
-					L1PcInstance player = L1World.getInstance().getPlayer(name);
-					if(player != null) {
-						player.getInventory().DeleteItemInInventory(itemId);
-						SC_SystemMessage.send(pc, player.getName()+"님의 템번호 ["+itemId+"]를 삭제하였습니다.");
-						
-					}
-				}catch(Exception e) {
-					SC_SystemMessage.send(pc, cmdName + " [케릭] [케릭터명] [아이템 번호] 으로 입력해 주세요");
-				}
-			}
-		}catch(Exception e) {
-			SC_SystemMessage.send(pc, "\\aD" + cmdName + " [전체] [아이템 번호] 으로 입력해 주세요. ");
-			SC_SystemMessage.send(pc, "\\aD" + cmdName + "[케릭]  [케릭터명] [아이템 번호] 으로 입력해 주세요");
+			StringTokenizer st = new StringTokenizer(arg);
+			if (!"회수".equals(st.nextToken())) throw new IllegalArgumentException();
+			L1PcInstance target = L1World.getInstance().getPlayer(st.nextToken());
+			int id = Integer.parseInt(st.nextToken());
+			int count = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 0;
+			if (id <= 0 || count < 0 || st.hasMoreTokens()) throw new IllegalArgumentException();
+			builderDelete(pc, target, id, count, false);
+		} catch (RuntimeException e) {
+			SC_SystemMessage.send(pc, ".아이템삭제 회수 [접속 캐릭명] [아이템 고유번호] [수량/생략=전량]");
+			SC_SystemMessage.send(pc, "계정·창고·전서버 일괄 SQL 삭제는 지원하지 않습니다.");
 		}
 	}
 
-	private static void BuilderDeleteItems_deleteWareHouse(WarehouseManager wareHouse, String accountName, int itemId) {
-		//계정창고 아이템 삭제..
-		Warehouse _privateWarehouse = null;
-		Warehouse _elfWarehouse = null;				
-		Warehouse _supplementaryService = null;
 
-		L1ItemInstance itemPrivate;
-		L1ItemInstance itemElf;
-		L1ItemInstance itemSupple;				
-
-		_privateWarehouse = wareHouse.getPrivateItems(accountName);
-		_elfWarehouse =  wareHouse.getElfItems(accountName);
-		_supplementaryService =  wareHouse.getSupplementaryItems(accountName);					
-		itemPrivate = _privateWarehouse.GetFirstItemByClassID(itemId);
-		itemElf = _elfWarehouse.GetFirstItemByClassID(itemId);
-		itemSupple = _supplementaryService.GetFirstItemByClassID(itemId);	
-		if(itemPrivate != null) {
-			_privateWarehouse.deleteItem(itemPrivate);
-		}
-		if(itemElf != null) {
-			_elfWarehouse.deleteItem(itemElf);
-		}
-		if(itemSupple != null) {
-			_supplementaryService.deleteItem(itemSupple);
-		}
-	}
 	
-	private static ArrayList<String> BuilderDeleteItems_loadAccountCharacter(String accountName, int itemId) {
-		ArrayList<String> _list = new ArrayList<String>();
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("SELECT * FROM characters WHERE account_name = ? AND OnlineStatus = 0");
-			pstm.setString(1, accountName);
-			rs = pstm.executeQuery();
-			while(rs.next()) {
-				BuilderDeleteItems_deleteCharacterDB(rs.getInt("objid"), itemId );
-			}
-		}catch(SQLException e) {
 
-		}finally {
-			SQLUtil.close(rs, pstm, con);
-		}
-		return _list;
-	}
 	
-	private static void BuilderDeleteItems_deleteCharacterDB(int char_id, int itemId) {
-		Connection con = null;
-		PreparedStatement pstm = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("DELETE  FROM character_items WHERE char_id = ? AND item_id = ? ");
-			pstm.setInt(1, char_id);
-			pstm.setInt(2, itemId);
-			pstm.execute();
-		}catch(SQLException e) {
-			e.printStackTrace();
-		}finally {
-			SQLUtil.close(pstm, con);
-		}
-	}
-	
-	private static ArrayList<String> BuilderDeleteItems_loadAccount() {
-		ArrayList<String> _list = new ArrayList<String>();
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("SELECT * FROM accounts");
-			rs = pstm.executeQuery();
-			while(rs.next()) {
-				_list.add(rs.getString("login"));
-			}
-		}catch(SQLException e) {
 
-		}finally {
-			SQLUtil.close(rs, pstm, con);
-		}
-		return _list;
-	}
+	
+
 
 	static private String BuilderQueryCClass( String ip )
 	{
@@ -8388,169 +7881,14 @@ for (L1PcInstance pc2 : players) {
 	}
 
 	private static void BuilderCmd_level_present(L1PcInstance pc, String cmdName, String arg) {
-
-		try {
-			StringTokenizer st = new StringTokenizer(arg);
-			int minlvl = Integer.parseInt(st.nextToken(), 10);
-			int maxlvl = Integer.parseInt(st.nextToken(), 10);
-			int itemid = Integer.parseInt(st.nextToken(), 10);
-			int enchant = Integer.parseInt(st.nextToken(), 10);
-			int count = Integer.parseInt(st.nextToken(), 10);
-
-			L1Item temp = CObjectDB.GetItem(itemid);
-			if (temp == null) {
-				SC_SystemMessage.send(pc, "존재하지 않는 아이템 ID입니다. ");
-				return;
-			}
-
-			BuilderLevelPresent(minlvl, maxlvl, itemid, enchant, count);
-			SC_SystemMessage.send(pc, temp.getName() + "를 " + count
-					+ " 개 선물 했습니다. (Lv" + minlvl + "~" + maxlvl + ")");
-		} catch (Exception e) {
-			SC_SystemMessage.send(pc, ".렙선물 [최저레벨] [최고레벨] [아이템ID] [인챈트] [갯수]로 입력해 주세요. ");
-		}
+		SC_SystemMessage.send(pc, "렙선물은 오프라인 창고 원자 처리 검증 전까지 중지합니다. .전체선물 또는 .선물을 이용하십시오.");
 	}
 
-	public static void BuilderLevelPresent(String account, int itemid, int enchant, int count) throws Exception {
-		L1Item temp = CObjectDB.GetItem(itemid);
-		if (temp == null) {
-			return;
-		}
 
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
 
-			if (account.compareToIgnoreCase("*") == 0) {
-				pstm = con.prepareStatement("SELECT * FROM accounts");
-			} else {
-				pstm = con.prepareStatement("SELECT * FROM accounts WHERE login=?");
-				pstm.setString(1, account);
-			}
-			rs = pstm.executeQuery();
 
-			ArrayList<String> accountList = new ArrayList<String>();
-			while (rs.next()) {
-				accountList.add(rs.getString("login"));
-			}
 
-			BuilderLevelPresent(accountList, itemid, enchant, count);
 
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw e;
-		} finally {
-			SQLUtil.close(rs);
-			SQLUtil.close(pstm);
-			SQLUtil.close(con);
-		}
-
-	}
-
-	public static void BuilderLevelPresent(int minlvl, int maxlvl, int itemid, int enchant, int count) throws Exception {
-		L1Item temp = CObjectDB.GetItem(itemid);
-		if (temp == null) {
-			return;
-		}
-
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-
-			pstm = con.prepareStatement("SELECT distinct(account_name) as account_name FROM characters WHERE level between ? and ?");
-			pstm.setInt(1, minlvl);
-			pstm.setInt(2, maxlvl);
-			rs = pstm.executeQuery();
-
-			ArrayList<String> accountList = new ArrayList<String>();
-			while (rs.next()) {
-				accountList.add(rs.getString("account_name"));
-			}
-
-			BuilderLevelPresent(accountList, itemid, enchant, count);
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw e;
-		} finally {
-			SQLUtil.close(rs);
-			SQLUtil.close(pstm);
-			SQLUtil.close(con);
-		}
-
-	}
-
-	private static void BuilderLevelPresent(ArrayList<String> accountList, int itemid, int enchant, int count) throws Exception {
-		L1Item temp = CObjectDB.GetItem(itemid);
-		if (temp == null) {
-			throw new Exception("존재하지 않는 아이템 ID");
-		}
-		Connection con = null;
-		PreparedStatement pstm = null;
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			con.setAutoCommit(false);
-			L1ItemInstance item = null;
-			for (String account : accountList) {
-				if (temp.isStackable()) {
-					item = CObjectDB.CreateItem(itemid);
-					item.setEnchantLevel(enchant);
-					item.setCount(count);
-
-					pstm = con.prepareStatement("INSERT INTO character_warehouse SET id = ?, account_name = ?, item_id = ?, item_name = ?, count = ?, is_equipped=0, enchantlvl = ?, is_id = ?, durability = ?, charge_count = ?, remaining_time = ?");
-					pstm.setInt(1, item.getId());
-					pstm.setString(2, account);
-					pstm.setInt(3, item.getItemId());
-					pstm.setString(4, item.getName());
-					pstm.setInt(5, item.getCount());
-					pstm.setInt(6, item.getEnchantLevel());
-					pstm.setInt(7, item.isIdentified() ? 1 : 0);
-					pstm.setInt(8, item.get_durability());
-					pstm.setInt(9, item.getChargeCount());
-					pstm.setInt(10, item.getRemainingTime());
-					pstm.execute();
-				} else {
-					item = null;
-					int createCount;
-					for (createCount = 0; createCount < count; createCount++) {
-						item = CObjectDB.CreateItem(itemid);
-						item.setEnchantLevel(enchant);
-						pstm = con.prepareStatement("INSERT INTO character_warehouse SET id = ?, account_name = ?, item_id = ?, item_name = ?, count = ?, is_equipped=0, enchantlvl = ?, is_id = ?, durability = ?, charge_count = ?, remaining_time = ?");
-						pstm.setInt(1, item.getId());
-						pstm.setString(2, account);
-						pstm.setInt(3, item.getItemId());
-						pstm.setString(4, item.getName());
-						pstm.setInt(5, item.getCount());
-						pstm.setInt(6, item.getEnchantLevel());
-						pstm.setInt(7, item.isIdentified() ? 1 : 0);
-						pstm.setInt(8, item.get_durability());
-						pstm.setInt(9, item.getChargeCount());
-						pstm.setInt(10, item.getRemainingTime());
-						pstm.execute();
-					}
-				}
-				SQLUtil.close(pstm);
-			}
-
-			con.commit();
-			con.setAutoCommit(true);
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ignore) {
-				// ignore
-			}
-			e.printStackTrace();
-			throw new Exception(".present 처리중에 에러가 발생했습니다.");
-		} finally {
-			SQLUtil.close(pstm);
-			SQLUtil.close(con);
-		}
-	}
 
 	private static void BuilderCmd_impact_npc(L1PcInstance pc, String cmdName, String arg) {
 		BuilderSpawnImpact(pc, true, arg);
@@ -9034,6 +8372,123 @@ for (L1PcInstance pc2 : players) {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	private static boolean builderFullAccess(L1PcInstance gm) {
+		return gm != null && gm.getAccessLevel() == Config.GMCODE && gm.getAccessLevel() != Config.SUB_GMCODE;
+	}
+	private static boolean builderLive(L1PcInstance pc, CUserSocket socket, int stamp) {
+		return pc != null && socket != null && pc.getSessionStamp() == stamp && pc.getNetConnection() == socket
+				&& socket.isConnected() && socket.getActiveChar() == pc && !pc.isLogoutStarted();
+	}
+	private static void builderReply(L1PcInstance gm, CUserSocket socket, int stamp, String message) {
+		if (socket == null ? builderFullAccess(gm) : builderLive(gm, socket, stamp))
+			SC_SystemMessage.send(gm, message);
+	}
+	private static void builderOnItemOwner(L1PcInstance gm, L1PcInstance target, Runnable action) {
+		if (!builderFullAccess(gm)) return;
+		final CUserSocket gmSocket = gm.getNetConnection();
+		final int gmStamp = gm.getSessionStamp();
+		final CUserSocket socket = target == null ? null : target.getNetConnection();
+		final int stamp = target == null ? 0 : target.getSessionStamp();
+		if (!builderLive(target, socket, stamp)) {
+			builderReply(gm, gmSocket, gmStamp, "접속 중인 캐릭터만 처리할 수 있습니다.");
+			return;
+		}
+		CIOThreadCallback.getInstance().completeSession(socket, () -> {
+			if (!builderFullAccess(gm) || (gmSocket != null && !builderLive(gm, gmSocket, gmStamp))
+					|| !builderLive(target, socket, stamp)) throw new IllegalStateException("Stale GM item request");
+			action.run();
+		}, failure -> {
+			if (failure != null) builderReply(gm, gmSocket, gmStamp,
+					target.getName() + ": 요청 실패 또는 인벤토리 처리 중입니다.");
+		});
+	}
+	private static l1j.server.server.model.L1InventoryTransaction builderItemTransaction(L1PcInstance target) {
+		return l1j.server.server.model.L1InventoryTransaction.begin(target,
+				CacheD.accountOrderKey("$builder-item", target.getId()));
+	}
+	private static void builderValidateGrant(L1Item template, int count, int enchant, int attribute, int bless) {
+		if (template == null || count <= 0 || count > CInventory.MAX_AMOUNT
+				|| (!template.isStackable() && count > CUserInventory.MAX_SIZE)
+				|| enchant < -128 || enchant > 127 || attribute < 0 || attribute > 20
+				|| (bless != 0 && bless != 129)) throw new IllegalArgumentException("Invalid GM item grant");
+	}
+	private static void builderStageGrant(l1j.server.server.model.L1InventoryTransaction tx,
+			L1Item template, int count, int enchant, int attribute, int bless) {
+		builderValidateGrant(template, count, enchant, attribute, bless);
+		final L1ItemInstance image = new L1ItemInstance(template, count);
+		image.setIdentified(true);
+		image.setBless(bless == 129 ? 129 : template.getBless());
+		image.setEnchantLevel(template.isStackable() ? 0 : enchant);
+		image.setAttrEnchantLevel(template.isStackable() ? 0 : attribute);
+		if (tx.grant(image) == null) throw new IllegalStateException("Grant capacity exceeded");
+	}
+	private static L1Item builderFindItem(String value) {
+		int id;
+		try { id = Integer.parseInt(value); }
+		catch (NumberFormatException e) { id = CObjectDB.LoadItem().findItemIdByNameWithoutSpace(value); }
+		return CObjectDB.GetItem(id);
+	}
+	private static void builderGrant(L1PcInstance gm, L1PcInstance target, L1Item template,
+			int count, int enchant, int attribute, int bless) {
+		builderValidateGrant(template, count, enchant, attribute, bless);
+		final CUserSocket gmSocket = gm.getNetConnection();
+		final int gmStamp = gm.getSessionStamp();
+		builderOnItemOwner(gm, target, () -> {
+			try (var tx = builderItemTransaction(target)) {
+				builderStageGrant(tx, template, count, enchant, attribute, bless);
+				tx.onTerminalFailure(() -> builderReply(gm, gmSocket, gmStamp,
+						target.getName() + ": DB 결과 확인 필요. 재지급하지 마십시오."));
+				tx.commit(() -> {
+					builderReply(gm, gmSocket, gmStamp, target.getName() + ": " + template.getName() + " " + count + "개 지급 완료");
+					if (target != gm) {
+						SC_SystemMessage.send(target, "운영자 선물: " + template.getName() + " " + count + "개");
+						SC_SkillSound.send(target, target.getId(), 4856);
+					}
+				});
+			}
+		});
+	}
+	private static void builderDelete(L1PcInstance gm, L1PcInstance target, int objectId, int count, boolean all) {
+		final CUserSocket gmSocket = gm.getNetConnection();
+		final int gmStamp = gm.getSessionStamp();
+		builderOnItemOwner(gm, target, () -> {
+			try (var tx = builderItemTransaction(target)) {
+				int rows = 0;
+				if (all) {
+					for (L1ItemInstance item : target.getInventory().getItems()) {
+						if (item.isEquipped()) continue;
+						if (!tx.debit(item, item.getCount())) throw new IllegalStateException("Protected inventory row");
+						rows++;
+					}
+				} else {
+					final L1ItemInstance item = target.getInventory().GetByServerID(objectId);
+					if (item == null || item.isEquipped()) {
+						builderReply(gm, gmSocket, gmStamp, "고유번호를 확인하고 착용을 먼저 해제하십시오.");
+						return;
+					}
+					if (!tx.debit(item, count == 0 ? item.getCount() : count)) {
+						builderReply(gm, gmSocket, gmStamp, "수량 부족 또는 보호된 아이템입니다.");
+						return;
+					}
+					rows = 1;
+				}
+				if (rows == 0) { builderReply(gm, gmSocket, gmStamp, "회수할 아이템이 없습니다."); return; }
+				final int committedRows = rows;
+				tx.onTerminalFailure(() -> builderReply(gm, gmSocket, gmStamp,
+						target.getName() + ": 회수 DB 결과 확인 필요. 재시도하지 마십시오."));
+				tx.commit(() -> builderReply(gm, gmSocket, gmStamp,
+						target.getName() + ": 아이템 " + committedRows + "개 항목 회수 완료"));
+			}
+		});
+	}
+	private static void builderGiftOnline(L1PcInstance gm, L1Item template, int count, int enchant) {
+		builderValidateGrant(template, count, enchant, 0, 0);
+		for (L1PcInstance target : L1World.getInstance().getAllPlayers()) {
+			if (target == null || target.isGhost() || target.isPrivateShop() || target.getNetConnection() == null) continue;
+			builderGrant(gm, target, template, count, enchant, 0, 0);
 		}
 	}
 

@@ -35,7 +35,7 @@ jobs:
           if git grep -n 'registerExisting(loaded,' -- rkern/src; then status=1; fi
           echo 'Remaining unregistered L1CommandExecutor implementations:'
           git grep -l 'implements L1CommandExecutor' -- rkern/src || true
-          if git grep -n -E '(BuilderCmd_spawn_robot|BuilderCmd_attack_log|BuilderDuplicateKick|doGiveEventStaff|doGiveEventStaff1|doGiveEventStaff2|킬삭제|킬증가|데스삭제|데스증가)[[:space:]]*\(' -- rkern/src; then status=1; fi
+          if git grep -n -E '(^|[^[:alnum:]_])(BuilderCmd_spawn_robot|BuilderCmd_attack_log|BuilderDuplicateKick|doGiveEventStaff|doGiveEventStaff1|doGiveEventStaff2|킬삭제|킬증가|데스삭제|데스증가)[[:space:]]*\(' -- rkern/src; then status=1; fi
           exit "$status"
       - uses: actions/cache@v4
         if: ${{ !cancelled() }}

@@ -335,7 +335,7 @@ public class CharacterTable {
 	}
 
 	public void CharacterAccountCheck(L1PcInstance pc, String charName) {
-		String sql1 = "SELECT login, password FROM accounts WHERE ip = (SELECT ip FROM accounts WHERE login = (SELECT account_name FROM characters WHERE char_name = ?))";
+		String sql1 = "SELECT login FROM accounts WHERE ip = (SELECT ip FROM accounts WHERE login = (SELECT account_name FROM characters WHERE char_name = ?))";
 		String sql2 = "SELECT char_name, level, highlevel, clanname, onlinestatus FROM characters WHERE account_name = ?";
 
 		try (Connection con = DatabaseFactory.getInstance().getConnection();
@@ -346,7 +346,7 @@ public class CharacterTable {
 				SC_SystemMessage.send(pc, "-------------------------------------------------");
 				while (loginRs.next()) {
 					String login = loginRs.getString("login");
-					SC_SystemMessage.send(pc, "\\fYAccounts : " + login + ", PassWord : " + loginRs.getString("password"));
+					SC_SystemMessage.send(pc, "\\fYAccounts : " + login);
 					
 					try (PreparedStatement pstm2 = con.prepareStatement(sql2)) {
 						pstm2.setString(1, login);
@@ -368,7 +368,7 @@ public class CharacterTable {
 	}
 
 	public void CharacterAccountCheck1(L1PcInstance pc, String charName) {
-		String sql1 = "SELECT login, password, ip FROM accounts WHERE login = (SELECT account_name FROM characters WHERE char_name = ?)";
+		String sql1 = "SELECT login, ip FROM accounts WHERE login = (SELECT account_name FROM characters WHERE char_name = ?)";
 		String sql2 = "SELECT char_name, level, highlevel, clanname, onlinestatus FROM characters WHERE account_name = ?";
 
 		try (Connection con = DatabaseFactory.getInstance().getConnection();
@@ -379,7 +379,7 @@ public class CharacterTable {
 				SC_SystemMessage.send(pc, "\\aD-------------------------------------------------");
 				while (loginRs.next()) {
 					String login = loginRs.getString("login");
-					SC_SystemMessage.send(pc, "\\aH계정: " + login + ", 비번: " + loginRs.getString("password") + ", IP: " + loginRs.getString("ip"));
+					SC_SystemMessage.send(pc, "\\aH계정: " + login + ", IP: " + loginRs.getString("ip"));
 					
 					try (PreparedStatement pstm2 = con.prepareStatement(sql2)) {
 						pstm2.setString(1, login);
