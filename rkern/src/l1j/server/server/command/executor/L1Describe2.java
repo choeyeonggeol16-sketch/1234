@@ -29,7 +29,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 //import java.util.logging.Logger;
 
 public class L1Describe2 implements L1CommandExecutor {
-	//private static Logger _log = Logger.getLogger(L1Describe.class.getName());
+	
 
 	private L1Describe2() {
 	}

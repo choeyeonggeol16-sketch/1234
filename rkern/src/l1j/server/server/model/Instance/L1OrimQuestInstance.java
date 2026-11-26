@@ -1380,7 +1380,7 @@
 //	}
 //
 //	/**
-//	 * 월드에 새로운 함정을 만들어 추가 ※ L1ReloadTrap이 실행될 때 삭제되는 점에주의
+//	 * 월드에 새로운 함정을 만들어 추가 ※ 트랩 리로드 명령 실행 시 삭제되는 점에주의
 //	 */
 //	private static L1TrapInstance setSwitch(L1Location loc, int id) {
 //		final int trapId = id;

@@ -41,7 +41,7 @@ import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.SQLUtil;
 
 public class L1ImPactGfxid1 implements L1CommandExecutor {
-	private static Logger _log = Logger.getLogger(L1InvGfxId.class.getName());
+	private static Logger _log = Logger.getLogger(L1ImPactGfxid1.class.getName());
 	public static ArrayList<ImPact> _ImPactInfo = new ArrayList<ImPact>();
 
 	private L1ImPactGfxid1() {}
