@@ -9128,7 +9128,7 @@ for (L1PcInstance pc2 : players) {
 			 * 현재 화면의 HP BAR를 즉시 한 번 보낸다.
 			 */
 			for (L1Object obj : pc.getKnownObjects()) {
-				if (BuilderIsHpBarTarget(obj)) {
+				if (L1PcInstance.isHpBarTarget(obj)) {
 					SC_HPMeter.send(pc, (L1Character) obj);
 				}
 			}
@@ -9149,7 +9149,7 @@ for (L1PcInstance pc2 : players) {
 			 * 현재 클라이언트에 남아 있는 HP BAR 즉시 삭제.
 			 */
 			for (L1Object obj : pc.getKnownObjects()) {
-				if (BuilderIsHpBarTarget(obj)) {
+				if (L1PcInstance.isHpBarTarget(obj)) {
 					SC_HPMeter.send(pc, obj.getId(), 0xFF, 0xFF);
 				}
 			}
@@ -9160,25 +9160,7 @@ for (L1PcInstance pc2 : players) {
 		}
 	}
 
-	public static boolean BuilderIsHpBarTarget(L1Object obj) {
-		if (obj instanceof L1MonsterInstance) {
-			return true;
-		}
-		if (obj instanceof L1PcInstance) {
-			return true;
-		}
-		if (obj instanceof L1SummonInstance) {
-			return true;
-		}
-		if (obj instanceof L1PetInstance) {
-			return true;
-		}
-		if (obj instanceof L1CompanionInstance) {
-			return true;
-		}
 
-		return false;
-	}
 
 	// Both display commands use the same action lookup and timer callback.
 	private static void BuilderSpawnImpact(L1PcInstance pc, boolean attack, String arg) {

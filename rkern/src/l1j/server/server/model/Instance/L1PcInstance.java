@@ -31,7 +31,6 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.SkillCheck;
 import l1j.server.server.ThreadPool;
 import l1j.server.server.auth.captcha.Captcha;
-import l1j.server.server.command.executor.L1HpBar;
 import l1j.server.server.datatables.CharBuffTable;
 import l1j.server.server.datatables.CharacterSlotItemTable;
 import l1j.server.server.datatables.CharacterTable;
@@ -8259,6 +8258,26 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		}
 	}
 	
+	public static boolean isHpBarTarget(L1Object obj) {
+		if (obj instanceof L1MonsterInstance) {
+			return true;
+		}
+		if (obj instanceof L1PcInstance) {
+			return true;
+		}
+		if (obj instanceof L1SummonInstance) {
+			return true;
+		}
+		if (obj instanceof L1PetInstance) {
+			return true;
+		}
+		if (obj instanceof L1CompanionInstance) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public void updateHpBar() {
 		if (!hasSkillEffect(L1SkillId.GMSTATUS_HPBAR)) {
 			return;
@@ -8269,7 +8288,7 @@ for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
 		try {
 			for (L1Object visible : nearby) {
 				if (visible == null || !canSeeObject(visible)
-						|| !L1HpBar.isHpBarTarget(visible)) continue;
+						|| !isHpBarTarget(visible)) continue;
 				SC_HPMeter.send(this, (L1Character) visible);
 			}
 		} finally {

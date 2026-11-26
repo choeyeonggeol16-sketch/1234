@@ -18,42 +18,31 @@ jobs:
             rkern/docs/jproring_cio_integration_20261120
       - name: Assert obsolete command classes and references removed
         run: |
-          if git grep -n -w -E 'GMCommands|L1Commands|L1Command|L1CommandHelp|GMCommandsConfig' -- rkern/src | grep -v 'GMCommands.xml'; then
-            exit 1
-          fi
           git grep -n 'BuilderCmd2Handler(' -- rkern/src
-          if git grep -n -w -E 'L1LetterCommand|L1LevelPresent|L1ImPactGfxid1|L1ImPactGfxid|L1Burf|L1PowerKick|L1SkillEffect|L1AdShop|L1RemoveLetter|L1HpBar' -- rkern/src; then
-            exit 1
+          status=0
+          if matches=$(git grep -n -w -E 'GMCommands|L1Commands|L1Command|L1CommandHelp|GMCommandsConfig|L1LetterCommand|L1LevelPresent|L1ImPactGfxid1|L1ImPactGfxid|L1Burf|L1PowerKick|L1SkillEffect|L1AdShop|L1RemoveLetter|L1HpBar|L1Search1|L1Reload|L1Buff|L1Summon|L1Shutdown|L1Search|L1ItemDelete|L1QueryCharacter|L1PartyRecall|L1Poly|L1Present|L1Status|L1SKick|L1NpcShopSwitch|L1HomeTown|L1Favorite|L1EventSpawn|L1CheckCharacter|L1CheckPassword|L1ToSpawn|L1RangeKick|L1DatabaseInit|L1SpawnRobot|L1SpawnCmd|L1FakeCharacter|L1InsertSpawn|L1BanIp|L1GM|L1GMQuestion|L1CreateItemSet|L1ShowTrap|L1Thread|L1AddSkill|L1NpcDown|L1ServerName|L1Clear|L1Describe|L1DeleteGroundItem|L1DescIdWeapon|L1DescIdArmor|L1DescId|L1Level|L1ReloadTrap|L1ResetTrap|L1ServerMessage|L1BuffIcon|L1GfxId|L1InvGfxId|L1SkillIcon|L1ChatNG|L1Chat|L1Ress|L1Visible|L1Recall|L1Kick|L1Loc|L1Move|L1Invisible|L1Kill|L1ToPC|L1Echo|L1Action|L1Speed|L1Patrol|L1AllBuff|L1ChatNG2|L1ChangeWeather|L1Who|L1RessBuff|L1AttackLog|L1GMRoom|L1AccountBanKick' -- rkern/src); then
+            # GMCommands.xml is a configuration filename, and CObjectDB uses
+            # L1Summon as an NPC prototype discriminator, not a command class.
+            matches=$(printf '%s\n' "$matches" | grep -v 'GMCommands.xml' | grep -vE '^rkern/src/l1j/server/server/datatables/CObjectDB.java:[0-9]+:[[:space:]]*case "L1Doll".*"L1Summon", "L1SummonInstance".*NPC_CONTEXT_REQUIRED;' || true)
+            if [ -n "$matches" ]; then
+              printf '%s\n' "$matches"
+              status=1
+            fi
+          else
+            result=$?
+            if [ "$result" -ne 1 ]; then exit "$result"; fi
           fi
-          if git grep -n 'registerExisting(loaded,' -- rkern/src; then exit 1; fi
+          if git grep -n 'registerExisting(loaded,' -- rkern/src; then status=1; fi
           echo 'Remaining unregistered L1CommandExecutor implementations:'
           git grep -l 'implements L1CommandExecutor' -- rkern/src || true
-          if git grep -n -w -E 'L1Search1|L1Reload|L1Buff|L1Summon|L1Shutdown|L1Search|L1ItemDelete|L1QueryCharacter|L1PartyRecall' -- rkern/src; then
-            exit 1
-          fi
-          if git grep -n -w -E 'L1Poly|L1Present|L1Status|L1SKick|L1NpcShopSwitch|L1HomeTown|L1Favorite|L1EventSpawn' -- rkern/src; then
-            exit 1
-          fi
-          if git grep -n -w -E 'L1CheckCharacter|L1CheckPassword|L1ToSpawn|L1RangeKick|L1DatabaseInit|L1SpawnRobot|L1SpawnCmd|L1FakeCharacter|L1InsertSpawn|L1BanIp|L1GM' -- rkern/src; then
-            exit 1
-          fi
-          if git grep -n -w -E 'L1GMQuestion|L1CreateItemSet|L1ShowTrap|L1Thread|L1AddSkill|L1NpcDown|L1ServerName|L1Clear|L1Describe|L1DeleteGroundItem' -- rkern/src; then
-            exit 1
-          fi
-          if git grep -n -w -E 'L1DescIdWeapon|L1DescIdArmor|L1DescId|L1Level|L1ReloadTrap|L1ResetTrap|L1ServerMessage|L1BuffIcon|L1GfxId|L1InvGfxId|L1SkillIcon|L1ChatNG|L1Chat|L1Ress' -- rkern/src; then
-            exit 1
-          fi
-          if git grep -n -w -E 'L1Visible|L1Recall|L1Kick|L1Loc|L1Move|L1Invisible|L1Kill|L1ToPC|L1Echo|L1Action|L1Speed' -- rkern/src; then
-            exit 1
-          fi
-          if git grep -n -w -E 'L1Patrol|L1AllBuff|L1ChatNG2|L1ChangeWeather|L1Who|L1RessBuff|L1AttackLog|L1GMRoom|L1AccountBanKick' -- rkern/src; then
-            exit 1
-          fi
+          exit "$status"
       - uses: actions/cache@v4
+        if: ${{ !cancelled() }}
         with:
           path: ~/.cache/rkern-skill-deps
           key: rkern-skill-jars-v1
       - name: Compile Java 21
+        if: ${{ !cancelled() }}
         run: |
           export PATH="$JAVA_HOME_21_X64/bin:$PATH"
           python3 - <<'PY'
