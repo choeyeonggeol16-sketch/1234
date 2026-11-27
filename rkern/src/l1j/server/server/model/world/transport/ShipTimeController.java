@@ -27,7 +27,7 @@ import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.thread.CServerTimer;
@@ -94,11 +94,7 @@ public class ShipTimeController implements Runnable {
     }
 
 	private void checkShipTime() {
-		int servertime = L1GameTimeClock.getInstance().getGameTime().getSeconds();
-        // Legacy ship windows are expressed as negative seconds within a day
-        // (-86400..-1), while the game clock can be either positive or negative
-        // after its 32-bit wrap. Normalize both directions before comparisons.
-        int nowtime = Math.floorMod(servertime, 86400) - 86400;
+		int nowtime = CL2Time.getSecondOfDay() - 86_400;
 		
 		if (nowtime >= -62370 && nowtime < -62200 //13시 8분 ~ 13시 33분 배
 				|| nowtime >= -56982 && nowtime < -56800

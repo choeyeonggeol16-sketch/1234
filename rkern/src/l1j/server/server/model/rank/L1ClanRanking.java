@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.storage.CacheD;
-import l1j.server.server.model.gametime.RealTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.utils.SQLUtil;
 
@@ -87,7 +87,7 @@ public class L1ClanRanking implements Runnable {
 		if (_currentTime == 0) {
 			return true;
 		}
-		return RealTimeClock.getInstance().getRealTime().get(Calendar.MINUTE) == 0;
+		return CL2Time.getDateTime().get(Calendar.MINUTE) == 0;
 	}
 
 	public void gmcommand() {

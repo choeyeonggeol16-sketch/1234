@@ -101,9 +101,8 @@ import l1j.server.server.model.character.companion.CompanionLoader;
 import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
 import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
 import l1j.server.server.model.character.scheduler.CInventoryExpiry;
-import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.world.town.CResidenceSettlement;
-import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1TreasureBox;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.inventory.EquipmentEnchantOptions;
@@ -200,8 +199,7 @@ public class GameServer {
 		// 온라인 상태 리셋트
 		CharacterTable.clearOnlineStatus();
 		// Loaders can read time and register listeners before callbacks start.
-		L1GameTimeClock.prepare();
-		RealTimeClock.prepare();
+		CL2Time.prepare();
 		
 		KeyTable.initBossKey();
 
@@ -351,9 +349,8 @@ public class GameServer {
 		if (Config.AUTO_GM_SHOP) {
 			NpcShopManager.getInstance().start();
 		}
-        CResidenceSettlement.getInstance().start(L1GameTimeClock.getInstance());
-		L1GameTimeClock.start();
-		RealTimeClock.start();
+        CResidenceSettlement.getInstance().start(CL2Time.getInstance());
+		CL2Time.start();
 	}
 
     public void disconnectAllCharacters() {
@@ -599,8 +596,7 @@ public class GameServer {
             Server.stopLoginServer();
             CInstantZoneManager.stopAccepting();
             disconnectAllCharacters();
-            L1GameTimeClock.stop();
-            RealTimeClock.stop();
+            CL2Time.stop();
             // Let accepted off-owner work finish before removing the world, its
             // owner threads, or the database that those callbacks may still use.
             RaidSpace.release();

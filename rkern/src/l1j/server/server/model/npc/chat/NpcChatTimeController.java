@@ -11,11 +11,11 @@ import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.BaseTime;
-import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.gametime.TimeListener;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.L2TimeListener;
 
-public final class NpcChatTimeController implements Runnable, TimeListener {
+public final class NpcChatTimeController implements Runnable, L2TimeListener {
     private static final Logger LOG = Logger.getLogger(NpcChatTimeController.class.getName());
     private final AtomicBoolean inFlight = new AtomicBoolean();
     private volatile boolean started;
@@ -33,25 +33,25 @@ public final class NpcChatTimeController implements Runnable, TimeListener {
 
     public synchronized void start() {
         if (started) return;
-        final RealTimeClock clock = RealTimeClock.getInstance();
-        if (clock == null) throw new IllegalStateException("RealTimeClock not initialized");
+        final CL2Time clock = CL2Time.getInstance();
+        if (clock == null) throw new IllegalStateException("CL2Time not initialized");
         ++generation;
         started = true;
         completedMinute = -1L;
         // Existing clock drives retry signals; world iteration is never run on it.
-        clock.addListener(this, Calendar.SECOND);
-        onSecondChanged(clock.getRealTime());
+        CL2Time.addRealListener(this, Calendar.SECOND);
+        onSecondChanged(CL2Time.getDateTime());
     }
 
     public synchronized void stop() {
         if (!started) return;
         started = false;
         ++generation;
-        RealTimeClock.getInstance().removeListener(this, Calendar.SECOND);
+        CL2Time.removeRealListener(this, Calendar.SECOND);
     }
 
     @Override
-    public void onSecondChanged(BaseTime time) {
+    public void onSecondChanged(L2DateTime time) {
         if (!started) return;
         final long minute = System.currentTimeMillis() / 60_000L;
         if (completedMinute == minute || !inFlight.compareAndSet(false, true)) return;
@@ -75,10 +75,6 @@ public final class NpcChatTimeController implements Runnable, TimeListener {
         }
     }
 
-    @Override public void onMonthChanged(BaseTime time) { }
-    @Override public void onDayChanged(BaseTime time) { }
-    @Override public void onHourChanged(BaseTime time) { }
-    @Override public void onMinuteChanged(BaseTime time) { }
 
     @Override
     public void run() {

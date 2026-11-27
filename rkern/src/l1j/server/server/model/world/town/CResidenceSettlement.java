@@ -18,9 +18,9 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.TownTable;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.L1GameTime;
-import l1j.server.server.model.gametime.L1GameTimeAdapter;
-import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -29,7 +29,7 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.templates.L1Town;
 
-public final class CResidenceSettlement extends L1GameTimeAdapter {
+public final class CResidenceSettlement implements L2TimeListener {
     public static final int FIRST_TOWN = 1;
     public static final int LAST_TOWN = 10;
     private static final int SETTLEMENT_DAY = 25;
@@ -40,13 +40,13 @@ public final class CResidenceSettlement extends L1GameTimeAdapter {
 
     private static volatile boolean settling;
     private static volatile long period = 1;
-    private L1GameTimeClock clock;
+    private CL2Time clock;
     private boolean scheduled;
     private long clockGeneration;
     private int lastMonth = Integer.MIN_VALUE;
     private int lastDay = Integer.MIN_VALUE;
     private static volatile int uncertainMonth = Integer.MIN_VALUE;
-    private L1GameTime pendingDay;
+    private L2DateTime pendingDay;
     private boolean pendingMonthly;
 
     private CResidenceSettlement() {}
@@ -73,24 +73,26 @@ public final class CResidenceSettlement extends L1GameTimeAdapter {
         return false;
     }
 
-    public synchronized void start(L1GameTimeClock source) {
+    public synchronized void start(CL2Time source) {
         if (clock == source) return;
         stop();
         TownTable.getInstance();
         clock = source;
-        clock.addListener(this);
+        clock.addGameListener(this, Calendar.DAY_OF_MONTH);
+        clock.addGameListener(this, Calendar.HOUR_OF_DAY);
     }
 
     public synchronized void stop() {
         if (clock == null) return;
-        clock.removeListener(this);
+        clock.removeGameListener(this, Calendar.DAY_OF_MONTH);
+        clock.removeGameListener(this, Calendar.HOUR_OF_DAY);
         clock = null;
         pendingDay = null;
         clockGeneration++;
     }
 
     @Override
-    public synchronized void onDayChanged(L1GameTime time) {
+    public synchronized void onDayChanged(L2DateTime time) {
         if (clock == null) return;
         if (pendingDay == null || !pendingMonthly) {
             pendingDay = time;
@@ -100,37 +102,37 @@ public final class CResidenceSettlement extends L1GameTimeAdapter {
     }
 
     @Override
-    public synchronized void onHourChanged(L1GameTime time) {
+    public synchronized void onHourChanged(L2DateTime time) {
         submitPending();
     }
 
     private void submitPending() {
-        L1GameTime time = pendingDay;
+        L2DateTime time = pendingDay;
         if (time == null || scheduled) return;
         if (alreadyProcessed(time, pendingMonthly) || request(time, pendingMonthly)) pendingDay = null;
     }
 
-    private static boolean isMonthly(L1GameTime time) {
+    private static boolean isMonthly(L2DateTime time) {
         return time.get(Calendar.DAY_OF_MONTH) == SETTLEMENT_DAY;
     }
 
     public synchronized boolean request(boolean monthly) {
-        return clock != null && request(clock.getGameTime(), monthly);
+        return clock != null && request(CL2Time.getGameDateTime(), monthly);
     }
 
-    private static int monthKey(L1GameTime time) {
+    private static int monthKey(L2DateTime time) {
         return time.get(Calendar.YEAR) * 12 + time.get(Calendar.MONTH);
     }
 
-    private static int dayKey(L1GameTime time) {
+    private static int dayKey(L2DateTime time) {
         return monthKey(time) * 32 + time.get(Calendar.DAY_OF_MONTH);
     }
 
-    private boolean alreadyProcessed(L1GameTime time, boolean monthly) {
+    private boolean alreadyProcessed(L2DateTime time, boolean monthly) {
         return monthly ? monthKey(time) == lastMonth : dayKey(time) == lastDay;
     }
 
-    private boolean request(L1GameTime time, boolean monthly) {
+    private boolean request(L2DateTime time, boolean monthly) {
         if (clock == null || scheduled || alreadyProcessed(time, monthly)) return false;
         long generation = clockGeneration;
         scheduled = true;
@@ -144,7 +146,7 @@ public final class CResidenceSettlement extends L1GameTimeAdapter {
         }
     }
 
-    private void run(long generation, L1GameTime time, boolean monthly) {
+    private void run(long generation, L2DateTime time, boolean monthly) {
         int month = monthKey(time);
         int day = dayKey(time);
         try {

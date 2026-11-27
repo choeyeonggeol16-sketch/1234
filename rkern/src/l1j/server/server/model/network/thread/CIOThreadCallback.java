@@ -38,7 +38,7 @@ import l1j.server.server.model.character.skill.CSkillEffectActivation;
 import l1j.server.server.model.character.skill.TomahawkBleedService;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.execution.CIOShardContext;
-import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.network.core.sc.packet.SC_GameTime;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
@@ -1206,9 +1206,7 @@ public final class CIOThreadCallback {
 		private void syncGameTimeIfDue(L1PcInstance pc) {
 			if (!activeSession(pc) || pc.is무인상점() || pc.getNetConnection() == null) return;
 			try {
-				final L1GameTimeClock clock = L1GameTimeClock.getInstance();
-				if (clock == null) return;
-				final long serverTime = clock.getGameTime().getSeconds();
+				final long serverTime = CL2Time.getTime();
 				final long bucket = serverTime / GAME_TIME_SYNC_SECONDS;
 				if (bucket != lastGameTimeBucket && SC_GameTime.send(pc, serverTime))
 					lastGameTimeBucket = bucket;

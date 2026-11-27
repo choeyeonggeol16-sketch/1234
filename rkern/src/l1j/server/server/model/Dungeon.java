@@ -12,7 +12,7 @@ import gnu.trove.map.hash.TLongObjectHashMap;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 
 public class Dungeon {
 
@@ -118,8 +118,7 @@ public class Dungeon {
 	}
 
 	public boolean dg(int locX, int locY, int mapId, L1PcInstance pc) {
-		int servertime = L1GameTimeClock.getInstance().getGameTime().getSeconds();
-		int nowtime = servertime % 86400;
+		int nowtime = CL2Time.getSecondOfDay();
 		
 		long key = makeKey(mapId, locX, locY);
 		if (_dungeonMap.containsKey(key)) {

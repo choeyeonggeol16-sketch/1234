@@ -12,7 +12,7 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
-import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.utils.CPCParamDB;
 
 public final class L1AttackHelper {
@@ -308,9 +308,7 @@ public final class L1AttackHelper {
 		final int undead = npc.getNpcTemplate().get_undead();
 		if (undead != 1 && undead != 3) return false;
 
-		return L1GameTimeClock.getInstance()
-				.getGameTime()
-				.isNight();
+		return CL2Time.isNight();
 	}
 	public static boolean blockPetSummonCompanionHitInSafeZone(L1Character attacker, L1PcInstance targetPc) {
 		if (attacker == null || targetPc == null) return false;

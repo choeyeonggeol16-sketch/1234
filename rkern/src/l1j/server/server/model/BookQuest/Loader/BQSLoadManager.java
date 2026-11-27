@@ -12,7 +12,7 @@ import l1j.server.server.model.BookQuest.UserSide.BQSCharacterCriteriaProgress;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.RealTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
@@ -63,11 +63,11 @@ public class BQSLoadManager implements Command{
             @Override
             public void result(ResultSet rs) throws Exception{
                 if(rs.next()){
-                    Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
+                    Calendar cal = CL2Time.getRealTimeCalendar();
                     BQS_UPDATE_CALENDAR = (Calendar)cal.clone();
                     BQS_UPDATE_CALENDAR.setTimeInMillis(rs.getTimestamp("update_info").getTime());
                     BQS_UPDATE_CALENDAR.set(Calendar.HOUR_OF_DAY, BQS_UPDATE_STDHOUR);
-                    int diff_hours = (((int)(cal.getTimeInMillis() - BQS_UPDATE_CALENDAR.getTimeInMillis()) / 1000) / 3600);
+                    long diff_hours = (cal.getTimeInMillis() - BQS_UPDATE_CALENDAR.getTimeInMillis()) / 3_600_000L;
                     if(diff_hours > BQS_UPDATE_HOURS)
                         updateBqsUpdateCalendar();
                     cal.clear();
@@ -80,7 +80,7 @@ public class BQSLoadManager implements Command{
     
     public static void updateBqsUpdateCalendar(){
         Calendar oldCal = BQS_UPDATE_CALENDAR;
-        BQS_UPDATE_CALENDAR = RealTimeClock.getInstance().getRealTimeCalendar();
+        BQS_UPDATE_CALENDAR = CL2Time.getRealTimeCalendar();
         BQS_UPDATE_CALENDAR.set(Calendar.HOUR_OF_DAY, BQS_UPDATE_STDHOUR);
         BQS_UPDATE_CALENDAR.set(Calendar.MINUTE, 0);
         BQS_UPDATE_CALENDAR.set(Calendar.SECOND, 0);

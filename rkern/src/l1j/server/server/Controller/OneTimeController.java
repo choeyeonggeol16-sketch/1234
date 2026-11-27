@@ -11,11 +11,11 @@ import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.BaseTime;
-import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.gametime.TimeListener;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.L2TimeListener;
 
-public final class OneTimeController implements TimeListener {
+public final class OneTimeController implements L2TimeListener {
     private static final Logger LOG = Logger.getLogger(OneTimeController.class.getName());
     private static final OneTimeController INSTANCE = new OneTimeController();
     private final AtomicBoolean inFlight = new AtomicBoolean();
@@ -36,24 +36,24 @@ public final class OneTimeController implements TimeListener {
 
     private synchronized void startInternal() {
         if (started) return;
-        final RealTimeClock clock = RealTimeClock.getInstance();
-        if (clock == null) throw new IllegalStateException("RealTimeClock not initialized");
+        final CL2Time clock = CL2Time.getInstance();
+        if (clock == null) throw new IllegalStateException("CL2Time not initialized");
         ++epoch;
         started = true;
-        clock.addListener(this, Calendar.SECOND);
+        CL2Time.addRealListener(this, Calendar.SECOND);
         // A server started during the midnight hour still owes the day's reset.
-        onSecondChanged(clock.getRealTime());
+        onSecondChanged(CL2Time.getDateTime());
     }
 
     private synchronized void stopInternal() {
         if (!started) return;
         started = false;
         ++epoch;
-        RealTimeClock.getInstance().removeListener(this, Calendar.SECOND);
+        CL2Time.removeRealListener(this, Calendar.SECOND);
     }
 
     @Override
-    public void onSecondChanged(BaseTime time) {
+    public void onSecondChanged(L2DateTime time) {
         if (!started || time == null) return;
         final long day = (((long) time.get(Calendar.YEAR)) << 9)
                 | time.get(Calendar.DAY_OF_YEAR);
@@ -98,8 +98,4 @@ public final class OneTimeController implements TimeListener {
         }
     }
 
-    @Override public void onMonthChanged(BaseTime time) { }
-    @Override public void onDayChanged(BaseTime time) { }
-    @Override public void onHourChanged(BaseTime time) { }
-    @Override public void onMinuteChanged(BaseTime time) { }
 }

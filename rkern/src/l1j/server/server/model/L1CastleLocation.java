@@ -3,9 +3,9 @@ package l1j.server.server.model;
 import l1j.server.server.shared.GameRandom;
 
 
-import l1j.server.server.model.gametime.L1GameTime;
-import l1j.server.server.model.gametime.L1GameTimeAdapter;
-import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 
@@ -102,9 +102,9 @@ public class L1CastleLocation {
 	private static final L1Location[] SUB_TOWERS = new L1Location[5];
 
 	// shop tax rate [1..8]
-	private static final int[] CASTLE_TAX_RATE = new int[9];
+	private static volatile int[] CASTLE_TAX_RATE = new int[9];
 
-	private static L1CastleTaxRateListener _listener;
+	private static final L2TimeListener CASTLE_TAX_CLOCK = new CResidenceTaxListener();
 
 	static {
 		// towers
@@ -324,24 +324,25 @@ public class L1CastleLocation {
 		return (castleId != 0) ? CASTLE_TAX_RATE[castleId] : 0;
 	}
 
-	// GameServer#initialize 에서 호출될 것
-	public static void setCastleTaxRate() {
-		for (int i = 1; i <= 8; i++) {
-			CastleWar war = CastleWarBusiness.getInstance().get(i);
-			CASTLE_TAX_RATE[i] = (war != null) ? war.getTaxRate() : 0;
-		}
-		if (_listener == null) {
-			_listener = new L1CastleTaxRateListener();
-			L1GameTimeClock.getInstance().addListener(_listener);
-		}
-	}
+    public static void setCastleTaxRate() {
+        refreshCastleTaxRates();
+        CL2Time.getInstance().addGameListener(CASTLE_TAX_CLOCK, java.util.Calendar.DAY_OF_MONTH);
+    }
 
-	private static class L1CastleTaxRateListener extends L1GameTimeAdapter {
-		@Override
-		public void onDayChanged(L1GameTime time) {
-			L1CastleLocation.setCastleTaxRate();
-		}
-	}
+    private static void refreshCastleTaxRates() {
+        int[] rates = new int[9];
+        for (int i = 1; i < rates.length; i++) {
+            CastleWar war = CastleWarBusiness.getInstance().get(i);
+            rates[i] = war == null ? 0 : war.getTaxRate();
+        }
+        CASTLE_TAX_RATE = rates;
+    }
+
+    private static final class CResidenceTaxListener implements L2TimeListener {
+        @Override public void onDayChanged(L2DateTime time) {
+            refreshCastleTaxRates();
+        }
+    }
 
 	public static int[] getSubTowerLoc(int no) {
 		int[] result = new int[3];

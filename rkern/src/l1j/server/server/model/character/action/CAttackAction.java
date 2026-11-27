@@ -46,7 +46,7 @@ import l1j.server.server.model.character.companion.instance.CompanionAttackHandl
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.helper.WeakExposeHelper;
 import l1j.server.server.model.character.skill.passive.PassiveID;
-import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackCritical;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackMissPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
@@ -1464,7 +1464,7 @@ public final class CAttackAction extends CNewAction {
 	private int calcUndeadMaterialBonus() {	
 		if (_targetNpc == null) return 0;
 		final int undeadType = _targetNpc.getNpcTemplate().get_undead();
-		final boolean isNight = L1GameTimeClock.getInstance().getGameTime().isNight();
+		final boolean isNight = CL2Time.isNight();
 		return L1UndeadBonusHelper.calcBonus(_pc,
 				_weaponMaterial,
 				_weaponBless,

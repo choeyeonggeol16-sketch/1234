@@ -12,7 +12,7 @@ import l1j.server.server.model.character.action.listener.npc.NpcActionListener;
 import l1j.server.server.model.character.combat.arena.CombatEGameType;
 import l1j.server.server.model.character.combat.arena.CombatObserver;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
-import l1j.server.server.model.gametime.RealTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.shared.arrangement.ArrangeParseeFactory;
@@ -140,7 +140,7 @@ public class AcceptorToCombatListenerAdapter extends AbstractDateAcceptor implem
 		
 		try{
 			CombatObserver observer = CombatLoadManager.getInstance().execute_observer(_listener.get_g_type());
-			Calendar closed_cal = RealTimeClock.getInstance().getRealTimeCalendar();
+			Calendar closed_cal = CL2Time.getRealTimeCalendar();
 			closed_cal.add(Calendar.SECOND, observer.to_total_remain_seconds());
 			set_closed_cal(closed_cal);
 			observer.add_quit_listener(new SimpleListener(){

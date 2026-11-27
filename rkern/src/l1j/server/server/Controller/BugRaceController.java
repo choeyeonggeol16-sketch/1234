@@ -29,9 +29,9 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.BaseTime;
-import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.gametime.TimeListener;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.L2TimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -45,7 +45,7 @@ import l1j.server.server.templates.L1RaceTicket;
 import l1j.server.server.templates.L1Racer;
 import l1j.server.server.templates.L1ShopItem;
 
-public class BugRaceController implements Runnable, TimeListener {
+public class BugRaceController implements Runnable, L2TimeListener {
 	private static final Logger LOG = Logger.getLogger(BugRaceController.class.getName());
 	private static BugRaceController _instance;
     private final BugRacePersistence persistence = new BugRacePersistence();
@@ -54,17 +54,17 @@ public class BugRaceController implements Runnable, TimeListener {
     private volatile long nextRunAtMs;
     private volatile int clockEpoch;
     // Published as a single snapshot. Rejected racer timers are retried by
-    // the already registered RealTimeClock tick, never by a new worker.
+    // the already registered CL2Time tick, never by a new worker.
     private volatile RunBug[] activeRunners = new RunBug[5];
 
-    // RealTimeClock is already started before the race controller in GameServer.
+    // CL2Time is already started before the race controller in GameServer.
     // The clock only dispatches: game, SQL and packet work remains off its thread.
     public synchronized void start() {
         if (clockRegistered) return;
         clockRegistered = true;
         ++clockEpoch;
         nextRunAtMs = 0L;
-        RealTimeClock.getInstance().addListener(this, Calendar.SECOND);
+        CL2Time.addRealListener(this, Calendar.SECOND);
         onSecondChanged(null);
     }
 
@@ -73,10 +73,10 @@ public class BugRaceController implements Runnable, TimeListener {
         clockRegistered = false;
         ++clockEpoch;
         activeRunners = new RunBug[5];
-        RealTimeClock.getInstance().removeListener(this, Calendar.SECOND);
+        CL2Time.removeRealListener(this, Calendar.SECOND);
     }
 
-    @Override public void onSecondChanged(BaseTime time) {
+    @Override public void onSecondChanged(L2DateTime time) {
         if (!clockRegistered) return;
         // Do not run movement on the clock: only re-admit an already existing
         // runner whose previous one-shot schedule was rejected.
@@ -104,10 +104,6 @@ public class BugRaceController implements Runnable, TimeListener {
         }
     }
 
-    @Override public void onMonthChanged(BaseTime time) { }
-    @Override public void onDayChanged(BaseTime time) { }
-    @Override public void onHourChanged(BaseTime time) { }
-    @Override public void onMinuteChanged(BaseTime time) { }
 
 
 	public static int BUG_BASIC_SPEED;

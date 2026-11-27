@@ -7,11 +7,11 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
-import l1j.server.server.model.gametime.BaseTime;
-import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.gametime.TimeListener;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.L2TimeListener;
 
-public class BQSWQUpdator implements TimeListener{
+public class BQSWQUpdator implements L2TimeListener{
 	private static BQSWQUpdator _instance;
 	public static BQSWQUpdator getInstance(){
 		if(_instance == null)
@@ -36,10 +36,10 @@ public class BQSWQUpdator implements TimeListener{
 	
 	public void update_listener(){
 		if(_current_listener_type > 0)
-			RealTimeClock.getInstance().removeListener(this, _current_listener_type);
+			CL2Time.removeRealListener(this, _current_listener_type);
 			
 		_current_listener_type = BQSLoadManager.BQS_UPDATE_TYPE;
-		Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
+		Calendar cal = CL2Time.getRealTimeCalendar();
 		switch(BQSLoadManager.BQS_UPDATE_TYPE){
 		case Calendar.MINUTE:
 			_accumulate_clock = accumulate_minute(cal);
@@ -56,45 +56,35 @@ public class BQSWQUpdator implements TimeListener{
 			_update_times = BQSLoadManager.BQS_UPDATE_HOURS;
 			break;
 		}
-		RealTimeClock.getInstance().addListener(this, _current_listener_type);
+		CL2Time.addRealListener(this, _current_listener_type);
 	}
 	
-	public int accumulate_hour(Calendar cal){
-		return ((cal.get(Calendar.YEAR) - BQSLoadManager.BQS_UPDATE_CALENDAR.get(Calendar.YEAR)) * RealTimeClock.YEAR_TO_HOURS) + 
-				((cal.get(Calendar.DAY_OF_YEAR) - BQSLoadManager.BQS_UPDATE_CALENDAR.get(Calendar.DAY_OF_YEAR)) * RealTimeClock.DAY_TO_HOURS) +
-				(cal.get(Calendar.HOUR_OF_DAY) - BQSLoadManager.BQS_UPDATE_CALENDAR.get(Calendar.HOUR_OF_DAY));
-	}
+    public int accumulate_hour(Calendar cal) {
+        return elapsedBuckets(cal, 3_600_000L);
+    }
 
-	public int accumulate_minute(Calendar cal){
-		int accumulate_hour_to_minute = accumulate_hour(cal) * 60;
-		return accumulate_hour_to_minute + (cal.get(Calendar.MINUTE) - BQSLoadManager.BQS_UPDATE_CALENDAR.get(Calendar.MINUTE));	
-	}
-	
-	public int accumulate_second(Calendar cal){
-		int accumulate_minute_to_second = accumulate_minute(cal) * 60;
-		return accumulate_minute_to_second + (cal.get(Calendar.SECOND) - BQSLoadManager.BQS_UPDATE_CALENDAR.get(Calendar.SECOND));
-	}
-	
-	@Override
-	public void onMonthChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
+    public int accumulate_minute(Calendar cal) {
+        return elapsedBuckets(cal, 60_000L);
+    }
+
+    public int accumulate_second(Calendar cal) {
+        return elapsedBuckets(cal, 1_000L);
+    }
+
+    private int elapsedBuckets(Calendar cal, long unit) {
+        long start = BQSLoadManager.BQS_UPDATE_CALENDAR.getTimeInMillis();
+        long difference = Math.floorDiv(cal.getTimeInMillis(), unit) - Math.floorDiv(start, unit);
+        return (int) Math.clamp(difference, 0, Integer.MAX_VALUE);
+    }
 
 	@Override
-	public void onDayChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void onHourChanged(L2DateTime time) { onClockTick(); }
 
 	@Override
-	public void onHourChanged(BaseTime time) { onClockTick(); }
+	public void onMinuteChanged(L2DateTime time) { onClockTick(); }
 
 	@Override
-	public void onMinuteChanged(BaseTime time) { onClockTick(); }
-
-	@Override
-	public void onSecondChanged(BaseTime time) { onClockTick(); }
+	public void onSecondChanged(L2DateTime time) { onClockTick(); }
 
 	private void onClockTick() {
 		synchronized (this) {
@@ -128,7 +118,7 @@ public class BQSWQUpdator implements TimeListener{
 					if (!_isrun || !_pendingUpdate) return;
 					_pendingUpdate = false;
 				}
-				Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
+				Calendar cal = CL2Time.getRealTimeCalendar();
 				System.out.println(String.format("[Book System Update...!] %4d-%2d%2d %2d:%2d:%2d",
 						cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH),
 						cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND)));

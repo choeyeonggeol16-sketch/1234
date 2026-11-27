@@ -4,7 +4,7 @@ import java.util.Calendar;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.RealTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.world.index.IndexStampManager;
 import l1j.server.server.model.world.index.StampIndex;
 import l1j.server.server.model.world.instance.dungeon.time.updator.DungeonTimeUpdator;
@@ -50,7 +50,7 @@ public class DungeonTimeLoadManager implements Command{
 	
 	private void do_truncate(){
 	      Calendar cal = IndexStampManager.select(StampIndex.SIDX_DUNGEON_TIME_TRUNCATE);
-	      Calendar current = RealTimeClock.getInstance().getRealTimeCalendar();
+	      Calendar current = CL2Time.getRealTimeCalendar();
 	      if(cal == null ||
 	            cal.get(Calendar.YEAR) != current.get(Calendar.YEAR) || 
 	            cal.get(Calendar.MONTH) != current.get(Calendar.MONDAY) || 
@@ -121,7 +121,7 @@ public class DungeonTimeLoadManager implements Command{
 				.add_command(new CommandTree("전체초기화", "전체 케릭터의 던전시간을 초기화합니다.", null){
 					@Override
 					protected void to_handle_command(CommandArgs args) throws Exception{
-						DungeonTimeUpdator.getInstance().do_initialize(RealTimeClock.getInstance().getRealTimeCalendar());
+						DungeonTimeUpdator.getInstance().do_initialize(CL2Time.getRealTimeCalendar());
 						args.notify("전체 초기화를 완료했습니다.");
 					}
 				});

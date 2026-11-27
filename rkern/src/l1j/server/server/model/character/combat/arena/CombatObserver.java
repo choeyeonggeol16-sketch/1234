@@ -18,7 +18,7 @@ import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.combat.arena.loader.CombatTrapsLoader;
 import l1j.server.server.model.character.combat.statistics.shared.TeamKda;
 import l1j.server.server.model.character.combat.statistics.shared.UserKda;
-import l1j.server.server.model.gametime.RealTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.item.reward.AbstractReward;
 import l1j.server.server.model.network.packethelper.PacketFactory;
 import l1j.server.server.model.world.trap.AbstractTrap;
@@ -80,7 +80,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         StringBuilder sb = new StringBuilder(256);
         sb.append("[ID:").append(_combat_info.get_combat_id()).append("(").append(_combat_info.get_game_type().to_kr_desc()).append(")");
         sb.append("맵").append(_copyMapId).append(",상태:").append(_status.name());
-        Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
+        Calendar cal = CL2Time.getRealTimeCalendar();
         cal.setTimeInMillis(_start_sec * 1000L);
         sb.append(",시작시간:").append(cal.get(Calendar.HOUR_OF_DAY)).append(":").append(cal.get(Calendar.MINUTE)).append(":").append(cal.get(Calendar.SECOND));
         return sb.toString();

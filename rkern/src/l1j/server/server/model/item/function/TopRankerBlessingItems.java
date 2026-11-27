@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.gametime.RealTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;
@@ -24,7 +24,7 @@ static void 정상의가호(L1PcInstance pc, L1ItemInstance useItem) {
         return;
     }
 
-    Calendar currentDate = RealTimeClock.getInstance().getRealTimeCalendar();
+    Calendar currentDate = CL2Time.getRealTimeCalendar();
     Timestamp lastUsed = pc.getLastTopBless();
         if (lastUsed == null || currentDate.getTimeInMillis() > lastUsed.getTime() + (1000 * 60 * 60 * 1)) {
         SC_SkillSound.send(pc, pc.getId(), 12536);
@@ -41,12 +41,12 @@ static void 정상의가호(L1PcInstance pc, L1ItemInstance useItem) {
 }
 
 static void 정상의가호2(L1PcInstance pc, L1ItemInstance useItem) {
-    final long now = RealTimeClock.getInstance().getRealTimeCalendar().getTimeInMillis();
+    final long now = CL2Time.getRealTimeCalendar().getTimeInMillis();
     final Timestamp lastUsed = pc.getLastTopBless();
     final long nextAllowed = lastUsed == null ? Long.MIN_VALUE : lastUsed.getTime() + 3600000L;
     if (now <= nextAllowed) {
         final long remaining = nextAllowed - now;
-        final Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
+        final Calendar cal = CL2Time.getRealTimeCalendar();
         cal.setTimeInMillis(nextAllowed);
         SC_SystemMessage.send(pc, remaining / 60000 + "분 동안(" + cal.get(Calendar.HOUR_OF_DAY)
                 + ":" + cal.get(Calendar.MINUTE) + " 까지)은 사용할 수 없습니다.");

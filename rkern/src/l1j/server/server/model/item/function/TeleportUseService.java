@@ -8,7 +8,6 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.gametime.L1GameTimeClock;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;

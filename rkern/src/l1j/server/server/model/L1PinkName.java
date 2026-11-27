@@ -4,7 +4,7 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CServerTimer;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.shared.L1Type;
@@ -94,11 +94,11 @@ public class L1PinkName {
         private final L1PcInstance pc;
 
         // “중간 갱신”을 1회만 보내고 싶으면(클라가 남은시간 표시를 강하게 원할 때)
-        private int nextOptionalSendTime = -1;
+        private long nextOptionalSendTime = -1;
 
         PinkTicker(L1PcInstance pc) {
             this.pc = pc;
-            int now = (int) L1GameTimeClock.getInstance().getGameTime().getSeconds();
+            long now = CL2Time.getTime();
             this.nextOptionalSendTime = now + pc.getPinkNameTime() + 1;
         }
 
@@ -118,7 +118,7 @@ public class L1PinkName {
                     pc.setPinkName(true);
                     pc.send_pink_name(left);
                 }
-                int now = (int) L1GameTimeClock.getInstance().getGameTime().getSeconds();
+                long now = CL2Time.getTime();
                 if (nextOptionalSendTime > 0 && now >= nextOptionalSendTime) {
                     pc.send_pink_name(left);
                     nextOptionalSendTime = -1;

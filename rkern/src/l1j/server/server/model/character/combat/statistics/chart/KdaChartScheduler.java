@@ -2,11 +2,11 @@ package l1j.server.server.model.character.combat.statistics.chart;
 import java.util.Calendar;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.BaseTime;
-import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.gametime.TimeListener;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.L2TimeListener;
 
-public class KdaChartScheduler implements TimeListener {
+public class KdaChartScheduler implements L2TimeListener {
 	private static KdaChartScheduler _instance;
 	public static KdaChartScheduler getInstance(){
 		if(_instance == null)
@@ -31,7 +31,7 @@ public class KdaChartScheduler implements TimeListener {
 	}
 	
 	private void dispose(){
-		RealTimeClock.getInstance().removeListener(this, Calendar.SECOND);
+		CL2Time.removeRealListener(this, Calendar.SECOND);
 		if(_updator != null)
 			_updator.dispose();
 	}
@@ -41,35 +41,15 @@ public class KdaChartScheduler implements TimeListener {
 	}
 	
 	public void run(){
-		RealTimeClock.getInstance().addListener(this, Calendar.SECOND);
+		CL2Time.addRealListener(this, Calendar.SECOND);
 	}
 	
-	@Override
-	public void onMonthChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
+
+
+
 
 	@Override
-	public void onDayChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onHourChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onMinuteChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSecondChanged(BaseTime time) {
+	public void onSecondChanged(L2DateTime time) {
 		Calendar cal = time.getCalendar();
 		if(_updator.isBefore(cal))
 			_updator.update();

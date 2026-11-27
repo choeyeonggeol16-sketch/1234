@@ -1,9 +1,7 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.model.gametime.L1GameTimeClock;
-import l1j.server.server.model.L1Character;
-import l1j.server.server.model.CWorld;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -35,11 +33,7 @@ public final class SC_GameTime {
     }
 
     public static boolean send(L1PcInstance pc) {
-        int time = 0;
-        try {
-            time = L1GameTimeClock.getInstance().getGameTime().getSeconds();
-        } catch (Exception ignored) {}
-        return send(pc, time);
+        return send(pc, CL2Time.getTime());
     }
 
 }

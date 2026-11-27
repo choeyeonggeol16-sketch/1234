@@ -12,14 +12,14 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.CompanionSettings;
-import l1j.server.server.model.gametime.BaseTime;
-import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.gametime.TimeListener;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.L2TimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.Handler;
 
-public class CompanionRegenerator implements TimeListener, Runnable {
+public class CompanionRegenerator implements L2TimeListener, Runnable {
 	private static volatile CompanionRegenerator _instance;
     private static final Logger LOG = Logger.getLogger(CompanionRegenerator.class.getName());
 	public static CompanionRegenerator getInstance(){
@@ -45,35 +45,19 @@ public class CompanionRegenerator implements TimeListener, Runnable {
         if (m_is_run) return;
         m_is_run = true;
         try {
-            RealTimeClock.getInstance().addListener(this, Calendar.SECOND);
+            CL2Time.addRealListener(this, Calendar.SECOND);
         } catch (RuntimeException e) {
             m_is_run = false;
             throw e;
         }
     }
 	
-	@Override
-	public void onMonthChanged(BaseTime time) {
-		
-	}
+
+
+
 
 	@Override
-	public void onDayChanged(BaseTime time) {
-		
-	}
-
-	@Override
-	public void onHourChanged(BaseTime time) {
-		
-	}
-
-	@Override
-	public void onMinuteChanged(BaseTime time) {
-		
-	}
-
-	@Override
-	public void onSecondChanged(BaseTime time) {
+	public void onSecondChanged(L2DateTime time) {
 		if (m_is_run && ++m_accumulcate_seconds >= CompanionSettings.REGENERATION_TICK_SECONDS) {
             m_accumulcate_seconds = 0;
             if (m_regenQueued.compareAndSet(false, true)) {

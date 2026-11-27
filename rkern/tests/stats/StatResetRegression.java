@@ -109,7 +109,7 @@ public final class StatResetRegression {
         Config.CACHE_MAP_FILES = true;
         Config.RATE_WEIGHT_LIMIT = 1;
         Config.TIME_ZONE = "UTC";
-        l1j.server.server.model.gametime.L1GameTimeClock.prepare();
+        l1j.server.server.model.gametime.CL2Time.prepare();
         Config.MAX_ONLINE_USERS = 8;
         CPacketFilter.getInstance().load();
         try (var con = data.getConnection();

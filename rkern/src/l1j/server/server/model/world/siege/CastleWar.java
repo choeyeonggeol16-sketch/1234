@@ -23,7 +23,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1WarSpawn;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.gametime.RealTimeClock;
+import l1j.server.server.model.gametime.CL2Time;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_CastleMaster;
@@ -132,7 +132,7 @@ public class CastleWar extends War {
     }
 
     public int getSpareSeconds() {
-        Calendar curCal = RealTimeClock.getInstance().getRealTimeCalendar();
+        Calendar curCal = CL2Time.getRealTimeCalendar();
         int result = (int) ((_endCal.getTimeInMillis() - curCal.getTimeInMillis()) / 1000L);
         if (result > 0)
             return result;
@@ -140,7 +140,7 @@ public class CastleWar extends War {
     }
 
     public void nextCalendar(Timestamp ts) {
-        Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
+        Calendar cal = CL2Time.getRealTimeCalendar();
         cal.setTimeInMillis(ts.getTime());
         nextCalendar(cal);
     }
@@ -156,7 +156,7 @@ public class CastleWar extends War {
     }
 
     public void updateTime(int increaseMinute) {
-        Calendar cal = RealTimeClock.getInstance().getRealTimeCalendar();
+        Calendar cal = CL2Time.getRealTimeCalendar();
         Calendar tmp = (Calendar) cal.clone();
         tmp.add(Calendar.MINUTE, increaseMinute);
         if (tmp.getTimeInMillis() > _limitCal.getTimeInMillis()) {

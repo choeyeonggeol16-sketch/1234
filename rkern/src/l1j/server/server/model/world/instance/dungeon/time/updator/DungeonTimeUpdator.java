@@ -9,9 +9,9 @@ import l1j.server.Config;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.BaseTime;
-import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.gametime.TimeListener;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.L2TimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -19,7 +19,7 @@ import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformatio
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
 
-public class DungeonTimeUpdator implements TimeListener{
+public class DungeonTimeUpdator implements L2TimeListener{
 	private static final Logger LOG = Logger.getLogger(DungeonTimeUpdator.class.getName());
 	private static DungeonTimeUpdator _instance;
 	public static DungeonTimeUpdator getInstance(){
@@ -54,11 +54,11 @@ public class DungeonTimeUpdator implements TimeListener{
 	public synchronized void run() {
 		if (_consumer != null) return;
 		_consumer = new DungeonTimeConsumer();
-		RealTimeClock.getInstance().addListener(this, Calendar.SECOND);
+		CL2Time.addRealListener(this, Calendar.SECOND);
 	}
 
 	public synchronized void dispose() {
-		RealTimeClock.getInstance().removeListener(this, Calendar.SECOND);
+		CL2Time.removeRealListener(this, Calendar.SECOND);
 		// In-flight work checks its consumer generation before applying a tick.
 		_consumer = null;
 	}
@@ -67,27 +67,9 @@ public class DungeonTimeUpdator implements TimeListener{
 		return _consumer != null;
 	}
 	
-	@Override
-	public void onMonthChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
-	public void onDayChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
-	public void onHourChanged(BaseTime time) {
-	}
 
-	@Override
-	public void onMinuteChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	public void do_initialize(Calendar cal) {
 		do_initialize(cal, false);
@@ -134,10 +116,9 @@ public class DungeonTimeUpdator implements TimeListener{
 	}
 	
 	@Override
-	public void onSecondChanged(BaseTime time) {
+	public void onSecondChanged(L2DateTime time) {
 		/** 던전초기화 시간 **/
-		Calendar calendar = Calendar.getInstance();
-		int nowDay = calendar.get(Calendar.DAY_OF_WEEK);
+		int nowDay = time.get(Calendar.DAY_OF_WEEK);
 		// [던전초기화 시각 외부화] config/altsettings.properties 의 DungeonResetHour/DungeonResetMinute
 		final Calendar pendingReset;
 		synchronized (this) { pendingReset = _pendingScheduledReset; }
@@ -149,7 +130,7 @@ public class DungeonTimeUpdator implements TimeListener{
 				}
 				Config.네쥬던전초기화 = pendingReset.get(Calendar.DAY_OF_WEEK);
 			}
-		} else if(time.equals_time(Config.DungeonResetHour, Config.DungeonResetMinute, 0)) {
+		} else if(time.matches(Config.DungeonResetHour, Config.DungeonResetMinute, 0)) {
 			final Calendar resetTime = time.getCalendar();
 			if (do_initialize(resetTime, true)) {
 				Config.네쥬던전초기화 = nowDay;

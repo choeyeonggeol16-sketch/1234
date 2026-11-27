@@ -2,13 +2,13 @@ package l1j.server.server.task.calendar;
 
 import java.util.Calendar;
 
-import l1j.server.server.model.gametime.BaseTime;
-import l1j.server.server.model.gametime.RealTimeClock;
-import l1j.server.server.model.gametime.TimeListener;
+import l1j.server.server.model.gametime.L2DateTime;
+import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.L2TimeListener;
 import l1j.server.server.task.calendar.acceptor.AbstractDateAcceptor;
 import l1j.server.server.task.calendar.acceptor.AcceptorToNpcListenerAdapter;
 
-public class MinuteScheduler extends AbstractDateScheduler implements TimeListener{
+public class MinuteScheduler extends AbstractDateScheduler implements L2TimeListener{
 	private static MinuteScheduler _instance;
 	public static MinuteScheduler getInstance(){
 		if(_instance == null)
@@ -28,32 +28,17 @@ public class MinuteScheduler extends AbstractDateScheduler implements TimeListen
 	}
 	
 	public void run(){
-		RealTimeClock.getInstance().addListener(this, Calendar.MINUTE);
-	}
-
-	@Override
-	public void onMonthChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
+		CL2Time.addRealListener(this, Calendar.MINUTE);
 	}
 
 
-	@Override
-	public void onDayChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
+
+
+
 
 
 	@Override
-	public void onHourChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	@Override
-	public void onMinuteChanged(BaseTime time) {
+	public void onMinuteChanged(L2DateTime time) {
 		try{
 			Calendar cal = time.getCalendar();
 			for(AbstractDateAcceptor acceptor : _acceptors)
@@ -64,9 +49,4 @@ public class MinuteScheduler extends AbstractDateScheduler implements TimeListen
 	}
 
 
-	@Override
-	public void onSecondChanged(BaseTime time) {
-		// TODO Auto-generated method stub
-		
-	}
 }
