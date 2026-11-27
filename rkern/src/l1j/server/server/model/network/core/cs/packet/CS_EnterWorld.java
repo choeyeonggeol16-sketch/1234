@@ -731,7 +731,7 @@ public final class CS_EnterWorld {
     
     private static void postEnterProcess(L1PcInstance pc, CUserSocket client, EnterData data) {
     	
-        if (data.excludes != null && !data.excludes.isEmpty())
+        if (data.excludes != null)
             applyExcludeList(SpamTable.getInstance().getExcludeTable(pc.getId()), data.excludes);
 
         serchSummon(pc);
@@ -1234,9 +1234,10 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 
     private static void applyExcludeList(L1ExcludingList exList, List<ExcludeRow> rows) {
         if (exList == null || rows == null) return;
-        for (int i = 0, n = rows.size(); i < n; i++) {
-            final ExcludeRow row = rows.get(i);
-            if (!exList.contains(row.type, row.name)) exList.add(row.type, row.name);
+        synchronized (exList) {
+            exList.clearNameLists();
+            for (ExcludeRow row : rows)
+                if (!exList.contains(row.type, row.name)) exList.add(row.type, row.name);
         }
     }
     private static int[] readLateralSnapshot(int characterId) throws SQLException {

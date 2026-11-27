@@ -12,6 +12,27 @@ public class L1ExcludingList {
 	private final ArrayList<String> _nameList_Chat = new ArrayList<>();
 	private final ArrayList<String> _nameList_Letter = new ArrayList<>();
 
+	private boolean changePending;
+
+	public synchronized boolean beginChange() {
+		if (changePending) return false;
+		changePending = true;
+		return true;
+	}
+
+	public synchronized void finishChange() { changePending = false; }
+
+	public synchronized String matchingName(int type, String name) {
+		final var rows = type == 0 ? _nameList_Chat : _nameList_Letter;
+		for (String current : rows) if (current.equalsIgnoreCase(name)) return current;
+		return null;
+	}
+
+	public synchronized void clearNameLists() {
+		_nameList_Chat.clear();
+		_nameList_Letter.clear();
+	}
+
 	public synchronized String[] getExcludeList(int type) {
 		switch (type) {
 		case 0:

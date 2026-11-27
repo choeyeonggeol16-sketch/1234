@@ -19,28 +19,16 @@
 
 package l1j.server.server.templates;
 
-public class L1CharName {
-	public L1CharName() {
+public final class L1CharName {
+	private final int id;
+	private final String name;
+
+	public L1CharName(int id, String name) {
+		this.id = id;
+		this.name = name;
 	}
 
-	private int _id;
+	public int getId() { return id; }
 
-	public int getId() {
-		return _id;
-	}
-
-	public void setId(int i) {
-		_id = i;
-	}
-
-	private String _name;
-
-	public String getName() {
-		return _name;
-	}
-
-	public void setName(String s) {
-		_name = s;
-	}
-
+	public String getName() { return name; }
 }

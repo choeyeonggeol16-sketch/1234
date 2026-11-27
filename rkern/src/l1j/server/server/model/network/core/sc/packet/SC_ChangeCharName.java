@@ -82,14 +82,8 @@ public final class SC_ChangeCharName {
 				return RESULT_NO_PACKET;
 			}
 
-			// 3. DB 캐릭터 이름 업데이트
-			Updator.exec("UPDATE characters SET char_name=? WHERE char_name=?", new Handler() {
-				@Override
-				public void handle(PreparedStatement pstm) throws Exception {
-					pstm.setString(1, destinationName);
-					pstm.setString(2, pc.getName());
-				}
-			});
+			if (!l1j.server.server.datatables.CharacterTable.getInstance()
+					.renameCharacter(pc.getId(), pc.getName(), destinationName)) return RESULT_FAILURE;
 
 			// 4. DB KDA 정보 업데이트
 			Updator.exec("UPDATE tb_kda SET name=? WHERE name=? OR objid=?", new Handler() {

@@ -5,9 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Comparator;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,48 +33,108 @@ import l1j.server.server.templates.L1CharName;
 public class CharacterTable {
 	private CharacterStorage _charStorage;
 
-	private static CharacterTable _instance;
-
 	private static final Logger _log = Logger.getLogger(CharacterTable.class.getName());
-
-	private final Map<String, L1CharName> _charNameList = new ConcurrentHashMap<>();
-	
-	private final TIntObjectMap<L1CharName> _charIdMap = new TIntObjectHashMap<>();
-
-	private CharacterTable() {
-		_charStorage = new MySqlCharacterStorage();
+	private static final class Holder {
+		private static final CharacterTable INSTANCE = new CharacterTable();
 	}
+	private final Object nameLock = new Object();
+	private Names names = new Names();
+	private long nameRevision;
 
-	public static CharacterTable getInstance() {
-		if (_instance == null) {
-			_instance = new CharacterTable();
+	// Most folded keys have one row. A list is needed only for legacy collisions.
+	private static final class Names {
+		final TIntObjectMap<L1CharName> ids = new TIntObjectHashMap<>();
+		final TreeMap<String, Object> folded = new TreeMap<>(
+				Comparator.comparingInt(String::length).thenComparing(String.CASE_INSENSITIVE_ORDER));
+
+		void add(L1CharName value) {
+			final L1CharName byId = ids.get(value.getId());
+			if (byId != null) remove(byId);
+			ids.put(value.getId(), value);
+			final String key = value.getName();
+			final Object previous = folded.get(key);
+			if (previous == null) folded.put(key, value);
+			else if (previous instanceof L1CharName first) {
+				final ArrayList<L1CharName> group = new ArrayList<>(2);
+				group.add(first);
+				group.add(value);
+				folded.put(key, group);
+			} else group(previous).add(value);
 		}
-		return _instance;
+
+		void remove(L1CharName value) {
+			final String key = value.getName();
+			ids.remove(value.getId());
+			final Object group = folded.get(key);
+			if (group instanceof L1CharName) folded.remove(key);
+			else {
+				final var rows = group(group);
+				rows.remove(value);
+				folded.remove(key);
+				if (rows.size() == 1) folded.put(rows.getFirst().getName(), rows.getFirst());
+				else if (!rows.isEmpty()) folded.put(rows.getFirst().getName(), rows);
+			}
+		}
+
+		L1CharName exact(String key) {
+			Object value = folded.get(key);
+			if (value == null) return null;
+			if (value instanceof L1CharName name) return name.getName().equals(key) ? name : null;
+			L1CharName match = null;
+			for (L1CharName row : group(value)) {
+				if (!row.getName().equals(key)) continue;
+				if (match != null) return null;
+				match = row;
+			}
+			return match;
+		}
+
+		@SuppressWarnings("unchecked")
+		private static ArrayList<L1CharName> group(Object value) {
+			return (ArrayList<L1CharName>) value;
+		}
 	}
+
+	private CharacterTable() { _charStorage = new MySqlCharacterStorage(); }
+
+	public static CharacterTable getInstance() { return Holder.INSTANCE; }
 
 	public void storeNewCharacter(L1PcInstance pc) throws Exception {
-        pc.lockUserState();
-        try {
+		pc.lockUserState();
+		try {
 			_charStorage.createCharacter(pc);
-			if (!_charNameList.containsKey(pc.getName())) {
-				L1CharName cn = new L1CharName();
-				cn.setName(pc.getName());
-				cn.setId(pc.getId());
-				_charNameList.put(pc.getName(), cn);
-				synchronized (_charIdMap) {
-					_charIdMap.put(pc.getId(), cn);
-				}
-			}
+			registerCreatedCharacter(pc);
 			_log.finest("storeNewCharacter");
-        } finally { pc.unlockUserState(); }
+		} finally { pc.unlockUserState(); }
 	}
 
-    /** Publish identity indexes only after the complete creation receipt commits. */
-    public void registerCreatedCharacter(L1PcInstance pc) {
-        L1CharName cn = new L1CharName(); cn.setName(pc.getName()); cn.setId(pc.getId());
-        _charNameList.put(pc.getName(), cn);
-        synchronized (_charIdMap) { _charIdMap.put(pc.getId(), cn); }
-    }
+	/** Publish identity indexes only after the complete creation receipt commits. */
+	public void registerCreatedCharacter(L1PcInstance pc) {
+		publishName(pc.getId(), pc.getName());
+	}
+
+	private void publishName(int id, String name) {
+		synchronized (nameLock) {
+			names.add(new L1CharName(id, name));
+			nameRevision++;
+		}
+	}
+
+	public boolean renameCharacter(int id, String oldName, String newName) throws SQLException {
+		try (Connection con = DatabaseFactory.getInstance().getConnection();
+			 PreparedStatement ps = con.prepareStatement(
+					 "UPDATE characters AS src LEFT JOIN characters AS existing "
+					 + "ON existing.char_name=? AND existing.objid<>src.objid "
+					 + "SET src.char_name=? WHERE src.objid=? AND BINARY src.char_name=? AND existing.objid IS NULL")) {
+			ps.setString(1, newName);
+			ps.setString(2, newName);
+			ps.setInt(3, id);
+			ps.setString(4, oldName);
+			if (ps.executeUpdate() != 1) return false;
+		}
+		publishName(id, newName);
+		return true;
+	}
 
 	public void updateCharacterAccount(L1PcInstance pc) throws Exception {
 		synchronized (pc) {
@@ -89,48 +149,40 @@ public class CharacterTable {
         pc.lockUserState();
         try {
             if (pc.rst != null && pc.getReturnStat() != 0) return true;
-            final boolean accepted = _charStorage.storeCharacter(pc);
-			String name = pc.getName();
-			if (!_charNameList.containsKey(name)) {
-				L1CharName cn = new L1CharName();
-				cn.setName(name);
-				cn.setId(pc.getId());
-				_charNameList.put(name, cn);
-				synchronized (_charIdMap) {
-					_charIdMap.put(pc.getId(), cn);
-				}
-			}
-			_log.finest("storeCharacter: " + pc.getName());
-            return accepted;
+            return _charStorage.storeCharacter(pc);
         } finally { pc.unlockUserState(); }
 	}
 
 	public void deleteCharacter(String accountName, String charName) throws Exception {
         _charStorage.deleteCharacter(accountName, charName);
-        L1CharName cn = _charNameList.remove(charName);
-        if (cn != null) {
-            synchronized (_charIdMap) {
-                _charIdMap.remove(cn.getId());
-            }
+        synchronized (nameLock) {
+            L1CharName cn = names.exact(charName);
+            if (cn != null) names.remove(cn);
+            nameRevision++;
         }
         _log.finest("deleteCharacter");
     }
 
 	public boolean isContainNameList(String name) {
-		return _charNameList.containsKey(name);
+		return getCharName(name) != null;
 	}
 
 	public L1CharName getCharNameById(int id) {
-		synchronized (_charIdMap) {
-			return _charIdMap.get(id);
-		}
+		synchronized (nameLock) { return names.ids.get(id); }
 	}
-	
+
 	public L1CharName getCharName(String name) {
-		if (name == null || name.isEmpty()) {
-			return null;
+		if (name == null || name.isEmpty()) return null;
+		synchronized (nameLock) { return names.exact(name); }
+	}
+
+	/** Includes offline characters. A folded key shared by multiple IDs is ambiguous. */
+	public L1CharName getUniqueCharNameIgnoringCase(String name) {
+		if (name == null || name.isEmpty()) return null;
+		synchronized (nameLock) {
+			Object value = names.folded.get(name);
+			return value instanceof L1CharName cn && name.equalsIgnoreCase(cn.getName()) ? cn : null;
 		}
-		return _charNameList.get(name);
 	}
 
 	public L1PcInstance restoreCharacter(String charName) throws Exception {
@@ -240,37 +292,30 @@ public class CharacterTable {
 
     public void loadAllCharName() {
         final String sql = "SELECT objid, char_name FROM characters";
-        // Construct both indexes outside the published maps. A JDBC failure
-        // halfway through a result set must not destroy the known roster.
-        final Map<String, L1CharName> byName = new java.util.HashMap<>();
-        final TIntObjectMap<L1CharName> byId = new TIntObjectHashMap<>();
+        final long revision;
+        synchronized (nameLock) { revision = nameRevision; }
+        final Names loaded = new Names();
         try (Connection con = DatabaseFactory.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                final int id = rs.getInt("objid");
-                final String name = rs.getString("char_name");
+                int id = rs.getInt("objid");
+                String name = rs.getString("char_name");
                 if (id <= 0 || name == null || name.isEmpty()
-                        || byName.containsKey(name) || byId.containsKey(id)) {
+                        || loaded.exact(name) != null || loaded.ids.containsKey(id))
                     throw new SQLException("Invalid or duplicate character name/ID in DB");
-                }
-                final L1CharName cn = new L1CharName();
-                cn.setName(name);
-                cn.setId(id);
-                byName.put(name, cn);
-                byId.put(id, cn);
+                loaded.add(new L1CharName(id, name));
             }
         } catch (SQLException e) {
-            _log.log(Level.SEVERE, "loadAllCharName failed; refusing incomplete index", e);
             throw new IllegalStateException("Character name index load failed", e);
         }
-        synchronized (_charIdMap) {
-            _charNameList.clear();
-            _charNameList.putAll(byName);
-            _charIdMap.clear();
-            byId.forEachEntry((id, cn) -> { _charIdMap.put(id, cn); return true; });
+        synchronized (nameLock) {
+            if (nameRevision != revision)
+                throw new IllegalStateException("Character names changed during reload");
+            names = loaded;
+            nameRevision++;
         }
-        _log.config("캐릭터 이름 및 ID 목록 " + byName.size() + "건 로드 완료");
+        _log.config("캐릭터 이름 및 ID 목록 " + loaded.ids.size() + "건 로드 완료");
     }
 
 	public int PcLevelInDB(int pcid) {
@@ -293,7 +338,7 @@ public class CharacterTable {
 	}
 
 	public L1CharName[] getCharNameList() {
-		return _charNameList.values().toArray(new L1CharName[0]);
+		synchronized (nameLock) { return names.ids.valueCollection().toArray(L1CharName[]::new); }
 	}
 
 	public void updateLoc(int castleid, int a, int b, int c, int d, int f) {

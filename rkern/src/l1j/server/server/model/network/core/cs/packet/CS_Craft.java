@@ -382,19 +382,39 @@ public final class CS_Craft {
 			return;
 		}
 
-		if (exList.contains(subType, charName)) {
-			delExclude(pc, subType, charName);
-			exList.remove(subType, charName);
-			SC_PacketBox.send(pc, SC_PacketBox.REM_EXCLUDE, subType, charName);
-			return;
-		}
-
-		for (L1CharName cn : CharacterTable.getInstance().getCharNameList()) {
-			if (charName.equalsIgnoreCase(cn.getName())) {
-				exList.add(subType, cn.getName());
-				insertExclude(pc, subType, cn.getId(), cn.getName());
-				SC_PacketBox.send(pc, SC_PacketBox.ADD_EXCLUDE, subType, charName);
-				return;
+		if (subType != 0 && subType != 1) return;
+		synchronized (exList) {
+			final String existing = exList.matchingName(subType, charName);
+			final L1CharName target = existing == null
+					? CharacterTable.getInstance().getUniqueCharNameIgnoringCase(charName) : null;
+			if (existing == null && (target == null || target.getId() == pc.getId())) return;
+			if (!exList.beginChange()) return;
+			final int stamp = pc.getSessionStamp(), ownerId = pc.getId();
+			final var socket = new java.lang.ref.WeakReference<>(pc.getNetConnection());
+			try {
+				CacheD.getInstance().submitDbJobRetryOrdered(ownerId, () -> {
+					writeExclude(ownerId, subType, existing, target);
+					synchronized (exList) {
+						if (existing != null) exList.remove(subType, existing);
+						else exList.add(subType, target.getName());
+						exList.finishChange();
+					}
+					final CUserSocket session = socket.get();
+					if (session == null) return;
+					try {
+						l1j.server.server.model.network.thread.CIOThreadCallback.getInstance().completeSession(session, () -> {
+							final L1PcInstance recipient = session.getActiveChar();
+							if (recipient == null || recipient.getId() != ownerId || recipient.getSessionStamp() != stamp) return;
+							SC_PacketBox.send(recipient, existing == null ? SC_PacketBox.ADD_EXCLUDE : SC_PacketBox.REM_EXCLUDE,
+									subType, existing == null ? target.getName() : existing);
+						});
+					} catch (RuntimeException failure) {
+						_log.log(java.util.logging.Level.FINE, "Exclude notification unavailable", failure);
+					}
+				});
+			} catch (RuntimeException refused) {
+				exList.finishChange();
+				_log.log(java.util.logging.Level.WARNING, "Character exclude save not admitted", refused);
 			}
 		}
 	}
@@ -815,37 +835,23 @@ public final class CS_Craft {
 		}
 	}
 
-	private static void insertExclude(L1PcInstance pc, int subType, int objId, String name) {
-        final int ownerId = pc.getId();
-        CacheD.getInstance().submitDbJobOrdered(ownerId, () -> {
-            try (Connection con = DatabaseFactory.getInstance().getConnection();
-                 PreparedStatement ps = con.prepareStatement(
-                     "INSERT INTO character_exclude SET char_id=?, type=?, exclude_id=?, exclude_name=?")) {
-                ps.setInt(1, ownerId);
-                ps.setInt(2, subType);
-                ps.setInt(3, objId);
-                ps.setString(4, name);
-                ps.executeUpdate();
-            } catch (SQLException ex) {
-                throw new IllegalStateException("Character exclude insert failed: " + ownerId, ex);
-            }
-        });
-    }
-
-    private static void delExclude(L1PcInstance pc, int subType, String name) {
-        final int ownerId = pc.getId();
-        CacheD.getInstance().submitDbJobOrdered(ownerId, () -> {
-            try (Connection con = DatabaseFactory.getInstance().getConnection();
-                 PreparedStatement ps = con.prepareStatement(
-                     "DELETE FROM character_exclude WHERE char_id=? AND type=? AND exclude_name=?")) {
-                ps.setInt(1, ownerId);
-                ps.setInt(2, subType);
-                ps.setString(3, name);
-                ps.executeUpdate();
-            } catch (SQLException ex) {
-                throw new IllegalStateException("Character exclude delete failed: " + ownerId, ex);
-            }
-        });
+    private static void writeExclude(int ownerId, int type, String existing, L1CharName target) {
+        String sql = existing == null
+                ? "INSERT INTO character_exclude (char_id,type,exclude_id,exclude_name) VALUES (?,?,?,?) "
+                        + "ON DUPLICATE KEY UPDATE exclude_name=VALUES(exclude_name)"
+                : "DELETE FROM character_exclude WHERE char_id=? AND type=? AND BINARY exclude_name=?";
+        try (Connection con = DatabaseFactory.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, ownerId);
+            ps.setInt(2, type);
+            if (existing == null) {
+                ps.setInt(3, target.getId());
+                ps.setString(4, target.getName());
+            } else ps.setString(3, existing);
+            ps.executeUpdate();
+        } catch (SQLException failure) {
+            throw new IllegalStateException("Character exclude save failed: " + ownerId, failure);
+        }
     }
 
 }
