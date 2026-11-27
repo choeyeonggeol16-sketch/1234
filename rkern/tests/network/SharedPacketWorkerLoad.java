@@ -75,7 +75,7 @@ public final class SharedPacketWorkerLoad {
         if (args.length != 1 || !(args[0].equals("uniform") || args[0].equals("hot")))
             throw new IllegalArgumentException("Expected uniform or hot");
         boolean hot = args[0].equals("hot");
-        boolean shared = Boolean.parseBoolean(System.getProperty("rkern.network.sharedPacketWorkers", "true"));
+        boolean shared = Boolean.getBoolean("rkern.network.sharedPacketWorkers");
         require(Runtime.getRuntime().availableProcessors() == 2, "run with -XX:ActiveProcessorCount=2");
         Config.MAX_ONLINE_USERS = 16;
         CPacketFilter.getInstance().load();

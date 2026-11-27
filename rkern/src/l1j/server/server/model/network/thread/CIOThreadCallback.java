@@ -56,8 +56,7 @@ public final class CIOThreadCallback {
 	private static final Logger LOGGER =
 			Logger.getLogger(CIOThreadCallback.class.getName());
 
-    static final boolean SHARED_PACKET_WORKERS = Boolean.parseBoolean(
-            System.getProperty("rkern.network.sharedPacketWorkers", "true"));
+    static final boolean SHARED_PACKET_WORKERS = Boolean.getBoolean("rkern.network.sharedPacketWorkers");
     private static final int MAX_SHARDS = 8;
     private static final int SHARDS = logicalShardCount(Runtime.getRuntime().availableProcessors());
 

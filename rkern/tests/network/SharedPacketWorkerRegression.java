@@ -82,7 +82,7 @@ public final class SharedPacketWorkerRegression {
         var original = UserPacketCallbackMap.gPacketTableFromClient[ALIVE];
         try {
             final int shards = scheduler.bindNetworkIngress(config);
-            final boolean shared = Boolean.parseBoolean(System.getProperty("rkern.network.sharedPacketWorkers", "true"));
+            final boolean shared = Boolean.getBoolean("rkern.network.sharedPacketWorkers");
             require(shards == (blockedNeighbor && !shared ? 2 : SHARDS),
                     "logical CIO shard count for the selected layout");
             final var pool = new CIOBufferPool(16, 24, 16, 16, shards);
