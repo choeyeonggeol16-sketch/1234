@@ -17,6 +17,7 @@ public final class ClanNameIndexRegression {
         final CWorld world = CWorld.getInstance();
         verifyIdentity(world);
         verifyMatching(world);
+        verifyActiveBlessings(world);
         verifyConcurrentReplacement(world);
         verifyWarRetirement(world);
         System.out.println("PASS clan name parity, order, mutation/reload, concurrent replacement and war retirement");
@@ -80,6 +81,35 @@ public final class ClanNameIndexRegression {
         } catch (NullPointerException expected) {
             // The previous world facade rejected null through String.length().
         }
+    }
+
+    private static void verifyActiveBlessings(CWorld world) {
+        var dormant = clan(42, "Dormant");
+        var active = clan(43, "Active");
+        active.setBuffTime(11, 1, 29, 0);
+        active.setBless(2);
+        world.storeClan(dormant);
+        world.storeClan(active);
+        var indexed = world.getActiveClanBlessings();
+        require(List.copyOf(indexed).equals(List.of(active)), "startup indexes only active blessings");
+        int[] exposed = active.getBuffTime();
+        exposed[0] = -10;
+        active.setBuffTime(1, 0);
+        long expiry = active.beginBlessingExpiry(2);
+        require(expiry > 0 && active.beginBlessingExpiry(2) == 0 && active.getBuffTime(0) == 11,
+                "single expiry claim and protected remaining slots");
+        active.setBless(4);
+        require(active.completeBlessingExpiry(43, 2, expiry) == 0 && active.getBless() == 4,
+                "stale expiry cannot clear a replacement blessing");
+        var replacement = clan(43, "Replacement");
+        world.storeClan(replacement);
+        active.setBless(1);
+        require(indexed.isEmpty(), "detached same-ID generation cannot publish");
+        replacement.setBless(1);
+        require(List.copyOf(indexed).equals(List.of(replacement)), "committed activation published");
+        replacement.setBless(0);
+        require(indexed.isEmpty(), "inactive blessing removed");
+        world.clearClan();
     }
 
     private static void verifyMatching(CWorld world) {

@@ -151,8 +151,7 @@ public final class SC_Pledge {
     public static CSharedBroadcast.NativeWireWriter
             nativeBlessWriter(L1Clan clan, int bless) {
         final long blessCount = clan == null ? 0L : clan.getBlessCount();
-        final int[] times = clan == null || clan.getBuffTime() == null
-                ? new int[4] : clan.getBuffTime().clone();
+        final int[] times = clan == null ? new int[4] : clan.getBuffTime();
         return out -> {
             out.put((byte) Opcodes.S_EXTENDED_PROTOBUF).putShort((short) 0x8a);
             out.put((byte) 0x08);
@@ -211,7 +210,7 @@ public final class SC_Pledge {
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
         final long blessCount = clan == null ? 0L : clan.getBlessCount();
-        final int[] times = clan == null || clan.getBuffTime() == null ? new int[4] : clan.getBuffTime().clone();
+        final int[] times = clan == null ? new int[4] : clan.getBuffTime();
         final CIOFrame frame = connection.beginDirectFrame(512);
         if (frame == null) return false;
         boolean committed = false;

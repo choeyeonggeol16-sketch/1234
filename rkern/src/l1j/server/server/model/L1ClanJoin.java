@@ -468,18 +468,10 @@ public class L1ClanJoin {
 			if (clan == null || joinPc == null) {
 				return;
 			}
-			int bless = clan.getBless();
-			if (bless != 0 && !joinPc.hasSkillEffect(504 + bless)) {
-				int time = clan.getBuffTime()[bless - 1];
-				if (time <= 0) {
-					time = 172800;
-				}
-				L1SkillUse.cast(
-						joinPc,
-						504 + bless,
-						joinPc.getId(), joinPc.getX(),
-						joinPc.getY(), null, time, L1SkillUse.TYPE_LOGIN);
-				
+			final L1Clan.Blessing blessing = clan.getBlessing();
+			if (blessing.number() != 0 && blessing.time() > 0 && !joinPc.hasSkillEffect(504 + blessing.number())) {
+				L1SkillUse.cast(joinPc, 504 + blessing.number(), joinPc.getId(), joinPc.getX(),
+						joinPc.getY(), null, blessing.time(), L1SkillUse.TYPE_LOGIN);
 			}
 		} catch (Exception e) {
 		}

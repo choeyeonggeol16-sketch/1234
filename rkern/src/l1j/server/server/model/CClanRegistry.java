@@ -19,6 +19,8 @@ final class CClanRegistry {
             .thenComparing(String.CASE_INSENSITIVE_ORDER);
 
     private final L1IntRegistry<L1Clan> byId = new L1IntRegistry<>();
+    private final L1IntRegistry<L1Clan> activeBlessings = new L1IntRegistry<>();
+    private final Collection<L1Clan> blessings = Collections.unmodifiableCollection(activeBlessings.values());
     private final Collection<L1Clan> clans = Collections.unmodifiableCollection(byId.values());
     private volatile ConcurrentSkipListMap<String, NameMatches> byName = new ConcurrentSkipListMap<>(NAME_ORDER);
     private final L1IntRegistry<War> wars = new L1IntRegistry<>();
@@ -36,6 +38,8 @@ final class CClanRegistry {
     private void storeLocked(L1Clan clan) {
         final L1Clan replaced = byId.put(clan.getClanId(), clan);
         clan.setClanRegistry(owner);
+        if (replaced != null) activeBlessings.remove(clan.getClanId(), replaced);
+        updateBlessingLocked(clan);
         if (replaced != null) {
             replaced.setClanRegistry(null);
             final String name = clan.getClanName();
@@ -59,6 +63,7 @@ final class CClanRegistry {
     }
 
     private void detachName(L1Clan clan) {
+        activeBlessings.remove(clan.getClanId(), clan);
         removeName(clan);
         clan.setClanRegistry(null);
     }
@@ -67,6 +72,7 @@ final class CClanRegistry {
         synchronized (CLAN_LOCK) {
             for (L1Clan clan : clans) clan.setClanRegistry(null);
             byId.clear();
+            activeBlessings.clear();
             byName = new ConcurrentSkipListMap<>(NAME_ORDER);
         }
     }
@@ -83,6 +89,22 @@ final class CClanRegistry {
 
     Collection<L1Clan> clans() {
         return clans;
+    }
+
+    Collection<L1Clan> activeBlessings() { return blessings; }
+
+    static void blessingChanged(L1Clan clan) {
+        synchronized (CLAN_LOCK) {
+            CClanRegistry registry = clan.clanRegistry();
+            if (registry != null) registry.updateBlessingLocked(clan);
+        }
+    }
+
+    private void updateBlessingLocked(L1Clan clan) {
+        int id = clan.getClanId();
+        if (byId.get(id) != clan) return;
+        if (clan.getBless() != 0) activeBlessings.put(id, clan);
+        else activeBlessings.remove(id, clan);
     }
 
     static void changeId(L1Clan clan, int id) {

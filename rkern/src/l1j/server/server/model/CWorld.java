@@ -915,6 +915,10 @@ public final class CWorld {
         return clanRegistry.clans();
     }
 
+    public Collection<L1Clan> getActiveClanBlessings() {
+        return clanRegistry.activeBlessings();
+    }
+
     public void setWeather(int weather) {
         _weather = weather;
     }

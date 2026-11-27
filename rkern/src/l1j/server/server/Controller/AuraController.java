@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CParty;
@@ -266,45 +267,52 @@ public final class AuraController implements Runnable {
     }
 
     private void tickClanBuff() {
-        try {
-            for (L1Clan clan : CWorld.getInstance().getAllClans()) {
-                if (clan == null) continue;
+        final CWorld world = CWorld.getInstance();
+        final var cache = l1j.server.server.storage.CacheD.getInstance();
+        for (L1Clan clan : world.getActiveClanBlessings()) {
+            try {
                 synchronized (clan) {
-                if (l1j.server.server.storage.CacheD.getInstance().hasPendingOwnerApply(clan.getClanId())) continue;
-
-                final int bless = clan.getBless();
-                if (bless == 0) continue;
-
-                final int[] time = clan.getBuffTime();
-                if (time == null || bless - 1 < 0 || bless - 1 >= time.length) continue;
-
-                clan.setBuffTime(bless - 1, time[bless - 1] - 1);
-
-                if (clan.getBuffTime()[bless - 1] <= 0) {
-                    // Expiration is game state, not contingent on a notification.
-                    // Preserve member notice -> skill removal in the success case.
-                    try (var shared = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                            SC_Pledge.nativeBlessWriter(clan, bless),
-                            Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-                        for (L1PcInstance member : clan.getOnlineClanMember()) {
-                            if (member == null) continue;
-                            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared, member);
-                            try { member.removeSkillEffect(bless + 504); }
-                            catch (RuntimeException skillFailure) {
-                                LOG.log(Level.SEVERE, "Clan blessing expiry failed for member=" + member.getId(), skillFailure);
-                            }
-                        }
-                    } catch (RuntimeException noticeFailure) {
-                        LOG.log(Level.WARNING, "Clan bless expiry notice failed", noticeFailure);
-                        // Do not leave the elapsed clan blessing marked active.
+                    final int clanId = clan.getClanId();
+                    final int bless = clan.getBless();
+                    if (bless == 0 || world.getClan(clanId) != clan || clan.hasPendingBlessingExpiry()
+                            || cache.hasPendingOwnerApply(clanId)) continue;
+                    final int slot = bless - 1;
+                    clan.setBuffTime(slot, clan.getBuffTime(slot) - 1);
+                    if (clan.getBuffTime(slot) != 0) continue;
+                    final long generation = clan.beginBlessingExpiry(bless);
+                    if (generation == 0) continue;
+                    try {
+                        cache.submitDbJobRetryOrdered(clanId, () -> expireBlessing(world, clan, clanId, bless, generation));
+                    } catch (RuntimeException failure) {
+                        clan.cancelBlessingExpiry(clanId, bless, generation);
+                        throw failure;
                     }
-                    clan.setBless(0);
-                    ClanTable.getInstance().updateBless(clan.getClanId(), 0);
                 }
-                }
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Clan blessing tick failed: " + clan.getClanId(), failure);
             }
-        } catch (Throwable t) {
-            LOG.log(Level.SEVERE, "Clanbuff tick error", t);
+        }
+    }
+
+    private void expireBlessing(CWorld world, L1Clan clan, int clanId, int bless, long generation) {
+        if (world.getClan(clanId) != clan || !clan.matchesBlessingExpiry(clanId, bless, generation)) return;
+        if (!ClanTable.persistBlessingExpiry(world, clan, clanId, bless, generation)) return;
+        if (world.getClan(clanId) != clan) return;
+        final long expired = clan.completeBlessingExpiry(clanId, bless, generation);
+        if (expired == 0) return;
+        try {
+            for (L1PcInstance member : clan.getOnlineClanMember()) {
+                final int stamp = member.getSessionStamp();
+                CIOThreadCallback.getInstance().completeWarehouseMove(member, stamp, () -> {
+                    if (member.getClan() != clan || !clan.matchesBlessing(0, expired)) return;
+                    try { SC_Pledge.sendBless(member, clan, bless); }
+                    finally { member.removeSkillEffect(bless + 504); }
+                }, failure -> {
+                    if (failure != null) LOG.log(Level.FINE, "Clan blessing expiry notification", failure);
+                });
+            }
+        } catch (RuntimeException failure) {
+            LOG.log(Level.WARNING, "Clan blessing expiry notification failed: " + clanId, failure);
         }
     }
 

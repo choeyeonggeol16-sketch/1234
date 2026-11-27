@@ -747,24 +747,60 @@ public class L1Clan {
 	}
 
 	/** 혈맹버프 포인트 **/
-	private int _bless = 0;
-	private int _blesscount = 0;
-	private int _attack = 0;
-	private int _defence = 0;
-	private int _pvpattack = 0;
-	private int _pvpdefence = 0;
-	public int[] getBuffTime = new int[] { _attack, _defence, _pvpattack, _pvpdefence };
+	private volatile int _bless;
+	private volatile int _blesscount;
+	private final int[] buffTimes = new int[4];
+	private long blessingGeneration;
+	private int expiryClanId;
 
-	public int[] getBuffTime() {
-		return getBuffTime;
+	public record Blessing(int number, int time, long generation) {}
+
+	public synchronized int[] getBuffTime() { return buffTimes.clone(); }
+
+	public synchronized int getBuffTime(int slot) { return buffTimes[slot]; }
+
+	public synchronized void setBuffTime(int slot, int time) {
+		buffTimes[slot] = IntRange.ensure(time, 0, 172800);
 	}
 
-	public void setBuffTime(int i, int j) {
-		getBuffTime[i] = IntRange.ensure(j, 0, 172800);
+	public synchronized void setBuffTime(int a, int b, int c, int d) {
+		setBuffTime(0, a);
+		setBuffTime(1, b);
+		setBuffTime(2, c);
+		setBuffTime(3, d);
 	}
 
-	public void setBuffTime(int a, int b, int c, int d) {
-		getBuffTime = new int[] { a, b, c, d };
+	public synchronized Blessing getBlessing() {
+		return new Blessing(_bless, _bless == 0 ? 0 : buffTimes[_bless - 1], blessingGeneration);
+	}
+
+	public synchronized boolean hasPendingBlessingExpiry() {
+		return expiryClanId != 0 && expiryClanId == getClanId();
+	}
+
+	public synchronized long beginBlessingExpiry(int number) {
+		if (_bless != number || number == 0 || hasPendingBlessingExpiry() || buffTimes[number - 1] != 0) return 0;
+		expiryClanId = getClanId();
+		return blessingGeneration;
+	}
+
+	public synchronized boolean matchesBlessingExpiry(int clanId, int number, long generation) {
+		return getClanId() == clanId && expiryClanId == clanId
+				&& _bless == number && blessingGeneration == generation;
+	}
+
+	public synchronized void cancelBlessingExpiry(int clanId, int number, long generation) {
+		if (matchesBlessingExpiry(clanId, number, generation)) expiryClanId = 0;
+	}
+
+	public synchronized long completeBlessingExpiry(int clanId, int number, long generation) {
+		if (!matchesBlessingExpiry(clanId, number, generation)) return 0;
+		setBless(0);
+		return blessingGeneration;
+	}
+
+	public synchronized boolean matchesBlessing(int number, long generation) {
+		return _bless == number && blessingGeneration == generation;
 	}
 
 	public int getBlessCount() {
@@ -787,8 +823,11 @@ public class L1Clan {
 		return _bless;
 	}
 
-	public void setBless(int i) {
-		_bless = i;
+	public synchronized void setBless(int i) {
+		_bless = i >= 1 && i <= 4 ? i : 0;
+		blessingGeneration++;
+		expiryClanId = 0;
+		CClanRegistry.blessingChanged(this);
 	}
 
 	/** 2016.11.25 server 앱센터 혈맹 **/

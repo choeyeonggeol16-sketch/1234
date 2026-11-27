@@ -743,11 +743,10 @@ public final class CS_EnterWorld {
         }
         if (pc.getClanid() != 0) {
             if (clan != null) {
-                if (clan.getBless() != 0) {
-                	L1SkillUse.cast(pc, 504 + clan.getBless(), pc.getId(), pc.getX(),
-                            pc.getY(), null, clan.getBuffTime()[clan.getBless() - 1], L1SkillUse.TYPE_LOGIN);
-                	
-
+                final L1Clan.Blessing blessing = clan.getBlessing();
+                if (blessing.number() != 0 && blessing.time() > 0) {
+                    L1SkillUse.cast(pc, 504 + blessing.number(), pc.getId(), pc.getX(),
+                            pc.getY(), null, blessing.time(), L1SkillUse.TYPE_LOGIN);
                 }
                 SC_ActionUI.send(pc, clan.getClanName(), pc.getClanRank());
                 SC_PacketBox.send(pc, SC_PacketBox.PLEDGE_EMBLEM_STATUS, pc.getClan().getEmblemStatus());

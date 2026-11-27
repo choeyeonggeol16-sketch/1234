@@ -1762,10 +1762,10 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		final var clan = pc.getClan();
 		if (clan == null) return;
 
-		final int blessIdx = Math.max(0, clan.getBless() - 1);
-		final int[] times = clan.getBuffTime();
-		final int buffTime = times != null && blessIdx < times.length ? times[blessIdx] : 0;
 		final int stance = skillId - L1SkillId.CLAN_BUFF1;
+		final var blessing = clan.getBlessing();
+		if (stance + 1 != blessing.number() || blessing.time() <= 0) return;
+		final int buffTime = blessing.time();
 		if (stance <= 1) pc.applySkillModifierFromOwner(skillId, 0);
 		if (skillId == L1SkillId.CLAN_BUFF2) sendAttrDef(pc);
 		SC_ActionUI2.send(pc, 2724 + stance, buffTime, 7, 7233 + 2 * stance, 4650 + stance);

@@ -140,7 +140,7 @@ public final class CS_Craft {
             after.first = ClanBuffTable.getRandomBuff(draft); draft.setBuffFirst(after.first);
             after.second = ClanBuffTable.getRandomBuff(draft); draft.setBuffSecond(after.second);
             after.third = ClanBuffTable.getRandomBuff(draft);
-            stageClanBuff(tx, clan, before, after);
+            stageClanBuff(tx, clan, before, after, false);
             tx.commit(() -> {
                 after.install(clan);
                 l1j.server.server.model.network.core.sc.packet.SC_EinhasadClanBuff.send(pc, pc);
@@ -170,7 +170,7 @@ public final class CS_Craft {
             int fee = buffCheck == 1 ? 0 : buffCheck == 2 ? 1000 : 500000;
             if (fee > 0 && !tx.debit(40308, fee)) return;
             if (buffCheck != 2) after.selection = buffNum;
-            stageClanBuff(tx, clan, before, after);
+            stageClanBuff(tx, clan, before, after, false);
             tx.commit(() -> {
                 after.install(clan);
                 if (buffCheck == 2) {
@@ -213,6 +213,7 @@ public final class CS_Craft {
         if (pc == null || pc.getClan() == null || buffId < 0 || buffId >= 4) return;
         final L1Clan clan = pc.getClan();
         synchronized (clan) {
+        if (clan.hasPendingBlessingExpiry() || pc.getClan() != clan) return;
         if (!pc.isGm() && !pc.isCrown() && pc.getClanRank() != 9 && pc.getClanRank() != 3) {
             SC_ServerMessage.send(pc, 4648); return;
         }
@@ -223,18 +224,19 @@ public final class CS_Craft {
             after.bless = buffId + 1;
             after.times[buffId] = before.times[buffId] > 0 ? before.times[buffId] : 172800;
             if (!pc.isGm()) after.points -= fee;
-            stageClanBuff(tx, clan, before, after);
+            stageClanBuff(tx, clan, before, after, true);
             tx.commit(() -> {
-                after.install(clan);
+                final long generation = after.installBlessing(clan);
                 for (L1PcInstance member : clan.getOnlineClanMember()) {
                     if (member == null) continue;
                     final int stamp = member.getSessionStamp();
                     l1j.server.server.model.network.thread.CIOThreadCallback.getInstance()
                             .completeWarehouseMove(member, stamp, () -> {
-                        if (member.getClanid() != clan.getClanId()) return;
-                        if (before.bless != 0 && member.hasSkillEffect(504 + before.bless)) {
-                            member.removeSkillEffect(504 + before.bless);
-                            SC_ActionUI2.send(member, 2723 + before.bless, 1, 0, 7231 + before.bless * 2, 0);
+                        if (member.getClan() != clan || !clan.matchesBlessing(after.bless, generation)) return;
+                        for (int previous = 1; previous <= 4; previous++) {
+                            if (!member.hasSkillEffect(504 + previous)) continue;
+                            member.removeSkillEffect(504 + previous);
+                            SC_ActionUI2.send(member, 2723 + previous, 1, 0, 7231 + previous * 2, 0);
                         }
                         SC_Pledge.sendBless(member, clan, after.bless);
                         L1SkillUse.cast(member, buffId + 505, member.getId(), member.getX(), member.getY(),
@@ -255,18 +257,27 @@ public final class CS_Craft {
         ClanBuffImage(L1Clan clan) {
             selection = clan.getEinhasadBlessBuff(); first = clan.getBuffFirst();
             second = clan.getBuffSecond(); third = clan.getBuffThird();
-            bless = clan.getBless(); points = clan.getBlessCount(); times = clan.getBuffTime().clone();
+            bless = clan.getBless(); points = clan.getBlessCount(); times = clan.getBuffTime();
         }
         void install(L1Clan clan) {
-            clan.setEinhasadBlessBuff(selection); clan.setBuffFirst(first);
-            clan.setBuffSecond(second); clan.setBuffThird(third);
-            clan.setBless(bless); clan.setBlessCount(points);
-            for (int i=0; i<4; i++) clan.setBuffTime(i, times[i]);
+            synchronized (clan) {
+                clan.setEinhasadBlessBuff(selection); clan.setBuffFirst(first);
+                clan.setBuffSecond(second); clan.setBuffThird(third);
+            }
+        }
+        long installBlessing(L1Clan clan) {
+            synchronized (clan) {
+                install(clan);
+                clan.setBuffTime(times[0], times[1], times[2], times[3]);
+                clan.setBlessCount(points);
+                clan.setBless(bless);
+                return clan.getBlessing().generation();
+            }
         }
     }
 
     private static void stageClanBuff(L1InventoryTransaction tx, L1Clan clan,
-            ClanBuffImage before, ClanBuffImage after) {
+            ClanBuffImage before, ClanBuffImage after, boolean blessing) {
         final int clanId = clan.getClanId();
         tx.requireTables("clan_data");
         tx.sql(con -> {
@@ -277,17 +288,21 @@ public final class CS_Craft {
                 try (java.sql.ResultSet rows = check.executeQuery()) {
                     if (!rows.next() || rows.getInt(1)!=before.selection || rows.getInt(2)!=before.first
                             || rows.getInt(3)!=before.second || rows.getInt(4)!=before.third
-                            || rows.getInt(5)!=before.bless || rows.getInt(6)!=before.points)
+                            || (blessing && (rows.getInt(5)!=before.bless || rows.getInt(6)!=before.points)))
                         throw new SQLException("Clan buff preimage changed");
                 }
             }
-            try (PreparedStatement ps = con.prepareStatement("UPDATE clan_data SET EinhasadBlessBuff=?,"
-                    + "Buff_List1=?,Buff_List2=?,Buff_List3=?,bless=?,bless_count=?,"
-                    + "attack=?,defence=?,pvpattack=?,pvpdefence=? WHERE clan_id=?")) {
+            String sql = "UPDATE clan_data SET EinhasadBlessBuff=?,Buff_List1=?,Buff_List2=?,Buff_List3=?"
+                    + (blessing ? ",bless=?,bless_count=?,attack=?,defence=?,pvpattack=?,pvpdefence=?" : "")
+                    + " WHERE clan_id=?";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1,after.selection);ps.setInt(2,after.first);ps.setInt(3,after.second);
-                ps.setInt(4,after.third);ps.setInt(5,after.bless);ps.setInt(6,after.points);
-                for(int i=0;i<4;i++)ps.setInt(7+i,after.times[i]);
-                ps.setInt(11,clanId);
+                ps.setInt(4,after.third);
+                if (blessing) {
+                    ps.setInt(5,after.bless);ps.setInt(6,after.points);
+                    for (int i=0; i<4; i++) ps.setInt(7+i,after.times[i]);
+                }
+                ps.setInt(blessing ? 11 : 5,clanId);
                 if (ps.executeUpdate()>1) throw new SQLException("Duplicate clan identity");
             }
         });

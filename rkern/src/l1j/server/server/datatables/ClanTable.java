@@ -29,6 +29,7 @@ import l1j.server.server.storage.CacheD;
 public class ClanTable {
 	private static final Logger _log = Logger.getLogger(ClanTable.class.getName());
 	private static volatile ClanTable _instance;
+	private static final Object BLESSING_RELOAD = new Object();
 
 	// [최적화] Trove4j Primitive Int Map 적용 (Integer 박싱 비용 소멸)
 	private final TIntObjectMap<L1Clan> _clans = new TIntObjectHashMap<L1Clan>(64);
@@ -808,14 +809,16 @@ public class ClanTable {
 	}
 
 	public static synchronized void reload() {
-		// Do not erase active clans on a failed or partial database reload.
-		// The staged table never publishes until its roster and warehouses load.
-		ClanTable candidate = new ClanTable(false);
-		ClanTable oldInstance = _instance;
-		CWorld.getInstance().clearClan();
-		candidate.publishClans();
-		_instance = candidate;
-		if (oldInstance != null) oldInstance._clans.clear();
+		synchronized (BLESSING_RELOAD) {
+			// Do not erase active clans on a failed or partial database reload.
+			// The staged table never publishes until its roster and warehouses load.
+			ClanTable candidate = new ClanTable(false);
+			ClanTable oldInstance = _instance;
+			CWorld.getInstance().clearClan();
+			candidate.publishClans();
+			_instance = candidate;
+			if (oldInstance != null) oldInstance._clans.clear();
+		}
 	}
 
 	public L1Clan find(String clan_name) {
@@ -890,36 +893,58 @@ public class ClanTable {
         });
     }
 
-	public void updateBless(int clanid, int bless) {
-        CacheD.getInstance().submitDbJobOrdered(clanid,()->{
-		try (Connection con = DatabaseFactory.getInstance().getConnection(); 
-			 PreparedStatement pstm = con.prepareStatement("UPDATE clan_data SET bless = ? WHERE clan_id = ?")) {
-			pstm.setInt(1, bless);
-			pstm.setInt(2, clanid);
-			pstm.execute();
-		} catch (SQLException e) {
-			throw new IllegalStateException("Clan blessing save",e);
+	/** The CacheD clan lane owns this call. Retry is safe even if the first commit acknowledgement was lost. */
+	public static boolean persistBlessingExpiry(CWorld world, L1Clan clan, int clanId, int bless, long generation) {
+		synchronized (BLESSING_RELOAD) {
+			if (world.getClan(clanId) != clan || !clan.matchesBlessingExpiry(clanId, bless, generation)) return false;
+			String column = blessingColumn(bless);
+			try (Connection con = DatabaseFactory.getInstance().getConnection();
+				 PreparedStatement ps = con.prepareStatement(
+						 "UPDATE clan_data SET bless=0," + column + "=0 WHERE clan_id=? AND bless=?")) {
+				ps.setInt(1, clanId);
+				ps.setInt(2, bless);
+				ps.executeUpdate();
+			} catch (SQLException failure) {
+				throw new IllegalStateException("Clan blessing expiry save failed: " + clanId, failure);
+			}
+			return true;
 		}
-	
-        });
-    }
+	}
 
-	public void updateBuffTime(int a, int b, int c, int d, int clanid) {
-        CacheD.getInstance().submitDbJobOrdered(clanid,()->{
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-				PreparedStatement pstm = con.prepareStatement("UPDATE clan_data SET attack = ?, defence = ?, pvpattack = ?, pvpdefence = ? WHERE clan_id = ?")) {
-			pstm.setInt(1, a);
-			pstm.setInt(2, b);
-			pstm.setInt(3, c);
-			pstm.setInt(4, d);
-			pstm.setInt(5, clanid);
-			pstm.execute();
-		} catch (SQLException e) {
-			throw new IllegalStateException("Clan buff time save",e);
+	private static String blessingColumn(int bless) {
+		return switch (bless) {
+			case 1 -> "attack";
+			case 2 -> "defence";
+			case 3 -> "pvpattack";
+			case 4 -> "pvpdefence";
+			default -> throw new IllegalArgumentException("Invalid clan blessing number");
+		};
+	}
+
+	/** Called after world ticks and owner callbacks drain on graceful shutdown. */
+	public static void checkpointActiveBlessings(CWorld world, CacheD cache) {
+		for (L1Clan clan : world.getActiveClanBlessings()) {
+			final int id = clan.getClanId();
+			final L1Clan.Blessing state = clan.getBlessing();
+			if (state.number() == 0) continue;
+			cache.submitDbJobRetryOrdered(id, () -> {
+				synchronized (BLESSING_RELOAD) {
+					if (world.getClan(id) != clan || !clan.matchesBlessing(state.number(), state.generation())) return;
+					final String column = blessingColumn(state.number());
+					try (Connection con = DatabaseFactory.getInstance().getConnection();
+						 PreparedStatement ps = con.prepareStatement(
+								 "UPDATE clan_data SET " + column + "=? WHERE clan_id=? AND bless=?")) {
+						ps.setInt(1, state.time());
+						ps.setInt(2, id);
+						ps.setInt(3, state.number());
+						ps.executeUpdate();
+					} catch (SQLException failure) {
+						throw new IllegalStateException("Clan blessing checkpoint failed: " + id, failure);
+					}
+				}
+			});
 		}
-	
-        });
-    }
+	}
 
 	public void updateClanPassword(L1Clan clan) {
 		String sql = "UPDATE clan_data SET join_password = ? WHERE clan_name = ?";

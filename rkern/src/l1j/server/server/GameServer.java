@@ -673,6 +673,8 @@ public class GameServer {
                 LoggerInstance.getInstance().flushImmediately();
             }
 
+            ClanTable.checkpointActiveBlessings(CWorld.getInstance(), cache);
+
             final CIOThreadCallback cio = CIOThreadCallback.getInstance();
             cio.shutdown();
             if (!cio.awaitTermination(30L, TimeUnit.SECONDS))
