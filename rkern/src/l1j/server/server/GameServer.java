@@ -93,8 +93,8 @@ import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
 import l1j.server.server.model.character.action.listener.ActionListenerLinkageLoader;
 import l1j.server.server.model.character.action.listener.ActionListenerLoader;
 import l1j.server.server.model.character.animation.NpcSpeedData;
-import l1j.server.server.model.character.animation.SprBoundary;
-import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.animation.CSpriteLevelBoundary;
+import l1j.server.server.model.character.animation.loader.CSpriteTimingTable;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.companion.CompanionLoader;
@@ -180,7 +180,7 @@ public class GameServer {
 		IdFactory.getInstance();
 		BuilderCmdHandler.LoadBuilderCmdHandler();
 		L1WorldMap.getInstance();
-		SpriteInformationLoader.getInstance().loadSpriteInformation();
+		CSpriteTimingTable.getInstance().load();
 
 		FishingExpInfo.do_load();
 		GameUtils.load();
@@ -195,7 +195,7 @@ public class GameServer {
 		
 		
 		CharacterTable.getInstance().loadAllCharName();
-		SprBoundary.do_load();
+		CSpriteLevelBoundary.reload();
 		// 온라인 상태 리셋트
 		CharacterTable.clearOnlineStatus();
 		// Loaders can read time and register listeners before callbacks start.

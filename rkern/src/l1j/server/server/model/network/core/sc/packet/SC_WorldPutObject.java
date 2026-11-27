@@ -19,7 +19,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.animation.loader.CSpriteTimingTable;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.buffer.Assemble;
@@ -1217,7 +1217,7 @@ public final class SC_WorldPutObject {
             int spriteId) {
 
         try {
-            return SpriteInformationLoader
+            return CSpriteTimingTable
                     .levelToIndex(level, spriteId);
         } catch (RuntimeException e) {
             return 0;

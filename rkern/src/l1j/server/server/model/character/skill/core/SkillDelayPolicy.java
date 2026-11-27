@@ -3,8 +3,8 @@ package l1j.server.server.model.character.skill.core;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.animation.EActionCodes;
-import l1j.server.server.model.character.animation.SpriteInformation;
-import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.animation.CSpriteTiming;
+import l1j.server.server.model.character.animation.loader.CSpriteTimingTable;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.templates.L1Skills;
 
@@ -33,12 +33,10 @@ public enum SkillDelayPolicy {
             return (int) SPELL_MIN_GATE_MS;
         }
 
-        final SpriteInformationLoader loader =
-                SpriteInformationLoader.getInstance();
-
-        final SpriteInformation spr =
-                loader.get(pc.getCurrentSpriteId());
-
+        CSpriteTiming spr = pc.getCurrentSprite();
+        if (spr == null) {
+            spr = CSpriteTimingTable.getInstance().get(pc.getCurrentSpriteId());
+        }
         if (spr == null) {
             return (int) SPELL_MIN_GATE_MS;
         }

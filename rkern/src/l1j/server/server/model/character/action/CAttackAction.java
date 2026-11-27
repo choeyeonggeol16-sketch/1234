@@ -41,7 +41,7 @@ import l1j.server.server.model.character.combat.CCreatureDamageReaction;
 import l1j.server.server.model.character.combat.mortalbody.MortalBodyProcEngine;
 import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatProcs;
 import l1j.server.server.model.character.animation.EActionCodes;
-import l1j.server.server.model.character.animation.SpriteInformation;
+import l1j.server.server.model.character.animation.CSpriteTiming;
 import l1j.server.server.model.character.companion.instance.CompanionAttackHandler;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.helper.WeakExposeHelper;
@@ -446,7 +446,7 @@ public final class CAttackAction extends CNewAction {
             }
         }
         
-        final SpriteInformation sInfo = target.getCurrentSprite();
+        final CSpriteTiming sInfo = target.getCurrentSprite();
 
         final int range = owner.getAttackRang();
 

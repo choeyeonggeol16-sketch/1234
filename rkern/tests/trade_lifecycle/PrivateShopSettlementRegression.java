@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import gnu.trove.map.hash.TIntObjectHashMap;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
@@ -31,9 +30,8 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.map.L1WorldMap;
-import l1j.server.server.model.character.animation.SpriteInformation;
-import l1j.server.server.model.character.animation.SprBoundary;
-import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.animation.CSpriteLevelBoundary;
+import l1j.server.server.model.character.animation.loader.CSpriteTimingTable;
 import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.network.core.config.CIOConfig;
@@ -67,7 +65,7 @@ public final class PrivateShopSettlementRegression {
         "character_level_gifts", "character_teleport", "character_warehouse", "character_elf_warehouse",
         "character_special_warehouse", "character_package_warehouse", "character_supplementary_service",
         "clan_data", "clan_warehouse", "companion_instance", "companion_class", "letter", "mapids",
-        "etcitem", "weapon", "armor", "notradable", "dungeon", "dungeon_random", "castle", "spr_boundary", "spawnlist_trap", "trap"
+        "etcitem", "weapon", "armor", "notradable", "dungeon", "dungeon_random", "castle", "spr_boundary", "spr_info", "spr_action", "tb_magicdelay", "spawnlist_trap", "trap"
     };
     private static final L1V1Map MARKET = createMarket();
 
@@ -150,21 +148,12 @@ public final class PrivateShopSettlementRegression {
         CGameTime.prepare();
         L1WorldMap.getInstance().addMap(MARKET);
         CPacketFilter.getInstance().load();
-        SprBoundary.do_load();
+        CSpriteLevelBoundary.reload();
         CompanionClassInfo.do_load();
         CompanionInstanceCache.do_load();
         try (var con = db.getConnection(); var sql = con.createStatement()) {
-            var sprites = new TIntObjectHashMap<SpriteInformation>();
-            try (var row = sql.executeQuery("SELECT 0 AS spr_id, 1 AS width, 1 AS height, 0 AS action_count "
-                    + "UNION ALL SELECT 1120, 1, 1, 0")) {
-                while (row.next()) {
-                    var sprite = SpriteInformation.create(row);
-                    sprites.put(sprite.getSpriteId(), sprite);
-                }
-            }
-            var catalog = SpriteInformationLoader.class.getDeclaredField("_sprInfos");
-            catalog.setAccessible(true);
-            catalog.set(SpriteInformationLoader.getInstance(), sprites);
+            sql.execute("INSERT INTO spr_info(spr_id,width,height,action_count) VALUES (0,1,1,0),(1120,1,1,0)");
+            CSpriteTimingTable.getInstance().load();
             sql.execute("INSERT INTO etcitem(item_id,name,name_id,item_type,use_type,material,stackable) VALUES "
                     + "(40308,'Fixture adena','Fixture adena','other','none','gold',1),"
                     + "(40001,'Fixture stock','Fixture stock','other','none','cloth',1),"

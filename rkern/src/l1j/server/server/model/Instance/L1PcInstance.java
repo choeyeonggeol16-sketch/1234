@@ -76,7 +76,7 @@ import l1j.server.server.model.character.CYieldLock;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.action.CCreatureController;
 import l1j.server.server.model.character.animation.EActionCodes;
-import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.animation.loader.CSpriteTimingTable;
 import l1j.server.server.model.character.combat.arena.CombatObserver;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.effect.PcClanBuffEffects;
@@ -6465,7 +6465,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	    if (poly != null) {
 	        level = Math.max(level, poly.getMinLevel());
 	    }
-	    int status = SpriteInformationLoader.levelToIndex(level, spriteId);
+	    int status = CSpriteTimingTable.levelToIndex(level, spriteId);
 	    if (getPolyIdByEquip() == 11365) {
 	        status = Math.max(status, 9);
 	    }
@@ -6888,7 +6888,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 
 	@Override
 	public long getCurrentSpriteInterval(EActionCodes actionCode) {
-		return (long) _currentSpriteInfo.getInterval(this, actionCode);
+		return (long) getCurrentSprite().getInterval(this, actionCode);
 	}
 
 	@Override

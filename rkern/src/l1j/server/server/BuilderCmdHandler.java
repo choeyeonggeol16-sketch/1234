@@ -167,8 +167,8 @@ import l1j.server.server.model.character.ItemSkill.Doll.MagicDollCombatConfig;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.PlaySupport2019;
 import l1j.server.server.model.character.combat.arena.dogfight.history.DogFightTicketIdManager;
 import l1j.server.server.model.character.animation.NpcSpeedData;
-import l1j.server.server.model.character.animation.SprBoundary;
-import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.animation.CSpriteLevelBoundary;
+import l1j.server.server.model.character.animation.loader.CSpriteTimingTable;
 import l1j.server.server.model.character.action.listener.ActionListenerLinkageLoader;
 import l1j.server.server.model.character.action.listener.ActionListenerLoader;
 import l1j.server.server.model.item.teleport.designated.DesignatedTeleportLoader;
@@ -6405,8 +6405,14 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			FishingExpInfo.do_load();
 			gm.sendPackets("fishing_exp_info 테이블이 리로드 되었습니다.");
 		}else if(arg.equalsIgnoreCase("변신레벨")){
-			SprBoundary.do_load();
-			gm.sendPackets("spr_boundary 테이블이 리로드 되었습니다.");
+			gm.sendPackets(CSpriteLevelBoundary.reload() ? "spr_boundary 테이블을 리로드했습니다."
+					: "spr_boundary 리로드 실패. 이전 값을 유지합니다.");
+		} else if (arg.equalsIgnoreCase("SPR")) {
+			if (!CWorldWork.tryExecute(() -> gm.sendPackets(
+					CSpriteTimingTable.getInstance().reloadSprites() ? "SPR 행동 시간을 리로드했습니다."
+							: "SPR 리로드 실패. 이전 값을 유지합니다."))) {
+				gm.sendPackets("SPR 리로드 요청을 처리할 수 없습니다.");
+			}
 		}else if(arg.equalsIgnoreCase("엔피씨속도")){
 			NpcSpeedData.do_load();
 			for(L1NpcInstance npc : CWorld.getInstance().getAllNpc())
@@ -6644,8 +6650,8 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 		} else if (arg.equalsIgnoreCase("답장")) {
 			gm.sendPackets("리로드: letter_command 테이블이 리로드 되었습니다");
 		} else if(arg.equalsIgnoreCase("마법딜")){			
-			SpriteInformationLoader.getInstance().reloadSpellDelayInformation();
-			gm.sendPackets("리로드: MagicDelay 테이블이 리로드 되었습니다");	
+			gm.sendPackets(CSpriteTimingTable.getInstance().reloadSpellDelayInformation()
+					? "MagicDelay 테이블을 리로드했습니다." : "MagicDelay 리로드 실패. 이전 값을 유지합니다.");
 		} else if(arg.equalsIgnoreCase("광역마법")){
 			EffectModelLoader.reload();
 			gm.sendPackets("리로드: EffectModel 테이블이 리로드 되었습니다.");	
@@ -6663,7 +6669,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			gm.sendPackets("오토드랍.엔샵 .매크로 .악세인챈정보");
 			gm.sendPackets("세트아이템.로봇.제작엔피씨.자동공지.북시스템");
 			gm.sendPackets("맵아인");
-			gm.sendPackets("마법딜 .광역마법 .엔피씨마크 .아인증폭 .노드랍");
+			gm.sendPackets("SPR .변신레벨 .마법딜 .광역마법 .엔피씨마크 .아인증폭 .노드랍");
 			gm.sendPackets("아이템스킬 .크레프트인포 .인형인포 .제작인형컨픽");
 			gm.sendPackets("액션리스너 .제작확률 .인형확률 .엔피씨다운");
 			gm.sendPackets("텔주문서 .푸쉬시스템 .참시스템");

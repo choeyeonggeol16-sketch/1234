@@ -19,8 +19,8 @@ import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.character.animation.EActionCodes;
-import l1j.server.server.model.character.animation.SpriteInformation;
-import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
+import l1j.server.server.model.character.animation.CSpriteTiming;
+import l1j.server.server.model.character.animation.loader.CSpriteTimingTable;
 import l1j.server.server.model.character.combat.statistics.Kda;
 import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -2369,19 +2369,28 @@ public class L1Character extends L1Object {
 
 	}
 
-	protected SpriteInformation _currentSpriteInfo;
+	private static final AtomicReferenceFieldUpdater<L1Character, CSpriteTiming> SPRITE_TIMING =
+			AtomicReferenceFieldUpdater.newUpdater(L1Character.class, CSpriteTiming.class, "currentSpriteTiming");
+	private volatile CSpriteTiming currentSpriteTiming;
 
 	public int getCurrentSpriteId() {
-		return _currentSpriteInfo == null ? 1120 : _currentSpriteInfo.getSpriteId();
+		CSpriteTiming sprite = currentSpriteTiming;
+		return sprite == null ? CSpriteTimingTable.DEFAULT_SPRITE_ID : sprite.getSpriteId();
 	}
 
-	public SpriteInformation getCurrentSprite() {
-		return _currentSpriteInfo;
+	public CSpriteTiming getCurrentSprite() {
+		CSpriteTiming sprite = currentSpriteTiming;
+		if (sprite == null) return null;
+		CSpriteTiming refreshed = CSpriteTimingTable.getInstance().refresh(sprite);
+		if (refreshed != sprite) SPRITE_TIMING.compareAndSet(this, sprite, refreshed);
+		return refreshed;
 	}
 
 	public void setCurrentSprite(int spriteId) {
-		if (!equalsCurrentSprite(spriteId))
-			_currentSpriteInfo = SpriteInformationLoader.getInstance().get(spriteId);
+		CSpriteTiming sprite = currentSpriteTiming;
+		if (sprite == null || sprite.getSpriteId() != spriteId) {
+			currentSpriteTiming = CSpriteTimingTable.getInstance().get(spriteId);
+		}
 	}
 
 	public boolean equalsCurrentSprite(int compareSpriteId) {
@@ -2389,11 +2398,11 @@ public class L1Character extends L1Object {
 	}
 
 	public long getCurrentSpriteInterval(EActionCodes actionCode) {
-		return (long) _currentSpriteInfo.getInterval(this, actionCode);
+		return (long) getCurrentSprite().getInterval(this, actionCode);
 	}
 
 	public long getCurrentSpriteInterval(int actionCode) {
-		return (long) _currentSpriteInfo.getInterval(this, actionCode);
+		return (long) getCurrentSprite().getInterval(this, EActionCodes.fromInt(actionCode));
 	}
 
 	public void sendShape(int poly) {
