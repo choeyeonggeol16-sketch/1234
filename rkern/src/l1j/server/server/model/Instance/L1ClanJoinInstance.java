@@ -1,5 +1,6 @@
 package l1j.server.server.model.Instance;
 
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import l1j.server.server.IdFactory;
@@ -10,7 +11,6 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
-import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.shared.L1Type;
@@ -81,25 +81,40 @@ public class L1ClanJoinInstance extends L1Object{
 	}
 	
 	public static L1ClanJoinInstance newInstance(L1PcInstance pc){
+		IdFactory ids = IdFactory.getInstance();
+		return newInstance(pc, ids.nextId(), ids.nextId());
+	}
+
+	static L1ClanJoinInstance newInstance(L1PcInstance pc, int objectId, int emblemId) {
 		L1ClanJoinInstance cjInstance = newInstance();
 		cjInstance.set_name(pc.getName());
 		cjInstance.set_title(pc.getTitle());
 		cjInstance.set_owner_id(pc.getId());
 		cjInstance.set_clan_id(pc.getClanid());
 		cjInstance.set_lawful(pc.getLawful());
-		cjInstance.setId(IdFactory.getInstance().nextId());
-		cjInstance.set_emblem_id(IdFactory.getInstance().nextId());
+		cjInstance.setId(objectId);
+		cjInstance.set_emblem_id(emblemId);
 		cjInstance.setX(pc.getX());
 		cjInstance.setY(pc.getY());
-		cjInstance.setMap(pc.getMapId());
+		cjInstance.setMap(pc.getMap());
 		cjInstance.set_heading(pc.getHeading());
 		cjInstance.set_gfx(pc.getClassId());
-		SC_WorldPutObject.get(
-		        pc.getNetConnection(),
-		        cjInstance.serialize());
-		_clan_to_cj.put(pc.getClanid(), cjInstance);
-		CWorld.getInstance().storeAndEnterWorld(cjInstance);
-		return cjInstance;
+		cjInstance.appearance = cjInstance.serialize();
+		if (cjInstance.appearance == null) throw new IllegalStateException("Missing recruitment sign appearance");
+		int clanId = cjInstance.get_clan_id();
+		L1ClanJoinInstance existing = _clan_to_cj.putIfAbsent(clanId, cjInstance);
+		if (existing != null) return existing;
+		CWorld world = CWorld.getInstance();
+		try {
+			world.storeAndEnterWorld(cjInstance);
+			if (cjInstance.disposed) world.leaveAndRemoveObject(cjInstance);
+			else cjInstance.onPerceive(pc);
+			return cjInstance;
+		} catch (RuntimeException | Error failure) {
+			_clan_to_cj.remove(clanId, cjInstance);
+			cjInstance.dispose();
+			throw failure;
+		}
 	}
 	
 	public static L1ClanJoinInstance newInstance(){
@@ -121,36 +136,35 @@ public class L1ClanJoinInstance extends L1Object{
 	private int _lawful;
 	private int _gfx;
 	private int _heading;
-	private CServerPacket _world_put;
+	private volatile CServerPacket _world_put;
+	private byte[] appearance;
+	private volatile boolean disposed;
+	// Weak keys avoid retaining disconnected characters. FALSE reserves an in-flight appearance.
+	private transient WeakHashMap<L1PcInstance, Boolean> viewers;
 	private L1ClanJoinInstance(){
 		
 	}
 	
-	public void dispose(){
-		CWorld world = CWorld.getInstance();
-		world.removeVisibleObject(this);
-		world.removeObject(this);
-//		if(_world_put != null){
-//			_world_put.clear();
-//			_world_put = null;
-//		}
-		
-		try (var sharedRemove = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-		        SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-		for (L1PcInstance player : world.getAllPlayers()) {
-			if (player == null) {
-				continue;
-			}
-
-			if (player.knownsObject(this)) {
-				player.removeKnownObject(this);
-
-				l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedRemove, player);
-			}
+	public void dispose() {
+		final L1PcInstance[] seen;
+		synchronized (this) {
+			if (disposed) return;
+			disposed = true;
+			seen = viewers == null ? null : viewers.keySet().toArray(new L1PcInstance[0]);
+			viewers = null;
 		}
+		_clan_to_cj.remove(_clan_id, this);
+		CWorld.getInstance().leaveAndRemoveObject(this);
+		if (seen != null) {
+			for (L1PcInstance pc : seen) pc.outOfSight(this);
 		}
 	}
-	
+
+	public synchronized void forgetViewer(L1PcInstance pc) {
+		if (viewers != null && Boolean.TRUE.equals(viewers.get(pc)) && !pc.knownsObject(this))
+			viewers.remove(pc);
+	}
+
 	public L1ClanJoinInstance set_name(String name){
 		_name = name;
 		return this;
@@ -241,13 +255,32 @@ public class L1ClanJoinInstance extends L1Object{
 	}
 	
 	@Override
-	public void onPerceive(L1PcInstance perceivedFrom) {
-		if (_world_put == null || perceivedFrom == null || perceivedFrom.knownsObject(this)) return;
-		final var client = perceivedFrom.getNetConnection();
-		if (client == null || !client.isConnected() || client.getActiveChar() != perceivedFrom) return;
-		if (client.tryWritePacket(client, _world_put)
-				&& perceivedFrom.getNetConnection() == client && client.isConnected()) {
-			perceivedFrom.addKnownObject(this);
+	public void onPerceive(L1PcInstance pc) {
+		if (disposed || pc == null || !pc.isPublishedIn(getMap()) || !pc.canSeeObject(this)) return;
+		final var socket = pc.getNetConnection();
+		if (socket == null || !socket.isCurrentCharacter(pc)) return;
+		synchronized (this) {
+			if (disposed || pc.knownsObject(this)) return;
+			if (viewers == null) viewers = new WeakHashMap<>();
+			if (Boolean.FALSE.equals(viewers.put(pc, false))) return;
+		}
+		boolean accepted = false;
+		try {
+			CServerPacket packet = _world_put;
+			accepted = packet != null ? socket.tryWritePacket(socket, packet)
+					: SC_WorldPutObject.get(socket, appearance);
+		} finally {
+			boolean retract = false;
+			synchronized (this) {
+				if (accepted && socket.isCurrentCharacter(pc)) {
+					pc.addKnownObject(this);
+					retract = disposed || !pc.isPublishedIn(getMap()) || !pc.canSeeObject(this);
+					if (!disposed) viewers.put(pc, true);
+				} else if (!disposed) {
+					viewers.remove(pc);
+				}
+			}
+			if (retract) pc.outOfSight(this);
 		}
 	}
 

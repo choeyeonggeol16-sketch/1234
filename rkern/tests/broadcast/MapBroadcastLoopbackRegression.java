@@ -22,6 +22,8 @@ import l1j.server.server.Account;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.model.L1Clan;
+import l1j.server.server.model.Instance.L1ClanJoinInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
@@ -117,6 +119,7 @@ public final class MapBroadcastLoopbackRegression {
         final Peer otherMap = join(server, field, 103, true);
         final Peer registeredOnly = join(server, firstRoom, 103, false);
 
+        recruitmentSign(origin, near, edge, far, otherMap, registeredOnly);
         nearby("finite radius includes its edge, excludes source/other/far/unentered", origin.pc, RADIUS, near, edge);
         nearby("fast screen selection", origin.pc, -1, near, edge, far);
         final int sound = ++broadcasts;
@@ -191,6 +194,63 @@ public final class MapBroadcastLoopbackRegression {
         nearby("closed client cannot take a frame or stall a healthy peer", origin.pc, RADIUS);
         move(otherMap.pc, 103, secondRoom);
         nearby("healthy delivery after disconnect", origin.pc, RADIUS, otherMap);
+        clanBroadcast(server, origin, otherMap);
+
+    }
+
+    private void recruitmentSign(Peer owner, Peer near, Peer edge, Peer far, Peer elsewhere, Peer unentered) throws Exception {
+        int oldRange = Config.PC_RECOGNIZE_RANGE;
+        Config.PC_RECOGNIZE_RANGE = 8;
+        try {
+            owner.pc.setClanid(710);
+            owner.pc.setTitle("Recruit");
+            var factory = L1ClanJoinInstance.class.getDeclaredMethod("newInstance", L1PcInstance.class, int.class, int.class);
+            factory.setAccessible(true);
+            var sign = (L1ClanJoinInstance) factory.invoke(null, owner.pc, 19001, 19002);
+            for (var peer : List.of(owner, near, edge, far, elsewhere, unentered)) peer.pc.inSight(sign);
+            byte[] data = sign.serialize();
+            byte[] appearance = ByteBuffer.allocate(3 + data.length).order(ByteOrder.LITTLE_ENDIAN)
+                    .put((byte) Opcodes.S_EXTENDED_PROTOBUF).putShort((short) 0x77).put(data).array();
+            verify("sign appears once to owner and nearby nonmembers", ++broadcasts, List.of(owner, near, edge, far), appearance);
+            byte[] remove = ByteBuffer.allocate(7).order(ByteOrder.LITTLE_ENDIAN)
+                    .put((byte) Opcodes.S_REMOVE_OBJECT).putInt(sign.getId()).putShort((short) 0).array();
+            near.pc.outOfSight(sign);
+            verify("departed viewer forgets sign", ++broadcasts, List.of(near), remove);
+            sign.dispose();
+            sign.dispose();
+            far.pc.inSight(sign);
+            verify("retirement retracts only remaining viewers", ++broadcasts, List.of(owner, edge, far), remove);
+            check(!owner.pc.knownsObject(sign) && !far.pc.knownsObject(sign) && world.findObject(sign.getId()) == null,
+                    "retired recruitment sign remained visible or registered");
+        } finally { Config.PC_RECOGNIZE_RANGE = oldRange; }
+    }
+
+    private void clanBroadcast(CIOServer server, Peer old, Peer teammate) throws Exception {
+        var clan = new L1Clan();
+        clan.setClanId(731);
+        for (Peer peer : List.of(old, teammate)) {
+            peer.pc.setClanid(731);
+            peer.pc.setOnlineStatus(1);
+            clan.addLoadedClanMember(peer.pc.getName(), 1, 1, "", peer.pc.getId(), 0);
+        }
+        check(clan.GetMemberCounts() == (2L << 32 | 2), "online roster counts");
+        Peer next = connect(server);
+        L1PcInstance current = new L1PcInstance();
+        current.setId(old.pc.getId());
+        current.setName(old.pc.getName());
+        current.getLocation().set(old.pc.getX(), old.pc.getY(), old.pc.getMap());
+        current.setClanid(731);
+        current.setOnlineStatus(1);
+        actors.add(current);
+        attach(next, current);
+        world.storeObject(current);
+        clan.releaseClanMemberReference(old.pc);
+        int mark = ++broadcasts;
+        CSharedBroadcast.sendWrittenClan(clan, writer(mark, new AtomicInteger(), null));
+        verify("clan broadcast selects the new socket before roster cache refresh", mark, List.of(next, teammate));
+        mark = ++broadcasts;
+        CSharedBroadcast.sendWrittenClanBestEffort(clan, writer(mark, new AtomicInteger(), () -> current.setClanid(0)));
+        verify("member leaves during encoding", mark, List.of(teammate));
     }
 
     private void move(L1PcInstance pc, int x, L1Map map) {

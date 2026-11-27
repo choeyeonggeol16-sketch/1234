@@ -208,7 +208,7 @@ public final class CS_War {
         }
 
         if (redKnightClanId == 0) {
-            if (clan.getOnlineClanMember().length <= Config.혈맹접속인원) {
+            if (clan.getOnlineMemberCount() <= Config.혈맹접속인원) {
                 SC_SystemMessage.send(player, "접속한 혈맹원이 " + Config.혈맹접속인원 + "명 이상이면 선포가 가능합니다.");
                 return;
             }

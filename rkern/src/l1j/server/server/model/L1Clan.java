@@ -438,18 +438,7 @@ public class L1Clan {
         final ClanMember[] members = clanMemberList.snapshot();
         int online = 0;
         for (ClanMember member : members) {
-            synchronized (member) {
-                final L1PcInstance current = member.player;
-                if (current != null && current.getOnlineStatus() == 1
-                        && !current.isLogoutStarted() && current.getClanid() == getClanId()
-                        && FindOnlineMember(member) == current) {
-                    member.online = true;
-                    online++;
-                } else {
-                    member.player = null;
-                    member.online = false;
-                }
-            }
+            if (refreshOnlineMember(member)) online++;
         }
         return ((long)members.length << 32) | (online & 0xffffffffL);
     }
@@ -562,6 +551,37 @@ public class L1Clan {
                 && !pc.isLogoutStarted()
                 && world.getPlayer(pc.getName()) == pc) return pc;
         return null;
+    }
+
+    public boolean isOnlineMember(L1PcInstance pc) {
+        if (pc == null || IsDismissed()) return false;
+        ClanMember member = clanMemberList.GetDbMember(pc.getId());
+        return member != null && FindOnlineMember(member) == pc;
+    }
+
+    public Stream<L1PcInstance> onlinePlayers() {
+        return createMembersStream().map(this::FindOnlineMember).filter(java.util.Objects::nonNull);
+    }
+
+    public boolean hasAtLeastOnlineMembers(int minimum) {
+        if (minimum <= 0) return true;
+        for (ClanMember member : clanMemberList.snapshot()) {
+            if (FindOnlineMember(member) != null && --minimum == 0) return true;
+        }
+        return false;
+    }
+
+    private boolean refreshOnlineMember(ClanMember member) {
+        // Structural writers use roster -> member order. A removed entry in an
+        // older snapshot must never reacquire a player reference.
+        synchronized (clanMemberList) {
+            if (clanMemberList.GetDbMember(member.memberId) != member) return false;
+            synchronized (member) {
+                member.player = FindOnlineMember(member);
+                member.online = member.player != null;
+                return member.online;
+            }
+        }
     }
 
     public int getOnlineMemberCount() {
@@ -820,7 +840,7 @@ public class L1Clan {
 	}
 
 	public Stream<ClanMember> createOnlineMembers() {
-		return createMembersStream().filter((ClanMember m) -> m.online && m.player != null);
+		return createMembersStream().filter(this::refreshOnlineMember);
 	}
 
 	

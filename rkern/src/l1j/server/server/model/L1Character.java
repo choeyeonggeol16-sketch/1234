@@ -1083,8 +1083,11 @@ public class L1Character extends L1Object {
 		knownContainer(true).add(obj);
 	}
 	public void removeKnownObject(L1Object obj) {
+		forgetKnownObject(obj);
+	}
+	protected final boolean forgetKnownObject(L1Object obj) {
 		final CKnownObjectContainer known = knownContainer(false);
-		if (known != null) known.remove(obj);
+		return known != null && known.remove(obj);
 	}
 	public void removeAllKnownObjects() {
 		final CKnownObjectContainer known = knownContainer(false);

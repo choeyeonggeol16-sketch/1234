@@ -2,6 +2,7 @@ package l1j.server.server.model.world.siege;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import l1j.server.Config;
@@ -23,6 +24,8 @@ import l1j.server.server.model.L1WarSpawn;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.gametime.RealTimeClock;
+import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_CastleMaster;
 import l1j.server.server.model.network.core.sc.packet.SC_IconMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -236,22 +239,10 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
         if (oldDefense != null)
             ClanTable.getInstance().updateClan(oldDefense);
 
-        CInstanceWork.execute(new Runnable() {
-            @Override
-            public void run() {
-                byte[] injury = createInjury(_defense, SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.DEFENCE);
-                if (injury == null) return;
-                byte[] raw = injury;
-                try (var sharedInjury = l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(raw)) {
-                    for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
-                        if (pc == null || pc.getNetConnection() == null) continue;
-                        L1Clan c = pc.getClan();
-                        if (c != null && c.getClanId() == _defense.getClanId()) {
-                            l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedInjury, pc);
-                        }
-                    }
-                }
-            }
+        CInstanceWork.execute(() -> {
+            if (_defense != nextDefense) return;
+            byte[] injury = createInjury(nextDefense, SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.DEFENCE);
+            if (injury != null) CSharedBroadcast.sendWrittenClanBestEffort(nextDefense, out -> out.put(injury));
         });
     }
 
@@ -327,9 +318,9 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
     }
 
     private void teleport(L1PcInstance pc, int x, int y, int mid) {
-        if(GameUtils.isNonAction(pc) || pc.hasSkillEffect(L1SkillId.DESPERADO) || pc.hasSkillEffect(L1SkillId.SHOCK_STUN))
-            pc.start_teleport(x, y, mid, pc.getHeading(), 169, false, false);
-        pc.start_teleport(x, y, mid, pc.getHeading(), 169, true, false);
+        boolean effect = !GameUtils.isNonAction(pc) && !pc.hasSkillEffect(L1SkillId.DESPERADO)
+                && !pc.hasSkillEffect(L1SkillId.SHOCK_STUN);
+        pc.start_teleport(x, y, mid, pc.getHeading(), 169, effect, false);
     }
 
     public CastleWar proclaim(L1Clan clan) {
@@ -341,12 +332,10 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
 
         register(clan);
         byte[] stream = createInjury(clan, SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.ATTACK);
-        clan.createOnlineMembers().forEach((L1Clan.ClanMember m) -> {
-            if (m.player != null) {
-                if (L1CastleLocation.checkInWarArea(_castleId, m.player))
-                    l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(m.player, stream);
-                onLordBuff(m.player);
-            }
+        clan.onlinePlayers().forEach(member -> {
+            if (L1CastleLocation.checkInWarArea(_castleId, member))
+                l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(member, stream);
+            onLordBuff(member);
         });
         return this;
     }
@@ -367,15 +356,13 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
 
         register(clan);
         byte[] stream = createInjury(clan, SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.ATTACK);
-        clan.createOnlineMembers().forEach((L1Clan.ClanMember m) -> {
-            if (m.player != null) {
-                if (L1CastleLocation.checkInWarArea(_castleId, m.player)){
-                    l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(m.player, stream);
-                    onLordBuff(m.player);
-                    final L1Location loc = createGetBackLocation();
-                    L1Location nloc = loc.randomLocation(15, true);
-                    teleport(m.player, nloc.getX(), nloc.getY(), nloc.getMapId());
-                }
+        clan.onlinePlayers().forEach(member -> {
+            if (L1CastleLocation.checkInWarArea(_castleId, member)) {
+                l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(member, stream);
+                onLordBuff(member);
+                final L1Location loc = createGetBackLocation();
+                L1Location nloc = loc.randomLocation(15, true);
+                teleport(member, nloc.getX(), nloc.getY(), nloc.getMapId());
             }
         });
         return this;
@@ -488,6 +475,20 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
         }
     }
 
+    private static final int[] SECURITY_MAP_IDS = {52, 248, 249, 250, 251};
+
+    static void forEachSecurityEvacuee(int defenderId, Consumer<L1PcInstance> evacuate) {
+        CWorld world = CWorld.getInstance();
+        for (int id : SECURITY_MAP_IDS) {
+            var terrain = L1WorldMap.getInstance().findMap(id);
+            for (L1PcInstance pc : world.getVisiblePlayers(terrain)) {
+                if (pc.getMap() == terrain && pc.isPublishedIn(terrain) && world.findObject(pc.getId()) == pc
+                        && !pc.isLogoutStarted() && !pc.isGm() && (defenderId <= 0 || pc.getClanid() != defenderId))
+                    evacuate.accept(pc);
+            }
+        }
+    }
+
     class WarOpener implements Runnable {
         @Override
         public void run() {
@@ -503,18 +504,7 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
         private void onSecurity() {
             if (_castleId >= 1 && _castleId <= 4) {
                 final int[] loc = L1CastleLocation.getGetBackLoc(_castleId);
-                final int defenseId = _defenseId;
-                CWorld.getInstance().getAllPlayerStream().filter((L1PcInstance pc) -> {
-                    if (pc == null || pc.isGm() || pc.getClanid() == defenseId)
-                        return false;
-
-                    int mapId = pc.getMapId();
-                    return (mapId == 52 || mapId == 248 || mapId == 249 || mapId == 250 || mapId == 251)
-                            || pc.getClanid() <= 0;
-
-                }
-                        ).forEach((L1PcInstance pc) -> {teleport(pc, loc[0], loc[1], loc[2]);
-                        });
+                forEachSecurityEvacuee(_defenseId, pc -> teleport(pc, loc[0], loc[1], loc[2]));
 
             }
 

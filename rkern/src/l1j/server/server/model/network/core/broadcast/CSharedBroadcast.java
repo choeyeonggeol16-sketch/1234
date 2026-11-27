@@ -702,43 +702,42 @@ public final class CSharedBroadcast {
         out.put(lenPos,(byte)encoded);
     }
 
-    /** Clan-wide visual/war notice: preserve online-member cursor ownership,
-     * duplicates, and source sharing while isolating one member's SEND failure.
-     * Invalid plaintext is attempted only once for the entire clan.
-     */
-    public static void sendWrittenClanBestEffort(
-            L1Clan clan,NativeWireWriter writer) {
-        if(clan==null||writer==null)return;
-        CAsyncSendConstBuffer shared=null;
-        try(var members=clan.createOnlineMembers()) {
-            final var it=members.iterator();
-            while(it.hasNext()) {
-                final var member=it.next();
-                if(member==null)continue;
-                shared=sendWrittenOptionalTo(shared,member.player,writer);
-            }
-        } catch(UnavailableOptionalSource invalid) {
-            // Already logged; invalid writer must not retry for each member.
-        } catch(RuntimeException failure) {
-            logOptionalNoticeFailure(failure);
-        } finally { closeOptional(shared); }
+    public static void sendWrittenClanBestEffort(L1Clan clan, NativeWireWriter writer) {
+        sendClan(clan, writer, true);
     }
 
-    /** Original clan-member traversal and every online-member duplicate/order. */
-    public static void sendWrittenClan(
-            L1Clan clan,NativeWireWriter writer) {
-        if(clan==null||writer==null)return;
-        CAsyncSendConstBuffer shared=null;
-        try {
-            try(var members=clan.createOnlineMembers()) {
-                final var it=members.iterator();
-                while(it.hasNext()) {
-                    final var member = it.next();
-                    if (member != null) shared = sendWrittenTo(shared, member.player, writer);
+    public static void sendWrittenClan(L1Clan clan, NativeWireWriter writer) {
+        sendClan(clan, writer, false);
+    }
+
+    private static void sendClan(L1Clan clan, NativeWireWriter writer, boolean optional) {
+        if (clan == null || writer == null) return;
+        try (var members = clan.onlinePlayers()) {
+            var it = members.iterator();
+            if (!it.hasNext()) return;
+            try (var shared = new CAsyncSendConstBuffer(writer, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                while (it.hasNext()) {
+                    L1PcInstance pc = it.next();
+                    final CUserSocket socket;
+                    try {
+                        socket = eligibleBroadcastSocket(pc);
+                        if (socket == null || !socket.isCurrentCharacter(pc)) continue;
+                    } catch (RuntimeException failure) {
+                        if (!optional) throw failure;
+                        logOptionalNoticeFailure(failure);
+                        continue;
+                    }
+                    try {
+                        shared.sendClanMember(socket, pc, clan, optional);
+                    } catch (RuntimeException failure) {
+                        if (!optional || !shared.hasFrozenSource()) throw failure;
+                        logOptionalNoticeFailure(failure);
+                    }
                 }
             }
-        } finally {
-            if(shared!=null)shared.close();
+        } catch (RuntimeException failure) {
+            if (!optional) throw failure;
+            logOptionalNoticeFailure(failure);
         }
     }
 

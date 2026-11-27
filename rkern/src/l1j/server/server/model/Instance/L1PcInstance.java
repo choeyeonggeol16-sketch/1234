@@ -8115,10 +8115,13 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 			removeKnownObject(obj);
 			return;
 		}
-		removeKnownObject(obj);
-		SC_RemoveObject.send(
-				getNetConnection(),
-				obj);
+		if (!forgetKnownObject(obj)) return;
+		final var socket = getNetConnection();
+		if (obj instanceof L1ClanJoinInstance sign) {
+			sign.forgetViewer(this);
+			if (socket == null || !socket.isCurrentCharacter(this)) return;
+		}
+		SC_RemoveObject.send(socket, obj);
 	}
 
 	public void onWorldMove(int oldMap, int oldX, int oldY) {

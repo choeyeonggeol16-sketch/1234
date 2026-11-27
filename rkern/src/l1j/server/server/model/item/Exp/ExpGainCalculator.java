@@ -204,11 +204,8 @@ public final class ExpGainCalculator {
 
             // 혈맹 온라인 버프
             double clanOnlineBonus = 1.0;
-            if (clan != null) {
-                final Object[] online = clan.getOnlineClanMember();
-                if (online != null && online.length >= Config.CLAN_COUNT) {
-                    clanOnlineBonus += Config.혈맹버프퍼센트;
-                }
+            if (clan != null && clan.hasAtLeastOnlineMembers(Config.CLAN_COUNT)) {
+                clanOnlineBonus += Config.혈맹버프퍼센트;
             }
 
             // 랭크

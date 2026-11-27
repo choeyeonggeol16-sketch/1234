@@ -56,7 +56,7 @@ public class War {
 	
 	protected int						_warId;
 	protected HashMap<Integer, L1Clan> 	_offenses;
-	protected L1Clan					_defense;
+	protected volatile L1Clan _defense;
 	protected int						_defenseId;
 	protected WAR_TYPE					_warType;
 	protected Lock						_warLock;

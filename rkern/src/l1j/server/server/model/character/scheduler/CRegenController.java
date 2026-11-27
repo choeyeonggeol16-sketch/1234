@@ -448,17 +448,15 @@ public final class CRegenController {
             L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan == null) return;
 
-            if (pc.getClanid() != 0
-                    && clan.getOnlineClanMember().length >= Config.CLAN_COUNT
-                    && !pc.isClanBuff()) {
+            if (pc.getClanid() == 0) return;
+            boolean enoughOnline = clan.hasAtLeastOnlineMembers(Config.CLAN_COUNT);
+            if (enoughOnline && !pc.isClanBuff()) {
 
                 pc.setSkillEffect(L1SkillId.CLANBUFF_YES, 0);
                 SC_PacketBox.send(pc, SC_PacketBox.UNLIMITED_ICON1, 450, true);
                 pc.setClanBuff(true);
 
-            } else if (pc.getClanid() != 0
-                    && clan.getOnlineClanMember().length < Config.CLAN_COUNT
-                    && pc.isClanBuff()) {
+            } else if (!enoughOnline && pc.isClanBuff()) {
 
                 pc.killSkillEffectTimer(L1SkillId.CLANBUFF_YES);
                 SC_PacketBox.send(pc, SC_PacketBox.UNLIMITED_ICON1, 450, false);
