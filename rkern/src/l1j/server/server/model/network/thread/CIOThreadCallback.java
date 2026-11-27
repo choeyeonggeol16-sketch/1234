@@ -33,7 +33,7 @@ import l1j.server.server.model.character.action.CCreatureController;
 import l1j.server.server.model.character.effect.poison.PoisonEffect;
 import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.character.skill.SkillHandlers;
+import l1j.server.server.model.character.skill.CSkillEffectActivation;
 import l1j.server.server.model.character.skill.TomahawkBleedService;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.execution.CIOShardContext;
@@ -2956,17 +2956,17 @@ public final class CIOThreadCallback {
 			CSkillInfo.pumpStartFromOwner((L1PcInstance) cha, skillId, timeMillis);
 			break;
 		case SKILL_OP_COMA_REWARD:
-			SkillHandlers.startComaRewardFromOwner((L1PcInstance) cha, skillId, timeMillis);
+			CSkillEffectActivation.startComaRewardFromOwner((L1PcInstance) cha, skillId, timeMillis);
 			break;
 		case SKILL_OP_SUPPORT_ADVANCE:
-			SkillHandlers.startSupportAdvanceFromOwner((L1PcInstance) cha, timeMillis);
+			CSkillEffectActivation.startSupportAdvanceFromOwner((L1PcInstance) cha, timeMillis);
 			break;
 
         case SKILL_OP_NPC_BERSERKERS:
-            SkillHandlers.startNpcBerserkersFromOwner((L1NpcInstance) cha, skillId, timeMillis);
+            CSkillEffectActivation.startNpcBerserkersFromOwner((L1NpcInstance) cha, skillId, timeMillis);
             break;
         case SKILL_OP_ELEMENTAL_FALL_DOWN:
-            SkillHandlers.startNpcElementalFallDownFromOwner((L1NpcInstance) cha, timeMillis, skillId);
+            CSkillEffectActivation.startNpcElementalFallDownFromOwner((L1NpcInstance) cha, timeMillis, skillId);
             break;
 		case SKILL_OP_ARM:
             armCharacterSkillHeartbeatDirect(cha);

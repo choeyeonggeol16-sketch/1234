@@ -39,14 +39,14 @@ public final class BenchmarkSkillEffectLifecycle {
         @Override public void removeSkillEffect(int id) {
             if (!hasSkillEffect(id)) return;
             killSkillEffectTimer(id);
-            SkillStopHandlers.dispatch(this, id);
+            CSkillEffectPumpEnd.dispatch(this, id);
         }
     }
 
     private static void castPair(Player pc, Cast god, Cast fire) {
-        SkillHandlers.dispatch(god, pc, null, 0, null);
+        CSkillEffectActivation.dispatch(god, pc, null, 0, null);
         pc.setSkillEffect(God_buff, 38_000); // The legacy caster installed this in the common timer stage.
-        SkillHandlers.dispatch(fire, pc, null, 0, null);
+        CSkillEffectActivation.dispatch(fire, pc, null, 0, null);
     }
 
     private static void cycle(Player pc, Cast god, Cast fire) {

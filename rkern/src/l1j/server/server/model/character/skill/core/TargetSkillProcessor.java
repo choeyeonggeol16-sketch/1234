@@ -6,7 +6,7 @@ import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.character.skill.SkillHandlers;
+import l1j.server.server.model.character.skill.CSkillEffectActivation;
 import l1j.server.server.model.character.skill.helper.SkillGfxHelper;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
 import l1j.server.server.templates.L1Skills;
@@ -125,11 +125,11 @@ public enum TargetSkillProcessor {
         // =====================================================
         // Skill Handler
         // =====================================================
-        final int hd = SkillHandlers.dispatch(su, target, magic, undeadType, null);
+        final int hd = CSkillEffectActivation.dispatch(su, target, magic, undeadType, null);
 
-        if (hd == SkillHandlers.HD_RETURN) return Outcome.RETURN_ALL;
-        if (hd == SkillHandlers.HD_CONTINUE) return Outcome.CONTINUE;
-        if (hd == SkillHandlers.HD_NOT_HANDLED) su.hdClearOverrides();
+        if (hd == CSkillEffectActivation.HD_RETURN) return Outcome.RETURN_ALL;
+        if (hd == CSkillEffectActivation.HD_CONTINUE) return Outcome.CONTINUE;
+        if (hd == CSkillEffectActivation.HD_NOT_HANDLED) su.hdClearOverrides();
 
         // =====================================================
         // HEAL undead 처리
@@ -198,7 +198,7 @@ public enum TargetSkillProcessor {
         // =====================================================
         // Magic effect
         // =====================================================
-        if (hd != SkillHandlers.HD_HANDLED_WITHOUT_TIMER) su.exAddMagicList(target, false);
+        if (hd != CSkillEffectActivation.HD_HANDLED_WITHOUT_TIMER) su.exAddMagicList(target, false);
 
         // =====================================================
         // Light refresh

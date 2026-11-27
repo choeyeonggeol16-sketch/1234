@@ -47,7 +47,7 @@ public final class TestSkillEffectLifecycle {
         @Override public void setSkillEffect(int id, int duration) { effects.put(id, duration); }
         @Override public boolean hasSkillEffect(int id) { return effects.containsKey(id); }
         @Override public void removeSkillEffect(int id) {
-            if (effects.remove(id) != null) SkillStopHandlers.dispatch(this, id);
+            if (effects.remove(id) != null) CSkillEffectPumpEnd.dispatch(this, id);
         }
     }
 
@@ -214,17 +214,17 @@ public final class TestSkillEffectLifecycle {
 
     private static void verifyLifecycle() {
         for (int id : new int[]{-1, 0, 32767, 32768, Integer.MAX_VALUE}) {
-            verify(SkillHandlers.dispatch(new Cast(id), null, null, 0, null) == SkillHandlers.HD_NOT_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), null, null, 0, null) == CSkillEffectActivation.HD_NOT_HANDLED,
                     "missing start", id);
-            verify(!SkillStopHandlers.hasHandler(id), "missing end", id);
+            verify(!CSkillEffectPumpEnd.hasHandler(id), "missing end", id);
         }
-        SkillStopHandlers.register(32767, (target, id) -> SkillStopHandlers.StopResult.HANDLED);
-        verify(!SkillStopHandlers.hasHandler(32767), "frozen registration", 32767);
+        CSkillEffectPumpEnd.register(32767, (target, id) -> CSkillEffectPumpEnd.StopResult.HANDLED);
+        verify(!CSkillEffectPumpEnd.hasHandler(32767), "frozen registration", 32767);
 
         int stopOnly = L1SkillId.STATUS_BLUE_POTION;
-        verify(SkillHandlers.dispatch(new Cast(stopOnly), null, null, 0, null) == SkillHandlers.HD_NOT_HANDLED,
+        verify(CSkillEffectActivation.dispatch(new Cast(stopOnly), null, null, 0, null) == CSkillEffectActivation.HD_NOT_HANDLED,
                 "stop-only missing start", stopOnly);
-        verify(SkillStopHandlers.dispatch(null, stopOnly) == SkillStopHandlers.StopResult.HANDLED,
+        verify(CSkillEffectPumpEnd.dispatch(null, stopOnly) == CSkillEffectPumpEnd.StopResult.HANDLED,
                 "stop-only end", stopOnly);
 
         for (Buff buff : BUFFS) {
@@ -239,11 +239,11 @@ public final class TestSkillEffectLifecycle {
             int mr = pc.getResistance().getEffectedMrBySkill();
             Cast cast = new Cast(id);
             L1Character npc = new L1Character();
-            verify(SkillHandlers.dispatch(cast, npc, null, 0, null) == SkillHandlers.HD_NOT_HANDLED,
+            verify(CSkillEffectActivation.dispatch(cast, npc, null, 0, null) == CSkillEffectActivation.HD_NOT_HANDLED,
                     "non-player start", id);
-            System.out.println("non-player end " + id + " " + SkillStopHandlers.dispatch(npc, id));
+            System.out.println("non-player end " + id + " " + CSkillEffectPumpEnd.dispatch(npc, id));
 
-            verify(SkillHandlers.dispatch(cast, pc, null, 0, null) == SkillHandlers.HD_HANDLED, "start", id);
+            verify(CSkillEffectActivation.dispatch(cast, pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED, "start", id);
             verify(pc.effects.get(id) == 38_000, "effect duration", id);
             printState(pc, id, "start");
             int buffedHp = pc.getMaxHp(), buffedMp = pc.getMaxMp(), buffedAc = pc.getAC().getAc();
@@ -251,7 +251,7 @@ public final class TestSkillEffectLifecycle {
             verify(buffedHp == hp + buff.hp() && buffedMp == mp + buff.mp() && buffedAc == -96 + buff.ac()
                     && buffedMr == mr + buff.mr(), "applied stats", id);
 
-            verify(SkillHandlers.dispatch(cast, pc, null, 0, null) == SkillHandlers.HD_HANDLED, "recast", id);
+            verify(CSkillEffectActivation.dispatch(cast, pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED, "recast", id);
             verify(pc.getMaxHp() == buffedHp && pc.getMaxMp() == buffedMp && pc.getAC().getAc() == buffedAc
                     && pc.getResistance().getEffectedMrBySkill() == buffedMr, "recast stats", id);
             printState(pc, id, "recast");
@@ -273,9 +273,9 @@ public final class TestSkillEffectLifecycle {
                 N_BUFF_WATER, N_BUFF_WIND, N_BUFF_EARTH, N_BUFF_FIRE, N_BUFF_ALL_RESIST};
         for (int id : ids) {
             verify(CSkillInfo.isManaged(id), "managed registration", id);
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "start", id);
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "recast", id);
             verify(pc.effects.get(id) == 38_000, "timer after recast", id);
         }
@@ -314,9 +314,9 @@ public final class TestSkillEffectLifecycle {
         int[] ids = {DRESS_EVASION, AQUA_PROTECTER, SOLID_CARRIAGE, SCALES_WATER_DRAGON, SCALES_RINDVIOR_DRAGON};
         for (int id : ids) {
             verify(CSkillInfo.isManaged(id), "managed registration", id);
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "start", id);
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "recast", id);
             verify(pc.hasSkillEffect(id), "timer after recast", id);
         }
@@ -345,7 +345,7 @@ public final class TestSkillEffectLifecycle {
         verify(pc.getEffectedER() == 22 && pc.getResistance().getMr() == baseMr + 10
                 && pc.getResistance().getAddedMr() == 30, "restore installs distinct sources", RESIST_MAGIC);
         for (int id : ids) {
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "recast after restore", id);
         }
         verify(pc.getEffectedER() == 22 && pc.getResistance().getMr() == baseMr + 10,
@@ -370,7 +370,7 @@ public final class TestSkillEffectLifecycle {
         CSkillInfo.pumpStartFromOwner(pc, DRESS_MIGHTY, 38);
         CSkillInfo.pumpStartFromOwner(pc, DRESS_DEXTERITY, 38);
         for (int id : ids) {
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "cast", id);
             CSkillInfo.pumpStartFromOwner(pc, id, 38);
         }
@@ -400,7 +400,7 @@ public final class TestSkillEffectLifecycle {
             verify(CSkillInfo.isManaged(id), "common stat registration", id);
             BuffRestoreRegistry.find(id).restore(pc, id, 0, 38, new int[39]);
             pc.setSkillEffect(id, 38_000);
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "cast after restore", id);
         }
         verify(pc.getAbility().getAddedCon() == 7 && pc.getAbility().getAddedWis() == 5,
@@ -438,7 +438,7 @@ public final class TestSkillEffectLifecycle {
         BuffRestoreRegistry.find(ENCHANT_ACURUCY).restore(pc, ENCHANT_ACURUCY, 0, 38, new int[39]);
         pc.setSkillEffect(ENCHANT_ACURUCY, 38_000);
         for (int id : new int[]{GLOWING_AURA, IllUSION_OGRE, ENCHANT_ACURUCY}) {
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "start or recast melee modifier", id);
         }
         verify(pc.getHitup() == 127 && pc.getDmgup() == 127, "combined capped melee stats", GLOWING_AURA);
@@ -458,9 +458,9 @@ public final class TestSkillEffectLifecycle {
         pc.getAbility().addSp(3);
         int sp = pc.getAbility().getSp();
         for (int id : new int[]{N_BUFF_DMG, N_BUFF_SP, IllUSION_LICH}) {
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "start", id);
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "recast", id);
         }
         verify(pc.getDmgup() == 5 && pc.getBowDmgup() == 7 && pc.getAbility().getSp() == sp + 5,
@@ -481,9 +481,9 @@ public final class TestSkillEffectLifecycle {
         pc.addDamageReductionByArmor(4);
         int hp = pc.getMaxHp(), mp = pc.getMaxMp();
         for (int id : new int[]{N_BUFF_HPMP, N_BUFF_REDUCT}) {
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "start", id);
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "recast", id);
         }
         verify(pc.getMaxHp() == hp + 50 && pc.getMaxMp() == mp + 50 && pc.getWeightReduction() == 10
@@ -507,9 +507,9 @@ public final class TestSkillEffectLifecycle {
         resistance.addSpecialResistance(eKind.ABILITY, 126);
         resistance.addSpecialResistance(eKind.SPIRIT, 9);
         for (int id : new int[]{N_BUFF_PVP_DMG, N_BUFF_STUN, N_BUFF_HOLD}) {
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "start", id);
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "recast", id);
         }
         verify(resistance.getcalcPcDefense() == 15 && resistance.getPVPweaponTotalDamage() == 127
@@ -532,7 +532,7 @@ public final class TestSkillEffectLifecycle {
         pc.addMaxHp(100);
         int baseHp = pc.getMaxHp();
         for (int id : new int[]{L1SkillId.PRIDE, L1SkillId.GIGANTIC, L1SkillId.ADVANCE_SPIRIT})
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED, "stack", id);
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED, "stack", id);
         verify(pc.getMaxHp() == baseHp + 201 + 401 + 198, "independent HP sources", L1SkillId.PRIDE);
         pc.removeSkillEffect(L1SkillId.PRIDE);
         pc.setCurrentHp(pc.getMaxHp());
@@ -546,14 +546,14 @@ public final class TestSkillEffectLifecycle {
 
         pc.getAC().setAc(-96);
         int shield = L1SkillId.SHIELD;
-        SkillHandlers.dispatch(new Cast(shield), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(shield), pc, null, 0, null);
         pc.getAC().setAc(-104);
         verify(pc.getAC().getAc() == -106, "retain equipment AC change", shield);
         pc.removeSkillEffect(shield);
         verify(pc.getAC().getAc() == -104, "restore only managed AC", shield);
         int scales = L1SkillId.SCALES_EARTH_DRAGON;
         pc.getResistance().addMr(250);
-        SkillHandlers.dispatch(new Cast(scales), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(scales), pc, null, 0, null);
         pc.removeSkillEffect(scales);
         verify(pc.getResistance().getAddedMr() == 250, "capped MR preserves other sources", scales);
     }
@@ -563,7 +563,7 @@ public final class TestSkillEffectLifecycle {
         for (int id : new int[] {MAJESTY, ABSOLUTE_BARRIER, ABSOLUTE_BLADE, REDUCTION_ARMOR, MOEBIUS,
                 N_BUFF_WATER_DMG, N_BUFF_WIND_DMG, N_BUFF_EARTH_DMG, N_BUFF_FIRE_DMG}) {
             verify(CSkillInfo.isManaged(id), "shared timer registration", id);
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED
                     && pc.effects.get(id) == 38_000, "shared timer duration", id);
             pc.removeSkillEffect(id);
             verify(!pc.hasSkillEffect(id), "shared timer removal", id);
@@ -577,8 +577,8 @@ public final class TestSkillEffectLifecycle {
         pc.addHitup(12);
         pc.addDmgup(15);
         pc.submitSkillPumpStart(DISEASE, -64);
-        SkillHandlers.dispatch(new Cast(WEAKNESS), pc, null, 0, null);
-        SkillHandlers.dispatch(new Cast(MOB_DISEASE_1), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(WEAKNESS), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(MOB_DISEASE_1), pc, null, 0, null);
         verify(pc.getAC().getAc() == ac + 24 && pc.getHitup() == 5 && pc.getDmgup() == 4,
                 "boss Disease affects damage and regular Disease affects accuracy", DISEASE);
         pc.removeSkillEffect(DISEASE);
@@ -598,8 +598,8 @@ public final class TestSkillEffectLifecycle {
         pc.getAbility().addAddedStr(15);
         pc.getAbility().addAddedInt(12);
         pc.getAbility().addAddedCha(9);
-        SkillHandlers.dispatch(new Cast(N_BUFF_STR), pc, null, 0, null);
-        SkillHandlers.dispatch(new Cast(PANIC), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(N_BUFF_STR), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(PANIC), pc, null, 0, null);
         BuffRestoreRegistry.find(HORROR_OF_DEATH).restore(pc, HORROR_OF_DEATH, 0, 38, new int[39]);
         pc.setSkillEffect(HORROR_OF_DEATH, 38_000);
         verify(pc.getAbility().getAddedStr() == 5 && pc.getAbility().getAddedInt() == 1
@@ -616,12 +616,12 @@ public final class TestSkillEffectLifecycle {
         Player pc = new Player();
         pc.addBaseMaxMp(100);
         pc.setCurrentMp(10);
-        verify(SkillHandlers.dispatch(new Cast(BODY_TO_MIND), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+        verify(CSkillEffectActivation.dispatch(new Cast(BODY_TO_MIND), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED
                 && pc.getCurrentMp() == 12, "Body to Mind restores two MP", BODY_TO_MIND);
-        verify(SkillHandlers.dispatch(new Cast(BLOODY_SOUL), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+        verify(CSkillEffectActivation.dispatch(new Cast(BLOODY_SOUL), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED
                 && pc.getCurrentMp() == 27, "Bloody Soul restores fifteen MP", BLOODY_SOUL);
         pc.setCurrentMp(pc.getMaxMp() - 1);
-        SkillHandlers.dispatch(new Cast(BLOODY_SOUL), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(BLOODY_SOUL), pc, null, 0, null);
         verify(pc.getCurrentMp() == pc.getMaxMp() && !pc.hasSkillEffect(BLOODY_SOUL),
                 "instant recovery clamps without a timer", BLOODY_SOUL);
     }
@@ -633,7 +633,7 @@ public final class TestSkillEffectLifecycle {
         pc.addHitup(12);
         pc.addDmgup(17);
         for (int id : new int[]{IRON_SKIN, FIRE_SHIELD, BLESSED_ARMOR, BOUNCE_ATTACK, PATIENCE}) {
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "managed armor combat buff", id);
         }
         verify(pc.getAC().getAc() == ac - 17 && pc.getHitup() == 18 && pc.getDamageReductionByArmor() == 11,
@@ -666,14 +666,14 @@ public final class TestSkillEffectLifecycle {
         pc.addHitup(13);
         pc.getResistance().addSpecialResistance(eKind.ABILITY, 125);
         final int hp = pc.getMaxHp(), mp = pc.getMaxMp(), ac = pc.getAC().getAc();
-        verify(SkillHandlers.dispatch(new Cast(God_buff), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+        verify(CSkillEffectActivation.dispatch(new Cast(God_buff), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED
                 && pc.getHitup() == 16, "cast applies God buff accuracy", God_buff);
         BuffRestoreRegistry.find(God_buff).restore(pc, God_buff, 0, 38, new int[39]);
         verify(pc.getHitup() == 13 && pc.getMaxHp() == hp + 20 && pc.getMaxMp() == mp + 13
                 && pc.getAC().getAc() == ac - 2 && pc.getResistance().getSpecialResistance(eKind.SPIRIT) == 10,
                 "login replaces God buff with its own recorded bonuses", God_buff);
-        SkillHandlers.dispatch(new Cast(SCALES_FIRE_DRAGON), pc, null, 0, null);
-        SkillHandlers.dispatch(new Cast(SCALES_FIRE_DRAGON), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(SCALES_FIRE_DRAGON), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(SCALES_FIRE_DRAGON), pc, null, 0, null);
         verify(pc.getHitup() == 18 && pc.getResistance().getSpecialResistance(eKind.ABILITY) == 127
                 && pc.getResistance().getSpecialResistance(eKind.DRAGON_SPELL) == 5
                 && pc.getResistance().getSpecialResistance(eKind.FEAR) == 5, "fire scales recast preserves caps", SCALES_FIRE_DRAGON);
@@ -683,7 +683,7 @@ public final class TestSkillEffectLifecycle {
         pc.removeSkillEffect(SCALES_FIRE_DRAGON);
         verify(pc.getHitup() == 13 && pc.getResistance().getSpecialResistance(eKind.ABILITY) == 125
                 && pc.getResistance().getSpecialResistance(eKind.FEAR) == 0, "fire scales removes its own sources", SCALES_FIRE_DRAGON);
-        verify(SkillHandlers.dispatch(new Cast(BRAVE_AURA), pc, null, 0, null) == SkillHandlers.HD_HANDLED
+        verify(CSkillEffectActivation.dispatch(new Cast(BRAVE_AURA), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED
                 && pc.effects.get(BRAVE_AURA) == 38_000, "visual aura retains duration", BRAVE_AURA);
     }
 
@@ -748,10 +748,10 @@ public final class TestSkillEffectLifecycle {
         target.setSkillEffect(L1SkillId.PHANTASM, 0);
         target.setSkillEffect(L1SkillId.FOG_OF_SLEEPING, 0);
         target.killSkillEffectTimer(L1SkillId.PHANTASM);
-        SkillStopHandlers.dispatch(target, L1SkillId.PHANTASM);
+        CSkillEffectPumpEnd.dispatch(target, L1SkillId.PHANTASM);
         verify(target.isSleeped(), "overlapping sleep survives first end", L1SkillId.PHANTASM);
         target.killSkillEffectTimer(L1SkillId.FOG_OF_SLEEPING);
-        SkillStopHandlers.dispatch(target, L1SkillId.FOG_OF_SLEEPING);
+        CSkillEffectPumpEnd.dispatch(target, L1SkillId.FOG_OF_SLEEPING);
         verify(!target.isSleeped(), "last sleep releases movement", L1SkillId.FOG_OF_SLEEPING);
     }
 
@@ -768,7 +768,7 @@ public final class TestSkillEffectLifecycle {
         target.setMoveSpeed(1);
         target.setSkillEffect(HASTE, 0);
         target.setSkillEffect(STATUS_HASTE, 0);
-        SkillStopHandlers.dispatch(target, SLOW);
+        CSkillEffectPumpEnd.dispatch(target, SLOW);
         verify(target.getMoveSpeed() == 1, "stale slow does not reset haste", SLOW);
         target.removeSkillEffect(HASTE);
         verify(target.getMoveSpeed() == 1, "potion haste survives spell expiry", STATUS_HASTE);
@@ -784,7 +784,7 @@ public final class TestSkillEffectLifecycle {
         };
         target.setMoveSpeed(2);
         target.setSkillEffect(MOB_SLOW_18, 0);
-        verify(SkillHandlers.dispatch(haste, target, null, 0, null) == SkillHandlers.HD_HANDLED,
+        verify(CSkillEffectActivation.dispatch(haste, target, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                 "haste dispels the slow", HASTE);
         MagicEffectApplier.INSTANCE.applySkillEffect(haste, target, false);
         verify(target.getMoveSpeed() == 0 && !target.hasSkillEffect(HASTE) && !target.hasSkillEffect(MOB_SLOW_18),
@@ -871,8 +871,8 @@ public final class TestSkillEffectLifecycle {
                 "stun still holds after final freeze", EMPIRE);
         npc.skillEffectRemoveFromOwner(EMPIRE, true);
         verify(!npc.isParalyzed(), "all timed restrictions gone", EMPIRE);
-        verify(SkillHandlers.dispatch(new Cast(ICE_LANCE), npc, null, 0, null)
-                == SkillHandlers.HD_HANDLED_WITHOUT_TIMER, "rejected freeze skips only timer stage", ICE_LANCE);
+        verify(CSkillEffectActivation.dispatch(new Cast(ICE_LANCE), npc, null, 0, null)
+                == CSkillEffectActivation.HD_HANDLED_WITHOUT_TIMER, "rejected freeze skips only timer stage", ICE_LANCE);
         L1PcInstance pc = new L1PcInstance();
         pc.setCurseParalyzed(true);
         pc.setPoisonParalyzed(true);
@@ -903,7 +903,7 @@ public final class TestSkillEffectLifecycle {
         L1PcInstance pc = new L1PcInstance();
         int shield = L1SkillId.SHIELD;
         int ac = pc.getAC().getAc();
-        verify(SkillHandlers.dispatch(new Cast(shield), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+        verify(CSkillEffectActivation.dispatch(new Cast(shield), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                 "controller accepted cast", shield);
         verify(pc.hasSkillEffect(shield) && pc.getAC().getAc() == ac - 2, "controller applied cast and timer", shield);
         pc.killSkillEffectTimer(shield);
@@ -911,8 +911,8 @@ public final class TestSkillEffectLifecycle {
 
         int wis = pc.getAbility().getAddedWis();
         int water = pc.getResistance().getWater();
-        SkillHandlers.dispatch(new Cast(N_BUFF_WIS), pc, null, 0, null);
-        SkillHandlers.dispatch(new Cast(N_BUFF_WATER), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(N_BUFF_WIS), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(N_BUFF_WATER), pc, null, 0, null);
         verify(pc.hasSkillEffect(N_BUFF_WIS) && pc.getAbility().getAddedWis() == wis + 1
                 && pc.hasSkillEffect(N_BUFF_WATER) && pc.getResistance().getWater() == water + 5,
                 "controller applies both stat groups", N_BUFF_WIS);
@@ -924,8 +924,8 @@ public final class TestSkillEffectLifecycle {
                 "clear removes elemental modifier", N_BUFF_WATER);
 
         int er = pc.getEffectedER();
-        SkillHandlers.dispatch(new Cast(SCALES_WATER_DRAGON), pc, null, 0, null);
-        SkillHandlers.dispatch(new Cast(SCALES_WATER_DRAGON), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(SCALES_WATER_DRAGON), pc, null, 0, null);
+        CSkillEffectActivation.dispatch(new Cast(SCALES_WATER_DRAGON), pc, null, 0, null);
         verify(pc.hasSkillEffect(SCALES_WATER_DRAGON) && pc.getEffectedER() == er + 10,
                 "controller refreshes water scales without stacking", SCALES_WATER_DRAGON);
         pc.skillEffectClearFromOwner();
@@ -944,7 +944,7 @@ public final class TestSkillEffectLifecycle {
         final int[] owned = {CLEAR_MIND, PHYSICAL_ENCHANT_STR, PHYSICAL_ENCHANT_DEX,
                 RESIST_ELEMENTAL, ELEMENTAL_PROTECTION, INSIGHT, MIRROR_IMAGE, UNCANNY_DODGE};
         for (int id : owned) {
-            verify(SkillHandlers.dispatch(new Cast(id), pc, null, 0, null) == SkillHandlers.HD_HANDLED,
+            verify(CSkillEffectActivation.dispatch(new Cast(id), pc, null, 0, null) == CSkillEffectActivation.HD_HANDLED,
                     "owner accepts stat effect", id);
             verify(pc.hasSkillEffect(id), "owner installs timer", id);
         }

@@ -24,34 +24,34 @@ public final class CSkillInfo {
     private static boolean frozen;
 
     static {
-        SkillHandlers.registerEffects();
-        SkillStopHandlers.registerEffects();
-        registerManaged(ADVANCE_SPIRIT, SkillHandlers::startAdvanceSpirit, MAX_HP, MAX_MP);
-        registerManaged(PRIDE, SkillHandlers::startScaledHp, MAX_HP);
-        registerManaged(GIGANTIC, SkillHandlers::startScaledHp, MAX_HP);
-        registerManaged(SHINING_AURA, SkillHandlers::startShiningShield, AC);
-        registerManaged(SHIELD, SkillHandlers::startShiningShield, AC);
-        registerManaged(SHADOW_ARMOR, SkillHandlers::startShadowArmor, MR);
-        registerManaged(IllUSION_DIAMONDGOLEM, SkillHandlers::startIllusionDiamondGolem, AC);
-        registerManaged(SCALES_EARTH_DRAGON, SkillHandlers::startScalesEarthDragon, AC, MR);
-        registerManaged(N_BUFF_STR, SkillHandlers::startInventoryStatBuff, PRIMARY_STATS);
-        registerManaged(N_BUFF_DEX, SkillHandlers::startInventoryStatBuff, PRIMARY_STATS);
-        registerManaged(N_BUFF_INT, SkillHandlers::startInventoryStatBuff, PRIMARY_STATS);
-        registerManaged(N_BUFF_WIS, SkillHandlers::startInventoryStatBuff, PRIMARY_STATS);
-        registerManaged(N_BUFF_WATER, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
-        registerManaged(N_BUFF_WIND, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
-        registerManaged(N_BUFF_EARTH, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
-        registerManaged(N_BUFF_FIRE, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
-        registerManaged(N_BUFF_ALL_RESIST, SkillHandlers::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
-        registerManaged(DRESS_MIGHTY, SkillHandlers::startDressStatBuff, PRIMARY_STATS);
-        registerManaged(DRESS_DEXTERITY, SkillHandlers::startDressStatBuff, PRIMARY_STATS);
-        registerManaged(DRESS_EVASION, SkillHandlers::startEvasionBuff, ER);
-        registerManaged(AQUA_PROTECTER, SkillHandlers::startEvasionBuff, ER);
-        registerManaged(SOLID_CARRIAGE, SkillHandlers::startEvasionBuff, ER);
-        registerManaged(SCALES_WATER_DRAGON, SkillHandlers::startScalesEvasion, ER);
-        registerManaged(SCALES_RINDVIOR_DRAGON, SkillHandlers::startScalesEvasion, DG);
-        registerManaged(FREEZEENG_ARMOR, SkillHandlers::startEvasionBuff, ER);
-        registerManaged(SHINING_ARMOR, SkillHandlers::startEvasionBuff, ER);
+        CSkillEffectActivation.registerEffects();
+        CSkillEffectPumpEnd.registerEffects();
+        registerManaged(ADVANCE_SPIRIT, CSkillEffectActivation::startAdvanceSpirit, MAX_HP, MAX_MP);
+        registerManaged(PRIDE, CSkillEffectActivation::startScaledHp, MAX_HP);
+        registerManaged(GIGANTIC, CSkillEffectActivation::startScaledHp, MAX_HP);
+        registerManaged(SHINING_AURA, CSkillEffectActivation::startShiningShield, AC);
+        registerManaged(SHIELD, CSkillEffectActivation::startShiningShield, AC);
+        registerManaged(SHADOW_ARMOR, CSkillEffectActivation::startShadowArmor, MR);
+        registerManaged(IllUSION_DIAMONDGOLEM, CSkillEffectActivation::startIllusionDiamondGolem, AC);
+        registerManaged(SCALES_EARTH_DRAGON, CSkillEffectActivation::startScalesEarthDragon, AC, MR);
+        registerManaged(N_BUFF_STR, CSkillEffectActivation::startInventoryStatBuff, PRIMARY_STATS);
+        registerManaged(N_BUFF_DEX, CSkillEffectActivation::startInventoryStatBuff, PRIMARY_STATS);
+        registerManaged(N_BUFF_INT, CSkillEffectActivation::startInventoryStatBuff, PRIMARY_STATS);
+        registerManaged(N_BUFF_WIS, CSkillEffectActivation::startInventoryStatBuff, PRIMARY_STATS);
+        registerManaged(N_BUFF_WATER, CSkillEffectActivation::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(N_BUFF_WIND, CSkillEffectActivation::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(N_BUFF_EARTH, CSkillEffectActivation::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(N_BUFF_FIRE, CSkillEffectActivation::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(N_BUFF_ALL_RESIST, CSkillEffectActivation::startInventoryStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(DRESS_MIGHTY, CSkillEffectActivation::startDressStatBuff, PRIMARY_STATS);
+        registerManaged(DRESS_DEXTERITY, CSkillEffectActivation::startDressStatBuff, PRIMARY_STATS);
+        registerManaged(DRESS_EVASION, CSkillEffectActivation::startEvasionBuff, ER);
+        registerManaged(AQUA_PROTECTER, CSkillEffectActivation::startEvasionBuff, ER);
+        registerManaged(SOLID_CARRIAGE, CSkillEffectActivation::startEvasionBuff, ER);
+        registerManaged(SCALES_WATER_DRAGON, CSkillEffectActivation::startScalesEvasion, ER);
+        registerManaged(SCALES_RINDVIOR_DRAGON, CSkillEffectActivation::startScalesEvasion, DG);
+        registerManaged(FREEZEENG_ARMOR, CSkillEffectActivation::startEvasionBuff, ER);
+        registerManaged(SHINING_ARMOR, CSkillEffectActivation::startEvasionBuff, ER);
         // 9483 is a separate externally granted passive from spell 116.
         registerManaged(샤이닝아머, null, fixed(ER, 10));
         registerManaged(루돌프의버프, null, fixed(PRIMARY_STATS, 1L << 24));
@@ -93,173 +93,173 @@ public final class CSkillInfo {
         registerManaged(기술적중5, null, fixed(SPECIAL_PIERCE_FOUR, 5));
         registerManaged(용언적중5, null, fixed(SPECIAL_PIERCE_FOUR, 5L << 16));
         registerManaged(공포적중5, null, fixed(SPECIAL_PIERCE_FOUR, 5L << 24));
-        registerManaged(RESIST_MAGIC, SkillHandlers::startResistMagic, MR);
-        registerManaged(GLOWING_AURA, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
-        registerManaged(IllUSION_OGRE, SkillHandlers::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
-        registerManaged(ENCHANT_ACURUCY, SkillHandlers::startMeleeBuff, MELEE_HIT);
-        registerManaged(N_BUFF_DMG, SkillHandlers::startInventoryDamageBuff, MELEE_DAMAGE, RANGED_DAMAGE);
-        registerManaged(N_BUFF_SP, SkillHandlers::startSpellPowerBuff, SP);
-        registerManaged(IllUSION_LICH, SkillHandlers::startSpellPowerBuff, SP);
-        registerManaged(N_BUFF_HPMP, SkillHandlers::startInventoryHealthBuff,
+        registerManaged(RESIST_MAGIC, CSkillEffectActivation::startResistMagic, MR);
+        registerManaged(GLOWING_AURA, CSkillEffectActivation::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(IllUSION_OGRE, CSkillEffectActivation::startMeleeBuff, MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(ENCHANT_ACURUCY, CSkillEffectActivation::startMeleeBuff, MELEE_HIT);
+        registerManaged(N_BUFF_DMG, CSkillEffectActivation::startInventoryDamageBuff, MELEE_DAMAGE, RANGED_DAMAGE);
+        registerManaged(N_BUFF_SP, CSkillEffectActivation::startSpellPowerBuff, SP);
+        registerManaged(IllUSION_LICH, CSkillEffectActivation::startSpellPowerBuff, SP);
+        registerManaged(N_BUFF_HPMP, CSkillEffectActivation::startInventoryHealthBuff,
                 MAX_HP, MAX_MP, new CSkillEffect.CarryLimit(3));
-        registerManaged(N_BUFF_REDUCT, SkillHandlers::startInventoryArmorBuff, ARMOR_REDUCTION);
-        registerManaged(N_BUFF_PVP_DMG, SkillHandlers::startInventoryResistanceBuff, PVP_DAMAGE, PVP_REDUCTION);
-        registerManaged(N_BUFF_STUN, SkillHandlers::startInventoryResistanceBuff, SPECIAL_RESISTANCE);
-        registerManaged(N_BUFF_HOLD, SkillHandlers::startInventoryResistanceBuff, SPECIAL_RESISTANCE);
-        registerManaged(CLEAR_MIND, SkillHandlers::startClearMind, PRIMARY_STATS);
-        registerManaged(PHYSICAL_ENCHANT_STR, SkillHandlers::startPhysicalEnchant, PRIMARY_STATS);
-        registerManaged(PHYSICAL_ENCHANT_DEX, SkillHandlers::startPhysicalEnchant, PRIMARY_STATS);
-        registerManaged(RESIST_ELEMENTAL, SkillHandlers::startCommonStatBuff, ELEMENTAL_RESISTANCE);
-        registerManaged(ELEMENTAL_PROTECTION, SkillHandlers::startCommonStatBuff, ELEMENTAL_RESISTANCE, SPIRIT_PIERCE);
-        registerManaged(INSIGHT, SkillHandlers::startCommonStatBuff, PRIMARY_STATS);
-        registerManaged(MIRROR_IMAGE, SkillHandlers::startCommonStatBuff, DG);
-        registerManaged(UNCANNY_DODGE, SkillHandlers::startCommonStatBuff, DG);
+        registerManaged(N_BUFF_REDUCT, CSkillEffectActivation::startInventoryArmorBuff, ARMOR_REDUCTION);
+        registerManaged(N_BUFF_PVP_DMG, CSkillEffectActivation::startInventoryResistanceBuff, PVP_DAMAGE, PVP_REDUCTION);
+        registerManaged(N_BUFF_STUN, CSkillEffectActivation::startInventoryResistanceBuff, SPECIAL_RESISTANCE);
+        registerManaged(N_BUFF_HOLD, CSkillEffectActivation::startInventoryResistanceBuff, SPECIAL_RESISTANCE);
+        registerManaged(CLEAR_MIND, CSkillEffectActivation::startClearMind, PRIMARY_STATS);
+        registerManaged(PHYSICAL_ENCHANT_STR, CSkillEffectActivation::startPhysicalEnchant, PRIMARY_STATS);
+        registerManaged(PHYSICAL_ENCHANT_DEX, CSkillEffectActivation::startPhysicalEnchant, PRIMARY_STATS);
+        registerManaged(RESIST_ELEMENTAL, CSkillEffectActivation::startCommonStatBuff, ELEMENTAL_RESISTANCE);
+        registerManaged(ELEMENTAL_PROTECTION, CSkillEffectActivation::startCommonStatBuff, ELEMENTAL_RESISTANCE, SPIRIT_PIERCE);
+        registerManaged(INSIGHT, CSkillEffectActivation::startCommonStatBuff, PRIMARY_STATS);
+        registerManaged(MIRROR_IMAGE, CSkillEffectActivation::startCommonStatBuff, DG);
+        registerManaged(UNCANNY_DODGE, CSkillEffectActivation::startCommonStatBuff, DG);
         registerManaged(기간틱, null, MAX_HP);
         registerManaged(프라이드, null, MAX_HP);
         registerManaged(포텐셜, null, MAX_HP, MAX_MP, CSkillEffect.Potential.MR,
                 CSkillEffect.Potential.SP, CSkillEffect.Potential.ER, CSkillEffect.Potential.DG);
-        registerManaged(God_buff, SkillHandlers::startGodBuff, MELEE_HIT,
+        registerManaged(God_buff, CSkillEffectActivation::startGodBuff, MELEE_HIT,
                 new CSkillEffect.Fixed(AC, -2), new CSkillEffect.Fixed(MAX_HP, 20),
                 new CSkillEffect.Fixed(MAX_MP, 13L << 32), specialResistance(eKind.SPIRIT, 10));
-        registerManaged(SCALES_FIRE_DRAGON, SkillHandlers::startScalesFireDragon, MELEE_HIT,
+        registerManaged(SCALES_FIRE_DRAGON, CSkillEffectActivation::startScalesFireDragon, MELEE_HIT,
                 specialResistance(eKind.ABILITY, 5), specialResistance(eKind.DRAGON_SPELL, 5),
                 specialResistance(eKind.FEAR, 5));
-        registerManaged(BRAVE_AURA, SkillHandlers::startBraveAura);
-        registerManaged(IRON_SKIN, SkillHandlers::startArmorBuff, AC);
-        registerManaged(FIRE_SHIELD, SkillHandlers::startArmorBuff, AC);
-        registerManaged(BLESSED_ARMOR, SkillHandlers::startArmorBuff, AC);
-        registerManaged(BOUNCE_ATTACK, SkillHandlers::startCommonStatBuff, MELEE_HIT);
-        registerManaged(PATIENCE, SkillHandlers::startCommonStatBuff, ARMOR_REDUCTION);
-        registerManaged(BERSERKERS, SkillHandlers::startBerserkers,
+        registerManaged(BRAVE_AURA, CSkillEffectActivation::startBraveAura);
+        registerManaged(IRON_SKIN, CSkillEffectActivation::startArmorBuff, AC);
+        registerManaged(FIRE_SHIELD, CSkillEffectActivation::startArmorBuff, AC);
+        registerManaged(BLESSED_ARMOR, CSkillEffectActivation::startArmorBuff, AC);
+        registerManaged(BOUNCE_ATTACK, CSkillEffectActivation::startCommonStatBuff, MELEE_HIT);
+        registerManaged(PATIENCE, CSkillEffectActivation::startCommonStatBuff, ARMOR_REDUCTION);
+        registerManaged(BERSERKERS, CSkillEffectActivation::startBerserkers,
                 new CSkillEffect.Fixed(AC, 10), MELEE_HIT, MELEE_DAMAGE);
-        registerManagedWithFallback(GUARD_BREAK, SkillHandlers::startGuardBreak,
-                SkillHandlers::castGuardBreakOnNpc, AC);
-        registerManaged(WEAKNESS, SkillHandlers::startCommonStatBuff, MELEE_HIT, MELEE_DAMAGE);
-        registerManaged(MOB_WEAKNESS_1, SkillHandlers::startCommonStatBuff, MELEE_HIT, MELEE_DAMAGE);
-        registerManaged(DISEASE, SkillHandlers::startDisease, new CSkillEffect.Fixed(AC, 12), MELEE_HIT, MELEE_DAMAGE);
-        registerManaged(MOB_DISEASE_1, SkillHandlers::startDisease, new CSkillEffect.Fixed(AC, 12), MELEE_HIT, MELEE_DAMAGE);
-        registerManaged(MOB_DISEASE_30, SkillHandlers::startDisease, new CSkillEffect.Fixed(AC, 12), MELEE_HIT, MELEE_DAMAGE);
-        registerManaged(FEAR, SkillHandlers::startCommonStatBuff, DG);
-        registerManaged(HORROR_OF_DEATH, SkillHandlers::startCommonStatBuff, PRIMARY_PENALTY);
-        registerManaged(PANIC, SkillHandlers::startCommonStatBuff, PRIMARY_PENALTY);
+        registerManagedWithFallback(GUARD_BREAK, CSkillEffectActivation::startGuardBreak,
+                CSkillEffectActivation::castGuardBreakOnNpc, AC);
+        registerManaged(WEAKNESS, CSkillEffectActivation::startCommonStatBuff, MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(MOB_WEAKNESS_1, CSkillEffectActivation::startCommonStatBuff, MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(DISEASE, CSkillEffectActivation::startDisease, new CSkillEffect.Fixed(AC, 12), MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(MOB_DISEASE_1, CSkillEffectActivation::startDisease, new CSkillEffect.Fixed(AC, 12), MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(MOB_DISEASE_30, CSkillEffectActivation::startDisease, new CSkillEffect.Fixed(AC, 12), MELEE_HIT, MELEE_DAMAGE);
+        registerManaged(FEAR, CSkillEffectActivation::startCommonStatBuff, DG);
+        registerManaged(HORROR_OF_DEATH, CSkillEffectActivation::startCommonStatBuff, PRIMARY_PENALTY);
+        registerManaged(PANIC, CSkillEffectActivation::startCommonStatBuff, PRIMARY_PENALTY);
         registerNotifiedTimer(MAJESTY, 9518, 0, 5893, 5893, 0);
         registerNotifiedTimer(ABSOLUTE_BARRIER, 717, 10, 700, 700, 2179);
         registerNotifiedTimer(ABSOLUTE_BLADE, 7432, 0, 4735, 4735, 4742);
         registerNotifiedTimer(REDUCTION_ARMOR, 1889, 0, 1043, 1043, 2197);
         registerNotifiedTimer(MOEBIUS, 9443, 0, 5550, 5552, 0);
-        registerManaged(N_BUFF_WATER_DMG, SkillHandlers::startInventoryIconTimer);
-        registerManaged(N_BUFF_WIND_DMG, SkillHandlers::startInventoryIconTimer);
-        registerManaged(N_BUFF_EARTH_DMG, SkillHandlers::startInventoryIconTimer);
-        registerManaged(N_BUFF_FIRE_DMG, SkillHandlers::startInventoryIconTimer);
-        registerManaged(DECREASE_WEIGHT, SkillHandlers::startFixedCombatBuff, new CSkillEffect.CarryLimit(180));
-        registerManaged(REDUCE_WEIGHT, SkillHandlers::startFixedCombatBuff, new CSkillEffect.CarryLimit(180));
-        registerManaged(COUNTER_MIRROR, SkillHandlers::startFixedCombatBuff, new CSkillEffect.CarryLimit(300));
-        registerManaged(EARTH_WEAPON, SkillHandlers::startFixedCombatBuff, fixed(MELEE_HIT, 4), fixed(MELEE_DAMAGE, 2L << 32));
-        registerManaged(BURNING_WEAPON, SkillHandlers::startFixedCombatBuff, fixed(MELEE_HIT, 3), fixed(MELEE_DAMAGE, 6L << 32));
-        registerManaged(AQUA_SHOT, SkillHandlers::startFixedCombatBuff, fixed(RANGED_HIT, 4));
-        registerManaged(STORM_EYE, SkillHandlers::startFixedCombatBuff, fixed(RANGED_HIT, 2), fixed(RANGED_DAMAGE, 3));
-        registerManaged(STORM_SHOT, SkillHandlers::startFixedCombatBuff, fixed(RANGED_HIT, -3), fixed(RANGED_DAMAGE, 5));
-        registerManaged(EARTH_GUARDIAN, SkillHandlers::startFixedCombatBuff, fixed(ARMOR_REDUCTION, 2));
+        registerManaged(N_BUFF_WATER_DMG, CSkillEffectActivation::startInventoryIconTimer);
+        registerManaged(N_BUFF_WIND_DMG, CSkillEffectActivation::startInventoryIconTimer);
+        registerManaged(N_BUFF_EARTH_DMG, CSkillEffectActivation::startInventoryIconTimer);
+        registerManaged(N_BUFF_FIRE_DMG, CSkillEffectActivation::startInventoryIconTimer);
+        registerManaged(DECREASE_WEIGHT, CSkillEffectActivation::startFixedCombatBuff, new CSkillEffect.CarryLimit(180));
+        registerManaged(REDUCE_WEIGHT, CSkillEffectActivation::startFixedCombatBuff, new CSkillEffect.CarryLimit(180));
+        registerManaged(COUNTER_MIRROR, CSkillEffectActivation::startFixedCombatBuff, new CSkillEffect.CarryLimit(300));
+        registerManaged(EARTH_WEAPON, CSkillEffectActivation::startFixedCombatBuff, fixed(MELEE_HIT, 4), fixed(MELEE_DAMAGE, 2L << 32));
+        registerManaged(BURNING_WEAPON, CSkillEffectActivation::startFixedCombatBuff, fixed(MELEE_HIT, 3), fixed(MELEE_DAMAGE, 6L << 32));
+        registerManaged(AQUA_SHOT, CSkillEffectActivation::startFixedCombatBuff, fixed(RANGED_HIT, 4));
+        registerManaged(STORM_EYE, CSkillEffectActivation::startFixedCombatBuff, fixed(RANGED_HIT, 2), fixed(RANGED_DAMAGE, 3));
+        registerManaged(STORM_SHOT, CSkillEffectActivation::startFixedCombatBuff, fixed(RANGED_HIT, -3), fixed(RANGED_DAMAGE, 5));
+        registerManaged(EARTH_GUARDIAN, CSkillEffectActivation::startFixedCombatBuff, fixed(ARMOR_REDUCTION, 2));
         registerNotifiedTimer(EAGGLE_EYE, 8490, 10, 5157, 0, 5158, fixed(RANGED_CRITICAL, 2));
         registerNotifiedTimer(IllUSION_AVATAR, 3111, 10, 1377, 1377, 2215, fixed(MELEE_DAMAGE, 10L << 32));
         registerNotifiedTimer(FOCUS_SPRITS, 4832, 10, 5272, 0, 5273, fixed(MAGIC_CRITICAL, 5));
-        registerManaged(CYCLONE, SkillHandlers::startCasterTimer);
-        registerManaged(LUCIFER, SkillHandlers::startCasterTimer);
-        registerManaged(miso1, SkillHandlers::startMiso);
-        registerManaged(miso2, SkillHandlers::startMiso, fixed(MAX_HP, 100), fixed(MR, 10L << 32), fixed(HP_REGEN, 2));
-        registerManaged(miso3, SkillHandlers::startMiso, fixed(MELEE_DAMAGE, 3L << 32), fixed(RANGED_DAMAGE, 3),
+        registerManaged(CYCLONE, CSkillEffectActivation::startCasterTimer);
+        registerManaged(LUCIFER, CSkillEffectActivation::startCasterTimer);
+        registerManaged(miso1, CSkillEffectActivation::startMiso);
+        registerManaged(miso2, CSkillEffectActivation::startMiso, fixed(MAX_HP, 100), fixed(MR, 10L << 32), fixed(HP_REGEN, 2));
+        registerManaged(miso3, CSkillEffectActivation::startMiso, fixed(MELEE_DAMAGE, 3L << 32), fixed(RANGED_DAMAGE, 3),
                 fixed(MAX_MP, 50L << 32), fixed(SP, 3), fixed(MP_REGEN, 2));
-        registerManagedPlayerBuff(ANTA_MAAN, SkillHandlers::startDragonMaan, specialResistance(eKind.DRAGON_SPELL, 5));
-        registerManagedPlayerBuff(FAFU_MAAN, SkillHandlers::startDragonMaan, specialResistance(eKind.SPIRIT, 5));
-        registerManagedPlayerBuff(LIND_MAAN, SkillHandlers::startDragonMaan, fixed(SP, 1), specialResistance(eKind.FEAR, 5));
-        registerManagedPlayerBuff(VALA_MAAN, SkillHandlers::startDragonMaan,
+        registerManagedPlayerBuff(ANTA_MAAN, CSkillEffectActivation::startDragonMaan, specialResistance(eKind.DRAGON_SPELL, 5));
+        registerManagedPlayerBuff(FAFU_MAAN, CSkillEffectActivation::startDragonMaan, specialResistance(eKind.SPIRIT, 5));
+        registerManagedPlayerBuff(LIND_MAAN, CSkillEffectActivation::startDragonMaan, fixed(SP, 1), specialResistance(eKind.FEAR, 5));
+        registerManagedPlayerBuff(VALA_MAAN, CSkillEffectActivation::startDragonMaan,
                 fixed(MELEE_DAMAGE, 2L << 32), specialResistance(eKind.ABILITY, 5));
-        registerManagedPlayerBuff(BIRTH_MAAN, SkillHandlers::startDragonMaan,
+        registerManagedPlayerBuff(BIRTH_MAAN, CSkillEffectActivation::startDragonMaan,
                 specialResistance(eKind.SPIRIT, 5), specialResistance(eKind.DRAGON_SPELL, 5));
-        registerManagedPlayerBuff(SHAPE_MAAN, SkillHandlers::startDragonMaan, fixed(SP, 1),
+        registerManagedPlayerBuff(SHAPE_MAAN, CSkillEffectActivation::startDragonMaan, fixed(SP, 1),
                 specialResistance(eKind.SPIRIT, 5), specialResistance(eKind.DRAGON_SPELL, 5), specialResistance(eKind.FEAR, 5));
-        registerManagedPlayerBuff(LIFE_MAAN, SkillHandlers::startDragonMaan, fixed(SP, 1),
+        registerManagedPlayerBuff(LIFE_MAAN, CSkillEffectActivation::startDragonMaan, fixed(SP, 1),
                 fixed(MELEE_DAMAGE, 2L << 32), specialResistance(eKind.ALL, 5), fixed(ALL_PIERCE, 3));
-        registerManagedPlayerBuff(ANTA_BUFF, SkillHandlers::startDragonBlood, fixed(AC, -2), fixed(ELEMENTAL_RESISTANCE, 50));
-        registerManagedPlayerBuff(FAFU_BUFF, SkillHandlers::startDragonBlood,
+        registerManagedPlayerBuff(ANTA_BUFF, CSkillEffectActivation::startDragonBlood, fixed(AC, -2), fixed(ELEMENTAL_RESISTANCE, 50));
+        registerManagedPlayerBuff(FAFU_BUFF, CSkillEffectActivation::startDragonBlood,
                 fixed(HP_REGEN, 3), fixed(MP_REGEN, 1), fixed(ELEMENTAL_RESISTANCE, 50L << 8));
-        registerManagedPlayerBuff(RIND_BUFF, SkillHandlers::startDragonBlood,
+        registerManagedPlayerBuff(RIND_BUFF, CSkillEffectActivation::startDragonBlood,
                 fixed(MELEE_HIT, 3), fixed(RANGED_HIT, 3), fixed(ELEMENTAL_RESISTANCE, 50L << 24));
         final CSkillEffect seasonalHp = fixed(MAX_HP, 50);
         final CSkillEffect seasonalMp = fixed(MAX_MP, 30L << 32);
-        registerManagedPlayerBuff(FEATHER_BUFF_A, SkillHandlers::startFeatherBuff, seasonalHp, seasonalMp,
+        registerManagedPlayerBuff(FEATHER_BUFF_A, CSkillEffectActivation::startFeatherBuff, seasonalHp, seasonalMp,
                 fixed(HP_REGEN, 3), fixed(MP_REGEN, 3), fixed(MELEE_DAMAGE, 2L << 32), fixed(MELEE_HIT, 2),
                 fixed(SP, 2), ARMOR_REDUCTION);
-        registerManagedPlayerBuff(FEATHER_BUFF_B, SkillHandlers::startFeatherBuff, seasonalHp, seasonalMp,
+        registerManagedPlayerBuff(FEATHER_BUFF_B, CSkillEffectActivation::startFeatherBuff, seasonalHp, seasonalMp,
                 fixed(MELEE_HIT, 2), fixed(SP, 1), ARMOR_REDUCTION);
-        registerManagedPlayerBuff(FEATHER_BUFF_C, SkillHandlers::startFeatherBuff, seasonalHp, seasonalMp, fixed(AC, -2));
-        registerManagedPlayerBuff(FEATHER_BUFF_D, SkillHandlers::startFeatherBuff, fixed(AC, -1));
-        registerManagedPlayerBuff(성혈버프, SkillHandlers::startSeonghyeolBuff, fixed(MAX_HP, 300), fixed(MAX_MP, 150L << 32),
+        registerManagedPlayerBuff(FEATHER_BUFF_C, CSkillEffectActivation::startFeatherBuff, seasonalHp, seasonalMp, fixed(AC, -2));
+        registerManagedPlayerBuff(FEATHER_BUFF_D, CSkillEffectActivation::startFeatherBuff, fixed(AC, -1));
+        registerManagedPlayerBuff(성혈버프, CSkillEffectActivation::startSeonghyeolBuff, fixed(MAX_HP, 300), fixed(MAX_MP, 150L << 32),
                 fixed(MELEE_DAMAGE, 3L << 32), fixed(RANGED_DAMAGE, 3), fixed(SP, 3), fixed(AC, -10), fixed(MR, 15L << 32),
                 fixed(PVP_DAMAGE, 5), fixed(PVP_REDUCTION, 5L << 32));
-        registerManagedPlayerBuff(메티스축복주문서, SkillHandlers::startMetisBlessScroll, seasonalHp, seasonalMp,
+        registerManagedPlayerBuff(메티스축복주문서, CSkillEffectActivation::startMetisBlessScroll, seasonalHp, seasonalMp,
                 fixed(MELEE_HIT, 2), fixed(MELEE_DAMAGE, 2L << 32), fixed(RANGED_HIT, 2), fixed(RANGED_DAMAGE, 2),
                 fixed(SP, 2), fixed(HP_REGEN, 3), fixed(MP_REGEN, 3));
-        registerManagedPlayerBuff(DRAGON_HUNTER_BLESS, SkillHandlers::startEventIconBuff);
-        registerManagedPlayerBuff(HUNTER_BLESS, SkillHandlers::startEventIconBuff);
-        registerManagedPlayerBuff(HUNTER_BLESS2, SkillHandlers::startEventIconBuff);
-        registerManagedPlayerBuff(COMA_A, SkillHandlers::startComa, fixed(PRIMARY_STATS, (1L << 32) | 0x0505),
+        registerManagedPlayerBuff(DRAGON_HUNTER_BLESS, CSkillEffectActivation::startEventIconBuff);
+        registerManagedPlayerBuff(HUNTER_BLESS, CSkillEffectActivation::startEventIconBuff);
+        registerManagedPlayerBuff(HUNTER_BLESS2, CSkillEffectActivation::startEventIconBuff);
+        registerManagedPlayerBuff(COMA_A, CSkillEffectActivation::startComa, fixed(PRIMARY_STATS, (1L << 32) | 0x0505),
                 fixed(WEAPON_HIT_RATE, 3), fixed(AC, -3));
-        registerManagedPlayerBuff(COMA_B, SkillHandlers::startComa, fixed(PRIMARY_STATS, (3L << 32) | 0x0505),
+        registerManagedPlayerBuff(COMA_B, CSkillEffectActivation::startComa, fixed(PRIMARY_STATS, (3L << 32) | 0x0505),
                 fixed(WEAPON_HIT_RATE, 5), fixed(AC, -8), fixed(SP, 1));
-        registerManagedPlayerBuff(CLAN_BUFF1, SkillHandlers::startClanStance, fixed(MELEE_DAMAGE, 2L << 32), fixed(RANGED_DAMAGE, 2));
-        registerManagedPlayerBuff(CLAN_BUFF2, SkillHandlers::startClanStance, fixed(AC, -3));
-        registerManagedPlayerBuff(CLAN_BUFF3, SkillHandlers::startClanStance);
-        registerManagedPlayerBuff(CLAN_BUFF4, SkillHandlers::startClanStance);
-        registerManagedPlayerBuff(정상의가호, SkillHandlers::startNormalBlessing, fixed(ARMOR_REDUCTION, 8));
-        registerManagedPlayerBuff(천하장사버프, SkillHandlers::startStrongmanBuff, fixed(ARMOR_REDUCTION, 5));
+        registerManagedPlayerBuff(CLAN_BUFF1, CSkillEffectActivation::startClanStance, fixed(MELEE_DAMAGE, 2L << 32), fixed(RANGED_DAMAGE, 2));
+        registerManagedPlayerBuff(CLAN_BUFF2, CSkillEffectActivation::startClanStance, fixed(AC, -3));
+        registerManagedPlayerBuff(CLAN_BUFF3, CSkillEffectActivation::startClanStance);
+        registerManagedPlayerBuff(CLAN_BUFF4, CSkillEffectActivation::startClanStance);
+        registerManagedPlayerBuff(정상의가호, CSkillEffectActivation::startNormalBlessing, fixed(ARMOR_REDUCTION, 8));
+        registerManagedPlayerBuff(천하장사버프, CSkillEffectActivation::startStrongmanBuff, fixed(ARMOR_REDUCTION, 5));
         registerBlessing(SIDE_OF_ME_BLESSING, 5);
         registerBlessing(RE_START_BLESSING, 3);
         registerBlessing(NEW_START_BLESSING, 2);
         registerBlessing(LIFE_BLESSING, 1);
-        registerManagedPlayerBuff(격전의주문서, SkillHandlers::startBattleScroll, fixed(AC, -5), fixed(MAGIC_HIT, 2),
+        registerManagedPlayerBuff(격전의주문서, CSkillEffectActivation::startBattleScroll, fixed(AC, -5), fixed(MAGIC_HIT, 2),
                 fixed(WEAPON_HIT_RATE, 5), fixed(RANGED_HIT, 5), fixed(PVP_DAMAGE, 5), fixed(PVP_REDUCTION, 5L << 32));
-        registerManagedPlayerBuff(BUFF_특별한성장축복, SkillHandlers::startSpecialBuff);
-        registerManagedPlayerBuff(BUFF_특별한방어축복, SkillHandlers::startSpecialBuff,
+        registerManagedPlayerBuff(BUFF_특별한성장축복, CSkillEffectActivation::startSpecialBuff);
+        registerManagedPlayerBuff(BUFF_특별한방어축복, CSkillEffectActivation::startSpecialBuff,
                 seasonalHp, fixed(ARMOR_REDUCTION, 1), fixed(MR, 5L << 32));
-        registerManagedPlayerBuff(BUFF_특별한공격축복, SkillHandlers::startSpecialBuff,
+        registerManagedPlayerBuff(BUFF_특별한공격축복, CSkillEffectActivation::startSpecialBuff,
                 seasonalMp, fixed(MELEE_DAMAGE, 2L << 32), fixed(RANGED_DAMAGE, 2), fixed(SP, 2));
-        registerManagedPlayerBuff(BUFF_SAEL, SkillHandlers::startNpcBloodBuff, fixed(AC, -8),
+        registerManagedPlayerBuff(BUFF_SAEL, CSkillEffectActivation::startNpcBloodBuff, fixed(AC, -8),
                 fixed(RANGED_HIT, 6), fixed(RANGED_DAMAGE, 3), fixed(MAX_HP, 80), fixed(MAX_MP, 10L << 32),
                 fixed(HP_REGEN, 8), fixed(MP_REGEN, 1), fixed(ELEMENTAL_RESISTANCE, 30));
-        registerManagedPlayerBuff(BUFF_GUNTER, SkillHandlers::startNpcBloodBuff, fixed(PRIMARY_STATS, 5 << 8),
+        registerManagedPlayerBuff(BUFF_GUNTER, CSkillEffectActivation::startNpcBloodBuff, fixed(PRIMARY_STATS, 5 << 8),
                 fixed(RANGED_HIT, 7), fixed(RANGED_DAMAGE, 5), fixed(MAX_HP, 100), fixed(MAX_MP, 40L << 32),
                 fixed(HP_REGEN, 10), fixed(MP_REGEN, 3));
         final CSkillEffect[] crayBlood = { fixed(MELEE_HIT, 5), fixed(MELEE_DAMAGE, 1L << 32),
                 fixed(RANGED_HIT, 5), fixed(RANGED_DAMAGE, 1), fixed(MAX_HP, 100), fixed(MAX_MP, 50L << 32),
                 fixed(HP_REGEN, 3), fixed(MP_REGEN, 3) };
-        registerManagedPlayerBuff(BUFF_CRAY, SkillHandlers::startNpcBloodBuff, crayBlood);
-        registerManagedPlayerBuff(BUFF_Vala, SkillHandlers::startNpcBloodBuff, crayBlood);
-        registerManagedPlayerBuff(DRAGON_SET, SkillHandlers::startDragonSet, fixed(MELEE_DAMAGE, 3L << 32),
+        registerManagedPlayerBuff(BUFF_CRAY, CSkillEffectActivation::startNpcBloodBuff, crayBlood);
+        registerManagedPlayerBuff(BUFF_Vala, CSkillEffectActivation::startNpcBloodBuff, crayBlood);
+        registerManagedPlayerBuff(DRAGON_SET, CSkillEffectActivation::startDragonSet, fixed(MELEE_DAMAGE, 3L << 32),
                 fixed(WEAPON_DAMAGE_RATE, 3), fixed(RANGED_DAMAGE, 3), fixed(RANGED_HIT, 3), fixed(AC, -3), fixed(SP, 2));
-        registerManagedPlayerBuff(SOUL_BARRIER, SkillHandlers::startTimedInventoryIcon);
-        registerManagedPlayerBuff(TITANL_RISING, SkillHandlers::startTimedInventoryIcon);
+        registerManagedPlayerBuff(SOUL_BARRIER, CSkillEffectActivation::startTimedInventoryIcon);
+        registerManagedPlayerBuff(TITANL_RISING, CSkillEffectActivation::startTimedInventoryIcon);
         registerNotifiedTimer(STRIKER_GALE, 2357, 10, 1084, 1084, 2200);
         registerNotifiedTimer(BLOW_ATTACK, 8843, 10, 5266, 5266, 5267);
-        registerManagedPlayerBuff(BLESS_WEAPON, SkillHandlers::startWeaponBuff, fixed(MELEE_DAMAGE, 2L << 32), fixed(MELEE_HIT, 2));
-        registerManagedPlayerBuff(HOLY_WEAPON, SkillHandlers::startWeaponBuff, fixed(MELEE_DAMAGE, 1L << 32), fixed(MELEE_HIT, 1));
-        registerManagedPlayerBuff(ENCHANT_WEAPON, SkillHandlers::startWeaponBuff, fixed(MELEE_DAMAGE, 2L << 32));
-        registerManagedPlayerBuff(SHADOW_FANG, SkillHandlers::startWeaponBuff, fixed(MELEE_DAMAGE, 5L << 32));
+        registerManagedPlayerBuff(BLESS_WEAPON, CSkillEffectActivation::startWeaponBuff, fixed(MELEE_DAMAGE, 2L << 32), fixed(MELEE_HIT, 2));
+        registerManagedPlayerBuff(HOLY_WEAPON, CSkillEffectActivation::startWeaponBuff, fixed(MELEE_DAMAGE, 1L << 32), fixed(MELEE_HIT, 1));
+        registerManagedPlayerBuff(ENCHANT_WEAPON, CSkillEffectActivation::startWeaponBuff, fixed(MELEE_DAMAGE, 2L << 32));
+        registerManagedPlayerBuff(SHADOW_FANG, CSkillEffectActivation::startWeaponBuff, fixed(MELEE_DAMAGE, 5L << 32));
         registerCube(CUBE_AVATAR, 5322, 3073);
         registerCube(CUBE_RICH, 5309, 1348, fixed(SP, 2));
         registerCube(CUBE_GOLEM, 5314, 3075, fixed(AC, -8));
         registerCube(CUBE_OGRE, 5312, 3074, fixed(MELEE_DAMAGE, 4L << 32), fixed(MELEE_HIT, 4));
-        registerContextual(IMPACT, SkillHandlers::castImpact, SkillHandlers::startImpact, ALL_PIERCE, IMPACT_PROBABILITY);
-        registerContextual(GRACE_AVATAR, SkillHandlers::castGraceAvatar, SkillHandlers::startGraceAvatar,
+        registerContextual(IMPACT, CSkillEffectActivation::castImpact, CSkillEffectActivation::startImpact, ALL_PIERCE, IMPACT_PROBABILITY);
+        registerContextual(GRACE_AVATAR, CSkillEffectActivation::castGraceAvatar, CSkillEffectActivation::startGraceAvatar,
                 specialResistance(eKind.ALL, 5));
-        registerContextual(IMMUNE_TO_HARM, SkillHandlers::castImmuneToHarm, SkillHandlers::startImmuneToHarm);
-        registerContextual(ELEMENTAL_FALL_DOWN, SkillHandlers::castElementalFallDown, SkillHandlers::startElementalFallDown,
+        registerContextual(IMMUNE_TO_HARM, CSkillEffectActivation::castImmuneToHarm, CSkillEffectActivation::startImmuneToHarm);
+        registerContextual(ELEMENTAL_FALL_DOWN, CSkillEffectActivation::castElementalFallDown, CSkillEffectActivation::startElementalFallDown,
                 ELEMENTAL_WEAKNESS);
-        registerContextual(FOG_OF_SLEEPING, SkillHandlers::castSleep, SkillHandlers::startSleep);
-        registerContextual(DARK_BLIND, SkillHandlers::castSleep, SkillHandlers::startSleep);
-        registerContextual(PHANTASM, SkillHandlers::castSleep, SkillHandlers::startSleep);
-        registerContextual(CURSE_BLIND, SkillHandlers::castBlind, SkillHandlers::startBlind);
-        registerContextual(DARKNESS, SkillHandlers::castBlind, SkillHandlers::startBlind);
+        registerContextual(FOG_OF_SLEEPING, CSkillEffectActivation::castSleep, CSkillEffectActivation::startSleep);
+        registerContextual(DARK_BLIND, CSkillEffectActivation::castSleep, CSkillEffectActivation::startSleep);
+        registerContextual(PHANTASM, CSkillEffectActivation::castSleep, CSkillEffectActivation::startSleep);
+        registerContextual(CURSE_BLIND, CSkillEffectActivation::castBlind, CSkillEffectActivation::startBlind);
+        registerContextual(DARKNESS, CSkillEffectActivation::castBlind, CSkillEffectActivation::startBlind);
         registerClanBuff(혈맹버프AC, fixed(AC, -5));
         registerClanBuff(혈맹버프마방, fixed(MR, 10L << 32));
         registerClanBuff(혈맹버프PVP추가, fixed(PVP_DAMAGE, 3));
@@ -269,36 +269,36 @@ public final class CSkillInfo {
         registerClanBuff(혈맹버프올적중, fixed(ALL_PIERCE, 3));
         registerClanBuff(혈맹버프올스텟, fixed(PRIMARY_STATS, 0x030303030303L));
         registerClanBuff(혈맹버프회복);
-        registerManaged(HOLY_WALK, SkillHandlers::startBraveSpeed);
-        registerManaged(MOVING_ACCELERATION, SkillHandlers::startBraveSpeed);
-        registerManaged(BLOOD_LUST, SkillHandlers::startBraveSpeed);
-        registerManagedPlayerBuff(HURRICANE, SkillHandlers::startBraveVisual);
-        registerManagedPlayerBuff(FOCUS_WAVE, SkillHandlers::startBraveVisual);
-        registerManagedPlayerBuff(SAND_STORM, SkillHandlers::startBraveVisual);
-        registerManagedPlayerBuff(DANCING_BLADES, SkillHandlers::startBraveVisual);
-        registerContextual(WIND_SHACKLE, SkillHandlers::castWindShackle, SkillHandlers::startWindShackle);
-        registerContextual(MOB_WINDSHACKLE_1, SkillHandlers::castWindShackle, SkillHandlers::startWindShackle);
-        registerContextual(RINDVIOR_WIND_SHACKLE, SkillHandlers::castWindShackle, SkillHandlers::startWindShackle);
-        registerContextual(RINDVIOR_WIND_SHACKLE_1, SkillHandlers::castWindShackle, SkillHandlers::startWindShackle);
-        registerContextual(DRAKE_WIND_SHACKLE, SkillHandlers::castWindShackle, SkillHandlers::startWindShackle);
-        registerContextual(DEATH_HEAL, SkillHandlers::castDeathHeal, SkillHandlers::startDeathHeal);
-        registerContextual(DEATH_HEAL_Mob, SkillHandlers::castDeathHeal, SkillHandlers::startDeathHeal);
-        registerContextual(STATUS_FREEZE, SkillHandlers::castStatusFreeze, SkillHandlers::startStatusFreeze);
-        registerContextual(INVISIBILITY, SkillHandlers::castInvisibility, SkillHandlers::startInvisibility);
-        registerContextual(BLIND_HIDING, SkillHandlers::castInvisibility, SkillHandlers::startInvisibility);
-        registerContextual(RINDVIOR_SILENCE, SkillHandlers::castRindviorSilence, SkillHandlers::startRindviorSilence);
+        registerManaged(HOLY_WALK, CSkillEffectActivation::startBraveSpeed);
+        registerManaged(MOVING_ACCELERATION, CSkillEffectActivation::startBraveSpeed);
+        registerManaged(BLOOD_LUST, CSkillEffectActivation::startBraveSpeed);
+        registerManagedPlayerBuff(HURRICANE, CSkillEffectActivation::startBraveVisual);
+        registerManagedPlayerBuff(FOCUS_WAVE, CSkillEffectActivation::startBraveVisual);
+        registerManagedPlayerBuff(SAND_STORM, CSkillEffectActivation::startBraveVisual);
+        registerManagedPlayerBuff(DANCING_BLADES, CSkillEffectActivation::startBraveVisual);
+        registerContextual(WIND_SHACKLE, CSkillEffectActivation::castWindShackle, CSkillEffectActivation::startWindShackle);
+        registerContextual(MOB_WINDSHACKLE_1, CSkillEffectActivation::castWindShackle, CSkillEffectActivation::startWindShackle);
+        registerContextual(RINDVIOR_WIND_SHACKLE, CSkillEffectActivation::castWindShackle, CSkillEffectActivation::startWindShackle);
+        registerContextual(RINDVIOR_WIND_SHACKLE_1, CSkillEffectActivation::castWindShackle, CSkillEffectActivation::startWindShackle);
+        registerContextual(DRAKE_WIND_SHACKLE, CSkillEffectActivation::castWindShackle, CSkillEffectActivation::startWindShackle);
+        registerContextual(DEATH_HEAL, CSkillEffectActivation::castDeathHeal, CSkillEffectActivation::startDeathHeal);
+        registerContextual(DEATH_HEAL_Mob, CSkillEffectActivation::castDeathHeal, CSkillEffectActivation::startDeathHeal);
+        registerContextual(STATUS_FREEZE, CSkillEffectActivation::castStatusFreeze, CSkillEffectActivation::startStatusFreeze);
+        registerContextual(INVISIBILITY, CSkillEffectActivation::castInvisibility, CSkillEffectActivation::startInvisibility);
+        registerContextual(BLIND_HIDING, CSkillEffectActivation::castInvisibility, CSkillEffectActivation::startInvisibility);
+        registerContextual(RINDVIOR_SILENCE, CSkillEffectActivation::castRindviorSilence, CSkillEffectActivation::startRindviorSilence);
         // Dedicated control casts: target PC state/visuals must execute on that
         // target's existing 32-slot controller FIFO. NPC admission remains on NpcServer.
-        registerContextual(SHAPE_CHANGE, SkillHandlers::onShapeChange, SkillHandlers::startShapeChangeFromOwner);
-        registerContextual(TOMAHAWK, SkillHandlers::onTomahawk, SkillHandlers::startTomahawkFromOwner);
-        registerContextual(POWERRIP, SkillHandlers::onPowerRip, SkillHandlers::startPowerRipFromOwner);
-        registerContextual(DESPERADO, SkillHandlers::onDesperado, SkillHandlers::startDesperadoFromOwner);
-        registerContextual(THUNDER_GRAB, SkillHandlers::onThunderGrab, SkillHandlers::startThunderGrabFromOwner);
-        registerContextual(프라임, null, SkillHandlers::startPrimeFromOwner,
+        registerContextual(SHAPE_CHANGE, CSkillEffectActivation::onShapeChange, CSkillEffectActivation::startShapeChangeFromOwner);
+        registerContextual(TOMAHAWK, CSkillEffectActivation::onTomahawk, CSkillEffectActivation::startTomahawkFromOwner);
+        registerContextual(POWERRIP, CSkillEffectActivation::onPowerRip, CSkillEffectActivation::startPowerRipFromOwner);
+        registerContextual(DESPERADO, CSkillEffectActivation::onDesperado, CSkillEffectActivation::startDesperadoFromOwner);
+        registerContextual(THUNDER_GRAB, CSkillEffectActivation::onThunderGrab, CSkillEffectActivation::startThunderGrabFromOwner);
+        registerContextual(프라임, null, CSkillEffectActivation::startPrimeFromOwner,
                 fixed(BOW_HIT_RATE, 3), fixed(BOW_DAMAGE_RATE, 3),
                 fixed(WEAPON_HIT_RATE, 3), fixed(WEAPON_DAMAGE_RATE, 3),
                 fixed(SP, 2), fixed(MAGIC_HIT, 2));
-        registerContextual(프라임1, null, SkillHandlers::startPrimeFromOwner,
+        registerContextual(프라임1, null, CSkillEffectActivation::startPrimeFromOwner,
                 fixed(BOW_HIT_RATE, 9), fixed(BOW_DAMAGE_RATE, 9),
                 fixed(WEAPON_HIT_RATE, 9), fixed(WEAPON_DAMAGE_RATE, 9),
                 fixed(SP, 6), fixed(MAGIC_HIT, 6), fixed(MAX_HP, 500));
@@ -334,8 +334,8 @@ public final class CSkillInfo {
         frozen = true;
     }
 
-    private final SkillHandlers.SkillHandler cast;
-    private final SkillStopHandlers.StopHandler stop;
+    private final CSkillEffectActivation.SkillHandler cast;
+    private final CSkillEffectPumpEnd.StopHandler stop;
     private final PumpStartEffect start;
     private final CSkillEffect[] effects;
     private final boolean instant;
@@ -354,16 +354,16 @@ public final class CSkillInfo {
         void apply(L1PcInstance target, int skillId, int duration, int option, int gfx, boolean partyMember);
     }
 
-    private record ContextualCast(SkillHandlers.SkillHandler cast, ContextStartEffect start)
-            implements SkillHandlers.SkillHandler {
-        @Override public SkillHandlers.HandlerResult handle(L1SkillUse su, L1Character target,
+    private record ContextualCast(CSkillEffectActivation.SkillHandler cast, ContextStartEffect start)
+            implements CSkillEffectActivation.SkillHandler {
+        @Override public CSkillEffectActivation.HandlerResult handle(L1SkillUse su, L1Character target,
                 L1Magic magic, int undeadType, Iterator<?> targets) {
             return cast != null ? cast.handle(su, target, magic, undeadType, targets)
-                    : SkillHandlers.HandlerResult.NOT_HANDLED;
+                    : CSkillEffectActivation.HandlerResult.NOT_HANDLED;
         }
     }
 
-    private CSkillInfo(SkillHandlers.SkillHandler cast, SkillStopHandlers.StopHandler stop,
+    private CSkillInfo(CSkillEffectActivation.SkillHandler cast, CSkillEffectPumpEnd.StopHandler stop,
             PumpStartEffect start, CSkillEffect[] effects, boolean instant) {
         this.cast = cast;
         this.stop = stop;
@@ -390,17 +390,17 @@ public final class CSkillInfo {
         }
     }
 
-    static void registerInstant(int skillId, SkillHandlers.SkillHandler cast) {
+    static void registerInstant(int skillId, CSkillEffectActivation.SkillHandler cast) {
         registerCast(skillId, cast, true);
     }
 
-    static void registerCast(int skillId, SkillHandlers.SkillHandler cast, boolean instant) {
+    static void registerCast(int skillId, CSkillEffectActivation.SkillHandler cast, boolean instant) {
         if (frozen || skillId < 0 || cast == null) return;
         if (get(skillId) != null) throw new IllegalStateException("Duplicate skill cast " + skillId);
         put(skillId, new CSkillInfo(cast, null, null, null, instant));
     }
 
-    static void registerPumpEnd(int skillId, SkillStopHandlers.StopHandler stop) {
+    static void registerPumpEnd(int skillId, CSkillEffectPumpEnd.StopHandler stop) {
         if (frozen || skillId < 0 || stop == null) return;
         CSkillInfo prior = get(skillId);
         if (prior != null && prior.stop != null) throw new IllegalStateException("Duplicate skill end " + skillId);
@@ -413,13 +413,13 @@ public final class CSkillInfo {
     }
 
     private static void registerCube(int id, int icon, int tooltip, CSkillEffect... effects) {
-        registerContextual(id, SkillHandlers::castCubeBuff,
+        registerContextual(id, CSkillEffectActivation::castCubeBuff,
                 (pc, skillId, duration, iconDuration, gfx, partyMember) ->
-                        SkillHandlers.startCubeBuff(pc, skillId, duration, iconDuration, gfx, partyMember, icon, tooltip),
+                        CSkillEffectActivation.startCubeBuff(pc, skillId, duration, iconDuration, gfx, partyMember, icon, tooltip),
                 effects);
     }
 
-    private static void registerContextual(int id, SkillHandlers.SkillHandler cast, ContextStartEffect start,
+    private static void registerContextual(int id, CSkillEffectActivation.SkillHandler cast, ContextStartEffect start,
             CSkillEffect... effects) {
         final CSkillInfo prior = get(id);
         if (prior != null && (prior.cast != null || prior.start != null || prior.effects != null))
@@ -432,23 +432,23 @@ public final class CSkillInfo {
     }
 
     private static void registerBlessing(int skillId, int amount) {
-        registerManagedPlayerBuff(skillId, SkillHandlers::startLegacyBlessing,
+        registerManagedPlayerBuff(skillId, CSkillEffectActivation::startLegacyBlessing,
                 fixed(ARMOR_REDUCTION, amount), fixed(MELEE_DAMAGE, (long) amount << 32), fixed(RANGED_DAMAGE, amount));
     }
 
     private static void registerManagedPlayerBuff(int skillId, PumpStartEffect start, CSkillEffect... effects) {
-        registerManagedWithFallback(skillId, start, SkillHandlers::ignoreNonPlayerBuff, effects);
+        registerManagedWithFallback(skillId, start, CSkillEffectActivation::ignoreNonPlayerBuff, effects);
     }
 
     private static void registerNotifiedTimer(int skillId, int icon, int priority, int tooltip, int start, int end,
             CSkillEffect... effects) {
         final boolean statModifier = effects.length != 0;
         registerManaged(skillId, (pc, id, duration) ->
-                SkillHandlers.startNoticeTimer(pc, id, duration, icon, priority, tooltip, start, end, statModifier), effects);
+                CSkillEffectActivation.startNoticeTimer(pc, id, duration, icon, priority, tooltip, start, end, statModifier), effects);
     }
 
     private static void registerManagedWithFallback(int skillId, PumpStartEffect start,
-            SkillHandlers.SkillHandler fallback, CSkillEffect... effects) {
+            CSkillEffectActivation.SkillHandler fallback, CSkillEffect... effects) {
         CSkillInfo prior = get(skillId);
         if (prior == null || prior.stop == null || prior.cast != null)
             throw new IllegalStateException("Invalid managed skill definition " + skillId);
@@ -464,7 +464,7 @@ public final class CSkillInfo {
         return new CSkillEffect.Fixed(effect, captured);
     }
 
-    SkillHandlers.HandlerResult activateSkillEffects(L1SkillUse su, L1Character target, L1Magic magic,
+    CSkillEffectActivation.HandlerResult activateSkillEffects(L1SkillUse su, L1Character target, L1Magic magic,
             int undeadType, Iterator<?> targets) {
         if (start != null) {
             final int skillId = su.hdSkillId();
@@ -475,7 +475,7 @@ public final class CSkillInfo {
                 default -> target;
             };
             if (!(recipient instanceof L1PcInstance pc))
-                return cast == null ? SkillHandlers.HandlerResult.NOT_HANDLED
+                return cast == null ? CSkillEffectActivation.HandlerResult.NOT_HANDLED
                         : cast.handle(su, target, magic, undeadType, targets);
             int duration = skillId == SHINING_AURA || skillId == SHIELD
                     || skillId == DRESS_DEXTERITY || skillId == DRESS_MIGHTY || skillId == GLOWING_AURA
@@ -486,11 +486,11 @@ public final class CSkillInfo {
                     || skillId == EARTH_GUARDIAN || skillId == 격전의주문서
                     || skillId == BLESS_WEAPON || skillId == HOLY_WEAPON || skillId == ENCHANT_WEAPON || skillId == SHADOW_FANG
                     || skillId == BUFF_특별한성장축복 || skillId == BUFF_특별한방어축복 || skillId == BUFF_특별한공격축복
-                    ? su.hdGetBuffIconDuration() : SkillHandlers.durationSecForBuff(su, skillId);
+                    ? su.hdGetBuffIconDuration() : CSkillEffectActivation.durationSecForBuff(su, skillId);
             return pc.submitSkillPumpStart(skillId, duration)
-                    ? SkillHandlers.HandlerResult.HANDLED : SkillHandlers.HandlerResult.CONTINUE;
+                    ? CSkillEffectActivation.HandlerResult.HANDLED : CSkillEffectActivation.HandlerResult.CONTINUE;
         }
-        if (cast == null) return SkillHandlers.HandlerResult.NOT_HANDLED;
+        if (cast == null) return CSkillEffectActivation.HandlerResult.NOT_HANDLED;
         return instant ? cast.instant(su, target, magic, undeadType, targets)
                 : cast.handle(su, target, magic, undeadType, targets);
     }
@@ -597,7 +597,7 @@ public final class CSkillInfo {
         return start != null || (cast != null && (!(cast instanceof ContextualCast contextual) || contextual.cast() != null));
     }
 
-    SkillStopHandlers.StopHandler stopHandler() { return stop; }
+    CSkillEffectPumpEnd.StopHandler stopHandler() { return stop; }
 
     public static boolean grantSupportAdvance(L1PcInstance target, int seconds) {
         return CIOThreadCallback.getInstance().submitSupportAdvance(target, seconds);

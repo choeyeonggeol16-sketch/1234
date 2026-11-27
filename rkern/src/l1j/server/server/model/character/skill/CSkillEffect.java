@@ -9,9 +9,9 @@ import l1j.server.server.model.character.effect.paralysis.CurseParalysis;
 
 /** Shared execution contract for the separate cast, lifetime and stat stages. */
 interface CSkillEffect {
-    default SkillHandlers.HandlerResult instant(L1SkillUse cast, L1Character target, L1Magic magic,
+    default CSkillEffectActivation.HandlerResult instant(L1SkillUse cast, L1Character target, L1Magic magic,
             int undeadType, Iterator<?> targets) {
-        return SkillHandlers.HandlerResult.NOT_HANDLED;
+        return CSkillEffectActivation.HandlerResult.NOT_HANDLED;
     }
 
     default boolean checkPumpCondition(L1Character target) { return true; }
@@ -20,8 +20,8 @@ interface CSkillEffect {
 
     default void pumpStart(L1PcInstance target, int skillId, int duration) { }
 
-    default SkillStopHandlers.StopResult pumpEnd(L1Character target, int skillId) {
-        return SkillStopHandlers.StopResult.NOT_HANDLED;
+    default CSkillEffectPumpEnd.StopResult pumpEnd(L1Character target, int skillId) {
+        return CSkillEffectPumpEnd.StopResult.NOT_HANDLED;
     }
 
     enum Bonus implements CSkillEffect {
@@ -180,32 +180,32 @@ interface CSkillEffect {
         }
     }
 
-    record DamagePoison(int interval, int damage, boolean activeEffect, int duration) implements SkillHandlers.SkillHandler {
-        @Override public SkillHandlers.HandlerResult handle(L1SkillUse cast, L1Character target,
+    record DamagePoison(int interval, int damage, boolean activeEffect, int duration) implements CSkillEffectActivation.SkillHandler {
+        @Override public CSkillEffectActivation.HandlerResult handle(L1SkillUse cast, L1Character target,
                 L1Magic magic, int undeadType, Iterator<?> targets) {
             if (target != null) l1j.server.server.model.character.effect.poison.DamagePoison.doInfection(cast.hdUser(), target, interval, damage, activeEffect, duration);
-            return SkillHandlers.HandlerResult.HANDLED;
+            return CSkillEffectActivation.HandlerResult.HANDLED;
         }
     }
 
-    enum Paralysis implements SkillHandlers.SkillHandler {
+    enum Paralysis implements CSkillEffectActivation.SkillHandler {
         CURSE, PETRIFY;
 
-        @Override public SkillHandlers.HandlerResult handle(L1SkillUse cast, L1Character target,
+        @Override public CSkillEffectActivation.HandlerResult handle(L1SkillUse cast, L1Character target,
                 L1Magic magic, int undeadType, Iterator<?> targets) {
-            if (target == null) return SkillHandlers.HandlerResult.HANDLED;
+            if (target == null) return CSkillEffectActivation.HandlerResult.HANDLED;
             if (this == CURSE || (!target.hasSkillEffect(L1SkillId.MOB_COCA) && !target.hasSkillEffect(L1SkillId.MOB_BASILL))) {
                 CurseParalysis.curse(target, cast.hdSkillId());
             }
-            return SkillHandlers.HandlerResult.HANDLED;
+            return CSkillEffectActivation.HandlerResult.HANDLED;
         }
     }
 
-    record RestoreMana(int amount) implements SkillHandlers.SkillHandler {
-        @Override public SkillHandlers.HandlerResult handle(L1SkillUse cast, L1Character target,
+    record RestoreMana(int amount) implements CSkillEffectActivation.SkillHandler {
+        @Override public CSkillEffectActivation.HandlerResult handle(L1SkillUse cast, L1Character target,
                 L1Magic magic, int undeadType, Iterator<?> targets) {
             if (target instanceof L1PcInstance pc) pc.setCurrentMp(pc.getCurrentMp() + amount);
-            return SkillHandlers.HandlerResult.HANDLED;
+            return CSkillEffectActivation.HandlerResult.HANDLED;
         }
     }
 

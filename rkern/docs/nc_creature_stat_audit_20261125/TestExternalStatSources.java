@@ -9,7 +9,7 @@ import l1j.server.DatabaseFactory;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.character.skill.SkillHandlers;
+import l1j.server.server.model.character.skill.CSkillEffectActivation;
 import l1j.server.server.model.item.doll.DollPotentialEffects;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
@@ -37,7 +37,7 @@ public final class TestExternalStatSources {
         require(pc.GetTotalStatStr() == 15 && pc.GetTotalStatDex() == 15 && pc.GetTotalStatCon() == 15
                 && pc.getAc() == ac && pc.GetStatSp() == sp && pc.getHitRate() == hit, "dispel restores all sources");
 
-        SkillHandlers.startComaRewardFromOwner(pc, L1SkillId.COMA_A, 1);
+        CSkillEffectActivation.startComaRewardFromOwner(pc, L1SkillId.COMA_A, 1);
         final int generation = pc.skillEffectHeartbeatTryArm();
         require(generation != 0, "fixture owns timer");
         Thread.sleep(1050);

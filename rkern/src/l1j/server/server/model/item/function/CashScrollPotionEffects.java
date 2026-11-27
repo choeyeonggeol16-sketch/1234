@@ -9,7 +9,7 @@ import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CASHSCROL
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.CSkillInfo;
-import l1j.server.server.model.character.skill.SkillHandlers;
+import l1j.server.server.model.character.skill.CSkillEffectActivation;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.utils.ItemPresentOutStream;
 
@@ -56,12 +56,12 @@ public final class CashScrollPotionEffects {
         for (Scroll previous : SCROLLS) {
             if (!pc.hasSkillEffect(previous.skillId)) continue;
             pc.killSkillEffectTimer(previous.skillId);
-            SkillHandlers.notifyCashScrollStats(pc, previous.skillId);
+            CSkillEffectActivation.notifyCashScrollStats(pc, previous.skillId);
         }
 
         final int id = scroll.skillId;
         pc.applySkillModifierFromOwner(id, 0);
-        SkillHandlers.notifyCashScrollStats(pc, id);
+        CSkillEffectActivation.notifyCashScrollStats(pc, id);
         SC_SkillSound.send(pc, pc.getId(), id);
         SC_SkillSound.broadcast(pc, pc.getId(), id);
         pc.setSkillEffect(id, DURATION_MINUTES * 60_000);

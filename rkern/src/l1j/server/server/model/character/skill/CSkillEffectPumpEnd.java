@@ -45,13 +45,13 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillIconWisdomPotion;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconWindShackle;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconBlessOfEva;
 import l1j.server.server.model.network.core.sc.packet.SC_CurseBlind;
-public final class SkillStopHandlers {
+public final class CSkillEffectPumpEnd {
 
-	private SkillStopHandlers() {}
+	private CSkillEffectPumpEnd() {}
 
 	// ===== 결과 =====
 	private static final java.util.logging.Logger LOG =
-			java.util.logging.Logger.getLogger(SkillStopHandlers.class.getName());
+			java.util.logging.Logger.getLogger(CSkillEffectPumpEnd.class.getName());
 
 	public enum StopResult {
 		NOT_HANDLED, 
@@ -69,431 +69,431 @@ public final class SkillStopHandlers {
 	}
 
 	static void registerEffects() {
-		register(L1SkillId.혈맹버프AC,   SkillStopHandlers::offClanScroll);
-		register(L1SkillId.혈맹버프마방, SkillStopHandlers::offClanScroll);
-		register(L1SkillId.혈맹버프PVP추가, SkillStopHandlers::offClanScroll);
-		register(L1SkillId.혈맹버프PVP감소, SkillStopHandlers::offClanScroll);
-		register(L1SkillId.혈맹버프HP증가, SkillStopHandlers::offClanScroll);
-		register(L1SkillId.혈맹버프올내성, SkillStopHandlers::offClanScroll);
-		register(L1SkillId.혈맹버프올적중, SkillStopHandlers::offClanScroll);
-		register(L1SkillId.혈맹버프올스텟, SkillStopHandlers::offClanScroll);
-		register(L1SkillId.혈맹버프회복,     SkillStopHandlers::offNoop);
+		register(L1SkillId.혈맹버프AC,   CSkillEffectPumpEnd::offClanScroll);
+		register(L1SkillId.혈맹버프마방, CSkillEffectPumpEnd::offClanScroll);
+		register(L1SkillId.혈맹버프PVP추가, CSkillEffectPumpEnd::offClanScroll);
+		register(L1SkillId.혈맹버프PVP감소, CSkillEffectPumpEnd::offClanScroll);
+		register(L1SkillId.혈맹버프HP증가, CSkillEffectPumpEnd::offClanScroll);
+		register(L1SkillId.혈맹버프올내성, CSkillEffectPumpEnd::offClanScroll);
+		register(L1SkillId.혈맹버프올적중, CSkillEffectPumpEnd::offClanScroll);
+		register(L1SkillId.혈맹버프올스텟, CSkillEffectPumpEnd::offClanScroll);
+		register(L1SkillId.혈맹버프회복,     CSkillEffectPumpEnd::offNoop);
 
-		register(L1SkillId.천하장사버프,     SkillStopHandlers::offPlayerModifier);
+		register(L1SkillId.천하장사버프,     CSkillEffectPumpEnd::offPlayerModifier);
 
-		register(L1SkillId.N_BUFF_PVP_DMG,   SkillStopHandlers::offNBuffPvpDmg);
-		register(L1SkillId.N_BUFF_HPMP,      SkillStopHandlers::offNBuffHpMp);
-		register(L1SkillId.N_BUFF_DMG,       SkillStopHandlers::offNBuffDmg);
-		register(L1SkillId.N_BUFF_REDUCT,    SkillStopHandlers::offNBuffReduct);
-		register(L1SkillId.N_BUFF_SP,        SkillStopHandlers::offNBuffSp);
-		register(L1SkillId.N_BUFF_STUN,      SkillStopHandlers::offNBuffStun);
-		register(L1SkillId.N_BUFF_HOLD,      SkillStopHandlers::offNBuffHold);
+		register(L1SkillId.N_BUFF_PVP_DMG,   CSkillEffectPumpEnd::offNBuffPvpDmg);
+		register(L1SkillId.N_BUFF_HPMP,      CSkillEffectPumpEnd::offNBuffHpMp);
+		register(L1SkillId.N_BUFF_DMG,       CSkillEffectPumpEnd::offNBuffDmg);
+		register(L1SkillId.N_BUFF_REDUCT,    CSkillEffectPumpEnd::offNBuffReduct);
+		register(L1SkillId.N_BUFF_SP,        CSkillEffectPumpEnd::offNBuffSp);
+		register(L1SkillId.N_BUFF_STUN,      CSkillEffectPumpEnd::offNBuffStun);
+		register(L1SkillId.N_BUFF_HOLD,      CSkillEffectPumpEnd::offNBuffHold);
 
-		register(L1SkillId.N_BUFF_WATER_DMG, SkillStopHandlers::offInventoryElementalTimer);
-		register(L1SkillId.N_BUFF_WIND_DMG,  SkillStopHandlers::offInventoryElementalTimer);
-		register(L1SkillId.N_BUFF_EARTH_DMG, SkillStopHandlers::offInventoryElementalTimer);
-		register(L1SkillId.N_BUFF_FIRE_DMG,  SkillStopHandlers::offInventoryElementalTimer);
+		register(L1SkillId.N_BUFF_WATER_DMG, CSkillEffectPumpEnd::offInventoryElementalTimer);
+		register(L1SkillId.N_BUFF_WIND_DMG,  CSkillEffectPumpEnd::offInventoryElementalTimer);
+		register(L1SkillId.N_BUFF_EARTH_DMG, CSkillEffectPumpEnd::offInventoryElementalTimer);
+		register(L1SkillId.N_BUFF_FIRE_DMG,  CSkillEffectPumpEnd::offInventoryElementalTimer);
 
-		register(L1SkillId.N_BUFF_STR,       SkillStopHandlers::offNBuffStr);
-		register(L1SkillId.N_BUFF_DEX,       SkillStopHandlers::offNBuffDex);
-		register(L1SkillId.N_BUFF_INT,       SkillStopHandlers::offNBuffInt);
-		register(L1SkillId.N_BUFF_WIS,       SkillStopHandlers::offNBuffWis);
+		register(L1SkillId.N_BUFF_STR,       CSkillEffectPumpEnd::offNBuffStr);
+		register(L1SkillId.N_BUFF_DEX,       CSkillEffectPumpEnd::offNBuffDex);
+		register(L1SkillId.N_BUFF_INT,       CSkillEffectPumpEnd::offNBuffInt);
+		register(L1SkillId.N_BUFF_WIS,       CSkillEffectPumpEnd::offNBuffWis);
 
-		register(L1SkillId.N_BUFF_WATER,     SkillStopHandlers::offNBuffWater);
-		register(L1SkillId.N_BUFF_WIND,      SkillStopHandlers::offNBuffWind);
-		register(L1SkillId.N_BUFF_EARTH,     SkillStopHandlers::offNBuffEarth);
-		register(L1SkillId.N_BUFF_FIRE,      SkillStopHandlers::offNBuffFire);
-		register(L1SkillId.N_BUFF_ALL_RESIST,SkillStopHandlers::offNBuffAllResist);
+		register(L1SkillId.N_BUFF_WATER,     CSkillEffectPumpEnd::offNBuffWater);
+		register(L1SkillId.N_BUFF_WIND,      CSkillEffectPumpEnd::offNBuffWind);
+		register(L1SkillId.N_BUFF_EARTH,     CSkillEffectPumpEnd::offNBuffEarth);
+		register(L1SkillId.N_BUFF_FIRE,      CSkillEffectPumpEnd::offNBuffFire);
+		register(L1SkillId.N_BUFF_ALL_RESIST,CSkillEffectPumpEnd::offNBuffAllResist);
 
-		register(L1SkillId.FEAR,             SkillStopHandlers::offFear);
+		register(L1SkillId.FEAR,             CSkillEffectPumpEnd::offFear);
 
-		register(L1SkillId.EXP_POTION,       SkillStopHandlers::offExpPotion);
-		register(L1SkillId.TELEPORT_RULER,   SkillStopHandlers::offNoop);
-		register(L1SkillId.miso1, SkillStopHandlers::offMiso1);
-		register(L1SkillId.miso2, SkillStopHandlers::offMiso2);
-		register(L1SkillId.miso3, SkillStopHandlers::offMiso3);
+		register(L1SkillId.EXP_POTION,       CSkillEffectPumpEnd::offExpPotion);
+		register(L1SkillId.TELEPORT_RULER,   CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.miso1, CSkillEffectPumpEnd::offMiso1);
+		register(L1SkillId.miso2, CSkillEffectPumpEnd::offMiso2);
+		register(L1SkillId.miso3, CSkillEffectPumpEnd::offMiso3);
 
-		register(L1SkillId.DRAGON_SET, SkillStopHandlers::offDragonSet);
+		register(L1SkillId.DRAGON_SET, CSkillEffectPumpEnd::offDragonSet);
 
-		register(L1SkillId.HUNTER_BLESS,  SkillStopHandlers::offMiso1);
-		register(L1SkillId.HUNTER_BLESS1, SkillStopHandlers::offHunterBless1);
+		register(L1SkillId.HUNTER_BLESS,  CSkillEffectPumpEnd::offMiso1);
+		register(L1SkillId.HUNTER_BLESS1, CSkillEffectPumpEnd::offHunterBless1);
 
-		register(L1SkillId.MEDITATION, SkillStopHandlers::offMiso1);
+		register(L1SkillId.MEDITATION, CSkillEffectPumpEnd::offMiso1);
 
-		register(L1SkillId.POLY_RING_MASTER, SkillStopHandlers::offPolyRingMaster);
+		register(L1SkillId.POLY_RING_MASTER, CSkillEffectPumpEnd::offPolyRingMaster);
 
-		register(L1SkillId.THUNDER_GRAB, SkillStopHandlers::offThunderGrab);
+		register(L1SkillId.THUNDER_GRAB, CSkillEffectPumpEnd::offThunderGrab);
 
-		register(L1SkillId.SOUL_BARRIER, SkillStopHandlers::offSoulBarrier);
+		register(L1SkillId.SOUL_BARRIER, CSkillEffectPumpEnd::offSoulBarrier);
 
-		register(L1SkillId.DOUBLE_BRAKE, SkillStopHandlers::offDoubleBrake);
+		register(L1SkillId.DOUBLE_BRAKE, CSkillEffectPumpEnd::offDoubleBrake);
 
-		register(L1SkillId.EXP_BUFF,         SkillStopHandlers::offExpBuff);
-		register(L1SkillId.TITANL_RISING,    SkillStopHandlers::offTitanlRising);
-		register(L1SkillId.ABSOLUTE_BLADE,   SkillStopHandlers::offAbsoluteBlade);
-		register(L1SkillId.DEATH_HEAL_Mob,   SkillStopHandlers::offMiso1);
-		register(L1SkillId.DEATH_HEAL,       SkillStopHandlers::offMiso1);
+		register(L1SkillId.EXP_BUFF,         CSkillEffectPumpEnd::offExpBuff);
+		register(L1SkillId.TITANL_RISING,    CSkillEffectPumpEnd::offTitanlRising);
+		register(L1SkillId.ABSOLUTE_BLADE,   CSkillEffectPumpEnd::offAbsoluteBlade);
+		register(L1SkillId.DEATH_HEAL_Mob,   CSkillEffectPumpEnd::offMiso1);
+		register(L1SkillId.DEATH_HEAL,       CSkillEffectPumpEnd::offMiso1);
 
-		register(L1SkillId.CLAN_BUFF1,       SkillStopHandlers::offClanStance);
-		register(L1SkillId.CLAN_BUFF2,       SkillStopHandlers::offClanStance);
-		register(L1SkillId.CLAN_BUFF3,       SkillStopHandlers::offClanStance);
-		register(L1SkillId.CLAN_BUFF4,       SkillStopHandlers::offClanStance);
+		register(L1SkillId.CLAN_BUFF1,       CSkillEffectPumpEnd::offClanStance);
+		register(L1SkillId.CLAN_BUFF2,       CSkillEffectPumpEnd::offClanStance);
+		register(L1SkillId.CLAN_BUFF3,       CSkillEffectPumpEnd::offClanStance);
+		register(L1SkillId.CLAN_BUFF4,       CSkillEffectPumpEnd::offClanStance);
 
-		register(L1SkillId.정상의가호,       SkillStopHandlers::offPlayerModifier);
+		register(L1SkillId.정상의가호,       CSkillEffectPumpEnd::offPlayerModifier);
 
-		register(L1SkillId.레벨업보너스,     SkillStopHandlers::offLevelUpBonus);
-		register(L1SkillId.DRAGON_PUPLE,     SkillStopHandlers::offDragonPuple);
-		register(L1SkillId.DRAGON_TOPAZ,     SkillStopHandlers::offDragonTopaz);
+		register(L1SkillId.레벨업보너스,     CSkillEffectPumpEnd::offLevelUpBonus);
+		register(L1SkillId.DRAGON_PUPLE,     CSkillEffectPumpEnd::offDragonPuple);
+		register(L1SkillId.DRAGON_TOPAZ,     CSkillEffectPumpEnd::offDragonTopaz);
 
-		register(L1SkillId.포커스3단,        SkillStopHandlers::offFocus3);
+		register(L1SkillId.포커스3단,        CSkillEffectPumpEnd::offFocus3);
 
-		register(L1SkillId.TOMAHAWK,   SkillStopHandlers::offMiso1);
-		register(L1SkillId.완력빙수,   SkillStopHandlers::offStrIce);
-		register(L1SkillId.민첩빙수,   SkillStopHandlers::offDexIce);
-		register(L1SkillId.지식빙수,   SkillStopHandlers::offIntIce);
+		register(L1SkillId.TOMAHAWK,   CSkillEffectPumpEnd::offMiso1);
+		register(L1SkillId.완력빙수,   CSkillEffectPumpEnd::offStrIce);
+		register(L1SkillId.민첩빙수,   CSkillEffectPumpEnd::offDexIce);
+		register(L1SkillId.지식빙수,   CSkillEffectPumpEnd::offIntIce);
 
-		register(L1SkillId.LIGHT,          SkillStopHandlers::offLight);
-		register(L1SkillId.TRUE_TARGET,    SkillStopHandlers::offTrueTarget);
-		register(L1SkillId.GLOWING_AURA, SkillStopHandlers::offGlowingWeapon);
-		register(L1SkillId.God_buff,       SkillStopHandlers::offGodBuff);
+		register(L1SkillId.LIGHT,          CSkillEffectPumpEnd::offLight);
+		register(L1SkillId.TRUE_TARGET,    CSkillEffectPumpEnd::offTrueTarget);
+		register(L1SkillId.GLOWING_AURA, CSkillEffectPumpEnd::offGlowingWeapon);
+		register(L1SkillId.God_buff,       CSkillEffectPumpEnd::offGodBuff);
 
-		register(L1SkillId.BUFF_SAEL,      SkillStopHandlers::offNpcBloodBuff);
-		register(L1SkillId.SHINING_AURA, SkillStopHandlers::offShiningShield);
-		register(L1SkillId.BRAVE_AURA,   SkillStopHandlers::offBraveMental);
-		register(L1SkillId.SHIELD,         SkillStopHandlers::offShield);
-		register(L1SkillId.BLIND_HIDING,   SkillStopHandlers::offBlindHiding);
-		register(L1SkillId.SHADOW_ARMOR,   SkillStopHandlers::offShadowArmor);
-		register(L1SkillId.DRESS_DEXTERITY,SkillStopHandlers::offDressDexterity);
-		register(L1SkillId.DRESS_MIGHTY,   SkillStopHandlers::offDressMighty);
+		register(L1SkillId.BUFF_SAEL,      CSkillEffectPumpEnd::offNpcBloodBuff);
+		register(L1SkillId.SHINING_AURA, CSkillEffectPumpEnd::offShiningShield);
+		register(L1SkillId.BRAVE_AURA,   CSkillEffectPumpEnd::offBraveMental);
+		register(L1SkillId.SHIELD,         CSkillEffectPumpEnd::offShield);
+		register(L1SkillId.BLIND_HIDING,   CSkillEffectPumpEnd::offBlindHiding);
+		register(L1SkillId.SHADOW_ARMOR,   CSkillEffectPumpEnd::offShadowArmor);
+		register(L1SkillId.DRESS_DEXTERITY,CSkillEffectPumpEnd::offDressDexterity);
+		register(L1SkillId.DRESS_MIGHTY,   CSkillEffectPumpEnd::offDressMighty);
 		
 
-		register(L1SkillId.PATIENCE, SkillStopHandlers::offPatience);
+		register(L1SkillId.PATIENCE, CSkillEffectPumpEnd::offPatience);
 		
-		register(L1SkillId.EARTH_GUARDIAN, SkillStopHandlers::offEarthGuardian);
-		register(L1SkillId.RESIST_MAGIC,   SkillStopHandlers::offResistMagic);
+		register(L1SkillId.EARTH_GUARDIAN, CSkillEffectPumpEnd::offEarthGuardian);
+		register(L1SkillId.RESIST_MAGIC,   CSkillEffectPumpEnd::offResistMagic);
 
-		register(L1SkillId.RESIST_ELEMENTAL,      SkillStopHandlers::offResistElemental);
-		register(L1SkillId.ELEMENTAL_PROTECTION, SkillStopHandlers::offElementalProtection);
-		register(L1SkillId.ELEMENTAL_FALL_DOWN,  SkillStopHandlers::offElementalFallDown);
-		register(L1SkillId.IRON_SKIN,            SkillStopHandlers::offIronSkin);
-		register(L1SkillId.FIRE_SHIELD,          SkillStopHandlers::offFireShield);
-		register(L1SkillId.PHYSICAL_ENCHANT_STR, SkillStopHandlers::offPhysicalEnchantStr);
-		register(L1SkillId.PHYSICAL_ENCHANT_DEX, SkillStopHandlers::offPhysicalEnchantDex);
-		register(L1SkillId.EARTH_WEAPON,         SkillStopHandlers::offEarthWeapon);
+		register(L1SkillId.RESIST_ELEMENTAL,      CSkillEffectPumpEnd::offResistElemental);
+		register(L1SkillId.ELEMENTAL_PROTECTION, CSkillEffectPumpEnd::offElementalProtection);
+		register(L1SkillId.ELEMENTAL_FALL_DOWN,  CSkillEffectPumpEnd::offElementalFallDown);
+		register(L1SkillId.IRON_SKIN,            CSkillEffectPumpEnd::offIronSkin);
+		register(L1SkillId.FIRE_SHIELD,          CSkillEffectPumpEnd::offFireShield);
+		register(L1SkillId.PHYSICAL_ENCHANT_STR, CSkillEffectPumpEnd::offPhysicalEnchantStr);
+		register(L1SkillId.PHYSICAL_ENCHANT_DEX, CSkillEffectPumpEnd::offPhysicalEnchantDex);
+		register(L1SkillId.EARTH_WEAPON,         CSkillEffectPumpEnd::offEarthWeapon);
 
-		register(L1SkillId.INFERNO,        SkillStopHandlers::offInferno);
+		register(L1SkillId.INFERNO,        CSkillEffectPumpEnd::offInferno);
 
-		register(L1SkillId.FOCUS_WAVE,     SkillStopHandlers::offFocusWave);
-		register(L1SkillId.HURRICANE,      SkillStopHandlers::offBraveSpeedReset);
-		register(L1SkillId.SAND_STORM,     SkillStopHandlers::offBraveSpeedReset);
-		register(L1SkillId.DANCING_BLADES, SkillStopHandlers::offBraveSpeedReset);
+		register(L1SkillId.FOCUS_WAVE,     CSkillEffectPumpEnd::offFocusWave);
+		register(L1SkillId.HURRICANE,      CSkillEffectPumpEnd::offBraveSpeedReset);
+		register(L1SkillId.SAND_STORM,     CSkillEffectPumpEnd::offBraveSpeedReset);
+		register(L1SkillId.DANCING_BLADES, CSkillEffectPumpEnd::offBraveSpeedReset);
 
-		register(L1SkillId.BUFF_CRAY,      SkillStopHandlers::offNpcBloodBuff);
-		register(L1SkillId.BUFF_Vala,      SkillStopHandlers::offNpcBloodBuff);
-		register(L1SkillId.BUFF_GUNTER,    SkillStopHandlers::offNpcBloodBuff);
+		register(L1SkillId.BUFF_CRAY,      CSkillEffectPumpEnd::offNpcBloodBuff);
+		register(L1SkillId.BUFF_Vala,      CSkillEffectPumpEnd::offNpcBloodBuff);
+		register(L1SkillId.BUFF_GUNTER,    CSkillEffectPumpEnd::offNpcBloodBuff);
 
-		register(L1SkillId.UNCANNY_DODGE,  SkillStopHandlers::offUncannyDodge);
-		register(L1SkillId.BURNING_WEAPON, SkillStopHandlers::offBurningWeapon);
-		register(L1SkillId.MIRROR_IMAGE,   SkillStopHandlers::offUncannyDodge);
-		register(L1SkillId.AQUA_SHOT,      SkillStopHandlers::offAquaShot);
+		register(L1SkillId.UNCANNY_DODGE,  CSkillEffectPumpEnd::offUncannyDodge);
+		register(L1SkillId.BURNING_WEAPON, CSkillEffectPumpEnd::offBurningWeapon);
+		register(L1SkillId.MIRROR_IMAGE,   CSkillEffectPumpEnd::offUncannyDodge);
+		register(L1SkillId.AQUA_SHOT,      CSkillEffectPumpEnd::offAquaShot);
 
-		register(L1SkillId.INSIGHT,     SkillStopHandlers::offInsight);
+		register(L1SkillId.INSIGHT,     CSkillEffectPumpEnd::offInsight);
 
-		register(L1SkillId.Tam_Fruit1,  SkillStopHandlers::offTamFruitSync);
-		register(L1SkillId.Tam_Fruit2,  SkillStopHandlers::offTamFruitSync);
-		register(L1SkillId.Tam_Fruit3,  SkillStopHandlers::offTamFruitSync);
-		register(L1SkillId.Tam_Fruit4,  SkillStopHandlers::offTamFruitSync);
-		register(L1SkillId.Tam_Fruit5,  SkillStopHandlers::offTamFruitSync);
+		register(L1SkillId.Tam_Fruit1,  CSkillEffectPumpEnd::offTamFruitSync);
+		register(L1SkillId.Tam_Fruit2,  CSkillEffectPumpEnd::offTamFruitSync);
+		register(L1SkillId.Tam_Fruit3,  CSkillEffectPumpEnd::offTamFruitSync);
+		register(L1SkillId.Tam_Fruit4,  CSkillEffectPumpEnd::offTamFruitSync);
+		register(L1SkillId.Tam_Fruit5,  CSkillEffectPumpEnd::offTamFruitSync);
 
-		register(L1SkillId.SHAPE_CHANGE, SkillStopHandlers::offShapeChange);
+		register(L1SkillId.SHAPE_CHANGE, CSkillEffectPumpEnd::offShapeChange);
 
-		register(L1SkillId.HOLY_WALK,            SkillStopHandlers::offBraveSpeedReset);
-		register(L1SkillId.MOVING_ACCELERATION, SkillStopHandlers::offBraveSpeedReset);
+		register(L1SkillId.HOLY_WALK,            CSkillEffectPumpEnd::offBraveSpeedReset);
+		register(L1SkillId.MOVING_ACCELERATION, CSkillEffectPumpEnd::offBraveSpeedReset);
 
-		register(L1SkillId.BLOOD_LUST,           SkillStopHandlers::offBraveSpeedReset);
+		register(L1SkillId.BLOOD_LUST,           CSkillEffectPumpEnd::offBraveSpeedReset);
 
-		register(L1SkillId.DARK_BLIND,           SkillStopHandlers::offSleepFamily);
+		register(L1SkillId.DARK_BLIND,           CSkillEffectPumpEnd::offSleepFamily);
 
-		register(L1SkillId.CURSE_BLIND,          SkillStopHandlers::offCurseBlindFamily);
-		register(L1SkillId.DARKNESS,             SkillStopHandlers::offCurseBlindFamily);
-		register(L1SkillId.LINDBIOR_SPIRIT_EFFECT, SkillStopHandlers::offCurseBlindFamily);
+		register(L1SkillId.CURSE_BLIND,          CSkillEffectPumpEnd::offCurseBlindFamily);
+		register(L1SkillId.DARKNESS,             CSkillEffectPumpEnd::offCurseBlindFamily);
+		register(L1SkillId.LINDBIOR_SPIRIT_EFFECT, CSkillEffectPumpEnd::offCurseBlindFamily);
 
-		register(L1SkillId.CURSE_PARALYZE,       SkillStopHandlers::offCurseParalyzeFamily);
-		register(L1SkillId.DESERT_SKILL1,        SkillStopHandlers::offCurseParalyzeFamily);
+		register(L1SkillId.CURSE_PARALYZE,       CSkillEffectPumpEnd::offCurseParalyzeFamily);
+		register(L1SkillId.DESERT_SKILL1,        CSkillEffectPumpEnd::offCurseParalyzeFamily);
 
-		register(L1SkillId.WEAKNESS,             SkillStopHandlers::offWeaknessFamily);
-		register(L1SkillId.MOB_WEAKNESS_1,       SkillStopHandlers::offWeaknessFamily);
+		register(L1SkillId.WEAKNESS,             CSkillEffectPumpEnd::offWeaknessFamily);
+		register(L1SkillId.MOB_WEAKNESS_1,       CSkillEffectPumpEnd::offWeaknessFamily);
 
-		register(L1SkillId.DISEASE,              SkillStopHandlers::offDiseaseFamily);
-		register(L1SkillId.MOB_DISEASE_1,        SkillStopHandlers::offDiseaseFamily);
-		register(L1SkillId.MOB_DISEASE_30,       SkillStopHandlers::offDiseaseFamily);
+		register(L1SkillId.DISEASE,              CSkillEffectPumpEnd::offDiseaseFamily);
+		register(L1SkillId.MOB_DISEASE_1,        CSkillEffectPumpEnd::offDiseaseFamily);
+		register(L1SkillId.MOB_DISEASE_30,       CSkillEffectPumpEnd::offDiseaseFamily);
 
-		register(L1SkillId.HORROR_OF_DEATH,      SkillStopHandlers::offHorrorOfDeath);
-		register(L1SkillId.PANIC,                SkillStopHandlers::offPanic);
+		register(L1SkillId.HORROR_OF_DEATH,      CSkillEffectPumpEnd::offHorrorOfDeath);
+		register(L1SkillId.PANIC,                CSkillEffectPumpEnd::offPanic);
 
-		register(L1SkillId.ICE_LANCE,            SkillStopHandlers::offFreezeFamily);
+		register(L1SkillId.ICE_LANCE,            CSkillEffectPumpEnd::offFreezeFamily);
 
-		register(L1SkillId.MOB_BERSERKERS,       SkillStopHandlers::offMobBerserkers);
+		register(L1SkillId.MOB_BERSERKERS,       CSkillEffectPumpEnd::offMobBerserkers);
 
-		register(L1SkillId.EARTH_BIND,           SkillStopHandlers::offFreezeFamily);
-		register(L1SkillId.MOB_BASILL,           SkillStopHandlers::offFreezeFamily);
-		register(L1SkillId.MOB_COCA,             SkillStopHandlers::offFreezeFamily);
+		register(L1SkillId.EARTH_BIND,           CSkillEffectPumpEnd::offFreezeFamily);
+		register(L1SkillId.MOB_BASILL,           CSkillEffectPumpEnd::offFreezeFamily);
+		register(L1SkillId.MOB_COCA,             CSkillEffectPumpEnd::offFreezeFamily);
 
-		register(L1SkillId.SHOCK_STUN,           SkillStopHandlers::offStunFamily);
-		register(L1SkillId.MOB_SHOCKSTUN_30,     SkillStopHandlers::offStunFamily);
-		register(L1SkillId.MOB_RANGESTUN_18,     SkillStopHandlers::offStunFamily);
-		register(L1SkillId.MOB_RANGESTUN_19,     SkillStopHandlers::offStunFamily);
-		register(L1SkillId.MOB_RANGESTUN_20,     SkillStopHandlers::offStunFamily);
-		register(L1SkillId.Mob_RANGESTUN_30,     SkillStopHandlers::offStunFamily);
-		register(L1SkillId.ANTA_MESSAGE_6,       SkillStopHandlers::offStunFamily);
-		register(L1SkillId.ANTA_MESSAGE_7,       SkillStopHandlers::offStunFamily);
-		register(L1SkillId.ANTA_MESSAGE_8,       SkillStopHandlers::offStunFamily);
-		register(L1SkillId.ANTA_SHOCKSTUN,       SkillStopHandlers::offStunFamily);
-		register(L1SkillId.OMAN_STUN,            SkillStopHandlers::offStunFamily);
-		register(L1SkillId.Maeno_STUN,           SkillStopHandlers::offStunFamily);
+		register(L1SkillId.SHOCK_STUN,           CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.MOB_SHOCKSTUN_30,     CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.MOB_RANGESTUN_18,     CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.MOB_RANGESTUN_19,     CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.MOB_RANGESTUN_20,     CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.Mob_RANGESTUN_30,     CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.ANTA_MESSAGE_6,       CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.ANTA_MESSAGE_7,       CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.ANTA_MESSAGE_8,       CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.ANTA_SHOCKSTUN,       CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.OMAN_STUN,            CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.Maeno_STUN,           CSkillEffectPumpEnd::offStunFamily);
 
-		register(L1SkillId.EMPIRE,               SkillStopHandlers::offStunFamily);
-		register(L1SkillId.BONE_BREAK,           SkillStopHandlers::offStunFamily);
+		register(L1SkillId.EMPIRE,               CSkillEffectPumpEnd::offStunFamily);
+		register(L1SkillId.BONE_BREAK,           CSkillEffectPumpEnd::offStunFamily);
 
-		register(L1SkillId.PHANTASM,             SkillStopHandlers::offSleepFamily);
-		register(L1SkillId.FOG_OF_SLEEPING,      SkillStopHandlers::offSleepFamily);
+		register(L1SkillId.PHANTASM,             CSkillEffectPumpEnd::offSleepFamily);
+		register(L1SkillId.FOG_OF_SLEEPING,      CSkillEffectPumpEnd::offSleepFamily);
 
-		register(L1SkillId.SLOW,                  SkillStopHandlers::offSlowFamily);
-		register(L1SkillId.MOB_SLOW_1,            SkillStopHandlers::offSlowFamily);
-		register(L1SkillId.MOB_SLOW_18,           SkillStopHandlers::offSlowFamily);
-		register(L1SkillId.STATUS_FREEZE,         SkillStopHandlers::offStatusFreeze);
+		register(L1SkillId.SLOW,                  CSkillEffectPumpEnd::offSlowFamily);
+		register(L1SkillId.MOB_SLOW_1,            CSkillEffectPumpEnd::offSlowFamily);
+		register(L1SkillId.MOB_SLOW_18,           CSkillEffectPumpEnd::offSlowFamily);
+		register(L1SkillId.STATUS_FREEZE,         CSkillEffectPumpEnd::offStatusFreeze);
 
-		register(L1SkillId.STATUS_IGNITION,       SkillStopHandlers::offStatusIgnition);
-		register(L1SkillId.STATUS_QUAKE,          SkillStopHandlers::offStatusQuake);
-		register(L1SkillId.STATUS_SHOCK,          SkillStopHandlers::offStatusShock);
+		register(L1SkillId.STATUS_IGNITION,       CSkillEffectPumpEnd::offStatusIgnition);
+		register(L1SkillId.STATUS_QUAKE,          CSkillEffectPumpEnd::offStatusQuake);
+		register(L1SkillId.STATUS_SHOCK,          CSkillEffectPumpEnd::offStatusShock);
 
-		register(L1SkillId.STATUS_BRAVE,          SkillStopHandlers::offBraveSpeedReset);
-		register(L1SkillId.STATUS_FRUIT,          SkillStopHandlers::offBraveSpeedReset);
-		register(L1SkillId.STATUS_ELFBRAVE,       SkillStopHandlers::offBraveSpeedReset);
+		register(L1SkillId.STATUS_BRAVE,          CSkillEffectPumpEnd::offBraveSpeedReset);
+		register(L1SkillId.STATUS_FRUIT,          CSkillEffectPumpEnd::offBraveSpeedReset);
+		register(L1SkillId.STATUS_ELFBRAVE,       CSkillEffectPumpEnd::offBraveSpeedReset);
 
-		register(L1SkillId.STATUS_HASTE,          SkillStopHandlers::offHasteFamily);
+		register(L1SkillId.STATUS_HASTE,          CSkillEffectPumpEnd::offHasteFamily);
 
-		register(L1SkillId.STATUS_UNDERWATER_BREATH, SkillStopHandlers::offUnderwaterBreath);
-		register(L1SkillId.STATUS_WISDOM_POTION,  SkillStopHandlers::offWisdomPotion);
+		register(L1SkillId.STATUS_UNDERWATER_BREATH, CSkillEffectPumpEnd::offUnderwaterBreath);
+		register(L1SkillId.STATUS_WISDOM_POTION,  CSkillEffectPumpEnd::offWisdomPotion);
 
-		register(L1SkillId.STATUS_CHAT_PROHIBITED, SkillStopHandlers::offChatProhibited);
+		register(L1SkillId.STATUS_CHAT_PROHIBITED, CSkillEffectPumpEnd::offChatProhibited);
 
-		register(L1SkillId.STATUS_CASHSCROLL,     SkillStopHandlers::offCashScroll);
-		register(L1SkillId.STATUS_CASHSCROLL2,    SkillStopHandlers::offCashScroll);
-		register(L1SkillId.STATUS_CASHSCROLL3,    SkillStopHandlers::offCashScroll);
-		register(L1SkillId.STATUS_CASHSCROLL4,    SkillStopHandlers::offCashScroll);
-		register(L1SkillId.STATUS_CASHSCROLL5,    SkillStopHandlers::offCashScroll);
-		register(L1SkillId.STATUS_CASHSCROLL6,    SkillStopHandlers::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL,     CSkillEffectPumpEnd::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL2,    CSkillEffectPumpEnd::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL3,    CSkillEffectPumpEnd::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL4,    CSkillEffectPumpEnd::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL5,    CSkillEffectPumpEnd::offCashScroll);
+		register(L1SkillId.STATUS_CASHSCROLL6,    CSkillEffectPumpEnd::offCashScroll);
 
-		register(L1SkillId.STATUS_POISON,         SkillStopHandlers::offPoison);
+		register(L1SkillId.STATUS_POISON,         CSkillEffectPumpEnd::offPoison);
 
-		register(L1SkillId.성혈버프,               SkillStopHandlers::offSeonghyeolBuff);
+		register(L1SkillId.성혈버프,               CSkillEffectPumpEnd::offSeonghyeolBuff);
 
-		register(L1SkillId.COMA_A,                SkillStopHandlers::offComa);
-		register(L1SkillId.COMA_B,                SkillStopHandlers::offComa);
+		register(L1SkillId.COMA_A,                CSkillEffectPumpEnd::offComa);
+		register(L1SkillId.COMA_B,                CSkillEffectPumpEnd::offComa);
 
-		register(L1SkillId.FEATHER_BUFF_A,        SkillStopHandlers::offFeatherBuff);
-		register(L1SkillId.FEATHER_BUFF_B,        SkillStopHandlers::offFeatherBuff);
-		register(L1SkillId.FEATHER_BUFF_C,        SkillStopHandlers::offFeatherBuff);
-		register(L1SkillId.FEATHER_BUFF_D,        SkillStopHandlers::offFeatherBuff);
+		register(L1SkillId.FEATHER_BUFF_A,        CSkillEffectPumpEnd::offFeatherBuff);
+		register(L1SkillId.FEATHER_BUFF_B,        CSkillEffectPumpEnd::offFeatherBuff);
+		register(L1SkillId.FEATHER_BUFF_C,        CSkillEffectPumpEnd::offFeatherBuff);
+		register(L1SkillId.FEATHER_BUFF_D,        CSkillEffectPumpEnd::offFeatherBuff);
 
 
-		register(L1SkillId.ANTA_MAAN, SkillStopHandlers::offDragonMaan);
-		register(L1SkillId.FAFU_MAAN, SkillStopHandlers::offDragonMaan);
-		register(L1SkillId.LIND_MAAN, SkillStopHandlers::offDragonMaan);
-		register(L1SkillId.VALA_MAAN, SkillStopHandlers::offDragonMaan);
-		register(L1SkillId.BIRTH_MAAN, SkillStopHandlers::offDragonMaan);
-		register(L1SkillId.SHAPE_MAAN, SkillStopHandlers::offDragonMaan);
-		register(L1SkillId.LIFE_MAAN, SkillStopHandlers::offDragonMaan);
+		register(L1SkillId.ANTA_MAAN, CSkillEffectPumpEnd::offDragonMaan);
+		register(L1SkillId.FAFU_MAAN, CSkillEffectPumpEnd::offDragonMaan);
+		register(L1SkillId.LIND_MAAN, CSkillEffectPumpEnd::offDragonMaan);
+		register(L1SkillId.VALA_MAAN, CSkillEffectPumpEnd::offDragonMaan);
+		register(L1SkillId.BIRTH_MAAN, CSkillEffectPumpEnd::offDragonMaan);
+		register(L1SkillId.SHAPE_MAAN, CSkillEffectPumpEnd::offDragonMaan);
+		register(L1SkillId.LIFE_MAAN, CSkillEffectPumpEnd::offDragonMaan);
 
-		register(L1SkillId.ANTA_BUFF, SkillStopHandlers::offDragonBlood);
-		register(L1SkillId.FAFU_BUFF, SkillStopHandlers::offDragonBlood);
-		register(L1SkillId.RIND_BUFF, SkillStopHandlers::offDragonBlood);
+		register(L1SkillId.ANTA_BUFF, CSkillEffectPumpEnd::offDragonBlood);
+		register(L1SkillId.FAFU_BUFF, CSkillEffectPumpEnd::offDragonBlood);
+		register(L1SkillId.RIND_BUFF, CSkillEffectPumpEnd::offDragonBlood);
 
-		register(L1SkillId.STATUS_DRAGON_PEARL, SkillStopHandlers::offDragonPearl);
+		register(L1SkillId.STATUS_DRAGON_PEARL, CSkillEffectPumpEnd::offDragonPearl);
 
-		register(L1SkillId.BOUNCE_ATTACK, SkillStopHandlers::offBounceAttack);
+		register(L1SkillId.BOUNCE_ATTACK, CSkillEffectPumpEnd::offBounceAttack);
 
-		register(L1SkillId.COUNTER_MIRROR, SkillStopHandlers::offCounterMirror);
+		register(L1SkillId.COUNTER_MIRROR, CSkillEffectPumpEnd::offCounterMirror);
 
-		register(L1SkillId.DECREASE_WEIGHT, SkillStopHandlers::offReduceOrDecreaseWeight);
-		register(L1SkillId.REDUCE_WEIGHT,   SkillStopHandlers::offReduceOrDecreaseWeight);
+		register(L1SkillId.DECREASE_WEIGHT, CSkillEffectPumpEnd::offReduceOrDecreaseWeight);
+		register(L1SkillId.REDUCE_WEIGHT,   CSkillEffectPumpEnd::offReduceOrDecreaseWeight);
 
-		register(L1SkillId.RINDVIOR_WIND_SHACKLE,   SkillStopHandlers::offWindShackleIcon);
-		register(L1SkillId.RINDVIOR_WIND_SHACKLE_1, SkillStopHandlers::offWindShackleIcon);
-		register(L1SkillId.DRAKE_WIND_SHACKLE,      SkillStopHandlers::offWindShackleIcon);
+		register(L1SkillId.RINDVIOR_WIND_SHACKLE,   CSkillEffectPumpEnd::offWindShackleIcon);
+		register(L1SkillId.RINDVIOR_WIND_SHACKLE_1, CSkillEffectPumpEnd::offWindShackleIcon);
+		register(L1SkillId.DRAKE_WIND_SHACKLE,      CSkillEffectPumpEnd::offWindShackleIcon);
 
-		register(L1SkillId.STORM_EYE,  SkillStopHandlers::offStormEye);
-		register(L1SkillId.STORM_SHOT, SkillStopHandlers::offStormShot);
-		register(L1SkillId.BERSERKERS, SkillStopHandlers::offBerserkers);
+		register(L1SkillId.STORM_EYE,  CSkillEffectPumpEnd::offStormEye);
+		register(L1SkillId.STORM_SHOT, CSkillEffectPumpEnd::offStormShot);
+		register(L1SkillId.BERSERKERS, CSkillEffectPumpEnd::offBerserkers);
 		
-		register(L1SkillId.MAJESTY, SkillStopHandlers::offMajesty);
-		register(L1SkillId.IMMUNE_TO_HARM, SkillStopHandlers::offImmuneToHarm);
+		register(L1SkillId.MAJESTY, CSkillEffectPumpEnd::offMajesty);
+		register(L1SkillId.IMMUNE_TO_HARM, CSkillEffectPumpEnd::offImmuneToHarm);
 
-		register(L1SkillId.FOCUS_SPRITS, SkillStopHandlers::offFocusSpirits);
+		register(L1SkillId.FOCUS_SPRITS, CSkillEffectPumpEnd::offFocusSpirits);
 
-		register(L1SkillId.CUBE_RICH, SkillStopHandlers::offCubeRich);
-		register(L1SkillId.CUBE_GOLEM, SkillStopHandlers::offCubeGolem);
-		register(L1SkillId.CUBE_OGRE, SkillStopHandlers::offCubeOgre);
-		register(L1SkillId.CUBE_AVATAR, SkillStopHandlers::offCubeAvatar);
+		register(L1SkillId.CUBE_RICH, CSkillEffectPumpEnd::offCubeRich);
+		register(L1SkillId.CUBE_GOLEM, CSkillEffectPumpEnd::offCubeGolem);
+		register(L1SkillId.CUBE_OGRE, CSkillEffectPumpEnd::offCubeOgre);
+		register(L1SkillId.CUBE_AVATAR, CSkillEffectPumpEnd::offCubeAvatar);
 
-		register(L1SkillId.IMPACT, SkillStopHandlers::offImpact);
+		register(L1SkillId.IMPACT, CSkillEffectPumpEnd::offImpact);
 
-		register(L1SkillId.LUCIFER, SkillStopHandlers::offLucifer);
-		register(L1SkillId.BLOW_ATTACK, SkillStopHandlers::offBlowAttack);
-		register(L1SkillId.ARMOR_BRAKE, SkillStopHandlers::offArmorBrake);
+		register(L1SkillId.LUCIFER, CSkillEffectPumpEnd::offLucifer);
+		register(L1SkillId.BLOW_ATTACK, CSkillEffectPumpEnd::offBlowAttack);
+		register(L1SkillId.ARMOR_BRAKE, CSkillEffectPumpEnd::offArmorBrake);
 
-		register(L1SkillId.GRACE_AVATAR, SkillStopHandlers::offGraceAvatar);
+		register(L1SkillId.GRACE_AVATAR, CSkillEffectPumpEnd::offGraceAvatar);
 
-		register(L1SkillId.DRESS_EVASION, SkillStopHandlers::offDressEvasion);
-		register(L1SkillId.AQUA_PROTECTER, SkillStopHandlers::offAquaProtecter);
-		register(L1SkillId.SOLID_CARRIAGE, SkillStopHandlers::offSolidCarriage);
+		register(L1SkillId.DRESS_EVASION, CSkillEffectPumpEnd::offDressEvasion);
+		register(L1SkillId.AQUA_PROTECTER, CSkillEffectPumpEnd::offAquaProtecter);
+		register(L1SkillId.SOLID_CARRIAGE, CSkillEffectPumpEnd::offSolidCarriage);
 
-		register(L1SkillId.GUARD_BREAK, SkillStopHandlers::offGuardBreak);
-		register(L1SkillId.STRIKER_GALE, SkillStopHandlers::offStrikerGale);
+		register(L1SkillId.GUARD_BREAK, CSkillEffectPumpEnd::offGuardBreak);
+		register(L1SkillId.STRIKER_GALE, CSkillEffectPumpEnd::offStrikerGale);
 
-		register(L1SkillId.CLEAR_MIND, SkillStopHandlers::offClearMind);
+		register(L1SkillId.CLEAR_MIND, CSkillEffectPumpEnd::offClearMind);
 
-		register(L1SkillId.SHADOW_FANG, SkillStopHandlers::offWeaponBuff);
-		register(L1SkillId.BLESS_WEAPON, SkillStopHandlers::offWeaponBuff);
-		register(L1SkillId.ENCHANT_WEAPON, SkillStopHandlers::offWeaponBuff);
-		register(L1SkillId.BLESSED_ARMOR, SkillStopHandlers::offBlessedArmor);
+		register(L1SkillId.SHADOW_FANG, CSkillEffectPumpEnd::offWeaponBuff);
+		register(L1SkillId.BLESS_WEAPON, CSkillEffectPumpEnd::offWeaponBuff);
+		register(L1SkillId.ENCHANT_WEAPON, CSkillEffectPumpEnd::offWeaponBuff);
+		register(L1SkillId.BLESSED_ARMOR, CSkillEffectPumpEnd::offBlessedArmor);
 
-		register(L1SkillId.CYCLONE, SkillStopHandlers::offCyclone);
+		register(L1SkillId.CYCLONE, CSkillEffectPumpEnd::offCyclone);
 
-		register(L1SkillId.SHINING_ARMOR, SkillStopHandlers::offShiningArmor);
-		register(L1SkillId.샤이닝아머, SkillStopHandlers::offPassiveShiningArmor);
-		register(L1SkillId.USER_WANTED, SkillStopHandlers::offWanted);
-		register(L1SkillId.USER_WANTED1, SkillStopHandlers::offWanted);
-		register(L1SkillId.hp300, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.mp300, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.대미지감소5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.ac5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.mr15, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.모든속성저항20, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.힘3, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.덱3, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.콘3, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.위즈3, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.인트3, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.pvp대미지7, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.근거리대미지5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.원거리대미지5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.근거리명중5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.원거리명중5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.sp5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.마법적중5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.기술내성8, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.정령내성8, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.용언내성3, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.공포내성3, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.모든내성3, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.정령적중5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.모든적중3, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.pvp감소7, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.기술적중5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.용언적중5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.공포적중5, SkillStopHandlers::offPersistentPotential);
-		register(L1SkillId.HOLY_WEAPON, SkillStopHandlers::offWeaponBuff);
+		register(L1SkillId.SHINING_ARMOR, CSkillEffectPumpEnd::offShiningArmor);
+		register(L1SkillId.샤이닝아머, CSkillEffectPumpEnd::offPassiveShiningArmor);
+		register(L1SkillId.USER_WANTED, CSkillEffectPumpEnd::offWanted);
+		register(L1SkillId.USER_WANTED1, CSkillEffectPumpEnd::offWanted);
+		register(L1SkillId.hp300, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.mp300, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.대미지감소5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.ac5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.mr15, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.모든속성저항20, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.힘3, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.덱3, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.콘3, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.위즈3, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.인트3, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.pvp대미지7, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.근거리대미지5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.원거리대미지5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.근거리명중5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.원거리명중5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.sp5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.마법적중5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.기술내성8, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.정령내성8, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.용언내성3, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.공포내성3, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.모든내성3, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.정령적중5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.모든적중3, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.pvp감소7, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.기술적중5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.용언적중5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.공포적중5, CSkillEffectPumpEnd::offPersistentPotential);
+		register(L1SkillId.HOLY_WEAPON, CSkillEffectPumpEnd::offWeaponBuff);
 
-		register(L1SkillId.MOEBIUS, SkillStopHandlers::offMoebius);
+		register(L1SkillId.MOEBIUS, CSkillEffectPumpEnd::offMoebius);
 
-		register(L1SkillId.SCALES_EARTH_DRAGON, SkillStopHandlers::offScalesEarthDragon);
-		register(L1SkillId.SCALES_WATER_DRAGON, SkillStopHandlers::offScalesWaterDragon);
-		register(L1SkillId.SCALES_RINDVIOR_DRAGON, SkillStopHandlers::offScalesRindviorDragon);
-		register(L1SkillId.SCALES_FIRE_DRAGON, SkillStopHandlers::offScalesFireDragon);
+		register(L1SkillId.SCALES_EARTH_DRAGON, CSkillEffectPumpEnd::offScalesEarthDragon);
+		register(L1SkillId.SCALES_WATER_DRAGON, CSkillEffectPumpEnd::offScalesWaterDragon);
+		register(L1SkillId.SCALES_RINDVIOR_DRAGON, CSkillEffectPumpEnd::offScalesRindviorDragon);
+		register(L1SkillId.SCALES_FIRE_DRAGON, CSkillEffectPumpEnd::offScalesFireDragon);
 
-		register(L1SkillId.IllUSION_OGRE, SkillStopHandlers::offIllusionOgre);
-		register(L1SkillId.IllUSION_LICH, SkillStopHandlers::offIllusionLich);
-		register(L1SkillId.IllUSION_DIAMONDGOLEM, SkillStopHandlers::offIllusionDiamondGolem);
-		register(L1SkillId.IllUSION_AVATAR, SkillStopHandlers::offIllusionAvatar);
+		register(L1SkillId.IllUSION_OGRE, CSkillEffectPumpEnd::offIllusionOgre);
+		register(L1SkillId.IllUSION_LICH, CSkillEffectPumpEnd::offIllusionLich);
+		register(L1SkillId.IllUSION_DIAMONDGOLEM, CSkillEffectPumpEnd::offIllusionDiamondGolem);
+		register(L1SkillId.IllUSION_AVATAR, CSkillEffectPumpEnd::offIllusionAvatar);
 
-		register(L1SkillId.REDUCTION_ARMOR, SkillStopHandlers::offReductionArmor);
-		register(L1SkillId.FREEZEENG_ARMOR, SkillStopHandlers::offFreezeengArmor);
+		register(L1SkillId.REDUCTION_ARMOR, CSkillEffectPumpEnd::offReductionArmor);
+		register(L1SkillId.FREEZEENG_ARMOR, CSkillEffectPumpEnd::offFreezeengArmor);
 
-		register(L1SkillId.ENCHANT_ACURUCY, SkillStopHandlers::offEnchantAcurucy);
+		register(L1SkillId.ENCHANT_ACURUCY, CSkillEffectPumpEnd::offEnchantAcurucy);
 
 		register(L1SkillId.PRIDE,
 				(target, id) -> offScaledHp(target, id, CSkillEffect.MaxHp.PRIDE));
 		register(L1SkillId.GIGANTIC,
 				(target, id) -> offScaledHp(target, id, CSkillEffect.MaxHp.GIGANTIC));
 
-		register(L1SkillId.EAGGLE_EYE, SkillStopHandlers::offEaggleEye);
+		register(L1SkillId.EAGGLE_EYE, CSkillEffectPumpEnd::offEaggleEye);
 
-		register(L1SkillId.ABSOLUTE_BARRIER, SkillStopHandlers::offNoop);
+		register(L1SkillId.ABSOLUTE_BARRIER, CSkillEffectPumpEnd::offNoop);
 		
-		register(L1SkillId.POWERRIP,        SkillStopHandlers::offPowerRip);
-		register(L1SkillId.DESPERADO,       SkillStopHandlers::offDesperado);
-		register(L1SkillId.ADVANCE_SPIRIT,  SkillStopHandlers::offAdvanceSpirit);
-		register(L1SkillId.HASTE,           SkillStopHandlers::offHasteFamily);
-		register(L1SkillId.GREATER_HASTE,   SkillStopHandlers::offHasteFamily);
+		register(L1SkillId.POWERRIP,        CSkillEffectPumpEnd::offPowerRip);
+		register(L1SkillId.DESPERADO,       CSkillEffectPumpEnd::offDesperado);
+		register(L1SkillId.ADVANCE_SPIRIT,  CSkillEffectPumpEnd::offAdvanceSpirit);
+		register(L1SkillId.HASTE,           CSkillEffectPumpEnd::offHasteFamily);
+		register(L1SkillId.GREATER_HASTE,   CSkillEffectPumpEnd::offHasteFamily);
 		
-		register(L1SkillId.매직실드1, SkillStopHandlers::offNoop);
-		register(L1SkillId.버닝샷, SkillStopHandlers::offBurningShot);
-		register(L1SkillId.매직실드2, SkillStopHandlers::offMagicShield2);
-		register(L1SkillId.기간틱, SkillStopHandlers::offLegacyScaledHp);
-		register(L1SkillId.엠파이어오버로드DG, SkillStopHandlers::offStunControlOverloadDg);
-		register(L1SkillId.이뮨투함블레이드, SkillStopHandlers::offImmuneBladeCustom);
-		register(L1SkillId.비전텔레포트, SkillStopHandlers::offCooldownNotice);
-		register(L1SkillId.이터니티대기, SkillStopHandlers::offCooldownNotice);
-		register(L1SkillId.데몰리션대기, SkillStopHandlers::offCooldownNotice);
-		register(L1SkillId.엘븐스트라이크대기, SkillStopHandlers::offCooldownNotice);
-		register(L1SkillId.엘리멘탈대기, SkillStopHandlers::offCooldownNotice);
-		register(L1SkillId.NO_DIS, SkillStopHandlers::offNoDis);
-		register(L1SkillId.어드밴스대기, SkillStopHandlers::offCooldownNotice);
-		register(L1SkillId.쉐도우대기, SkillStopHandlers::offCooldownNotice);
-		register(L1SkillId.어벤저대기, SkillStopHandlers::offCooldownNotice);
-		register(L1SkillId.버닝샷대기, SkillStopHandlers::offCooldownNotice);
-		register(L1SkillId.DRAGON_HUNTER_BLESS, SkillStopHandlers::offNoop);
-		register(L1SkillId.격전의주문서, SkillStopHandlers::offBattleScroll);
-		register(L1SkillId.루돌프의버프, SkillStopHandlers::offRudolphBuff);
-		register(L1SkillId.HUNTER_BLESS2, SkillStopHandlers::offNoop);
-		register(L1SkillId.프라임, SkillStopHandlers::offPrime);
-		register(L1SkillId.프라임1, SkillStopHandlers::offPrime1);
-		register(L1SkillId.프라임85, SkillStopHandlers::offNoop);
-		register(L1SkillId.프라임90, SkillStopHandlers::offNoop);
-		register(L1SkillId.프라임95, SkillStopHandlers::offNoop);
-		register(L1SkillId.일루션리치, SkillStopHandlers::offLegacyIllusionLich);
-		register(L1SkillId.일루션골렘, SkillStopHandlers::offLegacyIllusionGolem);
-		register(L1SkillId.에테리얼, SkillStopHandlers::offSimpleInventoryIcon);
-		register(L1SkillId.솔리드캐리지, SkillStopHandlers::offLegacySolidCarriage);
-		register(L1SkillId.버닝, SkillStopHandlers::offSimpleInventoryIcon);
-		register(L1SkillId.이베이젼, SkillStopHandlers::offLegacyEvasion);
-		register(L1SkillId.리버레이션, SkillStopHandlers::offLiberation);
-		register(L1SkillId.잠재력저지먼트1, SkillStopHandlers::offJudgment);
-		register(L1SkillId.잠재력저지먼트2, SkillStopHandlers::offJudgment);
-		register(L1SkillId.잠재력저지먼트3, SkillStopHandlers::offJudgment);
-		register(L1SkillId.잠재력저지먼트4, SkillStopHandlers::offJudgment);
-		register(L1SkillId.잠재력저지먼트5, SkillStopHandlers::offJudgment);
-		register(L1SkillId.할파스, SkillStopHandlers::offHalpas);
-		register(L1SkillId.할파스의신의, SkillStopHandlers::offHalpasGod);
-		register(L1SkillId.할파스의신의PVP, SkillStopHandlers::offHalpasGodPvp);
-		register(L1SkillId.잠재력소울, SkillStopHandlers::offPotentialSoul);
-		register(L1SkillId.잠재력소울스킬, SkillStopHandlers::offPotentialSoulSkill);
-		register(L1SkillId.가드피어효과, SkillStopHandlers::offGuardFearEffect);
-		register(L1SkillId.가드피어호러효과, SkillStopHandlers::offGuardFearHorrorEffect);
-	//	register(800018, SkillStopHandlers::offTikalRespawn);
-	//	register(800019, SkillStopHandlers::offTikalRespawn);
-		register(L1SkillId.전투지휘, SkillStopHandlers::offCombatCommand);
-		register(L1SkillId.DELAY, SkillStopHandlers::offDelay);
-		register(L1SkillId.프라이드, SkillStopHandlers::offLegacyScaledHp);
-		register(L1SkillId.포텐셜, SkillStopHandlers::offPotential);
-		register(L1SkillId.어드밴스, SkillStopHandlers::offLegacyAdvance);
-		register(L1SkillId.이터디스, SkillStopHandlers::offEtherDis);
-		register(L1SkillId.STATUS_BLUE_POTION, SkillStopHandlers::offNoop);
-		register(L1SkillId.STATUS_BLUE_POTION2, SkillStopHandlers::offNoop);
-		register(L1SkillId.메티스축복주문서, SkillStopHandlers::offMetisBlessScroll);
-		register(L1SkillId.버서크, SkillStopHandlers::offBerserkCustom);
-		register(L1SkillId.버서크대기, SkillStopHandlers::offNoop);
-		register(L1SkillId.SIDE_OF_ME_BLESSING, SkillStopHandlers::offPlayerModifier);
-		register(L1SkillId.RE_START_BLESSING, SkillStopHandlers::offPlayerModifier);
-		register(L1SkillId.NEW_START_BLESSING, SkillStopHandlers::offPlayerModifier);
-		register(L1SkillId.LIFE_BLESSING, SkillStopHandlers::offPlayerModifier);
-		register(L1SkillId.COUNTER_BARRIER, SkillStopHandlers::offCounterBarrierLegacy);
+		register(L1SkillId.매직실드1, CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.버닝샷, CSkillEffectPumpEnd::offBurningShot);
+		register(L1SkillId.매직실드2, CSkillEffectPumpEnd::offMagicShield2);
+		register(L1SkillId.기간틱, CSkillEffectPumpEnd::offLegacyScaledHp);
+		register(L1SkillId.엠파이어오버로드DG, CSkillEffectPumpEnd::offStunControlOverloadDg);
+		register(L1SkillId.이뮨투함블레이드, CSkillEffectPumpEnd::offImmuneBladeCustom);
+		register(L1SkillId.비전텔레포트, CSkillEffectPumpEnd::offCooldownNotice);
+		register(L1SkillId.이터니티대기, CSkillEffectPumpEnd::offCooldownNotice);
+		register(L1SkillId.데몰리션대기, CSkillEffectPumpEnd::offCooldownNotice);
+		register(L1SkillId.엘븐스트라이크대기, CSkillEffectPumpEnd::offCooldownNotice);
+		register(L1SkillId.엘리멘탈대기, CSkillEffectPumpEnd::offCooldownNotice);
+		register(L1SkillId.NO_DIS, CSkillEffectPumpEnd::offNoDis);
+		register(L1SkillId.어드밴스대기, CSkillEffectPumpEnd::offCooldownNotice);
+		register(L1SkillId.쉐도우대기, CSkillEffectPumpEnd::offCooldownNotice);
+		register(L1SkillId.어벤저대기, CSkillEffectPumpEnd::offCooldownNotice);
+		register(L1SkillId.버닝샷대기, CSkillEffectPumpEnd::offCooldownNotice);
+		register(L1SkillId.DRAGON_HUNTER_BLESS, CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.격전의주문서, CSkillEffectPumpEnd::offBattleScroll);
+		register(L1SkillId.루돌프의버프, CSkillEffectPumpEnd::offRudolphBuff);
+		register(L1SkillId.HUNTER_BLESS2, CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.프라임, CSkillEffectPumpEnd::offPrime);
+		register(L1SkillId.프라임1, CSkillEffectPumpEnd::offPrime1);
+		register(L1SkillId.프라임85, CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.프라임90, CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.프라임95, CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.일루션리치, CSkillEffectPumpEnd::offLegacyIllusionLich);
+		register(L1SkillId.일루션골렘, CSkillEffectPumpEnd::offLegacyIllusionGolem);
+		register(L1SkillId.에테리얼, CSkillEffectPumpEnd::offSimpleInventoryIcon);
+		register(L1SkillId.솔리드캐리지, CSkillEffectPumpEnd::offLegacySolidCarriage);
+		register(L1SkillId.버닝, CSkillEffectPumpEnd::offSimpleInventoryIcon);
+		register(L1SkillId.이베이젼, CSkillEffectPumpEnd::offLegacyEvasion);
+		register(L1SkillId.리버레이션, CSkillEffectPumpEnd::offLiberation);
+		register(L1SkillId.잠재력저지먼트1, CSkillEffectPumpEnd::offJudgment);
+		register(L1SkillId.잠재력저지먼트2, CSkillEffectPumpEnd::offJudgment);
+		register(L1SkillId.잠재력저지먼트3, CSkillEffectPumpEnd::offJudgment);
+		register(L1SkillId.잠재력저지먼트4, CSkillEffectPumpEnd::offJudgment);
+		register(L1SkillId.잠재력저지먼트5, CSkillEffectPumpEnd::offJudgment);
+		register(L1SkillId.할파스, CSkillEffectPumpEnd::offHalpas);
+		register(L1SkillId.할파스의신의, CSkillEffectPumpEnd::offHalpasGod);
+		register(L1SkillId.할파스의신의PVP, CSkillEffectPumpEnd::offHalpasGodPvp);
+		register(L1SkillId.잠재력소울, CSkillEffectPumpEnd::offPotentialSoul);
+		register(L1SkillId.잠재력소울스킬, CSkillEffectPumpEnd::offPotentialSoulSkill);
+		register(L1SkillId.가드피어효과, CSkillEffectPumpEnd::offGuardFearEffect);
+		register(L1SkillId.가드피어호러효과, CSkillEffectPumpEnd::offGuardFearHorrorEffect);
+	//	register(800018, CSkillEffectPumpEnd::offTikalRespawn);
+	//	register(800019, CSkillEffectPumpEnd::offTikalRespawn);
+		register(L1SkillId.전투지휘, CSkillEffectPumpEnd::offCombatCommand);
+		register(L1SkillId.DELAY, CSkillEffectPumpEnd::offDelay);
+		register(L1SkillId.프라이드, CSkillEffectPumpEnd::offLegacyScaledHp);
+		register(L1SkillId.포텐셜, CSkillEffectPumpEnd::offPotential);
+		register(L1SkillId.어드밴스, CSkillEffectPumpEnd::offLegacyAdvance);
+		register(L1SkillId.이터디스, CSkillEffectPumpEnd::offEtherDis);
+		register(L1SkillId.STATUS_BLUE_POTION, CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.STATUS_BLUE_POTION2, CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.메티스축복주문서, CSkillEffectPumpEnd::offMetisBlessScroll);
+		register(L1SkillId.버서크, CSkillEffectPumpEnd::offBerserkCustom);
+		register(L1SkillId.버서크대기, CSkillEffectPumpEnd::offNoop);
+		register(L1SkillId.SIDE_OF_ME_BLESSING, CSkillEffectPumpEnd::offPlayerModifier);
+		register(L1SkillId.RE_START_BLESSING, CSkillEffectPumpEnd::offPlayerModifier);
+		register(L1SkillId.NEW_START_BLESSING, CSkillEffectPumpEnd::offPlayerModifier);
+		register(L1SkillId.LIFE_BLESSING, CSkillEffectPumpEnd::offPlayerModifier);
+		register(L1SkillId.COUNTER_BARRIER, CSkillEffectPumpEnd::offCounterBarrierLegacy);
 
-		register(L1SkillId.BUFF_특별한성장축복, SkillStopHandlers::offSpecialBuff);
-		register(L1SkillId.BUFF_특별한방어축복, SkillStopHandlers::offSpecialBuff);
-		register(L1SkillId.BUFF_특별한공격축복, SkillStopHandlers::offSpecialBuff);
+		register(L1SkillId.BUFF_특별한성장축복, CSkillEffectPumpEnd::offSpecialBuff);
+		register(L1SkillId.BUFF_특별한방어축복, CSkillEffectPumpEnd::offSpecialBuff);
+		register(L1SkillId.BUFF_특별한공격축복, CSkillEffectPumpEnd::offSpecialBuff);
 	}
 
 	/** Compatibility entry point. Definitions are frozen automatically during initialization. */
@@ -559,7 +559,7 @@ public final class SkillStopHandlers {
 
 	// ===== N_BUFF =====
 
-	private static SkillStopHandlers.StopResult offNBuffPvpDmg(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffPvpDmg(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -568,7 +568,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffHpMp(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffHpMp(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -579,7 +579,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffDmg(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffDmg(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -588,7 +588,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffReduct(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffReduct(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -597,7 +597,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffSp(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffSp(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -607,7 +607,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffStun(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffStun(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -616,7 +616,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffHold(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffHold(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -635,7 +635,7 @@ public final class SkillStopHandlers {
 
 	// stat
 
-	private static SkillStopHandlers.StopResult offNBuffStr(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffStr(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -644,7 +644,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffDex(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffDex(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -653,7 +653,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffInt(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffInt(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -662,7 +662,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffWis(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffWis(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -673,7 +673,7 @@ public final class SkillStopHandlers {
 
 	// elemental resist
 
-	private static SkillStopHandlers.StopResult offNBuffWater(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffWater(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -683,7 +683,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffWind(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffWind(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -693,7 +693,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffEarth(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffEarth(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -703,7 +703,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffFire(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffFire(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -713,7 +713,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offNBuffAllResist(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offNBuffAllResist(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -725,7 +725,7 @@ public final class SkillStopHandlers {
 
 	// ===== misc =====
 
-	private static SkillStopHandlers.StopResult offFear(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offFear(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -733,7 +733,7 @@ public final class SkillStopHandlers {
 		return StopResult.HANDLED;
 	}
 
-	private static SkillStopHandlers.StopResult offExpPotion(L1Character cha, int skillId) {
+	private static CSkillEffectPumpEnd.StopResult offExpPotion(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance)) return StopResult.NOT_HANDLED;
 		L1PcInstance pc = (L1PcInstance) cha;
 
@@ -843,7 +843,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance pc)) return StopResult.NOT_HANDLED;
 		pc.removeSkillModifierFromOwner(skillId);
 		if (skillId == L1SkillId.CLAN_BUFF2) SC_OwnCharAttrDef.send(pc);
-		SC_ServerMessage.send(pc, 4619, SkillHandlers.clanStanceName(skillId));
+		SC_ServerMessage.send(pc, 4619, CSkillEffectActivation.clanStanceName(skillId));
 		return StopResult.HANDLED;
 	}
 
@@ -1364,7 +1364,7 @@ public final class SkillStopHandlers {
 	private static StopResult offCashScroll(L1Character target, int id) {
 		if (target instanceof L1PcInstance pc) {
 			pc.removeSkillModifierFromOwner(id);
-			SkillHandlers.notifyCashScrollStats(pc, id);
+			CSkillEffectActivation.notifyCashScrollStats(pc, id);
 		}
 		return StopResult.HANDLED;
 	}
@@ -1415,7 +1415,7 @@ public final class SkillStopHandlers {
 	private static StopResult offDragonMaan(L1Character cha, int skillId) {
 		if (!(cha instanceof L1PcInstance pc)) return StopResult.HANDLED;
 		pc.removeSkillModifierFromOwner(skillId);
-		if (SkillHandlers.hasDragonMaanSpellPower(skillId)) SC_SPMR.send(pc);
+		if (CSkillEffectActivation.hasDragonMaanSpellPower(skillId)) SC_SPMR.send(pc);
 		SC_OwnCharAttrDef.send(pc);
 		return StopResult.HANDLED;
 	}
@@ -1430,7 +1430,7 @@ public final class SkillStopHandlers {
 		if (!(cha instanceof L1PcInstance pc)) return StopResult.HANDLED;
 		pc.removeSkillModifierFromOwner(skillId);
 		SC_OwnCharStatus.send(pc);
-		SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, SkillHandlers.dragonBloodIcon(skillId), 0);
+		SC_PacketBox.send(pc, SC_PacketBox.DRAGONBLOOD, CSkillEffectActivation.dragonBloodIcon(skillId), 0);
 		return StopResult.HANDLED;
 	}
 

@@ -78,9 +78,9 @@ import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.L1SpawnUtil;
 import l1j.server.server.utils.eKind;
 /**
- *   SkillHandlers
+ *   CSkillEffectActivation
  */
-public final class SkillHandlers {
+public final class CSkillEffectActivation {
 
     /** Uses the existing recipient controller FIFO for all Prime state changes. */
     static void startPrimeFromOwner(L1PcInstance target, int skillId, int duration,
@@ -126,7 +126,7 @@ public final class SkillHandlers {
     }
 
 
-	private SkillHandlers() {}
+	private CSkillEffectActivation() {}
 
 
 	public static final int HD_NOT_HANDLED = 0;
@@ -156,22 +156,22 @@ public final class SkillHandlers {
 
 	static void registerEffects() {
 		final SkillHandler cursePoison = new CSkillEffect.DamagePoison(3000, 5, false, 7000);
-		CSkillInfo.registerCast(L1SkillId.ICE_LANCE, SkillHandlers::castFreeze, false);
-		CSkillInfo.registerCast(L1SkillId.EARTH_BIND, SkillHandlers::castFreeze, false);
-		CSkillInfo.registerCast(L1SkillId.MOB_BERSERKERS, SkillHandlers::castMonsterBerserkers, false);
+		CSkillInfo.registerCast(L1SkillId.ICE_LANCE, CSkillEffectActivation::castFreeze, false);
+		CSkillInfo.registerCast(L1SkillId.EARTH_BIND, CSkillEffectActivation::castFreeze, false);
+		CSkillInfo.registerCast(L1SkillId.MOB_BERSERKERS, CSkillEffectActivation::castMonsterBerserkers, false);
 
-		CSkillInfo.registerInstant(L1SkillId.TRUE_TARGET, SkillHandlers::onTrueTarget);
-		registerStun(L1SkillId.SHOCK_STUN, 81162, SkillHandlers::officialStun, true);
-		registerStun(L1SkillId.EMPIRE, 50000066, SkillHandlers::officialStun, true);
+		CSkillInfo.registerInstant(L1SkillId.TRUE_TARGET, CSkillEffectActivation::onTrueTarget);
+		registerStun(L1SkillId.SHOCK_STUN, 81162, CSkillEffectActivation::officialStun, true);
+		registerStun(L1SkillId.EMPIRE, 50000066, CSkillEffectActivation::officialStun, true);
 		registerStun(L1SkillId.BONE_BREAK, 200020, (cast, target) -> SkillUseHelper.pickMillis(SkillUseHelper.BONE_BREAK_DUR), true);
-		CSkillInfo.registerInstant(L1SkillId.CANCELLATION, SkillHandlers::onCancellation);
-		CSkillInfo.registerInstant(L1SkillId.RESURRECTION, SkillHandlers::onResurrection);
-		CSkillInfo.registerInstant(L1SkillId.GREATER_RESURRECTION, SkillHandlers::onResurrection);
+		CSkillInfo.registerInstant(L1SkillId.CANCELLATION, CSkillEffectActivation::onCancellation);
+		CSkillInfo.registerInstant(L1SkillId.RESURRECTION, CSkillEffectActivation::onResurrection);
+		CSkillInfo.registerInstant(L1SkillId.GREATER_RESURRECTION, CSkillEffectActivation::onResurrection);
 
 
 		// multi-hit
-		CSkillInfo.registerInstant(L1SkillId.TRIPLE_ARROW, SkillHandlers::onTripleArrow);
-		CSkillInfo.registerInstant(L1SkillId.FOU_SLAYER, SkillHandlers::onFouSlayer);
+		CSkillInfo.registerInstant(L1SkillId.TRIPLE_ARROW, CSkillEffectActivation::onTripleArrow);
+		CSkillInfo.registerInstant(L1SkillId.FOU_SLAYER, CSkillEffectActivation::onFouSlayer);
 
 		// buffs (이관)
 
@@ -186,60 +186,60 @@ public final class SkillHandlers {
 
 
 
-		CSkillInfo.registerInstant(L1SkillId.TAMING_MONSTER, SkillHandlers::onTamingMonster);
-		CSkillInfo.registerInstant(L1SkillId.CREATE_ZOMBIE, SkillHandlers::onCreateZombie);
-		CSkillInfo.registerInstant(L1SkillId.WEAK_ELEMENTAL, SkillHandlers::onWeakElemental);
-		CSkillInfo.registerInstant(L1SkillId.RETURN_TO_NATURE, SkillHandlers::onReturnToNature);
+		CSkillInfo.registerInstant(L1SkillId.TAMING_MONSTER, CSkillEffectActivation::onTamingMonster);
+		CSkillInfo.registerInstant(L1SkillId.CREATE_ZOMBIE, CSkillEffectActivation::onCreateZombie);
+		CSkillInfo.registerInstant(L1SkillId.WEAK_ELEMENTAL, CSkillEffectActivation::onWeakElemental);
+		CSkillInfo.registerInstant(L1SkillId.RETURN_TO_NATURE, CSkillEffectActivation::onReturnToNature);
 
 
-		CSkillInfo.registerInstant(L1SkillId.LESSER_ELEMENTAL, SkillHandlers::onElementalSummon);
-		CSkillInfo.registerInstant(L1SkillId.GREATER_ELEMENTAL, SkillHandlers::onElementalSummon);
+		CSkillInfo.registerInstant(L1SkillId.LESSER_ELEMENTAL, CSkillEffectActivation::onElementalSummon);
+		CSkillInfo.registerInstant(L1SkillId.GREATER_ELEMENTAL, CSkillEffectActivation::onElementalSummon);
 
-		CSkillInfo.registerInstant(L1SkillId.TELEPORT, SkillHandlers::onTeleport);
-		CSkillInfo.registerInstant(L1SkillId.MASS_TELEPORT, SkillHandlers::onTeleport);
-		CSkillInfo.registerInstant(L1SkillId.TELEPORT_TO_MATHER, SkillHandlers::onTeleportToMather);
+		CSkillInfo.registerInstant(L1SkillId.TELEPORT, CSkillEffectActivation::onTeleport);
+		CSkillInfo.registerInstant(L1SkillId.MASS_TELEPORT, CSkillEffectActivation::onTeleport);
+		CSkillInfo.registerInstant(L1SkillId.TELEPORT_TO_MATHER, CSkillEffectActivation::onTeleportToMather);
 
-		CSkillInfo.registerInstant(L1SkillId.BRING_STONE, SkillHandlers::onBringStone);
-		CSkillInfo.registerInstant(L1SkillId.SUMMON_MONSTER, SkillHandlers::onSummonMonster);
-
-
-		CSkillInfo.registerCast(L1SkillId.GREATER_HASTE, SkillHandlers::castMovementSpeed, false);
+		CSkillInfo.registerInstant(L1SkillId.BRING_STONE, CSkillEffectActivation::onBringStone);
+		CSkillInfo.registerInstant(L1SkillId.SUMMON_MONSTER, CSkillEffectActivation::onSummonMonster);
 
 
-
-
-		CSkillInfo.registerInstant(L1SkillId.REMOVE_CURSE, SkillHandlers::onRemoveCurse);
-		CSkillInfo.registerInstant(L1SkillId.CALL_OF_NATURE, SkillHandlers::onCallOfNature);
-
-		CSkillInfo.registerCast(L1SkillId.SLOW, SkillHandlers::castMovementSpeed, false);
-		CSkillInfo.registerCast(L1SkillId.MOB_SLOW_1, SkillHandlers::castMovementSpeed, false);
-		CSkillInfo.registerCast(L1SkillId.MOB_SLOW_18, SkillHandlers::castMovementSpeed, false);
+		CSkillInfo.registerCast(L1SkillId.GREATER_HASTE, CSkillEffectActivation::castMovementSpeed, false);
 
 
 
-		CSkillInfo.registerCast(L1SkillId.HASTE, SkillHandlers::castMovementSpeed, false);
+
+		CSkillInfo.registerInstant(L1SkillId.REMOVE_CURSE, CSkillEffectActivation::onRemoveCurse);
+		CSkillInfo.registerInstant(L1SkillId.CALL_OF_NATURE, CSkillEffectActivation::onCallOfNature);
+
+		CSkillInfo.registerCast(L1SkillId.SLOW, CSkillEffectActivation::castMovementSpeed, false);
+		CSkillInfo.registerCast(L1SkillId.MOB_SLOW_1, CSkillEffectActivation::castMovementSpeed, false);
+		CSkillInfo.registerCast(L1SkillId.MOB_SLOW_18, CSkillEffectActivation::castMovementSpeed, false);
+
+
+
+		CSkillInfo.registerCast(L1SkillId.HASTE, CSkillEffectActivation::castMovementSpeed, false);
 
 
 		// 은신몹 싱크 해제 계열
-		CSkillInfo.registerInstant(L1SkillId.DETECTION, SkillHandlers::onDetectionLike);
-		CSkillInfo.registerInstant(L1SkillId.IZE_BREAK, SkillHandlers::onDetectionLike);
-		CSkillInfo.registerInstant(L1SkillId.EYE_OF_DRAGON, SkillHandlers::onDetectionLike);
+		CSkillInfo.registerInstant(L1SkillId.DETECTION, CSkillEffectActivation::onDetectionLike);
+		CSkillInfo.registerInstant(L1SkillId.IZE_BREAK, CSkillEffectActivation::onDetectionLike);
+		CSkillInfo.registerInstant(L1SkillId.EYE_OF_DRAGON, CSkillEffectActivation::onDetectionLike);
 
 		// PC면 마법데미지 / NPC면 sink면 드러내기 아니면 0
-		CSkillInfo.registerInstant(L1SkillId.COUNTER_DETECTION, SkillHandlers::onCounterDetection);
+		CSkillInfo.registerInstant(L1SkillId.COUNTER_DETECTION, CSkillEffectActivation::onCounterDetection);
 
 
-		CSkillInfo.registerInstant(L1SkillId.MIND_BREAK, SkillHandlers::onMindBreak);
+		CSkillInfo.registerInstant(L1SkillId.MIND_BREAK, CSkillEffectActivation::onMindBreak);
 
 
 
 
 
-		CSkillInfo.registerInstant(L1SkillId.TURN_UNDEAD, SkillHandlers::onTurnUndead);
+		CSkillInfo.registerInstant(L1SkillId.TURN_UNDEAD, CSkillEffectActivation::onTurnUndead);
 
-		CSkillInfo.registerInstant(L1SkillId.MANA_DRAIN, SkillHandlers::onManaDrain);
+		CSkillInfo.registerInstant(L1SkillId.MANA_DRAIN, CSkillEffectActivation::onManaDrain);
 
-		CSkillInfo.registerInstant(L1SkillId.WEAPON_BREAK, SkillHandlers::onWeaponBreak);
+		CSkillInfo.registerInstant(L1SkillId.WEAPON_BREAK, CSkillEffectActivation::onWeaponBreak);
 
 
 
@@ -257,28 +257,25 @@ public final class SkillHandlers {
 		CSkillInfo.registerInstant(L1SkillId.MOB_BASILL, CSkillEffect.Paralysis.PETRIFY);
 		CSkillInfo.registerInstant(L1SkillId.MOB_COCA, CSkillEffect.Paralysis.PETRIFY);
 
-		registerStun(L1SkillId.MOB_RANGESTUN_18, 81162, SkillHandlers::monsterStun, false);
-		registerStun(L1SkillId.MOB_RANGESTUN_19, 81162, SkillHandlers::monsterStun, false);
-		registerStun(L1SkillId.MOB_SHOCKSTUN_30, 81162, SkillHandlers::monsterStun, false);
+		registerStun(L1SkillId.MOB_RANGESTUN_18, 81162, CSkillEffectActivation::monsterStun, false);
+		registerStun(L1SkillId.MOB_RANGESTUN_19, 81162, CSkillEffectActivation::monsterStun, false);
+		registerStun(L1SkillId.MOB_SHOCKSTUN_30, 81162, CSkillEffectActivation::monsterStun, false);
 
 		// 힐계열: WATER_LIFE 타이머 제거 + 아이콘 삭제
-		CSkillInfo.registerInstant(L1SkillId.HEAL, SkillHandlers::onHealFamily);
-		CSkillInfo.registerInstant(L1SkillId.EXTRA_HEAL, SkillHandlers::onHealFamily);
-		CSkillInfo.registerInstant(L1SkillId.GREATER_HEAL, SkillHandlers::onHealFamily);
-		CSkillInfo.registerInstant(L1SkillId.FULL_HEAL, SkillHandlers::onHealFamily);
-		CSkillInfo.registerInstant(L1SkillId.HEAL_ALL, SkillHandlers::onHealFamily);
-		CSkillInfo.registerInstant(L1SkillId.NATURES_TOUCH, SkillHandlers::onHealFamily);
-		CSkillInfo.registerInstant(L1SkillId.NATURES_BLESSING, SkillHandlers::onHealFamily);
+		CSkillInfo.registerInstant(L1SkillId.HEAL, CSkillEffectActivation::onHealFamily);
+		CSkillInfo.registerInstant(L1SkillId.EXTRA_HEAL, CSkillEffectActivation::onHealFamily);
+		CSkillInfo.registerInstant(L1SkillId.GREATER_HEAL, CSkillEffectActivation::onHealFamily);
+		CSkillInfo.registerInstant(L1SkillId.FULL_HEAL, CSkillEffectActivation::onHealFamily);
+		CSkillInfo.registerInstant(L1SkillId.HEAL_ALL, CSkillEffectActivation::onHealFamily);
+		CSkillInfo.registerInstant(L1SkillId.NATURES_TOUCH, CSkillEffectActivation::onHealFamily);
+		CSkillInfo.registerInstant(L1SkillId.NATURES_BLESSING, CSkillEffectActivation::onHealFamily);
 
 		// 흡혈계열: heal = dmg/2 (데미지 계산 이후 훅에서 반영해야 함)
-		CSkillInfo.registerInstant(L1SkillId.CHILL_TOUCH, SkillHandlers::onVampiricTouchLike);
-		CSkillInfo.registerInstant(L1SkillId.VAMPIRIC_TOUCH, SkillHandlers::onVampiricTouchLike);
+		CSkillInfo.registerInstant(L1SkillId.CHILL_TOUCH, CSkillEffectActivation::onVampiricTouchLike);
+		CSkillInfo.registerInstant(L1SkillId.VAMPIRIC_TOUCH, CSkillEffectActivation::onVampiricTouchLike);
 
 
-		CSkillInfo.registerInstant(L1SkillId.CURE_POISON, SkillHandlers::onCurePoison);
-
-
-
+		CSkillInfo.registerInstant(L1SkillId.CURE_POISON, CSkillEffectActivation::onCurePoison);
 
 
 
@@ -288,20 +285,23 @@ public final class SkillHandlers {
 
 
 
-		CSkillInfo.registerInstant(10026, SkillHandlers::onDgUiAndKill);
-		CSkillInfo.registerInstant(10027, SkillHandlers::onDgUiAndKill);
-		CSkillInfo.registerInstant(10028, SkillHandlers::onDgUiAndKill);
-		CSkillInfo.registerInstant(10029, SkillHandlers::onDgUiAndKill);
 
-		CSkillInfo.registerInstant(10057, SkillHandlers::onTeleportFront5);
+
+
+		CSkillInfo.registerInstant(10026, CSkillEffectActivation::onDgUiAndKill);
+		CSkillInfo.registerInstant(10027, CSkillEffectActivation::onDgUiAndKill);
+		CSkillInfo.registerInstant(10028, CSkillEffectActivation::onDgUiAndKill);
+		CSkillInfo.registerInstant(10029, CSkillEffectActivation::onDgUiAndKill);
+
+		CSkillInfo.registerInstant(10057, CSkillEffectActivation::onTeleportFront5);
 
 		CSkillInfo.registerInstant(L1SkillId.BODY_TO_MIND, new CSkillEffect.RestoreMana(2));
 		CSkillInfo.registerInstant(L1SkillId.BLOODY_SOUL, new CSkillEffect.RestoreMana(15));
-		CSkillInfo.registerInstant(L1SkillId.AREA_OF_SILENCE, SkillHandlers::onAreaOfSilenceSound);
-		CSkillInfo.registerInstant(L1SkillId.BOSS_COUNTER_BARRIER, SkillHandlers::onBossCounterBarrierEffect);
+		CSkillInfo.registerInstant(L1SkillId.AREA_OF_SILENCE, CSkillEffectActivation::onAreaOfSilenceSound);
+		CSkillInfo.registerInstant(L1SkillId.BOSS_COUNTER_BARRIER, CSkillEffectActivation::onBossCounterBarrierEffect);
 
-		registerStun(L1SkillId.OMAN_STUN, 81162, SkillHandlers::omanStun, false);
-		registerStun(L1SkillId.Maeno_STUN, 81162, SkillHandlers::omanStun, false);
+		registerStun(L1SkillId.OMAN_STUN, 81162, CSkillEffectActivation::omanStun, false);
+		registerStun(L1SkillId.Maeno_STUN, 81162, CSkillEffectActivation::omanStun, false);
 
 		// 몹버서커
 
@@ -321,29 +321,29 @@ public final class SkillHandlers {
 
 		// 기르타스
 		CSkillInfo.registerInstant(L1SkillId.TROGIR_MILPITAS1, cursePoison);
-		CSkillInfo.registerInstant(L1SkillId.TROGIR_MILPITAS2, SkillHandlers::castMilpitasSummon);
+		CSkillInfo.registerInstant(L1SkillId.TROGIR_MILPITAS2, CSkillEffectActivation::castMilpitasSummon);
 		registerBossDamage(L1SkillId.TROGIR_MILPITAS3, 11002, false);
 		registerBossDamage(L1SkillId.TROGIR_MILPITAS4, 11003, false);
 		registerBossDamage(L1SkillId.TROGIR_MILPITAS5, 11004, false);
 		registerBossDamage(L1SkillId.TROGIR_MILPITAS6, 11008, false);
 
 		// 원본 공통 보조 / 이벤트 버프
-		CSkillInfo.registerInstant(L1SkillId.CONCENTRATION, SkillHandlers::onConcentration);
+		CSkillInfo.registerInstant(L1SkillId.CONCENTRATION, CSkillEffectActivation::onConcentration);
 
 		// 원본에서 본문이 비어 있던 case도 handled로 보존
-		CSkillInfo.registerInstant(L1SkillId.잠재력소울, SkillHandlers::ignoreNonPlayerBuff);
-		CSkillInfo.registerInstant(L1SkillId.할파스의신의PVP, SkillHandlers::ignoreNonPlayerBuff);
-		CSkillInfo.registerInstant(L1SkillId.할파스의신의, SkillHandlers::ignoreNonPlayerBuff);
+		CSkillInfo.registerInstant(L1SkillId.잠재력소울, CSkillEffectActivation::ignoreNonPlayerBuff);
+		CSkillInfo.registerInstant(L1SkillId.할파스의신의PVP, CSkillEffectActivation::ignoreNonPlayerBuff);
+		CSkillInfo.registerInstant(L1SkillId.할파스의신의, CSkillEffectActivation::ignoreNonPlayerBuff);
 
 		// 피닉스 / 드레이크
 		registerBossDamage(L1SkillId.Phoenix_Skill1, 16258, true);
 		registerBossDamage(L1SkillId.Phoenix_Skill2, 16299, true);
 		registerBossDamage(L1SkillId.DRAKE_Skill1, 16333, true);
 		registerBossDamage(L1SkillId.DRAKE_Skill2, 16335, true);
-		CSkillInfo.registerInstant(L1SkillId.DRAKE_MASSTELEPORT, SkillHandlers::onDrakeMassTeleport);
-		CSkillInfo.registerInstant(L1SkillId.EFRETE_SUMMON_MONSTER, SkillHandlers::onEfreetSummon);
-		CSkillInfo.registerInstant(L1SkillId.PHOENIX_SUMMON_MONSTER, SkillHandlers::onPhoenixSummon);
-		CSkillInfo.registerInstant(L1SkillId.PHOENIX_CANCELLATION, SkillHandlers::onDragonCancellation);
+		CSkillInfo.registerInstant(L1SkillId.DRAKE_MASSTELEPORT, CSkillEffectActivation::onDrakeMassTeleport);
+		CSkillInfo.registerInstant(L1SkillId.EFRETE_SUMMON_MONSTER, CSkillEffectActivation::onEfreetSummon);
+		CSkillInfo.registerInstant(L1SkillId.PHOENIX_SUMMON_MONSTER, CSkillEffectActivation::onPhoenixSummon);
+		CSkillInfo.registerInstant(L1SkillId.PHOENIX_CANCELLATION, CSkillEffectActivation::onDragonCancellation);
 
 		// 샌드웜
 		registerSandWormCue(L1SkillId.Sand_worms, 10145);
@@ -352,60 +352,60 @@ public final class SkillHandlers {
 		registerSandWormCue(L1SkillId.Sand_worms3, 10191);
 
 		// 오만
-		CSkillInfo.registerInstant(L1SkillId.OMAN_CANCELLATION, SkillHandlers::onOmanCancellation);
+		CSkillInfo.registerInstant(L1SkillId.OMAN_CANCELLATION, CSkillEffectActivation::onOmanCancellation);
 
 		// 안타라스
-		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_1, 900011, true, SkillHandlers::cancelBossTargetEffects, SkillHandlers::antarasParalysisRoll);
-		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_2, 900011, true, SkillHandlers::antarasDamagePoison);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_1, 900011, true, CSkillEffectActivation::cancelBossTargetEffects, CSkillEffectActivation::antarasParalysisRoll);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_2, 900011, true, CSkillEffectActivation::antarasDamagePoison);
 		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_3, 900011, true);
 		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_4, 900011, true);
-		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_5, 900011, true, SkillHandlers::antarasDamagePoison);
-		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_6, 900011, false, SkillHandlers::antarasStun);
-		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_7, 900011, false, SkillHandlers::antarasStun);
-		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_8, 900011, false, SkillHandlers::antarasStun);
-		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_9, 900011, true, SkillHandlers::antarasDamagePoison, SkillHandlers::antarasWeaponBreak);
-		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_10, 900011, true, SkillHandlers::antarasParalysisRoll, SkillHandlers::antarasWeaponBreak);
-		registerNpcBossEffects(L1SkillId.ANTA_CANCELLATION, 900011, true, SkillHandlers::cancelBossTargetEffects);
-		registerNpcBossEffects(L1SkillId.ANTA_WEAPON_BREAK, 900011, true, SkillHandlers::antarasWeaponBreak);
-		registerNpcBossEffects(L1SkillId.ANTA_SHOCKSTUN, 900011, false, SkillHandlers::antarasStun);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_5, 900011, true, CSkillEffectActivation::antarasDamagePoison);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_6, 900011, false, CSkillEffectActivation::antarasStun);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_7, 900011, false, CSkillEffectActivation::antarasStun);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_8, 900011, false, CSkillEffectActivation::antarasStun);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_9, 900011, true, CSkillEffectActivation::antarasDamagePoison, CSkillEffectActivation::antarasWeaponBreak);
+		registerNpcBossEffects(L1SkillId.ANTA_MESSAGE_10, 900011, true, CSkillEffectActivation::antarasParalysisRoll, CSkillEffectActivation::antarasWeaponBreak);
+		registerNpcBossEffects(L1SkillId.ANTA_CANCELLATION, 900011, true, CSkillEffectActivation::cancelBossTargetEffects);
+		registerNpcBossEffects(L1SkillId.ANTA_WEAPON_BREAK, 900011, true, CSkillEffectActivation::antarasWeaponBreak);
+		registerNpcBossEffects(L1SkillId.ANTA_SHOCKSTUN, 900011, false, CSkillEffectActivation::antarasStun);
 
 		// 파푸리온
-		registerNpcBossEffects(L1SkillId.PAP_PREDICATE1, 900038, true, SkillHandlers::summonPapMinions);
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE1, 900038, true, CSkillEffectActivation::summonPapMinions);
 		registerNpcBossEffects(L1SkillId.PAP_PREDICATE3, 900038, true, timedBossDebuff(7781, L1SkillId.PAP_DEATH_PORTION));
 		registerNpcBossEffects(L1SkillId.PAP_PREDICATE5, 900038, true, timedBossDebuff(7782, L1SkillId.PAP_REDUCE_HELL));
 		registerNpcBossEffects(L1SkillId.PAP_PREDICATE6, 900038, true, timedBossDebuff(7780, L1SkillId.PAP_DEATH_HELL));
-		registerNpcBossEffects(L1SkillId.PAP_PREDICATE7, 900038, true, SkillHandlers::cancelBossTargetEffects);
-		registerNpcBossEffects(L1SkillId.PAP_PREDICATE8, 900038, true, SkillHandlers::papWeaponBreak);
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE7, 900038, true, CSkillEffectActivation::cancelBossTargetEffects);
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE8, 900038, true, CSkillEffectActivation::papWeaponBreak);
 		registerNpcBossEffects(L1SkillId.PAP_PREDICATE9, 900038, true);
-		registerNpcBossEffects(L1SkillId.PAP_PREDICATE11, 900038, true, SkillHandlers::cancelBossTargetEffects, timedBossDebuff(7780, L1SkillId.PAP_DEATH_HELL));
-		registerNpcBossEffects(L1SkillId.PAP_PREDICATE12, 900038, true, SkillHandlers::cancelBossTargetEffects, timedBossDebuff(7780, L1SkillId.PAP_DEATH_HELL));
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE11, 900038, true, CSkillEffectActivation::cancelBossTargetEffects, timedBossDebuff(7780, L1SkillId.PAP_DEATH_HELL));
+		registerNpcBossEffects(L1SkillId.PAP_PREDICATE12, 900038, true, CSkillEffectActivation::cancelBossTargetEffects, timedBossDebuff(7780, L1SkillId.PAP_DEATH_HELL));
 
 		// 린드비오르
-		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_SUMMON_MONSTER_CLOUD, SkillHandlers::onRindviorSummonCloud);
-		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_PREDICATE, SkillHandlers::onRindviorPredicate);
-		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_SUMMON_MONSTER, SkillHandlers::onRindviorSummon);
-		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_BOW, SkillHandlers::onRindviorBow);
-		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_PREDICATE_CANCELLATION, SkillHandlers::onRindviorPredicateCancellation);
-		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_CANCELLATION, SkillHandlers::onDragonCancellation);
-		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_WEAPON, SkillHandlers::onRindviorWeapon);
-		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_WEAPON_2, SkillHandlers::onRindviorWeapon);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_SUMMON_MONSTER_CLOUD, CSkillEffectActivation::onRindviorSummonCloud);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_PREDICATE, CSkillEffectActivation::onRindviorPredicate);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_SUMMON_MONSTER, CSkillEffectActivation::onRindviorSummon);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_BOW, CSkillEffectActivation::onRindviorBow);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_PREDICATE_CANCELLATION, CSkillEffectActivation::onRindviorPredicateCancellation);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_CANCELLATION, CSkillEffectActivation::onDragonCancellation);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_WEAPON, CSkillEffectActivation::onRindviorWeapon);
+		CSkillInfo.registerInstant(L1SkillId.RINDVIOR_WEAPON_2, CSkillEffectActivation::onRindviorWeapon);
 
 		// 흑장로
-		CSkillInfo.registerInstant(L1SkillId.BLACKELDER_DEATH_HELL, SkillHandlers::onBlackElderDeathHell);
+		CSkillInfo.registerInstant(L1SkillId.BLACKELDER_DEATH_HELL, CSkillEffectActivation::onBlackElderDeathHell);
 		CSkillInfo.registerInstant(L1SkillId.BLACKELDER_DEATH_POTION, timedBossDebuff(7781, L1SkillId.PAP_DEATH_PORTION));
 
 		// 에르자베 / 제니스
-		CSkillInfo.registerCast(L1SkillId.DESERT_SKILL1, SkillHandlers::castDesertParalysis, false);
-		CSkillInfo.registerCast(L1SkillId.DESERT_SKILL2, SkillHandlers::castDesertParalysis, false);
-		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL3, SkillHandlers::castDesertManaDrain);
-		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL4, SkillHandlers::castDesertPoison);
-		CSkillInfo.registerInstant(L1SkillId.ZENITH_Poison, SkillHandlers::castDesertPoison);
-		CSkillInfo.registerCast(L1SkillId.DESERT_SKILL5, SkillHandlers::castDesertDebuffs, false);
-		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL6, SkillHandlers::castDesertBlindness);
-		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL7, SkillHandlers::castDesertSleep);
-		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL8, SkillHandlers::castDesertSound);
-		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL9, SkillHandlers::castDesertSummon);
-		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL10, SkillHandlers::castDesertSummon);
+		CSkillInfo.registerCast(L1SkillId.DESERT_SKILL1, CSkillEffectActivation::castDesertParalysis, false);
+		CSkillInfo.registerCast(L1SkillId.DESERT_SKILL2, CSkillEffectActivation::castDesertParalysis, false);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL3, CSkillEffectActivation::castDesertManaDrain);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL4, CSkillEffectActivation::castDesertPoison);
+		CSkillInfo.registerInstant(L1SkillId.ZENITH_Poison, CSkillEffectActivation::castDesertPoison);
+		CSkillInfo.registerCast(L1SkillId.DESERT_SKILL5, CSkillEffectActivation::castDesertDebuffs, false);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL6, CSkillEffectActivation::castDesertBlindness);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL7, CSkillEffectActivation::castDesertSleep);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL8, CSkillEffectActivation::castDesertSound);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL9, CSkillEffectActivation::castDesertSummon);
+		CSkillInfo.registerInstant(L1SkillId.DESERT_SKILL10, CSkillEffectActivation::castDesertSummon);
 		
 
 	}
@@ -2731,7 +2731,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		applySkillEffectSec(pc, skillId, duration);
 	}
 
-	// ===== helpers (SkillHandlers 안에 같이 둬도 되고 Helper 클래스로 빼도 됨) =====
+	// ===== helpers (CSkillEffectActivation 안에 같이 둬도 되고 Helper 클래스로 빼도 됨) =====
 
 	private static void refreshParty(L1PcInstance pc) {
 		try {

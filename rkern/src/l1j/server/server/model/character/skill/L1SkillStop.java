@@ -28,7 +28,7 @@ public final class L1SkillStop {
 			}
 		}
 
-		SkillStopHandlers.dispatch(cha, skillId);
+		CSkillEffectPumpEnd.dispatch(cha, skillId);
 
 		if (cha instanceof L1PcInstance pc) {
 			sendStopMessage(pc, skillId);
