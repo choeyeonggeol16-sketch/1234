@@ -1,0 +1,6 @@
+{
+  "os": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "cpu_count": 3,
+  "java": "openjdk version \"21.0.13\" 2026-10-20",
+  "cpu_limit": "200000 100000"
+}

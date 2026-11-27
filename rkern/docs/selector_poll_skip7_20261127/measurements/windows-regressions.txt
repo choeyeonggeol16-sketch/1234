@@ -1,0 +1,17 @@
+platform
+OS=Windows Server 2025 Java=21 Selector=sun.nio.ch.WEPollSelectorImpl
+revisions
+baseline=b29bf3b34e4682c55ee2ede5e32d076d80be5201
+candidate=29b908a8d4281d4a9c0a01b02456a12e78063b65
+selector-transport
+PASS raw TCP callbacks, graceful gather, mailbox concurrency, deadlines and hosted rollback
+poll-fairness
+PASS Selector shared seven-skip bound, hosted fairness, and real poll resets
+baseline-backpressure
+PASS hosted loopback partial SEND, OP_WRITE enable/clear, READ pause/resume, drain, timeout and RST
+candidate-backpressure
+PASS hosted loopback partial SEND, OP_WRITE enable/clear, READ pause/resume, drain, timeout and RST
+buffer-affinity
+PASS shard-local receive preference, global overflow capacity and cross-thread return
+cio-integration
+PASS RKern login entry, cipher FIFO, fragmented maximum frame, timer, MAC/account admission, large broadcast, graceful FIFO drain, 16 restarts and 64 reset/reconnect cycles with zero outstanding leases

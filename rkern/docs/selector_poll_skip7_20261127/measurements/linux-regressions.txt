@@ -1,0 +1,60 @@
+baseline-broadcast
+PASS 20 encrypted loopback recipients, one source encoding
+PASS 100 encrypted loopback recipients, one source encoding
+PASS 500 encrypted loopback recipients, one source encoding
+PASS closed middle recipient did not interrupt 499 remaining writes
+PASS 4 concurrent producers delivered 640 independently decrypted frames exactly once
+PASS drained all sockets and leases, no JVM deadlock
+baseline-cio
+PASS RKern login entry, cipher FIFO, fragmented maximum frame, timer, MAC/account admission, large broadcast, graceful FIFO drain, 1 restarts and 24 reset/reconnect cycles with zero outstanding leases
+baseline-one-slot
+PASS one SEND slot delivered with a separate frozen source slot
+PASS large raw broadcast delivered while small source pool was full
+PASS drained all sockets and leases, no JVM deadlock
+baseline-pressure
+PASS optional refusal and invalid commit kept socket and cipher usable, strict refusal closed only its target
+PASS drained all sockets and leases, no JVM deadlock
+baseline-transport
+PASS raw TCP callbacks, graceful gather, mailbox concurrency, deadlines and hosted rollback
+candidate-broadcast
+PASS 20 encrypted loopback recipients, one source encoding
+PASS 100 encrypted loopback recipients, one source encoding
+PASS 500 encrypted loopback recipients, one source encoding
+PASS closed middle recipient did not interrupt 499 remaining writes
+PASS 4 concurrent producers delivered 640 independently decrypted frames exactly once
+PASS drained all sockets and leases, no JVM deadlock
+candidate-cio
+PASS RKern login entry, cipher FIFO, fragmented maximum frame, timer, MAC/account admission, large broadcast, graceful FIFO drain, 1 restarts and 24 reset/reconnect cycles with zero outstanding leases
+candidate-one-slot
+PASS one SEND slot delivered with a separate frozen source slot
+PASS large raw broadcast delivered while small source pool was full
+PASS drained all sockets and leases, no JVM deadlock
+candidate-pressure
+PASS optional refusal and invalid commit kept socket and cipher usable, strict refusal closed only its target
+PASS drained all sockets and leases, no JVM deadlock
+candidate-transport
+PASS raw TCP callbacks, graceful gather, mailbox concurrency, deadlines and hosted rollback
+timer-OwnedWorkLifecycleRegression.log
+PASS worker reuse, instance event lifecycle, direct CIO signals, 4096 distant cancellations, 2048 stop races, 512 accepted jobs and zero retained work
+timer-ServerTimerRegression.log
+PASS Server timer regression (16289 checks)
+timer-UserTimerRegression.log
+PASS User timer regression (6172 checks)
+timer-l1j.server.server.model.network.thread.TimerCancellationRegression.log
+PASS long timer cancellation and concurrent shard shutdown
+baseline.QwxO.log
+PASS hosted loopback partial SEND, OP_WRITE enable/clear, READ pause/resume, drain, timeout and RST
+baseline.yhcm.log
+PASS hosted loopback partial SEND, OP_WRITE enable/clear, READ pause/resume, drain, timeout and RST
+candidate.JMWN.log
+PASS hosted loopback partial SEND, OP_WRITE enable/clear, READ pause/resume, drain, timeout and RST
+candidate.igYZ.log
+PASS hosted loopback partial SEND, OP_WRITE enable/clear, READ pause/resume, drain, timeout and RST
+baseline.log
+Exception in thread "main" java.lang.AssertionError: new readiness collected before the mandatory eighth poll
+candidate.log
+PASS Selector shared seven-skip bound, hosted fairness, and real poll resets
+PASS Selector shared seven-skip bound, hosted fairness, and real poll resets
+PASS Selector shared seven-skip bound, hosted fairness, and real poll resets
+PASS Selector shared seven-skip bound, hosted fairness, and real poll resets
+PASS Selector shared seven-skip bound, hosted fairness, and real poll resets
