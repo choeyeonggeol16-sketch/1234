@@ -14,6 +14,7 @@ import l1j.server.server.model.map.L1Map;
 
 /** One dungeon generation. Callbacks retain this handle, never just its reusable map number. */
 public final class CInstantZone<T> {
+    private static final Runnable NO_CLEANUP = () -> {};
     final CInstantZoneManager<T> manager;
     final boolean borrowed;
     private final int id;
@@ -76,9 +77,7 @@ public final class CInstantZone<T> {
     }
 
     void closePrepared() {
-        final Runnable action;
-        synchronized (this) { action = cleanup; }
-        if (action != null) close(action);
+        requestClose(null);
     }
 
     public synchronized void bind(T value) {
@@ -165,12 +164,18 @@ public final class CInstantZone<T> {
     }
 
     public void close(Runnable action) {
-        Objects.requireNonNull(action);
+        requestClose(Objects.requireNonNull(action));
+    }
+
+    private void requestClose(Runnable action) {
         final Future<?> cancel;
         synchronized (this) {
-            if (closing) return;
+            // Terrain still being copied is rolled back by the allocator
+            // after the shutdown admission cutoff.
+            if (closing || map == null) return;
             closing = true;
-            cleanup = action;
+            if (action != null) cleanup = action;
+            else if (cleanup == null) cleanup = NO_CLEANUP;
             cancel = eventThread == Thread.currentThread() ? null : event;
         }
         if (cancel != null) cancel.cancel(true);

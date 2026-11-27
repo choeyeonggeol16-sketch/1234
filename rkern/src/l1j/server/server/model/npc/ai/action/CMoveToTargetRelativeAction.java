@@ -119,7 +119,8 @@ public final class CMoveToTargetRelativeAction {
         // The router tries its local window first, then a larger reusable
         // window covering both actor and target. Do not reject by old 12-tile
         // distance before asking whether another entrance can be reached.
-        final short mapId = (short) monster.getMapId();
+        final var terrain = monster.getMap();
+        final short mapId = (short) terrain.getId();
         final int baseHeading = target.targetDirection(mx, my);
         final boolean clockwiseFirst =
                 ((monster.getId() ^ target.getId()) & 1) == 0;
@@ -197,7 +198,7 @@ public final class CMoveToTargetRelativeAction {
             // owner wake. Use the same bounded claim lifetime as subsequent
             // chase ticks, never a shorter distance-based first lease.
             if (!COLLISION.reserveNpcMove(
-                    mapId, bestX, bestY, monster.getId(),
+                    terrain, bestX, bestY, monster.getId(),
                     OPEN_LANE_CLAIM_MAX_MS)) {
                 continue;
             }
@@ -209,7 +210,7 @@ public final class CMoveToTargetRelativeAction {
                     || target.getMapId() != monster.getMapId()
                     || target.getX() != tx || target.getY() != ty
                     || !isUsableMeleeSlot(target, bestX, bestY)) {
-                COLLISION.cancelNpcMove(mapId, bestX, bestY, monster.getId());
+                COLLISION.cancelNpcMove(terrain, bestX, bestY, monster.getId());
                 return false;
             }
             // The new claim already belongs to this NPC. Retire only an
@@ -221,11 +222,11 @@ public final class CMoveToTargetRelativeAction {
             final int oldPacked = monster._desireResumeAttackPos;
             if (oldPacked != 0
                     && (oldPacked != newPacked
-                        || monster._desireResumeAttackMapId != mapId)) {
+                        || monster._desireResumeAttackTerrain != terrain)) {
                 CMoveToTargetAction.clearReservedAttackSlot(monster);
             }
             CDesirePQ.releaseBlockedAttackGateOnly(monster, target);
-            monster._desireResumeAttackMapId = mapId;
+            monster._desireResumeAttackTerrain = terrain;
             monster._desireResumeAttackBlockedRetries = 0;
             monster._desireResumeAttackTargetId = target.getId();
             monster._desireResumeAttackTargetPos =
@@ -244,7 +245,7 @@ public final class CMoveToTargetRelativeAction {
                                 == (((bestX & 0xffff) << 16) | (bestY & 0xffff))) {
                     CMoveToTargetAction.clearReservedAttackSlot(monster);
                 } else {
-                    COLLISION.cancelNpcMove(mapId, bestX, bestY, monster.getId());
+                    COLLISION.cancelNpcMove(terrain, bestX, bestY, monster.getId());
                 }
                 return false;
             }

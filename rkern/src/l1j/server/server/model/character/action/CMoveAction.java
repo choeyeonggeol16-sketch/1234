@@ -119,7 +119,7 @@ public final class CMoveAction extends CNewAction {
             publishStep(pc, moveMap, sx, sy, nextX, nextY);
             return MOVED;
         } finally {
-            if (!committed) WORLD_COLLISION.cancelPcMove(moveMap, nextX, nextY, pc.getId());
+            if (!committed) WORLD_COLLISION.cancelPcMove(map, nextX, nextY, pc.getId());
         }
     }
 

@@ -282,7 +282,7 @@ public final class SetMoving {
                 && monster._desireResumeAttackTargetId == target.getId()
                 && monster._desireResumeAttackTargetPos ==
                     (((targetX & 0xffff) << 16) | (targetY & 0xffff))
-                && monster._desireResumeAttackMapId == (short) creature.getMapId();
+                && monster._desireResumeAttackTerrain == creature.getMap();
     }
 
     /**

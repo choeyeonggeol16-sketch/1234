@@ -134,7 +134,7 @@ public final class CWorld {
     private static final VarHandle EXEC_TAIL;
     private static final VarHandle EXEC_PENDING;
     private static final VarHandle EXEC_PAGE =
-            MethodHandles.arrayElementVarHandle(long[][].class);
+            MethodHandles.arrayElementVarHandle(ExecutionPage[].class);
     private static final VarHandle EXEC_READY =
             MethodHandles.arrayElementVarHandle(long[].class);
 
@@ -148,11 +148,15 @@ public final class CWorld {
         }
     }
 
-    private final L1Object[][] executionObjects = new L1Object[EXEC_PAGE_COUNT][];
-    private final long[][] executionCoordinates = new long[EXEC_PAGE_COUNT][];
-    private final int[][] executionMaps = new int[EXEC_PAGE_COUNT][];
-    private final long[][] executionIdentities = new long[EXEC_PAGE_COUNT][];
-    private final long[][] executionReady = new long[EXEC_PAGE_COUNT][];
+    private static final class ExecutionPage {
+        final L1Object[] objects = new L1Object[EXEC_PAGE_SIZE];
+        final L1Map[] destinations = new L1Map[EXEC_PAGE_SIZE];
+        final long[] coordinates = new long[EXEC_PAGE_SIZE];
+        final long[] identities = new long[EXEC_PAGE_SIZE];
+        final long[] ready = new long[EXEC_PAGE_SIZE];
+    }
+
+    private final ExecutionPage[] executionPages = new ExecutionPage[EXEC_PAGE_COUNT];
 
     private volatile long executionTail;
     private volatile long executionHead;
@@ -160,43 +164,43 @@ public final class CWorld {
     private volatile Thread executionThread;
     private volatile Thread executionWaiter;
     private int executionDepth;
-    // Mutated only under executionReady; the consumer reads it after a drain.
+    // Mutated only under executionPages; the consumer reads it after a drain.
     private volatile int executionAllocatedPages;
     private volatile long executionLastTrimNs;
 
     /** World jobs are admitted without routing through the CIO command FIFO. */
     public boolean AsyncStoreObject(L1Object object) {
-        return publishWorld(EXEC_STORE, object, 0, 0, 0);
+        return publishWorld(EXEC_STORE, object, 0, 0, null);
     }
 
     public boolean AsyncRemoveObject(L1Object object) {
-        return publishWorld(EXEC_REMOVE, object, 0, 0, 0);
+        return publishWorld(EXEC_REMOVE, object, 0, 0, null);
     }
 
     public boolean AsyncStoreAndEnterWorld(L1Object object) {
-        return publishWorld(EXEC_STORE_ENTER, object, 0, 0, 0);
+        return publishWorld(EXEC_STORE_ENTER, object, 0, 0, null);
     }
 
     public boolean AsyncEnterWorld(L1Object object) {
-        return publishWorld(EXEC_ENTER, object, 0, 0, 0);
+        return publishWorld(EXEC_ENTER, object, 0, 0, null);
     }
 
     public boolean AsyncLeaveWorld(L1Object object) {
-        return publishWorld(EXEC_LEAVE, object, 0, 0, 0);
+        return publishWorld(EXEC_LEAVE, object, 0, 0, null);
     }
 
     public boolean AsyncMove(L1Object object, int x, int y, int mapId) {
-        return publishWorld(EXEC_MOVE, object, x, y, mapId);
+        return object != null && publishWorld(EXEC_MOVE, object, x, y, L1WorldMap.getInstance().findMap(mapId));
     }
 
     /** Ground item expiry shares the same world identity serializer as removal. */
     public boolean AsyncItemTimer(L1ItemInstance item, int timerId, int generation) {
-        return publishWorld(EXEC_ITEM_TIMER, item, timerId, generation, 0);
+        return publishWorld(EXEC_ITEM_TIMER, item, timerId, generation, null);
     }
 
     /** One existing serializer ticket per party death, not per recipient or item. */
     public boolean AsyncPickItem(L1MonsterInstance npc, int deathEpoch) {
-        return publishWorld(EXEC_PICK_ITEM, npc, deathEpoch, 0, 0);
+        return publishWorld(EXEC_PICK_ITEM, npc, deathEpoch, 0, null);
     }
 
     private void DoAsyncPickItem(L1Object object, int deathEpoch) {
@@ -208,17 +212,17 @@ public final class CWorld {
         return (int) Math.max(0L, Math.min(EXEC_SLOTS, outstanding));
     }
 
-    private void ensureExecutionPage(int page) {
-        if (EXEC_PAGE.getAcquire(executionReady, page) != null) return;
-        // Pages are cold-path allocations only; readiness is published last.
-        synchronized (executionReady) {
-            if (executionReady[page] != null) return;
-            executionObjects[page] = new L1Object[EXEC_PAGE_SIZE];
-            executionCoordinates[page] = new long[EXEC_PAGE_SIZE];
-            executionMaps[page] = new int[EXEC_PAGE_SIZE];
-            executionIdentities[page] = new long[EXEC_PAGE_SIZE];
-            EXEC_PAGE.setRelease(executionReady, page, new long[EXEC_PAGE_SIZE]);
-            ++executionAllocatedPages;
+    private ExecutionPage ensureExecutionPage(int index) {
+        ExecutionPage page = (ExecutionPage) EXEC_PAGE.getAcquire(executionPages, index);
+        if (page != null) return page;
+        synchronized (executionPages) {
+            page = executionPages[index];
+            if (page == null) {
+                page = new ExecutionPage();
+                EXEC_PAGE.setRelease(executionPages, index, page);
+                ++executionAllocatedPages;
+            }
+            return page;
         }
     }
 
@@ -234,24 +238,17 @@ public final class CWorld {
         if (executionAllocatedPages < EXEC_TRIM_MIN_PAGES) return;
         final long now = System.nanoTime();
         final long last = executionLastTrimNs;
-        if (last != 0L && now - last < EXEC_TRIM_INTERVAL_NS) return;
+        // A second large burst can be the last traffic for hours. The cooldown only
+        // applies to the smaller, routinely reused working set.
+        if (executionAllocatedPages < EXEC_TRIM_MIN_PAGES * 4
+                && last != 0L && now - last < EXEC_TRIM_INTERVAL_NS) return;
         final long emptyTicket = executionHead;
         if (emptyTicket < 0L || !EXEC_TAIL.compareAndSet(this,
                 emptyTicket, emptyTicket | EXEC_TRIM_GATE)) return;
         final long nextTicket = emptyTicket + EXEC_SLOTS;
         try {
-            synchronized (executionReady) {
-                // The exclusive gate prevents tail CAS and there were no
-                // outstanding reservations when it was acquired.
-                for (int p = 0; p < EXEC_PAGE_COUNT; ++p) {
-                    if (executionReady[p] == null) continue;
-                    // No pending producer or drainer can refer to these arrays.
-                    EXEC_PAGE.setRelease(executionReady, p, null);
-                    executionObjects[p] = null;
-                    executionCoordinates[p] = null;
-                    executionMaps[p] = null;
-                    executionIdentities[p] = null;
-                }
+            synchronized (executionPages) {
+                Arrays.fill(executionPages, null);
                 executionAllocatedPages = 0;
                 executionLastTrimNs = now;
             }
@@ -264,10 +261,10 @@ public final class CWorld {
     }
 
     private boolean publishWorld(int operation, L1Object object,
-            int x, int y, int mapId) {
+            int x, int y, L1Map destination) {
         if (object == null) return false;
         if (Thread.currentThread() == executionThread) {
-            runWorld(operation, object, x, y, mapId,
+            runWorld(operation, object, x, y, destination,
                     objectFactory.worldIdentityOf(object));
             return true;
         }
@@ -276,6 +273,7 @@ public final class CWorld {
         final long identity = objectFactory.worldIdentityOf(object);
         long ticket;
         int slot;
+        ExecutionPage page;
         for (;;) {
             ticket = executionTail;
             if (ticket < 0L) {
@@ -284,27 +282,26 @@ public final class CWorld {
             }
             if (ticket - executionHead >= EXEC_LIMIT) return false;
             slot = (int) ticket & EXEC_MASK;
-            ensureExecutionPage(slot >>> EXEC_PAGE_BITS);
+            page = ensureExecutionPage(slot >>> EXEC_PAGE_BITS);
             if (EXEC_TAIL.compareAndSet(this, ticket, ticket + 1L)) break;
         }
-        final int page = slot >>> EXEC_PAGE_BITS;
         final int entry = slot & EXEC_PAGE_MASK;
         int publishedOperation = operation;
         try {
-            executionObjects[page][entry] = object;
-            executionCoordinates[page][entry] =
+            page.objects[entry] = object;
+            page.coordinates[entry] =
                     ((long) x << 32) | (y & 0xffffffffL);
-            executionMaps[page][entry] = mapId;
-            executionIdentities[page][entry] = identity;
+            page.destinations[entry] = destination;
+            page.identities[entry] = identity;
         } catch (Throwable failure) {
             // A reserved ticket must always be consumable by the drainer.
             publishedOperation = EXEC_CANCEL;
-            EXEC_READY.setRelease(executionReady[page], entry,
+            EXEC_READY.setRelease(page.ready, entry,
                     ((ticket + 1L) << 4) | publishedOperation);
             signalWorld();
             throw failure;
         }
-        EXEC_READY.setRelease(executionReady[page], entry,
+        EXEC_READY.setRelease(page.ready, entry,
                 ((ticket + 1L) << 4) | publishedOperation);
         signalWorld();
         return true;
@@ -324,9 +321,9 @@ public final class CWorld {
         for (;;) {
             final long ticket = executionHead;
             final int slot = (int) ticket & EXEC_MASK;
-            final int page = slot >>> EXEC_PAGE_BITS;
+            final ExecutionPage page = (ExecutionPage) EXEC_PAGE.getAcquire(executionPages, slot >>> EXEC_PAGE_BITS);
             final int entry = slot & EXEC_PAGE_MASK;
-            final long[] ready = executionReady[page];
+            final long[] ready = page.ready;
             final long expected = (ticket + 1L) << 4;
             long stamp;
             int spins = 0;
@@ -347,17 +344,17 @@ public final class CWorld {
             try {
                 final int operation = (int) (stamp & 15L);
                 if (operation != EXEC_CANCEL) {
-                    final long position = executionCoordinates[page][entry];
-                    runWorld(operation, executionObjects[page][entry],
+                    final long position = page.coordinates[entry];
+                    runWorld(operation, page.objects[entry],
                             (int) (position >>> 32), (int) position,
-                            executionMaps[page][entry],
-                            executionIdentities[page][entry]);
+                            page.destinations[entry],
+                            page.identities[entry]);
                 }
             } catch (Throwable failure) {
                 EXEC_LOG.log(Level.SEVERE, "CWorld executable failed", failure);
             } finally {
-                executionObjects[page][entry] = null;
-                executionIdentities[page][entry] = 0L;
+                page.objects[entry] = null;
+                page.destinations[entry] = null;
                 executionHead = ticket + 1L;
             }
             executionThread = null;
@@ -370,7 +367,7 @@ public final class CWorld {
     }
 
     private void runWorld(int operation, L1Object object,
-            int x, int y, int mapId, long identity) {
+            int x, int y, L1Map destination, long identity) {
         if (++executionDepth > 4) {
             EXEC_LOG.warning("CWorld nested executable depth=" + executionDepth);
         }
@@ -383,35 +380,35 @@ public final class CWorld {
                 DoAsyncPickItem(object, x);
                 return;
             }
-            if (operation != EXEC_STORE && operation != EXEC_STORE_ENTER) {
-                if (identity != 0L) {
-                    if (objectFactory.findByWorldIdentity(identity) != object) return;
-                } else if (objectFactory.find(object.getId()) != object) {
-                    return;
-                }
+            // A queued STORE followed by ENTER may have been admitted before the first
+            // registration existed. Bind that dependency now, then validate under the
+            // factory stripe at the actual mutation (same Java object can be reinstalled).
+            if (identity == 0 && operation != EXEC_STORE && operation != EXEC_STORE_ENTER) {
+                identity = objectFactory.worldIdentityOf(object);
+                if (identity == 0) return;
             }
             switch (operation) {
             case EXEC_STORE:
-                installObject(object);
+                installObject(object, identity);
                 break;
             case EXEC_REMOVE:
                 // Remove both registries and visibility as one transition.
-                leaveAndRemoveObject(object);
+                leaveAndRemoveObject(object, identity);
                 break;
             case EXEC_STORE_ENTER:
-                installAndEnterWorld(object);
+                installAndEnterWorld(object, identity);
                 break;
             case EXEC_ENTER:
-                addRegisteredVisibleObject(object);
+                addVisibleObject0(object, true, identity);
                 break;
             case EXEC_LEAVE:
-                removeVisibleObject(object);
+                removeVisibleObject(object, identity);
                 break;
             case EXEC_MOVE:
-                relocateVisibleObject(object, x, y, mapId);
+                relocateVisibleObject(object, x, y, destination, identity);
                 break;
             case EXEC_ITEM_TIMER:
-                if (object instanceof L1ItemInstance) {
+                if (object instanceof L1ItemInstance && objectFactory.findByWorldIdentity(identity) == object) {
                     ((L1ItemInstance) object).TimerExpired(x, y);
                 }
                 break;
@@ -458,35 +455,40 @@ public final class CWorld {
     }
 
     // World object identity and its secondary registries must change in one
-    // serial operation. Reuse the factory's existing ID-page monitor instead
+    // serial operation. Reuse the factory's existing ID writer monitor instead
     // of creating a global lock, worker, task object, or new queue.
     public void storeObject(L1Object object) {
-        installObject(object);
+        installObject(object, 0L);
     }
 
     /** Synchronous registration and entry; callers can use the actor immediately. */
     public void storeAndEnterWorld(L1Object object) {
-        installAndEnterWorld(object);
+        installAndEnterWorld(object, 0L);
     }
 
     /** Remove the identity and its visibility as one generation transition. */
     public void leaveAndRemoveObject(L1Object object) {
+        leaveAndRemoveObject(object, 0L);
+    }
+
+    private void leaveAndRemoveObject(L1Object object, long expected) {
         if (object == null) {
             throw new NullPointerException("object");
         }
         // The same instance can be removed and re-registered under its old ID.
-        // Keep the object's relocation lock and the existing ID-page writer lock
+        // Keep the object's relocation lock and the existing ID writer lock
         // across both operations, otherwise a delayed leave can erase the new
         // registration's visibility/occupancy after the ID has been reinstalled.
-        // Object -> ID-page is also the order used by relocation and visibility.
+        // Object -> ID stripe is also the order used by relocation and visibility.
         if (object instanceof L1GroundInventory) {
-            removeVisibleObject(object);
+            removeVisibleObject(object, expected);
             return;
         }
         final long oldPos;
         final boolean removed;
         synchronized (object) {
             synchronized (objectFactory.slotLock(object.getId())) {
+                if (expected != 0 && objectFactory.findByWorldIdentity(expected) != object) return;
                 oldPos = removeVisibleObjectLocked(object);
                 removed = objectFactory.remove(object);
                 if (removed) removeSecondary(object);
@@ -500,21 +502,23 @@ public final class CWorld {
         }
     }
 
-    // The previous actor must be captured under the same ID-page writer lock
+    // The previous actor must be captured under the same ID writer lock
     // used for replacement; a read outside the lock can miss an intervening
     // registration and strand its visible entry on another map.
-    private void installAndEnterWorld(L1Object object) {
-        installObject(object);
-        addRegisteredVisibleObject(object);
+    private void installAndEnterWorld(L1Object object, long expected) {
+        final long installed = installObject(object, expected);
+        if (installed != 0) addVisibleObject0(object, true, installed);
     }
 
-    private void installObject(L1Object object) {
+    private long installObject(L1Object object, long expected) {
         if (object == null) {
             throw new NullPointerException();
         }
 
         final L1Object previous;
+        final long installed;
         synchronized (objectFactory.slotLock(object.getId())) {
+            if (expected != 0 && objectFactory.findByWorldIdentity(expected) != object) return 0L;
             final int id = object.getId();
             final L1Object registered = objectFactory.find(id);
             final L1Object local = mapObjects.mapOnlyOwner(id);
@@ -523,6 +527,7 @@ public final class CWorld {
             if (registered != null && registered != object) removeSecondary(registered);
             objectFactory.install(object);
             installSecondary(object);
+            installed = objectFactory.worldIdentityOf(object);
         }
         // Keep NPC speed initialization outside the registry page monitor.
         if (object instanceof L1NpcInstance npc) {
@@ -532,12 +537,13 @@ public final class CWorld {
         if (previous != null && previous != object) {
             retireReplacedVisible(previous);
         }
+        return installed;
     }
 
     // An earlier registration can lose its ID, then regain it before the
     // replacement's delayed visibility cleanup runs. In that case it is live
     // again and its occupancy/view must not be removed. Recheck the canonical
-    // ID under the same per-object -> ID-page order used by relocation.
+    // ID under the same per-object -> ID stripe order used by relocation.
     private void retireReplacedVisible(L1Object previous) {
         long oldPos = -1L;
         synchronized (previous) {
@@ -774,14 +780,10 @@ public final class CWorld {
     }
 
     public void addVisibleObject(L1Object object) {
-        addVisibleObject0(object, false);
+        addVisibleObject0(object, false, 0L);
     }
 
-    private void addRegisteredVisibleObject(L1Object object) {
-        addVisibleObject0(object, true);
-    }
-
-    private void addVisibleObject0(L1Object object, boolean registeredOnly) {
+    private void addVisibleObject0(L1Object object, boolean registeredOnly, long expected) {
         if (object == null)
             return;
 
@@ -794,6 +796,7 @@ public final class CWorld {
             } else {
                 final int id = object.getId();
                 synchronized (objectFactory.slotLock(id)) {
+                    if (expected != 0 && objectFactory.findByWorldIdentity(expected) != object) return;
                     final L1Object owner = objectFactory.find(id);
                     // Traps and certain item publications legitimately have no factory entry.
                     // A registered actor's late enter must never displace its replacement.
@@ -813,7 +816,7 @@ public final class CWorld {
                     if (old != LocalWorldMap.NO_POSITION && (object instanceof L1PcInstance || object instanceof L1NpcInstance)
                             && (LocalWorldMap.positionMap(old) != object.getMapId()
                             || LocalWorldMap.positionX(old) != object.getX() || LocalWorldMap.positionY(old) != object.getY()))
-                        collision.leaveCreature(object, LocalWorldMap.positionMap(old),
+                        collision.leaveCreature(object, LocalWorldMap.publishedTerrain(object),
                                 LocalWorldMap.positionX(old), LocalWorldMap.positionY(old));
                     collision.enterCreature(object);
                     newPos = clusterGrid.enterSilently(object);
@@ -832,10 +835,21 @@ public final class CWorld {
     }
 
     public void removeVisibleObject(L1Object object) {
+        removeVisibleObject(object, 0L);
+    }
+
+    private void removeVisibleObject(L1Object object, long expected) {
         if (object == null) return;
         final long oldPos;
         synchronized (object) {
-            oldPos = removeVisibleObjectLocked(object);
+            if (expected == 0) {
+                oldPos = removeVisibleObjectLocked(object);
+            } else {
+                synchronized (objectFactory.slotLock(object.getId())) {
+                    if (objectFactory.findByWorldIdentity(expected) != object) return;
+                    oldPos = removeVisibleObjectLocked(object);
+                }
+            }
         }
         clusterGrid.reconcileLeave(object, oldPos);
     }
@@ -859,7 +873,7 @@ public final class CWorld {
                     // the replacement's exact tile must preserve the new occupancy.
                     if (current == null || LocalWorldMap.publishedPosition(current) != old
                             || (object instanceof L1PcInstance) != (current instanceof L1PcInstance)) {
-                        collision.leaveCreature(object, map, LocalWorldMap.positionX(old), LocalWorldMap.positionY(old));
+                        collision.leaveCreature(object, LocalWorldMap.publishedTerrain(object), LocalWorldMap.positionX(old), LocalWorldMap.positionY(old));
                     }
                 }
             }
@@ -882,9 +896,13 @@ public final class CWorld {
 
     /** A delayed caller holding a recycled terrain reference cannot enter the replacement. */
     public boolean relocateVisibleObject(L1Object object, int x, int y, L1Map destination) {
+        return relocateVisibleObject(object, x, y, destination, 0L);
+    }
+
+    private boolean relocateVisibleObject(L1Object object, int x, int y, L1Map destination, long expected) {
         if (object == null) return false;
         synchronized (object) {
-            if (!relocateLocked(object, x, y, destination)) return false;
+            if (!relocateLocked(object, x, y, destination, expected)) return false;
         }
         if (object instanceof L1PcInstance pc) pc.InvalidateWarehouseAccess();
         return true;
@@ -894,20 +912,26 @@ public final class CWorld {
     public boolean moveVisibleObject(L1Object object, int x, int y, L1Map destination) {
         if (object == null) return false;
         final long previous, current;
+        final L1Map unchangedTerrain;
         synchronized (object) {
             previous = LocalWorldMap.publishedPosition(object);
+            unchangedTerrain = LocalWorldMap.publishedTerrain(object) == destination ? destination : null;
             if (!relocateLocked(object, x, y, destination)) return false;
             current = LocalWorldMap.publishedPosition(object);
         }
         if (object instanceof L1PcInstance pc) pc.CheckWarehouseRange();
-        clusterGrid.reconcileMove(object, previous, current);
+        clusterGrid.reconcileMove(object, previous, current, unchangedTerrain);
         return true;
     }
 
     private boolean relocateLocked(L1Object object, int x, int y, L1Map destination) {
+        return relocateLocked(object, x, y, destination, 0L);
+    }
+
+    private boolean relocateLocked(L1Object object, int x, int y, L1Map destination, long expected) {
         if (destination == null) return false;
         synchronized (objectFactory.slotLock(object.getId())) {
-            if (objectFactory.find(object.getId()) != object
+            if ((expected != 0 ? objectFactory.findByWorldIdentity(expected) : objectFactory.find(object.getId())) != object
                     || LocalWorldMap.publishedPosition(object) == LocalWorldMap.NO_POSITION
                     || !LocalWorldMap.isSanePosition(destination.getId(), x, y)
                     || L1WorldMap.getInstance().findMap(destination.getId()) != destination) return false;
@@ -922,6 +946,7 @@ public final class CWorld {
     public void moveTo(L1Object object, int oldMap, int oldX, int oldY) {
         if (object == null) return;
         final long previous, current;
+        final L1Map unchangedTerrain;
         synchronized (object) {
             synchronized (objectFactory.slotLock(object.getId())) {
                 if (objectFactory.find(object.getId()) != object) return;
@@ -929,6 +954,7 @@ public final class CWorld {
                 if (previous == LocalWorldMap.NO_POSITION) return;
                 final L1Map before = LocalWorldMap.publishedTerrain(object);
                 final L1Map destination = object.getMap();
+                unchangedTerrain = before == destination ? before : null;
                 if ((destination != before && L1WorldMap.getInstance().findMap(destination.getId()) != destination)
                         || !mapObjects.move(object, object.getMapId(), object.getX(), object.getY())) {
                     object.getLocation().set(LocalWorldMap.positionX(previous), LocalWorldMap.positionY(previous), before);
@@ -938,7 +964,7 @@ public final class CWorld {
             }
         }
         if (object instanceof L1PcInstance pc) pc.CheckWarehouseRange();
-        clusterGrid.reconcileMove(object, previous, current);
+        clusterGrid.reconcileMove(object, previous, current, unchangedTerrain);
     }
 
     public L1Object findObject(String name) {

@@ -1,12 +1,16 @@
 package l1j.server.server.model.map;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+import l1j.server.MapReader;
+
 public final class WorldMapGenerationRegression {
     public static void main(String[] args) throws Exception {
+        failedStartup();
         var entered = new CountDownLatch(1);
         var proceed = new CountDownLatch(1);
         final L1V1Map template = new L1V1Map(10, new byte[4][4], 0, 0, false, false, false,
@@ -46,6 +50,20 @@ public final class WorldMapGenerationRegression {
         var next = maps.tryCloneMap(21, 22);
         check(next != null && maps.removeMap(next), "failed copy releases reservation");
         System.out.println("PASS world map reservation, concurrent copies, rollback and identity removal");
+    }
+
+    private static void failedStartup() {
+        final IOException cause = new IOException("unreadable map file");
+        MapReader reader = new MapReader() {
+            @Override public Map<Integer, L1Map> read() throws IOException { throw cause; }
+            @Override public L1Map read(int id) { throw new AssertionError("single map lookup"); }
+        };
+        try {
+            new L1WorldMap(reader);
+            throw new AssertionError("failed map read was accepted");
+        } catch (IllegalStateException expected) {
+            check(expected.getCause() == cause, "startup lost the map read error");
+        }
     }
 
     private static void check(boolean result, String message) {

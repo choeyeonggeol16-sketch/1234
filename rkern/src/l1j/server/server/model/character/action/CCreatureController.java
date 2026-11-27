@@ -486,7 +486,8 @@ public final class CCreatureController {
                 if (identity != 0L) {
                     try {
                         final L1PcInstance pc = actor;
-                        if (pc != null && actorEpoch == (int) (identity >>> 32)
+                        if (pc != null && pc.getClusterMapId() >= 0 && !pc.isLogoutStarted()
+                                && actorEpoch == (int) (identity >>> 32)
                                 && pc.getSessionStamp() == (int) identity) {
                             pc.refreshSight();
                         }
@@ -645,7 +646,8 @@ public final class CCreatureController {
             final L1Object observed = (L1Object) o0;
             if (pc != null && observed != null && pc != observed) {
                 try {
-                    if (observed.getClusterMapId() < 0) pc.outOfSight(observed);
+                    if (observed.getClusterMapId() < 0 || pc.getClusterMapId() < 0 || pc.isLogoutStarted())
+                        pc.outOfSight(observed);
                     else pc.reconcileSight(observed);
                 } catch (RuntimeException failure) {
                     EXECUTION_LOG.log(Level.WARNING,

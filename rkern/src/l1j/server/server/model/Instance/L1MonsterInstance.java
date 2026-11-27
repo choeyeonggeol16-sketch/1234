@@ -96,7 +96,7 @@ public class L1MonsterInstance extends L1NpcInstance {
     public int _desireResumeAttackTargetPos = 0;
     public int _desireResumeAttackPos = 0;
     /** Map that owns _desireResumeAttackPos; the NPC may move maps before cleanup. */
-    public short _desireResumeAttackMapId = 0;
+    public l1j.server.server.model.map.L1Map _desireResumeAttackTerrain;
     // Consecutive no-progress ticks for a claimed melee destination.
     public byte _desireResumeAttackBlockedRetries = 0;
 

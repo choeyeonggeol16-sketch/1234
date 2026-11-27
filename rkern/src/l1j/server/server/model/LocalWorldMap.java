@@ -737,7 +737,7 @@ public final class LocalWorldMap {
     }
 
     private void publishViewDelta(int op, long oldPosition,
-            long newPosition, L1Object object) {
+            long newPosition, L1Object object, L1Map unchangedTerrain) {
         // Tile inventories remain spatial for NPC/pet looting, but they are
         // never sent as player AOI objects. Only their CItem entries are.
         if (object == null || object instanceof L1GroundInventory) return;
@@ -759,14 +759,13 @@ public final class LocalWorldMap {
             }
             // When the moved object is itself a player, also reconcile that
             // player's known objects. Never involve CIO shard affinity.
-            if (object instanceof L1PcInstance) {
-                final L1PcInstance pc = (L1PcInstance) object;
+            if (object instanceof L1PcInstance pc && publishedPosition(pc) != NO_POSITION) {
                 // Movement between two established positions changes only the
                 // ground sight boundary. Login, leave and map resets retain full
                 // reconciliation; rejected SENDs retain the existing repair path.
                 final boolean groundDelta = op == DELTA_VIEW_MOVE
-                        && oldPosition != NO_POSITION && newPosition != NO_POSITION
-                        && positionMap(oldPosition) == positionMap(newPosition)
+                        && unchangedTerrain != null && pc.getMap() == unchangedTerrain
+                        && publishedPosition(pc) == newPosition
                         && (pc.groundSightEpoch() & 1) != 0;
                 collectSightCandidates(oldPosition, newPosition, radius,
                         false, groundDelta, scratch.objects);
@@ -810,7 +809,7 @@ public final class LocalWorldMap {
     }
 
     void reconcileEnter(L1Object object, long position) {
-        if (position != NO_POSITION) publishViewDelta(DELTA_VIEW_ENTER, NO_POSITION, position, object);
+        if (position != NO_POSITION) publishViewDelta(DELTA_VIEW_ENTER, NO_POSITION, position, object, null);
     }
 
     /** Return the last published tile so the caller can notify after its outer locks. */
@@ -828,7 +827,7 @@ public final class LocalWorldMap {
     }
 
     void reconcileLeave(L1Object object, long position) {
-        if (position != NO_POSITION) publishViewDelta(DELTA_VIEW_LEAVE, position, NO_POSITION, object);
+        if (position != NO_POSITION) publishViewDelta(DELTA_VIEW_LEAVE, position, NO_POSITION, object, null);
     }
 
     public void relocate(L1Object object) {
@@ -848,17 +847,20 @@ public final class LocalWorldMap {
     public void relocate(L1Object object, int oldMap, int oldX, int oldY) {
         if (object == null) return;
         final long previous, current;
+        final L1Map unchangedTerrain;
         synchronized (object) {
             previous = publishedPosition(object);
+            final L1Map before = publishedTerrain(object);
             current = relocateSilently(object);
+            unchangedTerrain = before == publishedTerrain(object) ? before : null;
         }
-        reconcileMove(object, previous, current);
+        reconcileMove(object, previous, current, unchangedTerrain);
     }
 
-    void reconcileMove(L1Object object, long previous, long current) {
+    void reconcileMove(L1Object object, long previous, long current, L1Map unchangedTerrain) {
         if (previous == NO_POSITION) reconcileEnter(object, current);
         else if (current == NO_POSITION) reconcileLeave(object, previous);
-        else publishViewDelta(DELTA_VIEW_MOVE, previous, current, object);
+        else publishViewDelta(DELTA_VIEW_MOVE, previous, current, object, unchangedTerrain);
     }
 
     public List<L1Object> queryNearby(L1Object origin, int radius) {

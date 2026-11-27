@@ -1647,7 +1647,7 @@ public class L1NpcInstance extends L1Character {
                 if (!moved && tracksOccupancy) {
                     if (world.findObjectBySmartId(smartId) != this
                             || !teleportNpcOcc(mapId, nx, ny, mapId, oldX, oldY)) {
-                        TileOccupancyNpc.getInstance().releaseNow((short) mapId, nx, ny, getId());
+                        TileOccupancyNpc.getInstance().releaseNow(getMap(), nx, ny, getId());
                     }
                 }
             }
@@ -2790,14 +2790,14 @@ public class L1NpcInstance extends L1Character {
         if (!shouldUseNpcOccupancy()) {
             return;
         }
-        TileOccupancyNpc.getInstance().tryOccupyNow(occMapId(), getX(), getY(), getId());
+        TileOccupancyNpc.getInstance().tryOccupyNow(getMap(), getX(), getY(), getId());
     }
 
     public void releaseNpcTileNow() {
         if (!shouldUseNpcOccupancy()) {
             return;
         }
-        TileOccupancyNpc.getInstance().releaseNow(occMapId(), getX(), getY(), getId());
+        TileOccupancyNpc.getInstance().releaseNow(getMap(), getX(), getY(), getId());
     }
 
     private boolean reserveNpcDest(int x, int y) {
@@ -2811,7 +2811,7 @@ public class L1NpcInstance extends L1Character {
         if (isPassableNpc()) {
             return;
         }
-        TileOccupancyNpc.getInstance().cancelMove(occMapId(), x, y, getId());
+        TileOccupancyNpc.getInstance().cancelMove(getMap(), x, y, getId());
     }
 
     private boolean commitNpcMove(int sx, int sy, int dx, int dy) {

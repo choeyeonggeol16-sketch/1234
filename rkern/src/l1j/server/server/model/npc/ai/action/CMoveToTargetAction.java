@@ -736,7 +736,7 @@ public final class CMoveToTargetAction {
         /*
          * Target moved: the old reserved tile is no longer its melee slot.
          */
-        if (monster._desireResumeAttackMapId != (short) monster.getMapId()
+        if (monster._desireResumeAttackTerrain != monster.getMap()
                 || monster._desireResumeAttackTargetPos
                         != (((target.getX() & 0xffff) << 16)
                             | (target.getY() & 0xffff))
@@ -755,7 +755,7 @@ public final class CMoveToTargetAction {
          * reservation as clear, but a real creature body still wins.
          */
         if (!COLLISION.reserveNpcMove(
-                (short) monster.getMapId(),
+                monster._desireResumeAttackTerrain,
                 slotX,
                 slotY,
                 monster.getId(),
@@ -875,7 +875,7 @@ public final class CMoveToTargetAction {
                 || monster._desireResumeAttackTargetPos
                         != (((target.getX() & 0xffff) << 16)
                             | (target.getY() & 0xffff))
-                || monster._desireResumeAttackMapId != (short) monster.getMapId()
+                || monster._desireResumeAttackTerrain != monster.getMap()
                 || Math.max(Math.abs(x - target.getX()),
                             Math.abs(y - target.getY())) != 1
                 || !isUsableMeleeSlot(target, x, y)) {
@@ -891,7 +891,7 @@ public final class CMoveToTargetAction {
 
         if (packed != 0) {
             COLLISION.cancelNpcMove(
-                    monster._desireResumeAttackMapId,
+                    monster._desireResumeAttackTerrain,
                     (packed >>> 16) & 0xffff,
                     packed & 0xffff,
                     monster.getId());
@@ -900,7 +900,7 @@ public final class CMoveToTargetAction {
         monster._desireResumeAttackTargetId = 0;
         monster._desireResumeAttackTargetPos = 0;
         monster._desireResumeAttackPos = 0;
-        monster._desireResumeAttackMapId = 0;
+        monster._desireResumeAttackTerrain = null;
         monster._desireResumeAttackBlockedRetries = 0;
     }
 

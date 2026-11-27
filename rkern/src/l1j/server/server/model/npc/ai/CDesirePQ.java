@@ -350,7 +350,7 @@ public final class CDesirePQ {
 
         if (packed != 0) {
             COLLISION.cancelNpcMove(
-                    npc._desireResumeAttackMapId,
+                    npc._desireResumeAttackTerrain,
                     (packed >>> 16) & 0xffff,
                     packed & 0xffff,
                     npc.getId());
@@ -359,7 +359,7 @@ public final class CDesirePQ {
         npc._desireResumeAttackTargetId = 0;
         npc._desireResumeAttackTargetPos = 0;
         npc._desireResumeAttackPos = 0;
-        npc._desireResumeAttackMapId = 0;
+        npc._desireResumeAttackTerrain = null;
         npc._desireResumeAttackBlockedRetries = 0;
     }
 

@@ -1,6 +1,7 @@
 package l1j.server.server.model.ai.core;
 
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
@@ -35,6 +36,12 @@ public final class WorldCollisionHash {
 
     public static WorldCollisionHash getInstance() {
         return INSTANCE;
+    }
+
+    /** Called after a terrain generation is unpublished and before its ID is freed. */
+    public void retireMap(L1Map terrain) {
+        pc.retireMap(terrain);
+        npc.retireMap(terrain);
     }
 
     private WorldCollisionHash() {
@@ -669,6 +676,10 @@ public final class WorldCollisionHash {
         return pc.canMoveTo(mapId, x, y, actorId, ttlMs);
     }
 
+    public void cancelPcMove(L1Map terrain, int x, int y, int actorId) {
+        pc.cancelMove(terrain, x, y, actorId);
+    }
+
     public void cancelPcMove(int mapId, int x, int y, int actorId) {
         pc.cancelMove(mapId, x, y, actorId);
     }
@@ -702,7 +713,7 @@ public final class WorldCollisionHash {
         if (object instanceof L1PcInstance) {
             final L1PcInstance actor = (L1PcInstance) object;
             pc.tryOccupyNow(
-                    (short) actor.getMapId(),
+                    actor.getMap(),
                     actor.getX(),
                     actor.getY(),
                     actor.getId());
@@ -713,7 +724,7 @@ public final class WorldCollisionHash {
             final L1NpcInstance actor = (L1NpcInstance) object;
             if (actor.shouldUseNpcOccupancy()) {
                 npc.tryOccupyNow(
-                        (short) actor.getMapId(),
+                        actor.getMap(),
                         actor.getX(),
                         actor.getY(),
                         actor.getId());
@@ -723,7 +734,15 @@ public final class WorldCollisionHash {
 
     /** World removal collision hook. AOI/visibility does not belong here. */
     public void leaveCreature(L1Object object) {
-        if (object != null) leaveCreature(object, object.getMapId(), object.getX(), object.getY());
+        if (object != null) leaveCreature(object, object.getMap(), object.getX(), object.getY());
+    }
+
+    public void leaveCreature(L1Object object, L1Map terrain, int x, int y) {
+        if (object instanceof L1PcInstance) {
+            pc.releaseNow(terrain, x, y, object.getId());
+        } else if (object instanceof L1NpcInstance actor && actor.shouldUseNpcOccupancy()) {
+            npc.releaseNow(terrain, x, y, object.getId());
+        }
     }
 
     /** CWorld can retire an actor after its public location has already changed. */
@@ -791,6 +810,14 @@ public final class WorldCollisionHash {
 
     public void releaseNpcNow(short mapId, int x, int y, int actorId) {
         npc.releaseNow(mapId, x, y, actorId);
+    }
+
+    public boolean reserveNpcMove(L1Map terrain, int x, int y, int actorId, long ttlMs) {
+        return npc.canMoveTo(terrain, x, y, actorId, ttlMs);
+    }
+
+    public void cancelNpcMove(L1Map terrain, int x, int y, int actorId) {
+        npc.cancelMove(terrain, x, y, actorId);
     }
 
     public boolean reserveNpcMove(short mapId, int x, int y, int actorId, long ttlMs) {

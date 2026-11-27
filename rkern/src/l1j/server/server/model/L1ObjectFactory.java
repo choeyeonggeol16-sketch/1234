@@ -32,82 +32,65 @@ final class L1ObjectFactory {
 
     private static final class PageGroup {
         final Page[] pages = new Page[PAGE_COUNT];
+        int pageCount;
     }
 
     private static final class Page {
         final Object[] objects = new Object[SLOT_COUNT];
         final int[] generations = new int[SLOT_COUNT];
+        int size;
     }
 
+    // A compound world mutation must keep its lock when its last slot disappears.
+    private final Object[] slotLocks = locks(256);
+    private final Object[] groupLocks = locks(32);
     private final PageGroup[] groups = new PageGroup[GROUP_COUNT];
     private final AtomicInteger generationSequence = new AtomicInteger(1);
     private final AtomicInteger objectCount = new AtomicInteger();
     private final CollectionView values = new CollectionView();
 
-    // Identity mutations and their CWorld secondary-index updates share this
-    // existing ID-page monitor. Unrelated pages never contend.
+    private static Object[] locks(int count) {
+        final Object[] locks = new Object[count];
+        for (int i = 0; i < count; i++) locks[i] = new Object();
+        return locks;
+    }
+
     Object slotLock(int objectId) {
-        return ensurePage(objectId);
+        final int page = objectId >>> SLOT_BITS;
+        return slotLocks[(page ^ (page >>> 8) ^ (page >>> 16)) & (slotLocks.length - 1)];
     }
 
     void install(L1Object object) {
-        if (object == null) {
-            throw new NullPointerException("object");
-        }
+        if (object == null) throw new NullPointerException("object");
+        final int id = object.getId();
+        final int slot = slotIndex(id);
+        synchronized (slotLock(id)) {
+            Page page = pageIfPresent(id);
+            if (page == null) page = createPage(id);
+            final Object previous = OBJECT_HANDLE.getAcquire(page.objects, slot);
+            if (previous == object) return;
 
-        final int objectId = object.getId();
-        final Page page = ensurePage(objectId);
-        final int slot = slotIndex(objectId);
-
-        synchronized (page) {
-            final Object current =
-                    OBJECT_HANDLE.getAcquire(page.objects, slot);
-
-            if (current == object) {
-                final int generation =
-                        (int) INT_HANDLE.getAcquire(page.generations, slot);
-                if (generation != 0) {
-                    return;
-                }
-            }
-
-            final boolean wasEmpty = current == null;
-            
+            // Readers use the generation on both sides of the object read.
             OBJECT_HANDLE.setRelease(page.objects, slot, null);
-
-            final int generation = nextGeneration();
-            INT_HANDLE.setRelease(page.generations, slot, generation);
-
+            INT_HANDLE.setRelease(page.generations, slot, nextGeneration());
             OBJECT_HANDLE.setRelease(page.objects, slot, object);
-
-            if (wasEmpty) {
+            if (previous == null) {
+                page.size++;
                 objectCount.incrementAndGet();
             }
         }
     }
 
     boolean remove(L1Object object) {
-        if (object == null) {
-            return false;
-        }
-
-        final Page page = pageIfPresent(object.getId());
-        if (page == null) {
-            return false;
-        }
-
-        final int slot = slotIndex(object.getId());
-
-        synchronized (page) {
-            final Object current =
-                    OBJECT_HANDLE.getAcquire(page.objects, slot);
-
-            if (current != object) {
-                return false;
-            }
-
+        if (object == null) return false;
+        final int id = object.getId();
+        final int slot = slotIndex(id);
+        synchronized (slotLock(id)) {
+            final Page page = pageIfPresent(id);
+            if (page == null || OBJECT_HANDLE.getAcquire(page.objects, slot) != object) return false;
             OBJECT_HANDLE.setRelease(page.objects, slot, null);
             INT_HANDLE.setRelease(page.generations, slot, 0);
+            if (--page.size == 0) dropPage(id);
             objectCount.decrementAndGet();
             return true;
         }
@@ -125,146 +108,48 @@ final class L1ObjectFactory {
     }
 
     long smartIdOf(int objectId) {
-        if (objectId <= 0) {
-            return 0L;
-        }
-
-        final Page page = pageIfPresent(objectId);
-        if (page == null) {
-            return 0L;
-        }
-
-        final int slot = slotIndex(objectId);
-        final Object first =
-                OBJECT_HANDLE.getAcquire(page.objects, slot);
-
-        if (first == null) {
-            return 0L;
-        }
-
-        final int generation =
-                (int) INT_HANDLE.getAcquire(page.generations, slot);
-
-        if (generation == 0
-                || first != OBJECT_HANDLE.getAcquire(page.objects, slot)) {
-            return 0L;
-        }
-
-        return packSmartId(objectId, generation);
+        return objectId > 0 ? worldIdentityOf(objectId) : 0L;
     }
 
     long smartIdOf(L1Object object) {
-        if (object == null || object.getId() <= 0) {
-            return 0L;
-        }
-
-        final int objectId = object.getId();
-        final Page page = pageIfPresent(objectId);
-        if (page == null) {
-            return 0L;
-        }
-
-        final int slot = slotIndex(objectId);
-        final Object first =
-                OBJECT_HANDLE.getAcquire(page.objects, slot);
-
-        if (first != object) {
-            return 0L;
-        }
-
-        final int generation =
-                (int) INT_HANDLE.getAcquire(page.generations, slot);
-
-        if (generation == 0
-                || OBJECT_HANDLE.getAcquire(page.objects, slot) != object) {
-            return 0L;
-        }
-
-        return packSmartId(objectId, generation);
+        return object != null && object.getId() > 0 ? worldIdentityOf(object) : 0L;
     }
 
-    L1Object findBySmartId(long smartId) {
-        if (smartId == 0L) {
-            return null;
-        }
-
-        final int objectId = (int) smartId;
-        final int expectedGeneration = (int) (smartId >>> 32);
-
-        if (objectId <= 0 || expectedGeneration == 0) {
-            return null;
-        }
-
-        final Page page = pageIfPresent(objectId);
-        if (page == null) {
-            return null;
-        }
-
-        final int slot = slotIndex(objectId);
-        final Object first =
-                OBJECT_HANDLE.getAcquire(page.objects, slot);
-
-        if (first == null) {
-            return null;
-        }
-
-        final int generation =
-                (int) INT_HANDLE.getAcquire(page.generations, slot);
-
-        if (generation != expectedGeneration) {
-            return null;
-        }
-
-        final Object second =
-                OBJECT_HANDLE.getAcquire(page.objects, slot);
-
-        return first == second ? (L1Object) first : null;
+    L1Object findBySmartId(long identity) {
+        return (int) identity > 0 ? findByWorldIdentity(identity) : null;
     }
 
-    // Private CWorld ticket identity, including negative inventory IDs.
-    // Public SmartID methods intentionally keep their positive-ID contract.
-    long worldIdentityOf(int objectId) {
-        final Page page = pageIfPresent(objectId);
-        if (page == null) return 0L;
-        final int slot = slotIndex(objectId);
-        final Object first = OBJECT_HANDLE.getAcquire(page.objects, slot);
-        if (first == null) return 0L;
-        final int generation = (int) INT_HANDLE.getAcquire(page.generations, slot);
-        if (generation == 0 || first != OBJECT_HANDLE.getAcquire(page.objects, slot)) {
-            return 0L;
-        }
-        return packSmartId(objectId, generation);
+    // World tickets also support signed inventory IDs, while public SmartIDs require positive IDs.
+    long worldIdentityOf(int id) {
+        return identityOf(id, null);
     }
 
     long worldIdentityOf(L1Object object) {
-        if (object == null) return 0L;
-        final int objectId = object.getId();
-        final Page page = pageIfPresent(objectId);
+        return object == null ? 0L : identityOf(object.getId(), object);
+    }
+
+    private long identityOf(int id, L1Object expected) {
+        final Page page = pageIfPresent(id);
         if (page == null) return 0L;
-        final int slot = slotIndex(objectId);
-        if (OBJECT_HANDLE.getAcquire(page.objects, slot) != object) return 0L;
+        final int slot = slotIndex(id);
         final int generation = (int) INT_HANDLE.getAcquire(page.generations, slot);
-        if (generation == 0 || OBJECT_HANDLE.getAcquire(page.objects, slot) != object) {
-            return 0L;
-        }
-        return packSmartId(objectId, generation);
+        if (generation == 0) return 0L;
+        final Object current = OBJECT_HANDLE.getAcquire(page.objects, slot);
+        if (current == null || (expected != null && current != expected)
+                || (int) INT_HANDLE.getAcquire(page.generations, slot) != generation) return 0L;
+        return packSmartId(id, generation);
     }
 
     L1Object findByWorldIdentity(long identity) {
-        if (identity == 0L) return null;
-        final int objectId = (int) identity;
-        final int expectedGeneration = (int) (identity >>> 32);
-        if (expectedGeneration == 0) return null;
-        final Page page = pageIfPresent(objectId);
+        final int generation = (int) (identity >>> 32);
+        if (generation == 0) return null;
+        final int id = (int) identity;
+        final Page page = pageIfPresent(id);
         if (page == null) return null;
-        final int slot = slotIndex(objectId);
-        final Object first = OBJECT_HANDLE.getAcquire(page.objects, slot);
-        if (first == null) return null;
-        if ((int) INT_HANDLE.getAcquire(page.generations, slot) != expectedGeneration) {
-            return null;
-        }
-        return first == OBJECT_HANDLE.getAcquire(page.objects, slot)
-                ? (L1Object) first : null;
+        final int slot = slotIndex(id);
+        if ((int) INT_HANDLE.getAcquire(page.generations, slot) != generation) return null;
+        final Object current = OBJECT_HANDLE.getAcquire(page.objects, slot);
+        return (int) INT_HANDLE.getAcquire(page.generations, slot) == generation ? (L1Object) current : null;
     }
 
     int size() {
@@ -283,40 +168,31 @@ final class L1ObjectFactory {
         return generation;
     }
 
-    private Page ensurePage(int objectId) {
-        final int pageNumber = objectId >>> SLOT_BITS;
-        final int groupIndex = pageNumber >>> PAGE_BITS;
-        final int pageIndex = pageNumber & PAGE_MASK;
-
-        PageGroup group =
-                (PageGroup) GROUP_HANDLE.getAcquire(groups, groupIndex);
-
-        if (group == null) {
-            final PageGroup created = new PageGroup();
-            if (GROUP_HANDLE.compareAndSet(
-                    groups, groupIndex, null, created)) {
-                group = created;
-            } else {
-                group = (PageGroup) GROUP_HANDLE.getAcquire(
-                        groups, groupIndex);
+    // The caller owns the stable page stripe. Group locks protect only page table membership.
+    private Page createPage(int id) {
+        final int number = id >>> SLOT_BITS;
+        final int groupIndex = number >>> PAGE_BITS;
+        final Page page = new Page();
+        synchronized (groupLocks[groupIndex & (groupLocks.length - 1)]) {
+            PageGroup group = (PageGroup) GROUP_HANDLE.getAcquire(groups, groupIndex);
+            if (group == null) {
+                group = new PageGroup();
+                GROUP_HANDLE.setRelease(groups, groupIndex, group);
             }
+            PAGE_HANDLE.setRelease(group.pages, number & PAGE_MASK, page);
+            group.pageCount++;
         }
-
-        Page page =
-                (Page) PAGE_HANDLE.getAcquire(group.pages, pageIndex);
-
-        if (page == null) {
-            final Page created = new Page();
-            if (PAGE_HANDLE.compareAndSet(
-                    group.pages, pageIndex, null, created)) {
-                page = created;
-            } else {
-                page = (Page) PAGE_HANDLE.getAcquire(
-                        group.pages, pageIndex);
-            }
-        }
-
         return page;
+    }
+
+    private void dropPage(int id) {
+        final int number = id >>> SLOT_BITS;
+        final int groupIndex = number >>> PAGE_BITS;
+        synchronized (groupLocks[groupIndex & (groupLocks.length - 1)]) {
+            final PageGroup group = (PageGroup) GROUP_HANDLE.getAcquire(groups, groupIndex);
+            PAGE_HANDLE.setRelease(group.pages, number & PAGE_MASK, null);
+            if (--group.pageCount == 0) GROUP_HANDLE.setRelease(groups, groupIndex, null);
+        }
     }
 
     private Page pageIfPresent(int objectId) {

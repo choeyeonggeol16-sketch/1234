@@ -32,7 +32,7 @@ public final class CInstantZoneManager<T> {
     }
 
     private static final Maps WORLD = new Maps() {
-        public L1Map borrow(int id) { return L1WorldMap.getInstance().findMap(id); }
+        public L1Map borrow(int id) { return L1WorldMap.getInstance().findMapForZoneBorrow(id); }
         public L1Map clone(int template, int id) { return L1WorldMap.getInstance().tryCloneMap(template, id); }
         public void release(L1Map map) {
             MapCleaner.cleanupNow(map, MapCleanerFilterFactory.createBattleHunterFilter());
@@ -107,6 +107,7 @@ public final class CInstantZoneManager<T> {
     public CInstantZone<T> tryOpen(int template, int base, int firstClone, int lastClone) {
         if (base < -1 || base > Short.MAX_VALUE || firstClone < 0 || lastClone > Short.MAX_VALUE)
             throw new IllegalArgumentException("Invalid dungeon map range");
+        if (stopping) return null;
         if (base >= 0) {
             final CInstantZone<T> zone = acquire(template, base, true);
             if (zone != null) return zone;
@@ -128,20 +129,33 @@ public final class CInstantZoneManager<T> {
             if (OWNERS.putIfAbsent(id, zone) != null) return null;
             rooms.put(id, zone);
         }
+        L1Map terrain = null;
         boolean published = false;
         try {
-            if (PUBLIC_ENTRIES.get(id) != 0) return null;
-            final L1Map terrain = borrowed ? maps.borrow(id) : maps.clone(template, id);
+            if (stopping || PUBLIC_ENTRIES.get(id) != 0) return null;
+            terrain = borrowed ? maps.borrow(id) : maps.clone(template, id);
             if (terrain == null) {
                 if (borrowed) throw new IllegalStateException("Missing dungeon base map " + id);
                 return null;
             }
             if (borrowed && maps.occupied(terrain)) return null;
-            zone.publish(terrain);
-            published = true;
+            // Copies may be expensive, so only the final publication shares
+            // a lock with stopAccepting. The shutdown sweep can then close
+            // every published owner even before its cleanup is registered.
+            synchronized (CInstantZoneManager.class) {
+                if (stopping) return null;
+                zone.publish(terrain);
+                published = true;
+            }
             return zone;
         } finally {
-            if (!published) forget(zone);
+            if (!published) {
+                try {
+                    if (!borrowed && terrain != null) maps.release(terrain);
+                } finally {
+                    forget(zone);
+                }
+            }
         }
     }
 
@@ -209,7 +223,7 @@ public final class CInstantZoneManager<T> {
         }
     }
 
-    public static void stopAccepting() { stopping = true; }
+    public static synchronized void stopAccepting() { stopping = true; }
 
     /** Sessions and script workers have quiesced. Retire remaining prepared rooms with their own cleanup. */
     public static void closePrepared() {

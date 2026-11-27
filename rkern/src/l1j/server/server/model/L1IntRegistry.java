@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * Reads are lock-free acquire loads.
  * Writes use a stable striped monitor for each 256-key bucket, allowing
- * empty leaf arrays to be released without changing compound-lock identity.
+ * empty paths to be released without changing compound-lock identity.
  */
 public final class L1IntRegistry<T> {
 
@@ -42,10 +42,12 @@ public final class L1IntRegistry<T> {
 
     private static final class Node1 {
         final Node2[] next = new Node2[RADIX];
+        int children;
     }
 
     private static final class Node2 {
         final Leaf[] next = new Leaf[RADIX];
+        int children;
     }
 
     private static final class Leaf {
@@ -54,8 +56,15 @@ public final class L1IntRegistry<T> {
         int live;
     }
 
-    private final Node1[] root = new Node1[RADIX];
-    private final AtomicInteger size = new AtomicInteger();
+    private static final class State {
+        volatile Node1[] root;
+        int children;
+        final AtomicInteger size = new AtomicInteger();
+    }
+
+    // A clear publishes the tree and its count together. In-flight writers
+    // finish against the generation they obtained under their leaf stripe.
+    private volatile State state = new State();
     private final ValuesView values = new ValuesView();
 
     // The monitor is independent of leaf lifetime: pruning cannot break
@@ -72,21 +81,22 @@ public final class L1IntRegistry<T> {
         }
 
         synchronized (lockForKey(key)) {
-            final Leaf leaf = ensureLeaf(key);
+            final State current = state;
+            final Leaf leaf = ensureLeaf(current, key);
             final int slot = key & MASK;
             @SuppressWarnings("unchecked")
             final T old = (T) VALUE.getAcquire(leaf.values, slot);
             VALUE.setRelease(leaf.values, slot, value);
             if (old == null) {
                 leaf.live++;
-                size.incrementAndGet();
+                current.size.incrementAndGet();
             }
             return old;
         }
     }
 
     public T get(int key) {
-        final Leaf leaf = leafIfPresent(key);
+        final Leaf leaf = leafIfPresent(state, key);
         if (leaf == null) {
             return null;
         }
@@ -121,45 +131,35 @@ public final class L1IntRegistry<T> {
 
 
     public T remove(int key) {
+        return removeMatching(key, null);
+    }
+
+    public boolean remove(int key, T expected) {
+        return expected != null && removeMatching(key, expected) != null;
+    }
+
+    private T removeMatching(int key, T expected) {
         synchronized (lockForKey(key)) {
-            final Leaf leaf = leafIfPresent(key);
+            final State current = state;
+            final Leaf leaf = leafIfPresent(current, key);
             if (leaf == null) return null;
             final int slot = key & MASK;
             @SuppressWarnings("unchecked")
             final T old = (T) VALUE.getAcquire(leaf.values, slot);
-            if (old == null) return null;
+            if (old == null || (expected != null && old != expected)) return null;
             VALUE.setRelease(leaf.values, slot, null);
-            leaf.live--;
-            size.decrementAndGet();
-            if (leaf.live == 0) detachEmptyLeaf(key, leaf);
+            current.size.decrementAndGet();
+            if (--leaf.live == 0) detachEmptyLeaf(current, key);
             return old;
         }
     }
 
-    public boolean remove(int key, T expected) {
-        if (expected == null) {
-            return false;
-        }
-
-        synchronized (lockForKey(key)) {
-            final Leaf leaf = leafIfPresent(key);
-            if (leaf == null) return false;
-            final int slot = key & MASK;
-            if (VALUE.getAcquire(leaf.values, slot) != expected) return false;
-            VALUE.setRelease(leaf.values, slot, null);
-            leaf.live--;
-            size.decrementAndGet();
-            if (leaf.live == 0) detachEmptyLeaf(key, leaf);
-            return true;
-        }
-    }
-
     public int size() {
-        return size.get();
+        return state.size.get();
     }
 
     public boolean isEmpty() {
-        return size.get() == 0;
+        return size() == 0;
     }
 
     public Collection<T> values() {
@@ -167,63 +167,58 @@ public final class L1IntRegistry<T> {
     }
 
     public void clear() {
-        synchronized (root) {
-            for (int i = 0; i < RADIX; i++) {
-                N1.setRelease(root, i, null);
+        state = new State();
+    }
+
+    // Only the first insertion and last removal in a leaf change the tree.
+    // Both acquire locks in the same order: stable leaf stripe, then state.
+    private static void detachEmptyLeaf(State current, int key) {
+        final int a = key >>> 24;
+        final int b = (key >>> 16) & MASK;
+        synchronized (current) {
+            final Node1 n1 = current.root[a];
+            final Node2 n2 = n1.next[b];
+            LEAF.setRelease(n2.next, (key >>> 8) & MASK, null);
+            if (--n2.children == 0) {
+                N2.setRelease(n1.next, b, null);
+                if (--n1.children == 0) {
+                    N1.setRelease(current.root, a, null);
+                    if (--current.children == 0) current.root = null;
+                }
             }
-            size.set(0);
         }
     }
 
-    private void detachEmptyLeaf(int key, Leaf leaf) {
-        // All writers to this 256-key leaf share the same stable monitor.
-        // Leave parent nodes installed: removing those would require a second
-        // coordination protocol with writers in other leaf stripes.
-        final Node1 n1 = (Node1) N1.getAcquire(root, key >>> 24);
-        if (n1 == null) return;
-        final Node2 n2 = (Node2) N2.getAcquire(n1.next, (key >>> 16) & MASK);
-        if (n2 != null) LEAF.compareAndSet(n2.next, (key >>> 8) & MASK, leaf, null);
-    }
-
-    private Leaf ensureLeaf(int key) {
+    private static Leaf ensureLeaf(State current, int key) {
+        final Leaf existing = leafIfPresent(current, key);
+        if (existing != null) return existing;
         final int a = key >>> 24;
         final int b = (key >>> 16) & MASK;
         final int c = (key >>> 8) & MASK;
-
-        Node1 n1 = (Node1) N1.getAcquire(root, a);
-        if (n1 == null) {
-            final Node1 created = new Node1();
-            if (N1.compareAndSet(root, a, null, created)) {
-                n1 = created;
-            } else {
-                n1 = (Node1) N1.getAcquire(root, a);
+        synchronized (current) {
+            if (current.root == null) current.root = new Node1[RADIX];
+            Node1 n1 = current.root[a];
+            if (n1 == null) {
+                n1 = new Node1();
+                current.children++;
+                N1.setRelease(current.root, a, n1);
             }
-        }
-
-        Node2 n2 = (Node2) N2.getAcquire(n1.next, b);
-        if (n2 == null) {
-            final Node2 created = new Node2();
-            if (N2.compareAndSet(n1.next, b, null, created)) {
-                n2 = created;
-            } else {
-                n2 = (Node2) N2.getAcquire(n1.next, b);
+            Node2 n2 = n1.next[b];
+            if (n2 == null) {
+                n2 = new Node2();
+                n1.children++;
+                N2.setRelease(n1.next, b, n2);
             }
+            final Leaf leaf = new Leaf();
+            n2.children++;
+            LEAF.setRelease(n2.next, c, leaf);
+            return leaf;
         }
-
-        Leaf leaf = (Leaf) LEAF.getAcquire(n2.next, c);
-        if (leaf == null) {
-            final Leaf created = new Leaf();
-            if (LEAF.compareAndSet(n2.next, c, null, created)) {
-                leaf = created;
-            } else {
-                leaf = (Leaf) LEAF.getAcquire(n2.next, c);
-            }
-        }
-
-        return leaf;
     }
 
-    private Leaf leafIfPresent(int key) {
+    private static Leaf leafIfPresent(State current, int key) {
+        final Node1[] root = current.root;
+        if (root == null) return null;
         final Node1 n1 = (Node1) N1.getAcquire(root, key >>> 24);
         if (n1 == null) {
             return null;
@@ -329,6 +324,8 @@ public final class L1IntRegistry<T> {
                     b = 0;
                 }
 
+                final Node1[] root = state.root;
+                if (root == null) return;
                 while (a < RADIX) {
                     final Node1 v = (Node1) N1.getAcquire(root, a++);
                     if (v != null) {

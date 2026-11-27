@@ -103,6 +103,8 @@ public final class WorldBroadcastAudienceRegression {
             }
         };
         viewer.setId(24);
+        viewer.getLocation().set(100, 100, map);
+        new LocalWorldMap().enterSilently(viewer);
         viewer.getCreatureController().ReconcileSight(trigger, false);
         check(processedHealthy.get(), "failed reentrant sight update cannot abort later work");
     }

@@ -8078,9 +8078,14 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 		return getLocation().getTileLineDistance(obj.getLocation()) <= range;
 	}
 
-	
+	private boolean hasSightPresence() {
+		return getClusterMapId() >= 0 && !isLogoutStarted();
+	}
+
 	public void inSight(L1Object obj) {
-		if (obj == null || obj == this || knownsObject(obj) || !canSeeObject(obj)) {
+		if (!hasSightPresence() || obj == null || obj == this
+				|| (obj instanceof L1PcInstance pc && !pc.hasSightPresence())
+				|| knownsObject(obj) || !canSeeObject(obj)) {
 			return;
 		}
 		obj.onPerceive(this);
@@ -8096,6 +8101,13 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 			return;
 		}
 
+		final L1Object current = CWorld.getInstance().findObject(obj.getId());
+		if (current != null && current != obj && current.getClusterMapId() >= 0
+				&& knownsObject(current) && canSeeObject(current)) {
+			// The client has the replacement under the same wire ID.
+			removeKnownObject(obj);
+			return;
+		}
 		removeKnownObject(obj);
 		SC_RemoveObject.send(
 				getNetConnection(),
@@ -8103,7 +8115,8 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	}
 
 	public void onWorldMove(int oldMap, int oldX, int oldY) {
-		
+		if (!hasSightPresence()) return;
+
 		final List<L1PcInstance> scannedPlayers = borrowKnownPlayers();
         try {
             for (int scanIndex = 0, scanSize = scannedPlayers.size(); scanIndex < scanSize; scanIndex++) {
@@ -8153,6 +8166,10 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	public void reconcileSight(L1Object obj) {
 		// Ground tile containers stay in NPC's spatial lookup, not player AOI.
 		if (obj instanceof L1GroundInventory) return;
+		if (!hasSightPresence()) {
+			outOfSight(obj);
+			return;
+		}
 		if (obj instanceof L1ItemInstance item) {
 			if (!L1GroundInventory.isVisibleGroundItem(this, item))
 				L1GroundInventory.forgetItem(this, item);

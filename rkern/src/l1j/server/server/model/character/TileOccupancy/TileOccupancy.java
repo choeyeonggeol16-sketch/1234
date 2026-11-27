@@ -77,11 +77,13 @@ public final class TileOccupancy {
     // 1. MapContext 
     // =========================================================
     private static final class MapContext {
+        private final L1Map terrain;
         private final Long2LongHashMap grid;     // Key: 좌표 -> Value: objectId
         private final Long2LongHashMap reserves; // Key: 좌표 -> Value: Packed(objectId | expireAt)
         private final StampedLock lock = new StampedLock();
 
-        MapContext(int initialCapacity) {
+        MapContext(L1Map terrain, int initialCapacity) {
+            this.terrain = terrain;
             // 초기용량을 고정하여 메모리 폭발 방지 (Agrona가 필요 시 자동 리사이징)
             this.grid = new Long2LongHashMap(initialCapacity, 0.5f, 0L);
             this.reserves = new Long2LongHashMap(512, 0.5f, 0L);
@@ -271,28 +273,37 @@ public final class TileOccupancy {
     private final MapContext[] contexts = new MapContext[32768];
     private final Object initLock = new Object();
 
-    private MapContext peekContext(int mapId) {
-        return mapId < 0 || mapId >= contexts.length
-                ? null : (MapContext) CONTEXT.getAcquire(contexts, mapId);
+    private MapContext peekContext(int id) {
+        if (id < 0 || id >= contexts.length) return null;
+        MapContext ctx = (MapContext) CONTEXT.getAcquire(contexts, id);
+        return ctx != null && ctx.terrain == L1WorldMap.getInstance().findMap(id) ? ctx : null;
     }
 
-    private MapContext getContext(int mapId) {
-        if (mapId < 0 || mapId >= contexts.length) return null;
-        MapContext ctx = (MapContext) CONTEXT.getAcquire(contexts, mapId);
-        if (ctx == null) {
-            synchronized (initLock) {
-                ctx = (MapContext) CONTEXT.getAcquire(contexts, mapId);
-                if (ctx == null) {
-                    L1Map map = L1WorldMap.getInstance().getMap((short) mapId);
-                    if (map != null) {
-                        ctx = new MapContext(2048);
-                        CONTEXT.setRelease(contexts, mapId, ctx);
-                    }
-                }
+    private MapContext getContext(int id) {
+        if (id < 0 || id >= contexts.length) return null;
+        MapContext ctx = peekContext(id);
+        if (ctx != null) return ctx;
+        synchronized (initLock) {
+            L1Map terrain = L1WorldMap.getInstance().findMap(id);
+            if (terrain == null || terrain.isNull()) return null;
+            ctx = (MapContext) CONTEXT.getAcquire(contexts, id);
+            if (ctx == null || ctx.terrain != terrain) {
+                ctx = new MapContext(terrain, 2048);
+                CONTEXT.setRelease(contexts, id, ctx);
             }
+            return ctx;
         }
-        return ctx;
     }
+
+    public void retireMap(L1Map terrain) {
+        int id = terrain.getId();
+        if (id < 0 || id >= contexts.length) return;
+        synchronized (initLock) {
+            MapContext ctx = (MapContext) CONTEXT.getAcquire(contexts, id);
+            if (ctx != null && ctx.terrain == terrain) CONTEXT.setRelease(contexts, id, null);
+        }
+    }
+
 
     // =========================================================
     // Public APIs
@@ -314,8 +325,19 @@ public final class TileOccupancy {
     }
 
     public boolean tryOccupyNow(int mapId, int x, int y, int objectId) {
-        if (objectId == 0) return false;
+        return tryOccupyNow(getContext(mapId), mapId, x, y, objectId);
+    }
+
+    public boolean tryOccupyNow(L1Map terrain, int x, int y, int objectId) {
+        if (terrain == null) return false;
+        final int mapId = terrain.getId();
         final MapContext ctx = getContext(mapId);
+        if (ctx == null || ctx.terrain != terrain) return false;
+        return tryOccupyNow(ctx, mapId, x, y, objectId);
+    }
+
+    private boolean tryOccupyNow(MapContext ctx, int mapId, int x, int y, int objectId) {
+        if (objectId == 0) return false;
         if (ctx == null) return false;
         synchronized (gate(gateIndex(mapId, x, y))) {
             return peerClear(mapId, x, y, objectId)
@@ -325,8 +347,19 @@ public final class TileOccupancy {
     }
 
     public void releaseNow(int mapId, int x, int y, int objectId) {
+        releaseNow(peekContext(mapId), mapId, x, y, objectId);
+    }
+
+    public void releaseNow(L1Map terrain, int x, int y, int objectId) {
+        if (terrain == null) return;
+        final int mapId = terrain.getId();
+        final MapContext ctx = peekContext(mapId);
+        if (ctx == null || ctx.terrain != terrain) return;
+        releaseNow(ctx, mapId, x, y, objectId);
+    }
+
+    private void releaseNow(MapContext ctx, int mapId, int x, int y, int objectId) {
         if (objectId == 0) return;
-        final MapContext ctx = getContext(mapId);
         if (ctx == null) return;
         synchronized (gate(gateIndex(mapId, x, y))) {
             ctx.release(ctx.getKey(x, y), objectId);
@@ -352,7 +385,7 @@ public final class TileOccupancy {
         if (objectId == 0) return false;
         final MapContext dst = getContext(newMapId);
         if (dst == null) return false;
-        final MapContext src = getContext(oldMapId);
+        final MapContext src = peekContext(oldMapId);
         final int a = gateIndex(oldMapId, oldX, oldY);
         final int b = gateIndex(newMapId, newX, newY);
         synchronized (gate(Math.min(a, b))) {
@@ -396,7 +429,18 @@ public final class TileOccupancy {
     }
 
     public void cancelMove(int mapId, int newX, int newY, int objectId) {
-        final MapContext ctx = getContext(mapId);
+        cancelMove(peekContext(mapId), mapId, newX, newY, objectId);
+    }
+
+    public void cancelMove(L1Map terrain, int newX, int newY, int objectId) {
+        if (terrain == null) return;
+        final int mapId = terrain.getId();
+        final MapContext ctx = peekContext(mapId);
+        if (ctx == null || ctx.terrain != terrain) return;
+        cancelMove(ctx, mapId, newX, newY, objectId);
+    }
+
+    private void cancelMove(MapContext ctx, int mapId, int newX, int newY, int objectId) {
         if (ctx == null) return;
         synchronized (gate(gateIndex(mapId, newX, newY))) {
             ctx.releaseReserve(ctx.getKey(newX, newY), objectId);
