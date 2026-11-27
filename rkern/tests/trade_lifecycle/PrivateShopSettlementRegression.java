@@ -2,12 +2,14 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.DriverManager;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -22,6 +24,7 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.NoTradable;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.character.animation.SpriteInformation;
 import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
@@ -31,12 +34,15 @@ import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CIOServer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.cs.packet.CS_CharSelect;
 import l1j.server.server.model.network.core.cs.packet.CS_PersonalShop;
 import l1j.server.server.model.network.core.cs.packet.CS_QueryPersonalShop;
 import l1j.server.server.model.network.core.cs.packet.CS_Result;
+import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
 
@@ -286,11 +292,137 @@ public final class PrivateShopSettlementRegression {
         amounts(shop, 1007, 3, 16);
         amounts(customer, 193, 7, 2);
         amounts(other, 200, 0, 0);
-        on(shop.socket, () -> CS_PersonalShop.handle(shop.socket, 1, null)).get(5, TimeUnit.SECONDS);
-        flush();
-        require(!shop.pc.isPrivateShop() && scalar("SELECT COUNT(*) FROM character_shop") == 0,
-                "normal close retires both directions and persisted rows");
+        verifyReopen(shop, other);
+        try {
+            verifyOfflineSale(shop, customer);
+            verifyReload(shop, customer, other);
+        } finally {
+            if (shop.pc.getNetConnection() == null && shop.socket.getActiveChar() == null) retireOfflineShop(shop);
+        }
+        on(customer.socket, () -> CS_QueryPersonalShop.handle(customer.socket, 1, shopId)).get(5, TimeUnit.SECONDS);
+        require(customer.socket.getPlayerShopView() == null && receipts() == 6,
+                "query after offline retirement releases viewer state and keeps six durable receipts");
+        System.out.println("PASS private shop: partial buy, same-stack multi-order, single sell, stale view, restrictions, "
+                + "competing buyers and close, reopen, offline sale and retirement, 6 exact receipts, reload and conservation");
+    }
 
+    private void verifyReopen(Peer shop, Peer other) throws Exception {
+        final int shopId = shop.pc.getId();
+        assertView(other, shop, 0);
+        final var priorView = other.socket.getPlayerShopView();
+        final int openVersion = shop.pc.getPrivateShopVersion();
+        on(shop.socket, () -> {
+            CS_PersonalShop.handle(shop.socket, 1, null);
+            final int closedVersion = shop.pc.getPrivateShopVersion();
+            require(closedVersion != openVersion, "close invalidates the previous shop generation");
+            CS_PersonalShop.handle(shop.socket, 1, null);
+            require(closedVersion == shop.pc.getPrivateShopVersion(), "duplicate close retains closed generation");
+        }).get(5, TimeUnit.SECONDS);
+        flush();
+        assertClosed(shop);
+        require(!priorView.matches(shop.pc, false), "closed shop rejects a former buyer view");
+
+        openSingle(shop, false, SALE_STACK, 11, 2);
+        flush();
+        require(shop.pc.isPrivateShop() && listingCount(shopId, SALE_STACK) == 2
+                && shop.pc.getPurchasings() == null
+                && scalar("SELECT price FROM character_shop WHERE item_objid=" + SALE_STACK) == 11,
+                "same-side reopen quotes new price and quantity only");
+        require(!priorView.matches(shop.pc, false), "previous sale view does not match reopened shop");
+        purchase(other, shop, 0, 1).get(5, TimeUnit.SECONDS);
+        flush();
+        require(receipts() == 4 && listingCount(shopId, SALE_STACK) == 2
+                && other.socket.getPlayerShopView() == null,
+                "a prior list cannot debit the reopened shop");
+        amounts(other, 200, 0, 0);
+
+        assertView(other, shop, 0);
+        var freshView = other.socket.getPlayerShopView();
+        require(freshView.price(0) == 11 && freshView.count(0) == 2, "fresh sale view matches replacement");
+        purchase(other, shop, 0, 1).get(5, TimeUnit.SECONDS);
+        flush();
+        require(receipts() == 5 && listingCount(shopId, SALE_STACK) == 1, "fresh quote settles at new price");
+        amounts(shop, 1018, 2, 16);
+        amounts(other, 189, 1, 0);
+
+        // Replace the active sale with only a purchase order through the normal open packet.
+        openSingle(shop, true, ORDER_STACK_A, 9, 2);
+        flush();
+        require(shop.pc.isPrivateShop() && shop.pc.getSellings() == null
+                && listingCount(shopId, SALE_STACK) == 0 && listingCount(shopId, ORDER_STACK_A) == 2
+                && scalar("SELECT COUNT(*) FROM character_shop") == 1
+                && scalar("SELECT SUM(Shop_open_count) FROM accounts") == 3, "relist replaces the visible and stored side");
+        require(!freshView.matches(shop.pc, false), "changing mode invalidates the last sale view");
+        on(other.socket, () -> CS_QueryPersonalShop.handle(other.socket, 0, shopId)).get(5, TimeUnit.SECONDS);
+        require(other.socket.getPlayerShopView() == null, "empty sale side retains no view");
+    }
+
+    private void verifyOfflineSale(Peer shop, Peer customer) throws Exception {
+        final int shopId = shop.pc.getId();
+        final byte[] chat = shop.pc.getShopChat();
+        require(chat != null && chat.length > 0, "test shop published chat text");
+        on(shop.socket, () -> CS_CharSelect.RequestOfflinePrivateStore(shop.pc)).get(5, TimeUnit.SECONDS);
+        flush();
+        require(shop.pc.is무인상점() && shop.pc.isPrivateShop() && shop.pc.getOnlineStatus() == 0
+                && shop.pc.getNetConnection() == null && shop.socket.getActiveChar() == null
+                && !shop.socket.ownsReadyGameSession()
+                && shop.socket.getConnectionState() == CConnectionState.AUTHENTICATED
+                && CWorld.getInstance().findObject(shopId) == shop.pc
+                && Arrays.equals(shop.pc.getShopChat(), chat) && listingCount(shopId, ORDER_STACK_A) == 2,
+                "offline command detaches the session and preserves shop data");
+        assertView(customer, shop, 1);
+        require(customer.socket.getPlayerShopView().price(0) == 9, "offline quote is visible");
+        on(customer.socket, () -> CS_Result.handle(customer.socket, shopId, 1, 1, 1,
+                sellRow(CUSTOMER_ORDER_STACK, 1, 0), null)).get(5, TimeUnit.SECONDS);
+        flush();
+        require(receipts() == 6 && listingCount(shopId, ORDER_STACK_A) == 1,
+                "a normal customer can sell to a detached merchant");
+        amounts(shop, 1009, 2, 17);
+        amounts(customer, 202, 7, 1);
+        require(scalar("SELECT OnlineStatus FROM characters WHERE objid=" + shop.pc.getId()) == 0,
+                "offline command persisted the detached online state");
+    }
+
+    private void retireOfflineShop(Peer shop) throws Exception {
+        var remove = User.class.getDeclaredMethod("RemovePrivateStoreList", L1PcInstance.class);
+        remove.setAccessible(true);
+        on(shop.socket, () -> {
+            var inventory = shop.pc.getInventory();
+            require(inventory.tryBeginEquipmentChange(), "offline retirement holds the inventory gate");
+            try {
+                require(Boolean.TRUE.equals(remove.invoke(null, shop.pc)), "production offline retirement accepted");
+                require(shop.pc.getSellings() == null && shop.pc.getPurchasings() == null && shop.pc.getShopChat() == null,
+                        "offline retirement releases both lists and shop chat references");
+                shop.pc.logout();
+            } catch (ReflectiveOperationException failure) {
+                throw new AssertionError("Could not call production retirement", failure);
+            } finally {
+                inventory.endEquipmentChange();
+            }
+        }).get(5, TimeUnit.SECONDS);
+        flush();
+        assertClosed(shop);
+        require(CWorld.getInstance().findObject(shop.pc.getId()) == null
+                && shop.socket.getActiveChar() == null && shop.socket.getPlayerShopView() == null,
+                "offline retirement releases the synthetic actor and session view");
+    }
+
+    private void assertClosed(Peer shop) throws Exception {
+        require(!shop.pc.isPrivateShop() && shop.pc.getSellings() == null && shop.pc.getPurchasings() == null
+                && shop.pc.getShopChat() == null && scalar("SELECT COUNT(*) FROM character_shop") == 0,
+                "close retires both listing references, chat and persisted rows");
+    }
+
+    private void openSingle(Peer shop, boolean purchase, int objectId, int price, int count) throws Exception {
+        final byte[] chat = "fixture quote".getBytes(StandardCharsets.US_ASCII);
+        final ByteBuffer listing = ByteBuffer.allocate(16 + chat.length).order(ByteOrder.LITTLE_ENDIAN);
+        if (purchase) listing.putShort((short) 0).putShort((short) 1).putInt(objectId).putInt(price).putInt(count);
+        else listing.putShort((short) 1).putInt(objectId).putInt(price).putInt(count).putShort((short) 0);
+        listing.put(chat);
+        on(shop.socket, () -> CS_PersonalShop.handle(shop.socket, 0, listing.array())).get(5, TimeUnit.SECONDS);
+    }
+
+    private void verifyReload(Peer shop, Peer customer, Peer other) throws Exception {
         for (Peer peer : new Peer[] {shop, customer, other}) {
             var reloaded = new MySqlCharactersItemStorage().loadItems(peer.pc.getId());
             int gold = amount(peer, GOLD), sale = amount(peer, SALE), order = amount(peer, ORDER);
@@ -304,8 +436,6 @@ public final class PrivateShopSettlementRegression {
                 && scalar("SELECT SUM(count) FROM character_items WHERE item_id=40001") == 10
                 && scalar("SELECT SUM(count) FROM character_items WHERE item_id=40002") == 18,
                 "SQL and reloaded inventories conserve stock and currency");
-        System.out.println("PASS private shop: listing, partial buy, two orders from one stack, single sell, "
-                + "stale side and operator restriction, two buyers and close, 4 exact receipts, reload and conservation");
     }
 
     private Peer peer(CIOServer server, int seat) throws Exception {

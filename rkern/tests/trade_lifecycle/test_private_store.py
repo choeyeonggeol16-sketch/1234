@@ -1,4 +1,4 @@
-"""Run real private-store User methods with isolated inventory/socket/storage doubles.
+"""Run real private-store entry and state transitions with isolated inventory/socket/storage doubles.
 Tests both wire paths, admission, reentrant gate and close. Not a JDBC test.
 """
 from pathlib import Path
@@ -11,6 +11,13 @@ u=(src/"User.java").read_text(encoding="utf-8")
 start=u.index("    private static final Logger PRIVATE_STORE_LOG")
 body=u[start:u.rindex("}")]
 tx=(src/"PlayerShopTransactions.java").read_text(encoding="utf-8")
+model=root/"src/l1j/server/server/model"
+actor=(model/"Instance/L1PcInstance.java").read_text(encoding="utf-8")
+actor_shop=actor[actor.index("    public PlayerPrivateStore.State privateStoreState()"):
+                 actor.index("    /** Memory half of a receipt-committed private-shop operation.")].replace("@Override ", "")
+store=(model/"shop/PlayerPrivateStore.java").read_text(encoding="utf-8")
+store=store[store.index("public final class PlayerPrivateStore"):].replace(
+    "public final class PlayerPrivateStore", "static final class PlayerPrivateStore", 1)
 def extract(s,marker):
     start=s.index(marker)
     i=s.index("{",start)+1
@@ -25,6 +32,7 @@ transfer=extract(tx,"static boolean canTransfer(") + "\n" + extract(tx,"private 
 java=r"""
 import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.*;
 
 public class PrivateStoreTest {
@@ -78,20 +86,22 @@ public class PrivateStoreTest {
     static class L1DollInstance {int id; int getItemObjId(){return id;}}
     static class Companion {int id; int get_control_object_id(){return id;}}
     static class CompanionInstanceCache {static int protectedId;static boolean is_companion_oblivion(int id){return id!=protectedId;}}
+""" + store + r"""
     static class L1PcInstance {
         final CUserSocket socket=new CUserSocket(); final Inventory inv=new Inventory(this);
         final Map<Integer,Object> dolls=new HashMap<>();
         final int id; int map=800,x=1,y=1,sprite=10,상점변신,stamp=1,notices;
-        String account; boolean gm; boolean isGm(){return gm;} boolean dead,ghost,teleport,logout,pending,invis,fishing,shop,ready;
-        Object trade; Companion companion; byte[] chat;
-        ArrayList<DynamicShopItem> sells,buys;
+        String account; boolean gm; boolean isGm(){return gm;} boolean dead,ghost,teleport,logout,pending,invis,fishing;
+        Object trade; Companion companion;
+        private static final AtomicReferenceFieldUpdater<L1PcInstance, PlayerPrivateStore> PRIVATE_STORE =
+                AtomicReferenceFieldUpdater.newUpdater(L1PcInstance.class, PlayerPrivateStore.class, "privateStore");
+        private volatile PlayerPrivateStore privateStore;
         L1PcInstance(int id){this.id=id;account="a"+id;socket.pc=this;}
         int getId(){return id;} Object mapRef=CWorld.world; Object getMap(){return mapRef;} int getMapId(){return map;} int getX(){return x;} int getY(){return y;}
         boolean isDead(){return dead;} boolean isGhost(){return ghost;} boolean get_teleport(){return teleport;}
         boolean isLogoutStarted(){return logout;} Object GetTrade(){return trade;}
         boolean isInvisble(){return invis;} boolean isFishing(){return fishing;}
         void setFishing(boolean b){fishing=b;} void setFishingTime(int t){} void setFishingReady(boolean b){}
-        boolean isPrivateShop(){return shop;} boolean isPrivateReady(){return ready;}
         int getCurrentSpriteId(){return sprite;} int getClassId(){return 10;}
         int getSkillEffectTimeSec(int i){return 10;}
         boolean hasSkillEffect(int i){return false;} void killSkillEffectTimer(int i){} void removeSkillEffect(int i){}
@@ -100,8 +110,7 @@ public class PrivateStoreTest {
         boolean isItemTransferSession(CUserSocket s,int st){return !logout&&s==socket&&s.pc==this&&st==stamp;}
         Inventory getInventory(){return inv;} Companion get_companion(){return companion;}
         Map<Integer,Object> getDollList(){return dolls;} CUserSocket getNetConnection(){return socket;}
-        void setShopChat(byte[] b){chat=b;} void setSellings(ArrayList<DynamicShopItem> l){sells=l;}
-        void setPurchasings(ArrayList<DynamicShopItem> l){buys=l;} void setPrivateShop(boolean b){shop=b;}
+""" + actor_shop + r"""
         void setCurrentSprite(int i){sprite=i;} void curePoison(){}
     }
     static class CWorld {
@@ -121,9 +130,11 @@ public class PrivateStoreTest {
             if(pc.inv.depth!=1)throw new AssertionError("publication outside gate");
             if(reject)throw new RejectedExecutionException();writes++;
         }
-        static void deleteProcess(L1PcInstance pc){
+        static void enqueuePlayerListingRemoval(int id){
+            L1PcInstance pc = CWorld.world.players.stream().filter(player -> player.id == id).findFirst().orElseThrow();
             if(pc.inv.depth!=1)throw new AssertionError("close outside gate");
-            if(reject)throw new RejectedExecutionException();deletes++;pc.sells=null;pc.buys=null;
+            if(!pc.isPrivateShop())throw new AssertionError("removal enqueued for a closed shop");
+            if(reject)throw new RejectedExecutionException();deletes++;
         }
     }
     static class CS_ActionUi {
@@ -171,7 +182,7 @@ public class PrivateStoreTest {
     static void ui(L1PcInstance pc,int... entries){
         User.OnPrivateStorePacket(pc.socket,0,new CS_ActionUi.ShopPayload(entries,entries.length/4));
     }
-    static void noOpen(L1PcInstance pc,String why){check(!pc.shop&&pc.inv.depth==0,why);}
+    static void noOpen(L1PcInstance pc,String why){check(!pc.isPrivateShop()&&pc.inv.depth==0,why);}
     public static void main(String[] args) {
         L1PcInstance pc=new L1PcInstance(1),customer=new L1PcInstance(2);
         CWorld.world.players.add(pc);CWorld.world.players.add(customer);
@@ -181,7 +192,7 @@ public class PrivateStoreTest {
         open(pc,11,1,1);noOpen(pc,"blocked classic sell");
         ui(pc,0x12,11,5,1);noOpen(pc,"blocked action sell");
         ui(pc,0x1a,11,5,1);noOpen(pc,"blocked action buy");
-        pc.gm=true;open(pc,11,1,1);check(pc.shop,"GM operator-list exception");close(pc);
+        pc.gm=true;open(pc,11,1,1);check(pc.isPrivateShop(),"GM operator-list exception");close(pc);
         pc.gm=false;NoTradable.blocked=0;
         pc.trade=new Object();open(pc,11,1,1);noOpen(pc,"trade");pc.trade=null;
         pc.pending=true;open(pc,11,1,1);noOpen(pc,"pending");pc.pending=false;
@@ -204,23 +215,40 @@ public class PrivateStoreTest {
         pc.companion=new Companion();pc.companion.id=11;open(pc,11,1,1);noOpen(pc,"companion");pc.companion=null;
         DynamicShopStorage.reject=true;open(pc,11,1,1);noOpen(pc,"storage reject");DynamicShopStorage.reject=false;
         open(pc,11,5,2);
-        check(pc.shop&&pc.sells.size()==1&&pc.sells.get(0).count==2&&!pc.inv.readWithoutGate&&pc.inv.depth==0,"classic");
+        check(pc.isPrivateShop()&&pc.getSellings().size()==1&&pc.getSellings().get(0).count==2
+                &&!pc.inv.readWithoutGate&&pc.inv.depth==0,"classic");
         check(PlayerShopTransactions.canReach(customer,pc),"reachable");
         check(!PlayerShopTransactions.canReach(null,pc)&&!PlayerShopTransactions.canReach(customer,null),"null parties");
         customer.trade=new Object();check(!PlayerShopTransactions.canReach(customer,pc),"customer trading");customer.trade=null;
         pc.dead=true;check(!PlayerShopTransactions.canReach(customer,pc),"dead merchant");
-        pc.map=1;close(pc);check(!pc.shop&&pc.sells==null&&pc.inv.depth==0,"close outside market/dead");
+        pc.map=1;close(pc);check(!pc.isPrivateShop()&&pc.getSellings()==null&&pc.inv.depth==0,"close outside market/dead");
         pc.dead=false;pc.map=800;
         pc.inv.adena=false;ui(pc,0x12,11,5,1);noOpen(pc,"UI funds");pc.inv.adena=true;
         ui(pc,0x12,11,5,1,0x1a,11,6,1);noOpen(pc,"duplicate across sides");
-        ui(pc,0x12,11,5,1);check(pc.shop&&pc.sprite==11483&&pc.inv.depth==0,"UI open");
-        pc.ready=true;User.OnPrivateStorePacket(pc.socket,1,(CS_ActionUi.ShopPayload)null);
-        check(pc.shop,"offline-ready UI close guard");pc.ready=false;
-        DynamicShopStorage.reject=true;close(pc);check(pc.shop&&pc.inv.depth==0,"failed close keeps state");
+        ui(pc,0x12,11,5,1);check(pc.isPrivateShop()&&pc.sprite==11483&&pc.inv.depth==0,"UI open");
+        final int openedVersion = pc.getPrivateShopVersion();
+        final var published = pc.getSellings();
+        DynamicShopStorage.reject=true;
+        ui(pc,0x12,11,6,1);
+        check(pc.isPrivateShop() && pc.getSellings() == published && pc.getPrivateShopVersion() == openedVersion,
+                "rejected re-open retains old publication");
+        DynamicShopStorage.reject=false;
+        pc.setPrivateReady(true);User.OnPrivateStorePacket(pc.socket,1,(CS_ActionUi.ShopPayload)null);
+        check(pc.isPrivateShop(),"offline-ready UI close guard");pc.setPrivateReady(false);
+        DynamicShopStorage.reject=true;close(pc);
+        check(pc.isPrivateShop() && pc.getSellings() == published && pc.getPrivateShopVersion() == openedVersion
+                && pc.inv.depth == 0,
+                "failed close keeps list and generation");
         DynamicShopStorage.reject=false;close(pc);noOpen(pc,"close");
+        final int stoppedVersion = pc.getPrivateShopVersion(), stoppedDeletes = DynamicShopStorage.deletes;
+        close(pc);
+        check(User.RemovePrivateStoreList(pc) && pc.getPrivateShopVersion() == stoppedVersion
+                && DynamicShopStorage.deletes == stoppedDeletes,
+                "repeated close succeeds without enqueue or generation change");
         ui(pc,0x1a,11,5,25);
-        check(pc.shop&&pc.buys.get(0).count==25,"UI buy demand above example amount");
-        DynamicShopItem d=pc.buys.get(0);check(PlayerShopTransactions.canTransfer(customer,item,d,1,1),"valid transfer");
+        check(pc.isPrivateShop()&&pc.getPurchasings().get(0).count==25,"UI buy demand above example amount");
+        DynamicShopItem d=pc.getPurchasings().get(0);
+        check(PlayerShopTransactions.canTransfer(customer,item,d,1,1),"valid transfer");
         check(!PlayerShopTransactions.canTransfer(customer,item,d,0,1),"zero transfer");
         check(!PlayerShopTransactions.canTransfer(customer,item,d,-1,1),"negative transfer");
         check(!PlayerShopTransactions.canTransfer(customer,item,d,21,1),"insufficient actual item count");
@@ -229,9 +257,9 @@ public class PrivateStoreTest {
         check(!PlayerShopTransactions.canTransfer(customer,item,d,1,1),"settlement denies newly restricted seller");
         customer.gm=true;
         check(PlayerShopTransactions.canTransfer(customer,item,d,1,1),"GM seller may transfer operator-restricted item");
-        check(PlayerShopTransactions.findListing(pc,pc.buys,d.objId)==null,"newly restricted buy listing");
+        check(PlayerShopTransactions.findListing(pc,pc.getPurchasings(),d.objId)==null,"newly restricted buy listing");
         pc.gm=true;
-        check(PlayerShopTransactions.findListing(pc,pc.buys,d.objId)==d,"GM buy listing operator exception");
+        check(PlayerShopTransactions.findListing(pc,pc.getPurchasings(),d.objId)==d,"GM buy listing operator exception");
         customer.gm=false;pc.gm=false;NoTradable.blocked=0;
         item.expiry=new java.sql.Timestamp(1);
         check(!PlayerShopTransactions.canTransfer(customer,item,d,1,1),"expired item cannot be sold");
@@ -239,7 +267,19 @@ public class PrivateStoreTest {
         check(PlayerShopTransactions.canTransfer(customer,item,d,1,1),"unexpired item");
         item.expiry=null;
         item.enchant=1;check(!PlayerShopTransactions.canTransfer(customer,item,d,1,1),"changed item");item.enchant=0;
+        pc.getPurchasings().clear();
+        final int beforeEmptyDeletion = DynamicShopStorage.deletes;
         close(pc);
+        check(!pc.isPrivateShop() && DynamicShopStorage.deletes == beforeEmptyDeletion + 1,
+                "a real shop with no stock left still retires its persisted listing");
+        final int beforePresentationOpen = DynamicShopStorage.writes;
+        pc.openDisplayPrivateStore(new byte[0]);
+        final int beforePresentationClose = pc.getPrivateShopVersion();
+        close(pc);
+        check(!pc.isPrivateShop() && !pc.isDisplayOnlyPrivateStore()
+                && pc.getPrivateShopVersion() == beforePresentationClose + 1
+                && DynamicShopStorage.writes == beforePresentationOpen && DynamicShopStorage.deletes == beforeEmptyDeletion + 1,
+                "presentation-only shop closes without admitting SQL");
         check(!pc.inv.readWithoutGate&&pc.inv.depth==0,"all listing reads gated");
         System.out.println("PASS private store admission and lifecycle ("+checks+" checks)");
     }

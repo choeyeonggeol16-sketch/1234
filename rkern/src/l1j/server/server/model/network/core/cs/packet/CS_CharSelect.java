@@ -92,7 +92,6 @@ public final class CS_CharSelect {
         final int stamp = pc.getSessionStamp();
         if (!pc.isItemTransferSession(client, stamp)) return false;
 
-        final boolean privateStore = pc.isPrivateShop();
         if (!pc.getInventory().tryBeginEquipmentChange()) {
             pc.sendPackets("아이템 거래 처리 중입니다. 잠시 후 다시 시도해 주세요.");
             return false;
@@ -103,6 +102,7 @@ public final class CS_CharSelect {
                 pc.sendPackets("아이템 거래 처리 중입니다. 잠시 후 다시 시도해 주세요.");
                 return false;
             }
+            final boolean privateStore = pc.isPrivateShop();
             if (selectionRequest) prepareSelection(pc);
             if (privateStore && pc.isPrivateReady()) {
                 detachPrivateShop(pc, client);

@@ -1,6 +1,7 @@
 package l1j.server.server.model.Instance;
 
 import l1j.server.server.datatables.CObjectDB;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.RejectedExecutionException;
@@ -57,6 +58,8 @@ import l1j.server.server.model.npc.ai.action.CGetItemAction;
 import l1j.server.server.model.npc.ai.action.CMoveAction;
 import l1j.server.server.model.npc.ai.action.SetMoving;
 import l1j.server.server.model.npc.ai.action.dMoveTo;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
+import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.model.npc.chat.L1NpcChat;
@@ -2668,6 +2671,103 @@ public class L1NpcInstance extends L1Character {
         }
         if (sendNotice) SC_ExplosionNoti.broadcast(this, getId(), remaining);
     }
+
+	private volatile ArrayList<DynamicShopItem> _sellings;
+	private volatile ArrayList<DynamicShopItem> _purchasings;
+
+	@Override
+	public void disposeShopInfo() {
+		disposeSellings();
+		disposePurchasings();
+	}
+
+	private DynamicShopItem findDShopItem(ArrayList<DynamicShopItem> list, int objid) {
+		if (list == null)
+			return null;
+
+		int size = list.size();
+		DynamicShopItem item = null;
+		for (int i = 0; i < size; i++) {
+			item = list.get(i);
+			if (item.objId == objid)
+				return item;
+		}
+		return null;
+	}
+
+	public DynamicShopItem findSellings(int objid) {
+		return findDShopItem(_sellings, objid);
+	}
+
+	public void updateSellings(int objid, int count) {
+		DynamicShopItem item = findSellings(objid);
+		if (item == null)
+			return;
+
+		if (item.count <= count) {
+			_sellings.remove(item);
+			DynamicShopStorage.deleteProcess(this, item.objId);
+		} else {
+			item.count -= count;
+			DynamicShopStorage.updateProcess(this, item);
+		}
+	}
+
+	@Override
+	public ArrayList<DynamicShopItem> getSellings() {
+		return _sellings;
+	}
+
+	public void setSellings(ArrayList<DynamicShopItem> list) {
+		_sellings = list;
+	}
+
+	public void addSellings(DynamicShopItem item) {
+		if (_sellings == null)
+			_sellings = new ArrayList<DynamicShopItem>(7);
+		_sellings.add(item);
+	}
+
+	public void disposeSellings() {
+		_sellings = null;
+	}
+
+	public DynamicShopItem findPurchasings(int objid) {
+		return findDShopItem(_purchasings, objid);
+	}
+
+	public void updatePurchasings(int objid, int count) {
+		DynamicShopItem item = findPurchasings(objid);
+		if (item == null)
+			return;
+
+		if (item.count <= count) {
+			_purchasings.remove(item);
+			DynamicShopStorage.deleteProcess(this, item.objId);
+		} else {
+			item.count -= count;
+			DynamicShopStorage.updateProcess(this, item);
+		}
+	}
+
+	@Override
+	public ArrayList<DynamicShopItem> getPurchasings() {
+		return _purchasings;
+	}
+
+	public void setPurchasings(ArrayList<DynamicShopItem> list) {
+		_purchasings = list;
+	}
+
+	public void addPurchasings(DynamicShopItem item) {
+		if (_purchasings == null)
+			_purchasings = new ArrayList<DynamicShopItem>(7);
+		    _purchasings.add(item);
+	}
+
+	public void disposePurchasings() {
+		_purchasings = null;
+	}
 
     private String _shopName;
     public String getShopName() {

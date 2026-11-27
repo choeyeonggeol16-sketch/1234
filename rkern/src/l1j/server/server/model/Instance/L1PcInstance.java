@@ -135,6 +135,9 @@ import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.rank.loader.RankUserLoader;
+import l1j.server.server.model.shop.PlayerPrivateStore;
+import l1j.server.server.model.shop.dynamic.DynamicShopItem;
+import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
 import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeUserInformation;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeProgressLoader;
@@ -1051,9 +1054,9 @@ public class L1PcInstance extends L1Character {
 	private CQuestSystem _quest;
 
 
-	private volatile boolean _isPrivateShop;
-	private volatile int privateShopVersion;
-	private boolean _isPrivateReady = false;
+    private static final AtomicReferenceFieldUpdater<L1PcInstance, PlayerPrivateStore> PRIVATE_STORE =
+            AtomicReferenceFieldUpdater.newUpdater(L1PcInstance.class, PlayerPrivateStore.class, "privateStore");
+    private volatile PlayerPrivateStore privateStore;
 
 	private long _lastPasswordChangeTime;
 	private long _lastLocalTellTime;
@@ -1203,7 +1206,6 @@ public class L1PcInstance extends L1Character {
 
 	private final CUserBookmark userBookmark;
 	public final CUserBookmark getUserBookmark() { return userBookmark; }
-	private volatile byte[] _shopChat;
 	private AtomicInteger _pinkNameTime;
 	private volatile CUserSocket _netConnection;
 	// Odd: current client world can accept ground sprites. Even: map/world reset.
@@ -2062,8 +2064,9 @@ public class L1PcInstance extends L1Character {
 	        SC_PinkName.send(pc, getId(), getPinkNameTime());
 	    }
 
-	    if (isPrivateShop()) {
-	        SC_DoActionShop.send(pc, getId(), ActionCodes.ACTION_Shop, getShopChat());
+        final var shop = privateStoreState();
+	    if (shop.open()) {
+	        SC_DoActionShop.send(pc, getId(), ActionCodes.ACTION_Shop, shop.chat());
 	    }
 
 	    if (isFishing()) {
@@ -2842,40 +2845,88 @@ public class L1PcInstance extends L1Character {
 	public void setAutoFish(boolean flag) {
 		_isAutofish = flag;
 	}
-	public void setShopChat(byte[] chat) {
-		_shopChat = chat;
-	}
-
-	public byte[] getShopChat() {
-		return _shopChat;
-	}
-
-    @Override
-    public void disposeShopInfo() {
-        super.disposeShopInfo();
-        _shopChat = null;
+    public PlayerPrivateStore.State privateStoreState() {
+        final PlayerPrivateStore store = privateStore;
+        return store == null ? PlayerPrivateStore.initialState() : store.snapshot();
     }
 
-	public boolean isPrivateShop() {
-		return _isPrivateShop;
-	}
+    public void openPrivateStore(ArrayList<DynamicShopItem> sells, ArrayList<DynamicShopItem> buys, byte[] chat) {
+        privateStoreForOpen().open(sells, buys, chat, false,
+                () -> DynamicShopStorage.replacePlayerListings(this, sells, buys));
+    }
 
-	public void setPrivateShop(boolean flag) {
-		if (flag || _isPrivateShop) privateShopVersion++;
-		_isPrivateShop = flag;
-	}
+    public void openDisplayPrivateStore(byte[] chat) {
+        privateStoreForOpen().open(null, null, chat, true, null);
+    }
 
-	public int getPrivateShopVersion() {
-		return privateShopVersion;
-	}
+    private PlayerPrivateStore privateStoreForOpen() {
+        PlayerPrivateStore store = privateStore;
+        if (store == null) {
+            store = new PlayerPrivateStore();
+            if (!PRIVATE_STORE.compareAndSet(this, null, store)) store = privateStore;
+        }
+        return store;
+    }
 
-	public boolean isPrivateReady() {
-		return _isPrivateReady;
-	}
+    public boolean closePrivateStore() {
+        final PlayerPrivateStore store = privateStore;
+        return store != null && store.snapshot().open()
+                && store.close(() -> DynamicShopStorage.enqueuePlayerListingRemoval(getId()));
+    }
 
-	public void setPrivateReady(boolean b) {
-		_isPrivateReady = b;
-	}
+    public boolean closePrivateStore(int generation) {
+        final PlayerPrivateStore store = privateStore;
+        return store != null && store.close(generation, () -> DynamicShopStorage.enqueuePlayerListingRemoval(getId()));
+    }
+
+    @Override public void disposeShopInfo() {
+        final PlayerPrivateStore store = privateStore;
+        if (store != null) store.close(null);
+    }
+
+    @Override public ArrayList<DynamicShopItem> getSellings() { return privateStoreState().sellings(); }
+
+    @Override public ArrayList<DynamicShopItem> getPurchasings() { return privateStoreState().purchasings(); }
+
+    public byte[] getShopChat() { return privateStoreState().chat(); }
+
+    public boolean isPrivateShop() { return privateStoreState().open(); }
+
+    public boolean isDisplayOnlyPrivateStore() { return privateStoreState().displayOnly(); }
+
+    public int getPrivateShopVersion() { return privateStoreState().generation(); }
+
+    public boolean isPrivateReady() {
+        final PlayerPrivateStore store = privateStore;
+        return store != null && store.isReady();
+    }
+
+    public void setPrivateReady(boolean value) {
+        final PlayerPrivateStore store = privateStore;
+        if (store != null) store.setReady(value);
+    }
+
+    public boolean setPrivateReady(int generation, boolean value) {
+        final PlayerPrivateStore store = privateStore;
+        return store != null && store.setReady(generation, value);
+    }
+
+    /** Memory half of a receipt-committed private-shop operation. SQL listing
+     * quantities were checked and changed on the same connection as payment.
+     */
+    public void applyCommittedShopQuantity(boolean purchase, DynamicShopItem expected,
+            int expectedCount, int amount) {
+        final var state = privateStoreState();
+        final ArrayList<DynamicShopItem> list = purchase ? state.purchasings() : state.sellings();
+        if (list == null || expected == null || amount <= 0 || amount > expectedCount)
+            throw new IllegalStateException("Invalid committed private shop quantity");
+        synchronized (list) {
+            if (state != privateStoreState() || !list.contains(expected) || expected.count != expectedCount)
+                throw new IllegalStateException("Private shop preimage changed after commit");
+            if (amount == expectedCount) list.remove(expected);
+            else expected.count = expectedCount - amount;
+        }
+    }
 
 	private int _special_size;
 

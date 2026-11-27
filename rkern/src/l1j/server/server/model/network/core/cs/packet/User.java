@@ -17,7 +17,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
-import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.datatables.LetterTable;
@@ -575,11 +574,7 @@ public final class User {
     private static boolean PublishPrivateStoreList(L1PcInstance pc, ArrayList<DynamicShopItem> sells,
             ArrayList<DynamicShopItem> buys, byte[] chat) {
         try {
-            DynamicShopStorage.replacePlayerListings(pc, sells, buys);
-            pc.setSellings(sells);
-            pc.setPurchasings(buys);
-            pc.setShopChat(chat);
-            pc.setPrivateShop(true);
+            pc.openPrivateStore(sells, buys, chat);
             return true;
         } catch (RejectedExecutionException rejected) {
             PRIVATE_STORE_LOG.log(Level.WARNING, "Private shop listing admission rejected", rejected);
@@ -588,10 +583,10 @@ public final class User {
         }
     }
 
+    /** Caller owns the same inventory gate as store admission and settlement. */
     static boolean RemovePrivateStoreList(L1PcInstance pc) {
         try {
-            DynamicShopStorage.deleteProcess(pc);
-            pc.setPrivateShop(false);
+            pc.closePrivateStore();
             return true;
         } catch (RejectedExecutionException rejected) {
             SC_SystemMessage.send(pc, "잠시 후 개인상점을 다시 닫아 주세요.");

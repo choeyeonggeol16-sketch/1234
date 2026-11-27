@@ -239,7 +239,8 @@ public final class SC_WorldPutObject {
         final int y = pc.getY();
         final int heading = pc.getHeading();
         final int spriteId = pc.getCurrentSpriteId();
-        final int action = computePcAction(pc);
+        final var store = pc.privateStoreState();
+        final int action = computePcAction(pc, store.open());
 
         final int lightRadius = pc.getOwnLightSize();
         final int lawful = pc.getLawful();
@@ -262,7 +263,7 @@ public final class SC_WorldPutObject {
         final String clanName = safeString(pc.getClanname());
         final String masterName = "";
 
-        final byte[] shopChat = pc.getShopChat();
+        final byte[] shopChat = store.chat();
         final int shopChatLength =
                 shopChat != null ? shopChat.length : 0;
 
@@ -566,7 +567,8 @@ public final class SC_WorldPutObject {
         final int x = pc.getX();
         final int y = pc.getY();
         final int spriteId = pc.getCurrentSpriteId();
-        final int action = computePcAction(pc);
+        final var store = pc.privateStoreState();
+        final int action = computePcAction(pc, store.open());
 
         return sendPcPartial(
                 client,
@@ -1043,14 +1045,13 @@ public final class SC_WorldPutObject {
     // PC HELPERS
     // =====================================================================
 
-    private static int computePcAction(
-            L1PcInstance pc) {
+    private static int computePcAction(L1PcInstance pc, boolean storeOpen) {
 
         if (pc.isDead()) {
             return ActionCodes.ACTION_Die;
         }
 
-        if (pc.isPrivateShop()) {
+        if (storeOpen) {
             return 70;
         }
 
@@ -1673,7 +1674,8 @@ public final class SC_WorldPutObject {
         final int y = pc.getY();
         final int heading = pc.getHeading();
         final int spriteId = pc.getCurrentSpriteId();
-        final int action = computePcAction(pc);
+        final var store = pc.privateStoreState();
+        final int action = computePcAction(pc, store.open());
 
         final int lightRadius = pc.getOwnLightSize();
         final int lawful = pc.getLawful();
@@ -1696,7 +1698,7 @@ public final class SC_WorldPutObject {
         final String clanName = safeString(pc.getClanname());
         final String masterName = "";
 
-        final byte[] shopChat = pc.getShopChat();
+        final byte[] shopChat = store.chat();
         final int shopChatLength =
                 shopChat != null ? shopChat.length : 0;
 

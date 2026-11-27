@@ -26,3 +26,13 @@
 Java 21에서 서버 클래스와 의존 JAR를 준비하고, `rkern/tests/network/CioSyntheticPopulation.java`, `rkern/docs/jproring_selector_transport_20261120/SelectorTransportTest.java`, 아래 두 통합 테스트를 같은 테스트 출력 경로에 컴파일한다. 실행 클래스패스에 `rkern/src`를 포함해 아이템 표기 스크립트를 읽을 수 있게 한다. 각 테스트를 별도의 빈 작업 디렉터리에서 실행한다. 세 인수는 테스트용 JDBC URL, DB 사용자, 참조 스키마 이름이다. 비밀번호는 `RKERN_STORAGE_TEST_PASSWORD` 환경변수에서 읽는다. 각 테스트가 참조 스키마의 테이블 정의를 별도의 임시 스키마로 복사하고 종료 시 임시 스키마를 삭제한다.
 
 [직접 교환 통합 테스트](../../tests/trade_lifecycle/DirectTradeIntegrationRegression.java) · [개인상점 통합 테스트](../../tests/trade_lifecycle/PrivateShopSettlementRegression.java) · [거래 수명주기와 화면 회귀 테스트](../../tests/trade_lifecycle)
+
+## 후속 작업 · 캐릭터가 소유하는 개인상점의 개점과 폐점
+
+LU4에서는 플레이어 `User`가 판매·매입·도매 컨테이너를 멤버로 갖는다. 주문을 새로 등록할 때 기존 항목을 지우고 새 항목을 등록한다. 상점 동작은 캐릭터 컨트롤러의 직렬화 경로에서 전환한다. RKern에서는 리니지 1의 판매·매입 동시 등록과 기존 CIO·인벤토리 실행 경로를 유지했다. [LU4 User.h](https://github.com/luannbr/Open_LU4_L2OFF/blob/abbb2e5f474d40cf12539a8e97fddc52474ed95e/L2Server/src/User.h#L3674) · [판매 목록 교체](https://github.com/luannbr/Open_LU4_L2OFF/blob/abbb2e5f474d40cf12539a8e97fddc52474ed95e/L2Server/src/User.cpp#L8889) · [매입 목록 교체](https://github.com/luannbr/Open_LU4_L2OFF/blob/abbb2e5f474d40cf12539a8e97fddc52474ed95e/L2Server/src/User.cpp#L9148) · [컨트롤러](https://github.com/luannbr/Open_LU4_L2OFF/blob/abbb2e5f474d40cf12539a8e97fddc52474ed95e/L2Server/src/CreatureController.cpp#L2210)
+
+- **개점.** 일반 패킷과 ActionUI가 입력을 검증하고 캐릭터의 같은 개점 메서드를 호출한다. 캐릭터에서 처음 개점할 때만 `PlayerPrivateStore`를 생성한다. CacheD가 저장 작업을 접수하면 판매·매입 목록, 간판 문구, 개점 번호를 한 번에 공개한다. 접수가 거절되면 직전 상태가 유지된다. GM이 만든 광고용 캐릭터는 상품이나 DB 작업 없이 간판만 게시한다.
+- **폐점·재개점.** 폐점 시 저장 목록 삭제가 접수되면 해당 개점의 주문과 문구 참조를 놓고, 두 번째 폐점 요청은 추가 삭제를 접수하지 않는다. 다음 개점은 같은 `PlayerPrivateStore`에 새로운 주문 목록과 개점 번호를 게시한다. 손님이 예전에 보았던 가격 또는 이전 개점에 예약된 10초 타이머가 새 상점을 변경할 수 없다. 월드의 캐릭터 표시와 앱센터의 판매·매입 목록도 같은 개점 상태를 읽는다.
+- **무인상점.** 상인 연결이 무인상점 모드로 분리돼도 월드 캐릭터와 주문은 유지된다. 손님과 진행 중인 정산이 있는 무인상점의 GM 추방은 거래가 끝난 뒤 다시 요청할 수 있다. [상점 상태](../../src/l1j/server/server/model/shop/PlayerPrivateStore.java) · [캐릭터 개점·폐점 메서드](../../src/l1j/server/server/model/Instance/L1PcInstance.java)
+
+후속 Java 21 빌드는 운영 소스 1,695개를 컴파일했다. 격리 MariaDB와 실제 TCP 연결 3개로 개점·중복 폐점·새 가격 재개점·매입 전용 재등록·무인 전환 후 매입·폐점을 확인했다. 이전 7아데나 견적은 거절됐고 새 11아데나 견적으로 한 번만 거래됐다. 이 확장 시나리오의 영수증은 6건이었다. 세 캐릭터 인벤토리를 다시 읽은 뒤에도 아데나 1,400개와 상품 10개·18개가 보존됐다. 인증은 합성 세션을 사용했으며 실제 게임 클라이언트 화면과 전체 재로그인은 이 통합 시험의 범위 밖이다. [통합 검증](../../tests/trade_lifecycle/PrivateShopSettlementRegression.java) · [개점 회차와 지연 타이머 검증](../../tests/trade_lifecycle/test_private_store_lifecycle.py) · [무인상점 정리 검증](../../tests/trade_lifecycle/test_private_store_retirement.py)

@@ -39,7 +39,6 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.character.effect.poison.PoisonEffect;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
-import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.types.Point;
 import l1j.server.server.utils.CPCParamDB;
@@ -2211,115 +2210,11 @@ public class L1Character extends L1Object {
 		}
 	}
 
-	private volatile ArrayList<DynamicShopItem> _sellings;
-	private volatile ArrayList<DynamicShopItem> _purchasings;
+    public void disposeShopInfo() { }
 
-	public void disposeShopInfo() {
-		disposeSellings();
-		disposePurchasings();
-	}
+    public ArrayList<DynamicShopItem> getSellings() { return null; }
 
-	private DynamicShopItem findDShopItem(ArrayList<DynamicShopItem> list, int objid) {
-		if (list == null)
-			return null;
-
-		int size = list.size();
-		DynamicShopItem item = null;
-		for (int i = 0; i < size; i++) {
-			item = list.get(i);
-			if (item.objId == objid)
-				return item;
-		}
-		return null;
-	}
-
-	public DynamicShopItem findSellings(int objid) {
-		return findDShopItem(_sellings, objid);
-	}
-
-	public void updateSellings(int objid, int count) {
-		DynamicShopItem item = findSellings(objid);
-		if (item == null)
-			return;
-
-		if (item.count <= count) {
-			_sellings.remove(item);
-			DynamicShopStorage.deleteProcess(this, item.objId);
-		} else {
-			item.count -= count;
-			DynamicShopStorage.updateProcess(this, item);
-		}
-	}
-
-	public ArrayList<DynamicShopItem> getSellings() {
-		return _sellings;
-	}
-
-	public void setSellings(ArrayList<DynamicShopItem> list) {
-		_sellings = list;
-	}
-
-	public void addSellings(DynamicShopItem item) {
-		if (_sellings == null)
-			_sellings = new ArrayList<DynamicShopItem>(7);
-		_sellings.add(item);
-	}
-
-	public void disposeSellings() {
-		_sellings = null;
-	}
-
-	public DynamicShopItem findPurchasings(int objid) {
-		return findDShopItem(_purchasings, objid);
-	}
-
-	public void updatePurchasings(int objid, int count) {
-		DynamicShopItem item = findPurchasings(objid);
-		if (item == null)
-			return;
-
-		if (item.count <= count) {
-			_purchasings.remove(item);
-			DynamicShopStorage.deleteProcess(this, item.objId);
-		} else {
-			item.count -= count;
-			DynamicShopStorage.updateProcess(this, item);
-		}
-	}
-
-    /** Memory half of a receipt-committed private-shop operation. SQL listing
-     * quantities were checked and changed on the same connection as payment.
-     */
-    public void applyCommittedShopQuantity(boolean purchase, DynamicShopItem expected,
-            int expectedCount, int amount) {
-        final ArrayList<DynamicShopItem> list = purchase ? _purchasings : _sellings;
-        if (list == null || expected == null || amount <= 0 || amount > expectedCount)
-            throw new IllegalStateException("Invalid committed private shop quantity");
-        synchronized (list) {
-            if (!list.contains(expected) || expected.count != expectedCount)
-                throw new IllegalStateException("Private shop preimage changed after commit");
-            if (amount == expectedCount) list.remove(expected);
-            else expected.count = expectedCount - amount;
-        }
-    }
-
-	public ArrayList<DynamicShopItem> getPurchasings() {
-		return _purchasings;
-	}
-
-	public void setPurchasings(ArrayList<DynamicShopItem> list) {
-		_purchasings = list;
-	}
-
-	public void addPurchasings(DynamicShopItem item) {
-		if (_purchasings == null)
-			_purchasings = new ArrayList<DynamicShopItem>(7);
-		    _purchasings.add(item);
-	}
-
-	public void disposePurchasings() {
-		_purchasings = null;
-	}
+    public ArrayList<DynamicShopItem> getPurchasings() { return null; }
 
 
 	public void sendPackets(CServerPacket pck, boolean clear) {

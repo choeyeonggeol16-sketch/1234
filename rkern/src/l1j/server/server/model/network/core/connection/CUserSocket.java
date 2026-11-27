@@ -2712,9 +2712,13 @@ public final class CUserSocket extends CSocket {
     /** An administrative kick also retires the exact private-store or auto-clan
      * session after its transport and packets have drained. */
     public void kickAndLogout(L1PcInstance pc, int stamp) {
+        tryKickAndLogout(pc, stamp);
+    }
+
+    public boolean tryKickAndLogout(L1PcInstance pc, int stamp) {
         final boolean startClose;
         synchronized (this) {
-            if (_activeChar != pc || pc.getNetConnection() != this || pc.getSessionStamp() != stamp) return;
+            if (_activeChar != pc || pc.getNetConnection() != this || pc.getSessionStamp() != stamp) return false;
             pc.fenceForcedItemTransferRetirement();
             FORCED_LOGOUT.compareAndSet(this, null, new ForcedLogout(pc, stamp));
             markLifecycle(FORCED_CHARACTER_CLOSE);
@@ -2736,6 +2740,7 @@ public final class CUserSocket extends CSocket {
         finally {
             if (isClientCleanupComplete()) finishForcedLogout();
         }
+        return true;
     }
 
     /** Terminal packet/I/O drain starts one deferred L1 logout operation. */

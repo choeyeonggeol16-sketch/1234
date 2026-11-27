@@ -11,9 +11,12 @@ login = (root / "network/core/cs/packet/CS_EnterWorld.java").read_text(encoding=
 login = login[login.index("    private static boolean currentPrivateStoreLogin("):login.index("    private static EnterData loadEnterData(")]
 socket = (root / "network/core/connection/CUserSocket.java").read_text(encoding="utf-8")
 socket = socket[socket.index("    private volatile boolean privateStoreRetirementPending;"):socket.index("    private volatile PlayerShopView playerShopView;")]
+game = (root.parent / "GameServer.java").read_text(encoding="utf-8")
+game = game[game.index("    public static boolean tryDisconnectChar("):game.index("public static void disconnectChar(String name)")].rstrip()
 fixture = r"""
 import java.util.*;
 import java.util.concurrent.atomic.*;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.*;
 import java.util.logging.*;
 public final class RetirementCheck {
@@ -33,6 +36,10 @@ public final class RetirementCheck {
         L1PcInstance getActiveChar(){return pc;}
         CConnectionState getConnectionState(){return state;}
         void close(){connected=false;}
+        boolean tryKickAndLogout(L1PcInstance expected, int stamp){
+            if (pc!=expected || pc.getNetConnection()!=this || pc.stamp!=stamp) return false;
+            complete=true;return true;
+        }
 """ + socket + r"""
     }
     static class CWorld {
@@ -43,7 +50,8 @@ public final class RetirementCheck {
     }
     static class CacheD {
         static final CacheD INSTANCE=new CacheD();
-        boolean pending;
+        boolean pending,quarantined;
+        boolean isOwnerPersistenceQuarantined(int id){return quarantined;}
         static CacheD getInstance(){return INSTANCE;}
         boolean hasPendingOwnerApply(int id){return pending;}
     }
@@ -69,13 +77,30 @@ public final class RetirementCheck {
         }
     }
     static class Inventory {
-        L1PcInstance pc; int token;
-        boolean tryBeginEquipmentChange(){token=pc.tryReserveItemTransfer();return token!=0;}
+        L1PcInstance pc; int token; Runnable afterReserve;
+        boolean tryBeginEquipmentChange(){token=pc.tryReserveItemTransfer();
+            if(token!=0 && afterReserve!=null) afterReserve.run();
+            return token!=0;}
         void endEquipmentChange(){pc.endItemTransfer(token);token=0;}
     }
     static class L1PcInstance {
         int id,stamp=1, logouts, trade;
-        boolean shop,dead,done,quarantined;
+        boolean shop,dead,done,quarantined,display,continuation;
+        boolean hasItemTransferContinuation(){return continuation;}
+        int deletes;
+        record Opening(boolean open,int generation){}
+        Opening opening;
+        Opening privateStoreState() {
+            if(opening==null||opening.open()!=shop) opening=new Opening(shop, opening==null?1:opening.generation()+1);
+            return opening;
+        }
+        boolean closePrivateStore(int generation){
+            check(isItemTransferBusy(),"administrative close requires merchant gate");
+            if (!shop||privateStoreState().generation()!=generation)return false;
+            if (!display && User.reject)throw new RejectedExecutionException();
+            if (!display)deletes++;
+            shop=false;return true;
+        }
         String account;
         CUserSocket socket;
         final Inventory inv=new Inventory();
@@ -116,7 +141,7 @@ public final class RetirementCheck {
         }
     }
     static void doEnterWorld(String n,CUserSocket c){check(!c.isPrivateStoreRetirementPending(),"pending released before reload");enters++;}
-""" + login + owners + r"""
+""" + login + owners + game + r"""
     static CUserSocket login(String name){
         var s=new CUserSocket();s.account=new Account(name);
         LoginController.INSTANCE.current=s;return s;
@@ -185,6 +210,36 @@ public final class RetirementCheck {
         c=login("merchant");CIOThreadCallback.INSTANCE.reject=true;
         retirePrivateStoreForLogin("m",c,c.account,world,merchant);CSessionLifecycle.jobs.remove().run();
         check(!c.connected&&!c.isPrivateStoreRetirementPending()&&merchant.done,"rejected callback clears pending");
+        var adminTarget=shop(201);
+        int reserved=adminTarget.tryReserveItemTransfer();
+        check(!tryDisconnectChar(adminTarget)&&adminTarget.shop&&adminTarget.logouts==0,"busy detached merchant not retired");
+        adminTarget.endItemTransfer(reserved);
+        CacheD.INSTANCE.pending=true;
+        check(!tryDisconnectChar(adminTarget)&&!adminTarget.isItemTransferBusy(),"pending receipt blocks and releases gate");
+        CacheD.INSTANCE.pending=false;
+        adminTarget.continuation=true;
+        check(!tryDisconnectChar(adminTarget)&&adminTarget.deletes==0,"active continuation preserved");
+        adminTarget.continuation=false;
+        CacheD.INSTANCE.quarantined=true;
+        check(!tryDisconnectChar(adminTarget)&&adminTarget.logouts==0,"quarantined owner not treated as ordinary retirement");
+        CacheD.INSTANCE.quarantined=false;
+        adminTarget.inv.afterReserve=()->adminTarget.opening=new L1PcInstance.Opening(true,8);
+        check(!tryDisconnectChar(adminTarget)&&adminTarget.deletes==0&&adminTarget.shop,"replacement opening survives");
+        adminTarget.inv.afterReserve=null;
+        User.reject=true;
+        check(!tryDisconnectChar(adminTarget)&&adminTarget.shop&&adminTarget.logouts==0
+                &&!adminTarget.isItemTransferBusy(),"rejected delete leaves merchant live");
+        User.reject=false;
+        check(tryDisconnectChar(adminTarget)&&adminTarget.deletes==1&&adminTarget.logouts==1
+                &&!adminTarget.isItemTransferBusy(),"exact merchant deleted then retired");
+        check(!tryDisconnectChar(adminTarget)&&adminTarget.deletes==1,"stale actor cannot delete replacement");
+        var ad=shop(202);ad.display=true;User.reject=true;
+        check(tryDisconnectChar(ad)&&ad.deletes==0&&ad.logouts==1,"display-only merchant retires without SQL");
+        User.reject=false;
+        var online=shop(203);attach(online);
+        check(tryDisconnectChar(online)&&online.socket.complete&&online.shop,"online kick uses transport drain");
+        online.socket.pc=null;
+        check(!tryDisconnectChar(online),"replaced online actor rejects kick");
         System.out.println("PASS private store retirement and owner gate ("+checks+" checks)");
     }
 }

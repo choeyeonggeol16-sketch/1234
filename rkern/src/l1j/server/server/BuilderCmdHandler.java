@@ -2331,8 +2331,11 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		try {
 			L1PcInstance target = CWorld.getInstance().getPlayer(param);
 			if (target != null) {
-				gm.sendPackets((new StringBuilder()).append(target.getName()).append("님을 추방 했습니다.").toString());
-				GameServer.disconnectChar(target);
+				if (GameServer.tryDisconnectChar(target)) {
+					gm.sendPackets(target.getName() + "님 추방을 접수했습니다.");
+				} else {
+					gm.sendPackets("상점 또는 접속 상태가 변경되었거나 거래 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+				}
 			} else {
 				gm.sendPackets("그러한 이름의 캐릭터는 월드내에는 존재하지 않습니다.");
 			}
@@ -7709,8 +7712,7 @@ for (L1PcInstance pc2 : players) {
 		
 		byte[] chat = Config.PRIVATE_SHOP_CHAT.getBytes();
 		
-		newPc.setShopChat(chat);
-		newPc.setPrivateShop(true);
+		newPc.openDisplayPrivateStore(chat);
 		SC_DoActionShop.send(newPc, newPc.getId(), ActionCodes.ACTION_Shop, chat);
 		SC_DoActionShop.broadcast(newPc, newPc.getId(), ActionCodes.ACTION_Shop, chat);		
 	}

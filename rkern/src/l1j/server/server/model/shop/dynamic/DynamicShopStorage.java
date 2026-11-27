@@ -119,14 +119,18 @@ public class DynamicShopStorage implements Runnable{
 	
 	public static void deleteProcess(L1Character c) {
         if (c == null) return;
-        final int ownerId = c.getId();
+        enqueuePlayerListingRemoval(c.getId());
+        c.disposeShopInfo();
+    }
+
+    /** Queues only the durable delete. A player retires its open state after admission. */
+    public static void enqueuePlayerListingRemoval(int ownerId) {
         CacheD.getInstance().submitDbJobRetryOrdered(ownerId, () -> {
             try (Connection con = DatabaseFactory.getInstance().getConnection();
                  PreparedStatement ps = con.prepareStatement("DELETE FROM character_shop WHERE objid=?")) {
                 ps.setInt(1,ownerId); ps.executeUpdate();
             } catch (SQLException e) { throw new IllegalStateException("Private shop close persistence",e); }
         });
-        c.disposeShopInfo();
     }
 	
 	public static void deleteProcess(L1Character c, int itemObjId) {

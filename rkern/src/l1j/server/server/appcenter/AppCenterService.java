@@ -595,16 +595,19 @@ public final class AppCenterService {
         // Read only the market map and shops already in the world registry.
         // Avoid a JDBC connection and never hold world locks across HTTP requests.
         for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
-            if (pc == null || pc.getMapId() != 800 || !pc.isPrivateShop()) continue;
+            if (pc == null || pc.getMapId() != 800) continue;
+            final var store = pc.privateStoreState();
+            if (!store.open()) continue;
             String seller = validText(pc.getName(),32);
             if (seller.isEmpty()) continue;
             final int x=pc.getX(),y=pc.getY();
-            try {
-                appendListings(result,pc.getSellings(),seller,x,y,0);
-                appendListings(result,pc.getPurchasings(),seller,x,y,1);
-            } catch (IndexOutOfBoundsException | java.util.ConcurrentModificationException transientChange) {
-                // A shop edited its mutable listing while this worker read it.
-                // A complete list will be picked up on the next five-second tick.
+            final int firstRow = result.size();
+            appendPlayerListings(result, store.sellings(), seller, x, y, 0);
+            appendPlayerListings(result, store.purchasings(), seller, x, y, 1);
+            if (pc.privateStoreState() != store || pc.getMapId() != 800) {
+                // Drop this merchant's rows if their generation retired during the copy.
+                result.subList(firstRow, result.size()).clear();
+                continue;
             }
             if (result.size() >= MAX_SHOP_ROWS) break;
         }
@@ -628,6 +631,16 @@ public final class AppCenterService {
             .thenComparing(m->m.seller));
         return List.copyOf(result);
     }
+
+    private static void appendPlayerListings(List<Market> out, List<DynamicShopItem> listings,
+                                             String seller, int x, int y, int kind) {
+        if (listings == null) return;
+        // Receipt replay changes quantity and membership under this same list monitor.
+        synchronized (listings) {
+            appendListings(out, listings, seller, x, y, kind);
+        }
+    }
+
     private static void appendListings(List<Market> out,List<DynamicShopItem> listings,
                                        String seller,int x,int y,int kind) {
         if (listings == null) return;

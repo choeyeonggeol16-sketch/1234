@@ -2,6 +2,7 @@ package l1j.server.server;
 
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -439,12 +440,46 @@ public class GameServer {
 	/**
 	 * 온라인중의 플레이어에 대해서 kick , 캐릭터 정보의 보존을 한다.
 	 */
-	public static void disconnectChar(L1PcInstance pc) {
+    public static void disconnectChar(L1PcInstance pc) {
+        tryDisconnectChar(pc);
+    }
+
+    public static boolean tryDisconnectChar(L1PcInstance pc) {
         final int stamp = pc.getSessionStamp();
         final CUserSocket client = pc.getNetConnection();
-        if (client != null) client.kickAndLogout(pc, stamp);
-        else pc.logout();
-	}
+        if (client != null) return client.tryKickAndLogout(pc, stamp);
+
+        final var opening = pc.privateStoreState();
+        final CWorld world = CWorld.getInstance();
+        if (pc.isLogoutStarted()) return false;
+        if (!opening.open()) {
+            pc.logout();
+            return true;
+        }
+        if (world.findObject(pc.getId()) != pc) return false;
+
+        // The detached merchant still owns its world inventory. Claim the same
+        // gate as settlement before disposing the exact opening observed above.
+        final var inventory = pc.getInventory();
+        if (!inventory.tryBeginEquipmentChange()) return false;
+        try {
+            if (pc.privateStoreState() != opening || pc.getSessionStamp() != stamp
+                    || pc.getNetConnection() != null || pc.isLogoutStarted()
+                    || CWorld.getInstance() != world || world.findObject(pc.getId()) != pc
+                    || pc.hasItemTransferContinuation()
+                    || CacheD.getInstance().hasPendingOwnerApply(pc.getId())
+                    || CacheD.getInstance().isOwnerPersistenceQuarantined(pc.getId())) return false;
+            try {
+                if (!pc.closePrivateStore(opening.generation())) return false;
+            } catch (RejectedExecutionException busy) {
+                return false;
+            }
+            pc.logout();
+            return true;
+        } finally {
+            inventory.endEquipmentChange();
+        }
+    }
 
 	public static void disconnectChar(String name) {
 		L1PcInstance pc = CWorld.getInstance().getPlayer(name);
