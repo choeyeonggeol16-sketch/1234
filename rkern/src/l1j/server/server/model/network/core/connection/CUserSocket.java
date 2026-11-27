@@ -28,7 +28,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
 import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.model.network.core.session.DominationHybrid;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.Connection;
-import l1j.server.server.model.network.core.transport.selector.CSelectorTransport.OwnerCommand;
 import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
@@ -51,35 +50,6 @@ import l1j.server.server.storage.CacheD;
  * game state remains subject to the session and creature ownership rules.
  */
 public final class CUserSocket extends CSocket {
-    private static final OwnerCommand RETURN_SEND_DRAIN = new OwnerCommand() {
-        @Override public void run(Connection connection) {
-            ((CUserSocket) connection.rawEndpoint()).resumeSharedSocketCallbacks(false);
-        }
-
-        @Override public void cancel(Connection connection) {
-            ((CUserSocket) connection.rawEndpoint()).resumeSharedSocketCallbacks(true);
-        }
-    };
-
-    // Created only when this socket first attempts a heavy SEND handoff.
-    // Access is protected by the existing serializer ownership token.
-    private Runnable sharedSendDrain;
-
-    @Override boolean transferSocketDrain(boolean returning) {
-        if (_closed != 0 || _closing != 0 || _stateLock.isHeldByCurrentThread()
-                || Thread.holdsLock(this)) return false;
-        final SendBurst burst = SEND_BURST.get();
-        if (burst != null && (burst.depth != 0 || burst.flushing)) return false;
-        if (!returning && sharedSendDrain == null) sharedSendDrain = this::drainSharedSocketCallbacks;
-
-        // The bit stays claimed while the runnable is in transit. Publish
-        // the idle owner reference before offering; a peer may run at once.
-        _socketOwner = null;
-        if (returning ? peer.submit(RETURN_SEND_DRAIN, true) : peer.tryShareWork(sharedSendDrain)) return true;
-        _socketOwner = Thread.currentThread();
-        return false;
-    }
-
     private static final boolean[] SESSION_OPCODE = new boolean[256];
     static {
         SESSION_OPCODE[Opcodes.C_LOGIN & 0xFF] = true;

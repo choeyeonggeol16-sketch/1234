@@ -26,8 +26,6 @@ import java.util.function.LongConsumer;
 
 /** Bounded, standard-Java TCP transport. Each connection has one Selector owner for its entire lifetime. */
 public final class CSelectorTransport implements AutoCloseable {
-    public static final boolean SHARED_SEND_WORKERS = Boolean.getBoolean("rkern.network.sharedSendWorkers");
-
     public record Config(int owners, int connectionsPerOwner, int acceptBacklog, int mailboxCapacity,
             int largeReceivesPerOwner, int smallSendsPerOwner, int largeSendsPerOwner,
             int sendBytesPerConnection, int sendFramesPerConnection, int socketSendBytes,
@@ -59,7 +57,13 @@ public final class CSelectorTransport implements AutoCloseable {
 
     /** Installed on existing owner threads by the game scheduler. */
     public interface OwnerDriver {
+        /** Opt in during hosted attachment, before publishing this driver. */
+        default void enableSharedTurns() { throw new UnsupportedOperationException("Shared Selector turns unavailable"); }
+        /** Run a synchronous transport/game turn on the calling worker. */
+        default void withOwner(Runnable operation) { throw new UnsupportedOperationException("Shared Selector turns unavailable"); }
         void advance();
+        /** Probe once for more ready I/O after a scoped turn serviced network work. */
+        default boolean collectImmediateWork() { throw new UnsupportedOperationException("Selector readiness probe unavailable"); }
         void awaitWork(long maxWaitMillis);
         void wakeup();
         void closeOnOwner();
@@ -81,11 +85,7 @@ public final class CSelectorTransport implements AutoCloseable {
     public record OwnerStats(int remainingConnections, int remainingCommands) { }
 
     public record OwnerDiagnostics(int index, int admitted, int queuedCommands,
-            int deadlines, int stalledWrites, long sharedWorkRuns) {
-        public OwnerDiagnostics(int index, int admitted, int queuedCommands, int deadlines, int stalledWrites) {
-            this(index, admitted, queuedCommands, deadlines, stalledWrites, 0L);
-        }
-    }
+            int deadlines, int stalledWrites) { }
 
     private static final int ACCEPT_BUDGET = 32;
     private static final int COMMAND_BUDGET = 64;
@@ -93,10 +93,6 @@ public final class CSelectorTransport implements AutoCloseable {
     private static final long OWNER_PHASE_NANOS = 500_000;
     private static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(5);
     private static final System.Logger LOG = System.getLogger(CSelectorTransport.class.getName());
-    private enum SharedSlot implements Runnable {
-        IDLE, STOPPED;
-        @Override public void run() { throw new IllegalStateException("Idle slot has no task"); }
-    }
 
     private final Config config;
     private final RawHandler handler;
@@ -266,24 +262,6 @@ public final class CSelectorTransport implements AutoCloseable {
         public int ownerIndex() { return owner.index; }
         public boolean isOwnerThread() { return Thread.currentThread() == owner.thread; }
         public boolean isOpen() { return !closed; }
-
-        /**
-         * Transfer one bounded task to a peer about to wait for Selector work.
-         * The caller retains the task on refusal. Acceptance always invokes it
-         * on the peer, including during shutdown. Socket I/O remains owner-only.
-         */
-        public boolean tryShareWork(Runnable task) {
-            if (!SHARED_SEND_WORKERS || closed || owner.stopping || owners.length < 2) return false;
-            Objects.requireNonNull(task);
-            Thread caller = Thread.currentThread();
-            int index = owner.index;
-            for (int i = 1; i < owners.length; i++) {
-                if (++index == owners.length) index = 0;
-                Owner peer = owners[index];
-                if (peer.thread != caller && peer.tryAcceptSharedWork(task)) return true;
-            }
-            return false;
-        }
 
         /** Control-plane close cannot be refused by a full regular mailbox. */
         public void requestClose(boolean drain) {
@@ -680,14 +658,16 @@ public final class CSelectorTransport implements AutoCloseable {
 
     private final class Owner implements Runnable, OwnerDriver {
         private final int index;
+        private final boolean hosted;
+        // The logical owner is scoped only for hosts that opt in before startup.
         private volatile Thread thread;
+        // Both an owned turn and the host's readiness-only wait use this gate.
+        private volatile AtomicReference<Thread> scopedActivity;
+        // Both values move with exclusive scopedActivity, including the wait-to-turn boundary.
+        private boolean scopedPollCollected;
+        private boolean scopedNetworkProgress;
         private final Selector selector;
         private final AtomicInteger admitted = new AtomicInteger();
-        private volatile long sharedWorkRuns; // This owner is the only writer.
-        // null = active, IDLE = accepting one idle handoff, STOPPED = closed.
-        // A real task in the slot belongs exclusively to this owner until invoked.
-        private final AtomicReference<Runnable> sharedWork = SHARED_SEND_WORKERS && owners.length > 1
-                ? new AtomicReference<>() : null;
         // Targets are a Connection with a command or a SocketChannel awaiting registration.
         // Slots are published in one monitor transaction and cleared before running callbacks.
         private final Object[] mailbox = new Object[config.mailboxCapacity()];
@@ -709,6 +689,7 @@ public final class CSelectorTransport implements AutoCloseable {
 
         private Owner(int index, boolean hosted) throws IOException {
             this.index = index;
+            this.hosted = hosted;
             if (!hosted) thread = Thread.ofPlatform().name("jproring-selector-" + index).unstarted(this);
             selector = Selector.open();
         }
@@ -735,7 +716,7 @@ public final class CSelectorTransport implements AutoCloseable {
 
         private OwnerDiagnostics diagnostics() {
             synchronized (mailbox) {
-                return new OwnerDiagnostics(index, admitted.get(), mailboxSize, deadlineDepth, stalledDepth, sharedWorkRuns);
+                return new OwnerDiagnostics(index, admitted.get(), mailboxSize, deadlineDepth, stalledDepth);
             }
         }
 
@@ -794,18 +775,8 @@ public final class CSelectorTransport implements AutoCloseable {
             synchronized (mailbox) { return mailboxSize; }
         }
 
-        private boolean tryAcceptSharedWork(Runnable task) {
-            if (stopping || !sharedWork.compareAndSet(SharedSlot.IDLE, task)) return false;
-            selector.wakeup();
-            return true;
-        }
-
         private void requestStop() {
             synchronized (mailbox) { stopping = true; }
-            // Withdraw idle admission without taking an already accepted task
-            // away from its owner. That owner drains the slot on every exit.
-            if (sharedWork != null)
-                sharedWork.getAndUpdate(slot -> slot == null || slot == SharedSlot.IDLE ? SharedSlot.STOPPED : slot);
             selector.wakeup();
         }
 
@@ -825,20 +796,89 @@ public final class CSelectorTransport implements AutoCloseable {
         }
 
         @Override
+        public void enableSharedTurns() {
+            synchronized (startupLock) {
+                if (!hosted || started || stopping || finished)
+                    throw new IllegalStateException("Shared turns require hosted attachment");
+                if (scopedActivity == null) scopedActivity = new AtomicReference<>();
+            }
+        }
+
+        @Override
+        public void withOwner(Runnable operation) {
+            Objects.requireNonNull(operation);
+            AtomicReference<Thread> activity = scopedActivity;
+            if (activity == null) throw new IllegalStateException("Shared Selector turns are disabled");
+            claim(activity);
+            thread = Thread.currentThread();
+            try {
+                // A network stop must not discard the host's packets or timers.
+                operation.run();
+            } finally {
+                thread = null;
+                activity.set(null);
+            }
+        }
+
+        private void claim(AtomicReference<Thread> activity) {
+            if (!activity.compareAndSet(null, Thread.currentThread()))
+                throw new IllegalStateException("Concurrent hosted Selector activity");
+        }
+
+        @Override
         public void advance() {
             if (!started || finished) return;
+            final boolean scoped = scopedActivity != null;
+            if (scoped) requireOwner();
             try {
-                initialize();
+                if (!scoped) initialize();
                 if (!stopping) {
-                    selector.selectNow(collector);
-                    work();
+                    // A waiter or the preceding tail probe already collected
+                    // readiness for at most this one turn, even on an empty poll.
+                    if (!scoped || !scopedPollCollected) selector.selectNow(collector);
+                    if (scoped) scopedPollCollected = false;
+                    boolean networkProgress = work();
+                    if (scoped) scopedNetworkProgress = networkProgress;
                 }
             } catch (Throwable unexpected) { fail(unexpected); }
             if (stopping) finish();
         }
 
+        private boolean hasImmediateWork() {
+            requireOwner();
+            if (!started || finished) return false;
+            if (stopping || first != null || acceptReady || hasMailboxWork()) return true;
+            final long now = System.nanoTime();
+            return (!deadlines.isEmpty() && now - deadlines.peek().scheduledDeadline >= 0)
+                    || (!stalled.isEmpty() && now - stalled.peek().stallDeadline >= 0);
+        }
+
+        @Override
+        public boolean collectImmediateWork() {
+            if (hasImmediateWork()) return true;
+            if (!started || finished || scopedActivity == null || !scopedNetworkProgress) return false;
+            scopedNetworkProgress = false;
+            try {
+                selector.selectNow(collector);
+                scopedPollCollected = true;
+            } catch (Throwable unexpected) { fail(unexpected); }
+            if (stopping) finish();
+            return hasImmediateWork();
+        }
+
         @Override
         public void awaitWork(long maxWaitMillis) {
+            AtomicReference<Thread> activity = scopedActivity;
+            if (activity == null) {
+                awaitReadiness(maxWaitMillis, false);
+                return;
+            }
+            claim(activity);
+            try { awaitReadiness(maxWaitMillis, true); }
+            finally { activity.set(null); }
+        }
+
+        private void awaitReadiness(long maxWaitMillis, boolean scoped) {
             if (stopping || finished) return;
             // A host may publish drivers on running threads before its attach call returns.
             if (!started) {
@@ -846,14 +886,13 @@ public final class CSelectorTransport implements AutoCloseable {
                 return;
             }
             try {
-                // Attachment can commit between the host's advance and awaitWork calls.
-                // In that case this is the first active call on the owning thread.
-                if (thread == null) initialize();
-                else requireOwner();
+                // In shared mode only readiness is collected here. Commands,
+                // game callbacks and closing run with the logical owner bound.
+                if (!scoped) initialize();
                 select(Math.max(0, maxWaitMillis));
-            }
-            catch (Throwable unexpected) { fail(unexpected); }
-            if (stopping) finish();
+                if (scoped) scopedPollCollected = true;
+            } catch (Throwable unexpected) { fail(unexpected); }
+            if (!scoped && stopping) finish();
         }
 
         @Override public void wakeup() { selector.wakeup(); }
@@ -868,14 +907,28 @@ public final class CSelectorTransport implements AutoCloseable {
                     return;
                 }
             }
-            if (thread == null) thread = Thread.currentThread();
-            requireOwner();
+            AtomicReference<Thread> activity = scopedActivity;
+            if (activity == null) {
+                initialize();
+                stopAndFinish();
+            } else if (Thread.currentThread() == thread) {
+                stopAndFinish();
+            } else {
+                withOwner(this::stopAndFinish);
+            }
+        }
+
+        private void stopAndFinish() {
             CSelectorTransport.this.requestStop();
             finish();
         }
 
         private void initialize() {
-            if (thread == null) thread = Thread.currentThread();
+            if (thread == null) {
+                synchronized (startupLock) {
+                    if (thread == null) thread = Thread.currentThread();
+                }
+            }
             requireOwner();
         }
 
@@ -892,22 +945,9 @@ public final class CSelectorTransport implements AutoCloseable {
             }
         }
 
-        private void runSharedWork(Runnable task) {
-            if (task == null || task instanceof SharedSlot) return;
-            sharedWorkRuns++;
-            try { task.run(); }
-            catch (RuntimeException error) { reportCallbackFailure("shared work", error); }
-            catch (Error error) { fail(error); }
-        }
-
         private void finish() {
             if (finished) return;
-            try {
-                try {
-                    if (sharedWork != null) runSharedWork(sharedWork.getAndSet(SharedSlot.STOPPED));
-                }
-                finally { cleanup(); }
-            }
+            try { cleanup(); }
             catch (Throwable error) { failure.compareAndSet(null, error); }
             finally {
                 finished = true;
@@ -915,7 +955,8 @@ public final class CSelectorTransport implements AutoCloseable {
             }
         }
 
-        private void work() throws IOException {
+        private boolean work() throws IOException {
+            boolean networkProgress = false;
             long now = System.nanoTime();
             drainExpired(now);
             drainCloses();
@@ -926,7 +967,7 @@ public final class CSelectorTransport implements AutoCloseable {
             }
             if (acceptReady) {
                 acceptReady = false;
-                if (accepting && !stopping) accept();
+                if (accepting && !stopping) networkProgress = accept();
             }
             if (first != null) {
                 long readyDeadline = System.nanoTime() + OWNER_PHASE_NANOS;
@@ -934,9 +975,11 @@ public final class CSelectorTransport implements AutoCloseable {
                     Connection connection = first;
                     unlink(connection);
                     connection.turn();
+                    networkProgress = true;
                     if ((i & 7) == 7 && System.nanoTime() - readyDeadline >= 0) break;
                 }
             }
+            return networkProgress;
         }
 
         private void select(long maxWaitMillis) throws IOException {
@@ -957,22 +1000,6 @@ public final class CSelectorTransport implements AutoCloseable {
                 long deadlineMillis = 1 + (delay - 1) / 1_000_000;
                 if (waitMillis < 0 || deadlineMillis < waitMillis) waitMillis = deadlineMillis;
             }
-            if (sharedWork == null) {
-                selectBlocking(waitMillis);
-                return;
-            }
-            if (!sharedWork.compareAndSet(null, SharedSlot.IDLE)) return;
-            try {
-                // A task can arrive before select, while select waits, or as
-                // select returns. The slot check handles the first case and
-                // Selector.wakeup is sticky across the gap to the native wait.
-                if (!stopping && sharedWork.get() == SharedSlot.IDLE) selectBlocking(waitMillis);
-            } finally {
-                runSharedWork(sharedWork.getAndUpdate(slot -> slot == SharedSlot.STOPPED ? slot : null));
-            }
-        }
-
-        private void selectBlocking(long waitMillis) throws IOException {
             if (waitMillis < 0) selector.select(collector);
             else selector.select(collector, waitMillis);
         }
@@ -1079,15 +1106,17 @@ public final class CSelectorTransport implements AutoCloseable {
         }
     }
 
-    private void accept() throws IOException {
+    private boolean accept() throws IOException {
+        boolean accepted = false;
         for (int i = 0; i < ACCEPT_BUDGET; i++) {
             SocketChannel channel;
             try { channel = listener.accept(); }
             catch (ClosedChannelException stopped) {
-                if (!accepting) return;
+                if (!accepting) return accepted;
                 throw stopped;
             }
-            if (channel == null) return;
+            if (channel == null) return accepted;
+            accepted = true;
             Owner owner = reserveOwner();
             if (owner == null) {
                 channel.close();
@@ -1097,6 +1126,7 @@ public final class CSelectorTransport implements AutoCloseable {
                 owner.dropChannel(channel);
             }
         }
+        return accepted;
     }
 
     private Owner reserveOwner() {
