@@ -53,7 +53,6 @@ public final class CWorld {
 
     private volatile boolean _worldChatEnabled = true;
 
-    private volatile boolean _processingContributionTotal = false;
 
     static final int MAX_MAP_ID = 32768;
 
@@ -808,6 +807,15 @@ public final class CWorld {
         if (world != null) world.users.keysChanged(pc);
     }
 
+    public static void playerTownChanged(L1PcInstance pc) {
+        CWorld world = _instance;
+        if (world != null) world.users.townChanged(pc);
+    }
+
+    public Collection<L1PcInstance> getTownResidents() {
+        return users.residents();
+    }
+
     public boolean hasOtherPrivateShop(L1PcInstance pc) {
         return users.hasOtherPrivateShop(pc);
     }
@@ -905,14 +913,6 @@ public final class CWorld {
 
     public boolean isWorldChatElabled() {
         return _worldChatEnabled;
-    }
-
-    public void setProcessingContributionTotal(boolean flag) {
-        _processingContributionTotal = flag;
-    }
-
-    public boolean isProcessingContributionTotal() {
-        return _processingContributionTotal;
     }
 
     public L1Object[] getObject2() {

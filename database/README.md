@@ -2,6 +2,10 @@
 
 SQL은 MySQL 5.7과 MariaDB에서 사용할 수 있습니다. 예시의 `net`은 실제 DB 이름으로 바꾸세요.
 
+## 2026-11-27 마을 정산
+
+마을 정산은 `town`, `characters`, `cached_transaction_receipts`의 InnoDB 트랜잭션을 사용합니다. 기존 Net DB에는 [거래 테이블 엔진 변환](Net_transaction_engines.sql)을 적용하고 [마을 공헌도 조회 인덱스](Net_town_lookup_index.sql)를 추가합니다.
+
 ## 2026-11-26 Net 업데이트
 
 이번 배포 기준은 이전에 전달한 `RKern_net_b59fa545_ready_to_import.zip`입니다. 새 비공개 설치본 `RKern_Net_SQL_20261126.zip`은 빈 DB에 `Net.sql`을 한 번 임포트하면 됩니다. 이전에 사용한 아이템 옵션 스크립트도 함께 들어 있습니다. 기존 운영 DB를 업그레이드할 때는 전체 덤프 대신 아래 순서를 사용하세요.

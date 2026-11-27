@@ -226,10 +226,7 @@ public class CalcExp {
 				return;
 			}
 
-			if (!CWorld.getInstance().isProcessingContributionTotal() && killerPc.getHomeTownId() > 0) {
-				final int contribution = npc.getLevel() / 10;
-				killerPc.addContribution(contribution);
-			}
+			killerPc.addContribution(npc.getLevel() / 10);
 
 			final int lawful = npc.getLawful();
 
@@ -298,10 +295,7 @@ public class CalcExp {
 
 			if (m == 0 || totalHateExp <= 0L) return;
 
-			if (!CWorld.getInstance().isProcessingContributionTotal() && killerPc.getHomeTownId() > 0) {
-				final int contribution = npc.getLevel() / 10;
-				killerPc.addContribution(contribution);
-			}
+			killerPc.addContribution(npc.getLevel() / 10);
 
 			final int lawful = npc.getLawful();
 

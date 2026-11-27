@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.world.town.CResidenceSettlement;
+import l1j.server.server.model.world.town.CTownMembership;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.ObjectWrapper;
 import l1j.server.server.storage.CacheD;
@@ -35,6 +37,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
 		L1PcInstance pc = null;
 		String sql = "SELECT * FROM characters WHERE char_name = ?";
 		
+        CResidenceSettlement.lockPersistence();
 		try (Connection con = DatabaseFactory.getInstance().getConnection();
 			 PreparedStatement pstm = con.prepareStatement(sql)) {
 			pstm.setString(1, charName);
@@ -114,8 +117,8 @@ public class MySqlCharacterStorage implements CharacterStorage {
 				}
 				
 				pc.setOnlineStatus(rs.getInt("OnlineStatus"));
-				pc.setHomeTownId(rs.getInt("HomeTownID"));
-				pc.setContribution(rs.getInt("Contribution"));
+                pc.restoreHomeTown(rs.getInt("HomeTownID"), rs.getInt("Contribution"),
+                        CResidenceSettlement.period());
 				pc.setBanned(rs.getBoolean("Banned"));
 				pc.setKarma(rs.getInt("Karma"));
 				pc.setLastPk(rs.getTimestamp("LastPk"));
@@ -167,7 +170,9 @@ public class MySqlCharacterStorage implements CharacterStorage {
 		} catch (SQLException e) {
 			_log.log(Level.SEVERE, "loadCharacter error for: " + charName, e);
 			pc = null;
-		}
+		} finally {
+            CResidenceSettlement.unlockPersistence();
+        }
 
 		if (pc != null) {
 			pc.refresh();
@@ -401,8 +406,9 @@ public class MySqlCharacterStorage implements CharacterStorage {
         public final int objectId;
         public final long sessionEpoch;
         public final int characterReceiptRevision;
+        public final CTownMembership.Snapshot homeTown;
         private final int onlineStatus;
-        private final int[] values = new int[65];
+        private final int[] values = new int[63];
         private final String[] strings = new String[5];
         private final Timestamp[] times = new Timestamp[4];
 
@@ -462,8 +468,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
             values[ni++] = pc.getPartnerId();
             values[ni++] = pc.getAccessLevel();
             values[ni++] = onlineStatus;
-            values[ni++] = pc.getHomeTownId();
-            values[ni++] = pc.getContribution();
+            homeTown = pc.captureHomeTown();
             values[ni++] = (pc.isBanned()) ? 1 : 0;
             long karma = pc.captureKarmaForSave();
             characterReceiptRevision = (int) (karma >>> 32);
@@ -505,6 +510,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
                     && sessionEpoch == other.sessionEpoch
                     && characterReceiptRevision == other.characterReceiptRevision
                     && onlineStatus == other.onlineStatus
+                    && homeTown.equals(other.homeTown)
                     && java.util.Arrays.equals(values, other.values)
                     && java.util.Arrays.equals(strings, other.strings)
                     && java.util.Arrays.equals(times, other.times);
@@ -515,6 +521,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
         }
 
         public void write() throws SQLException {
+            CResidenceSettlement.lockPersistence();
             try (Connection con = DatabaseFactory.getInstance().getConnection();
                  PreparedStatement ps = con.prepareStatement(CHARACTER_STORE_SQL)) {
                 int index = 0, ni = 0, si = 0, ti = 0;
@@ -561,8 +568,12 @@ public class MySqlCharacterStorage implements CharacterStorage {
                 ps.setInt(++index, values[ni++]);
                 ps.setShort(++index, (short) values[ni++]);
                 ps.setInt(++index, values[ni++]);
-                ps.setInt(++index, values[ni++]);
-                ps.setInt(++index, values[ni++]);
+                long period = CResidenceSettlement.period();
+                boolean unsettled = CResidenceSettlement.isSettlementUncertain();
+                ps.setBoolean(++index, unsettled);
+                ps.setInt(++index, homeTown.townIdFor(period));
+                ps.setBoolean(++index, unsettled);
+                ps.setInt(++index, homeTown.contributionFor(period));
                 ps.setBoolean(++index, values[ni++] != 0);
                 ps.setInt(++index, values[ni++]);
                 ps.setTimestamp(++index, times[ti++]);
@@ -605,6 +616,8 @@ public class MySqlCharacterStorage implements CharacterStorage {
                         }
                     }
                 }
+            } finally {
+                CResidenceSettlement.unlockPersistence();
             }
         }
     }
@@ -614,7 +627,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
 				+ ", Cha=?, BaseCha=?, Intel=?, BaseIntel=?, Wis=?, BaseWis=?, Status=?, Class=?, Sex=?, Type=?"
 				+ ", Heading=?, LocX=?, LocY=?, MapID=?, Food=?, Lawful=?, Title=?, ClanID=?, Clanname=?, ClanRank=?"
 				+ ", notes=?, BonusStatus=?, ElixirStatus=?, ElfAttr=?, PKcount=?, ExpRes=?, PartnerID=?, AccessLevel=?"
-				+ ", OnlineStatus=?, HomeTownID=?, Contribution=?, Banned=?, Karma=?, LastPk=?"
+				+ ", OnlineStatus=?, HomeTownID=IF(?,HomeTownID,?), Contribution=IF(?,Contribution,?), Banned=?, Karma=?, LastPk=?"
 				+ ", DeleteTime=?, ReturnStat=?, sealScrollTime=?, sealScrollCount=?, lastLogoutTime = IF(? = 0, NOW(), lastLogoutTime)"
 				+ ", AinState=?, SurvivalGauge=?"
 				+ ", Mark_Count=?, Age=?, AddDamage=?, AddDamageRate=?, AddReduction=?, AddReductionRate=?, bug_check=?, kir_time=?, col_y=?, col_m=?, col_l=?, col_h=?, level_q=?,"

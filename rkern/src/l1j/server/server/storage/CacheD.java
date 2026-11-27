@@ -29,6 +29,8 @@ import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.storage.cached.CUser;
 import l1j.server.server.storage.cached.CWareHouse;
 import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
+import l1j.server.server.model.world.town.CResidenceSettlement;
+import l1j.server.server.model.world.town.CTownMembership;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage.ItemSnapshot;
 
@@ -1817,6 +1819,20 @@ public final class CacheD {
             // Signed distance preserves ordering across integer wrap for outstanding owner callbacks.
             if (user != null && user.sessionEpoch == sessionEpoch && revision - user.characterReceiptRevision > 0)
                 user.characterReceiptRevision = revision;
+        }
+    }
+
+    /** Include queued logout images whose owners have already left the world. */
+    public void collectPendingHomeTowns(long period,
+            gnu.trove.map.hash.TIntObjectHashMap<CTownMembership.Snapshot> pending) {
+        synchronized (lock) {
+            for (CUser user : characters.values()) {
+                CharacterSnapshot snapshot = user.latest;
+                if (snapshot != null && snapshot.homeTown.period() == period
+                        && CResidenceSettlement.isTracked(snapshot.homeTown.townId())) {
+                    pending.putIfAbsent(snapshot.objectId, snapshot.homeTown);
+                }
+            }
         }
     }
 

@@ -155,7 +155,7 @@ import java.util.NoSuchElementException;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.network.core.sc.packet.SC_Lawful;
 import l1j.server.server.model.shop.NpcShopManager;
-import l1j.server.server.Controller.HomeTownTimeController;
+import l1j.server.server.model.world.town.CResidenceSettlement;
 
 import l1j.server.server.model.network.core.sc.packet.SC_ShopSellList2;
 import l1j.server.server.storage.CacheD;
@@ -6104,9 +6104,9 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			StringTokenizer st = new StringTokenizer(arg);
 			String para1 = st.nextToken();
 			if (para1.equalsIgnoreCase("매일")) {
-				HomeTownTimeController.getInstance(). dailyProc();
+				requestResidenceSettlement(pc, false);
 			} else if (para1.equalsIgnoreCase("매달")) {
-				HomeTownTimeController.getInstance(). monthlyProc();
+				requestResidenceSettlement(pc, true);
 			} else {
 				throw new Exception();
 			}
@@ -6114,6 +6114,12 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			SC_SystemMessage.send(pc, ".홈타운 [매일,매달] 라고 입력해 주세요. ");
 		}
 	}
+
+    private static void requestResidenceSettlement(L1PcInstance pc, boolean monthly) {
+        boolean queued = CResidenceSettlement.getInstance().request(monthly);
+        SC_SystemMessage.send(pc, queued ? "마을 정산 작업을 예약했습니다."
+                : "마을 정산을 예약할 수 없습니다. 진행 중이거나 이미 처리된 기간입니다.");
+    }
 
 	private static final Map<Integer, String> BUILDER_FAVORITES = new java.util.concurrent.ConcurrentHashMap<>();
 

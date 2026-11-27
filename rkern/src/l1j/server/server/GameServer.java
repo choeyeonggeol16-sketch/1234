@@ -102,6 +102,7 @@ import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
 import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
 import l1j.server.server.model.character.scheduler.CInventoryExpiry;
 import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.world.town.CResidenceSettlement;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.L1TreasureBox;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
@@ -350,6 +351,7 @@ public class GameServer {
 		if (Config.AUTO_GM_SHOP) {
 			NpcShopManager.getInstance().start();
 		}
+        CResidenceSettlement.getInstance().start(L1GameTimeClock.getInstance());
 		L1GameTimeClock.start();
 		RealTimeClock.start();
 	}
@@ -588,6 +590,7 @@ public class GameServer {
 	        AppCenterService.stop();
 	        OneTimeController.stop();
 	        NpcChatTimeController.getInstance().stop();
+            CResidenceSettlement.getInstance().stop();
 	        L1CompanionInstance.do_store_companions();
 
             // The native transport is joined while CIO shard owners are still

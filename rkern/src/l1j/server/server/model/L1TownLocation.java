@@ -379,7 +379,7 @@ public class L1TownLocation {
 		int town_id = getTownIdByNpcid(npcid);
 		if (town_id >= 1 && town_id <= 10) {
 			L1Town town = TownTable.getInstance().getTownTable(town_id);
-			return (town != null) ? town.get_tax_rate() : 0;
+			return (town != null) ? town.taxRate() : 0;
 		}
 		return 0;
 	}

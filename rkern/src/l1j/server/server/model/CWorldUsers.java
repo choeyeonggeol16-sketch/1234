@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.world.town.CResidenceSettlement;
 
 /** Online users by character name and the other characters on their account. */
 final class CWorldUsers {
@@ -24,10 +25,24 @@ final class CWorldUsers {
             new ConcurrentSkipListMap<>(String.CASE_INSENSITIVE_ORDER);
     // Writers also need the keys from before an in-place rename or account change.
     // Indexed reads never acquire this monitor or call into the world under it.
+    private final java.util.Set<L1PcInstance> residents = ConcurrentHashMap.newKeySet();
+    private final Collection<L1PcInstance> residentView = Collections.unmodifiableSet(residents);
     private final IdentityHashMap<L1PcInstance, Keys> keys = new IdentityHashMap<>();
 
     Collection<L1PcInstance> online() {
         return online;
+    }
+
+    Collection<L1PcInstance> residents() {
+        return residentView;
+    }
+
+    synchronized void townChanged(L1PcInstance pc) {
+        Keys entry = keys.get(pc);
+        if (entry != null && entry.name != null && byName.get(entry.name) == pc && CResidenceSettlement.isTracked(pc.getHomeTownId()))
+            residents.add(pc);
+        else
+            residents.remove(pc);
     }
 
     L1PcInstance find(String name) {
@@ -58,7 +73,10 @@ final class CWorldUsers {
 
         boolean wasOnline = entry.name != null && byName.get(entry.name) == pc;
         if (wasOnline && (renamed || accountChanged)) removeAccount(entry.account, pc);
-        if (wasOnline && renamed) byName.remove(entry.name, pc);
+        if (wasOnline && renamed) {
+            byName.remove(entry.name, pc);
+            residents.remove(pc);
+        }
         entry.name = key;
         entry.account = account;
         if (key == null) return;
@@ -66,12 +84,15 @@ final class CWorldUsers {
             L1PcInstance displaced = byName.put(key, pc);
             if (displaced != null && displaced != pc) {
                 removeAccount(keys.get(displaced).account, displaced);
+                residents.remove(displaced);
             }
         }
         if ((!wasOnline || renamed || accountChanged) && byName.get(key) == pc) addAccount(account, pc);
+        if (CResidenceSettlement.isTracked(pc.getHomeTownId()) && byName.get(key) == pc) residents.add(pc);
     }
 
     synchronized void remove(L1PcInstance pc) {
+        residents.remove(pc);
         Keys entry = keys.remove(pc);
         if (entry != null && entry.name != null && byName.remove(entry.name, pc)) {
             removeAccount(entry.account, pc);

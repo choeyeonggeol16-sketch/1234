@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 
 
 import l1j.server.Config;
+import l1j.server.server.model.world.town.CTownMembership;
 import l1j.server.server.Account;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.FishingTimeController;
@@ -977,8 +978,7 @@ public class L1PcInstance extends L1Character {
 	private int _expRes;
 
 	private int _onlineStatus;
-	private int _homeTownId;
-	private int _contribution;
+	private final CTownMembership townMembership = new CTownMembership();
 	private int _food;
 	private int _partnerId;
 	private long _fishingTime = 0;
@@ -4393,21 +4393,30 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 		_onlineStatus = i;
 	}
 
-	public int getHomeTownId() {
-		return _homeTownId;
-	}
+    public int getHomeTownId() {
+        return townMembership.townId();
+    }
 
-	public void setHomeTownId(int i) {
-		_homeTownId = i;
-	}
+    public void setHomeTownId(int townId) {
+        townMembership.changeTown(townId);
+        CWorld.playerTownChanged(this);
+    }
 
-	public int getContribution() {
-		return _contribution;
-	}
+    public void restoreHomeTown(int townId, int contribution, long period) {
+        townMembership.restore(townId, contribution, period);
+    }
 
-	public void setContribution(int i) {
-		_contribution = i;
-	}
+    public CTownMembership.Snapshot captureHomeTown() {
+        return townMembership.snapshot();
+    }
+
+    public int getContribution() {
+        return townMembership.contribution();
+    }
+
+    public void setContribution(int contribution) {
+        townMembership.setContribution(contribution);
+    }
 
 	private boolean _morning = false;
 
@@ -4684,9 +4693,9 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	    }
 	}
 
-	public synchronized void addContribution(int contribution) {
-		_contribution += contribution;
-	}
+	public void addContribution(int contribution) {
+        if (townMembership.townId() > 0) townMembership.earn(contribution);
+    }
 
 	public static void remove_skills(L1PcInstance pc, Integer[] skills) {
 		for(Integer skillId : skills) {

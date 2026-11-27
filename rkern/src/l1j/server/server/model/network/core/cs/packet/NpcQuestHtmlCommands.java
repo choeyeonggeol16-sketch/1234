@@ -1,14 +1,12 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.Config;
-import l1j.server.server.datatables.TownTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.quest.CQuestSystem;
-import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_Karma;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
@@ -17,7 +15,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.templates.L1Town;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CURSE_BARLOG;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CURSE_YAHEE;
 
@@ -518,76 +515,8 @@ final class NpcQuestHtmlCommands {
             int npcid = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
             int taxRatesCastle = L1CastleLocation.getCastleTaxRateByNpcId(npcid);
             htmldata = new String[] { String.valueOf(taxRatesCastle) };
-        } else if (s.equalsIgnoreCase("set")) {
-            if (obj instanceof L1NpcInstance) {
-                int npcid = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
-                int town_id = L1TownLocation.getTownIdByNpcid(npcid);
-
-                if (town_id >= 1 && town_id <= 10) {
-                    if (pc.getHomeTownId() == -1) {
-                        SC_ServerMessage.send(pc, 759);
-                        htmlid = "";
-                    } else if (pc.getHomeTownId() > 0) {
-                        if (pc.getHomeTownId() != town_id) {
-                            L1Town town = TownTable.getInstance().getTownTable(pc.getHomeTownId());
-                            if (town != null) {
-                                SC_ServerMessage.send(pc, 758, town.get_name());
-                            }
-                            htmlid = "";
-                        } else {
-                            htmlid = "";
-                        }
-                    } else if (pc.getHomeTownId() == 0) {
-                        if (pc.getLevel() < 10) {
-                            SC_ServerMessage.send(pc, 757);
-                            htmlid = "";
-                        } else {
-                            int level = pc.getLevel();
-                            int cost = level * level * 10;
-                            if (pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, cost)) {
-                                pc.setHomeTownId(town_id);
-                                pc.setContribution(0);
-                                pc.save();
-                            } else {
-                                SC_ServerMessage.send(pc, 337, "$4");
-                            }
-                            htmlid = "";
-                        }
-                    }
-                }
-            }
-        } else if (s.equalsIgnoreCase("clear")) {
-            if (obj instanceof L1NpcInstance) {
-                int npcid = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
-                int town_id = L1TownLocation.getTownIdByNpcid(npcid);
-                if (town_id > 0) {
-                    if (pc.getHomeTownId() > 0) {
-                        if (pc.getHomeTownId() == town_id) {
-                            pc.setHomeTownId(-1);
-                            pc.setContribution(0);
-                        } else {
-                            SC_ServerMessage.send(pc, 756);
-                        }
-                    }
-                    htmlid = "";
-                }
-            }
-        } else if (s.equalsIgnoreCase("ask")) {
-            if (obj instanceof L1NpcInstance) {
-                int npcid = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
-                int town_id = L1TownLocation.getTownIdByNpcid(npcid);
-
-                if (town_id >= 1 && town_id <= 10) {
-                    L1Town town = TownTable.getInstance().getTownTable(town_id);
-                    String leader = town.get_leader_name();
-                    if (leader != null && leader.length() != 0) {
-                        htmlid = "owner";
-                        htmldata = new String[] { leader };
-                    } else {
-                        htmlid = "noowner";
-                    }
-                }
-            }
+        } else if (NpcResidenceCommands.handle(pc, obj, objid, s)) {
+            return;
         } else {
             NpcRegionalHtmlCommands.handle(client, pc, obj, objid, s, s2, htmlid, templateId);
             return;
