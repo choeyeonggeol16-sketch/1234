@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +31,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_LetterList;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
 
@@ -187,7 +187,7 @@ public final class CS_Mail {
         final int stamp=pc.getSessionStamp();
         final int owner=pc.getId();
         final int mailboxKey=LetterTable.mailboxOrderKey(pc.getName());
-        final String receipt=UUID.randomUUID().toString();
+        final String receipt=GameRandom.receiptId();
         try {
             CacheD.getInstance().submitDbJobOrdered(mailboxKey,()->{
                 try {

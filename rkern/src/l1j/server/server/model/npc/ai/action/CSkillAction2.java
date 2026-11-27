@@ -9,7 +9,6 @@ import l1j.server.server.model.CWorld;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
@@ -28,6 +27,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1MobSkill;
 import l1j.server.server.templates.L1MobSkill.SkillEntry;
 import l1j.server.server.templates.L1Npc;
@@ -227,7 +227,7 @@ public final class CSkillAction2 {
         final int count =
                 (max <= 0)
                 ? min
-                : (ThreadLocalRandom.current().nextInt(max) + min);
+                : (GameRandom.nextInt(max) + min);
 
         if (count <= 0) {
             return false;
@@ -914,8 +914,7 @@ public final class CSkillAction2 {
 
         if (e.triRnd > 0) {
             final int chance =
-                    ThreadLocalRandom.current()
-                            .nextInt(100) + 1;
+                    GameRandom.nextInt(100) + 1;
 
             if (chance > e.triRnd) {
 
@@ -1112,8 +1111,7 @@ public final class CSkillAction2 {
             mob.setMap(mapid);
 
             mob.setHeading(
-                    ThreadLocalRandom.current()
-                            .nextInt(8));
+                    GameRandom.nextInt(8));
 
             CWorld.getInstance().storeAndEnterWorld(mob);
 
@@ -1241,8 +1239,7 @@ public final class CSkillAction2 {
                 if (seen == 1) {
                     picked = cha;
 
-                } else if (ThreadLocalRandom.current()
-                        .nextInt(seen) == 0) {
+                } else if (GameRandom.nextInt(seen) == 0) {
 
                     picked = cha;
                 }

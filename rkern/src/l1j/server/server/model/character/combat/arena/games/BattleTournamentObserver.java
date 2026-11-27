@@ -3,7 +3,6 @@ package l1j.server.server.model.character.combat.arena.games;
 import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.function.BooleanSupplier;
 
 import l1j.server.server.IdFactory;
@@ -152,7 +151,7 @@ public class BattleTournamentObserver extends CombatObserver{
 			@Override
 			public void compensate(L1TreasureChest chest){
 				ArrayList<DropItemBuilder> list = new ArrayList<DropItemBuilder>(chest_rewards);
-				Collections.shuffle(list);
+				GameRandom.shuffle(list);
 				int count 		= (grade + 1) * CombatLoadManager.COMBAT_BT_CHEST_DROPITEM_AMOUNT;
 				int size		= list.size();
 				for(int i = count - 1; i>=0; --i){

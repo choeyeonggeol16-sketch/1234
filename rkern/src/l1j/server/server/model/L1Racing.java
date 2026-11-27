@@ -6,6 +6,8 @@
  */
 
 package l1j.server.server.model;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_GameList;
 
 import l1j.server.server.model.network.core.sc.packet.SC_GameRap;
@@ -126,7 +128,7 @@ public class L1Racing implements Runnable
 	 * Thread abstract Method 
 	*/
 	private int Rnd(int rnd){
-		return (int)(Math.random() * rnd);
+		return (int)(GameRandom.nextDouble() * rnd);
 	}
 
 	@Override

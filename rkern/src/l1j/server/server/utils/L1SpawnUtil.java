@@ -16,6 +16,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.shared.GameRandom;
 
 public class L1SpawnUtil {
 	private static Logger _log = Logger.getLogger(L1SpawnUtil.class.getName());
@@ -33,8 +34,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(pc.getX() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(pc.getY() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(pc.getX() + GameRandom.spawnOffset(randomRange));
+					npc.setY(pc.getY() + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap(). isInMap(npc.getLocation()) && npc.getMap(). isPassable(npc.getLocation())) {
 						break;
 					}
@@ -87,8 +88,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(pc.getX() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(pc.getY() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(pc.getX() + GameRandom.spawnOffset(randomRange));
+					npc.setY(pc.getY() + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap().isInMap(npc.getLocation()) && npc.getMap().isPassable(npc.getLocation())) {
 						break;
 					}
@@ -142,8 +143,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(pc.getX() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(pc.getY() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(pc.getX() + GameRandom.spawnOffset(randomRange));
+					npc.setY(pc.getY() + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap(). isInMap(npc.getLocation()) && npc.getMap(). isPassable(npc.getLocation())) {
 						break;
 					}
@@ -222,8 +223,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(x + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(y + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(x + GameRandom.spawnOffset(randomRange));
+					npc.setY(y + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap(). isInMap(npc.getLocation()) && npc.getMap(). isPassable(npc.getLocation())) {
 						break;
 					}
@@ -292,8 +293,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(x + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(y + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(x + GameRandom.spawnOffset(randomRange));
+					npc.setY(y + GameRandom.spawnOffset(randomRange));
 					if ((npc.getMap().isInMap(npc.getLocation())) && (npc.getMap().isPassable(npc.getLocation()))) {
 						break;
 					}
@@ -333,8 +334,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(x + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(y + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(x + GameRandom.spawnOffset(randomRange));
+					npc.setY(y + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap(). isInMap(npc.getLocation()) && npc.getMap(). isPassable(npc.getLocation())) {
 						break;
 					}
@@ -461,8 +462,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(x + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(y + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(x + GameRandom.spawnOffset(randomRange));
+					npc.setY(y + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap().isInMap(npc.getLocation()) && npc.getMap().isPassable(npc.getLocation())) {
 						break;
 					}
@@ -511,8 +512,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(pc.getX() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(pc.getY() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(pc.getX() + GameRandom.spawnOffset(randomRange));
+					npc.setY(pc.getY() + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap(). isInMap(npc.getLocation()) && npc.getMap(). isPassable(npc.getLocation())) {
 						break;
 					}
@@ -549,8 +550,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(x + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(y + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(x + GameRandom.spawnOffset(randomRange));
+					npc.setY(y + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap().isInMap(npc.getLocation()) && npc.getMap().isPassable(npc.getLocation())) {
 						break;
 					}
@@ -594,8 +595,8 @@ public class L1SpawnUtil {
 					int tryCount = 0;
 					do {
 						tryCount++;
-						npc.setX(x + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-						npc.setY(y + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+						npc.setX(x + GameRandom.spawnOffset(randomRange));
+						npc.setY(y + GameRandom.spawnOffset(randomRange));
 						if (npc.getMap().isInMap(npc.getLocation()) && npc.getMap().isPassable(npc.getLocation())) {
 							break;
 						}
@@ -645,8 +646,8 @@ public class L1SpawnUtil {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(pc.getX() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(pc.getY() + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(pc.getX() + GameRandom.spawnOffset(randomRange));
+					npc.setY(pc.getY() + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap(). isInMap(npc.getLocation()) && npc.getMap(). isPassable(npc.getLocation())) {
 						break;
 					}

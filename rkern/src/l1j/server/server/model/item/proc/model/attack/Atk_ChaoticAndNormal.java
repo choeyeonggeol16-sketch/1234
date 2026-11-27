@@ -4,6 +4,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.item.proc.model.ItemSkillModel;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 public class Atk_ChaoticAndNormal extends ItemSkillModel{
@@ -20,7 +21,7 @@ public class Atk_ChaoticAndNormal extends ItemSkillModel{
 				return cdmg;
 			dmg = GameUtils.getMagicDamage(attacker, defender, min_val, max_val);
 		}else {
-			dmg = _rnd.nextInt(max_val - min_val) + min_val;
+			dmg = GameRandom.nextIntOrFixed(min_val, max_val);
 		}
 		
 		dmg = calcEnchant(t_item, dmg);

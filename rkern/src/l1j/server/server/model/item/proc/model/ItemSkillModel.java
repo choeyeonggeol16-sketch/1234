@@ -1,6 +1,7 @@
 package l1j.server.server.model.item.proc.model;
 
-import java.util.Random;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Character;
@@ -10,7 +11,6 @@ import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.GameUtils;
 
 public abstract class ItemSkillModel {
-	protected static Random _rnd = new Random(System.nanoTime());
 	
 	public int 		itemId;			// item id.
 	public int		condition;		// condition..
@@ -35,7 +35,7 @@ public abstract class ItemSkillModel {
 	public abstract double get(L1Character attacker, L1Character defender, L1ItemInstance t_item, double dwd);
 	
 	protected boolean isInPercent(int p){
-		return (_rnd.nextInt(100) + 1) <= p;
+		return (GameRandom.nextInt(100) + 1) <= p;
 	}
 	
 	protected int getProbability(L1Character c, L1ItemInstance t_item){

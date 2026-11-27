@@ -1,12 +1,12 @@
 package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.shared.GameRandom;
 
 public class ValakasNormal extends RaidBossSkill{
     @Override
@@ -30,7 +30,7 @@ public class ValakasNormal extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc)){
                     processAction(own, pc);
                 }else{
@@ -77,7 +77,7 @@ public class ValakasNormal extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc)){
                     processAction(own, pc);
                 }else{

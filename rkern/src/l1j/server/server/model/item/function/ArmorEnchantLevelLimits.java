@@ -1,6 +1,5 @@
 package l1j.server.server.model.item.function;
 
-import static l1j.server.server.model.item.function.CreatureItemActions._random;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_bless_orim;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_insignia;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_insignia1;

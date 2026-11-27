@@ -6,13 +6,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.UUID;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import l1j.server.DatabaseFactory;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage.ItemSnapshot;
 
@@ -204,7 +204,7 @@ public final class CTransaction {
     }
 
     public static void persistWarehouseMove(Mutation[] operations) throws SQLException {
-        persistWarehouseMove(UUID.randomUUID().toString(), 0, 0, operations);
+        persistWarehouseMove(GameRandom.receiptId(), 0, 0, operations);
     }
 
     public static void persistWarehouseMove(String txId, int firstOwner, int secondOwner,
@@ -494,7 +494,7 @@ public final class CTransaction {
 
     public static void persist(ItemSnapshot[] writes, int[] deletes,
                                int firstOwner, int secondOwner) throws SQLException {
-        persist(UUID.randomUUID().toString(), writes, deletes, firstOwner, secondOwner);
+        persist(GameRandom.receiptId(), writes, deletes, firstOwner, secondOwner);
     }
 
     public static void persist(String txId, ItemSnapshot[] writes, int[] deletes,

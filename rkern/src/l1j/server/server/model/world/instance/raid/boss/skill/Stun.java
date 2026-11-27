@@ -1,7 +1,6 @@
 package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -10,6 +9,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
+import l1j.server.server.shared.GameRandom;
 /** shock stun. **/
 public class Stun extends RaidBossSkill{
     @Override
@@ -33,7 +33,7 @@ public class Stun extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(own, pc);
             }else{
@@ -70,7 +70,7 @@ public class Stun extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(own, pc);
             }else{
@@ -102,6 +102,6 @@ public class Stun extends RaidBossSkill{
     }
 
     private int calcStunTime(){
-        return ThreadLocalRandom.current().nextInt(Math.max(1, RaidLoadManager.MRS_BS_STUN_MAX - RaidLoadManager.MRS_BS_STUN_MIN)) + RaidLoadManager.MRS_BS_STUN_MIN;
+        return GameRandom.nextInt(Math.max(1, RaidLoadManager.MRS_BS_STUN_MAX - RaidLoadManager.MRS_BS_STUN_MIN)) + RaidLoadManager.MRS_BS_STUN_MIN;
     }
 }

@@ -4,8 +4,8 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collections;
 
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.command.Command;
 import l1j.server.server.shared.command.CommandArgs;
 import l1j.server.server.shared.command.CommandTree;
@@ -44,7 +44,7 @@ public class AlchemyProbabilityBox implements Command{
 	public void shuffleList(int alchemyId){
 		ArrayList<Integer> list = m_probability_boxes.get(alchemyId - 1);
 		ArrayList<Integer> new_list = new ArrayList<Integer>(list);
-		Collections.shuffle(new_list);
+		GameRandom.shuffle(new_list);
 		m_probability_boxes.set(alchemyId - 1, new_list);
 	}
 	

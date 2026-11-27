@@ -2,66 +2,51 @@ package l1j.server.server.auth.captcha.loader;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 import l1j.server.server.auth.captcha.CaptchaData;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 
-public class CaptchaDataLoader{
-	private static CaptchaDataLoader _instance;
-	public static CaptchaDataLoader getInstance(){
-		if(_instance == null)
-			_instance = new CaptchaDataLoader();
-		return _instance;
-	}
+public class CaptchaDataLoader {
+    private static final Logger LOG = Logger.getLogger(CaptchaDataLoader.class.getName());
+    private static CaptchaDataLoader instance;
+    private volatile List<CaptchaData> challenges;
 
-	public static void release(){
-		if(_instance != null){
-			_instance.dispose();
-			_instance = null;
-		}
-	}
+    private CaptchaDataLoader() {
+        var rows = new ArrayList<CaptchaData>();
+        Selector.exec("select * from tb_captcha", new FullSelectorHandler() {
+            @Override
+            public void result(ResultSet rs) throws Exception {
+                while (rs.next()) rows.add(CaptchaData.newInstance(rs));
+            }
+        });
+        challenges = List.copyOf(rows);
+        if (challenges.isEmpty()) LOG.warning("No captcha challenges loaded from tb_captcha");
+    }
 
-	public static void reload(){
-		CaptchaDataLoader old = _instance;
-		_instance = new CaptchaDataLoader();
-		if(old != null){
-			old.dispose();
-			old = null;
-		}
-	}
+    public static synchronized CaptchaDataLoader getInstance() {
+        if (instance == null) instance = new CaptchaDataLoader();
+        return instance;
+    }
 
-	
-	private ArrayList<CaptchaData> _captcha_datas;
-	private CaptchaDataLoader(){
-		_captcha_datas = load();
-		
-	}
-	
-	private ArrayList<CaptchaData> load(){
-		ArrayList<CaptchaData> captcha_datas = new ArrayList<CaptchaData>(300);
-		Selector.exec("select * from tb_captcha", new FullSelectorHandler(){
-			@Override
-			public void result(ResultSet rs) throws Exception {
-				while(rs.next())
-					captcha_datas.add(CaptchaData.newInstance(rs));
-			}
-		});
-		
-		return captcha_datas;
-	}
-	
-	public CaptchaData to_rand_captcha(){
-		return _captcha_datas.get(GameRandom.next(_captcha_datas.size()));
-	}
+    public static synchronized void release() {
+        instance = null;
+    }
 
-	public void dispose(){
-		if(_captcha_datas != null){
-			for(CaptchaData c_data : _captcha_datas)
-				c_data.dispose();
-			_captcha_datas.clear();
-			_captcha_datas = null;
-		}
-	}
+    public static synchronized void reload() {
+        CaptchaDataLoader replacement = new CaptchaDataLoader();
+        if (instance == null || !replacement.challenges.isEmpty()) instance = replacement;
+    }
+
+    public CaptchaData to_rand_captcha() {
+        List<CaptchaData> snapshot = challenges;
+        return snapshot.isEmpty() ? null : snapshot.get(GameRandom.secureIndex(snapshot.size()));
+    }
+
+    public void dispose() {
+        challenges = List.of();
+    }
 }

@@ -1,11 +1,12 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.shared.GameRandom;
+
 
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.SHAPE_CHANGE;
 
-import java.util.Random;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.L1Character;
@@ -66,10 +67,9 @@ import static l1j.server.server.model.item.function.CreatureItemActions.*;
 /** Original RandomELevel item use implementation. */
 final class RandomEnchantLevelEffects {
     private RandomEnchantLevelEffects() {}
-    private static final Random _random = CreatureItemActions._random;
 
 	public static int RandomELevel(L1ItemInstance item, int itemId) {
-		int j = _random.nextInt(100) + 1;
+		int j = GameRandom.nextInt(100) + 1;
 		if (itemId == L1ItemId.B_SCROLL_OF_ENCHANT_ARMOR || itemId == L1ItemId.B_SCROLL_OF_ENCHANT_WEAPON
 				|| itemId == L1ItemId.Inadril_T_ScrollB || itemId == L1ItemId.Inadril_T_ScrollB2
 				|| itemId == L1ItemId.C_SCROLL_OF_ENCHANT_ARMOR6) {

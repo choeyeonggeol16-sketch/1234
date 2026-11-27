@@ -6,6 +6,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.proc.model.ItemSkillModel;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconWindShackle;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 public class Atk_PumpkinCurse extends ItemSkillModel{
@@ -21,7 +22,7 @@ public class Atk_PumpkinCurse extends ItemSkillModel{
 				return 0D;
 			dmg = GameUtils.getMagicDamage(attacker, defender, min_val, max_val);
 		}else {
-			dmg = _rnd.nextInt(max_val - min_val) + min_val;
+			dmg = GameRandom.nextIntOrFixed(min_val, max_val);
 		}
 		
 		dmg = calcEnchant(t_item, dmg);
@@ -37,7 +38,7 @@ public class Atk_PumpkinCurse extends ItemSkillModel{
 			return 0D;
 		
 		if(!defender.hasSkillEffect(L1SkillId.WIND_SHACKLE)){
-			int time = _rnd.nextInt(5);
+			int time = GameRandom.nextInt(5);
 			if(time > 0){
 				defender.setSkillEffect(L1SkillId.WIND_SHACKLE, time * 1000);
 				SC_SkillIconWindShackle.send(defender, defender.getId(), time);

@@ -1,6 +1,7 @@
 package l1j.server.server.model.character.effect.action.realize;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -15,7 +16,7 @@ public final class OnChaseThread extends OnEffectThread {
     @Override protected void initializePattern() {
         if (players == null || players.isEmpty()) return;
         for (int i = 0; i < 10; i++) {
-            final L1PcInstance pc = players.get(ThreadLocalRandom.current().nextInt(players.size()));
+            final L1PcInstance pc = players.get(GameRandom.nextInt(players.size()));
             if (pc != null && !pc.isDead() && pc.getMapId() == owner.getMapId()) {
                 target = pc;
                 return;

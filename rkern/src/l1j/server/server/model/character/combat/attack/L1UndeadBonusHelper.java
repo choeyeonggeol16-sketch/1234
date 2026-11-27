@@ -1,6 +1,7 @@
 package l1j.server.server.model.character.combat.attack;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -46,13 +47,13 @@ public final class L1UndeadBonusHelper {
         if (isMaterialBonusWeapon && isUndead13) {
             // 밤 1~10, 낮 1~20
             damage += isNight
-                    ? ThreadLocalRandom.current().nextInt(1, 11)
-                    : ThreadLocalRandom.current().nextInt(1, 21);
+                    ? GameRandom.nextInt(1, 11)
+                    : GameRandom.nextInt(1, 21);
         }
 
         // 2) 축복 보너스 (bless==0) AND (언데드 1/2/3) -> 1~4
         if (weaponBless == 0 && isUndead123) {
-            damage += ThreadLocalRandom.current().nextInt(1, 5);
+            damage += GameRandom.nextInt(1, 5);
         }
 
         // 3) 홀리 고정추가 (언데드 1/3)

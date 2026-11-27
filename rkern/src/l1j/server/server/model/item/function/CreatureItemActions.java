@@ -2,7 +2,6 @@ package l1j.server.server.model.item.function;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.Random;
 import java.util.logging.Logger;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.BugRaceController;
@@ -30,7 +29,6 @@ public final class CreatureItemActions {
     private CreatureItemActions() {}
 
     static final Logger ITEM_USE2_LOG=Logger.getLogger(SpecialConsumableRouter.class.getName());
-    static final Random _random=new Random(System.nanoTime());
 
     public static void UseItem(CUserSocket client, L1PcInstance pc, L1ItemInstance item,
             int itemObjid, int targetId, int x, int y, String name, int skillId) {

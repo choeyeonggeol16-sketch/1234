@@ -1,5 +1,7 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.shared.GameRandom;
+
 
 import static l1j.server.server.model.item.function.BossSummonWandItems.*;
 import static l1j.server.server.model.item.function.CashBuffTransactions.*;
@@ -38,7 +40,6 @@ import static l1j.server.server.model.item.function.TransformationItems.*;
 import static l1j.server.server.model.item.function.WandInspectionItems.*;
 import static l1j.server.server.model.item.function.WarriorSkillBookItems.*;
 
-import java.util.Random;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -49,7 +50,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 /** AttributeEnchantScrollEffects: original item effect implementation, without changing use order. */
 final class AttributeEnchantScrollEffects {
     private AttributeEnchantScrollEffects() {}
-    private static final Random _random = CreatureItemActions._random;
     private static final Logger ITEM_USE2_LOG = CreatureItemActions.ITEM_USE2_LOG;
 
 	public static void AttrEnchant(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance weapon) {
@@ -81,7 +81,7 @@ final class AttributeEnchantScrollEffects {
 			return;
 		}
 		// Preserve the exact old roll: nextInt(80)+1 and <30/<20/<10/<7/<4.
-		final int chance = _random.nextInt(80) + 1;
+		final int chance = GameRandom.nextInt(80) + 1;
 		final int limit = grade == 0 ? 30 : grade == 1 ? 20 : grade == 2 ? 10
 				: grade == 3 ? 7 : 4;
 		final boolean success = chance < limit;

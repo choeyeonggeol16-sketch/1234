@@ -2,7 +2,6 @@ package l1j.server.server.model.character.combat.arena.games;
 
 import l1j.server.server.model.world.instance.CInstanceEvents;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
@@ -17,6 +16,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.instance.shared.L1LiftGateInstance;
 import l1j.server.server.shared.EStatus;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.builder.DropItemBuilder;
 import l1j.server.server.shared.builder.MonsterSpawnBuilder;
 import l1j.server.server.shared.geometry.GameRectangle;
@@ -332,7 +332,7 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 
 	private boolean dropBonus() {
 		return runOwned(() -> {
-			Collections.shuffle(_drop_builders);
+			GameRandom.shuffle(_drop_builders);
 			final int size = _drop_builders.size();
 			if (size == 0) return false;
 			for (int i = CombatLoadManager.COMBAT_BT_CLEAR_BONUS_AMOUNT - 1; i >= 0; i--) {

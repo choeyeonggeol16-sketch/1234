@@ -1,6 +1,7 @@
 package l1j.server.server.model.item.function;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -20,7 +21,7 @@ public class OmanRandomAmulet {
         final int floor = itemId >= 830052 ? itemId - 830052 : itemId - 830042;
         if (floor < 0 || floor >= 10) return;
         final int successRate = floor < 6 ? 40 : 30;
-        final int rewardId = (ThreadLocalRandom.current().nextInt(100) < successRate
+        final int rewardId = (GameRandom.nextInt(100) < successRate
                 ? 830022 : 830012) + floor;
 
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, item.getId())) {

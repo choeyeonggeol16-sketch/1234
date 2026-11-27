@@ -3,7 +3,6 @@ package l1j.server.server.model.world.instance.dungeon.fanstasyisland;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +21,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.L1SpawnUtil;
 
 public final class FantasyIsland implements Runnable {
@@ -42,7 +42,6 @@ public final class FantasyIsland implements Runnable {
 	private static final int LAST_STEP = 6;
 	private static final int END = 7;
 
-	private Random _rnd = new Random(System.nanoTime());
 	private int[] bossInt = {14905, 14907, 7200020};
 	private int _status;
 	private L1NpcInstance unicorn;
@@ -264,7 +263,7 @@ public final class FantasyIsland implements Runnable {
 					L1SpawnUtil.spawnCount(32801, 32873, _map, 7200014, 0, 0, 7);
 					L1SpawnUtil.spawnCount(32789, 32861, _map, 7200011, 0, 0, 7);
 					L1SpawnUtil.spawnCount(32789, 32861, _map, 7200015, 0, 0, 7);
-					int chance = _rnd.nextInt(100) ;
+					int chance = GameRandom.nextInt(100) ;
 					if(chance <= 30) {
 						boss = L1SpawnUtil.spawnCount(32789, 32861, _map, bossInt[0], 0, 0, 1);
 					}else if(chance > 30 && chance <= 70) {
@@ -308,7 +307,7 @@ public final class FantasyIsland implements Runnable {
 						SC_SkillSound.broadcast(unicorn, unicorn.getId(), 169);
 
 						int itemId = 0;
-						int rnd = new Random().nextInt(1000) + 1;
+						int rnd = GameRandom.nextInt(1000) + 1;
 						if (rnd < 300) { itemId = 40074; //갑옷 마법 주문서
 						} else if (rnd < 600) { itemId = 40087; //무기 마법 주문서
 						} else if (rnd < 610) { itemId = 600; //뇌신검

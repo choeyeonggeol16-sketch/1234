@@ -14,6 +14,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.CommonUtil;
 
 /** Dedicated item-use handler extracted from a mixed domain. */
@@ -67,7 +68,7 @@ final class IslandReturnScrollUse {
 			}
 			int[] x = LOST_ISLAND_X;
 			int[] y = LOST_ISLAND_Y;
-			int type = java.util.concurrent.ThreadLocalRandom.current().nextInt(x.length);
+			int type = GameRandom.nextInt(x.length);
 			L1Location base = new L1Location(x[type], y[type], 1710);
 			L1Location random = L1Location.randomLocation(base, 0, 3, true);
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () ->
@@ -95,7 +96,7 @@ final class IslandReturnScrollUse {
 			}
 			int[] xa = PIRATE_INNER_XY;
 			int[] ya = PIRATE_INNER_XY;
-			int typea = java.util.concurrent.ThreadLocalRandom.current().nextInt(xa.length);
+			int typea = GameRandom.nextInt(xa.length);
 			L1Location basea = new L1Location(xa[typea], ya[typea], 441);
 			L1Location randoma = L1Location.randomLocation(basea, 0, 3, true);
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () ->
@@ -122,7 +123,7 @@ final class IslandReturnScrollUse {
 			}
 			int[] x = PIRATE_RETURN_X;
 			int[] y = PIRATE_RETURN_Y;
-			int type = java.util.concurrent.ThreadLocalRandom.current().nextInt(x.length);
+			int type = GameRandom.nextInt(x.length);
 			L1Location base = new L1Location(x[type], y[type], 440);
 			L1Location random = L1Location.randomLocation(base, 0, 3, true);
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () ->
@@ -155,7 +156,7 @@ final class IslandReturnScrollUse {
 			}
 			int[] x = LOST_RETURN_X;
 			int[] y = LOST_RETURN_Y;
-			int type = java.util.concurrent.ThreadLocalRandom.current().nextInt(x.length);
+			int type = GameRandom.nextInt(x.length);
 			L1Location base = new L1Location(x[type], y[type], 4);
 			L1Location random = L1Location.randomLocation(base, 0, 3, true);
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () ->

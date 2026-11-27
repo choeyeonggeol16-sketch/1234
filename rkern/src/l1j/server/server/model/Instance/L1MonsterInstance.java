@@ -2,7 +2,6 @@ package l1j.server.server.model.Instance;
 
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
-import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -60,7 +59,6 @@ import l1j.server.server.utils.TYUtil;
 public class L1MonsterInstance extends L1NpcInstance {
 
 	private static final long serialVersionUID = 1L;
-	private static Random _random = new Random(System.nanoTime());
     private volatile int _deathEpoch;
     private static final java.util.logging.Logger DEATH_DROP_LOG =
             java.util.logging.Logger.getLogger(L1MonsterInstance.class.getName());
@@ -769,7 +767,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     private void PapPearl(L1NpcInstance Pearl) { // 진주
         L1NpcInstance Pap = null;
         L1PcInstance PearlBuff = null;
-        Random random = new Random();
         // ── 클러스터 기반: 반경 10 조회 ──
         for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(Pearl, 10)) {
             if (obj instanceof L1MonsterInstance) {
@@ -785,7 +782,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
                     PearlBuff = Buff;
             }
         }
-        int PearlBuffRandom = random.nextInt(10) + 1;
+        int PearlBuffRandom = GameRandom.nextInt(10) + 1;
         if (Pap != null && Pap.getCurrentHp() > 0 && Pearl.getNpcTemplate().get_gfxid() == 7684
                 && Pearl.getCurrentHp() > 0) {
             Pap.applyNpcHpDelta(3000);
@@ -1267,7 +1264,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         default:
             return;
         }
-        if (_random.nextInt(odds) == 0) {
+        if (GameRandom.nextInt(odds) == 0) {
             NpcEventFactory.requestHide(this, event);
         }
     }
@@ -1277,13 +1274,13 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 		int npcid = getNpcTemplate().get_npcId();
 		if (npcid == 45061 || npcid == 45161 || npcid == 45181 || npcid == 45455 || npcid == 400000
 				|| npcid == 400001) {
-			int rnd = _random.nextInt(3);
+			int rnd = GameRandom.nextInt(3);
 			if (1 > rnd) {
 				setHiddenStatus(L1NpcInstance.HIDDEN_STATUS_SINK);
 				setStatus(13);
 			}
 		} else if (npcid == 45045 || npcid == 45126 || npcid == 45134 || npcid == 45281 || npcid == 75003) {
-			int rnd = _random.nextInt(3);
+			int rnd = GameRandom.nextInt(3);
 			if (1 > rnd) {
 				setHiddenStatus(L1NpcInstance.HIDDEN_STATUS_SINK);
 				setStatus(4);

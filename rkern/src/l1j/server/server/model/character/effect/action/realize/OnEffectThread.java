@@ -2,7 +2,6 @@ package l1j.server.server.model.character.effect.action.realize;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +22,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import l1j.server.server.model.network.core.sc.packet.SC_OnlyEffect;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.CNPCServer;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 /**
@@ -298,7 +298,7 @@ public class OnEffectThread {
         int damage = GameUtils.getMagicDamage(attacker, pc, min, max);
         if (pc.hasSkillEffect(L1SkillId.FAFU_MAAN) || pc.hasSkillEffect(L1SkillId.LIFE_MAAN)
                 || pc.hasSkillEffect(L1SkillId.SHAPE_MAAN) || pc.hasSkillEffect(L1SkillId.BIRTH_MAAN)) {
-            if (ThreadLocalRandom.current().nextInt(100) < 35) damage /= 2;
+            if (GameRandom.nextInt(100) < 35) damage /= 2;
         }
         damage -= pc.getDamageReductionByArmor();
         if (pc.hasSkillEffect(L1SkillId.REDUCTION_ARMOR))

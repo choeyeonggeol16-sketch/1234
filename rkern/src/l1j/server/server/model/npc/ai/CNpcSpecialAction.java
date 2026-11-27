@@ -1,12 +1,12 @@
 package l1j.server.server.model.npc.ai;
 
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.shared.GameRandom;
 
 /** L1 scripted NPC actions, dispatched by the existing NPC AI owner. */
 public final class CNpcSpecialAction {
@@ -91,7 +91,7 @@ public final class CNpcSpecialAction {
             if (obj instanceof L1PcInstance pc
                     && !pc.isDead()
                     && npc.getLocation().getTileLineDistance(pc.getLocation()) <= 2) {
-                final int chance = ThreadLocalRandom.current().nextInt(100) + 1;
+                final int chance = GameRandom.nextInt(100) + 1;
                 if (chance < 40) pc.start_teleport(33445, 33130, 4, pc.getHeading(), 169, true, pc.getAutoHunt());
                 else if (chance < 60) pc.start_teleport(33428, 33244, 4, pc.getHeading(), 169, true, pc.getAutoHunt());
                 else if (chance < 70) pc.start_teleport(33474, 33165, 4, pc.getHeading(), 169, true, pc.getAutoHunt());

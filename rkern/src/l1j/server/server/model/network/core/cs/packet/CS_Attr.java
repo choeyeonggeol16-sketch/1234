@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.Account;
@@ -51,6 +50,7 @@ import l1j.server.server.model.npc.spawn.boss.BossTeleportInvites;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.model.world.siege.WarFactory;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
 import l1j.server.server.templates.L1Npc;
@@ -517,9 +517,8 @@ public final class CS_Attr {
 				if (L1Racing.getInstance().contains(0, pc) && pc.getMapId() != 5143) {
 					if (L1Racing.getInstance().getGameStatus() == L1Racing.STATUS_NONE
 							|| L1Racing.getInstance().getGameStatus() == L1Racing.STATUS_READY) {
-						Random random = new Random(System.nanoTime());
-						int locx = 32767 + random.nextInt(2);
-						int locy = 32848 + random.nextInt(2);
+						int locx = 32767 + GameRandom.nextInt(2);
+						int locy = 32848 + GameRandom.nextInt(2);
 						
 						L1SkillUse.cast(
 								pc,

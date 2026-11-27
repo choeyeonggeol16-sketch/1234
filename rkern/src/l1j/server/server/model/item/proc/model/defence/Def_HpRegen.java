@@ -5,6 +5,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.proc.model.ItemSkillModel;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 public class Def_HpRegen extends ItemSkillModel{
@@ -16,7 +17,7 @@ public class Def_HpRegen extends ItemSkillModel{
 		
 		double heal = min_val;
 		if(min_val != max_val){
-			heal		= _rnd.nextInt(max_val - min_val) + min_val;
+			heal		= GameRandom.nextIntOrFixed(min_val, max_val);
 			heal		= calcEnchant(t_item, heal);
 			heal		= calcAttr(defender, heal);
 			heal		= calcStat(defender, heal);

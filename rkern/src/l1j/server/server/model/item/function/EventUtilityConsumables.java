@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.function;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HOLY_MITHRIL_POWDER;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HOLY_WATER;
@@ -53,7 +55,7 @@ final class EventUtilityConsumables {
 			break;
 
 		case 40328:// 6단계 마법주사위
-			int gfxid = 3204 + java.util.concurrent.ThreadLocalRandom.current().nextInt(6);
+			int gfxid = 3204 + GameRandom.nextInt(6);
 			SC_SkillSound.send(pc, pc.getId(), gfxid);
 			SC_SkillSound.broadcast(pc, pc.getId(), gfxid);
 			break;

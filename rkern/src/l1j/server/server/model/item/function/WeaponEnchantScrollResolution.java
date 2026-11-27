@@ -7,8 +7,8 @@ import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.CommonUtil;
-import static l1j.server.server.model.item.function.CreatureItemActions._random;
 import static l1j.server.server.model.item.function.EnchantmentItems.AttrEnchant;
 import static l1j.server.server.model.item.function.TransformationItems.RandomELevel;
 
@@ -44,7 +44,7 @@ final class WeaponEnchantScrollResolution {
         int enchant_level = targetItem.getEnchantLevel();
         // BEGIN_ORIGINAL_WEAPONENCHANTSCROLLRESOLUTION
                             if (itemId == L1ItemId.C_SCROLL_OF_ENCHANT_WEAPON || itemId == L1ItemId.ENCHANT_WEAPONA) {
-                                final int roll = _random.nextInt(100) + 1;
+                                final int roll = GameRandom.nextInt(100) + 1;
                                 if ((safe_enchant == 0 && roll <= 30) || enchant_level < -6) {
                                     ItemReceiptOperations.useAtomicEnchantFailure(pc, item, targetItem, null);
                                 } else {
@@ -76,7 +76,7 @@ final class WeaponEnchantScrollResolution {
                                     int dice = targetItem.getItem().get_safeenchant() == 0 ? Config.rareweapon[enchant]
                                             : Config.weapon[enchant];
 
-                                    int rnd = _random.nextInt(100) + 1;
+                                    int rnd = GameRandom.nextInt(100) + 1;
                                     if (rnd <= dice) {
                                         ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client, () -> {
                                             resultNotice(pc, "순간 강렬하게 빛을내어 인챈트에 성공 하였습니다.");
@@ -130,7 +130,7 @@ final class WeaponEnchantScrollResolution {
                                 if (!(targetItem.getItem().getMaterial() == 9
                                         || targetItem.getItem().getMaterial() == 18)) {
                                     if (enchant_level == 9) {
-                                        int rnd = _random.nextInt(100) + 1;
+                                        int rnd = GameRandom.nextInt(100) + 1;
                                         if (!SpecialEnchantScrolls.isOwnedScrollTarget(pc, item, targetItem))
                                             return ItemActionResult.STOP;
                                         if (rnd <= Config.Master_Enchant) {
@@ -154,7 +154,7 @@ final class WeaponEnchantScrollResolution {
                                 if (!(targetItem.getItem().getMaterial() == 9
                                         || targetItem.getItem().getMaterial() == 18)) {
                                     if (enchant_level >= 8) {
-                                        int rnd = _random.nextInt(100) + 1;
+                                        int rnd = GameRandom.nextInt(100) + 1;
                                         if (!SpecialEnchantScrolls.isOwnedScrollTarget(pc, item, targetItem))
                                             return ItemActionResult.STOP;
                                         if (rnd <= 100) {
@@ -174,7 +174,7 @@ final class WeaponEnchantScrollResolution {
                                     ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client,
                                             RandomELevel(targetItem, itemId), null);
                                 } else {
-                                    final int roll = _random.nextInt(100) + 1;
+                                    final int roll = GameRandom.nextInt(100) + 1;
                                     final int chance = WeaponEnchantChanceCalculation.calculate(
                                             pc, targetItem, weaponId, enchant_level, roll);
                                     final boolean forced = pc._EnchantWeaponSuccess;

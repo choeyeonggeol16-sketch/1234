@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.ObjectWrapper;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.CharacterStorage;
@@ -307,7 +308,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
             throw new IllegalStateException("Character delete barrier incomplete: "+charName);
         boolean committed=false,uncertain=false;
         try {
-            l1j.server.server.storage.cached.CTransaction.persistEconomy(java.util.UUID.randomUUID().toString(),
+            l1j.server.server.storage.cached.CTransaction.persistEconomy(GameRandom.receiptId(),
                     characterId,CacheD.accountOrderKey(accountName),
                     new l1j.server.server.storage.cached.CTransaction.Mutation[]{con->{
                 l1j.server.server.storage.cached.CTransaction.requireTransactionalTables(con,

@@ -11,9 +11,9 @@ import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import static l1j.server.server.model.item.function.CreatureItemActions.ITEM_USE2_LOG;
-import static l1j.server.server.model.item.function.CreatureItemActions._random;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsumeTwoInput;
 import static l1j.server.server.model.item.function.DurabilityRepairItems.UseDurableRepair;
@@ -56,7 +56,7 @@ final class QuestEarringCollection {
                 SC_ServerMessage.send(pc, 79);
                 return ItemActionResult.STOP;
             }
-            if ((_random.nextInt(99) + 1) < Config.CREATE_CHANCE_PROCESSING) {
+            if ((GameRandom.nextInt(99) + 1) < Config.CREATE_CHANCE_PROCESSING) {
                 UseDurableTwoInput(pc, item, targetItem, earingReward,
                         () -> ItemActionCompletion.finishCommittedConsumable(pc, item));
             } else {

@@ -1,6 +1,5 @@
 package l1j.server.server.model.item.function;
 
-import static l1j.server.server.model.item.function.CreatureItemActions._random;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_bless_orim;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_insignia;
 import static l1j.server.server.model.item.function.EnchantmentItems.enchant_insignia1;
@@ -51,7 +50,7 @@ final class ArmorEnchantScrollResolution {
                     || itemId == L1ItemId.ENCHANT_ARMOR || itemId == L1ItemId.Inadril_T_ScrollB3
                     || itemId == L1ItemId.B_SCROLL_OF_ENCHANT_ARMOR5) {
 
-                final int roll = _random.nextInt(100) + 1;
+                final int roll = GameRandom.nextInt(100) + 1;
                 if ((safe_enchant == 0 && roll <= 30) || enchant_level < -1) {
                     ItemReceiptOperations.useAtomicEnchantFailure(pc, item, targetItem, null);
                 } else {
@@ -158,7 +157,7 @@ final class ArmorEnchantScrollResolution {
                             : enchant_level >= Config.accessory.length ? Config.accessory.length - 1
                                     : enchant_level;
 
-                            int rnd = _random.nextInt(100) + 1;
+                            int rnd = GameRandom.nextInt(100) + 1;
                             if (rnd <= Config.accessory[enchant]) {
                                 ItemReceiptOperations.UseAtomicEnchantSuccess(pc, item, targetItem, client, () -> {
                                     resultNotice(pc, "순간 강렬하게 빛을내어 인챈트에 성공 하였습니다.");
@@ -277,7 +276,7 @@ final class ArmorEnchantScrollResolution {
                         RandomELevel(targetItem, itemId), null);
                 return ItemActionResult.STOP;
             } else {
-                final int roll = _random.nextInt(100) + 1;
+                final int roll = GameRandom.nextInt(100) + 1;
                 final int chance = ArmorEnchantChanceCalculation.calculate(
                         pc, targetItem, armorId, armortype, enchant_level, roll);
 

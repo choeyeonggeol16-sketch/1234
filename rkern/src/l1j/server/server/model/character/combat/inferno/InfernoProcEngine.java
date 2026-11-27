@@ -1,9 +1,9 @@
 package l1j.server.server.model.character.combat.inferno;
 
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.CommonUtil;
 
 /** Inferno activation and multiplier only; the attack result owns final HP commit. */
@@ -18,7 +18,7 @@ public final class InfernoProcEngine {
         final L1ItemInstance weapon = defender.getWeapon();
         if (weapon == null || weapon.getItem().getType() != 1) return 0;
         if (chance <= 0 || (chance < 100
-                && ThreadLocalRandom.current().nextInt(100) >= chance)) return 0;
-        return ThreadLocalRandom.current().nextInt(4) + 1;
+                && GameRandom.nextInt(100) >= chance)) return 0;
+        return GameRandom.nextInt(4) + 1;
     }
 }

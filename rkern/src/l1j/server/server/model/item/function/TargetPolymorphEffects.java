@@ -1,11 +1,12 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.shared.GameRandom;
+
 
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.SHAPE_CHANGE;
 
-import java.util.Random;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.L1Character;
@@ -71,7 +72,6 @@ final class TargetPolymorphEffects {
     private static final int[] POLYMORPH_IDS = { 29, 979, 1037, 1039, 3860, 3861, 3862, 3863, 3864, 3865, 3904, 3906, 95, 146, 2374, 2376,
 				2377, 2378, 3866, 3867, 3868, 3869, 3870, 3871, 3872, 3873, 3874, 3875, 3876, 3882, 3883, 3884, 3885,
 				11358, 11396, 11397, 12225, 12226, 11399, 11398, 12227 };
-    private static final Random _random = CreatureItemActions._random;
 
 	public static void polyAction(L1PcInstance attacker, L1Character cha, int itemId, String s) {
 		boolean isSameClan = false;
@@ -94,13 +94,13 @@ final class TargetPolymorphEffects {
 		}
 		if (attacker.getId() != cha.getId() && !isSameClan) {
 			int probability = 3 * (attacker.getLevel() - cha.getLevel()) - cha.GetMDefendBySkill();
-			int rnd = _random.nextInt(100) + 1;
+			int rnd = GameRandom.nextInt(100) + 1;
 			if (rnd > probability) {
 				SC_ServerMessage.send(attacker, 280);
 				return;
 			}
 		}
-		int pid = _random.nextInt(POLYMORPH_IDS.length);
+		int pid = GameRandom.nextInt(POLYMORPH_IDS.length);
 		int polyId = POLYMORPH_IDS[pid];
 
 		if (cha instanceof L1PcInstance) {

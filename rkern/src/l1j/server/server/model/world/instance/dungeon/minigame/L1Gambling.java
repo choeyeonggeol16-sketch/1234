@@ -1,6 +1,5 @@
 package l1j.server.server.model.world.instance.dungeon.minigame;
 
-import java.util.Random;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,6 +14,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 
 /**
  * 주사위 딜러(400064) 홀짝/숫자 게임.
@@ -85,9 +85,8 @@ public class L1Gambling {
 			@Override
 			public void run() {
 				try {
-					Random random = new Random();
 					L1NpcInstance dealer = findDealer();
-					int gfxid = 3204 + random.nextInt(6); // 3204~3209 = 주사위 눈 1~6
+					int gfxid = 3204 + GameRandom.nextInt(6); // 3204~3209 = 주사위 눈 1~6
 					String pick;
 					boolean win;
 					int mult;

@@ -1,6 +1,7 @@
 package l1j.server.server.model.npc.ai.action;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1CastleGuardInstance;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -1134,7 +1135,7 @@ public final class CMoveToTargetAction {
             }
         }
 
-        return 20 > ThreadLocalRandom.current().nextInt(100)
+        return 20 > GameRandom.nextInt(100)
                 && distance > 6 && distance < 15
                 && TeleportToUser(npc, target);
     }

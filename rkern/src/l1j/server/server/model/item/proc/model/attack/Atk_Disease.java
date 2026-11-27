@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.proc.model.attack;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
@@ -29,7 +31,7 @@ public class Atk_Disease extends ItemSkillModel{
 			if(!isInPercent(pure))
 				return 0D;
 		}
-		double time =  _rnd.nextInt(max_val - min_val) + min_val;
+		double time =  GameRandom.nextIntOrFixed(min_val, max_val);
 		time 		= calcEnchant(t_item, time);
 		time		= calcAttr(defender, time);
 		time		= calcStat(attacker, time);

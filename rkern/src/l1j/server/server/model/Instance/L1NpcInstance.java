@@ -2,7 +2,6 @@ package l1j.server.server.model.Instance;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -59,6 +58,7 @@ import l1j.server.server.model.npc.ai.action.SetMoving;
 import l1j.server.server.model.npc.ai.action.dMoveTo;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.model.npc.chat.L1NpcChat;
@@ -402,7 +402,7 @@ public class L1NpcInstance extends L1Character {
         // Some legacy rows store a nonzero upper bound below their base level.
         final int span = configuredRandomLevel > 0 && configuredRandomLevel > baseLevel
                 ? configuredRandomLevel - baseLevel : 0;
-        final int rolled = span > 0 ? ThreadLocalRandom.current().nextInt(span + 1) : 0;
+        final int rolled = span > 0 ? GameRandom.nextInt(span + 1) : 0;
         final double rate = span > 0 ? (double) rolled / span : 0D;
         final int level = baseLevel + rolled;
         setLevel(level);
@@ -1598,7 +1598,7 @@ public class L1NpcInstance extends L1Character {
                 || getCurrentHp() <= 0 || getHiddenStatus() != HIDDEN_STATUS_NONE) {
             return false;
         }
-        final int rdir = ThreadLocalRandom.current().nextInt(8);
+        final int rdir = GameRandom.nextInt(8);
         for (int i = 0; i < 8; i++) {
             final int dir = (rdir + i) & 7;
             if (TeleportToLocation(nx + DIR_DX[dir], ny + DIR_DY[dir], (dir + 4) & 7, 10)) {

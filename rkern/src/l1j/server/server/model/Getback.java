@@ -3,7 +3,6 @@ package l1j.server.server.model;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,6 +11,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.GetBackRestartTable;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1GetBackRestart;
 import l1j.server.server.model.world.residence.L1HouseLocation;
 
@@ -132,7 +132,7 @@ public class Getback {
 		}
 
 		// 0~2 랜덤 선택
-		final int pos = ThreadLocalRandom.current().nextInt(3);
+		final int pos = GameRandom.nextInt(3);
 		readGetbackInfoInto(gb, pos, loc);
 
 		// town_id가 지정되고 있는 경우는 거기에 귀환시킨다

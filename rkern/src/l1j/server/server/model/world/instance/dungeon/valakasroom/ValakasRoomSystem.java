@@ -5,12 +5,12 @@ import l1j.server.server.model.world.instance.CInstantZoneManager;
 
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.shared.GameRandom;
 
 public class ValakasRoomSystem {
     private static final ValakasRoomSystem INSTANCE = new ValakasRoomSystem();
     private static final int FIRST_MAP = 2600;
     private static final int CAPACITY = 49;
-    private static final java.util.Random RANDOM = new java.util.Random();
     private final CInstantZoneManager<ValakasStart> rooms = new CInstantZoneManager<>(CAPACITY);
 
     public static ValakasRoomSystem getInstance() {
@@ -28,7 +28,7 @@ public class ValakasRoomSystem {
             int id = zone.mapId();
             ValakasRoomSpawn spawn = ValakasRoomSpawn.getInstance();
             room.BasicNpcList = spawn.fillRequiredSpawnTable(id, 2);
-            room.BossList = spawn.fillRequiredSpawnTable(id, 1000 + RANDOM.nextInt(3));
+            room.BossList = spawn.fillRequiredSpawnTable(id, 1000 + GameRandom.nextInt(3));
             room.NpcList = spawn.fillRequiredSpawnTable(id, 1);
             return room;
         } catch (RuntimeException failure) {

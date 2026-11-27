@@ -20,9 +20,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import l1j.server.Config;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1ItemDelay;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1EtcItem;
 import l1j.server.server.model.CWorld;
@@ -255,9 +255,9 @@ public class L1TreasureBox {
             SC_SystemMessage.send(pc,"보물상자 확률 설정을 확인해 주세요.");return;
         }
         final int roll=(erzabe || sandworm || _type==TYPE.SPECIFIC) ? -1
-                : ThreadLocalRandom.current().nextInt(_totalChance);
-        final int specialReward=erzabe ? ERZABE_REWARDS[ThreadLocalRandom.current().nextInt(ERZABE_REWARDS.length)]
-                : sandworm ? SANDWORM_REWARDS[ThreadLocalRandom.current().nextInt(SANDWORM_REWARDS.length)] : 0;
+                : GameRandom.nextInt(_totalChance);
+        final int specialReward=erzabe ? ERZABE_REWARDS[GameRandom.nextInt(ERZABE_REWARDS.length)]
+                : sandworm ? SANDWORM_REWARDS[GameRandom.nextInt(SANDWORM_REWARDS.length)] : 0;
         final int delay=((L1EtcItem)source.getItem()).get_delayEffect();
         final long now=System.currentTimeMillis();
         final l1j.server.server.model.L1Clan clan=(_type==TYPE.SPECIFIC
@@ -288,9 +288,9 @@ public class L1TreasureBox {
                     if (!selected) continue;
                     int enchant=spec.getEnchant();
                     if (boxId==3000045)
-                        enchant=ANCIENT_WEAPON_ENCHANT[ThreadLocalRandom.current().nextInt(ANCIENT_WEAPON_ENCHANT.length)];
+                        enchant=ANCIENT_WEAPON_ENCHANT[GameRandom.nextInt(ANCIENT_WEAPON_ENCHANT.length)];
                     else if (boxId>=3000038 && boxId<=3000044)
-                        enchant=ANCIENT_ARMOR_ENCHANT[ThreadLocalRandom.current().nextInt(ANCIENT_ARMOR_ENCHANT.length)];
+                        enchant=ANCIENT_ARMOR_ENCHANT[GameRandom.nextInt(ANCIENT_ARMOR_ENCHANT.length)];
                     prepareReward(tx,outputs,spec.getItemId(),spec.getCount(),enchant,
                             _type==TYPE.SPECIFIC ? spec.getAttr():0,spec.getBless(),
                             spec.getTime(),now,spec.getChance()>0);

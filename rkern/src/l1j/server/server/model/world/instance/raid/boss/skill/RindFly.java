@@ -2,7 +2,6 @@ package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -16,6 +15,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
+import l1j.server.server.shared.GameRandom;
 
 public class RindFly extends RaidBossSkill{
     @Override
@@ -45,7 +45,7 @@ public class RindFly extends RaidBossSkill{
             }
 
             Thread.sleep(
-                    ThreadLocalRandom.current().nextInt(
+                    GameRandom.nextInt(
                             (int) (RaidLoadManager.MRS_BS_RINDFLY_MAX
                                     - RaidLoadManager.MRS_BS_RINDFLY_MIN))
                             + RaidLoadManager.MRS_BS_RINDFLY_MIN);
@@ -56,7 +56,7 @@ public class RindFly extends RaidBossSkill{
             SC_WorldPutObject.broadcastNpc(own);
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(own, pc);
             }else{
@@ -98,7 +98,7 @@ public class RindFly extends RaidBossSkill{
             }
 
             Thread.sleep(
-                    ThreadLocalRandom.current().nextInt(
+                    GameRandom.nextInt(
                             (int) (RaidLoadManager.MRS_BS_RINDFLY_MAX
                                     - RaidLoadManager.MRS_BS_RINDFLY_MIN))
                             + RaidLoadManager.MRS_BS_RINDFLY_MIN);
@@ -109,7 +109,7 @@ public class RindFly extends RaidBossSkill{
             SC_WorldPutObject.broadcastNpc(own);
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(own, pc);
             }else{
@@ -161,7 +161,7 @@ public class RindFly extends RaidBossSkill{
             boss.setHiddenStatus(L1MonsterInstance.HIDDEN_STATUS_NONE);
             for (int attempt = 0; attempt < 51; attempt++) {
                 if (players.isEmpty()) break;
-                final L1PcInstance player = players.get(ThreadLocalRandom.current().nextInt(players.size()));
+                final L1PcInstance player = players.get(GameRandom.nextInt(players.size()));
                 if (player == null || player.getMap() != terrain) continue;
                 final int x = player.getX(), y = player.getY();
                 if (!occupancy.claimLandingTile(boss, player, terrain, x, y)) continue;

@@ -137,7 +137,14 @@ public class Captcha {
     }
 
     public void drain_captcha(L1PcInstance pc){
-        drain_captcha(pc, CaptchaDataLoader.getInstance().to_rand_captcha());
+        tryDrainCaptcha(pc);
+    }
+
+    public boolean tryDrainCaptcha(L1PcInstance pc) {
+        CaptchaData challenge = CaptchaDataLoader.getInstance().to_rand_captcha();
+        if (challenge == null) return false;
+        drain_captcha(pc, challenge);
+        return true;
     }
 
     public void drain_captcha(L1PcInstance pc, CaptchaData c_data){

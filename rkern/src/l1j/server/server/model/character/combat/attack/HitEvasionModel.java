@@ -1,7 +1,8 @@
 package l1j.server.server.model.character.combat.attack;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.Arrays;
+
+import l1j.server.server.shared.GameRandom;
 
 public final class HitEvasionModel {
 
@@ -144,7 +145,7 @@ public final class HitEvasionModel {
     }
 
     public static boolean rollHit(double hitChance) {
-        int r = ThreadLocalRandom.current().nextInt(10000);
+        int r = GameRandom.nextInt(10000);
         int p = (int) (probability(hitChance) * 10000.0 + 0.5);
         return r < p;
     }

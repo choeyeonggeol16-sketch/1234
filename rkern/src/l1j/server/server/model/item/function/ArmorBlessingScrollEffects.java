@@ -1,10 +1,11 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.shared.GameRandom;
+
 
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.storage.CacheD;
@@ -79,7 +80,7 @@ final class ArmorBlessingScrollEffects {
         SC_ServerMessage.send(pc, 4302);
         return;
     }
-    final int roll = ThreadLocalRandom.current().nextInt(100);
+    final int roll = GameRandom.nextInt(100);
     final int nextLevel;
     if (roll < Config.방어구축복6단) nextLevel = 6; else if (roll < Config.방어구축복5단) nextLevel = 5; else nextLevel = 4;
     final String targetName = target.getLogName();
@@ -129,7 +130,7 @@ final class ArmorBlessingScrollEffects {
         SC_ServerMessage.send(pc, 4302);
         return;
     }
-    final int roll = ThreadLocalRandom.current().nextInt(100);
+    final int roll = GameRandom.nextInt(100);
     final int nextLevel;
     if (roll < Config.방어구축복1단) nextLevel = 1; else if (roll < Config.방어구축복2단) nextLevel = 2; else if (roll < Config.방어구축복3단) nextLevel = 3; else nextLevel = 0;
     final String targetName = target.getLogName();

@@ -3,8 +3,6 @@ package l1j.server.server.model.item.function;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -27,11 +25,11 @@ import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 /** Item-specific effect extracted without changing its original execution body. */
 final class ElvenStrikeItemEffect {
-    private static final Random _random = CreatureItemActions._random;
 
     private ElvenStrikeItemEffect() {}
 
@@ -44,8 +42,7 @@ final class ElvenStrikeItemEffect {
         if (!validTarget(pc, target)) return false;
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
-        Random random = ThreadLocalRandom.current();
-        int rnd = random.nextInt(100) + 1;
+        int rnd = GameRandom.nextInt(100) + 1;
         if ((pc.getType() == 2 && pc.getLevel() >= 85) || pc.isGm()) {
             if (target != null) {
                 if (target instanceof L1PcInstance) {
@@ -92,15 +89,15 @@ final class ElvenStrikeItemEffect {
                         SC_ServerMessage.send(pc, 278);
                         return false;
                     }
-                    int 랜덤 = _random.nextInt(100) + 1;
+                    int 랜덤 = GameRandom.nextInt(100) + 1;
                     int 렙차 = pc.getLevel() - member.getLevel();
                     int 기본확률 = Config.엘븐스트라이크기본;
                     int 양렙차 = 기본확률 + (렙차 * Config.엘븐스트라이크양);
                     int 음렙차 = 기본확률 + (렙차 * Config.엘븐스트라이크음);
-                    int aa1 = random.nextInt(100) + 1;
+                    int aa1 = GameRandom.nextInt(100) + 1;
                     int aa = member.getAc() / 2;
                     int dmg = (pc.getLevel() / 3 * Config.엘븐스트라이크배율) + aa1;
-                    final int 엘븐스트라이크시간 = DurationChoiceItems.elven(random);
+                    final int 엘븐스트라이크시간 = DurationChoiceItems.elven(GameRandom.current());
                     // Existing short inventory gate: a failed debit must not apply a skill.
                     if (!pc.getInventory().tryConsumeCombatReagent(40319, 2)) return false;
                     pc.setSkillEffect(L1SkillId.엘븐스트라이크대기, Config.엘븐스트라이크대기 * 1000);
@@ -202,16 +199,16 @@ final class ElvenStrikeItemEffect {
                         SC_ServerMessage.send(pc, 278);
                         return false;
                     }
-                    int 랜덤 = _random.nextInt(100) + 1;
+                    int 랜덤 = GameRandom.nextInt(100) + 1;
                     int 렙차 = pc.getLevel() - member1.getLevel();
                     int 기본확률 = Config.엘븐스트라이크기본;
                     int 양렙차 = 기본확률 + (렙차 * Config.엘븐스트라이크양);
                     int 음렙차 = 기본확률 + (렙차 * Config.엘븐스트라이크음);
-                    int aa1 = random.nextInt(100) + 1;
-                    int 몬스터 = random.nextInt(100) + 1;
+                    int aa1 = GameRandom.nextInt(100) + 1;
+                    int 몬스터 = GameRandom.nextInt(100) + 1;
                     int aa = member1.getAc() / 2;
                     int dmg = (pc.getLevel() / 3 * Config.엘븐스트라이크배율) + aa1;
-                    final int 엘븐스트라이크시간 = DurationChoiceItems.elven(random);
+                    final int 엘븐스트라이크시간 = DurationChoiceItems.elven(GameRandom.current());
                     // Existing short inventory gate: a failed debit must not apply a skill.
                     if (!pc.getInventory().tryConsumeCombatReagent(40319, 2)) return false;
                     pc.setSkillEffect(L1SkillId.엘븐스트라이크대기, Config.엘븐스트라이크대기 * 1000);

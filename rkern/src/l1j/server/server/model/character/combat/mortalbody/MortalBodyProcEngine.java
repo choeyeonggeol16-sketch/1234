@@ -1,6 +1,5 @@
 package l1j.server.server.model.character.combat.mortalbody;
 
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -8,6 +7,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
+import l1j.server.server.shared.GameRandom;
 
 /** src22 MortalBodyProcEngine rules without per-hit Callback allocation. */
 public final class MortalBodyProcEngine {
@@ -21,7 +21,7 @@ public final class MortalBodyProcEngine {
                 || !defender.hasSkillEffect(L1SkillId.MORTAL_BODY)
                 || SkillUseHelper.isSkillBlock(defender)) return false;
         return chance >= 100 || (chance > 0
-                && ThreadLocalRandom.current().nextInt(100) < chance);
+                && GameRandom.nextInt(100) < chance);
     }
 
     /** src22: -(victim AC / 2), minimum 40, attacker immunity reduction. */

@@ -1,11 +1,12 @@
 package l1j.server.server.model.network.thread;
 
+import l1j.server.server.shared.GameRandom;
+
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1110,7 +1111,7 @@ public final class CIOThreadCallback {
 		}
 
 		private static long saveJitterNs(long intervalNs) {
-			return ThreadLocalRandom.current().nextLong(
+			return GameRandom.nextLong(
 					Math.max(TimeUnit.SECONDS.toNanos(1L), intervalNs / 10L));
 		}
 

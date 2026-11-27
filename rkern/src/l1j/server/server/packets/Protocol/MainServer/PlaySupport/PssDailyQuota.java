@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.DatabaseFactory;
+import l1j.server.server.shared.GameRandom;
 
 /** Persisted per-character PSS allowance. Called on the existing CacheD DB lane only. */
 final class PssDailyQuota {
@@ -70,7 +70,7 @@ final class PssDailyQuota {
                     con.commit();
                     return null;
                 }
-                long token = ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
+                long token = GameRandom.secureToken();
                 long stopMs = nowMs + available;
                 write(con, charId, persistedDay, used, token, nowMs, stopMs);
                 con.commit();
@@ -183,7 +183,7 @@ final class PssDailyQuota {
                     con.commit();
                     return null;
                 }
-                long token = ThreadLocalRandom.current().nextLong(1L, Long.MAX_VALUE);
+                long token = GameRandom.secureToken();
                 long expiresMs = nowMs + available;
                 write(con, charId, persistedDay, used, token, nowMs, expiresMs);
                 con.commit();

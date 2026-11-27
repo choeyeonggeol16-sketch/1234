@@ -1,6 +1,7 @@
 package l1j.server.server.model.npc.ai;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -1613,11 +1614,10 @@ public final class CDesirePQ {
             return;
         }
 
-        final ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
         // Allocation-free Fisher-Yates over same-state slots.
         for (int logical = count - 1; logical > 0; logical--) {
-            final int pick = rnd.nextInt(logical + 1);
+            final int pick = GameRandom.nextInt(logical + 1);
 
             final int a = nthIndex(state, logical);
             final int b = nthIndex(state, pick);

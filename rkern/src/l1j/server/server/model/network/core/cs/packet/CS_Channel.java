@@ -1,4 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_CharPass;
 import l1j.server.server.appcenter.AppCenterService;
 
@@ -10,7 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
@@ -501,36 +502,35 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         int locx = pc.getX();
         int locy = pc.getY();
 
-        final ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
         if (mapIndex == 1) {
             if (point == 0) {
-                locx = 34079 + rnd.nextInt(12);
-                locy = 33136 + rnd.nextInt(15);
+                locx = 34079 + GameRandom.nextInt(12);
+                locy = 33136 + GameRandom.nextInt(15);
             } else if (point == 1) {
-                locx = 33970 + rnd.nextInt(10);
-                locy = 33243 + rnd.nextInt(14);
+                locx = 33970 + GameRandom.nextInt(10);
+                locy = 33243 + GameRandom.nextInt(14);
             } else if (point == 2) {
-                locx = 33925 + rnd.nextInt(14);
-                locy = 33351 + rnd.nextInt(9);
+                locx = 33925 + GameRandom.nextInt(14);
+                locy = 33351 + GameRandom.nextInt(9);
             }
 
         } else if (mapIndex == 2) {
             if (point == 0) {
-                locx = 32615 + rnd.nextInt(11);
-                locy = 32719 + rnd.nextInt(7);
+                locx = 32615 + GameRandom.nextInt(11);
+                locy = 32719 + GameRandom.nextInt(7);
             } else if (point == 1) {
-                locx = 32621 + rnd.nextInt(9);
-                locy = 32788 + rnd.nextInt(13);
+                locx = 32621 + GameRandom.nextInt(9);
+                locy = 32788 + GameRandom.nextInt(13);
             }
 
         } else if (mapIndex == 3) {
             if (point == 0) {
-                locx = 33501 + rnd.nextInt(11);
-                locy = 32765 + rnd.nextInt(9);
+                locx = 33501 + GameRandom.nextInt(11);
+                locy = 32765 + GameRandom.nextInt(9);
             } else if (point == 1) {
-                locx = 33440 + rnd.nextInt(11);
-                locy = 32784 + rnd.nextInt(11);
+                locx = 33440 + GameRandom.nextInt(11);
+                locy = 32784 + GameRandom.nextInt(11);
             }
 
         } else if (mapIndex == 4) {
@@ -541,8 +541,8 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
             };
 
             if (point >= 0 && point < marketCoords.length) {
-                locx = marketCoords[point][0] + rnd.nextInt(2);
-                locy = marketCoords[point][1] + rnd.nextInt(2);
+                locx = marketCoords[point][0] + GameRandom.nextInt(2);
+                locy = marketCoords[point][1] + GameRandom.nextInt(2);
             }
         }
 

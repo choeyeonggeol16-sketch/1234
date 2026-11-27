@@ -1,6 +1,7 @@
 package l1j.server.server.model.character.combat.attack;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -73,6 +74,6 @@ public final class NpcStatusAttackHelper {
     public static boolean rollPct(int pct) {
         if (pct <= 0) return false;
         if (pct >= 100) return true;
-        return ThreadLocalRandom.current().nextInt(100) < pct;
+        return GameRandom.nextInt(100) < pct;
     }
 }

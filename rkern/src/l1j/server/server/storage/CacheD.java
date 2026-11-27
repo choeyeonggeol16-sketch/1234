@@ -9,7 +9,6 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -22,6 +21,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.cached.CAccount;
 import l1j.server.server.storage.cached.CItem;
 import l1j.server.server.storage.cached.CPendingState;
@@ -77,7 +77,7 @@ public final class CacheD {
             this.auxiliaryTemplateId = auxiliaryTemplateId;
             this.mailboxKey = mailboxKey;
             this.mailReceiver = mailReceiver;
-            this.auxiliaryReceiptId = auxiliaryTemplateId == 0 ? null : UUID.randomUUID().toString();
+            this.auxiliaryReceiptId = auxiliaryTemplateId == 0 ? null : GameRandom.receiptId();
         }
     }
 
@@ -130,7 +130,7 @@ public final class CacheD {
     /** An SQL-only settlement batch; game state is never touched by a DB worker. */
     public static final class TradeScope implements AutoCloseable {
         private final boolean staging;
-        private final String receiptId = UUID.randomUUID().toString();
+        private final String receiptId = GameRandom.receiptId();
         private final int firstOwner;
         private final int secondOwner;
         private final LinkedHashMap<Integer, ItemSnapshot> writes = new LinkedHashMap<>();
@@ -293,7 +293,7 @@ public final class CacheD {
      */
     public static final class WarehouseMove implements AutoCloseable {
         private final int characterId;
-        private final String receiptId = UUID.randomUUID().toString();
+        private final String receiptId = GameRandom.receiptId();
         private final int warehouseKey;
         private final boolean economy;
         private final int[] extraOwnerIds;

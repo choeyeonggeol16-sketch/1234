@@ -1,10 +1,11 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.shared.GameRandom;
+
 
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.storage.CacheD;
@@ -78,8 +79,8 @@ final class ItemOptionScrollEffects {
         SC_ServerMessage.send(pc, 4302);
         return;
     }
-    final boolean success = ThreadLocalRandom.current().nextInt(100) < Config.랜덤부여주문서;
-    final int nextLevel = success ? 10 + ThreadLocalRandom.current().nextInt(17) : 0;
+    final boolean success = GameRandom.nextInt(100) < Config.랜덤부여주문서;
+    final int nextLevel = success ? 10 + GameRandom.nextInt(17) : 0;
     final String name = target.getLogName();
     try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
             User.CheckAndSetPendingUseETCItem(pc,
@@ -126,10 +127,9 @@ final class ItemOptionScrollEffects {
         SC_ServerMessage.send(pc, 4302);
         return;
     }
-    final ThreadLocalRandom rnd = ThreadLocalRandom.current();
-    final boolean gate = rnd.nextInt(100) < Config.랜덤부여주문서;
-    final int bonus = gate ? qualityBonus(rnd.nextInt(100)) : -1;
-    final int nextQuality = bonus < 0 ? -1 : rnd.nextInt(20) + bonus;
+    final boolean gate = GameRandom.nextInt(100) < Config.랜덤부여주문서;
+    final int bonus = gate ? qualityBonus(GameRandom.nextInt(100)) : -1;
+    final int nextQuality = bonus < 0 ? -1 : GameRandom.nextInt(20) + bonus;
     final boolean success = nextQuality >= 0 && nextQuality > target.get_bless_level2();
     final String name = target.getLogName();
     try (l1j.server.server.model.inventory.L1InventoryTransaction tx =

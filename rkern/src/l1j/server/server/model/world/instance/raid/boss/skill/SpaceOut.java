@@ -1,10 +1,10 @@
 package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.shared.GameRandom;
 
 public class SpaceOut extends RaidBossSkill{
     @Override
@@ -22,7 +22,7 @@ public class SpaceOut extends RaidBossSkill{
 
         try{
             own.setParalyzed(true);
-            Thread.sleep(ThreadLocalRandom.current().nextInt(_dmgMax - _dmgMin) + _dmgMin);
+            Thread.sleep(GameRandom.nextIntOrFixed(_dmgMin, _dmgMax));
         }catch(Exception e){
 
         }finally{
@@ -41,7 +41,7 @@ public class SpaceOut extends RaidBossSkill{
             return;
 
         try {
-            Thread.sleep(ThreadLocalRandom.current().nextInt(_dmgMax - _dmgMin) + _dmgMin);
+            Thread.sleep(GameRandom.nextIntOrFixed(_dmgMin, _dmgMax));
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {

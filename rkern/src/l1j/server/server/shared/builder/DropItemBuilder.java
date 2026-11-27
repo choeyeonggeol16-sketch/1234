@@ -1,7 +1,6 @@
 package l1j.server.server.shared.builder;
 
 import l1j.server.server.datatables.CObjectDB;
-import java.util.Random;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.inventory.CInventory;
@@ -9,9 +8,9 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.shared.GameRandom;
 
 public class DropItemBuilder {
-	private static final Random _rnd = new Random(System.nanoTime());
 	private int _itemId;
 	private int	_min_enchant;
 	private int _max_enchant;
@@ -55,7 +54,7 @@ public class DropItemBuilder {
 		
 		if(division <= 0)
 			division = 1;
-		return _rnd.nextInt(100000 / division) <= (_dice);
+		return GameRandom.nextInt(100000 / division) <= (_dice);
 	}
 	
 	public L1ItemInstance build(int x, int y, L1Map m){
@@ -67,8 +66,8 @@ public class DropItemBuilder {
 				return null;
 			
 			if(_min_enchant != _max_enchant)
-				item.setEnchantLevel(_rnd.nextInt(_max_enchant + 1 - _min_enchant) + _min_enchant);
-			item.setCount(_min == _max ? _min : _rnd.nextInt(_max - _min + 1) + _min);
+				item.setEnchantLevel(GameRandom.next(_min_enchant, _max_enchant));
+			item.setCount(GameRandom.next(_min, _max));
 			item.setIdentified(true);
 			CInventory inv = CWorld.getInstance().getInventory(x, y, (short)m.getId());
 			inv.CreateOrAddItem(item);
@@ -91,8 +90,8 @@ public class DropItemBuilder {
 				cy = y;
 				break;
 			}
-			cx = x + (_rnd.nextBoolean() ? -_rnd.nextInt(range) : _rnd.nextInt(range));
-			cy = y + (_rnd.nextBoolean() ? -_rnd.nextInt(range) : _rnd.nextInt(range));
+			cx = x + (GameRandom.nextBoolean() ? -GameRandom.nextInt(range) : GameRandom.nextInt(range));
+			cy = y + (GameRandom.nextBoolean() ? -GameRandom.nextInt(range) : GameRandom.nextInt(range));
 		}while(!m.isPassable(cx, cy));
 		return build(cx, cy, m);
 	}

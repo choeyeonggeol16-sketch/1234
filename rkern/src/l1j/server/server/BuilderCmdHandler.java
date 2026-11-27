@@ -99,6 +99,7 @@ import l1j.server.server.model.world.siege.War;
 import l1j.server.server.monitor.LoggerInstance;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.shared.EPcStatus;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.command.CommandArgs;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.executors.Updator;
@@ -229,7 +230,6 @@ public final class BuilderCmdHandler {
  
 	private static Logger _log = Logger.getLogger(BuilderCmdHandler.class.getName());
 
-	private static Random _random = new Random(System.nanoTime());
 	public List<L1MonsterInstance> fieldbosslist = new ArrayList<L1MonsterInstance>();
 
 
@@ -1133,10 +1133,9 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 		}
 	}
 
-	private static Random _rnd = new Random();
 
 	public static Random getRnd() {
-		return _rnd;
+		return GameRandom.current();
 	}
 
 
@@ -1177,7 +1176,7 @@ for (L1PcInstance clanMembers : clan.getOnlineClanMember()) {
 	public static int get_random(int min, int max) {
 		if (min > max)
 			return min;
-		return _rnd.nextInt(max - min + 1) + min;
+		return GameRandom.next(min, max);
 	}
 	// TODO GM 커멘드 추가
 	private void showHelp(L1PcInstance gm, String filter) {
@@ -5689,7 +5688,6 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 		}
 	}
 
-	private static final Random BUILDER_FAKE_RANDOM = new Random(System.nanoTime());
 
 	private static void BuilderCmd_fake_character(L1PcInstance pc, String cmdName, String arg) {
 		try {
@@ -5724,7 +5722,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			newPc.SetStatInt(12);
 			newPc.SetOriginalStatWis(11);
 			newPc.SetStatWis(11);
-			int ran = BUILDER_FAKE_RANDOM.nextInt(120);			
+			int ran = GameRandom.nextInt(120);
 			if (ran >= 0 && ran < 15) { // 15 남기사가 15프로
 				newPc.setClassId(61);
 				newPc.setCurrentSprite(61);
@@ -7509,7 +7507,6 @@ for (L1PcInstance pc2 : players) {
 		}
 	}
 
-	private static Random BUILDER_AD_SHOP_RANDOM =  new Random(System.nanoTime());
 
 
 	private static final int[] BUILDER_AD_SHOP_MALE = new int[] { 0, 61, 138, 734, 2786, 6658, 6671 };
@@ -7526,8 +7523,8 @@ for (L1PcInstance pc2 : players) {
 				return;
 			}
 			
-			int sex = BUILDER_AD_SHOP_RANDOM.nextInt(1);
-			int type = BUILDER_AD_SHOP_RANDOM.nextInt(BUILDER_AD_SHOP_MALE.length);
+			int sex = GameRandom.nextInt(2);
+			int type = GameRandom.nextInt(BUILDER_AD_SHOP_MALE.length);
 			int AccountName = 1;
 
 			BuilderCreateAdShop(pc.getAccountName(), name, sex, type, pc.getX(), pc.getY(), pc.getHeading(), pc.getMapId());

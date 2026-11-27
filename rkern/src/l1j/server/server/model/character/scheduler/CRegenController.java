@@ -1,6 +1,5 @@
 package l1j.server.server.model.character.scheduler;
 
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
 import l1j.server.Config;
@@ -15,6 +14,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.CPCParamDB;
 
 /**
@@ -276,7 +276,7 @@ public final class CRegenController {
         int basebonus = pc.GetStatHPRegen();
         int equipHpr = pc.getHpr();
 
-        int bonus = ThreadLocalRandom.current().nextInt(maxBonus) + 1;
+        int bonus = GameRandom.nextInt(maxBonus) + 1;
 
         if (pc.hasSkillEffect(L1SkillId.NATURES_TOUCH)) bonus += 15;
         if (L1HouseLocation.isInHouse(pc.getX(), pc.getY(), pc.getMapId())) bonus += 5;
@@ -346,7 +346,7 @@ public final class CRegenController {
         if (doll == null) return;
 
         final int actionId =
-                66 + ThreadLocalRandom.current().nextInt(2);
+                66 + GameRandom.nextInt(2);
 
         SC_DoActionGFX.send(
                 pc.getNetConnection(),

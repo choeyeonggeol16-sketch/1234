@@ -1,6 +1,7 @@
 package l1j.server.server.model;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.gametime.L1GameTime;
 import l1j.server.server.model.gametime.L1GameTimeAdapter;
@@ -263,7 +264,7 @@ public class L1CastleLocation {
 		case ADEN_CASTLE_ID:
 			return L1TownLocation.getGetBackLoc(L1TownLocation.TOWNID_ADEN);
 		case DIAD_CASTLE_ID: {
-			int rnd = ThreadLocalRandom.current().nextInt(3);
+			int rnd = GameRandom.nextInt(3);
 			int[] loc = new int[3];
 			if (rnd == 0) {
 				loc[0] = 32792; loc[1] = 32807; loc[2] = 310;

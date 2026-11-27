@@ -1,6 +1,7 @@
 package l1j.server.server.model.character.combat.attack;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -241,7 +242,7 @@ public final class L1SkillProcHelper {
             if (weaponType == 58) {
                 final int basisPoints = criticalChanceBasisPoints(chance, weaponDoubleDmgChance);
                 return basisPoints > 0
-                        && ThreadLocalRandom.current().nextInt(1, 10001) <= basisPoints;
+                        && GameRandom.nextInt(1, 10001) <= basisPoints;
             }
 		}
 
@@ -268,7 +269,7 @@ public final class L1SkillProcHelper {
 	}
 
 	private static int rnd100() {
-		return ThreadLocalRandom.current().nextInt(1, 101); // 1..100
+		return GameRandom.nextInt(1, 101); // 1..100
 	}
 
     private static boolean isProcCyclone(final L1PcInstance pc, final boolean ranged,

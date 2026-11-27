@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,6 +20,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 import l1j.server.server.templates.L1Drop;
@@ -146,7 +146,7 @@ public class DropTable {
 
 		long cnt = min;
 		long add = (max - min + 1);
-		if (add > 1) cnt += ThreadLocalRandom.current().nextInt((int) Math.min(Integer.MAX_VALUE, add));
+		if (add > 1) cnt += GameRandom.nextInt((int) Math.min(Integer.MAX_VALUE, add));
 
 		if (cnt <= 0) return;
 
@@ -179,7 +179,6 @@ public class DropTable {
 		if (adenarate < 0) adenarate = 0;
 		if (droprate <= 0 && adenarate <= 0) return;
 
-		ThreadLocalRandom rnd = ThreadLocalRandom.current();
 		double rateOfMapId = MapsTable.getInstance().getDropRate(npc.getMap().getBaseMapId());
 
 		for (int i = 0; i < dropList.size(); i++) {
@@ -189,7 +188,7 @@ public class DropTable {
 			int itemId = drop.getItemid();
 			if (adenarate == 0 && itemId == L1ItemId.ADENA) continue;
 
-			int randomChance = rnd.nextInt(0x0f4240) + 1;
+			int randomChance = GameRandom.nextInt(0x0f4240) + 1;
 			double rateOfItem = DropItemTable.getInstance().getDropRate(itemId);
 
 			double chance = drop.getChance() * droprate * rateOfMapId * rateOfItem;
@@ -206,7 +205,7 @@ public class DropTable {
 			}
 			long cnt = min;
 			long add = (max - min + 1);
-			if (add > 1) cnt += rnd.nextInt((int) Math.min(Integer.MAX_VALUE, add));
+			if (add > 1) cnt += GameRandom.nextInt((int) Math.min(Integer.MAX_VALUE, add));
 
 			if (cnt <= 0) continue;
 			if (cnt > MAX_STACKABLE) cnt = MAX_STACKABLE;

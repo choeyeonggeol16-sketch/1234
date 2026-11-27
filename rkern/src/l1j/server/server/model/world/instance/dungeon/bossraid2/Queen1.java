@@ -2,7 +2,6 @@ package l1j.server.server.model.world.instance.dungeon.bossraid2;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Random;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.instance.CInstanceEvents;
@@ -17,6 +16,7 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.TYUtil;
 import l1j.server.Config;
 
@@ -25,7 +25,6 @@ public final class Queen1 {
 	private final CInstantZone<Queen1> zone;
 	private final int _map;
  
-	private static Random _random = new Random(System.nanoTime());
 
 
 	private boolean FirstRoom = false;
@@ -279,39 +278,39 @@ public final class Queen1 {
 
 		// 1번방 뿌리기
 		for (int i = 0; i < 25; i++) {
-			spawn(32765, 32818, (short) _map, 0, bossraids[_random.nextInt(100) % bossraids.length], 12, 1);
+			spawn(32765, 32818, (short) _map, 0, bossraids[GameRandom.nextInt(bossraids.length)], 12, 1);
 		}
-		spawn(32780, 32817, (short) _map, 0, bossraidsboss[_random.nextInt(100) % bossraidsboss.length], 0, 1); //1번방 보스
-		spawn(32749, 32800, (short) _map, 0, bossraids[_random.nextInt(100) % bossraids.length], 0, 1);
-		spawn(32749, 32817, (short) _map, 0, bossraids[_random.nextInt(100) % bossraids.length], 0, 1);
-		spawn(32766, 32833, (short) _map, 0, bossraids[_random.nextInt(100) % bossraids.length], 0, 1);
-		spawn(32772, 32802, (short) _map, 0, bossraids[_random.nextInt(100) % bossraids.length], 0, 1);
+		spawn(32780, 32817, (short) _map, 0, bossraidsboss[GameRandom.nextInt(bossraidsboss.length)], 0, 1); //1번방 보스
+		spawn(32749, 32800, (short) _map, 0, bossraids[GameRandom.nextInt(bossraids.length)], 0, 1);
+		spawn(32749, 32817, (short) _map, 0, bossraids[GameRandom.nextInt(bossraids.length)], 0, 1);
+		spawn(32766, 32833, (short) _map, 0, bossraids[GameRandom.nextInt(bossraids.length)], 0, 1);
+		spawn(32772, 32802, (short) _map, 0, bossraids[GameRandom.nextInt(bossraids.length)], 0, 1);
 
 
 		// 2번 방 뿌리기 2였는데 1로 고쳤죠 메소드를 따라가보면
-		spawn(32813, 32805, (short) _map, 0, bossraids2[_random.nextInt(100) % bossraids2.length], 0, 2);
-		spawn(32819, 32807, (short) _map, 0, bossraids2[_random.nextInt(100) % bossraids2.length], 0, 2);
-		spawn(32819, 32805, (short) _map, 0, bossraids2[_random.nextInt(100) % bossraids2.length], 0, 2);
+		spawn(32813, 32805, (short) _map, 0, bossraids2[GameRandom.nextInt(bossraids2.length)], 0, 2);
+		spawn(32819, 32807, (short) _map, 0, bossraids2[GameRandom.nextInt(bossraids2.length)], 0, 2);
+		spawn(32819, 32805, (short) _map, 0, bossraids2[GameRandom.nextInt(bossraids2.length)], 0, 2);
 		for (int i = 0; i < 25; i++) {
-			spawn(32833, 32806, (short) _map, 0, bossraids2[_random.nextInt(100) % bossraids2.length], 13, 2);
+			spawn(32833, 32806, (short) _map, 0, bossraids2[GameRandom.nextInt(bossraids2.length)], 13, 2);
 		}
-		spawn(32846, 32805, (short) _map, 0, bossraidsboss[_random.nextInt(100) % bossraidsboss.length], 0, 2); //2번방 보스
+		spawn(32846, 32805, (short) _map, 0, bossraidsboss[GameRandom.nextInt(bossraidsboss.length)], 0, 2); //2번방 보스
 		// 3번 방 뿌리기
-		spawn(32859, 32832, (short) _map, 0, bossraids3[_random.nextInt(100) % bossraids3.length], 0, 3);
-		spawn(32857, 32831, (short) _map, 0, bossraids3[_random.nextInt(100) % bossraids3.length], 0, 3);
-		spawn(32855, 32834, (short) _map, 0, bossraids3[_random.nextInt(100) % bossraids3.length], 0, 3);
+		spawn(32859, 32832, (short) _map, 0, bossraids3[GameRandom.nextInt(bossraids3.length)], 0, 3);
+		spawn(32857, 32831, (short) _map, 0, bossraids3[GameRandom.nextInt(bossraids3.length)], 0, 3);
+		spawn(32855, 32834, (short) _map, 0, bossraids3[GameRandom.nextInt(bossraids3.length)], 0, 3);
 		for (int i = 0; i < 25; i++) {
-			spawn(32850, 32853, (short) _map, 0, bossraids3[_random.nextInt(100) % bossraids3.length], 10, 3);
+			spawn(32850, 32853, (short) _map, 0, bossraids3[GameRandom.nextInt(bossraids3.length)], 10, 3);
 		}
-		spawn(32831, 32853, (short) _map, 0, bossraidsboss[_random.nextInt(100) % bossraidsboss.length], 0, 3); //3번방 보스
+		spawn(32831, 32853, (short) _map, 0, bossraidsboss[GameRandom.nextInt(bossraidsboss.length)], 0, 3); //3번방 보스
 		// 4번 방 뿌리기
 		for (int i = 0; i < 25; i++) {
-			spawn(32767, 32892, (short) _map, 0, bossraids4[_random.nextInt(100) % bossraids4.length], 12, 4);
+			spawn(32767, 32892, (short) _map, 0, bossraids4[GameRandom.nextInt(bossraids4.length)], 12, 4);
 		}
-		spawn(32764, 32907, (short) _map, 0, bossraidsboss[_random.nextInt(100) % bossraidsboss.length], 0, 4); //4번방 보스
+		spawn(32764, 32907, (short) _map, 0, bossraidsboss[GameRandom.nextInt(bossraidsboss.length)], 0, 4); //4번방 보스
 		// 5번 방 뿌리기 ( 보스 몬스터 추가 : 아이스 여왕 )
 		for (int i = 0; i < 25; i++) {
-			spawn(32826, 32921, (short) _map, 6, bossraids5[_random.nextInt(100) % bossraids5.length], 12, 5);
+			spawn(32826, 32921, (short) _map, 6, bossraids5[GameRandom.nextInt(bossraids5.length)], 12, 5);
 		}
 		spawn(32840, 32921, (short) _map, 6, 81163, 0, 5); // 아이스여왕
 	}

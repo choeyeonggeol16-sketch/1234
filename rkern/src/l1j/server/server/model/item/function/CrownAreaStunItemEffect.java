@@ -33,7 +33,6 @@ import static l1j.server.server.model.item.function.TowerCharmCraftingItems.*;
 import static l1j.server.server.model.item.function.TowerTeleportAmulets.*;
 import static l1j.server.server.model.item.function.TransformationItems.*;
 
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -52,6 +51,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 
 /** Item-specific effect extracted without changing its original execution body. */
 final class CrownAreaStunItemEffect {
@@ -97,10 +97,9 @@ final class CrownAreaStunItemEffect {
             // One RNG per owner-thread invocation, no per-target Random or
             // 5-element duration array. Duration and hit probability match the
             // original 5-way and 1..100 distributions exactly.
-            final ThreadLocalRandom random = ThreadLocalRandom.current();
             for (L1Object obj : CWorld.getInstance().getClusterGrid().queryNearby(pc, 10)) {
-                final int stunDuration = 2000 + 500 * random.nextInt(5);
-                final int probability = random.nextInt(100) + 1;
+                final int stunDuration = 2000 + 500 * GameRandom.nextInt(5);
+                final int probability = GameRandom.nextInt(100) + 1;
 
                 if (probability < 50) {
                     final int _shockStunDuration = stunDuration;

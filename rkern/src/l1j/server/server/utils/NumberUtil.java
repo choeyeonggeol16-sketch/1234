@@ -18,22 +18,13 @@
  */
 package l1j.server.server.utils;
 
-import java.util.Random;
+import l1j.server.server.shared.GameRandom;
 
 public class NumberUtil {
 
 	public static int randomRound(double number) {
-		double percentage = (number - Math.floor(number)) * 100;
-		
-		if (percentage == 0) {
-			return ((int) number);
-		} else {
-			int r = new Random(System.nanoTime()).nextInt(100);
-			if (r < percentage) {
-				return ((int) number + 1);
-			} else {
-				return ((int) number);
-			}
-		}
+        double floor = Math.floor(number);
+        double fraction = number - floor;
+        return (int) (fraction > 0 && GameRandom.nextDouble() < fraction ? floor + 1 : floor);
 	}
 }

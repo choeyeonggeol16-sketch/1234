@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.function;
+
+import l1j.server.server.shared.GameRandom;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CURSE_BARLOG;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_CURSE_YAHEE;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
@@ -32,7 +34,7 @@ final class BossInvocationScrollItems {
 				}
                 ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
                     BossSummonWandItems.UseMobEventSpawnWand(pc, l1iteminstance,
-                            java.util.concurrent.ThreadLocalRandom.current());
+                            GameRandom.current());
                     pc.sendPackets("누군가가 소환되었다.");
                 });
             } else {

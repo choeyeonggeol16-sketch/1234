@@ -1,11 +1,11 @@
 package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.L1SpawnUtil;
 
 public class Summon extends RaidBossSkill{
@@ -33,7 +33,7 @@ public class Summon extends RaidBossSkill{
             if(_dmgMin == _dmgMax)
                 num = _dmgMin;
             else
-                num = ThreadLocalRandom.current().nextInt(_dmgMax - _dmgMin) + _dmgMin;
+                num = GameRandom.nextIntOrFixed(_dmgMin, _dmgMax);
 
             for(int i=0; i<num; i++)
                 L1SpawnUtil.spawn2(own.getX(), own.getY(), own.getMapId(), _effectId, _range, 0, 0);
@@ -62,7 +62,7 @@ public class Summon extends RaidBossSkill{
             if(_dmgMin == _dmgMax)
                 num = _dmgMin;
             else
-                num = ThreadLocalRandom.current().nextInt(_dmgMax - _dmgMin) + _dmgMin;
+                num = GameRandom.nextIntOrFixed(_dmgMin, _dmgMax);
 
             for(int i=0; i<num; i++)
                 L1SpawnUtil.spawn2(own.getX(), own.getY(), own.getMapId(), _effectId, _range, 0, 0);

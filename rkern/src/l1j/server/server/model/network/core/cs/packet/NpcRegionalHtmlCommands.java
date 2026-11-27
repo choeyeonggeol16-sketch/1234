@@ -1,6 +1,5 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import static l1j.server.server.model.network.core.cs.packet.HtmlCmdHandler._random;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
@@ -9,6 +8,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.shared.GameRandom;
 
 /** Regional NPCs, class quests and training services. */
 final class NpcRegionalHtmlCommands {
@@ -73,7 +73,7 @@ final class NpcRegionalHtmlCommands {
             }
         } else if (templateId == 70512) {
             if (s.equalsIgnoreCase("0") || s.equalsIgnoreCase("fullheal")) {
-                int hp = _random.nextInt(21) + 70;
+                int hp = GameRandom.nextInt(21) + 70;
                 pc.setCurrentHp(pc.getCurrentHp() + hp);
                 SC_ServerMessage.send(pc, 77);
                 SC_SkillSound.send(pc, pc.getId(), 830);
@@ -317,8 +317,8 @@ final class NpcRegionalHtmlCommands {
                     htmlid = "keplisha9";
                 } else {
                     if (pc.getInventory().DeleteItemInInventory(41314, 1)) {
-                        int html = _random.nextInt(9) + 1;
-                        int PolyId = 6180 + _random.nextInt(40);
+                        int html = GameRandom.nextInt(9) + 1;
+                        int PolyId = 6180 + GameRandom.nextInt(40);
                         NpcLocalCommands.polyByKeplisha(client, PolyId);
                         switch (html) {
                         case 1:

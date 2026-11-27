@@ -1,5 +1,7 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.datatables.CObjectDB;
 import static l1j.server.server.model.character.skill.L1SkillId.EARTH_BIND;
@@ -145,8 +147,8 @@ public final class NpcWandAndSpawnItems {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(x + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(y + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(x + GameRandom.spawnOffset(randomRange));
+					npc.setY(y + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap().isInMap(npc.getLocation()) && npc.getMap().isPassable(npc.getLocation())) {
 						break;
 					}

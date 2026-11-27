@@ -1,6 +1,5 @@
 package l1j.server.server.model.world.instance.dungeon.ice;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +13,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.world.cleanup.MapCleaner;
 import l1j.server.server.model.world.instance.CInstantZoneManager;
+import l1j.server.server.shared.GameRandom;
 
 /** Shared door and NPC placement for encounters using the ice-cave template. */
 public final class CIceCaveSpawn {
@@ -30,11 +30,10 @@ public final class CIceCaveSpawn {
             npc.getLocation().set(x, y, mapId);
             npc.getLocation().forward(heading);
         } else {
-            final ThreadLocalRandom random = ThreadLocalRandom.current();
             boolean placed = false;
             for (int attempt = 0; attempt < 50; attempt++) {
-                npc.setX(x + random.nextInt(radius) - random.nextInt(radius));
-                npc.setY(y + random.nextInt(radius) - random.nextInt(radius));
+                npc.setX(x + GameRandom.nextInt(radius) - GameRandom.nextInt(radius));
+                npc.setY(y + GameRandom.nextInt(radius) - GameRandom.nextInt(radius));
                 if (npc.getMap().isInMap(npc.getLocation()) && npc.getMap().isPassable(npc.getLocation())) {
                     placed = true;
                     break;

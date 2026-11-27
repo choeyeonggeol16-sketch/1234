@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +27,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.npc.spawn.boss.CNpcRespawnStore.Entry;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.CWorldWork;
+import l1j.server.server.shared.GameRandom;
 
 /**
  * 보스 스폰 컨트롤러.
@@ -308,10 +308,9 @@ public final class CBossNpcMaker {
         // Fixed definitions may deliberately stand on a non-walkable tile.
         if (range == 0) return map.isInMap(location);
         if (range < 0) return false;
-        final var random = ThreadLocalRandom.current();
         for (int i = 0; i < 50; i++) {
-            location.setX(x + random.nextInt(range) - random.nextInt(range));
-            location.setY(y + random.nextInt(range) - random.nextInt(range));
+            location.setX(x + GameRandom.nextInt(range) - GameRandom.nextInt(range));
+            location.setY(y + GameRandom.nextInt(range) - GameRandom.nextInt(range));
             if (map.isInMap(location) && map.isPassable(location)) return true;
         }
         location.setX(x);

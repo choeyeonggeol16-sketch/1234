@@ -5,8 +5,6 @@ import static l1j.server.server.model.character.skill.L1SkillId.SHOCK_STUN;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -24,12 +22,12 @@ import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.eKind;
 
 /** Item-specific effect extracted without changing its original execution body. */
 final class BlazeStunItemEffect {
-    private static final Random _random = CreatureItemActions._random;
 
     private BlazeStunItemEffect() {}
 
@@ -37,7 +35,6 @@ final class BlazeStunItemEffect {
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
         L1Object target = CWorld.getInstance().findObject(targetId);
-        Random random = ThreadLocalRandom.current();
         if ((pc.getType() == 1 && pc.getLevel() >= 50) || pc.isGm()) {
             if (target != null) {
                 if (target instanceof L1PcInstance) {
@@ -86,7 +83,7 @@ final class BlazeStunItemEffect {
                         SC_ServerMessage.send(pc, 278);
                         return;
                     }
-                    int 랜덤 = _random.nextInt(100) + 1;
+                    int 랜덤 = GameRandom.nextInt(100) + 1;
                     int 렙차 = pc.getLevel() - member.getLevel();
                     int 기본확률 = Config.ngsdefault;
                     int 적중 = pc.GetSpecialPierce(eKind.ABILITY) + pc.GetSpecialPierce(eKind.ALL);
@@ -94,7 +91,7 @@ final class BlazeStunItemEffect {
                     int stunpoint = 0;
                     int 양렙차 = (렙차 * Config.ngslvpoint);
                     int 음렙차 = (렙차 * Config.ngslvpoint);
-                    int aa1 = random.nextInt(100) + 1;
+                    int aa1 = GameRandom.nextInt(100) + 1;
                     int aa = member.getAc() / 2;
                     int probability = 0;
                     int dmg = (pc.getLevel() / 3 * Config.엘븐스트라이크배율) + aa1;
@@ -104,7 +101,7 @@ final class BlazeStunItemEffect {
                     probability = (int)+Config.ngsdefault + stunpoint;
                     probability += 양렙차;
                     probability -= 내성;
-                    final int 엘븐스트라이크시간 = DurationChoiceItems.blaze(random);
+                    final int 엘븐스트라이크시간 = DurationChoiceItems.blaze(GameRandom.current());
                     SC_SkillSound.send(pc, member.getId(), 5146);
                     SC_SkillSound.broadcast(pc, member.getId(), 5146);
                     pc.setCurrentMp(pc.getCurrentMp() - 20);

@@ -1,11 +1,11 @@
 package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.shared.GameRandom;
 /** 유저들의 위치를 바꾼다. **/
 public class PosChange extends RaidBossSkill{
     @Override
@@ -29,13 +29,13 @@ public class PosChange extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(own, pc);
             }else{
                 for(int i=0; i<size; i++){
                     pc = pcs.get(i);
-                    if(pc == null || pc.isDead() || !isRange(own, pc) || ThreadLocalRandom.current().nextInt(100) > _ratio)
+                    if(pc == null || pc.isDead() || !isRange(own, pc) || GameRandom.nextInt(100) > _ratio)
                         continue;
 
                     processAction(own, pc);
@@ -66,7 +66,7 @@ public class PosChange extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(own, pc);
             }else{
@@ -94,11 +94,11 @@ public class PosChange extends RaidBossSkill{
         }*/
 
         int div = _range / 2;
-        int x 	= ThreadLocalRandom.current().nextInt(div);
-        int y	= ThreadLocalRandom.current().nextInt(div);
-        if(ThreadLocalRandom.current().nextBoolean())
+        int x 	= GameRandom.nextInt(div);
+        int y	= GameRandom.nextInt(div);
+        if(GameRandom.nextBoolean())
             x *= -1;
-        if(ThreadLocalRandom.current().nextBoolean())
+        if(GameRandom.nextBoolean())
             y *= -1;
 
         pc.start_teleport(own.getX() + x, own.getY() + y, pc.getMapId(), pc.getHeading(), 169, true, false);

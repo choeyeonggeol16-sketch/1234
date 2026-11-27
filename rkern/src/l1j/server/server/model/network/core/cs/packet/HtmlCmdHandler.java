@@ -1,6 +1,5 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.datatables.NpcActionTable;
@@ -25,12 +24,6 @@ final class HtmlCmdHandler {
 
     private static final byte[] EMPTY_BYTES = new byte[0];
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(HtmlCmdHandler.class.getName());
-
-    /*
-     * 원본도 static Random 하나를 공유했다.
-     * packet wrapper만 제거하고 random semantics는 그대로 유지.
-     */
-    static final Random _random = new Random(System.nanoTime());
 
     private HtmlCmdHandler() {
     }

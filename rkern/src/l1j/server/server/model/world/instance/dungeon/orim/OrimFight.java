@@ -2,20 +2,19 @@ package l1j.server.server.model.world.instance.dungeon.orim;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Random;
 
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.L1SpawnUtil;
 
 class OrimFight extends Thread {
 	private static OrimFight _instance;
 	public L1NpcInstance oldin = null;
 
-	private static Random _random1 = new Random(System.nanoTime());
 	private int type;
 	L1PcInstance summonChar = null;
 
@@ -33,8 +32,8 @@ class OrimFight extends Thread {
 	}
 
 	public void run() {
-		int ran = _random1.nextInt(OrimController.getInstance().getPlayMembersCount());
-		int ranDie = _random1.nextInt(3) + 1;
+		int ran = GameRandom.nextInt(OrimController.getInstance().getPlayMembersCount());
+		int ranDie = GameRandom.nextInt(3) + 1;
 		summonChar = OrimController.getInstance().getPlayMemberArray()[ran];
 		if (!summonChar.isDead()) {
 			switch (type) {

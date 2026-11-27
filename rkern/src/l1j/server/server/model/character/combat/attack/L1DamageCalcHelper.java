@@ -1,6 +1,7 @@
 package l1j.server.server.model.character.combat.attack;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 /** 근/원거리 데미지 계산 헬퍼. */
 public final class L1DamageCalcHelper {
@@ -63,8 +64,7 @@ public final class L1DamageCalcHelper {
         // ---- aRandom (크로우/일반크리면 max)
         final boolean forceMax = (critMode == WeaponCritMode.CLAW_CRIT) || normalCriticalMax;
         final int aRandom = forceMax ? randMax
-                : (randMax == randMin ? randMin
-                : ThreadLocalRandom.current().nextInt(randMin, randMax + 1));
+                : GameRandom.next(randMin, randMax);
 
         // ---- weaponCore (속뎀 제외)
         int weaponCore = aRandom + weaponBonus + enchant + undeadBonus - weaponLoss;

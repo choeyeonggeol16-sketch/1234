@@ -13,6 +13,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.shared.GameRandom;
 
 final class NpcTravelCommands {
     private NpcTravelCommands() {}
@@ -581,7 +582,7 @@ final class NpcTravelCommands {
 
     static void esmeralda(L1PcInstance pc, String command) {
         if (!"journey".equalsIgnoreCase(command)) return;
-        int index = java.util.concurrent.ThreadLocalRandom.current().nextInt(GHOST_LOC[0].length);
+        int index = GameRandom.nextInt(GHOST_LOC[0].length);
         pc.beginGhost(GHOST_LOC[0][index], GHOST_LOC[1][index], (short) GHOST_LOC[2][index], true, 8);
     }
 

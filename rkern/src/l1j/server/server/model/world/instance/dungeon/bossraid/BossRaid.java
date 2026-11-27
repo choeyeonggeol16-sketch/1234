@@ -1,6 +1,5 @@
 package l1j.server.server.model.world.instance.dungeon.bossraid;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +17,7 @@ import l1j.server.server.model.world.instance.CInstantZoneManager;
 import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.model.world.instance.CInstantZone;
 import l1j.server.server.model.world.instance.dungeon.ice.CIceCaveSpawn;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.L1SpawnUtil;
 
 public final class BossRaid {
@@ -41,7 +41,7 @@ public final class BossRaid {
 
     void play() {
         if (CInstanceEvents.isStopping() || !CIceCaveSpawn.pause(3000L)) return;
-        final int bossId = monsters[ThreadLocalRandom.current().nextInt(monsters.length - 1)];
+        final int bossId = monsters[GameRandom.nextInt(monsters.length)];
         if (CObjectDB.GetNPC(bossId) == null)
             throw new IllegalStateException("Missing boss raid NPC template " + bossId);
         L1SpawnUtil.spawn2(32801, 32797, (short) mapId, bossId, 0, 0, 0);

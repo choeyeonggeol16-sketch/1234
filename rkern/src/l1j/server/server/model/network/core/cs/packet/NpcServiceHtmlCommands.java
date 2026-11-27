@@ -1,6 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import static l1j.server.server.model.network.core.cs.packet.HtmlCmdHandler._random;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.world.instance.dungeon.hadin.HadinSystem;
 import l1j.server.server.model.world.residence.HouseTable;
@@ -69,7 +70,7 @@ final class NpcServiceHtmlCommands {
             if (s.equalsIgnoreCase("1")) {
                 htmlid = "camus5";
             } else if (s.equalsIgnoreCase("2")) {
-                htmlid = NpcExchangeCommands.prism(pc, objid, _random);
+                htmlid = NpcExchangeCommands.prism(pc, objid, GameRandom.current());
             }
             // 결혼반지 충전
         } else if (templateId == 70702) {

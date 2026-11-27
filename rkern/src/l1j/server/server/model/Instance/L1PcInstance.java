@@ -3225,7 +3225,7 @@ public class L1PcInstance extends L1Character {
 		if (damage == 0)
 			return;
 		int player_mr = GetMDefendBySkill();
-		int rnd = java.util.concurrent.ThreadLocalRandom.current().nextInt(100) + 1;
+		int rnd = GameRandom.nextInt(100) + 1;
 		if (player_mr >= rnd) {
 			damage /= 2;
 		}

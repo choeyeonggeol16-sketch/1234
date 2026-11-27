@@ -4,7 +4,6 @@ import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.Controller.BugRaceController;
@@ -33,6 +32,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SurvivalCry;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
@@ -355,7 +355,6 @@ public class L1Shop {
 		}
 		
 		L1ItemInstance item = null;
-		ThreadLocalRandom random = ThreadLocalRandom.current();
 		for (L1ShopBuyOrder order : orderList.getList()) {
 			int itemId = order.getItem().getItemId();
 			int amount = order.getCount();
@@ -376,7 +375,7 @@ public class L1Shop {
 			item.setEnchantLevel(enchant);
 			if (_npcId == 70068 || _npcId == 70020 || _npcId == 70056) {// 인챈상점
 				//item.setIdentified(false);
-				int chance = random.nextInt(150) + 1;
+				int chance = GameRandom.nextInt(150) + 1;
 				if (chance <= 15) {
 					item.setEnchantLevel(-2);
 				} else if (chance >= 16 && chance <= 30) {
@@ -384,9 +383,9 @@ public class L1Shop {
 				} else if (chance >= 31 && chance <= 89) {
 					item.setEnchantLevel(0);
 				} else if (chance >= 90 && chance <= 141) {
-					item.setEnchantLevel(random.nextInt(2) + 1);
+					item.setEnchantLevel(GameRandom.nextInt(2) + 1);
 				} else if (chance >= 142 && chance <= 147) {
-					item.setEnchantLevel(random.nextInt(3) + 3);
+					item.setEnchantLevel(GameRandom.nextInt(3) + 3);
 				} else if (chance >= 148 && chance <= 149) {
 					item.setEnchantLevel(6);
 				} else if (chance == 150) {
@@ -487,7 +486,7 @@ public class L1Shop {
 			}
 			if (_npcId == 7310103 || _npcId == 7310199) {// 행운의 랜덤 상점
 
-				int chance1 = random.nextInt(100) + 1;
+				int chance1 = GameRandom.nextInt(100) + 1;
 				if (chance1 < 60) {
 					item.setEnchantLevel(7);
 				} else if (chance1 >= 60 && chance1 <= 70) {
@@ -529,7 +528,7 @@ public class L1Shop {
 			}
 			if (_npcId == 900173) {// 인챈상점
 				//item.setIdentified(false);
-				int chance = random.nextInt(170) + 1;
+				int chance = GameRandom.nextInt(170) + 1;
 				if (chance <= 20) {
 					item.setEnchantLevel(-2);
 				} else if (chance >= 25 && chance <= 35) {
@@ -546,7 +545,7 @@ public class L1Shop {
 			}
 			if (_npcId == 7310125) {// 인챈상점
 				//item.setIdentified(false);
-				int chance = random.nextInt(120) + 1;
+				int chance = GameRandom.nextInt(120) + 1;
 				if (chance < 20) {
 					item.setEnchantLevel(-2);
 				} else if (chance >= 20 && chance <= 30) {
@@ -571,7 +570,7 @@ public class L1Shop {
 			}
 			if (_npcId == 7310104) {// 마족
 				//item.setIdentified(false);
-				int chance1 = random.nextInt(100) + 2;
+				int chance1 = GameRandom.nextInt(100) + 2;
 				if (chance1 <= 15) {
 					item.setEnchantLevel(-3);
 				} else if (chance1 >= 31 && chance1 <= 40) {
@@ -581,9 +580,9 @@ public class L1Shop {
 				} else if (chance1 >= 10 && chance1 <= 20) {
 					item.setEnchantLevel(0);
 				} else if (chance1 >= 21 && chance1 <= 30) {
-					item.setEnchantLevel(random.nextInt(2) + 1);
+					item.setEnchantLevel(GameRandom.nextInt(2) + 1);
 				} else if (chance1 >= 51 && chance1 <= 60) {
-					item.setEnchantLevel(random.nextInt(3) + 3);
+					item.setEnchantLevel(GameRandom.nextInt(3) + 3);
 				} else if (chance1 >= 61 && chance1 <= 70) {
 					item.setEnchantLevel(2);
 				} else if (chance1 >= 71 && chance1 <= 80) {
@@ -1044,7 +1043,6 @@ public class L1Shop {
 			int itemId = order.getItem().getItemId();
 			int enchant = order.getItem().getEnchant();
 			int amount = order.getCount();
-			ThreadLocalRandom random = ThreadLocalRandom.current();
 			item = detachedShopItem(itemId);
 			item.setIdentified(true);
 			if (getSellingItems().contains(item)) {
@@ -1053,7 +1051,7 @@ public class L1Shop {
 
 			if (_npcId == 7310103) {// 행운의 랜덤 상점
 				item.setIdentified(false);
-				int chance1 = random.nextInt(100) + 1;
+				int chance1 = GameRandom.nextInt(100) + 1;
 				if (chance1 <= 50) {
 					item.setEnchantLevel(7);
 				} else if (chance1 >= 60 && chance1 <= 70) {
@@ -1354,7 +1352,6 @@ public class L1Shop {
 		for (L1ShopBuyOrder order : orderList.getList()) {
 			int itemId = order.getItem().getItemId();
 			int amount = order.getCount();
-			ThreadLocalRandom random = ThreadLocalRandom.current();
 			item = detachedShopItem(itemId);
 			item.setIdentified(true);
 			if (getSellingItems().contains(item)) {
@@ -1364,7 +1361,7 @@ public class L1Shop {
 			
 			if (_npcId == 7310126) {// 행운의 랜덤 상점
 				item.setIdentified(false);
-				int chance2 = random.nextInt(150) + 1;
+				int chance2 = GameRandom.nextInt(150) + 1;
 				if (chance2 <= 15) {
 					item.setEnchantLevel(-2);
 				} else if (chance2 >= 20 && chance2 <= 30) {
@@ -1372,9 +1369,9 @@ public class L1Shop {
 				} else if (chance2 >= 31 && chance2 <= 40) {
 					item.setEnchantLevel(0);
 				} else if (chance2 >= 51 && chance2 <= 60) {
-					item.setEnchantLevel(random.nextInt(1) + 2);
+					item.setEnchantLevel(2);
 				} else if (chance2 >= 70 && chance2 <= 80) {
-					item.setEnchantLevel(random.nextInt(2) + 3);
+					item.setEnchantLevel(GameRandom.nextInt(2) + 3);
 				} else if (chance2 >= 90 && chance2 <= 110) {
 					item.setEnchantLevel(5);
 				} else if (chance2 == 148) {
@@ -1396,7 +1393,6 @@ public class L1Shop {
 		for (L1ShopBuyOrder order : orderList.getList()) {
 			int itemId = order.getItem().getItemId();
 			int amount = order.getCount();
-			ThreadLocalRandom random = ThreadLocalRandom.current();
 			item = detachedShopItem(itemId);
 			if (getSellingItems().contains(item)) {
 				return;
@@ -1404,7 +1400,7 @@ public class L1Shop {
 			item.setCount(amount);
 			if (_npcId == 010) {// 행운의 랜덤 상점
 				item.setIdentified(false);
-				int chance1 = random.nextInt(150) + 1;
+				int chance1 = GameRandom.nextInt(150) + 1;
 				if (chance1 <= 15) {
 					item.setEnchantLevel(-3);
 				} else if (chance1 >= 31 && chance1 <= 40) {
@@ -1414,9 +1410,9 @@ public class L1Shop {
 				} else if (chance1 >= 15 && chance1 <= 30) {
 					item.setEnchantLevel(0);
 				} else if (chance1 >= 41 && chance1 <= 50) {
-					item.setEnchantLevel(random.nextInt(2) + 1);
+					item.setEnchantLevel(GameRandom.nextInt(2) + 1);
 				} else if (chance1 >= 71 && chance1 <= 81) {
-					item.setEnchantLevel(random.nextInt(2) + 3);
+					item.setEnchantLevel(GameRandom.nextInt(2) + 3);
 				} else if (chance1 >= 110 && chance1 <= 120) {
 					item.setEnchantLevel(3);
 				} else if (chance1 == 140) {
@@ -1426,7 +1422,7 @@ public class L1Shop {
 
 			if (_npcId == 010) {// 행운의 랜덤 상점
 				item.setIdentified(false);
-				int chance2 = random.nextInt(150) + 1;
+				int chance2 = GameRandom.nextInt(150) + 1;
 				if (chance2 <= 15) {
 					item.setEnchantLevel(-2);
 				} else if (chance2 >= 20 && chance2 <= 30) {
@@ -1434,9 +1430,9 @@ public class L1Shop {
 				} else if (chance2 >= 31 && chance2 <= 40) {
 					item.setEnchantLevel(0);
 				} else if (chance2 >= 51 && chance2 <= 60) {
-					item.setEnchantLevel(random.nextInt(1) + 2);
+					item.setEnchantLevel(2);
 				} else if (chance2 >= 70 && chance2 <= 80) {
-					item.setEnchantLevel(random.nextInt(2) + 3);
+					item.setEnchantLevel(GameRandom.nextInt(2) + 3);
 				} else if (chance2 >= 90 && chance2 <= 110) {
 					item.setEnchantLevel(5);
 				} else if (chance2 == 148) {

@@ -2,10 +2,10 @@ package l1j.server.server.model.item.function;
 
 
 
+
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.SHAPE_CHANGE;
 
-import java.util.Random;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.L1Character;
@@ -64,7 +64,6 @@ import static l1j.server.server.model.item.function.DollEffectItems.*;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
 public final class TransformationItems {
-    private static final Random _random = CreatureItemActions._random;
     private TransformationItems() {}
 	public static boolean usePolyScroll(L1PcInstance pc, int item_id, String s) {
 		return PolymorphScrollEffects.usePolyScroll(pc, item_id, s);

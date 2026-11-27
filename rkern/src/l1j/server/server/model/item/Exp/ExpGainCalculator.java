@@ -354,7 +354,7 @@ public final class ExpGainCalculator {
                     if (pc.getAutoHunt()) {
                         return false; 
                     }
-                    captcha.drain_captcha(pc);
+                    return captcha.tryDrainCaptcha(pc);
                 }
             }
         }

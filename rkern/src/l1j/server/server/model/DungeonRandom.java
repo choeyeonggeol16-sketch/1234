@@ -24,12 +24,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.SQLUtil;
 
 // Referenced classes of package l1j.server.server.model:
@@ -43,7 +43,6 @@ public class DungeonRandom {
     private static volatile DungeonRandom _instance = null;
 
     private static Map<String, NewDungeonRandom> _dungeonMap = new HashMap<String, NewDungeonRandom>();
-    private static Random _random = new Random(System.nanoTime());
 
     public static DungeonRandom getInstance() {
         DungeonRandom current = _instance;
@@ -128,7 +127,7 @@ public class DungeonRandom {
 		String key = new StringBuilder().append(mapId).append(locX)
 				.append(locY).toString();
 		if (_dungeonMap.containsKey(key)) {
-			int rnd = _random.nextInt(5);
+			int rnd = GameRandom.nextInt(5);
 			NewDungeonRandom newDungeonRandom = _dungeonMap.get(key);
 			short newMap = newDungeonRandom._newMapId[rnd];
 			int newX = newDungeonRandom._newX[rnd];

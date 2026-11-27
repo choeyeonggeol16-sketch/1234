@@ -3,7 +3,6 @@ package l1j.server.server.model.world.instance.dungeon.orim;
 import java.util.ArrayList;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +17,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.CommonUtil;
 import l1j.server.server.utils.L1SpawnUtil;
 
@@ -32,7 +32,6 @@ public class OrimController extends Thread {
 
 	private final ArrayList<L1PcInstance> playmember = new ArrayList<L1PcInstance>();
 
-	private static Random _random = new Random(System.nanoTime());
 	private L1Location[] dependLoc;
 	private L1Location attackLoc;
 	private ArrayList<L1NpcInstance> _list = new ArrayList<L1NpcInstance>();
@@ -521,8 +520,8 @@ public class OrimController extends Thread {
 		} else {
 			for (int k = 0; k < spawnCount; k++) {
 				ran = CommonUtil.random(_MonsterList[stageNum].length);
-				int x = 32789 + _random.nextInt(18);
-				int y = 32796 + _random.nextInt(13);
+				int x = 32789 + GameRandom.nextInt(18);
+				int y = 32796 + GameRandom.nextInt(13);
 
 				L1SpawnUtil.spawn3(x, y, (short)9101, 0, 91244, 1, false, 2000);
 
@@ -536,9 +535,9 @@ public class OrimController extends Thread {
 	private void StarZone(int i, int j) {
 		if (i == 1) {
 			attackFormat();
-		      int x = 32789 + _random.nextInt(18);
-		      int y = 32796 + _random.nextInt(13);
-			int time = j == 0 ? 10000 : 10000 + _random.nextInt(10) * 1000;
+		      int x = 32789 + GameRandom.nextInt(18);
+		      int y = 32796 + GameRandom.nextInt(13);
+			int time = j == 0 ? 10000 : 10000 + GameRandom.nextInt(10) * 1000;
 			L1SpawnUtil.spawn3(x, y, (short)9101, 0, 91238, 1, false, time);
 			attackLoc = new L1Location(x, y, 9101);
 		}
@@ -550,9 +549,9 @@ public class OrimController extends Thread {
 			dependLoc = new L1Location[spawnCount - 2];
 			for (int k = 0; k < spawnCount - 2; k++) {
 				dependLoc[k] = new L1Location();
-			      int x1 = 32789 + _random.nextInt(18);
-			      int y1 = 32796 + _random.nextInt(13);
-				L1SpawnUtil.spawn3(x1, y1, (short)9101, 0, 91239, 1, false, 10000 + _random.nextInt(5) * 1000);
+			      int x1 = 32789 + GameRandom.nextInt(18);
+			      int y1 = 32796 + GameRandom.nextInt(13);
+				L1SpawnUtil.spawn3(x1, y1, (short)9101, 0, 91239, 1, false, 10000 + GameRandom.nextInt(5) * 1000);
 				dependLoc[k] = new L1Location(x1, y1, 9101);
 			}
 		}
@@ -881,8 +880,8 @@ public class OrimController extends Thread {
 		for (int shellCount = 0; shellCount < 5 - attackCount / 2; shellCount++) {
 			for (L1PcInstance pc : getPlayMemberArray())
 				try {
-					int x = 32789 + _random.nextInt(18);
-					int y = 32796 + _random.nextInt(13);
+					int x = 32789 + GameRandom.nextInt(18);
+					int y = 32796 + GameRandom.nextInt(13);
 					SC_EffectLocation.send(pc, x, y, 762);
 					SC_EffectLocation.send(pc, x, 32815, 8233);
 				} catch (Exception e) {
@@ -895,8 +894,8 @@ public class OrimController extends Thread {
 				
 			}
 			if (shellCount + 1 > dependCount) {
-				int x = 32789 + _random.nextInt(18);
-				int y = 32796 + _random.nextInt(13);
+				int x = 32789 + GameRandom.nextInt(18);
+				int y = 32796 + GameRandom.nextInt(13);
 
 				L1SpawnUtil.spawn5(x, y, (short)9101, 4, 91233, 1, false);
 				dangerCount += 1;

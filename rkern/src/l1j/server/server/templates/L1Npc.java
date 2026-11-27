@@ -729,7 +729,7 @@ public class L1Npc extends L1Object implements Cloneable {
 	}
 	
 	public long doProbabilityBornNpc(L1NpcInstance npc){		
-		return (_born != null && GameRandom.isWinning(1000000, _born.probability_byMillion)) ? _born.doBornAndGetInterval(npc) : 0L;		
+		return (_born != null && GameRandom.isWinning(1000000, _born.probability_byMillion)) ? _born.doBornAndGetInterval(npc) : 0L;
 	}
 	
 	public class BornAction{

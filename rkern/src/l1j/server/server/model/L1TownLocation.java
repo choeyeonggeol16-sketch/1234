@@ -1,7 +1,8 @@
 
 package l1j.server.server.model;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.datatables.TownTable;
 import l1j.server.server.templates.L1Town;
@@ -356,7 +357,7 @@ public class L1TownLocation {
 			return fillDefaultSilverKnight(loc);
 		}
 
-		final int rnd = ThreadLocalRandom.current().nextInt(candidates.length);
+		final int rnd = GameRandom.nextInt(candidates.length);
 		final Point p = candidates[rnd];
 		loc[0] = p.getX();
 		loc[1] = p.getY();
@@ -366,7 +367,7 @@ public class L1TownLocation {
 
 	private static int[] fillDefaultSilverKnight(int[] loc) {
 		final Point[] candidates = GETBACK_LOC_SILVER_KNIGHT_TOWN;
-		final int rnd = ThreadLocalRandom.current().nextInt(candidates.length);
+		final int rnd = GameRandom.nextInt(candidates.length);
 		final Point p = candidates[rnd];
 		loc[0] = p.getX();
 		loc[1] = p.getY();

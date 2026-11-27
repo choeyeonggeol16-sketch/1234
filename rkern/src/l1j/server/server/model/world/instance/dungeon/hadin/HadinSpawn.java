@@ -64,8 +64,8 @@ public class HadinSpawn {
 						field.setX(rs.getInt("locx"));
 						field.setY(rs.getInt("locy"));
 					//	if(type != 0){
-					//		field.setX(field.getX() + ((int) (Math.random() * 5) - (int) (Math.random() * 5)));
-					//		field.setY(field.getY() + ((int) (Math.random() * 5) - (int) (Math.random() * 5)));
+
+
 					//	}
 						field.setMap((short) mapid);
 						field.setHomeX(field.getX());
@@ -138,10 +138,6 @@ public class HadinSpawn {
 						field.setId(IdFactory.getInstance().nextId());
 						field.setX(x);
 						field.setY(y);
-						if(type != 0){
-							field.setX(field.getX() + ((int) (Math.random() * 1) - (int) (Math.random() * 1)));
-							field.setY(field.getY() + ((int) (Math.random() * 1) - (int) (Math.random() * 1)));
-						}
 						field.setMap((short) mapid);
 						field.setHomeX(field.getX());
 						field.setHomeY(field.getY());

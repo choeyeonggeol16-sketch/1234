@@ -11,9 +11,9 @@ import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import static l1j.server.server.model.item.function.CreatureItemActions.ITEM_USE2_LOG;
-import static l1j.server.server.model.item.function.CreatureItemActions._random;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsumeTwoInput;
 import static l1j.server.server.model.item.function.DurabilityRepairItems.UseDurableRepair;
@@ -43,7 +43,7 @@ final class QuestRingCollection {
                     : ringGroup == 2 ? 441 : 444;
             final int failureCode = ringGroup == 0 ? 447 : ringGroup == 1 ? 446
                     : ringGroup == 2 ? 445 : 448;
-            if ((_random.nextInt(99) + 1) < Config.CREATE_CHANCE_PROCESSING_DIAMOND) {
+            if ((GameRandom.nextInt(99) + 1) < Config.CREATE_CHANCE_PROCESSING_DIAMOND) {
                 final String ringName = targetItem.getName();
                 UseDurableTwoInput(pc, item, targetItem, ringReward, () -> {
                     try {

@@ -1,6 +1,7 @@
 package l1j.server.server.model.character.skill.helper;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -69,7 +70,7 @@ public final class WeakExposeHelper {
         // =====================================================
         final int probability = AttackSkillChanceConfig.get().weakExposeBaseChance() + addChance;
         if (probability <= 0 || (probability < 100
-                && ThreadLocalRandom.current().nextInt(100) > probability)) {
+                && GameRandom.nextInt(100) > probability)) {
             return 0;
         }
 

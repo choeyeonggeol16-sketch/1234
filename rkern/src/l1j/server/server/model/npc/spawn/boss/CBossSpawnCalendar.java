@@ -9,7 +9,8 @@ import java.time.ZoneId;
 import java.util.BitSet;
 import java.util.HexFormat;
 import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
+
+import l1j.server.server.shared.GameRandom;
 
 /** Resolve a boss's configured HH:mm bases independently of jitter, timers and persistence. */
 public final class CBossSpawnCalendar {
@@ -69,7 +70,7 @@ public final class CBossSpawnCalendar {
         final long max = jitterMax(definition);
         if (max == 0L) return slot;
         if (slot > Long.MAX_VALUE - max) return -1L;
-        return slot + ThreadLocalRandom.current().nextLong(1L, max + 1L);
+        return slot + GameRandom.nextLong(1L, max + 1L);
     }
 
     /** Recover a future roll, or an overdue roll before the next base after its due time and within one hour. */

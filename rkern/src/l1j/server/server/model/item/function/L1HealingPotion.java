@@ -21,7 +21,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,6 +38,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.shared.GameRandom;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 public class L1HealingPotion {
@@ -198,7 +198,7 @@ public class L1HealingPotion {
 		int chance = effect.getMax() - effect.getMin();
 		double healHp = effect.getMin();
 		if (chance > 0) {
-			healHp += ThreadLocalRandom.current().nextInt(chance) + 1;	
+			healHp += GameRandom.nextInt(chance) + 1;
 		}
 
 		//  물약 회복률(%)

@@ -1,4 +1,6 @@
 package l1j.server.server.model.character.skill;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.Iterator;
 import java.util.Random;
@@ -1291,7 +1293,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		final L1Character recipient = target != null ? target : su.hdTarget();
 		if (!(recipient instanceof L1PcInstance pc)) return HandlerResult.HANDLED;
 		final Random random = su.hdRandom();
-		final int seconds = random != null ? random.nextInt(10) + 1 : (int) (Math.random() * 10) + 1;
+		final int seconds = random != null ? random.nextInt(10) + 1 : GameRandom.next(1, 10);
 		final int originalTimerMs = target == pc ? DurationResolver.INSTANCE.resolveDurationMs(su) : 0;
 		return submitContextBuff(pc, su.hdSkillId(), originalTimerMs, seconds, 0, null)
 				? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;

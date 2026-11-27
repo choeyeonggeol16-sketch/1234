@@ -1,11 +1,11 @@
 package l1j.server.server.model.item.function;
 
 import java.sql.Timestamp;
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.datatables.ResolventTable;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1ItemDelay;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1EtcItem;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -46,7 +46,7 @@ final class OrdinaryResolventItems {
         }
 
         useResolventRoll(pc, target, solvent, base,
-                ThreadLocalRandom.current().nextInt(100) + 1);
+                GameRandom.nextInt(100) + 1);
     }
 
     static void useResolventRoll(
@@ -87,7 +87,7 @@ final class OrdinaryResolventItems {
             SC_ServerMessage.send(pc, 1161);
             return;
         }
-        final int count = ThreadLocalRandom.current().nextInt(100) + 1 >= 70
+        final int count = GameRandom.nextInt(100) + 1 >= 70
                 ? base / 2 : base;
         ResolventSettlement.settleResolvent(pc, target, solvent, 41246, count, 0, false);
     }

@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.function;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HOLY_MITHRIL_POWDER;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_HOLY_WATER;
@@ -71,7 +73,7 @@ final class ClanRewardScrollItems {
 				pc.sendPackets("혈맹포인트 상자 설정 오류입니다.");
 				return;
 			}
-			final int points = java.util.concurrent.ThreadLocalRandom.current().nextInt(pointRange) + Config.혈맹포인트최소;
+			final int points = GameRandom.nextInt(pointRange) + Config.혈맹포인트최소;
 			if (points <= 0) return;
 			try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
 					l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc,

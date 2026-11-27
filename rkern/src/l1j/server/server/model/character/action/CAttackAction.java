@@ -1,7 +1,6 @@
 package l1j.server.server.model.character.action;
 
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -811,10 +810,6 @@ public final class CAttackAction extends CNewAction {
 
 	private int _statusDamage = 0;
 
-	// Shared java.util.Random uses a single CAS seed across all attacker threads.
-    // ThreadLocalRandom keeps each combat thread's PRNG state independent and
-    // still implements Random for the existing L1DamageCalcHelper APIs.
-    private static final Random _random = ThreadLocalRandom.current();
 
 	private int _hitRate = 0;
 
@@ -1397,7 +1392,7 @@ public final class CAttackAction extends CNewAction {
         // do not enter weapon/stat/DR/proc arithmetic.
         _isCritical = _edoryuDouble = _doubleBreak = _burning = false;
         _cycloneProc = _crash = _fury = _burningSlashProc = false;
-        return ThreadLocalRandom.current().nextInt(1, 3);
+        return GameRandom.nextInt(1, 3);
     }
 
 	/** 엔피시 -> 플레이어 대미지 판정 **/
@@ -1446,7 +1441,7 @@ public final class CAttackAction extends CNewAction {
 	private int rollNpcBaseDamage(boolean rangedNpc) {
 		int status = _npc.GetStatPAttack(rangedNpc);
 
-		int dmg = status + ThreadLocalRandom.current().nextInt(Math.max(1, _npc.getLevel() / 2)) + 1;
+		int dmg = status + GameRandom.nextInt(Math.max(1, _npc.getLevel() / 2)) + 1;
 		dmg += _npc.getDmgup();
 
 		if (isUndeadDamage()) {
@@ -1526,8 +1521,7 @@ public final class CAttackAction extends CNewAction {
         final int displayedDamage = TargetSizeHelper.isSmall(pvp, target)
                 ? _weaponSmall : _weaponLarge;
         if (displayedDamage <= 0) return 0;
-        final ThreadLocalRandom rng = ThreadLocalRandom.current();
-        final int dice = keylinkDice(displayedDamage, rng);
+        final int dice = keylinkDice(displayedDamage, GameRandom.current());
 
         // SP already includes MagicLevel + MagicBonus: subtract both once.
         final int bonusSp = _pc.GetStatSp() - _pc.GetStatBaseSp();
@@ -1544,7 +1538,7 @@ public final class CAttackAction extends CNewAction {
                 || _pc.hasSkillEffect(L1SkillId.LIFE_MAAN)) {
             critChance++;
         }
-        _isCritical = critChance > 0 && rng.nextInt(100) < Math.min(100, critChance);
+        _isCritical = critChance > 0 && GameRandom.nextInt(100) < Math.min(100, critChance);
         if (_isCritical) scaled = (int) Math.floor(scaled * 1.25);
 
         // 강화 및 추가 마법 데미지를 합산한 후 MR을 적용한다.
@@ -1573,7 +1567,7 @@ public final class CAttackAction extends CNewAction {
      * without per-item branches or allocations on the attack path. An attack
      * value alone cannot identify every historical keylink's internal dice.
      */
-    private static int keylinkDice(final int displayedDamage, final ThreadLocalRandom rng) {
+    private static int keylinkDice(final int displayedDamage, final Random rng) {
         if (displayedDamage <= 0) return 0;
         if (displayedDamage < 10) return rng.nextInt(1, displayedDamage + 1);
         if (displayedDamage <= 26) {
@@ -1790,7 +1784,7 @@ public final class CAttackAction extends CNewAction {
 		return damage;
 	}
 	public void addPcPoisonAttack(L1Character attacker, L1Character target) {
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if ((_weaponId == 13 || _weaponId == 44 // FOD, 고대의 다크 에르프 소도
 				|| (_weaponId != 0 && _pc.hasSkillEffect(L1SkillId.ENCHANT_VENOM))) // 인챈트
 																			// 베놈
@@ -2255,7 +2249,7 @@ public final class CAttackAction extends CNewAction {
 			int 회복 = (int) ((double) Math.round(
 					(weapon.getItem().getDmgLarge() + weapon.getEnchantLevel() + weapon.getItem().getDmgModifier())
 							* Config.카배회복량));
-			int 최종회복 = _random.nextInt(30) + 회복;
+			int 최종회복 = GameRandom.nextInt(30) + 회복;
 			_targetPc.setCurrentHp(_targetPc.getCurrentHp() + 최종회복);
 			SC_SkillSound.send(_targetPc, _targetPc.getId(), 6590);
 			SC_SkillSound.broadcastFast(_targetPc, _targetPc.getId(), 6590);

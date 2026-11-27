@@ -5,6 +5,7 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.proc.model.ItemSkillModel;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 public class Atk_Silence extends ItemSkillModel{
@@ -28,7 +29,7 @@ public class Atk_Silence extends ItemSkillModel{
 		if(defender.hasSkillEffect(L1SkillId.SILENCE))
 			return 0D;
 		
-		double time	=  _rnd.nextInt(max_val - min_val) + min_val;
+		double time	=  GameRandom.nextIntOrFixed(min_val, max_val);
 		time 		= calcEnchant(t_item, time);
 		time		= calcAttr(defender, time);
 		time		= calcStat(attacker, time);

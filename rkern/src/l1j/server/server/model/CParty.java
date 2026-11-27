@@ -28,6 +28,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_LIST_
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_MARK_CHANGE_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_MEMBER_STATUS;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_PARTY_SYNC_PERIODIC_INFO;
+import l1j.server.server.shared.GameRandom;
 
 public class CParty {
 
@@ -431,7 +432,7 @@ public class CParty {
 
     private void RouteAdena(CWorld world, L1Location origin, CInventory source, L1ItemInstance item,
             CContributeData snap, L1PcInstance[] members, int size, String tag) {
-        final int winnerIndex = java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
+        final int winnerIndex = GameRandom.nextInt(size);
         final long total = item.getCount();
         final long each = total / size;
         final long remainder = total % size;
@@ -460,7 +461,7 @@ public class CParty {
         // The previous general mode already chose a random eligible winner.
         // Random mode also had a uniform final selection; keep that distribution.
         final int index = mode == 2 ? NextLootIndex(size)
-                : java.util.concurrent.ThreadLocalRandom.current().nextInt(size);
+                : GameRandom.nextInt(size);
         final L1PcInstance target = members[index];
         final int amount = item.getCount();
         final L1PcInstance recipient = CheckRouteCond(origin, snap, target) ? target : null;

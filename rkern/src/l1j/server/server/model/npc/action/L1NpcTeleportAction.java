@@ -34,7 +34,6 @@ public class L1NpcTeleportAction extends L1NpcXmlAction {
 	private final int _price;
 	private final boolean _effect;
 
-	// private static Random _rand = new Random(System.nanoTime());
 
 	public L1NpcTeleportAction(Element element) {
 		super(element);

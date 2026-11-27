@@ -1,7 +1,6 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.model.L1Location;
@@ -15,6 +14,7 @@ import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.ClientAutomationSession;
 
@@ -77,8 +77,8 @@ final class TeleportRandomTravel {
             if (m.getId() == pc.getId()) continue;
             if (m.isPrivateShop()) continue;
 
-            int nx = x + ThreadLocalRandom.current().nextInt(3) + 1;
-            int ny = y + ThreadLocalRandom.current().nextInt(3) + 1;
+            int nx = x + GameRandom.nextInt(3) + 1;
+            int ny = y + GameRandom.nextInt(3) + 1;
 
             if (map.isInMap(nx, ny) && map.isPassable(nx, ny)) {
                 m.start_teleport(nx, ny, mapId, m.getHeading(), 169, true, true);
@@ -87,8 +87,8 @@ final class TeleportRandomTravel {
             }
         }
 
-        int nx = x + ThreadLocalRandom.current().nextInt(3) + 1;
-        int ny = y + ThreadLocalRandom.current().nextInt(3) + 1;
+        int nx = x + GameRandom.nextInt(3) + 1;
+        int ny = y + GameRandom.nextInt(3) + 1;
 
         if (map.isInMap(nx, ny) && map.isPassable(nx, ny)) {
             pc.start_teleport(nx, ny, mapId, pc.getHeading(), 169, true, true);

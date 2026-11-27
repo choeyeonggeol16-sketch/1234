@@ -6,6 +6,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 
 final class ManaConsumables {
     private static final java.util.logging.Logger LOG =
@@ -36,7 +37,7 @@ final class ManaConsumables {
         switch (itemId) {
 		case 40067:// 쑥송편
 		case 41414:// 복월병
-			final int restoreMpStrong = 15 + java.util.concurrent.ThreadLocalRandom.current().nextInt(30);
+			final int restoreMpStrong = 15 + GameRandom.nextInt(30);
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
 				pc.setCurrentMp(pc.getCurrentMp() + restoreMpStrong);
 				sendMpSound(pc);
@@ -45,7 +46,7 @@ final class ManaConsumables {
 
 		case 40066:// 송편
 		case 41413:// 월병
-			final int restoreMpSmall = 5 + java.util.concurrent.ThreadLocalRandom.current().nextInt(10);
+			final int restoreMpSmall = 5 + GameRandom.nextInt(10);
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
 				pc.setCurrentMp(pc.getCurrentMp() + restoreMpSmall);
 				sendMpSound(pc);
@@ -91,7 +92,7 @@ final class ManaConsumables {
 			break;
 
 		case 41404:// 쿠작의 영약
-			final int restoreMp41404 = (80 + java.util.concurrent.ThreadLocalRandom.current().nextInt(21));
+			final int restoreMp41404 = (80 + GameRandom.nextInt(21));
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
 				pc.setCurrentMp(pc.getCurrentMp() + restoreMp41404);
 				sendMpNotice(pc);
@@ -99,7 +100,7 @@ final class ManaConsumables {
 			break;
 
 		case 41412:// 금쫑즈
-			final int restoreMp41412 = (5 + java.util.concurrent.ThreadLocalRandom.current().nextInt(16));
+			final int restoreMp41412 = (5 + GameRandom.nextInt(16));
 			ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
 				pc.setCurrentMp(pc.getCurrentMp() + restoreMp41412);
 				sendMpNotice(pc);

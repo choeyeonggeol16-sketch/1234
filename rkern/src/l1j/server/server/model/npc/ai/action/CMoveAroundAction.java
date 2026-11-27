@@ -1,6 +1,7 @@
 package l1j.server.server.model.npc.ai.action;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
+
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -10,6 +11,7 @@ import l1j.server.server.model.ai.core.PathNodeWorld;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.npc.ai.AstarProvider;
 import l1j.server.server.model.npc.ai.CDesirePQ;
+import l1j.server.server.shared.GameRandom;
 
 /**
  * Retail-observation MOVE_AROUND adapter.
@@ -195,8 +197,6 @@ public final class CMoveAroundAction {
             final L1MonsterInstance monster,
             final long now) {
 
-        final ThreadLocalRandom rnd =
-                ThreadLocalRandom.current();
 
         for (int attempt = 0;
              attempt < DESTINATION_ATTEMPTS;
@@ -204,7 +204,7 @@ public final class CMoveAroundAction {
 
             if (!chooseRandomDestination(
                     monster,
-                    rnd)) {
+                    GameRandom.current())) {
 
                 continue;
             }
@@ -256,7 +256,7 @@ public final class CMoveAroundAction {
 
     private static boolean chooseRandomDestination(
             final L1MonsterInstance monster,
-            final ThreadLocalRandom rnd) {
+            final Random rnd) {
 
         final int distance =
                 rnd.nextInt(

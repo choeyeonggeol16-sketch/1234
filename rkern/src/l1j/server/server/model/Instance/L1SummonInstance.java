@@ -2,7 +2,6 @@ package l1j.server.server.model.Instance;
 
 import l1j.server.server.datatables.CObjectDB;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +25,7 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.CNpcItemUse;
 import l1j.server.server.model.npc.ai.action.dPetDefault;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 public class L1SummonInstance extends L1NpcInstance {
@@ -70,8 +70,8 @@ public class L1SummonInstance extends L1NpcInstance {
 		setMaster(master);
 		setMap(master.getMapId());
 
-		int nx = master.getX() + ThreadLocalRandom.current().nextInt(5) - 2;
-		int ny = master.getY() + ThreadLocalRandom.current().nextInt(5) - 2;
+		int nx = master.getX() + GameRandom.nextInt(5) - 2;
+		int ny = master.getY() + GameRandom.nextInt(5) - 2;
 
 		if (!getMap().isInMap(nx, ny) || !getMap().isPassable(nx, ny)) {
 			nx = master.getX();
@@ -81,7 +81,7 @@ public class L1SummonInstance extends L1NpcInstance {
 		setX(nx);
 		setY(ny);
 		
-		setHeading(ThreadLocalRandom.current().nextInt(8));
+		setHeading(GameRandom.nextInt(8));
 		setLightSize(template.getLightSize());
 		_currentPetStatus = 1;
 		

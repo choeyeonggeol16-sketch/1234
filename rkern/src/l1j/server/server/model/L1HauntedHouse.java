@@ -3,7 +3,6 @@ package l1j.server.server.model;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import java.util.ArrayList;
-import java.util.Random;
 
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.IdFactory;
@@ -18,6 +17,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.model.inventory.CInventory;
 
@@ -427,8 +427,7 @@ for (L1PcInstance player : getMembersArray()) {
 					if (pc.getInventory().CreateOrAddItem(item) != null) {
 						SC_ServerMessage.send(pc, 403, item.getLogName());
 
-						Random random = new Random(System.nanoTime()); // 펫레이싱
-						if (random.nextInt() < 33) {
+						if (GameRandom.isWinning(100, 33)) {
 							// Reuse the actual grant for the one-item notice.
 							L1ItemInstance bonus = pc.getInventory().CreateOrAddItem(3000023, 1);
 							if (bonus != null) {

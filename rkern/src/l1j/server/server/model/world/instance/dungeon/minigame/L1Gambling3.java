@@ -1,6 +1,5 @@
 package l1j.server.server.model.world.instance.dungeon.minigame;
 
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +13,7 @@ import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 
 /**
  * 신용소막딜러(300027) 몹배팅 게임.
@@ -87,12 +87,11 @@ public class L1Gambling3 {
 			@Override
 			public void run() {
 				try {
-					Random random = new Random();
 					L1NpcInstance dealer = findDealer();
 					say(pc, dealer, MOB_NAMES[type - 1] + "에 배팅! 출발합니다~ 과연? ㅋㅋㅋ");
-					int m1 = 300041 + random.nextInt(9);
-					int m2 = 300041 + random.nextInt(9);
-					int m3 = 300041 + random.nextInt(9);
+					int m1 = 300041 + GameRandom.nextInt(9);
+					int m2 = 300041 + GameRandom.nextInt(9);
+					int m3 = 300041 + GameRandom.nextInt(9);
 					L1EffectSpawn.getInstance().spawnEffect(m1, 3500, 33513, 32851, mapId);
 					L1EffectSpawn.getInstance().spawnEffect(m2, 3500, 33511, 32851, mapId);
 					L1EffectSpawn.getInstance().spawnEffect(m3, 3500, 33509, 32851, mapId);

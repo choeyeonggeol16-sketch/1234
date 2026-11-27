@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Random;
 import java.util.TimeZone;
 
 import l1j.server.Config;
@@ -27,13 +26,13 @@ import l1j.server.server.model.network.core.sc.packet.SC_ShowCmd;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.utils.BytesOutputStream;
 
 public class Kda {
 	private static final int KDAM_INIT 			= 0;
 	private static final int KDAM_WP_INC 		= 1;
-	private static Random _random = new Random(System.nanoTime());
 	private static final String[] _kdaMessages = new String[]{
 		"당신의 킬데스가 초기화 되었습니다.",
 	//	new RPacketBox(RPacketBox.GREEN_MESSAGE, "PK에서 승리하여 혈맹 포인트가 1점이 상승 했습니다."),
@@ -206,7 +205,7 @@ public class Kda {
 		
 	
 		
-		int aa = _random.nextInt(100) + 1;
+		int aa = GameRandom.nextInt(100) + 1;
 		if (Config.공성수배) {
 			if (!isInWarAreaAndWarTime(killer)) {
 				

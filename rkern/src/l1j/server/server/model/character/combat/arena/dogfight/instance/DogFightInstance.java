@@ -2,7 +2,6 @@ package l1j.server.server.model.character.combat.arena.dogfight.instance;
 
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import l1j.server.server.model.character.combat.arena.dogfight.game.trigger.DogFightTrigger;
 import l1j.server.server.model.character.combat.arena.dogfight.game.trigger.DogFightTriggerInfo;
@@ -214,7 +213,7 @@ public class DogFightInstance extends L1NpcInstance{
 		if(m_is_non_update)
 			return;
 		
-		Collections.shuffle(targets);
+		GameRandom.shuffle(targets);
 		if(_target != null)
 			setHate(_target, 0);
 		for(DogFightInstance fighter : targets){

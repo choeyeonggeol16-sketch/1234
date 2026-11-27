@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.function;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.cs.packet.CS_Attr;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.L1NeigeItemBox;
@@ -26,8 +28,8 @@ case 3000106:// 수련던전1층이동주문서
 				return;
 			}
 			if (pc.getMap().isEscapable() || pc.isGm()) {
-				int rx = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
-				int ry = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+				int rx = GameRandom.nextInt(2);
+				int ry = GameRandom.nextInt(2);
 				int ux = 32809 + rx;
 				int uy = 32727 + ry;
 				ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
@@ -42,8 +44,8 @@ case 3000106:// 수련던전1층이동주문서
 		
 case 3000354:// 에바의왕국 수중던전
 			if (pc.getMap().isEscapable() || pc.isGm()) {
-				int rx = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
-				int ry = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+				int rx = GameRandom.nextInt(2);
+				int ry = GameRandom.nextInt(2);
 				int ux = 32734 + rx;
 				int uy = 32841 + ry;
 				ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
@@ -58,8 +60,8 @@ case 3000354:// 에바의왕국 수중던전
 		
 case 3000394:// 화룡의 둥지
 			if (pc.getMap().isEscapable() || pc.isGm()) {
-				int rx = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
-				int ry = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+				int rx = GameRandom.nextInt(2);
+				int ry = GameRandom.nextInt(2);
 				int ux = 33713 + rx;
 				int uy = 32301 + ry;
 				ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
@@ -74,8 +76,8 @@ case 3000394:// 화룡의 둥지
 		
 case 3000396:// 풍룡의 둥지
 			if (pc.getMap().isEscapable() || pc.isGm()) {
-				int rx = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
-				int ry = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+				int rx = GameRandom.nextInt(2);
+				int ry = GameRandom.nextInt(2);
 				int ux = 34180 + rx;
 				int uy = 32857 + ry;
 				ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
@@ -90,8 +92,8 @@ case 3000396:// 풍룡의 둥지
 		
 case 3000395:// 발라카스 둥지
 			if (pc.getMap().isEscapable() || pc.isGm()) {
-				int rx = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
-				int ry = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+				int rx = GameRandom.nextInt(2);
+				int ry = GameRandom.nextInt(2);
 				int ux = 32779 + rx;
 				int uy = 32751 + ry;
 				ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
@@ -106,8 +108,8 @@ case 3000395:// 발라카스 둥지
 		
 case 40824:// 수련던전2층이동주문서
 			if (pc.getMap().isEscapable() || pc.isGm()) {
-				int rx = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
-				int ry = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+				int rx = GameRandom.nextInt(2);
+				int ry = GameRandom.nextInt(2);
 				int ux = 32807 + rx;
 				int uy = 32747 + ry;
 				ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
@@ -122,8 +124,8 @@ case 40824:// 수련던전2층이동주문서
 		
 case 40825:// 수련던전3층이동주문서
 			if (pc.getMap().isEscapable() || pc.isGm()) {
-				int rx = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
-				int ry = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+				int rx = GameRandom.nextInt(2);
+				int ry = GameRandom.nextInt(2);
 				int ux = 32810 + rx;
 				int uy = 32765 + ry;
 				ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
@@ -147,8 +149,8 @@ case 43201: // 클라우디아 마을 부적
 		
 case 40826:// 수련던전4층이동주문서
 			if (pc.getMap().isEscapable() || pc.isGm()) {
-				int rx = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
-				int ry = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+				int rx = GameRandom.nextInt(2);
+				int ry = GameRandom.nextInt(2);
 				int ux = 32799 + rx;
 				int uy = 32798 + ry;
 				ItemReceiptOperations.UseDurableConsume(pc, l1iteminstance, () -> {
@@ -198,7 +200,7 @@ case 41208:// 사그러지는 영혼
 		
 case 3000193:// 요던1층
 			if (pc.getMap().isEscapable() || pc.isGm()) {
-				int rx = java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+				int rx = GameRandom.nextInt(2);
 				int ux = 32805 + rx;
 				int uy = 32724 + rx;
 

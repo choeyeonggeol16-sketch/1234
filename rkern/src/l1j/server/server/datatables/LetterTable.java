@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +17,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
 
@@ -137,7 +137,7 @@ public class LetterTable {
     }
 
     private static void enqueue(Letter letter, L1PcInstance owner, Runnable afterCommit) {
-        final String receipt=UUID.randomUUID().toString();
+        final String receipt=GameRandom.receiptId();
         final int mailboxKey=mailboxOrderKey(letter.receiver);
         final CUserSocket session=owner==null ? null : owner.getNetConnection();
         final int stamp=owner==null ? 0 : owner.getSessionStamp();
@@ -236,7 +236,7 @@ public class LetterTable {
                 throw new IllegalStateException("Mail cleanup receiver lookup failed", failure);
             }
             final int mailboxKey = mailboxOrderKey(receiver);
-            final String receipt = UUID.randomUUID().toString();
+            final String receipt = GameRandom.receiptId();
             CacheD.getInstance().submitDbJobRetryOrdered(mailboxKey, () -> {
                 try {
                     CTransaction.persistWarehouseMove(receipt, mailboxKey, 0,

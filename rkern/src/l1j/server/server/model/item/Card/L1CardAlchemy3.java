@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.Card;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -7,7 +9,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 import java.util.ArrayList;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import java.util.Random;
 import java.util.function.Consumer;
 
 import l1j.server.Config;
@@ -21,7 +22,6 @@ import l1j.server.server.utils.MessageUtil;
  * 신화/유일 카드 합성 시스템 
  */
 public class L1CardAlchemy3 {
-	private static final Random _random = new Random(System.nanoTime());
 
 	// 카드 ID별 계정 데이터 차감 매핑 (4장 통합 처리용)
 	@SuppressWarnings("unchecked")
@@ -106,9 +106,9 @@ public class L1CardAlchemy3 {
 		}
 
         final int chance = Config.sole_per + (pc.신화합성확률증가 ? Config.sole_per_potion : 0);
-        final int rnd = _random.nextInt(100) + 1;
+        final int rnd = GameRandom.nextInt(100) + 1;
         final boolean isUniqueSuccess = rnd <= chance;
-        int selectedRx = _random.nextInt(11) + 1;
+        int selectedRx = GameRandom.nextInt(11) + 1;
         if (isUniqueSuccess) selectedRx = 1;
         else if (selectedRx == 1) selectedRx = 11;
         final int rx = selectedRx;

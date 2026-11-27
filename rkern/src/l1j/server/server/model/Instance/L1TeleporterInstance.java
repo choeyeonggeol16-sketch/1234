@@ -5,7 +5,6 @@ import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.character.action.CAttackAction;
 
 import java.util.HashMap;
-import java.util.Random;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
@@ -13,6 +12,7 @@ import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.npc.dialog.L1NpcHtml;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Npc;
 
 public class L1TeleporterInstance extends L1NpcInstance {
@@ -76,8 +76,7 @@ public class L1TeleporterInstance extends L1NpcInstance {
 				if (player.isElf()) { // 에르프
 					if (quest.get_step(CQuestSystem.QUEST_LEVEL30) == 1) {
 						if (!player.getInventory().HaveItemByClassId(40592)) { // 저주해진 정령서
-							Random random = new Random(System.nanoTime());
-							if (random.nextInt(100) < 50) { // 50%로 다크마르단젼
+							if (GameRandom.nextInt(100) < 50) { // 50%로 다크마르단젼
 								htmlid = "fairyp2";
 							} else { // 다크 에르프 지하 감옥
 								htmlid = "fairyp1";

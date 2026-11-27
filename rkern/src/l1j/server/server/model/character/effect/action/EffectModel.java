@@ -7,9 +7,9 @@ import l1j.server.server.model.character.effect.action.realize.OnChaseThread;
 import l1j.server.server.model.character.effect.action.realize.OnEffectThread;
 import l1j.server.server.model.character.effect.action.realize.OnRadiationThread;
 import l1j.server.server.model.character.effect.action.realize.OnRotationThread;
+import l1j.server.server.shared.GameRandom;
 
 public class EffectModel{
-	protected static Random _rnd = new Random(System.nanoTime());
 	private static final int ET_RANDOM 		= 0;
 	private static final int ET_TIGHTEN 	= 1;
 	private static final int ET_ROTATE		= 2;
@@ -121,7 +121,7 @@ public class EffectModel{
 	}
 	
 	public boolean isEffectSet(){
-		return _rnd.nextInt(100) + 1 <= _ratio;
+		return GameRandom.nextInt(100) + 1 <= _ratio;
 	}
 	
 	/** Bound the full cast before admitting any task to the shared scheduler. */
@@ -152,7 +152,7 @@ public class EffectModel{
         if (npc == null || !isSafe()) return false;
 		int tmpType = _type;
 		if(_type == ET_RANDOM)
-			tmpType = ETS_RANDOM[_rnd.nextInt(ETS_RANDOM.length)];
+			tmpType = ETS_RANDOM[GameRandom.nextInt(ETS_RANDOM.length)];
 		
 		switch(tmpType){
 		case ET_TIGHTEN:

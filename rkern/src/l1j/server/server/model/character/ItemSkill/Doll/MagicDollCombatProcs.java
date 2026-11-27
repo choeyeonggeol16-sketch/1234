@@ -1,6 +1,5 @@
 package l1j.server.server.model.character.ItemSkill.Doll;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,6 +12,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_UseAttackSkill;
+import l1j.server.server.shared.GameRandom;
 
 /** src22 doll on-hit procs, adapted to current doll lifecycle and CIO packets. */
 public final class MagicDollCombatProcs {
@@ -69,8 +69,8 @@ public final class MagicDollCombatProcs {
                 chance = extra.chance(); lo = extra.minDamage(); hi = extra.maxDamage(); fx = extra.effect();
                 break;
         }
-        if (chance <= 0 || ThreadLocalRandom.current().nextInt(100) >= chance) return damage;
-        int bonus = lo == hi ? lo : ThreadLocalRandom.current().nextInt(lo, hi + 1);
+        if (chance <= 0 || GameRandom.nextInt(100) >= chance) return damage;
+        int bonus = GameRandom.next(lo, hi);
         if (bonus <= 0) return damage;
 
         // Erase and MR critical belong only to the original Death Knight / Black Elder procs.
@@ -81,7 +81,7 @@ public final class MagicDollCombatProcs {
             }
         }
         if ((proc == CombatProc.DEATH || proc == CombatProc.BLACK) && target.GetMDefendBySkill() <= rates.criticalMrMax()
-                && ThreadLocalRandom.current().nextInt(100) < rates.criticalChance()) {
+                && GameRandom.nextInt(100) < rates.criticalChance()) {
             bonus = (int) (((long) bonus * rates.criticalMultiplierPercent() + 50L) / 100L);
         }
         if (fx > 0) {

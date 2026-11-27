@@ -1,7 +1,8 @@
 
 package l1j.server.server.model.inventory;
+
+import l1j.server.server.shared.GameRandom;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.model.Instance.L1DollInstance;
@@ -915,7 +916,7 @@ public class CUserInventory extends CInventory {
 	// 해당아이템은 드랍불가
 	public L1ItemInstance CaoPenalty() {
 
-		int rnd = ThreadLocalRandom.current().nextInt(_items.size());
+		int rnd = GameRandom.nextInt(_items.size());
 		L1ItemInstance penaltyItem = _items.get(rnd);
 		
         if (penaltyItem == null || penaltyItem.getItem() == null) return null;

@@ -2,16 +2,15 @@ package l1j.server.server.shared.builder;
 
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayDeque;
-import java.util.Random;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.listener.MonsterDeathHandler;
 import l1j.server.server.templates.L1Npc;
 
 public class MonsterSpawnBuilder {
-	private static final Random 	_rnd = new Random(System.nanoTime());
 	private L1Npc[] 		_templates;
 	
 	public void dispose(){
@@ -34,14 +33,14 @@ public class MonsterSpawnBuilder {
 	}
 	
 	public L1Npc getNpc(){
-		return _templates[_rnd.nextInt(_templates.length)];
+		return _templates[GameRandom.nextInt(_templates.length)];
 	}
 	
 	private L1MonsterInstance create(int x, int y, int h, short mapid){
 		if(_templates == null || _templates.length <= 0)
 			return null;
 		
-		return create(x, y, h, mapid, _templates[_rnd.nextInt(_templates.length)]);
+		return create(x, y, h, mapid, _templates[GameRandom.nextInt(_templates.length)]);
 	}
 	
 	private L1MonsterInstance create(int x, int y, int h, short mapid, L1Npc npc){
@@ -54,7 +53,7 @@ public class MonsterSpawnBuilder {
 		m.getLocation().forward(0);
 		m.setX(x); m.setHomeX(x);
 		m.setY(y); m.setHomeY(y);
-		m.setHeading(_rnd.nextInt(8));
+		m.setHeading(GameRandom.nextInt(8));
 		m.setLightSize(npc.getLightSize());
 		m.refreshLight();
 		CWorld.getInstance().storeAndEnterWorld(m);
@@ -62,44 +61,44 @@ public class MonsterSpawnBuilder {
 	}
 	
 	public L1MonsterInstance build(int left, int top, int right, int bottom, short mapid, MonsterDeathHandler handler){
-		int cx = _rnd.nextInt(right - left) + left;
-		int cy = _rnd.nextInt(bottom - top) + top;
-		return create(cx, cy, _rnd.nextInt(8), mapid).setDeathHandler(handler);
+		int cx = GameRandom.nextIntOrFixed(left, right);
+		int cy = GameRandom.nextIntOrFixed(top, bottom);
+		return create(cx, cy, GameRandom.nextInt(8), mapid).setDeathHandler(handler);
 	}
 	
 	public L1MonsterInstance build(int left, int top, int right, int bottom, short mapid, MonsterDeathHandler handler, L1Npc npc){
-		int cx = _rnd.nextInt(right - left) + left;
-		int cy = _rnd.nextInt(bottom - top) + top;
-		return create(cx, cy, _rnd.nextInt(8), mapid, npc).setDeathHandler(handler);
+		int cx = GameRandom.nextIntOrFixed(left, right);
+		int cy = GameRandom.nextIntOrFixed(top, bottom);
+		return create(cx, cy, GameRandom.nextInt(8), mapid, npc).setDeathHandler(handler);
 	}
 	
 	public L1MonsterInstance build(int x, int y, int range, short mapid, MonsterDeathHandler handler){
 		int cx = x;
 		int cy = y;
 		if(range != 0){
-			cx += _rnd.nextBoolean() ? -_rnd.nextInt(range) : _rnd.nextInt(range);
-			cy += _rnd.nextBoolean() ? -_rnd.nextInt(range) : _rnd.nextInt(range);
+			cx += GameRandom.nextBoolean() ? -GameRandom.nextInt(range) : GameRandom.nextInt(range);
+			cy += GameRandom.nextBoolean() ? -GameRandom.nextInt(range) : GameRandom.nextInt(range);
 		}
-		return create(cx, cy, _rnd.nextInt(8), mapid).setDeathHandler(handler);
+		return create(cx, cy, GameRandom.nextInt(8), mapid).setDeathHandler(handler);
 	}
 	
 	public L1MonsterInstance build(int x, int y, int range, short mapid, MonsterDeathHandler handler, L1Npc npc){
 		int cx = x;
 		int cy = y;
 		if(range != 0){
-			cx += _rnd.nextBoolean() ? -_rnd.nextInt(range) : _rnd.nextInt(range);
-			cy += _rnd.nextBoolean() ? -_rnd.nextInt(range) : _rnd.nextInt(range);
+			cx += GameRandom.nextBoolean() ? -GameRandom.nextInt(range) : GameRandom.nextInt(range);
+			cy += GameRandom.nextBoolean() ? -GameRandom.nextInt(range) : GameRandom.nextInt(range);
 		}
-		return create(cx, cy, _rnd.nextInt(8), mapid, npc).setDeathHandler(handler);
+		return create(cx, cy, GameRandom.nextInt(8), mapid, npc).setDeathHandler(handler);
 	}
 	
 	public L1MonsterInstance build(int x, int y, int range, short mapid){
 		int cx = x;
 		int cy = y;
 		if(range != 0){
-			cx += _rnd.nextBoolean() ? -_rnd.nextInt(range) : _rnd.nextInt(range);
-			cy += _rnd.nextBoolean() ? -_rnd.nextInt(range) : _rnd.nextInt(range);
+			cx += GameRandom.nextBoolean() ? -GameRandom.nextInt(range) : GameRandom.nextInt(range);
+			cy += GameRandom.nextBoolean() ? -GameRandom.nextInt(range) : GameRandom.nextInt(range);
 		}
-		return create(cx, cy, _rnd.nextInt(8), mapid);
+		return create(cx, cy, GameRandom.nextInt(8), mapid);
 	}
 }

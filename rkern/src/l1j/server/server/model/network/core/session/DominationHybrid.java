@@ -1,7 +1,6 @@
 package l1j.server.server.model.network.core.session;
 
 import java.nio.charset.Charset;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +18,7 @@ import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 
 /**
@@ -149,11 +149,10 @@ public final class DominationHybrid {
         // Same semantics as TeleporterActionListener.makePassableMap(): uniformly
         // choose a walkable tile within the DB radius; keep only primitives.
         int selectedX = 0, selectedY = 0, validTiles = 0;
-        final ThreadLocalRandom rng = ThreadLocalRandom.current();
         for (int x = centerX - range; x <= centerX + range; ++x) {
             for (int y = centerY - range; y <= centerY + range; ++y) {
                 if (map.isInMap(x, y) && map.isPassable(x, y)
-                        && rng.nextInt(++validTiles) == 0) {
+                        && GameRandom.nextInt(++validTiles) == 0) {
                     selectedX = x;
                     selectedY = y;
                 }

@@ -1,6 +1,7 @@
 package l1j.server.server.utils;
 
-import java.util.Random;
+import l1j.server.server.shared.GameRandom;
+
 
 /**
  * <p>
@@ -12,7 +13,6 @@ import java.util.Random;
  * </p>
  */
 public class IntRange {
-	private static final Random _rnd = new Random(System.nanoTime());
 	private int _low;
 	private int _high;
 
@@ -26,8 +26,7 @@ public class IntRange {
 	}
 	
 	public static int random(int number) {
-		Random rnd = new Random();
-		return rnd.nextInt(number);
+		return GameRandom.nextInt(number);
 	}
 	/**
 	 * 수치 i가, 범위내에 있을까를 돌려준다.
@@ -71,7 +70,7 @@ public class IntRange {
 	 * @return 범위내의 랜덤인 값
 	 */
 	public int randomValue() {
-		return _rnd.nextInt(getWidth() + 1) + _low;
+		return GameRandom.next(_low, _high);
 	}
 
 	public int getLow() {

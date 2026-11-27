@@ -5,9 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.UUID;
 import java.util.function.Consumer;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.cached.CTransaction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -491,7 +491,7 @@ public class ClanTable {
 		final int clanId = clan.getClanId();
 		final String clanName = clan.getClanName();
 		final int ownerKey = CacheD.accountOrderKey("war-point:" + clanId);
-		final String receiptId = UUID.randomUUID().toString();
+		final String receiptId = GameRandom.receiptId();
 		try {
 			CacheD.getInstance().submitDbJobOrdered(ownerKey, () -> {
 				try {

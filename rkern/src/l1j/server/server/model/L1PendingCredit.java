@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +16,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
@@ -38,7 +38,7 @@ public final class L1PendingCredit {
     public static CTransaction.Mutation prepare(int characterId,int amount,String reason) {
         if(characterId<=0 || amount<=0 || amount>CInventory.MAX_AMOUNT)
             throw new IllegalArgumentException("Credit identity/amount");
-        final String id=UUID.randomUUID().toString();
+        final String id=GameRandom.receiptId();
         return con->{
             CTransaction.requireTransactionalTables(con,"character_pending_credits","characters");
             try(PreparedStatement lock=con.prepareStatement("SELECT objid FROM characters WHERE objid=? FOR UPDATE")) {
@@ -115,7 +115,7 @@ public final class L1PendingCredit {
             }
             if(read(con,characterId,false).isEmpty())return;
         }
-        CTransaction.persistEconomy(UUID.randomUUID().toString(),characterId,KEY,new CTransaction.Mutation[]{con->{
+        CTransaction.persistEconomy(GameRandom.receiptId(),characterId,KEY,new CTransaction.Mutation[]{con->{
             CTransaction.requireTransactionalTables(con,"character_pending_credits","character_items","characters");
             try(PreparedStatement ps=con.prepareStatement("SELECT objid FROM characters WHERE objid=? FOR UPDATE")) {
                 ps.setInt(1,characterId);

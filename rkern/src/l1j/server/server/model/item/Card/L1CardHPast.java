@@ -1,6 +1,7 @@
 package l1j.server.server.model.item.Card;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.Account;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -86,9 +87,8 @@ public class L1CardHPast {
     // Select an unbiased, uniformly ordered prefix with no List, boxing, or temporary shuffle copy.
     // Partial Fisher-Yates: all ordered pairs/quads have equal probability.
     private static void shufflePrefix(int[] cards, int length, int selected) {
-        ThreadLocalRandom random = ThreadLocalRandom.current();
         for (int i = 0; i < selected; i++) {
-            int j = i + random.nextInt(length - i);
+            int j = i + GameRandom.nextInt(length - i);
             int tmp = cards[i];
             cards[i] = cards[j];
             cards[j] = tmp;

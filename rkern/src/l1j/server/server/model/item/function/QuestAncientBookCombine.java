@@ -13,7 +13,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.storage.CacheD;
 import static l1j.server.server.model.item.function.CreatureItemActions.ITEM_USE2_LOG;
-import static l1j.server.server.model.item.function.CreatureItemActions._random;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsumeTwoInput;
 import static l1j.server.server.model.item.function.DurabilityRepairItems.UseDurableRepair;

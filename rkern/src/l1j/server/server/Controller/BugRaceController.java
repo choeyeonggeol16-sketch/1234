@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.RejectedExecutionException;
@@ -160,7 +159,6 @@ public class BugRaceController implements Runnable, TimeListener {
 	MessengerInstance _box_npc;
 	
 	public int[] _ticketCount = new int[5];
-	private static Random _rnd = new Random(System.nanoTime());
 	private static DecimalFormat _df = new DecimalFormat("#.#");
 
 	public int _ranking = 0;
@@ -170,7 +168,6 @@ public class BugRaceController implements Runnable, TimeListener {
 	public L1NpcInstance[] _littleBugBear = new L1NpcInstance[5];
 
 	int Lucky = 0;
-	private static Random rnd = new Random(System.nanoTime());
 
 	/** 버경 추가 **/
 	private final HashMap<Integer, L1RaceTicket> _race = new HashMap<Integer, L1RaceTicket>(32);
@@ -344,7 +341,7 @@ public class BugRaceController implements Runnable, TimeListener {
 			_complete = false;
 			_first = null;
 
-			Lucky = rnd.nextInt(50);
+			Lucky = GameRandom.nextInt(50);
 
 			broadcastNpc("소지중인 레이스표를 판매하시길 바랍니다.");
 			_is_downs = new boolean[]{false, false, false, false, false};
@@ -418,7 +415,7 @@ public class BugRaceController implements Runnable, TimeListener {
 
 	private void sleepTime() {
 		for (int i = 0; i < 5; i++) {
-			int bugState = _rnd.nextInt(5);
+			int bugState = GameRandom.nextInt(5);
 			int addValue = 0;
 
 			switch (bugState) {
@@ -498,7 +495,7 @@ public class BugRaceController implements Runnable, TimeListener {
 
 	    list.clear();
 
-	    Collections.shuffle(_bugs);
+	    GameRandom.shuffle(_bugs);
 
 	    for (int m = 0; m < 5; ++m) {
 	        try {
@@ -1039,7 +1036,6 @@ for (L1PcInstance player : CWorld.getInstance().getAllPlayers()) {
 
 		private int _bugId;
 		private int _remainRacingCount;
-		private Random _rndGen = new Random(System.nanoTime());
         private long rejectedDueMs;
 
         private synchronized void scheduleNext(long delayMs) {
@@ -1085,7 +1081,7 @@ for (L1PcInstance player : CWorld.getInstance().getAllPlayers()) {
                         scheduleNext(1L);
                         break;
 					} else {
-						if(is_down() || (IS_AUTO_TUMBLE && _rndGen.nextInt(MAX_TUMBLE_PROBABILITY) < 1 && _rndGen.nextInt(100) > (int) (_winRate[_bugId]))){
+						if(is_down() || (IS_AUTO_TUMBLE && GameRandom.nextInt(MAX_TUMBLE_PROBABILITY) < 1 && GameRandom.nextInt(100) > (int) (_winRate[_bugId]))){
 /*						if () {*/
 							SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);
 							scheduleNext(2000 - (int) (_winRate[_bugId]) * 5);
@@ -1104,7 +1100,7 @@ for (L1PcInstance player : CWorld.getInstance().getAllPlayers()) {
                         scheduleNext(1L);
                         break;
 					} else {
-						if(is_down() || (IS_AUTO_TUMBLE && _rndGen.nextInt(MAX_TUMBLE_PROBABILITY) < 2 && _rndGen.nextInt(100) > (int) (_winRate[_bugId]))){
+						if(is_down() || (IS_AUTO_TUMBLE && GameRandom.nextInt(MAX_TUMBLE_PROBABILITY) < 2 && GameRandom.nextInt(100) > (int) (_winRate[_bugId]))){
 //						if () {
 							SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);
 							// 3500 - (int)(_winRate[_bugId]) * 5);
@@ -1125,7 +1121,7 @@ for (L1PcInstance player : CWorld.getInstance().getAllPlayers()) {
                         scheduleNext(1L);
                         break;
 					} else {
-						if(is_down() || (IS_AUTO_TUMBLE && _rndGen.nextInt(MAX_TUMBLE_PROBABILITY) < 2 && _rndGen.nextInt(100) > (int) (_winRate[_bugId]))){
+						if(is_down() || (IS_AUTO_TUMBLE && GameRandom.nextInt(MAX_TUMBLE_PROBABILITY) < 2 && GameRandom.nextInt(100) > (int) (_winRate[_bugId]))){
 //						if () {
 							SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);
 							scheduleNext(2000 - (int) (_winRate[_bugId]) * 5);
@@ -1144,7 +1140,7 @@ for (L1PcInstance player : CWorld.getInstance().getAllPlayers()) {
                         scheduleNext(1L);
                         break;
 					} else {
-						if(is_down() || (IS_AUTO_TUMBLE && _rndGen.nextInt(MAX_TUMBLE_PROBABILITY) < 2 && _rndGen.nextInt(100) > (int) (_winRate[_bugId]))){
+						if(is_down() || (IS_AUTO_TUMBLE && GameRandom.nextInt(MAX_TUMBLE_PROBABILITY) < 2 && GameRandom.nextInt(100) > (int) (_winRate[_bugId]))){
 //						if () {
 							SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);
 							scheduleNext(2000 - (int) (_winRate[_bugId]) * 5);
@@ -1160,7 +1156,7 @@ for (L1PcInstance player : CWorld.getInstance().getAllPlayers()) {
 				case 4: {
 					if (_littleBugBear[_bugId].getX() == 33527) {
 						goalIn(_bugId);
-					} else if(is_down() || (IS_AUTO_TUMBLE && _littleBugBear[_bugId].getX() < 33522 && _rndGen.nextInt(MAX_TUMBLE_PROBABILITY) < 2 && _rndGen.nextInt(100) > (int) (_winRate[_bugId]))){
+					} else if(is_down() || (IS_AUTO_TUMBLE && _littleBugBear[_bugId].getX() < 33522 && GameRandom.nextInt(MAX_TUMBLE_PROBABILITY) < 2 && GameRandom.nextInt(100) > (int) (_winRate[_bugId]))){
 						SC_AttackPacket.broadcast(_littleBugBear[_bugId], _littleBugBear[_bugId].getId(), 30);
 						scheduleNext(2000 - (int) (_winRate[_bugId]) * 5);
 					} else {

@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.Card;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -7,7 +9,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 import java.util.ArrayList;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import java.util.Random;
 import java.util.function.Consumer;
 import l1j.server.Config;
 import l1j.server.server.Account;
@@ -18,7 +19,6 @@ import l1j.server.server.utils.MessageUtil;
  * 전설/신화 카드 합성 시스템
  */
 public class L1CardAlchemy1 {
-    private static final Random _random = new Random(System.nanoTime());
 
     // 카드 ID별 계정 데이터 차감 매핑
     @SuppressWarnings("unchecked")
@@ -147,7 +147,7 @@ public class L1CardAlchemy1 {
         }
 
         // Same two RNG draws as the legacy successful synthesis path.
-        final int rx2 = _random.nextInt(100) + 1;
+        final int rx2 = GameRandom.nextInt(100) + 1;
         final int chance = Config.myth_per + (pc.전설합성확률증가 ? Config.myth_per_potion : 0);
         final boolean mythSuccess = rx2 <= chance;
         final ResultCard result = mythSuccess ? getMythCard(pc.get_sex()) : getLegendCard();
@@ -234,13 +234,13 @@ public class L1CardAlchemy1 {
     };
 
     private static ResultCard getMythCard(int sex) {
-        final int index = _random.nextInt(11);
+        final int index = GameRandom.nextInt(11);
         return (sex == 0 ? MALE_MYTH_CARDS : FEMALE_MYTH_CARDS)[index];
     }
 
     // 전설 카드 데이터
     private static ResultCard getLegendCard() {
-        final int index = _random.nextInt(23);
+        final int index = GameRandom.nextInt(23);
         return LEGEND_CARDS[index];
     }
 

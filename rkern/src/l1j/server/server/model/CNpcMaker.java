@@ -4,7 +4,6 @@ import l1j.server.server.model.npc.spawn.group.L1MobGroupSpawn;
 import l1j.server.server.datatables.CObjectDB;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +18,7 @@ import l1j.server.server.model.character.TileOccupancy.TileOccupancyNpc;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.templates.L1Npc;
 
@@ -298,7 +298,7 @@ public class CNpcMaker {
     private long calcRespawnDelay() {
         long respawnDelay = (long) _minRespawnDelay * 1000L;
         if (_delayInterval > 0) {
-            respawnDelay += (long) ThreadLocalRandom.current().nextInt(_delayInterval) * 1000L;
+            respawnDelay += (long) GameRandom.nextInt(_delayInterval) * 1000L;
         }
         return respawnDelay;
     }
@@ -394,7 +394,6 @@ public class CNpcMaker {
     private boolean doSpawnInternal(int spawnNumber, int objectId) {
         L1NpcInstance mob = null;
         boolean storedInWorld = false;
-        final ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
         try {
             final short mapId = _mapid;
@@ -419,9 +418,9 @@ public class CNpcMaker {
 
             final int npcId = mob.getNpcTemplate().get_npcId();
             if (npcId == 45488 && getMapId() == 9) {
-                mob.setMap((short) (getMapId() + rnd.nextInt(2)));
+                mob.setMap((short) (getMapId() + GameRandom.nextInt(2)));
             } else if (npcId == 45601 && getMapId() == 11) {
-                mob.setMap((short) (getMapId() + rnd.nextInt(3)));
+                mob.setMap((short) (getMapId() + GameRandom.nextInt(3)));
             } else {
                 mob.setMap(getMapId());
             }
@@ -436,14 +435,14 @@ public class CNpcMaker {
                         final int hx = _homeX[spawnNumber];
                         final int hy = _homeY[spawnNumber];
                         newlocx = hx - Config.SPAWN_HOME_POINT_RANGE
-                                + rnd.nextInt(Config.SPAWN_HOME_POINT_RANGE * 2 + 1);
+                                + GameRandom.nextInt(Config.SPAWN_HOME_POINT_RANGE * 2 + 1);
                         newlocy = hy - Config.SPAWN_HOME_POINT_RANGE
-                                + rnd.nextInt(Config.SPAWN_HOME_POINT_RANGE * 2 + 1);
+                                + GameRandom.nextInt(Config.SPAWN_HOME_POINT_RANGE * 2 + 1);
                     } else {
                         final int rangeX = getLocX2() - getLocX1();
                         final int rangeY = getLocY2() - getLocY1();
-                        newlocx = rnd.nextInt(rangeX > 0 ? rangeX : 1) + getLocX1();
-                        newlocy = rnd.nextInt(rangeY > 0 ? rangeY : 1) + getLocY1();
+                        newlocx = GameRandom.nextInt(rangeX > 0 ? rangeX : 1) + getLocX1();
+                        newlocy = GameRandom.nextInt(rangeY > 0 ? rangeY : 1) + getLocY1();
                     }
 
                     if (tryCount > 49) {
@@ -453,8 +452,8 @@ public class CNpcMaker {
                 } else if (isRandomSpawn()) {
                     final int rx = getRandomx();
                     final int ry = getRandomy();
-                    newlocx = getLocX() + (rx > 0 ? rnd.nextInt(rx * 2 + 1) - rx : 0);
-                    newlocy = getLocY() + (ry > 0 ? rnd.nextInt(ry * 2 + 1) - ry : 0);
+                    newlocx = getLocX() + (rx > 0 ? GameRandom.nextInt(rx * 2 + 1) - rx : 0);
+                    newlocy = getLocY() + (ry > 0 ? GameRandom.nextInt(ry * 2 + 1) - ry : 0);
                 } else {
                     newlocx = getLocX();
                     newlocy = getLocY();

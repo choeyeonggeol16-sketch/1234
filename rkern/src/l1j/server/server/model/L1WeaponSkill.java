@@ -1,4 +1,6 @@
 package l1j.server.server.model;
+
+import l1j.server.server.shared.GameRandom;
 import static l1j.server.server.model.character.skill.L1SkillId.ABSOLUTE_BARRIER;
 import static l1j.server.server.model.character.skill.L1SkillId.COUNTER_MAGIC;
 import static l1j.server.server.model.character.skill.L1SkillId.EARTH_BIND;
@@ -7,7 +9,6 @@ import static l1j.server.server.model.character.skill.L1SkillId.ICE_LANCE;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
 import static l1j.server.server.model.character.skill.L1SkillId.TURN_UNDEAD;
 
-import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -34,7 +35,6 @@ import l1j.server.server.model.world.effect.L1EffectSpawn;
 
 public class L1WeaponSkill {
 
-	private static Random _random = new Random(System.nanoTime());
 
 	private int _weaponId;
 
@@ -120,8 +120,8 @@ public class L1WeaponSkill {
 	
 	public static double 실렌의결의(L1PcInstance pc, L1Character cha, int enchant) { 
 		double dmg = 20;
-		int aa = _random.nextInt(Config.결심최대 - Config.결심최소) + Config.결심최소;
-		int chance = _random.nextInt(100) + 1;
+		int aa = GameRandom.nextIntOrFixed(Config.결심최소, Config.결심최대);
+		int chance = GameRandom.nextInt(100) + 1;
 		int val = enchant * Config.결심인챈트 + Config.결심인챈트트;
 		
 		if (isFreeze(cha)) return 0;
@@ -179,8 +179,8 @@ public class L1WeaponSkill {
 	public static double 사이하의집념(L1PcInstance pc, L1Character cha, int enchant) { 	
 		double dmg = 20;
 		// 다시 원본 Config 이름인 '고통'으로 복구
-		int aa = _random.nextInt(Config.고통최대 - Config.고통최소) + Config.고통최소;
-		int chance = _random.nextInt(100) + 1;
+		int aa = GameRandom.nextIntOrFixed(Config.고통최소, Config.고통최대);
+		int chance = GameRandom.nextInt(100) + 1;
 		
 		// 원본 소스에 있던 오타(고통인챈트트) 그대로 복구
 		int val = enchant * Config.고통인챈트 + Config.고통인챈트트; 
@@ -238,7 +238,7 @@ public class L1WeaponSkill {
 		int charaIntelligence = 0;
 
 		for (int i = 0; i < diceCount; i++) {
-			KiringkuDamage += (_random.nextInt(dice) + 1);
+			KiringkuDamage += (GameRandom.nextInt(dice) + 1);
 		}
 		KiringkuDamage += value;
 
@@ -283,7 +283,7 @@ public class L1WeaponSkill {
 
 	public static double 악운의단검(L1PcInstance pc, L1PcInstance targetPc, L1ItemInstance weapon) {
 		double dmg = 0;
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (5 >= chance) {
 			dmg = targetPc.getCurrentHp() / 1.2;
 			if (targetPc.getCurrentHp() - dmg < 0) {
@@ -303,7 +303,7 @@ public class L1WeaponSkill {
 		if (isFreeze(cha)) {
 			return;
 		}
-		if ((_random.nextInt(100) + 1) <= 10) {
+		if ((GameRandom.nextInt(100) + 1) <= 10) {
 			if (cha instanceof L1PcInstance) {
 				L1PcInstance targetPc = (L1PcInstance) cha;
                 L1EffectSpawn.getInstance().spawnEffect(81182, fettersTime, cha.getX(), cha.getY(), cha.getMapId());
@@ -324,11 +324,11 @@ public class L1WeaponSkill {
 
 	public static void 체인소드(L1PcInstance pc) { // 체인소드 대미지.
 		if (pc.getInventory().IsEquippedByClassID(123007)) {
-			if (_random.nextInt(100) >= Config.약점노출 + 7)
+			if (GameRandom.nextInt(100) >= Config.약점노출 + 7)
 				return;
 		} else {
 
-			if (_random.nextInt(100) >= Config.약점노출)
+			if (GameRandom.nextInt(100) >= Config.약점노출)
 				return;
 		}
 		if(pc.hasSkillEffect(L1SkillId.CHAINSWORD1)){
@@ -352,7 +352,7 @@ public class L1WeaponSkill {
 	}
 
 	public static void getDiseaseWeapon(L1PcInstance pc, L1Character cha, int weaponid) {
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		int skilltime = weaponid == 412003 ? 64 : 20;
 		if (7 >= chance) {
 			if (!cha.hasSkillEffect(56)) {
@@ -373,7 +373,7 @@ public class L1WeaponSkill {
 
 	public static double 블레이즈쇼크(L1PcInstance pc, L1Character cha, int enchant) {
 		double dmg = 0;
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		int val = enchant * 1;
 		if (val <= 0) {
 			val = 1;
@@ -381,7 +381,7 @@ public class L1WeaponSkill {
 			val += 1;
 
 		if (val >= chance) {
-			int randmg = _random.nextInt(50) + 20;
+			int randmg = GameRandom.nextInt(50) + 20;
 			dmg = randmg;
 
 			if (dmg < 20)
@@ -395,7 +395,7 @@ public class L1WeaponSkill {
 
 	public static double 블레이즈쇼크1(L1PcInstance pc, L1Character cha, int enchant) {
 		double dmg = 0;
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		int val = enchant * 1;
 		if (val <= 0) {
 			val = 1;
@@ -403,7 +403,7 @@ public class L1WeaponSkill {
 			val += 1;
 
 		if (val >= chance) {
-			int randmg = _random.nextInt(50) + 25;
+			int randmg = GameRandom.nextInt(50) + 25;
 			dmg = randmg;
 
 			if (dmg < 25)
@@ -417,7 +417,7 @@ public class L1WeaponSkill {
 
 	public static double 체인소드블레이즈쇼크(L1PcInstance pc, L1Character cha, int enchant) {
 		double dmg = 0;
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		int val = enchant * 1;
 		if (val <= 0) {
 			val = 1;
@@ -425,7 +425,7 @@ public class L1WeaponSkill {
 			val += 1;
 
 		if (val >= chance) {
-			int randmg = _random.nextInt(50) + 20;
+			int randmg = GameRandom.nextInt(50) + 20;
 			dmg = randmg;
 
 			if (dmg < 20)
@@ -434,7 +434,7 @@ public class L1WeaponSkill {
 			SC_SkillSound.send(pc, cha.getId(), 3939);
 			SC_SkillSound.broadcast(pc, cha.getId(), 3939);
 		}
-		if (_random.nextInt(100) < 15) {
+		if (GameRandom.nextInt(100) < 15) {
 			if(pc.hasSkillEffect(L1SkillId.CHAINSWORD1)){
 				pc.killSkillEffectTimer(L1SkillId.CHAINSWORD1);
 				pc.setSkillEffect(L1SkillId.CHAINSWORD2, 15000);
@@ -461,7 +461,7 @@ public class L1WeaponSkill {
 		double dmg = 0;
 		int locx = cha.getX();
 		int locy = cha.getY();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (5 + enchant >= chance) {
 			dmg = 15;
 			if (dmg <= 0) {
@@ -474,8 +474,8 @@ public class L1WeaponSkill {
 	}
 	public static double 파아그리오공포(L1PcInstance pc, L1Character cha, int enchant) { 
 		double dmg = 20;
-		int aa = _random.nextInt(Config.환상최대 - Config.환상최소) + Config.환상최소;
-		int chance = _random.nextInt(100) + 1;
+		int aa = GameRandom.nextIntOrFixed(Config.환상최소, Config.환상최대);
+		int chance = GameRandom.nextInt(100) + 1;
 		int val = enchant * Config.환상인챈트 + Config.환상인챈트트;
 		
 		if (isFreeze(cha)) return 0;
@@ -525,8 +525,8 @@ public class L1WeaponSkill {
 	
 	public static double 단테스일격(L1PcInstance pc, L1Character cha, int enchant) { 
 		double dmg = 20;
-		int aa = _random.nextInt(Config.환상최대 - Config.환상최소) + Config.환상최소;
-		int chance = _random.nextInt(100) + 1;
+		int aa = GameRandom.nextIntOrFixed(Config.환상최소, Config.환상최대);
+		int chance = GameRandom.nextInt(100) + 1;
 		
 		// 질문자님이 수정하신 정상적인 인챈트 변수명 유지
 		int val = enchant * Config.환상인챈트 + Config.환상인챈트;
@@ -595,8 +595,8 @@ public class L1WeaponSkill {
 			// 1. 타겟이 유저(PC)일 경우 (단일 타격 + 결박)
 			// ==========================================
 			double dmg = 20;
-			int aa = _random.nextInt(Config.고독최대 - Config.고독최소) + Config.고독최소;
-			int chance = _random.nextInt(100) + 1;
+			int aa = GameRandom.nextIntOrFixed(Config.고독최소, Config.고독최대);
+			int chance = GameRandom.nextInt(100) + 1;
 			int val = enchant * Config.고독인챈트 + Config.고독인챈트;
 			
 			if (isFreeze(cha)) return 0;
@@ -623,8 +623,8 @@ public class L1WeaponSkill {
 			// 2. 타겟이 몬스터(NPC)일 경우 (광역 스플래시 타격)
 			// ==========================================
 			double dmg = 20;
-			int aa = _random.nextInt(Config.고독최대 - Config.고독최소) + Config.고독최소;
-			int chance = _random.nextInt(100) + 1;
+			int aa = GameRandom.nextIntOrFixed(Config.고독최소, Config.고독최대);
+			int chance = GameRandom.nextInt(100) + 1;
 			int val = enchant * Config.고독인챈트 + Config.고독인챈트;
 			
 			if (isFreeze(cha)) return 0;
@@ -682,8 +682,8 @@ public class L1WeaponSkill {
 			// 1. 타겟이 유저(PC)일 경우 (단일 타격 + 결박)
 			// ==========================================
 			double dmg = 20;
-			int aa = _random.nextInt(Config.아인최대 - Config.아인최소) + Config.아인최소;
-			int chance = _random.nextInt(100) + 1;
+			int aa = GameRandom.nextIntOrFixed(Config.아인최소, Config.아인최대);
+			int chance = GameRandom.nextInt(100) + 1;
 			int val = enchant * Config.아인하사드인챈트트 + Config.아인하사드인챈트;
 			
 			if (isFreeze(cha)) return 0;
@@ -711,9 +711,9 @@ public class L1WeaponSkill {
 			// ==========================================
 			double dmg = 20;
 			// 몬스터용 전용 Config 설정 (뒤에 1이 붙은 변수들) 유지
-			int aa = _random.nextInt(Config.아인최대1 - Config.아인최소1) + Config.아인최소1;
+			int aa = GameRandom.nextIntOrFixed(Config.아인최소1, Config.아인최대1);
 			int val = enchant * Config.아인하사드인챈트트1 + Config.아인하사드인챈트1;
-			int chance = _random.nextInt(100) + 1;
+			int chance = GameRandom.nextInt(100) + 1;
 			
 			if (isFreeze(cha)) return 0;
 			
@@ -765,8 +765,8 @@ public class L1WeaponSkill {
 	}
 	public static double 에바의서약(L1PcInstance pc, L1Character cha, int enchant) { 
 		double dmg = 20; 
-		int aa = _random.nextInt(Config.에바최대 - Config.에바최소) + Config.에바최소;
-		int chance = _random.nextInt(100) + 1;
+		int aa = GameRandom.nextIntOrFixed(Config.에바최소, Config.에바최대);
+		int chance = GameRandom.nextInt(100) + 1;
 		int val = enchant * Config.에바인챈트1 + Config.에바인챈트;
 		
 		if (isFreeze(cha)) return 0;
@@ -829,8 +829,8 @@ public class L1WeaponSkill {
 			// 1. 타겟이 유저(PC)일 경우 (단일 타격 + 결박)
 			// ==========================================
 			double dmg = 20;
-			int aa = _random.nextInt(Config.그랑최대 - Config.그랑최소) + Config.그랑최소;
-			int chance = _random.nextInt(100) + 1;
+			int aa = GameRandom.nextIntOrFixed(Config.그랑최소, Config.그랑최대);
+			int chance = GameRandom.nextInt(100) + 1;
 			int val = enchant * Config.그랑카인인챈트트 + Config.그랑카인인챈트;
 			
 			if (isFreeze(cha)) return 0;
@@ -857,9 +857,9 @@ public class L1WeaponSkill {
 			// 2. 타겟이 몬스터(NPC)일 경우 (광역 스플래시 타격)
 			// ==========================================
 			double dmg = 20;
-			int aa = _random.nextInt(Config.그랑최대1 - Config.그랑최소1) + Config.그랑최소1;
+			int aa = GameRandom.nextIntOrFixed(Config.그랑최소1, Config.그랑최대1);
 			int val = enchant * Config.그랑카인인챈트트1 + Config.그랑카인인챈트1;
-			int chance = _random.nextInt(100) + 1;
+			int chance = GameRandom.nextInt(100) + 1;
 			
 			if (isFreeze(cha)) return 0;
 			
@@ -911,7 +911,7 @@ public class L1WeaponSkill {
 	}
 	public static double 아우라키아의초월(L1PcInstance pc, L1Character cha, int enchant) { 
 		double dmg = 0;
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		
 		if (isFreeze(cha)) return 0;
 		
@@ -921,7 +921,7 @@ public class L1WeaponSkill {
 			int div = (int) ((Str / 10) * 10);
 			int min = 160 + div;
 			int max = 420 + div;
-			dmg = _random.nextInt(max - min) + min;
+			dmg = GameRandom.nextIntOrFixed(min, max);
 			if (dmg <= 0) dmg = 0;
 			
 			// 타겟이 유저(PC)인지 몬스터(NPC)인지 확인
@@ -979,9 +979,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (2 + enchant >= chance) {
-			dmg = _random.nextInt(intel / 2) + (intel);
+			dmg = GameRandom.nextInt(intel / 2) + (intel);
 			if (dmg <= 0) {
 				dmg = 0;
 			}
@@ -996,9 +996,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (1 + enchant >= chance) {
-			dmg = _random.nextInt(intel / 2) + (intel * 2);
+			dmg = GameRandom.nextInt(intel / 2) + (intel * 2);
 			if (dmg <= 0) {
 				dmg = 0;
 			}
@@ -1013,9 +1013,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (2 + enchant >= chance) {
-			dmg = _random.nextInt(intel / 2) + (intel * 2);
+			dmg = GameRandom.nextInt(intel / 2) + (intel * 2);
 			if (dmg <= 0) {
 				dmg = 0;
 			}
@@ -1030,9 +1030,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (2 + enchant >= chance) {
-			dmg = _random.nextInt(intel / 2) + (intel);
+			dmg = GameRandom.nextInt(intel / 2) + (intel);
 			if (dmg <= 0) {
 				dmg = 0;
 			}
@@ -1047,9 +1047,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int dex = pc.GetTotalStatDex();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (1 + enchant >= chance) {
-			dmg = _random.nextInt(dex) + (dex);
+			dmg = GameRandom.nextInt(dex) + (dex);
 			if (dmg <= 0) {
 				dmg = 0;
 			}
@@ -1062,9 +1062,9 @@ public class L1WeaponSkill {
 	public static double getMoonBowDamage(L1PcInstance pc, L1Character cha, int enchant) {
 		double dmg = 0;
 		int dex = pc.GetTotalStatDex();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (1 + enchant >= chance) {
-			dmg = _random.nextInt(dex) + (dex);
+			dmg = GameRandom.nextInt(dex) + (dex);
 			if (dmg <= 0) {
 				dmg = 0;
 			}
@@ -1085,9 +1085,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (1 + enchant >= chance) {
-			dmg = _random.nextInt(intel) + (intel * 2);
+			dmg = GameRandom.nextInt(intel) + (intel * 2);
 			if (dmg <= 0) {
 				dmg = 0;
 			}
@@ -1102,9 +1102,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (2 + enchant >= chance) {
-			dmg = _random.nextInt(intel) + 20 + (intel * 2);
+			dmg = GameRandom.nextInt(intel) + 20 + (intel * 2);
 			if (dmg <= 0) {
 				dmg = 0;
 			}
@@ -1119,9 +1119,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (6 + enchant >= chance) {// 3
-			dmg = _random.nextInt(intel / 2) + (intel * 1.2);
+			dmg = GameRandom.nextInt(intel / 2) + (intel * 1.2);
 			if (cha.getCurrentMp() >= 5) {
 				cha.setCurrentMp(cha.getCurrentMp() - 5);
 				if (dmg <= 0) {
@@ -1140,9 +1140,9 @@ public class L1WeaponSkill {
 		int locy = cha.getY();
 		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (10 + enchant >= chance) {// 3
-			dmg = _random.nextInt(enchant * 2 + 5) + ((sp + intel) * 4); // 공식변경
+			dmg = GameRandom.nextInt(enchant * 2 + 5) + ((sp + intel) * 4); // 공식변경
 			if (cha.getCurrentMp() >= 5) {
 				cha.setCurrentMp(cha.getCurrentMp() - 10);
 				if (5 >= chance) {// 이펙트 랜타 찬스
@@ -1162,12 +1162,12 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int Str = pc.GetTotalStatStr();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
 			int div = (int)((Str / 10) * 1.5);
 			int min = 20 + div;
 			int max = 50 + div;	
-			dmg = _random.nextInt(max - min) + min;
+			dmg = GameRandom.nextIntOrFixed(min, max);
 			if(dmg <= 0) dmg = 0;
 			// dex 20일때, 최소 23~최대 53
 			// 70일때, 최소 37~최대 67
@@ -1183,12 +1183,12 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int dex = pc.GetTotalStatDex();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (4 + enchant >= chance) {
 			int div = (int)((dex / 10) * 1.2);
 			int min = 20 + div;
 			int max = 50 + div;	
-			dmg = _random.nextInt(max - min) + min;
+			dmg = GameRandom.nextIntOrFixed(min, max);
 			if(dmg <= 0) dmg = 0;
 			// dex 20일때, 최소 23~최대 53
 			// 70일때, 최소 37~최대 67
@@ -1204,12 +1204,12 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int Str = pc.GetTotalStatStr();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
 			int div = (int)((Str / 10) * 1.2);
 			int min = 15 + div;
 			int max = 40 + div;	
-			dmg = _random.nextInt(max - min) + min;
+			dmg = GameRandom.nextIntOrFixed(min, max);
 			if(dmg <= 0) dmg = 0;
 			// dex 20일때, 최소 23~최대 53
 			// 70일때, 최소 37~최대 67
@@ -1225,12 +1225,12 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int Str = pc.GetTotalStatStr();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (3 + enchant >= chance) {
 			int div = (int)((Str / 10) * 1.2);
 			int min = 13 + div;
 			int max = 47 + div;	
-			dmg = _random.nextInt(max - min) + min;
+			dmg = GameRandom.nextIntOrFixed(min, max);
 			if(dmg <= 0) dmg = 0;
 			// dex 20일때, 최소 23~최대 53
 			// 70일때, 최소 37~최대 67
@@ -1246,9 +1246,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int Str = pc.GetTotalStatStr();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (5 + enchant >= chance) {// 찬스
-			dmg = _random.nextInt(Str) + (Str);
+			dmg = GameRandom.nextInt(Str) + (Str);
 			if (3 >= chance) {// 이펙트 랜타 찬스
 				dmg += dmg * 0.1;// 대미지
 			} else if (dmg <= 0) {
@@ -1265,9 +1265,9 @@ public class L1WeaponSkill {
 		int locx = cha.getX();
 		int locy = cha.getY();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (3 + enchant >= chance) {
-			dmg = _random.nextInt(intel / 2) + (intel * 3);
+			dmg = GameRandom.nextInt(intel / 2) + (intel * 3);
 			if (cha.getCurrentMp() >= 5) {
 				cha.setCurrentMp(cha.getCurrentMp() - 5);
 				if (dmg <= 0) {
@@ -1286,12 +1286,12 @@ public class L1WeaponSkill {
 		int locy = cha.getY();
 		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (5 + enchant >= chance) {
 			int div = (int)((intel+(sp) / 10) * 1.2);
 			int min = 10 + div;
 			int max = 40 + div;
-			dmg = _random.nextInt(max - min) + min;
+			dmg = GameRandom.nextIntOrFixed(min, max);
 			if(dmg <= 0) dmg = 0;
 			// dex 20일때, 최소 23~최대 53
 			// 70일때, 최소 37~최대 67
@@ -1308,12 +1308,12 @@ public class L1WeaponSkill {
 		int locy = cha.getY();
 		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
 			int div = (int)((intel+(sp) / 10) * 1.2);
 			int min = 10 + div;
 			int max = 40 + div;
-			dmg = _random.nextInt(max - min) + min;
+			dmg = GameRandom.nextIntOrFixed(min, max);
 			if(dmg <= 0) dmg = 0;
 			// dex 20일때, 최소 23~최대 53
 			// 70일때, 최소 37~최대 67
@@ -1330,9 +1330,9 @@ public class L1WeaponSkill {
 		int locy = cha.getY();
 		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (15 + enchant >= chance) {
-			dmg = _random.nextInt(enchant * 2 + 3) + ((sp + intel) * 3); // 리뉴얼로상향
+			dmg = GameRandom.nextInt(enchant * 2 + 3) + ((sp + intel) * 3); // 리뉴얼로상향
 			if (dmg <= 0) {
 				dmg = 0;
 			}
@@ -1348,12 +1348,12 @@ public class L1WeaponSkill {
 		int locy = cha.getY();
 		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (7 + enchant >= chance) {
 			int div = (int)((intel+(sp) / 10) * 2.8);
 			int min = 15 + div;
 			int max = 45 + div;
-			dmg = _random.nextInt(sp + intel) + ((sp + intel) * 2.5) + sp * 2;
+			dmg = GameRandom.nextInt(sp + intel) + ((sp + intel) * 2.5) + sp * 2;
 			if(dmg <= 0) dmg = 0;
 			// dex 20일때, 최소 23~최대 53
 			// 70일때, 최소 37~최대 67
@@ -1369,12 +1369,12 @@ public class L1WeaponSkill {
 		int locy = cha.getY();
 		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (10 + enchant >= chance) {
 			int div = (int)((intel+(sp) / 10) * 2.8);
 			int min = 15 + div;
 			int max = 45 + div;
-			dmg = _random.nextInt(sp + intel) + ((sp + intel) * 2) + sp * 2;
+			dmg = GameRandom.nextInt(sp + intel) + ((sp + intel) * 2) + sp * 2;
 			if(dmg <= 0) dmg = 0;
 			// dex 20일때, 최소 23~최대 53
 			// 70일때, 최소 37~최대 67
@@ -1391,9 +1391,9 @@ public class L1WeaponSkill {
 		int locy = cha.getY();
 		int sp = pc.GetStatSp();
 		int intel = pc.GetTotalStatInt();
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		if (20 + enchant >= chance && 5 <= chance) {
-			dmg = _random.nextInt(sp + intel) + ((sp + intel) * 4.5);
+			dmg = GameRandom.nextInt(sp + intel) + ((sp + intel) * 4.5);
 			if (5 >= chance) {
 				dmg += 50;
 			} else if (dmg <= 0) {
@@ -1406,7 +1406,7 @@ public class L1WeaponSkill {
 	}
 
 	public static void 천사의지팡이(L1PcInstance pc, L1Character cha, int enchant) {
-		int chance = _random.nextInt(100) + 1;
+		int chance = GameRandom.nextInt(100) + 1;
 		int undeadType = ((L1MonsterInstance) cha).getNpcTemplate().get_undead();
 		if (undeadType == 1 || undeadType == 3) {
 			if(pc.getMapId() != 15403 && pc.getMapId() != 111 && pc.getMapId() != 12862){
@@ -1426,7 +1426,7 @@ public class L1WeaponSkill {
 		int ran1 = 0; // 랜덤 수치 적용
 		int mrset = 0; // 엠알에서 랜덤 수치를 뺀값
 		int mrs = cha.GetMDefendBySkill();
-		ran1 = _random.nextInt(5) + 1;
+		ran1 = GameRandom.nextInt(5) + 1;
 		mrset = mrs - ran1;
 		double calMr = 0.00D;
 		calMr = (220 - mrset) / 250.00D;

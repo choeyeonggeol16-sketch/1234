@@ -1,4 +1,6 @@
 package l1j.server.server.model.character.skill;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
@@ -2234,7 +2236,7 @@ public final class CSkillEffectPumpEnd {
 			SC_SkillSound.broadcastFast(npc, npc.getId(), 17872);
 
 			L1Magic magic = new L1Magic(npc, cha);
-			int damage = java.util.concurrent.ThreadLocalRandom.current().nextInt(
+			int damage = GameRandom.nextInt(
 					Config.이터이차최소,
 					Config.이터이차최대);
 			magic.commit(damage, 0);

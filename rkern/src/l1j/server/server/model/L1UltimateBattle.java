@@ -107,7 +107,6 @@ public class L1UltimateBattle {
 
 	private int _mpr;
 
-	// private static Random random = new Random(System.nanoTime());
 	private static int BEFORE_MINUTE = 5;
 
 	private CUltimateBattleTimer battleTimer;

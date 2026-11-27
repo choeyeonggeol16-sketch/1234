@@ -1,6 +1,7 @@
 package l1j.server.server.model.character.combat.counterbarrier;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -23,6 +24,6 @@ public final class CounterBarrierProcEngine {
                 && defender.getLevel() >= 85 ? defender.getLevel() - 85 : 0;
         final int chance = configuredChance + veteran;
         return chance >= 100 || (chance > 0
-                && ThreadLocalRandom.current().nextInt(100) < chance);
+                && GameRandom.nextInt(100) < chance);
     }
 }

@@ -3,8 +3,6 @@ package l1j.server.server.model.item.function;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -22,6 +20,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.character.effect.poison.DamagePoison;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 import l1j.server.server.utils.eKind;
 
@@ -36,8 +35,7 @@ final class DemolitionItemEffect {
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
         L1Object target = CWorld.getInstance().findObject(targetId);
-        Random random = ThreadLocalRandom.current();
-        int rnd = random.nextInt(100) + 1;
+        int rnd = GameRandom.nextInt(100) + 1;
         if ((pc.getType() == 7 && pc.getLevel() >= 85) || pc.isGm()) {
             if (target != null) {
                 if (target instanceof L1PcInstance) {
@@ -99,7 +97,7 @@ final class DemolitionItemEffect {
                     attackLevel = pc.getLevel();
                     defenseLevel = member.getLevel();
                     int shockStunPoint = pc.GetSpecialPierce(eKind.FEAR) + pc.GetSpecialPierce(eKind.ALL);
-                    final int 데몰리션시간 = DurationChoiceItems.demolition(random);
+                    final int 데몰리션시간 = DurationChoiceItems.demolition(GameRandom.current());
                     if (shockStunPoint > 0) {
                         attackLevel += Math.round(((double)shockStunPoint * (double)Config.STUNHIT_TO_LEVEL11));
                     }

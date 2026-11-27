@@ -12,7 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import java.util.Random;
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -20,6 +19,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.ControlSkillEffects;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_Attack;
+import l1j.server.server.shared.GameRandom;
 
 public class CommonUtil {
 	/**
@@ -43,8 +43,7 @@ public class CommonUtil {
 	 * @return
 	 */
 	public static int random(int number) {
-		Random rnd = new Random();
-		return rnd.nextInt(number);
+		return GameRandom.nextInt(number);
 	}
 
 	/**
@@ -54,7 +53,7 @@ public class CommonUtil {
 	 * @return
 	 */
 	public static int random(int lbound, int ubound) {
-		return (int) ((Math.random() * (ubound - lbound + 1)) + lbound);
+		return GameRandom.next(lbound, ubound);
 	}
 
 	/**

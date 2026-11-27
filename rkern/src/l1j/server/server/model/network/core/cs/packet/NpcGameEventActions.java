@@ -34,6 +34,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.L1SpawnUtil;
 import l1j.server.server.utils.TYUtil;
 
@@ -278,7 +279,7 @@ final class NpcGameEventActions {
             for (int id : bosses) if (CObjectDB.LoadNPC().getTemplate(id) == null) return "bosskey10";
             if (!pc.getInventory().DeleteItemInInventory(80479, 1)) return "bosskey10";
             // Keep the existing 0..99 modulo selection and shared RNG order.
-            spawn(32878, 32816, (short) pc.getMapId(), 0, bosses[random.nextInt(100) % bosses.length], 0);
+            spawn(32878, 32816, (short) pc.getMapId(), 0, bosses[random.nextInt(bosses.length)], 0);
             SC_NpcChatPacket.sendNpc(pc, npc, "어떤 몬스터가 나왔을까요??", 0);
             return tail;
         }
@@ -307,8 +308,8 @@ final class NpcGameEventActions {
 				int tryCount = 0;
 				do {
 					tryCount++;
-					npc.setX(x + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
-					npc.setY(y + (int) (Math.random() * randomRange) - (int) (Math.random() * randomRange));
+					npc.setX(x + GameRandom.spawnOffset(randomRange));
+					npc.setY(y + GameRandom.spawnOffset(randomRange));
 					if (npc.getMap().isInMap(npc.getLocation()) && npc.getMap().isPassable(npc.getLocation())) {
 						break;
 					}

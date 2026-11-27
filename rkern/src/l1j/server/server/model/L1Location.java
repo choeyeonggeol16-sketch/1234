@@ -18,7 +18,8 @@
  */
 package l1j.server.server.model;
 
-import java.util.Random;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.map.L1Map;
@@ -27,7 +28,6 @@ import l1j.server.server.types.Point;
 import l1j.server.server.model.world.residence.L1HouseLocation;
 
 public class L1Location extends Point {
-	private static Random _random = new Random(System.nanoTime());
 
 	protected L1Map _map = L1Map.newNull();
 
@@ -197,8 +197,8 @@ public class L1Location extends Point {
 
 			if(diffX < 0 ||diffY <0) 
 				continue;
-			newX = locX1 + L1Location._random.nextInt(diffX + 1);
-			newY = locY1 + L1Location._random.nextInt(diffY + 1);
+			newX = locX1 + GameRandom.nextInt(diffX + 1);
+			newY = locY1 + GameRandom.nextInt(diffY + 1);
 
 			newLocation.set(newX, newY);
 
@@ -290,8 +290,8 @@ public class L1Location extends Point {
 			}
 			trial++;
 
-			newX = locX1 + L1Location._random.nextInt(diffX + 1);
-			newY = locY1 + L1Location._random.nextInt(diffY + 1);
+			newX = locX1 + GameRandom.nextInt(diffX + 1);
+			newY = locY1 + GameRandom.nextInt(diffY + 1);
 
 			newLocation.set(newX, newY);
 

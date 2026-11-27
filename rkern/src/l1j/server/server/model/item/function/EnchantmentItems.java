@@ -1,6 +1,7 @@
 package l1j.server.server.model.item.function;
 
 
+
 import static l1j.server.server.model.item.function.BossSummonWandItems.*;
 import static l1j.server.server.model.item.function.CashBuffTransactions.*;
 import static l1j.server.server.model.item.function.ChargedRewardBoxItems.*;
@@ -37,7 +38,6 @@ import static l1j.server.server.model.item.function.TransformationItems.*;
 import static l1j.server.server.model.item.function.WandInspectionItems.*;
 import static l1j.server.server.model.item.function.WarriorSkillBookItems.*;
 
-import java.util.Random;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -45,7 +45,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
 public final class EnchantmentItems {
-    private static final Random _random = CreatureItemActions._random;
     private static final Logger ITEM_USE2_LOG = CreatureItemActions.ITEM_USE2_LOG;
     private EnchantmentItems() {}
 	public static void AttrEnchant(L1PcInstance pc, L1ItemInstance scroll, L1ItemInstance weapon) {

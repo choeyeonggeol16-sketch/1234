@@ -9,9 +9,9 @@ import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 
-import static l1j.server.server.model.item.function.CreatureItemActions._random;
 
 /** Both legacy boxes use one receipt: source debit + guaranteed Adena + optional random reward. */
 final class LegacyGiftBoxes {
@@ -27,7 +27,7 @@ final class LegacyGiftBoxes {
             return ItemActionResult.STOP;
 
         // Sample EXACTLY once, with the same shared RNG and bounds as the original boxes.
-        final int roll = _random.nextInt(boxId == 41303 ? 120 : 170) + 1;
+        final int roll = GameRandom.nextInt(boxId == 41303 ? 120 : 170) + 1;
         final int adena = boxId == 41303 ? 500000 : 5000000;
         final String adenaNotice = boxId == 41303
                 ? "아데나 (500,000)을 얻었습니다." : "아데나 (5,000,000)을 얻었습니다.";

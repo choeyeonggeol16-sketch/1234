@@ -2,7 +2,6 @@ package l1j.server.server.model.character.action;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +27,7 @@ import l1j.server.server.model.world.instance.raid.RaidObject;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
 import l1j.server.server.monitor.Logger.ItemActionType;
 import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.MessageUtil;
 
 public final class CGetItemAction extends CNewAction {
@@ -332,7 +332,6 @@ public final class CGetItemAction extends CNewAction {
             return handleSinglePickup(owner, party, amount);
         }
 
-        final ThreadLocalRandom random = ThreadLocalRandom.current();
         final String distTag = isPartyAuto(owner) ? "자동 분배" : "일반 분배";
 
         if (itemId == L1ItemId.ADENA) {
@@ -398,7 +397,7 @@ public final class CGetItemAction extends CNewAction {
                         party.NextLootIndex(members.size()));
             } else {
                 luckyUser = members.get(
-                        random.nextInt(members.size()));
+                        GameRandom.nextInt(members.size()));
             }
 
             final L1ItemInstance moved =

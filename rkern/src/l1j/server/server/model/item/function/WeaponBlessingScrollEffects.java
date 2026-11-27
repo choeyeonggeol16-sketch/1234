@@ -1,10 +1,11 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.shared.GameRandom;
+
 
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.storage.CacheD;
@@ -84,7 +85,7 @@ final class WeaponBlessingScrollEffects {
             return;
         }
         if (level < 0 || level > 5) return;
-        final int roll = ThreadLocalRandom.current().nextInt(100);
+        final int roll = GameRandom.nextInt(100);
         final boolean success = (level == 0 ? roll < Config.축복1단
                 : level == 1 ? roll < Config.축복2단
                 : level == 2 ? roll < Config.축복3단

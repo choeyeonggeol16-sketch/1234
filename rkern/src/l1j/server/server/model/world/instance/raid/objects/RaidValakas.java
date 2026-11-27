@@ -2,7 +2,6 @@ package l1j.server.server.model.world.instance.raid.objects;
 
 import java.util.ArrayList;
 import java.util.TimerTask;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.instance.CInstanceEvents;
@@ -20,6 +19,7 @@ import l1j.server.server.model.world.instance.raid.boss.skill.RaidBossCombo;
 import l1j.server.server.model.world.instance.raid.boss.skill.RaidBossSkill;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
 import l1j.server.server.model.world.instance.raid.spawn.RaidNpcSpawn;
+import l1j.server.server.shared.GameRandom;
 
 public class RaidValakas extends RaidObject{
 	private static final String[] s_startMessages = new String[]{
@@ -337,7 +337,7 @@ try {
 				}
 				
 				if(csize != 0 && (++count % RaidLoadManager.MRS_CB_COUNT) == 0){
-					combo = _combos.get(ThreadLocalRandom.current().nextInt(csize));
+					combo = _combos.get(GameRandom.nextInt(csize));
 					phase = combo.getPhase();
 					if(((int)(perToHp * phase)) > _boss.getCurrentHp()){
 						combo.action(_boss, _users);
@@ -345,8 +345,8 @@ try {
 					}
 				}
 				
-				if(ssize != 0 && ThreadLocalRandom.current().nextInt(100) <= RaidLoadManager.MRS_BS_USE_RATE){
-					skill = _skills.get(ThreadLocalRandom.current().nextInt(ssize));
+				if(ssize != 0 && GameRandom.nextInt(100) <= RaidLoadManager.MRS_BS_USE_RATE){
+					skill = _skills.get(GameRandom.nextInt(ssize));
 					skill.action(_boss, _users);
 				}
 			}

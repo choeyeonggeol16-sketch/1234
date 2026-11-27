@@ -1,7 +1,6 @@
 package l1j.server.server.model.world.instance.dungeon.ice.queen;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.instance.CInstanceEvents;
@@ -13,13 +12,13 @@ import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.shared.GameRandom;
 
 public final class Queen {
 
 	private final CInstantZone<Queen> zone;
 	private final int _map;
 
-	private static Random _random = new Random(System.nanoTime());
 
 
 	private boolean FirstRoom = false;
@@ -212,37 +211,37 @@ public final class Queen {
 
 		// 1번방 뿌리기
 		for (int i = 0; i < 15; i++) {
-			spawn(32765, 32818, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 12, 1);
+			spawn(32765, 32818, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 12, 1);
 		}
-		spawn(32749, 32800, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 1);
-		spawn(32749, 32817, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 1);
-		spawn(32766, 32833, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 1);
-		spawn(32772, 32802, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 1);
+		spawn(32749, 32800, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 1);
+		spawn(32749, 32817, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 1);
+		spawn(32766, 32833, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 1);
+		spawn(32772, 32802, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 1);
 
 		// 2번 방 뿌리기 2였는데 1로 고쳤죠 메소드를 따라가보면
-		spawn(32813, 32805, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 2);
-		spawn(32819, 32807, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 2);
-		spawn(32819, 32805, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 2);
+		spawn(32813, 32805, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 2);
+		spawn(32819, 32807, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 2);
+		spawn(32819, 32805, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 2);
 		for (int i = 0; i < 15; i++) {
-			spawn(32833, 32806, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 13, 2);
+			spawn(32833, 32806, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 13, 2);
 		}
 
 		// 3번 방 뿌리기
-		spawn(32859, 32832, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 3);
-		spawn(32857, 32831, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 3);
-		spawn(32855, 32834, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 0, 3);
+		spawn(32859, 32832, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 3);
+		spawn(32857, 32831, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 3);
+		spawn(32855, 32834, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 0, 3);
 		for (int i = 0; i < 15; i++) {
-			spawn(32850, 32853, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 10, 3);
+			spawn(32850, 32853, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 10, 3);
 		}
 
 		// 4번 방 뿌리기
 		for (int i = 0; i < 15; i++) {
-			spawn(32767, 32892, (short) _map, 0, _MonsterList[_random.nextInt(100) % _MonsterList.length], 12, 4);
+			spawn(32767, 32892, (short) _map, 0, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 12, 4);
 		}
 
 		// 5번 방 뿌리기 ( 보스 몬스터 추가 : 아이스 여왕 )
 		for (int i = 0; i < 15; i++) {
-			spawn(32767, 32892, (short) _map, 6, _MonsterList[_random.nextInt(100) % _MonsterList.length], 12, 5);
+			spawn(32767, 32892, (short) _map, 6, _MonsterList[GameRandom.nextInt(_MonsterList.length)], 12, 5);
 		}
 		spawn(32845, 32920, (short) _map, 6, 45609, 0, 5); // 아이스여왕
 	}

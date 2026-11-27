@@ -3,7 +3,6 @@ package l1j.server.server.model.character.skill.helper;
 import static l1j.server.server.model.character.skill.L1SkillId.*;
 
 import java.util.BitSet;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -15,6 +14,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.world.trap.L1WorldTraps;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Skills;
 
 public final class SkillUseHelper {
@@ -738,7 +738,7 @@ public final class SkillUseHelper {
 	
 	public static int pickMillis(int[] arr) {
         if (arr == null || arr.length == 0) return 0;
-        return arr[ThreadLocalRandom.current().nextInt(arr.length)];
+        return arr[GameRandom.nextInt(arr.length)];
     }
 	
     // =========================================================
@@ -779,7 +779,7 @@ public final class SkillUseHelper {
 	public static int pickRandomPolyId() {
 	    final int[] arr = POLY_ARRAY;
 	    if (arr == null || arr.length == 0) return 0;
-	    return arr[ThreadLocalRandom.current().nextInt(arr.length)];
+	    return arr[GameRandom.nextInt(arr.length)];
 	}
 
 	// =========================================================

@@ -2,13 +2,13 @@ package l1j.server.server.model.item.function;
 
 import l1j.server.server.datatables.CObjectDB;
 import java.sql.Timestamp;
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1ItemDelay;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.L1SpawnUtil;
 import static l1j.server.server.model.item.function.SpecialConsumableRouter.nowTimestamp;
 import l1j.server.server.model.item.function.SpecialConsumableRouter.Result;
@@ -29,7 +29,7 @@ final class ClanRaidTransactions {
             int bossY,
             short bossMapId) {
 
-        final int rnd = ThreadLocalRandom.current().nextInt(1000);
+        final int rnd = GameRandom.nextInt(1000);
         if (!(rnd > 900 && pc.getMapId() == requiredMapId)) {
             pc.sendPackets("\\aH이곳이 아닌것 같다. 다른곳을 찾아보자");
             item.setLastUsed(nowTimestamp());
@@ -44,7 +44,7 @@ final class ClanRaidTransactions {
 
         // Preserve the original boss selection and the entrance position.
         // The latter must not be read after a possibly deferred teleport.
-        final int bossId = bossIds[ThreadLocalRandom.current().nextInt(100) % bossIds.length];
+        final int bossId = bossIds[GameRandom.nextInt(bossIds.length)];
         if (CObjectDB.LoadNPC().getTemplate(portalNpcId) == null
                 || CObjectDB.LoadNPC().getTemplate(bossId) == null) {
             SC_SystemMessage.send(pc, "혈맹 레이드 NPC 설정을 확인해 주세요.");

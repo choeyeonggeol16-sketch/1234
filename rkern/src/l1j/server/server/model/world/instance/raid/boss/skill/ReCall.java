@@ -1,11 +1,11 @@
 package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
+import l1j.server.server.shared.GameRandom;
 
 /** 유저를 소환한다. **/
 public class ReCall extends RaidBossSkill{
@@ -30,7 +30,7 @@ public class ReCall extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(own, pc);
             }else{
@@ -67,7 +67,7 @@ public class ReCall extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(own, pc);
             }else{
@@ -95,6 +95,6 @@ public class ReCall extends RaidBossSkill{
             Broadcaster.broadcastPacket(pc, oe);
         }*/
 
-        pc.start_teleport(own.getX() + ThreadLocalRandom.current().nextInt(2) + 1, own.getY() + ThreadLocalRandom.current().nextInt(2) + 1, pc.getMapId(), pc.getHeading(), 169, true, false);
+        pc.start_teleport(own.getX() + GameRandom.nextInt(2) + 1, own.getY() + GameRandom.nextInt(2) + 1, pc.getMapId(), pc.getHeading(), 169, true, false);
     }
 }

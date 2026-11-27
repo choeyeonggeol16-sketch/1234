@@ -1,4 +1,6 @@
 package l1j.server.server.model.npc.action;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 import java.util.ArrayList;
@@ -10,7 +12,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.model.item.teleport.NeigeTower;
@@ -39,7 +40,6 @@ public class ActionControlHandler {
     private static final ActionControlHandler instance = new ActionControlHandler();
     public static ActionControlHandler getInstance() { return instance; }
 
-    private static final Random _random = new Random(System.nanoTime());
     private final Map<String, GameAction> _actionMap = new HashMap<>();
 
     @FunctionalInterface
@@ -208,8 +208,8 @@ public class ActionControlHandler {
     }
 
     private boolean rndTele(L1PcInstance pc, int x, int y, int map, int range) {
-        int tx = x + _random.nextInt(range);
-        int ty = y + _random.nextInt(range);
+        int tx = x + GameRandom.nextInt(range);
+        int ty = y + GameRandom.nextInt(range);
         pc.start_teleport(tx, ty, map, pc.getHeading(), 169, true, pc.getAutoHunt());
         return false;
     }

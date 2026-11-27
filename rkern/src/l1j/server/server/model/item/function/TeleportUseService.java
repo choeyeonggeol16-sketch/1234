@@ -1,7 +1,6 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.model.L1Location;
@@ -15,6 +14,7 @@ import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.ClientAutomationSession;
 
@@ -129,8 +129,8 @@ public final class TeleportUseService {
                 if (precise) {
                     pc.start_teleport(bookmarkX, bookmarkY, bookmarkMapId, pc.getHeading(), 169, true, true);
                 } else {
-                    int nx = bookmarkX + ThreadLocalRandom.current().nextInt(15);
-                    int ny = bookmarkY + ThreadLocalRandom.current().nextInt(15);
+                    int nx = bookmarkX + GameRandom.nextInt(15);
+                    int ny = bookmarkY + GameRandom.nextInt(15);
                     if (map.isInMap(nx, ny) && map.isPassable(nx, ny)) {
                         pc.start_teleport(nx, ny, bookmarkMapId, pc.getHeading(), 169, true, true);
                     } else {

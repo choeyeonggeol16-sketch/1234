@@ -1,11 +1,11 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.server.datatables.CObjectDB;
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.shared.GameRandom;
 
 final class ClanRaidNpcSpawn {
     private ClanRaidNpcSpawn() {}
@@ -38,13 +38,13 @@ final class ClanRaidNpcSpawn {
 
                     npc.setX(
                             x
-                            + ThreadLocalRandom.current().nextInt(randomRange)
-                            - ThreadLocalRandom.current().nextInt(randomRange));
+                            + GameRandom.nextInt(randomRange)
+                            - GameRandom.nextInt(randomRange));
 
                     npc.setY(
                             y
-                            + ThreadLocalRandom.current().nextInt(randomRange)
-                            - ThreadLocalRandom.current().nextInt(randomRange));
+                            + GameRandom.nextInt(randomRange)
+                            - GameRandom.nextInt(randomRange));
 
                     if (npc.getMap().isInMap(npc.getLocation())
                             && npc.getMap().isPassable(npc.getLocation())) {

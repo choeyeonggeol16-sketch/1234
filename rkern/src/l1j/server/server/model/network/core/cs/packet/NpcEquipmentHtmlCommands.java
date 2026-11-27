@@ -1,10 +1,10 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import static l1j.server.server.model.network.core.cs.packet.HtmlCmdHandler._random;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.shared.GameRandom;
 
 /** Equipment exchanges, crafting and their NPC dialogue. */
 final class NpcEquipmentHtmlCommands {
@@ -153,7 +153,7 @@ final class NpcEquipmentHtmlCommands {
             // 넘어진 항해사
         } else if (templateId == 80076) {
             if (s.equalsIgnoreCase("A")) {
-                final int variant = _random.nextInt(2);
+                final int variant = GameRandom.nextInt(2);
                 NpcQuestTransactions.grantLegacyNpcItem(pc, (L1NpcInstance) obj,
                         49082 + variant, 1, false, variant == 0 ? "voyager6a" : "voyager6b");
                 return;

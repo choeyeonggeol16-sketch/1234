@@ -12,6 +12,7 @@ import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Item;
 
 import l1j.server.Config;
@@ -141,7 +142,7 @@ final class NpcQuestTransactions {
     }
 
     /** Lukein treasure chests: map debit, reward grant and BOTH quest rows in one receipt.
-     * Keep the original shared Random and reward IDs; no per-click reward arrays.
+     * The reward IDs are shared across requests.
      */
     static void lukeinChestReceipt(L1PcInstance pc, L1NpcInstance npc,
             int expectedStep, int nextFirst, int nextCount, int boxQuestId,
@@ -170,7 +171,7 @@ final class NpcQuestTransactions {
                 return;
             }
             // Same nextInt range as the old nextbox/nextbox2 arrays.
-            final int nextStep = nextFirst + (nextCount == 1 ? 0 : HtmlCmdHandler._random.nextInt(nextCount));
+            final int nextStep = nextFirst + (nextCount == 1 ? 0 : GameRandom.nextInt(nextCount));
             CQuestSystem.StageLukeinChest(tx, pc.getId(), expectedStep, nextStep, boxQuestId);
             tx.onFailure(() -> {
                 SC_SystemMessage.send(pc, "보물지도 교환이 확정되지 않았습니다.");
@@ -211,8 +212,8 @@ final class NpcQuestTransactions {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "keplisha8");
                 return;
             }
-            final int variant = HtmlCmdHandler._random.nextInt(3);
-            final int detail = HtmlCmdHandler._random.nextInt(100) + 1;
+            final int variant = GameRandom.nextInt(3);
+            final int detail = GameRandom.nextInt(100) + 1;
             final String page = (variant == 0 ? "horosa" : variant == 1 ? "horosb" : "horosc") + detail;
             final String npcName = npc.getNpcTemplate().get_name();
             tx.onFailure(() -> SC_NPCTalkReturn.send(pc, npc.getId(), "keplisha8"));
@@ -272,7 +273,7 @@ final class NpcQuestTransactions {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "sherme1");
                 return;
             }
-            final boolean success = HtmlCmdHandler._random.nextInt(100) + 1 <= percent;
+            final boolean success = GameRandom.nextInt(100) + 1 <= percent;
             final L1ItemInstance reward = success ? tx.grant(rewardId, 1) : null;
             if (success && reward == null) {
                 SC_NPCTalkReturn.send(pc, npc.getId(), "sherme1");

@@ -7,7 +7,6 @@ import static l1j.server.server.model.item.function.CombatSupportItems.액션;
 import static l1j.server.server.model.item.function.CombatSupportItems.액션1;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
-import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -26,11 +25,11 @@ import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 /** Item-specific effect extracted without changing its original execution body. */
 final class EternityItemEffect {
-    private static final Random _random = CreatureItemActions._random;
 
     private EternityItemEffect() {}
 
@@ -80,7 +79,7 @@ final class EternityItemEffect {
                         SC_SystemMessage.send(pc, "\\fY타겟과의 사이에 장애물로 인해 사용할 수 없습니다.");
                         return;
                     }
-                    int 랜덤 = _random.nextInt(100) + 1;
+                    int 랜덤 = GameRandom.nextInt(100) + 1;
                     int 렙차 = pc.getLevel() - member.getLevel();
                     int 기본확률 = Config.이터기본;
                     int 양렙차 = 기본확률 + (렙차 * Config.이터양);
@@ -112,7 +111,7 @@ final class EternityItemEffect {
                         pc.setSkillEffect(L1SkillId.이터니티대기, Config.이터니티대기 * 1000);
                         pc.setCurrentMp(pc.getCurrentMp() - 80);
                         L1SkillUse.cast(pc, L1SkillId.보조버프, pc.getId(), pc.getX(), pc.getY(), null, 0, L1SkillUse.TYPE_SPELLSC);
-                        int aa1 = _random.nextInt(150) + 1;
+                        int aa1 = GameRandom.nextInt(150) + 1;
                         int dmg = (pc.GetStatSp() * Config.이터니티배율) + aa1;
                         dmg = (int)calcMrDefense(member.GetMDefendBySkill(), dmg);
                         if (dmg < 200) {
@@ -150,7 +149,7 @@ final class EternityItemEffect {
                         pc.setSkillEffect(L1SkillId.이터니티대기, Config.이터니티대기 * 1000);
                         pc.setCurrentMp(pc.getCurrentMp() - 80);
                         L1SkillUse.cast(pc, L1SkillId.보조버프, pc.getId(), pc.getX(), pc.getY(), null, 0, L1SkillUse.TYPE_SPELLSC);
-                        int aa1 = _random.nextInt(150) + 1;
+                        int aa1 = GameRandom.nextInt(150) + 1;
                         int dmg = (pc.GetStatSp() * Config.이터니티배율) + aa1;
                         dmg = (int)calcMrDefense(member.GetMDefendBySkill(), dmg);
                         if (dmg < 200) {
@@ -205,7 +204,7 @@ final class EternityItemEffect {
                         return;
                     }
                     int qq = Config.이터몬스터;
-                    int 랜덤 = _random.nextInt(100) + 1;
+                    int 랜덤 = GameRandom.nextInt(100) + 1;
                     if (랜덤 <= qq) {
                         member1.setSkillEffect(L1SkillId.이터디스, Config.이터제약);
                         member1.setSkillEffect(STATUS_FREEZE, Config.이터제약);
@@ -222,7 +221,7 @@ final class EternityItemEffect {
                     pc.setSkillEffect(L1SkillId.이터니티대기, Config.이터니티대기 * 1000);
                     pc.setCurrentMp(pc.getCurrentMp() - 80);
                     L1SkillUse.cast(pc, L1SkillId.보조버프, pc.getId(), pc.getX(), pc.getY(), null, 0, L1SkillUse.TYPE_SPELLSC);
-                    int aa1 = _random.nextInt(150) + 1;
+                    int aa1 = GameRandom.nextInt(150) + 1;
                     int dmg = (pc.GetStatSp() * Config.이터니티배율) + aa1;
                     dmg = (int)calcMrDefense(member1.GetMDefendBySkill(), dmg);
                     if (dmg < 200) {

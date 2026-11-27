@@ -3,8 +3,6 @@ package l1j.server.server.model.item.function;
 import static l1j.server.server.model.character.skill.L1SkillId.COUNTER_MAGIC;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -19,6 +17,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 /** Item-specific effect extracted without changing its original execution body. */
@@ -32,14 +31,13 @@ final class AvengerItemEffect {
         SC_AttackPacket.send(pc.getNetConnection(), pc, 0, ActionCodes.ACTION_Wand);
         SC_AttackPacket.broadcast(pc, 0, ActionCodes.ACTION_Wand);
         L1Object target = CWorld.getInstance().findObject(targetId);
-        Random random = ThreadLocalRandom.current();
-        int rnd = random.nextInt(100) + 1;
+        int rnd = GameRandom.nextInt(100) + 1;
         if ((pc.getType() == 4 && pc.getLevel() >= 85) || pc.isGm()) {
             if (target != null) {
                 if (target instanceof L1PcInstance) {
                     L1PcInstance member = (L1PcInstance)target;
                     if (member.getMapId() != pc.getMapId() || member.isDead() || member.get_teleport()) return false;
-                    int aa1 = random.nextInt(100) + 1;
+                    int aa1 = GameRandom.nextInt(100) + 1;
                     int aa = member.getAc() / 2;
                     int dmg = (pc.getLevel() / 3 * Config.어벤저배율) + aa1;
                     if (pc.getId() == member.getId()) {

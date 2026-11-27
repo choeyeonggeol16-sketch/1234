@@ -1,13 +1,13 @@
 package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.shared.GameRandom;
 
 /** weapon break. **/
 public class WpBrk extends RaidBossSkill{
@@ -32,7 +32,7 @@ public class WpBrk extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(pc);
             }else{
@@ -67,7 +67,7 @@ public class WpBrk extends RaidBossSkill{
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
             if((_type & BSRTYPE_ONCE) > 0){
-                pc = pcs.get(ThreadLocalRandom.current().nextInt(size));
+                pc = pcs.get(GameRandom.nextInt(size));
                 if(isSkillSet(own, pc))
                     processAction(pc);
             }else{

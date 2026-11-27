@@ -1,6 +1,5 @@
 package l1j.server.server.model.item.function;
 
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.inventory.L1InventoryTransaction;

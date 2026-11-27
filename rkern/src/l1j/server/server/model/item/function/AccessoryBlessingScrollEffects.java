@@ -1,10 +1,11 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.shared.GameRandom;
+
 
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.storage.CacheD;
@@ -82,7 +83,7 @@ final class AccessoryBlessingScrollEffects {
             pc.sendPackets("더 이상 강화는 불가능합니다.");
             return;
         }
-        final boolean success = ThreadLocalRandom.current().nextInt(100) < Config.악세축복1단;
+        final boolean success = GameRandom.nextInt(100) < Config.악세축복1단;
         final String name = target.getLogName();
         try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
                 User.CheckAndSetPendingUseETCItem(pc,
@@ -133,7 +134,7 @@ final class AccessoryBlessingScrollEffects {
         pc.sendPackets("더 이상 강화는 불가능합니다.");
         return;
     }
-    final boolean higher = ThreadLocalRandom.current().nextInt(100) < Config.악세축복3단;
+    final boolean higher = GameRandom.nextInt(100) < Config.악세축복3단;
     final int nextLevel = higher ? 8 : 7;
     final String name = target.getLogName();
     try (l1j.server.server.model.inventory.L1InventoryTransaction tx =

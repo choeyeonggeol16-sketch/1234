@@ -1,6 +1,7 @@
 package l1j.server.server.model.npc.ai.action;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.npc.spawn.group.L1MobGroupInfo;
@@ -646,13 +647,13 @@ public final class CMoveAction {
         int direction = CMoveAction.randomMoveDirection(creature);
 
         if (distance == 0) {
-            distance = ThreadLocalRandom.current().nextInt(5) + 1;
-            direction = ThreadLocalRandom.current().nextInt(20);
+            distance = GameRandom.nextInt(5) + 1;
+            direction = GameRandom.nextInt(20);
 
             if (creature.getHomeX() != 0
                     && creature.getHomeY() != 0
                     && direction < 8
-                    && ThreadLocalRandom.current().nextInt(3) == 0) {
+                    && GameRandom.nextInt(3) == 0) {
 
                 final int homeDir = creature.moveDirection(
                         creature.getHomeX(),

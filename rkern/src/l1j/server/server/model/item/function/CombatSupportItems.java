@@ -1,6 +1,5 @@
 package l1j.server.server.model.item.function;
 
-import java.util.Random;
 import java.util.concurrent.RejectedExecutionException;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -12,12 +11,12 @@ import l1j.server.server.model.character.effect.poison.DamagePoison;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CIOThreadCallback.WheelTask;
+import l1j.server.server.shared.GameRandom;
 
 /**
  * Legacy combat effects grouped by responsibility. 
  */
 final class CombatSupportItems {
-    private static final Random _random = CreatureItemActions._random;
     
     private CombatSupportItems() {
     }
@@ -66,7 +65,7 @@ final class CombatSupportItems {
     }
 
     private static int randomSecondDamage() {
-        return _random.nextInt(Config.이터이차최대 - Config.이터이차최소) + Config.이터이차최소;
+        return GameRandom.nextIntOrFixed(Config.이터이차최소, Config.이터이차최대);
     }
 
     public static void 액션(L1PcInstance pc, L1Character target) {

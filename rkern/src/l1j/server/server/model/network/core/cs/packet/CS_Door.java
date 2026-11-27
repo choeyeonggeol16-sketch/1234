@@ -1,6 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import java.util.Random;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.residence.HouseTable;
@@ -24,13 +25,6 @@ import l1j.server.server.model.world.residence.L1House;
  * packet wrapper만 제거하고 기존 게임 로직은 그대로 유지한다.
  */
 public final class CS_Door {
-
-    /*
-     * 기존 C_Door와 동일하게 static Random 하나를 유지한다.
-     * C_OPEN은 cold path라 여기서 Random contention을 건드릴 이유가 없다.
-     */
-    private static final Random RANDOM =
-            new Random(System.nanoTime());
 
     private CS_Door() {
     }
@@ -190,7 +184,7 @@ public final class CS_Door {
             L1DoorInstance door) {
 
         final int ran =
-                RANDOM.nextInt(100) + 1;
+                GameRandom.nextInt(100) + 1;
 
         if (door.getOpenStatus()
                 != ActionCodes.ACTION_Close) {
@@ -264,7 +258,7 @@ public final class CS_Door {
             L1DoorInstance door) {
 
         final int ran =
-                RANDOM.nextInt(100) + 1;
+                GameRandom.nextInt(100) + 1;
 
         final L1ItemInstance item;
 

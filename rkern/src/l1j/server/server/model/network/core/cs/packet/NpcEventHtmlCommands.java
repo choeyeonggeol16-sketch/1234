@@ -1,6 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.Config;
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightSettings;
@@ -215,12 +216,11 @@ final class NpcEventHtmlCommands {
             return;
         } else if (templateId == 71179) { // 디에츠(빛고목제작)
             if (s.equalsIgnoreCase("A")) {// 복원된 고대의 목걸이
-                ThreadLocalRandom random = ThreadLocalRandom.current();
                 if (pc.getInventory().HaveItemByClassId(49028, 1) && pc.getInventory().HaveItemByClassId(49029, 1)
                         && pc.getInventory().HaveItemByClassId(49030, 1) && pc.getInventory().HaveItemByClassId(41139, 1)) { // 보석과
                                                                                                                 // 볼품없는
                     // 목걸이 확인
-                    if (random.nextInt(10) > 6) {
+                    if (GameRandom.nextInt(10) > 6) {
                         materials = Recipes.RECIPE_VALUES_92;
                         counts = Recipes.RECIPE_VALUES_93;
                         createitem = Recipes.RECIPE_VALUES_94; // 복원된 고대의 목걸이
@@ -237,10 +237,9 @@ final class NpcEventHtmlCommands {
                     htmlid = "dh6";
                 }
             } else if (s.equalsIgnoreCase("B")) {// 빛나는 고대의 목걸이 제작을 부탁한다.
-                ThreadLocalRandom random = ThreadLocalRandom.current();
                 if (pc.getInventory().HaveItemByClassId(49027, 1) && pc.getInventory().HaveItemByClassId(41140, 1)) { // 다이아몬드와
                     // 복원된 목걸이
-                    if (random.nextInt(10) > 7) {
+                    if (GameRandom.nextInt(10) > 7) {
                         materials = Recipes.RECIPE_VALUES_97;
                         counts = NpcCraftCommands.UnitCounts.TWO_ITEMS;
                         createitem = Recipes.RECIPE_VALUES_98; // 빛나는 고대 목걸이

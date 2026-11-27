@@ -3,11 +3,11 @@ package l1j.server.server.model.character.companion.basic.classinfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 import l1j.server.server.model.character.companion.basic.category.CompanionCategoryInfo;
 import l1j.server.server.model.character.companion.basic.elemental.CompanionElemental;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 
@@ -39,7 +39,7 @@ public class CompanionClassInfo {
 	
 	public static ArrayList<CompanionClassInfo> get_shuffles_classes(){
 		ArrayList<CompanionClassInfo> classes = get_classes();
-		Collections.shuffle(classes);
+		GameRandom.shuffle(classes);
 		return classes;
 	}
 	

@@ -3,7 +3,6 @@ package l1j.server.server.model.item.function;
 import static l1j.server.server.model.character.skill.L1SkillId.STATUS_FREEZE;
 import static l1j.server.server.model.item.function.CreatureItemActions.*;
 
-import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -22,11 +21,11 @@ import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 /** Item-specific effect extracted without changing its original execution body. */
 final class ShadowBindingItemEffect {
-    private static final Random _random = CreatureItemActions._random;
 
     private ShadowBindingItemEffect() {}
 
@@ -76,7 +75,7 @@ final class ShadowBindingItemEffect {
                         SC_SystemMessage.send(pc, "\\fY타겟과의 사이에 장애물로 인해 사용할 수 없습니다.");
                         return;
                     }
-                    int 랜덤 = _random.nextInt(100) + 1;
+                    int 랜덤 = GameRandom.nextInt(100) + 1;
                     int 렙차 = pc.getLevel() - member.getLevel();
                     int 기본확률 = Config.쉐도우기본;
                     int 양렙차 = 기본확률 + (렙차 * Config.쉐도우양);
@@ -176,7 +175,7 @@ final class ShadowBindingItemEffect {
                     pc.setCurrentMp(pc.getCurrentMp() - 15);
                     pc.setSkillEffect(L1SkillId.쉐도우대기, Config.쉐도우대기 * 1000);
                     int qq = Config.쉐도우몬스터;
-                    int 랜덤1 = _random.nextInt(100) + 1;
+                    int 랜덤1 = GameRandom.nextInt(100) + 1;
                     if (랜덤1 <= qq) {
                         member1.setSkillEffect(STATUS_FREEZE, Config.쉐도우제약);
                         SC_Paralysis.send(member1, SC_Paralysis.TYPE_BIND, true);

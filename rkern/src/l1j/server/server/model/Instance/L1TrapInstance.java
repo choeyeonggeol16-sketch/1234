@@ -19,7 +19,6 @@
 package l1j.server.server.model.Instance;
 
 import java.util.Collections;
-import java.util.Random;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -30,6 +29,7 @@ import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.world.trap.L1Trap;
 import l1j.server.server.model.network.core.sc.packet.SC_Trap;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.types.Point;
 
 public class L1TrapInstance extends L1Object {
@@ -48,7 +48,6 @@ public class L1TrapInstance extends L1Object {
 	private final Set<L1PcInstance> _knownPlayers =
 			Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
-	private static final Random _random = new Random(System.nanoTime());
 
 	public L1TrapInstance(int id, L1Trap trap, L1Location loc, Point rndPt,
 			int span) {
@@ -77,10 +76,10 @@ public class L1TrapInstance extends L1Object {
 		}
 		L1Map map = null;
 		for (int i = 0; i < 50; i++) {
-			int rndX = _random.nextInt(_rndPt.getX() + 1)
-					* (_random.nextInt(2) == 1 ? 1 : -1);
-			int rndY = _random.nextInt(_rndPt.getY() + 1)
-					* (_random.nextInt(2) == 1 ? 1 : -1);
+			int rndX = GameRandom.nextInt(_rndPt.getX() + 1)
+					* (GameRandom.nextInt(2) == 1 ? 1 : -1);
+			int rndY = GameRandom.nextInt(_rndPt.getY() + 1)
+					* (GameRandom.nextInt(2) == 1 ? 1 : -1);
 
 			rndX += _baseLoc.getX();
 			rndY += _baseLoc.getY();

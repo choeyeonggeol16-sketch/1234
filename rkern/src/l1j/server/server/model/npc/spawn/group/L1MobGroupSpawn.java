@@ -18,10 +18,10 @@ package l1j.server.server.model.npc.spawn.group;
 
 import l1j.server.server.model.CWorld;
 import l1j.server.server.datatables.CObjectDB;
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Npc;
 
 // Referenced classes of package l1j.server.server.model:
@@ -76,9 +76,8 @@ public class L1MobGroupSpawn {
 			mob.setMovementDistance(leader.getMovementDistance());
 			mob.setRest(leader.isRest());
 
-			final ThreadLocalRandom random = ThreadLocalRandom.current();
-			mob.setX(leader.getX() + random.nextInt(5) - 2);
-			mob.setY(leader.getY() + random.nextInt(5) - 2);
+			mob.setX(leader.getX() + GameRandom.nextInt(5) - 2);
+			mob.setY(leader.getY() + GameRandom.nextInt(5) - 2);
 			if (!isDoSpawn(mob, isRespawnScreen)) {
 				mob.setX(leader.getX());
 				mob.setY(leader.getY());

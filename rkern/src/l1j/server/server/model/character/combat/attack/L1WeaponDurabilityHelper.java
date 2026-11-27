@@ -1,6 +1,7 @@
 package l1j.server.server.model.character.combat.attack;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -63,7 +64,7 @@ public final class L1WeaponDurabilityHelper {
     private static boolean rollPercent(final int percent) {
         if (percent <= 0) return false;
         if (percent >= 100) return true;
-        return ThreadLocalRandom.current().nextInt(100) < percent; // 0~99
+        return GameRandom.nextInt(100) < percent; // 0~99
     }
 
     private static void applyDamage(final L1PcInstance pc, final L1ItemInstance weapon) {

@@ -1,7 +1,6 @@
 package l1j.server.server.model.character.combat.arena.dogfight.game;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightSettings;
@@ -17,6 +16,7 @@ import l1j.server.server.model.Instance.MessengerInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
+import l1j.server.server.shared.GameRandom;
 
 public class DogFightGame implements IFighterDeadNotifyHandler{
 	public static DogFightGame newInstance(DogFightGameInfo gInfo, IFighterGameEndedHandler ended_handler){
@@ -264,7 +264,7 @@ public class DogFightGame implements IFighterDeadNotifyHandler{
 	
 	private ArrayList<DogFightInstance> get_shuffle_fighters(){
 		ArrayList<DogFightInstance> fighters = new ArrayList<DogFightInstance>(m_all_fighters);
-		Collections.shuffle(fighters);
+		GameRandom.shuffle(fighters);
 		return fighters;
 	}
 	

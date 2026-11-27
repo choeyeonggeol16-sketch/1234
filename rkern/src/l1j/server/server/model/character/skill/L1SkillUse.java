@@ -1,7 +1,6 @@
 package l1j.server.server.model.character.skill;
 
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.L1Character;
@@ -21,6 +20,7 @@ import l1j.server.server.model.character.skill.helper.SkillTargetingHelper;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
 import l1j.server.server.model.character.skill.helper.SummonHelper;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Skills;
 
 public class L1SkillUse {
@@ -849,7 +849,7 @@ public class L1SkillUse {
 	public int hdCalcTypePcPc() { return PC_PC; }
 	public int hdCalcTypeNpcPc() { return NPC_PC; }
 	public int hdSkillCastGfx() { return _skill != null ? _skill.getCastGfx() : 0; }
-	public Random hdRandom() { return ThreadLocalRandom.current(); }
+	public Random hdRandom() { return GameRandom.current(); }
 	public void hdSetShockStunDuration(int ms) { _shockStunDuration = ms; }
 	public void hdSetEarthBindDuration(int ms) { _earthBindDuration = ms; }
 	public int hdSkillsBegin() { return L1SkillId.SKILLS_BEGIN; }

@@ -23,6 +23,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.world.instance.inn.InnHelper;
 import l1j.server.server.packets.Protocol.MainServer.Proto.CS_ALCHEMY_MAKE_REQ;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftInputItemSlotInfo;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
@@ -371,7 +372,7 @@ public class CInventory extends L1Object {
 		if (!treasure && Warehouse.chargeMergeItem(itemId)) {
 			L1ItemInstance findItem = findMergeItem(item);
 			if (findItem != null) {
-				addStackCharge(findItem, chargeCount - java.util.concurrent.ThreadLocalRandom.current().nextInt(5));
+				addStackCharge(findItem, chargeCount - GameRandom.nextInt(5));
                 return findItem;
 			}
 		}

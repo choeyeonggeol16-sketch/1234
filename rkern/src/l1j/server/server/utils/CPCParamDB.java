@@ -1,6 +1,6 @@
 package l1j.server.server.utils;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
 
 public final class CPCParamDB {
 
@@ -313,15 +313,6 @@ public final class CPCParamDB {
     private static int clampCon(int c)  { return clamp(c, 0, CON_MAX); }
 
     // =========================================================
-    // RNG (ThreadLocalRandom)
-    // =========================================================
-    private static ThreadLocalRandom tlr() {
-        return ThreadLocalRandom.current();
-    }
-    private static int nextInt(int bound) {
-        return tlr().nextInt(bound);
-    }
-    // =========================================================
     // Tables
     // =========================================================
     // HP base per CON; MP growth is computed by mpGrowthBound.
@@ -337,7 +328,7 @@ public final class CPCParamDB {
     public static int increaseMp(int type, byte Wis) {
         final int min = MinincreaseMp(type, Wis & 0xFF);
         final int max = MaxincreaseMp(type, Wis & 0xFF);
-        return min + nextInt(max - min + 1);
+        return GameRandom.next(min, max);
     }
 
     public static int MinincreaseMp(int type, int Wis) {
@@ -349,7 +340,7 @@ public final class CPCParamDB {
     }
 
     public static short increaseHp(int type, byte Con) {
-        return (short) (PureHp(type, Con & 0xFF) + nextInt(2));
+        return (short) (PureHp(type, Con & 0xFF) + GameRandom.nextInt(2));
     }
 
     public static short PureHp(int type, int Con) {

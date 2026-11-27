@@ -3,10 +3,10 @@ package l1j.server.server.model.BookQuest.Loader;
 import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 import l1j.server.server.model.BookQuest.BQSInformation;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 import l1j.server.server.templates.L1Npc;
@@ -93,7 +93,7 @@ public class BQSInformationLoader {
     
     public ArrayList<BQSInformation> createShuffleWeeks(int difficulty){
         ArrayList<BQSInformation> weeks = createWeeks(difficulty);
-        Collections.shuffle(weeks);
+        GameRandom.shuffle(weeks);
         return weeks;
     }
     

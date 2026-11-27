@@ -3,7 +3,6 @@ package l1j.server.server.model.world.instance.raid.spawn;
 import l1j.server.server.datatables.CObjectDB;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -11,6 +10,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Npc;
 
 public class RaidNpcSpawn {
@@ -136,11 +136,11 @@ public class RaidNpcSpawn {
 	
 	/** for random spawn **/
 	public L1NpcInstance spawnRandom(int mapId){
-		return spawnNpc(mapId, ThreadLocalRandom.current().nextInt(_right - _left) + _left, ThreadLocalRandom.current().nextInt(_bottom - _top) + _top);		
+		return spawnNpc(mapId, GameRandom.nextIntOrFixed(_left, _right), GameRandom.nextIntOrFixed(_top, _bottom));
 	}
 	
 	public L1NpcInstance spawnRandomBoss(int mapId){
-		return spawnBoss(mapId, ThreadLocalRandom.current().nextInt(_right - _left) + _left, ThreadLocalRandom.current().nextInt(_bottom - _top) + _top);		
+		return spawnBoss(mapId, GameRandom.nextIntOrFixed(_left, _right), GameRandom.nextIntOrFixed(_top, _bottom));
 	}
 	
 	/** for rectangle spawn. this is random spawn. **/
@@ -179,10 +179,10 @@ public class RaidNpcSpawn {
 		int length 						= _right - _left;
 		ArrayList<L1NpcInstance> list 	= new ArrayList<L1NpcInstance>(length * 4);
 		for(int i=0; i<length; i++){
-			list.add(spawnNpcNonPass(npcs[ThreadLocalRandom.current().nextInt(npcs.length)], mapId, _left + i, _top));
-			list.add(spawnNpcNonPass(npcs[ThreadLocalRandom.current().nextInt(npcs.length)], mapId, _right, _top + i));
-			list.add(spawnNpcNonPass(npcs[ThreadLocalRandom.current().nextInt(npcs.length)], mapId, _right - i, _bottom));
-			list.add(spawnNpcNonPass(npcs[ThreadLocalRandom.current().nextInt(npcs.length)], mapId, _left, _bottom - i));
+			list.add(spawnNpcNonPass(npcs[GameRandom.nextInt(npcs.length)], mapId, _left + i, _top));
+			list.add(spawnNpcNonPass(npcs[GameRandom.nextInt(npcs.length)], mapId, _right, _top + i));
+			list.add(spawnNpcNonPass(npcs[GameRandom.nextInt(npcs.length)], mapId, _right - i, _bottom));
+			list.add(spawnNpcNonPass(npcs[GameRandom.nextInt(npcs.length)], mapId, _left, _bottom - i));
 		}
 		return list;
 	}

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.BadNamesList;
@@ -17,6 +16,7 @@ import l1j.server.server.model.Beginner;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Skills;
 
 
@@ -228,7 +228,7 @@ public final class CS_CreateChar {
 		short init_hp = 0, init_mp = 0;
 		final int NewHi = 0; // 숨계
 		int startPosType = NewHi; 
-		int startPos = ThreadLocalRandom.current().nextInt(5);
+		int startPos = GameRandom.nextInt(5);
 
 		pc.setId(IdFactory.getInstance().nextId());
 
@@ -246,8 +246,8 @@ public final class CS_CreateChar {
 			pc.setY(START_LOC_Y[startPosType][startPos]);
 			pc.setMap(MAPID_LIST[pc.getType()]);
 		} else {
-			int randIdx = ThreadLocalRandom.current().nextInt(10) + 1;
-			int offset = ThreadLocalRandom.current().nextInt(3) - 3;
+			int randIdx = GameRandom.nextInt(10) + 1;
+			int offset = GameRandom.nextInt(3) - 3;
 			
 			int[][] baseCoords = {
 				{33445, 32794}, {33426, 32817}, {33426, 32802}, {33441, 32818}, {33438, 32813},

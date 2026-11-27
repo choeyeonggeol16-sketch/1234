@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Spliterator;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 
@@ -25,6 +24,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.set.hash.TIntHashSet;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Item;
 
 /** Intrusive, ordered inventory membership. The list monitor protects only links;
@@ -814,7 +814,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         if (size < 2) return;
         final L1ItemInstance[] rows = snapshotLocked().toArray(new L1ItemInstance[size]);
         for (int i = rows.length - 1; i > 0; i--) {
-            final int j = ThreadLocalRandom.current().nextInt(i + 1);
+            final int j = GameRandom.nextInt(i + 1);
             final L1ItemInstance tmp = rows[i]; rows[i] = rows[j]; rows[j] = tmp;
         }
         for (int i = 0; i < rows.length; i++) {

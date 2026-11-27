@@ -13,7 +13,6 @@ import java.sql.ResultSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.Random;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -23,6 +22,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_OnlyEffect;
+import l1j.server.server.shared.GameRandom;
 public class GameUtils {
 	public static boolean isNullOrEmpty(String s){
 		return s == null || s.equals("") || s.length() <= 0;
@@ -116,7 +116,6 @@ public class GameUtils {
 		}
 		return 0;
 	}
-	protected static Random _rnd = new Random(System.nanoTime());
 
 	public static int	MCS_HITRATE_MAX;
 	public static int	MCS_HITRATE_MIN;
@@ -327,7 +326,7 @@ public class GameUtils {
 	}
 	
 	public static int checkAroundWidePassable(L1PcInstance body, int d){
-		if(_rnd.nextBoolean()){
+		if(GameRandom.nextBoolean()){
 			int h		= _headingWideLines[(d + 1) % 8];
 			if(!isVisibleObjects(body, h))
 				return h;
@@ -355,7 +354,7 @@ public class GameUtils {
 				return h;
 		}
 		
-		if(_rnd.nextInt(100) < 5)
+		if(GameRandom.nextInt(100) < 5)
 			return checkReverseAroundPassable(body, d);
 		return -1;
 	}
@@ -424,7 +423,7 @@ public class GameUtils {
 		else if (hit <= MCS_HITRATE_MIN)
 			hit = MCS_HITRATE_MIN;
 
-		if ((_rnd.nextInt(100)) < hit)
+		if ((GameRandom.nextInt(100)) < hit)
 			return true;
 		return false;
 	}
@@ -480,7 +479,7 @@ public class GameUtils {
 		int result = 0;
 		try{
 			int intel = attacker.GetTotalStatInt();
-			int pure = _rnd.nextInt(max - min) + min;
+			int pure = GameRandom.nextIntOrFixed(min, max);
 			double dmg = pure + (intel * MCS_STSSPELL_STATADDER);
 			result = getMagicDamage(dmg, target.GetMDefendAndConsumeErase());
 		}catch(Exception e){
@@ -502,12 +501,12 @@ public class GameUtils {
 			dmg = getMagicDamage(attacker, pc, min, max);
 			if(pc.hasSkillEffect(L1SkillId.FAFU_MAAN) || pc.hasSkillEffect(L1SkillId.LIFE_MAAN) || 
 					pc.hasSkillEffect(L1SkillId.SHAPE_MAAN) || pc.hasSkillEffect(L1SkillId.BIRTH_MAAN)){
-				int MaanMagicCri = _rnd.nextInt(100) + 1;
+				int MaanMagicCri = GameRandom.nextInt(100) + 1;
 			    if (MaanMagicCri <= 35)
 			    	dmg /= 2;
 			}
 		}else{
-			dmg = _rnd.nextInt(max - min) + min;
+			dmg = GameRandom.nextIntOrFixed(min, max);
 		}
 		
 		dmg -= pc.getDamageReductionByArmor();
@@ -574,7 +573,7 @@ public class GameUtils {
 	}
 	
 	public static <E> E getRandomListElement(ArrayList<E> list){
-		return list.get(_rnd.nextInt(list.size()));
+		return list.get(GameRandom.nextInt(list.size()));
 	}
 	
 	public static ArrayList<L1Object> createKnownPlayers(L1PcInstance body){

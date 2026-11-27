@@ -4,7 +4,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.TimeZone;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -31,6 +30,7 @@ import l1j.server.server.model.npc.spawn.boss.BossTeleportInvites;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TAM_WINDOW;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.ServerMessage;
 import l1j.server.server.utils.TYUtil;
 
@@ -402,10 +402,7 @@ public final class CS_ActionUi {
         }
 
         final int index =
-                ThreadLocalRandom
-                        .current()
-                        .nextInt(4)
-                        << 1;
+                GameRandom.nextInt(4) << 1;
 
         pc.start_teleport(
                 SKY_GARDEN_COORDS[index],

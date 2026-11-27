@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.Card;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -7,7 +9,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 import java.util.ArrayList;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import java.util.Random;
 import java.util.function.Consumer;
 
 import l1j.server.Config;
@@ -19,7 +20,6 @@ import l1j.server.server.utils.MessageUtil;
  * 영웅 카드 합성 시스템 
  */
 public class L1CardAlchemy2 {
-    private static final Random _random = new Random(System.nanoTime());
 
     // 카드 ID별 계정 데이터 차감 매핑 (36종 영웅 카드)
     @SuppressWarnings("unchecked")
@@ -158,7 +158,7 @@ public class L1CardAlchemy2 {
             return false;
         }
 
-        final int rx2 = _random.nextInt(100) + 1;
+        final int rx2 = GameRandom.nextInt(100) + 1;
         final int chance = Config.legend_per + (pc.영웅합성확률증가 ? Config.legend_per_potion : 0);
         final boolean isSuccess = rx2 <= chance;
         final ResultCard result = isSuccess ? getLegendResult() : getHeroResult();
@@ -267,12 +267,12 @@ public class L1CardAlchemy2 {
     };
 
     private static ResultCard getLegendResult() {
-        final int index = _random.nextInt(36);
+        final int index = GameRandom.nextInt(36);
         return LEGEND_CARDS[index];
     }
 
     private static ResultCard getHeroResult() {
-        final int index = _random.nextInt(36);
+        final int index = GameRandom.nextInt(36);
         return HERO_CARDS[index];
     }
 

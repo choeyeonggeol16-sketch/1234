@@ -7,7 +7,6 @@ import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.utils.CommonUtil;
 
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.IdFactory;

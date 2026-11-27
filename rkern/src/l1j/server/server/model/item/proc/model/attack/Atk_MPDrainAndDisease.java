@@ -1,4 +1,6 @@
 package l1j.server.server.model.item.proc.model.attack;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
@@ -14,7 +16,7 @@ public class Atk_MPDrainAndDisease  extends ItemSkillModel{
 	public double get(L1Character attacker, L1Character defender, L1ItemInstance t_item, double dwd) {
 		int dmp = defender.getCurrentMp();
 		if(dmp > 0){
-			int drn = _rnd.nextInt(5);
+			int drn = GameRandom.nextInt(5);
 			if(drn > dmp)
 				drn = dmp;
 			defender.setCurrentMp((int)(defender.getCurrentMp() - drn));
@@ -39,7 +41,7 @@ public class Atk_MPDrainAndDisease  extends ItemSkillModel{
 			if(!isInPercent(pure))
 				return 0D;
 		}
-		double time =  _rnd.nextInt(max_val - min_val) + min_val;
+		double time =  GameRandom.nextIntOrFixed(min_val, max_val);
 		time 		= calcEnchant(t_item, time);
 		time		= calcAttr(defender, time);
 		time		= calcStat(attacker, time);

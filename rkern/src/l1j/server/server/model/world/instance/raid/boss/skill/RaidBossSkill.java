@@ -1,7 +1,6 @@
 package l1j.server.server.model.world.instance.raid.boss.skill;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -12,6 +11,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.sc.packet.SC_OnlyEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 public abstract class RaidBossSkill{
@@ -119,7 +119,7 @@ public abstract class RaidBossSkill{
 	}
 	
 	protected int calcDamageForValakas(L1Character attacker, L1PcInstance pc){
-		if(pc.hasSkillEffect(L1SkillId.IMMUNE_TO_HARM) && ThreadLocalRandom.current().nextInt(100) <= RaidLoadManager.MRS_BS_VALA_IMMUNEBLADE){
+		if(pc.hasSkillEffect(L1SkillId.IMMUNE_TO_HARM) && GameRandom.nextInt(100) <= RaidLoadManager.MRS_BS_VALA_IMMUNEBLADE){
 			SC_OnlyEffect.send(pc, pc.getId(), 15961);
             SC_OnlyEffect.broadcastFast(pc, pc.getId(), 15961);
 			pc.removeSkillEffect(L1SkillId.IMMUNE_TO_HARM);
@@ -138,12 +138,12 @@ public abstract class RaidBossSkill{
 			dmg = GameUtils.getMagicDamage(attacker, pc, min, max);
 			if(pc.hasSkillEffect(L1SkillId.FAFU_MAAN) || pc.hasSkillEffect(L1SkillId.LIFE_MAAN) || 
 					pc.hasSkillEffect(L1SkillId.SHAPE_MAAN) || pc.hasSkillEffect(L1SkillId.BIRTH_MAAN)){
-				int MaanMagicCri = ThreadLocalRandom.current().nextInt(100) + 1;
+				int MaanMagicCri = GameRandom.nextInt(100) + 1;
 			    if (MaanMagicCri <= 35)
 			    	dmg /= 2;
 			}
 		}else{
-			dmg = ThreadLocalRandom.current().nextInt(Math.max(1, max - min)) + min;
+			dmg = GameRandom.nextInt(Math.max(1, max - min)) + min;
 		}
 		
 		dmg -= pc.getDamageReductionByArmor();
@@ -172,7 +172,7 @@ public abstract class RaidBossSkill{
 		/**수호성 아툰**/
 		if(pc.getAccount().getTree_select4() != 0){
 			int a = pc.getAccount().getTree_select4();
-			int r = ThreadLocalRandom.current().nextInt(100) + 1;
+			int r = GameRandom.nextInt(100) + 1;
 			if(r <= 2){
 				switch(a){
 				case 20796:
@@ -217,12 +217,12 @@ public abstract class RaidBossSkill{
 			dmg = GameUtils.getMagicDamage(attacker, pc, min, max);
 			if(pc.hasSkillEffect(L1SkillId.FAFU_MAAN) || pc.hasSkillEffect(L1SkillId.LIFE_MAAN) || 
 					pc.hasSkillEffect(L1SkillId.SHAPE_MAAN) || pc.hasSkillEffect(L1SkillId.BIRTH_MAAN)){
-				int MaanMagicCri = ThreadLocalRandom.current().nextInt(100) + 1;
+				int MaanMagicCri = GameRandom.nextInt(100) + 1;
 			    if (MaanMagicCri <= 35)
 			    	dmg /= 2;
 			}
 		}else{
-			dmg = ThreadLocalRandom.current().nextInt(Math.max(1, max - min)) + min;
+			dmg = GameRandom.nextInt(Math.max(1, max - min)) + min;
 		}
 		
 		dmg -= pc.getDamageReductionByArmor();
@@ -268,7 +268,7 @@ public abstract class RaidBossSkill{
 	}
 	
 	public boolean setAbsoluteBarrierDestroy(L1PcInstance pc){
-		if(ThreadLocalRandom.current().nextInt(100) <= RaidLoadManager.MRS_BS_VALA_ABSOLUTEBLADE){
+		if(GameRandom.nextInt(100) <= RaidLoadManager.MRS_BS_VALA_ABSOLUTEBLADE){
 			pc.removeSkillEffect(L1SkillId.ABSOLUTE_BARRIER);
 			SC_OnlyEffect.send(pc, pc.getId(), 15835);
             SC_OnlyEffect.broadcast(pc, pc.getId(), 15835);

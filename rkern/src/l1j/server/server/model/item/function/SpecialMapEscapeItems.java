@@ -16,7 +16,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_AttackStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import static l1j.server.server.model.item.function.CreatureItemActions._random;
+import l1j.server.server.shared.GameRandom;
 import static l1j.server.server.model.item.function.CreatureItemActions.cancelAbsoluteBarrier;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;
 import static l1j.server.server.model.item.function.TransformationItems.polyAction;
@@ -42,7 +42,7 @@ final class SpecialMapEscapeItems {
         }
 
         if (pc.getMap().isEscapable() || pc.isGm()) {
-            final int rx = _random.nextInt(7);
+            final int rx = GameRandom.nextInt(7);
             final int ux = 32768 + rx;
             final int uy = 32834 + rx;
             UseDurableConsume(pc, item, () -> {

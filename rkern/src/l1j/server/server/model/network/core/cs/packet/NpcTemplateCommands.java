@@ -1,16 +1,15 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.shared.GameRandom;
 
 /** Template-specific command dispatch after the existing HTML/XML/listener precedence. */
 final class NpcTemplateCommands {
     private static final Logger LOG = Logger.getLogger(NpcTemplateCommands.class.getName());
-    private static final Random _random = new Random(System.nanoTime());
     private NpcTemplateCommands() {}
 
     static String dispatch(L1PcInstance pc, L1Object obj, String s, String htmlid) {
@@ -23,16 +22,16 @@ final class NpcTemplateCommands {
                 case 5163 -> NpcCastleActions.redKnight(pc, s, htmlid);
                 case 7000079 -> NpcGameEventActions.bossTraining(pc, npc, s, htmlid);
                 case 7200022 -> NpcBuffCommands.birthday(pc, s, htmlid, obj);
-                case 7000080 -> NpcGameEventActions.bossKey(pc, npc, s, htmlid, _random);
+                case 7000080 -> NpcGameEventActions.bossKey(pc, npc, s, htmlid, GameRandom.current());
                 case 7210050 -> NpcQuestTransactions.oldBook(pc, s, htmlid);
                 case 7210000 -> NpcTravelCommands.waterDragonDungeon(pc, s, htmlid);
                 case 7310088 -> NpcTravelCommands.peter(pc, s, htmlid);
-                case 505011 -> NpcTravelCommands.jeep(pc, s, htmlid, _random);
+                case 505011 -> NpcTravelCommands.jeep(pc, s, htmlid, GameRandom.current());
                 case 535 -> NpcQuestTransactions.exchangeProtonGun(pc, obj.getId(), s, htmlid);
                 case 7210007 -> NpcQuestTransactions.hamo(pc, obj.getId(), s, htmlid);
                 case 7210008 -> NpcGameEventActions.valakasReady(pc, npcid, s, htmlid);
                 case 7210009 -> NpcGameEventActions.valakasRaid(pc, npcid, s, htmlid);
-                case 7310093 -> NpcTravelCommands.piar(pc, s, htmlid, _random);
+                case 7310093 -> NpcTravelCommands.piar(pc, s, htmlid, GameRandom.current());
                 case 70611 -> NpcBuffCommands.lawfulBook(pc, s, htmlid);
                 case 7320159 -> NpcBuffCommands.dragonHunter(pc, s, htmlid);
                 case 50015 -> NpcTravelCommands.pcRoom50015(pc, s, htmlid);
@@ -56,9 +55,9 @@ final class NpcTemplateCommands {
                 case 522 -> NpcBuffCommands.hunterBless(pc, s, htmlid);
                 case 81210 -> NpcTravelCommands.townTravel(pc, s, htmlid);
                 case 70798 -> NpcTravelCommands.ricky(pc, s, htmlid);
-                case 50078 -> NpcTravelCommands.gardenNotice(pc, s, htmlid, _random);
-                case 7320034 -> NpcTravelCommands.zigur(pc, s, htmlid, _random);
-                case 7320033 -> NpcTravelCommands.siegeTravel(pc, s, htmlid, _random);
+                case 50078 -> NpcTravelCommands.gardenNotice(pc, s, htmlid, GameRandom.current());
+                case 7320034 -> NpcTravelCommands.zigur(pc, s, htmlid, GameRandom.current());
+                case 7320033 -> NpcTravelCommands.siegeTravel(pc, s, htmlid, GameRandom.current());
                 case 7310174 -> NpcExchangeCommands.eva(pc, obj.getId(), s, htmlid);
                 case 70690 -> NpcExchangeCommands.bamut(pc, obj.getId(), s, htmlid);
                 case 7310149 -> NpcExchangeCommands.memoryCrystal(pc, obj.getId(), s, htmlid);
@@ -66,7 +65,7 @@ final class NpcTemplateCommands {
                 case 7200000 -> NpcExperienceCommands.ekins(pc, obj.getId(), s, htmlid);
                 case 7200001 -> NpcGameEventActions.fantasyIsland(pc, s, htmlid);
                 case 70641 -> NpcExchangeCommands.habert(pc, obj.getId(), s, htmlid);
-                case 1231231 -> NpcTravelCommands.forgottenIsland(pc, s, htmlid, _random);
+                case 1231231 -> NpcTravelCommands.forgottenIsland(pc, s, htmlid, GameRandom.current());
                 case 71180 -> NpcExchangeCommands.jape(pc, obj.getId(), s, htmlid);
                 case 5066 -> NpcExchangeCommands.fireGolem(pc, obj, s, htmlid);
                 case 80077 -> NpcTravelCommands.aldran(pc, s, htmlid);

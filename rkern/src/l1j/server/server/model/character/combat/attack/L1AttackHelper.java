@@ -1,7 +1,8 @@
 package l1j.server.server.model.character.combat.attack;
 
+import l1j.server.server.shared.GameRandom;
 
-import java.util.concurrent.ThreadLocalRandom;
+
 
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -38,7 +39,7 @@ public final class L1AttackHelper {
         final AttackSkillChanceConfig.Settings rates = AttackSkillChanceConfig.get();
         chance = Math.min(chance, twoHand ? rates.absoluteBladeTwoHandCap() : rates.absoluteBladeOneHandCap());
 
-		if (ThreadLocalRandom.current().nextInt(1, 101) > chance) return;
+		if (GameRandom.nextInt(1, 101) > chance) return;
 
 		// 중복 호출/경합 방지용 재확인
 		if (!targetPc.hasSkillEffect(L1SkillId.ABSOLUTE_BARRIER)) return;
@@ -60,7 +61,7 @@ public final class L1AttackHelper {
 	public static double rollMaanEvadeBonus(final L1PcInstance targetPc) {
 		if (targetPc == null) return 0.0;
 		if (!hasAnyMaan(targetPc)) return 0.0;
-		return (ThreadLocalRandom.current().nextInt(1, 101) <= AttackSkillChanceConfig.get().maanEvadeChance()) ? MAAN_EVADE_BONUS : 0.0;
+		return (GameRandom.nextInt(1, 101) <= AttackSkillChanceConfig.get().maanEvadeChance()) ? MAAN_EVADE_BONUS : 0.0;
 	}
 
 	private static boolean hasAnyMaan(final L1PcInstance pc) {
@@ -212,7 +213,7 @@ public final class L1AttackHelper {
 		if (c <= 0) return 0;
 		if (c > 100) c = 100;
 
-		final int roll = ThreadLocalRandom.current().nextInt(1, 101); // 1..100
+		final int roll = GameRandom.nextInt(1, 101); // 1..100
 		return (roll <= c) ? bonusDamage : 0;
 	}
 

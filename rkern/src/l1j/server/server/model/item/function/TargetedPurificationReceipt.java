@@ -1,10 +1,10 @@
 package l1j.server.server.model.item.function;
 
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -30,9 +30,8 @@ final class TargetedPurificationReceipt {
         final boolean success;
         final boolean destroyTargetOnFailure;
         final int failMessage;
-        final ThreadLocalRandom random = ThreadLocalRandom.current();
         if (reagentId == 40925 && targetId >= 40987 && targetId <= 40989) {
-            success = random.nextInt(100) < Config.CREATE_CHANCE_RECOLLECTION;
+            success = GameRandom.nextInt(100) < Config.CREATE_CHANCE_RECOLLECTION;
             resultId = targetId + 186;
             destroyTargetOnFailure = true;
             failMessage = 158;
@@ -40,17 +39,17 @@ final class TargetedPurificationReceipt {
                 && targetId >= (41173 + (reagentId - 40926) * 3)
                 && targetId <= (41175 + (reagentId - 40926) * 3)) {
             // The old roll was Random.nextInt(99) + 1 (1..99), strict '<'.
-            success = random.nextInt(99) + 1 < Config.CREATE_CHANCE_MYSTERIOUS;
+            success = GameRandom.nextInt(99) + 1 < Config.CREATE_CHANCE_MYSTERIOUS;
             resultId = targetId - 12;
             destroyTargetOnFailure = false;
             failMessage = 160;
         } else if (reagentId == 40964 && targetId >= 41011 && targetId <= 41018) {
-            success = random.nextInt(99) + 1 <= Config.CREATE_CHANCE_HISTORY_BOOK;
+            success = GameRandom.nextInt(99) + 1 <= Config.CREATE_CHANCE_HISTORY_BOOK;
             resultId = targetId + 8;
             destroyTargetOnFailure = true;
             failMessage = 158;
         } else if (reagentId == 41036 && targetId >= 41038 && targetId <= 41047) {
-            success = random.nextInt(99) + 1 <= Config.CREATE_CHANCE_DIARY;
+            success = GameRandom.nextInt(99) + 1 <= Config.CREATE_CHANCE_DIARY;
             resultId = targetId + 10;
             destroyTargetOnFailure = true;
             failMessage = 158;

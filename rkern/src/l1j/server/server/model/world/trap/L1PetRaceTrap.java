@@ -1,11 +1,12 @@
 package l1j.server.server.model.world.trap;
+
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_GameList;
 
 import l1j.server.server.model.network.core.sc.packet.SC_GameRanking;
 
 import l1j.server.server.model.network.core.sc.packet.SC_GameRap;
 
-import java.util.Random;
 
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1PolyMorph;
@@ -149,9 +150,8 @@ public class L1PetRaceTrap extends L1Trap {
 				}
 				c.getInventory().CreateOrAddItem(41308, 1);
 
-				Random random = new Random(System.nanoTime()); // 펫레이싱
 
-				if(random.nextInt() < 33)
+				if(GameRandom.isWinning(100, 33))
 				{
 					L1ItemInstance item = c.getInventory().CreateOrAddItem(3000024, 1);
 					// Preserve the one-item notification even when storeItem merged a stack.
@@ -162,8 +162,7 @@ public class L1PetRaceTrap extends L1Trap {
 				racing.endGame();
 			}
 		}else if (_type.equals("g")) { //변신트랩 55
-			Random random = new Random();
-			int chance = random.nextInt(31);
+			int chance = GameRandom.nextInt(31);
 			switch (chance) {
 				/**기본 펫 */
 				case 0: 
@@ -287,8 +286,7 @@ public class L1PetRaceTrap extends L1Trap {
 					break;
 			}
 		}else if (_type.equals("h")) { //변신트랩 56
-			Random random = new Random();
-			int chance = random.nextInt(31);
+			int chance = GameRandom.nextInt(31);
 			switch (chance) {
 				/**기본 펫 */
 				case 0: 

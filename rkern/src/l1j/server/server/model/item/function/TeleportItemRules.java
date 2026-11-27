@@ -1,7 +1,6 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
-import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
 import l1j.server.server.model.L1Location;

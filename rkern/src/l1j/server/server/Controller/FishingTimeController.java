@@ -1,6 +1,5 @@
 package l1j.server.server.Controller;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +27,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_FISHING_NOT;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 
 /**
@@ -534,12 +534,12 @@ public final class FishingTimeController {
 
     private static int rollFishingDrop(int mode, byte expType) {
         if (mode == 0 && Config.FISH_COMS) {
-            final int chance = ThreadLocalRandom.current().nextInt(1, 1001);
+            final int chance = GameRandom.nextInt(1, 1001);
             final boolean grown = expType == EXP_GROWN_UP;
             final int limit = grown ? Config.Fishchance1 : Config.Fishchance;
             return selectSpecialDrop(grown, chance, limit);
         }
-        return selectDrop(fishingRewardTable(mode, expType), ThreadLocalRandom.current().nextInt(1, 10001));
+        return selectDrop(fishingRewardTable(mode, expType), GameRandom.nextInt(1, 10001));
     }
 
     private static int[] fishingRewardTable(int mode, byte expType) {

@@ -1,6 +1,7 @@
 package l1j.server.server.model.character.combat.titan;
 
-import java.util.concurrent.ThreadLocalRandom;
+import l1j.server.server.shared.GameRandom;
+
 
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -58,7 +59,7 @@ public final class TitanProcEngine {
         // src22 evaluates the integer HP percentage before comparison.
         final int hpPercent = (int) (((long) hp * 100L) / maxHp);
         if (hpPercent > threshold) return false;
-        if (chance < 100 && ThreadLocalRandom.current().nextInt(100) >= chance) return false;
+        if (chance < 100 && GameRandom.nextInt(100) >= chance) return false;
 
         // Do not reflect when CacheD will reject the catalyst mutation.
         if (defender.isItemTransferBusy()) return false;

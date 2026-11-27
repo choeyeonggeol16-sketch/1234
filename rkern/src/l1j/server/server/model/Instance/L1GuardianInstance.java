@@ -2,7 +2,6 @@
 package l1j.server.server.model.Instance;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
@@ -22,6 +21,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Npc;
 public class L1GuardianInstance extends L1NpcInstance {
 	/**
@@ -29,7 +29,6 @@ public class L1GuardianInstance extends L1NpcInstance {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private Random _random = new Random(System.nanoTime());
 	private L1GuardianInstance _npc = this;
 
 	/**
@@ -114,7 +113,7 @@ public class L1GuardianInstance extends L1NpcInstance {
 	/** Called only after the reference design executor confirms a barehanded elf hit. */
 	public boolean onGuardianBarehandedHit(L1PcInstance player) {
 		if (getNpcTemplate().get_npcId() == 70848) { // tree
-			int chance = _random.nextInt(100) + 1;
+			int chance = GameRandom.nextInt(100) + 1;
 			if (chance <= 10) {
 				player.getInventory().CreateOrAddItem(40506, 1);
 				SC_ServerMessage.send(player, 143, "$755", "$794");
@@ -129,14 +128,14 @@ public class L1GuardianInstance extends L1NpcInstance {
 			}
 		}
 		if (getNpcTemplate().get_npcId() == 70850) {
-			int chance = _random.nextInt(100) + 1;
+			int chance = GameRandom.nextInt(100) + 1;
 			if (chance <= 30) {
 				player.getInventory().CreateOrAddItem(40519, 5);
 				SC_ServerMessage.send(player, 143, "$753", "$760" + " (" + 5 + ")");
 			}
 		}
 		if (getNpcTemplate().get_npcId() == 70846) {
-			int chance = _random.nextInt(100) + 1;
+			int chance = GameRandom.nextInt(100) + 1;
 			if (chance <= 30) {
 				player.getInventory().CreateOrAddItem(40503, 1);
 				SC_ServerMessage.send(player, 143, "$752", "$769");

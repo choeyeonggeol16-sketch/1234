@@ -1,5 +1,6 @@
 package l1j.server.server.model.Instance;
-import java.util.concurrent.ThreadLocalRandom;
+
+import l1j.server.server.shared.GameRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import l1j.server.Config;
@@ -207,8 +208,8 @@ public class L1DollInstance extends L1NpcInstance {
 
 		setMap(master.getMapId());
 
-		int nx = master.getX() + ThreadLocalRandom.current().nextInt(5) - 2;
-		int ny = master.getY() + ThreadLocalRandom.current().nextInt(5) - 2;
+		int nx = master.getX() + GameRandom.nextInt(5) - 2;
+		int ny = master.getY() + GameRandom.nextInt(5) - 2;
 
 		if (!getMap().isInMap(nx, ny) || !getMap().isPassable(nx, ny)) {
 			nx = master.getX();
@@ -217,7 +218,7 @@ public class L1DollInstance extends L1NpcInstance {
 		setX(nx);
 		setY(ny);
 		
-		setHeading(ThreadLocalRandom.current().nextInt(8));
+		setHeading(GameRandom.nextInt(8));
 		
 		setLightSize(template.getLightSize());
 

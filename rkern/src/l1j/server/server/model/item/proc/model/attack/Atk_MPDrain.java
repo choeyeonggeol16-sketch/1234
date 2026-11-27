@@ -6,13 +6,14 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.item.proc.model.ItemSkillModel;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
+import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.GameUtils;
 
 public class Atk_MPDrain extends ItemSkillModel{
 
 	@Override
 	public double get(L1Character attacker, L1Character defender, L1ItemInstance t_item, double dwd) {
-		double dmg = _rnd.nextInt(max_val - min_val) + min_val;
+		double dmg = GameRandom.nextIntOrFixed(min_val, max_val);
 		int enchant = t_item.getEnchantLevel();
 		if(enchant >= 7){
 			dmg += ((enchant - 7) + 4);

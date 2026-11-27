@@ -1,6 +1,5 @@
 package l1j.server.server.model.npc.ai;
 
-import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -8,6 +7,7 @@ import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
+import l1j.server.server.shared.GameRandom;
 /**
  * NPC(Pet/Summon/Support 등)의 포션 자동 사용 정책.
  */
@@ -48,7 +48,7 @@ public final class CNpcItemUse {
         if (chance <= 0) {
             return false;
         }
-        if (chance < 100 && ThreadLocalRandom.current().nextInt(100) >= chance) {
+        if (chance < 100 && GameRandom.nextInt(100) >= chance) {
             return false;
         }
         if (type == USEITEM_HEAL) {
