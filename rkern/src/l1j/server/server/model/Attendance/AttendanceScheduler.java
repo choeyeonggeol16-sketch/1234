@@ -8,12 +8,12 @@ import java.util.logging.Logger;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_USER_DATA_EXTEND;
 
-public class AttendanceScheduler implements L2TimeListener{
+public class AttendanceScheduler implements GameTimeListener{
 	private static final int UPDATE_SECOND = 1;
 	public static final int ATTEN_SHD_RESULT_ERROR = -1;
 	public static final int ATTEN_SHD_RESULT_NONUPDATE = 0;
@@ -39,20 +39,20 @@ public class AttendanceScheduler implements L2TimeListener{
 
 	public synchronized void run() {
 		if (_isrun) return;
-		final Calendar cal = CL2Time.getRealTimeCalendar();
+		final Calendar cal = CGameTime.getRealTimeCalendar();
 		final int period = AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND;
 		if (period <= 0) throw new IllegalStateException("Invalid attendance reset period: " + period);
 		_accumulate_second = (cal.get(Calendar.HOUR_OF_DAY) * 3600
 				+ cal.get(Calendar.MINUTE) * 60 + cal.get(Calendar.SECOND)) % period;
 		queueOverdueDay(cal.getTimeInMillis());
 		_isrun = true;
-		CL2Time.addRealListener(this, Calendar.SECOND);
+		CGameTime.addRealListener(this, Calendar.SECOND);
 	}
 	
 	public synchronized void dispose() {
 		if (!_isrun) return;
 		_isrun = false;
-		CL2Time.removeRealListener(this, Calendar.SECOND);
+		CGameTime.removeRealListener(this, Calendar.SECOND);
 		_pendingSeconds = 0;
 		_pendingSecondsAfterDay = 0;
 		_pendingDayMillis = 0L;
@@ -71,7 +71,7 @@ public class AttendanceScheduler implements L2TimeListener{
 
 
 	@Override
-	public void onSecondChanged(L2DateTime time) {
+	public void onSecondChanged(CDateTime time) {
 		boolean submit = false;
 		synchronized (this) {
 			if (!_isrun) return;

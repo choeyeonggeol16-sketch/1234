@@ -63,7 +63,7 @@ import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
 import l1j.server.server.model.character.companion.CompanionCommandExecutor;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
 import l1j.server.server.model.item.enchant.ItemEnchantSystemLoadManager;
@@ -1803,7 +1803,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			StringTokenizer tok = new StringTokenizer(param);
 			String name = tok.nextToken();
 			int minute = Integer.parseInt(tok.nextToken());
-			Calendar cal = CL2Time.getRealTimeCalendar();
+			Calendar cal = CGameTime.getRealTimeCalendar();
 			if (minute != 0)
 				cal.add(Calendar.MINUTE, minute);
 

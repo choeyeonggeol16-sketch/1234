@@ -28,7 +28,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.CCreatureController;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.character.animation.SpriteInformation;
@@ -147,7 +147,7 @@ public final class PrivateShopSettlementRegression {
         Config.RATE_WEIGHT_LIMIT = 1;
         Config.CACHE_MAP_FILES = true;
         Config.WALK_POSITION_CHECK = false;
-        CL2Time.prepare();
+        CGameTime.prepare();
         L1WorldMap.getInstance().addMap(MARKET);
         CPacketFilter.getInstance().load();
         SprBoundary.do_load();

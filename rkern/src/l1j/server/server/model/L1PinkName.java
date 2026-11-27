@@ -4,7 +4,7 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CServerTimer;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.shared.L1Type;
@@ -98,7 +98,7 @@ public class L1PinkName {
 
         PinkTicker(L1PcInstance pc) {
             this.pc = pc;
-            long now = CL2Time.getTime();
+            long now = CGameTime.getTime();
             this.nextOptionalSendTime = now + pc.getPinkNameTime() + 1;
         }
 
@@ -118,7 +118,7 @@ public class L1PinkName {
                     pc.setPinkName(true);
                     pc.send_pink_name(left);
                 }
-                long now = CL2Time.getTime();
+                long now = CGameTime.getTime();
                 if (nextOptionalSendTime > 0 && now >= nextOptionalSendTime) {
                     pc.send_pink_name(left);
                     nextOptionalSendTime = -1;

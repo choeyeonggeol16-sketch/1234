@@ -18,9 +18,9 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.datatables.TownTable;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.L2TimeListener;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -29,7 +29,7 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.templates.L1Town;
 
-public final class CResidenceSettlement implements L2TimeListener {
+public final class CResidenceSettlement implements GameTimeListener {
     public static final int FIRST_TOWN = 1;
     public static final int LAST_TOWN = 10;
     private static final int SETTLEMENT_DAY = 25;
@@ -40,13 +40,13 @@ public final class CResidenceSettlement implements L2TimeListener {
 
     private static volatile boolean settling;
     private static volatile long period = 1;
-    private CL2Time clock;
+    private CGameTime clock;
     private boolean scheduled;
     private long clockGeneration;
     private int lastMonth = Integer.MIN_VALUE;
     private int lastDay = Integer.MIN_VALUE;
     private static volatile int uncertainMonth = Integer.MIN_VALUE;
-    private L2DateTime pendingDay;
+    private CDateTime pendingDay;
     private boolean pendingMonthly;
 
     private CResidenceSettlement() {}
@@ -73,7 +73,7 @@ public final class CResidenceSettlement implements L2TimeListener {
         return false;
     }
 
-    public synchronized void start(CL2Time source) {
+    public synchronized void start(CGameTime source) {
         if (clock == source) return;
         stop();
         TownTable.getInstance();
@@ -92,7 +92,7 @@ public final class CResidenceSettlement implements L2TimeListener {
     }
 
     @Override
-    public synchronized void onDayChanged(L2DateTime time) {
+    public synchronized void onDayChanged(CDateTime time) {
         if (clock == null) return;
         if (pendingDay == null || !pendingMonthly) {
             pendingDay = time;
@@ -102,37 +102,37 @@ public final class CResidenceSettlement implements L2TimeListener {
     }
 
     @Override
-    public synchronized void onHourChanged(L2DateTime time) {
+    public synchronized void onHourChanged(CDateTime time) {
         submitPending();
     }
 
     private void submitPending() {
-        L2DateTime time = pendingDay;
+        CDateTime time = pendingDay;
         if (time == null || scheduled) return;
         if (alreadyProcessed(time, pendingMonthly) || request(time, pendingMonthly)) pendingDay = null;
     }
 
-    private static boolean isMonthly(L2DateTime time) {
+    private static boolean isMonthly(CDateTime time) {
         return time.get(Calendar.DAY_OF_MONTH) == SETTLEMENT_DAY;
     }
 
     public synchronized boolean request(boolean monthly) {
-        return clock != null && request(CL2Time.getGameDateTime(), monthly);
+        return clock != null && request(CGameTime.getGameDateTime(), monthly);
     }
 
-    private static int monthKey(L2DateTime time) {
+    private static int monthKey(CDateTime time) {
         return time.get(Calendar.YEAR) * 12 + time.get(Calendar.MONTH);
     }
 
-    private static int dayKey(L2DateTime time) {
+    private static int dayKey(CDateTime time) {
         return monthKey(time) * 32 + time.get(Calendar.DAY_OF_MONTH);
     }
 
-    private boolean alreadyProcessed(L2DateTime time, boolean monthly) {
+    private boolean alreadyProcessed(CDateTime time, boolean monthly) {
         return monthly ? monthKey(time) == lastMonth : dayKey(time) == lastDay;
     }
 
-    private boolean request(L2DateTime time, boolean monthly) {
+    private boolean request(CDateTime time, boolean monthly) {
         if (clock == null || scheduled || alreadyProcessed(time, monthly)) return false;
         long generation = clockGeneration;
         scheduled = true;
@@ -146,7 +146,7 @@ public final class CResidenceSettlement implements L2TimeListener {
         }
     }
 
-    private void run(long generation, L2DateTime time, boolean monthly) {
+    private void run(long generation, CDateTime time, boolean monthly) {
         int month = monthKey(time);
         int day = dayKey(time);
         try {

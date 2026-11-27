@@ -101,7 +101,7 @@ import l1j.server.server.model.character.companion.CompanionLoader;
 import l1j.server.server.model.character.effect.action.loader.EffectModelLoader;
 import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
 import l1j.server.server.model.character.scheduler.CInventoryExpiry;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.world.town.CResidenceSettlement;
 import l1j.server.server.model.item.L1TreasureBox;
 import l1j.server.server.model.item.collection.loader.CollectionLoadManager;
@@ -199,7 +199,7 @@ public class GameServer {
 		// 온라인 상태 리셋트
 		CharacterTable.clearOnlineStatus();
 		// Loaders can read time and register listeners before callbacks start.
-		CL2Time.prepare();
+		CGameTime.prepare();
 		
 		KeyTable.initBossKey();
 
@@ -349,8 +349,8 @@ public class GameServer {
 		if (Config.AUTO_GM_SHOP) {
 			NpcShopManager.getInstance().start();
 		}
-        CResidenceSettlement.getInstance().start(CL2Time.getInstance());
-		CL2Time.start();
+        CResidenceSettlement.getInstance().start(CGameTime.getInstance());
+		CGameTime.start();
 	}
 
     public void disconnectAllCharacters() {
@@ -596,7 +596,7 @@ public class GameServer {
             Server.stopLoginServer();
             CInstantZoneManager.stopAccepting();
             disconnectAllCharacters();
-            CL2Time.stop();
+            CGameTime.stop();
             // Let accepted off-owner work finish before removing the world, its
             // owner threads, or the database that those callbacks may still use.
             RaidSpace.release();

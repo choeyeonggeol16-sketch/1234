@@ -11,11 +11,11 @@ import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 
-public final class NpcChatTimeController implements Runnable, L2TimeListener {
+public final class NpcChatTimeController implements Runnable, GameTimeListener {
     private static final Logger LOG = Logger.getLogger(NpcChatTimeController.class.getName());
     private final AtomicBoolean inFlight = new AtomicBoolean();
     private volatile boolean started;
@@ -33,25 +33,25 @@ public final class NpcChatTimeController implements Runnable, L2TimeListener {
 
     public synchronized void start() {
         if (started) return;
-        final CL2Time clock = CL2Time.getInstance();
-        if (clock == null) throw new IllegalStateException("CL2Time not initialized");
+        final CGameTime clock = CGameTime.getInstance();
+        if (clock == null) throw new IllegalStateException("CGameTime not initialized");
         ++generation;
         started = true;
         completedMinute = -1L;
         // Existing clock drives retry signals; world iteration is never run on it.
-        CL2Time.addRealListener(this, Calendar.SECOND);
-        onSecondChanged(CL2Time.getDateTime());
+        CGameTime.addRealListener(this, Calendar.SECOND);
+        onSecondChanged(CGameTime.getDateTime());
     }
 
     public synchronized void stop() {
         if (!started) return;
         started = false;
         ++generation;
-        CL2Time.removeRealListener(this, Calendar.SECOND);
+        CGameTime.removeRealListener(this, Calendar.SECOND);
     }
 
     @Override
-    public void onSecondChanged(L2DateTime time) {
+    public void onSecondChanged(CDateTime time) {
         if (!started) return;
         final long minute = System.currentTimeMillis() / 60_000L;
         if (completedMinute == minute || !inFlight.compareAndSet(false, true)) return;

@@ -2,11 +2,11 @@ package l1j.server.server.model.character.combat.statistics.chart;
 import java.util.Calendar;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 
-public class KdaChartScheduler implements L2TimeListener {
+public class KdaChartScheduler implements GameTimeListener {
 	private static KdaChartScheduler _instance;
 	public static KdaChartScheduler getInstance(){
 		if(_instance == null)
@@ -31,7 +31,7 @@ public class KdaChartScheduler implements L2TimeListener {
 	}
 	
 	private void dispose(){
-		CL2Time.removeRealListener(this, Calendar.SECOND);
+		CGameTime.removeRealListener(this, Calendar.SECOND);
 		if(_updator != null)
 			_updator.dispose();
 	}
@@ -41,7 +41,7 @@ public class KdaChartScheduler implements L2TimeListener {
 	}
 	
 	public void run(){
-		CL2Time.addRealListener(this, Calendar.SECOND);
+		CGameTime.addRealListener(this, Calendar.SECOND);
 	}
 	
 
@@ -49,7 +49,7 @@ public class KdaChartScheduler implements L2TimeListener {
 
 
 	@Override
-	public void onSecondChanged(L2DateTime time) {
+	public void onSecondChanged(CDateTime time) {
 		Calendar cal = time.getCalendar();
 		if(_updator.isBefore(cal))
 			_updator.update();

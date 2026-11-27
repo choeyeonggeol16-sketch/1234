@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.Handler;
@@ -13,7 +13,7 @@ import l1j.server.server.storage.sql.handler.SelectorHandler;
 
 public class IndexStampManager {
 	public static void update(StampIndex index){
-		update(index, CL2Time.getRealTimeCalendar());
+		update(index, CGameTime.getRealTimeCalendar());
 	}
 	
 	public static void update(StampIndex index, Calendar cal){
@@ -29,7 +29,7 @@ public class IndexStampManager {
 	}
 	
 	public static Calendar select(StampIndex index){
-		Calendar cal = CL2Time.getRealTimeCalendar();
+		Calendar cal = CGameTime.getRealTimeCalendar();
 		long millis = cal.getTimeInMillis();
 		Selector.exec("select * from tb_index_stamp where idx=?", new SelectorHandler(){
 			@Override

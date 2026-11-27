@@ -23,7 +23,7 @@ import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_Invis;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -866,7 +866,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				}
 				break;
 			case 70011:
-				int time = CL2Time.getSecondOfDay();
+				int time = CGameTime.getSecondOfDay();
 				if (time < 60 * 60 * 6 || time > 60 * 60 * 20) { // 20:00?6:00
 					htmlid = "shipEvI6";
 				}

@@ -13,21 +13,21 @@ import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.world.instance.CInstantZoneManager;
 
 /** Owns the game timeline and dispatches game and real calendar boundaries. */
-public final class CL2Time {
-    private static final Logger LOG = Logger.getLogger(CL2Time.class.getName());
+public final class CGameTime {
+    private static final Logger LOG = Logger.getLogger(CGameTime.class.getName());
     static final long GAME_ORIGIN_MS = 1_057_233_600_000L;
     private static final long LEGACY_ERA_SECONDS = 1L << 32;
     private static final long STEP_MS = 500L;
     private static final long STEP_NS = TimeUnit.MILLISECONDS.toNanos(STEP_MS);
     private static final int SECONDS_PER_STEP = 3;
 
-    private static volatile CL2Time instance;
+    private static volatile CGameTime instance;
 
     private final long anchorNanos;
     private final long anchorGameSeconds;
     private final long phaseNanos;
     private final ClockEvents gameEvents = new ClockEvents(0);
-    private final ClockEvents realEvents = new ClockEvents(L2DateTime.KST_OFFSET);
+    private final ClockEvents realEvents = new ClockEvents(CDateTime.KST_OFFSET);
 
     private CServerTimer timer;
     private volatile boolean retired;
@@ -35,7 +35,7 @@ public final class CL2Time {
     private long previousReal;
     private long previousMaintenance;
 
-    CL2Time(long wallMillis, long monotonicNanos) {
+    CGameTime(long wallMillis, long monotonicNanos) {
         anchorNanos = monotonicNanos;
         anchorGameSeconds = gameSecondsAt(wallMillis);
         phaseNanos = TimeUnit.MILLISECONDS.toNanos(Math.floorMod(wallMillis - GAME_ORIGIN_MS, STEP_MS));
@@ -54,13 +54,13 @@ public final class CL2Time {
     }
 
     public static long getTime() {
-        CL2Time clock = instance;
+        CGameTime clock = instance;
         return clock == null ? gameSecondsAt(System.currentTimeMillis()) : clock.timeAt(System.nanoTime());
     }
 
     public static int getWireTime() { return (int) getTime(); }
 
-    public static int getSecondOfDay() { return Math.floorMod(getTime(), L2DateTime.SECONDS_PER_DAY); }
+    public static int getSecondOfDay() { return Math.floorMod(getTime(), CDateTime.SECONDS_PER_DAY); }
 
     public static boolean isNight() { return isNight(getSecondOfDay()); }
 
@@ -68,25 +68,25 @@ public final class CL2Time {
         return secondOfDay < 6 * 3600 || secondOfDay >= 18 * 3600;
     }
 
-    public static L2DateTime getGameDateTime() { return new L2DateTime(getTime(), 0); }
+    public static CDateTime getGameDateTime() { return new CDateTime(getTime(), 0); }
 
-    public static L2DateTime getDateTime() {
-        return new L2DateTime(Math.floorDiv(System.currentTimeMillis(), 1000), L2DateTime.KST_OFFSET);
+    public static CDateTime getDateTime() {
+        return new CDateTime(Math.floorDiv(System.currentTimeMillis(), 1000), CDateTime.KST_OFFSET);
     }
 
     public static Calendar getRealTimeCalendar() {
-        return L2DateTime.kstCalendarAt(System.currentTimeMillis());
+        return CDateTime.kstCalendarAt(System.currentTimeMillis());
     }
 
-    public static CL2Time getInstance() { return instance; }
+    public static CGameTime getInstance() { return instance; }
 
     public static synchronized void prepare() {
-        if (instance == null) instance = new CL2Time(System.currentTimeMillis(), System.nanoTime());
+        if (instance == null) instance = new CGameTime(System.currentTimeMillis(), System.nanoTime());
     }
 
     public static synchronized void start() {
         prepare();
-        CL2Time clock = instance;
+        CGameTime clock = instance;
         if (clock.timer != null) return;
         long now = System.nanoTime();
         clock.previousGame = clock.timeAt(now);
@@ -97,7 +97,7 @@ public final class CL2Time {
     }
 
     public static synchronized void stop() {
-        CL2Time clock = instance;
+        CGameTime clock = instance;
         if (clock == null) return;
         clock.retired = true;
         instance = null;
@@ -107,27 +107,27 @@ public final class CL2Time {
         clock.realEvents.clear();
     }
 
-    public static void addRealListener(L2TimeListener listener, int field) {
-        CL2Time clock = instance;
+    public static void addRealListener(GameTimeListener listener, int field) {
+        CGameTime clock = instance;
         if (clock == null) throw new IllegalStateException("World clock has not been prepared");
         clock.addListener(clock.realEvents, listener, field);
     }
 
-    public static void removeRealListener(L2TimeListener listener, int field) {
-        CL2Time clock = instance;
+    public static void removeRealListener(GameTimeListener listener, int field) {
+        CGameTime clock = instance;
         if (clock != null) clock.realEvents.listeners(field).remove(listener);
     }
 
-    public void addGameListener(L2TimeListener listener, int field) {
+    public void addGameListener(GameTimeListener listener, int field) {
         addListener(gameEvents, listener, field);
     }
 
-    public void removeGameListener(L2TimeListener listener, int field) {
+    public void removeGameListener(GameTimeListener listener, int field) {
         gameEvents.listeners(field).remove(listener);
     }
 
-    private void addListener(ClockEvents events, L2TimeListener listener, int field) {
-        synchronized (CL2Time.class) {
+    private void addListener(ClockEvents events, GameTimeListener listener, int field) {
+        synchronized (CGameTime.class) {
             if (retired) return;
             events.listeners(field).addIfAbsent(Objects.requireNonNull(listener));
         }
@@ -166,15 +166,15 @@ public final class CL2Time {
 
     final class ClockEvents {
         private final int offset;
-        private final CopyOnWriteArrayList<L2TimeListener> months = new CopyOnWriteArrayList<>();
-        private final CopyOnWriteArrayList<L2TimeListener> days = new CopyOnWriteArrayList<>();
-        private final CopyOnWriteArrayList<L2TimeListener> hours = new CopyOnWriteArrayList<>();
-        private final CopyOnWriteArrayList<L2TimeListener> minutes = new CopyOnWriteArrayList<>();
-        private final CopyOnWriteArrayList<L2TimeListener> seconds = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<GameTimeListener> months = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<GameTimeListener> days = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<GameTimeListener> hours = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<GameTimeListener> minutes = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<GameTimeListener> seconds = new CopyOnWriteArrayList<>();
 
         ClockEvents(int offset) { this.offset = offset; }
 
-        CopyOnWriteArrayList<L2TimeListener> listeners(int field) {
+        CopyOnWriteArrayList<GameTimeListener> listeners(int field) {
             return switch (field) {
                 case Calendar.MONTH -> months;
                 case Calendar.DAY_OF_MONTH -> days;
@@ -189,14 +189,14 @@ public final class CL2Time {
             if (retired || current <= previous) return;
             long before = previous + offset;
             long after = current + offset;
-            long previousDay = Math.floorDiv(before, L2DateTime.SECONDS_PER_DAY);
-            long currentDay = Math.floorDiv(after, L2DateTime.SECONDS_PER_DAY);
+            long previousDay = Math.floorDiv(before, CDateTime.SECONDS_PER_DAY);
+            long currentDay = Math.floorDiv(after, CDateTime.SECONDS_PER_DAY);
             boolean day = currentDay != previousDay && !days.isEmpty();
             boolean month = currentDay != previousDay && !months.isEmpty() && differentMonth(previousDay, currentDay);
             boolean hour = !hours.isEmpty() && Math.floorDiv(after, 3600) != Math.floorDiv(before, 3600);
             boolean minute = !minutes.isEmpty() && Math.floorDiv(after, 60) != Math.floorDiv(before, 60);
             boolean second = !seconds.isEmpty();
-            L2DateTime time = month || day || hour || minute || second ? new L2DateTime(current, offset) : null;
+            CDateTime time = month || day || hour || minute || second ? new CDateTime(current, offset) : null;
             if (month) notify(months, time, Calendar.MONTH);
             if (day) notify(days, time, Calendar.DAY_OF_MONTH);
             if (hour) notify(hours, time, Calendar.HOUR_OF_DAY);
@@ -204,8 +204,8 @@ public final class CL2Time {
             if (second) notify(seconds, time, Calendar.SECOND);
         }
 
-        private void notify(CopyOnWriteArrayList<L2TimeListener> group, L2DateTime time, int field) {
-            for (L2TimeListener listener : group) {
+        private void notify(CopyOnWriteArrayList<GameTimeListener> group, CDateTime time, int field) {
+            for (GameTimeListener listener : group) {
                 if (retired) return;
                 try {
                     switch (field) {

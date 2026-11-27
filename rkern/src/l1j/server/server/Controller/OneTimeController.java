@@ -11,11 +11,11 @@ import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 
-public final class OneTimeController implements L2TimeListener {
+public final class OneTimeController implements GameTimeListener {
     private static final Logger LOG = Logger.getLogger(OneTimeController.class.getName());
     private static final OneTimeController INSTANCE = new OneTimeController();
     private final AtomicBoolean inFlight = new AtomicBoolean();
@@ -36,24 +36,24 @@ public final class OneTimeController implements L2TimeListener {
 
     private synchronized void startInternal() {
         if (started) return;
-        final CL2Time clock = CL2Time.getInstance();
-        if (clock == null) throw new IllegalStateException("CL2Time not initialized");
+        final CGameTime clock = CGameTime.getInstance();
+        if (clock == null) throw new IllegalStateException("CGameTime not initialized");
         ++epoch;
         started = true;
-        CL2Time.addRealListener(this, Calendar.SECOND);
+        CGameTime.addRealListener(this, Calendar.SECOND);
         // A server started during the midnight hour still owes the day's reset.
-        onSecondChanged(CL2Time.getDateTime());
+        onSecondChanged(CGameTime.getDateTime());
     }
 
     private synchronized void stopInternal() {
         if (!started) return;
         started = false;
         ++epoch;
-        CL2Time.removeRealListener(this, Calendar.SECOND);
+        CGameTime.removeRealListener(this, Calendar.SECOND);
     }
 
     @Override
-    public void onSecondChanged(L2DateTime time) {
+    public void onSecondChanged(CDateTime time) {
         if (!started || time == null) return;
         final long day = (((long) time.get(Calendar.YEAR)) << 9)
                 | time.get(Calendar.DAY_OF_YEAR);

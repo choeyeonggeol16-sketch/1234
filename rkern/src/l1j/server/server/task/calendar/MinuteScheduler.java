@@ -2,13 +2,13 @@ package l1j.server.server.task.calendar;
 
 import java.util.Calendar;
 
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 import l1j.server.server.task.calendar.acceptor.AbstractDateAcceptor;
 import l1j.server.server.task.calendar.acceptor.AcceptorToNpcListenerAdapter;
 
-public class MinuteScheduler extends AbstractDateScheduler implements L2TimeListener{
+public class MinuteScheduler extends AbstractDateScheduler implements GameTimeListener{
 	private static MinuteScheduler _instance;
 	public static MinuteScheduler getInstance(){
 		if(_instance == null)
@@ -28,7 +28,7 @@ public class MinuteScheduler extends AbstractDateScheduler implements L2TimeList
 	}
 	
 	public void run(){
-		CL2Time.addRealListener(this, Calendar.MINUTE);
+		CGameTime.addRealListener(this, Calendar.MINUTE);
 	}
 
 
@@ -38,7 +38,7 @@ public class MinuteScheduler extends AbstractDateScheduler implements L2TimeList
 
 
 	@Override
-	public void onMinuteChanged(L2DateTime time) {
+	public void onMinuteChanged(CDateTime time) {
 		try{
 			Calendar cal = time.getCalendar();
 			for(AbstractDateAcceptor acceptor : _acceptors)

@@ -2,7 +2,7 @@ package l1j.server.server.shared;
 
 import java.util.Calendar;
 
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 
 public class SimpleDateTime {
 	public static SimpleDateTime newInstance(){
@@ -20,7 +20,7 @@ public class SimpleDateTime {
 		return newInstance(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
 	}
 	public static SimpleDateTime newInstance(long millis){
-		Calendar cal = CL2Time.getRealTimeCalendar();
+		Calendar cal = CGameTime.getRealTimeCalendar();
 		cal.setTimeInMillis(millis);
 		return newInstance(cal);
 	}
@@ -30,7 +30,7 @@ public class SimpleDateTime {
 	private SimpleDateTime(){};
 	
 	public Calendar to_calendar(){
-		Calendar cal = CL2Time.getRealTimeCalendar();
+		Calendar cal = CGameTime.getRealTimeCalendar();
 		cal.set(Calendar.HOUR_OF_DAY, hour);
 		cal.set(Calendar.MINUTE, minute);
 		cal.set(Calendar.SECOND, second);

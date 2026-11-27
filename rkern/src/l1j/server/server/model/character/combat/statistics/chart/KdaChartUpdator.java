@@ -14,7 +14,7 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.statistics.Kda;
 import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoader;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.network.core.sc.packet.SC_ChartRank;
 
 public class KdaChartUpdator {
@@ -44,7 +44,7 @@ public class KdaChartUpdator {
 	}
 	
 	public void updateCal(){
-		Calendar cal = CL2Time.getRealTimeCalendar();
+		Calendar cal = CGameTime.getRealTimeCalendar();
 		if(_updateCal != null){
 			_updateCal.clear();
 			_updateCal = null;

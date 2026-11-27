@@ -12,14 +12,14 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.CompanionSettings;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.Handler;
 
-public class CompanionRegenerator implements L2TimeListener, Runnable {
+public class CompanionRegenerator implements GameTimeListener, Runnable {
 	private static volatile CompanionRegenerator _instance;
     private static final Logger LOG = Logger.getLogger(CompanionRegenerator.class.getName());
 	public static CompanionRegenerator getInstance(){
@@ -45,7 +45,7 @@ public class CompanionRegenerator implements L2TimeListener, Runnable {
         if (m_is_run) return;
         m_is_run = true;
         try {
-            CL2Time.addRealListener(this, Calendar.SECOND);
+            CGameTime.addRealListener(this, Calendar.SECOND);
         } catch (RuntimeException e) {
             m_is_run = false;
             throw e;
@@ -57,7 +57,7 @@ public class CompanionRegenerator implements L2TimeListener, Runnable {
 
 
 	@Override
-	public void onSecondChanged(L2DateTime time) {
+	public void onSecondChanged(CDateTime time) {
 		if (m_is_run && ++m_accumulcate_seconds >= CompanionSettings.REGENERATION_TICK_SECONDS) {
             m_accumulcate_seconds = 0;
             if (m_regenQueued.compareAndSet(false, true)) {

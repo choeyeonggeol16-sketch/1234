@@ -114,7 +114,7 @@ public final class CharacterStatDurabilityRegression implements AutoCloseable {
     private static void setup() {
         Config.CACHE_MAP_FILES = true;
         Config.TIME_ZONE = "UTC";
-        l1j.server.server.model.gametime.CL2Time.prepare();
+        l1j.server.server.model.gametime.CGameTime.prepare();
         Config.MAX_ONLINE_USERS = 8;
         Config.GMCODE = 9999;
         Config.SUB_GMCODE = 8888;

@@ -27,7 +27,7 @@ import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.thread.CServerTimer;
@@ -94,7 +94,7 @@ public class ShipTimeController implements Runnable {
     }
 
 	private void checkShipTime() {
-		int nowtime = CL2Time.getSecondOfDay() - 86_400;
+		int nowtime = CGameTime.getSecondOfDay() - 86_400;
 		
 		if (nowtime >= -62370 && nowtime < -62200 //13시 8분 ~ 13시 33분 배
 				|| nowtime >= -56982 && nowtime < -56800

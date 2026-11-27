@@ -5,7 +5,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 /** Immutable calendar fields for one real-world or game-world second. */
-public final class L2DateTime {
+public final class CDateTime {
     static final int SECONDS_PER_DAY = 86_400;
     static final int KST_OFFSET = 9 * 3600;
     private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
@@ -16,7 +16,7 @@ public final class L2DateTime {
     private final int secondOfDay;
     private final LocalDate date;
 
-    L2DateTime(long seconds, int offset) {
+    CDateTime(long seconds, int offset) {
         this.seconds = seconds;
         this.offset = offset;
         long localSeconds = seconds + offset;

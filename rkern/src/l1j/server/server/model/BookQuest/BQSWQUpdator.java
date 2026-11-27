@@ -7,11 +7,11 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 
-public class BQSWQUpdator implements L2TimeListener{
+public class BQSWQUpdator implements GameTimeListener{
 	private static BQSWQUpdator _instance;
 	public static BQSWQUpdator getInstance(){
 		if(_instance == null)
@@ -36,10 +36,10 @@ public class BQSWQUpdator implements L2TimeListener{
 	
 	public void update_listener(){
 		if(_current_listener_type > 0)
-			CL2Time.removeRealListener(this, _current_listener_type);
+			CGameTime.removeRealListener(this, _current_listener_type);
 			
 		_current_listener_type = BQSLoadManager.BQS_UPDATE_TYPE;
-		Calendar cal = CL2Time.getRealTimeCalendar();
+		Calendar cal = CGameTime.getRealTimeCalendar();
 		switch(BQSLoadManager.BQS_UPDATE_TYPE){
 		case Calendar.MINUTE:
 			_accumulate_clock = accumulate_minute(cal);
@@ -56,7 +56,7 @@ public class BQSWQUpdator implements L2TimeListener{
 			_update_times = BQSLoadManager.BQS_UPDATE_HOURS;
 			break;
 		}
-		CL2Time.addRealListener(this, _current_listener_type);
+		CGameTime.addRealListener(this, _current_listener_type);
 	}
 	
     public int accumulate_hour(Calendar cal) {
@@ -78,13 +78,13 @@ public class BQSWQUpdator implements L2TimeListener{
     }
 
 	@Override
-	public void onHourChanged(L2DateTime time) { onClockTick(); }
+	public void onHourChanged(CDateTime time) { onClockTick(); }
 
 	@Override
-	public void onMinuteChanged(L2DateTime time) { onClockTick(); }
+	public void onMinuteChanged(CDateTime time) { onClockTick(); }
 
 	@Override
-	public void onSecondChanged(L2DateTime time) { onClockTick(); }
+	public void onSecondChanged(CDateTime time) { onClockTick(); }
 
 	private void onClockTick() {
 		synchronized (this) {
@@ -118,7 +118,7 @@ public class BQSWQUpdator implements L2TimeListener{
 					if (!_isrun || !_pendingUpdate) return;
 					_pendingUpdate = false;
 				}
-				Calendar cal = CL2Time.getRealTimeCalendar();
+				Calendar cal = CGameTime.getRealTimeCalendar();
 				System.out.println(String.format("[Book System Update...!] %4d-%2d%2d %2d:%2d:%2d",
 						cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH),
 						cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND)));

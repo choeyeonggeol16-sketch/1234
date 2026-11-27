@@ -3,9 +3,9 @@ package l1j.server.server.model;
 import l1j.server.server.shared.GameRandom;
 
 
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.L2TimeListener;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 
@@ -104,7 +104,7 @@ public class L1CastleLocation {
 	// shop tax rate [1..8]
 	private static volatile int[] CASTLE_TAX_RATE = new int[9];
 
-	private static final L2TimeListener CASTLE_TAX_CLOCK = new CResidenceTaxListener();
+	private static final GameTimeListener CASTLE_TAX_CLOCK = new CResidenceTaxListener();
 
 	static {
 		// towers
@@ -326,7 +326,7 @@ public class L1CastleLocation {
 
     public static void setCastleTaxRate() {
         refreshCastleTaxRates();
-        CL2Time.getInstance().addGameListener(CASTLE_TAX_CLOCK, java.util.Calendar.DAY_OF_MONTH);
+        CGameTime.getInstance().addGameListener(CASTLE_TAX_CLOCK, java.util.Calendar.DAY_OF_MONTH);
     }
 
     private static void refreshCastleTaxRates() {
@@ -338,8 +338,8 @@ public class L1CastleLocation {
         CASTLE_TAX_RATE = rates;
     }
 
-    private static final class CResidenceTaxListener implements L2TimeListener {
-        @Override public void onDayChanged(L2DateTime time) {
+    private static final class CResidenceTaxListener implements GameTimeListener {
+        @Override public void onDayChanged(CDateTime time) {
             refreshCastleTaxRates();
         }
     }

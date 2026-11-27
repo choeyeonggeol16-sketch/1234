@@ -8,7 +8,7 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -78,7 +78,7 @@ private static final int[] TOWER_KEYS = {
 
         if (mapId == 54 && !TeleportUseService.canBypassMapRestrictions(pc)) {
             if (Config.PRISONTEL) {
-                long t = CL2Time.getSecondOfDay();
+                long t = CGameTime.getSecondOfDay();
                 if (t >= 60 * 60 * 20 || t <= 60 * 60 * 6) {
                     pc.tpEndFinish();
                     SC_ServerMessage.send(pc, 6648);

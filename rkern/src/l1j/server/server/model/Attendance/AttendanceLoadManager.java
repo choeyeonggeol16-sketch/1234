@@ -14,7 +14,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceGroupType;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceDataGroup;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendanceTimeStatus;
@@ -47,7 +47,7 @@ public class AttendanceLoadManager implements Command{
 			throw new IllegalStateException("Attendance startup day read failed", error);
 		}
 
-		final Calendar current = CL2Time.getRealTimeCalendar();
+		final Calendar current = CGameTime.getRealTimeCalendar();
 		final long now = current.getTimeInMillis();
 		if (stored != null) {
 			current.setTimeInMillis(wholeSecond(stored.getTime()));
@@ -58,7 +58,7 @@ public class AttendanceLoadManager implements Command{
 	}
 
 	static void updateServerStartupInfo(long dayMillis) {
-		final Calendar day = CL2Time.getRealTimeCalendar();
+		final Calendar day = CGameTime.getRealTimeCalendar();
 		day.setTimeInMillis(wholeSecond(dayMillis));
 		final Timestamp time = new Timestamp(day.getTimeInMillis());
 		try (Connection con = DatabaseFactory.getInstance().getConnection();

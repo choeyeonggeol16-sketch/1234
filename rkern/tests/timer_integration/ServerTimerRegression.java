@@ -8,9 +8,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import l1j.server.server.model.L1UltimateBattle;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CServerTimer;
@@ -120,34 +120,34 @@ public final class ServerTimerRegression {
     }
 
     private static void worldClockLifecycle() throws Exception {
-        CL2Time.prepare();
-        CL2Time initial = CL2Time.getInstance();
+        CGameTime.prepare();
+        CGameTime initial = CGameTime.getInstance();
         var firstTick = new CountDownLatch(1);
         var oldCalls = new AtomicInteger();
-        CL2Time.addRealListener(new L2TimeListener() {
-            @Override public void onSecondChanged(L2DateTime time) {
+        CGameTime.addRealListener(new GameTimeListener() {
+            @Override public void onSecondChanged(CDateTime time) {
                 oldCalls.incrementAndGet();
                 firstTick.countDown();
             }
         }, Calendar.SECOND);
-        CL2Time.start();
+        CGameTime.start();
         CServerTimer initialTimer = (CServerTimer) field(initial, "timer");
-        CL2Time.start();
+        CGameTime.start();
         check(field(initial, "timer") == initialTimer, "duplicate clock start keeps one timer");
         check(firstTick.await(4L, TimeUnit.SECONDS), "clock runs through the actual server timer");
-        CL2Time.stop();
-        check(initialTimer.isCancelled() && CL2Time.getInstance() == null, "stop cancels and retires the clock");
+        CGameTime.stop();
+        check(initialTimer.isCancelled() && CGameTime.getInstance() == null, "stop cancels and retires the clock");
         int stopped = oldCalls.get();
 
-        CL2Time.prepare();
+        CGameTime.prepare();
         var restartedTick = new CountDownLatch(1);
-        CL2Time.addRealListener(new L2TimeListener() {
-            @Override public void onSecondChanged(L2DateTime time) { restartedTick.countDown(); }
+        CGameTime.addRealListener(new GameTimeListener() {
+            @Override public void onSecondChanged(CDateTime time) { restartedTick.countDown(); }
         }, Calendar.SECOND);
-        CL2Time.start();
+        CGameTime.start();
         check(restartedTick.await(4L, TimeUnit.SECONDS), "new clock dispatches after restart");
         check(oldCalls.get() == stopped, "restart drops prior clock listeners");
-        CL2Time.stop();
+        CGameTime.stop();
     }
 
     public static void main(String[] args) throws Exception {
@@ -162,7 +162,7 @@ public final class ServerTimerRegression {
             cancelArenaCountdown();
             worldClockLifecycle();
         } finally {
-            CL2Time.stop();
+            CGameTime.stop();
             CWorldWork.stopAccepting();
             for (COwnedWork owner : owners) owner.stopAccepting();
             cio.shutdown();

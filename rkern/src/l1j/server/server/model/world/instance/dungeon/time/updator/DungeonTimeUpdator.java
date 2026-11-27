@@ -9,9 +9,9 @@ import l1j.server.Config;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -19,7 +19,7 @@ import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformatio
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
 
-public class DungeonTimeUpdator implements L2TimeListener{
+public class DungeonTimeUpdator implements GameTimeListener{
 	private static final Logger LOG = Logger.getLogger(DungeonTimeUpdator.class.getName());
 	private static DungeonTimeUpdator _instance;
 	public static DungeonTimeUpdator getInstance(){
@@ -54,11 +54,11 @@ public class DungeonTimeUpdator implements L2TimeListener{
 	public synchronized void run() {
 		if (_consumer != null) return;
 		_consumer = new DungeonTimeConsumer();
-		CL2Time.addRealListener(this, Calendar.SECOND);
+		CGameTime.addRealListener(this, Calendar.SECOND);
 	}
 
 	public synchronized void dispose() {
-		CL2Time.removeRealListener(this, Calendar.SECOND);
+		CGameTime.removeRealListener(this, Calendar.SECOND);
 		// In-flight work checks its consumer generation before applying a tick.
 		_consumer = null;
 	}
@@ -116,7 +116,7 @@ public class DungeonTimeUpdator implements L2TimeListener{
 	}
 	
 	@Override
-	public void onSecondChanged(L2DateTime time) {
+	public void onSecondChanged(CDateTime time) {
 		/** 던전초기화 시간 **/
 		int nowDay = time.get(Calendar.DAY_OF_WEEK);
 		// [던전초기화 시각 외부화] config/altsettings.properties 의 DungeonResetHour/DungeonResetMinute

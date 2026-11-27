@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -32,7 +32,7 @@ public final class SC_OwnCharStatus {
         final int currentMp = Math.min(pc.getCurrentMp(), 32767);
         final int maxMp = Math.min(pc.getMaxMp(), 32767);
         final int ac = pc.getAc();
-        final int rawTime = CL2Time.getWireTime();
+        final int rawTime = CGameTime.getWireTime();
         final int time = rawTime - rawTime % 300;
         final int food = pc.get_food();
         final int weight = pc.getInventory() != null ? pc.getInventory().getWeight100() : 0;

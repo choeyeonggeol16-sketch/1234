@@ -19,9 +19,9 @@ import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.L2DateTime;
-import l1j.server.server.model.gametime.CL2Time;
-import l1j.server.server.model.gametime.L2TimeListener;
+import l1j.server.server.model.gametime.CDateTime;
+import l1j.server.server.model.gametime.CGameTime;
+import l1j.server.server.model.gametime.GameTimeListener;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.rank.loader.RankUserLoader;
@@ -34,7 +34,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TOP_RANKER_NOTI;
 /**
  * 랭킹 비즈니스 로직.
  */
-public class RankBusiness implements L2TimeListener{
+public class RankBusiness implements GameTimeListener{
     private static RankBusiness _instance;
     public static RankBusiness getInstance(){
         if(_instance == null)
@@ -78,7 +78,7 @@ public class RankBusiness implements L2TimeListener{
         _accumulate_second = 0;
         _refreshGeneration++;
         _isrun = true;
-        CL2Time.addRealListener(this, Calendar.SECOND);
+        CGameTime.addRealListener(this, Calendar.SECOND);
         requestRefresh();
     }
 
@@ -87,12 +87,12 @@ public class RankBusiness implements L2TimeListener{
         _isrun = false;
         _refreshPending = false;
         _refreshGeneration++;
-        CL2Time.removeRealListener(this, Calendar.SECOND);
+        CGameTime.removeRealListener(this, Calendar.SECOND);
     }
 
 
     @Override
-    public void onSecondChanged(L2DateTime time) {
+    public void onSecondChanged(CDateTime time) {
         if (!_isrun) return;
         if (++_accumulate_second >= RankLoadManager.MRK_SYS_UPDATE_CLOCK) {
             _accumulate_second = 0;

@@ -1,7 +1,7 @@
 package l1j.server.server.model.world.transport;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.gametime.CL2Time;
+import l1j.server.server.model.gametime.CGameTime;
 
 public final class L1NeigeShip {
     private static final int BOARDING_DURATION = 1500;
@@ -23,7 +23,7 @@ public final class L1NeigeShip {
     }
 
     private static boolean isBoardingTime() {
-        int time = CL2Time.getSecondOfDay() - 86_400;
+        int time = CGameTime.getSecondOfDay() - 86_400;
         for (int start : BOARDING_STARTS) {
             if (time >= start && time < start + BOARDING_DURATION) return true;
         }
