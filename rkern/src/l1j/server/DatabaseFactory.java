@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import l1j.server.server.model.network.core.execution.CIOShardContext;
 
 /**
  * HikariCP를 커넥션 풀로 사용하는 데이터베이스 팩토리 클래스
@@ -272,7 +273,7 @@ public class DatabaseFactory {
     private static void traceJdbc(String operation, String sql, long ns, Throwable failure) {
         final Thread current = Thread.currentThread();
         final String thread = current.getName();
-        final boolean cio = thread.startsWith("CIOThread-");
+        final boolean cio = CIOShardContext.currentShardIndex() >= 0;
         final String caller = findGameCaller();
         final String normalizedSql = oneLine(sql);
         final String key = operation + '\n' + caller + '\n' + normalizedSql + '\n' + cio;

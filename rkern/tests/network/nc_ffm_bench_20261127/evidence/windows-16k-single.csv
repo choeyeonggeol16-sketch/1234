@@ -1,0 +1,9 @@
+rep,attempt,order,backend,generator,clients,rate,warmup_ms,measure_ms,status,paired,requests,active_clients,completed_rps,schedule_p99_us,rtt_p99_us,sender_lag_p99_us,valid_completed,completed_in_window,dropped,peak_pending,peak_waiting,pending_at_end,unscheduled_at_end,drain_ms,drained_rps,accepted,closed,frames,error
+1,1,1,SharedSelectorCore,PacedDriver,5000,16000,2500,5000,ok,1,80000,5000,15999.600,332.400,247.800,118.800,80000,79998,0,64,1,2,0,0.178,15999.429,5000,5000,120000,
+1,1,2,WinIocpCore,PacedDriver,5000,16000,2500,5000,ok,1,80000,5000,15999.600,579.200,369.000,267.600,80000,79998,0,64,1,2,0,0.171,15999.454,5000,5000,120000,
+2,1,1,WinIocpCore,PacedDriver,5000,16000,2500,5000,ok,1,80000,5000,15999.600,568.600,295.600,314.500,80000,79998,0,64,1,2,0,0.176,15999.436,5000,5000,120000,
+2,1,2,SharedSelectorCore,PacedDriver,5000,16000,2500,5000,ok,1,80000,5000,15999.600,550.100,242.700,305.900,80000,79998,0,63,1,2,0,0.194,15999.378,5000,5000,120000,
+3,1,1,SharedSelectorCore,PacedDriver,5000,16000,2500,5000,ok,0,80000,5000,15999.800,901.600,395.900,506.700,80000,79999,0,64,1,1,0,0.177,15999.435,5000,5000,120000,
+3,1,2,WinIocpCore,PacedDriver,5000,16000,2500,5000,failed,0,,,,,,,,,,,,,,,,,,,"process closed its output, exit=None; see process log"
+3,2,1,WinIocpCore,PacedDriver,5000,16000,2500,5000,failed,0,,,,,,,,,,,,,,,,,,,"process closed its output, exit=None; see process log"
+3,2,2,SharedSelectorCore,PacedDriver,5000,16000,2500,5000,failed,0,,,,,,,,,,,,,,,,,,,"process closed its output, exit=None; see process log"

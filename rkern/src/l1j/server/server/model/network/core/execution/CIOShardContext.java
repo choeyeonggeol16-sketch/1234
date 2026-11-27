@@ -1,12 +1,10 @@
 package l1j.server.server.model.network.core.execution;
 
 /**
- * Producer-thread network shard identity.
+ * Logical network shard identity of the current executor.
  *
- * PcShard owner threads publish their stable shard id once on thread entry.
- * Network hot paths can then select an SPSC producer pipe without depending on
- * the game scheduler package or allocating per command. Integer.valueOf() for
- * the small shard ids is cached by the JDK, so enterShard() does not allocate.
+ * Fixed owners publish the identity on thread entry. Shared workers publish it
+ * for one exclusive turn. The JDK caches the small boxed shard IDs.
  */
 public final class CIOShardContext {
 
@@ -37,5 +35,10 @@ public final class CIOShardContext {
 
     public static void exitShard() {
         CURRENT_SHARD.remove();
+    }
+
+    /** Leave a shared turn while retaining this worker's ThreadLocal slot. */
+    public static void leaveSharedTurn() {
+        CURRENT_SHARD.set(null);
     }
 }

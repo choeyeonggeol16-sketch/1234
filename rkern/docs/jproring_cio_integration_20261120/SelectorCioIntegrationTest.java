@@ -38,6 +38,7 @@ import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
 
@@ -296,7 +297,8 @@ public final class SelectorCioIntegrationTest {
             CIOThreadCallback owners = CIOThreadCallback.getInstance();
             owners.shutdown();
             check(owners.awaitTermination(5, TimeUnit.SECONDS), "existing game owners joined");
-            l1j.server.server.ThreadPool.getInstance().shutdown();
+            CSessionLifecycle.stopAccepting();
+            check(CSessionLifecycle.awaitDrained(5, TimeUnit.SECONDS), "session cleanup finished");
         }
         System.out.println("PASS RKern login entry, cipher FIFO, fragmented maximum frame, timer, MAC/account admission, large broadcast, graceful FIFO drain, "
                 + restarts + " restarts and " + reconnects + " reset/reconnect cycles with zero outstanding leases");

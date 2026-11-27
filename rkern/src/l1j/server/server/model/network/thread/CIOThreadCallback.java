@@ -56,9 +56,14 @@ public final class CIOThreadCallback {
 	private static final Logger LOGGER =
 			Logger.getLogger(CIOThreadCallback.class.getName());
 
-	private static final int MAX_SHARDS = 8;
-	private static final int SHARDS =
-			resolveShardCount(Runtime.getRuntime().availableProcessors());
+    static final boolean SHARED_PACKET_WORKERS = Boolean.getBoolean("rkern.network.sharedPacketWorkers");
+    private static final int MAX_SHARDS = 8;
+    private static final int SHARDS = logicalShardCount(Runtime.getRuntime().availableProcessors());
+
+    private static int logicalShardCount(int cores) {
+        int workers = resolveShardCount(cores);
+        return SHARED_PACKET_WORKERS && workers > 1 ? workers * 2 : workers;
+    }
 
 	private static int resolveShardCount(int cores) {
 		if (cores <= 1) {
@@ -140,6 +145,7 @@ public final class CIOThreadCallback {
 	 */
 	private volatile int networkShardCount;
 	private volatile int networkIngressCapacity;
+    private volatile CIOSharedPacketWorkers sharedPacketWorkers;
 
 	private CIOThreadCallback(int shardCount) {
 		this.shardCount = shardCount;
@@ -209,7 +215,8 @@ public final class CIOThreadCallback {
 										+ " stalledMs=" + stalledMs
 										+ " progress=" + shard.lastProgressCounter);
 
-						LockSupport.unpark(t);
+						final Thread executor = shard.sharedTurnThread;
+						LockSupport.unpark(executor == null ? t : executor);
 					}
 				}
 			} catch (Throwable t) {
@@ -477,7 +484,7 @@ public final class CIOThreadCallback {
         final CIOThread owner = characterOwner(target);
         if (owner == null || !owner.running) return false;
         final long boundedDelay = Math.max(1L, delayMs);
-        if (Thread.currentThread() == owner.thread) {
+        if (owner.isExecutionThread()) {
             owner.onRawSchedule(boundedDelay, poison, null);
             return true;
         }
@@ -511,7 +518,7 @@ public final class CIOThreadCallback {
         final CIOThread owner = characterOwner(target);
         if (owner == null || !owner.running) return false;
         final long boundedDelay = Math.max(1L, delayMs);
-        if (Thread.currentThread() == owner.thread) {
+        if (owner.isExecutionThread()) {
             owner.onRawSchedule(boundedDelay, task, null);
             return true;
         }
@@ -625,7 +632,7 @@ public final class CIOThreadCallback {
 		return count;
 	}
 
-    /** The validated network subset lives on the same threads as game timers and session replay. */
+    /** Attach one Selector to each logical shard's timers, ingress and session replay. */
     public synchronized void attachSelectors(java.util.List<CSelectorTransport.OwnerDriver> drivers) {
         drivers = java.util.List.copyOf(drivers);
         if (drivers.size() != networkShardCount || drivers.isEmpty())
@@ -636,11 +643,26 @@ public final class CIOThreadCallback {
             if (!shard.running || existing != null && existing.active())
                 throw new IllegalStateException("Selector owner unavailable on shard " + i);
         }
+        final int cores = Runtime.getRuntime().availableProcessors();
+        final boolean useSharedTurns = SHARED_PACKET_WORKERS && cores > 1 && drivers.size() > 1;
+        if (useSharedTurns) {
+            for (CSelectorTransport.OwnerDriver driver : drivers) driver.enableSharedTurns();
+            if (sharedPacketWorkers == null) {
+                final int workerCount = Math.min(drivers.size(), resolveShardCount(cores));
+                sharedPacketWorkers = new CIOSharedPacketWorkers(workerCount, drivers.size());
+            }
+        }
         for (int i = 0; i < drivers.size(); i++) {
             CIOThread shard = shards[i];
+            shard.sharedWorkers = useSharedTurns ? sharedPacketWorkers : null;
             shard.selectorDriver = drivers.get(i);
             shard.signalWork(false);
         }
+    }
+
+    public int sharedPacketWorkerCount() {
+        CIOSharedPacketWorkers workers = sharedPacketWorkers;
+        return workers == null ? 0 : workers.size();
     }
 
 	private static int resolveNetworkShardCount(
@@ -661,15 +683,8 @@ public final class CIOThreadCallback {
 							configuredShardCount,
 							maxShards);
 
-		} else if (cores <= 1) {
-			count = 1;
-
 		} else {
-			count =
-					Math.min(
-							Integer.highestOneBit(
-									cores - 1) << 1,
-							maxShards);
+			count = Math.min(logicalShardCount(cores), maxShards);
 		}
 
 		if (Integer.bitCount(count) != 1) {
@@ -1467,6 +1482,9 @@ public final class CIOThreadCallback {
 
 
 	static final class CIOThread implements Runnable {
+        private static final int MAX_SHARED_PASSES = 4;
+        private static final long MAX_SHARED_TURN_NANOS = 1_000_000L;
+
         // 0: working, 1: published work, 2: parked or entering park.
         // Wake signals track wheel deadlines; no command queue is used.
         // The owner changes 0->2 only after its drain pass; if it sees state 1,
@@ -1481,13 +1499,29 @@ public final class CIOThreadCallback {
         }
         private volatile int wakeGate;
         private volatile CSelectorTransport.OwnerDriver selectorDriver;
+        private volatile CIOSharedPacketWorkers sharedWorkers;
+        private volatile Thread sharedTurnThread;
+        private final Object sharedTurnMonitor = new Object();
+        private final Runnable sharedTurnBatch = this::runSharedBatch;
+        // The readiness waiter publishes one driver and waits until the entire
+        // owner turn is done. Only its executor writes the result fields.
+        private CSelectorTransport.OwnerDriver sharedTurnDriver;
+        private CIOSharedPacketWorkers sharedTurnWorkers;
+        private long turnSleepMs;
+        private boolean turnBacklog;
+        private boolean turnFailed;
+
+        boolean isExecutionThread() {
+            final Thread current = Thread.currentThread();
+            return current == thread || current == sharedTurnThread;
+        }
 
         void signalWork(boolean inbound) {
             final Thread target = thread;
             if (target == null) return;
             // Timer admission on the owner still needs a wake when parked.
             // It must force another loop, rather than silently park until tick.
-            if (target == Thread.currentThread()) {
+            if (isExecutionThread()) {
                 WAKE_GATE.setVolatile(this, 1);
                 return;
             }
@@ -1511,6 +1545,73 @@ public final class CIOThreadCallback {
         private void finishPark() {
             // If a producer changed 2->1, keep its signal for the next pass.
             WAKE_GATE.compareAndSet(this, 2, 0);
+        }
+
+        private boolean executeSharedTurn(CIOSharedPacketWorkers workers,
+                CSelectorTransport.OwnerDriver driver) {
+            boolean interrupted = false;
+            synchronized (sharedTurnMonitor) {
+                sharedTurnDriver = driver;
+                sharedTurnWorkers = workers;
+                if (!workers.offer(this)) {
+                    sharedTurnDriver = null;
+                    sharedTurnWorkers = null;
+                    return false;
+                }
+                while (sharedTurnDriver != null) {
+                    try {
+                        sharedTurnMonitor.wait();
+                    } catch (InterruptedException e) {
+                        // The readiness waiter cannot reclaim or close a
+                        // Selector while an accepted worker owns its turn.
+                        interrupted = true;
+                    }
+                }
+            }
+            if (interrupted) Thread.currentThread().interrupt();
+            return true;
+        }
+
+        void runSharedTurn() {
+            final CSelectorTransport.OwnerDriver driver = sharedTurnDriver;
+            final CIOSharedPacketWorkers workers = sharedTurnWorkers;
+            try {
+                CIOShardContext.enterShard(idx);
+                sharedTurnThread = Thread.currentThread();
+                driver.withOwner(sharedTurnBatch);
+            } catch (Throwable failure) {
+                recordTurnFailure(failure);
+            } finally {
+                sharedTurnThread = null;
+                CIOShardContext.leaveSharedTurn();
+                // Keep a busy shard in FIFO order without waking its park
+                // thread just to post the same turn again. The former worker
+                // holds neither the driver scope nor shard context here.
+                if (!running || turnFailed || !turnBacklog || driver != selectorDriver
+                        || !driver.active() || !workers.offer(this)) {
+                    synchronized (sharedTurnMonitor) {
+                        sharedTurnDriver = null;
+                        sharedTurnWorkers = null;
+                        sharedTurnMonitor.notify();
+                    }
+                }
+            }
+        }
+
+        private void runSharedBatch() {
+            final CSelectorTransport.OwnerDriver driver = sharedTurnDriver;
+            final CIOSharedPacketWorkers workers = sharedTurnWorkers;
+            final long deadline = System.nanoTime() + MAX_SHARED_TURN_NANOS;
+            for (int pass = 0; running && pass < MAX_SHARED_PASSES; pass++) {
+                runOwnerPass(driver);
+                if (turnFailed || !running) return;
+                // A live transport pass can collect the next ready batch
+                // without a round trip through the blocking readiness waiter.
+                // Existing ingress backlog already retains this shard's turn.
+                if (!turnBacklog && driver.active()) turnBacklog = driver.collectImmediateWork();
+                if (!turnBacklog || workers.hasQueuedTurns()
+                        || System.nanoTime() - deadline >= 0L) return;
+            }
         }
 
         // Separate from threadLocalTimer: FIFO is consumed as soon as the
@@ -2265,6 +2366,48 @@ public final class CIOThreadCallback {
 			threadLocalTimer.schedule(delayMs, task, handle);
 		}
 
+        private void runOwnerPass(CSelectorTransport.OwnerDriver driver) {
+            turnFailed = false;
+            try {
+                lastProgressNs = System.nanoTime();
+                lastProgressCounter++;
+                final long elapsed = nowMs() - lastWheelAtMs;
+                if (elapsed >= WHEEL_TICK_MS) {
+                    final int steps = (int) Math.min(100L, elapsed / WHEEL_TICK_MS);
+                    for (int i = 0; i < steps; i++) {
+                        lastWheelAtMs += WHEEL_TICK_MS;
+                        threadLocalTimer.tick(this);
+                    }
+                }
+                // The per-pass limit lets overdue wheel work run again even
+                // when the shard's ingress FIFO remains ready.
+                for (int drained = 0; drained < MAX_PACKET_BURST && running; drained++) {
+                    PacketTask packet = packetIngress.poll();
+                    if (packet == null) break;
+                    try {
+                        packet.run();
+                    } catch (Throwable failure) {
+                        LOGGER.log(Level.SEVERE, "[CIO-PACKET] shard handler failed idx=" + idx, failure);
+                    }
+                }
+                turnSleepMs = lastWheelAtMs + WHEEL_TICK_MS - nowMs();
+                turnBacklog = !packetIngress.isEmpty();
+            } catch (Throwable failure) {
+                recordTurnFailure(failure);
+                return;
+            }
+            if (driver != null && driver.active()) driver.advance();
+        }
+
+        private void recordTurnFailure(Throwable failure) {
+            LOGGER.log(Level.SEVERE, "[CIOThread] owner loop failure; shard survives idx=" + idx, failure);
+            lastProgressNs = System.nanoTime();
+            lastProgressCounter++;
+            turnFailed = true;
+            turnBacklog = true;
+            turnSleepMs = 0L;
+        }
+
 		@Override
 		public void run() {
             CIOShardContext.enterShard(idx);
@@ -2272,65 +2415,32 @@ public final class CIOThreadCallback {
                 lastWheelAtMs = nowMs();
                 while (running) {
                     if (Thread.interrupted() && !running) break;
-                    boolean backlog;
-                    boolean ownerFailed = false;
-                    long sleepMs;
-                    try {
-                        lastProgressNs = System.nanoTime();
-                        lastProgressCounter++;
-                        final long now = nowMs();
-                        final long elapsed = now - lastWheelAtMs;
-                        if (elapsed >= WHEEL_TICK_MS) {
-                            final int steps = (int) Math.min(100L, elapsed / WHEEL_TICK_MS);
-                            for (int i = 0; i < steps; i++) {
-                                lastWheelAtMs += WHEEL_TICK_MS;
-                                threadLocalTimer.tick(this);
-                            }
+                    final CSelectorTransport.OwnerDriver driver = selectorDriver;
+                    final CIOSharedPacketWorkers workers = sharedWorkers;
+                    if (workers != null && driver != null && driver.active()) {
+                        if (!executeSharedTurn(workers, driver)) {
+                            if (!running) break;
+                            recordTurnFailure(new IllegalStateException("CIO shard turn was rejected"));
                         }
-                        // Run accepted network commands immediately, on their
-                        // assigned shard. Never attach RECV to the timer wheel.
-                        // A bounded burst lets overdue timers run next pass.
-                        int packetDrained = 0;
-                        PacketTask packet;
-                        while (packetDrained < MAX_PACKET_BURST
-                                && running && (packet = packetIngress.poll()) != null) {
-                            try {
-                                packet.run();
-                            } catch (Throwable packetFailure) {
-                                LOGGER.log(Level.SEVERE,
-                                        "[CIO-PACKET] shard handler failed idx=" + idx,
-                                        packetFailure);
-                            }
-                            packetDrained++;
-                        }
-                        sleepMs = lastWheelAtMs + WHEEL_TICK_MS - nowMs();
-                        backlog = !packetIngress.isEmpty();
-                    } catch (Throwable t) {
-                        LOGGER.log(Level.SEVERE,
-                                "[CIOThread] owner loop failure; shard survives idx=" + idx, t);
-                        lastProgressNs = System.nanoTime();
-                        lastProgressCounter++;
-                        ownerFailed = true;
-                        backlog = true;
-                        sleepMs = 0L;
+                    } else {
+                        runOwnerPass(driver);
                     }
-                    if (ownerFailed) {
+                    if (!running) break;
+                    if (turnFailed) {
                         // Preserve the original anti-exception-spin delay.
                         LockSupport.parkNanos(1_000_000L);
                         continue;
                     }
-                    final CSelectorTransport.OwnerDriver driver = selectorDriver;
-                    if (driver != null && driver.active()) driver.advance();
-                    if (backlog) continue;
+                    if (turnBacklog) continue;
                     if (!preparePark()) continue;
                     try {
                         if (driver != null && driver.active()) {
-                            driver.awaitWork(Math.min(MAX_SLEEP_MS, Math.max(1L, sleepMs)));
-                        } else if (sleepMs <= 0L) {
+                            driver.awaitWork(Math.min(MAX_SLEEP_MS, Math.max(1L, turnSleepMs)));
+                        } else if (turnSleepMs <= 0L) {
                             LockSupport.parkNanos(IDLE_PARK_NS);
                         } else {
                             LockSupport.parkNanos(
-                                    Math.min(MAX_SLEEP_MS, sleepMs) * 1_000_000L);
+                                    Math.min(MAX_SLEEP_MS, turnSleepMs) * 1_000_000L);
                         }
                     } finally {
                         finishPark();
@@ -2905,7 +3015,7 @@ public final class CIOThreadCallback {
         if (owner == null || !owner.running || generation == 0 || delayMs <= 0L) {
             return false;
         }
-        if (Thread.currentThread() == owner.thread) {
+        if (owner.isExecutionThread()) {
             owner.onCharacterSkillHeartbeatSchedule(delayMs, cha, generation);
             return true;
         }
@@ -3408,33 +3518,31 @@ public final class CIOThreadCallback {
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         if (unit == null) throw new NullPointerException("unit");
         if (timeout < 0L) throw new IllegalArgumentException("timeout");
-        if (watchdogRunning) return false;
+        final CIOSharedPacketWorkers workers = sharedPacketWorkers;
+        final Thread current = Thread.currentThread();
+        if (watchdogRunning || current == watchdogThread || workers != null && workers.isCurrentWorker())
+            return false;
+        for (CIOThread shard : shards) {
+            if (current == shard.thread) return false;
+        }
         final long budget = unit.toNanos(timeout);
         final long started = System.nanoTime();
-        boolean selfJoin = false;
-        for (int i = 0; i < shardCount; i++) {
-            final Thread worker = shards[i].thread;
+        for (CIOThread shard : shards) {
+            final Thread worker = shard.thread;
             if (worker == null) continue;
-            if (worker == Thread.currentThread()) {
-                selfJoin = true;
-                continue;
-            }
             while (worker.isAlive()) {
                 final long remaining = budget - (System.nanoTime() - started);
                 if (remaining <= 0L) return false;
                 worker.join(Math.max(1L, remaining / 1_000_000L));
             }
         }
-        if (watchdogThread == Thread.currentThread()) {
-            selfJoin = true;
-        } else {
-            while (watchdogThread.isAlive()) {
-                final long remaining = budget - (System.nanoTime() - started);
-                if (remaining <= 0L) return false;
-                watchdogThread.join(Math.max(1L, remaining / 1_000_000L));
-            }
+        if (workers != null && !workers.awaitTermination(started, budget)) return false;
+        while (watchdogThread.isAlive()) {
+            final long remaining = budget - (System.nanoTime() - started);
+            if (remaining <= 0L) return false;
+            watchdogThread.join(Math.max(1L, remaining / 1_000_000L));
         }
-        return !selfJoin;
+        return true;
     }
 
 	public synchronized void shutdown() {
@@ -3455,5 +3563,7 @@ public final class CIOThreadCallback {
                 if (t != null) LockSupport.unpark(t);
             }
 		}
+        final CIOSharedPacketWorkers workers = sharedPacketWorkers;
+        if (workers != null) workers.requestStop();
 	}
 }
