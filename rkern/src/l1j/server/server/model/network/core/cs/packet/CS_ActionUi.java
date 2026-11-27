@@ -9,7 +9,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.appcenter.AppCenterService;
-import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.datatables.MapUserTeleportTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -20,8 +19,6 @@ import l1j.server.server.model.CParty;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.tam.TamFruitUseService;
-import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
@@ -30,12 +27,10 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.npc.spawn.boss.BossTeleportInvites;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TAM_WINDOW;
-import l1j.server.server.shared.GameRandom;
-import l1j.server.server.shared.geometry.GamePoint;
-import l1j.server.server.model.npc.spawn.boss.L1Boss;
 import l1j.server.server.utils.ServerMessage;
 import l1j.server.server.utils.TYUtil;
 
@@ -142,7 +137,7 @@ public final class CS_ActionUi {
                 return;
 
             case EVENT_TELEPORT:
-                handleEventTeleport(pc);
+                BossTeleportInvites.teleportFromActionUi(pc, client);
                 return;
 
             case BLESSED_TELEPORT:
@@ -276,84 +271,6 @@ public final class CS_ActionUi {
     }
 
 
-
-    private static void handleEventTeleport(
-            L1PcInstance pc) {
-
-        if (pc.getLevel()
-                < Config.YN_pclevel) {
-
-            SC_SystemMessage.send(pc, "레벨 "
-                                    + Config.YN_pclevel
-                                    + " 부터 이용가능 합니다.");
-
-            return;
-        }
-
-        final L1Boss boss =
-                BossMonsterSpawnList.find(
-                        pc.getBossYN());
-
-        if (boss == null) {
-
-            SC_SystemMessage.send(pc, "선택 딜레이가 지나 이용이 불가능 합니다(10초)");
-
-            return;
-        }
-
-        final L1Map map =
-                L1WorldMap
-                        .getInstance()
-                        .getMap(
-                                (short) boss.getMap());
-
-        final int x =
-                boss.getX();
-
-        final int y =
-                boss.getY();
-
-        int cx = 0;
-        int cy = 0;
-
-        int currentTry = 0;
-
-        final int limitTry =
-                100;
-
-        do {
-
-            cx =
-                    x + (GameRandom.isBoolean()
-                            ? GameRandom.next(5)
-                            : -GameRandom.next(5));
-
-            cy =
-                    y + (GameRandom.isBoolean()
-                            ? GameRandom.next(5)
-                            : -GameRandom.next(5));
-
-        } while (++currentTry < limitTry
-                && !GamePoint.isValidPosition(
-                        map,
-                        cx,
-                        cy));
-
-        if (currentTry >= limitTry) {
-
-            cx = x;
-            cy = y;
-        }
-
-        pc.start_teleport(
-                cx,
-                cy,
-                (short) boss.getMap(),
-                pc.getHeading(),
-                169,
-                true,
-                pc.getAutoHunt());
-    }
 
     private static void handleBlessedTeleport(
             L1PcInstance pc,

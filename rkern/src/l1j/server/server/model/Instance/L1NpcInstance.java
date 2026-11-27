@@ -14,7 +14,7 @@ import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.item.drop.DropTable;
 import l1j.server.server.datatables.AutoLoot;
-import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
+import l1j.server.server.model.npc.spawn.boss.CBossNpcMakerDB;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.item.drop.CContributeData;
@@ -1222,7 +1222,7 @@ public class L1NpcInstance extends L1Character {
                 }
             }
             final boolean forceGround = Config.BOSS_DROP_GROUND_ENABLE
-                    && BossMonsterSpawnList.find(getNpcId()) != null;
+                    && CBossNpcMakerDB.isBossTemplate(getNpcId());
             final L1PcInstance primary = contribute == null ? lastAttacker : contribute.GetPrimaryOwner(lastAttacker);
             final boolean hasRoute = contribute != null && contribute.HasRouteCandidates();
             for (L1ItemInstance item : items) {

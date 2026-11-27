@@ -136,6 +136,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.model.network.packet.CServerPacket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
+import l1j.server.server.model.npc.spawn.boss.BossTeleportInvites.Invitation;
 import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.model.shop.PlayerPrivateStore;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
@@ -266,15 +267,24 @@ public class L1PcInstance extends L1Character {
 
 
 
-	private int boss_spawn_yn;
+    private static final AtomicReferenceFieldUpdater<L1PcInstance, Invitation> BOSS_TELEPORT_INVITATION =
+            AtomicReferenceFieldUpdater.newUpdater(L1PcInstance.class, Invitation.class, "bossTeleportInvitation");
+    private transient volatile Invitation bossTeleportInvitation;
 
-	public int getBossYN() {
-		return boss_spawn_yn;
-	}
+    public Invitation bossTeleportInvitation() {
+        return bossTeleportInvitation;
+    }
 
-	public void setBossYN(int i) {
-		boss_spawn_yn = i;
-	}
+    public boolean replaceBossTeleportInvitation(Invitation expected, Invitation replacement) {
+        return BOSS_TELEPORT_INVITATION.compareAndSet(this, expected, replacement);
+    }
+
+    private void retireBossTeleportInvitation() {
+        final Invitation invitation = bossTeleportInvitation;
+        if (invitation != null && !invitation.isFor(getNetConnection(), getSessionStamp())) {
+            replaceBossTeleportInvitation(invitation, null);
+        }
+    }
 
 	private boolean specialBuff = false;
 
@@ -2699,6 +2709,7 @@ public class L1PcInstance extends L1Character {
         final CUserSocket previous = _netConnection;
 		if (previous != clientthread) suspendGroundSight();
 		_netConnection = clientthread;
+        if (previous != clientthread) retireBossTeleportInvitation();
 		if (previous != null && previous != clientthread) {
             previous.onItemTransferFinished(this);
             previous.clearNpcShopViewFor(this);
@@ -7467,6 +7478,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	private transient volatile int _sessionStamp = 0;
 	public int nextSessionStamp() {
         final int stamp = ++_sessionStamp;
+        retireBossTeleportInvitation();
         InvalidateWarehouseAccess();
         return stamp;
     }

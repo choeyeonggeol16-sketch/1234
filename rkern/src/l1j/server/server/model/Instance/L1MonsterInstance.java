@@ -9,7 +9,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.TimeMapController;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.ClanTable;
-import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
+import l1j.server.server.model.npc.spawn.boss.CBossNpcMakerDB;
 import l1j.server.server.datatables.DoorSpawnTable;
 import l1j.server.server.model.item.drop.DropTable;
 import l1j.server.server.model.npc.dialog.NPCTalkDataTable;
@@ -912,7 +912,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 
     private boolean TryQueuePartyDrop(DeathSettlement job, L1PcInstance pc, CContributeData snap) {
         if (!Config.PARTY_LOOT_ENABLE || Config.STANDBY_SERVER || (snap == null || !snap.HasRouteCandidates())
-                || (Config.BOSS_DROP_GROUND_ENABLE && BossMonsterSpawnList.find(getNpcId()) != null)) return false;
+                || (Config.BOSS_DROP_GROUND_ENABLE && CBossNpcMakerDB.isBossTemplate(getNpcId()))) return false;
         final L1PcInstance owner = snap.GetPrimaryOwner(pc);
         final CParty party = owner == null ? null : owner.getParty();
         if (party == null) return false;

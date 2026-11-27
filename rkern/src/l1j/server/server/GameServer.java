@@ -23,7 +23,7 @@ import l1j.server.server.model.world.instance.dungeon.tower.DominanceDataLoader;
 import l1j.server.server.model.world.residence.CWorldAgitTimer;
 import l1j.server.server.task.COwnedWork;
 import l1j.server.server.Controller.AuraController;
-import l1j.server.server.model.npc.spawn.boss.BossController;
+import l1j.server.server.model.npc.spawn.boss.CBossNpcMaker;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.model.npc.chat.NpcChatTimeController;
 import l1j.server.server.Controller.OneTimeController;
@@ -37,7 +37,6 @@ import l1j.server.server.datatables.ArmorEnchantInformationTable;
 import l1j.server.server.datatables.ArmorEnchantList;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.world.residence.AuctionBoardTable;
-import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.ClanBuffTable;
 import l1j.server.server.datatables.ClanTable;
@@ -323,7 +322,6 @@ public class GameServer {
 		HouseTable.getInstance();       // 캐시 로드
 		L1HouseLocation.rebuildCaches();
 		
-		BossMonsterSpawnList.init();
 	}
 
 	private void startRuntimeServices() {
@@ -338,7 +336,7 @@ public class GameServer {
 		L1ClanRanking.getInstance().start();
 		ServerMacroLoader.getInstance().start();
 		DominanceTimeController.getInstance();
-		BossController.start();
+		CBossNpcMaker.start();
 		CWorldAgitTimer.start();
 		DogFightLoader.getInstance().startAutomaticReservation();
 		AuraController.getInstance().start();
@@ -578,7 +576,7 @@ public class GameServer {
 	        CWorldAgitTimer.stop();
 	        DogFightLoader.getInstance().stopTimers();
 	        UBTable.getInstance().getAllUb().forEach(battle -> battle.stop());
-	        BossController.stop();
+	        CBossNpcMaker.stop();
 	        DominanceTimeController.stop();
 	        AuraController.getInstance().stop();
 	        ShipTimeController.getInstance().stop();

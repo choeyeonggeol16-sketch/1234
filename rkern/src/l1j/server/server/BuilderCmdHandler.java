@@ -29,7 +29,7 @@ import javolution.util.FastTable;
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.character.combat.arena.dogfight.DogFightCommandExecutor;
-import l1j.server.server.model.npc.spawn.boss.BossController;
+import l1j.server.server.model.npc.spawn.boss.CBossNpcMaker;
 import l1j.server.server.Controller.BugRaceController;
 import l1j.server.server.auth.captcha.loader.CaptchaLoadManager;
 import l1j.server.server.datatables.AlchemyProbabilityBox;
@@ -659,7 +659,7 @@ public final class BuilderCmdHandler {
 
 		});
 		registerDirect(loaded, "이벤트상점", (gm, cmd, param) -> {
-			BossController.handleShopAlarmCommand(gm, param);
+			CBossNpcMaker.handleShopAlarmCommand(gm, param);
 
 //		case "테스팅":
 //			gm.sendPackets(new RActionUI(RActionUI.EVENT_SYSTEM, 45752, true));
@@ -6701,11 +6701,10 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 //				e.printStackTrace();
 //			}
 		} else if (arg.equalsIgnoreCase("보스스폰")) {
-			if (BossController.reload()) {
-				gm.sendPackets("리로드: spawnlist_boss_hot 테이블이 리로드 되었습니다");
-			} else {
-				gm.sendPackets("리로드 실패: 보스 스폰 DB 오류. 기존 예약을 유지합니다.");
-			}
+			if (!CWorldWork.tryExecute(() -> {
+				boolean applied = CBossNpcMaker.reload();
+				gm.sendPackets(applied ? "보스 출현 일정을 리로드했습니다." : "보스 일정 리로드 실패. 기존 예약을 유지합니다.");
+			})) gm.sendPackets("보스 일정 리로드 요청을 처리할 수 없습니다.");
 		} else if (arg.equalsIgnoreCase("답장")) {
 			gm.sendPackets("리로드: letter_command 테이블이 리로드 되었습니다");
 		} else if(arg.equalsIgnoreCase("마법딜")){			

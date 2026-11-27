@@ -9,7 +9,6 @@ import java.util.Random;
 
 import l1j.server.Config;
 import l1j.server.server.Account;
-import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
 import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.datatables.ExpTable;
@@ -37,27 +36,23 @@ import l1j.server.server.model.character.survey.SurveySystemLoader;
 import l1j.server.server.model.item.Card.L1CardAdd;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ClanAttention;
-import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_Resurrection;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_Trade;
+import l1j.server.server.model.npc.spawn.boss.BossTeleportInvites;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.model.world.siege.WarFactory;
-import l1j.server.server.shared.GameRandom;
-import l1j.server.server.shared.geometry.GamePoint;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.mysql.MySqlCharacterStorage.CharacterSnapshot;
-import l1j.server.server.model.npc.spawn.boss.L1Boss;
 import l1j.server.server.templates.L1Npc;
 public final class CS_Attr {
 
@@ -251,45 +246,11 @@ public final class CS_Attr {
                 if (c == MSGCODE_YES) L1CardAdd.SkillTree(pc);
                 else pc.setCollecItem(null);
                 return;
-			case MSGCODE_622_BOSS: {
-				if (c == MSGCODE_NO) {
-					if (pc.getLevel() < Config.YN_pclevel) {
-						SC_SystemMessage.send(pc, "레벨 " + Config.YN_pclevel + " 부터 이용가능 합니다.");
-						return;
-					}
-					SC_SystemMessage.send(pc, "보스이동 참가를 거절 하셨습니다.");
-					pc.setBossYN(0);
-				} else if (c == MSGCODE_YES) {
-					if (pc.getLevel() < Config.YN_pclevel) {
-						SC_SystemMessage.send(pc, "레벨 "+Config.YN_pclevel+" 부터 이용가능 합니다.");
-						return;
-					}
-
-					L1Boss boss = BossMonsterSpawnList.find(pc.getBossYN());
-					if (boss == null)
-						SC_SystemMessage.send(pc, "선택 딜레이가 지나 이용이 불가능 합니다(10초)");
-					else {
-						L1Map m	= L1WorldMap.getInstance().getMap((short)boss.getMap());
-						int x = boss.getX();
-						int y = boss.getY();
-						int cx = 0;
-						int cy = 0;
-						int current_try = 0;
-						int limit_try = 100;
-						do{
-							cx = x + (GameRandom.isBoolean() ? GameRandom.next(5) : -GameRandom.next(5));
-							cy = y + (GameRandom.isBoolean() ? GameRandom.next(5) : -GameRandom.next(5));
-						}while(++current_try < limit_try && !GamePoint.isValidPosition(m, cx, cy));
-						if(current_try >= limit_try){
-							cx = x;
-							cy = y;
-						}
-						pc.start_teleport(cx, cy, (short) boss.getMap(), pc.getHeading(), 169, true, false);
-						SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "해당 보스구역으로 이동 되었습니다.");
-					}
-				}
-				break;
-			}
+            case MSGCODE_622_BOSS:
+                if (c == MSGCODE_NO || c == MSGCODE_YES) {
+                    BossTeleportInvites.answer(pc, client, c == MSGCODE_YES);
+                }
+                return;
 			}
 
 			if(SurveySystemLoader.getInstance().isSurvey(msgIdx)){

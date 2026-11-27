@@ -15,7 +15,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.Account;
 import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.model.npc.spawn.boss.BossController;
+import l1j.server.server.model.npc.spawn.boss.CBossNpcMaker;
 import l1j.server.server.auth.login.LoginController;
 import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.SkillCheck;
@@ -850,7 +850,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         }
         pc.LoadCheckStatus();
         // 보스몬스터 이벤트 알람
-        BossController.sendBossEventSnapshot(pc);
+        CBossNpcMaker.sendBossEventSnapshot(pc);
         SC_SLOT_CHANGE.sendCreate(pc, SC_SLOT_CHANGE.SLOT_CHANGE, pc);
 
         applySealScroll(pc);

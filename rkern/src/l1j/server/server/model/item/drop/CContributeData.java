@@ -3,7 +3,7 @@ package l1j.server.server.model.item.drop;
 import java.util.ArrayList;
 import java.util.Arrays;
 import l1j.server.Config;
-import l1j.server.server.model.npc.spawn.boss.BossMonsterSpawnList;
+import l1j.server.server.model.npc.spawn.boss.CBossNpcMakerDB;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Location;
@@ -95,7 +95,7 @@ public final class CContributeData {
         }
         Arrays.sort(routeIds, 0, routeCount);
         return new CContributeData(groupCount == 0 ? 0L : groups[best], Arrays.copyOf(allowed, unique),
-                groupCount != 0 && BossMonsterSpawnList.find(victim.getNpcId()) != null,
+                groupCount != 0 && CBossNpcMakerDB.isBossTemplate(victim.getNpcId()),
                 hasRouteCandidates, primaryOwner, Arrays.copyOf(routeIds, routeCount));
     }
 
