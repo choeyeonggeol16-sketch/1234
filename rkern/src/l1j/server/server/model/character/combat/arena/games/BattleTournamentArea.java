@@ -4,11 +4,14 @@ import l1j.server.server.model.world.instance.CInstanceEvents;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
 import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -29,6 +32,8 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 	private int _team_id;
 	private int _round_id;
 	private int _map_id;
+	private L1Map _terrain;
+	private volatile BattleTournamentObserver _observer;
 	private GameRectangle _area;
 	private DropItemBuilder _key_builder;
 	private MonsterSpawnBuilder _sbuilder;
@@ -74,8 +79,10 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 		return _round_id;
 	}
 	
-	public BattleTournamentArea set_map_id(int map_id){
-		_map_id = map_id;
+	BattleTournamentArea set_terrain(L1Map terrain, BattleTournamentObserver observer) {
+		_terrain = terrain;
+		_map_id = terrain.getId();
+		_observer = observer;
 		return this;
 	}
 	public int get_map_id(){
@@ -163,26 +170,35 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 	}
 	
 	public void do_running(){
-		if(!is_ready())
-			return;
-		
-		set_status(EStatus.RUNNING);
-		_lift.up();
-		int spawns = (CWorld.getInstance().getVisiblePlayers(_map_id).size() / 2) * CombatLoadManager.COMBAT_BT_MONSTER_PACK;
-		set_death_count(new AtomicInteger(spawns));
-		CInstanceEvents.start(new Runnable(){
-			@Override
-			public void run(){
-				try{
-					for(int i=spawns - 1; i>=0; --i){
-						L1MonsterInstance m = _sbuilder.build(_area.left, _area.top, _area.right, _area.bottom, (short) _map_id, BattleTournamentArea.this);
-						SC_EffectLocation.broadcast(m, m.getX(), m.getY(), 2236);
-						Thread.sleep(200L);
-					}
-				}catch(Exception e){
-					e.printStackTrace();
+		runOwned(() -> {
+			if (!is_ready()) return false;
+			set_status(EStatus.RUNNING);
+			_lift.up();
+			final int spawns = (CWorld.getInstance().getVisiblePlayers(_terrain).size() / 2)
+					* CombatLoadManager.COMBAT_BT_MONSTER_PACK;
+			set_death_count(new AtomicInteger(spawns));
+			CInstanceEvents.start(() -> {
+				try {
+					for (int i = 0; i < spawns && spawnMonster(); i++) Thread.sleep(200L);
+				} catch (InterruptedException interrupted) {
+					Thread.currentThread().interrupt();
 				}
-			}
+			});
+			return true;
+		});
+	}
+
+	private boolean runOwned(BooleanSupplier action) {
+		final BattleTournamentObserver observer = _observer;
+		return observer != null && observer.runAreaAction(_terrain, action);
+	}
+
+	private boolean spawnMonster() {
+		return runOwned(() -> {
+			final L1MonsterInstance monster = _sbuilder.build(
+					_area.left, _area.top, _area.right, _area.bottom, (short) _map_id, this);
+			SC_EffectLocation.broadcast(monster, monster.getX(), monster.getY(), 2236);
+			return true;
 		});
 	}
 	
@@ -222,119 +238,122 @@ public class BattleTournamentArea implements MonsterDeathHandler{
 	
     private void broadcast(int[] packets, boolean ignored) {
         if (packets == null || packets.length == 0) return;
-        final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter[] frames=new l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter[packets.length];
+        final CSharedBroadcast.NativeWireWriter[] frames = new CSharedBroadcast.NativeWireWriter[packets.length];
         for(int i=0;i<packets.length;i++)
             frames[i]=SC_DisplayEffect.nativeWriter(packets[i]);
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast
-                .sendWrittenMapTeamFrames(_map_id,_team_id,_round_id<4,frames);
+        CSharedBroadcast.sendWrittenMapTeamFrames(_terrain, _team_id, _round_id < 4, frames);
     }
 	
 	private void broadcast(String s){
         if (_round_id >= 4) {
-            l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(CWorld.getInstance().getVisiblePlayers(_map_id),s);
+            CSharedBroadcast.sendWrittenMapBestEffort(_terrain, SC_SystemMessage.nativeWriter(s));
         } else {
-            l1j.server.server.model.network.core.broadcast.CSharedBroadcast
-                    .sendWrittenMapTeamBestEffort(_map_id, _team_id, SC_SystemMessage.nativeWriter(s));
+            CSharedBroadcast.sendWrittenMapTeamBestEffort(_terrain, _team_id, SC_SystemMessage.nativeWriter(s));
         }
     }
 	
 	public void do_boss_spawn(){
-		CInstanceEvents.start(new Runnable(){
-			@Override
-			public void run(){
-				try{
-					L1Npc npc = _boss_sbuilder.getNpc();
-					if(npc == null){
-						System.out.println(String.format("MJBattleHunterArea boss spawn is null!!! team_id : %d, round_id : %d", _team_id, _round_id));
-						return;
-					}
-					
-					for(int i=CombatLoadManager.COMBAT_BT_BOSS_SPAWN_SECOND; i>=1; --i){
-						broadcast(String.format("%d초 후 %s가 출현합니다.", i, npc.get_name()));
-						Thread.sleep(1000L);
-					}
-					int[] pcks = create_boss_notify_packet();
-					broadcast(pcks, false);
-					_boss_sbuilder.build(_area.x, _area.y, 0, (short) _map_id, new MonsterDeathHandler(){
-						@Override
-						public boolean onDeathNotify(L1MonsterInstance m){
-							if(m._destroyed)
-								return false;
-							
-							CInstanceEvents.start(new Runnable(){
-								@Override
-								public void run(){
-									try{
-										int mx = m.getX();
-										int my = m.getY();
-										SC_EffectLocation.broadcast(m, mx, my, 2236);
-										m.setDeathProcessing(true);
-										m.allTargetClear();
-										m.setCurrentHp(0);
-										m.setDead(true);
-										m.setStatus(ActionCodes.ACTION_Die);
-										m.deleteMe();
-										
-										if(_key_builder != null){
-											_key_builder.build(mx, my, (short)_map_id, -1);
-											_key_builder = null;
-										}
-									}catch(Exception e){
-										e.printStackTrace();
-									}finally{
-										_clear_listener.on(new int[]{get_team_id(), get_round_id()});
-									}
-								}
-							});
-							
-							return true;
-						}
-					});
-					Thread.sleep(500L);
-					broadcast(pcks, true);
-				}catch(Exception e){
-					e.printStackTrace();
-				}finally{
-				}
-			}
+		runOwned(() -> {
+			final L1Npc npc = _boss_sbuilder == null ? null : _boss_sbuilder.getNpc();
+			if (npc == null) return false;
+			CInstanceEvents.start(() -> runBossCountdown(npc));
+			return true;
 		});
 	}
-	
-	@Override
-	public boolean onDeathNotify(L1MonsterInstance m) {
-		if(m._destroyed)
-			return false;
-		
-		SC_EffectLocation.broadcast(m, m.getX(), m.getY(), 2236);
-		m.setDeathProcessing(true);
-		m.allTargetClear();
-		m.setCurrentHp(0);
-		m.setDead(true);
-		m.setStatus(ActionCodes.ACTION_Die);
-		m.deleteMe();
-		if(_death_count.decrementAndGet() <= 0){
-			if(_drop_builders != null){
-				CInstanceEvents.start(new Runnable(){
-					@Override
-					public void run(){
-						Collections.shuffle(_drop_builders);
-						int size = _drop_builders.size();
-						for(int i = CombatLoadManager.COMBAT_BT_CLEAR_BONUS_AMOUNT - 1; i>=0; --i)
-							_drop_builders.get(i % size).build(_area.left, _area.top, _area.right, _area.bottom, (short) _map_id);
-					}
-				});
+
+	private void runBossCountdown(L1Npc npc) {
+		try {
+			for (int remaining = CombatLoadManager.COMBAT_BT_BOSS_SPAWN_SECOND; remaining >= 1; remaining--) {
+				final int seconds = remaining;
+				if (!runOwned(() -> {
+					broadcast(String.format("%d초 후 %s가 출현합니다.", seconds, npc.get_name()));
+					return true;
+				})) return;
+				Thread.sleep(1000L);
 			}
-			
-			if(_boss_sbuilder == null){
-				_clear_listener.on(new int[]{get_team_id(), get_round_id()});
+			final int[] packets = create_boss_notify_packet();
+			if (!spawnBoss(packets)) return;
+			Thread.sleep(500L);
+			runOwned(() -> {
+				broadcast(packets, true);
 				return true;
-			}
-			do_boss_spawn();
-		}	
-		return true;
+			});
+		} catch (InterruptedException interrupted) {
+			Thread.currentThread().interrupt();
+		}
 	}
-	
+
+	private boolean spawnBoss(int[] packets) {
+		return runOwned(() -> {
+			broadcast(packets, false);
+			_boss_sbuilder.build(_area.x, _area.y, 0, (short) _map_id, this::onBossDeath);
+			return true;
+		});
+	}
+
+	private boolean onBossDeath(L1MonsterInstance monster) {
+		return runOwned(() -> {
+			if (monster._destroyed || monster.getMap() != _terrain) return false;
+			CInstanceEvents.start(() -> finishBossDeath(monster));
+			return true;
+		});
+	}
+
+	private boolean finishBossDeath(L1MonsterInstance monster) {
+		return runOwned(() -> {
+			if (monster._destroyed || monster.getMap() != _terrain) return false;
+			try {
+				final int x = monster.getX(), y = monster.getY();
+				deleteMonster(monster);
+				if (_key_builder != null) {
+					_key_builder.build(x, y, _terrain, -1);
+					_key_builder = null;
+				}
+			} finally {
+				_clear_listener.on(new int[]{get_team_id(), get_round_id()});
+			}
+			return true;
+		});
+	}
+
+	@Override
+	public boolean onDeathNotify(L1MonsterInstance monster) {
+		return runOwned(() -> {
+			if (monster._destroyed || monster.getMap() != _terrain) return false;
+			deleteMonster(monster);
+			if (_death_count.decrementAndGet() <= 0) {
+				if (_drop_builders != null) CInstanceEvents.start(this::dropBonus);
+				if (_boss_sbuilder == null) _clear_listener.on(new int[]{get_team_id(), get_round_id()});
+				else do_boss_spawn();
+			}
+			return true;
+		});
+	}
+
+	private boolean dropBonus() {
+		return runOwned(() -> {
+			Collections.shuffle(_drop_builders);
+			final int size = _drop_builders.size();
+			if (size == 0) return false;
+			for (int i = CombatLoadManager.COMBAT_BT_CLEAR_BONUS_AMOUNT - 1; i >= 0; i--) {
+				_drop_builders.get(i % size).build(_area.left, _area.top, _area.right, _area.bottom, (short) _map_id);
+			}
+			return true;
+		});
+	}
+
+	private static void deleteMonster(L1MonsterInstance monster) {
+		SC_EffectLocation.broadcast(monster, monster.getX(), monster.getY(), 2236);
+		monster.setDeathProcessing(true);
+		monster.allTargetClear();
+		monster.setCurrentHp(0);
+		monster.setDead(true);
+		monster.setStatus(ActionCodes.ACTION_Die);
+		monster.deleteMe();
+	}
+
 	public void dispose(){
+		_observer = null;
 		if(_lift != null){
 			_lift.dispose();
 			_lift = null;

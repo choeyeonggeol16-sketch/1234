@@ -60,7 +60,7 @@ public final class CWorld {
     private static volatile CWorld _instance;
 
     private CWorld() {
-        mapObjects = new CWorldMapObjects(MapsTable.getInstance().getMaps().keySet());
+        mapObjects = new CWorldMapObjects(MapsTable.getInstance().getMaps().keySet(), objectFactory);
         groundItems = new CWorldGroundItems(this, mapObjects);
     }
 

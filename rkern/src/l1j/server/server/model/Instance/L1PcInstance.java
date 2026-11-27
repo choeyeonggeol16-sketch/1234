@@ -753,7 +753,7 @@ public class L1PcInstance extends L1Character {
 	public boolean _is특정보스 = false;
 	public boolean _is특정보스투 = false;
 	/** 화룡의 안식처 **/
-	public boolean isInValakasBoss = false;
+	public volatile boolean isInValakasBoss = false;
 	public boolean isInValakas = false;
 	private boolean _ghost = false;
 	private boolean _ghostCanTalk = true;

@@ -5,6 +5,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.connection.CIOBufferEx;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -55,15 +58,26 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
     protected final int senderId() { return senderId; }
     /** Returns true when the socket admits a SEND lease for the shared bytes. */
     public final boolean send(CUserSocket target, int recipientId) {
-        return send(target, recipientId, false);
+        return send(target, recipientId, false, null, null, null, 0, null, 0);
     }
 
     /** Visual sends may refuse admission without disconnecting the receiver. */
     public final boolean sendBestEffort(CUserSocket target, int recipientId) {
-        return send(target, recipientId, true);
+        return send(target, recipientId, true, null, null, null, 0, null, 0);
     }
 
-    private boolean send(CUserSocket target, int recipientId, boolean optional) {
+    final boolean sendScoped(CUserSocket target, L1PcInstance recipient, L1Map terrain,
+            L1Object anchor, int radius, Integer teamId, boolean optional) {
+        return send(target, recipient.getId(), optional, recipient, terrain, anchor, radius, teamId, 0);
+    }
+
+    final boolean sendGroundScoped(CUserSocket target, L1PcInstance recipient, L1Map terrain,
+            L1Object item, int sightEpoch, boolean optional) {
+        return send(target, recipient.getId(), optional, recipient, terrain, item, 0, null, sightEpoch);
+    }
+
+    private boolean send(CUserSocket target, int recipientId, boolean optional, L1PcInstance recipient,
+            L1Map terrain, L1Object anchor, int radius, Integer teamId, int groundSightEpoch) {
         final Source frozen;
         synchronized (this) {
             if (closed) throw new IllegalStateException("broadcast already closed");
@@ -92,7 +106,11 @@ public class CAsyncSendConstBuffer implements AutoCloseable {
         // copying without holding the broadcast monitor across those callbacks.
         final boolean admitted;
         try {
-            admitted = optional ? target.sendFrozenWireBestEffort(frozen.wire) : target.sendFrozenWire(frozen.wire);
+            // Freezing a lazy source runs its writer. The audience or socket owner
+            // may change before it finishes, so recheck just before FIFO admission.
+            admitted = (recipient == null || CSharedBroadcast.matchesScope(
+                    target, recipient, terrain, anchor, radius, teamId, groundSightEpoch))
+                    && (optional ? target.sendFrozenWireBestEffort(frozen.wire) : target.sendFrozenWire(frozen.wire));
         } catch (RuntimeException | Error failure) {
             releaseAfterFailure(frozen, failure);
             throw failure;

@@ -20,6 +20,7 @@ final class CWorldMapObjects {
     // must still retire across maps on replacement. Tile inventories are local to a map.
     private final L1IntRegistry<L1Object> mapOnly = new L1IntRegistry<>();
     private final BitSet configured = new BitSet();
+    private final L1ObjectFactory identities;
 
     private static final class MapMembers {
         final L1IntRegistry<L1Object> objects = new L1IntRegistry<>();
@@ -42,13 +43,17 @@ final class CWorldMapObjects {
             var roster = players;
             if (roster != null) roster.remove(pc.getId(), pc);
         }
-
-        boolean containsPlayer(L1PcInstance pc, L1Map terrain) {
-            return LocalWorldMap.publishedTerrain(pc) == terrain && objects.get(pc.getId()) == pc;
-        }
     }
 
-    CWorldMapObjects(Iterable<Integer> configuredMaps) {
+    private boolean containsPlayer(MapMembers members, L1PcInstance pc, L1Map terrain) {
+        int id = pc.getId();
+        // The factory installs a replacement before it can lock and retire the old actor.
+        return LocalWorldMap.publishedTerrain(pc) == terrain && members.objects.get(id) == pc
+                && identities.find(id) == pc;
+    }
+
+    CWorldMapObjects(Iterable<Integer> configuredMaps, L1ObjectFactory identities) {
+        this.identities = identities;
         for (int id : configuredMaps) {
             if (valid(id)) configured.set(id);
         }
@@ -91,7 +96,7 @@ final class CWorldMapObjects {
         var result = new ArrayList<L1PcInstance>(roster.size());
         if (terrain != null) {
             for (L1PcInstance pc : roster.values()) {
-                if (members.containsPlayer(pc, terrain)) result.add(pc);
+                if (containsPlayer(members, pc, terrain)) result.add(pc);
             }
         }
         return result;
@@ -102,7 +107,7 @@ final class CWorldMapObjects {
         final var roster = members == null ? null : members.players;
         if (roster != null && !roster.isEmpty()) {
             for (L1PcInstance pc : roster.values()) {
-                if (pc != except && members.containsPlayer(pc, terrain)) return true;
+                if (pc != except && containsPlayer(members, pc, terrain)) return true;
             }
         }
         return false;

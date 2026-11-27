@@ -4,6 +4,7 @@ import l1j.server.server.model.world.instance.CInstanceEvents;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.function.BooleanSupplier;
 
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.world.instance.CInstanceWork;
@@ -239,7 +240,7 @@ public class BattleTournamentObserver extends CombatObserver{
 				.set_sbuilder(round_id == 4 ? null : mbuilders[round_id])
 				.set_drop_builders(new ArrayList<DropItemBuilder>(dbuilders))
 				.set_boss_sbuilder(boss_builders[round_id])
-				.set_map_id(_copyMapId)
+				.set_terrain(m, this)
 				.set_clear_listener(new IGenericListener<int[]>(){
 					@Override
 					public int[] on(int[] t) {
@@ -303,6 +304,20 @@ public class BattleTournamentObserver extends CombatObserver{
 		}
 		return this;
 	}
+
+    boolean runAreaAction(L1Map terrain, BooleanSupplier action) {
+        if (!is_running()) return false;
+        final boolean[] ran = { false };
+        enterZone(() -> {
+            _lock.lock();
+            try {
+                if (is_running() && copyMap() == terrain) ran[0] = action.getAsBoolean();
+            } finally {
+                _lock.unlock();
+            }
+        });
+        return ran[0];
+    }
 	
 	protected void dispose_area(){
 		for(int team_id = 1; team_id>=0; --team_id){

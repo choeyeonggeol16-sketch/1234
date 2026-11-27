@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -28,6 +29,7 @@ public final class WorldVisibilityRegression {
         installMapMetadata();
         radiusScreenAndGenerations();
         mapPlayerMembership();
+        mapPlayerDuringReplacement();
         fastOrderingAndLimits();
         publishedMovementAndCleanup();
         movingAndReplacedIdsAppearOnce();
@@ -153,6 +155,43 @@ public final class WorldVisibilityRegression {
             world.removeObject(ghost);
             check(world.getVisiblePlayers(first).isEmpty() && world.getVisiblePlayers(recycled).isEmpty(),
                     "last leave clears player membership while other map objects remain");
+        }
+    }
+
+    private static void mapPlayerDuringReplacement() throws Exception {
+        final var original = map(3122);
+        final var destination = map(3123);
+        try (var fixture = new WorldFixture(original, destination)) {
+            var world = fixture.world;
+            var retiring = fixture.player(original, 58340, 120, 120, true);
+            var replacement = new L1PcInstance();
+            locate(replacement, destination, retiring.getId(), 125, 125);
+            replacement.setName("map-roster-replacement");
+            fixture.owned.add(replacement);
+            var enter = new FutureTask<Void>(() -> {
+                world.storeAndEnterWorld(replacement);
+                return null;
+            });
+            try {
+                synchronized (retiring) {
+                    Thread.ofPlatform().daemon().start(enter);
+                    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+                    while (world.findObject(retiring.getId()) != replacement && System.nanoTime() < deadline) {
+                        Thread.sleep(1);
+                    }
+                    check(world.findObject(retiring.getId()) == replacement, "replacement installed while old visibility is held");
+                    check(world.getVisiblePlayers(original).isEmpty() && world.getVisiblePlayers(original.getId()).isEmpty()
+                                    && !world.hasOtherMapPlayer(original, null),
+                            "replaced player must leave all map audiences as soon as its world identity changes");
+                    check(world.getVisiblePlayers(destination).isEmpty(), "registered replacement has not entered yet");
+                }
+            } finally {
+                enter.get(5, TimeUnit.SECONDS);
+            }
+            world.leaveAndRemoveObject(retiring);
+            check(world.getVisiblePlayers(destination).equals(List.of(replacement))
+                            && world.hasOtherMapPlayer(destination, null) && !world.hasOtherMapPlayer(destination, replacement),
+                    "late departure leaves the entered replacement visible on its destination");
         }
     }
 

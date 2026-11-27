@@ -9,12 +9,14 @@ import l1j.server.server.GameServerSetting;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.inventory.L1InventoryTransaction;
-import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.experience.fishing.EFishingType;
 import l1j.server.server.model.character.experience.fishing.FishingExpInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.item.Exp.CalcExp;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.cs.packet.CDB;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
@@ -559,13 +561,9 @@ public final class FishingTimeController {
 
     private void distribute_message(
             int owner_object_id,String message,int effect_id){
-        // Preserve two independent AOI lookups, first all notices, then all FX.
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                CWorld.getInstance().getVisiblePlayers(5490),
-                SC_PacketBox.nativeGreenWriter(message));
-        l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                CWorld.getInstance().getVisiblePlayers(5490),
-                SC_SkillSound.nativeWriter(owner_object_id,effect_id));
+        final L1Map terrain = L1WorldMap.getInstance().findMap(5490);
+        CSharedBroadcast.sendWrittenMapBestEffort(terrain, SC_PacketBox.nativeGreenWriter(message));
+        CSharedBroadcast.sendWrittenMapBestEffort(terrain, SC_SkillSound.nativeWriter(owner_object_id, effect_id));
     }
 
     private void distribute_message(int owner_object_id, int itemid) {

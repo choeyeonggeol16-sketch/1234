@@ -73,7 +73,7 @@ public class ValakasStart {
 					briddge3.open();
 				}
 				
-				if (BossList != null && valakas != null && pc.isInValakasBoss) {
+				if (BossList != null && valakas != null && hasBossTrigger()) {
 					stage = VALAKAS;
 				}
 
@@ -125,7 +125,7 @@ public class ValakasStart {
 					Thread.sleep(2000);
 					//발라카스:크크..자신감이 넘치는구나..
 					SC_NpcChatPacket.broadcastCharacter(valakas, valakas, "$18873");
-					pc.isInValakasBoss = false;
+					clearBossTrigger();
 					stage = WAIT_RAID;
 					break;
 				case END:
@@ -242,6 +242,19 @@ public class ValakasStart {
 					valakas = npc;
 				}
 			}
+		}
+	}
+
+	private boolean hasBossTrigger() {
+		synchronized (pc) {
+			return pc.getMap() == zone.map() && pc.isInValakasBoss;
+		}
+	}
+
+	private void clearBossTrigger() {
+		// World relocation uses the same monitor as this post-dialogue update.
+		synchronized (pc) {
+			if (pc.getMap() == zone.map()) pc.isInValakasBoss = false;
 		}
 	}
 

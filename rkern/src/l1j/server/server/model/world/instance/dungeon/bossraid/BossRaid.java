@@ -51,7 +51,7 @@ public final class BossRaid {
             if (!CIceCaveSpawn.pause(1000L)) return;
             --time;
             if (time % 60 == 0) {
-                CSharedBroadcast.sendWrittenObjectPlayersBestEffort(world.getVisiblePlayers(zone.map()),
+                CSharedBroadcast.sendWrittenMapBestEffort(zone.map(),
                         SC_PacketBox.nativeGreenWriter(time / 60 + "분 후에 마을로 강제 이동 됩니다."));
             }
             if (time <= LIMIT_SECONDS - 10 && world.getVisiblePlayers(zone.map()).isEmpty())

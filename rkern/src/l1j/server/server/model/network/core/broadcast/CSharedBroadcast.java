@@ -14,12 +14,14 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.Opcodes;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.CWorld;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
@@ -80,6 +82,7 @@ public final class CSharedBroadcast {
             int p6,int p7,int p8,int p9,int p10,boolean fast) {
         if(anchor==null)return;
         final boolean optional = kind != FORMAT_CHANGESHAPE;
+        final L1Map terrain = anchor.getMap();
         final CWorld world=CWorld.getInstance();
         final List<L1PcInstance> recipients=fast
                 ? world.borrowVisiblePlayerFast(anchor)
@@ -105,7 +108,7 @@ public final class CSharedBroadcast {
                         continue;
                     }
                 }
-                try { sendVisual(socket, pc.getId(), shared, optional); }
+                try { shared.sendScoped(socket, pc, terrain, anchor, -1, null, optional); }
                 catch (RuntimeException failure) { logOptionalNoticeFailure(failure); }
             }
         } finally {
@@ -143,6 +146,7 @@ public final class CSharedBroadcast {
             int p0, int p1, int p2, int p3,
             boolean fast, int radius, Predicate<L1PcInstance> filter, boolean optional) {
         if (anchor == null) return;
+        final L1Map terrain = anchor.getMap();
         final CWorld world = CWorld.getInstance();
         final boolean borrowed = fast && radius < 0;
         final List<L1PcInstance> recipients = borrowed
@@ -171,7 +175,7 @@ public final class CSharedBroadcast {
                         continue;
                     }
                 }
-                try { sendVisual(socket, pc.getId(), shared, optional); }
+                try { shared.sendScoped(socket, pc, terrain, anchor, Math.max(-1, radius), null, optional); }
                 catch (RuntimeException failure) { logOptionalNoticeFailure(failure); }
             }
         } finally {
@@ -186,6 +190,7 @@ public final class CSharedBroadcast {
 
     public static void sendAction(L1Object anchor, int objectId, int actionId) {
         if (anchor == null) return;
+        final L1Map terrain = anchor.getMap();
         final CWorld world = CWorld.getInstance();
         final List<L1PcInstance> recipients = world.borrowVisiblePlayerFast(anchor);
         CAsyncSendConstBufferExceptSelf shared = null;
@@ -206,7 +211,7 @@ public final class CSharedBroadcast {
                             objectId, actionId);
                     if (shared == null) continue;
                 }
-                try { shared.sendBestEffort(socket, pc.getId()); }
+                try { shared.sendScoped(socket, pc, terrain, anchor, -1, null, true); }
                 catch (RuntimeException failure) { logOptionalNoticeFailure(failure); }
             }
         } finally {
@@ -220,6 +225,7 @@ public final class CSharedBroadcast {
 
     public static void sendMove(L1Object anchor, int objectId, int x, int y, int heading) {
         if (anchor == null) return;
+        final L1Map terrain = anchor.getMap();
         final CWorld world = CWorld.getInstance();
         final List<L1PcInstance> recipients = world.borrowVisiblePlayerFast(anchor);
         CAsyncSendConstBufferExceptSelf shared = null;
@@ -241,7 +247,7 @@ public final class CSharedBroadcast {
                             objectId, x, y, heading);
                     if (shared == null) throw new IllegalStateException("S_MOVE shared Native source unavailable (allocation or shutdown)");
                 }
-                try { shared.send(socket, pc.getId()); }
+                try { shared.sendScoped(socket, pc, terrain, anchor, -1, null, false); }
                 catch (RuntimeException failure) { logOptionalNoticeFailure(failure); }
             }
         } finally {
@@ -292,6 +298,7 @@ public final class CSharedBroadcast {
     private static void sendWritten(L1Object anchor, NativeWireWriter writer, boolean fast,
             int radius, Predicate<L1PcInstance> filter, boolean optional) {
         if(anchor==null||writer==null)return;
+        final L1Map terrain = anchor.getMap();
         final CWorld world=CWorld.getInstance();
         final boolean borrowed=fast&&radius<0;
         final List<L1PcInstance> recipients=borrowed
@@ -314,7 +321,7 @@ public final class CSharedBroadcast {
                 if(shared==null) {
                     shared = new CAsyncSendConstBufferExceptSelf(writer, anchor.getId(), Integer.MAX_VALUE);
                 }
-                try { sendVisual(socket, pc.getId(), shared, optional); }
+                try { shared.sendScoped(socket, pc, terrain, anchor, Math.max(-1, radius), null, optional); }
                 catch (RuntimeException failure) {
                     if (!shared.hasFrozenSource()) {
                         if (!optional) throw failure;
@@ -340,10 +347,22 @@ public final class CSharedBroadcast {
         return socket != null && socket.isConnected() && socket.isClientConnected() ? socket : null;
     }
 
-    private static void sendVisual(CUserSocket socket, int recipientId,
-            CAsyncSendConstBuffer shared, boolean optional) {
-        if (optional) shared.sendBestEffort(socket, recipientId);
-        else shared.send(socket, recipientId);
+    static boolean matchesScope(CUserSocket socket, L1PcInstance pc, L1Map terrain, L1Object anchor,
+            int radius, Integer teamId, int groundSightEpoch) {
+        if (terrain == null || !socket.isCurrentCharacter(pc) || pc.isLogoutStarted()
+                || !pc.isPublishedIn(terrain) || pc.getMap() != terrain
+                || CWorld.getInstance().findObject(pc.getId()) != pc
+                || (teamId != null && pc.get_current_combat_team_id() != teamId.intValue())) return false;
+        if (anchor == null) return currentTerrain(terrain);
+        if (anchor.getMap() != terrain) return false;
+        if (groundSightEpoch != 0) {
+            return pc.groundSightEpoch() == groundSightEpoch && anchor.isPublishedIn(terrain) && pc.canSeeObject(anchor);
+        }
+        return anchor == pc || CTLMFilter.nearby(anchor, pc, radius, radius < 0);
+    }
+
+    private static boolean currentTerrain(L1Map terrain) {
+        return terrain != null && L1WorldMap.getInstance().findMap(terrain.getId()) == terrain;
     }
 
     /**
@@ -390,6 +409,11 @@ public final class CSharedBroadcast {
 
     private static CAsyncSendConstBuffer sendWrittenOptionalTo(
             CAsyncSendConstBuffer shared,L1PcInstance pc,NativeWireWriter writer) {
+        return sendWrittenOptionalTo(shared, pc, writer, null, null, null);
+    }
+
+    private static CAsyncSendConstBuffer sendWrittenOptionalTo(CAsyncSendConstBuffer shared,
+            L1PcInstance pc, NativeWireWriter writer, L1Map terrain, L1Object anchor, Integer teamId) {
         final CUserSocket socket;
         final int recipient;
         try {
@@ -410,7 +434,8 @@ public final class CSharedBroadcast {
                         writer,Integer.MIN_VALUE,Integer.MAX_VALUE);
                 shared=first;
             }
-            shared.sendBestEffort(socket, recipient);
+            if (terrain == null && anchor == null) shared.sendBestEffort(socket, recipient);
+            else shared.sendScoped(socket, pc, terrain, anchor, -1, teamId, true);
         } catch(RuntimeException failure) {
             // No frozen plaintext exists after an encoder/acquire/seal error.
             // Trying the same broken writer on every later recipient multiplies
@@ -561,12 +586,13 @@ public final class CSharedBroadcast {
     public static void sendWrittenSelfAndVisibleBestEffort(
             L1Character anchor,NativeWireWriter writer) {
         if(anchor==null||writer==null)return;
+        final L1Map terrain = anchor.getMap();
         CAsyncSendConstBuffer shared=null;
         try {
             if(anchor instanceof L1PcInstance pc)
-                shared=sendWrittenOptionalTo(shared,pc,writer);
+                shared=sendWrittenOptionalTo(shared,pc,writer,terrain,anchor,null);
             for(L1PcInstance viewer:CWorld.getInstance().getVisiblePlayer(anchor))
-                shared=sendWrittenOptionalTo(shared,viewer,writer);
+                shared=sendWrittenOptionalTo(shared,viewer,writer,terrain,anchor,null);
         } catch(UnavailableOptionalSource invalid) {
             // Broken source must not be regenerated for every viewer.
         } catch(RuntimeException failure) {
@@ -580,6 +606,7 @@ public final class CSharedBroadcast {
     public static void sendWrittenNestedVisibleBestEffort(
             L1Object origin,NativeWireWriter writer) {
         if(origin==null||writer==null)return;
+        final L1Map terrain = origin.getMap();
         final CWorld world=CWorld.getInstance();
         CAsyncSendConstBuffer shared=null;
         try {
@@ -587,12 +614,12 @@ public final class CSharedBroadcast {
             if (anchors.isEmpty()) return;
             final List<L1PcInstance> recipients = new ArrayList<>(anchors.size());
             for(L1PcInstance anchor:anchors) {
-                if(anchor==null)continue;
+                if (!isNestedAnchor(world, origin, anchor, terrain)) continue;
                 world.collectVisiblePlayers(anchor, -1, recipients);
                 for(L1PcInstance recipient:recipients) {
                     try {
                         if(!CTLMFilter.sameWorldOther(anchor,recipient))continue;
-                        shared=sendWrittenOptionalTo(shared,recipient,writer);
+                        shared=sendWrittenOptionalTo(shared,recipient,writer,terrain,anchor,null);
                     } catch(UnavailableOptionalSource invalid) {
                         return;
                     } catch(RuntimeException failure) {
@@ -605,17 +632,34 @@ public final class CSharedBroadcast {
         } finally { closeOptional(shared); }
     }
 
+    private static boolean isNestedAnchor(CWorld world, L1Object origin, L1PcInstance anchor, L1Map terrain) {
+        return anchor != null && origin.getMap() == terrain && anchor.isPublishedIn(terrain)
+                && world.findObject(anchor.getId()) == anchor && CTLMFilter.nearby(origin, anchor, -1, true);
+    }
+
     /** Optional team notice: identical recipient-major order and team filter. */
     public static void sendWrittenMapTeamBestEffort(
             int mapId,int teamId,NativeWireWriter writer) {
-        if(writer==null)return;
+        if (writer != null) sendWrittenMapTeamBestEffort(L1WorldMap.getInstance().findMap(mapId), teamId, writer);
+    }
+
+    public static void sendWrittenMapTeamBestEffort(L1Map terrain, int teamId, NativeWireWriter writer) {
+        sendWrittenMapBestEffort(terrain, teamId, writer);
+    }
+
+    public static void sendWrittenMapBestEffort(L1Map terrain, NativeWireWriter writer) {
+        sendWrittenMapBestEffort(terrain, null, writer);
+    }
+
+    private static void sendWrittenMapBestEffort(L1Map terrain, Integer teamId, NativeWireWriter writer) {
+        if (writer == null || !currentTerrain(terrain)) return;
         CAsyncSendConstBuffer shared=null;
         try {
-            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayers(mapId)) {
+            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayers(terrain)) {
                 if(pc==null)continue;
                 try {
-                    if(pc.get_current_combat_team_id()!=teamId)continue;
-                    shared=sendWrittenOptionalTo(shared,pc,writer);
+                    if (teamId != null && pc.get_current_combat_team_id() != teamId.intValue()) continue;
+                    shared=sendWrittenOptionalTo(shared,pc,writer,terrain,null,teamId);
                 } catch(UnavailableOptionalSource invalid) {
                     return;
                 } catch(RuntimeException failure) {
@@ -725,7 +769,10 @@ public final class CSharedBroadcast {
                         continue;
                     }
                 }
-                try { sendVisual(socket, pc.getId(), shared, optional); }
+                try {
+                    if (optional) shared.sendBestEffort(socket, pc.getId());
+                    else shared.send(socket, pc.getId());
+                }
                 catch(RuntimeException failure) { logOptionalNoticeFailure(failure); }
             }
         } finally {
@@ -737,6 +784,11 @@ public final class CSharedBroadcast {
     // original AOI member (including duplicates). No ExceptSelf suppression.
     private static CAsyncSendConstBuffer sendWrittenTo(
             CAsyncSendConstBuffer shared,L1PcInstance pc,NativeWireWriter writer) {
+        return sendWrittenTo(shared, pc, writer, null, null, null);
+    }
+
+    private static CAsyncSendConstBuffer sendWrittenTo(CAsyncSendConstBuffer shared, L1PcInstance pc,
+            NativeWireWriter writer, L1Map terrain, L1Object anchor, Integer teamId) {
         final CUserSocket socket = eligibleBroadcastSocket(pc);
         if (socket == null) return shared;
         if(shared==null) {
@@ -746,7 +798,8 @@ public final class CSharedBroadcast {
             final CAsyncSendConstBuffer first=new CAsyncSendConstBuffer(
                     writer,Integer.MIN_VALUE,Integer.MAX_VALUE);
             try {
-                first.send(socket,pc.getId());
+                if (terrain == null && anchor == null) first.send(socket,pc.getId());
+                else first.sendScoped(socket,pc,terrain,anchor,-1,teamId,false);
                 return first;
             } catch(RuntimeException|Error failure) {
                 try {first.close();}
@@ -756,19 +809,21 @@ public final class CSharedBroadcast {
                 throw failure;
             }
         }
-        shared.send(socket,pc.getId());
+        if (terrain == null && anchor == null) shared.send(socket,pc.getId());
+        else shared.sendScoped(socket,pc,terrain,anchor,-1,teamId,false);
         return shared;
     }
 
     public static void sendWrittenSelfAndVisible(
             L1Character anchor,NativeWireWriter writer) {
         if(anchor==null||writer==null)return;
+        final L1Map terrain = anchor.getMap();
         CAsyncSendConstBuffer shared=null;
         try {
             if(anchor instanceof L1PcInstance pc)
-                shared=sendWrittenTo(shared,pc,writer);
+                shared=sendWrittenTo(shared,pc,writer,terrain,anchor,null);
             for(L1PcInstance viewer:CWorld.getInstance().getVisiblePlayer(anchor))
-                shared=sendWrittenTo(shared,viewer,writer);
+                shared=sendWrittenTo(shared,viewer,writer,terrain,anchor,null);
         } finally {
             if(shared!=null)shared.close();
         }
@@ -780,6 +835,7 @@ public final class CSharedBroadcast {
             L1ItemInstance item,
             boolean addKnownObject,NativeWireWriter writer) {
         if(item==null||writer==null)return 0;
+        final L1Map terrain = item.getMap();
         int viewers=0;
         CAsyncSendConstBuffer shared=null;
         final CWorld world=CWorld.getInstance();
@@ -807,8 +863,7 @@ public final class CSharedBroadcast {
                 final boolean admitted;
                 if(pc.groundSightEpoch()!=sightEpoch)continue;
                 try {
-                    admitted = addKnownObject ? shared.sendBestEffort(socket, pc.getId())
-                            : shared.send(socket, pc.getId());
+                    admitted = shared.sendGroundScoped(socket, pc, terrain, item, sightEpoch, addKnownObject);
                 }
                 catch(RuntimeException failure) {
                     // The writer is lazy: failure before source freeze is
@@ -819,9 +874,10 @@ public final class CSharedBroadcast {
                     continue;
                 }
                 if(admitted) {
-                    if(addKnownObject&&pc.groundSightEpoch()==sightEpoch)pc.addKnownObject(item);
+                    if (addKnownObject && matchesScope(socket, pc, terrain, item, 0, null, sightEpoch))
+                        pc.addKnownObject(item);
                     viewers++;
-                } else if(addKnownObject&&pc.groundSightEpoch()==sightEpoch)
+                } else if (addKnownObject && matchesScope(socket, pc, terrain, item, 0, null, sightEpoch))
                     pc.markGroundSightRetry();
             }
         } finally {
@@ -891,13 +947,14 @@ public final class CSharedBroadcast {
     public static void sendWrittenNestedVisible(L1Object origin,NativeWireWriter writer) {
         if(origin==null||writer==null)return;
         final CWorld world=CWorld.getInstance();
+        final L1Map terrain = origin.getMap();
         CAsyncSendConstBuffer shared=null;
         try {
             for(L1PcInstance anchor:world.getVisiblePlayer(origin)) {
-                if(anchor==null)continue;
+                if (!isNestedAnchor(world, origin, anchor, terrain)) continue;
                 for(L1PcInstance recipient:world.getVisiblePlayer(anchor)) {
                     if(!CTLMFilter.sameWorldOther(anchor,recipient))continue;
-                    shared=sendWrittenTo(shared,recipient,writer);
+                    shared=sendWrittenTo(shared,recipient,writer,terrain,anchor,null);
                 }
             }
         } finally { if(shared!=null)shared.close(); }
@@ -914,24 +971,23 @@ public final class CSharedBroadcast {
         if(anchor==null||writer==null)return;
         if(length<=16384||length>0xFFFF)
             throw new IllegalArgumentException("large SC area frame length "+length);
+        final L1Map terrain = anchor.getMap();
         try (var shared = new CAsyncSendConstBuffer(writer, anchor.getId(), Integer.MAX_VALUE, length)) {
-            if (anchor instanceof L1PcInstance pc) sendLargeTo(pc, shared);
-            for (L1PcInstance viewer : CWorld.getInstance().getVisiblePlayer(anchor)) sendLargeTo(viewer, shared);
+            if (anchor instanceof L1PcInstance pc) sendLargeTo(pc, shared, terrain, anchor);
+            for (L1PcInstance viewer : CWorld.getInstance().getVisiblePlayer(anchor))
+                sendLargeTo(viewer, shared, terrain, anchor);
         }
     }
 
-    private static void sendLargeTo(L1PcInstance pc, CAsyncSendConstBuffer shared) {
+    private static void sendLargeTo(L1PcInstance pc, CAsyncSendConstBuffer shared, L1Map terrain, L1Object anchor) {
         final CUserSocket socket;
         try { socket = eligibleBroadcastSocket(pc); }
         catch (RuntimeException failure) {
             logOptionalNoticeFailure(failure);
             return;
         }
-        if (socket != null) sendLargeTo(socket, pc.getId(), shared);
-    }
-
-    private static void sendLargeTo(CUserSocket socket, int recipient, CAsyncSendConstBuffer shared) {
-        try { shared.sendBestEffort(socket, recipient); }
+        if (socket == null) return;
+        try { shared.sendScoped(socket, pc, terrain, anchor, -1, null, true); }
         catch (RuntimeException failure) {
             // Only a frozen frame can safely be reused for the remaining recipients.
             if (!shared.hasFrozenSource()) throw failure;
@@ -944,6 +1000,7 @@ public final class CSharedBroadcast {
         if(anchor==null||writer==null)return;
         if(length<=16384||length>0xFFFF)
             throw new IllegalArgumentException("large SC wire length "+length);
+        final L1Map terrain = anchor.getMap();
         final CWorld world=CWorld.getInstance();
         final List<L1PcInstance> visible=world.borrowVisiblePlayerFast(anchor);
         try (var shared = new CAsyncSendConstBuffer(writer, anchor.getId(), Integer.MAX_VALUE, length)) {
@@ -954,7 +1011,7 @@ public final class CSharedBroadcast {
                     logOptionalNoticeFailure(failure);
                     continue;
                 }
-                sendLargeTo(pc, shared);
+                sendLargeTo(pc, shared, terrain, anchor);
             }
         } finally {
             world.releaseVisiblePlayerFast(visible);
@@ -1027,12 +1084,19 @@ public final class CSharedBroadcast {
 
     public static void sendRawSelfAndVisible(L1PcInstance self,byte[] encoded) {
         if(self==null)return;
+        final L1Map terrain = self.getMap();
         try(var shared=openRaw(encoded)) {
             if(shared==null)return;
-            sendRecipient(shared,self);
+            sendRawVisibleRecipient(shared, self, terrain, self);
             for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayer(self))
-                sendRecipient(shared,pc);
+                sendRawVisibleRecipient(shared, pc, terrain, self);
         }
+    }
+
+    private static void sendRawVisibleRecipient(CAsyncSendConstBuffer shared, L1PcInstance pc,
+            L1Map terrain, L1Object anchor) {
+        final CUserSocket socket = eligibleBroadcastSocket(pc);
+        if (socket != null) shared.sendScoped(socket, pc, terrain, anchor, -1, null, false);
     }
 
             /**
@@ -1042,19 +1106,31 @@ public final class CSharedBroadcast {
      * This method never serializes inside the recipient iteration.
      */
     public static void sendWrittenMapTeam(int mapId,int teamId,NativeWireWriter writer) {
-        if(writer==null)return;
+        if (writer != null) sendWrittenMapTeam(L1WorldMap.getInstance().findMap(mapId), teamId, writer);
+    }
+
+    public static void sendWrittenMapTeam(L1Map terrain, int teamId, NativeWireWriter writer) {
+        if (writer == null || !currentTerrain(terrain)) return;
+        final Integer expectedTeam = teamId;
         CAsyncSendConstBuffer shared=null;
         try{
-            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayers(mapId)){
+            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayers(terrain)){
                 if(pc==null||pc.get_current_combat_team_id()!=teamId)continue;
-                shared=sendWrittenTo(shared,pc,writer);
+                shared=sendWrittenTo(shared,pc,writer,terrain,null,expectedTeam);
             }
         }finally{if(shared!=null)shared.close();}
     }
 
     public static void sendWrittenMapTeamFrames(int mapId,int teamId,boolean teamOnly,
                                                  NativeWireWriter[] writers){
-        if(writers==null||writers.length==0)return;
+        if (writers != null && writers.length != 0)
+            sendWrittenMapTeamFrames(L1WorldMap.getInstance().findMap(mapId), teamId, teamOnly, writers);
+    }
+
+    public static void sendWrittenMapTeamFrames(L1Map terrain, int teamId, boolean teamOnly,
+            NativeWireWriter[] writers) {
+        if (writers == null || writers.length == 0 || !currentTerrain(terrain)) return;
+        final Integer expectedTeam = teamOnly ? teamId : null;
         final CAsyncSendConstBuffer[] shared=new CAsyncSendConstBuffer[writers.length];
         Throwable primaryFailure = null;
         try{
@@ -1062,7 +1138,7 @@ public final class CSharedBroadcast {
                 if(writers[i]==null)return;
                 shared[i]=new CAsyncSendConstBuffer(writers[i],Integer.MIN_VALUE,Integer.MAX_VALUE);
             }
-            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayers(mapId)){
+            for(L1PcInstance pc:CWorld.getInstance().getVisiblePlayers(terrain)){
                 final CUserSocket socket;
                 try {
                     if(pc==null||(teamOnly&&pc.get_current_combat_team_id()!=teamId))continue;
@@ -1074,7 +1150,7 @@ public final class CSharedBroadcast {
                 if(socket==null)continue;
                 for(CAsyncSendConstBuffer source:shared) {
                     try {
-                        if (!source.sendBestEffort(socket, pc.getId())) break;
+                        if (!source.sendScoped(socket,pc,terrain,null,-1,expectedTeam,true)) break;
                     }
                     catch(RuntimeException failure) {
                         // Invalid source is fatal for the entire effect set;

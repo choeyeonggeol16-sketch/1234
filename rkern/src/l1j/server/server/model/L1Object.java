@@ -237,13 +237,16 @@ public class L1Object implements Serializable {
 	
 	// Zero is unpublished, including after deserialization. The grid writes the exact tile.
 	private transient volatile long _clusterPosition;
-	private transient L1Map _clusterTerrain;
+	private transient volatile L1Map _clusterTerrain;
 
 	final long clusterPosition() { return _clusterPosition - 1L; }
 	private void setClusterPosition(long position) { _clusterPosition = position + 1L; }
 
 	// Read and update the terrain together with the tile under this object's monitor.
 	final L1Map clusterTerrain() { return _clusterTerrain; }
+	public final boolean isPublishedIn(L1Map terrain) {
+		return terrain != null && getClusterMapId() == terrain.getId() && _clusterTerrain == terrain;
+	}
 	final void publishClusterPosition(long position, L1Map terrain) {
 		if (_clusterTerrain != terrain) _clusterTerrain = terrain;
 		setClusterPosition(position);

@@ -17,6 +17,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.config.CIOConfig;
@@ -227,8 +228,8 @@ public static void broadcastGreen(String message) {
     }
 
     public static void broadcastGreenMap(int mapId, String message) {
-        CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                CWorld.getInstance().getVisiblePlayers(mapId), b -> { b.put((byte)Opcodes.S_EVENT).put((byte)GREEN_MESSAGE).put((byte)2); CSharedBroadcast.writeMS949(b,message); b.put((byte)0); });
+        CSharedBroadcast.sendWrittenMapBestEffort(
+                L1WorldMap.getInstance().findMap(mapId), nativeGreenWriter(message));
     }
 
     public static boolean send(L1PcInstance receiver, int subCode) {
