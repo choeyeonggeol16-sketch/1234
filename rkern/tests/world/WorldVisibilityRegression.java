@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import l1j.server.Config;
@@ -16,12 +17,19 @@ import l1j.server.TextMapReader;
 import l1j.server.server.datatables.MapsTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1TrapInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.animation.NpcSpeedData;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.world.CWorldWork;
+import l1j.server.server.model.world.trap.L1Trap;
+import l1j.server.server.model.world.trap.L1WorldTraps;
+import l1j.server.server.task.COwnedWork;
 import l1j.server.server.templates.L1Npc;
+import l1j.server.server.types.Point;
 import sun.misc.Unsafe;
 
 public final class WorldVisibilityRegression {
@@ -33,7 +41,87 @@ public final class WorldVisibilityRegression {
         fastOrderingAndLimits();
         publishedMovementAndCleanup();
         movingAndReplacedIdsAppearOnce();
-        System.out.println("PASS world visibility geometry, unsigned/first-seen order, terrain generation, map player roster and rollback, entered players, nested scopes and concurrent identities");
+        try {
+            trapLookupAndLifecycle();
+        } finally {
+            CWorldWork.stopAccepting();
+            var cio = CIOThreadCallback.getInstance();
+            cio.shutdown();
+            check(cio.awaitTermination(5, TimeUnit.SECONDS), "trap timer shards stopped");
+            check(CWorldWork.awaitDrained(5, TimeUnit.SECONDS), "trap timer work drained");
+        }
+        System.out.println("PASS world visibility, player roster, terrain generations and trap lifecycle");
+    }
+
+    private static void trapLookupAndLifecycle() throws Exception {
+        final L1Map terrain = map(3130);
+        final L1Map reused = map(3130);
+        final var hits = new AtomicInteger();
+        final var detected = new AtomicInteger();
+        final var template = new L1Trap(1, 0, true) {
+            @Override public void onTrod(L1PcInstance pc, L1Object trap) { hits.incrementAndGet(); }
+            @Override public void onDetection(L1PcInstance pc, L1Object trap) { detected.incrementAndGet(); }
+        };
+        final var ctor = L1WorldTraps.class.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        final var manager = ctor.newInstance();
+        final Field slot = field(L1WorldTraps.class, "instance");
+        final Object previousManager = slot.get(null);
+        slot.set(null, manager);
+        try (var fixture = new WorldFixture(terrain)) {
+            final var tile = new L1Location(100, 100, terrain);
+            final var high = new L1TrapInstance(57003, template, tile, new Point(), 60_000);
+            final var low = new L1TrapInstance(57002, template, tile, new Point(), 60_000);
+            final var base = new L1TrapInstance(57001, tile);
+            manager.addTrap(high);
+            manager.addTrap(base);
+            manager.addTrap(low);
+            final var first = fixture.player(terrain, 57004, 100, 100, true);
+            final var second = fixture.player(terrain, 57005, 100, 100, true);
+            var grid = fixture.world.getClusterGrid();
+            check(grid.findArmedTrapAt(terrain, 100, 100) == low, "stable same-tile trap priority");
+            check(grid.findArmedTrapAt(reused, 100, 100) == null, "exact trap terrain identity");
+
+            manager.onPlayerMoved(first);
+            check(hits.get() == 1 && grid.findArmedTrapAt(terrain, 100, 100) == high,
+                    "one armed trap from a movement and no base trigger");
+            var start = new CountDownLatch(1);
+            var mover = new FutureTask<Void>(() -> { start.await(); manager.onPlayerMoved(second); return null; });
+            Thread.ofPlatform().daemon(true).start(mover);
+            start.countDown();
+            manager.onPlayerMoved(first);
+            mover.get(5, TimeUnit.SECONDS);
+            check(hits.get() == 2, "simultaneous steps can claim the last trap once");
+
+            manager.resetAllTraps();
+            check(fixture.world.relocateTrap(low, 112, 100), "map-only trap relocates across cells");
+            check(grid.findArmedTrapAt(terrain, 100, 100) == high
+                    && grid.findArmedTrapAt(terrain, 112, 100) == low, "grid refreshes both trap tiles");
+            manager.removeTrap(high);
+            var worker = (COwnedWork) field(CWorldWork.class, "WORK").get(null);
+            int permits = 0;
+            while (worker.reserveTimer()) permits++;
+            try {
+                manager.onDetection(first);
+                manager.onDetection(first);
+                check(detected.get() == 1 && !low.isEnable(),
+                        "detection from an empty tile claims once even if its timer is refused");
+                check(field(L1WorldTraps.class, "rejected").get(manager) != null, "refused respawn retained");
+            } finally {
+                while (permits-- > 0) worker.releaseTimer();
+            }
+            L1WorldTraps.retryRespawns();
+            check(field(L1WorldTraps.class, "rejected").get(manager) == null && !low.isEnable(),
+                    "maintenance re-admits the cooldown without an extra trigger");
+
+            L1WorldMap.getInstance().addMap(reused);
+            manager.resetAllTraps();
+            check(!low.isEnable() && grid.findArmedTrapAt(terrain, 112, 100) == null,
+                    "retired terrain removes and cancels traps");
+            L1WorldMap.getInstance().removeMap(reused.getId());
+        } finally {
+            slot.set(null, previousManager);
+        }
     }
 
     private static void radiusScreenAndGenerations() {

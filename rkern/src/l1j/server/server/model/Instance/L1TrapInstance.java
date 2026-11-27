@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -41,8 +42,9 @@ public class L1TrapInstance extends L1Object {
 	private final Point _baseLoc = new Point();
 	private final Point _rndPt = new Point();
 	private final int _span;
-	private boolean _isEnable = true;
+	private volatile boolean _isEnable = true;
 	private final String _nameForView;
+	private final boolean _base;
 
 	// A persistent trap must not retain a disconnected character or its inventory.
 	private final Set<L1PcInstance> _knownPlayers =
@@ -58,8 +60,10 @@ public class L1TrapInstance extends L1Object {
 		_rndPt.set(rndPt);
 		_span = span;
 		_nameForView = "trap";
+		_base = false;
 
-		resetLocation();
+		long tile = randomTile();
+		if (tile != -1L) getLocation().set((int) (tile >>> 32), (int) tile);
 	}
 
 	public L1TrapInstance(int id, L1Location loc) {
@@ -68,28 +72,27 @@ public class L1TrapInstance extends L1Object {
 		getLocation().set(loc);
 		_span = 0;
 		_nameForView = "trap base";
+		_base = true;
 	}
 
-	public void resetLocation() {
-		if (_rndPt.getX() == 0 && _rndPt.getY() == 0) {
-			return;
-		}
-		L1Map map = null;
+	private long randomTile() {
+		if (_rndPt.getX() == 0 && _rndPt.getY() == 0) return -1L;
+		L1Map map = getMap();
 		for (int i = 0; i < 50; i++) {
-			int rndX = GameRandom.nextInt(_rndPt.getX() + 1)
+			int x = _baseLoc.getX() + GameRandom.nextInt(_rndPt.getX() + 1)
 					* (GameRandom.nextInt(2) == 1 ? 1 : -1);
-			int rndY = GameRandom.nextInt(_rndPt.getY() + 1)
+			int y = _baseLoc.getY() + GameRandom.nextInt(_rndPt.getY() + 1)
 					* (GameRandom.nextInt(2) == 1 ? 1 : -1);
-
-			rndX += _baseLoc.getX();
-			rndY += _baseLoc.getY();
-
-			map = getLocation().getMap();
-			if (map.isInMap(rndX, rndY) && map.isPassable(rndX, rndY)) {
-				getLocation().set(rndX, rndY);
-				break;
-			}
+			if (map.isInMap(x, y) && map.isPassable(x, y))
+				return ((long) x << 32) | (y & 0xFFFFFFFFL);
 		}
+		return -1L;
+	}
+
+	public boolean resetPublishedLocation() {
+		long tile = randomTile();
+		if (tile == -1L) return isPublishedIn(getMap());
+		return CWorld.getInstance().relocateTrap(this, (int) (tile >>> 32), (int) tile);
 	}
 
 	public void enableTrap() {
@@ -98,9 +101,12 @@ public class L1TrapInstance extends L1Object {
 
 	public void disableTrap() {
 		_isEnable = false;
+	}
 
+	public void clearViewers() {
 		final L1PcInstance[] viewers;
 		synchronized (_knownPlayers) {
+			if (_knownPlayers.isEmpty()) return;
 			viewers = _knownPlayers.toArray(new L1PcInstance[0]);
 			_knownPlayers.clear();
 		}
@@ -118,6 +124,14 @@ public class L1TrapInstance extends L1Object {
 		return _isEnable;
 	}
 
+	public boolean isTriggerable() {
+		return !_base;
+	}
+
+	public boolean isDetectionable() {
+		return _trap.isDetectionable();
+	}
+
 	public int getSpan() {
 		return _span;
 	}
@@ -132,16 +146,13 @@ public class L1TrapInstance extends L1Object {
 
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
-		if (perceivedFrom == null)
-			return;
-		if (perceivedFrom.hasSkillEffect(L1SkillId.GMSTATUS_SHOWTRAPS)) {
-			
-			if (!perceivedFrom.knownsObject(this)
-				&& SC_Trap.send(perceivedFrom, getX(), getY(), getId(), _nameForView)) {
-			perceivedFrom.addKnownObject(this);
-			_knownPlayers.add(perceivedFrom);
-		}
-			
+		if (perceivedFrom == null || !perceivedFrom.hasSkillEffect(L1SkillId.GMSTATUS_SHOWTRAPS)) return;
+		synchronized (_knownPlayers) {
+			if (_isEnable && !perceivedFrom.knownsObject(this)
+					&& SC_Trap.send(perceivedFrom, getX(), getY(), getId(), _nameForView)) {
+				perceivedFrom.addKnownObject(this);
+				_knownPlayers.add(perceivedFrom);
+			}
 		}
 	}
 }

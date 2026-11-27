@@ -14,6 +14,7 @@ import gnu.trove.procedure.TLongProcedure;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1TrapInstance;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.broadcast.CTLMFilter;
@@ -867,6 +868,30 @@ public final class LocalWorldMap {
         if (previous == NO_POSITION) reconcileEnter(object, current);
         else if (current == NO_POSITION) reconcileLeave(object, previous);
         else publishViewDelta(DELTA_VIEW_MOVE, previous, current, object, unchangedTerrain);
+    }
+
+    /** Trap movement needs one tile and one stable priority, without an AOI result allocation. */
+    public L1TrapInstance findArmedTrapAt(L1Map map, int x, int y) {
+        if (map == null || !isSanePosition(map.getId(), x, y)) return null;
+        final long key = packedKey(map.getId(), toCell(x), toCell(y));
+        final long position = packPosition(map.getId(), x, y);
+        final CanonicalStripe stripe = canonicalStripe(key);
+        final long stamp = stripe.lock.readLock();
+        try {
+            final CellBucket cell = stripe.cells.get(key);
+            if (cell == null) return null;
+            L1TrapInstance first = null;
+            for (int i = 0; i < cell._objectCount; i++) {
+                if (cell._objects[i] instanceof L1TrapInstance trap && trap.isTriggerable()
+                        && trap.isEnable() && publishedTerrain(trap) == map && publishedPosition(trap) == position
+                        && (first == null || Integer.compareUnsigned(trap.getId(), first.getId()) < 0)) {
+                    first = trap;
+                }
+            }
+            return first;
+        } finally {
+            stripe.lock.unlockRead(stamp);
+        }
     }
 
     public List<L1Object> queryNearby(L1Object origin, int radius) {

@@ -17,6 +17,7 @@ import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1TrapInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.character.animation.NpcSpeedData;
@@ -502,6 +503,21 @@ public final class CWorld {
                 }
             }
             return clusterGrid.leaveSilently(object);
+        }
+    }
+
+    /** Respawn a hidden, map-only trap on the same published terrain. */
+    public boolean relocateTrap(L1TrapInstance trap, int x, int y) {
+        synchronized (trap) {
+            final L1Map map = trap.getMap();
+            synchronized (objectFactory.slotLock(trap.getId())) {
+                if (mapObjects.mapOnlyOwner(trap.getId()) != trap || !trap.isPublishedIn(map)
+                        || L1WorldMap.getInstance().findMap(map.getId()) != map
+                        || !mapObjects.move(trap, map.getId(), x, y)) return false;
+                trap.getLocation().set(x, y, map);
+                clusterGrid.relocateSilently(trap);
+                return true;
+            }
         }
     }
 

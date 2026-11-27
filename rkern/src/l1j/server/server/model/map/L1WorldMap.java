@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import l1j.server.MapReader;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
 import l1j.server.server.model.world.instance.CInstantZoneManager;
+import l1j.server.server.model.world.trap.L1WorldTraps;
 
 public class L1WorldMap {
 	private static final class Holder {
@@ -95,8 +96,9 @@ public class L1WorldMap {
             // lazy lookup may now fail, but cannot recreate the old state.
             retireOccupancy(expected);
             zoneIds.remove(id);
-            return true;
         }
+        L1WorldTraps.retireTerrain(expected);
+        return true;
     }
 
     private L1Map requireMap(int mapId) {
@@ -117,19 +119,24 @@ public class L1WorldMap {
 
     public void addMap(L1Map map) {
         final int id = map.getId();
+        final L1Map previous;
         synchronized (zoneIds) {
             if ((zoneIds.contains(id) || CInstantZoneManager.destination(id) != null) && _maps.get(id) != map)
                 throw new IllegalStateException("Map ID belongs to an instance zone: " + id);
-            final L1Map previous = _maps.put(id, map);
+            previous = _maps.put(id, map);
             if (previous != map) retireOccupancy(previous);
         }
+        if (previous != null && previous != map) L1WorldTraps.retireTerrain(previous);
     }
 
     public void removeMap(int mapId) {
+        final L1Map previous;
         synchronized (zoneIds) {
-            if (!zoneIds.contains(mapId) && CInstantZoneManager.destination(mapId) == null)
-                retireOccupancy(_maps.remove(mapId));
+            if (zoneIds.contains(mapId) || CInstantZoneManager.destination(mapId) != null) return;
+            previous = _maps.remove(mapId);
+            retireOccupancy(previous);
         }
+        if (previous != null) L1WorldTraps.retireTerrain(previous);
     }
 
     private static void retireOccupancy(L1Map map) {

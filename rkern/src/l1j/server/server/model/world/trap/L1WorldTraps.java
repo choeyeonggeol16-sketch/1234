@@ -1,260 +1,295 @@
 package l1j.server.server.model.world.trap;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.HashMap;
-import l1j.server.server.model.network.thread.CServerTimer;
-import l1j.server.server.model.world.CWorldWork;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1TrapInstance;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.types.Point;
-import l1j.server.server.utils.SQLUtil;
 
-// 여기 타이머를 놔두는 이유는;; 자주 콜도 안되는 애인데다가, TimerTask쓰는게 편해서...다.-_-;;; by magik
 public class L1WorldTraps {
-	private static Logger _log = Logger.getLogger(L1WorldTraps.class.getName());
+    private static final Logger LOG = Logger.getLogger(L1WorldTraps.class.getName());
+    private static volatile L1WorldTraps instance;
 
-	private List<L1TrapInstance> _allTraps = new ArrayList<L1TrapInstance>(5120);
-	private List<L1TrapInstance> _allBases = new ArrayList<L1TrapInstance>(260);
+    // Null values are armed traps or bases. Non-null values own a cooldown.
+    private final IdentityHashMap<L1TrapInstance, Respawn> traps = new IdentityHashMap<>();
+    private final IdentityHashMap<L1Map, Integer> trapCounts = new IdentityHashMap<>();
+    private volatile Set<L1Map> trapMaps = Set.of();
+    private volatile ArrayDeque<Respawn> rejected;
+    private volatile boolean stopped;
 
-	private final HashMap<L1TrapInstance, TrapSpawnTimer> _pendingRespawns = new HashMap<>();
-	private volatile boolean _stopped;
+    public static L1WorldTraps getInstance() {
+        L1WorldTraps current = instance;
+        if (current == null) {
+            synchronized (L1WorldTraps.class) {
+                current = instance;
+                if (current == null) {
+                    current = new L1WorldTraps();
+                    List<L1TrapInstance> loaded = load();
+                    if (loaded != null) loaded.forEach(current::addTrap);
+                    instance = current;
+                }
+            }
+        }
+        return current;
+    }
 
-	private static volatile L1WorldTraps _instance;
+    private static List<L1TrapInstance> load() {
+        final List<L1TrapInstance> loaded = new ArrayList<>();
+        try (var connection = DatabaseFactory.getInstance().getConnection();
+                var statement = connection.prepareStatement("SELECT * FROM spawnlist_trap");
+                var rows = statement.executeQuery()) {
+            while (rows.next()) {
+                int templateId = rows.getInt("trapId");
+                L1Trap template = TrapTable.getInstance().getTemplate(templateId);
+                if (template == null) {
+                    LOG.warning("Unknown trap template in spawnlist_trap: " + templateId);
+                    continue;
+                }
+                L1Location location = new L1Location(rows.getInt("locX"), rows.getInt("locY"), rows.getInt("mapId"));
+                Point offset = new Point(rows.getInt("locRndX"), rows.getInt("locRndY"));
+                int count = rows.getInt("count");
+                int span = rows.getInt("span");
+                for (int i = 0; i < count; i++)
+                    loaded.add(new L1TrapInstance(IdFactory.getInstance().nextId(), template, location, offset, span));
+                loaded.add(new L1TrapInstance(IdFactory.getInstance().nextId(), location));
+            }
+            return loaded;
+        } catch (SQLException error) {
+            LOG.log(Level.WARNING, "Could not load world traps", error);
+            return null;
+        }
+    }
 
-	private L1WorldTraps() {
-		initialize();
-	}
+    public static synchronized void reloadTraps() {
+        TrapTable.reload();
+        List<L1TrapInstance> loaded = load();
+        if (loaded == null) return;
+        L1WorldTraps old = instance;
+        if (old != null) old.stop();
+        L1WorldTraps replacement = new L1WorldTraps();
+        loaded.forEach(replacement::addTrap);
+        instance = replacement;
+    }
 
-	public static L1WorldTraps getInstance() {
-		L1WorldTraps instance = _instance;
-		if (instance == null) {
-			synchronized (L1WorldTraps.class) {
-				instance = _instance;
-				if (instance == null) _instance = instance = new L1WorldTraps();
-			}
-		}
-		return instance;
-	}
+    public static synchronized void retireTerrain(L1Map terrain) {
+        L1WorldTraps current = instance;
+        if (current == null) return;
+        final List<L1TrapInstance> retired = new ArrayList<>();
+        synchronized (current) {
+            for (L1TrapInstance trap : current.traps.keySet()) {
+                if (trap.getMap() == terrain) retired.add(trap);
+            }
+        }
+        retired.forEach(current::removeTrap);
+    }
 
-	private TrapsComparator _comp = new TrapsComparator();
-	private void initialize() {
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
+    private void stop() {
+        final List<L1TrapInstance> retired;
+        synchronized (this) {
+            stopped = true;
+            retired = new ArrayList<>(traps.keySet());
+        }
+        retired.forEach(this::removeTrap);
+    }
 
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
+    public void addTrap(L1TrapInstance trap) {
+        synchronized (trap) {
+            synchronized (this) {
+                if (stopped || traps.containsKey(trap) || !currentTerrain(trap.getMap())) return;
+                traps.put(trap, null);
+                if (trap.isTriggerable() && trapCounts.merge(trap.getMap(), 1, Integer::sum) == 1)
+                    trapMaps = Set.copyOf(trapCounts.keySet());
+                trap.enableTrap();
+            }
+            CWorld.getInstance().addVisibleObject(trap);
+        }
+    }
 
-			pstm = con.prepareStatement("SELECT * FROM spawnlist_trap");
+    public void removeTrap(L1TrapInstance trap) {
+        synchronized (trap) {
+            synchronized (this) {
+                if (!traps.containsKey(trap)) return;
+                Respawn cooldown = traps.remove(trap);
+                if (trap.isTriggerable()
+                        && trapCounts.computeIfPresent(trap.getMap(), (map, count) -> count == 1 ? null : count - 1) == null)
+                    trapMaps = Set.copyOf(trapCounts.keySet());
+                if (cooldown != null) cooldown.cancel();
+                trap.disableTrap();
+            }
+            CWorld.getInstance().removeVisibleObject(trap);
+        }
+        trap.clearViewers();
+    }
 
-			rs = pstm.executeQuery();
-			L1TrapInstance trap = null;
-			L1TrapInstance base = null;
-			L1Trap trapTemp = null;
-			L1Location loc = null;
-			Point rndPt = null;
-			while (rs.next()) {
-				int trapId = rs.getInt("trapId");
-				trapTemp = TrapTable.getInstance().getTemplate(trapId);
-				loc = new L1Location();
-				loc.setMap(rs.getInt("mapId"));
-				loc.setX(rs.getInt("locX"));
-				loc.setY(rs.getInt("locY"));
-				rndPt = new Point();
-				rndPt.setX(rs.getInt("locRndX"));
-				rndPt.setY(rs.getInt("locRndY"));
-				int count = rs.getInt("count");
-				int span = rs.getInt("span");
+    public void resetAllTraps() {
+        final List<L1TrapInstance> snapshot;
+        synchronized (this) {
+            if (stopped) return;
+            snapshot = new ArrayList<>(traps.keySet());
+        }
+        for (L1TrapInstance trap : snapshot) {
+            if (!trap.isTriggerable()) continue;
+            final Respawn reset;
+            synchronized (this) {
+                if (stopped || !traps.containsKey(trap)) continue;
+                Respawn previous = traps.get(trap);
+                if (previous != null && previous.applying) {
+                    previous.reset = true;
+                    continue;
+                }
+                if (previous != null) previous.cancel();
+                reset = new Respawn(trap);
+                reset.applying = true;
+                reset.reset = true;
+                traps.put(trap, reset);
+                trap.disableTrap();
+            }
+            try {
+                trap.clearViewers();
+            } finally {
+                reset.finishEffect();
+            }
+        }
+    }
 
-				for (int i = 0; i < count; i++) {
-					trap = new L1TrapInstance(IdFactory.getInstance().nextId(), trapTemp, loc, rndPt, span);
-					CWorld.getInstance().addVisibleObject(trap);
-					_allTraps.add(trap);
-				}
-				base = new L1TrapInstance(IdFactory.getInstance().nextId(), loc);
-				CWorld.getInstance().addVisibleObject(base);
-				_allBases.add(base);
-			}
-			_allTraps.sort(_comp);
-			_allBases.sort(_comp);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			SQLUtil.close(rs);
-			SQLUtil.close(pstm);
-			SQLUtil.close(con);
-		}
-	}
+    public void onPlayerMoved(L1PcInstance player) {
+        if (stopped) return;
+        L1Map map = player.getMap();
+        if (!trapMaps.contains(map)) return;
+        int x = player.getX(), y = player.getY();
+        L1TrapInstance trap;
+        while ((trap = CWorld.getInstance().getClusterGrid().findArmedTrapAt(map, x, y)) != null) {
+            if (trigger(player, trap, map, x, y, false) || stopped
+                    || trap.isEnable() || player.getMap() != map
+                    || player.getX() != x || player.getY() != y) return;
+        }
+    }
 
-	public static synchronized void reloadTraps() {
-		TrapTable.reload();
-		L1WorldTraps oldInstance = _instance;
-		L1WorldTraps replacement = new L1WorldTraps();
-		if (oldInstance != null) {
-			oldInstance.stopTimer();
-			removeTraps(oldInstance._allTraps);
-			removeTraps(oldInstance._allBases);
-		}
-		_instance = replacement;
-	}
+    public void onDetection(L1PcInstance caster) {
+        if (stopped) return;
+        L1Map map = caster.getMap();
+        if (!trapMaps.contains(map)) return;
+        int x = caster.getX(), y = caster.getY();
+        for (L1Object candidate : CWorld.getInstance().getVisibleObjects(caster)) {
+            if (candidate instanceof L1TrapInstance trap && trap.isDetectionable())
+                trigger(caster, trap, map, x, y, true);
+        }
+    }
 
-	private static void removeTraps(List<L1TrapInstance> traps) {
-		for (L1TrapInstance trap : traps) {
-			trap.disableTrap();
-			CWorld.getInstance().removeVisibleObject(trap);
-		}
-	}
+    private boolean trigger(L1PcInstance player, L1TrapInstance trap, L1Map map, int x, int y, boolean detection) {
+        final Respawn cooldown;
+        synchronized (this) {
+            if (stopped || !trap.isEnable() || !traps.containsKey(trap) || traps.get(trap) != null
+                    || player.getMap() != map || player.getX() != x || player.getY() != y
+                    || !trap.isPublishedIn(map) || !currentTerrain(map)
+                    || (detection ? !player.getLocation().isInScreen(trap.getLocation())
+                            : trap.getX() != x || trap.getY() != y)) return false;
+            cooldown = new Respawn(trap);
+            cooldown.applying = true;
+            traps.put(trap, cooldown);
+            trap.disableTrap();
+        }
+        try {
+            if (detection) trap.onDetection(player);
+            else trap.onTrod(player);
+        } finally {
+            try {
+                trap.clearViewers();
+            } finally {
+                cooldown.finishEffect();
+            }
+        }
+        return true;
+    }
 
-	private void stopTimer() {
-		synchronized (this) {
-			_stopped = true;
-			for (TrapSpawnTimer task : _pendingRespawns.values()) {
-				if (task.future != null) task.future.cancel();
-			}
-			_pendingRespawns.clear();
-		}
-	}
+    /** Existing world maintenance retries a bounded number of refused timer admissions. */
+    public static void retryRespawns() {
+        L1WorldTraps current = instance;
+        if (current == null || current.rejected == null) return;
+        synchronized (current) {
+            var queue = current.rejected;
+            if (current.stopped || queue == null) return;
+            for (int count = 0; count < 32 && !queue.isEmpty(); count++) {
+                if (!queue.peekFirst().schedule()) break;
+                queue.removeFirst();
+            }
+            if (queue.isEmpty()) current.rejected = null;
+        }
+    }
 
-	private void disableTrap(L1TrapInstance trap) {
-		synchronized (this) {
-			if (_stopped) return;
-			final TrapSpawnTimer task = new TrapSpawnTimer(trap);
-			final CServerTimer future = CWorldWork.schedule(task, trap.getSpan());
-			if (future == null) {
-				_log.warning("Trap respawn schedule rejected; leaving trap enabled: " + trap.getId());
-				return;
-			}
-			task.future = future;
-			TrapSpawnTimer previous = _pendingRespawns.put(trap, task);
-			if (previous != null && previous.future != null) previous.future.cancel();
-			trap.disableTrap();
-		}
-	}
+    private static boolean currentTerrain(L1Map map) {
+        return !map.isNull() && L1WorldMap.getInstance().findMap(map.getId()) == map;
+    }
 
-	public synchronized void resetAllTraps() {
-		if (_stopped) return;
-		for (TrapSpawnTimer task : _pendingRespawns.values()) {
-			if (task.future != null) task.future.cancel();
-		}
-		_pendingRespawns.clear();
-		for (L1TrapInstance trap : _allTraps) {
-			trap.resetLocation();
-			trap.enableTrap();
-		}
-	}
+    private final class Respawn implements Runnable {
+        private final L1TrapInstance trap;
+        private CServerTimer timer;
+        private long deadline;
+        private boolean applying;
+        private boolean reset;
 
-	public void onPlayerMoved(L1PcInstance player) {
-		int idx = Collections.binarySearch(_allTraps, player, _comp);
-		if(idx < 0)
-			return;
-		
-		L1TrapInstance t = _allTraps.get(idx);
-		if(t.isEnable()){
-			t.onTrod(player);
-			disableTrap(t);
-		}
-		
-		/*L1Location loc = player.getLocation();
-		for (L1TrapInstance trap : _allTraps) {
-			if (trap.isEnable() && loc.equals(trap.getLocation())) {
-				trap.onTrod(player);
-				disableTrap(trap);
-			}
-		}*/
-	}
+        private Respawn(L1TrapInstance trap) {
+            this.trap = trap;
+        }
 
-	public void onDetection(L1PcInstance caster) {
-		int idx = Collections.binarySearch(_allTraps, caster, _comp);
-		if(idx < 0)
-			return;
-		
-		L1TrapInstance 	t 	= null;
-		L1Location 		loc = caster.getLocation();
-		for(int i=idx; i>=0; i--){
-			t = _allTraps.get(i);
-			if(t.isEnable() && loc.isInScreen(t.getLocation())){
-				t.onDetection(caster);
-				disableTrap(t);
-			}
-		}
-		for(int i=idx+1; i<_allTraps.size(); i++){
-			t = _allTraps.get(i);
-			if(t.isEnable() && loc.isInScreen(t.getLocation())){
-				t.onDetection(caster);
-				disableTrap(t);
-			}
-		}
-	}
+        private void finishEffect() {
+            synchronized (L1WorldTraps.this) {
+                if (stopped || traps.get(trap) != this) return;
+                applying = false;
+                if (!reset) {
+                    deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(Math.max(0, trap.getSpan()));
+                    if (!schedule()) {
+                        if (rejected == null) {
+                            rejected = new ArrayDeque<>();
+                            LOG.warning("Trap timer admission refused. World maintenance will retry.");
+                        }
+                        rejected.addLast(this);
+                    }
+                    return;
+                }
+            }
+            run();
+        }
 
-	class TrapsComparator implements Comparator<L1Object>{
-		@Override
-		public int compare(L1Object o1, L1Object o2) {
-			if(o1.getMapId() > o2.getMapId())
-				return 1;
-			else if(o1.getMapId() < o2.getMapId())
-				return -1;
-			else if(o1.getX() > o2.getX())
-				return 1;
-			else if(o1.getX() < o2.getX())
-				return -1;
-			else if(o1.getY() > o2.getY())
-				return 1;
-			else if(o1.getY() < o2.getY())
-				return -1;
-			return 0;
-		}
-		
-	}
-	
-	private class TrapSpawnTimer implements Runnable {
-		private final L1TrapInstance _targetTrap;
-		private CServerTimer future;
+        private boolean schedule() {
+            long delay = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
+            timer = CWorldWork.schedule(this, Math.max(1L, delay));
+            return timer != null;
+        }
 
-		public TrapSpawnTimer(L1TrapInstance trap) {
-			_targetTrap = trap;
-		}
+        private void cancel() {
+            if (timer != null) timer.cancel();
+            else if (rejected != null && rejected.remove(this) && rejected.isEmpty()) rejected = null;
+        }
 
-		@Override
-		public void run() {
-			synchronized (L1WorldTraps.this) {
-				if (_stopped || _pendingRespawns.get(_targetTrap) != this) return;
-				_pendingRespawns.remove(_targetTrap);
-				_targetTrap.resetLocation();
-				_targetTrap.enableTrap();
-			}
-		}
-	}
-	
-	// 오림 인던 관련
-	public synchronized void addTrap(L1TrapInstance trap) {
-		_allTraps.add(trap);
-	}
-
-	 public synchronized void removeTrap(L1TrapInstance trap) {
-		 for (Iterator<L1TrapInstance> i =_allTraps.listIterator(); i.hasNext();) {
-			  L1TrapInstance traps = i.next();
-			  if(traps.getId() == trap.getId()){
-					  i.remove();
-				  break;
-			  }
-		 }
-		List<L1TrapInstance> traps = new ArrayList<L1TrapInstance>();
-		traps.add(trap);
-		removeTraps(traps);
-	}
+        @Override
+        public void run() {
+            synchronized (trap) {
+                synchronized (L1WorldTraps.this) {
+                    if (stopped || traps.get(trap) != this) return;
+                    if (currentTerrain(trap.getMap()) && trap.resetPublishedLocation()) {
+                        traps.put(trap, null);
+                        trap.enableTrap();
+                    }
+                }
+            }
+        }
+    }
 }

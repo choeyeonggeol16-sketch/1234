@@ -45,6 +45,10 @@ public abstract class L1Trap {
 		return _id;
 	}
 
+	public boolean isDetectionable() {
+		return _isDetectionable;
+	}
+
 	public int getGfxId() {
 		return _gfxId;
 	}

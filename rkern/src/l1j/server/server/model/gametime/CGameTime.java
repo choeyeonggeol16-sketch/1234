@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.world.instance.CInstantZoneManager;
+import l1j.server.server.model.world.trap.L1WorldTraps;
 
 /** Owns the game timeline and dispatches game and real calendar boundaries. */
 public final class CGameTime {
@@ -145,7 +146,7 @@ public final class CGameTime {
             gameEvents.advance(beforeGame, game);
             if (!retired && now - previousMaintenance >= TimeUnit.SECONDS.toNanos(1)) {
                 previousMaintenance = now;
-                reapZones();
+                maintainWorld();
             }
             if (real > beforeReal) {
                 previousReal = real;
@@ -156,11 +157,16 @@ public final class CGameTime {
         }
     }
 
-    private static void reapZones() {
+    private static void maintainWorld() {
         try {
             CInstantZoneManager.reapWorld();
         } catch (RuntimeException | LinkageError failure) {
             LOG.log(Level.WARNING, "Instant zone cleanup tick failed", failure);
+        }
+        try {
+            L1WorldTraps.retryRespawns();
+        } catch (RuntimeException | LinkageError failure) {
+            LOG.log(Level.WARNING, "Trap timer retry failed", failure);
         }
     }
 
