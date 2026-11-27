@@ -45,16 +45,6 @@ public class RaidRindvior extends RaidObject{
 	protected void setBossSpawn(RaidNpcSpawn spawn) {
 		_bossSpawn = spawn;
 	}
-
-	@Override
-	public void dispose(){
-		super.dispose();
-		
-		if(_npcList != null){
-			_npcList.clear();
-			_npcList = null;
-		}
-	}
 	
 	@Override
 	protected void readyRaid() {
@@ -63,14 +53,12 @@ public class RaidRindvior extends RaidObject{
 		int 			cpMap		= 0;
 		try{
 			cpMap				= getCopyMapId();
-			L1PcInstance[] pcs	= null;
 			boolean isInArea 	= true;
 	
 			while (isInArea && _state == RS_READY && !CInstanceEvents.isStopping()) {
 				Thread.sleep(500);
-				pcs = _users.toArray(new L1PcInstance[_users.size()]);
-				for(int i=0; i<pcs.length; i++){
-					pc = pcs[i];
+				for(L1PcInstance member : _users){
+					pc = member;
 					if(pc == null)
 						continue;
 					
@@ -87,7 +75,6 @@ public class RaidRindvior extends RaidObject{
 			}
 			
 			if (_state != RS_READY || CInstanceEvents.isStopping()) return;
-			size = _users.size();
 			for(int i=0; i<=s_startMessages.length; i++){
 				Thread.sleep(RaidLoadManager.MRS_MESSAGE_DELAY);
 				try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
@@ -95,8 +82,8 @@ public class RaidRindvior extends RaidObject{
                     ? SC_ServerMessage.nativeWriter(s_startMessages[i])
                     : SC_SystemMessage.nativeWriter(s_lastMessage),
                   Integer.MIN_VALUE,Integer.MAX_VALUE)){
-                 for(int j=0; j<size; j++){
-					pc = _users.get(j);
+                 for(L1PcInstance member : _users){
+					pc = member;
 					if(pc != null && pc.getMapId() == cpMap){
 												l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
 						
@@ -146,7 +133,7 @@ public class RaidRindvior extends RaidObject{
 					return;
 				
 				if(!isInRaid()){
-					resetRaid();
+					requestReset();
 					return;
 				}
 				

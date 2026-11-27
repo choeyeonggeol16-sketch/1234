@@ -28,11 +28,11 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
         InnRoom room = new InnRoom();
         room._mapInfo = mapInfo;
         try {
-            if (CopyMapObservable.getInstance().register(mapInfo.mapId, room) == null) {
-                room.notifyObservable();
-                return null;
-            }
             synchronized (room) {
+                if (CopyMapObservable.getInstance().register(mapInfo.mapId, room) == null) {
+                    room.notifyObservable();
+                    return null;
+                }
                 room.registered = true;
                 room._future = CInstanceWork.scheduleRequired(room, InnHelper.RENTAL_MINUTE * 60L * 1000L);
             }
@@ -104,9 +104,11 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
         if (room != null) room.removeKey(item.getId());
     }
 
-    private synchronized void removeKey(int id) {
-        if (closed || !_keys.remove(id, this)) return;
-        if (--_usageCount == 0) notifyObservable();
+    private void removeKey(int id) {
+        synchronized (this) {
+            if (closed || !_keys.remove(id, this) || --_usageCount != 0) return;
+        }
+        notifyObservable();
     }
 
     public static void remove(L1ItemInstance[] items) {
@@ -124,20 +126,25 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
     public void run() { notifyObservable(); }
 
     @Override
-    public synchronized void notifyObservable() {
-        if (closed) return;
-        closed = true;
-        if (_future != null) {
-            _future.cancel();
-            _future = null;
+    public void notifyObservable() {
+        final boolean releaseMap;
+        synchronized (this) {
+            if (closed) return;
+            closed = true;
+            if (_future != null) {
+                _future.cancel();
+                _future = null;
+            }
+            if (_keyIds != null) {
+                for (int id : _keyIds) _keys.remove(id, this);
+                _keyIds = null;
+            }
+            _usageCount = 0;
+            _mapInfo.usageCount.decrementAndGet();
+            releaseMap = registered;
         }
-        if (_keyIds != null) {
-            for (int id : _keyIds) _keys.remove(id, this);
-            _keyIds = null;
-        }
-        _usageCount = 0;
-        _mapInfo.usageCount.decrementAndGet();
-        if (registered) super.notifyObservable();
+        // Synchronous cleanup visits inventories and players outside the rental lock.
+        if (releaseMap) super.notifyObservable();
     }
 
 	private synchronized boolean in(int keyId, L1PcInstance pc){
@@ -160,7 +167,7 @@ public class InnRoom extends AbstractCopyMapObserver implements Runnable{
 			SC_Paralysis.send(pc, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
 			return true;
 		}
-		pc.start_teleport(_mapInfo.x, _mapInfo.y, _copyMapId, pc.getHeading(), 169, false, false, false);
-        return true;
+		return enterZone(() -> pc.start_teleport(_mapInfo.x, _mapInfo.y, _copyMapId,
+                pc.getHeading(), 169, false, false, false));
 	}
 }

@@ -20,7 +20,6 @@ import l1j.server.server.model.character.combat.statistics.shared.TeamKda;
 import l1j.server.server.model.character.combat.statistics.shared.UserKda;
 import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.item.reward.AbstractReward;
-import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.packethelper.PacketFactory;
 import l1j.server.server.model.world.trap.AbstractTrap;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
@@ -46,9 +45,12 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     public final static int REWARDS_INDEX_LOSER_DEAD = 3;
     
     public static CombatObserver execute(CombatObserver observer){
-        return observer
-            .initialize()
-            .execute_combat();
+        try {
+            return observer.initialize().execute_combat();
+        } catch (RuntimeException | Error failure) {
+            observer.closeCopyMap();
+            throw failure;
+        }
     }
     
     protected Lock _lock;
@@ -62,7 +64,9 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     protected LinkedList<Integer> _team_q;
     protected CParty[]	_parties;
     protected volatile EStatus _status;
+    private CServerTimer readyTimer;
     private CServerTimer finishTimer;
+    private volatile boolean disposalStarted;
     protected AtomicInteger _team_id;
     protected byte[][] _box_attr;
     protected byte[][][][] _team_box_attr;
@@ -157,8 +161,9 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         return this;
     }
     protected CombatObserver initialize_copymap(){
-        CopyMapObservable.getInstance().register(_combat_info.get_rt_zone().mapId, this);
-        L1WorldMap.getInstance().getMap(_copyMapId)
+        if (CopyMapObservable.getInstance().register(_combat_info.get_rt_zone().mapId, this) == null)
+            throw new IllegalStateException("No combat arena available");
+        copyMap()
         .set_isEnabledDeathPenalty(false)
         .set_isEscapable(false)
         .set_isMarkable(false)
@@ -169,7 +174,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         return this;
     }
     protected void dispose_users(){
-        Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
+        Collection<L1PcInstance> col = visibleZonePlayers();
         
         // The quit countdown is the same S_EVENT frame for every participant.
         // Keep the original map collection iteration order; serialize once.
@@ -184,14 +189,13 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             java.util.logging.Logger.getLogger(CombatObserver.class.getName()).log(
                     java.util.logging.Level.WARNING, "Combat quit notice failed; scheduling exit", sendFailure);
         }
-        final int copy_map_id = _copyMapId;
         final TeamKda[] team_kda = _team_kda;
         final CParty[] parties	= _parties;
         CInstanceWork.scheduleRequired(new Runnable(){
             @Override
             public void run(){
                 try{
-                    Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(copy_map_id);
+                    Collection<L1PcInstance> col = visibleZonePlayers();
                     for(L1PcInstance pc : col){
                         if(pc == null || pc.getNetConnection() == null)
                             continue;
@@ -269,14 +273,17 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
             long ready_seconds = _combat_info.get_ready_seconds();
             
             _start_sec = (System.currentTimeMillis() / 1000L) + ready_seconds;
-            CInstanceWork.scheduleRequired(this, ready_seconds * 1000L);
+            readyTimer = CInstanceWork.scheduleRequired(this, ready_seconds * 1000L);
         }
         return this;
     }
     
     public void enter(L1PcInstance pc){
-        if(pc == null)
-            return;
+        if (pc != null && !enterZone(() -> enterParticipant(pc)))
+            pc.sendPackets("입장 시간이 초과되었습니다.");
+    }
+
+    private void enterParticipant(L1PcInstance pc) {
         
         if(!is_ready()){
             pc.sendPackets("입장 시간이 초과되었습니다.");
@@ -307,6 +314,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         CInstanceWork.scheduleRequired(new Runnable(){
             @Override
             public void run(){
+                if (disposalStarted || pc.getMap() != copyMap()) return;
                 PacketFactory.sendTime(pc, _start_sec - (System.currentTimeMillis() / 1000L));
                 if(_box_attr != null){
                     for(byte[] data : _box_attr)
@@ -322,7 +330,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     }
     
     protected boolean validation_users(){
-          Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
+          Collection<L1PcInstance> col = visibleZonePlayers();
            if(col.size() < _team_size){
                String message = String.format("참가 인원이 부족하여 %s이(가) 종료되었습니다.", _combat_info.get_game_type().to_kr_desc());
                l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcast(message);
@@ -429,7 +437,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
                         for (int i = 0; i < frames.length; ++i)
                             frames[i] = l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(sourceBoxes[i]);
                     }
-                    for (L1PcInstance pc : CWorld.getInstance().getVisiblePlayers(_copyMapId)) {
+                    for (L1PcInstance pc : visibleZonePlayers()) {
                         if (pc == null || pc.getNetConnection() == null || !pc.getNetConnection().isConnected() || !pc.is_combat_field())
                             continue;
                         if (frames != null)
@@ -512,7 +520,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     }
     
     protected boolean is_live_team(int team_id){
-        Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
+        Collection<L1PcInstance> col = visibleZonePlayers();
         for(L1PcInstance p : col){
             if(p == null || p.getNetConnection() == null)
                 continue;
@@ -596,14 +604,23 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     protected void on_running(){}
     
     @Override
-    public void run() {		
+    public void run() {
+        enterZone(this::startReadyCombat);
+    }
+
+    private void startReadyCombat() {
+        if (!is_ready() || disposalStarted) return;
         if(!validation_users()){
             notify_quit();
             dispose();
             return;
         }
         try{
-            set_status(EStatus.RUNNING);
+            _lock.lock();
+            try {
+                if (!is_ready() || disposalStarted) return;
+                set_status(EStatus.RUNNING);
+            } finally { _lock.unlock(); }
             on_running();
             execute_traps();
             _lock.lock();
@@ -642,7 +659,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
                             return;
                         
                         if(sec % CombatLoadManager.COMBAT_TRAPS_SPAWN_SECOND == 0 && GameRandom.isWinning(1000000, CombatLoadManager.COMBAT_TRAPS_SPAWN_PROB_BY_MILLION)){
-                            Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
+                            Collection<L1PcInstance> col = visibleZonePlayers();
                             AbstractTrap trap = CombatTrapsLoader.getInstance().to_rand_trap();
                             trap.do_traps(col);
                         }
@@ -666,7 +683,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         final UserKda[] ranker_kdas = select_ranker_kda();
         final SC_NOTIFICATION_MESSAGE[] packets = CombatLoadManager.create_result_notify(winner_kda, ranker_kdas);
         final int winner_id = winner_kda.get_team_id();
-        Collection<L1PcInstance> col = CWorld.getInstance().getVisiblePlayers(_copyMapId);
+        Collection<L1PcInstance> col = visibleZonePlayers();
         // Notifications are best effort; distributing the already decided
         // match rewards must not depend on Native broadcast admission.
         l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer win = null;
@@ -771,33 +788,51 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
     }
     
     @Override
-    public void dispose(){
+    protected void closeImmediately() {
+        try {
+            for (L1PcInstance pc : visibleZonePlayers()) {
+                try {
+                    if (pc.getMap() == copyMap() && pc.is_combat_field()
+                            && pc.get_current_combat_id() == _combat_info.get_combat_id()) leave(pc);
+                } catch (RuntimeException failure) {
+                    java.util.logging.Logger.getLogger(CombatObserver.class.getName()).log(
+                            java.util.logging.Level.WARNING, "Arena exit failed for player " + pc.getId(), failure);
+                }
+            }
+        } finally { closeCopyMap(); }
+    }
+
+    protected void disposeEncounterObjects() { }
+
+    @Override
+    public final void dispose() {
         _lock.lock();
         try {
+            if (disposalStarted) return;
+            disposalStarted = true;
             _status = EStatus.CLOSED;
-            if (finishTimer != null) {
-                finishTimer.cancel();
-                finishTimer = null;
-            }
+            if (readyTimer != null) { readyTimer.cancel(); readyTimer = null; }
+            if (finishTimer != null) { finishTimer.cancel(); finishTimer = null; }
         } finally {
             _lock.unlock();
         }
-        if(_quit_listener != null){
-            _quit_listener.clear();
-            _quit_listener = null;
-        }
-        
-        dispose_users();
-        _box_attr = null;
-        _team_box_attr = null;
-        CInstanceWork.scheduleRequired(new Runnable(){
-            @Override
-            public void run(){
-                CombatObserver.super.dispose();				
+        boolean pending = false;
+        try {
+            disposeEncounterObjects();
+            if (_quit_listener != null) {
+                _quit_listener.clear();
+                _quit_listener = null;
             }
-        }, (CombatLoadManager.COMBAT_QUIT_DELAY_SECOND * 2) * 1000L);
+            dispose_users();
+            _box_attr = null;
+            _team_box_attr = null;
+            CInstanceWork.scheduleRequired(this::closeCopyMap, CombatLoadManager.COMBAT_QUIT_DELAY_SECOND * 2000L);
+            pending = true;
+        } finally {
+            if (!pending) closeImmediately();
+        }
     }
-    
+
     protected void batch_quit(){
         if(get_status().equals(EStatus.DISPOSING)){
             try{

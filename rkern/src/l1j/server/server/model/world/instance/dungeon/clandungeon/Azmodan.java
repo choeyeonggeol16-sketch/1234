@@ -4,9 +4,13 @@ import l1j.server.server.datatables.CObjectDB;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.instance.CInstanceEvents;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.L1Clan;
@@ -15,16 +19,21 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 
-public class Azmodan implements Runnable {
+public final class Azmodan implements Runnable {
+    private static final Logger LOG = Logger.getLogger(Azmodan.class.getName());
+    private final CInstantZone<Azmodan> zone;
+    private final int clanId;
+    private final int _map;
+    private boolean began;
+    private boolean returnRequested;
 
-	private int _map;
 
 	private static Random _random = new Random(System.nanoTime());
 
@@ -38,9 +47,14 @@ public class Azmodan implements Runnable {
 
 	private int Time = 3600;
 	
-	public Azmodan(int id) {
-		_map = id;
-	}
+    Azmodan(CInstantZone<Azmodan> zone, int clanId) {
+        this.zone = zone;
+        this.clanId = clanId;
+        this._map = zone.mapId();
+    }
+
+    int clanId() { return clanId; }
+    boolean began() { return began; }
 
 	int[] _MonsterList1 = { 14901, 14902 };
 	int[] _MonsterList2 = { 14900, 14901, 14902, 14903 };
@@ -48,6 +62,8 @@ public class Azmodan implements Runnable {
 
 	@Override
 	public void run() {
+        if (CInstanceEvents.isStopping() || Thread.currentThread().isInterrupted()) return;
+		began = true;
 		Running = true;
 		FirstLevel = true;
 		Time = 3600;
@@ -57,7 +73,6 @@ public class Azmodan implements Runnable {
 			try {
 				Check();
 				if (End) {
-					reset();
 					break;
 				} else if (FirstLevel) {
 					First();
@@ -66,7 +81,9 @@ public class Azmodan implements Runnable {
 				} else if (ThirdLevel) {
 					Third();
 				} 
-			} catch (Exception e) {
+			} catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Clan dungeon stage failed for map " + _map, failure);
+                break;
 			} finally {
 				if (!CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
 					try { Thread.sleep(1000L); }
@@ -74,13 +91,6 @@ public class Azmodan implements Runnable {
 				}
 			}
 		}
-		// Preserve shutdown storage cleanup even after the room wait was interrupted.
-		Thread.interrupted();
-		Azmodan_Delete();		
-	}
-
-	public void Start() {
-		CInstanceEvents.schedule(this, 2000L);
 	}
 	
 	private void Check() {
@@ -94,7 +104,7 @@ public class Azmodan implements Runnable {
 		} 
 		if (Time % 600 == 0) {
 			int min = Time / 60;
-			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
+			CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
                     CWorld.getInstance().getVisibleObjects(_map).values(),
                     SC_PacketBox.nativeGreenWriter(min+"분뒤에 던전은 종료됩니다."));
 		}
@@ -140,41 +150,36 @@ public class Azmodan implements Runnable {
 		}		
 	}
 
-	private void Azmodan_Delete() {
-		for (L1Object ob : CWorld.getInstance().getVisibleObjects(_map).values()) {
-			if (ob == null)
+    void cleanup() {
+        if (!began) return;
+        // Storage cleanup must still run if the room's wait was interrupted.
+        Thread.interrupted();
+        Running = false;
+        if (!returnRequested) returnPlayers();
+		for (L1Object ob : CWorld.getInstance().snapshotZoneOccupants(zone.map())) {
+			if (ob == null || ob.getMap() != zone.map())
 				continue;
-			if (ob instanceof L1ItemInstance) {
-				L1ItemInstance obj = (L1ItemInstance) ob;
-				CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
-				groundInventory.DeleteItemAmount(obj);
-			} else if (ob instanceof L1NpcInstance) {
-				L1NpcInstance npc = (L1NpcInstance) ob;
-				npc.deleteMe();
-			}
+            try {
+                if (ob instanceof L1ItemInstance item) {
+                    CInventory groundInventory = CWorld.getInstance().findGroundInventory(item.getX(), item.getY(), item.getMapId());
+                    if (groundInventory != null && groundInventory.getMap() == zone.map()) groundInventory.DeleteItemAmount(item);
+                } else if (ob instanceof L1NpcInstance npc && !CInstantZoneManager.isPlayerCompanion(npc)) {
+                    npc.deleteMe();
+                }
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Clan dungeon object cleanup failed for map " + _map, failure);
+            }
 		}
-		for (L1Clan clan : CWorld.getInstance().getAllClans()) {
-			if (clan.getClanId() == AzmodanSystem.getInstance().getClanid(_map)) {	
-				clan.setUnderDungeon(2);
-				ClanTable.getInstance().updateUnderDungeon(clan.getClanId(), 2);	
-				clan.setUnderMapid(0);			
-			}
-		}
-		AzmodanSystem.getInstance().removeAzmodan(_map);
-	}
-
-	private void reset() {
-		Running = false;
-		ListClear(1);
-		ListClear(2);
-		ListClear(3);
-		ListClear(4);		
-		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
-			if (obj instanceof L1MonsterInstance) {
-				L1MonsterInstance mon = (L1MonsterInstance) obj;
-				mon.deleteMe();
-			}
-		}		
+        _list0.clear();
+        _list1.clear();
+        _list2.clear();
+        _list3.clear();
+        final L1Clan clan = CWorld.getInstance().getClan(clanId);
+        if (clan != null) {
+            clan.setUnderDungeon(2);
+            clan.setUnderMapid(0);
+            ClanTable.getInstance().updateUnderDungeon(clanId, 2);
+        }
 	}
 
 	private void openDoor(int doorId) {
@@ -191,58 +196,52 @@ public class Azmodan implements Runnable {
 		}
 	}
 	
-	private void CheckClanId() {	
-		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
-			if (obj instanceof L1NpcInstance) {
-				if (((L1NpcInstance) obj).getNpcId() == 14907 && ((L1NpcInstance) obj).isDead() ) {
-					for (L1Clan clan : CWorld.getInstance().getAllClans()) {
-						int clantime = 3600 - Time; //744
-						int min = clantime / 60;    // 12
-						int second = clantime - (min * 60);
-						if (clan.getClanId() == AzmodanSystem.getInstance().getClanid(_map)) {
-							if (clan.getRankTime() > clantime || clan.getRankTime() == 0) {
-								clan.setRankTime(clantime);						
-								ClanTable.getInstance().updateRankTime(clan.getClanId(), clantime);
-								long now = System.currentTimeMillis();
-								Timestamp time = new Timestamp(now);
-								clan.setRankDate(time);
-								ClanTable.getInstance().updateRankDate(clan.getClanId(), time);
-								String pck = String.format("기록을 %d분 %d초 로 갱신하였습니다.", min, second);
-                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArrayBestEffort(clan.getOnlineClanMember(),SC_SystemMessage.nativeWriter(pck)); 
-						//		pck.clear();
-							} else if (clan.getRankTime() < clantime) {
-								String pck = "기존의 기록을 갱신하는데 실패하였습니다.";
-                                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenArrayBestEffort(clan.getOnlineClanMember(),SC_SystemMessage.nativeWriter(pck)); 	
-						//		pck.clear();
-						}
-							End();
-						}
-					}
-				}
-			}
-		}
-	}
-	
+    private void CheckClanId() {
+        final L1Clan clan = CWorld.getInstance().getClan(clanId);
+        if (clan == null) return;
+        for (L1Object object : CWorld.getInstance().getVisibleObjects(_map).values()) {
+            if (!(object instanceof L1NpcInstance npc) || npc.getMap() != zone.map()
+                    || npc.getNpcId() != 14907 || !npc.isDead()) continue;
+            final int elapsed = 3600 - Time;
+            if (clan.getRankTime() == 0 || clan.getRankTime() > elapsed) {
+                clan.setRankTime(elapsed);
+                ClanTable.getInstance().updateRankTime(clanId, elapsed);
+                final Timestamp now = new Timestamp(System.currentTimeMillis());
+                clan.setRankDate(now);
+                ClanTable.getInstance().updateRankDate(clanId, now);
+                final String message = String.format("기록을 %d분 %d초 로 갱신하였습니다.", elapsed / 60, elapsed % 60);
+                CSharedBroadcast.sendWrittenArrayBestEffort(clan.getOnlineClanMember(),
+                        SC_SystemMessage.nativeWriter(message));
+            } else if (clan.getRankTime() < elapsed) {
+                CSharedBroadcast.sendWrittenArrayBestEffort(clan.getOnlineClanMember(),
+                        SC_SystemMessage.nativeWriter("기존의 기록을 갱신하는데 실패하였습니다."));
+            }
+            End();
+            return;
+        }
+    }
+
 	private void End() {
 		try {
-			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
+			CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
                     CWorld.getInstance().getVisibleObjects(_map).values(),
                     SC_PacketBox.nativeGreenWriter("30초후 지하통로가 닫힙니다."));
 			Thread.sleep(30000);
-			for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
-				if (obj instanceof L1PcInstance) {
-					L1PcInstance pc = (L1PcInstance) obj;				
-//					L1Teleport.teleport(pc, 33426, 32811, (short) 4, 5, true);
-					pc.start_teleport(33426, 32811, 4, 5, 169, true, false);
-				}
-			}
+			returnPlayers();
 		} catch (InterruptedException stopping) {
 			Thread.currentThread().interrupt();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		End = true;
 	}
+
+    private void returnPlayers() {
+        returnRequested = true;
+        for (L1Object obj : CWorld.getInstance().snapshotZoneOccupants(zone.map())) {
+            if (obj instanceof L1PcInstance pc && pc.getMap() == zone.map()) {
+                pc.start_teleport(33426, 32811, 4, 5, 169, true, false);
+            }
+        }
+    }
 
 	private final ArrayList<L1NpcInstance> _list0 = new ArrayList<L1NpcInstance>();
 	private final ArrayList<L1NpcInstance> _list1 = new ArrayList<L1NpcInstance>();
@@ -303,23 +302,6 @@ public class Azmodan implements Runnable {
 				return;
 			}
 			_list3.remove(npc);
-			break;	
-		}
-	}
-
-	private void ListClear(int type) {
-		switch (type) {
-		case 0:
-			_list0.clear();
-			break;
-		case 1:
-			_list1.clear();
-			break;
-		case 2:
-			_list2.clear();
-			break;
-		case 3:
-			_list3.clear();
 			break;	
 		}
 	}
@@ -511,7 +493,8 @@ public class Azmodan implements Runnable {
 		spawn(32866, 33173, (short) _map, 5, 14907, 0, 3); // 탐욕의 아즈모단
 	}
 
-	public static L1NpcInstance spawn(int x, int y, short MapId, int Heading, int npcId, int randomRange, int roomnumber) {
+	private L1NpcInstance spawn(int x, int y, short MapId, int Heading, int npcId, int randomRange, int roomnumber) {
+		if (Thread.currentThread().isInterrupted()) return null;
 		L1NpcInstance npc = null;
 		try { 
 			npc = CObjectDB.CreateNPC(npcId);
@@ -529,7 +512,6 @@ public class Azmodan implements Runnable {
 					if (npc.getMap().isInMap(npc.getLocation()) && npc.getMap().isPassable(npc.getLocation())) {
 						break;
 					}
-					Thread.sleep(1);
 				} while (tryCount < 50);
 				if (tryCount >= 50) {
 					npc.getLocation().forward(Heading);
@@ -552,16 +534,7 @@ public class Azmodan implements Runnable {
 
 			CWorld.getInstance().storeAndEnterWorld(npc);
 
-			Azmodan azmodan = AzmodanSystem.getInstance().getAzmodan(MapId);
-			if (roomnumber == 0) {
-				azmodan.add(npc, 0);
-			} else if (roomnumber == 1) {
-				azmodan.add(npc, 1);
-			} else if (roomnumber == 2) {
-				azmodan.add(npc, 2);
-			} else if (roomnumber == 3) {
-				azmodan.add(npc, 3);		
-			}
+			add(npc, roomnumber);
 			npc.refreshLight();
 			npc.startChat(L1NpcInstance.CHAT_TIMING_APPEARANCE); 
 

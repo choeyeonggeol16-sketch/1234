@@ -28,6 +28,8 @@ import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.world.instance.inn.InnHelper;
@@ -629,6 +631,16 @@ public final class CWorld {
     static final int PICK_INVENTORY = 1;
     static final int PICK_GROUND = 2;
 
+    /** Carries the generation at death even when the terrain of a borrowed base room is reused. */
+    public static class DropOrigin extends L1Location {
+        private final CInstantZone<?> generation;
+
+        public DropOrigin(L1Location position) {
+            super(position);
+            generation = CInstantZoneManager.destination(getMapId());
+        }
+    }
+
     /** Validate ownership before a party route; tradeItem revalidates under both inventory monitors. */
     boolean PickItemCond(CInventory source, L1ItemInstance item, int count) {
         return source != null && item != null && count > 0
@@ -640,26 +652,39 @@ public final class CWorld {
             L1PcInstance recipient) {
         if (origin == null || !PickItemCond(source, item, count)) return PICK_REJECTED;
         if (recipient != null) {
-            int x = 0, y = 0;
-            short map = 0;
-            boolean live = false;
-            // Logout sets its admission flag before taking this same lock for its
-            // final inventory save. A successful transfer must precede that save.
+            final CInstantZone<?> zone = CInstantZoneManager.destination(origin.getMapId());
+            if (origin instanceof DropOrigin saved && saved.generation != zone) return PICK_REJECTED;
+            final boolean awarded = zone == null
+                    ? tryAwardDrop(origin, source, item, count, recipient)
+                    : zone.trySettle(origin.getMap(), () -> tryAwardDrop(origin, source, item, count, recipient));
+            if (awarded) return PICK_INVENTORY;
+            int targetX = 0, targetY = 0;
+            final boolean live;
             synchronized (recipient.autoSaveLifecycleLock()) {
-                final var session = recipient.getNetConnection();
-                if (!recipient.isLogoutStarted() && session != null && session.isConnected()
-                        && session.getActiveChar() == recipient) {
-                    if (DoAsyncAddItemToInventory(source, item, count, recipient)) return PICK_INVENTORY;
-                    x = recipient.getX();
-                    y = recipient.getY();
-                    map = recipient.getMapId();
-                    live = true;
+                live = isDropRecipient(origin, recipient);
+                if (live) {
+                    targetX = recipient.getX();
+                    targetY = recipient.getY();
                 }
             }
-            if (live && DropAtTile(source, item, count, x, y, map)) return PICK_GROUND;
+            if (live && DropAtTile(source, item, count, targetX, targetY, origin)) return PICK_GROUND;
         }
-        return DropAtTile(source, item, count, origin.getX(), origin.getY(), (short) origin.getMapId())
+        return DropAtTile(source, item, count, origin.getX(), origin.getY(), origin)
                 ? PICK_GROUND : PICK_REJECTED;
+    }
+
+    private boolean tryAwardDrop(L1Location origin, CInventory source, L1ItemInstance item, int count,
+            L1PcInstance recipient) {
+        synchronized (recipient.autoSaveLifecycleLock()) {
+            return isDropRecipient(origin, recipient)
+                    && DoAsyncAddItemToInventory(source, item, count, recipient);
+        }
+    }
+
+    private static boolean isDropRecipient(L1Location origin, L1PcInstance recipient) {
+        final var session = recipient.getNetConnection();
+        return recipient.getMap() == origin.getMap() && !recipient.isLogoutStarted()
+                && session != null && session.isConnected() && session.getActiveChar() == recipient;
     }
 
     /**
@@ -678,13 +703,24 @@ public final class CWorld {
     }
 
     private boolean DropAtTile(CInventory source, L1ItemInstance item, int count,
-            int x, int y, short map) {
+            int x, int y, L1Location origin) {
         if (!PickItemCond(source, item, count)) return false;
+        final CInstantZone<?> zone = CInstantZoneManager.destination(origin.getMapId());
+        if (origin instanceof DropOrigin saved && saved.generation != zone) return false;
+        final L1Map expected = origin.getMap();
+        return zone == null ? deliverToGround(source, item, count, x, y, expected)
+                : zone.trySettle(expected, () -> deliverToGround(source, item, count, x, y, expected));
+    }
+
+    private boolean deliverToGround(CInventory source, L1ItemInstance item, int count,
+            int x, int y, L1Map expected) {
+        final short map = (short) expected.getId();
+        if (L1WorldMap.getInstance().findMap(expected.getId()) != expected) return false;
         final L1GroundInventory ground = getGroundInventory(x, y, map);
         // Pickup may have removed an empty bucket between lookup and transfer.
         // Preserve the existing ground -> source monitor order.
         synchronized (ground) {
-            if (findGroundInventory(x, y, map) != ground) return false;
+            if (ground.getMap() != expected || findGroundInventory(x, y, map) != ground) return false;
             return source.tradeItem(item, count, ground) != null;
         }
     }
@@ -695,27 +731,25 @@ public final class CWorld {
     boolean PutItem(L1Location origin, CInventory source, L1ItemInstance item) {
         if (origin == null || !PickItemCond(source, item, item.getCount())) return false;
         final int x = origin.getX(), y = origin.getY();
-        final short map = (short) origin.getMapId();
         for (int i = 0; i < DROP_OFFSETS.length; i += 2) {
             final int tx = x + DROP_OFFSETS[i], ty = y + DROP_OFFSETS[i + 1];
             if (origin.getMap().isPassable(tx, ty))
-                return DropAtTile(source, item, item.getCount(), tx, ty, map);
+                return DropAtTile(source, item, item.getCount(), tx, ty, origin);
         }
-        return DropAtTile(source, item, item.getCount(), x, y, map);
+        return DropAtTile(source, item, item.getCount(), x, y, origin);
     }
 
     /** Try the corpse tile and nearby passable tiles, without changing stack caps. */
     boolean RecoverDropRemainder(L1Location origin, CInventory source, L1ItemInstance item) {
         if (source.GetByServerID(item.getId()) != item || item.getCount() <= 0) return true;
         final int x = origin.getX(), y = origin.getY();
-        final short map = (short) origin.getMapId();
-        if (DropAtTile(source, item, item.getCount(), x, y, map)) return true;
+        if (DropAtTile(source, item, item.getCount(), x, y, origin)) return true;
         for (int radius = 1; radius <= 3; radius++) {
             for (int dy = -radius; dy <= radius; dy++) {
                 for (int dx = -radius; dx <= radius; dx++) {
                     if (Math.max(Math.abs(dx), Math.abs(dy)) != radius
                             || !origin.getMap().isPassable(x + dx, y + dy)) continue;
-                    if (DropAtTile(source, item, item.getCount(), x + dx, y + dy, map)) return true;
+                    if (DropAtTile(source, item, item.getCount(), x + dx, y + dy, origin)) return true;
                 }
             }
         }
@@ -1074,13 +1108,33 @@ public final class CWorld {
     }
 
     public final Collection<L1PcInstance> getVisiblePlayers(int mapId) {
+        final L1IntRegistry<L1Object> visible = visibleMap(mapId, false);
+        if (visible == null || visible.isEmpty()) return new ArrayList<>();
+        return visiblePlayers(visible, L1WorldMap.getInstance().getMap((short) mapId));
+    }
+
+    public final Collection<L1PcInstance> getVisiblePlayers(L1Map map) {
+        if (map == null || map.isNull()) return Collections.emptyList();
+        final L1IntRegistry<L1Object> visible = visibleMap(map.getId(), false);
+        return visible == null ? Collections.emptyList() : visiblePlayers(visible, map);
+    }
+
+    private static List<L1PcInstance> visiblePlayers(L1IntRegistry<L1Object> mapSrc, L1Map currentMap) {
         final List<L1PcInstance> result = new ArrayList<>();
-        final L1IntRegistry<L1Object> mapSrc = visibleMap(mapId, false);
-        if (mapSrc == null || mapSrc.isEmpty()) return result;
-        final L1Map currentMap = L1WorldMap.getInstance().getMap((short) mapId);
-        if (currentMap.isNull() || currentMap.getId() != mapId) return result;
         for (L1Object object : mapSrc.values()) {
             if (object instanceof L1PcInstance pc && pc.getMap() == currentMap) result.add(pc);
+        }
+        return result;
+    }
+
+    /** Snapshot one terrain generation before running actor callbacks outside the registry. */
+    public List<L1Object> snapshotZoneOccupants(L1Map expected) {
+        if (expected == null) throw new NullPointerException("expected");
+        final L1IntRegistry<L1Object> visible = visibleMap(expected.getId(), false);
+        if (visible == null || visible.isEmpty()) return Collections.emptyList();
+        final ArrayList<L1Object> result = new ArrayList<>();
+        for (L1Object object : visible.values()) {
+            if (object.getMap() == expected) result.add(object);
         }
         return result;
     }

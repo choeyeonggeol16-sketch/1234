@@ -1,65 +1,47 @@
 package l1j.server.server.model.world.instance.dungeon.ice.queen;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
+import l1j.server.server.model.world.instance.dungeon.ice.CIceCaveSpawn;
 
-public class QueenSystem {
-	
-	private static QueenSystem _instance;
-	private final ArrayList<Integer> _map = new ArrayList<Integer>();
-	private final Map<Integer, Queen> _list = new ConcurrentHashMap<Integer, Queen>();
+public final class QueenSystem {
+    private static final QueenSystem INSTANCE = new QueenSystem();
+    private static final Logger LOG = Logger.getLogger(QueenSystem.class.getName());
+    private final CInstantZoneManager<Queen> zones = new CInstantZoneManager<>(49);
 
-	public static QueenSystem getInstance() {
-		if (_instance == null) {
-			_instance = new QueenSystem();
-		}
-		return _instance;
-	}
+    private QueenSystem() {}
 
-	public QueenSystem(){
-		_map.add(2101);
-	}
+    public static QueenSystem getInstance() {
+        return INSTANCE;
+    }
 
-	public void startQueen(L1PcInstance pc){
-		if(countQueen() >= 49){
-			SC_ChatPacket.sendDirect(pc, pc, "인스턴스 던전에 진입한 인원이 너무 많습니다");
-			return;
-		}
-		int id = blankMapId();
-		if(id != 2101)
-			L1WorldMap.getInstance().cloneMap(2151, id);
-		Queen queen = new Queen(id);
-//		L1Teleport.teleport(pc, 32728, 32819, (short) id, 5, true);
-		pc.start_teleport(32728, 32819, id, 5, 169, true, false);
-		_list.put(id, queen);
-		queen.Start();
-	}
-
-	public int blankMapId(){
-		if(_list.size() == 0)
-			return 2101;
-		for(int i = 2101 ; i <= 2150; i++){
-			Queen h = _list.get(i);
-			if(h == null)
-				return i;
-		}  
-		return 2150;
-	}
-
-	public Queen getQueen(int id){
-		return _list.get(id);
-	}
-
-	public void removeQueen(int id){
-		_list.remove(id);
-	}
-
-	public int countQueen(){
-		return _list.size();
-	}
+    public void startQueen(L1PcInstance pc) {
+        CInstantZone<Queen> zone = null;
+        try {
+            zone = zones.tryOpen(2151, 2101, 2101, 2150);
+            if (zone != null) {
+                final Queen queen = new Queen(zone);
+                final int mapId = zone.mapId();
+                final var session = pc.getNetConnection();
+                final int stamp = pc.getSessionStamp();
+                zone.bind(queen);
+                zone.start(() -> {
+                    if (session == null || !pc.isItemTransferSession(session, stamp)
+                            || !session.ownsReadyGameSession()) return;
+                    pc.start_teleport(32728, 32819, mapId, 5, 169, true, false);
+                    if (CIceCaveSpawn.pause(2000L)) queen.play();
+                }, queen::finish);
+                return;
+            }
+        } catch (RuntimeException failure) {
+            if (zone != null) zone.close(() -> {});
+            LOG.log(Level.WARNING, "Ice queen admission failed", failure);
+        }
+        SC_ChatPacket.sendDirect(pc, pc, "인스턴스 던전에 진입한 인원이 너무 많습니다");
+    }
 }

@@ -1,12 +1,15 @@
 package l1j.server.server.model.world.instance.dungeon.hadin;
 import l1j.server.server.model.world.instance.CInstanceEvents;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 import l1j.server.server.model.network.core.sc.packet.SC_Door;
 
 import java.util.ArrayList;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.datatables.DoorSpawnTable;
@@ -14,6 +17,7 @@ import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -21,11 +25,16 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 
-public class Hadin implements Runnable {
-
-	private short _map;
-	private int stage = 1;
-	private CParty _pARTy;
+public final class Hadin implements Runnable {
+    private static final Logger LOG = Logger.getLogger(Hadin.class.getName());
+    private final CInstantZone<Hadin> zone;
+    private final short _map;
+    private final CParty _pARTy;
+    private final L1Map entranceMap;
+    private final L1PcInstance[] participants;
+    private boolean began;
+    private boolean returnRequested;
+    private int stage = 1;
 	private static final int SECRET_HADIN = 1;
 	private static final int TALK_ISLAND_DUNGEON_1 = 2;
 	private static final int TALK_ISLAND_DUNGEON_2 = 3;
@@ -59,87 +68,56 @@ public class Hadin implements Runnable {
 	private static final int TALK_ISLAND_DUNGEON_END = 31;
 	private int SubStep = 0;
 	private L1NpcInstance Npc_Hadin;
-	private L1NpcInstance Hadin_Effect;
-	private List<L1PcInstance> list2;
+	private final List<L1PcInstance> list2 = new ArrayList<>();
 	private HadinTrap HT = null;
 
 	private boolean Running = true;
-	private boolean listck = false;
 
 	public ArrayList<L1NpcInstance> BasicNpcList;
 	public ArrayList<L1NpcInstance> NpcList;
 
 	public HashMap<String, L1NpcInstance> BossRoomDoor;
 
-	public Hadin(int id){
-		_map = (short)id;
-		list2 = new ArrayList<L1PcInstance>();
-	}
+    Hadin(CInstantZone<Hadin> zone, CParty party, L1Map entranceMap) {
+        this.zone = zone;
+        this._map = (short) zone.mapId();
+        this._pARTy = party;
+        this.entranceMap = entranceMap;
+        this.participants = party.getMembers();
+    }
 
-	public boolean StartCK = false;
+    public boolean StartCK = false;
 
-	private boolean UserCountCK = true;
+    @Override
+    public void run() {
+        try {
+            if (CInstanceEvents.isStopping() || Thread.currentThread().isInterrupted()) return;
+            began = true;
+            BasicNpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 0, true);
+            Hadin_Setting();
+            if (Npc_Hadin == null) throw new IllegalStateException("Missing Hadin NPC");
+            BossRoomDoor = HadinSpawn.getInstance().fillSpawnTable2(_map, 22);
 
-	@Override
-	public void run() {
-		//System.out.println("Hadin Thread Create Compleate");
-		Hadin_Setting();
-		BossRoomDoor = HadinSpawn.getInstance().fillSpawnTable2(_map, 22);
-		list2 = getParty().getList();
-		int firtCkCount = 0;
-		while(Running && !Thread.currentThread().isInterrupted()){
-			try {
-				if(UserCountCK){
-					int i = 0;
-					for(L1PcInstance pc : list2){
-						if(pc.getMapId() != _map){
-							firtCkCount++;
-							break;
-						}else{
-							i++;
-						}
-					}					
-					if(i >= getParty().getNumOfMembers()){
-						UserCountCK = false;
-						firtCkCount = 0;
-					} else {
-						if(firtCkCount >= 10){
-							RETURN_TEL();
-							UserCountCK = false;
-						} else {
-							Thread.sleep(1500);
-							continue;
-						}
-					}
-				}
-				for(L1PcInstance pc : list2){
-					if(pc == null) continue;
-					if(getParty().getNumOfMembers() < 5 || !pc.isInParty() || pc.getMapId() != _map){//7명
-//						L1Teleport.teleport(pc, 32574, 32942, (short) 0, 5, true);
-						pc.start_teleport(32574, 32942, 0, 5, 169, true, false);
-						if(list2.contains(pc)){
-							list2.remove(pc);
-						}
-					}
-					if(pc.getMapId() != _map){
-						if (pc.isInParty()){ 
-							getParty().leaveMember(pc);
-						}
-					}
-					if(getParty().getNumOfMembers() < 5){//7명
-						listck = true;
-						Running = false;
-					}
-				}
-				if(listck)
-					break;
+            if (!zone.enter(this::enterParticipants) || list2.isEmpty()) return;
+            int arrivalChecks = 0;
+            while (!allArrived()) {
+                if (++arrivalChecks >= 10 || !Running || CInstanceEvents.isStopping()) return;
+                Sleep(1500);
+            }
 
-				if(NpcList != null){
-					for(L1NpcInstance npc : NpcList){
-						if(npc == null || npc.isDead())
-							NpcList.remove(npc);
-					}
-				}
+            while (Running && !CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
+                if (HT != null && HT.timerUnavailable()) return;
+                final var members = list2.iterator();
+                while (members.hasNext()) {
+                    final L1PcInstance pc = members.next();
+                    final boolean inside = ownsPlayer(pc) && pc.getMap() == zone.map();
+                    if (inside && pc.getParty() == _pARTy && _pARTy.getNumOfMembers() >= 5) continue;
+                    if (inside) pc.start_teleport(32574, 32942, 0, 5, 169, true, false);
+                    else if (pc.getParty() == _pARTy) _pARTy.leaveMember(pc);
+                    members.remove();
+                }
+                if (_pARTy.getNumOfMembers() < 5 || list2.isEmpty()) return;
+                if (NpcList != null) NpcList.removeIf(npc -> npc == null || npc.isDead());
 				switch(stage){
 				/** 하딘 로비 **/
 				case SECRET_HADIN:
@@ -175,20 +153,20 @@ public class Hadin implements Runnable {
 						//그럼 시작해볼까?
 						SC_NpcChatPacket.broadcastNpc(Npc_Hadin, Npc_Hadin, "$8702", 0);                           
 					Sleep(3000);
-					for(L1PcInstance pc : getParty().getMembers()){
-						if(pc == null)
+					for(L1PcInstance pc : list2){
+						if(pc.getMap() != zone.map() || pc.getParty() != _pARTy)
 							continue;
 //						L1Teleport.teleport(pc, 32665, 32793, _map, 3, true);
 						pc.start_teleport(32665, 32793, _map, 5, 169, true, false);
 					}
-					HT = new HadinTrap(_map);
+					HT = new HadinTrap(zone);
 					Sleep(5000);
 					stage = 2;
 					break;
 					/** 첫방 -> 문 오픈 -> 2번째방 몬스터 2번 스폰**/
 				case TALK_ISLAND_DUNGEON_1:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if (SubStep == 0){
 						Sleep(2000);
 						Sleep(2000);
@@ -216,7 +194,7 @@ public class Hadin implements Runnable {
 					/** 3번째방 몬스터 스폰 **/
 				case TALK_ISLAND_DUNGEON_3:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 2, true);
 						SubStep++;
@@ -239,7 +217,7 @@ public class Hadin implements Runnable {
 					/** 몬스터 스폰  **/
 				case TALK_ISLAND_DUNGEON_5:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 3, true);
 						SubStep++;
@@ -259,7 +237,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_7:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 4, true);
 						SubStep++;
@@ -273,7 +251,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_8:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 5, true);
 						SubStep++;
@@ -287,7 +265,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_9:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 6, true);
 						SubStep++;
@@ -310,7 +288,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_11:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 7, true);
 						SubStep++;
@@ -324,7 +302,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_12:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 8, true);
 						SubStep++;
@@ -338,7 +316,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_13:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 9, true);
 						SubStep++;
@@ -367,7 +345,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_15:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 10, true);
 						SubStep++;
@@ -381,7 +359,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_16:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 11, true);
 						SubStep++;
@@ -395,7 +373,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_17:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 12, true);
 						SubStep++;
@@ -409,7 +387,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_18:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 13, true);
 						SubStep++;
@@ -423,7 +401,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_19:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 14, true);
 						SubStep++;
@@ -437,7 +415,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_20:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 15, true);
 						SubStep++;
@@ -451,7 +429,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_21:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 16, true);
 						SubStep++;
@@ -465,7 +443,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_22:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 17, true);
 						SubStep++;
@@ -479,7 +457,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_23:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 18, true);
 						SubStep++;
@@ -493,7 +471,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_24:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 19, true);
 						SubStep++;
@@ -507,7 +485,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_25:
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 20, true);
 						SubStep++;
@@ -533,7 +511,7 @@ public class Hadin implements Runnable {
 					break;
 				case TALK_ISLAND_DUNGEON_26://여기서 케레 스폰
 					if(NpcList != null && NpcList.size() > 0)
-						continue;
+						break;
 					if(SubStep <= 0){
 						NpcList = HadinSpawn.getInstance().fillSpawnTable(_map, 21, true);
 						SubStep++;
@@ -631,25 +609,35 @@ public class Hadin implements Runnable {
 				default:
 					break;
 				}
-			}catch(InterruptedException interrupted){
-				Thread.currentThread().interrupt();
-				break;
-			}catch(Exception e){
-				//System.out.println("Hadin Event Thread Error instanceID : "+_map +" -> "+e);
-			}finally{
-				if (!Thread.currentThread().isInterrupted()) {
-					try { Thread.sleep(1500); }
-					catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
-				}
-			}
-		}
-		//System.out.println("Hadin Thread Delete");
-		Hadin_Delete();
-	}
+                if (Running) Sleep(1500);
+            }
+        } catch (InterruptedException stopping) {
+            Thread.currentThread().interrupt();
+        } catch (RuntimeException failure) {
+            LOG.log(Level.WARNING, "Hadin stage failed for map " + _map, failure);
+        }
+    }
 
-	public void Start(){
-		CInstanceEvents.start(this);
-	}
+    private boolean allArrived() {
+        for (L1PcInstance pc : list2) {
+            if (!ownsPlayer(pc) || pc.getMap() != zone.map()) return false;
+        }
+        return true;
+    }
+
+    private void enterParticipants() {
+        for (L1PcInstance pc : participants) {
+            if (Thread.currentThread().isInterrupted()) return;
+            if (ownsPlayer(pc) && pc.getParty() == _pARTy && pc.getMap() == entranceMap) {
+                list2.add(pc);
+                pc.start_teleport(32726, 32724, _map, pc.getHeading(), 169, true, false);
+            }
+        }
+    }
+
+    private static boolean ownsPlayer(L1PcInstance pc) {
+        return pc != null && !pc.isLogoutStarted() && CWorld.getInstance().findObject(pc.getId()) == pc;
+    }
 
 	private void Sleep(int time) throws InterruptedException {
 		Thread.sleep(time);
@@ -660,8 +648,6 @@ public class Hadin implements Runnable {
 			if(npc != null){
 				if(npc.getName().equalsIgnoreCase("하딘")){
 					Npc_Hadin = npc;
-				} else if(npc.getName().equalsIgnoreCase("하딘 바닥 이펙트")){
-					Hadin_Effect = npc;
 				}
 			}
 		}
@@ -671,34 +657,37 @@ public class Hadin implements Runnable {
 		return _pARTy;
 	}
 
-	public void setParty(CParty p){
-		_pARTy = p;
-	}
-
-	private void Hadin_Delete(){
-		if (HT != null) {
-			HT.stop();
-			HT = null;
-		}
-		Collection<L1Object> cklist = CWorld.getInstance().getVisibleObjects(_map).values();
-		for(L1Object ob : cklist){
-			if(ob == null)
-				continue;
-			if(ob instanceof L1ItemInstance){
-				L1ItemInstance obj = (L1ItemInstance)ob;
-				CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
-				groundInventory.DeleteItemAmount(obj);
-			}else if(ob instanceof L1NpcInstance){
-				L1NpcInstance npc = (L1NpcInstance)ob;
-				npc.deleteMe();
-			}
-		}
-		HadinSystem.getInstance().removeHadin(_map);
-	}
+    void cleanup() {
+        if (!began) return;
+        Thread.interrupted();
+        Running = false;
+        if (HT != null) {
+            HT.stop();
+            HT = null;
+        }
+        if (!returnRequested) RETURN_TEL();
+        for (L1Object object : CWorld.getInstance().snapshotZoneOccupants(zone.map())) {
+            if (object == null || object.getMap() != zone.map()) continue;
+            try {
+                if (object instanceof L1ItemInstance item) {
+                    CInventory ground = CWorld.getInstance().findGroundInventory(item.getX(), item.getY(), _map);
+                    if (ground != null && ground.getMap() == zone.map()) ground.DeleteItemAmount(item);
+                } else if (object instanceof L1NpcInstance npc && !CInstantZoneManager.isPlayerCompanion(npc)) {
+                    npc.deleteMe();
+                }
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Hadin object cleanup failed for map " + _map, failure);
+            }
+        }
+        list2.clear();
+        BasicNpcList = null;
+        NpcList = null;
+        BossRoomDoor = null;
+    }
 
 	public void OpenDoor(int i){
 		L1DoorInstance door = DoorSpawnTable.getInstance().getDoor(i);
-		if (door != null){
+		if (door != null && door.getMap() == zone.map()){
 			if(door.getOpenStatus() == ActionCodes.ACTION_Close){
 				door.open();
 			}
@@ -730,10 +719,15 @@ public class Hadin implements Runnable {
                 getParty().getMembers(), SC_PacketBox.nativeGreenWriter("$"+count));
     }
 
-	private void RETURN_TEL(){
-		for(L1PcInstance pc : getParty().getMembers()){
-//			L1Teleport.teleport(pc, 32572, 32944, (short) 0, 3, true);
-			pc.start_teleport(32572, 32944, 0, 3, 169, true, false);
-		}
-	}
+    private void RETURN_TEL() {
+        returnRequested = true;
+        for (L1PcInstance pc : list2) {
+            if (!ownsPlayer(pc) || pc.getMap() != zone.map()) continue;
+            try {
+                pc.start_teleport(32572, 32944, 0, 3, 169, true, false);
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Hadin player return failed for map " + _map, failure);
+            }
+        }
+    }
 }

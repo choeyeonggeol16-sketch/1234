@@ -1,239 +1,79 @@
 package l1j.server.server.model.world.instance.dungeon.bossraid;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.model.world.instance.CInstanceEvents;
-import l1j.server.server.model.inventory.CInventory;
-import l1j.server.server.model.L1Object;
+import l1j.server.Config;
+import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.CWorld;
-import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.item.teleport.L1Teleport;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
+import l1j.server.server.model.world.cleanup.MapCleaner;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
+import l1j.server.server.model.world.instance.CInstanceEvents;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.dungeon.ice.CIceCaveSpawn;
 import l1j.server.server.utils.L1SpawnUtil;
-import l1j.server.Config;
 
-public class BossRaid implements Runnable {
+public final class BossRaid {
+    private static final Logger LOG = Logger.getLogger(BossRaid.class.getName());
+    private static final int LIMIT_SECONDS = 1800;
 
-	private static Logger _log = Logger.getLogger(BossRaid.class.getName());
-	
-	private int _map;
-	
-	private static Random _random = new Random(System.nanoTime());
+    private final CInstantZone<BossRaid> zone;
+    private final int mapId;
+    private final int[] monsters = {
+        Config.boss1, Config.boss2, Config.boss3, Config.boss4, Config.boss5,
+        Config.boss6, Config.boss7, Config.boss8, Config.boss9, Config.boss10,
+        Config.boss10, Config.boss10, Config.boss10, Config.boss9, Config.boss9,
+        Config.boss8, Config.boss8, Config.boss7, Config.boss7, Config.boss6
+    };
 
-	private boolean Running = false;
-	
-	public boolean Start = false;
-	private boolean FirstRoom = false;
-	private boolean End = false;
-	
-	private int Time = 1800;
+    BossRaid(CInstantZone<BossRaid> zone) {
+        this.zone = zone;
+        mapId = zone.mapId();
+        zone.setExit(33436, 32807, 4);
+    }
 
-	public BossRaid(int id){
-		_map = id;
-	}
-	 
-	int[] _MonsterList= { 
-			Config.boss1
-			, Config.boss2
-			, Config.boss3
-			, Config.boss4
-			, Config.boss5
-			, Config.boss6
-			, Config.boss7
-			, Config.boss8
-			, Config.boss9
-			, Config.boss10
-			, Config.boss10
-			, Config.boss10
-			, Config.boss10
-			, Config.boss9
-			, Config.boss9
-			, Config.boss8
-			, Config.boss8
-			, Config.boss7
-			, Config.boss7
-			, Config.boss6
-	};
+    void play() {
+        if (CInstanceEvents.isStopping() || !CIceCaveSpawn.pause(3000L)) return;
+        final int bossId = monsters[ThreadLocalRandom.current().nextInt(monsters.length - 1)];
+        if (CObjectDB.GetNPC(bossId) == null)
+            throw new IllegalStateException("Missing boss raid NPC template " + bossId);
+        L1SpawnUtil.spawn2(32801, 32797, (short) mapId, bossId, 0, 0, 0);
 
-	@Override
-	public void run() {
-		Calendar cal = Calendar.getInstance();
-		int 시간 = Calendar.HOUR;
-		int 분 = Calendar.MINUTE;
-		/** 0 오전 , 1 오후 * */
-		String 오전오후 = "오후";
-		if (cal.get(Calendar.AM_PM) == 0) {
-			오전오후 = "오전";
-		}
-		Running = true;
-		FirstRoom = true;
-		Time = 1800;
-		while (Running && !CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
-			try {
-				Check();
-				if (End) {
-					reset();
-					break;
-				} else if (FirstRoom) {
-					First();
-				}
-			}catch(Exception e){
-			} finally {
-				if (!CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
-					try { Thread.sleep(1000L); }
-					catch (InterruptedException stopping) { Thread.currentThread().interrupt(); }
-				}
-			}
-		}
-		BossRaid_Delete();
-	  System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■■■■■■ 보스 레이드 종료 " +  _map+" ■■■■■■");
-	}
+        final CWorld world = CWorld.getInstance();
+        for (int time = LIMIT_SECONDS - 1; time > 0 && !CInstanceEvents.isStopping();) {
+            if (!CIceCaveSpawn.pause(1000L)) return;
+            --time;
+            if (time % 60 == 0) {
+                CSharedBroadcast.sendWrittenObjectPlayersBestEffort(world.getVisiblePlayers(zone.map()),
+                        SC_PacketBox.nativeGreenWriter(time / 60 + "분 후에 마을로 강제 이동 됩니다."));
+            }
+            if (time <= LIMIT_SECONDS - 10 && world.getVisiblePlayers(zone.map()).isEmpty())
+                return;
+        }
+    }
 
-	public void Start(){
-		Calendar cal = Calendar.getInstance();
-		int 시간 = Calendar.HOUR;
-		int 분 = Calendar.MINUTE;
-		/** 0 오전 , 1 오후 * */
-		String 오전오후 = "오후";
-		if (cal.get(Calendar.AM_PM) == 0) {
-			오전오후 = "오전";
-		}
-		CInstanceEvents.schedule(this, 2000L);
-	  System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■■■■■■ 보스 레이드 시작 " +  _map+" ■■■■■■");
-	}
-
-	private void Check() {
-		if (Time > 0) {
-			Time--;
-		}
-		if (Time <= 0) {
-			End();
-		} else if (Time <= 1790) {
-			CheckPc();
-		} 
-		if (Time % 60 == 0) {
-			int min = Time / 60;
-			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    CWorld.getInstance().getVisibleObjects(_map).values(),
-                    SC_PacketBox.nativeGreenWriter(min+"분 후에 마을로 강제 이동 됩니다."));
-		}
-	}
-	
-	private void First() {
-		if (_list1.size() > 0) {
-			for (int i = _list1.size()-1; i >= 0; i--) {
-				L1NpcInstance npc = _list1.get(i);
-				if (npc.getCurrentHp() <= 0) {
-					remove(npc, 1);
-				}
-			}
-		} else {
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				return;
-			}
-			L1SpawnUtil.spawn2(32801, 32797, (short) _map, _MonsterList[_random.nextInt(_MonsterList.length - 1)], 0, 0, 0);//1라운드 보스.
-			FirstRoom = false;
-			setBossGo(false);
-		}
-	}
-
-	private void BossRaid_Delete(){
-		Collection<L1Object> cklist = CWorld.getInstance().getVisibleObjects(_map).values();
-		for(L1Object ob : cklist){
-			if(ob == null)
-				continue;
-			if(ob instanceof L1ItemInstance){
-				L1ItemInstance obj = (L1ItemInstance)ob;
-				CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
-				groundInventory.DeleteItemAmount(obj);
-			}else if(ob instanceof L1NpcInstance){
-				L1NpcInstance npc = (L1NpcInstance)ob;
-				npc.deleteMe();
-			}
-		}
-		BossRaidSystem.getInstance().removeBossRaid(_map);
-	}
-	
-	private void reset() {
-		Running = false;
-		ListClear(1);
-		ListClear(2);
-		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
-			if (obj instanceof L1MonsterInstance) {
-				L1MonsterInstance mon = (L1MonsterInstance) obj;
-				mon.deleteMe();
-			}
-		}
-	}
-	
-	private void CheckPc() {
-		int check = 0;
-		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
-			if (obj instanceof L1PcInstance) {
-				check = 1;
-			}
-		}
-		if(check == 0){End();}
-	}
-
-	private void End() {
-		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
-			if (obj instanceof L1PcInstance) {
-				L1PcInstance pc = (L1PcInstance) obj;
-
-				pc.start_teleport(33436, 32807, 4, 5, 169, false, false);
-			}
-		}
-
-		End = true;
-	}
-	
-	private final ArrayList<L1NpcInstance> _list0 = new ArrayList<L1NpcInstance>();
-	private final ArrayList<L1NpcInstance> _list1 = new ArrayList<L1NpcInstance>();
-	
-	public void add(L1NpcInstance npc, int type) {
-		switch (type) {
-		case 0: if (npc == null || _list0.contains(npc)) { return; }
-		_list0.add(npc); break;
-		case 1: if (npc == null || _list1.contains(npc)) { return; }
-		_list1.add(npc); break;
-		}
-	}
-	
-	private void remove(L1NpcInstance npc, int type) {
-		switch (type) {
-		case 0: if (npc == null || !_list0.contains(npc)) { return; }
-		_list0.remove(npc); break;
-		case 1: if (npc == null || !_list1.contains(npc)) { return; }
-		_list1.remove(npc); break;
-		}
-	}
-
-	private void ListClear(int type) {
-		switch (type) {
-		case 0: _list0.clear(); break;
-		case 1: _list1.clear(); break;
-		}
-	}
-	
-	private static boolean _bossgo = false;
-	
-	public static boolean getBossGo() {
-		return _bossgo;
-	}
-	
-	public static void setBossGo(boolean s) {
-		_bossgo = s;
-	}
+    void finish() {
+        final CWorld world = CWorld.getInstance();
+        final L1Map map = zone.map();
+        for (L1Object object : world.snapshotZoneOccupants(map)) {
+            if (object.getMap() != map) continue;
+            try {
+                if (object instanceof L1PcInstance pc) {
+                    pc.start_teleport(33436, 32807, 4, 5, 169, false, false);
+                } else if (object instanceof L1NpcInstance npc && !CInstantZoneManager.isPlayerCompanion(npc)) {
+                    npc.deleteMe();
+                }
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Boss raid cleanup failed for map " + mapId, failure);
+            }
+        }
+        MapCleaner.removeGroundItems(map);
+    }
 }

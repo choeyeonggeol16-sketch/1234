@@ -11,28 +11,25 @@ import l1j.server.server.model.world.instance.raid.spawn.RaidNpcSpawn;
 import l1j.server.server.utils.SQLUtil;
 
 public class RaidSpawnLoader {
-	private static RaidSpawnLoader _instance;
-	public static RaidSpawnLoader getInstance(){
-		if(_instance == null)
-			_instance = new RaidSpawnLoader();
-		return _instance;
-	}
-	
-	public static void release(){
-		if(_instance != null){
-			_instance.clear();
-			_instance = null;
-		}
-	}
-	
-	public static void reload(){
-		RaidSpawnLoader tmp = null;
-		tmp	= _instance;
-		_instance = new RaidSpawnLoader();
-		tmp.clear();
-		tmp = null;
-	}
-	
+    private static volatile RaidSpawnLoader _instance;
+
+    public static RaidSpawnLoader getInstance() {
+        RaidSpawnLoader current = _instance;
+        if (current != null) return current;
+        synchronized (RaidSpawnLoader.class) {
+            if (_instance == null) _instance = new RaidSpawnLoader();
+            return _instance;
+        }
+    }
+
+    public static synchronized void release() {
+        _instance = null;
+    }
+
+    public static synchronized void reload() {
+        _instance = new RaidSpawnLoader();
+    }
+
 	private HashMap<Integer, ArrayList<RaidNpcSpawn>> _spawns;
 	private RaidSpawnLoader(){
 		load();
@@ -77,10 +74,5 @@ public class RaidSpawnLoader {
 		return _spawns.get(i);
 	}
 	
-	public void clear(){
-		if(_spawns != null){
-			_spawns.clear();
-			_spawns = null;
-		}
-	}
+
 }

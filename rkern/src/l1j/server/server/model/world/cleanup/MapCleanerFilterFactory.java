@@ -2,6 +2,7 @@ package l1j.server.server.model.world.cleanup;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 import l1j.server.server.shared.L1Type;
 
 public class MapCleanerFilterFactory {
@@ -11,7 +12,7 @@ public class MapCleanerFilterFactory {
 		return new MapCleanerFilter(){
 			@Override
 			public boolean isFilter(L1Object obj){
-				if(obj == null || obj.instanceOf(flg))
+				if(obj == null || obj.instanceOf(flg) || CInstantZoneManager.isPlayerCompanion(obj))
 					return true;
 				
 				if(obj.instanceOf(L1Type.L1TYPE_PC)){
@@ -31,7 +32,7 @@ public class MapCleanerFilterFactory {
 		return new MapCleanerFilter(){
 			@Override
 			public boolean isFilter(L1Object obj){
-				if(obj == null || obj.instanceOf(flg))
+				if(obj == null || obj.instanceOf(flg) || CInstantZoneManager.isPlayerCompanion(obj))
 					return true;
 				
 				return false;

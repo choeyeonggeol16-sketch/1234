@@ -21,6 +21,11 @@ public final class MapCleaner implements Runnable {
             CInstanceWork.scheduleRequired(cleaner, 1L);
     }
 
+    /** The zone owner retains its map ID through completion of this cleanup. */
+    public static void cleanupNow(L1Map map, MapCleanerFilter filter) {
+        new MapCleaner(map, filter).run();
+    }
+
     public static void removeGroundItems(L1Map map) {
         if (map == null || map.isNull()) return;
         final CWorld world = CWorld.getInstance();

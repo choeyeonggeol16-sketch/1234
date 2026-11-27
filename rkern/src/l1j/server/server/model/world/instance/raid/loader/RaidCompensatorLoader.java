@@ -14,27 +14,25 @@ import l1j.server.server.model.world.instance.raid.compensator.ItemCompensator;
 import l1j.server.server.utils.SQLUtil;
 
 public class RaidCompensatorLoader {
-	private static RaidCompensatorLoader _instance;
-	public static RaidCompensatorLoader getInstance(){
-		if(_instance == null)
-			_instance = new RaidCompensatorLoader();
-		return _instance;
-	}
-	
-	public static void release(){
-		if(_instance != null){
-			_instance.clear();
-			_instance = null;
-		}
-	}
-	
-	public static void reload(){
-		RaidCompensatorLoader tmp = _instance;
-		_instance = new RaidCompensatorLoader();
-		tmp.clear();
-		tmp = null;
-	}
-	
+    private static volatile RaidCompensatorLoader _instance;
+
+    public static RaidCompensatorLoader getInstance() {
+        RaidCompensatorLoader current = _instance;
+        if (current != null) return current;
+        synchronized (RaidCompensatorLoader.class) {
+            if (_instance == null) _instance = new RaidCompensatorLoader();
+            return _instance;
+        }
+    }
+
+    public static synchronized void release() {
+        _instance = null;
+    }
+
+    public static synchronized void reload() {
+        _instance = new RaidCompensatorLoader();
+    }
+
 	private HashMap<Integer, ArrayList<CompensatorElement>> _compensators;
 	private RaidCompensatorLoader(){
 		Connection con						= null;
@@ -98,10 +96,5 @@ public class RaidCompensatorLoader {
 		return _compensators.get(i);
 	}
 	
-	public void clear(){
-		if(_compensators != null){
-			_compensators.clear();
-			_compensators = null;
-		}
-	}
+
 }

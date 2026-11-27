@@ -1,82 +1,58 @@
 package l1j.server.server.model.world.instance.dungeon.hadin;
 
-
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import l1j.server.server.model.CParty;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 
-public class HadinSystem {
-	
-	private static HadinSystem _instance;
-	private final ArrayList<Integer> _map = new ArrayList<Integer>();
-	private final Map<Integer, Hadin> _list = new ConcurrentHashMap<Integer, Hadin>();
+public final class HadinSystem {
+    private static final Logger LOG = Logger.getLogger(HadinSystem.class.getName());
+    private static final HadinSystem INSTANCE = new HadinSystem();
+    private static final int BASE_MAP = 9000;
 
-	public static HadinSystem getInstance() {
-		if (_instance == null) {
-			_instance = new HadinSystem();
-		}
-		return _instance;
-	}
+    private final CInstantZoneManager<Hadin> zones = new CInstantZoneManager<>(99);
+    private final ConcurrentHashMap<CParty, CInstantZone<Hadin>> activeParties = new ConcurrentHashMap<>();
 
-	public HadinSystem(){
-		_map.add(9000);
-	}
+    private HadinSystem() {}
 
-	/**
-		HadinSystem.java는 맵 관리만 해준다고 보면됨
-		맵 생성 및 연구소로 텔 시키고
-		하딘.java에 파티를 넘겨주고
-		스레드 가동해서 파티 이용 이벤트 처리 
-	**/
-	public void startHadin(L1PcInstance pc){
-		if(countHadin() >= 99){
-			SC_ChatPacket.sendDirect(pc, pc, "인스턴스 던전에 진입한 인원이 너무 많습니다");
-			return;
-		}
-		int id = blankMapId();
-		if (id != 9000)
-			L1WorldMap.getInstance().cloneMap(9000, id);
-		Hadin ar = new Hadin(id);
-		for (L1PcInstance Ppc : pc.getParty().getMembers()) {
-			if (Ppc != null)
-//				L1Teleport.teleport(Ppc, 32726, 32724, (short) id, Ppc.getHeading(), true);
-			Ppc.start_teleport(32726, 32724, id, Ppc.getHeading(), 169, true, false);
-		}
-		ar.BasicNpcList = HadinSpawn.getInstance().fillSpawnTable(id, 0, true);
-		ar.setParty(pc.getParty());
-		_list.put(id, ar);
-		ar.Start();
-	}
+    public static HadinSystem getInstance() { return INSTANCE; }
 
-	/**
-	 * 빈 맵 아이디를 가져온다
-	 * @return
-	 */
-	public int blankMapId(){
-		if(_list.size() == 0)
-			return 9000;
-		for(int i = 9000 ; i <= 9099; i++){
-			Hadin h = _list.get(i);
-			if(h == null)
-				return i;
-		}  
-		return 9099;
-	}
+    public void startHadin(L1PcInstance pc) {
+        final CParty party = pc == null ? null : pc.getParty();
+        if (party == null || !party.isLeader(pc) || activeParties.containsKey(party)) return;
+        final CInstantZone<Hadin> zone = zones.tryOpen(BASE_MAP, BASE_MAP, BASE_MAP + 1, 9099);
+        if (zone == null) {
+            SC_ChatPacket.sendDirect(pc, pc, "인스턴스 던전에 진입한 인원이 너무 많습니다");
+            return;
+        }
+        if (activeParties.putIfAbsent(party, zone) != null) {
+            zone.close(() -> {});
+            return;
+        }
+        final Hadin encounter = new Hadin(zone, party, pc.getMap());
+        final Runnable cleanup = () -> {
+            try {
+                encounter.cleanup();
+            } finally {
+                activeParties.remove(party, zone);
+            }
+        };
+        try {
+            zone.bind(encounter);
+            zone.setExit(32572, 32944, 0);
+            zone.start(encounter, cleanup);
+        } catch (RuntimeException failure) {
+            zone.close(cleanup);
+            LOG.log(Level.WARNING, "Hadin startup failed for map " + zone.mapId(), failure);
+        }
+    }
 
-	public Hadin getHadin(int id){
-		return _list.get(id);
-	}
+    public Hadin getHadin(int id) { return zones.get(id); }
 
-	public void removeHadin(int id){
-		_list.remove(id);
-	}
-
-	public int countHadin(){
-		return _list.size();
-	}
-
+    public int countHadin() { return zones.size(); }
 }

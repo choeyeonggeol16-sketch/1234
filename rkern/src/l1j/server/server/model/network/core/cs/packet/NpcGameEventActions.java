@@ -37,11 +37,9 @@ import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.utils.L1SpawnUtil;
 import l1j.server.server.utils.TYUtil;
 
-import l1j.server.server.model.world.instance.dungeon.bossraid.BossRaid;
 
 import l1j.server.server.model.world.instance.dungeon.bossraid.BossRaidSystem;
 
-import l1j.server.server.model.world.instance.dungeon.bossraid2.Queen1;
 
 import l1j.server.server.model.world.instance.dungeon.bossraid2.QueenSystem2;
 
@@ -359,8 +357,7 @@ final class NpcGameEventActions {
         }
         if (s.equalsIgnoreCase("6")) {
             L1ItemInstance key = pc.getInventory().GetFirstItemByClassID(80500);
-            if (key == null || !training.isActive(key)) return "bosskey2";
-            pc.start_teleport(32901, 32814, key.getKeyId(), pc.getHeading(), 169, true, false);
+            if (key == null || !training.enter(pc, key)) return "bosskey2";
         }
         return htmlid;
     }
@@ -585,13 +582,8 @@ final class NpcGameEventActions {
         SC_SystemMessage.send(member, message);
     }
 
-    /** Existing single-request raid admission. Global reservation is owned by the raid system. */
     static boolean enterClanRaid(L1PcInstance pc, String s) {
         if (!s.equalsIgnoreCase("1")) return true;
-        if (Queen1.getqeensgo()) {
-            SC_SystemMessage.send(pc, "현재 혈맹 레이드가 진행중입니다. 잠시 후에 도전해주시기 바랍니다.");
-            return false;
-        }
         if (pc.getClanid() == 0) {
             SC_SystemMessage.send(pc, "혈맹 가입자만 진행 가능합니다.");
             return false;
@@ -604,21 +596,11 @@ final class NpcGameEventActions {
             SC_SystemMessage.send(pc, "파티장만 신청 가능합니다.");
             return true;
         }
-        if (!pc.getInventory().HaveItemByClassId(7005254, 1)
-                || !pc.getInventory().DeleteItemInInventory(7005254, 1)) {
-            SC_SystemMessage.send(pc, "보스 레이드 입장권(1)이 부족합니다.");
-            return true;
-        }
-        Queen1.setqeensgo(true);
         QueenSystem2.getInstance().startQueen(pc);
         return true;
     }
 
     static boolean enterBossRaid(L1PcInstance pc) {
-        if (BossRaid.getBossGo()) {
-            SC_SystemMessage.send(pc, "현재 보스 레이드가 진행중입니다. 잠시 후에 도전해주시기 바랍니다.");
-            return false;
-        }
         if (!pc.isInParty()) {
             SC_SystemMessage.send(pc, "파티중이 아닙니다. 2인 파티이상 출입 가능합니다.");
             return true;
@@ -627,12 +609,6 @@ final class NpcGameEventActions {
             SC_SystemMessage.send(pc, "파티장만 신청 가능합니다.");
             return true;
         }
-        if (!pc.getInventory().HaveItemAmount(7005254)
-                || !pc.getInventory().DeleteItemInInventory(7005254, 1)) {
-            SC_SystemMessage.send(pc, "보스 레이드 입장권(1)이 부족합니다.");
-            return true;
-        }
-        BossRaid.setBossGo(true);
         BossRaidSystem.getInstance().startBossRaid(pc);
         return true;
     }

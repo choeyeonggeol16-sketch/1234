@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.CWorldWork;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 
 public class RealTimeClock {
     public static final int DAY_TO_HOURS = 24;
@@ -107,6 +108,7 @@ public class RealTimeClock {
             }
         }
         if (isFieldChanged(Calendar.SECOND, prev, cur)) {
+            CInstantZoneManager.reapWorld();
             final List<TimeListener> list = _listeners.get(Calendar.SECOND);
             for (TimeListener listener : list) {
                 try {

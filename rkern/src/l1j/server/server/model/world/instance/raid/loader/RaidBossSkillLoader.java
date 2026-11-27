@@ -15,27 +15,25 @@ import l1j.server.server.utils.SQLUtil;
 
 /** 보스 스킬을 로드하고 관리할 클래스 **/
 public class RaidBossSkillLoader {
-	private static RaidBossSkillLoader _instance;
-	public static RaidBossSkillLoader getInstance(){
-		if(_instance == null)
-			_instance = new RaidBossSkillLoader();
-		return _instance;
-	}
-	
-	public static void release(){
-		if(_instance != null){
-			_instance.clear();
-			_instance = null;
-		}
-	}
-	
-	public static void reload(){
-		RaidBossSkillLoader tmp = _instance;
-		_instance = new RaidBossSkillLoader();
-		tmp.clear();
-		tmp = null;
-	}
-	
+    private static volatile RaidBossSkillLoader _instance;
+
+    public static RaidBossSkillLoader getInstance() {
+        RaidBossSkillLoader current = _instance;
+        if (current != null) return current;
+        synchronized (RaidBossSkillLoader.class) {
+            if (_instance == null) _instance = new RaidBossSkillLoader();
+            return _instance;
+        }
+    }
+
+    public static synchronized void release() {
+        _instance = null;
+    }
+
+    public static synchronized void reload() {
+        _instance = new RaidBossSkillLoader();
+    }
+
 	private HashMap<Integer, ArrayList<RaidBossSkill>> _skills;
 	private HashMap<Integer, ArrayList<RaidBossCombo>> _combos;
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -206,15 +204,5 @@ public class RaidBossSkillLoader {
 		return _combos.get(i);
 	}
 	
-	public void clear(){
-		if(_skills != null){
-			_skills.clear();
-			_skills = null;
-		}
-		
-		if(_combos != null){
-			_combos.clear();
-			_combos = null;
-		}
-	}
+
 }

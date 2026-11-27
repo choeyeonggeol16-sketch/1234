@@ -1,214 +1,107 @@
 package l1j.server.server.model.world.instance.raid;
 
-import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.Instance.L1SummonInstance;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.CWorld;
-import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.map.L1WorldMap;
-import l1j.server.server.model.world.cleanup.MapCleaner;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
 
-/** 레이드 공간을 할당하고 시작하는 헬퍼. **/
-public class RaidSpace {
-	private static Logger 	_log 	= Logger.getLogger(RaidSpace.class.getName());
-	private static Object	_lock 	= new Object();
-	
-	private static RaidSpace _instance;
-	public static RaidSpace getInstance(){
-		if(_instance == null)
-			_instance = new RaidSpace();
-		return _instance;
-	}
-	
-	public static void release(){
-		if(_instance != null){
-			_instance.clear();
-			_instance = null;
-		}
-	}
-	
-	public static void reload(){
-		RaidSpace tmp = _instance;
-		_instance = new RaidSpace();
-		tmp.clear();
-		tmp = null;
-	}
-	
-	/** 효율적으로 mapid를 관리하기 위한 Q **/
-	private ArrayDeque<Integer> 			_mapQ;
-	private HashMap<Integer, RaidObject> 	_objMap;
-	private RaidSpace(){
-		_mapQ = new ArrayDeque<Integer>(RaidLoadManager.MRS_COPYMAP_SIZE);
-		int size = RaidLoadManager.MRS_COPYMAP_START_ID + RaidLoadManager.MRS_COPYMAP_SIZE;
-		for(int i=RaidLoadManager.MRS_COPYMAP_START_ID; i<size; i++)
-			_mapQ.push(i);
-		
-		_objMap = new HashMap<Integer, RaidObject>(RaidLoadManager.MRS_COPYMAP_SIZE);
-	}
-	
-	/** 새 맵을 세팅한다. **/
-	private L1Map popMap(RaidObject obj){
-		L1Map map = null;
-		synchronized(_lock){
-			if(_mapQ.isEmpty()){
-				obj.notifySizeOver();
-				return null;
-			}
-			
-			if(obj.getBaseMapId() == -1)
-				return null;
-			
-			map = L1WorldMap.getInstance().cloneMapAndGet(obj.getBaseMapId(), _mapQ.pop());
-			obj.setCopyMap(map);
-			_objMap.put(obj.getCopyMapId(), obj);
-		}
-		return map;
-	}
-	
-	/** 맵을 반환한다. **/
-	private void pushMap(RaidObject obj){
-		L1Map map = null;
-		synchronized(_lock){
-			map = obj.getCopyMap();
-			if(map == null)
-				return;
-			
-			_objMap.put(map.getId(), null);
-			_mapQ.push(map.getId());
-			L1WorldMap.getInstance().removeMap(map.getId());
-		}
-	}
-	
-	/** 인스턴스를 시작한다. **/
-	public void startInstance(RaidObject obj){
-		if(_mapQ.isEmpty()){
-			obj.notifySizeOver();
-			return;
-		}
-		
-		popMap(obj);
-		try{
-			obj.init();
-		}catch(Exception e){
-			_log.log(Level.SEVERE,obj.toString() + " - " + e.getLocalizedMessage(), e);
-			obj.dispose();
-			e.printStackTrace();
-		}
-	}
-	
-	/** 인스턴스를 반환한다. **/
-	public void releaseInstance(RaidObject obj){
-		if (obj == null) return;
-		final L1Map copyMap = obj.getCopyMap();
-		if (copyMap == null) return;
-		
-		try{
-			int copyMapId = copyMap.getId();
-			Iterator<L1Object> it = CWorld.getInstance().getVisibleObjects(copyMapId).values().iterator();
-			while(it.hasNext()){
-				L1Object l1obj = it.next();
-				if((l1obj instanceof L1DollInstance) || (l1obj instanceof L1SummonInstance))
-					continue;
-				
-				if((l1obj instanceof L1NpcInstance))
-					((L1NpcInstance) l1obj).deleteMe();
-			}
+/** Dragon raid scripts run inside private instant zones. */
+public final class RaidSpace {
+    private static final Logger LOG = Logger.getLogger(RaidSpace.class.getName());
+    private static final RaidSpace INSTANCE = new RaidSpace();
+    private final CInstantZoneManager<RaidObject> rooms = new CInstantZoneManager<>(Integer.MAX_VALUE);
 
-			MapCleaner.removeGroundItems(copyMap);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
-		pushMap(obj);
-		obj.dispose();
-		obj = null;
-	}
-	
-	public boolean isInInstance(L1PcInstance pc){
-		return isInInstance(pc.getMapId());
-	}
-	
-	public boolean isInInstance(int mid){
-		int size 	= RaidLoadManager.MRS_COPYMAP_START_ID + RaidLoadManager.MRS_COPYMAP_SIZE;
-		return (mid >= RaidLoadManager.MRS_COPYMAP_START_ID && mid < size);		
-	}
-	
-	public void getBackPc(L1PcInstance pc){
-		RaidObject obj = null;
-		int mid = 0;
-		int x	= 0;
-		int y	= 0; 
-		if(isInInstance(pc)){
-			obj = _objMap.get(pc.getMapId());
-			if(obj == null){
-				mid = RaidLoadManager.MRS_ERRBACK_MAPID;
-				x	= RaidLoadManager.MRS_ERRBACK_X;
-				y	= RaidLoadManager.MRS_ERRBACK_Y;
-			}else{
-				RaidType type = obj.getRaidType();
-				mid	= type.getOutMapId();
-				x	= type.getOutX();
-				y	= type.getOutY();
-			}
-			
-			pc.setX(x);
-			pc.setY(y);
-			pc.setMap((short)mid);
-		}
-	}
-	
-	public int getIdenMap(int mid){
-		if(isInInstance(mid)){
-			RaidObject obj = _objMap.get(mid);
-			if(obj == null)
-				return mid;
-			
-			return obj.getBaseMapId();
-		}
-		return mid;
-	}
-	
-	public void clear(){
-		if(_objMap != null){
-			Iterator<RaidObject> 	it 	= _objMap.values().iterator();
-			RaidObject 			obj = null;
-			while(it.hasNext()){
-				obj = it.next();
-				releaseInstance(obj);
-			}
-			_objMap.clear();
-			_objMap	= null;
-		}
-		
-		if(_mapQ != null){
-			_mapQ.clear();
-			_mapQ = null;
-		}
-	}
-	
-	public RaidObject getOpenObject(int mapid){
-		return _objMap.get(mapid);
-	}
-	
-	public int getOpenSize(){
-		return _objMap.size();
-	}
-	
-	public Collection<RaidObject> getOpens(){
-		return _objMap.values();
-	}
-	
-	public Collection<Integer> getOpensMaps(){
-		return _objMap.keySet();
-	}
+    private long revision;
+
+    private RaidSpace() {}
+
+    public static RaidSpace getInstance() { return INSTANCE; }
+    public static void release() { INSTANCE.clear(); }
+    public static void reload() { INSTANCE.clear(); }
+
+    public void startInstance(RaidObject raid) {
+        startInstance(raid, () -> true);
+    }
+
+    public boolean startInstance(RaidObject raid, BooleanSupplier accept) {
+        final long openingRevision;
+        synchronized (this) { openingRevision = revision; }
+        final int first = RaidLoadManager.MRS_COPYMAP_START_ID;
+        final int count = RaidLoadManager.MRS_COPYMAP_SIZE;
+        final CInstantZone<RaidObject> zone = count <= 0 ? null
+                : rooms.tryOpen(raid.getBaseMapId(), -1, first, Math.addExact(first, count - 1));
+        if (zone == null) {
+            raid.notifySizeOver();
+            return false;
+        }
+        final boolean replaced;
+        synchronized (this) {
+            raid.attach(zone);
+            zone.bind(raid);
+            replaced = openingRevision != revision;
+        }
+        if (replaced) {
+            raid.failRaid();
+            return false;
+        }
+        try {
+            if (raid.open(accept)) return true;
+        } catch (RuntimeException failure) {
+            LOG.log(Level.SEVERE, "Opening dragon raid on map " + zone.mapId(), failure);
+        }
+        return false;
+    }
+
+    public void releaseInstance(RaidObject raid) {
+        if (raid != null) raid.failRaid();
+    }
+
+    public boolean isInInstance(L1PcInstance pc) { return isInInstance(pc.getMapId()); }
+
+    public boolean isInInstance(int id) {
+        int first = RaidLoadManager.MRS_COPYMAP_START_ID;
+        return (id >= first && (long) id - first < RaidLoadManager.MRS_COPYMAP_SIZE)
+                || rooms.get(id) != null;
+    }
+
+    public void getBackPc(L1PcInstance pc) {
+        if (!isInInstance(pc)) return;
+        RaidObject raid = rooms.get(pc.getMapId());
+        RaidType type = raid == null ? null : raid.getRaidType();
+        pc.setX(type == null ? RaidLoadManager.MRS_ERRBACK_X : type.getOutX());
+        pc.setY(type == null ? RaidLoadManager.MRS_ERRBACK_Y : type.getOutY());
+        pc.setMap((short) (type == null ? RaidLoadManager.MRS_ERRBACK_MAPID : type.getOutMapId()));
+    }
+
+    public int getIdenMap(int id) {
+        RaidObject raid = rooms.get(id);
+        return raid == null ? id : raid.getBaseMapId();
+    }
+
+    public void clear() {
+        List<RaidObject> snapshot;
+        synchronized (this) {
+            revision++;
+            snapshot = rooms.values();
+        }
+        for (RaidObject raid : snapshot) raid.failRaid();
+    }
+
+    public RaidObject getOpenObject(int id) { return rooms.get(id); }
+    public int getOpenSize() { return rooms.values().size(); }
+    public Collection<RaidObject> getOpens() { return rooms.values(); }
+    public Collection<Integer> getOpensMaps() {
+        return rooms.values().stream().map(RaidObject::getCopyMapId).toList();
+    }
+
+    public static void startEffect(L1NpcInstance caster, Runnable effect) {
+        RaidObject raid = INSTANCE.rooms.get(caster.getMapId());
+        if (raid != null) raid.startEffect(caster, effect);
+    }
 }

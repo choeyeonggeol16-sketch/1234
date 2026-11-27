@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.world.instance.CInstanceWork;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -55,7 +57,8 @@ public final class GludioInstanceDungeon {
         public final ArrayList<Member> members = new ArrayList<>(6);
         public final ArrayList<L1NpcInstance> npcs = new ArrayList<>(256);
         public final int[] entryX = new int[6], entryY = new int[6];
-        public boolean admitting, started, ended, entryChecked, clonedMap;
+        public boolean admitting, started, ended, entryChecked;
+        private CInstantZone<Room> zone;
         public int mapId, wave, introStep, phase, kaspaWave;
         public long enteredAt, battleAt, nextEventAt, nextKaspaAt, exitAt;
         public L1NpcInstance crystal, boss, exitCircle;
@@ -84,7 +87,7 @@ public final class GludioInstanceDungeon {
 
     private final HashMap<Integer,Room> rooms=new HashMap<>();
     private final HashMap<Integer,Room> memberRooms=new HashMap<>();
-    private final HashMap<Integer,Room> activeMaps=new HashMap<>();
+    private final CInstantZoneManager<Room> zones = new CInstantZoneManager<>(MAX_ROOMS);
     private final HashMap<Integer,Invite> pendingInvites=new HashMap<>();
     private static final long INVITE_WINDOW_NANOS=60*SECOND;
     private static final class Invite {
@@ -255,7 +258,7 @@ public final class GludioInstanceDungeon {
      */
     public synchronized boolean start(L1PcInstance owner,int id) {
         Room r=rooms.get(id);
-        if(owner==null || r==null || r.started || r.admitting || r.ended) return false;
+        if(owner==null || r==null || r.started || r.admitting || r.ended || r.zone != null) return false;
         if(!available()) initialize();
         if(!available()
                 || r.ownerId!=owner.getId() || r.members.isEmpty() || r.members.size()>6
@@ -268,19 +271,18 @@ public final class GludioInstanceDungeon {
                 || m.pc.get_teleport()
                 || m.pc.getMapId()==r.mapId && r.mapId!=0
                 || !m.pc.getInventory().HaveItemByClassId(KEY_ITEM,r.keyCount())) return false;
-        final int mapId=reserveMapId(terrain);
-        if(mapId<0 || CObjectDB.GetNPC(50000220)==null
+        if(CObjectDB.GetNPC(50000220)==null
                 || CObjectDB.GetNPC(50000221)==null
                 || CObjectDB.GetNPC(r.boost?(r.kind==NORMAL?460000302:460000301)
                         :(r.kind==NORMAL?50000256:50000255))==null) return false;
         try {
-            // Original GludioInDungeon: use the native 730/731 terrain for the first
-            // room; clone into 14301..14400 only when that terrain is already occupied.
-            // Unlike the original, do not overwrite 730 with a clone of 731.
-            r.clonedMap = mapId != terrain;
-            if (r.clonedMap) maps.cloneMap(terrain,mapId);
-            r.mapId=mapId;
-            activeMaps.put(mapId,r); // reserve BEFORE asynchronous CacheD commit
+            final CInstantZone<Room> zone = zones.tryOpen(terrain, terrain, FIRST_MAP, LAST_MAP);
+            if (zone == null) return false;
+            r.zone = zone;
+            r.mapId = zone.mapId();
+            zone.setExit(33436, 32795, 4);
+            zone.onClose(() -> cleanupZone(r, zone));
+            zone.bind(r);
             // Original GamePoint selected an entry before spawning the crystal/walls.
             if (!assignEntryPositions(r)) {
                 // Missing terrain is configuration/data failure, not a runtime
@@ -301,47 +303,49 @@ public final class GludioInstanceDungeon {
                     : L1InventoryTransaction.beginParty(players)) {
                 for (L1PcInstance member : players) {
                     if (!tx.debit(member, KEY_ITEM, r.keyCount())) {
-                        clearNpcs(r);releaseMap(r);return false;
+                        releaseMap(r);return false;
                     }
                 }
                 r.admitting=true;
                 tx.onFailure(()->{
                     synchronized(INSTANCE) {
-                        if(!r.ended && r.admitting) {
-                            r.admitting=false;clearNpcs(r);releaseMap(r);
+                        if(!r.ended && r.admitting && r.zone == zone) {
+                            r.admitting=false;releaseMap(r);
                             GludioDungeonPackets.sendRoomResult(owner, GludioDungeonPackets.SC_ARENACO_BYPASS_INDUN_GAME_START_ACK, 2, r.id);
                             notice(r,"열쇠 처리에 실패해 던전 시작이 취소되었습니다.");
                         }
                     }
                 });
                 tx.commitAfterInventoryRelease(()->{
-                    synchronized(INSTANCE) { INSTANCE.admit(r); }
+                    zone.enter(() -> { synchronized(INSTANCE) { if (r.zone == zone) INSTANCE.admit(r); } });
                 });
             }
             return true;
         } catch(Exception e) {
             LOG.log(Level.WARNING,"[Gludio-Indun] Start failed room="+id,e);
-            if(!r.started) {r.admitting=false;clearNpcs(r);releaseMap(r);}
+            if(!r.started) {r.admitting=false;releaseMap(r);}
             return false;
         }
     }
-    private int reserveMapId(int terrain) {
-        // The original server runs the first room on the actual source map.
-        if(!activeMaps.containsKey(terrain)) return terrain;
-        for(int id=FIRST_MAP;id<=LAST_MAP;id++) if(!activeMaps.containsKey(id)
-                && L1WorldMap.getInstance().getMap((short)id).isNull()) return id;
-        return -1;
-    }
     private void releaseMap(Room r) {
-        final int id=r.mapId;
-        if(id==0) return;
-        activeMaps.remove(id,r);
-        if(r.clonedMap) L1WorldMap.getInstance().removeMap(id);
-        r.mapId=0;
-        r.clonedMap=false;
+        CInstantZone<Room> zone = r.zone;
+        if (zone == null) return;
+        zone.close(() -> cleanupZone(r, zone));
     }
+
+    private synchronized void cleanupZone(Room r, CInstantZone<Room> zone) {
+        if (r.zone != zone) return;
+        try {
+            clearNpcs(r);
+            if (r.started) MapCleaner.removeGroundItems(zone.map());
+        } finally {
+            r.zone = null;
+            r.mapId = 0;
+        }
+    }
+
     private void admit(Room r) {
-        if(!r.admitting || r.ended || r.started || activeMaps.get(r.mapId)!=r) return;
+        if(!r.admitting || r.ended || r.started || zones.get(r.mapId)!=r) return;
         r.admitting=false;r.started=true;
         r.enteredAt=System.nanoTime();r.battleAt=0;
         r.nextEventAt=r.enteredAt+7*SECOND;
@@ -437,9 +441,9 @@ public final class GludioInstanceDungeon {
         npc.setHeading(heading);
         npc.setLightSize(tpl.getLightSize());
         if(location!=null) npc.setSpawnLocation(location);
+        r.npcs.add(npc);
         CWorld.getInstance().storeAndEnterWorld(npc);
         npc.refreshLight();
-        r.npcs.add(npc);
         if(npc instanceof L1MonsterInstance) {
             npc.onNpcAI();
             if(target!=null && !target.isDead()) npc.attackTarget(target);
@@ -655,8 +659,10 @@ public final class GludioInstanceDungeon {
         }
     }
     private void scheduleCleanup(Room r,long delay) {
-        if(CInstanceWork.schedule(()->cleanup(r),delay)==null)
-            LOG.warning("[Gludio-Indun] Cleanup admission refused; retain map="+r.mapId);
+        if (CInstanceWork.schedule(() -> cleanup(r), delay) == null) {
+            LOG.warning("[Gludio-Indun] Cleanup timer refused for map=" + r.mapId);
+            releaseMap(r);
+        }
     }
     private void cleanup(Room r) {
         synchronized(this) {
@@ -666,15 +672,19 @@ public final class GludioInstanceDungeon {
                     LOG.warning("[Gludio-Indun] Player still on map; cleanup deferred="+r.mapId);
                     scheduleCleanup(r,15000L);return;
                 }
-            clearNpcs(r);
-            MapCleaner.removeGroundItems(L1WorldMap.getInstance().getMap((short) r.mapId));
             releaseMap(r);
         }
     }
     private static void clearNpcs(Room r) {
         for(L1NpcInstance npc:r.npcs) {
-            try {if(npc!=null && !npc._destroyed) npc.deleteMe();}
-            catch(Exception failure) {LOG.log(Level.WARNING,"[Gludio-Indun] NPC cleanup",failure);}
+            if (npc == null || CInstantZoneManager.isPlayerCompanion(npc)) continue;
+            try {
+                if (!npc.isDestroyed()) npc.deleteMe();
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "[Gludio-Indun] NPC cleanup " + npc.getId(), failure);
+                CWorld world = CWorld.getInstance();
+                if (npc.isDestroyed() && world.findObject(npc.getId()) == npc) world.leaveAndRemoveObject(npc);
+            }
         }
         r.npcs.clear();
     }

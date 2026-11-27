@@ -3,11 +3,14 @@ package l1j.server.server.model.world.instance.dungeon.fanstasyisland;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import java.util.Calendar;
-import java.util.Collection;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import l1j.server.server.model.world.instance.CInstanceEvents;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
+import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
@@ -21,9 +24,15 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.utils.L1SpawnUtil;
 
-public class FantasyIsland implements Runnable {
-
-	private short _map;
+public final class FantasyIsland implements Runnable {
+    private static final Logger LOG = Logger.getLogger(FantasyIsland.class.getName());
+    private final CInstantZone<FantasyIsland> zone;
+    private final short _map;
+    private final L1Map entranceMap;
+    private final int sessionStamp;
+    private boolean began;
+    private boolean started;
+    private boolean returnRequested;
 	private int stage = 1;
 	private static final int WAIT_RAID = 1;
 	private static final int FIRST_STEP = 2;
@@ -38,58 +47,53 @@ public class FantasyIsland implements Runnable {
 	private int _status;
 	private L1NpcInstance unicorn;
 	private L1NpcInstance boss;
-	private L1PcInstance pc;
+	private final L1PcInstance pc;
 
-	private boolean Running = true;
+    private ArrayList<L1NpcInstance> BasicNpcList;
+    private ArrayList<L1NpcInstance> NpcList;
 
-	public ArrayList<L1NpcInstance> BasicNpcList;
-	public ArrayList<L1NpcInstance> NpcList;
+    FantasyIsland(CInstantZone<FantasyIsland> zone, L1PcInstance pc) {
+        this.zone = zone;
+        this._map = (short) zone.mapId();
+        this.pc = pc;
+        this.entranceMap = pc.getMap();
+        this.sessionStamp = pc.getSessionStamp();
+    }
 
-	public FantasyIsland(int id, L1PcInstance pc){
-		_map = (short)id;
-		this.pc = pc;
-	}
+    @Override
+    public void run() {
+        try {
+            if (!ownsPlayer() || pc.getMap() != entranceMap || CInstanceEvents.isStopping()
+                    || Thread.currentThread().isInterrupted()) return;
+            began = true;
+            BasicNpcList = FantasyIslandSpawn.getInstance().fillSpawnTable(_map, 0, true);
+            setting();
+            if (unicorn == null) throw new IllegalStateException("Missing Fantasy Island unicorn");
+            if (!zone.enter(() -> {
+                if (!ownsPlayer() || pc.getMap() != entranceMap || Thread.currentThread().isInterrupted()) return;
+                pc.isInFantasy = true;
+                started = true;
+                pc.start_teleport(32798, 32865, _map, pc.getHeading(), 169, true, false);
+            }) || !started) return;
+            LOG.info(() -> "Fantasy Island opened for " + pc.getName() + " on map " + _map);
+            Thread.sleep(2000L);
+            if (!inside()) return;
 
-	@Override
-	public void run() {
-		try {
-			runIsland();
-		} finally {
-			endRaid();
-		}
-	}
-
-	private void runIsland() {
-		setting();
-		NpcList = FantasyIslandSpawn.getInstance().fillSpawnTable(_map, 1, true);
-		while (Running && !CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
-			try {
-
-				if(NpcList != null){
-					for(L1NpcInstance npc : NpcList){
-						if(npc == null || npc.isDead())
-							NpcList.remove(npc);
-					}
-				}
-
-				if (unicorn.isDead()) {
-					if (pc != null) {
-						//						L1Teleport.teleport(pc, 33968, 32961, (short)  4, 2, true);
-						pc.start_teleport(33968, 32961, 4, 2, 169, true, false);
-						pc.getInventory().DeleteItemInInventory(810006);
-						pc.getInventory().DeleteItemInInventory(810007);
-						pc = null;
-					}
-					endRaid();
-				}
-
-				checkHp();
-				checkPc();
-
+            NpcList = FantasyIslandSpawn.getInstance().fillSpawnTable(_map, 1, true);
+            while (inside() && !CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
+                if (NpcList != null) NpcList.removeIf(npc -> npc == null || npc.isDead());
+                if (stage != END) {
+                    if (unicorn.isDead()) {
+                        zone.setExit(33968, 32961, 4);
+                        finishPlayer(33968, 32961);
+                        return;
+                    }
+                    checkHp();
+                }
 				switch(stage){
 				case WAIT_RAID:
 					if(NpcList.size() > 0)
-						continue;
+						break;
 					Sleep(5000);
 					SC_NpcChatPacket.broadcastNpc(unicorn, unicorn, "$17691", 0);
 					//도와주러 와 주셔서 감사합니다.
@@ -271,7 +275,8 @@ public class FantasyIsland implements Runnable {
 					stage = 6;
 					break;
 				case LAST_STEP:
-					if (boss.isDead() || boss == null) {
+					if (boss == null) throw new IllegalStateException("Missing Fantasy Island boss");
+                    if (boss.isDead()) {
 						Sleep(5000);
 //						pc.sendPackets(new RPacketBox(RPacketBox.GREEN_MESSAGE, "$17707"));////몽환의 지배자가 퇴치 되었습니다.
 						SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "지배자가 퇴치 되었습니다.");
@@ -329,13 +334,13 @@ public class FantasyIsland implements Runnable {
 					}
 					break;
 				case END:
-					Thread.sleep(2000);
+					Sleep(2000);
 					if(pc.getMapId() == _map){ 
 						//pc.sendPackets(new SC_ServerMessage(1480));  
 						//시스템 메시지: 5초 후에 텔레포트 합니다.
 						SC_SystemMessage.send(pc, "잠시 후 마을로 이동됩니다.");
 					}
-					Thread.sleep(10000);
+					Sleep(10000);
 					//					Sleep(3000);
 					//					if (pc.getMapId() == _map) {
 					//						pc.sendPackets(new SC_ServerMessage(1478));
@@ -366,33 +371,33 @@ public class FantasyIsland implements Runnable {
 					//						pc.sendPackets(new SC_ServerMessage(1484));
 					//						//시스템 메시지: 1초 후에 마을로 텔레포트 합니다.
 					//					}
-					pc.start_teleport(33437, 32813, 4, 2, 169, true, false);
-					pc.getInventory().DeleteItemInInventory(810006);
-					pc.getInventory().DeleteItemInInventory(810007);
-					pc = null;
-					break;
-				default:
-					break;
-				}
-			} catch (InterruptedException stopping) {
-				Thread.currentThread().interrupt();
-			} catch (Exception e) {
-			} finally {
-				if (!CInstanceEvents.isStopping() && !Thread.currentThread().isInterrupted()) {
-					try { Thread.sleep(1500L); }
-					catch (InterruptedException stopping) { Thread.currentThread().interrupt(); }
-				}
-			}
-		}
-	}
+                    finishPlayer(33437, 32813);
+                    return;
+                default:
+                    break;
+                }
+                Sleep(1500);
+            }
+        } catch (InterruptedException stopping) {
+            Thread.currentThread().interrupt();
+        } catch (RuntimeException failure) {
+            LOG.log(Level.WARNING, "Fantasy Island stage failed for map " + _map, failure);
+        }
+    }
 
-	private void Sleep(int time){
-		try{
-			Thread.sleep(time);
-		} catch (InterruptedException stopping) {
-			Thread.currentThread().interrupt();
-		}
-	}
+    private void Sleep(int time) throws InterruptedException {
+        Thread.sleep(time);
+        if (!inside() || CInstanceEvents.isStopping()) throw new InterruptedException("Player left Fantasy Island");
+    }
+
+    private boolean ownsPlayer() {
+        return pc.getSessionStamp() == sessionStamp && !pc.isLogoutStarted()
+                && CWorld.getInstance().findObject(pc.getId()) == pc;
+    }
+
+    private boolean inside() {
+        return ownsPlayer() && pc.getMap() == zone.map();
+    }
 
 	private void setting(){
 		for(L1NpcInstance npc : BasicNpcList){
@@ -430,57 +435,42 @@ public class FantasyIsland implements Runnable {
 		}
 	}
 
-	private void checkPc() {
-		int check = 0;
-		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
-			if (obj instanceof L1PcInstance) {
-				check = 1;
-			}
-		}
-		if (check == 0) {
-			if (pc != null) {
-				pc = null;
-			}
-			endRaid();
-		}
-	}
-	public void Start(){
-		Calendar cal = Calendar.getInstance();
-		int 시간 = Calendar.HOUR;
-		int 분 = Calendar.MINUTE;
-		/** 0 오전 , 1 오후 * */
-		String 오전오후 = "오후";
-		if (cal.get(Calendar.AM_PM) == 0) {
-			오전오후 = "오전";
-		}
-		CInstanceEvents.schedule(this, 2000L);
-		System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■중앙사원 시작■캐릭터:"+pc.getName()+"■맵:"+_map+"■");
-	}
-	private void endRaid(){
-		Calendar cal = Calendar.getInstance();
-		int 시간 = Calendar.HOUR;
-		int 분 = Calendar.MINUTE;
-		/** 0 오전 , 1 오후 * */
-		String 오전오후 = "오후";
-		if (cal.get(Calendar.AM_PM) == 0) {
-			오전오후 = "오전";
-		}
-		if (Running) {
-			Collection<L1Object> cklist = CWorld.getInstance().getVisibleObjects(_map).values();
-			for(L1Object ob : cklist){
-				if(ob == null) continue;
-				if(ob instanceof L1ItemInstance){
-					L1ItemInstance obj = (L1ItemInstance)ob;
-					CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
-					groundInventory.DeleteItemAmount(obj);
-				}else if(ob instanceof L1NpcInstance){
-					L1NpcInstance npc = (L1NpcInstance)ob;
-					npc.deleteMe();
-				}
-			}
-			Running = false;
-			FantasyIslandSystem.getInstance().remove(_map);
-			System.out.println(""+ 오전오후 + " " + cal.get(시간) + "시" + cal.get(분) + "분" + "   ■중앙사원 종료■캐릭터:"+(pc == null ? "-" : pc.getName())+"■맵:"+_map+"■");
-		}
-	}
+    private void finishPlayer(int x, int y) {
+        if (!inside()) return;
+        pc.start_teleport(x, y, 4, 2, 169, true, false);
+        returnRequested = true;
+        pc.getInventory().DeleteItemInInventory(810006);
+        pc.getInventory().DeleteItemInInventory(810007);
+    }
+
+    void cleanup() {
+        if (!began) return;
+        Thread.interrupted();
+        if (started && !returnRequested && inside()) {
+            try {
+                finishPlayer(33437, 32813);
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Fantasy Island player cleanup failed for map " + _map, failure);
+            }
+        }
+        if (started && ownsPlayer() && !inside()) pc.isInFantasy = false;
+        for (L1Object object : CWorld.getInstance().snapshotZoneOccupants(zone.map())) {
+            if (object == null || object.getMap() != zone.map()) continue;
+            try {
+                if (object instanceof L1ItemInstance item) {
+                    CInventory ground = CWorld.getInstance().findGroundInventory(item.getX(), item.getY(), _map);
+                    if (ground != null && ground.getMap() == zone.map()) ground.DeleteItemAmount(item);
+                } else if (object instanceof L1NpcInstance npc && !CInstantZoneManager.isPlayerCompanion(npc)) {
+                    npc.deleteMe();
+                }
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Fantasy Island object cleanup failed for map " + _map, failure);
+            }
+        }
+        BasicNpcList = null;
+        NpcList = null;
+        unicorn = null;
+        boss = null;
+        if (started) LOG.info(() -> "Fantasy Island closed for " + pc.getName() + " on map " + _map);
+    }
 }

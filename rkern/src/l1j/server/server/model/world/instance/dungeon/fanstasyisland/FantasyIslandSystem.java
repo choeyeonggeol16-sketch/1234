@@ -1,62 +1,54 @@
 package l1j.server.server.model.world.instance.dungeon.fanstasyisland;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 
-public class FantasyIslandSystem {
+public final class FantasyIslandSystem {
+    private static final Logger LOG = Logger.getLogger(FantasyIslandSystem.class.getName());
+    private static final FantasyIslandSystem INSTANCE = new FantasyIslandSystem();
+    private static final int BASE_MAP = 1936;
 
-	private static FantasyIslandSystem _instance;
-	//private final ArrayList<Integer> _map = new ArrayList<Integer>();
-	private final Map<Integer, FantasyIsland> _list = new ConcurrentHashMap<Integer, FantasyIsland>();
+    private final CInstantZoneManager<FantasyIsland> zones = new CInstantZoneManager<>(49);
+    private final ConcurrentHashMap<Integer, CInstantZone<FantasyIsland>> activePlayers = new ConcurrentHashMap<>();
 
-	public static FantasyIslandSystem getInstance() {
-		if (_instance == null) {
-			_instance = new FantasyIslandSystem();
-		}
-		return _instance;
-	}
+    private FantasyIslandSystem() {}
 
-	public void startRaid(L1PcInstance pc){
-		if(countRaid() >= 49){
-			SC_SystemMessage.send(pc, "몽환의 섬 던전에 진입한 인원이 너무 많습니다");
-			return;
-		}
-		int id = blankMapId();
-		if (id != 1936)
-			L1WorldMap.getInstance().cloneMap(1936, id);
-		FantasyIsland ar = new FantasyIsland(id, pc);
-		pc.start_teleport(32798, 32865, id, pc.getHeading(), 169, true, false);
-		ar.BasicNpcList = FantasyIslandSpawn.getInstance().fillSpawnTable(id, 0, true);
-		pc.isInFantasy = true;
-		_list.put(id, ar);
-		ar.Start();
-	}
+    public static FantasyIslandSystem getInstance() { return INSTANCE; }
 
-	/**
-	 * 빈 맵 아이디를 가져온다
-	 * @return
-	 */
-	public int blankMapId(){
-		if(_list.size() == 0)
-			return 1936;
-		for(int i = 1936 ; i <= 2035; i++){
-			FantasyIsland h = _list.get(i);
-			if(h == null)
-				return i;
-		}  
-		return 2035;
-	}
+    public void startRaid(L1PcInstance pc) {
+        if (pc == null || activePlayers.containsKey(pc.getId())) return;
+        final CInstantZone<FantasyIsland> zone = zones.tryOpen(BASE_MAP, BASE_MAP, BASE_MAP + 1, 2035);
+        if (zone == null) {
+            SC_SystemMessage.send(pc, "몽환의 섬 던전에 진입한 인원이 너무 많습니다");
+            return;
+        }
+        if (activePlayers.putIfAbsent(pc.getId(), zone) != null) {
+            zone.close(() -> {});
+            return;
+        }
+        final FantasyIsland encounter = new FantasyIsland(zone, pc);
+        final Runnable cleanup = () -> {
+            try {
+                encounter.cleanup();
+            } finally {
+                activePlayers.remove(pc.getId(), zone);
+            }
+        };
+        try {
+            zone.bind(encounter);
+            zone.setExit(33437, 32813, 4);
+            zone.start(encounter, cleanup);
+        } catch (RuntimeException failure) {
+            zone.close(cleanup);
+            LOG.log(Level.WARNING, "Fantasy Island startup failed for map " + zone.mapId(), failure);
+        }
+    }
 
-	public void remove(int id){
-		_list.remove(id);
-	}
-
-	public int countRaid(){
-		return _list.size();
-	}
-
+    public int countRaid() { return zones.size(); }
 }

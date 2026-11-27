@@ -10,6 +10,14 @@ import java.util.ArrayList;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.world.cleanup.MapCleaner;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1Npc;
@@ -17,6 +25,7 @@ import l1j.server.server.utils.SQLUtil;
 
 
 public class ValakasRoomSpawn {
+    private static final Logger LOG = Logger.getLogger(ValakasRoomSpawn.class.getName());
 	private static final ValakasRoomSpawn INSTANCE = new ValakasRoomSpawn();
 
 	public static ValakasRoomSpawn getInstance() {
@@ -24,6 +33,35 @@ public class ValakasRoomSpawn {
 	}
 
 	private ValakasRoomSpawn() {}
+
+    static boolean hasPlayers(CInstantZone<?> zone) {
+        for (L1Object obj : CWorld.getInstance().getVisibleObjects(zone.mapId()).values()) {
+            if (obj instanceof L1PcInstance && obj.getMap() == zone.map()) return true;
+        }
+        return false;
+    }
+
+    static void clearRoom(CInstantZone<?> zone) {
+        CWorld world = CWorld.getInstance();
+        for (L1Object obj : world.snapshotZoneOccupants(zone.map())) {
+            if (obj.getMap() != zone.map() || CInstantZoneManager.isPlayerCompanion(obj)) continue;
+            try {
+                if (obj instanceof L1NpcInstance npc) {
+                    npc.deleteMe();
+                } else if (obj instanceof L1PcInstance pc) {
+                    CIOThreadCallback.getInstance().completeSession(pc.getNetConnection(), () -> {
+                        if (zone.ownsMap() && pc.getMap() == zone.map() && !pc.get_teleport())
+                            pc.start_teleport(33705, 32504, 4, 5, 169, true, false);
+                    });
+                }
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Valakas room cleanup failed for object " + obj.getId(), failure);
+                if (obj instanceof L1NpcInstance npc && npc.isDestroyed() && world.findObject(npc.getId()) == npc)
+                    world.leaveAndRemoveObject(npc);
+            }
+        }
+        MapCleaner.removeGroundItems(zone.map());
+    }
 
 	public void fillSpawnTable(int mapid, int type) {
 		fillSpawnTable(mapid, type, false);

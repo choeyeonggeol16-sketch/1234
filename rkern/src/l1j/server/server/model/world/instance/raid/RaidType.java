@@ -145,7 +145,11 @@ public class RaidType {
 		pc.start_teleport(_movX, _movY, mid, 5, 169, true, false);
 	}
 	
-	public void create(L1PcInstance pc){
+	public void create(L1PcInstance pc) {
+        create(pc, () -> true);
+    }
+
+    public boolean create(L1PcInstance pc, java.util.function.BooleanSupplier accept){
 		RaidObject obj = null;
 		switch(_id){
 		case RID_ANTARAS:
@@ -165,8 +169,7 @@ public class RaidType {
 			break;
 		}
 		
-		if(obj != null)
-			RaidSpace.getInstance().startInstance(obj);
+		return obj != null && RaidSpace.getInstance().startInstance(obj, accept);
 	}
 	
 	@Override

@@ -10,6 +10,9 @@ import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.world.instance.CInstanceEvents;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
+import l1j.server.server.model.world.instance.raid.RaidSpace;
+import l1j.server.server.shared.observer.CopyMapObservable;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.storage.CCharacterSaveService;
 
@@ -131,7 +134,6 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftLoader;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ALCHEMY_DESIGN_ACK;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CRAFT_LIST_ALL_ACK;
-import l1j.server.server.shared.observer.CopyMapObservable;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.task.automation.ServerMacroLoader;
 import l1j.server.server.task.calendar.DateSchedulerLoader;
@@ -592,15 +594,19 @@ public class GameServer {
             // alive. Never save or dispose a character while its RECV handler
             // can be executing on one of those owners.
             Server.stopLoginServer();
+            CInstantZoneManager.stopAccepting();
             disconnectAllCharacters();
             L1GameTimeClock.stop();
             RealTimeClock.stop();
             // Let accepted off-owner work finish before removing the world, its
             // owner threads, or the database that those callbacks may still use.
+            RaidSpace.release();
+            CopyMapObservable.getInstance().disposes();
             CInstanceEvents.stop();
             while (!CInstanceEvents.awaitTermination(30L, TimeUnit.SECONDS)) {
                 System.err.println("[Instance] Waiting for running events to finish");
             }
+            CInstantZoneManager.closePrepared();
             CServerTimer.stopOwnerSignals();
             CSessionLifecycle.stopAccepting();
             CCharacterSaveService.stopAccepting();

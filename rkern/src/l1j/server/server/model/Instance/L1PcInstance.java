@@ -68,6 +68,8 @@ import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.inventory.CTradeManager;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 import l1j.server.server.model.ReportDeley;
 import l1j.server.server.model.character.CYieldLock;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
@@ -7316,6 +7318,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	
     private final AtomicBoolean _tpLock = new AtomicBoolean(false);
     private volatile int teleportTimerEpoch;
+    private volatile CInstantZone<?> teleportDestinationZone;
     private static final AtomicIntegerFieldUpdater<L1PcInstance> TELEPORT_TIMER_EPOCH =
             AtomicIntegerFieldUpdater.newUpdater(L1PcInstance.class, "teleportTimerEpoch");
 
@@ -7349,6 +7352,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
             set_teleport_x(x);
             set_teleport_y(y);
             set_teleport_map(mapId);
+            teleportDestinationZone = CInstantZoneManager.destination(mapId);
 
 			// 클라이언트에 텔레포트 시작 알림
 			SC_Teleport.send(getNetConnection());
@@ -7427,7 +7431,8 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 
     public void tpCommitTeleport() {
         try {
-            L1Teleport.getInstance().doTeleportation(this);
+            if (!CInstantZoneManager.enterDestination(get_teleport_map(), teleportDestinationZone,
+                    () -> L1Teleport.getInstance().doTeleportation(this))) tpEndFinish();
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -7439,7 +7444,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
         TELEPORT_TIMER_EPOCH.incrementAndGet(this);
 		try {
 			try { set_teleport(false); } catch (Throwable ignored) {}
-			try { _tpLock.set(false); } catch (Throwable ignored) {}
+			try { teleportDestinationZone = null; _tpLock.set(false); } catch (Throwable ignored) {}
 			try { SC_Paralysis.send(this, SC_Paralysis.TYPE_TELEPORT_UNLOCK, false);
 			} catch (Throwable ignored) {}
 		} catch (Throwable ignored) {}

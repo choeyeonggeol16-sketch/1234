@@ -417,7 +417,7 @@ public class CParty {
     /** Same map/range/hate policy for both currency and item routing. */
     private boolean CheckRouteCond(L1Location origin, CContributeData snap, L1PcInstance member) {
         if (member == null || member.getParty() != this || member.isDead()
-                || member.getMapId() != origin.getMapId()
+                || member.getMap() != origin.getMap()
                 || member.getLocation().getTileLineDistance(origin) > Config.PARTY_LOOT_RANGE) return false;
         if (Config.PARTY_LOOT_ELIGIBILITY != 0) return true;
         if (snap == null) return false;

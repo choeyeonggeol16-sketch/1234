@@ -1,63 +1,48 @@
 package l1j.server.server.model.world.instance.dungeon.valakasroom;
 
-import java.util.concurrent.ConcurrentHashMap;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.map.L1WorldMap;
 
 public class ValakasRoomSystem {
     private static final ValakasRoomSystem INSTANCE = new ValakasRoomSystem();
     private static final int FIRST_MAP = 2600;
     private static final int CAPACITY = 49;
     private static final java.util.Random RANDOM = new java.util.Random();
-    private final ConcurrentHashMap<Integer, ValakasStart> rooms = new ConcurrentHashMap<>();
+    private final CInstantZoneManager<ValakasStart> rooms = new CInstantZoneManager<>(CAPACITY);
 
     public static ValakasRoomSystem getInstance() {
         return INSTANCE;
     }
 
     public ValakasStart reserve(L1PcInstance pc) {
-        final ValakasStart room;
-        final int id;
-        synchronized (rooms) {
-            if (rooms.size() >= CAPACITY) return null;
-            int candidate = FIRST_MAP;
-            while (rooms.containsKey(candidate)) candidate++;
-            id = candidate;
-            room = new ValakasStart(id, pc);
-            rooms.put(id, room);
-        }
+        CInstantZone<ValakasStart> zone = rooms.tryOpen(FIRST_MAP, FIRST_MAP, FIRST_MAP + 1, FIRST_MAP + CAPACITY - 1);
+        if (zone == null) return null;
+        ValakasStart room = new ValakasStart(zone, pc);
         try {
-            if (id != FIRST_MAP) L1WorldMap.getInstance().cloneMap(FIRST_MAP, id);
+            zone.setExit(33705, 32504, 4);
+            zone.onClose(room::cleanup);
+            zone.bind(room);
+            int id = zone.mapId();
             ValakasRoomSpawn spawn = ValakasRoomSpawn.getInstance();
             room.BasicNpcList = spawn.fillRequiredSpawnTable(id, 2);
             room.BossList = spawn.fillRequiredSpawnTable(id, 1000 + RANDOM.nextInt(3));
             room.NpcList = spawn.fillRequiredSpawnTable(id, 1);
             return room;
         } catch (RuntimeException failure) {
-            discard(room);
+            room.endRaid();
             throw failure;
         }
     }
 
     public void enter(ValakasStart room, L1PcInstance pc) {
-        room.Start();
-        pc.isInValakas = true;
-        pc.start_teleport(32624, 33059, room.mapId(), 5, 169, true, false);
+        room.enter(pc);
     }
 
     public void cancel(ValakasStart room) {
-        if (CInstanceWork.schedule(() -> discard(room), 1L) == null)
-            discard(room);
-    }
-
-    private void discard(ValakasStart room) {
-        room.endRaid();
-    }
-
-    void remove(ValakasStart room) {
-        rooms.remove(room.mapId(), room);
+        if (CInstanceWork.schedule(room::endRaid, 1L) == null) room.endRaid();
     }
 
     public int countStartRaid() {

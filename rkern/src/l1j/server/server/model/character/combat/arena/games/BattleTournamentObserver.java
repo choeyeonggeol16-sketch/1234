@@ -21,7 +21,6 @@ import l1j.server.server.model.item.treasure.TreasureChestAttackFilter;
 import l1j.server.server.model.item.treasure.TreasureChestCompensator;
 import l1j.server.server.model.item.treasure.TreasureChestOpenFilter;
 import l1j.server.server.model.map.L1Map;
-import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.packethelper.PacketFactory;
 import l1j.server.server.shared.EPcStatus;
 import l1j.server.server.shared.EStatus;
@@ -217,7 +216,7 @@ public class BattleTournamentObserver extends CombatObserver{
 		initialize_chest();
 		initialize_shop();
 		
-		L1Map m = L1WorldMap.getInstance().getMap(_copyMapId);
+		L1Map m = copyMap();
 		m.set_isUseResurrection(true);
 		
 		BattleTournamentInformation t_info = get_tournament_info();
@@ -256,7 +255,10 @@ public class BattleTournamentObserver extends CombatObserver{
 								CInstanceWork.scheduleRequired(new Runnable(){
 									@Override
 									public void run(){
-										_areas[team_id][round_id + 1].do_boss_spawn();										
+										enterZone(() -> {
+                                    var area = _areas[team_id][round_id + 1];
+                                    if (is_running() && area != null) area.do_boss_spawn();
+                                });
 									}
 								}, CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND * 1000L);
 							}
@@ -282,12 +284,15 @@ public class BattleTournamentObserver extends CombatObserver{
 							@Override
 							public void run(){
 								try{
-									l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(CWorld.getInstance().getVisiblePlayers(_copyMapId), String.format("%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.", CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND));
+									l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(visibleZonePlayers(), String.format("%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.", CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND));
 									Thread.sleep(CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND * 1000L);
 								}catch(Exception e){
 									e.printStackTrace();
 								}finally{
-									_areas[team_id][round_id + 1].do_running();
+									enterZone(() -> {
+                                    var area = _areas[team_id][round_id + 1];
+                                    if (is_running() && area != null) area.do_running();
+                                });
 								}
 							}
 						});
@@ -346,13 +351,17 @@ public class BattleTournamentObserver extends CombatObserver{
 			@Override
 			public void run(){
 				try{
-					l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(CWorld.getInstance().getVisiblePlayers(_copyMapId), String.format("%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.", CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND));
+					l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcastRecipients(visibleZonePlayers(), String.format("%d초 후 문이 닫힙니다. 빠르게 다음 스테이지로 이동해주세요.", CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND));
 					Thread.sleep(CombatLoadManager.COMBAT_BT_STAGE_PASS_SECOND * 1000L);
 				}catch(Exception e){
 					e.printStackTrace();
 				}finally{
-					_areas[0][0].do_running();
-					_areas[1][0].do_running();
+					enterZone(() -> {
+                        if (is_running() && _areas[0][0] != null && _areas[1][0] != null) {
+                            _areas[0][0].do_running();
+                            _areas[1][0].do_running();
+                        }
+                    });
 				}
 			}
 		});
@@ -409,9 +418,8 @@ public class BattleTournamentObserver extends CombatObserver{
 	}
 	
 	@Override
-	public void dispose(){
+	protected void disposeEncounterObjects(){
 		dispose_area();
-		super.dispose();
 		_keys = null;
 	}
 }

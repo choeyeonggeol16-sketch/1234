@@ -2,12 +2,10 @@ package l1j.server.server.model.world.instance.raid.objects;
 
 import java.util.ArrayList;
 import java.util.TimerTask;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.instance.CInstanceEvents;
-import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DisplayEffect;
@@ -56,6 +54,7 @@ public class RaidValakas extends RaidObject{
 	
 	@Override
 	protected void resetRaid(){
+		clearProductFlags();
 		super.resetRaid();
 		
 		if(_fires == null || _fires.size() <= 0){	
@@ -89,17 +88,23 @@ public class RaidValakas extends RaidObject{
 	protected void setBossSpawn(RaidNpcSpawn spawn) {
 		_bossSpawn = spawn;
 	}
-
-	@Override
-	public void dispose(){
-		super.dispose();
-		
-		if(_npcList != null){
-			_npcList.clear();
-			_npcList = null;
-		}
-	}
 	
+    private final java.util.Set<L1PcInstance> productMembers = new java.util.HashSet<>();
+
+    private void clearProductFlags() {
+        synchronized (productMembers) {
+            for (var member : productMembers) member.setValakasProduct(false);
+            productMembers.clear();
+        }
+    }
+
+    @Override
+    protected void dispose() {
+        clearProductFlags();
+        _fires = null;
+        super.dispose();
+    }
+
 	private RaidNpcSpawn createSpawn(int npcId, int type, int numOfSpawn, int range, int heading){
 		return new RaidNpcSpawn(
 				npcId, 
@@ -114,7 +119,7 @@ public class RaidValakas extends RaidObject{
 	
 	
 	
-	private static RaidNpcSpawn _dustRain = null;
+	private RaidNpcSpawn _dustRain = null;
 	private L1NpcInstance createDustRain(){
 		if(_dustRain == null){
 			_dustRain = createSpawn(
@@ -128,7 +133,7 @@ public class RaidValakas extends RaidObject{
 		return _dustRain.spawn(getCopyMapId());
 	}
 	
-	private static RaidNpcSpawn _valakasEye = null;
+	private RaidNpcSpawn _valakasEye = null;
 	private L1NpcInstance createValakasEye(){
 		if(_valakasEye == null){
 			_valakasEye = createSpawn(
@@ -142,7 +147,7 @@ public class RaidValakas extends RaidObject{
 		return _valakasEye.spawn(getCopyMapId());
 	}
 	
-	private static long _startMeteorEffect = 0L;
+	private long _startMeteorEffect = 0L;
 	private void createStartMeteor(){
 		if(_startMeteorEffect == 0L){
 			// [TEST] 3.8 클라이언트 크래시 방지 - effectId 15930(메테오, 10000 이상 미지원) → 4842(화염진)으로 교체
@@ -191,8 +196,8 @@ public class RaidValakas extends RaidObject{
                     SC_PacketBox.nativeGreenWriter(s_startMessages[i]),
                     Integer.MIN_VALUE,Integer.MAX_VALUE);
 try {
-                    for(int j=0; j<size; j++){
-					pc = _users.get(j);
+                    for(L1PcInstance member : _users){
+					pc = member;
 					if(pc != null && pc.getMapId() == mid){
 						l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(shared,pc);
 						
@@ -221,8 +226,8 @@ try {
                     SC_PacketBox.nativeGreenWriter(s_startMessagesValakas[i]),
                     Integer.MIN_VALUE,Integer.MAX_VALUE);
 try {
-                    for(int j=0; j<size; j++){
-					pc = _users.get(j);
+                    for(L1PcInstance member : _users){
+					pc = member;
 					if(pc != null && pc.getMapId() == mid){
 						if(i == 0){
 							l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(blackShared,pc);
@@ -308,7 +313,7 @@ try {
 					return;
 				
 				if(!isInRaid()){
-					resetRaid();
+					requestReset();
 					return;
 				}
 				
@@ -431,10 +436,12 @@ try {
 					break;
 				
 				SC_SkillSound.send(pc, pc.getId(), 15837);
-				pc.setValakasProduct(true);
+				synchronized (productMembers) {
+                    productMembers.add(pc);
+                    pc.setValakasProduct(true);
+                }
 			}	
-			if (CInstanceWork.schedule(this, RaidLoadManager.MRS_SP_VALAKAS_PRODUCT_DESTTIME - 50) == null)
-				throw new RejectedExecutionException("Raid product deadline admission failed");
+			scheduleProduct(this, RaidLoadManager.MRS_SP_VALAKAS_PRODUCT_DESTTIME - 50);
 		}
 		
 		@Override
@@ -445,12 +452,7 @@ try {
 			if(_users == null || _users.size() <= 0)
 				return;
 			
-			for(L1PcInstance pc : _users){
-				if(pc == null)
-					continue;
-				
-				pc.setValakasProduct(false);
-			}
+			clearProductFlags();
 			
 			L1NpcInstance npc = null;
 			if(_mpAbsorb != null){
@@ -595,7 +597,7 @@ try {
 		return npcs;
 	}
 	
-	private static RaidNpcSpawn _fireSpawn = null;
+	private RaidNpcSpawn _fireSpawn = null;
 	private ArrayList<L1NpcInstance> createFires(){
 		try{
 			if(_fireSpawn == null)
@@ -616,6 +618,7 @@ try {
 	}
 	
 	private void deleteFires(ArrayList<L1NpcInstance> fires){
+		if (fires == null) return;
 		L1NpcInstance[] fireArray 	= fires.toArray(new L1NpcInstance[fires.size()]);
 		L1NpcInstance fire 			= null;
 		int size 					= fireArray.length;

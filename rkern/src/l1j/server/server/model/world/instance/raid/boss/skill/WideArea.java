@@ -3,6 +3,7 @@ package l1j.server.server.model.world.instance.raid.boss.skill;
 import java.util.ArrayList;
 
 import l1j.server.server.model.world.instance.CInstanceEvents;
+import l1j.server.server.model.world.instance.raid.RaidSpace;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
@@ -27,7 +28,7 @@ public class WideArea extends RaidBossSkill{
             if(_actid >= 0)
                 SC_DoActionGFX.broadcast(own, getSafeActId());
 
-            CInstanceEvents.start(new tightenEffectThread(own, pcs, _effectId, _range));
+            RaidSpace.startEffect(own, new tightenEffectThread(own, pcs, _range, _effectId));
             sleepAction(own, _actid);
         }catch(Exception e){
             e.printStackTrace();
@@ -48,7 +49,7 @@ public class WideArea extends RaidBossSkill{
         try{
             if(_actid >= 0)
                 SC_DoActionGFX.broadcast(own, getSafeActId());
-            CInstanceEvents.start(new tightenEffectThread(own, pcs, _effectId, _range));
+            RaidSpace.startEffect(own, new tightenEffectThread(own, pcs, _range, _effectId));
             sleepAction(own, _actid);
         }catch(Exception e){
             e.printStackTrace();
@@ -63,7 +64,6 @@ public class WideArea extends RaidBossSkill{
         private ArrayList<L1PcInstance> _pcs;
         private int						_range;
         private int						_effect;
-        // [TEST] 생성자 파라미터 순서: (own, pcs, effectId, range) 순서로 호출되지만 생성자는 (own, pcs, range, effect) 순 → 순서 바뀐 버그
         public tightenEffectThread(L1NpcInstance own, ArrayList<L1PcInstance> pcs, int range, int effect){
             _own 	= own;
             _pcs	= pcs;

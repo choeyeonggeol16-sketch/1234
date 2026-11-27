@@ -149,8 +149,7 @@ public class BattleTowerObserver extends CombatObserver{
 	}
 	
 	@Override
-	public void dispose(){
-		super.dispose();
+	protected void disposeEncounterObjects(){
 		dispose_tower();
 	}
 }

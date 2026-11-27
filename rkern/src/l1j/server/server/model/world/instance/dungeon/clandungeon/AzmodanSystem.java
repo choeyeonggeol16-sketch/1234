@@ -1,81 +1,68 @@
 package l1j.server.server.model.world.instance.dungeon.clandungeon;
 
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 
-public class AzmodanSystem {
-	
-	private static AzmodanSystem _instance;
-	private final ArrayList<Integer> _map = new ArrayList<Integer>();
-	private final Map<Integer, Azmodan> _list = new ConcurrentHashMap<Integer, Azmodan>();
-	private final Map<Integer, Integer> _clanlist = new ConcurrentHashMap<Integer, Integer>();
-	private final Map<Integer, Integer> _clanid = new ConcurrentHashMap<Integer, Integer>();
-	
-	public static AzmodanSystem getInstance() {
-		if (_instance == null) {
-			_instance = new AzmodanSystem();
-		}
-		return _instance;
-	}
+public final class AzmodanSystem {
+    private static final Logger LOG = Logger.getLogger(AzmodanSystem.class.getName());
+    private static final AzmodanSystem INSTANCE = new AzmodanSystem();
+    private static final int BASE_MAP = 12014;
 
-	public AzmodanSystem(){
-		_map.add(12014);
-	}
+    private final CInstantZoneManager<Azmodan> zones = new CInstantZoneManager<>(100);
+    private final ConcurrentHashMap<Integer, Integer> dailyClanMaps = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, CInstantZone<Azmodan>> activeClans = new ConcurrentHashMap<>();
 
-	public void startAzmodan(int clanid, L1PcInstance pc){
-		if(countAzmodan() >= 100){
-			SC_SystemMessage.send(pc, "현재 오픈중인 던전이 너무 많습니다. 잠시후에 이용해주세요");
-			return;
-		}
-		int id = blankMapId();
-		if(id != 12014)
-			L1WorldMap.getInstance().cloneMap(12014, id);
-		Azmodan clandun = new Azmodan(id);
-	
-		_list.put(id, clandun);
-		_clanlist.put(clanid, id);
-		_clanid.put(id, clanid);
-		clandun.Start();
-	}
+    private AzmodanSystem() {}
 
-	public int blankMapId(){
-		if(_list.size() == 0)
-			return 12014;
-		for(int i = 12014 ; i <= 12114; i++){
-			Azmodan h = _list.get(i);
-			if(h == null)
-				return i;
-		}  
-		return 12114;
-	}
+    public static AzmodanSystem getInstance() { return INSTANCE; }
 
-	public Azmodan getAzmodan(int id){
-		return _list.get(id);
-	}
-	
-	public int getAzmodanClanid(int id) {
-		return _clanlist.get(id);
-	}
+    public void startAzmodan(int clanId, L1PcInstance pc) {
+        if (pc == null || clanId <= 0 || pc.getClanid() != clanId || activeClans.containsKey(clanId)) return;
+        final CInstantZone<Azmodan> zone = zones.tryOpen(BASE_MAP, BASE_MAP, BASE_MAP + 1, 12114);
+        if (zone == null) {
+            SC_SystemMessage.send(pc, "현재 오픈중인 던전이 너무 많습니다. 잠시후에 이용해주세요");
+            return;
+        }
+        if (activeClans.putIfAbsent(clanId, zone) != null) {
+            zone.close(() -> {});
+            return;
+        }
+        final Azmodan encounter = new Azmodan(zone, clanId);
+        final Runnable cleanup = () -> {
+            try {
+                encounter.cleanup();
+            } finally {
+                if (!encounter.began()) dailyClanMaps.remove(clanId, zone.mapId());
+                activeClans.remove(clanId, zone);
+            }
+        };
+        try {
+            zone.bind(encounter);
+            zone.setExit(33426, 32811, 4);
+            dailyClanMaps.put(clanId, zone.mapId());
+            zone.start(encounter, cleanup, 2_000L);
+        } catch (RuntimeException failure) {
+            zone.close(cleanup);
+            LOG.log(Level.WARNING, "Clan dungeon startup failed for clan " + clanId, failure);
+        }
+    }
 
-	public int getClanid(int id) {
-		return _clanid.get(id);
-	}
-	
-	public void removeAzmodan(int id){
-		_list.remove(id);		
-		_clanid.remove(id);
-	}
+    public Azmodan getAzmodan(int id) { return zones.get(id); }
 
-	public void removeClan(int clanid) {
-		_clanlist.remove(clanid);
-	}
-	
-	public int countAzmodan(){
-		return _list.size();
-	}
+    public int getAzmodanClanid(int clanId) { return dailyClanMaps.getOrDefault(clanId, 0); }
+
+    public int getClanid(int id) {
+        final Azmodan encounter = getAzmodan(id);
+        return encounter == null ? 0 : encounter.clanId();
+    }
+
+    public void removeClan(int clanId) { dailyClanMaps.remove(clanId); }
+
+    public int countAzmodan() { return zones.size(); }
 }

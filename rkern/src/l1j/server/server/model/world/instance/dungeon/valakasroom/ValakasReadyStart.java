@@ -1,60 +1,45 @@
 package l1j.server.server.model.world.instance.dungeon.valakasroom;
 
-import java.util.concurrent.ConcurrentHashMap;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.map.L1WorldMap;
 
 public class ValakasReadyStart {
     private static final ValakasReadyStart INSTANCE = new ValakasReadyStart();
     private static final int FIRST_MAP = 2699;
     private static final int CAPACITY = 49;
-    private final ConcurrentHashMap<Integer, ValakasReady> rooms = new ConcurrentHashMap<>();
+    private final CInstantZoneManager<ValakasReady> rooms = new CInstantZoneManager<>(CAPACITY);
 
     public static ValakasReadyStart getInstance() {
         return INSTANCE;
     }
 
     public ValakasReady reserve(L1PcInstance pc) {
-        final ValakasReady room;
-        final int id;
-        synchronized (rooms) {
-            if (rooms.size() >= CAPACITY) return null;
-            int candidate = FIRST_MAP;
-            while (rooms.containsKey(candidate)) candidate++;
-            id = candidate;
-            room = new ValakasReady(id, pc);
-            rooms.put(id, room);
-        }
+        CInstantZone<ValakasReady> zone = rooms.tryOpen(FIRST_MAP, FIRST_MAP, FIRST_MAP + 1, FIRST_MAP + CAPACITY - 1);
+        if (zone == null) return null;
+        ValakasReady room = new ValakasReady(zone, pc);
         try {
-            if (id != FIRST_MAP) L1WorldMap.getInstance().cloneMap(FIRST_MAP, id);
+            zone.setExit(33705, 32504, 4);
+            zone.onClose(room::cleanup);
+            zone.bind(room);
+            int id = zone.mapId();
             ValakasRoomSpawn spawn = ValakasRoomSpawn.getInstance();
             room.BasicNpcList = spawn.fillRequiredSpawnTable(id, 0);
             return room;
         } catch (RuntimeException failure) {
-            discard(room);
+            room.endRaid();
             throw failure;
         }
     }
 
     public void enter(ValakasReady room, L1PcInstance pc) {
-        room.Start();
-        pc.isInValakas = true;
-        pc.start_teleport(32624, 33059, room.mapId(), 5, 169, true, false);
+        room.enter(pc);
     }
 
     public void cancel(ValakasReady room) {
-        if (CInstanceWork.schedule(() -> discard(room), 1L) == null)
-            discard(room);
-    }
-
-    private void discard(ValakasReady room) {
-        room.endRaid();
-    }
-
-    void remove(ValakasReady room) {
-        rooms.remove(room.mapId(), room);
+        if (CInstanceWork.schedule(room::endRaid, 1L) == null) room.endRaid();
     }
 
     public int countReadyRaid() {

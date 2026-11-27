@@ -11,28 +11,25 @@ import l1j.server.server.utils.SQLUtil;
 
 /** 레이드 인스턴스의 기본이 되는 레이드 템플릿(RaidType 클래스)를 로드하고 관리하는 클래스 **/
 public class RaidTypesLoader {
-	private static RaidTypesLoader _instance;
-	public static RaidTypesLoader getInstance(){
-		if(_instance == null)
-			_instance = new RaidTypesLoader();
-		return _instance;
-	}
-	
-	public static void release(){
-		if(_instance != null){
-			_instance.clear();
-			_instance = null;
-		}
-	}
-	
-	public static void reload(){
-		RaidTypesLoader tmp = null;
-		tmp 		= _instance;
-		_instance 	= new RaidTypesLoader();	
-		tmp.clear();
-		tmp = null;
-	}
-	
+    private static volatile RaidTypesLoader _instance;
+
+    public static RaidTypesLoader getInstance() {
+        RaidTypesLoader current = _instance;
+        if (current != null) return current;
+        synchronized (RaidTypesLoader.class) {
+            if (_instance == null) _instance = new RaidTypesLoader();
+            return _instance;
+        }
+    }
+
+    public static synchronized void release() {
+        _instance = null;
+    }
+
+    public static synchronized void reload() {
+        _instance = new RaidTypesLoader();
+    }
+
 	private HashMap<Integer, RaidType> _raidTypes;
 	private RaidTypesLoader(){
 		load();
@@ -65,12 +62,7 @@ public class RaidTypesLoader {
 		}
 	}
 	
-	public void clear(){
-		if(_raidTypes != null){
-			_raidTypes.clear();
-			_raidTypes = null;
-		}
-	}
+
 	
 	public RaidType get(int i){
 		return _raidTypes.get(i);

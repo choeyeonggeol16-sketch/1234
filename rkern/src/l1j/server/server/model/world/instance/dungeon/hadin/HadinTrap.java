@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.instance.CInstantZone;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
@@ -19,8 +20,11 @@ import l1j.server.server.utils.L1SpawnUtil;
 public class HadinTrap implements Runnable {
 
 	private static final Logger LOG = Logger.getLogger(HadinTrap.class.getName());
+	private final CInstantZone<Hadin> zone;
 	private final short _map;
+	private final Runnable tick = this::runTick;
 	private CServerTimer nextTick;
+	private volatile boolean timerUnavailable;
 	public volatile boolean Running = true;
 
 	private boolean LEVEL_1_TRAP_1 = false;
@@ -59,8 +63,9 @@ public class HadinTrap implements Runnable {
 
 	private HashMap<String, L1DoorInstance> doorList;
 
-	public HadinTrap(short id){
-		_map = (short)id;
+	HadinTrap(CInstantZone<Hadin> zone){
+		this.zone = zone;
+		_map = (short) zone.mapId();
 		doorList = new HashMap<String, L1DoorInstance>();
 		nextTick = CInstanceWork.scheduleRequired(this, 5000L);
 	}
@@ -69,9 +74,26 @@ public class HadinTrap implements Runnable {
 	public synchronized void run() {
 		if (!Running) return;
 		nextTick = null;
+		if (!zone.enter(tick)) {
+			stop();
+			return;
+		}
+		if (Running) {
+			nextTick = CInstanceWork.schedule(this, 2000L);
+			if (nextTick == null) {
+				timerUnavailable = true;
+				Running = false;
+			}
+		}
+	}
+
+	boolean timerUnavailable() { return timerUnavailable; }
+
+	private void runTick() {
 		try {
 			TRAP_RESET();
 			for (L1Object ob : CWorld.getInstance().getVisibleObjects(_map).values()) {
+				if (ob.getMap() != zone.map()) continue;
 				if (ob instanceof L1PcInstance pc) {
 					TRAP_ON(pc);
 				} else if (ob instanceof L1DoorInstance door) {
@@ -83,10 +105,6 @@ public class HadinTrap implements Runnable {
 			if (!MonCK) TRAP_ON_CK();
 		} catch (RuntimeException failure) {
 			LOG.log(Level.WARNING, "Hadin trap tick failed for map " + _map, failure);
-		}
-		if (Running) {
-			nextTick = CInstanceWork.schedule(this, 2000L);
-			if (nextTick == null) Running = false;
 		}
 	}
 

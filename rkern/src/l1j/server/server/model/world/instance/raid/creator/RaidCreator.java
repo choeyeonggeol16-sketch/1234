@@ -56,7 +56,7 @@ public class RaidCreator {
 	}
 	
 	public void create(L1PcInstance pc, L1ItemInstance item){
-		if(item.getCount() < _needCount){
+		if(item == null || item.getItemId() != _needItemId || _needCount <= 0 || item.getCount() < _needCount){
 			RaidMessage.RAID_OPEN_FAIL_INVALID_ITEM.sendMessage(pc);
 			return;
 		}
@@ -67,13 +67,12 @@ public class RaidCreator {
 			return;
 		}
 		
-		if(!pc.getInventory().HaveItemByClassId(_needItemId, _needCount)){
-			RaidMessage.RAID_OPEN_FAIL_INVALID_ITEM.sendMessage(pc);
-			return;
-		}
-		pc.getInventory().DeleteItemAmount(item, _needCount);
-		type.create(pc);
-		ArrayList<L1PcInstance> pcs = new ArrayList<L1PcInstance>();
+		if (!type.create(pc, () -> {
+            if (pc.getInventory().DeleteItemInInventory(item, _needCount)) return true;
+            RaidMessage.RAID_OPEN_FAIL_INVALID_ITEM.sendMessage(pc);
+            return false;
+        })) return;
+        ArrayList<L1PcInstance> pcs = new ArrayList<L1PcInstance>();
 		pcs.addAll(CWorld.getInstance().getAllPlayers());
 		RaidMessage.RAID_OPEN_SUCCESS_MESSAGE.sendMessage(pcs);
 		pcs.clear();

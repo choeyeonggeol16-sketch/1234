@@ -14,27 +14,25 @@ import l1j.server.server.utils.SQLUtil;
 
 /** 레이드를 시작 RaidCreator 객체를 로드하고 로드하고 관리하는 클래스 **/
 public class RaidCreatorLoader {
-	private static RaidCreatorLoader _instance;
-	public static RaidCreatorLoader getInstance(){
-		if(_instance == null)
-			_instance = new RaidCreatorLoader();
-		return _instance;
-	}
-	
-	public static void release(){
-		if(_instance != null){
-			_instance.clear();
-			_instance = null;
-		}
-	}
-	
-	public static void reload(){
-		RaidCreatorLoader tmp = _instance;
-		_instance 				= new RaidCreatorLoader();
-		tmp.clear();
-		tmp = null;
-	}
-	
+    private static volatile RaidCreatorLoader _instance;
+
+    public static RaidCreatorLoader getInstance() {
+        RaidCreatorLoader current = _instance;
+        if (current != null) return current;
+        synchronized (RaidCreatorLoader.class) {
+            if (_instance == null) _instance = new RaidCreatorLoader();
+            return _instance;
+        }
+    }
+
+    public static synchronized void release() {
+        _instance = null;
+    }
+
+    public static synchronized void reload() {
+        _instance = new RaidCreatorLoader();
+    }
+
 	private HashMap<Integer, RaidCreator> _creatorMaps;
 	private RaidCreatorLoader(){
 		load();
@@ -67,12 +65,7 @@ public class RaidCreatorLoader {
 		}
 	}
 	
-	public void clear(){
-		if(_creatorMaps != null){
-			_creatorMaps.clear();
-			_creatorMaps = null;
-		}
-	}
+
 	
 	public boolean createRaid(L1PcInstance pc, L1ItemInstance item){
 		RaidCreator creator = _creatorMaps.get(item.getItemId());

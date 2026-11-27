@@ -666,6 +666,8 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 		super.setCurrentMp(i);
 	}
 
+    public synchronized boolean hasPendingPartyDrop() { return _pendingPartyDrop != null; }
+
     private synchronized boolean DeferDropRemoval(byte mode) {
         if (_dropRemovalRequest == 0) _dropRemovalRequest = mode;
         return _pendingPartyDrop != null;
@@ -808,13 +810,11 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     
 	@Override
 	public void onDeath(L1Character lastAttacker) {
-        final int deathEpoch;
+        final DeathSettlement mandatoryDeath;
         synchronized (this) {
             if (!Die()) return;
-            deathEpoch = ++_deathEpoch;
+            mandatoryDeath = new DeathSettlement(lastAttacker, ++_deathEpoch);
         }
-
-        final DeathSettlement mandatoryDeath = new DeathSettlement(lastAttacker, deathEpoch);
 
         try {
             setStatus(ActionCodes.ACTION_Die);
@@ -834,14 +834,13 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     }
 
     /** Reuse the existing per-death Runnable as the post-pickup continuation. */
-    private final class DeathSettlement implements Runnable {
+    private final class DeathSettlement extends CWorld.DropOrigin implements Runnable {
         final L1Character lastAttacker;
         final int epoch;
         L1PcInstance rewardPc;
         CContributeData snapshot;
         CParty party;
         L1PcInstance[] members;
-        L1Location origin;
         CInventory source;
         boolean claimed; // guarded by NPC monitor
         boolean routed; // only the claimed dispatcher may run the initial drop
@@ -852,6 +851,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         byte removalMode;
 
         DeathSettlement(L1Character lastAttacker, int epoch) {
+            super(L1MonsterInstance.this.getLocation());
             this.lastAttacker = lastAttacker;
             this.epoch = epoch;
         }
@@ -923,7 +923,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
             job.snapshot = snap;
             job.party = party;
             job.members = members;
-            job.origin = new L1Location(getLocation());
             job.source = getInventory();
             job.handedOff = true;
             _pendingPartyDrop = job;
@@ -958,7 +957,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
                 // adena, select recipients again or repeat a successful share.
                 job.routed = true;
                 try {
-                    DropItemOnDying(job.snapshot, job.rewardPc, job.party, job.members, job.origin);
+                    DropItemOnDying(job.snapshot, job.rewardPc, job.party, job.members, job);
                 } finally {
                     // Recovery needs only the remaining inventory and origin.
                     job.snapshot = null;
@@ -985,7 +984,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         for (L1ItemInstance item : source.getItems()) {
             if (item == null || source.GetByServerID(item.getId()) != item || item.getCount() <= 0) continue;
             try {
-                world.RecoverNpcDrop(job.origin, source, item);
+                world.RecoverNpcDrop(job, source, item);
             } catch (RuntimeException failure) {
                 if (job.retryAttempts == 0) {
                     DEATH_DROP_LOG.log(java.util.logging.Level.WARNING,
@@ -1051,7 +1050,6 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
         job.snapshot = null;
         job.party = null;
         job.members = null;
-        job.origin = null;
         job.source = null;
         job.afterPickup = true;
         // Keep scripts and death completion out of the normal CWorld drain.
@@ -1188,7 +1186,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
             _dropHateList.copySnapshotTo(dropTargetList, dropHateList, damage);
             final CContributeData snap = CContributeData.Distribute(this, dropTargetList, dropHateList, damage);
             if (TryQueuePartyDrop(job, pc, snap)) return true;
-            if (isCurrentDeath(job.epoch)) DropItemOnDying(snap, pc, null, null, getLocation());
+            if (isCurrentDeath(job.epoch)) DropItemOnDying(snap, pc, null, null, job);
         } catch (Exception failure) {
             DEATH_DROP_LOG.log(java.util.logging.Level.WARNING, "Monster drop preparation failed", failure);
         }

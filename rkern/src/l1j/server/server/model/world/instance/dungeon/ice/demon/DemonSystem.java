@@ -1,65 +1,47 @@
 package l1j.server.server.model.world.instance.dungeon.ice.demon;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
+import l1j.server.server.model.world.instance.dungeon.ice.CIceCaveSpawn;
 
-public class DemonSystem {
-	
-	private static DemonSystem _instance;
-	private final ArrayList<Integer> _map = new ArrayList<Integer>();
-	private final Map<Integer, Demon> _list = new ConcurrentHashMap<Integer, Demon>();
+public final class DemonSystem {
+    private static final DemonSystem INSTANCE = new DemonSystem();
+    private static final Logger LOG = Logger.getLogger(DemonSystem.class.getName());
+    private final CInstantZoneManager<Demon> zones = new CInstantZoneManager<>(49);
 
-	public static DemonSystem getInstance() {
-		if (_instance == null) {
-			_instance = new DemonSystem();
-		}
-		return _instance;
-	}
+    private DemonSystem() {}
 
-	public DemonSystem(){
-		_map.add(2151);
-	}
+    public static DemonSystem getInstance() {
+        return INSTANCE;
+    }
 
-	public void startDemon(L1PcInstance pc){
-		if(countDemon() >= 49){
-			SC_ChatPacket.sendDirect(pc, pc, "인스턴스 던전에 진입한 인원이 너무 많습니다");
-			return;
-		}
-		int id = blankMapId();
-		if(id != 2151)
-			L1WorldMap.getInstance().cloneMap(2151, id);
-		Demon demon = new Demon(id);
-//		L1Teleport.teleport(pc, 32728, 32819, (short) id, 5, true);
-		pc.start_teleport(32728, 32819, id, 5, 169, true, false);
-		_list.put(id, demon);
-		demon.Start();
-	}
-
-	public int blankMapId(){
-		if(_list.size() == 0)
-			return 2151;
-		for(int i = 2151 ; i <= 2200; i++){
-			Demon h = _list.get(i);
-			if(h == null)
-				return i;
-		}  
-		return 2200;
-	}
-
-	public Demon getDemon(int id){
-		return _list.get(id);
-	}
-
-	public void removeDemon(int id){
-		_list.remove(id);
-	}
-
-	public int countDemon(){
-		return _list.size();
-	}
+    public void startDemon(L1PcInstance pc) {
+        CInstantZone<Demon> zone = null;
+        try {
+            zone = zones.tryOpen(2151, -1, 2152, 2200);
+            if (zone != null) {
+                final Demon demon = new Demon(zone);
+                final int mapId = zone.mapId();
+                final var session = pc.getNetConnection();
+                final int stamp = pc.getSessionStamp();
+                zone.bind(demon);
+                zone.start(() -> {
+                    if (session == null || !pc.isItemTransferSession(session, stamp)
+                            || !session.ownsReadyGameSession()) return;
+                    pc.start_teleport(32728, 32819, mapId, 5, 169, true, false);
+                    if (CIceCaveSpawn.pause(2000L)) demon.play();
+                }, demon::finish);
+                return;
+            }
+        } catch (RuntimeException failure) {
+            if (zone != null) zone.close(() -> {});
+            LOG.log(Level.WARNING, "Ice demon admission failed", failure);
+        }
+        SC_ChatPacket.sendDirect(pc, pc, "인스턴스 던전에 진입한 인원이 너무 많습니다");
+    }
 }

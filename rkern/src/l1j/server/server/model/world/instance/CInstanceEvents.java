@@ -31,7 +31,11 @@ public final class CInstanceEvents {
     }
 
     public static Future<?> schedule(Runnable task, long delayMs) {
-        final BlockingEvent event = new BlockingEvent(Objects.requireNonNull(task));
+        return schedule(task, delayMs, null);
+    }
+
+    static Future<?> schedule(Runnable task, long delayMs, Runnable onRetired) {
+        final BlockingEvent event = new BlockingEvent(Objects.requireNonNull(task), onRetired);
         synchronized (LOCK) {
             if (closed || EVENTS.size() >= MAX_EVENTS)
                 throw new RejectedExecutionException("Instance event capacity unavailable");
@@ -94,7 +98,12 @@ public final class CInstanceEvents {
         private volatile CServerTimer deadline;
         private volatile Thread eventThread;
 
-        BlockingEvent(Runnable task) { super(task, null); }
+        private Runnable onRetired;
+
+        BlockingEvent(Runnable task, Runnable onRetired) {
+            super(task, null);
+            this.onRetired = onRetired;
+        }
 
         void launch() {
             if (closed || isCancelled()) {
@@ -141,9 +150,17 @@ public final class CInstanceEvents {
         }
 
         private void retire() {
-            synchronized (LOCK) {
-                EVENTS.remove(this);
-                LOCK.notifyAll();
+            try {
+                final Runnable callback = onRetired;
+                onRetired = null;
+                if (callback != null) callback.run();
+            } catch (RuntimeException failure) {
+                LOG.log(Level.SEVERE, "Instance event cleanup failed", failure);
+            } finally {
+                synchronized (LOCK) {
+                    EVENTS.remove(this);
+                    LOCK.notifyAll();
+                }
             }
         }
     }

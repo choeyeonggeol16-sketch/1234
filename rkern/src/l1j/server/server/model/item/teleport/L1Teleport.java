@@ -17,6 +17,8 @@ import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.model.world.instance.CInstantZone;
+import l1j.server.server.model.world.instance.CInstantZoneManager;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
 import l1j.server.server.model.character.companion.instance.CompanionTeleportHandler;
 import l1j.server.server.model.character.experience.amplifier.ExpAmplifierLoader;
@@ -59,13 +61,16 @@ public class L1Teleport {
 		if (pc == null) {
 			return;
 		}
-		teleportInternal(pc, x, y, mapid);
+        final CInstantZone<?> zone = CInstantZoneManager.destination(mapid);
+        if (!CInstantZoneManager.enterDestination(mapid, zone, () -> teleportInternal(pc, x, y, mapid)))
+            pc.tpEndFinish();
 	}
 
 	public void doTeleportation(L1PcInstance pc) {
 		if (pc == null || !pc.get_teleport()) return;
 
 		if (pc.isDead() && !RaidSpace.getInstance().isInInstance(pc)) {
+            pc.tpEndFinish();
 			return;
 		}
 		teleportInternal(pc, pc.get_teleport_x(), pc.get_teleport_y(), pc.get_teleport_map());
@@ -428,7 +433,7 @@ public class L1Teleport {
 
 
 		// 특정 퀘스트/던전 상태 업데이트
-		updateQuestState(pc, oldMapId, newMapId);
+		updateQuestState(pc, oldMapId);
 
 		// 공성 관련 위치 이동 처리
 		CastleWarBusiness.move(pc);
@@ -446,8 +451,8 @@ public class L1Teleport {
 		}
 	}
 
-	private void updateQuestState(L1PcInstance pc, int mapid, int newMapId) {
-		if (pc.isInFantasy && !isFantasyMap(mapid)) {
+	private void updateQuestState(L1PcInstance pc, int mapid) {
+		if (pc.isInFantasy && pc.getMap().getBaseMapId() != 1936) {
 			pc.getInventory().DeleteItemInInventory(810006);
 			pc.getInventory().DeleteItemInInventory(810007);
 			pc.isInFantasy = false;
@@ -456,7 +461,7 @@ public class L1Teleport {
 			pc.getInventory().DeleteItemInInventory(203003);
 			pc.isInValakas = false;
 		}
-		if (pc.isInValakasBoss && mapid != 2600) {
+		if (pc.isInValakasBoss && pc.getMap().getBaseMapId() != 2600) {
 			pc.isInValakasBoss = false;
 		}
 		
@@ -490,10 +495,6 @@ public class L1Teleport {
 
 	private boolean isIndunMap(int mid) {
 		return mid == 1936 || mid == 2600 || mid == 2699;
-	}
-
-	private boolean isFantasyMap(int mid) {
-		return mid >= 1936 && mid <= 2035;
 	}
 
 	private boolean isGahoMap(int mid) {

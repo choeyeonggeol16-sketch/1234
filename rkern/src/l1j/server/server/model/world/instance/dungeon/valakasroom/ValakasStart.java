@@ -1,21 +1,18 @@
 package l1j.server.server.model.world.instance.dungeon.valakasroom;
-import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 import java.util.ArrayList;
 
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.instance.CInstanceEvents;
-import l1j.server.server.model.inventory.CInventory;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.CWorld;
+import l1j.server.server.model.world.instance.CInstantZone;
 import l1j.server.server.model.Instance.L1DoorInstance;
-import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
-public class ValakasStart implements Runnable {
+public class ValakasStart {
+	private final CInstantZone<ValakasStart> zone;
 	private final short _map;
 	private int stage = 1;
 	private static final int FIRST_STEP = 1;
@@ -37,29 +34,19 @@ public class ValakasStart implements Runnable {
 
 	private L1PcInstance pc;
 
-	private boolean ended;
-
 	private boolean Running = true;
 
 	public ArrayList<L1NpcInstance> BasicNpcList;
 	ArrayList<L1NpcInstance> NpcList;
 	public ArrayList<L1NpcInstance> BossList;
 
-	public ValakasStart(int id, L1PcInstance pc){
-		_map = (short)id;
+	ValakasStart(CInstantZone<ValakasStart> zone, L1PcInstance pc) {
+		this.zone = zone;
+		_map = (short) zone.mapId();
 		this.pc = pc;
 	}
 
 	public int mapId() { return _map; }
-
-	@Override
-	public void run() {
-		try {
-			runRaid();
-		} finally {
-			endRaid();
-		}
-	}
 
 	private void runRaid() {
 		setting();
@@ -196,9 +183,22 @@ public class ValakasStart implements Runnable {
 		}
 	}
 
-	public void Start() {
-		CInstanceEvents.schedule(this, 2000L);
-	}
+    void enter(L1PcInstance entrant) {
+        if (pc != entrant) return;
+        zone.enter(() -> {
+            boolean wasInValakas = entrant.isInValakas;
+            try {
+                zone.start(this::runRaid, this::cleanup, 2000L);
+                entrant.isInValakas = true;
+                entrant.start_teleport(32624, 33059, mapId(), 5, 169, true, false);
+            } catch (RuntimeException failure) {
+                entrant.isInValakas = wasInValakas;
+                endRaid();
+                throw failure;
+            }
+        });
+    }
+
 
 	private void setting(){
 		for(L1NpcInstance npc : BasicNpcList){
@@ -246,37 +246,16 @@ public class ValakasStart implements Runnable {
 	}
 
 	private void checkPc() {
-		int check = 0;
-		for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
-			if (obj instanceof L1PcInstance) {
-				check = 1;
-			}
-		}
-		if (check == 0) {
-			if (pc != null) {
-				pc = null;
-			}
-			Running = false;
-		}
-	}
-	
+        if (!ValakasRoomSpawn.hasPlayers(zone)) Running = false;
+    }
 
-	synchronized void endRaid(){
-		if (ended) return;
-		ended = true;
-		try {
-		for (L1Object ob : CWorld.getInstance().getVisibleObjects(_map).values()) {
-			if(ob == null)
-				continue;
-			if(ob instanceof L1ItemInstance){
-				L1ItemInstance obj = (L1ItemInstance)ob;
-				CInventory groundInventory = CWorld.getInstance().getInventory(obj.getX(), obj.getY(), obj.getMapId());
-				groundInventory.DeleteItemAmount(obj);
-			}else if(ob instanceof L1NpcInstance){
-				L1NpcInstance npc = (L1NpcInstance)ob;
-				npc.deleteMe();
-			}
-		}
+    void endRaid() {
+        zone.close(this::cleanup);
+    }
+
+    void cleanup() {
+        ValakasRoomSpawn.clearRoom(zone);
+
 		pc = null;
 		death = null;
 		ifrit = null;
@@ -291,9 +270,5 @@ public class ValakasStart implements Runnable {
 		if (NpcList != null) NpcList.clear();
 		if (BasicNpcList != null) BasicNpcList.clear();
 		if (BossList != null) BossList.clear();
-		} finally {
-			ValakasRoomSystem.getInstance().remove(this);
-		}
-
 	}
 }

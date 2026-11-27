@@ -2,11 +2,9 @@ package l1j.server.server.model.world.instance.raid.objects;
 
 import java.util.ArrayList;
 import java.util.TimerTask;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.server.model.world.instance.CInstanceEvents;
-import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
@@ -49,32 +47,19 @@ public class RaidFafurion extends RaidObject{
 	protected void setBossSpawn(RaidNpcSpawn spawn) {
 		_bossSpawn = spawn;
 	}
-
-	@Override
-	public void dispose(){
-		super.dispose();
-		
-		if(_npcList != null){
-			_npcList.clear();
-			_npcList = null;
-		}
-	}
 	
 	@Override
 	protected void readyRaid() {
 		L1PcInstance 	pc 		= null;
-		int 			size 	= 0;
 		int 			cpMap	= 0;
 		try{
 			cpMap				= getCopyMapId();
-			L1PcInstance[] pcs	= null;
 			boolean isInArea 	= true;
 	
 			while (isInArea && _state == RS_READY && !CInstanceEvents.isStopping()) {
 				Thread.sleep(500);
-				pcs = _users.toArray(new L1PcInstance[_users.size()]);
-				for(int i=0; i<pcs.length; i++){
-					pc = pcs[i];
+				for(L1PcInstance member : _users){
+					pc = member;
 					if(pc == null)
 						continue;
 					
@@ -91,7 +76,6 @@ public class RaidFafurion extends RaidObject{
 			}
 			
 			if (_state != RS_READY || CInstanceEvents.isStopping()) return;
-			size = _users.size();
 			for(int i=0; i<=s_startMessages.length; i++){
 				Thread.sleep(RaidLoadManager.MRS_MESSAGE_DELAY);
 				try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
@@ -99,8 +83,8 @@ public class RaidFafurion extends RaidObject{
                     ? SC_ServerMessage.nativeWriter(s_startMessages[i])
                     : SC_SystemMessage.nativeWriter(s_lastMessage),
                   Integer.MIN_VALUE,Integer.MAX_VALUE)){
-                 for(int j=0; j<size; j++){
-					pc = _users.get(j);
+                 for(L1PcInstance member : _users){
+					pc = member;
 					if(pc != null && pc.getMapId() == cpMap){
 												l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
 						
@@ -153,7 +137,7 @@ public class RaidFafurion extends RaidObject{
 						return;
 					
 					if(!isInRaid()){
-						resetRaid();
+						requestReset();
 						return;
 					}
 					
@@ -232,8 +216,7 @@ public class RaidFafurion extends RaidObject{
 			_sael1				= sp.spawnRandomBoss(mid);
 			sp					= createSpawn(RaidLoadManager.MRS_SP_SAEL2_ID, RaidNpcSpawn.ST_RECT, 1, 5, 0);
 			_sael2				= sp.spawnRandomBoss(mid);
-			if (CInstanceWork.schedule(this, RaidLoadManager.MRS_SP_PRODUCT_DESTTIME - 50) == null)
-				throw new RejectedExecutionException("Raid product deadline admission failed");
+			scheduleProduct(this, RaidLoadManager.MRS_SP_PRODUCT_DESTTIME - 50);
 		}
 		
 		@Override
