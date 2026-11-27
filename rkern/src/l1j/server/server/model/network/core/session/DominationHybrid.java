@@ -6,7 +6,8 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.Account;
-import l1j.server.server.auth.login.LoginController;
+import l1j.server.server.authd.CAccountContainer;
+import l1j.server.server.authd.CAuthD;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.listener.ActionListenerLoader;
@@ -287,7 +288,7 @@ public final class DominationHybrid {
         if (retire != null) retire.close();
     }
 
-    /** Called only AFTER old logout + LoginController removal + socket cleanup. */
+    /** Called only AFTER old logout + CAccountContainer removal + socket cleanup. */
     public static void onClientClosed(CUserSocket closed) {
         synchronized (DominationHybrid.class) {
             final Pending p = pending;
@@ -339,13 +340,11 @@ public final class DominationHybrid {
         final CUserSocket next = p.newClient;
         try {
             if (isExpired(p) || !next.isConnected() || next.getAccount() != null
-                    || LoginController.getInstance().getClientByAccount(p.account.getName()) != null
+                    || CAccountContainer.getInstance().getClientByAccount(p.account.getName()) != null
                     || CWorld.getInstance().getPlayer(p.character) != null) {
                 fail(p); return;
             }
-            LoginController.getInstance().login(next, p.account);
-            next.setAccount(p.account);
-            next.setConnectionState(CConnectionState.AUTHENTICATED);
+            CAuthD.attachHandoff(next, p.account);
             final ProtoWriter writer = Proto.begin(next,
                     ProtoMsg.SC_HIBREED_AUTH_ACK_PACKET, 32);
             if (writer == null) { fail(p); return; }

@@ -16,7 +16,7 @@ import l1j.server.server.Account;
 import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.npc.spawn.boss.CBossNpcMaker;
-import l1j.server.server.auth.login.LoginController;
+import l1j.server.server.authd.CAccountContainer;
 import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.SkillCheck;
 import l1j.server.server.datatables.CharacterSlotItemTable;
@@ -273,7 +273,7 @@ public final class CS_EnterWorld {
     private static boolean currentPrivateStoreLogin(CUserSocket client, Account account) {
         return client.isConnected() && client.getAccount() == account && client.getActiveChar() == null
                 && client.getConnectionState() == CConnectionState.AUTHENTICATED
-                && LoginController.getInstance().getClientByAccount(account.getName()) == client;
+                && CAccountContainer.getInstance().getClientByAccount(account.getName()) == client;
     }
 
     private static boolean canRetirePrivateStore(CWorld world, L1PcInstance shop, Account account) {
@@ -476,7 +476,7 @@ public final class CS_EnterWorld {
         }
 
         // 로그인 컨트롤러 정합
-        CUserSocket sessionClient = LoginController.getInstance().getClientByAccount(client.getAccountName());
+        CUserSocket sessionClient = CAccountContainer.getInstance().getClientByAccount(client.getAccountName());
         if (sessionClient != client) {
             _log.warning(String.format("세션 불일치 차단: %s", client.getIp()));
             client.close();

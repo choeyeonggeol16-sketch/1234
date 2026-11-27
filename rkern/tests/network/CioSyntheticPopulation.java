@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import l1j.server.server.Account;
-import l1j.server.server.auth.login.LoginController;
+import l1j.server.server.authd.CAccountContainer;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CIOServer;
@@ -79,7 +79,7 @@ public final class CioSyntheticPopulation {
             account.setValid(true);
             if (!socket.bindVerifiedMacIdentity(accountId(seat)))
                 throw new IllegalStateException("Synthetic account identity rejected");
-            LoginController.getInstance().login(socket, account);
+            CAccountContainer.getInstance().login(socket, account);
             loginRegistered = true;
             socket.setAccount(account);
             socket.setConnectionState(CConnectionState.AUTHENTICATED);
@@ -98,7 +98,7 @@ public final class CioSyntheticPopulation {
         } catch (Exception failure) {
             try {
                 actor.logout();
-                if (loginRegistered) LoginController.getInstance().logout(socket);
+                if (loginRegistered) CAccountContainer.getInstance().logout(socket);
             } catch (RuntimeException cleanup) {
                 failure.addSuppressed(cleanup);
             }
@@ -157,7 +157,7 @@ public final class CioSyntheticPopulation {
     public Snapshot assertReady(CIOServer server) {
         final int expected = seats.length();
         final long[] registry = server.accountRegistryDiagnostics();
-        final int online = LoginController.getInstance().getOnlinePlayerCount();
+        final int online = CAccountContainer.getInstance().getOnlinePlayerCount();
         final CWorld world = CWorld.getInstance();
         int ready = 0;
         for (int seat = 0; seat < expected; seat++) {
@@ -193,7 +193,7 @@ public final class CioSyntheticPopulation {
         if (failure != null) throw new AssertionError("Fixture actor cleanup failed", failure);
         final long[] registry = server.accountRegistryDiagnostics();
         final int[] cache = cacheRegistrySizes();
-        final int online = LoginController.getInstance().getOnlinePlayerCount();
+        final int online = CAccountContainer.getInstance().getOnlinePlayerCount();
         final int world = CWorld.getInstance().getAllPlayers().size();
         if (registry[0] != 0 || registry[1] != 0 || registry[2] != 0
                 || cache[0] != 0 || cache[1] != 0 || online != 0 || world != 0) {

@@ -41,7 +41,7 @@ import com.sun.management.OperatingSystemMXBean;
 
 import l1j.server.Config;
 import l1j.server.Server;
-import l1j.server.server.auth.login.LoginController;
+import l1j.server.server.authd.CAccountContainer;
 import l1j.server.server.GameServer;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -296,7 +296,7 @@ public class chocco extends JFrame {
 
         JMenu report = menu("보고서");
         addItem(report, "메모리", () -> showSimpleReport("메모리", "사용 메모리 : " + SystemUtil.getUsedMemoryMB() + " MB"));
-        addItem(report, "인스턴스", () -> showSimpleReport("인스턴스", "온라인 유저 : " + LoginController.getInstance().getOnlinePlayerCount() + "\n스레드 : " + Thread.activeCount()));
+        addItem(report, "인스턴스", () -> showSimpleReport("인스턴스", "온라인 유저 : " + CAccountContainer.getInstance().getOnlinePlayerCount() + "\n스레드 : " + Thread.activeCount()));
         JMenu creature = menu("크리처 분포");
         addItem(creature, "유저 분포", this::showUserManager);
         addDisabledItem(creature, "NPC 분포");
@@ -958,7 +958,7 @@ public class chocco extends JFrame {
 		OperatingSystemMXBean osBean =
 				(OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
-		 LoginController lc = LoginController.getInstance();
+		 CAccountContainer lc = CAccountContainer.getInstance();
 
 		monitorScheduler.scheduleAtFixedRate(() -> {
 			try {

@@ -14,10 +14,10 @@ def section(path, first, last):
 socket = section("connection/CUserSocket.java",
                  "    private volatile boolean privateStoreRetirementPending;",
                  "    private volatile PlayerShopView playerShopView;")
-auth = section("cs/packet/CS_AuthLogin.java", "    public static void handle(",
-               "    private static final class AuthLoad")
-notice = section("cs/packet/CS_AuthLogin.java", "    public static void sendNotice(",
-                 "    private static boolean isAccountIpQuotaReached(")
+auth_source = (src.parents[2] / "authd/CAuthD.java").read_text(encoding="utf-8")
+auth = auth_source[auth_source.index("    public static void requestLogin("):
+                   auth_source.index("    private static boolean finishLogin(")]
+notice = section("cs/packet/CS_ReadNews.java", "    private static void sendNotice(", "\n}")
 common = section("cs/packet/CS_CommonClick.java", "    private static final class ExpiredCharacter",
                  "    private static void completeCommonClick(")
 delete = section("cs/packet/CS_CommonClick.java", "    private static void deleteExpiredCharacter(",
@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 
 public final class LoginDbAdmissionCheck {
     static final Logger _log = Logger.getAnonymousLogger();
+    static final Logger LOG = _log;
     enum CConnectionState { CONNECTED, AUTHENTICATED, IN_GAME }
     record Account(String getName) {
         void tamUpdate(Account account) { }
@@ -113,33 +114,36 @@ public final class LoginDbAdmissionCheck {
             return true;
         }
     }
-    static class Config { static final boolean ALLOW_2PC = false; }
-    static class CIOConfig {
-        static final int NETWORK_CLIENT_PERMISSION = 1;
-        static final String NETWORK_ADDRESS2ACCOUNT = "";
-    }
-    static class LoginController {
-        static LoginController getInstance() { return new LoginController(); }
+    static class Config { static final boolean AUTO_CREATE_ACCOUNTS = false; }
+    static class CIOConfig { static final int NETWORK_ADDRESS2ACCOUNT = 2; }
+    static class CAccountContainer {
+        static CAccountContainer getInstance() { return new CAccountContainer(); }
+        static String accountKey(String name) { return name; }
         int getIpCount(String ip) { return 0; }
     }
-    static class LoginAttemptGuard { static boolean isBlocked(String ip) { return false; } }
-    static class SC_LoginResult {
-        static final int REASON_USER_OR_PASS_WRONG = 1;
-        static void send(CUserSocket socket, int reason) { }
+    static class CLoginAttemptGuard { static boolean isBlocked(String ip) { return false; } }
+    static int loginIpLimit() { return 1; }
+    static void rejectIp(CUserSocket client) { client.close(); }
+    static void sendWrongCredentials(CUserSocket client) {}
+    static void failCredentials(CUserSocket client, String ip) {}
+    static class CAccountDB {
+        record LoginResult(boolean valid) {}
+        static boolean recentlyMissing(String name) { return false; }
+        static LoginResult readLogin(String account, String password, String ip, String hostname,
+                boolean allowCreation, int limit) {
+            authReads++;
+            return new LoginResult(password.equals("valid-fixture"));
+        }
     }
-    static void processDuplication(CUserSocket socket, String account, String ip) { }
-    static boolean isRecentlyMissing(String account) { return false; }
-    record AuthLoad(boolean valid) { }
-    static AuthLoad readAuth(String account, String password, String ip, String hostname) {
-        authReads++;
-        return new AuthLoad(password.equals("valid-fixture"));
-    }
-    static boolean isAuthority(CUserSocket socket, String account, AuthLoad loaded) {
+    static boolean finishLogin(CUserSocket socket, String ip, CAccountDB.LoginResult loaded) {
         authReplies++;
         if (!loaded.valid()) return false;
-        socket.account = new Account(account);
+        socket.account = new Account("fixture");
         socket.state = CConnectionState.AUTHENTICATED;
         return true;
+    }
+    static void handle(CUserSocket socket, String name, String password) {
+        requestLogin(socket, name, password, client -> sendNotice(client, client.getAccountName()));
     }
     static class SC_CommonNews {
         record NoticeData(String message, String noticeId) { }

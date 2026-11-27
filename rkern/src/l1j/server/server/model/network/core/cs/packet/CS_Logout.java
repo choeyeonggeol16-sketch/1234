@@ -1,6 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.auth.login.LoginController;
+import l1j.server.server.authd.CAccountContainer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.utill.CConnectionState;
 
@@ -35,7 +35,7 @@ public final class CS_Logout {
                 return;
             }
             client.setConnectionState(CConnectionState.CONNECTED);
-            LoginController.getInstance().logout(client);
+            CAccountContainer.getInstance().logout(client);
 
         } catch (Exception ignored) {
         }

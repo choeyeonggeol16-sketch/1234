@@ -1,10 +1,12 @@
-package l1j.server.server.auth.login;
+package l1j.server.server.authd;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -16,21 +18,21 @@ import l1j.server.server.model.network.thread.CServerTimer;
 /**
  * 로그인 세션 레지스트리
  */
-public final class LoginController {
+public final class CAccountContainer {
 
-    private static final Logger _log = Logger.getLogger(LoginController.class.getName());
+    private static final Logger _log = Logger.getLogger(CAccountContainer.class.getName());
 
     // ---------------- 코어 ----------------
 
-    private static volatile LoginController _instance;
+    private static volatile CAccountContainer _instance;
 
-    public static LoginController getInstance() {
-        LoginController inst = _instance;
+    public static CAccountContainer getInstance() {
+        CAccountContainer inst = _instance;
         if (inst == null) {
-            synchronized (LoginController.class) {
+            synchronized (CAccountContainer.class) {
                 inst = _instance;
                 if (inst == null) {
-                    inst = new LoginController();
+                    inst = new CAccountContainer();
                     _instance = inst;
                 }
             }
@@ -39,7 +41,7 @@ public final class LoginController {
     }
 
     /** 정규화된 accountName -> session */
-    private final ConcurrentHashMap<String, SessionRec> _sessions =
+    private final ConcurrentHashMap<String, CClientSession> _sessions =
             new ConcurrentHashMap<>(8192);
 
     /** IP -> 접속 수 */
@@ -59,7 +61,7 @@ public final class LoginController {
     private volatile int _maxAllowedOnlinePlayers;
     private volatile long _reloginGraceMs = 1_000L;
 
-    private LoginController() {
+    private CAccountContainer() {
     }
 
     // ---------------- 값/키 유틸 ----------------
@@ -68,11 +70,10 @@ public final class LoginController {
      * 기존 AccountId.of()와 같은 정규화 규칙.
      * AccountId 객체 자체는 만들지 않는다.
      */
-    private static String accountKey(String raw) {
-        if (raw == null || raw.isEmpty()) {
-            throw new IllegalArgumentException("빈 계정명");
-        }
-        return raw.trim().toLowerCase();
+    static String accountKey(String raw) {
+        if (raw == null) return null;
+        String name = raw.trim();
+        return name.isEmpty() ? null : name.toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -97,11 +98,11 @@ public final class LoginController {
     }
 
     /** 세션 레코드: client + 로그인 당시 IP만 유지 */
-    private static final class SessionRec {
+    private static final class CClientSession {
         final CUserSocket client;
         final String ip;
 
-        SessionRec(CUserSocket client, String ip) {
+        CClientSession(CUserSocket client, String ip) {
             this.client = client;
             this.ip = ip;
         }
@@ -128,11 +129,9 @@ public final class LoginController {
     }
 
     public CUserSocket getClientByAccount(String accountName) {
-        if (accountName == null) {
-            return null;
-        }
-
-        final SessionRec r = _sessions.get(accountKey(accountName));
+        final String key = accountKey(accountName);
+        if (key == null) return null;
+        final CClientSession r = _sessions.get(key);
         return (r != null) ? r.client : null;
     }
 
@@ -155,7 +154,12 @@ public final class LoginController {
 
     public void login(CUserSocket client, Account account)
             throws GameServerFullException, AccountAlreadyLoginException {
+        if (!loginWithinIpLimit(client, account, Integer.MAX_VALUE))
+            throw new IllegalStateException("AuthD IP counter overflow");
+    }
 
+    boolean loginWithinIpLimit(CUserSocket client, Account account, int limit)
+            throws GameServerFullException, AccountAlreadyLoginException {
         Objects.requireNonNull(client, "client");
         Objects.requireNonNull(account, "account");
 
@@ -164,41 +168,69 @@ public final class LoginController {
         }
 
         final String id = accountKey(account.getName());
+        if (id == null) throw new IllegalArgumentException("빈 계정명");
         final String ip = requireIp(client.getIp());
         synchronized (client) {
             if (!client.isConnected()) throw new IllegalStateException("Login session already closed");
             if (client.loginRegistryKey() != null) throw new AccountAlreadyLoginException();
             reserveOnline(account.isGameMaster());
 
+            boolean reservedIp = false;
             boolean registered = false;
             try {
-                final SessionRec newRec = new SessionRec(client, ip);
+                reservedIp = reserveIp(ip, limit);
+                if (!reservedIp) return false;
+                final CClientSession newRec = new CClientSession(client, ip);
                 for (;;) {
-                    final SessionRec existing = _sessions.putIfAbsent(id, newRec);
+                    final CClientSession existing = _sessions.putIfAbsent(id, newRec);
                     if (existing == null) break;
                     if (isDeadSession(existing.client)) {
                         if (!_sessions.replace(id, existing, newRec)) continue;
-                        _log.warning("[LoginController] 좀비 세션 교체 - account=" + id
+                        _log.warning("[CAccountContainer] 좀비 세션 교체 - account=" + id
                                 + " old=" + System.identityHashCode(existing.client)
                                 + " new=" + System.identityHashCode(client));
                         decrementSessionCounts(existing);
                         break;
                     }
-                    _log.warning("[LoginController] 중복 로그인 거부 - account=" + id);
+                    _log.warning("[CAccountContainer] 중복 로그인 거부 - account=" + id);
                     scheduleKickIfNeeded(existing.client, id);
                     throw new AccountAlreadyLoginException();
                 }
 
                 // Terminal cleanup uses this key even if sending the login reply
                 // or publishing the Account object has not completed.
-                increment(_perIp, ip);
                 increment(_perCClass, cClassOf(ip));
                 client.setLoginRegistryKey(id);
                 registered = true;
+                return true;
             } finally {
-                if (!registered) decrementOnline();
+                if (!registered) {
+                    if (reservedIp) decrement(_perIp, ip);
+                    decrementOnline();
+                }
             }
         }
+    }
+
+    private boolean reserveIp(String ip, int limit) {
+        if (limit <= 0) return false;
+        if (limit == Integer.MAX_VALUE) {
+            increment(_perIp, ip);
+            return true;
+        }
+        final AtomicBoolean reserved = new AtomicBoolean();
+        _perIp.compute(ip, (key, count) -> {
+            if (count == null) {
+                reserved.set(true);
+                return new AtomicInteger(1);
+            }
+            if (count.get() < limit) {
+                count.incrementAndGet();
+                reserved.set(true);
+            }
+            return count;
+        });
+        return reserved.get();
     }
 
     private void reserveOnline(boolean gm) throws GameServerFullException {
@@ -221,7 +253,7 @@ public final class LoginController {
             final String id = client.loginRegistryKey();
             if (id == null) return false; // never registered, including pre-auth transport close
             client.setLoginRegistryKey(null);
-            final SessionRec existing = _sessions.get(id);
+            final CClientSession existing = _sessions.get(id);
             if (existing == null || existing.client != client || !_sessions.remove(id, existing))
                 return false;
             decrementSessionCounts(existing);
@@ -229,7 +261,7 @@ public final class LoginController {
         }
     }
 
-    private void decrementSessionCounts(SessionRec removed) {
+    private void decrementSessionCounts(CClientSession removed) {
         // 로그인 시점에 저장한 IP 기준으로 차감
         decrement(_perIp, removed.ip);
         decrement(_perCClass, cClassOf(removed.ip));
@@ -287,7 +319,7 @@ public final class LoginController {
                     // An earlier grace-period callback must not close a new
                     // session or bypass a newer kick reservation.
                     if (_pendingKickUntil.get(id) != dueBox) return;
-                    final SessionRec current = _sessions.get(id);
+                    final CClientSession current = _sessions.get(id);
                     if (current == null || current.client != old) return;
                     try {
                         if (old.getActiveChar() != null) {
@@ -307,7 +339,7 @@ public final class LoginController {
             // throwing. Never keep an unscheduled deadline in the map: it
             // would suppress every further kick attempt until it expires.
             clearKick.run();
-            _log.warning("[LoginController] duplicate session kick not scheduled: " + id);
+            _log.warning("[CAccountContainer] duplicate session kick not scheduled: " + id);
         }
     }
 
@@ -368,7 +400,7 @@ public final class LoginController {
         final List<CUserSocket> snapshot =
                 new ArrayList<>(_sessions.size());
 
-        for (SessionRec r : _sessions.values()) {
+        for (CClientSession r : _sessions.values()) {
             if (r != null) {
                 snapshot.add(r.client);
             }
@@ -383,7 +415,7 @@ public final class LoginController {
         final List<CUserSocket> all =
                 new ArrayList<>(_sessions.size());
 
-        for (SessionRec r : _sessions.values()) {
+        for (CClientSession r : _sessions.values()) {
             if (r != null) {
                 all.add(r.client);
             }

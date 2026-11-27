@@ -12,7 +12,7 @@ import java.util.Set;
 import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.Config;
-import l1j.server.server.auth.login.LoginController;
+import l1j.server.server.authd.CAccountContainer;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -76,7 +76,7 @@ public final class CIOServer implements AutoCloseable, CUserSocket.Closed {
         this.maxConnections = maxConnections;
         this.preLoginTimeout = config.usePreLoginTimeout;
         if (maxOnline < 1) throw new IllegalStateException("invalid online limit");
-        LoginController.getInstance().setMaxAllowedOnlinePlayers(maxOnline);
+        CAccountContainer.getInstance().setMaxAllowedOnlinePlayers(maxOnline);
         this.ipLimit = CIOConfig.NETWORK_CLIENT_PERMISSION;
         this.macLimit = CIOConfig.macLimit();
         int owners = ioThreads;
@@ -265,7 +265,7 @@ public final class CIOServer implements AutoCloseable, CUserSocket.Closed {
     private void activateAccepted(CIOServer registry, CSelectorTransport.Connection peer) {
         if (acceptingStopped.get() || closed.get() || !peer.isOpen()
                 || peer.remoteAddress().getPort() <= 1024
-                || maxOnline <= LoginController.getInstance().getOnlinePlayerCount()) {
+                || maxOnline <= CAccountContainer.getInstance().getOnlinePlayerCount()) {
             peer.abort();
             return;
         }

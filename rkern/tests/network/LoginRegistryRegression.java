@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -21,9 +22,10 @@ import java.util.function.BooleanSupplier;
 import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.Opcodes;
-import l1j.server.server.auth.login.AccountAlreadyLoginException;
-import l1j.server.server.auth.login.GameServerFullException;
-import l1j.server.server.auth.login.LoginController;
+import l1j.server.server.authd.AccountAlreadyLoginException;
+import l1j.server.server.authd.GameServerFullException;
+import l1j.server.server.authd.CAccountContainer;
+import l1j.server.server.authd.CAuthD;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.model.network.safe.CPacketFilter;
@@ -34,20 +36,20 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
  * Compile against the game classes and run this class in a fresh JVM without a database.
  */
 public final class LoginRegistryRegression {
-    private static final LoginController LOGIN = LoginController.getInstance();
+    private static final CAccountContainer LOGIN = CAccountContainer.getInstance();
     private static final int WAIT_MS = 5_000;
 
-    private static void check(boolean result, String label) {
+    static void check(boolean result, String label) {
         if (!result) throw new AssertionError(label);
     }
 
-    private static void await(BooleanSupplier condition, String label) throws InterruptedException {
+    static void await(BooleanSupplier condition, String label) throws InterruptedException {
         final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(WAIT_MS);
         while (!condition.getAsBoolean() && System.nanoTime() - deadline < 0L) Thread.sleep(1L);
         check(condition.getAsBoolean(), label);
     }
 
-    private static CUserSocket connect(CIOServer listener, Socket peer, Field sockets) throws Exception {
+    static CUserSocket connect(CIOServer listener, Socket peer, Field sockets) throws Exception {
         peer.setSoTimeout(WAIT_MS);
         peer.connect(listener.localAddress(), WAIT_MS);
         final DataInputStream input = new DataInputStream(peer.getInputStream());
@@ -92,7 +94,7 @@ public final class LoginRegistryRegression {
         final int ordinary = 7;
         final var peers = new ArrayList<Socket>(ordinary + 1);
         final var clients = new ArrayList<CUserSocket>(ordinary + 1);
-        final Field sessions = LoginController.class.getDeclaredField("_sessions");
+        final Field sessions = CAccountContainer.class.getDeclaredField("_sessions");
         sessions.setAccessible(true);
         final Object savedSessions = sessions.get(LOGIN);
         final int originalCap = LOGIN.getMaxAllowedOnlinePlayers();
@@ -168,6 +170,7 @@ public final class LoginRegistryRegression {
         try (var listener = new CIOServer(target, max, count, max, pool, owners, config)) {
             if (args.length == 0) verifyOwnership(listener, sockets);
             verifyCapacity(listener, sockets);
+            verifyIpCapacity(listener, sockets);
         } finally {
             owners.shutdown();
             check(owners.awaitTermination(5, TimeUnit.SECONDS), "network owners did not join");
@@ -176,6 +179,38 @@ public final class LoginRegistryRegression {
         }
         check(ManagementFactory.getThreadMXBean().findDeadlockedThreads() == null, "JVM detected a deadlock");
         System.out.println("PASS login registry ownership, concurrent capacity, GM bypass and teardown");
+    }
+
+    private static void verifyIpCapacity(CIOServer listener, Field sockets) throws Exception {
+        final var admit = CAccountContainer.class.getDeclaredMethod(
+                "loginWithinIpLimit", CUserSocket.class, Account.class, int.class);
+        admit.setAccessible(true);
+        final Locale previousLocale = Locale.getDefault();
+        try (var firstPeer = new Socket(); var secondPeer = new Socket();
+                var pool = Executors.newVirtualThreadPerTaskExecutor()) {
+            final var first = connect(listener, firstPeer, sockets);
+            final var second = connect(listener, secondPeer, sockets);
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            var start = new CountDownLatch(1);
+            var a = pool.submit(() -> { start.await(); return (Boolean) admit.invoke(LOGIN, first, account(" FIRST "), 1); });
+            var b = pool.submit(() -> { start.await(); return (Boolean) admit.invoke(LOGIN, second, account(" SECOND "), 1); });
+            start.countDown();
+            boolean firstWon = a.get(WAIT_MS, TimeUnit.MILLISECONDS);
+            boolean secondWon = b.get(WAIT_MS, TimeUnit.MILLISECONDS);
+            check(firstWon != secondWon && LOGIN.getIpCount("127.0.0.1") == 1
+                    && LOGIN.getOnlinePlayerCount() == 1, "only one password admission reserves the IP");
+            check(LOGIN.getClientByAccount(firstWon ? "first" : "second") == (firstWon ? first : second),
+                    "canonical account ownership does not depend on JVM locale");
+            check(!LOGIN.logout(firstWon ? second : first), "losing admission left an ownership key");
+            firstPeer.close();
+            secondPeer.close();
+            await(first::isClientCleanupComplete, "IP-cap first socket cleaned");
+            await(second::isClientCleanupComplete, "IP-cap second socket cleaned");
+        } finally {
+            Locale.setDefault(previousLocale);
+        }
+        check(LOGIN.getOnlinePlayerCount() == 0 && LOGIN.getIpCount("127.0.0.1") == 0,
+                "IP count and online count returned to zero");
     }
 
     private static void verifyOwnership(CIOServer listener, Field sockets) throws Exception {
@@ -203,9 +238,11 @@ public final class LoginRegistryRegression {
             check(LOGIN.getOnlinePlayerCount() == 0 && LOGIN.getClientByAccount("registry-fixture") == null,
                     "cleanup missed an owner without an Account object");
             final Account next = account("registry-fixture");
-            LOGIN.login(replacement, next);
             check(replacement.bindVerifiedMacIdentity(81L), "replacement MAC registered");
-            replacement.setAccount(next);
+            CAuthD.attachHandoff(replacement, next);
+            check(replacement.getAccount() == next && replacement.getConnectionState() ==
+                    l1j.server.server.model.network.utill.CConnectionState.AUTHENTICATED,
+                    "verified handoff publishes the account and connection state together");
             check(!LOGIN.logout(old) && LOGIN.getClientByAccount("registry-fixture") == replacement,
                     "late cleanup removed replacement");
             check(LOGIN.logout(replacement) && !LOGIN.logout(replacement), "explicit logout is not idempotent");

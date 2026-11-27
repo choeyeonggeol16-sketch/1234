@@ -55,10 +55,10 @@ public final class RetirementCheck {
         static CacheD getInstance(){return INSTANCE;}
         boolean hasPendingOwnerApply(int id){return pending;}
     }
-    static class LoginController {
-        static final LoginController INSTANCE=new LoginController();
+    static class CAccountContainer {
+        static final CAccountContainer INSTANCE=new CAccountContainer();
         CUserSocket current;
-        static LoginController getInstance(){return INSTANCE;}
+        static CAccountContainer getInstance(){return INSTANCE;}
         CUserSocket getClientByAccount(String a){return current;}
     }
     static class CSessionLifecycle {
@@ -144,7 +144,7 @@ public final class RetirementCheck {
 """ + login + owners + game + r"""
     static CUserSocket login(String name){
         var s=new CUserSocket();s.account=new Account(name);
-        LoginController.INSTANCE.current=s;return s;
+        CAccountContainer.INSTANCE.current=s;return s;
     }
     static void attach(L1PcInstance p){
         p.socket=new CUserSocket();p.socket.pc=p;

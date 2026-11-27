@@ -1,4 +1,4 @@
-package l1j.server.server.auth.login;
+package l1j.server.server.authd;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -7,9 +7,9 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 /**
- * 로그인 무차별 대입 방지 — IP당 비번 실패 누적, 10분 내 5회 실패 시 차단.
+ * 로그인 무차별 대입 방지 — IP당 비번 실패 누적, 1분 내 5회 실패 시 차단.
  */
-public final class LoginAttemptGuard {
+public final class CLoginAttemptGuard {
 
     private static final int MAX_FAILS = 5;
 
@@ -18,13 +18,13 @@ public final class LoginAttemptGuard {
             .maximumSize(100_000)
             .build();
 
-    private LoginAttemptGuard() {}
+    private CLoginAttemptGuard() {}
 
     public static void onFail(String ip) {
         if (ip == null || ip.isEmpty()) return;
         FAILS.asMap().compute(ip, (k, v) -> {
             if (v == null) v = new AtomicInteger();
-            v.incrementAndGet();
+            if (v.get() < MAX_FAILS) v.incrementAndGet();
             return v;
         });
     }

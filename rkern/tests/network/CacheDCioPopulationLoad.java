@@ -128,7 +128,7 @@ public final class CacheDCioPopulationLoad {
         Config.CACHE_MAP_FILES = true;
         Config.TIME_ZONE = "UTC";
         Config.MAX_ONLINE_USERS = (short) (population + 64);
-        java.util.logging.Logger.getLogger("l1j.server.server.auth.login.LoginController").setLevel(java.util.logging.Level.WARNING);
+        java.util.logging.Logger.getLogger("l1j.server.server.authd.CAccountContainer").setLevel(java.util.logging.Level.WARNING);
         try (var admin = DriverManager.getConnection(jdbc, user, password); var ddl = admin.createStatement()) {
             ddl.execute("CREATE DATABASE `" + schema + "` DEFAULT CHARACTER SET utf8mb4");
             try {

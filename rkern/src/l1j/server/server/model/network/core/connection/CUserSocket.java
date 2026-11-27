@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import l1j.server.server.Account;
 import l1j.server.server.Opcodes;
-import l1j.server.server.auth.login.LoginController;
+import l1j.server.server.authd.CAccountContainer;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
@@ -2655,7 +2655,7 @@ public final class CUserSocket extends CSocket {
 
 	private volatile Account account;
 	private volatile L1PcInstance _activeChar;
-    private String loginRegistryKey; // guarded by this, published by LoginController
+    private String loginRegistryKey; // guarded by this, published by CAccountContainer
     // Published only after the full asynchronous character-enter completion.
     // Prevents a half-initialized IN_GAME state from bypassing session guard.
     private volatile boolean _gameSessionReady;
@@ -2814,9 +2814,9 @@ public final class CUserSocket extends CSocket {
         catch (RuntimeException failure) { LOG.log(Level.WARNING, "Connection limit release failed", failure); }
 
 		try {
-			LoginController.getInstance().logout(this);
+			CAccountContainer.getInstance().logout(this);
 		} catch (Throwable e) {
-			LOG.log(Level.WARNING, "LoginController logout 예외 발생", e);
+			LOG.log(Level.WARNING, "CAccountContainer logout 예외 발생", e);
 		}
 
 		try {

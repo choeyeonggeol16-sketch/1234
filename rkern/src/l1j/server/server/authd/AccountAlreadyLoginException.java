@@ -16,15 +16,15 @@
  *
  * http://www.gnu.org/copyleft/gpl.html
  */
-package l1j.server.server.auth.login;
+package l1j.server.server.authd;
 
-public class GameServerFullException extends Exception {
+public class AccountAlreadyLoginException extends Exception {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public GameServerFullException() {
+	public AccountAlreadyLoginException() {
 		super();
 	}
 }
