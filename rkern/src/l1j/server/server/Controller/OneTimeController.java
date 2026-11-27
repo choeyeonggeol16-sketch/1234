@@ -13,9 +13,9 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 
-public final class OneTimeController implements GameTimeListener {
+public final class OneTimeController implements CTimeListener {
     private static final Logger LOG = Logger.getLogger(OneTimeController.class.getName());
     private static final OneTimeController INSTANCE = new OneTimeController();
     private final AtomicBoolean inFlight = new AtomicBoolean();

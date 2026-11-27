@@ -16,14 +16,14 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SIEGE_INJURY_TIME_NOIT;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SIEGE_ZONE_UPDATE_NOT;
 import l1j.server.server.utils.SQLUtil;
 
-public class CastleWarBusiness implements GameTimeListener{
+public class CastleWarBusiness implements CTimeListener{
 
     private static Logger _log = Logger.getLogger(CastleWarBusiness.class.getName());
 

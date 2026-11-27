@@ -4,7 +4,7 @@ import l1j.server.server.shared.GameRandom;
 
 
 import l1j.server.server.model.gametime.CDateTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
@@ -104,7 +104,7 @@ public class L1CastleLocation {
 	// shop tax rate [1..8]
 	private static volatile int[] CASTLE_TAX_RATE = new int[9];
 
-	private static final GameTimeListener CASTLE_TAX_CLOCK = new CResidenceTaxListener();
+	private static final CTimeListener CASTLE_TAX_CLOCK = new CResidenceTaxListener();
 
 	static {
 		// towers
@@ -338,7 +338,7 @@ public class L1CastleLocation {
         CASTLE_TAX_RATE = rates;
     }
 
-    private static final class CResidenceTaxListener implements GameTimeListener {
+    private static final class CResidenceTaxListener implements CTimeListener {
         @Override public void onDayChanged(CDateTime time) {
             refreshCastleTaxRates();
         }

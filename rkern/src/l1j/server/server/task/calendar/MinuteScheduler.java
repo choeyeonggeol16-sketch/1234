@@ -4,11 +4,11 @@ import java.util.Calendar;
 
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.task.calendar.acceptor.AbstractDateAcceptor;
 import l1j.server.server.task.calendar.acceptor.AcceptorToNpcListenerAdapter;
 
-public class MinuteScheduler extends AbstractDateScheduler implements GameTimeListener{
+public class MinuteScheduler extends AbstractDateScheduler implements CTimeListener{
 	private static MinuteScheduler _instance;
 	public static MinuteScheduler getInstance(){
 		if(_instance == null)

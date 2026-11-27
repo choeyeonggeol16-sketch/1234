@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import l1j.server.server.model.L1UltimateBattle;
 import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.gametime.CDateTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.thread.CServerTimer;
@@ -124,7 +124,7 @@ public final class ServerTimerRegression {
         CGameTime initial = CGameTime.getInstance();
         var firstTick = new CountDownLatch(1);
         var oldCalls = new AtomicInteger();
-        CGameTime.addRealListener(new GameTimeListener() {
+        CGameTime.addRealListener(new CTimeListener() {
             @Override public void onSecondChanged(CDateTime time) {
                 oldCalls.incrementAndGet();
                 firstTick.countDown();
@@ -141,7 +141,7 @@ public final class ServerTimerRegression {
 
         CGameTime.prepare();
         var restartedTick = new CountDownLatch(1);
-        CGameTime.addRealListener(new GameTimeListener() {
+        CGameTime.addRealListener(new CTimeListener() {
             @Override public void onSecondChanged(CDateTime time) { restartedTick.countDown(); }
         }, Calendar.SECOND);
         CGameTime.start();

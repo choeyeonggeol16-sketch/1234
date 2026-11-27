@@ -13,9 +13,9 @@ import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 
-public final class NpcChatTimeController implements Runnable, GameTimeListener {
+public final class NpcChatTimeController implements Runnable, CTimeListener {
     private static final Logger LOG = Logger.getLogger(NpcChatTimeController.class.getName());
     private final AtomicBoolean inFlight = new AtomicBoolean();
     private volatile boolean started;

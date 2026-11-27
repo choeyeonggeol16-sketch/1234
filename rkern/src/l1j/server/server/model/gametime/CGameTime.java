@@ -107,26 +107,26 @@ public final class CGameTime {
         clock.realEvents.clear();
     }
 
-    public static void addRealListener(GameTimeListener listener, int field) {
+    public static void addRealListener(CTimeListener listener, int field) {
         CGameTime clock = instance;
         if (clock == null) throw new IllegalStateException("World clock has not been prepared");
         clock.addListener(clock.realEvents, listener, field);
     }
 
-    public static void removeRealListener(GameTimeListener listener, int field) {
+    public static void removeRealListener(CTimeListener listener, int field) {
         CGameTime clock = instance;
         if (clock != null) clock.realEvents.listeners(field).remove(listener);
     }
 
-    public void addGameListener(GameTimeListener listener, int field) {
+    public void addGameListener(CTimeListener listener, int field) {
         addListener(gameEvents, listener, field);
     }
 
-    public void removeGameListener(GameTimeListener listener, int field) {
+    public void removeGameListener(CTimeListener listener, int field) {
         gameEvents.listeners(field).remove(listener);
     }
 
-    private void addListener(ClockEvents events, GameTimeListener listener, int field) {
+    private void addListener(ClockEvents events, CTimeListener listener, int field) {
         synchronized (CGameTime.class) {
             if (retired) return;
             events.listeners(field).addIfAbsent(Objects.requireNonNull(listener));
@@ -166,15 +166,15 @@ public final class CGameTime {
 
     final class ClockEvents {
         private final int offset;
-        private final CopyOnWriteArrayList<GameTimeListener> months = new CopyOnWriteArrayList<>();
-        private final CopyOnWriteArrayList<GameTimeListener> days = new CopyOnWriteArrayList<>();
-        private final CopyOnWriteArrayList<GameTimeListener> hours = new CopyOnWriteArrayList<>();
-        private final CopyOnWriteArrayList<GameTimeListener> minutes = new CopyOnWriteArrayList<>();
-        private final CopyOnWriteArrayList<GameTimeListener> seconds = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<CTimeListener> months = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<CTimeListener> days = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<CTimeListener> hours = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<CTimeListener> minutes = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<CTimeListener> seconds = new CopyOnWriteArrayList<>();
 
         ClockEvents(int offset) { this.offset = offset; }
 
-        CopyOnWriteArrayList<GameTimeListener> listeners(int field) {
+        CopyOnWriteArrayList<CTimeListener> listeners(int field) {
             return switch (field) {
                 case Calendar.MONTH -> months;
                 case Calendar.DAY_OF_MONTH -> days;
@@ -204,8 +204,8 @@ public final class CGameTime {
             if (second) notify(seconds, time, Calendar.SECOND);
         }
 
-        private void notify(CopyOnWriteArrayList<GameTimeListener> group, CDateTime time, int field) {
-            for (GameTimeListener listener : group) {
+        private void notify(CopyOnWriteArrayList<CTimeListener> group, CDateTime time, int field) {
+            for (CTimeListener listener : group) {
                 if (retired) return;
                 try {
                     switch (field) {

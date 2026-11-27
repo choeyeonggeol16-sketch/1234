@@ -19,7 +19,7 @@ import l1j.server.server.datatables.TownTable;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.CDateTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
 import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
@@ -29,7 +29,7 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.templates.L1Town;
 
-public final class CResidenceSettlement implements GameTimeListener {
+public final class CResidenceSettlement implements CTimeListener {
     public static final int FIRST_TOWN = 1;
     public static final int LAST_TOWN = 10;
     private static final int SETTLEMENT_DAY = 25;

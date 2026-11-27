@@ -10,10 +10,10 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_USER_DATA_EXTEND;
 
-public class AttendanceScheduler implements GameTimeListener{
+public class AttendanceScheduler implements CTimeListener{
 	private static final int UPDATE_SECOND = 1;
 	public static final int ATTEN_SHD_RESULT_ERROR = -1;
 	public static final int ATTEN_SHD_RESULT_NONUPDATE = 0;

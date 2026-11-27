@@ -14,12 +14,12 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.companion.CompanionSettings;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.Handler;
 
-public class CompanionRegenerator implements GameTimeListener, Runnable {
+public class CompanionRegenerator implements CTimeListener, Runnable {
 	private static volatile CompanionRegenerator _instance;
     private static final Logger LOG = Logger.getLogger(CompanionRegenerator.class.getName());
 	public static CompanionRegenerator getInstance(){

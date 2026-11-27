@@ -21,7 +21,7 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.rank.loader.RankUserLoader;
@@ -34,7 +34,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TOP_RANKER_NOTI;
 /**
  * 랭킹 비즈니스 로직.
  */
-public class RankBusiness implements GameTimeListener{
+public class RankBusiness implements CTimeListener{
     private static RankBusiness _instance;
     public static RankBusiness getInstance(){
         if(_instance == null)

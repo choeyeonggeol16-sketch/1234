@@ -31,7 +31,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -45,7 +45,7 @@ import l1j.server.server.templates.L1RaceTicket;
 import l1j.server.server.templates.L1Racer;
 import l1j.server.server.templates.L1ShopItem;
 
-public class BugRaceController implements Runnable, GameTimeListener {
+public class BugRaceController implements Runnable, CTimeListener {
 	private static final Logger LOG = Logger.getLogger(BugRaceController.class.getName());
 	private static BugRaceController _instance;
     private final BugRacePersistence persistence = new BugRacePersistence();

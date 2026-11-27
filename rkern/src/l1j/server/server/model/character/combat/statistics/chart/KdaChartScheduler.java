@@ -4,9 +4,9 @@ import java.util.Calendar;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 
-public class KdaChartScheduler implements GameTimeListener {
+public class KdaChartScheduler implements CTimeListener {
 	private static KdaChartScheduler _instance;
 	public static KdaChartScheduler getInstance(){
 		if(_instance == null)

@@ -37,7 +37,7 @@ public final class CGameTimeRegression {
             CGameTime current = CGameTime.getInstance();
             var events = current.new ClockEvents(CDateTime.KST_OFFSET);
             var seen = new ArrayList<String>();
-            var listener = new GameTimeListener() {
+            var listener = new CTimeListener() {
                 @Override public void onMonthChanged(CDateTime time) { seen.add("month"); }
                 @Override public void onDayChanged(CDateTime time) { seen.add("day"); }
                 @Override public void onHourChanged(CDateTime time) { seen.add("hour"); }

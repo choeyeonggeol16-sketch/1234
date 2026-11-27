@@ -9,9 +9,9 @@ import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.gametime.GameTimeListener;
+import l1j.server.server.model.gametime.CTimeListener;
 
-public class BQSWQUpdator implements GameTimeListener{
+public class BQSWQUpdator implements CTimeListener{
 	private static BQSWQUpdator _instance;
 	public static BQSWQUpdator getInstance(){
 		if(_instance == null)
