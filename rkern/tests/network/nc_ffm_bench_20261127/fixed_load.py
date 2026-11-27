@@ -8,7 +8,7 @@ from pathlib import Path
 METRICS = ("requests", "active_clients", "completed_rps", "schedule_p99_us", "rtt_p99_us", "sender_lag_p99_us",
            "valid_completed", "completed_in_window", "dropped", "peak_pending", "peak_waiting",
            "pending_at_end", "unscheduled_at_end", "drain_ms", "drained_rps")
-FIELDS = ["rep", "attempt", "order", "backend", "clients", "rate", "warmup_ms", "measure_ms",
+FIELDS = ["rep", "attempt", "order", "backend", "generator", "clients", "rate", "warmup_ms", "measure_ms",
           "status", "paired", *METRICS, "accepted", "closed", "frames", "error"]
 
 
@@ -24,7 +24,7 @@ def trial(args, row):
         ready = server.line(20).split()
         if len(ready) != 2 or ready[0] != "READY":
             raise ValueError(f"no server port: {ready}")
-        driver = Process([*command, "PacedDriver", ready[1], str(clients), str(row["warmup_ms"]),
+        driver = Process([*command, row["generator"], ready[1], str(clients), str(row["warmup_ms"]),
                           str(row["measure_ms"]), str(row["rate"])], label.with_suffix(".client.log"))
         result = driver.line(120).split()
         if not result or result[0] != "RESULT" or len(result) != len(METRICS)+1 or driver.proc.wait(timeout=10):
@@ -57,7 +57,12 @@ def trial(args, row):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--output",required=True,type=Path)
+    ap.add_argument("--rate",type=int,default=80000)
+    ap.add_argument("--driver",choices=["PacedDriver","BatchedPacedDriver"],default="PacedDriver")
     args=ap.parse_args()
+    if args.rate <= 0 or args.rate % 16 != 0:
+        ap.error("rate must be positive and divisible by 16")
+
     args.output.mkdir(exist_ok=False,parents=True)
     native = "WinIocpCore" if platform.system() == "Windows" else "NcFfmCore"
     with (args.output / "results.csv").open("w",newline="",encoding="utf-8") as stream:
@@ -71,7 +76,7 @@ def main():
                     backends.reverse()
                 for order,backend in enumerate(backends,1):
                     row=dict(rep=rep,attempt=attempt,order=order,backend=backend,clients=5000,
-                             rate=80000,warmup_ms=2500,measure_ms=5000)
+                             generator=args.driver,rate=args.rate,warmup_ms=2500,measure_ms=5000)
                     trial(args,row)
                     pair.append(row)
                     print(rep,attempt,backend,row["status"],row.get("rtt_p99_us",row.get("error")),flush=True)

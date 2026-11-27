@@ -45,7 +45,7 @@ jobs:
           & git rev-parse HEAD | Out-File -Encoding utf8 diagnostics/revision.txt
           & netsh interface ipv4 show dynamicport tcp | Out-File -Encoding utf8 diagnostics/ipv4-ports-before.txt
           $selector = '../../../src/l1j/server/server/model/network/core/transport/selector/CSelectorTransport.java'
-          $fixtures = @('CoreProtocol.java', 'CoreFrameCheck.java', 'SelectorCore.java', 'SharedSelectorCore.java', 'TransportDriver.java', 'PacedDriver.java', 'WinIocpCore.java')
+          $fixtures = @('CoreProtocol.java', 'CoreFrameCheck.java', 'SelectorCore.java', 'SharedSelectorCore.java', 'TransportDriver.java', 'PacedDriver.java', 'BatchedPacedDriver.java', 'WinIocpCore.java')
           & javac --release 21 --enable-preview -encoding UTF-8 -d classes $selector @fixtures 2>&1 | Tee-Object -FilePath diagnostics/compile.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -56,6 +56,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Size the transient runner IPv4 port range for repeated large cohorts
+        id: ports
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
           & netsh interface ipv4 set dynamicport tcp start=12000 num=53000 2>&1 |
@@ -64,25 +65,36 @@ jobs:
           & netsh interface ipv4 show dynamicport tcp | Out-File -Encoding utf8 diagnostics/ipv4-ports-after.txt
 
       - name: Compare both shared-worker transports at 1,024 and 5,000 IPv4 peers
+        if: contains(github.event.head_commit.message, '[saturation]')
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
           & python run_bench.py --shared-selector --output windows-shared 2>&1 | Tee-Object -FilePath diagnostics/benchmark.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Compare p99 at the same offered 80,000 requests per second
+      - name: Compare 5,000 peers at 80,000 scheduled requests per second in batches
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
-          & python fixed_load.py --output paced 2>&1 | Tee-Object -FilePath diagnostics/paced.log
+          & python fixed_load.py --output paced-batch --rate 80000 --driver BatchedPacedDriver 2>&1 |
+            Tee-Object -FilePath diagnostics/paced-batch.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Compare 5,000 peers at 16,000 scheduled requests per second with single frames
+        if: ${{ !cancelled() && steps.ports.outcome == 'success' }}
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          & python fixed_load.py --output paced-16k --rate 16000 --driver PacedDriver 2>&1 |
+            Tee-Object -FilePath diagnostics/paced-16k.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload CSV, environment and server/client logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nc-ffm-windows-shared-evidence
+          name: nc-ffm-windows-paced-evidence
           path: |
             rkern/tests/network/nc_ffm_bench_20261127/diagnostics
             rkern/tests/network/nc_ffm_bench_20261127/windows-shared
-            rkern/tests/network/nc_ffm_bench_20261127/paced
+            rkern/tests/network/nc_ffm_bench_20261127/paced-batch
+            rkern/tests/network/nc_ffm_bench_20261127/paced-16k
           if-no-files-found: warn
           retention-days: 14
