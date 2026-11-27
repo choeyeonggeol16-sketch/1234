@@ -17,7 +17,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ShopBuyList;
 import l1j.server.server.model.network.core.sc.packet.SC_ShopSellList;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.shop.L1AssessedItem;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_PERSONAL_SHOP_ITEM_LIST_NOTI;
 
 final class NpcMarketCommands {
@@ -124,7 +124,7 @@ final class NpcMarketCommands {
 					if (npcid == 70041 || npcid == 70042 || npcid == 70035) {
 						if (obj instanceof L1NpcInstance) {
 							L1NpcInstance npc = (L1NpcInstance) obj;
-							L1Shop shop = ShopTable.getInstance().get(npc.getNpcId());
+							CBuySell shop = ShopTable.getInstance().get(npc.getNpcId());
 							if (shop == null) {
 								SC_NoSell.send(pc, npc);
 								return;

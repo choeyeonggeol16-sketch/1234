@@ -14,7 +14,7 @@ import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.shop.L1AssessedItem;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 
 public final class SC_ShopBuyList {
 
@@ -36,7 +36,7 @@ public final class SC_ShopBuyList {
         final L1NpcInstance npc = (L1NpcInstance) object;
         final int npcId = npc.getNpcTemplate().get_npcId();
         if (npcId == 7320055) return false;
-        final L1Shop shop = ShopTable.getInstance().get(npcId);
+        final CBuySell shop = ShopTable.getInstance().get(npcId);
         if (shop == null) {
             SC_NoSell.send(pc, npc);
             throw new IllegalArgumentException(

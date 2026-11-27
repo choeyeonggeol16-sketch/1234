@@ -15,7 +15,7 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.model.shop.L1ShopBuyOrderList;
 import l1j.server.server.model.shop.L1ShopSellOrderList;
 import l1j.server.server.model.shop.NpcShopView;
@@ -65,7 +65,7 @@ final class MerchantTransactions {
             if (view.isCurrentDogFightRound()) handleDogfight(pc, view, size, first, rest);
             return;
         }
-        final L1Shop shop = view.currentShop();
+        final CBuySell shop = view.currentShop();
         if (shop == null) {
             client.clearNpcShopView(view);
             return;
@@ -86,7 +86,7 @@ final class MerchantTransactions {
         return false;
     }
 
-    private static void buy(L1PcInstance pc, L1Shop shop, NpcShopView view,
+    private static void buy(L1PcInstance pc, CBuySell shop, NpcShopView view,
             String npcName, int size, long first, byte[] rest) {
         final boolean dynamic = view.dynamic();
         final int npcId = view.shopId();
@@ -162,7 +162,7 @@ final class MerchantTransactions {
         });
     }
 
-    private static void sell(L1PcInstance pc, L1Shop shop, NpcShopView view,
+    private static void sell(L1PcInstance pc, CBuySell shop, NpcShopView view,
             int size, long first, byte[] rest) {
         final int npcId = view.shopId();
         final L1ShopSellOrderList orders = shop.newSellOrderList(pc);

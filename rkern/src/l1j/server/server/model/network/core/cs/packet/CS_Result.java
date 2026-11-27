@@ -11,7 +11,7 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.model.shop.L1ShopBuyOrder;
 import l1j.server.server.model.shop.L1ShopBuyOrderList;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
@@ -171,7 +171,7 @@ public final class CS_Result {
 					resetChangeFlags(pc, n);
 					return true;
 				}
-				L1Shop shop = ShopTable.getInstance().get(changeNpcId);
+				CBuySell shop = ShopTable.getInstance().get(changeNpcId);
 				if (shop != null) {
 					L1ShopBuyOrderList oList = shop.newBuyOrderList();
 					int totalcount = 0;

@@ -16,7 +16,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
 
@@ -34,7 +34,7 @@ public final class SC_ShopSellList {
         final L1Object obj = CWorld.getInstance().findObject(objId);
         if (!(obj instanceof L1NpcInstance)) return false;
         final int npcId = ((L1NpcInstance) obj).getNpcTemplate().get_npcId();
-        final L1Shop shop = ShopTable.getInstance().get(npcId);
+        final CBuySell shop = ShopTable.getInstance().get(npcId);
         if (shop == null) return false;
         final List<L1ShopItem> shopItems;
         try {

@@ -14,12 +14,12 @@ public final class L1ShopSellOrderList {
     private static final int MAX_SELL_COUNT_NORMAL = 500;
     private static final int EXCEPTION_ITEM_ID = 41246;
 
-    private final L1Shop shop;
+    private final CBuySell shop;
     private final L1PcInstance pc;
     private List<L1ShopSellOrder> orders = List.of();
     private boolean invalid;
 
-    L1ShopSellOrderList(L1Shop shop, L1PcInstance pc) {
+    L1ShopSellOrderList(CBuySell shop, L1PcInstance pc) {
         this.shop = shop;
         this.pc = pc;
     }
@@ -56,7 +56,7 @@ public final class L1ShopSellOrderList {
         }
     }
 
-    boolean readyFor(L1Shop owner) { return shop == owner && pc != null && !invalid && !orders.isEmpty(); }
+    boolean readyFor(CBuySell owner) { return shop == owner && pc != null && !invalid && !orders.isEmpty(); }
     public int BugOk() { return invalid ? 1 : 0; }
     L1PcInstance getPc() { return pc; }
     List<L1ShopSellOrder> orders() { return orders; }

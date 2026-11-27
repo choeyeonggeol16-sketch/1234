@@ -17,7 +17,7 @@ import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.PlayerShopTransactions;
 import l1j.server.server.model.L1TaxCalculator;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.model.shop.PlayerShopView;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
@@ -190,7 +190,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
     private static void do_send_buy_for_npc(
             L1PcInstance pc,
             L1NpcInstance npc,
-            L1Shop shop) {
+            CBuySell shop) {
 
         if (pc == null || npc == null || shop == null) {
             return;
@@ -205,7 +205,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
 
         // Holes retain their original catalog index. The compact display index is separate.
         final L1ShopItem[] offers = source.toArray(L1ShopItem[]::new);
-        final boolean normal = L1Shop.is_normal_shop(npc);
+        final boolean normal = CBuySell.is_normal_shop(npc);
         final int sellerId = npc.getId();
         final L1TaxCalculator taxes = new L1TaxCalculator(shop.getNpcId());
         try (ProtoWriter rows = ProtoWriter.borrow()) {
@@ -251,7 +251,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
     private static void do_send_sell_for_npc(
             L1PcInstance pc,
             L1NpcInstance npc,
-            L1Shop shop) {
+            CBuySell shop) {
 
         if (pc == null || npc == null || shop == null) {
             return;
@@ -359,7 +359,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         }
 
         final L1NpcInstance npc = (L1NpcInstance) obj;
-        final L1Shop shop = L1Shop.find_shop(npc);
+        final CBuySell shop = CBuySell.find_shop(npc);
 
         if (shop == null) {
             return;

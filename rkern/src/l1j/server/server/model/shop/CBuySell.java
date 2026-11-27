@@ -22,8 +22,8 @@ import l1j.server.server.model.item.NpcReissuedItemPolicy;
 import l1j.server.server.templates.L1ShopItem;
 
 /** Ordered NPC catalog. Client row numbers are scoped to this catalog revision. */
-public final class L1Shop {
-    private static final Logger LOG = Logger.getLogger(L1Shop.class.getName());
+public final class CBuySell {
+    private static final Logger LOG = Logger.getLogger(CBuySell.class.getName());
     private static final AtomicLong REVISIONS = new AtomicLong();
 
     private final long revision = REVISIONS.incrementAndGet();
@@ -35,7 +35,7 @@ public final class L1Shop {
     private final List<L1ShopItem> buybackCeilings;
     private final ShopStock stock;
 
-    public L1Shop(int npcId, List<L1ShopItem> selling, List<L1ShopItem> purchasing) {
+    public CBuySell(int npcId, List<L1ShopItem> selling, List<L1ShopItem> purchasing) {
         this.npcId = npcId;
         policy = ShopPolicy.forNpc(npcId);
         this.selling = List.copyOf(selling);
@@ -61,10 +61,10 @@ public final class L1Shop {
         return !(npc instanceof L1NpcShopInstance) && ShopTable.getInstance().get(npc.getNpcId()) != null;
     }
 
-    public static L1Shop find_shop(L1NpcInstance npc) {
+    public static CBuySell find_shop(L1NpcInstance npc) {
         if (npc instanceof L1NpcCashShopInstance) return null;
         int npcId = npc.getNpcId();
-        L1Shop shop = npc instanceof L1NpcShopInstance
+        CBuySell shop = npc instanceof L1NpcShopInstance
                 ? NpcShopManager.getInstance().getShop(npcId) : ShopTable.getInstance().get(npcId);
         if (shop == null) LOG.warning("NPC shop catalog missing for template " + npcId);
         return shop;

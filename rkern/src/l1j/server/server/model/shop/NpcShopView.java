@@ -35,7 +35,7 @@ public final class NpcShopView {
     private final int ticketOptions;
 
     private NpcShopView(Source source, CUserSocket client, L1PcInstance pc, L1NpcInstance npc,
-            int resultId, L1Shop shop, boolean buying, L1ShopItem[] offers, int[] saleIds,
+            int resultId, CBuySell shop, boolean buying, L1ShopItem[] offers, int[] saleIds,
             DogFightHistoryInfo dogFightRound, int ticketOptions) {
         this.source = source;
         ownerId = pc.getId();
@@ -56,20 +56,20 @@ public final class NpcShopView {
     }
 
     public static NpcShopView purchase(CUserSocket client, L1PcInstance pc, L1NpcInstance npc,
-            int resultId, L1Shop shop, L1ShopItem[] offers) {
+            int resultId, CBuySell shop, L1ShopItem[] offers) {
         return new NpcShopView(Source.NPC, client, pc, npc, resultId, shop, true, offers, null, null, 0);
     }
 
     public static NpcShopView sale(CUserSocket client, L1PcInstance pc, L1NpcInstance npc,
-            L1Shop shop, int[] saleIds) {
+            CBuySell shop, int[] saleIds) {
         return new NpcShopView(Source.NPC, client, pc, npc, npc.getId(), shop, false, null, saleIds, null, 0);
     }
 
-    public static NpcShopView aden(CUserSocket client, L1PcInstance pc, int resultId, L1Shop shop, L1ShopItem[] offers) {
+    public static NpcShopView aden(CUserSocket client, L1PcInstance pc, int resultId, CBuySell shop, L1ShopItem[] offers) {
         return new NpcShopView(Source.ADEN, client, pc, null, resultId, shop, true, offers, null, null, 0);
     }
 
-    public static NpcShopView gmSearch(CUserSocket client, L1PcInstance pc, int resultId, L1Shop shop, L1ShopItem[] offers) {
+    public static NpcShopView gmSearch(CUserSocket client, L1PcInstance pc, int resultId, CBuySell shop, L1ShopItem[] offers) {
         return new NpcShopView(Source.GM_SEARCH, client, pc, null, resultId, shop, true, offers, null, null, 0);
     }
 
@@ -105,8 +105,8 @@ public final class NpcShopView {
                 && Math.abs((long) pc.getY() - npc.getY()) <= 12;
     }
 
-    public L1Shop currentShop() {
-        final L1Shop current = dynamic ? NpcShopManager.getInstance().getShop(shopId) : ShopTable.getInstance().get(shopId);
+    public CBuySell currentShop() {
+        final CBuySell current = dynamic ? NpcShopManager.getInstance().getShop(shopId) : ShopTable.getInstance().get(shopId);
         return current != null && current.revision() == catalogRevision ? current : null;
     }
 

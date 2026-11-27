@@ -18,7 +18,7 @@ import l1j.server.server.templates.L1ShopItem;
 public final class ShopTable {
     private static final Logger LOG = Logger.getLogger(ShopTable.class.getName());
     private static volatile ShopTable instance;
-    private final ConcurrentMap<Integer, L1Shop> shops = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, CBuySell> shops = new ConcurrentHashMap<>();
 
     private ShopTable() {}
 
@@ -59,7 +59,7 @@ public final class ShopTable {
                 int next = rows.getInt("npc_id");
                 if (npcId != next) {
                     if (npcId != -1) {
-                        result.addShop(npcId, new L1Shop(npcId, sales, purchases));
+                        result.addShop(npcId, new CBuySell(npcId, sales, purchases));
                         sales.clear();
                         purchases.clear();
                     }
@@ -67,7 +67,7 @@ public final class ShopTable {
                 }
                 readOffer(rows, sales, purchases);
             }
-            if (npcId != -1) result.addShop(npcId, new L1Shop(npcId, sales, purchases));
+            if (npcId != -1) result.addShop(npcId, new CBuySell(npcId, sales, purchases));
         }
         if (Config.IS_VALIDSHOP) result.reportBuybackPrices();
         return result;
@@ -98,7 +98,7 @@ public final class ShopTable {
                 }
                 ShopTable current = getInstance();
                 if (sales.isEmpty() && purchases.isEmpty()) current.delShop(npcId);
-                else current.addShop(npcId, new L1Shop(npcId, sales, purchases));
+                else current.addShop(npcId, new CBuySell(npcId, sales, purchases));
             } catch (SQLException failure) {
                 LOG.log(Level.WARNING, "NPC shop reload failed for " + npcId, failure);
             }
@@ -107,7 +107,7 @@ public final class ShopTable {
 
     private void reportBuybackPrices() {
         TIntIntHashMap sales = new TIntIntHashMap();
-        for (L1Shop shop : shops.values()) {
+        for (CBuySell shop : shops.values()) {
             if (!shop.policy().capsBuyback(shop.getNpcId())
                     || shop.policy().buybackCurrency(shop.getNpcId()) != L1ItemId.ADENA) continue;
             for (L1ShopItem offer : shop.getSellingItems()) {
@@ -116,7 +116,7 @@ public final class ShopTable {
                 if (existing > offer.getPrice()) sales.put(offer.getItemId(), offer.getPrice());
             }
         }
-        for (L1Shop shop : shops.values()) {
+        for (CBuySell shop : shops.values()) {
             if (!shop.policy().capsBuyback(shop.getNpcId())
                     || shop.policy().buybackCurrency(shop.getNpcId()) != L1ItemId.ADENA) continue;
             for (L1ShopItem offer : shop.getBuyingItems()) {
@@ -128,7 +128,7 @@ public final class ShopTable {
         }
     }
 
-    public L1Shop get(int npcId) { return shops.get(npcId); }
-    public void addShop(int npcId, L1Shop shop) { shops.put(npcId, shop); }
+    public CBuySell get(int npcId) { return shops.get(npcId); }
+    public void addShop(int npcId, CBuySell shop) { shops.put(npcId, shop); }
     public void delShop(int npcId) { shops.remove(npcId); }
 }

@@ -13,7 +13,7 @@ import l1j.server.server.model.L1TaxCalculator;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
 
@@ -31,7 +31,7 @@ public final class SC_ShopSellList2 {
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
 
-        final L1Shop shop = ShopTable.getInstance().get(DEFAULT_NPC_ID);
+        final CBuySell shop = ShopTable.getInstance().get(DEFAULT_NPC_ID);
         final List<L1ShopItem> list = shop == null ? null : shop.getSellingItems();
         final int limit = list == null ? 0 : list.size();
         final L1ShopItem[] offers = new L1ShopItem[limit];

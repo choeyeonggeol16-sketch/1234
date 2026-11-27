@@ -16,7 +16,7 @@ import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.config.CIOConfig;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
 
@@ -43,7 +43,7 @@ public final class SC_PremiumShopSellList {
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
         if (connection == null || !connection.isClientConnected()) return false;
-        final L1Shop shop = ShopTable.getInstance().get(npcId);
+        final CBuySell shop = ShopTable.getInstance().get(npcId);
         List<L1ShopItem> list = null;
         if (shop != null) {
             try { list = shop.getSellingItems(); } catch (Exception ignored) {}

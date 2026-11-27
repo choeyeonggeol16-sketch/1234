@@ -14,7 +14,7 @@ public final class L1ShopBuyOrderList {
     private static final int MAX_BUY_COUNT = 9999;
     private static final long MAX_WEIGHT = (long) Integer.MAX_VALUE * 3000;
 
-    private final L1Shop shop;
+    private final CBuySell shop;
     private final L1TaxCalculator taxes;
     private List<L1ShopBuyOrder> orders = List.of();
     private boolean invalid;
@@ -23,7 +23,7 @@ public final class L1ShopBuyOrderList {
     private int totalPrice;
     private int totalTaxedPrice;
 
-    L1ShopBuyOrderList(L1Shop shop) {
+    L1ShopBuyOrderList(CBuySell shop) {
         this.shop = shop;
         taxes = new L1TaxCalculator(shop.getNpcId());
     }
@@ -79,7 +79,7 @@ public final class L1ShopBuyOrderList {
         for (int i = 0; i < entries; i++) orders.add(new L1ShopBuyOrder(offer, amount, row));
     }
 
-    boolean readyFor(L1Shop owner) { return shop == owner && !invalid && !orders.isEmpty(); }
+    boolean readyFor(CBuySell owner) { return shop == owner && !invalid && !orders.isEmpty(); }
     public int BugOk() { return invalid ? 1 : 0; }
     public List<L1ShopBuyOrder> getList() { return Collections.unmodifiableList(orders); }
     public L1ShopItem lastOffer() { return orders.getLast().getItem(); }

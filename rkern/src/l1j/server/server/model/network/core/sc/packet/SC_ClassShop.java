@@ -18,7 +18,7 @@ import l1j.server.server.model.L1TaxCalculator;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.templates.L1Item;
 import l1j.server.server.templates.L1ShopItem;
 
@@ -42,7 +42,7 @@ public final class SC_ClassShop {
             else if (npcId == 2020561) npcId = 2020561 + offset;
             else if (npcId == 415333) npcId = 2020569 + offset;
         }
-        final L1Shop shop = ShopTable.getInstance().get(npcId);
+        final CBuySell shop = ShopTable.getInstance().get(npcId);
         if (shop == null) {
             LOG.log(Level.WARNING, "SC_ClassShop 존재하지 않는 상점 ID - npcId: " + npcId);
             return false;

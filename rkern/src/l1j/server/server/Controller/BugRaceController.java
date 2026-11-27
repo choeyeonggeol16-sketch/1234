@@ -35,7 +35,7 @@ import l1j.server.server.model.gametime.TimeListener;
 import l1j.server.server.model.network.core.sc.packet.SC_AttackPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.PropertyReader;
 import l1j.server.server.storage.sql.executors.Selector;
@@ -405,11 +405,11 @@ public class BugRaceController implements Runnable, TimeListener {
 
 	public void initShopNpc() {
 		List<L1ShopItem> sellingList = new ArrayList<L1ShopItem>();
-		L1Shop shop = new L1Shop(70035, sellingList, _purchasingList);
+		CBuySell shop = new CBuySell(70035, sellingList, _purchasingList);
 		ShopTable.getInstance().addShop(70035, shop);
-		L1Shop shop1 = new L1Shop(70041, sellingList, _purchasingList);
+		CBuySell shop1 = new CBuySell(70041, sellingList, _purchasingList);
 		ShopTable.getInstance().addShop(70041, shop1);
-		L1Shop shop2 = new L1Shop(70042, sellingList, _purchasingList);
+		CBuySell shop2 = new CBuySell(70042, sellingList, _purchasingList);
 		ShopTable.getInstance().addShop(70042, shop2);
 	}
 
@@ -875,11 +875,11 @@ public class BugRaceController implements Runnable, TimeListener {
 				sellingList.add(create_ticket_shop_item(tInfo));
 			}
 
-			L1Shop shop = new L1Shop(70035, sellingList, _purchasingList);
+			CBuySell shop = new CBuySell(70035, sellingList, _purchasingList);
 			ShopTable.getInstance().addShop(70035, shop);
-			L1Shop shop1 = new L1Shop(70041, sellingList, _purchasingList);
+			CBuySell shop1 = new CBuySell(70041, sellingList, _purchasingList);
 			ShopTable.getInstance().addShop(70041, shop1);
-			L1Shop shop2 = new L1Shop(70042, sellingList, _purchasingList);
+			CBuySell shop2 = new CBuySell(70042, sellingList, _purchasingList);
 			ShopTable.getInstance().addShop(70042, shop2);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -911,11 +911,11 @@ public class BugRaceController implements Runnable, TimeListener {
 				sellingList.add(create_ticket_shop_item(tInfo));
 			}
 
-			L1Shop shop = new L1Shop(70035, sellingList, _purchasingList);
+			CBuySell shop = new CBuySell(70035, sellingList, _purchasingList);
 			ShopTable.getInstance().addShop(70035, shop);
-			L1Shop shop1 = new L1Shop(70041, sellingList, _purchasingList);
+			CBuySell shop1 = new CBuySell(70041, sellingList, _purchasingList);
 			ShopTable.getInstance().addShop(70041, shop1);
-			L1Shop shop2 = new L1Shop(70042, sellingList, _purchasingList);
+			CBuySell shop2 = new CBuySell(70042, sellingList, _purchasingList);
 			ShopTable.getInstance().addShop(70042, shop2);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -34,7 +34,7 @@ import com.sun.net.httpserver.HttpServer;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
 import l1j.server.server.model.L1TaxCalculator;
-import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.model.shop.NpcShopManager;
 import l1j.server.server.templates.L1ShopItem;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -623,7 +623,7 @@ public final class AppCenterService {
             String seller=validText(npc.getName(),32);
             if(seller.isEmpty()) continue;
             int x=npc.getX(),y=npc.getY();
-            L1Shop shop = NpcShopManager.getInstance().getShop(npc.getNpcId());
+            CBuySell shop = NpcShopManager.getInstance().getShop(npc.getNpcId());
             if (shop == null) continue;
             appendNpcListings(result, shop, seller, x, y, false);
             appendNpcListings(result, shop, seller, x, y, true);
@@ -634,7 +634,7 @@ public final class AppCenterService {
         return List.copyOf(result);
     }
 
-    private static void appendNpcListings(List<Market> out, L1Shop shop, String seller,
+    private static void appendNpcListings(List<Market> out, CBuySell shop, String seller,
                                           int x, int y, boolean buyback) {
         List<L1ShopItem> offers = buyback ? shop.getBuyingItems() : shop.getSellingItems();
         L1TaxCalculator taxes = buyback ? null : new L1TaxCalculator(shop.getNpcId());

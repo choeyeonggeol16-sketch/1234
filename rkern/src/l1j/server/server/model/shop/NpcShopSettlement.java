@@ -35,7 +35,7 @@ final class NpcShopSettlement {
 
     private NpcShopSettlement() {}
 
-    static void purchase(L1Shop shop, L1PcInstance pc, L1ShopBuyOrderList orders, Runnable afterCommitted) {
+    static void purchase(CBuySell shop, L1PcInstance pc, L1ShopBuyOrderList orders, Runnable afterCommitted) {
         ShopPolicy policy = shop.policy();
         int npcId = shop.getNpcId();
         int price = policy == ShopPolicy.ADENA ? orders.getTotalPriceTaxIncluded() : orders.getTotalPrice();
@@ -240,7 +240,7 @@ final class NpcShopSettlement {
         };
     }
 
-    static void buyback(L1Shop shop, L1ShopSellOrderList orders) {
+    static void buyback(CBuySell shop, L1ShopSellOrderList orders) {
         L1PcInstance pc = orders.getPc();
         int currency = shop.policy().buybackCurrency(shop.getNpcId());
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc, ownerShopLane(pc.getId()))) {

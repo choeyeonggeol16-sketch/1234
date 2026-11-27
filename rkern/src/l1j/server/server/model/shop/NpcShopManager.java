@@ -53,7 +53,7 @@ public class NpcShopManager {
         }
     }
 
-    private record Catalog(Map<Integer, List<ShopEntry>> entries, Map<Integer, L1Shop> shops) {}
+    private record Catalog(Map<Integer, List<ShopEntry>> entries, Map<Integer, CBuySell> shops) {}
     private volatile Catalog catalog = new Catalog(Map.of(), Map.of());
     // 스폰된 상점 NPC — 스폰(부팅 1회)과 리필
     private final ArrayList<L1NpcInstance> _spawned = new ArrayList<>();
@@ -70,11 +70,11 @@ public class NpcShopManager {
         return _power;
     }
 
-    public L1Shop getShop(int npcId) {
+    public CBuySell getShop(int npcId) {
         return catalog.shops().get(npcId);
     }
 
-    public Map<Integer, L1Shop> getAllShops() {
+    public Map<Integer, CBuySell> getAllShops() {
         return catalog.shops();
     }
 
@@ -94,14 +94,14 @@ public class NpcShopManager {
             return;
         }
         entries.replaceAll((id, rows) -> List.copyOf(rows));
-        Map<Integer, L1Shop> shops = new HashMap<>();
+        Map<Integer, CBuySell> shops = new HashMap<>();
         entries.forEach((id, rows) -> shops.put(id, buildL1Shop(id, rows)));
         catalog = new Catalog(Map.copyOf(entries), Map.copyOf(shops));
         _warnedItems.clear();
     }
 
-    /** ShopEntry 목록 → 기존 L1Shop 구조 변환 */
-    private L1Shop buildL1Shop(int npcId, List<ShopEntry> entries) {
+    /** ShopEntry 목록 → 기존 CBuySell 구조 변환 */
+    private CBuySell buildL1Shop(int npcId, List<ShopEntry> entries) {
         List<L1ShopItem> sells = new ArrayList<>();
         List<L1ShopItem> buys = new ArrayList<>();
         for (ShopEntry e : entries) {
@@ -110,7 +110,7 @@ public class NpcShopManager {
             if (e.purchase) buys.add(item);
             else sells.add(item);
         }
-        return new L1Shop(npcId, sells, buys);
+        return new CBuySell(npcId, sells, buys);
     }
 
     private boolean loadTable(Map<Integer, List<ShopEntry>> map, String table) {
@@ -304,7 +304,7 @@ public class NpcShopManager {
 
         ArrayList<DynamicShopItem> sells = new ArrayList<>(entries.size());
         ArrayList<DynamicShopItem> buys = new ArrayList<>(entries.size());
-        L1Shop shop = current.shops().get(npc.getNpcId());
+        CBuySell shop = current.shops().get(npc.getNpcId());
         List<L1ShopItem> offers = shop.getSellingItems();
         int saleRow = 0;
         int idx = 0;
