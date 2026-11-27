@@ -109,6 +109,7 @@ def run(args, path, profile, classpath, variant, trial):
         cpu0, cpu1 = args.linux_cpus.split(',')
         server_vm = ['taskset', '-c', cpu0, *vm]
         client_vm = ['taskset', '-c', cpu1, *vm]
+    warmup = args.warmup_ms or warmup
     measure_ms = args.measure_ms or measure
     if profile == 'soak' and measure_ms < 60_000:
         raise ValueError('soak requires 60 seconds or longer')
@@ -171,7 +172,8 @@ def run(args, path, profile, classpath, variant, trial):
             p99_accept = accepts[math.ceil(0.99 * len(accepts)) - 1] if accepts else None
             return {'profile': profile, 'trial': trial, 'variant': variant, 'sockets': sockets, 'active': active,
                     'payload_per_direction': payload, 'window': window, 'offered_rps': rate,
-                    'measure_ms': measure_ms, 'timely_requests': int(count), 'throughput_rps': throughput,
+                    'warmup_ms': warmup, 'measure_ms': measure_ms,
+                    'timely_requests': int(count), 'throughput_rps': throughput,
                     'rtt_p50_us': rtt50, 'rtt_p95_us': rtt95, 'rtt_p99_us': rtt99, 'rtt_p999_us': rtt999,
                     'host_cpu_ns_per_op': host / count, 'owner_cpu_ns_per_op': owner / count,
                     'host_alloc_bytes_per_op': alloc / count, 'owner_alloc_bytes_per_op': own_alloc / count,
@@ -192,15 +194,21 @@ def main():
     parser.add_argument('--profile', choices=(*PROFILES, 'matrix'), action='append', required=True)
     parser.add_argument('--linux-cpus', help='comma-separated server and client CPU IDs, Linux only')
     parser.add_argument('--polls', action='store_true', help='request separate test-only selector counters')
-    parser.add_argument('--measure-ms', type=int, help='short diagnostic override, except soak')
+    parser.add_argument('--warmup-ms', type=int, help='warmup override')
+    parser.add_argument('--measure-ms', type=int, help='measurement override, at least 60000 for soak')
+    parser.add_argument('--pairs', type=int, help='number of alternating A/B pairs per profile')
+    parser.add_argument('--candidate-first', action='store_true', help='reverse the first pair')
     args = parser.parse_args()
+    if any(value is not None and value <= 0 for value in (args.warmup_ms, args.measure_ms, args.pairs)):
+        parser.error('warmup, measurement, and pair count must be positive')
     if args.linux_cpus is not None:
         values_cpu = args.linux_cpus.split(',')
         if platform.system() != 'Linux' or len(values_cpu) != 2 or not all(item.isdigit() for item in values_cpu):
             parser.error('--linux-cpus requires two Linux CPU IDs')
     args.output.mkdir(parents=True, exist_ok=True)
     args.output = args.output.resolve()
-    settings = {'os': platform.platform(), 'cpu_count': os.cpu_count(), 'java': subprocess.run(
+    settings = {'os': platform.platform(), 'cpu_count': os.cpu_count(), 'linux_cpus': args.linux_cpus,
+                'java': subprocess.run(
         [args.java, '-version'], capture_output=True, text=True, check=True).stderr.splitlines()[0]}
     if Path('/sys/fs/cgroup/cpu.max').exists():
         settings['cpu_limit'] = Path('/sys/fs/cgroup/cpu.max').read_text().strip()
@@ -210,8 +218,8 @@ def main():
     failures = 0
     with (args.output / 'results.jsonl').open('w') as data:
         for index, name in enumerate(names):
-            for trial in range(1, PROFILES[name][-1] + 1):
-                order = targets if (index + trial) % 2 else targets[::-1]
+            for trial in range(1, (args.pairs or PROFILES[name][-1]) + 1):
+                order = targets if (index + trial + args.candidate_first) % 2 else targets[::-1]
                 for variant, classpath in order:
                     try:
                         row = run(args, args.output, name, classpath, variant, trial)

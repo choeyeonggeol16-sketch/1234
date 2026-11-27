@@ -6,10 +6,15 @@ import subprocess
 
 SOURCE = "rkern/src/l1j/server/server/model/network/core/transport/selector/CSelectorTransport.java"
 METRICS = ("now waits advance await eligibleAdvance eligibleAwait skipAdvance skipAwait atSeven "
-           "forceReady resetSeven maxSkips readArms writeArms interestOps scheduled turns acceptTurns").split()
+           "forceReady resetSeven maxSkips readArms writeArms interestOps scheduled turns acceptTurns replies").split()
 
 SNAPSHOT = """
     private int snapshotSequence;
+    private static final ThreadLocal<long[]> processedReplies = ThreadLocal.withInitial(() -> new long[1]);
+
+    public static void recordProbeReply() {
+        processedReplies.get()[0]++;
+    }
 
     public synchronized String selectorProbeCounters() {
         int sequence = ++snapshotSequence;
@@ -63,8 +68,9 @@ def instrument(source, candidate):
             if (requested != published) {
                 int sequence = requested;
                 snapshot = metrics.clone();
+                snapshot[REPLY_METRIC] = processedReplies.get()[0];
                 published = sequence;
-            }""")
+            }""".replace("REPLY_METRIC", str(METRICS.index("replies"))))
     for anchor, name, owner in (
             ("readTarget = target;", "readArms", "owner."),
             ("singleWrite = count == 1 ?", "writeArms", "owner."),
@@ -115,11 +121,23 @@ def main():
     output = args.out / "src" / "CSelectorTransport.java"
     output.parent.mkdir(exist_ok=True, parents=True)
     output.write_text(instrument(source, args.variant == "candidate"), encoding="utf-8")
+    # The clean RTT histogram counts only requests sent AND answered within the
+    # window. Backlogged windows can straddle either boundary. Count accepted
+    # echo replies on each owner at the same instant as its selector counters.
+    fixture = args.repo / "rkern/tests/network/selector_poll/SelectorPollBenchmark.java"
+    bench = fixture.read_text(encoding="utf-8")
+    accepted = "if (socket.tryWritePacket(socket, bytes ? new CBytesPacket(packet.body) : packet)) return true;"
+    if bench.count(accepted) != 1:
+        raise ValueError("Unexpected benchmark echo reply path")
+    instrumented_bench = output.parent / fixture.name
+    hook = "l1j.server.server.model.network.core.transport.selector.CSelectorTransport.recordProbeReply();"
+    instrumented_bench.write_text(bench.replace(accepted, accepted.replace("return true;",
+                                  "{ " + hook + " return true; }")), encoding="utf-8")
     classes = args.out / "classes"
     classes.mkdir(exist_ok=True, parents=True)
     subprocess.run([args.javac, "--enable-preview", "--release", "21", "-encoding", "UTF-8",
                     "-cp", args.classpath, "-sourcepath", str(output.parent),
-                    "-d", str(classes), str(output)], check=True)
+                    "-d", str(classes), str(output), str(instrumented_bench)], check=True)
     print(classes.resolve())
 
 
