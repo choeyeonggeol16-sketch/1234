@@ -621,11 +621,14 @@ public final class CS_Attr {
 			pc.DragonPortalLoc[2] = 0;
 			break;
 		case 479:
-			if(c == 1) {
-				try{
-					pc.onStat(name);
-				}catch(Exception e){
-					System.out.println(String.format("%s님이 스텟오버를 시도했습니다.", pc.getName()));
+			if (c == MSGCODE_YES) {
+				final int stamp = pc.getSessionStamp();
+				try {
+					pc.onStat(client, stamp, name, null, null);
+				} catch (IllegalArgumentException rejected) {
+					System.out.printf("%s님이 스텟오버를 시도했습니다.%n", pc.getName());
+				} catch (RuntimeException failure) {
+					if (pc.isItemTransferSession(client, stamp)) confirmationFailed(pc, failure);
 				}
 			}
 			break;

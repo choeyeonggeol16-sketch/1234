@@ -117,6 +117,25 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     private volatile boolean uncertainFailure;
     private int sqlCount;
 
+    public static L1InventoryTransaction beginCharacterStat(L1PcInstance pc) {
+        return new L1InventoryTransaction(pc);
+    }
+
+    private L1InventoryTransaction(L1PcInstance pc) {
+        primary = Objects.requireNonNull(pc);
+        owners = new InventoryTransactionOwners(pc, null, false);
+        try {
+            var session = owners.session(pc);
+            if (session == null || !session.ownsReadyGameSession())
+                throw new IllegalStateException("Character stat owner is not in game");
+            move = CacheD.beginCharacterStatMove(pc.getId(), pc.getCacheDSessionEpoch());
+            move.onError(this);
+        } catch (RuntimeException | Error failure) {
+            owners.release();
+            throw failure;
+        }
+    }
+
     public static L1InventoryTransaction begin(L1PcInstance pc, int resourceKey) {
         return new L1InventoryTransaction(pc, null, resourceKey, false);
     }

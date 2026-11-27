@@ -1162,6 +1162,18 @@ public class L1Character extends L1Object {
 		if (carryChanged && (changedStats & (NOTIFY_STR | NOTIFY_CON)) == 0) SC_Weight.send(pc);
 	}
 
+    public record StatResetVitals(int hp, int mp) {}
+
+    /** Project the normal maximums from a detached reset while preserving active bonuses. */
+    public final StatResetVitals projectStatResetVitals(int baseHp, int baseMp, int con, int wis) {
+        final long skill = m_SkillHPMP;
+        final int hp = Math.clamp((long) baseHp + m_nAddedHP + (int) skill, 1, 10_000_000)
+                + CPCParamDB.pureHpMpBonus(con);
+        final int mp = Math.clamp((long) baseMp + m_nAddedMP + (int) (skill >>> 32), 0, 10_000_000)
+                + CPCParamDB.pureHpMpBonus(wis);
+        return new StatResetVitals(hp, mp);
+    }
+
 	public int getMaxHp() {
 		final int delta = (int) m_SkillHPMP;
 		int maxhp = delta == 0 ? m_nMaxHP : Math.clamp((long) m_nBaseHP + m_nAddedHP + delta, 1, 10_000_000);
@@ -2302,9 +2314,13 @@ public class L1Character extends L1Object {
 	}
 
 	/** Every AC source update and its effective projection hold this monitor. */
+    protected final int effectiveAcFromBase(int baseAc) {
+        return IntRange.ensure(baseAc + m_nAddedPDefend + m_nSkillPDefend, -999, 999);
+    }
+
 	private boolean ValidatePDefend() {
 		final int previous = m_nPDefend;
-		final int effective = IntRange.ensure(m_nBasePDefend + m_nAddedPDefend + m_nSkillPDefend, -999, 999);
+		final int effective = effectiveAcFromBase(m_nBasePDefend);
 		m_nPDefend = effective;
 		return GetPDefendEvasion(previous) != GetPDefendEvasion(effective);
 	}

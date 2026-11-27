@@ -10,17 +10,10 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.action.ActionControlHandler;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 
-import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.inventory.L1PolyMorph;
-import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 
 import java.text.DecimalFormat;
@@ -138,38 +131,6 @@ final class NpcLocalCommands {
 			L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_KEPLISHA, false);
 		} else {
 			SC_ServerMessage.send(pc, 337, "$4");
-		}
-	}
-
-    static void StatInitialize(L1PcInstance pc) {
-		
-		L1SkillUse.cast(pc, L1SkillId.CANCELLATION, pc.getId(), pc.getX(), pc.getY(), null, 0,
-				L1SkillUse.TYPE_LOGIN);
-
-
-		if (pc.getWeapon() != null) {
-			pc.UnequipItem(pc.getWeapon());
-		}
-
-		SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
-		SC_OwnCharStatus2.send(pc);
-
-		for (L1ItemInstance armor : pc.getInventory().GetEquippedItems()) {
-			for (int type = 0; type <= 12; type++) {
-				if (armor != null) {
-					pc.UnequipItem(armor);
-				}
-			}
-		}
-		pc.setReturnStat(pc.getExp());
-		SC_SPMR.send(pc);
-		SC_OwnCharAttrDef.send(pc);
-		SC_OwnCharStatus2.send(pc);
-		SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.START);
-		try {
-			pc.save();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 

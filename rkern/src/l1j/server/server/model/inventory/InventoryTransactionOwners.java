@@ -157,7 +157,7 @@ final class InventoryTransactionOwners {
         throw new IllegalArgumentException("Unreserved inventory owner");
     }
 
-    private CUserSocket session(L1PcInstance pc) {
+    CUserSocket session(L1PcInstance pc) {
         if (pc == first) return firstSession;
         if (pc != null && pc == second) return secondSession;
         if (additional != null) for (int i = 0; i < additional.length; i++)

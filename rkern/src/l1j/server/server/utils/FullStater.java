@@ -1,5 +1,8 @@
 package l1j.server.server.utils;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
@@ -8,6 +11,7 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 public final class FullStater implements Runnable {
     private static final long STEP_DELAY_MS = 100L;
+    private static final Logger LOG = Logger.getLogger(FullStater.class.getName());
 
     private final L1PcInstance player;
     private final String stat;
@@ -22,22 +26,11 @@ public final class FullStater implements Runnable {
             return;
         }
 
-        if (count == 1) {
-            try {
-                if (!pc.onStat(stat)) {
-                    sendInsufficient(pc, calcBonus(pc));
-                    return;
-                }
-                sendSuccess(pc, stat);
-                sendRemaining(pc);
-            } catch (Exception failure) {
-                sendInsufficient(pc, calcBonus(pc));
-            }
-            return;
-        }
-
         final CUserSocket session = pc.getNetConnection();
-        if (session != null) new FullStater(pc, stat, count, session).schedule(1L);
+        if (session == null) return;
+        final FullStater batch = new FullStater(pc, stat, count, session);
+        if (count == 1) batch.run();
+        else batch.schedule(1L);
     }
 
     private FullStater(L1PcInstance player, String stat, int count, CUserSocket session) {
@@ -63,21 +56,28 @@ public final class FullStater implements Runnable {
     @Override
     public void run() {
         if (!ownsCurrentPlayer()) return;
-        if (remaining == 0) {
-            finish(true);
-            return;
-        }
         try {
-            if (!player.onStat(stat)) {
+            if (!player.onStat(session, stamp, stat, this::stepCommitted, this::stepRolledBack))
                 finish(false);
-                return;
-            }
-        } catch (Exception failure) {
+        } catch (IllegalArgumentException failure) {
             finish(false);
-            return;
+        } catch (RuntimeException failure) {
+            LOG.log(Level.WARNING, "Stat investment admission failed", failure);
+            if (ownsCurrentPlayer()) {
+                SC_SystemMessage.send(player, "능력치 저장을 시작하지 못했습니다. 다시 시도해 주세요.");
+                stepRolledBack();
+            }
         }
-        remaining--;
-        schedule(STEP_DELAY_MS);
+    }
+
+    private void stepCommitted() {
+        if (!ownsCurrentPlayer()) return;
+        if (--remaining == 0) finish(true);
+        else schedule(STEP_DELAY_MS);
+    }
+
+    private void stepRolledBack() {
+        if (ownsCurrentPlayer()) sendRemaining(player);
     }
 
     private void finish(boolean complete) {

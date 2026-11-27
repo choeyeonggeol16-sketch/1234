@@ -30,11 +30,7 @@ final class CharacterServiceItems {
     }
 
     static ItemActionResult handleResetStats(ItemActionContext use) {
-        L1PcInstance pc = use.player();
-        L1ItemInstance item = use.item();
-        {
-            StatReset.useCandle(pc, item);
-        }
-        return ItemActionResult.COMPLETE;
+        StatReset.useCandle(use.player(), use.item());
+        return ItemActionResult.STOP;
     }
 }

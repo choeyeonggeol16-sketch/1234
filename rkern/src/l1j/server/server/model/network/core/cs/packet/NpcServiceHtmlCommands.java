@@ -42,7 +42,7 @@ import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.residence.L1House;
 import l1j.server.server.templates.L1Town;
-import l1j.server.server.utils.CommonUtil;
+import l1j.server.server.model.item.function.StatReset;
 
 /** General HTML commands and NPC services. */
 final class NpcServiceHtmlCommands {
@@ -598,23 +598,8 @@ final class NpcServiceHtmlCommands {
             } else if (npcId == 300000) { // 펫 레이싱
                 htmlid = NpcGameEventActions.enterPe(pc, npcId);
             } else if (npcId == 200014) {
-                if (pc.getLevel() != pc.getHighLevel()) {
-                    SC_SystemMessage.send(pc, "레벨이 다운된 캐릭입니다. 레벨업 후 이용하세요.");
-                    return;
-                }
-                if (pc.getLevel() > 54) {
-                    if (pc.getInventory().HaveItemByClassId(200000)
-                            && pc.getInventory().DeleteItemInInventory(200000, 1)) {
-                        pc.start_teleport(32723 + CommonUtil.random(-10, 10), 32815 + CommonUtil.random(-10, 10), 5166,
-                                5, 169, true, false);
-                        NpcLocalCommands.StatInitialize(pc);
-                        htmlid = "";
-                    } else {
-                        SC_ServerMessage.send(pc, 1290);
-                    }
-                } else
-                    SC_SystemMessage.send(pc, "스텟초기화는 55레벨 이상만 가능합니다.");
-
+                StatReset.useNpcCandle(pc);
+                htmlid = "";
             } else if (npcId == 50038 || npcId == 50042 || npcId == 50029 || npcId == 50019 || npcId == 50062) {
                 SC_ChatPacket.sendDirect(pc, pc, "무한대전 관람모드 비활성화 상태.");
             } else {

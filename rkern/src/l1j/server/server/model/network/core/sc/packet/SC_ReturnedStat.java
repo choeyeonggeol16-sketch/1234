@@ -1,7 +1,6 @@
 package l1j.server.server.model.network.core.sc.packet;
 
 import l1j.server.server.Opcodes;
-import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.CWorld;
@@ -37,6 +36,15 @@ public final class SC_ReturnedStat {
     private SC_ReturnedStat() {}
 
     public static boolean sendPc(L1PcInstance pc, int type) {
+        return sendPc(pc, type, false);
+    }
+
+    /** END with zero remaining points dismisses the completed reset window. */
+    public static boolean sendResetComplete(L1PcInstance pc) {
+        return sendPc(pc, END, true);
+    }
+
+    private static boolean sendPc(L1PcInstance pc, int type, boolean resetComplete) {
         if (pc == null) return false;
         final CUserSocket socket = pc.getNetConnection();
         if (socket == null || !socket.isConnected()) return false;
@@ -104,13 +112,13 @@ short initHp = 0;
                     buffer.writeH(initHp);
                     buffer.writeH(initMp);
                     buffer.writeC(10);
-                    buffer.writeC(ExpTable.getLevelByExp(pc.getReturnStat()));
+                    buffer.writeC(pc.getReturnStat() == 0 ? 1 : pc.getLevel());
                     break;
                 }
                 case LEVELUP: {
                     if (pc.rst != null) {
                         buffer.writeC(pc.rst.level);
-                        buffer.writeC(ExpTable.getLevelByExp(pc.getReturnStat()));
+                        buffer.writeC(pc.rst.targetLevel);
                         buffer.writeH(pc.rst.baseHp + pc.rst.upHp);
                         buffer.writeH(pc.rst.baseMp + pc.rst.upMp);
                         buffer.writeH(pc.rst.ac);
@@ -126,7 +134,7 @@ short initHp = 0;
                     break;
                 }
                 case END:
-                    buffer.writeC(pc.getElixirStats());
+                    buffer.writeC(resetComplete ? 0 : pc.getElixirStats());
                     break;
                 case LOGIN: {
                     int first = 0, second = 0, third = 0;

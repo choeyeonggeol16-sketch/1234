@@ -58,7 +58,7 @@ public final class SC_Chainfo {
 		long adenaCount = 0;
 		StringBuilder itemsSb = new StringBuilder();
 
-		String charSql = "SELECT objid, level, Exp, Hp, Mp, Ac, Type FROM characters WHERE char_name=?";
+		String charSql = "SELECT objid, level, Exp, CurHp, CurMp, Ac, Type FROM characters WHERE char_name=?";
 		String adenaSql = "SELECT COALESCE(SUM(count),0) AS count FROM character_items WHERE char_id=? AND item_id=40308";
 		String itemSql = "SELECT enchantlvl, item_name FROM character_items WHERE char_id=? ORDER BY enchantlvl DESC LIMIT 14";
 
@@ -73,8 +73,8 @@ public final class SC_Chainfo {
 						charObjId = rs.getString("objid");
 						level = rs.getInt("level");
 						exp = rs.getInt("Exp");
-						hp = rs.getInt("Hp");
-						mp = rs.getInt("Mp");
+						hp = rs.getInt("CurHp");
+						mp = rs.getInt("CurMp");
 						ac = rs.getInt("Ac");
 						classType = rs.getInt("Type");
 					} else {
@@ -136,14 +136,14 @@ public final class SC_Chainfo {
 
 	private static String getClassType(int classType) {
 		switch (classType) {
-		case 0: case 1: return "군주";
-		case 48: case 61: return "기사";
-		case 37: case 138: return "요정";
-		case 734: case 1186: return "마법사";
-		case 2786: case 2796: return "다크엘프";
-		case 6658: case 6661: return "용기사";
-		case 6671: case 6650: return "환술사";
-		case 12490: case 12494: return "전사";
+		case 0: return "군주";
+		case 1: return "기사";
+		case 2: return "요정";
+		case 3: return "마법사";
+		case 4: return "다크엘프";
+		case 5: return "용기사";
+		case 6: return "환술사";
+		case 7: return "전사";
 		default: return "미확인";
 		}
 	}

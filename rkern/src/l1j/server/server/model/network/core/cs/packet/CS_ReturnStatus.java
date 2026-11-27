@@ -1,355 +1,339 @@
 package l1j.server.server.model.network.core.cs.packet;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 
-import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
-import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.L1ReturnStatTemp;
+
+import l1j.server.server.datatables.ExpTable;
+import l1j.server.server.model.HpMpGrowthHistory;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1Character.StatResetVitals;
+import l1j.server.server.model.L1ReturnStatTemp;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-
+import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_MpUpdate;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
 import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
-
+import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
+import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
+import l1j.server.server.storage.mysql.CharacterStatReceipt;
 import l1j.server.server.utils.CPCParamDB;
 import l1j.server.server.utils.CheckInitStat;
-import l1j.server.server.storage.CacheD;
 
 public final class CS_ReturnStatus {
+    private static final Logger LOG = Logger.getLogger(CS_ReturnStatus.class.getName());
+    private static final int BASE_STAT_SUM_MAX = 75;
+    private static final int BASE_STAT_MAX = 20;
+    private static final int BONUS_LEVEL_BASE = 50;
+    private static final int STAT_STR = 1;
+    private static final int STAT_INT = 2;
+    private static final int STAT_WIS = 3;
+    private static final int STAT_DEX = 4;
+    private static final int STAT_CON = 5;
+    private static final int STAT_CHA = 6;
 
-	private static final int BASE_STAT_SUM_MAX = 80;
+    private CS_ReturnStatus() {}
 
-	private static final int BONUS_LEVEL_BASE = 50;
-
-	private static final int STAT_STR = 1;
-	private static final int STAT_INT = 2;
-	private static final int STAT_WIS = 3;
-	private static final int STAT_DEX = 4;
-	private static final int STAT_CON = 5;
-	private static final int STAT_CHA = 6;
-
-	private CS_ReturnStatus() {}
-
-	public static void handle(CUserSocket client, int type, int levelup, int statusup, long packedStats) {
-
-		if (client == null || !client.ownsReadyGameSession()) {
-			return;
-		}
-
-		final L1PcInstance pc = client.getActiveChar();
-
-		if (pc == null) {
-			return;
-		}
+    public static void handle(CUserSocket client, int type, int levelup, int statusup, long packedStats) {
+        if (client == null || !client.ownsReadyGameSession() || type < 1 || type > 3) return;
+        final L1PcInstance pc = client.getActiveChar();
+        if (pc == null) return;
 
         final int stamp = pc.getSessionStamp();
-        final boolean finalSelection = type == 3 || type == 2 && levelup == 8;
-        final var inventory = pc.getInventory();
-        if (finalSelection && !inventory.tryBeginEquipmentChange()) return;
-		pc.lockUserState();
-		try {
-			if (pc.getReturnStat() == 0 || !pc.isItemTransferSession(client, stamp)
-                    || finalSelection && CacheD.getInstance().hasPendingOwnerApply(pc.getId())) return;
-			switch (type) {
-			case 1:
-				handleType1Start(client, pc, packedStats);
-				return;
+        final Selection selection;
+        pc.lockUserState();
+        try {
+            if (pc.getReturnStat() == 0 || !pc.isItemTransferSession(client, stamp)) return;
+            final L1ReturnStatTemp stage = pc.rst;
+            if (stage != null && stage.commitPending) return;
+            final int level = pc.getLevel();
+            if (level < 1 || level > HpMpGrowthHistory.MAX_LEVEL || ExpTable.getLevelByExp(pc.getExp()) != level)
+                return;
+            if (stage != null && (stage.targetLevel != level || stage.characterType != pc.getType())) {
+                // Reopen the detached preview at the current level using the already-paid marker.
+                pc.rst = null;
+                if (type != 1) {
+                    resendPhase(pc);
+                    return;
+                }
+            }
 
-			case 2:
-				handleType2LevelUp(client, pc, levelup, statusup);
-				return;
+            selection = switch (type) {
+                case 1 -> {
+                    start(pc, packedStats);
+                    yield null;
+                }
+                case 2 -> levelUp(pc, levelup, statusup);
+                case 3 -> selectElixirs(pc, packedStats);
+                default -> throw new AssertionError("Checked reset packet type");
+            };
+        } finally {
+            pc.unlockUserState();
+        }
 
-			case 3:
-				handleType3Elixir(pc, packedStats);
-				return;
+        if (selection != null) submit(client, pc, stamp, selection);
+    }
 
-			default:
-				return;
-			}
-
-		} catch (Throwable ignored) {
-			/*
-			 * 기존 C_ReturnStatus의 예외 무시(semantics) 기조를 그대로 유지합니다.
-			 */
-		} finally {
-			pc.unlockUserState();
-            if (finalSelection) inventory.endEquipmentChange();
-		}
-	}
-
-	// =========================================================
-	// TYPE 1: 스탯 초기화 시작
-	// =========================================================
-
-	private static void handleType1Start(CUserSocket client, L1PcInstance pc, long packedStats) {
-
-		final int str = statStr(packedStats);
-		final int intel = statInt(packedStats);
-		final int wis = statWis(packedStats);
-		final int dex = statDex(packedStats);
-		final int con = statCon(packedStats);
-		final int cha = statCha(packedStats);
-
-		if (isInvalidBaseStats(str, dex, con, wis, intel, cha)
+    private static void start(L1PcInstance pc, long packedStats) {
+        if (pc.rst != null) {
+            resendPhase(pc);
+            return;
+        }
+        final int str = readStat(packedStats, 0);
+        final int intel = readStat(packedStats, 8);
+        final int wis = readStat(packedStats, 16);
+        final int dex = readStat(packedStats, 24);
+        final int con = readStat(packedStats, 32);
+        final int cha = readStat(packedStats, 40);
+        if (!validBaseStat(str) || !validBaseStat(intel) || !validBaseStat(wis)
+                || !validBaseStat(dex) || !validBaseStat(con) || !validBaseStat(cha)
+                || str + intel + wis + dex + con + cha > BASE_STAT_SUM_MAX
                 || !CheckInitStat.CheckBaseStats(pc, str, dex, con, intel, wis, cha)) {
-			kickStatBug(client, pc);
-			return;
-		}
-
-		final L1ReturnStatTemp rst = new L1ReturnStatTemp();
-
-		rst.basestr = str;
-		rst.baseint = intel;
-		rst.basewis = wis;
-		rst.basedex = dex;
-		rst.basecon = con;
-		rst.basecha = cha;
-
-		rst.str = 0;
-		rst.Int = 0;
-		rst.wis = 0;
-		rst.dex = 0;
-		rst.con = 0;
-		rst.cha = 0;
-
-		rst.level = 1;
-		rst.upHp = 0;
-		rst.upMp = 0;
-		rst.ac = 10;
-
-		rst.baseHp = getInitHp(pc);
-		rst.baseMp = getInitMp(pc, rst.basewis);
-        pc.rst = rst;
-
-		SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.LEVELUP);
-	}
-
-	private static boolean isInvalidBaseStats(int str, int dex, int con, int wis, int intel, int cha) {
-
-		if (str <= 0 || dex <= 0 || con <= 0 || wis <= 0 || intel <= 0 || cha <= 0) {
-			return true;
-		}
-
-		return str + dex + con + wis + intel + cha > BASE_STAT_SUM_MAX;
-	}
-
-	// =========================================================
-	// TYPE 2: 레벨업 시 스탯 분배
-	// =========================================================
-
-	private static void handleType2LevelUp(CUserSocket client, L1PcInstance pc, int levelup, int statusup) {
-
-		if (pc.rst == null) return;
-        if (pc.rst.awaitingElixirs) {
-            if (levelup == 8) SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.END);
+            resendPhase(pc);
             return;
         }
 
-		/*
-		 * 레벨 범위 방어 로직.
-		 */
-		if (pc.rst.level > pc.getHighLevel() || (pc.rst.level == pc.getHighLevel() && levelup != 8)) {
-			System.out.println(String.format(
-					"%s님이 잘못된 레벨로 인해 스초를 다시 시작합니다.(원본레벨 : %d, 시도한 레벨 : %d)",
-					safeName(pc), pc.getHighLevel(), pc.rst.level));
+        final L1ReturnStatTemp stage = new L1ReturnStatTemp();
+        stage.targetLevel = pc.getLevel();
+        stage.characterType = pc.getType();
+        stage.basestr = str;
+        stage.baseint = intel;
+        stage.basewis = wis;
+        stage.basedex = dex;
+        stage.basecon = con;
+        stage.basecha = cha;
+        stage.level = 1;
+        stage.baseHp = CPCParamDB.initialHp(stage.characterType);
+        stage.baseMp = CPCParamDB.initialMp(stage.characterType, wis);
+        stage.ac = pc.calculateBaseAc(dex, stage.level);
+        pc.rst = stage;
+        resendPhase(pc);
+    }
 
-			kick(client);
-			return;
-		}
+    private static boolean validBaseStat(int value) {
+        return value >= 3 && value <= BASE_STAT_MAX;
+    }
 
-		/*
-		 * 50 레벨 이하에서 스탯 추가 코드 방지.
-		 */
-		if (pc.rst.level <= BONUS_LEVEL_BASE && levelup != 0 && levelup != 7 && levelup != 8) {
-			System.out.println(String.format(
-					"%s님이 50레벨 이하인데 스탯 추가를 시도했습니다. 시도레벨 : %d",
-					safeName(pc), pc.rst.level));
-
-			kick(client);
-			return;
-		}
-
-		switch (levelup) {
-		case 0:
-			statup(pc);
-			SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.LEVELUP);
-			return;
-
-		case STAT_STR:
-		case STAT_INT:
-		case STAT_WIS:
-		case STAT_DEX:
-		case STAT_CON:
-		case STAT_CHA:
-			if (!allocateLevelPoint(pc, levelup)) {
-				return;
-			}
-
-			statup(pc);
-			SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.LEVELUP);
-			return;
-
-		case 7:
-			/*
-			 * +10 레벨 한 번에 올리기.
-			 */
-			if (pc.rst.level > 40) {
-				return;
-			}
-
-			if ((pc.rst.level + 10) < pc.getHighLevel()) {
-				for (int i = 0; i < 10; i++) {
-					statup(pc);
-				}
-				SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.LEVELUP);
-			}
-			return;
-
-		case 8:
-			handleBonusAndMaybeFinish(client, pc, statusup);
-			return;
-
-		default:
-			return;
-		}
-	}
-
-	private static void handleBonusAndMaybeFinish(CUserSocket client, L1PcInstance pc, int statusup) {
-
-		if (pc.rst == null) {
-			return;
-		}
-        if (!hasCompleteResetGrowth(pc)) {
-            kick(client);
-            return;
-        }
-
-		if (pc.rst.level > BONUS_LEVEL_BASE) {
-			switch (statusup) {
-			case STAT_STR:
-			case STAT_INT:
-			case STAT_WIS:
-			case STAT_DEX:
-			case STAT_CON:
-			case STAT_CHA:
-				if (!allocateLevelPoint(pc, statusup)) {
-					return;
-				}
-				break;
-			default:
-				break;
-			}
-		}
-
-		/*
-		 * 엘릭서가 있으면 클라이언트에 엘릭서 스탯 입력 단계를 요청합니다.
-		 */
-		if (pc.getElixirStats() > 0) {
-            pc.rst.awaitingElixirs = true;
-			SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.END);
-			return;
-		}
-
+    private static Selection levelUp(L1PcInstance pc, int action, int finalStat) {
         final L1ReturnStatTemp stage = pc.rst;
-        applyFinalAndFinish(pc, stage, stage.basestr + stage.str, stage.baseint + stage.Int,
+        if (stage == null || stage.awaitingElixirs) {
+            resendPhase(pc);
+            return null;
+        }
+        if (action == 8) return selectFinalLevelPoint(pc, stage, finalStat);
+        if (stage.level >= stage.targetLevel || stage.levelSelectionComplete) {
+            resendPhase(pc);
+            return null;
+        }
+
+        switch (action) {
+            case 0 -> advanceLevel(pc, stage);
+            case STAT_STR, STAT_INT, STAT_WIS, STAT_DEX, STAT_CON, STAT_CHA -> {
+                if (stage.level <= BONUS_LEVEL_BASE || !allocateLevelPoint(pc, stage, action)) {
+                    resendPhase(pc);
+                    return null;
+                }
+                advanceLevel(pc, stage);
+            }
+            case 7 -> {
+                if (stage.level > 40 || stage.level + 10 >= stage.targetLevel) {
+                    resendPhase(pc);
+                    return null;
+                }
+                for (int i = 0; i < 10; i++) advanceLevel(pc, stage);
+            }
+            default -> { return null; }
+        }
+        resendPhase(pc);
+        return null;
+    }
+
+    private static Selection selectFinalLevelPoint(L1PcInstance pc, L1ReturnStatTemp stage, int stat) {
+        if (!hasCompleteResetGrowth(stage)) {
+            resendPhase(pc);
+            return null;
+        }
+        if (!stage.levelSelectionComplete) {
+            if (stage.level > BONUS_LEVEL_BASE && stat != 0 && !allocateLevelPoint(pc, stage, stat)) {
+                resendPhase(pc);
+                return null;
+            }
+            stage.ac = pc.calculateBaseAc(stage.basedex + stage.dex, stage.level);
+            stage.levelSelectionComplete = true;
+            stage.awaitingElixirs = pc.getElixirStats() > 0;
+        }
+        if (stage.awaitingElixirs) {
+            resendPhase(pc);
+            return null;
+        }
+        return new Selection(stage, stage.basestr + stage.str, stage.baseint + stage.Int,
                 stage.basewis + stage.wis, stage.basedex + stage.dex,
-                stage.basecon + stage.con, stage.basecha + stage.cha, false);
-	}
+                stage.basecon + stage.con, stage.basecha + stage.cha);
+    }
 
-	// =========================================================
-	// TYPE 3: 엘릭서 사용
-	// =========================================================
-
-    private static void handleType3Elixir(L1PcInstance pc, long packedStats) {
+    private static Selection selectElixirs(L1PcInstance pc, long packedStats) {
         final L1ReturnStatTemp stage = pc.rst;
-        if (stage == null || !stage.awaitingElixirs || pc.getElixirStats() <= 0
-                || !hasCompleteResetGrowth(pc)) return;
+        if (stage == null || !stage.awaitingElixirs || pc.getElixirStats() <= 0) return null;
 
-        final int str = statStr(packedStats), intel = statInt(packedStats), wis = statWis(packedStats);
-        final int dex = statDex(packedStats), con = statCon(packedStats), cha = statCha(packedStats);
-        final int dStr = str - stage.basestr - stage.str, dInt = intel - stage.baseint - stage.Int;
-        final int dWis = wis - stage.basewis - stage.wis, dDex = dex - stage.basedex - stage.dex;
-        final int dCon = con - stage.basecon - stage.con, dCha = cha - stage.basecha - stage.cha;
-        final int maximum = permanentLimit(pc);
+        final int str = readStat(packedStats, 0);
+        final int intel = readStat(packedStats, 8);
+        final int wis = readStat(packedStats, 16);
+        final int dex = readStat(packedStats, 24);
+        final int con = readStat(packedStats, 32);
+        final int cha = readStat(packedStats, 40);
+        final int dStr = str - stage.basestr - stage.str;
+        final int dInt = intel - stage.baseint - stage.Int;
+        final int dWis = wis - stage.basewis - stage.wis;
+        final int dDex = dex - stage.basedex - stage.dex;
+        final int dCon = con - stage.basecon - stage.con;
+        final int dCha = cha - stage.basecha - stage.cha;
+        final int maximum = permanentLimit(pc, stage);
         if (dStr < 0 || dInt < 0 || dWis < 0 || dDex < 0 || dCon < 0 || dCha < 0
                 || str > maximum || intel > maximum || wis > maximum
                 || dex > maximum || con > maximum || cha > maximum
                 || dStr + dInt + dWis + dDex + dCon + dCha != pc.getElixirStats()) {
-            SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.END);
-            return;
+            resendPhase(pc);
+            return null;
         }
-        applyFinalAndFinish(pc, stage, str, intel, wis, dex, con, cha, true);
+        return new Selection(stage, str, intel, wis, dex, con, cha);
     }
 
-    /** The reset window owns a detached allocation. Publish only a validated final selection. */
-    private static void applyFinalAndFinish(L1PcInstance pc, L1ReturnStatTemp stage,
-            int str, int intel, int wis, int dex, int con, int cha, boolean withElixirs) {
-        pc.setBonusStats(stage.allocatedLevelPoints());
-        pc.setExp(pc.getReturnStat());
-        pc.ResetPrimaryStats(stage.basestr, stage.basedex, stage.basecon, stage.baseint, stage.basewis, stage.basecha);
-        pc.SetStatStr(str);
-        pc.SetStatInt(intel);
-        pc.SetStatWis(wis);
-        pc.SetStatDex(dex);
-        pc.SetStatCon(con);
-        pc.SetStatCha(cha);
-        pc.addBaseMaxHp((short) (stage.baseHp + stage.upHp - pc.getBaseMaxHp()));
-        pc.addBaseMaxMp((short) (stage.baseMp + stage.upMp - pc.getBaseMaxMp()));
-        pc.setCurrentHp(pc.getMaxHp());
-        pc.setCurrentMp(pc.getMaxMp());
-        pc.completeStatResetGrowth(stage.hpMpGrowth);
-        pc.setReturnStat(0);
-        pc.rst = null;
-        pc.publishPermanentStatRevision();
-        saveCharacterState(pc);
+    private record Selection(L1ReturnStatTemp stage, int str, int intel, int wis, int dex, int con, int cha) {}
 
+    private static void submit(CUserSocket client, L1PcInstance pc, int stamp, Selection selected) {
+        final L1ReturnStatTemp stage = selected.stage;
+        // Claim the inventory/receipt owner before taking the user-state lock.
+        // This is the same acquisition order used by ordinary stat investment.
+        try (L1InventoryTransaction tx = L1InventoryTransaction.beginCharacterStat(pc)) {
+            pc.lockUserState();
+            try {
+                final int marker = pc.getReturnStat();
+                final int exp = pc.getExp();
+                if (marker <= 0 || pc.rst != stage || stage.commitPending || !pc.isItemTransferSession(client, stamp)
+                        || pc.getLevel() != stage.targetLevel || ExpTable.getLevelByExp(exp) != stage.targetLevel
+                        || pc.getType() != stage.characterType) return;
+                final StatResetVitals vitals = pc.projectStatResetVitals(stage.baseHp + stage.upHp,
+                        stage.baseMp + stage.upMp, selected.con, selected.wis);
+                final int ac = pc.projectEffectiveAc(selected.dex, stage.targetLevel);
+                CharacterStatReceipt.stageReset(tx, pc, stage, selected.str, selected.intel, selected.wis,
+                        selected.dex, selected.con, selected.cha, vitals.hp(), vitals.mp(), ac);
+                stage.commitPending = true;
+                try {
+                    tx.onFailure(() -> retry(pc, stage));
+                    tx.commitAfterInventoryRelease(() -> publish(pc, selected, marker),
+                            () -> complete(pc, exp, vitals, ac));
+                } catch (RuntimeException failure) {
+                    stage.commitPending = false;
+                    throw failure;
+                }
+            } finally {
+                pc.unlockUserState();
+            }
+        } catch (RuntimeException failure) {
+            LOG.log(Level.FINE, "Stat reset receipt admission deferred: " + pc.getId(), failure);
+            SC_SystemMessage.send(pc, "능력치 저장을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        }
+    }
+
+    private static void retry(L1PcInstance pc, L1ReturnStatTemp stage) {
+        pc.lockUserState();
+        try {
+            if (pc.rst != stage || pc.getReturnStat() == 0) return;
+            stage.commitPending = false;
+            SC_SystemMessage.send(pc, "능력치 저장에 실패했습니다. 확정을 다시 눌러 주세요.");
+            resendPhase(pc);
+        } finally {
+            pc.unlockUserState();
+        }
+    }
+
+    private static void publish(L1PcInstance pc, Selection selected, int marker) {
+        final L1ReturnStatTemp stage = selected.stage;
+        pc.lockUserState();
+        try {
+            if (pc.rst != stage || !stage.commitPending || pc.getReturnStat() != marker
+                    || pc.getType() != stage.characterType)
+                throw new IllegalStateException("Stat reset stage changed before durable replay");
+
+            pc.setBonusStats(stage.allocatedLevelPoints());
+            pc.ResetPrimaryStats(stage.basestr, stage.basedex, stage.basecon,
+                    stage.baseint, stage.basewis, stage.basecha);
+            pc.SetStatStr(selected.str);
+            pc.SetStatInt(selected.intel);
+            pc.SetStatWis(selected.wis);
+            pc.SetStatDex(selected.dex);
+            pc.SetStatCon(selected.con);
+            pc.SetStatCha(selected.cha);
+            pc.addBaseMaxHp((short) (stage.baseHp + stage.upHp - pc.getBaseMaxHp()));
+            pc.addBaseMaxMp(stage.baseMp + stage.upMp - pc.getBaseMaxMp());
+            pc.completeStatResetGrowth(stage.hpMpGrowth);
+            // A progression update received during the DB round trip still
+            // applies its normal growth on top of the newly committed reset.
+            final int level = ExpTable.getLevelByExp(pc.getExp());
+            if (level != stage.targetLevel)
+                pc.applyHpMpLevelTransition(stage.targetLevel, level);
+            pc.setLevel(level);
+            pc.setHighLevel(Math.max(pc.getHighLevel(), Math.max(level, stage.targetLevel)));
+            pc.setCurrentHp(pc.getMaxHp());
+            pc.setCurrentMp(pc.getMaxMp());
+            pc.setReturnStat(0);
+            pc.rst = null;
+            pc.publishPermanentStatRevision();
+        } finally {
+            pc.unlockUserState();
+        }
+    }
+
+    private static void complete(L1PcInstance pc, int capturedExp, StatResetVitals vitals, int capturedAc) {
+        if (pc.getExp() != capturedExp || pc.getCurrentHp() != vitals.hp()
+                || pc.getCurrentMp() != vitals.mp() || pc.getAc() != capturedAc) {
+            // Preserve concurrent progression or modifier changes after the receipt releases.
+            try { pc.save(); }
+            catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Post-reset progression save deferred: " + pc.getId(), failure);
+            }
+        }
         SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
         SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
         SC_SPMR.send(pc);
         SC_OwnCharStatus2.send(pc);
         SC_OwnCharStatus.send(pc);
         SC_OwnCharAttrDef.send(pc);
-        if (!withElixirs) SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.END);
+        SC_ReturnedStat.sendResetComplete(pc);
         pc.start_teleport(33430, 32810, 4, pc.getHeading(), 169, true, false);
-        if (!withElixirs) pc.RenewStat();
+        pc.RenewStat();
         pc.CheckStatus();
     }
 
-	// =========================================================
-	// STAT 로직
-	// =========================================================
-
-    private static boolean hasCompleteResetGrowth(L1PcInstance pc) {
+    private static void resendPhase(L1PcInstance pc) {
         final L1ReturnStatTemp stage = pc.rst;
-        if (stage == null || stage.hpMpGrowth == null
-                || stage.level != pc.getHighLevel() || stage.level != pc.getLevel()
-                || stage.level < 1 || stage.level > l1j.server.server.model.HpMpGrowthHistory.MAX_LEVEL
-                || stage.hpMpGrowth.floorLevel() != 1) return false;
+        SC_ReturnedStat.sendPc(pc, stage == null ? SC_ReturnedStat.START
+                : stage.awaitingElixirs ? SC_ReturnedStat.END : SC_ReturnedStat.LEVELUP);
+    }
+
+    private static boolean hasCompleteResetGrowth(L1ReturnStatTemp stage) {
+        if (stage.level != stage.targetLevel || stage.hpMpGrowth.floorLevel() != 1) return false;
         for (int level = 2; level <= stage.level; level++)
             if (!stage.hpMpGrowth.known(level)) return false;
         return true;
     }
 
-    private static boolean allocateLevelPoint(L1PcInstance pc, int type) {
-        final L1ReturnStatTemp stage = pc.rst;
-        final int value = switch (type) {
+    private static boolean allocateLevelPoint(L1PcInstance pc, L1ReturnStatTemp stage, int stat) {
+        final int value = switch (stat) {
             case STAT_STR -> stage.basestr + stage.str;
             case STAT_INT -> stage.baseint + stage.Int;
             case STAT_WIS -> stage.basewis + stage.wis;
             case STAT_DEX -> stage.basedex + stage.dex;
             case STAT_CON -> stage.basecon + stage.con;
             case STAT_CHA -> stage.basecha + stage.cha;
-            default -> throw new IllegalArgumentException("Unknown stat " + type);
+            default -> Integer.MAX_VALUE;
         };
-        if (value >= permanentLimit(pc) || stage.allocatedLevelPoints() >= stage.level - BONUS_LEVEL_BASE) {
-            SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.LEVELUP);
+        if (value >= permanentLimit(pc, stage) || stage.allocatedLevelPoints() >= stage.level - BONUS_LEVEL_BASE)
             return false;
-        }
-        switch (type) {
+
+        switch (stat) {
             case STAT_STR -> ++stage.str;
             case STAT_INT -> ++stage.Int;
             case STAT_WIS -> ++stage.wis;
@@ -360,96 +344,25 @@ public final class CS_ReturnStatus {
         return true;
     }
 
-    private static int permanentLimit(L1PcInstance pc) {
-        return pc.getHighLevel() >= 90 ? 50 : 45;
+    private static int permanentLimit(L1PcInstance pc, L1ReturnStatTemp stage) {
+        return Math.max(pc.getHighLevel(), stage.targetLevel) >= 90 ? 50 : 45;
     }
 
-	private static void statup(L1PcInstance pc) {
-
-		pc.rst.level++;
-
-		final int hp = CPCParamDB.increaseHp(pc.getType(), (byte) (pc.rst.con + pc.rst.basecon));
-		final int mp = CPCParamDB.increaseMp(pc.getType(), (byte) (pc.rst.wis + pc.rst.basewis));
-
-        int oldHp = Math.min(32767, pc.rst.baseHp + pc.rst.upHp);
-        int oldMp = Math.min(32767, pc.rst.baseMp + pc.rst.upMp);
-        int nextHp = Math.min(32767, oldHp + hp), nextMp = Math.min(32767, oldMp + mp);
-        pc.rst.hpMpGrowth.record(pc.rst.level, nextHp - oldHp, nextMp - oldMp);
-        pc.rst.upHp = nextHp - pc.rst.baseHp;
-        pc.rst.upMp = nextMp - pc.rst.baseMp;
-	}
-
-	// =========================================================
-	// PACKED STAT 추출
-	// =========================================================
-
-	private static int statStr(long value) {
-		return (int) (value & 0xFFL);
-	}
-
-	private static int statInt(long value) {
-		return (int) ((value >>> 8) & 0xFFL);
-	}
-
-	private static int statWis(long value) {
-		return (int) ((value >>> 16) & 0xFFL);
-	}
-
-	private static int statDex(long value) {
-		return (int) ((value >>> 24) & 0xFFL);
-	}
-
-	private static int statCon(long value) {
-		return (int) ((value >>> 32) & 0xFFL);
-	}
-
-	private static int statCha(long value) {
-		return (int) ((value >>> 40) & 0xFFL);
-	}
-
-	// =========================================================
-	// INIT HP / MP (클래스별 초기 수치)
-	// =========================================================
-
-	private static short getInitHp(L1PcInstance pc) {
-        return CPCParamDB.initialHp(pc.getType());
+    private static void advanceLevel(L1PcInstance pc, L1ReturnStatTemp stage) {
+        stage.level++;
+        final int hp = CPCParamDB.increaseHp(stage.characterType, (byte) (stage.basecon + stage.con));
+        final int mp = CPCParamDB.increaseMp(stage.characterType, (byte) (stage.basewis + stage.wis));
+        final int oldHp = stage.baseHp + stage.upHp;
+        final int oldMp = stage.baseMp + stage.upMp;
+        final int newHp = Math.min(32767, oldHp + hp);
+        final int newMp = Math.min(32767, oldMp + mp);
+        stage.hpMpGrowth.record(stage.level, newHp - oldHp, newMp - oldMp);
+        stage.upHp = newHp - stage.baseHp;
+        stage.upMp = newMp - stage.baseMp;
+        stage.ac = pc.calculateBaseAc(stage.basedex + stage.dex, stage.level);
     }
 
-	private static short getInitMp(L1PcInstance pc, int baseWis) {
-        return CPCParamDB.initialMp(pc.getType(), baseWis);
+    private static int readStat(long packed, int shift) {
+        return (int) ((packed >>> shift) & 0xffL);
     }
-
-	// =========================================================
-	// 유틸리티 (MISC)
-	// =========================================================
-
-	private static void kickStatBug(CUserSocket client, L1PcInstance pc) {
-		kick(client);
-		System.out.println("▶ 스텟버그 추방 : " + safeName(pc));
-	}
-
-	private static void kick(CUserSocket client) {
-		try {
-			client.kick();
-		} catch (Throwable ignored) {
-		}
-	}
-
-    private static void saveCharacterState(L1PcInstance pc) {
-        try {
-            pc.save();
-        } catch (RuntimeException failure) {
-            Logger.getLogger(CS_ReturnStatus.class.getName())
-                    .log(Level.SEVERE, "Stat reset save admission failed", failure);
-            SC_SystemMessage.send(pc, "능력치 저장에 실패했습니다. 다시 접속하기 전에 관리자에게 문의해 주세요.");
-        }
-    }
-
-	private static String safeName(L1PcInstance pc) {
-		try {
-			return pc != null ? pc.getName() : "null";
-		} catch (Throwable ignored) {
-			return "unknown";
-		}
-	}
 }

@@ -362,7 +362,7 @@ public final class CacheD {
                 if (!cache.transactionStoreReady)
                     throw new RejectedExecutionException("CacheD atomic storage schema is unavailable");
                 cache.checkItemOwner(characterId);
-                if (economy) cache.checkItemOwner(warehouseKey);
+                if (economy && warehouseKey > 0) cache.checkItemOwner(warehouseKey);
                 for (int owner : extraOwnerIds) cache.checkItemOwner(owner);
                 // A second move must not build its pre-image from game memory
                 // until the preceding owner's SQL transaction has finished.
@@ -426,7 +426,7 @@ public final class CacheD {
                 else cache.countUnpreparedWarehouse(reservedJob);
                 cache.pendingDbJobs++;
                 cache.dbJobsByOwner.addTo(characterId, 1);
-                if (warehouseKey != characterId) cache.dbJobsByOwner.addTo(warehouseKey, 1);
+                if (warehouseKey > 0 && warehouseKey != characterId) cache.dbJobsByOwner.addTo(warehouseKey, 1);
                 for (int owner : extraOwnerIds) cache.dbJobsByOwner.addTo(owner, 1);
                 cache.enqueueNext(reservedJob, 0L);
                 cache.signalReadyChange();
@@ -467,7 +467,7 @@ public final class CacheD {
         }
 
         private boolean isEconomyOwner(int id) {
-            if (id == characterId || id == warehouseKey) return true;
+            if (id == characterId || (warehouseKey > 0 && id == warehouseKey)) return true;
             for (int owner : extraOwnerIds) if (owner == id) return true;
             return false;
         }
@@ -697,6 +697,23 @@ public final class CacheD {
     }
 
     /** Reserve the existing two FIFO lanes for an immutable economic batch. */
+    /** A stat change touches only the active character's SQL row. */
+    public static WarehouseMove beginCharacterStatMove(int ownerId, long epoch) {
+        if (ownerId <= 0 || epoch == 0L)
+            throw new IllegalArgumentException("Unpublished character stat owner");
+        if (TRADE_CONTEXT.get() != null || WAREHOUSE_MOVE_CONTEXT.get() != null)
+            throw new IllegalStateException("Nested CacheD persistence scope");
+        CacheD cache = getInstance();
+        synchronized (cache.lock) {
+            CUser user = cache.activeUsers.get(ownerId);
+            if (user == null || user.sessionEpoch != epoch)
+                throw new RejectedExecutionException("Stale character stat session");
+            WarehouseMove move = new WarehouseMove(ownerId, 0, true);
+            WAREHOUSE_MOVE_CONTEXT.set(move);
+            return move;
+        }
+    }
+
     public static WarehouseMove beginEconomyMove(int ownerId, int secondaryKey) {
         return beginEconomyMove(ownerId, secondaryKey, NO_EXTRA_OWNERS);
     }

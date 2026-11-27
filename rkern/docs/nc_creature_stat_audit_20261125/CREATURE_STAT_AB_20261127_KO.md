@@ -43,12 +43,13 @@
 docs=rkern/docs/nc_creature_stat_audit_20261125
 tests=$(mktemp -d)
 git show "59e88fd3:$docs/TestCreatureLifecycle.java" > "$tests/TestCreatureLifecycle.java"
+git show "5087730a:$docs/CreatureStatWireRegression.java" > "$tests/CreatureStatWireRegression.java"
 javac --enable-preview --release 21 -encoding UTF-8 \
   -cp "$BASE_CLASSES:$DEPENDENCIES" -d "$tests" \
   "$docs/CreatureStatBenchmark.java" "$docs/CreatureStatCrosscuttingRegression.java" \
   "$tests/TestCreatureLifecycle.java" \
   rkern/docs/jproring_selector_transport_20261120/SelectorTransportTest.java \
-  "$docs/CreatureStatWireRegression.java"
+  "$tests/CreatureStatWireRegression.java"
 
 run() {
   for mode in combat preview skill; do
@@ -71,6 +72,9 @@ done
 
 `l1j.server.server.model.CreatureStatCrosscuttingRegression`과 `l1j.server.server.model.TestCreatureLifecycle`은 같은 클래스패스로 실행한다. `CreatureStatWireRegression`은 `baseline` 또는 `candidate` 인수를 받아 각각 새 빈 작업 디렉터리에서 실행한다. 이때 클래스패스의 서버 클래스와 리소스는 절대 경로로 지정한다.
 
+위 두 wire 모드는 이 보고서의 당시 서버 버전에서 실행한 결과를 재현한다. 영구 스탯 투자에 DB 영수증을 적용한 이후의 현재 서버는
+최신 `CreatureStatWireRegression.java`를 현재 서버 클래스·의존성과 함께 컴파일하고 `durable <격리 JDBC URL> <사용자> <Net DDL 참조 스키마>`로 실행한다. 시험 전용 스키마를 만들고 끝나면 삭제한다.
+레벨 업 직후 첫 투자, 암호화된 알림, 오래된 스냅샷 거부와 재로드를 확인한다.
 
 수정본 전용 장비·동시 갱신 검사는 최신 소스에 들어 있는 확장 생명주기 시험을 사용한다. 아래 명령은 위와 같은 셸에서 실행한다.
 

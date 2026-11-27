@@ -27,7 +27,7 @@ def method(signature):
 
 methods = "\n".join(method(s) for s in (
     "public final int getAc()", "public final void addAc(",
-    "public final void setAc(", "public final void setSkillAc(", "private boolean ValidatePDefend(", "private boolean ApplySkillAc(", "private void NotifyPDefend(",
+    "public final void setAc(", "public final void setSkillAc(", "protected final int effectiveAcFromBase(", "private boolean ValidatePDefend(", "private boolean ApplySkillAc(", "private void NotifyPDefend(",
     "public final int GetBasePDefend(", "protected final void SetBasePDefend(", "protected final synchronized void InitPDefend(", "private static int GetPDefendEvasion(",
 ))
 fields = "\n".join(re.search(r"[^\n]*\b" + n + r"\s*;", creature).group(0)

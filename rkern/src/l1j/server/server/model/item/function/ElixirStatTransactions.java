@@ -53,7 +53,9 @@ public final class ElixirStatTransactions {
                         || pc.getElixirStats() != beforeCount || stat.value(pc) != beforeStat
                         || !tx.debit(item, 1)) return;
                 tx.requireTables("characters");
-                tx.sql(con -> stat.persist(con, pc.getId(), level, beforeStat, beforeCount));
+                final int owner = pc.getId();
+                final int ac = stat == Stat.DEX ? pc.projectEffectiveAc(beforeStat + 1, level) : 0;
+                tx.sql(con -> stat.persist(con, owner, level, beforeStat, beforeCount, ac));
                 tx.onFailure(() -> SC_SystemMessage.send(pc, "엘릭서 저장에 실패했습니다."));
                 tx.commitAfterInventoryRelease(
                         () -> applyCommittedStat(pc, stat, beforeStat, beforeCount), () -> {
@@ -89,8 +91,9 @@ public final class ElixirStatTransactions {
 
         Stat(String column, int notice) {
             this.notice = notice;
-            this.update = "UPDATE characters SET " + column + "=?, ElixirStatus=? "
-                    + "WHERE objid=? AND " + column + "=? AND ElixirStatus=? AND level=?";
+            this.update = "UPDATE characters SET " + column + "=?, ElixirStatus=?"
+                    + (notice == SC_CHAR_STAT.Stat_Dex ? ", Ac=?" : "")
+                    + " WHERE objid=? AND " + column + "=? AND ElixirStatus=? AND level=? AND COALESCE(ReturnStat,0)=0";
         }
 
         int value(L1PcInstance pc) {
@@ -115,15 +118,17 @@ public final class ElixirStatTransactions {
             }
         }
 
-        void persist(Connection con, int ownerId, int level, int beforeStat, int beforeCount)
+        void persist(Connection con, int ownerId, int level, int beforeStat, int beforeCount, int ac)
                 throws SQLException {
             try (PreparedStatement ps = con.prepareStatement(update)) {
                 ps.setInt(1, beforeStat + 1);
                 ps.setInt(2, beforeCount + 1);
-                ps.setInt(3, ownerId);
-                ps.setInt(4, beforeStat);
-                ps.setInt(5, beforeCount);
-                ps.setInt(6, level);
+                int i = 2;
+                if (this == DEX) ps.setInt(++i, ac);
+                ps.setInt(++i, ownerId);
+                ps.setInt(++i, beforeStat);
+                ps.setInt(++i, beforeCount);
+                ps.setInt(++i, level);
                 if (ps.executeUpdate() != 1)
                     throw new SQLException("Elixir stat preimage changed: " + ownerId);
             }

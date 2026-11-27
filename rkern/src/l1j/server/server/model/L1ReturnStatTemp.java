@@ -1,7 +1,11 @@
 package l1j.server.server.model;
 
 public class L1ReturnStatTemp {
+    public int targetLevel;
+    public int characterType;
+    public boolean levelSelectionComplete;
     public boolean awaitingElixirs;
+    public boolean commitPending;
 
     public int allocatedLevelPoints() {
         return str + Int + wis + dex + con + cha;

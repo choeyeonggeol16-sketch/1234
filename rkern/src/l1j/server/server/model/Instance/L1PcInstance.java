@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 import l1j.server.server.model.network.thread.CServerTimer;
@@ -50,6 +51,7 @@ import l1j.server.server.model.L1DwarfForPackageInventory;
 import l1j.server.server.model.inventory.CUserEquipment;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.inventory.L1GroundInventory;
+import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1Karma;
 import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.L1Object;
@@ -160,6 +162,7 @@ import l1j.server.server.shared.EPcStatus;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.L1Type;
 import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.mysql.CharacterStatReceipt;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.executors.Updator;
 import l1j.server.server.storage.sql.handler.Handler;
@@ -5339,11 +5342,19 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	
 
 	public final synchronized void RefreshBasePDefend() {
-		int base = GetStatPDefend();
-		final int div = getBaseAcLevelDiv();
-		if (div > 0) base -= getLevel() / div;
-		SetBasePDefend(base, false);
+		SetBasePDefend(calculateBaseAc(GetTotalStatDex(), getLevel()), false);
 	}
+
+    public final int calculateBaseAc(int dex, int level) {
+        final int div = getBaseAcLevelDiv();
+        return CPCParamDB.물리방어력(dex) - (div == 0 ? 0 : level / div);
+    }
+
+    /** Effective defense for a prospective permanent DEX/level without publishing either. */
+    public final synchronized int projectEffectiveAc(int pureDex, int level) {
+        final int totalDex = Math.clamp(pureDex + GetAddedStatDex(), 0, 127);
+        return effectiveAcFromBase(calculateBaseAc(totalDex, level));
+    }
 
 	public void resetBaseAc() {
 		ValidateParameters(VB_PDEFEND);
@@ -6697,81 +6708,122 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	public void setCharLevelBonus(int i) {
 		_charLevelBonus = i;
 	}
-	public boolean onStat(String statName) throws Exception {
-	    if (getOnlineStatus() != 1) { // 127 스텟 버그 수정
-	        SC_Disconnect.send(this);
-	        return false;
-	    }
-
-	    final String name = statName.toLowerCase();
-	    final int stat;
-	    final boolean capped;
-	    final CUserInventory inventory = getInventory();
-	    if (!inventory.tryBeginEquipmentChange()) return false;
-	    lockUserState();
-	    try {
-	        if (getReturnStat() != 0) return false;
-	        final int bonusStats = getBonusStats();
-	        if (getLevel() - 50 <= bonusStats) return false;
-
-	        stat = switch (name) {
-	            case "str" -> SC_CHAR_STAT.Stat_Str;
-	            case "dex" -> SC_CHAR_STAT.Stat_Dex;
-	            case "con" -> SC_CHAR_STAT.Stat_Con;
-	            case "int" -> SC_CHAR_STAT.Stat_Int;
-	            case "wis" -> SC_CHAR_STAT.Stat_Wis;
-	            case "cha" -> SC_CHAR_STAT.Stat_Cha;
-	            default -> throw new Exception(statName);
-	        };
-
-	        int currentStatVal = switch (stat) {
-	            case SC_CHAR_STAT.Stat_Str -> GetStatStr();
-	            case SC_CHAR_STAT.Stat_Dex -> GetStatDex();
-	            case SC_CHAR_STAT.Stat_Con -> GetStatCon();
-	            case SC_CHAR_STAT.Stat_Int -> GetStatInt();
-	            case SC_CHAR_STAT.Stat_Wis -> GetStatWis();
-	            case SC_CHAR_STAT.Stat_Cha -> GetStatCha();
-	            default -> throw new AssertionError(stat);
-	        };
-
-	        capped = currentStatVal >= ((getLevel() >= 90) ? 50 : 45);
-	        if (!capped) {
-	            switch (stat) {
-	                case SC_CHAR_STAT.Stat_Str -> SetStatStr(currentStatVal + 1);
-	                case SC_CHAR_STAT.Stat_Dex -> SetStatDex(currentStatVal + 1);
-	                case SC_CHAR_STAT.Stat_Con -> SetStatCon(currentStatVal + 1);
-	                case SC_CHAR_STAT.Stat_Int -> SetStatInt(currentStatVal + 1);
-	                case SC_CHAR_STAT.Stat_Wis -> SetStatWis(currentStatVal + 1);
-	                case SC_CHAR_STAT.Stat_Cha -> SetStatCha(currentStatVal + 1);
-	            }
-	            setBonusStats(bonusStats + 1);
-	            publishPermanentStatRevision();
-	        }
-	    } finally {
-	        unlockUserState();
-	        inventory.endEquipmentChange();
-	    }
-	    if (capped) {
-	        SC_ServerMessage.send(this, 481);
-	        throw new Exception(statName);
-	    }
-	    NotifyPermanentStat(stat);
-	    if (stat != SC_CHAR_STAT.Stat_Str && stat != SC_CHAR_STAT.Stat_Dex) SC_OwnCharStatus2.send(this);
-	    SC_CharVisualUpdate.sendPacked(this, SC_CharVisualUpdate.pack(this));
-	    save(); 
-	    CheckStatus();
-
-	    int remainingStats = (getLevel() - 50) - getBonusStats();
-	    if (getLevel() >= 51 && remainingStats > 0) {
-	        int totalStats = GetStatStr() + GetStatDex() + GetStatCon()
-	                       + GetStatInt() + GetStatWis() + GetStatCha();
-	        if (totalStats < 150) {
-	            SC_MessageYN.send(this, 479, String.valueOf(remainingStats));
-	        }
-	    }
-	    return true;
+	/** Returns admission; the receipt owns live publication and the client reply. */
+	public boolean onStat(String statName) {
+		return onStat(getNetConnection(), getSessionStamp(), statName, null, null);
 	}
-	
+
+	public boolean onStat(CUserSocket session, int stamp, String statName,
+			Runnable afterCommitted, Runnable afterRollback) {
+		if (!ownsStatInvestmentSession(session, stamp)) return false;
+		if (getOnlineStatus() != 1) {
+			SC_Disconnect.send(this);
+			return false;
+		}
+		if (statInvestmentBlocked()) return false;
+
+		try (var tx = L1InventoryTransaction.beginCharacterStat(this)) {
+			final int stat;
+			final int previous;
+			final int bonus;
+			final boolean capped;
+			lockUserState();
+			try {
+				if (!ownsStatInvestmentSession(session, stamp) || getReturnStat() != 0) return false;
+				bonus = getBonusStats();
+				final int level = getLevel();
+				if (level - 50 <= bonus) return false;
+
+				stat = switch (statName == null ? "" : statName.toLowerCase(Locale.ROOT)) {
+					case "str" -> SC_CHAR_STAT.Stat_Str;
+					case "dex" -> SC_CHAR_STAT.Stat_Dex;
+					case "con" -> SC_CHAR_STAT.Stat_Con;
+					case "int" -> SC_CHAR_STAT.Stat_Int;
+					case "wis" -> SC_CHAR_STAT.Stat_Wis;
+					case "cha" -> SC_CHAR_STAT.Stat_Cha;
+					default -> throw new IllegalArgumentException("Unknown ability");
+				};
+				previous = statBeforeInvestment(stat);
+				capped = previous >= (level >= 90 ? 50 : 45);
+				if (!capped) CharacterStatReceipt.stageInvestment(tx, this, stat);
+			} finally {
+				unlockUserState();
+			}
+			if (capped) {
+				SC_ServerMessage.send(this, 481);
+				throw new IllegalArgumentException("Ability reached its permanent limit");
+			}
+			tx.onFailure(() -> {
+				if (!ownsStatInvestmentSession(session, stamp)) return;
+				SC_SystemMessage.send(this, "능력치 저장에 실패했습니다. 다시 시도해 주세요.");
+				if (afterRollback != null) afterRollback.run();
+			});
+			tx.commitAfterInventoryRelease(() -> publishStatInvestment(stat, previous, bonus), () -> {
+				if (!ownsStatInvestmentSession(session, stamp)) return;
+				notifyStatInvestment(stat);
+				if (afterCommitted != null) afterCommitted.run();
+			});
+			return true;
+		} catch (IllegalStateException failure) {
+			// If another action acquired the gate between our check and admission,
+			// the packet can be retried. Other preparation failures still surface.
+			if (!ownsStatInvestmentSession(session, stamp) || statInvestmentBlocked()) return false;
+			throw failure;
+		}
+	}
+
+	private boolean ownsStatInvestmentSession(CUserSocket session, int stamp) {
+		return isItemTransferSession(session, stamp) && session.ownsReadyGameSession();
+	}
+
+	private boolean statInvestmentBlocked() {
+		return getReturnStat() != 0 || isItemTransferBusy() || getTradeID() != 0 || isTradeResolving();
+	}
+
+	private int statBeforeInvestment(int stat) {
+		return switch (stat) {
+			case SC_CHAR_STAT.Stat_Str -> GetStatStr();
+			case SC_CHAR_STAT.Stat_Dex -> GetStatDex();
+			case SC_CHAR_STAT.Stat_Con -> GetStatCon();
+			case SC_CHAR_STAT.Stat_Int -> GetStatInt();
+			case SC_CHAR_STAT.Stat_Wis -> GetStatWis();
+			case SC_CHAR_STAT.Stat_Cha -> GetStatCha();
+			default -> throw new IllegalArgumentException("Unknown ability");
+		};
+	}
+
+	private void publishStatInvestment(int stat, int previous, int bonus) {
+		lockUserState();
+		try {
+			if (statBeforeInvestment(stat) != previous || getBonusStats() != bonus)
+				throw new IllegalStateException("Live ability changed before committed investment");
+			switch (stat) {
+				case SC_CHAR_STAT.Stat_Str -> SetStatStr(previous + 1);
+				case SC_CHAR_STAT.Stat_Dex -> SetStatDex(previous + 1);
+				case SC_CHAR_STAT.Stat_Con -> SetStatCon(previous + 1);
+				case SC_CHAR_STAT.Stat_Int -> SetStatInt(previous + 1);
+				case SC_CHAR_STAT.Stat_Wis -> SetStatWis(previous + 1);
+				case SC_CHAR_STAT.Stat_Cha -> SetStatCha(previous + 1);
+			}
+			setBonusStats(bonus + 1);
+			publishPermanentStatRevision();
+		} finally {
+			unlockUserState();
+		}
+	}
+
+	private void notifyStatInvestment(int stat) {
+		NotifyPermanentStat(stat);
+		if (stat != SC_CHAR_STAT.Stat_Str && stat != SC_CHAR_STAT.Stat_Dex) SC_OwnCharStatus2.send(this);
+		SC_CharVisualUpdate.sendPacked(this, SC_CharVisualUpdate.pack(this));
+		CheckStatus();
+
+		final int level = getLevel();
+		final int remaining = level - 50 - getBonusStats();
+		if (level >= 51 && remaining > 0 && GetStatAmount() < 150)
+			SC_MessageYN.send(this, 479, String.valueOf(remaining));
+	}
+
 	private L1ItemInstance _NameInstance;
 
 	public L1ItemInstance getNameInstance() {

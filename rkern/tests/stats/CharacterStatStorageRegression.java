@@ -63,7 +63,7 @@ public final class CharacterStatStorageRegression {
                 ddl.execute("DROP DATABASE " + schema);
             }
         }
-        System.out.println("PASS six stat receipts, rollback, abrupt pre-replay exit, duplicate replay, stale receipt/investment snapshots, login vitals");
+        System.out.println("PASS six elixir receipts, rollback, abrupt pre-replay exit, duplicate replay, stale snapshots and login vitals");
     }
 
     private static HikariDataSource install(String url, String user, String schema) throws Exception {
@@ -159,6 +159,8 @@ public final class CharacterStatStorageRegression {
                 } finally { release.countDown(); }
                 check(!delayed.get(4, TimeUnit.SECONDS), "stale snapshot rejected after owner publication");
             }
+            if (stat == Stat.DEX) check(scalar(admin, "SELECT Ac FROM characters") == fresh.getAc(),
+                    "DEX elixir stored final AC in its own transaction");
             check(cache.saveCharacter(new CharacterSnapshot(fresh)) && cache.flushCharacter(NAME, 5_000L),
                     "fresh snapshot persisted");
             var restored = storage.loadCharacter(NAME);
@@ -173,34 +175,19 @@ public final class CharacterStatStorageRegression {
         check(end.getBonusStats() == 3 && end.getElixirStats() == 6 && end.getLevel() == 80
                 && scalar(admin, "SELECT units FROM consumables") == 0
                 && scalar(admin, "SELECT COUNT(*) FROM cached_transaction_receipts") == 6, "final conservation");
-        // Use the actual normal investment (the same entry used by packet and timer).
-        fresh.setOnlineStatus(1);
-        int itemToken = fresh.tryReserveItemTransfer();
-        check(itemToken != 0, "pending elixir gate reserved");
-        try {
-            check(!fresh.onStat("str") && fresh.GetStatStr() == 17 && fresh.getBonusStats() == 3,
-                    "pending item transaction blocks level-point allocation");
-        } finally { fresh.endItemTransfer(itemToken); }
-        var beforeInvestment = new CharacterSnapshot(fresh);
-        check(fresh.onStat("str"), "normal stat allocation accepted");
-        // A delayed karma callback sharing the epoch cannot roll the revision back.
-        cache.publishKarmaReceipt(OWNER, fresh.getCacheDSessionEpoch(), beforeInvestment.characterReceiptRevision);
-        check(!cache.saveCharacter(beforeInvestment), "late pre-investment image rejected");
-        check(cache.saveCharacter(new CharacterSnapshot(fresh)) && cache.flushCharacter(NAME, 5_000L),
-                "retry saves the current investment");
-        var invested = storage.loadCharacter(NAME);
-        check(invested.GetStatStr() == 18 && invested.getBonusStats() == 4 && invested.getElixirStats() == 6,
-                "normal stat and point survived retry and fresh load");
+        // The gate, stale snapshot and reload assertions for ordinary investment
+        // now run in CreatureStatWireRegression durable and CharacterStatDurabilityRegression.
         check(cache.shutdown(5_000L), "DB worker shutdown");
     }
 
     private static void consume(String tx, Stat stat, int original, int count) throws SQLException {
+        int ac = stat == Stat.DEX ? new MySqlCharacterStorage().loadCharacter(NAME).projectEffectiveAc(original + 1, 80) : 0;
         CTransaction.persistEconomy(tx, OWNER, 0, new CTransaction.Mutation[]{con -> {
             try (var sql = con.createStatement()) {
                 if (sql.executeUpdate("UPDATE consumables SET units=units-1 WHERE units>0") != 1)
                     throw new SQLException("no consumable");
             }
-        }, con -> stat.persist(con, OWNER, 80, original, count)});
+        }, con -> stat.persist(con, OWNER, 80, original, count, ac)});
     }
 
     private static int scalar(Connection con, String query) throws SQLException {

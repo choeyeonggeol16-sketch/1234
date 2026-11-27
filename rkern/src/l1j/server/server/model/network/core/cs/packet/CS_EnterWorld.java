@@ -694,7 +694,7 @@ public final class CS_EnterWorld {
         }
 
         // 미분배 스탯 안내
-        if (pc.getLevel() >= 51 && pc.getLevel() - 50 > pc.getBonusStats()
+        if (pc.getReturnStat() == 0 && pc.getLevel() >= 51 && pc.getLevel() - 50 > pc.getBonusStats()
                 && pc.GetStatAmount() < 150) {
             SC_MessageYN.send(pc, 479, Integer.toString((pc.getLevel() - 50) - pc.getBonusStats()));
         }
@@ -706,8 +706,7 @@ public final class CS_EnterWorld {
             for (L1ItemInstance armor : pc.getInventory().GetEquippedItems()) {
                 pc.UnequipItem(armor);
             }
-            SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.START);
-            try { pc.save(); } catch (Exception e) { _log.warning("귀환스탯 저장 실패: " + pc.getName()); }
+            // The reset window opens once, after login restores buffs and equipment.
         }
 
         SC_PacketBox.send(pc, SC_PacketBox.인벤저장);
