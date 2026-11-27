@@ -21,6 +21,7 @@ import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.datatables.LetterTable;
+import l1j.server.server.datatables.NoTradable;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -366,7 +367,7 @@ public final class User {
                 return;
             }
 
-            if (!item.getItem().isTradable()) {
+            if (!item.getItem().isTradable() || NoTradable.blocksPlayerTransfer(pc.isGm(), item.getItemId())) {
                 tradable = false;
                 sendNotTradable(pc, item);
             }
@@ -430,7 +431,7 @@ public final class User {
                 count = item.getCount();
             }
 
-            if (!item.getItem().isTradable()) {
+            if (!item.getItem().isTradable() || NoTradable.blocksPlayerTransfer(pc.isGm(), item.getItemId())) {
                 tradable = false;
                 sendNotTradable(pc, item);
             }
@@ -503,7 +504,7 @@ public final class User {
                 SC_Disconnect.send(pc);
                 return;
             }
-            if (item.getBless() >= 128 || !item.getItem().isTradable()
+            if (item.getBless() >= 128 || !item.getItem().isTradable() || NoTradable.blocksPlayerTransfer(pc.isGm(), item.getItemId())
                     || !CompanionInstanceCache.is_companion_oblivion(id)
                     || IsCompanionItem(pc, id) || IsDollItem(pc, id)) {
                 sendNotTradable(pc, item);

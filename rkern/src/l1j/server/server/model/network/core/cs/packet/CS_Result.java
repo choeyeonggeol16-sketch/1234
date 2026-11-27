@@ -52,6 +52,14 @@ public final class CS_Result {
 
         if (MerchantTransactions.handleResult(client, pc, npcObjectId, resultType, size, packed0, params)) return;
 
+        if (size == 0 && (resultType == 0 || resultType == 1)) {
+            final var view = client.getPlayerShopView();
+            if (view != null && view.currentFor(client, pc) && view.targets(npcObjectId, resultType == 1)) {
+                client.clearPlayerShopView(view);
+                return;
+            }
+        }
+
 		L1Object findObject = CWorld.getInstance().findObject(npcObjectId);
         // Also handle cancel after the NPC disappeared; only the matching view is affected.
         if (size == 0 && (resultType == 3 || resultType == 5 || resultType == 9

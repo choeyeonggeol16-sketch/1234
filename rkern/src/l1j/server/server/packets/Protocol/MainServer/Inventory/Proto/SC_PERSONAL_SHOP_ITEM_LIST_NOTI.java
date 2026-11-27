@@ -5,6 +5,7 @@ import l1j.server.server.model.shop.NpcShopView;
 import java.util.ArrayList;
 import java.util.List;
 
+import l1j.server.server.datatables.NoTradable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -12,7 +13,9 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.item.NpcReissuedItemPolicy;
+import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
+import l1j.server.server.model.network.core.cs.packet.PlayerShopTransactions;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.model.shop.PlayerShopView;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
@@ -27,6 +30,13 @@ import l1j.server.server.templates.L1ShopItem;
  * 개인상점/상점 아이템 목록 통지 (0x0407)
  */
 public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
+
+    // Frame length, opcode/message ID, trailer, type, largest positive seller
+    // ID, and row count through 255. Encryption does not grow this frame.
+    private static final int PLAYER_SHOP_WIRE_OVERHEAD = CIOBufferPool.HEADER_BYTES + 3 + 2 + 2 + 6 + 3;
+    // Direct ProtoWriter reserves five bytes for each variable length before
+    // compacting it. A row, ItemInfo and its companion are at most three levels.
+    private static final int PLAYER_SHOP_ROW_BYTES = CIOBufferPool.MAX_WIRE_BYTES - PLAYER_SHOP_WIRE_OVERHEAD - 12;
 
     private ePersonalShopType type;       // 1 enum
     private Integer sellerId;             // 2 int32
@@ -95,65 +105,97 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
 
     /** Preserve the existing compact wire indices and remember which rows they represent. */
     public static void do_send(L1PcInstance pc, int objectId, ePersonalShopType type) {
-        if (pc == null || type == null || pc.getNetConnection() == null) return;
+        if (pc == null || type == null) return;
         final CUserSocket client = pc.getNetConnection();
-        client.setPlayerShopView(null);
+        if (client == null || client.getActiveChar() != pc || !client.ownsReadyGameSession()) return;
+        final int viewerStamp = pc.getSessionStamp();
         if (!(CWorld.getInstance().findObject(objectId) instanceof L1PcInstance shop)
-                || !shop.isPrivateShop()) return;
+                || !PlayerShopTransactions.canReach(pc, shop)) return;
         final boolean purchase = type == ePersonalShopType.TRADE_SELL;
         final ArrayList<DynamicShopItem> listings = purchase ? shop.getPurchasings() : shop.getSellings();
-        if (listings == null) return;
+        final PlayerShopView view;
+        final List<TradeItemInfo> items;
+        final int wireCapacity;
 
-        synchronized (listings) {
-            int capacity = Math.min(255, listings.size());
-            if (capacity == 0) return;
-            PlayerShopView view = new PlayerShopView(shop, purchase, capacity);
-            List<TradeItemInfo> items = new ArrayList<>(capacity);
-            if (purchase) {
-                final int[] classIds = new int[listings.size()];
-                for (int i = 0; i < classIds.length; i++) {
-                    final DynamicShopItem listing = listings.get(i);
-                    if (listing != null) classIds[i] = listing.itemId;
-                }
-                // The view index follows inventory order, then listing order for each row.
-                for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassIDs(classIds)) {
-                    if (item.isEquipped() || item.getCount() <= 0) continue;
-                    for (DynamicShopItem listing : listings) {
-                        if (listing == null || item.getItemId() != listing.itemId
-                                || item.getEnchantLevel() != listing.enchant
-                                || item.getAttrEnchantLevel() != listing.attr) continue;
-                        addPlayerShopRow(items, view, listing, item, true);
-                        if (view.size() == capacity) break;
+        if (listings == null) {
+            view = new PlayerShopView(pc, shop, purchase, 1);
+            items = List.of();
+            wireCapacity = PLAYER_SHOP_WIRE_OVERHEAD;
+        } else {
+            synchronized (listings) {
+                final int capacity = Math.min(PlayerShopView.MAX_ROWS, listings.size());
+                view = new PlayerShopView(pc, shop, purchase, capacity);
+                items = new ArrayList<>(capacity);
+                final long now = System.currentTimeMillis();
+                int remainingBytes = PLAYER_SHOP_ROW_BYTES;
+                if (purchase && capacity != 0) {
+                    final int[] classIds = new int[listings.size()];
+                    final boolean shopGm = shop.isGm();
+                    for (int i = 0; i < classIds.length; i++) {
+                        final DynamicShopItem listing = listings.get(i);
+                        if (listing != null && !NoTradable.blocksPlayerTransfer(shopGm, listing.itemId))
+                            classIds[i] = listing.itemId;
                     }
-                    if (view.size() == capacity) break;
+                    // Keep inventory order, then the merchant's listing order, even when
+                    // several of the customer's items match one buy order.
+                    for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassIDs(classIds)) {
+                        for (int i = 0; i < classIds.length; i++) {
+                            if (classIds[i] != item.getItemId()) continue;
+                            remainingBytes = addPlayerShopRow(items, view, pc, listings.get(i), item,
+                                    true, now, remainingBytes);
+                            if (remainingBytes == 0 || view.size() == PlayerShopView.MAX_ROWS) break;
+                        }
+                        if (remainingBytes == 0 || view.size() == PlayerShopView.MAX_ROWS) break;
+                    }
+                } else {
+                    for (DynamicShopItem listing : listings) {
+                        if (listing == null) continue;
+                        final L1ItemInstance item = shop.getInventory().GetByServerID(listing.objId);
+                        remainingBytes = addPlayerShopRow(items, view, shop, listing, item,
+                                false, now, remainingBytes);
+                        if (remainingBytes == 0 || view.size() == PlayerShopView.MAX_ROWS) break;
+                    }
                 }
-            } else {
-                for (DynamicShopItem listing : listings) {
-                    if (listing == null) continue;
-                    L1ItemInstance item = shop.getInventory().GetByServerID(listing.objId);
-                    if (item == null || item.isEquipped() || item.getCount() <= 0
-                            || item.getItemId() != listing.itemId) continue;
-                    addPlayerShopRow(items, view, listing, item, false);
-                    if (view.size() == capacity) break;
-                }
+                wireCapacity = items.isEmpty() ? PLAYER_SHOP_WIRE_OVERHEAD
+                        : CIOBufferPool.MAX_WIRE_BYTES - remainingBytes;
             }
-            if (!view.matches(shop, purchase)
+        }
+        // Receipt replay takes session ownership before its listing monitor.
+        // Publish and send outside the listing monitor in the captured viewer session.
+        synchronized (client) {
+            if (pc.getSessionStamp() != viewerStamp || !view.currentFor(client, pc)
+                    || !view.matches(shop, purchase) || !PlayerShopTransactions.canReach(pc, shop)
                     || listings != (purchase ? shop.getPurchasings() : shop.getSellings())) return;
-            if (sendFields(pc, 3L, type, objectId, view.size(), items)) client.setPlayerShopView(view);
+            if (sendFields(client, 3L, type, objectId, view.size(), items, wireCapacity)) {
+                if (view.size() != 0) client.publishPlayerShopView(pc, view);
+                else client.clearPlayerShopView(client.getPlayerShopView());
+            }
         }
     }
 
-    private static void addPlayerShopRow(List<TradeItemInfo> items, PlayerShopView view,
-            DynamicShopItem listing, L1ItemInstance item, boolean purchase) {
-        if (listing.isPurchase != purchase || listing.price <= 0 || listing.count <= 0) return;
+    private static int addPlayerShopRow(List<TradeItemInfo> items, PlayerShopView view, L1PcInstance seller,
+            DynamicShopItem listing, L1ItemInstance item, boolean purchase, long now, int remainingBytes) {
+        if (listing == null || item == null || listing.isPurchase != purchase || listing.price <= 0)
+            return remainingBytes;
         final int count = Math.min(item.getCount(), listing.count);
+        if (!PlayerShopTransactions.canTransfer(seller, item, listing, count, now)) return remainingBytes;
         final ItemInfo info = ItemInfo.newInstance(item);
-        if (info == null) return;
+        if (info == null) return remainingBytes;
         TradeItemInfo row = TradeItemInfo.newInstance().set_index(view.size()).set_price(listing.price)
                 .set_count(count).set_trade_info(0).set_item_info(info);
         if (purchase) row.set_buy_count(count);
+        final int wireBytes = playerShopRowWireBytes(row);
+        if (wireBytes > remainingBytes) return 0;
         items.add(row);
         view.add(listing.objId, purchase ? item.getId() : 0, listing.price, count);
+        return remainingBytes - wireBytes;
+    }
+
+    private static int playerShopRowWireBytes(TradeItemInfo row) {
+        final ProtoWriter sizer = ProtoWriter.tl();
+        sizer.msg(4);
+        row.body(sizer);
+        return sizer.end().length();
     }
 
     // ============================================================
@@ -520,7 +562,12 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
     }
 
     public static boolean sendFields(CUserSocket recipient, long presentMask, ePersonalShopType type, int sellerId, int size, List<TradeItemInfo> items) {
-        final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PERSONAL_SHOP_ITEM_LIST_NOTI, Proto.capacityBound(65535L));
+        return sendFields(recipient, presentMask, type, sellerId, size, items, CIOBufferPool.MAX_WIRE_BYTES);
+    }
+
+    private static boolean sendFields(CUserSocket recipient, long presentMask, ePersonalShopType type, int sellerId,
+            int size, List<TradeItemInfo> items, int wireCapacity) {
+        final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PERSONAL_SHOP_ITEM_LIST_NOTI, wireCapacity);
         if (writer == null) return false;
         try {
             writeFields(writer, presentMask, type, sellerId, size, items);

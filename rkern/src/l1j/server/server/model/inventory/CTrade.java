@@ -21,6 +21,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_Trade;
 import l1j.server.server.model.network.core.sc.packet.SC_TradeAddItem;
 import l1j.server.server.model.network.core.sc.packet.SC_TradeStatus;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.monitor.LoggerInstance;
 
 /** One active exchange owns both lists and both confirmation bits.
@@ -28,7 +29,7 @@ import l1j.server.server.monitor.LoggerInstance;
  */
 public final class CTrade {
     private static final Logger LOG = Logger.getLogger(CTrade.class.getName());
-    static final long TIMEOUT_MS = 300_000L;
+    private static final long TIMEOUT_MS = 300_000L;
     private static final long TIMEOUT_NS = TIMEOUT_MS * 1_000_000L;
     private static final int REQUESTED = 0, STARTED = 1, COMMITTING = 2, ENDED = 3;
     private final int id;
@@ -39,6 +40,7 @@ public final class CTrade {
     private int doneMask;
     private boolean requestSent;
     private long lastActivity = System.nanoTime();
+    private CServerTimer timeout;
     // Allocated only when that participant actually offers an item.
     private ArrayList<L1ItemInstance> firstItems, secondItems;
 
@@ -55,7 +57,6 @@ public final class CTrade {
     public boolean IsEnded() { return state == ENDED; }
     L1PcInstance first() { return first; }
     L1PcInstance second() { return second; }
-    int TimerShard() { return firstSocket.affinityShard(); }
 
     private boolean member(L1PcInstance pc) { return pc == first || pc == second; }
     private boolean attached() { return first.GetTrade() == this && second.GetTrade() == this; }
@@ -94,12 +95,20 @@ public final class CTrade {
                 && !HasPendingTradeBlocker(pc);
     }
 
-    private boolean validPair() {
-        return attached() && liveFirst() && liveSecond()
-                && IsParticipantEligible(first) && IsParticipantEligible(second)
-                && first.getMapId() == second.getMapId()
+    static boolean IsPairEligible(L1PcInstance first, CUserSocket firstSocket,
+            L1PcInstance second, CUserSocket secondSocket) {
+        if (!firstSocket.ownsReadyGameSession() || !secondSocket.ownsReadyGameSession()
+                || !IsParticipantEligible(first) || !IsParticipantEligible(second)) return false;
+        // Instanced map numbers can be reused while an old map object still exists.
+        final var map = first.getMap();
+        return map != null && second.getMap() == map
                 && Math.abs((long) first.getX() - second.getX()) <= 1
                 && Math.abs((long) first.getY() - second.getY()) <= 1;
+    }
+
+    private boolean validPair() {
+        return attached() && liveFirst() && liveSecond()
+                && IsPairEligible(first, firstSocket, second, secondSocket);
     }
     private boolean busy() { return first.isItemTransferBusy() || second.isItemTransferBusy(); }
     private boolean expired() { return System.nanoTime() - lastActivity >= TIMEOUT_NS; }
@@ -109,6 +118,7 @@ public final class CTrade {
         if (state != REQUESTED || requestSent) return false;
         if (!validPair() || busy() || expired()) { close(false, true); return false; }
         try {
+            if (!armTimeout(TIMEOUT_MS)) { close(false, true); return false; }
             // Existing S_ASK/C_Attr idx field provides the identity of this dialog.
             if (!SC_MessageYN.send(second, id, 252, first.getName())) {
                 close(false, true); return false;
@@ -153,7 +163,7 @@ public final class CTrade {
     private static boolean canTransferOffer(L1PcInstance from,L1ItemInstance source) {
         if(source==null || source.getItem()==null || source.isEquipped()
                 || !source.getItem().isTradable() || source.getBless()>=128 || characterToken(source)
-                || (!from.isGm() && NoTradable.getInstance().isNoTradable(source.getItemId()))
+                || NoTradable.blocksPlayerTransfer(from.isGm(), source.getItemId())
                 || !CompanionInstanceCache.is_companion_oblivion(source.getId())) return false;
         final L1CompanionInstance companion = from.get_companion();
         if (companion != null && companion.get_control_object_id() == source.getId()) return false;
@@ -312,6 +322,7 @@ public final class CTrade {
                 return;
             }
             state = COMMITTING;
+            cancelTimeout();
             partner = player == first ? second : first;
         }
         // Never hold the exchange monitor across CacheD admission or replay.
@@ -389,6 +400,7 @@ public final class CTrade {
     private void close(boolean success, boolean resync) {
         if (state == ENDED) return;
         state = ENDED;
+        cancelTimeout();
         try {
             try {
                 if (liveFirst()) {
@@ -419,11 +431,32 @@ public final class CTrade {
         if (pc == first ? liveFirst() : liveSecond())
             SC_SystemMessage.send(pc, "교환 중에는 아이템을 줍거나 사용할 수 없습니다.");
     }
-    /** One deadline per active trade, refreshed on successful operations. */
-    synchronized long CheckTradeTimeout() {
-        if (state == COMMITTING || state == ENDED) return 0L;
-        long remaining = TIMEOUT_NS - (System.nanoTime() - lastActivity);
-        if (remaining <= 0 || !validPair()) { close(false, true); return 0L; }
-        return Math.max(1L, (remaining + 999_999L) / 1_000_000L);
+    // The trade monitor serializes initial arm, refresh, cancellation and receipt admission.
+    private boolean armTimeout(long delayMs) {
+        timeout = CServerTimer.onceSignalOnShard(firstSocket.affinityShard(), this::checkTimeout,
+                delayMs, this::discardTimeout);
+        return timeout != null;
+    }
+
+    private void cancelTimeout() {
+        final CServerTimer active = timeout;
+        timeout = null;
+        if (active != null) active.cancel();
+    }
+
+    private synchronized void checkTimeout() {
+        cancelTimeout();
+        if (state == COMMITTING || state == ENDED) return;
+        try {
+            final long remaining = TIMEOUT_NS - (System.nanoTime() - lastActivity);
+            if (remaining > 0 && validPair()) armTimeout((remaining + 999_999L) / 1_000_000L);
+        } finally {
+            if (timeout == null) close(false, true);
+        }
+    }
+
+    private synchronized void discardTimeout() {
+        timeout = null;
+        if (state != COMMITTING) close(false, true);
     }
 }

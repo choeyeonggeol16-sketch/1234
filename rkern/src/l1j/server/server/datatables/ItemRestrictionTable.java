@@ -29,18 +29,21 @@ final class ItemRestrictionTable {
         reload();
     }
 
-    void reload() {
+    synchronized void reload() {
+        final TIntSet replacement = new TIntHashSet();
         try (Connection connection = DatabaseFactory.getInstance().getConnection();
                 PreparedStatement statement = connection.prepareStatement(selectSql);
                 ResultSet rows = statement.executeQuery()) {
-            synchronized (itemIds) {
-                itemIds.clear();
-                while (rows.next()) itemIds.add(rows.getInt("item_id"));
-            }
-            logger.config(label + " 아이템 목록 " + itemIds.size() + "건 로드 완료");
+            while (rows.next()) replacement.add(rows.getInt("item_id"));
         } catch (SQLException failure) {
             logger.log(Level.SEVERE, "loadIdList error", failure);
+            return;
         }
+        synchronized (itemIds) {
+            itemIds.clear();
+            itemIds.addAll(replacement);
+        }
+        logger.config(label + " 아이템 목록 " + replacement.size() + "건 로드 완료");
     }
 
     void storeId(int itemId) {
@@ -51,7 +54,7 @@ final class ItemRestrictionTable {
         update(itemId, false);
     }
 
-    private void update(int itemId, boolean add) {
+    private synchronized void update(int itemId, boolean add) {
         synchronized (itemIds) {
             if (itemIds.contains(itemId) == add) return;
         }

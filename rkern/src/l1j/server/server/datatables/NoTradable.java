@@ -40,6 +40,11 @@ public class NoTradable {
 		return restrictions.getIdList();
 	}
 
+    /** Operator override for player-to-player transfers; template rules are checked separately. */
+    public static boolean blocksPlayerTransfer(boolean gameMaster, int itemId) {
+        return !gameMaster && getInstance().isNoTradable(itemId);
+    }
+
 	public boolean isNoTradable(int itemId) {
 		return restrictions.contains(itemId);
 	}

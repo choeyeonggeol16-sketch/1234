@@ -18,11 +18,11 @@ public final class CS_QueryPersonalShop {
             int type,
             int objectId) {
 
-        if (client == null) {
+        if (client == null || !client.ownsReadyGameSession()) {
             return;
         }
 
-        client.setPlayerShopView(null);
+        client.clearPlayerShopView(client.getPlayerShopView());
         client.clearNpcShopView(client.getNpcShopView());
         final L1PcInstance pc =
                 client.getActiveChar();

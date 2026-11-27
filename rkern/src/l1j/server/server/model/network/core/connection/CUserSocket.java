@@ -2898,9 +2898,18 @@ public final class CUserSocket extends CSocket {
     private volatile PlayerShopView playerShopView;
 
     public PlayerShopView getPlayerShopView() { return playerShopView; }
-    public void setPlayerShopView(PlayerShopView view) {
+
+    /** Retain only the view whose exact viewer had its list admitted to SEND. */
+    public synchronized void publishPlayerShopView(L1PcInstance viewer, PlayerShopView view) {
+        if (!view.currentFor(this, viewer)) return;
         playerShopView = view;
-        if (view != null) npcShopView = null;
+        // Transport closing can clear readiness before acquiring the session monitor.
+        if (view.currentFor(this, viewer)) npcShopView = null;
+        else playerShopView = null;
+    }
+
+    public synchronized void clearPlayerShopView(PlayerShopView expected) {
+        if (playerShopView == expected) playerShopView = null;
     }
 
     private volatile NpcShopView npcShopView;
@@ -3170,12 +3179,14 @@ public final class CUserSocket extends CSocket {
             PlaySupport2019.onClientDetached(this);
             automationSession = null;
             clearPssWindowSession();
-            playerShopView = null;
         }
         synchronized (this) {
             if (pc != null && _activeChar != pc && (socketLifecycle & FORCED_CHARACTER_CLOSE) != 0)
                 throw new IllegalStateException("Cannot replace the character during a forced logout");
-            if (_activeChar != pc || pc == null) trackNpcDialogue(0L, true);
+            if (_activeChar != pc || pc == null) {
+                playerShopView = null;
+                trackNpcDialogue(0L, true);
+            }
             _activeChar = pc;
         }
 	}
@@ -3279,6 +3290,7 @@ public final class CUserSocket extends CSocket {
 
     public void clearGameSessionReady() {
         _gameSessionReady = false;
+        playerShopView = null;
         PlaySupport2019.onClientDetached(this);
         automationSession = null;
         clearPssWindowSession();

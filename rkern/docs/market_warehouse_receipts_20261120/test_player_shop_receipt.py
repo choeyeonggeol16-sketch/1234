@@ -8,10 +8,13 @@ source = Path(__file__).resolve().parents[2] / "src/l1j/server/server/model"
 tx = (source / "network/core/cs/packet/PlayerShopTransactions.java").read_text(encoding="utf-8")
 view = (source / "shop/PlayerShopView.java").read_text(encoding="utf-8")
 packet = (source / "network/core/cs/packet/CS_Result.java").read_text(encoding="utf-8")
-packed = packet[packet.index("\tstatic int param1("):packet.rfind("}")]
+user = (source / "network/core/cs/packet/User.java").read_text(encoding="utf-8")
+packed = packet[packet.index("\tpublic static int param1("):packet.rfind("}")]
+can_use = user[user.index("    static boolean CanUsePrivateStore("):user.index("    static void PrivateStoreBuy(")]
 fixture = r'''
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import java.util.*;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import java.util.logging.*;
 
@@ -23,18 +26,29 @@ public final class MarketCheck {
     }
 
     static final class Config { static boolean STANDBY_SERVER; static int PC_SHOP = 80; }
-    static final class NpcActionRange { static int get() { return 6; } }
     static final class CInventory { static int MAX_AMOUNT = 2_000_000_000; }
     static final class L1ItemId { static int ADENA = 40308; }
+    static final class CTrade {
+        static boolean HasPendingTradeBlocker(L1PcInstance pc) { return false; }
+    }
+    static final class NoTradable {
+        static int restricted;
+        static boolean blocksPlayerTransfer(boolean gameMaster, int itemId) {
+            return !gameMaster && itemId == restricted;
+        }
+    }
     static final class CompanionInstanceCache {
         static boolean is_companion_oblivion(int id) { return id != 701; }
     }
-    static final class CS_PersonalShop {
-        static boolean isPetItem(L1PcInstance pc, int id) { return false; }
-        static boolean isDollItem(L1PcInstance pc, int id) { return false; }
+    static final class User {
+''' + can_use + r'''
+        static boolean IsCompanionItem(L1PcInstance pc, int id) { return false; }
+        static boolean IsDollItem(L1PcInstance pc, int id) { return false; }
     }
     static final class SC_ServerMessage {
-        static void send(L1PcInstance pc, int id, String... text) { pc.notices++; }
+        static void send(L1PcInstance pc, int id, String... text) {
+            if (pc.client.ready) pc.notices++;
+        }
     }
     static final class SC_SystemMessage {
         static void send(L1PcInstance pc, String message) { pc.notices++; }
@@ -44,10 +58,10 @@ public final class MarketCheck {
         void 개인상점구매(boolean ok, L1PcInstance buyer, L1PcInstance shop, L1ItemInstance item, int quantity) {}
     }
 
-    static final class L1World {
-        static final L1World WORLD = new L1World();
+    static final class CWorld {
+        static final CWorld WORLD = new CWorld();
         final Map<Long, L1PcInstance> players = new HashMap<>();
-        static L1World getInstance() { return WORLD; }
+        static CWorld getInstance() { return WORLD; }
         long smartIdOf(L1PcInstance pc) { return pc.identity; }
         L1PcInstance findObjectBySmartId(long id) { return players.get(id); }
     }
@@ -75,6 +89,8 @@ public final class MarketCheck {
         int getCount() { return count; }
         int getBless() { return 0; }
         long getItemdelay3() { return 0; }
+        Date getEndTime() { return null; }
+        boolean isIdentified() { return true; }
         boolean isStackable() { return true; }
         boolean isEquipped() { return false; }
         ItemType getItem() { return template; }
@@ -83,49 +99,65 @@ public final class MarketCheck {
     static final class Inventory {
         final Map<Integer, L1ItemInstance> items = new HashMap<>();
         void add(L1ItemInstance item) { items.put(item.id, item); }
-        L1ItemInstance getItem(int id) { return items.get(id); }
+        L1ItemInstance GetByServerID(int id) { return items.get(id); }
+        L1ItemInstance GetFirstItemByClassID(int type) { return findItemId(type); }
         L1ItemInstance findItemId(int type) {
             for (var item : items.values()) if (item.type == type) return item;
             return null;
         }
     }
 
-    static final class CIOClient {
+    static final class CUserSocket {
+        final L1PcInstance active;
         PlayerShopView view;
+        boolean ready = true;
+        CUserSocket(L1PcInstance active) { this.active = active; }
+        L1PcInstance getActiveChar() { return active; }
+        boolean ownsReadyGameSession() { return ready; }
         PlayerShopView getPlayerShopView() { return view; }
-        void setPlayerShopView(PlayerShopView view) { this.view = view; }
+        void clearPlayerShopView(PlayerShopView expected) {
+            if (view == expected) view = null;
+        }
     }
 
     static final class L1PcInstance {
+        static final Object MARKET = new Object();
         final int id;
         final long identity;
         final Inventory inventory = new Inventory();
         ArrayList<DynamicShopItem> sales = new ArrayList<>();
         final ArrayList<DynamicShopItem> purchases = new ArrayList<>();
-        final CIOClient client = new CIOClient();
+        final CUserSocket client = new CUserSocket(this);
         String account;
-        int version = 1, map = 800, notices;
-        boolean open = true;
+        int version = 1, stamp = 1, map = 800, notices;
+        Object mapIdentity = MARKET;
+        boolean open, gm;
         L1PcInstance(int id) {
             this.id = id; this.identity = 1000L + id; account = "a" + id;
-            L1World.getInstance().players.put(identity, this);
+            CWorld.getInstance().players.put(identity, this);
         }
         int getId() { return id; }
         int getX() { return 123; }
         int getY() { return 456; }
         int getMapId() { return map; }
+        Object getMap() { return mapIdentity; }
         int getLevel() { return 20; }
         int getClanid() { return 1; }
         int getPrivateShopVersion() { return version; }
-        boolean isGm() { return false; }
+        int getSessionStamp() { return stamp; }
+        boolean isGm() { return gm; }
         boolean isDead() { return false; }
         boolean isGhost() { return false; }
+        boolean get_teleport() { return false; }
+        boolean isFishing() { return false; }
+        boolean isLogoutStarted() { return false; }
         boolean isPrivateShop() { return open; }
+        CTrade GetTrade() { return null; }
         String getName() { return "pc" + id; }
         String getAccountName() { return account; }
         void sendPackets(String message) { notices++; }
         Inventory getInventory() { return inventory; }
-        CIOClient getNetConnection() { return client; }
+        CUserSocket getNetConnection() { return client; }
         ArrayList<DynamicShopItem> getSellings() { return sales; }
         ArrayList<DynamicShopItem> getPurchasings() { return purchases; }
         void applyCommittedShopQuantity(boolean purchase, DynamicShopItem row, int expected, int count) {
@@ -146,7 +178,11 @@ public final class MarketCheck {
 
     static final class DynamicShopStorage {
         static DynamicShopItem copyListing(DynamicShopItem source) {
-            return new DynamicShopItem(source.objId, source.price, source.count, source.itemId, source.isPurchase);
+            var copy = new DynamicShopItem(source.objId, source.price, source.count, source.itemId, source.isPurchase);
+            copy.enchant = source.enchant;
+            copy.attr = source.attr;
+            copy.iden = source.iden;
+            return copy;
         }
         static void consumeListings(Object connection, int id, DynamicShopItem[] expected, int[] counts) {
             for (int i = 0; i < expected.length; i++) consumeListing(connection, id, expected[i], counts[i]);
@@ -204,6 +240,7 @@ public final class MarketCheck {
     public static void main(String[] args) {
         var customer = new L1PcInstance(11);
         var shop = new L1PcInstance(12);
+        shop.open = true;
         var wallet = new L1ItemInstance(100, L1ItemId.ADENA, 5000);
         var ore = new L1ItemInstance(200, 8254, 10);
         customer.inventory.add(wallet);
@@ -212,9 +249,18 @@ public final class MarketCheck {
         // The displayed row zero is not the first underlying listing.
         shop.sales.add(new DynamicShopItem(201, 90, 23, 9876, false));
         shop.sales.add(entry);
-        var view = new PlayerShopView(shop, false, 2);
+        var view = new PlayerShopView(customer, shop, false, 2);
         view.add(200, 0, 20, 8);
         customer.client.view = view;
+        String customerAccount = customer.account, shopAccount = shop.account;
+        customer.account = null;
+        execute(customer, shop, false, buy(0, 1), null);
+        check(pending == null && wallet.count == 5000 && entry.count == 8);
+        customer.account = customerAccount;
+        shop.account = null;
+        execute(customer, shop, false, buy(0, 1), null);
+        check(pending == null && ore.count == 10 && entry.count == 8);
+        shop.account = shopAccount;
         execute(customer, shop, false, buy(0, 5), tail(buy(0, 4)));
         check(pending == null);
         execute(customer, shop, false, buy(0, 3), tail(buy(0, 4)));
@@ -231,7 +277,7 @@ public final class MarketCheck {
         var purchase = new DynamicShopItem(300, 15, 4, 8254, true);
         shop.purchases.add(purchase);
         int customerOre = customer.inventory.findItemId(8254).id;
-        view = new PlayerShopView(shop, true, 1);
+        view = new PlayerShopView(customer, shop, true, 1);
         view.add(300, customerOre, 15, 4);
         customer.client.view = view;
         execute(customer, shop, true, sell(777, 0, 2), null);
@@ -247,12 +293,63 @@ public final class MarketCheck {
         execute(customer, shop, true, sell(customerOre, 0, 1), null);
         check(pending == null);
         customer.map = shop.map;
+        customer.mapIdentity = new Object();
+        execute(customer, shop, true, sell(customerOre, 0, 1), null);
+        check(pending == null);
+        customer.mapIdentity = shop.mapIdentity;
         customer.account = shop.account;
         execute(customer, shop, true, sell(customerOre, 0, 1), null);
         check(pending == null);
         customer.account = "customer";
-        shop.open = true;
-        var newView = new PlayerShopView(shop, false, 1);
+
+        execute(customer, shop, false, buy(0, 1), null);
+        check(pending == null && customer.client.view == view);
+        customer.stamp++;
+        execute(customer, shop, true, sell(customerOre, 0, 1), null);
+        check(pending == null && customer.client.view == null);
+
+        var secondPurchase = new DynamicShopItem(301, 19, 4, 8254, true);
+        shop.purchases.add(secondPurchase);
+        var purchaseView = new PlayerShopView(customer, shop, true, 1);
+        purchaseView.add(300, customerOre, 15, 2);
+        purchaseView.add(301, customerOre, 19, 4);
+        customer.client.view = purchaseView;
+        execute(customer, shop, true, sell(customerOre, 0, 2), tail(sell(customerOre, 1, 4)));
+        check(pending == null); // Each order has room, but the physical stack contains five.
+
+        NoTradable.restricted = 8254;
+        shop.gm = true;
+        execute(customer, shop, true, sell(customerOre, 0, 1), null);
+        check(pending == null); // Source owner is restricted.
+        shop.gm = false;
+        customer.gm = true;
+        execute(customer, shop, true, sell(customerOre, 0, 1), null);
+        check(pending == null); // Merchant's open buy order is now restricted.
+        customer.gm = false;
+        NoTradable.restricted = 0;
+
+        var merchantWallet = shop.inventory.findItemId(L1ItemId.ADENA);
+        int merchantMoney = merchantWallet.count;
+        int oldNotices = customer.notices;
+        merchantWallet.count = 0;
+        shop.client.ready = false;
+        execute(customer, shop, true, sell(customerOre, 0, 1), null);
+        check(pending == null && customer.notices == oldNotices + 1);
+        merchantWallet.count = merchantMoney;
+        shop.client.ready = true;
+
+        execute(customer, shop, true, sell(customerOre, 0, 1), tail(sell(customerOre, 1, 2)));
+        check(pending != null && pending.ops.size() == 2 && purchase.count == 2
+                && secondPurchase.count == 4 && wallet.count == 4890 && sqlRows == 2);
+        pending.confirm();
+        check(purchase.count == 1 && secondPurchase.count == 2 && wallet.count == 4943 && sqlRows == 4);
+        check(customer.inventory.GetByServerID(customerOre).count == 2 && customer.client.view == purchaseView);
+        execute(customer, shop, true, sell(customerOre, 0, 1), null);
+        check(pending != null);
+        pending.confirm();
+        check(!shop.purchases.contains(purchase) && wallet.count == 4958 && sqlRows == 5);
+
+        var newView = new PlayerShopView(customer, shop, false, 1);
         newView.add(200, 0, 20, 1);
         customer.client.view = newView;
         execute(customer, shop, false, buy(0, 1), null);
@@ -264,7 +361,7 @@ public final class MarketCheck {
             throw new AssertionError("expected stale owner replay to fail");
         } catch (IllegalStateException expected) {
             check(staleList.contains(entry) && entry.count == 1);
-            check(shop.sales.isEmpty() && wallet.count == 4870 && sqlRows == 3);
+            check(shop.sales.isEmpty() && wallet.count == 4938 && sqlRows == 6);
         }
         System.out.println("PASS player shop receipt checks=" + checks);
     }
@@ -273,5 +370,6 @@ with tempfile.TemporaryDirectory() as path:
     file = Path(path, "MarketCheck.java")
     file.write_text(fixture, encoding="utf-8")
     dependency = os.environ.get("FASTUTIL_JAR", "/tmp/rkern-n9-deps/fastutil-8.5.15.jar")
-    subprocess.run(["javac", "-encoding", "UTF-8", "-cp", dependency, "-d", path, str(file)], check=True)
+    compiler = os.environ.get("JAVAC", "javac")
+    subprocess.run([compiler, "-encoding", "UTF-8", "-cp", dependency, "-d", path, str(file)], check=True)
     subprocess.run(["java", "-cp", os.pathsep.join([path, dependency]), "MarketCheck"], check=True)

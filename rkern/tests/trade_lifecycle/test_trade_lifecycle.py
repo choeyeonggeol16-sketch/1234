@@ -57,7 +57,8 @@ public class CUserSocket {
     public volatile boolean connected=true;
     public volatile L1PcInstance active;
     public int starts, adds, result=-1, results, token, resync, messages;
-    public boolean failAdd, failAsk;
+    public boolean failAdd, failAsk, ready=true;
+    public boolean ownsReadyGameSession(){return connected && ready && active != null;}
     public int affinityShard(){return 0;}
     public L1PcInstance getActiveChar(){return active;}
 }
@@ -65,7 +66,9 @@ public class CUserSocket {
 stub(M+".Instance", "L1PcInstance", """
 public class L1PcInstance {
     private final int id; private volatile CTrade trade;
+    private static final Object SHARED_MAP=new Object();
     public volatile int stamp=1, x=10, y=10, map=4;
+    public volatile Object mapInstance=SHARED_MAP;
     public volatile boolean dead, ghost, shop, logout, changeItem, teleport, offlineShop, autoClanJoin;
     public boolean getIsChangeItem(){return changeItem;}
     public boolean getIsChangeItem1(){return false;}
@@ -98,6 +101,7 @@ public class L1PcInstance {
     public int getId(){return id;} public String getName(){return account;}
     public String getAccountName(){return account;} public int getLevel(){return 80;}
     public int getSessionStamp(){return stamp;} public int getMapId(){return map;}
+    public Object getMap(){return mapInstance;}
     public int getX(){return x;} public int getY(){return y;}
     public boolean isGhost(){return ghost;} public boolean isDead(){return dead;}
     public boolean isPrivateShop(){return shop;} public boolean isGm(){return false;}
@@ -119,7 +123,7 @@ public class L1PcInstance {
 """, f"import {I}.*; import {M}.network.core.connection.CUserSocket;")
 stub(M+".Instance", "L1DollInstance", "public class L1DollInstance { public int getItemObjId(){return 0;} }")
 stub(M+".Instance", "L1CompanionInstance", "public class L1CompanionInstance { public int control; public int get_control_object_id(){return control;} }")
-stub("l1j.server.server.datatables","NoTradable","public class NoTradable { public static NoTradable getInstance(){return new NoTradable();} public boolean isNoTradable(int id){return false;} }")
+stub("l1j.server.server.datatables","NoTradable","public class NoTradable { public static boolean blocksPlayerTransfer(boolean gm,int id){return false;} }")
 stub(M+".character.companion.instance","CompanionInstanceCache","public class CompanionInstanceCache { public static boolean is_companion_oblivion(int id){return true;} }")
 stub(M+".item","L1ItemId","public class L1ItemId { public static final int HIGH_CHARACTER_TRADE=999,LOW_CHARACTER_TRADE=998; }")
 stub(I+".warehouse","Warehouse","public class Warehouse { public static L1ItemInstance transferCopy(L1ItemInstance v,int id,int n,int charge){return v.copy(n);} }",f"import {M}.Instance.L1ItemInstance;")
@@ -140,9 +144,27 @@ public class CIOThreadCallback {
     public interface WheelTask {void run();boolean isCancelled();}
     public final java.util.List<WheelTask> timers=new java.util.ArrayList<>();
     public boolean reject;
+    public int shardCount(){return 1;}
+    public static int currentShardIndex(){return 0;}
     public synchronized boolean scheduleNetworkTimeout(int shard,WheelTask task,long delay){
         if(reject)return false;timers.add(task);return true;}
+    boolean scheduleServerTimer(int shard,WheelTask task,long delay){return scheduleNetworkTimeout(shard,task,delay);}
+    synchronized void cancelDistantServerTimer(int shard,CServerTimer timer){timers.remove(timer);}
     public synchronized WheelTask last(){return timers.get(timers.size()-1);}
+    public synchronized int active(){return timers.size();}
+    public void discardAll(){
+        java.util.List<WheelTask> old;
+        synchronized(this){old=java.util.List.copyOf(timers);timers.clear();}
+        for(WheelTask task:old) if(task instanceof CServerTimer timer) timer.discard();
+    }
+}
+""")
+stub("l1j.server.server.task","COwnedWork","""
+public class COwnedWork {
+    public boolean reserveTimer(){throw new UnsupportedOperationException();}
+    public void releaseTimer(){throw new UnsupportedOperationException();}
+    public boolean isClosed(){throw new UnsupportedOperationException();}
+    public boolean tryExecute(Runnable action){throw new UnsupportedOperationException();}
 }
 """)
 stub(I,"L1InventoryTransaction","""
@@ -243,6 +265,7 @@ public class TradeLifecycleTest {
         t.PressDone(a);t.RequestAddItems(a,v.id,1);check(a.socket.adds==2,"confirmed list frozen");
         int commits=L1InventoryTransaction.submitted;
         t.PressDone(b);t.PressDone(b);t.Canceled(a);
+        check(WHEEL.active()==0, "receipt retires the distant timer immediately");
         check(L1InventoryTransaction.submitted==commits+1&&v.count==10,"exactly one pending commit");
         check(a.GetTrade()==t&&t.IsResolving(),"cancel cannot interrupt receipt");
         L1InventoryTransaction.complete(1);retired(t,a,b);
@@ -265,9 +288,41 @@ public class TradeLifecycleTest {
         retired(t,a,b);check(v.count==9,"receipt admission rejection");
         a=pc();b=pc();t=request(a,b);expire(t);WHEEL.last().run();retired(t,a,b);
         a=pc();b=pc();t=open(a,b);expire(t);WHEEL.last().run();retired(t,a,b);
+        a=pc();b=pc();t=open(a,b);var original=WHEEL.last();original.run();
+        check(WHEEL.active()==1&&WHEEL.last()!=original&&original.isCancelled(),"activity rearms one timer");
+        t.Canceled(a);retired(t,a,b);check(WHEEL.active()==0,"cancel releases the refreshed timer");
+        for(int i=0;i<32;i++){
+            a=pc();b=pc();t=open(a,b);final var racing=WHEEL.last();
+            var firing=Thread.ofVirtual().start(racing::run);
+            t.Canceled(a);firing.join();retired(t,a,b);
+            check(WHEEL.active()==0,"concurrent timeout refresh and cancel leave no timer");
+        }
+        a=pc();b=pc();var attach=CTradeManager.class.getDeclaredMethod("attach",L1PcInstance.class,L1PcInstance.class);
+        attach.setAccessible(true);t=(CTrade)attach.invoke(MGR,a,b);
+        t.Canceled(a);check(!t.SendRequest()&&b.socket.token==0&&WHEEL.active()==0,
+                "cancel between registry publication and initial arm leaves no timer or dialog");retired(t,a,b);
+        a=pc();b=pc();t=open(a,b);v=item(a,9);t.RequestAddItems(a,v.id,2);t.PressDone(a);
+        var racingReceipt=WHEEL.last();var receiptTimerThread=Thread.ofVirtual().start(racingReceipt::run);
+        t.PressDone(b);receiptTimerThread.join();
+        check(WHEEL.active()==0&&t.IsResolving(),"concurrent refresh cannot rearm a committing trade");
+        WHEEL.discardAll();check(t.IsResolving(),"wheel shutdown cannot cancel an admitted receipt");
+        L1InventoryTransaction.complete(1);retired(t,a,b);
+        a=pc();b=pc();t=open(a,b);WHEEL.discardAll();retired(t,a,b);
+        check(WHEEL.active()==0,"wheel shutdown discards pending trade");
         a=pc();b=pc();t=request(a,b);b.stamp++;t.Request(b,t.GetID(),1);retired(t,a,b);
         check(b.socket.starts==0,"old session denied");
         a=pc();b=pc();t=open(a,b);v=item(a,9);b.x=20;t.RequestAddItems(a,v.id,1);retired(t,a,b);
+        a=pc();b=pc();b.socket.ready=false;
+        check(!MGR.CreateTrade(a,b)&&a.GetTrade()==null&&b.GetTrade()==null&&b.socket.token==0,
+                "target must be ready before a trade request is published");
+        b.socket.ready=true;b.mapInstance=new Object();
+        check(!MGR.CreateTrade(a,b)&&b.socket.token==0,"equal map IDs do not link different instances");
+        b.mapInstance=a.mapInstance;t=request(a,b);b.socket.ready=false;
+        t.Request(b,t.GetID(),1);retired(t,a,b);
+        check(a.socket.starts==0&&b.socket.starts==0,"readiness is rechecked before opening");
+        a=pc();b=pc();t=open(a,b);v=item(a,9);t.RequestAddItems(a,v.id,2);t.PressDone(a);
+        b.mapInstance=new Object();t.PressDone(b);retired(t,a,b);
+        check(v.count==9&&L1InventoryTransaction.pending==null,"map instance change blocks settlement");
         a=pc();b=pc();WHEEL.reject=true;check(!MGR.CreateTrade(a,b),"timer rejection");WHEEL.reject=false;
         check(a.GetTrade()==null&&b.GetTrade()==null,"timer reject cleanup");
         b.socket.failAsk=true;check(!MGR.CreateTrade(a,b),"dialog failure");
@@ -368,6 +423,7 @@ with tempfile.TemporaryDirectory() as directory:
         path.write_text(content,encoding="utf-8")
     out=tmp/"classes"
     out.mkdir()
-    files=[str(p) for p in tmp.rglob("*.java")] + [str(SRC/"CTrade.java"), str(SRC/"CTradeManager.java")]
+    files=[str(p) for p in tmp.rglob("*.java")] + [str(SRC/"CTrade.java"), str(SRC/"CTradeManager.java"),
+        str(SRC.parent/"network/thread/CServerTimer.java")]
     subprocess.run(["javac","-encoding","UTF-8","--release","21","-d",str(out),*files],check=True)
     subprocess.run(["java","-cp",str(out),I+".TradeLifecycleTest"],check=True,timeout=30)

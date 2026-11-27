@@ -21,7 +21,7 @@ def extract(s,marker):
         i+=1
     return s[start:i]
 reach=extract(tx,"static boolean canReach(")
-transfer=extract(tx,"private static boolean canTransfer(")
+transfer=extract(tx,"static boolean canTransfer(") + "\n" + extract(tx,"private static boolean matchesListing(") + "\n" + extract(tx,"private static DynamicShopItem findListing(")
 java=r"""
 import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
@@ -34,6 +34,10 @@ public class PrivateStoreTest {
     static class PlayerShopTransactions {
 """ + reach + "\n" + transfer + r"""
         static void execute(L1PcInstance a,L1PcInstance b,boolean p,int n,long x,byte[] z){}
+    }
+    static final class NoTradable {
+        static int blocked;
+        static boolean blocksPlayerTransfer(boolean gm,int template){return !gm && template==blocked;}
     }
     static final class CInventory {static final int MAX_AMOUNT=2000000000;}
     static final class CTrade {static boolean HasPendingTradeBlocker(L1PcInstance pc){return pc.pending;}}
@@ -78,11 +82,11 @@ public class PrivateStoreTest {
         final CUserSocket socket=new CUserSocket(); final Inventory inv=new Inventory(this);
         final Map<Integer,Object> dolls=new HashMap<>();
         final int id; int map=800,x=1,y=1,sprite=10,상점변신,stamp=1,notices;
-        String account; boolean dead,ghost,teleport,logout,pending,invis,fishing,shop,ready;
+        String account; boolean gm; boolean isGm(){return gm;} boolean dead,ghost,teleport,logout,pending,invis,fishing,shop,ready;
         Object trade; Companion companion; byte[] chat;
         ArrayList<DynamicShopItem> sells,buys;
         L1PcInstance(int id){this.id=id;account="a"+id;socket.pc=this;}
-        int getId(){return id;} int getMapId(){return map;} int getX(){return x;} int getY(){return y;}
+        int getId(){return id;} Object mapRef=CWorld.world; Object getMap(){return mapRef;} int getMapId(){return map;} int getX(){return x;} int getY(){return y;}
         boolean isDead(){return dead;} boolean isGhost(){return ghost;} boolean get_teleport(){return teleport;}
         boolean isLogoutStarted(){return logout;} Object GetTrade(){return trade;}
         boolean isInvisble(){return invis;} boolean isFishing(){return fishing;}
@@ -173,6 +177,12 @@ public class PrivateStoreTest {
         CWorld.world.players.add(pc);CWorld.world.players.add(customer);
         L1ItemInstance item=new L1ItemInstance(11,100);
         pc.inv.items.put(11,item);pc.inv.items.put(12,new L1ItemInstance(12,40308));
+        NoTradable.blocked=100;
+        open(pc,11,1,1);noOpen(pc,"blocked classic sell");
+        ui(pc,0x12,11,5,1);noOpen(pc,"blocked action sell");
+        ui(pc,0x1a,11,5,1);noOpen(pc,"blocked action buy");
+        pc.gm=true;open(pc,11,1,1);check(pc.shop,"GM operator-list exception");close(pc);
+        pc.gm=false;NoTradable.blocked=0;
         pc.trade=new Object();open(pc,11,1,1);noOpen(pc,"trade");pc.trade=null;
         pc.pending=true;open(pc,11,1,1);noOpen(pc,"pending");pc.pending=false;
         pc.dead=true;open(pc,11,1,1);noOpen(pc,"dead");pc.dead=false;
@@ -186,6 +196,11 @@ public class PrivateStoreTest {
                 .putShort((short)0).putShort((short)1).putInt(11).putInt(5).putInt(1).array();
         User.OnPrivateStorePacket(pc.socket,0,buy);noOpen(pc,"classic buy missing template");
         ui(pc,0x12,11,5,1);noOpen(pc,"UI missing template");item.item=template;
+        NoTradable.blocked=100;
+        User.OnPrivateStorePacket(pc.socket,0,buy);noOpen(pc,"blocked classic buy");
+        pc.gm=true;template.tradable=false;
+        User.OnPrivateStorePacket(pc.socket,0,buy);noOpen(pc,"GM still subject to template rule");
+        pc.gm=false;template.tradable=true;NoTradable.blocked=0;
         pc.companion=new Companion();pc.companion.id=11;open(pc,11,1,1);noOpen(pc,"companion");pc.companion=null;
         DynamicShopStorage.reject=true;open(pc,11,1,1);noOpen(pc,"storage reject");DynamicShopStorage.reject=false;
         open(pc,11,5,2);
@@ -210,6 +225,14 @@ public class PrivateStoreTest {
         check(!PlayerShopTransactions.canTransfer(customer,item,d,-1,1),"negative transfer");
         check(!PlayerShopTransactions.canTransfer(customer,item,d,21,1),"insufficient actual item count");
         check(!PlayerShopTransactions.canTransfer(customer,item,null,1,1),"null listing");
+        NoTradable.blocked=100;
+        check(!PlayerShopTransactions.canTransfer(customer,item,d,1,1),"settlement denies newly restricted seller");
+        customer.gm=true;
+        check(PlayerShopTransactions.canTransfer(customer,item,d,1,1),"GM seller may transfer operator-restricted item");
+        check(PlayerShopTransactions.findListing(pc,pc.buys,d.objId)==null,"newly restricted buy listing");
+        pc.gm=true;
+        check(PlayerShopTransactions.findListing(pc,pc.buys,d.objId)==d,"GM buy listing operator exception");
+        customer.gm=false;pc.gm=false;NoTradable.blocked=0;
         item.expiry=new java.sql.Timestamp(1);
         check(!PlayerShopTransactions.canTransfer(customer,item,d,1,1),"expired item cannot be sold");
         item.expiry=new java.sql.Timestamp(2);

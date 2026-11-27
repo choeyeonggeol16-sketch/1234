@@ -2,19 +2,22 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 
 import l1j.server.Config;
+import l1j.server.server.datatables.NoTradable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
-import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.shop.PlayerShopView;
@@ -22,17 +25,18 @@ import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
 import l1j.server.server.monitor.LoggerInstance;
 
-final class PlayerShopTransactions {
+public final class PlayerShopTransactions {
     private static final Logger LOG = Logger.getLogger(PlayerShopTransactions.class.getName());
 
     private PlayerShopTransactions() {}
 
-    static boolean canReach(L1PcInstance customer, L1PcInstance shop) {
+    public static boolean canReach(L1PcInstance customer, L1PcInstance shop) {
         return customer != null && shop != null && customer != shop && customer.getId() != shop.getId()
                 && User.CanUsePrivateStore(customer) && shop.isPrivateShop()
                 && !shop.isDead() && !shop.isGhost() && !shop.get_teleport() && !shop.isLogoutStarted()
                 && shop.GetTrade() == null && !CTrade.HasPendingTradeBlocker(shop)
                 && customer.getMapId() == shop.getMapId()
+                && customer.getMap() == shop.getMap()
                 && Math.abs((long) customer.getX() - shop.getX()) <= 12
                 && Math.abs((long) customer.getY() - shop.getY()) <= 12;
     }
@@ -40,14 +44,17 @@ final class PlayerShopTransactions {
     static void execute(L1PcInstance customer, L1PcInstance shop, boolean purchase,
             int size, long first, byte[] rest) {
         if (size <= 0 || size > 255 || !canReach(customer, shop) || !canTrade(customer)) return;
-        if (customer.getAccountName().equalsIgnoreCase(shop.getAccountName())) {
+        final String customerAccount = customer.getAccountName();
+        final String shopAccount = shop.getAccountName();
+        if (customerAccount == null || shopAccount == null) return;
+        if (customerAccount.equalsIgnoreCase(shopAccount)) {
             SC_SystemMessage.send(customer, "한 계정 내 무인상점은 이용할 수 없습니다.");
             return;
         }
         final var client = customer.getNetConnection();
         final PlayerShopView view = client == null ? null : client.getPlayerShopView();
-        if (view == null || !view.matches(shop, purchase)) {
-            if (client != null) client.setPlayerShopView(null);
+        if (!currentView(client, customer, shop, purchase, view)) {
+            if (view != null && view.targets(shop.getId(), purchase)) client.clearPlayerShopView(view);
             SC_SystemMessage.send(customer, "상점 목록을 다시 열어 주세요.");
             return;
         }
@@ -58,10 +65,10 @@ final class PlayerShopTransactions {
 
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(customer, shop)) {
             synchronized (listings) {
-                if (!canReach(customer, shop) || !view.matches(shop, purchase)
+                if (!canReach(customer, shop) || !currentView(client, customer, shop, purchase, view)
                         || listings != (purchase ? shop.getPurchasings() : shop.getSellings())) return;
                 if (size == 1) {
-                    executeSingle(tx, customer, shop, seller, buyer, purchase, listings, view, first);
+                    executeSingle(tx, client, customer, shop, seller, buyer, purchase, listings, view, first);
                     return;
                 }
                 final int rowCount = view.size();
@@ -81,21 +88,26 @@ final class PlayerShopTransactions {
                     final int listingId = view.listingId(row);
                     ListingDebit debit = debits.get(listingId);
                     if (debit == null) {
-                        DynamicShopItem listing = findListing(listings, listingId);
-                        if (listing == null || listing.isPurchase != purchase || listing.price <= 0 || listing.price != view.price(row)) return;
+                        DynamicShopItem listing = findListing(shop, listings, listingId);
+                        if (listing == null || listing.isPurchase != purchase || listing.price <= 0) return;
                         debit = new ListingDebit(listing);
                         debits.put(listingId, debit);
                     }
+                    if (debit.expected.price != view.price(row)) return;
                     final int itemId = purchase ? CS_Result.param1(first, rest, i) : listingId;
                     if (purchase && itemId != view.customerItemId(row)) return;
                     Transfer transfer = items.get(itemId);
                     if (transfer == null) {
                         L1ItemInstance item = seller.getInventory().GetByServerID(itemId);
                         if (!canTransfer(seller, item, debit.expected, count, now)) return;
-                        transfer = new Transfer(debit, item);
+                        transfer = new Transfer(item);
                         items.put(itemId, transfer);
+                    } else if (!matchesListing(transfer.item, debit.expected)) {
+                        return;
                     }
-                    if (transfer.listing != debit || (long) transfer.count + count > transfer.item.getCount()
+                    // One source stack can supply several separately displayed buy orders.
+                    // Debit each order and move the total quantity of that stack once.
+                    if ((long) transfer.count + count > transfer.item.getCount()
                             || (long) debit.count + count > debit.expected.count
                             || (!transfer.item.isStackable() && transfer.count != 0)) return;
                     transfer.count += count;
@@ -105,14 +117,14 @@ final class PlayerShopTransactions {
                 }
                 final L1ItemInstance adena = buyer.getInventory().GetFirstItemByClassID(L1ItemId.ADENA);
                 if (adena == null || adena.getCount() < total) {
-                    SC_ServerMessage.send(buyer, 189);
+                    sendInsufficientAdena(customer, buyer);
                     return;
                 }
                 for (Transfer transfer : items.values()) {
                     if (tx.transfer(seller, transfer.item, transfer.count, buyer) == null) return;
                 }
                 if (tx.transfer(buyer, adena, (int) total, seller) == null) return;
-                if (!canReach(customer, shop) || !view.matches(shop, purchase)) return;
+                if (!canReach(customer, shop) || !currentView(client, customer, shop, purchase, view)) return;
                 tx.requireTables("character_shop");
                 final int shopId = shop.getId();
                 final int[] listingIds = debits.keySet().toIntArray();
@@ -140,19 +152,19 @@ final class PlayerShopTransactions {
                     }
                 });
             }
-        } catch (IllegalStateException | java.util.concurrent.RejectedExecutionException rejected) {
+        } catch (IllegalStateException | RejectedExecutionException rejected) {
             sendFailure(customer);
         }
     }
 
-    private static void executeSingle(L1InventoryTransaction tx, L1PcInstance customer,
+    private static void executeSingle(L1InventoryTransaction tx, CUserSocket client, L1PcInstance customer,
             L1PcInstance shop, L1PcInstance seller, L1PcInstance buyer, boolean purchase,
             ArrayList<DynamicShopItem> listings, PlayerShopView view, long first) {
         final int row = purchase ? CS_Result.param3(first, null, 0) : CS_Result.param1(first, null, 0);
         final int count = purchase ? CS_Result.param2CH(first, null, 0) : (int) CS_Result.param2D(first, null, 0);
         if (row < 0 || row >= view.size() || count <= 0 || count > view.count(row)) return;
         final int listingId = view.listingId(row);
-        final DynamicShopItem listing = findListing(listings, listingId);
+        final DynamicShopItem listing = findListing(shop, listings, listingId);
         if (listing == null || listing.isPurchase != purchase || listing.price != view.price(row)
                 || listing.price <= 0 || count > listing.count) return;
         final int itemId = purchase ? CS_Result.param1(first, null, 0) : listingId;
@@ -163,12 +175,12 @@ final class PlayerShopTransactions {
         if (total > CInventory.MAX_AMOUNT) return;
         final L1ItemInstance adena = buyer.getInventory().GetFirstItemByClassID(L1ItemId.ADENA);
         if (adena == null || adena.getCount() < total) {
-            SC_ServerMessage.send(buyer, 189);
+            sendInsufficientAdena(customer, buyer);
             return;
         }
         if (tx.transfer(seller, item, count, buyer) == null
                 || tx.transfer(buyer, adena, (int) total, seller) == null) return;
-        if (!canReach(customer, shop) || !view.matches(shop, purchase)) return;
+        if (!canReach(customer, shop) || !currentView(client, customer, shop, purchase, view)) return;
         final DynamicShopItem expected = DynamicShopStorage.copyListing(listing);
         final int shopId = shop.getId();
         tx.requireTables("character_shop");
@@ -182,6 +194,12 @@ final class PlayerShopTransactions {
             }
             if (!purchase) notifySale(customer, shop, item, count);
         });
+    }
+
+    private static boolean currentView(CUserSocket client, L1PcInstance customer, L1PcInstance shop,
+            boolean purchase, PlayerShopView view) {
+        return view != null && client.getPlayerShopView() == view
+                && view.currentFor(client, customer) && view.matches(shop, purchase);
     }
 
     private static void requireList(L1PcInstance shop, boolean purchase, ArrayList<DynamicShopItem> listings) {
@@ -218,27 +236,40 @@ final class PlayerShopTransactions {
         return true;
     }
 
-    private static DynamicShopItem findListing(ArrayList<DynamicShopItem> listings, int id) {
+    private static DynamicShopItem findListing(L1PcInstance shop, ArrayList<DynamicShopItem> listings, int id) {
         for (int i = 0; i < listings.size(); i++) {
             DynamicShopItem listing = listings.get(i);
-            if (listing != null && listing.objId == id) return listing;
+            if (listing != null && listing.objId == id) {
+                if (listing.isPurchase && NoTradable.blocksPlayerTransfer(shop.isGm(), listing.itemId)) return null;
+                return listing;
+            }
         }
         return null;
     }
 
-    private static boolean canTransfer(L1PcInstance seller, L1ItemInstance item, DynamicShopItem listing,
+    public static boolean canTransfer(L1PcInstance seller, L1ItemInstance item, DynamicShopItem listing,
             int count, long now) {
         final var expiry = item == null ? null : item.getEndTime();
         return seller != null && listing != null && item != null && count > 0 && count <= item.getCount()
+                && !NoTradable.blocksPlayerTransfer(seller.isGm(), item.getItemId())
                 && (expiry == null || expiry.getTime() > now)
                 && item.getItem() != null && !item.isEquipped() && item.getItem().isTradable() && item.getBless() < 128
-                && (item.isIdentified() ? item.getBless() : -1) == listing.iden
-                && item.getItemdelay3() < now && item.getItemId() == listing.itemId
-                && item.getEnchantLevel() == listing.enchant && item.getAttrEnchantLevel() == listing.attr
+                && item.getItemdelay3() < now && matchesListing(item, listing)
                 && (item.isStackable() || count == 1)
                 && CompanionInstanceCache.is_companion_oblivion(item.getId())
                 && item.getItemId() != L1ItemId.ADENA
                 && !User.IsCompanionItem(seller, item.getId()) && !User.IsDollItem(seller, item.getId());
+    }
+
+    private static boolean matchesListing(L1ItemInstance item, DynamicShopItem listing) {
+        return item.getItemId() == listing.itemId
+                && item.getEnchantLevel() == listing.enchant && item.getAttrEnchantLevel() == listing.attr
+                && (item.isIdentified() ? item.getBless() : -1) == listing.iden;
+    }
+
+    private static void sendInsufficientAdena(L1PcInstance customer, L1PcInstance buyer) {
+        SC_ServerMessage.send(buyer, 189);
+        if (customer != buyer) SC_SystemMessage.send(customer, "이 개인상점의 아데나가 부족해 판매할 수 없습니다.");
     }
 
     private static void sendFailure(L1PcInstance customer) {
@@ -257,12 +288,10 @@ final class PlayerShopTransactions {
     }
 
     private static final class Transfer {
-        final ListingDebit listing;
         final L1ItemInstance item;
         int count;
 
-        Transfer(ListingDebit listing, L1ItemInstance item) {
-            this.listing = listing;
+        Transfer(L1ItemInstance item) {
             this.item = item;
         }
     }
