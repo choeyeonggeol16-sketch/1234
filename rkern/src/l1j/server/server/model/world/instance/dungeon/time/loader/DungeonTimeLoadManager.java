@@ -2,16 +2,14 @@ package l1j.server.server.model.world.instance.dungeon.time.loader;
 
 import java.util.Calendar;
 
+import l1j.server.Config;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.world.index.IndexStampManager;
-import l1j.server.server.model.world.index.StampIndex;
 import l1j.server.server.model.world.instance.dungeon.time.updator.DungeonTimeUpdator;
 import l1j.server.server.shared.command.Command;
 import l1j.server.server.shared.command.CommandArgs;
 import l1j.server.server.shared.command.CommandTree;
-import l1j.server.server.storage.sql.executors.Updator;
 
 public class DungeonTimeLoadManager implements Command{
 	private static DungeonTimeLoadManager _instance;
@@ -42,26 +40,14 @@ public class DungeonTimeLoadManager implements Command{
 		_commands = createCommand();
 	}
 	
-	public void do_truncate(Calendar current){
-		Updator.truncate("tb_dungeon_time_account_information");
-		Updator.truncate("tb_dungeon_time_char_information");
-		IndexStampManager.update(StampIndex.SIDX_DUNGEON_TIME_TRUNCATE, current);
-	}
-	
-	private void do_truncate(){
-	      Calendar cal = IndexStampManager.select(StampIndex.SIDX_DUNGEON_TIME_TRUNCATE);
-	      Calendar current = CGameTime.getRealTimeCalendar();
-	      if(cal == null ||
-	            cal.get(Calendar.YEAR) != current.get(Calendar.YEAR) || 
-	            cal.get(Calendar.MONTH) != current.get(Calendar.MONDAY) || 
-	            cal.get(Calendar.DAY_OF_MONTH) != current.get(Calendar.DAY_OF_MONTH)){
-	         
-	         do_truncate(current);
-	      }
-	   }
-	
-	public void load(){
-		do_truncate();
+	public void load() {
+		Calendar now = CGameTime.getRealTimeCalendar();
+		int hour = Config.DungeonResetHour, minute = Config.DungeonResetMinute;
+		if (hour >= 0 && hour < 24 && minute >= 0 && minute < 60) {
+			long seconds = Math.floorDiv(now.getTimeInMillis(), 1000L);
+			now.setTimeInMillis(DungeonTimeUpdator.resetBoundary(seconds, hour, minute) * 1000L);
+			DungeonTimeProgressLoader.resetAll(now);
+		}
 		DungeonTimeInformationLoader.getInstance();
 		DungeonTimeUpdator.getInstance().run();
 		DungeonTimePotionLoader.getInstance();
@@ -121,8 +107,9 @@ public class DungeonTimeLoadManager implements Command{
 				.add_command(new CommandTree("전체초기화", "전체 케릭터의 던전시간을 초기화합니다.", null){
 					@Override
 					protected void to_handle_command(CommandArgs args) throws Exception{
-						DungeonTimeUpdator.getInstance().do_initialize(CGameTime.getRealTimeCalendar());
-						args.notify("전체 초기화를 완료했습니다.");
+						boolean accepted = DungeonTimeUpdator.getInstance().do_initialize(CGameTime.getRealTimeCalendar());
+						args.notify(accepted ? "전체 던전 초기화 요청을 접수했습니다."
+								: "초기화 요청을 접수하지 못했습니다. 잠시 후 다시 시도하십시오.");
 					}
 				});
 	}

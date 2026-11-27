@@ -1,9 +1,14 @@
 package l1j.server.server.model.world.instance.dungeon.time.progress;
 
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeProgressLoader;
+
 public abstract class DungeonTimeProgress<T>{
 	private T _owner_info;
 	private int _timer_id;
-	private int _remain_seconds;
+	private volatile int _remain_seconds;
+	private final long generation = DungeonTimeProgressLoader.generation();
+
+	public final long generation() { return generation; }
 
 	public DungeonTimeProgress<T> set_owner_info(T val){
 		_owner_info = val;

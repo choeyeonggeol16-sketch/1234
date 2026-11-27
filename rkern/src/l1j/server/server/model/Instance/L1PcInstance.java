@@ -7127,11 +7127,11 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	}
 
 	public Collection<DungeonTimeProgress<?>> get_character_progresses() {
-		return _dtInfo.get_character_progresses().values();
+		return _dtInfo.get_character_progresses();
 	}
 
 	public Collection<DungeonTimeProgress<?>> get_account_progresses() {
-		return _dtInfo.get_account_progresses().values();
+		return _dtInfo.get_account_progresses();
 	}
 
 	public void put_dungeon_progress(int timer_id, AccountTimeProgress progress) {

@@ -2,6 +2,7 @@ package l1j.server.server.model.world.instance.dungeon.time.updator;
 
 import java.util.Calendar;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,7 +22,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
-import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
+import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeProgressLoader;
 
 public final class DungeonTimeUpdator implements CTimeListener {
     private static final Logger LOG = Logger.getLogger(DungeonTimeUpdator.class.getName());
@@ -36,6 +37,7 @@ public final class DungeonTimeUpdator implements CTimeListener {
     private long previousSecond = Long.MIN_VALUE;
     private long lastScheduledReset = Long.MIN_VALUE;
     private Calendar pendingScheduledReset;
+    private long resetRetryAfterNanos;
 
     private DungeonTimeUpdator() { }
 
@@ -65,32 +67,43 @@ public final class DungeonTimeUpdator implements CTimeListener {
 
     public synchronized boolean is_running() { return running; }
 
-    public synchronized void do_initialize(Calendar time) {
-        submitReset(time, false);
+    public synchronized boolean do_initialize(Calendar time) {
+        return submitReset((Calendar) time.clone(), false);
     }
 
-    private void submitReset(Calendar time, boolean scheduled) {
-        if (resetInProgress) return;
+    private boolean submitReset(Calendar time, boolean scheduled) {
+        if (resetInProgress || (scheduled && resetRetryAfterNanos != 0
+                && System.nanoTime() - resetRetryAfterNanos < 0)) return false;
         resetInProgress = true;
         if (running) consumer = new DungeonTimeConsumer();
         try {
             CInstanceWork.execute(() -> {
                 synchronized (progression) { applyReset(time, scheduled); }
             });
+            return true;
         } catch (RejectedExecutionException failure) {
             resetInProgress = false;
             LOG.log(Level.WARNING, "Dungeon reset admission rejected", failure);
+            return false;
         }
     }
 
     private void applyReset(Calendar time, boolean scheduled) {
         boolean done = false;
         try {
+            final boolean changed;
+            try {
+                changed = DungeonTimeProgressLoader.resetAll(time);
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Dungeon reset failed before notifying players", failure);
+                return;
+            }
+            done = true;
+            if (!changed) return;
             CWorld world = CWorld.getInstance();
             for (L1PcInstance pc : world.getAllPlayers()) {
                 if (pc.getNetConnection() == null) continue;
                 try {
-                    pc.initialize_dungeon_progress();
                     SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "전체 던전 시간이 초기화되었습니다.");
                     SC_SystemMessage.send(pc, "[NOTICE] All dungeon timers have been reset.");
                 } catch (RuntimeException failure) {
@@ -101,12 +114,10 @@ public final class DungeonTimeUpdator implements CTimeListener {
                 if (scheduled) teleportAfterReset(world);
             } catch (RuntimeException failure) {
                 LOG.log(Level.WARNING, "Dungeon reset relocation failed", failure);
-            } finally {
-                DungeonTimeLoadManager.getInstance().do_truncate(time);
             }
-            done = true;
         } finally {
             synchronized (this) {
+                if (scheduled) resetRetryAfterNanos = done ? 0 : System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
                 if (done && scheduled) {
                     lastScheduledReset = time.getTimeInMillis() / 1000L;
                     if (pendingScheduledReset == time) pendingScheduledReset = null;
@@ -136,7 +147,7 @@ public final class DungeonTimeUpdator implements CTimeListener {
     }
 
     // With several missed days, only the most recent scheduled reset is relevant.
-    static long resetBoundary(long now, int hour, int minute) {
+    public static long resetBoundary(long now, int hour, int minute) {
         long midnight = Math.floorDiv(now + KST_OFFSET_SECONDS, DAY_SECONDS) * DAY_SECONDS - KST_OFFSET_SECONDS;
         long boundary = midnight + hour * 3600L + minute * 60L;
         return boundary > now ? boundary - DAY_SECONDS : boundary;
