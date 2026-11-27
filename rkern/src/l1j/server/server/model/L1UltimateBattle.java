@@ -353,8 +353,7 @@ for (L1PcInstance pc : getMembersArray()) {
 	private void clearColosseum() {
 		L1MonsterInstance mob = null;
 		CInventory inventory = null;
-		for (Object obj : CWorld.getInstance().getVisibleObjects(_mapId)
-				.values()) {
+		for (Object obj : CWorld.getInstance().getMapObjects(_mapId)) {
 			if (obj instanceof L1MonsterInstance) {
 				mob = (L1MonsterInstance) obj;
 				if (!mob.isDead()) {

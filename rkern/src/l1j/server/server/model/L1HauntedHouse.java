@@ -279,7 +279,7 @@ for (L1PcInstance player : getMembersArray()) {
 
 	private void npcBroadcast(String msg) {
 		if (_guide == null) {
-			for (Object obj : CWorld.getInstance().getVisibleObjects(4).values()) {
+			for (Object obj : CWorld.getInstance().getMapObjects(4)) {
 				if (obj instanceof L1NpcInstance) {
 					L1NpcInstance n = (L1NpcInstance) obj;
 					if (n.getNpcTemplate().get_npcId() == 80085) {

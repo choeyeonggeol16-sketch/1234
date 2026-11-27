@@ -105,7 +105,7 @@ public final class Azmodan implements Runnable {
 		if (Time % 600 == 0) {
 			int min = Time / 60;
 			CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    CWorld.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getMapObjects(_map),
                     SC_PacketBox.nativeGreenWriter(min+"분뒤에 던전은 종료됩니다."));
 		}
 	}
@@ -184,7 +184,7 @@ public final class Azmodan implements Runnable {
 
 	private void openDoor(int doorId) {
 		L1DoorInstance door = null;
-		for (L1Object object : CWorld.getInstance().getVisibleObjects(_map).values()) {
+		for (L1Object object : CWorld.getInstance().getMapObjects(_map)) {
 			if (object instanceof L1DoorInstance) {
 				door = (L1DoorInstance) object;
 				if (door.getNpcTemplate().get_npcId() == doorId) {
@@ -199,7 +199,7 @@ public final class Azmodan implements Runnable {
     private void CheckClanId() {
         final L1Clan clan = CWorld.getInstance().getClan(clanId);
         if (clan == null) return;
-        for (L1Object object : CWorld.getInstance().getVisibleObjects(_map).values()) {
+        for (L1Object object : CWorld.getInstance().getMapObjects(_map)) {
             if (!(object instanceof L1NpcInstance npc) || npc.getMap() != zone.map()
                     || npc.getNpcId() != 14907 || !npc.isDead()) continue;
             final int elapsed = 3600 - Time;
@@ -224,7 +224,7 @@ public final class Azmodan implements Runnable {
 	private void End() {
 		try {
 			CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    CWorld.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getMapObjects(_map),
                     SC_PacketBox.nativeGreenWriter("30초후 지하통로가 닫힙니다."));
 			Thread.sleep(30000);
 			returnPlayers();

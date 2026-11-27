@@ -723,29 +723,15 @@ public final class WorldCollisionHash {
 
     /** World removal collision hook. AOI/visibility does not belong here. */
     public void leaveCreature(L1Object object) {
-        if (object == null) {
-            return;
-        }
+        if (object != null) leaveCreature(object, object.getMapId(), object.getX(), object.getY());
+    }
 
+    /** CWorld can retire an actor after its public location has already changed. */
+    public void leaveCreature(L1Object object, int mapId, int x, int y) {
         if (object instanceof L1PcInstance) {
-            final L1PcInstance actor = (L1PcInstance) object;
-            pc.releaseNow(
-                    (short) actor.getMapId(),
-                    actor.getX(),
-                    actor.getY(),
-                    actor.getId());
-            return;
-        }
-
-        if (object instanceof L1NpcInstance) {
-            final L1NpcInstance actor = (L1NpcInstance) object;
-            if (actor.shouldUseNpcOccupancy()) {
-                npc.releaseNow(
-                        (short) actor.getMapId(),
-                        actor.getX(),
-                        actor.getY(),
-                        actor.getId());
-            }
+            pc.releaseNow((short) mapId, x, y, object.getId());
+        } else if (object instanceof L1NpcInstance actor && actor.shouldUseNpcOccupancy()) {
+            npc.releaseNow((short) mapId, x, y, object.getId());
         }
     }
 

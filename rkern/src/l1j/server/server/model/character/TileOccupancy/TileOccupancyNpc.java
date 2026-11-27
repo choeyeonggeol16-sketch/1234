@@ -315,6 +315,25 @@ public final class TileOccupancyNpc {
         }
     }
 
+    /** Rind may share a tile only with the player selected for its landing. */
+    public boolean claimLandingTile(L1NpcInstance npc, L1PcInstance target, L1Map terrain, int x, int y) {
+        final short mapId = npc.getMapId();
+        final MapContext ctx = getContext(mapId);
+        if (ctx == null) return false;
+        synchronized (TileOccupancy.gate(TileOccupancy.gateIndex(mapId, x, y))) {
+            final CWorld world = CWorld.getInstance();
+            if (npc.getMap() != terrain || target.getMap() != terrain || target.getX() != x || target.getY() != y
+                    || target.isDead() || target.isLogoutStarted() || world.findObject(target.getId()) != target
+                    || world.findObject(npc.getId()) != npc) return false;
+            final TileOccupancy players = TileOccupancy.getInstance();
+            if (players.getOccupier(mapId, x, y) != target.getId()) return false;
+            final int reserved = players.getReservedBy(mapId, x, y);
+            final long key = ctx.getKey(x, y);
+            return (reserved == 0 || reserved == target.getId())
+                    && ownReservationClear(ctx, key, npc.getId()) && ctx.tryOccupy(key, npc.getId());
+        }
+    }
+
     public void releaseNow(short mapId, int x, int y, int occupierId) {
         if (occupierId == 0) return;
         final MapContext ctx = getContext(mapId);

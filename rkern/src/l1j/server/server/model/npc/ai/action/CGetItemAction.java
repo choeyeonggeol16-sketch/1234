@@ -1,5 +1,8 @@
 package l1j.server.server.model.npc.ai.action;
 
+import java.util.List;
+
+import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1Object;
@@ -113,21 +116,26 @@ public final class CGetItemAction {
         if (inventory == null) return;
         L1ItemInstance found = null;
         int nearest = AIR_FOOD_RADIUS + 1;
-        for (L1Object obj : CWorld.getInstance().getClusterGrid()
-                .queryNearbyReusable(npc, AIR_FOOD_RADIUS)) {
-            if (!(obj instanceof L1GroundInventory)) continue;
-            final L1GroundInventory ground = (L1GroundInventory) obj;
-            for (L1ItemInstance item : ground.getItems()) {
-                if (!isAirFood(item) || !isAllowedItem(npc, item)
-                        || item.getMapId() != npc.getMapId() || item.getCount() <= 0) continue;
-                final int distance = chebyshev(npc.getX(), npc.getY(), item.getX(), item.getY());
-                if (distance >= nearest || distance > AIR_FOOD_RADIUS
-                        || inventory.CheckAddable(item, item.getCount()) != CInventory.OK
-                        || ground.GetByServerID(item.getId()) != item) continue;
-                found = item;
-                nearest = distance;
+        final LocalWorldMap grid = CWorld.getInstance().getClusterGrid();
+        final List<L1Object> nearby = grid.borrowNearby(npc, AIR_FOOD_RADIUS);
+        try {
+            for (L1Object obj : nearby) {
+                if (!(obj instanceof L1GroundInventory)) continue;
+                final L1GroundInventory ground = (L1GroundInventory) obj;
+                for (L1ItemInstance item : ground.getItems()) {
+                    if (!isAirFood(item) || !isAllowedItem(npc, item)
+                            || item.getMapId() != npc.getMapId() || item.getCount() <= 0) continue;
+                    final int distance = chebyshev(npc.getX(), npc.getY(), item.getX(), item.getY());
+                    if (distance >= nearest || distance > AIR_FOOD_RADIUS
+                            || inventory.CheckAddable(item, item.getCount()) != CInventory.OK
+                            || ground.GetByServerID(item.getId()) != item) continue;
+                    found = item;
+                    nearest = distance;
+                }
+                if (nearest == 0) break;
             }
-            if (nearest == 0) break;
+        } finally {
+            grid.releaseNearby(nearby);
         }
         if (found == null || !canSearchFromAir(npc) || !isValidTargetItem(npc, found)
                 || !npc.tryLandFromAir()) return;
@@ -207,7 +215,6 @@ public final class CGetItemAction {
     /**
      * Shared GET_ITEM candidate selection. Pet and companion command scans
      * keep their original ten-tile radius and owner/item restrictions.
-     * Uses the existing reusable cluster-grid iteration (no temporary list).
      */
     public static void searchTarget(
             final L1NpcInstance creature, final int maxDistance) {
@@ -226,55 +233,56 @@ public final class CGetItemAction {
         L1ItemInstance nearest = null;
         int nearestDistance = maxDistance + 1;
 
-        for (L1Object obj : CWorld.getInstance()
-                .getClusterGrid()
-                .queryNearbyReusable(
-                        creature,
-                        maxDistance)) {
-
-            if (!(obj instanceof L1GroundInventory)) {
-                continue;
-            }
-
-            final L1GroundInventory ground = (L1GroundInventory) obj;
-            if (ground.getSize() <= 0) {
-                continue;
-            }
-
-            for (L1ItemInstance item : ground.getItems()) {
-                if (item == null
-                        || item.getMapId() != creature.getMapId()
-                        || item.getCount() <= 0
-                        || ground.GetByServerID(item.getId()) != item
-                        || !isAllowedItem(creature, item)) {
+        final LocalWorldMap grid = CWorld.getInstance().getClusterGrid();
+        final List<L1Object> nearby = grid.borrowNearby(creature, maxDistance);
+        try {
+            for (L1Object obj : nearby) {
+                if (!(obj instanceof L1GroundInventory)) {
                     continue;
                 }
 
-                final int distance = chebyshev(
-                        creature.getX(),
-                        creature.getY(),
-                        item.getX(),
-                        item.getY());
-
-                if (distance > maxDistance
-                        || distance >= nearestDistance) {
+                final L1GroundInventory ground = (L1GroundInventory) obj;
+                if (ground.getSize() <= 0) {
                     continue;
                 }
 
-                if (inventory.CheckAddable(
-                        item,
-                        item.getCount()) != CInventory.OK) {
-                    continue;
-                }
+                for (L1ItemInstance item : ground.getItems()) {
+                    if (item == null
+                            || item.getMapId() != creature.getMapId()
+                            || item.getCount() <= 0
+                            || ground.GetByServerID(item.getId()) != item
+                            || !isAllowedItem(creature, item)) {
+                        continue;
+                    }
 
-                nearest = item;
-                nearestDistance = distance;
+                    final int distance = chebyshev(
+                            creature.getX(),
+                            creature.getY(),
+                            item.getX(),
+                            item.getY());
 
-                if (distance == 0) {
-                    selectItem(creature, nearest, System.currentTimeMillis());
-                    return;
+                    if (distance > maxDistance
+                            || distance >= nearestDistance) {
+                        continue;
+                    }
+
+                    if (inventory.CheckAddable(
+                            item,
+                            item.getCount()) != CInventory.OK) {
+                        continue;
+                    }
+
+                    nearest = item;
+                    nearestDistance = distance;
+
+                    if (distance == 0) {
+                        selectItem(creature, nearest, System.currentTimeMillis());
+                        return;
+                    }
                 }
             }
+        } finally {
+            grid.releaseNearby(nearby);
         }
 
         if (nearest != null) {

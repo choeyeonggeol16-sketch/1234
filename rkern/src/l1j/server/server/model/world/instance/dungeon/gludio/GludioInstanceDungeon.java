@@ -667,7 +667,7 @@ public final class GludioInstanceDungeon {
     private void cleanup(Room r) {
         synchronized(this) {
             if(r.mapId==0) return;
-            for(L1Object obj:CWorld.getInstance().getVisibleObjects(r.mapId).values())
+            for(L1Object obj:CWorld.getInstance().getMapObjects(r.mapId))
                 if(obj instanceof L1PcInstance) {
                     LOG.warning("[Gludio-Indun] Player still on map; cleanup deferred="+r.mapId);
                     scheduleCleanup(r,15000L);return;

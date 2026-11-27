@@ -2521,7 +2521,7 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 			int countGM = 0, nocountPlayer = 0, countPlayer = 0, countShop = 0;
 
-			for (L1Object each1 : CWorld.getInstance().getVisibleObjects(i).values()) {
+			for (L1Object each1 : CWorld.getInstance().getMapObjects(i)) {
 				if (each1 instanceof L1PcInstance) {
 					L1PcInstance eachpc = (L1PcInstance) each1;
 

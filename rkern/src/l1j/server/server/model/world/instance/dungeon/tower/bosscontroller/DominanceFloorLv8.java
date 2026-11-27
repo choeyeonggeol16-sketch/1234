@@ -157,7 +157,7 @@ public class DominanceFloorLv8 implements Runnable {
 
 	private void Object_Check() {
 		L1NpcInstance mob = null;
-		for (L1Object object : CWorld.getInstance().getVisibleObjects(_mapid).values()) {
+		for (L1Object object : CWorld.getInstance().getMapObjects(_mapid)) {
 			if (object instanceof L1MonsterInstance) {
 				mob = (L1NpcInstance) object;
 				int npc = mob.getNpcTemplate().get_npcId();

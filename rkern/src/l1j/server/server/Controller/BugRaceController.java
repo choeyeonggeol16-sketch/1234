@@ -28,7 +28,6 @@ import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.MessengerInstance;
-import l1j.server.server.model.L1IntRegistry;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.BaseTime;
@@ -571,14 +570,7 @@ public class BugRaceController implements Runnable, TimeListener {
 
 	public void doorAction(boolean open) {
 
-		final L1IntRegistry<L1Object> mapObjects =
-		        CWorld.getInstance().getVisibleObjects(4);
-
-		if (mapObjects == null || mapObjects.isEmpty()) {
-			return;
-		}
-
-		for (L1Object object : mapObjects.values()) {
+		for (L1Object object : CWorld.getInstance().getMapObjects(4)) {
 			if (!(object instanceof L1DoorInstance)) {
 				continue;
 			}

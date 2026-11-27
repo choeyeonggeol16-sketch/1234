@@ -91,7 +91,7 @@ public final class Queen1 {
 		if (Time % 60 == 0) {
 			int min = Time / 60;
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    CWorld.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getMapObjects(_map),
                     SC_PacketBox.nativeGreenWriter(min + "분 후에 마을로 강제 이동 됩니다."));
 		}
 	}
@@ -106,7 +106,7 @@ public final class Queen1 {
 			}
 		} else {
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    CWorld.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getMapObjects(_map),
                     SC_PacketBox.nativeGreenWriter("\\f3??? : 나에게 도착 할 수 있을거라 생각하는가? 어리석군..."));
 			openDoor(5147); // 첫번째 문 개방.
 			FirstRoom = false;
@@ -124,7 +124,7 @@ public final class Queen1 {
 			}
 		} else {
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    CWorld.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getMapObjects(_map),
                     SC_PacketBox.nativeGreenWriter("\\f3하수인 : 막아라! 더이상 주인님을 화나게 만들면 안된다!"));
 			openDoor(5148); // 두번째 문 개방.
 			SecondRoom = false;
@@ -141,7 +141,7 @@ public final class Queen1 {
 				}
 			}
 		} else {
-			for (L1Object obj : CWorld.getInstance().getVisibleObjects(_map).values()) {
+			for (L1Object obj : CWorld.getInstance().getMapObjects(_map)) {
 				if (obj instanceof L1PcInstance) {
 					L1PcInstance pc = (L1PcInstance) obj;
 					String clanname = pc.getClanname();
@@ -164,7 +164,7 @@ public final class Queen1 {
 			}
 		} else {
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    CWorld.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getMapObjects(_map),
                     SC_PacketBox.nativeGreenWriter("\\f3??? : 어리석은것들.... 내가 상대해주마 오거라! "));
 			openDoor(5150); // 네번째 문 개방.
 			FourthRoom = false;
@@ -183,7 +183,7 @@ public final class Queen1 {
 		} else {
 
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                    CWorld.getInstance().getVisibleObjects(_map).values(),
+                    CWorld.getInstance().getMapObjects(_map),
                     SC_PacketBox.nativeGreenWriter("\\f3??? : 윽.... 끝이라 생각하지 마라 나는 곧 돌아온다...."));
 			openDoor(5151); // 다섯번째 문 개방.
 			BossRoom = false;

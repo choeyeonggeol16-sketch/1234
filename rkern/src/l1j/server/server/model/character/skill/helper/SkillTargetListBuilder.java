@@ -1,15 +1,15 @@
 package l1j.server.server.model.character.skill.helper;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.CWorld;
+import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
@@ -127,21 +127,32 @@ public enum SkillTargetListBuilder {
         int added = su.exTargetCount();
         if (added >= cap) return;
 
-        final List<L1Object> objects = getAreaObjects(su, area);
-        if (objects == null || objects.isEmpty()) return;
+        final LocalWorldMap grid;
+        final List<L1Object> objects;
+        try {
+            grid = CWorld.getInstance().getClusterGrid();
+            objects = grid.borrowNearby(area == -1 ? user : target, area);
+        } catch (Throwable queryFailure) {
+            return;
+        }
 
-        for (int i = 0, n = objects.size(); i < n; i++) {
-            final L1Object obj = objects.get(i);
-            if (!(obj instanceof L1Character)) continue;
+        try {
+            // Limit the inspected positions, including entries rejected below.
+            for (int i = 0, n = Math.min(cap, objects.size()); i < n; i++) {
+                final L1Object obj = objects.get(i);
+                if (!(obj instanceof L1Character)) continue;
 
-            final L1Character cha = (L1Character) obj;
+                final L1Character cha = (L1Character) obj;
 
-            if (!isSpecialAreaTargetAllowed(skillId, cha)) continue;
-            if (!su.tlIsTarget(cha)) continue;
-            if (su.tlAlreadyInList(cha)) continue;
+                if (!isSpecialAreaTargetAllowed(skillId, cha)) continue;
+                if (!su.tlIsTarget(cha)) continue;
+                if (su.tlAlreadyInList(cha)) continue;
 
-            su.tlAddTarget(cha, true);
-            if (++added >= cap) break;
+                su.tlAddTarget(cha, true);
+                if (++added >= cap) break;
+            }
+        } finally {
+            grid.releaseNearby(objects);
         }
     }
 
@@ -178,29 +189,6 @@ public enum SkillTargetListBuilder {
         }
 
         return true;
-    }
-
-    private static final ThreadLocal<ArrayList<L1Object>> TL_AREA =
-            ThreadLocal.withInitial(() -> new ArrayList<>(128));
-
-    private List<L1Object> getAreaObjects(L1SkillUse su, int area) {
-        final ArrayList<L1Object> out = TL_AREA.get();
-
-        final int limit = 64;
-        final int sid = su.tlSkillId();
-        final int lim = (sid == 65 ? 48 : limit);
-
-        try {
-            if (area == -1) {
-                CWorld.getInstance().fillVisibleObjectsLimit(su.tlUser(), -1, lim, out);
-            } else {
-                CWorld.getInstance().fillVisibleObjectsLimit(su.tlTarget(), area, lim, out);
-            }
-            return out;
-        } catch (Throwable t) {
-            out.clear();
-            return out;
-        }
     }
 
     private boolean isInRangeOrScreen(L1SkillUse su, L1Character from, L1Character to) {

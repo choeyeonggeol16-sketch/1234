@@ -69,7 +69,7 @@ public final class Queen {
 		if (Time % 60 == 0) {
 			int min = Time / 60;
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                CWorld.getInstance().getVisibleObjects(_map).values(),
+                CWorld.getInstance().getMapObjects(_map),
                 SC_PacketBox.nativeGreenWriter(min + "분 후에 마을로 강제 이동 됩니다."));
 		}
 	}
@@ -144,7 +144,7 @@ public final class Queen {
 			}
 		} else {
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(
-                CWorld.getInstance().getVisibleObjects(_map).values(),
+                CWorld.getInstance().getMapObjects(_map),
                 SC_PacketBox.nativeGreenWriter("벽 뒤에 있는 스빈을 만나십시오."));
 			openDoor(5151); // 다섯번째 문 개방.
 			BossRoom = false;

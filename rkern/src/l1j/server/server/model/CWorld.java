@@ -36,7 +36,6 @@ import l1j.server.server.model.world.instance.inn.InnHelper;
 import l1j.server.server.model.world.instance.inn.InnRoom;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.shared.L1Type;
-import l1j.server.server.types.Point;
 
 /**
  * Owns the world registries and spatial indexes. Synchronous mutations keep
@@ -46,11 +45,7 @@ import l1j.server.server.types.Point;
  * No worker, scheduler or CIO command lane is created.
  */
 public final class CWorld {
-    private static final VarHandle VISIBLE_MAP =
-            MethodHandles.arrayElementVarHandle(L1IntRegistry[].class);
-    @SuppressWarnings("unchecked")
-    private final L1IntRegistry<L1Object>[] _visibleObjects =
-            (L1IntRegistry<L1Object>[]) new L1IntRegistry<?>[MAX_MAP_ID + 1];
+    private final CWorldMapObjects mapObjects;
     private final ConcurrentHashMap<String, L1PcInstance> _allPlayers;
     private final L1IntRegistry<L1CompanionInstance> _allCompanions;
     private final L1IntRegistry<L1SummonInstance> _allSummons;
@@ -80,11 +75,7 @@ public final class CWorld {
         _allNpc = new L1IntRegistry<>();
         _allShopNpc = new L1IntRegistry<>();
 
-        for (int mapid : MapsTable.getInstance().getMaps().keySet()) {
-            if (mapid >= 0 && mapid <= MAX_MAP_ID && _visibleObjects[mapid] == null) {
-                _visibleObjects[mapid] = new L1IntRegistry<>();
-            }
-        }
+        mapObjects = new CWorldMapObjects(MapsTable.getInstance().getMaps().keySet());
     }
 
     public static CWorld getInstance() {
@@ -488,47 +479,33 @@ public final class CWorld {
         // across both operations, otherwise a delayed leave can erase the new
         // registration's visibility/occupancy after the ID has been reinstalled.
         // Object -> ID-page is also the order used by relocation and visibility.
+        if (object instanceof L1GroundInventory) {
+            removeVisibleObject(object);
+            return;
+        }
         final long oldPos;
+        final boolean removed;
         synchronized (object) {
             synchronized (objectFactory.slotLock(object.getId())) {
                 oldPos = removeVisibleObjectLocked(object);
-                removeObject(object);
+                removed = objectFactory.remove(object);
+                if (removed) removeSecondary(object);
             }
         }
         clusterGrid.reconcileLeave(object, oldPos);
+        if (removed) {
+            if (object instanceof L1NpcInstance npc) npc.StopRegenerationIfUnregistered();
+            if (object instanceof L1ItemInstance item && item.getItemId() == InnHelper.INN_KEYID)
+                InnRoom.remove(item);
+        }
     }
 
     // The previous actor must be captured under the same ID-page writer lock
     // used for replacement; a read outside the lock can miss an intervening
     // registration and strand its visible entry on another map.
     private void installAndEnterWorld(L1Object object) {
-        if (object == null) {
-            throw new NullPointerException("object");
-        }
-
-        final L1Object previous;
-        synchronized (objectFactory.slotLock(object.getId())) {
-            previous = objectFactory.find(object.getId());
-            if (previous != null && previous != object) {
-                removeSecondary(previous);
-            }
-            objectFactory.install(object);
-            installSecondary(object);
-        }
-        if (object instanceof L1NpcInstance npc) {
-            NpcSpeedData.install_npc(npc);
-            npc.StartRegeneration();
-        }
-        if (previous != null && previous != object) {
-            retireReplacedVisible(previous);
-        }
-        if (objectFactory.find(object.getId()) == object) {
-            addRegisteredVisibleObject(object);
-            // The registry may be replaced while entry side effects execute.
-            if (objectFactory.find(object.getId()) != object) {
-                removeVisibleObject(object);
-            }
-        }
+        installObject(object);
+        addRegisteredVisibleObject(object);
     }
 
     private void installObject(L1Object object) {
@@ -538,10 +515,12 @@ public final class CWorld {
 
         final L1Object previous;
         synchronized (objectFactory.slotLock(object.getId())) {
-            previous = objectFactory.find(object.getId());
-            if (previous != null && previous != object) {
-                removeSecondary(previous);
-            }
+            final int id = object.getId();
+            final L1Object registered = objectFactory.find(id);
+            final L1Object local = mapObjects.mapOnlyOwner(id);
+            if (local != null) mapObjects.forgetMapOnly(local);
+            previous = registered != null ? registered : local;
+            if (registered != null && registered != object) removeSecondary(registered);
             objectFactory.install(object);
             installSecondary(object);
         }
@@ -563,7 +542,7 @@ public final class CWorld {
         long oldPos = -1L;
         synchronized (previous) {
             synchronized (objectFactory.slotLock(previous.getId())) {
-                if (objectFactory.find(previous.getId()) != previous) {
+                if (objectFactory.find(previous.getId()) != previous && mapObjects.mapOnlyOwner(previous.getId()) != previous) {
                     oldPos = removeVisibleObjectLocked(previous);
                 }
             }
@@ -573,24 +552,7 @@ public final class CWorld {
     }
 
     public void removeObject(L1Object object) {
-        if (object == null) {
-            throw new NullPointerException();
-        }
-
-        synchronized (objectFactory.slotLock(object.getId())) {
-            if (!objectFactory.remove(object)) {
-                return;
-            }
-            removeSecondary(object);
-        }
-
-        if (object instanceof L1NpcInstance npc) npc.StopRegenerationIfUnregistered();
-        if (object.instanceOf(L1Type.L1TYPE_ITEMINSTANCE)) {
-            final L1ItemInstance item = (L1ItemInstance) object;
-            if (item.getItemId() == InnHelper.INN_KEYID) {
-                InnRoom.remove(item);
-            }
-        }
+        leaveAndRemoveObject(object);
     }
 
     private void installSecondary(L1Object object) {
@@ -715,8 +677,8 @@ public final class CWorld {
     private boolean deliverToGround(CInventory source, L1ItemInstance item, int count,
             int x, int y, L1Map expected) {
         final short map = (short) expected.getId();
-        if (L1WorldMap.getInstance().findMap(expected.getId()) != expected) return false;
-        final L1GroundInventory ground = getGroundInventory(x, y, map);
+        final L1GroundInventory ground = tryGroundInventory(x, y, expected);
+        if (ground == null) return false;
         // Pickup may have removed an empty bucket between lookup and transfer.
         // Preserve the existing ground -> source monitor order.
         synchronized (ground) {
@@ -756,28 +718,58 @@ public final class CWorld {
         return source.GetByServerID(item.getId()) != item;
     }
 
-    /** Non-creating ground lookup: pickup and validation must never publish empty tiles. */
-    public L1GroundInventory findGroundInventory(int x, int y, short mapId) {
-        final L1IntRegistry<L1Object> registry = visibleMap(mapId, false);
-        if (registry == null) return null;
-        final int key = ((x - 30000) * 10000 + (y - 30000)) * -1;
-        final L1Object object = registry.get(key);
-        return object instanceof L1GroundInventory ? (L1GroundInventory) object : null;
+    private static int groundKey(int x, int y) {
+        return -((x - 30000) * 10000 + (y - 30000));
     }
 
-    /** Ground-item tile lookup / first publication belongs to CWorld. */
+    /** A numeric map ID can be reused after an instance closes. */
+    public L1GroundInventory findGroundInventory(int x, int y, short mapId) {
+        final var map = visibleMap(mapId, false);
+        if (map == null || !(map.get(groundKey(x, y)) instanceof L1GroundInventory ground)) return null;
+        return ground.getX() == x && ground.getY() == y
+                && L1WorldMap.getInstance().findMap(mapId) == ground.getMap() ? ground : null;
+    }
+
     public L1GroundInventory getGroundInventory(int x, int y, short mapId) {
-        final int inventoryKey = ((x - 30000) * 10000 + (y - 30000)) * -1;
-        final L1IntRegistry<L1Object> registry = visibleMap(mapId, true);
-        // Reuse the visible map's writer leaf. The constructor publishes
-        // its inventory before the lock is released; competing drops at the
-        // same tile therefore cannot create two ground inventories.
-        synchronized (registry.lockForKey(inventoryKey)) {
-            final L1Object current = registry.get(inventoryKey);
-            if (current != null) {
-                return (L1GroundInventory) current;
+        final L1Map expected = L1WorldMap.getInstance().findMap(mapId);
+        final L1GroundInventory ground = tryGroundInventory(x, y, expected);
+        if (ground == null) throw new IllegalStateException("Ground tile unavailable: " + mapId + "/" + x + "/" + y);
+        return ground;
+    }
+
+    private L1GroundInventory tryGroundInventory(int x, int y, L1Map expected) {
+        if (expected == null || !LocalWorldMap.isSanePosition(expected.getId(), x, y)) return null;
+        final int mapId = expected.getId();
+        final var terrain = L1WorldMap.getInstance();
+        if (terrain.findMap(mapId) != expected) return null;
+        final int key = groundKey(x, y);
+        final var registry = visibleMap(mapId, true);
+        if (registry == null) return null;
+        for (;;) {
+            final L1GroundInventory retired;
+            synchronized (registry.lockForKey(key)) {
+                if (terrain.findMap(mapId) != expected) return null;
+                final L1Object current = registry.get(key);
+                if (current == null) {
+                    // Only the fresh, unpublished tile's monitor is acquired under this stripe.
+                    final var created = new L1GroundInventory(key, x, y, expected);
+                    synchronized (created) {
+                        mapObjects.enter(created, false);
+                        clusterGrid.enterSilently(created);
+                    }
+                    return terrain.findMap(mapId) == expected ? created : null;
+                }
+                if (!(current instanceof L1GroundInventory ground) || current.getX() != x || current.getY() != y)
+                    return null;
+                if (ground.getMap() == expected) return ground;
+                retired = ground;
             }
-            return new L1GroundInventory(inventoryKey, x, y, mapId);
+            // An outstanding pickup owns the item and its original tile. Never overwrite it.
+            synchronized (retired) {
+                if (registry.get(key) != retired) continue;
+                if (retired.getSize() != 0) return null;
+                removeVisibleObject(retired);
+            }
         }
     }
 
@@ -795,27 +787,38 @@ public final class CWorld {
 
         final long newPos;
         synchronized (object) {
-            final int mapId = object.getMapId();
-            final int id = object.getId();
-            if (mapId >= 0 && mapId <= MAX_MAP_ID) {
-                final L1IntRegistry<L1Object> map = visibleMap(mapId, true);
-                if (registeredOnly) {
-                    synchronized (objectFactory.slotLock(id)) {
-                        synchronized (map.lockForKey(id)) {
-                            if (objectFactory.find(id) != object) return;
-                            map.put(id, object);
-                            collision.enterCreature(object);
-                        }
+            if (object instanceof L1GroundInventory && !registeredOnly) {
+                // Ground tiles have coordinate-derived IDs and no factory registration.
+                if (!mapObjects.enter(object, false)) return;
+                newPos = clusterGrid.enterSilently(object);
+            } else {
+                final int id = object.getId();
+                synchronized (objectFactory.slotLock(id)) {
+                    final L1Object owner = objectFactory.find(id);
+                    // Traps and certain item publications legitimately have no factory entry.
+                    // A registered actor's late enter must never displace its replacement.
+                    final boolean canonical = owner == object;
+                    if (!canonical && (registeredOnly || object instanceof L1PcInstance || object instanceof L1NpcInstance))
+                        return;
+                    final L1Object local = canonical ? null : mapObjects.mapOnlyOwner(id);
+                    if ((!canonical && owner != null) || (local != null && local != object)
+                            || !mapObjects.enter(object, canonical)) {
+                        // The inventory insertion path uses failure to undo the staged item and its timer.
+                        if (!registeredOnly && object instanceof L1ItemInstance)
+                            throw new IllegalStateException("Conflicting ground item visibility: " + id);
+                        return;
                     }
-                } else {
-                    // Keep the legacy explicit addVisibleObject semantics.
-                    map.put(id, object);
+                    if (!canonical) mapObjects.rememberMapOnly(object);
+                    final long old = LocalWorldMap.publishedPosition(object);
+                    if (old != LocalWorldMap.NO_POSITION && (object instanceof L1PcInstance || object instanceof L1NpcInstance)
+                            && (LocalWorldMap.positionMap(old) != object.getMapId()
+                            || LocalWorldMap.positionX(old) != object.getX() || LocalWorldMap.positionY(old) != object.getY()))
+                        collision.leaveCreature(object, LocalWorldMap.positionMap(old),
+                                LocalWorldMap.positionX(old), LocalWorldMap.positionY(old));
                     collision.enterCreature(object);
+                    newPos = clusterGrid.enterSilently(object);
                 }
-            } else if (registeredOnly && objectFactory.find(id) != object) {
-                return;
             }
-            newPos = clusterGrid.enterSilently(object);
         }
         if (object instanceof L1NpcInstance) {
             NpcEventFactory.onNpcWorldEvent((L1NpcInstance) object);
@@ -837,100 +840,105 @@ public final class CWorld {
         clusterGrid.reconcileLeave(object, oldPos);
     }
 
-    // Used by compound leave+remove / replacement while identity lock is held.
+    // Called under the object monitor. Keep numeric collision ownership and map membership
+    // ordered with ID replacements, while ground tiles require no factory page.
     private long removeVisibleObjectLocked(L1Object object) {
-        final int mapId = object.getMapId();
-        final int id = object.getId();
-        if (mapId >= 0 && mapId <= MAX_MAP_ID) {
-            final L1IntRegistry<L1Object> map = visibleMap(mapId, false);
-            if (map != null && map.remove(id, object)) {
-                collision.leaveCreature(object);
-            }
+        if (object instanceof L1GroundInventory) {
+            mapObjects.remove(object, object.getClusterMapId());
+            return clusterGrid.leaveSilently(object);
         }
-        return clusterGrid.leaveSilently(object);
+        synchronized (objectFactory.slotLock(object.getId())) {
+            mapObjects.forgetMapOnly(object);
+            final long old = LocalWorldMap.publishedPosition(object);
+            if (old != LocalWorldMap.NO_POSITION) {
+                int map = LocalWorldMap.positionMap(old);
+                boolean removed = mapObjects.remove(object, map);
+                if (object instanceof L1PcInstance || object instanceof L1NpcInstance) {
+                    final L1Object current = removed ? null : objectFactory.find(object.getId());
+                    // The collision table stores numeric IDs. Retiring an old actor at
+                    // the replacement's exact tile must preserve the new occupancy.
+                    if (current == null || LocalWorldMap.publishedPosition(current) != old
+                            || (object instanceof L1PcInstance) != (current instanceof L1PcInstance)) {
+                        collision.leaveCreature(object, map, LocalWorldMap.positionX(old), LocalWorldMap.positionY(old));
+                    }
+                }
+            }
+            return clusterGrid.leaveSilently(object);
+        }
     }
 
     public void moveVisibleObject(L1Object object, int newMap) {
         if (object == null) return;
-
+        final L1Map destination = L1WorldMap.getInstance().findMap(newMap);
         synchronized (object) {
-            final int id = object.getId();
-            // A late move must not republish a removed actor or an older
-            // generation that has already been replaced under this ID.
-            synchronized (objectFactory.slotLock(id)) {
-                if (objectFactory.find(id) != object) return;
-                final int oldMap = object.getMapId();
-                if (oldMap != newMap) {
-                    if (oldMap >= 0 && oldMap <= MAX_MAP_ID) {
-                        final L1IntRegistry<L1Object> source = visibleMap(oldMap, false);
-                        if (source != null) source.remove(id, object);
-                    }
-                    if (newMap >= 0 && newMap <= MAX_MAP_ID) {
-                        visibleMap(newMap, true).put(id, object);
-                    }
-                }
-                clusterGrid.relocate(object);
-            }
+            relocateLocked(object, object.getX(), object.getY(), destination);
         }
     }
 
-    /**
-     * Change an actor's location while preserving the registration generation.
-     * The ID-page monitor also protects concurrent registration/removal.
-     */
     public void relocateVisibleObject(L1Object object, int x, int y, int mapId) {
-        if (object == null) return;
-
-        synchronized (object) {
-            final int id = object.getId();
-            synchronized (objectFactory.slotLock(id)) {
-                if (objectFactory.find(id) != object) return;
-                final int oldMap = object.getMapId();
-                if (oldMap != mapId) {
-                    if (oldMap >= 0 && oldMap <= MAX_MAP_ID) {
-                        final L1IntRegistry<L1Object> source = visibleMap(oldMap, false);
-                        if (source != null) source.remove(id, object);
-                    }
-                    if (mapId >= 0 && mapId <= MAX_MAP_ID) {
-                        visibleMap(mapId, true).put(id, object);
-                    }
-                }
-                object.setLocation(x, y, mapId);
-                clusterGrid.relocate(object);
-            }
-        }
-        // Warehouse lifecycle is outside the world identity/object monitors.
-        if (object instanceof L1PcInstance pc) pc.InvalidateWarehouseAccess();
+        if (object != null)
+            relocateVisibleObject(object, x, y, L1WorldMap.getInstance().findMap(mapId));
     }
 
-    /** Caller has updated position and supplies the prior coordinates. */
+    /** A delayed caller holding a recycled terrain reference cannot enter the replacement. */
+    public boolean relocateVisibleObject(L1Object object, int x, int y, L1Map destination) {
+        if (object == null) return false;
+        synchronized (object) {
+            if (!relocateLocked(object, x, y, destination)) return false;
+        }
+        if (object instanceof L1PcInstance pc) pc.InvalidateWarehouseAccess();
+        return true;
+    }
+
+    /** Move with the ordinary old/new visibility notification after the structural locks are released. */
+    public boolean moveVisibleObject(L1Object object, int x, int y, L1Map destination) {
+        if (object == null) return false;
+        final long previous, current;
+        synchronized (object) {
+            previous = LocalWorldMap.publishedPosition(object);
+            if (!relocateLocked(object, x, y, destination)) return false;
+            current = LocalWorldMap.publishedPosition(object);
+        }
+        if (object instanceof L1PcInstance pc) pc.CheckWarehouseRange();
+        clusterGrid.reconcileMove(object, previous, current);
+        return true;
+    }
+
+    private boolean relocateLocked(L1Object object, int x, int y, L1Map destination) {
+        if (destination == null) return false;
+        synchronized (objectFactory.slotLock(object.getId())) {
+            if (objectFactory.find(object.getId()) != object
+                    || LocalWorldMap.publishedPosition(object) == LocalWorldMap.NO_POSITION
+                    || !LocalWorldMap.isSanePosition(destination.getId(), x, y)
+                    || L1WorldMap.getInstance().findMap(destination.getId()) != destination) return false;
+            if (!mapObjects.move(object, destination.getId(), x, y)) return false;
+            object.getLocation().set(x, y, destination);
+            clusterGrid.relocateSilently(object);
+            return true;
+        }
+    }
+
+    /** Caller has already updated its location; reconcile from the last published tile. */
     public void moveTo(L1Object object, int oldMap, int oldX, int oldY) {
         if (object == null) return;
-        final int newMap, newX, newY;
+        final long previous, current;
         synchronized (object) {
-            final int id = object.getId();
-            synchronized (objectFactory.slotLock(id)) {
-                if (objectFactory.find(id) != object) return;
-                newMap = object.getMapId();
-                if (oldMap != newMap) {
-                    if (oldMap >= 0 && oldMap <= MAX_MAP_ID) {
-                        final L1IntRegistry<L1Object> source = visibleMap(oldMap, false);
-                        if (source != null) source.remove(id, object);
-                    }
-                    if (newMap >= 0 && newMap <= MAX_MAP_ID) {
-                        visibleMap(newMap, true).put(id, object);
-                    }
+            synchronized (objectFactory.slotLock(object.getId())) {
+                if (objectFactory.find(object.getId()) != object) return;
+                previous = LocalWorldMap.publishedPosition(object);
+                if (previous == LocalWorldMap.NO_POSITION) return;
+                final L1Map before = LocalWorldMap.publishedTerrain(object);
+                final L1Map destination = object.getMap();
+                if ((destination != before && L1WorldMap.getInstance().findMap(destination.getId()) != destination)
+                        || !mapObjects.move(object, object.getMapId(), object.getX(), object.getY())) {
+                    object.getLocation().set(LocalWorldMap.positionX(previous), LocalWorldMap.positionY(previous), before);
+                    return;
                 }
-                // The index is committed under identity/object locks; do not
-                // invoke a PC serializer until after both monitors are released.
-                clusterGrid.relocate(object);
-                newX = object.getX();
-                newY = object.getY();
+                current = clusterGrid.relocateSilently(object);
             }
         }
         if (object instanceof L1PcInstance pc) pc.CheckWarehouseRange();
-        clusterGrid.reconcileMove(object, oldMap, oldX, oldY,
-                newMap, newX, newY);
+        clusterGrid.reconcileMove(object, previous, current);
     }
 
     public L1Object findObject(String name) {
@@ -947,28 +955,7 @@ public final class CWorld {
     }
 
     private L1IntRegistry<L1Object> visibleMap(int mapId, boolean create) {
-        if (mapId < 0 || mapId > MAX_MAP_ID) {
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        L1IntRegistry<L1Object> map =
-                (L1IntRegistry<L1Object>) VISIBLE_MAP.getAcquire(_visibleObjects, mapId);
-        if (map != null || !create) {
-            return map;
-        }
-
-        synchronized (_visibleObjects) {
-            @SuppressWarnings("unchecked")
-            final L1IntRegistry<L1Object> existing =
-                    (L1IntRegistry<L1Object>) VISIBLE_MAP.getAcquire(_visibleObjects, mapId);
-            map = existing;
-            if (map == null) {
-                map = new L1IntRegistry<L1Object>();
-                VISIBLE_MAP.setRelease(_visibleObjects, mapId, map);
-            }
-            return map;
-        }
+        return mapObjects.registry(mapId, create);
     }
 
     public boolean PickNpcDrop(L1Location origin, CInventory source, L1ItemInstance item,
@@ -991,7 +978,7 @@ public final class CWorld {
     }
 
     public L1GroundInventory getInventory(L1Location loc) {
-        return getInventory(loc.getX(), loc.getY(), (short) loc.getMap().getId());
+        return loc == null ? null : tryGroundInventory(loc.getX(), loc.getY(), loc.getMap());
     }
 
     public void attack(L1PcInstance attacker, L1Character target) {
@@ -1002,108 +989,80 @@ public final class CWorld {
     }
 
 
-    private static int[] createLineKeys(Point src, Point target) {
-        final int x0 = src.getX();
-        final int y0 = src.getY();
-        final int x1 = target.getX();
-        final int y1 = target.getY();
-        final int dx = Math.abs(x1 - x0);
-        final int dy = Math.abs(y1 - y0);
-        final int[] keys = new int[Math.max(dx, dy) + 1];
-
-        int x = x0;
-        int y = y0;
-        final int sx = x1 >= x0 ? 1 : -1;
-        final int sy = y1 >= y0 ? 1 : -1;
-        int count = 0;
-
-        if (dx >= dy) {
-            int e = -dx;
-            for (int i = 0; i <= dx; i++) {
-                keys[count++] = (x << 16) + y;
-                x += sx;
-                e += dy << 1;
-                if (e >= 0) {
-                    y += sy;
-                    e -= dx << 1;
-                }
-            }
-        } else {
-            int e = -dy;
-            for (int i = 0; i <= dy; i++) {
-                keys[count++] = (x << 16) + y;
-                y += sy;
-                e += dx << 1;
-                if (e >= 0) {
-                    x += sx;
-                    e -= dy << 1;
-                }
-            }
-        }
-        return keys;
-    }
-
-    private static boolean containsLineKey(int[] keys, int key) {
-        for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == key) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public ArrayList<L1Object> getVisibleLineObjects(L1Object src, L1Object target) {
-        int[] lineKeys = createLineKeys(src.getLocation(), target.getLocation());
-        int map = target.getMapId();
-        L1IntRegistry<L1Object> mapSrc = visibleMap(map, false);
-        if(mapSrc == null || mapSrc.size() <= 0 || map > MAX_MAP_ID)
-            return null;
+        final L1Map map = target.getMap();
+        final L1IntRegistry<L1Object> visible = visibleMap((short) map.getId(), false);
+        if (visible == null || visible.isEmpty()) return null;
 
-        ArrayList<L1Object> result = new ArrayList<L1Object>(lineKeys.length);
-        for (L1Object element : mapSrc.values()) {
-            if (element == null || element.equals(src))
-                continue;
+        final ArrayList<L1Object> result = new ArrayList<>();
+        if (src.getMap() != map) return result;
+        final int x0 = src.getX(), y0 = src.getY(), x1 = target.getX(), y1 = target.getY();
+        if (src.getMap() != map || target.getMap() != map) return result;
+        clusterGrid.queryRectangle(map, Math.min(x0, x1), Math.min(y0, y1),
+                Math.max(x0, x1), Math.max(y0, y1), result);
 
-            int key = (element.getX() << 16) + element.getY();
-            if (containsLineKey(lineKeys, key))
-                result.add(element);
+        final long dx = Math.abs((long) x1 - x0), dy = Math.abs((long) y1 - y0);
+        final int sx = x1 >= x0 ? 1 : -1, sy = y1 >= y0 ? 1 : -1;
+        final boolean xMajor = dx >= dy;
+        final long major = xMajor ? dx : dy, minor = xMajor ? dy : dx;
+        int kept = 0;
+        for (int i = 0; i < result.size(); i++) {
+            final L1Object object = result.get(i);
+            if (object.getMap() != map || object.equals(src)) continue;
+            final long stepX = ((long) object.getX() - x0) * sx;
+            final long stepY = ((long) object.getY() - y0) * sy;
+            final long along = xMajor ? stepX : stepY;
+            if (along < 0L || along > major) continue;
+            // The original error accumulator advances the minor axis on an
+            // exact half-step, measured from this direction's starting tile.
+            // Unsigned division also covers products of two full int spans.
+            final long across = major == 0L ? 0L
+                    : Long.divideUnsigned(along * minor + major / 2L, major);
+            if ((xMajor ? stepY : stepX) == across) result.set(kept++, object);
         }
-        return result;
+        return finishShapeQuery(result, kept);
     }
 
     public ArrayList<L1Object> getVisibleBoxObjects(L1Object object, int heading, int width, int height) {
-        int x = object.getX(), y = object.getY(), map = object.getMapId();
-        L1IntRegistry<L1Object> mapSrc = visibleMap(map, false);
-        if(mapSrc == null || mapSrc.size() <= 0 || map > MAX_MAP_ID)
-            return null;
+        final L1Map map = object.getMap();
+        final L1IntRegistry<L1Object> visible = visibleMap((short) map.getId(), false);
+        if (visible == null || visible.isEmpty()) return null;
+        if (width < 0 || height < 0) throw new IllegalArgumentException("Negative visibility box size");
+        if (heading < 0 || heading >= 8) throw new ArrayIndexOutOfBoundsException(heading);
 
-        L1Location location = object.getLocation();
-        ArrayList<L1Object> result = new ArrayList<L1Object>(width * height);
-        int headingRotate[] = { 6, 7, 0, 1, 2, 3, 4, 5 };
-        double cosSita = Math.cos(headingRotate[heading] * Math.PI / 4);
-        double sinSita = Math.sin(headingRotate[heading] * Math.PI / 4);
+        final int x = object.getX(), y = object.getY();
+        final ArrayList<L1Object> result = new ArrayList<>();
+        if (object.getMap() != map) return result;
+        // The rotated box is additionally bounded by Chebyshev distance.
+        clusterGrid.queryRectangle(map, Math.clamp((long) x - height, Integer.MIN_VALUE, Integer.MAX_VALUE),
+                Math.clamp((long) y - height, Integer.MIN_VALUE, Integer.MAX_VALUE),
+                Math.clamp((long) x + height, Integer.MIN_VALUE, Integer.MAX_VALUE),
+                Math.clamp((long) y + height, Integer.MIN_VALUE, Integer.MAX_VALUE), result);
 
-        for (L1Object element : mapSrc.values()) {
-            if (element == null || element.equals(object) || map != element.getMapId()) {
+        final double angle = ((heading + 6) & 7) * Math.PI / 4;
+        final double cos = Math.cos(angle), sin = Math.sin(angle);
+        int kept = 0;
+        for (int i = 0; i < result.size(); i++) {
+            final L1Object element = result.get(i);
+            if (element.getMap() != map || element.equals(object)) continue;
+            final long dx = (long) element.getX() - x;
+            final long dy = (long) element.getY() - y;
+            if (dx == 0L && dy == 0L) {
+                result.set(kept++, element);
                 continue;
             }
-            if (location.isSamePoint(element.getLocation())) {
-                result.add(element);
-                continue;
-            }
-            int distance = location.getTileLineDistance(element.getLocation());
-            if (distance > height && distance > width) {
-                continue;
-            }
-
-            int x1 = element.getX() - x;
-            int y1 = element.getY() - y;
-            int rotX = (int) Math.round(x1 * cosSita + y1 * sinSita);
-            int rotY = (int) Math.round(-x1 * sinSita + y1 * cosSita);
-
-            if (rotX > 0 && distance <= height && rotY >= -width && rotY <= width)
-                result.add(element);
+            if (Math.max(Math.abs(dx), Math.abs(dy)) > height) continue;
+            final long forward = Math.round(dx * cos + dy * sin);
+            final long lateral = Math.round(-dx * sin + dy * cos);
+            if (forward > 0L && lateral >= -width && lateral <= width)
+                result.set(kept++, element);
         }
+        return finishShapeQuery(result, kept);
+    }
+
+    private static ArrayList<L1Object> finishShapeQuery(ArrayList<L1Object> result, int kept) {
+        for (int i = result.size() - 1; i >= kept; i--) result.remove(i);
+        sortByWorldId(result);
         return result;
     }
 
@@ -1173,8 +1132,7 @@ public final class CWorld {
             getClusterGrid().queryNearbyPlayers(object, radius, list);
             return list;
         } catch (RuntimeException | Error failure) {
-            list.clear();
-            scratch.depth = depth;
+            releaseVisiblePlayerFast(list);
             throw failure;
         }
     }
@@ -1194,94 +1152,36 @@ public final class CWorld {
     }
 
     public List<L1PcInstance> getVisiblePlayerFast(L1Object object) {
-        return getClusterGrid().queryScreenPlayers(object);
+        return clusterGrid.queryScreenPlayers(object);
     }
 
-
-
-
-
-
-
-    public int getAllPlayersSize(){
+    public int getAllPlayersSize() {
         return _allPlayers.size();
     }
 
-
-
-
-
+    // The map registry enumerates unsigned world IDs. Skills that choose the
+    // first matching target must see the same order after a spatial lookup.
+    private static void sortByWorldId(List<L1Object> objects) {
+        if (objects.size() > 1) {
+            objects.sort((left, right) -> Integer.compareUnsigned(left.getId(), right.getId()));
+        }
+    }
 
     public ArrayList<L1Object> getVisibleObjects(L1Object object) {
         return getVisibleObjects(object, -1);
     }
 
     public ArrayList<L1Object> getVisibleObjects(L1Object object, int radius) {
-        L1Map map = object.getMap();
-        Point pt = object.getLocation();
-        int mapId = object.getMapId();
-        ArrayList<L1Object> result = null;
-
-        if(radius < 0)
-            result = new ArrayList<L1Object>(19 * 8);
-        else if(radius == 0)
-            result = new ArrayList<L1Object>(2);
-        else
-            result = new ArrayList<L1Object>(radius * 8);
-
-        if (map.getId() <= MAX_MAP_ID) {
-            L1IntRegistry<L1Object> mapSrc = visibleMap(map.getId(), false);
-            if (mapSrc != null) {
-                final int selfId = object.getId();
-
-                for (L1Object element : mapSrc.values()) {
-                    if (element == null || element.getId() == selfId) {
-                        continue;
-                    }
-                    if (element.equals(object)) {
-                        continue;
-                    }
-
-                    if(mapId != element.getMapId()) {
-                        continue;
-                    }
-
-                    if (map != element.getMap()) {
-                        continue;
-                    }
-
-                    if (radius == -1) {
-                        if (pt.isInScreen(element.getLocation())) {
-                            result.add(element);
-                        }
-                    } else if (radius == 0) {
-                        if (pt.isSamePoint(element.getLocation())) {
-                            result.add(element);
-                        }
-                    } else {
-                        if (pt.getTileLineDistance(element.getLocation()) <= radius) {
-                            result.add(element);
-                        }
-                    }
-                }
-            }
-        }
+        final ArrayList<L1Object> result = new ArrayList<>();
+        clusterGrid.collectVisibleObjects(object, radius, result);
+        sortByWorldId(result);
         return result;
     }
 
     public ArrayList<L1Object> getVisiblePoint(L1Location loc, int radius) {
-        int mapId = loc.getMapId();
-        L1IntRegistry<L1Object> mapSrc = visibleMap(mapId, false);
-        if(mapSrc == null || mapSrc.size() <= 0 || mapId > MAX_MAP_ID)
-            return new ArrayList<L1Object>();
-        ArrayList<L1Object> result = new ArrayList<L1Object>(radius * 8);
-        for (L1Object element : mapSrc.values()) {
-            if (element == null || mapId != element.getMapId())
-                continue;
-
-            if (loc.getTileLineDistance(element.getLocation()) <= radius)
-                result.add(element);
-        }
+        final ArrayList<L1Object> result = new ArrayList<>();
+        clusterGrid.queryPoint(loc, radius, result);
+        sortByWorldId(result);
         return result;
     }
 
@@ -1290,56 +1190,19 @@ public final class CWorld {
     }
 
     public ArrayList<L1PcInstance> getVisiblePlayer(L1Object object, int radius) {
-        final int capacity = radius < 0 ? 19 * 4 : radius == 0 ? 2 : radius * 4;
-        final ArrayList<L1PcInstance> result = new ArrayList<>(capacity);
+        final ArrayList<L1PcInstance> result = new ArrayList<>();
         collectVisiblePlayers(object, radius, result);
         return result;
     }
 
-    /** Replaces the destination with visible players in world registry order. */
+    /** Replace the destination with players currently present in the visible cells. */
     public void collectVisiblePlayers(L1Object object, int radius, List<L1PcInstance> result) {
-        result.clear();
-        final L1Map map = object.getMap();
-        final Point pt = object.getLocation();
-        final int selfId = object.getId();
-
-        for (L1PcInstance element : _allPlayers.values()) {
-            if (element == null || element.getId() == selfId || map != element.getMap())
-                continue;
-
-            if (radius == -1) {
-                if (pt.isInScreen(element.getLocation()))
-                    result.add(element);
-            } else if (radius == 0) {
-                if (pt.isSamePoint(element.getLocation())) {
-                    result.add(element);
-                }
-            } else if (pt.getTileLineDistance(element.getLocation()) <= radius) {
-                result.add(element);
-            }
-        }
+        clusterGrid.collectVisiblePlayers(object, radius, result);
     }
 
-    public ArrayList<L1Object> getVisiblePlayer(L1Object object, int radius, int i) {
-        int map = object.getMapId();
-        Point pt = object.getLocation();
-        Collection<L1Object> npc = values();
-        ArrayList<L1Object> result2 = null;
-        if(radius < 0){
-            result2 = new ArrayList<L1Object>(19 * 4);
-        }else if(radius == 0){
-            result2 = new ArrayList<L1Object>(2);
-        }else{
-            result2 = new ArrayList<L1Object>(radius * 4);
-        }
-        for (L1Object element : npc) {
-            if ((element == null) || (element.equals(object)) || (map != element.getMapId()))
-                continue;
-            if (pt.getTileLineDistance(element.getLocation()) <= radius) {
-                result2.add(element);
-            }
-        }
-        return result2;
+    /** Legacy overload returns all spatial object types within a tile radius. */
+    public ArrayList<L1Object> getVisiblePlayer(L1Object object, int radius, int unused) {
+        return radius < 0 ? new ArrayList<>() : getVisibleObjects(object, radius);
     }
 
     public boolean hasRecognizePlayerFast(L1Object obj) {
@@ -1419,8 +1282,13 @@ public final class CWorld {
         return (vs != null) ? vs : (_allSummonValues = Collections.unmodifiableCollection(_allSummons.values()));
     }
 
+    /** Map-wide, read-only ID-order traversal. A read of a cold map does not allocate a registry. */
+    public Collection<L1Object> getMapObjects(int mapId) {
+        return mapObjects.members(mapId);
+    }
+
     public final L1IntRegistry<L1Object> getVisibleObjects(int mapId) {
-        return visibleMap(mapId, false);
+        return mapObjects.legacyRegistry(mapId);
     }
 
     public void addWar(War war) {
@@ -1499,29 +1367,12 @@ public final class CWorld {
         return values().toArray(new L1Object[objectCount()]);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-    public void getMapObject(int mapid) {
-        L1IntRegistry<L1Object> mapSrc = visibleMap(mapid, false);
-        if (mapSrc == null) return;
-        for (L1Object obj : mapSrc.values()) {
-            if (obj instanceof L1MonsterInstance) {
-                L1MonsterInstance mon = (L1MonsterInstance) obj;
-                if (mon.getHiddenStatus() != 0 || mon.isDead())
-                    continue;
-
-                if (mon.getMapId() == mapid)
-                    mon.re();
+    public void getMapObject(int mapId) {
+        for (L1Object object : getMapObjects(mapId)) {
+            if (object instanceof L1MonsterInstance monster
+                    && monster.getMapId() == mapId
+                    && monster.getHiddenStatus() == 0 && !monster.isDead()) {
+                monster.re();
             }
         }
     }
@@ -1557,11 +1408,9 @@ public final class CWorld {
         return null;
     }
 
-    public Stream<L1Object> createVisibleObjectsStream(int mapId){
-        L1IntRegistry<L1Object> mapSrc = visibleMap(mapId, false);
-        if (mapSrc == null) return Stream.empty();
-        Collection<L1Object> col = mapSrc.values();
-        return col.size() > 1024 ? col.parallelStream() : col.stream();
+    public Stream<L1Object> createVisibleObjectsStream(int mapId) {
+        Collection<L1Object> objects = getMapObjects(mapId);
+        return objects.size() > 1024 ? objects.parallelStream() : objects.stream();
     }
 
     public void fillVisibleObjectsLimit(

@@ -92,7 +92,7 @@ public class HadinTrap implements Runnable {
 	private void runTick() {
 		try {
 			TRAP_RESET();
-			for (L1Object ob : CWorld.getInstance().getVisibleObjects(_map).values()) {
+			for (L1Object ob : CWorld.getInstance().getMapObjects(_map)) {
 				if (ob.getMap() != zone.map()) continue;
 				if (ob instanceof L1PcInstance pc) {
 					TRAP_ON(pc);
@@ -164,7 +164,7 @@ public class HadinTrap implements Runnable {
 			door.open();			
 		} else if(LEVEL_3_TRAP_1 && LEVEL_3_TRAP_2 && LEVEL_3_TRAP_3 && LEVEL_3_TRAP_4){
 			Collection<L1Object> cklist;
-			cklist = CWorld.getInstance().getVisibleObjects(_map).values();
+			cklist = CWorld.getInstance().getMapObjects(_map);
 			for(L1Object ob : cklist){
 				if(ob == null)
 					continue;
@@ -178,13 +178,13 @@ public class HadinTrap implements Runnable {
 			LEVEL_4_TRAP_CK = true;
 		} else if (LAST_TRAP_1 && LAST_TRAP_2 && LAST_TRAP_4 && LAST_TRAP_5){
 			Collection<L1Object> cklist;
-			cklist = CWorld.getInstance().getVisibleObjects(_map).values();
+			cklist = CWorld.getInstance().getMapObjects(_map);
 			l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(cklist,SC_ServerMessage.nativeWriter(8719));
 			LAST_TRAP_CK = true;
 		} else if (LAST_TRAP){
 			Running = false;
 			Collection<L1Object> cklist;
-			cklist = CWorld.getInstance().getVisibleObjects(_map).values();
+			cklist = CWorld.getInstance().getMapObjects(_map);
 			try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
                         SC_ServerMessage.nativeWriter(403,"$9355 (1)"),
                         Integer.MIN_VALUE,Integer.MAX_VALUE)){
@@ -238,7 +238,7 @@ public class HadinTrap implements Runnable {
 
 	private void BonginSendPacekt(int count){
 		Collection<L1Object> cklist;
-		cklist = CWorld.getInstance().getVisibleObjects(_map).values();
+		cklist = CWorld.getInstance().getMapObjects(_map);
 		l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenObjectPlayersBestEffort(cklist,SC_PacketBox.nativeGreenWriter("$"+count));
 	}
 

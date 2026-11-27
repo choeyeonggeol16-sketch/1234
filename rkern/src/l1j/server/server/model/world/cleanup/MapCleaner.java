@@ -29,13 +29,11 @@ public final class MapCleaner implements Runnable {
     public static void removeGroundItems(L1Map map) {
         if (map == null || map.isNull()) return;
         final CWorld world = CWorld.getInstance();
-        final var visible = world.getVisibleObjects(map.getId());
-        if (visible == null) return;
 
         // Both registries traverse by object ID. Snapshot only the selected
         // room's items before deleting from its visible registry.
         ArrayList<L1ItemInstance> items = null;
-        for (L1Object object : visible.values()) {
+        for (L1Object object : world.getMapObjects(map.getId())) {
             if (object instanceof L1ItemInstance item && item.getMap() == map) {
                 if (items == null) items = new ArrayList<>();
                 items.add(item);
@@ -58,9 +56,7 @@ public final class MapCleaner implements Runnable {
     }
 
     @Override public void run() {
-        final var visible = CWorld.getInstance().getVisibleObjects(map.getId());
-        if (visible == null) return;
-        for (L1Object object : visible.values()) {
+        for (L1Object object : CWorld.getInstance().snapshotZoneOccupants(map)) {
             // A copied map ID can already belong to a different room.
             if (object == null || object.getMap() != map || (filter != null && filter.isFilter(object))) continue;
             if (object.instanceOf(L1Type.L1TYPE_NPC)) {

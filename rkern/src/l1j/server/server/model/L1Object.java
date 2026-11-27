@@ -235,25 +235,38 @@ public class L1Object implements Serializable {
 	 */
 	public void setMap(short mapId) {	_loc.setMap(L1WorldMap.getInstance().getMap(mapId));	}
 	
-	private int _clusterX = -1;
-	private int _clusterY = -1;
-	
-	public void setClusterPos(int x, int y) {
-		_clusterX = x;
-		_clusterY = y;
-	}
-	
-	public int getClusterX() {
-		return _clusterX;
-	}
-	
-	public int getClusterY() {
-		return _clusterY;
-	}
-	private int _clusterMapId = -1;
+	// Zero is unpublished, including after deserialization. The grid writes the exact tile.
+	private transient volatile long _clusterPosition;
+	private transient L1Map _clusterTerrain;
 
-	public int getClusterMapId() { return _clusterMapId; }
-	public void setClusterMapId(int id) { _clusterMapId = id; }
+	final long clusterPosition() { return _clusterPosition - 1L; }
+	private void setClusterPosition(long position) { _clusterPosition = position + 1L; }
+
+	// Read and update the terrain together with the tile under this object's monitor.
+	final L1Map clusterTerrain() { return _clusterTerrain; }
+	final void publishClusterPosition(long position, L1Map terrain) {
+		if (_clusterTerrain != terrain) _clusterTerrain = terrain;
+		setClusterPosition(position);
+	}
+
+	public synchronized void setClusterPos(int x, int y) {
+		setClusterPosition(LocalWorldMap.packPosition(getClusterMapId(),
+				LocalWorldMap.clusterTile(x), LocalWorldMap.clusterTile(y)));
+		if (LocalWorldMap.publishedPosition(this) == LocalWorldMap.NO_POSITION) _clusterTerrain = null;
+	}
+
+	public int getClusterX() { return LocalWorldMap.clusterCell(LocalWorldMap.positionX(clusterPosition())); }
+	public int getClusterY() { return LocalWorldMap.clusterCell(LocalWorldMap.positionY(clusterPosition())); }
+	public int getClusterMapId() {
+		final int id = LocalWorldMap.positionMap(clusterPosition());
+		return id == LocalWorldMap.MAP_MASK ? -1 : id;
+	}
+	public synchronized void setClusterMapId(int id) {
+		final long position = clusterPosition();
+		if (id != getClusterMapId()) _clusterTerrain = null;
+		setClusterPosition(LocalWorldMap.packPosition(id, LocalWorldMap.positionX(position),
+				LocalWorldMap.positionY(position)));
+	}
 
 
 	/**

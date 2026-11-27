@@ -6,12 +6,16 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.locks.StampedLock;
 
+import gnu.trove.list.array.TLongArrayList;
+import gnu.trove.map.hash.TIntIntHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
+import gnu.trove.procedure.TLongProcedure;
 
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.L1GroundInventory;
+import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.network.core.broadcast.CTLMFilter;
 
 /**
@@ -27,19 +31,24 @@ public final class LocalWorldMap {
 
     private static final int CELL_SHIFT = 3;
     private static final int CELL_SIZE = 1 << CELL_SHIFT;
+    private static final int CELL_MASK = 0xffff;
+    static final int MAP_MASK = 0xffff;
+    private static final int COORDINATE_MASK = 0xffffff;
+    private static final int MAX_TILE = ((CELL_MASK + 1) << CELL_SHIFT) - 1;
+    private static final int SMALL_QUERY_CELLS = 256;
     private static final int SCREEN_RADIUS = 22;
-    private static final int DELTA_ENTER = 1;
-    private static final int DELTA_LEAVE = 2;
-    private static final int DELTA_MOVE = 3;
     private static final int DELTA_VIEW_ENTER = 4;
     private static final int DELTA_VIEW_LEAVE = 5;
     private static final int DELTA_VIEW_MOVE = 6;
-    private static final long NO_POSITION = -1L;
+    static final long NO_POSITION = -1L;
     private static final int CANONICAL_STRIPE_COUNT = 32;
     private static final int CANONICAL_STRIPE_MASK = CANONICAL_STRIPE_COUNT - 1;
-    private static final int RETAINED_PLAYER_SCAN_SIZE = 512;
-    private static final ThreadLocal<IdentityHashMap<L1PcInstance, Boolean>> PLAYER_SCAN_SEEN =
+    private static final int RETAINED_SCAN_SIZE = 512;
+    private static final ThreadLocal<IdentityHashMap<L1Object, Boolean>> SCAN_SEEN =
             ThreadLocal.withInitial(IdentityHashMap::new);
+    private static final ThreadLocal<TIntIntHashMap> SCAN_IDS =
+            ThreadLocal.withInitial(() -> new TIntIntHashMap(16, 0.5f, 0, -1));
+    private static final ThreadLocal<CellQuery> CELL_QUERY = ThreadLocal.withInitial(CellQuery::new);
 
     private static final class CanonicalStripe {
         final StampedLock lock = new StampedLock();
@@ -48,10 +57,6 @@ public final class LocalWorldMap {
 
     private final CanonicalStripe[] _canonical =
             new CanonicalStripe[CANONICAL_STRIPE_COUNT];
-
-    // Lazy one-list-per-completion-thread storage; no owner worker or new queue.
-    private final ThreadLocal<ArrayList<L1Object>> _nearbyScratch =
-            ThreadLocal.withInitial(() -> new ArrayList<>(64));
 
     private static final class SightScratch {
         final ArrayList<L1Object> viewers = new ArrayList<>(32);
@@ -100,7 +105,7 @@ public final class LocalWorldMap {
         if (depth < 0 || frame.slots[depth] != result)
             throw new IllegalStateException("AOI nearby release out of order");
         frame.depth = depth;
-        if (result.size() > 512) frame.slots[depth] = null;
+        if (result.size() > RETAINED_SCAN_SIZE) frame.slots[depth] = null;
         result.clear();
     }
 
@@ -125,8 +130,8 @@ public final class LocalWorldMap {
         return total;
     }
 
-    private static boolean isSanePosition(int mapId, int x, int y) {
-        return mapId >= 0 && x >= 0 && y >= 0;
+    static boolean isSanePosition(int mapId, int x, int y) {
+        return mapId >= 0 && mapId < MAP_MASK && x >= 0 && x <= MAX_TILE && y >= 0 && y <= MAX_TILE;
     }
     private static void warnBadPosition(L1Object obj) {
         final long now = System.currentTimeMillis();
@@ -139,8 +144,8 @@ public final class LocalWorldMap {
     }
     private static long packedKey(int mapId, int cellX, int cellY) {
         return (((long) mapId & 0xffffffffL) << 32)
-                | (((long) cellX & 0xffffL) << 16)
-                | ((long) cellY & 0xffffL);
+                | (((long) cellX & CELL_MASK) << 16)
+                | ((long) cellY & CELL_MASK);
     }
     private static int canonicalStripeIndex(long key) {
         long z = key;
@@ -158,16 +163,29 @@ public final class LocalWorldMap {
         return coordinate >> CELL_SHIFT;
     }
     private static int getCellRange(int radius) {
-        return radius <= 0 ? 0 : (radius + CELL_SIZE - 1) >> CELL_SHIFT;
+        return radius <= 0 ? 0 : (Math.min(radius, MAX_TILE) + CELL_SIZE - 1) >> CELL_SHIFT;
     }
-    private static long packPosition(int mapId, int x, int y) {
-        return (((long) mapId & 0xffffL) << 48)
-                | (((long) x & 0xffffffL) << 24)
-                | ((long) y & 0xffffffL);
+    static long packPosition(int mapId, int x, int y) {
+        return (((long) mapId & MAP_MASK) << 48)
+                | (((long) x & COORDINATE_MASK) << 24)
+                | ((long) y & COORDINATE_MASK);
     }
-    private static int positionMap(long packed) { return (int) (packed >>> 48) & 0xffff; }
-    private static int positionX(long packed) { return (int) (packed >>> 24) & 0xffffff; }
-    private static int positionY(long packed) { return (int) packed & 0xffffff; }
+    static int positionMap(long packed) { return (int) (packed >>> 48) & MAP_MASK; }
+    static int positionX(long packed) { return (int) (packed >>> 24) & COORDINATE_MASK; }
+    static int positionY(long packed) { return (int) packed & COORDINATE_MASK; }
+    static int clusterCell(int tile) { return tile == COORDINATE_MASK ? -1 : toCell(tile); }
+    static int clusterTile(int cell) { return cell < 0 || cell > CELL_MASK ? COORDINATE_MASK : cell << CELL_SHIFT; }
+
+    static long publishedPosition(L1Object object) {
+        final long position = object.clusterPosition();
+        return positionMap(position) == MAP_MASK || positionX(position) > MAX_TILE
+                || positionY(position) > MAX_TILE ? NO_POSITION : position;
+    }
+
+    /** Call under the object monitor when pairing this generation with its published tile. */
+    static L1Map publishedTerrain(L1Object object) {
+        return object.clusterTerrain();
+    }
 
     private static final class CellBucket {
 
@@ -496,64 +514,6 @@ public final class LocalWorldMap {
             return _objectCount == 0;
         }
 
-        private void collectNearby(
-                L1Object origin,
-                int radius,
-                boolean screenMode,
-                List<L1Object> result) {
-
-            final L1Object[] objects = _objects;
-
-            for (int i = 0, size = _objectCount; i < size; i++) {
-                final L1Object obj = objects[i];
-
-                if (CTLMFilter.nearby(origin, obj, radius, screenMode))
-                    result.add(obj);
-            }
-        }
-
-        private void collectNearbyPlayers(
-                L1Object origin,
-                int radius,
-                boolean screenMode,
-                List<L1PcInstance> result) {
-
-            final L1PcInstance[] players = _players;
-            final int playerCount = _playerCount;
-            if (players == null || playerCount == 0) {
-                return;
-            }
-
-
-            for (int i = 0; i < playerCount; i++) {
-                final L1PcInstance pc = players[i];
-
-                if (CTLMFilter.nearby(origin, pc, radius, screenMode))
-                    result.add(pc);
-            }
-        }
-
-        private boolean hasNearbyPlayer(
-                L1Object origin,
-                int radius,
-                boolean screenMode) {
-
-            final L1PcInstance[] players = _players;
-            final int playerCount = _playerCount;
-            if (players == null || playerCount == 0) {
-                return false;
-            }
-
-
-            for (int i = 0; i < playerCount; i++) {
-                final L1PcInstance pc = players[i];
-
-                if (CTLMFilter.nearby(origin, pc, radius, screenMode))
-                    return true;
-            }
-
-            return false;
-        }
     }
 
     private static void addToStripeUnsafe(
@@ -605,72 +565,25 @@ public final class LocalWorldMap {
         }
     }
 
-    private void applyCanonicalDelta(
-            int op,
-            long oldKey,
-            long newKey,
-            L1Object obj) {
-
-        if (obj == null) {
-            return;
-        }
-
-        /*
-         * Canonical is a deferred compatibility mirror for owner-thread writes.
-         * Therefore an older queued MOVE may be drained after the same object has
-         * already moved again or left the world. Never resurrect an old position:
-         * remove the stale source reference, but add only when the object's current
-         * cluster position still matches this delta's destination.
-         */
-        // Hold the same object monitor as the producer while checking its
-        // current cell and updating canonical stripes. Without this boundary,
-        // a position change between check and add could recreate a stale cell.
-        synchronized (obj) {
-            final boolean present = hasClusterPosition(obj);
-            final long currentKey = present ? currentCellKey(obj) : 0L;
-            switch (op) {
-            case DELTA_ENTER:
-                if (present && currentKey == newKey) {
-                    canonicalAdd(newKey, obj);
-                }
-                break;
-
-            case DELTA_LEAVE:
-                if (!present || currentKey != oldKey) {
-                    canonicalRemove(oldKey, obj);
-                }
-                break;
-
-            case DELTA_MOVE:
-                if (!present || currentKey != oldKey) {
-                    canonicalRemove(oldKey, obj);
-                }
-                if (present && currentKey == newKey) {
-                    canonicalAdd(newKey, obj);
-                }
-                break;
-
-            default:
-                break;
-            }
-        }
+    private static long cellKey(long position) {
+        return packedKey(positionMap(position), toCell(positionX(position)), toCell(positionY(position)));
     }
 
-    private void commitSpatialDelta(int op, long oldKey, long newKey, L1Object obj) {
-        applyCanonicalDelta(op, oldKey, newKey, obj);
+    private static long livePosition(L1Object object, L1Map terrain) {
+        final int map = terrain.getId(), x = object.getX(), y = object.getY();
+        if (isSanePosition(map, x, y)) return packPosition(map, x, y);
+        warnBadPosition(object);
+        return NO_POSITION;
     }
 
-    private static boolean hasClusterPosition(L1Object obj) {
-        return obj.getClusterMapId() >= 0
-                && obj.getClusterX() >= 0
-                && obj.getClusterY() >= 0;
-    }
-
-    private static long currentCellKey(L1Object obj) {
-        return packedKey(
-                obj.getClusterMapId(),
-                obj.getClusterX(),
-                obj.getClusterY());
+    /** Caller holds the object monitor, ahead of the stripe locks. */
+    private void commitPosition(L1Object object, long previous, long current, L1Map terrain) {
+        final long oldKey = previous == NO_POSITION ? NO_POSITION : cellKey(previous);
+        final long newKey = current == NO_POSITION ? NO_POSITION : cellKey(current);
+        object.publishClusterPosition(current, current == NO_POSITION ? null : terrain);
+        if (oldKey == newKey) return;
+        if (oldKey != NO_POSITION) canonicalRemove(oldKey, object);
+        if (newKey != NO_POSITION) canonicalAdd(newKey, object);
     }
 
     /** Exact viewer -> tile predicate, matching Point.isInScreen and canSeeObject. */
@@ -679,6 +592,11 @@ public final class LocalWorldMap {
         final int dx = tile.getX() - positionX(position);
         final int dy = tile.getY() - positionY(position);
         if (radius != -1) return Math.max(Math.abs(dx), Math.abs(dy)) <= radius;
+        return insideScreen(dx, dy);
+    }
+
+    /** Point.isInScreen uses an asymmetric 20–22 tile border. */
+    private static boolean insideScreen(int dx, int dy) {
         final int distance = Math.abs(dx) + Math.abs(dy);
         if (distance <= 19) return true;
         if (distance > SCREEN_RADIUS) return false;
@@ -728,45 +646,65 @@ public final class LocalWorldMap {
             int skipMinX, int skipMaxX, int skipMinY, int skipMaxY,
             boolean playersOnly, boolean groundDelta, long oldPos, long newPos,
             int radius, ArrayList<L1Object> result) {
-        for (int cx = minX; cx <= maxX; cx++) {
-            for (int cy = minY; cy <= maxY; cy++) {
-                if (mapId == skipMapId
-                        && CTLMFilter.insideRectangle(
-                                cx, cy, skipMinX, skipMaxX, skipMinY, skipMaxY)) continue;
-                final long key = packedKey(mapId, cx, cy);
-                final CanonicalStripe stripe = canonicalStripe(key);
-                final long stamp = stripe.lock.readLock();
-                try {
-                    final CellBucket cell = stripe.cells.get(key);
-                    if (cell == null) continue;
-                    if (playersOnly) {
-                        final L1PcInstance[] players = cell._players;
-                        if (players != null) {
-                            for (int i = 0; i < cell._playerCount; i++) {
-                                if (players[i] != null) result.add(players[i]);
-                            }
-                        }
-                    } else {
-                        // Interior ground-only cells have no sight work. In mixed
-                        // cells preserve creature reconciliation, but visit ground
-                        // item objects only on the exact old/new tile difference.
-                        final boolean sameGroundSight = groundDelta && cell._groundCount != 0
-                                && unchangedGroundCell(oldPos, newPos, mapId, cx, cy, radius);
-                        if (sameGroundSight && cell._groundCount == cell._objectCount) continue;
-                        final L1Object[] objects = cell._objects;
-                        for (int i = 0; i < cell._objectCount; i++) {
-                            final L1Object candidate = objects[i];
-                            if (candidate == null || candidate instanceof L1GroundInventory) continue;
-                            if (groundDelta && candidate instanceof L1ItemInstance
-                                    && (sameGroundSight || groundVisibleAt(oldPos, candidate, radius)
-                                            == groundVisibleAt(newPos, candidate, radius))) continue;
-                            result.add(candidate);
-                        }
-                    }
-                } finally {
-                    stripe.lock.unlockRead(stamp);
+        if (mapId == skipMapId && minX >= skipMinX && maxX <= skipMaxX
+                && minY >= skipMinY && maxY <= skipMaxY) return;
+        if (scanGridCells(minX, minY, maxX, maxY)) {
+            for (int cx = minX; cx <= maxX; cx++) {
+                for (int cy = minY; cy <= maxY; cy++) {
+                    collectSightCell(packedKey(mapId, cx, cy), mapId, cx, cy, skipMapId,
+                            skipMinX, skipMaxX, skipMinY, skipMaxY,
+                            playersOnly, groundDelta, oldPos, newPos, radius, result);
                 }
             }
+        } else {
+            final TLongArrayList keys = occupiedCellKeys(mapId, minX, minY, maxX, maxY);
+            for (int i = 0; i < keys.size(); i++) {
+                final long key = keys.getQuick(i);
+                collectSightCell(key, mapId, (int) (key >>> 16) & CELL_MASK, (int) key & CELL_MASK,
+                        skipMapId, skipMinX, skipMaxX, skipMinY, skipMaxY,
+                        playersOnly, groundDelta, oldPos, newPos, radius, result);
+            }
+        }
+    }
+
+    private void collectSightCell(long key, int mapId, int cx, int cy,
+            int skipMapId, int skipMinX, int skipMaxX, int skipMinY, int skipMaxY,
+            boolean playersOnly, boolean groundDelta, long oldPos, long newPos,
+            int radius, ArrayList<L1Object> result) {
+        if (mapId == skipMapId
+                && CTLMFilter.insideRectangle(
+                        cx, cy, skipMinX, skipMaxX, skipMinY, skipMaxY)) return;
+        final CanonicalStripe stripe = canonicalStripe(key);
+        final long stamp = stripe.lock.readLock();
+        try {
+            final CellBucket cell = stripe.cells.get(key);
+            if (cell == null) return;
+            if (playersOnly) {
+                final L1PcInstance[] players = cell._players;
+                if (players != null) {
+                    for (int i = 0; i < cell._playerCount; i++) {
+                        if (players[i] != null) result.add(players[i]);
+                    }
+                }
+            } else {
+                // Interior ground-only cells have no sight work. In mixed
+                // cells preserve creature reconciliation, but visit ground
+                // item objects only on the exact old/new tile difference.
+                final boolean sameGroundSight = groundDelta && cell._groundCount != 0
+                        && unchangedGroundCell(oldPos, newPos, mapId, cx, cy, radius);
+                if (sameGroundSight && cell._groundCount == cell._objectCount) return;
+                final L1Object[] objects = cell._objects;
+                for (int i = 0; i < cell._objectCount; i++) {
+                    final L1Object candidate = objects[i];
+                    if (candidate == null || candidate instanceof L1GroundInventory) continue;
+                    if (groundDelta && candidate instanceof L1ItemInstance
+                            && (sameGroundSight || groundVisibleAt(oldPos, candidate, radius)
+                                    == groundVisibleAt(newPos, candidate, radius))) continue;
+                    result.add(candidate);
+                }
+            }
+        } finally {
+            stripe.lock.unlockRead(stamp);
         }
     }
 
@@ -780,10 +718,10 @@ public final class LocalWorldMap {
             oldMap = positionMap(oldPos);
             final int cx = toCell(positionX(oldPos));
             final int cy = toCell(positionY(oldPos));
-            oldMinX = cx - range;
-            oldMaxX = cx + range;
-            oldMinY = cy - range;
-            oldMaxY = cy + range;
+            oldMinX = Math.max(0, cx - range);
+            oldMaxX = Math.min(CELL_MASK, cx + range);
+            oldMinY = Math.max(0, cy - range);
+            oldMaxY = Math.min(CELL_MASK, cy + range);
             collectSightRect(oldMap, oldMinX, oldMaxX, oldMinY, oldMaxY,
                     Integer.MIN_VALUE, 1, 0, 1, 0, playersOnly, groundDelta, oldPos, newPos, radius, result);
         }
@@ -791,8 +729,8 @@ public final class LocalWorldMap {
             final int map = positionMap(newPos);
             final int cx = toCell(positionX(newPos));
             final int cy = toCell(positionY(newPos));
-            collectSightRect(map, cx - range, cx + range,
-                    cy - range, cy + range,
+            collectSightRect(map, Math.max(0, cx - range), Math.min(CELL_MASK, cx + range),
+                    Math.max(0, cy - range), Math.min(CELL_MASK, cy + range),
                     oldMap, oldMinX, oldMaxX, oldMinY, oldMaxY,
                     playersOnly, groundDelta, oldPos, newPos, radius, result);
         }
@@ -844,6 +782,8 @@ public final class LocalWorldMap {
                     pc.getCreatureController().RefreshSight();
             }
         } finally {
+            if (scratch == local && (scratch.viewers.size() > RETAINED_SCAN_SIZE
+                    || scratch.objects.size() > RETAINED_SCAN_SIZE)) _sightScratch.remove();
             scratch.viewers.clear();
             scratch.objects.clear();
             scratch.inUse = false;
@@ -851,314 +791,327 @@ public final class LocalWorldMap {
     }
 
     /** Canonical registration while caller may hold world/identity locks. */
-    long enterSilently(L1Object obj) {
-        if (obj == null) return NO_POSITION;
-        synchronized (obj) {
-            if (!isSanePosition(obj.getMapId(), obj.getX(), obj.getY())) {
-                warnBadPosition(obj);
-                if (hasClusterPosition(obj)) {
-                    final long oldKey = currentCellKey(obj);
-                    obj.setClusterPos(-1, -1);
-                    obj.setClusterMapId(-1);
-                    commitSpatialDelta(DELTA_LEAVE, oldKey, 0L, obj);
-                } else {
-                    obj.setClusterPos(-1, -1);
-                    obj.setClusterMapId(-1);
-                }
-                return NO_POSITION;
-            }
-            final int map = obj.getMapId();
-            final int cx = toCell(obj.getX());
-            final int cy = toCell(obj.getY());
-            if (hasClusterPosition(obj)
-                    && obj.getClusterMapId() == map
-                    && obj.getClusterX() == cx
-                    && obj.getClusterY() == cy) return NO_POSITION;
-            final boolean hadOld = hasClusterPosition(obj);
-            final long oldKey = hadOld ? currentCellKey(obj) : 0L;
-            final long newKey = packedKey(map, cx, cy);
-            obj.setClusterPos(cx, cy);
-            obj.setClusterMapId(map);
-            commitSpatialDelta(hadOld ? DELTA_MOVE : DELTA_ENTER,
-                    oldKey, newKey, obj);
-            return packPosition(map, obj.getX(), obj.getY());
+    long enterSilently(L1Object object) {
+        if (object == null) return NO_POSITION;
+        synchronized (object) {
+            final long previous = publishedPosition(object);
+            final L1Map previousTerrain = publishedTerrain(object);
+            final L1Map terrain = object.getMap();
+            final long current = livePosition(object, terrain);
+            commitPosition(object, previous, current, terrain);
+            return previousTerrain == terrain && previous != NO_POSITION && current != NO_POSITION
+                    && cellKey(previous) == cellKey(current)
+                    ? NO_POSITION : current;
         }
     }
 
-    public void enter(L1Object obj) {
-        final long position = enterSilently(obj);
-        if (position != NO_POSITION) reconcileEnter(obj, position);
+    public void enter(L1Object object) {
+        reconcileEnter(object, enterSilently(object));
     }
 
-    void reconcileEnter(L1Object obj, long position) {
-        if (position != NO_POSITION) {
-            publishViewDelta(DELTA_VIEW_ENTER, NO_POSITION, position, obj);
+    void reconcileEnter(L1Object object, long position) {
+        if (position != NO_POSITION) publishViewDelta(DELTA_VIEW_ENTER, NO_POSITION, position, object);
+    }
+
+    /** Return the last published tile so the caller can notify after its outer locks. */
+    long leaveSilently(L1Object object) {
+        if (object == null) return NO_POSITION;
+        synchronized (object) {
+            final long previous = publishedPosition(object);
+            commitPosition(object, previous, NO_POSITION, null);
+            return previous;
         }
     }
 
-    /** Return old packed position so caller can notify *after* its outer locks. */
-    long leaveSilently(L1Object obj) {
-        if (obj == null) return NO_POSITION;
-        synchronized (obj) {
-            if (!hasClusterPosition(obj)) return NO_POSITION;
-            final long oldKey = currentCellKey(obj);
-            final long oldPos = packPosition(obj.getMapId(), obj.getX(), obj.getY());
-            obj.setClusterPos(-1, -1);
-            obj.setClusterMapId(-1);
-            commitSpatialDelta(DELTA_LEAVE, oldKey, 0L, obj);
-            return oldPos;
+    public void leave(L1Object object) {
+        reconcileLeave(object, leaveSilently(object));
+    }
+
+    void reconcileLeave(L1Object object, long position) {
+        if (position != NO_POSITION) publishViewDelta(DELTA_VIEW_LEAVE, position, NO_POSITION, object);
+    }
+
+    public void relocate(L1Object object) {
+        relocateSilently(object);
+    }
+
+    long relocateSilently(L1Object object) {
+        if (object == null) return NO_POSITION;
+        synchronized (object) {
+            final L1Map terrain = object.getMap();
+            final long current = livePosition(object, terrain);
+            commitPosition(object, publishedPosition(object), current, terrain);
+            return current;
         }
     }
 
-    public void leave(L1Object obj) {
-        final long oldPosition = leaveSilently(obj);
-        if (oldPosition != NO_POSITION) reconcileLeave(obj, oldPosition);
-    }
-
-    void reconcileLeave(L1Object obj, long oldPosition) {
-        if (oldPosition != NO_POSITION) {
-            publishViewDelta(DELTA_VIEW_LEAVE, oldPosition, NO_POSITION, obj);
+    public void relocate(L1Object object, int oldMap, int oldX, int oldY) {
+        if (object == null) return;
+        final long previous, current;
+        synchronized (object) {
+            previous = publishedPosition(object);
+            current = relocateSilently(object);
         }
+        reconcileMove(object, previous, current);
     }
 
-    public void relocate(L1Object obj) {
-        relocate0(obj, false, 0, 0, 0);
+    void reconcileMove(L1Object object, long previous, long current) {
+        if (previous == NO_POSITION) reconcileEnter(object, current);
+        else if (current == NO_POSITION) reconcileLeave(object, previous);
+        else publishViewDelta(DELTA_VIEW_MOVE, previous, current, object);
     }
 
-    public void relocate(L1Object obj, int oldMap, int oldX, int oldY) {
-        relocate0(obj, true, oldMap, oldX, oldY);
-    }
-
-    void reconcileMove(L1Object obj, int oldMap, int oldX, int oldY,
-            int newMap, int newX, int newY) {
-        final long oldPos = packPosition(oldMap, oldX, oldY);
-        if (isSanePosition(newMap, newX, newY)) {
-            publishViewDelta(DELTA_VIEW_MOVE, oldPos,
-                    packPosition(newMap, newX, newY), obj);
-        } else {
-            publishViewDelta(DELTA_VIEW_LEAVE, oldPos, NO_POSITION, obj);
-        }
-    }
-
-    private void relocate0(L1Object obj, boolean publishView,
-            int oldMap, int oldX, int oldY) {
-        if (obj == null) return;
-        int resultOp = 0;
-        long oldPos = NO_POSITION;
-        long newPos = NO_POSITION;
-        synchronized (obj) {
-            if (publishView) oldPos = packPosition(oldMap, oldX, oldY);
-            if (!isSanePosition(obj.getMapId(), obj.getX(), obj.getY())) {
-                warnBadPosition(obj);
-                if (hasClusterPosition(obj)) {
-                    final long oldKey = currentCellKey(obj);
-                    obj.setClusterPos(-1, -1);
-                    obj.setClusterMapId(-1);
-                    commitSpatialDelta(DELTA_LEAVE, oldKey, 0L, obj);
-                    if (publishView) resultOp = DELTA_VIEW_LEAVE;
-                } else {
-                    obj.setClusterPos(-1, -1);
-                    obj.setClusterMapId(-1);
-                }
-            } else {
-                final int map = obj.getMapId();
-                final int x = obj.getX(), y = obj.getY();
-                final int cx = toCell(x), cy = toCell(y);
-                newPos = publishView ? packPosition(map, x, y) : NO_POSITION;
-                if (!hasClusterPosition(obj)) {
-                    obj.setClusterPos(cx, cy);
-                    obj.setClusterMapId(map);
-                    commitSpatialDelta(DELTA_ENTER, 0L, packedKey(map, cx, cy), obj);
-                } else if (obj.getClusterMapId() != map
-                        || obj.getClusterX() != cx
-                        || obj.getClusterY() != cy) {
-                    final long oldKey = currentCellKey(obj);
-                    obj.setClusterPos(cx, cy);
-                    obj.setClusterMapId(map);
-                    commitSpatialDelta(DELTA_MOVE, oldKey, packedKey(map, cx, cy), obj);
-                }
-                if (publishView) resultOp = DELTA_VIEW_MOVE;
-            }
-        }
-        if (resultOp != 0) publishViewDelta(resultOp, oldPos, newPos, obj);
-    }
-
-    /*
-     * 일반 호출부는 그대로 사용 가능.
-     */
     public List<L1Object> queryNearby(L1Object origin, int radius) {
-        final ArrayList<L1Object> result =
-                new ArrayList<>(radius <= 0 ? 8 : 32);
-
+        final ArrayList<L1Object> result = new ArrayList<>(radius <= 0 ? 8 : 32);
         queryNearby(origin, radius, result);
-
         return result;
     }
 
-    /*
-     * 호출할 때 기존 result 내용은 자동 clear.
-     */
-    public void queryNearby(
-            L1Object origin,
-            int radius,
-            List<L1Object> result) {
-
-        result.clear();
-
-        final int mapId = origin.getMapId();
-        final int cellX = toCell(origin.getX());
-        final int cellY = toCell(origin.getY());
-
-        final boolean screenMode = radius < 0;
-        final int effectiveRadius = screenMode ? SCREEN_RADIUS : radius;
-        final int cellRange = getCellRange(effectiveRadius);
-
-        for (int dx = -cellRange; dx <= cellRange; dx++) {
-            for (int dy = -cellRange; dy <= cellRange; dy++) {
-                final long key = packedKey(mapId, cellX + dx, cellY + dy);
-                final CanonicalStripe stripe = canonicalStripe(key);
-                final long stamp = stripe.lock.readLock();
-                try {
-                    final CellBucket cell = stripe.cells.get(key);
-                    if (cell != null) {
-                        cell.collectNearby(origin, radius, screenMode, result);
-                    }
-                } finally {
-                    stripe.lock.unlockRead(stamp);
-                }
-            }
-        }
+    public void queryNearby(L1Object origin, int radius, List<L1Object> result) {
+        collectObjectsAround(origin, radius < 0 ? -1 : radius, result);
     }
 
-    public List<L1PcInstance> queryNearbyPlayers(
-            L1Object origin,
-            int radius) {
+    /** Legacy visible-object semantics use only -1 for screen distance. */
+    public void collectVisibleObjects(L1Object origin, int radius, List<L1Object> result) {
+        collectObjectsAround(origin, radius, result);
+    }
 
-        final ArrayList<L1PcInstance> result =
-                new ArrayList<>(radius <= 0 ? 8 : 16);
+    private void collectObjectsAround(L1Object origin, int radius, List<L1Object> result) {
+        result.clear();
+        if (origin == null || radius < -1) return;
+        final List<L1Object> target = lockedDestination(result);
+        queryRadius(origin.getMap(), origin.getX(), origin.getY(), origin, radius, false, target, null);
+        finishQuery(result, target);
+    }
 
+    public void queryPoint(L1Location center, int radius, List<L1Object> result) {
+        result.clear();
+        if (center == null || radius < 0) return;
+        final List<L1Object> target = lockedDestination(result);
+        queryRadius(center.getMap(), center.getX(), center.getY(), null, radius, false, target, null);
+        finishQuery(result, target);
+    }
+
+    /** Inclusive tile bounds on the exact map generation. */
+    public void queryRectangle(L1Map map, int minX, int minY, int maxX, int maxY, List<L1Object> result) {
+        result.clear();
+        final List<L1Object> target = lockedDestination(result);
+        scanRectangle(map, minX, minY, maxX, maxY, null, 0, 0, false, false, target, null);
+        finishQuery(result, target);
+    }
+
+    public List<L1PcInstance> queryNearbyPlayers(L1Object origin, int radius) {
+        final ArrayList<L1PcInstance> result = new ArrayList<>(radius <= 0 ? 8 : 16);
         queryNearbyPlayers(origin, radius, result);
-
         return result;
     }
 
-    /*
-     * 재사용 버퍼 API.
-     */
-    public void queryNearbyPlayers(
-            L1Object origin,
-            int radius,
-            List<L1PcInstance> result) {
-
-        result.clear();
-
-        final int mapId = origin.getMapId();
-        final int cellX = toCell(origin.getX());
-        final int cellY = toCell(origin.getY());
-
-        final boolean screenMode = radius < 0;
-        final int effectiveRadius = screenMode ? SCREEN_RADIUS : radius;
-        final int cellRange = getCellRange(effectiveRadius);
-
-        for (int dx = -cellRange; dx <= cellRange; dx++) {
-            for (int dy = -cellRange; dy <= cellRange; dy++) {
-                final long key = packedKey(mapId, cellX + dx, cellY + dy);
-                final CanonicalStripe stripe = canonicalStripe(key);
-                final long stamp = stripe.lock.readLock();
-                try {
-                    final CellBucket cell = stripe.cells.get(key);
-                    if (cell != null) {
-                        cell.collectNearbyPlayers(origin, radius, screenMode, result);
-                    }
-                } finally {
-                    stripe.lock.unlockRead(stamp);
-                }
-            }
-        }
-        removeDuplicatePlayers(result);
+    public void queryNearbyPlayers(L1Object origin, int radius, List<L1PcInstance> result) {
+        collectVisiblePlayers(origin, radius < 0 ? -1 : radius, result);
     }
 
-    private static void removeDuplicatePlayers(List<L1PcInstance> result) {
-        final int size = result.size();
-        if (size < 2) return;
-
-        // Cell read locks are released between scans. A player crossing from an
-        // earlier cell into a later one can appear twice in the same audience.
-        final IdentityHashMap<L1PcInstance, Boolean> cached = PLAYER_SCAN_SEEN.get();
-        final IdentityHashMap<L1PcInstance, Boolean> seen = size <= RETAINED_PLAYER_SCAN_SIZE && cached.isEmpty()
-                ? cached : new IdentityHashMap<>(size);
-        try {
-            int write = 0;
-            for (int read = 0; read < size; read++) {
-                final L1PcInstance pc = result.get(read);
-                if (seen.put(pc, Boolean.TRUE) == null) {
-                    if (write != read) result.set(write, pc);
-                    write++;
-                }
-            }
-            if (write < size) result.subList(write, size).clear();
-        } finally {
-            seen.clear();
-        }
+    public void collectVisiblePlayers(L1Object origin, int radius, List<L1PcInstance> result) {
+        result.clear();
+        if (origin == null || radius < -1) return;
+        final List<L1PcInstance> target = lockedDestination(result);
+        queryRadius(origin.getMap(), origin.getX(), origin.getY(), origin, radius, true, null, target);
+        finishQuery(result, target);
     }
 
     public List<L1PcInstance> queryScreenPlayers(L1Object origin) {
         return queryNearbyPlayers(origin, -1);
     }
 
-    public void queryScreenPlayers(
-            L1Object origin,
-            List<L1PcInstance> result) {
-
+    public void queryScreenPlayers(L1Object origin, List<L1PcInstance> result) {
         queryNearbyPlayers(origin, -1, result);
     }
 
     public boolean hasNearbyPlayer(L1Object origin, int radius) {
-        final int mapId = origin.getMapId();
-        final int cellX = toCell(origin.getX());
-        final int cellY = toCell(origin.getY());
+        return origin != null && queryRadius(origin.getMap(), origin.getX(), origin.getY(), origin,
+                radius < 0 ? -1 : radius, true, null, null);
+    }
 
-        if (radius == 0) {
-            final long key = packedKey(mapId, cellX, cellY);
-            final CanonicalStripe stripe = canonicalStripe(key);
+    private boolean queryRadius(L1Map map, int x, int y, L1Object origin, int radius, boolean playersOnly,
+            List<L1Object> objects, List<L1PcInstance> players) {
+        final boolean screen = radius == -1;
+        final long range = screen ? SCREEN_RADIUS : radius;
+        return scanRectangle(map, x - range, y - range, x + range, y + range,
+                origin, x, y, screen, playersOnly, objects, players);
+    }
+
+    private boolean scanRectangle(L1Map map, long minX, long minY, long maxX, long maxY,
+            L1Object origin, int originX, int originY, boolean screen, boolean playersOnly,
+            List<L1Object> objects, List<L1PcInstance> players) {
+        if (map == null) return false;
+        final int mapId = map.getId();
+        if (mapId < 0) return false;
+        minX = Math.max(0L, minX);
+        minY = Math.max(0L, minY);
+        maxX = Math.min(MAX_TILE, maxX);
+        maxY = Math.min(MAX_TILE, maxY);
+        if (minX > maxX || minY > maxY) return false;
+
+        final int originId = origin == null ? 0 : origin.getId();
+        final CellQuery local = CELL_QUERY.get();
+        final CellQuery scan = local.map == null ? local : new CellQuery();
+        scan.map = map;
+        scan.minX = (int) minX;
+        scan.minY = (int) minY;
+        scan.maxX = (int) maxX;
+        scan.maxY = (int) maxY;
+        scan.excludesOrigin = origin != null;
+        scan.originId = originId;
+        scan.originX = originX;
+        scan.originY = originY;
+        scan.screen = screen;
+        scan.playersOnly = playersOnly;
+        scan.objects = objects;
+        scan.players = players;
+        try {
+            return scanCells(mapId, scan);
+        } finally {
+            scan.map = null;
+            scan.objects = null;
+            scan.players = null;
+        }
+    }
+
+    private boolean scanCells(int mapId, CellQuery scan) {
+        final int minX = toCell(scan.minX), minY = toCell(scan.minY);
+        final int maxX = toCell(scan.maxX), maxY = toCell(scan.maxY);
+        if (scanGridCells(minX, minY, maxX, maxY)) {
+            for (int x = minX; x <= maxX; x++) {
+                for (int y = minY; y <= maxY; y++) {
+                    if (scanCell(packedKey(mapId, x, y), scan)) return true;
+                }
+            }
+            return false;
+        }
+
+        final TLongArrayList keys = occupiedCellKeys(mapId, minX, minY, maxX, maxY);
+        for (int i = 0, size = keys.size(); i < size; i++) {
+            if (scanCell(keys.getQuick(i), scan)) return true;
+        }
+        return false;
+    }
+
+    private boolean scanGridCells(int minX, int minY, int maxX, int maxY) {
+        final long area = (long) (maxX - minX + 1) * (maxY - minY + 1);
+        // Only broad rectangles pay to inspect occupancy. Ordinary local lookups never scan the map.
+        return area <= SMALL_QUERY_CELLS || area <= getCellCount();
+    }
+
+    private TLongArrayList occupiedCellKeys(int mapId, int minX, int minY, int maxX, int maxY) {
+        // Avoid enumerating empty cells for a range wider than the populated index.
+        final TLongArrayList keys = new TLongArrayList();
+        final TLongProcedure collect = key -> {
+            if ((int) (key >>> 32) == mapId
+                    && CTLMFilter.insideRectangle((int) (key >>> 16) & CELL_MASK, (int) key & CELL_MASK,
+                            minX, maxX, minY, maxY)) keys.add(key);
+            return true;
+        };
+        for (CanonicalStripe stripe : _canonical) {
             final long stamp = stripe.lock.readLock();
             try {
-                final CellBucket cell = stripe.cells.get(key);
-                return cell != null && cell.hasNearbyPlayer(origin, 0, false);
+                stripe.cells.forEachKey(collect);
             } finally {
                 stripe.lock.unlockRead(stamp);
             }
         }
-
-        final boolean screenMode = radius < 0;
-        final int effectiveRadius = screenMode ? SCREEN_RADIUS : radius;
-        final int cellRange = getCellRange(effectiveRadius);
-
-        for (int dx = -cellRange; dx <= cellRange; dx++) {
-            for (int dy = -cellRange; dy <= cellRange; dy++) {
-                final long key = packedKey(mapId, cellX + dx, cellY + dy);
-                final CanonicalStripe stripe = canonicalStripe(key);
-                final long stamp = stripe.lock.readLock();
-                try {
-                    final CellBucket cell = stripe.cells.get(key);
-                    if (cell != null
-                            && cell.hasNearbyPlayer(origin, radius, screenMode)) {
-                        return true;
-                    }
-                } finally {
-                    stripe.lock.unlockRead(stamp);
-                }
-            }
-        }
-
-        return false;
+        keys.sort();
+        return keys;
     }
 
-    // Per-completion-thread scratch: same non-owning, non-reentrant return contract
-    // as the old owner-local queryNearbyScratch, without a CIO shard binding.
+    private boolean scanCell(long key, CellQuery scan) {
+        final CanonicalStripe stripe = canonicalStripe(key);
+        final long stamp = stripe.lock.readLock();
+        try {
+            final CellBucket cell = stripe.cells.get(key);
+            return cell != null && scan.collect(cell);
+        } finally {
+            stripe.lock.unlockRead(stamp);
+        }
+    }
+
+    private static final class CellQuery {
+        L1Map map;
+        int minX, minY, maxX, maxY;
+        int originId, originX, originY;
+        boolean excludesOrigin, screen, playersOnly;
+        List<L1Object> objects;
+        List<L1PcInstance> players;
+
+        boolean collect(CellBucket cell) {
+            final L1Object[] candidates = playersOnly ? cell._players : cell._objects;
+            final int size = playersOnly ? cell._playerCount : cell._objectCount;
+            for (int i = 0; i < size; i++) {
+                final L1Object candidate = candidates[i];
+                if (candidate.getMap() != map || (excludesOrigin && candidate.getId() == originId)) continue;
+                final int x = candidate.getX(), y = candidate.getY();
+                if (!CTLMFilter.insideRectangle(x, y, minX, maxX, minY, maxY)
+                        || (screen && !insideScreen(x - originX, y - originY))) continue;
+                if (objects != null) objects.add(candidate);
+                else if (players != null) players.add((L1PcInstance) candidate);
+                else return true;
+            }
+            return false;
+        }
+    }
+
+    private static <T> List<T> lockedDestination(List<T> result) {
+        // Custom list methods may enter world code, so call them without a stripe lock.
+        return result.getClass() == ArrayList.class ? result : new ArrayList<>();
+    }
+
+    private static <T extends L1Object> void finishQuery(List<T> result, List<T> target) {
+        final int size = target.size();
+        if (size > 1) {
+            // A concurrent move or replacement may appear in two different cells.
+            final TIntIntHashMap ids = scanIds(size);
+            IdentityHashMap<L1Object, Boolean> seen = null;
+            try {
+                int write = 0;
+                for (int read = 0; read < size; read++) {
+                    final T candidate = target.get(read);
+                    final int id = candidate.getId();
+                    if (id > 0) {
+                        final int previous = ids.putIfAbsent(id, write);
+                        if (previous >= 0) {
+                            if (publishedPosition(target.get(previous)) == NO_POSITION
+                                    && publishedPosition(candidate) != NO_POSITION) target.set(previous, candidate);
+                            continue;
+                        }
+                    } else {
+                        if (seen == null) seen = scanReferences(size);
+                        if (seen.put(candidate, Boolean.TRUE) != null) continue;
+                    }
+                    if (write != read) target.set(write, candidate);
+                    write++;
+                }
+                if (write < size) target.subList(write, size).clear();
+            } finally {
+                ids.clear();
+                if (seen != null) seen.clear();
+            }
+        }
+        if (target != result) {
+            for (T entry : target) result.add(entry);
+        }
+    }
+
+    private static TIntIntHashMap scanIds(int size) {
+        final TIntIntHashMap cached = SCAN_IDS.get();
+        return size <= RETAINED_SCAN_SIZE && cached.isEmpty()
+                ? cached : new TIntIntHashMap(size, 0.5f, 0, -1);
+    }
+
+    private static IdentityHashMap<L1Object, Boolean> scanReferences(int size) {
+        final IdentityHashMap<L1Object, Boolean> cached = SCAN_SEEN.get();
+        return size <= RETAINED_SCAN_SIZE && cached.isEmpty() ? cached : new IdentityHashMap<>(size);
+    }
+
+    /** Compatibility entry point. Use borrowNearby/releaseNearby for a scoped reusable list. */
     public List<L1Object> queryNearbyReusable(L1Object origin, int radius) {
-        final ArrayList<L1Object> result = _nearbyScratch.get();
-        queryNearby(origin, radius, result);
-        return result;
+        return queryNearby(origin, radius);
     }
 }

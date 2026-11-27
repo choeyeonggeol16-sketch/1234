@@ -40,9 +40,7 @@ public final class CInstantZoneManager<T> {
         }
         public boolean drainGround(L1Map map) { return drainWorldGround(map); }
         public boolean occupied(L1Map map) {
-            final var visible = CWorld.getInstance().getVisibleObjects(map.getId());
-            if (visible == null) return false;
-            for (var obj : visible.values()) {
+            for (var obj : CWorld.getInstance().getMapObjects(map.getId())) {
                 if (obj.getMap() != map) continue;
                 if (isProtectedOccupant(obj)) return true;
             }
@@ -99,12 +97,9 @@ public final class CInstantZoneManager<T> {
         for (var obj : world.snapshotZoneOccupants(map)) {
             if (obj instanceof L1GroundInventory tile) tile.clearItems();
         }
-        final var visible = world.getVisibleObjects(map.getId());
-        if (visible != null) {
-            for (var obj : visible.values()) {
-                if ((obj instanceof L1GroundInventory || obj instanceof L1ItemInstance) && obj.getMap() == map)
-                    return false;
-            }
+        for (var obj : world.getMapObjects(map.getId())) {
+            if ((obj instanceof L1GroundInventory || obj instanceof L1ItemInstance) && obj.getMap() == map)
+                return false;
         }
         return true;
     }

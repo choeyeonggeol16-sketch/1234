@@ -1,9 +1,13 @@
 package l1j.server.server.model.world.instance;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
@@ -16,6 +20,8 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1Location;
+import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1GroundInventory;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
@@ -39,6 +45,7 @@ public final class InstantZoneGroundReceiptRegression {
         Config.ALT_ITEM_DELETION_TYPE = "disabled";
         try {
             run();
+            retiredGroundAndConcurrentPublication();
             partyDropPreventsReuse();
         } finally {
             CInstantZoneManager.stopAccepting();
@@ -159,6 +166,107 @@ public final class InstantZoneGroundReceiptRegression {
         final var next = manager.tryOpen(TEMPLATE, -1, ROOM, ROOM);
         require(next != null && next.map() != terrain, "settled numeric ID can host a fresh zone");
         next.close(() -> {});
+    }
+
+    private static void retiredGroundAndConcurrentPublication() throws Exception {
+        final short id = ROOM + 10;
+        final var maps = L1WorldMap.getInstance();
+        final var world = CWorld.getInstance();
+        final var original = maps.cloneMapAndGet(TEMPLATE, id);
+        final var retired = world.getGroundInventory(X, Y, id);
+        final var item = drop(world, retired, original, 2_000_401_017);
+        final Object token = new Object();
+        require(item.reserveGroundPickup(token), "original receipt holds the ground item");
+        // Emulate an older administrative map importer that swaps terrain independently of CInstantZone.
+        final var current = maps.cloneMapAndGet(TEMPLATE, id);
+        require(world.findGroundInventory(X, Y, id) == null
+                && world.getInventory(new L1Location(X, Y, original)) == null
+                && world.getInventory(new L1Location(X, Y, current)) == null,
+                "neither generation can acquire the retired, still reserved tile");
+        retired.clearItems();
+        require(retired.GetByServerID(item.getId()) == item && item.hasGroundPickupReservation(token),
+                "rejected creation preserves original item and its exact receipt");
+        item.releaseGroundPickup(token);
+        retired.clearItems();
+        require(retired.getSize() == 0 && world.findObject(item.getId()) == null, "original cleanup completes");
+
+        final CountDownLatch start = new CountDownLatch(1);
+        final ArrayList<Future<L1GroundInventory>> results = new ArrayList<>();
+        final L1GroundInventory replacement;
+        try (var pool = Executors.newFixedThreadPool(8)) {
+            for (int i = 0; i < 8; i++) results.add(pool.submit(() -> {
+                start.await();
+                return world.getGroundInventory(X, Y, id);
+            }));
+            start.countDown();
+            replacement = results.get(0).get(5, TimeUnit.SECONDS);
+            for (var result : results) require(result.get(5, TimeUnit.SECONDS) == replacement,
+                    "all concurrent creators receive the one published replacement");
+        }
+        world.removeVisibleObject(retired);
+        require(replacement != retired && replacement.getMap() == current
+                && world.findGroundInventory(X, Y, id) == replacement
+                && world.getMapObjects(id).size() == 1, "late old leave preserves the current tile");
+        require(world.getInventory(new L1Location(X, Y, original)) == null, "old location cannot select new terrain");
+        require(world.getInventory(new L1Location(X + 524288, Y, current)) == null, "outside packed coordinate bounds");
+        // Legacy tile IDs are not injective for arbitrarily spaced coordinates.
+        require(world.getInventory(new L1Location(X + 1, Y - 10000, current)) == null,
+                "equal numeric tile key with different coordinates cannot return another bucket");
+        world.removeVisibleObject(replacement);
+
+        final var mapOnly = new L1Object();
+        mapOnly.setId(42_801);
+        mapOnly.getLocation().set(X, Y, original);
+        world.addVisibleObject(mapOnly);
+        final var actor = new L1Object();
+        actor.setId(mapOnly.getId());
+        actor.getLocation().set(X + 1, Y, current);
+        world.storeAndEnterWorld(actor);
+        world.addVisibleObject(mapOnly);
+        require(world.findObject(actor.getId()) == actor && mapOnly.getClusterMapId() < 0
+                && world.getVisibleObjects(id).get(actor.getId()) == actor,
+                "map-only prior owner cannot reclaim a replacement's visible ID");
+        world.removeObject(actor);
+        require(world.getMapObjects(id).isEmpty(), "direct identity removal also retires map membership");
+        // Hold the former object's monitor so retirement happens after the same map-only
+        // instance was legitimately admitted again following removal of the intermediate owner.
+        world.addVisibleObject(mapOnly);
+        final Thread installer;
+        synchronized (mapOnly) {
+            installer = Thread.ofPlatform().daemon().start(() -> world.storeObject(actor));
+            final long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (world.findObject(actor.getId()) != actor && System.nanoTime() < deadline)
+                LockSupport.parkNanos(100_000);
+            require(world.findObject(actor.getId()) == actor, "replacement registered before delayed retirement");
+            world.removeObject(actor);
+            world.addVisibleObject(mapOnly);
+        }
+        installer.join(5_000);
+        require(!installer.isAlive() && world.getVisibleObjects(id).get(mapOnly.getId()) == mapOnly
+                && mapOnly.getClusterMapId() == id, "delayed cleanup preserves the re-admitted map-only identity");
+        world.removeVisibleObject(mapOnly);
+
+        final var occupied = world.getGroundInventory(29_999, 30_000, id);
+        final short sourceId = (short) (id + 1);
+        final var source = maps.cloneMapAndGet(TEMPLATE, sourceId);
+        final var mover = new L1Object();
+        mover.setId(occupied.getId()); // The numeric tile key is positive at these coordinates.
+        mover.getLocation().set(X, Y, source);
+        world.storeAndEnterWorld(mover);
+        maps.cloneMapAndGet(TEMPLATE, sourceId);
+        require(!world.relocateVisibleObject(mover, X, Y, current) && mover.getMap() == source,
+                "destination ID collision cannot mutate the actor or displace the ground bucket");
+        mover.getLocation().set(X + 2, Y + 3, current);
+        world.moveTo(mover, sourceId, X, Y);
+        require(mover.getMap() == source && mover.getX() == X && mover.getY() == Y
+                && world.getVisibleObjects(sourceId).get(mover.getId()) == mover
+                && world.findGroundInventory(29_999, 30_000, id) == occupied,
+                "already-mutated move rolls back to exact published terrain across ID reuse");
+        world.removeObject(mover);
+        world.removeVisibleObject(occupied);
+        maps.removeMap(sourceId);
+        maps.removeMap(id);
+        System.out.println("PASS ground receipt across terrain replacement, 8 concurrent creators, aliased key and map-only retirement");
     }
 
     private static L1ItemInstance drop(CWorld world, L1GroundInventory tile, L1Map map, int objectId) {

@@ -36,6 +36,14 @@ public final class CompanionTeleportHandler {
 	        final ArrayList<L1PcInstance> oldViewers =
 	                CWorld.getInstance().getVisiblePlayer(companion);
 
+	        /*
+	         * 실제 companion 좌표 이동
+	         */
+	        final GamePoint pt = GamePoint.newInstance(next_x, next_y, 2, mid);
+
+	        final CWorld world = CWorld.getInstance();
+	        if (!world.relocateVisibleObject(companion, pt.x, pt.y, map)) return false;
+
 	        hideCompanionFromViewer(owner, companion, triggers);
 
 	        for (L1PcInstance viewer : oldViewers) {
@@ -45,21 +53,10 @@ public final class CompanionTeleportHandler {
 	            hideCompanionFromViewer(viewer, companion, triggers);
 	        }
 
-	        /*
-	         * 실제 companion 좌표 이동
-	         */
-	        final GamePoint pt = GamePoint.newInstance(next_x, next_y, 2, mid);
-
-	        CWorld.getInstance().relocateVisibleObject(
-	                companion, pt.x, pt.y, mid);
-
 	        if (triggers != null) {
-	            for (EffectTriggerInstance trigger : triggers) {
-	                trigger.setX(pt.x);
-	                trigger.setY(pt.y);
-	                trigger.setMap(mid);
-	                CWorld.getInstance().getClusterGrid().relocate(trigger);
-	            }
+	            // This list is a snapshot. Detached triggers must stay hidden.
+	            triggers.removeIf(trigger -> trigger == null
+	                    || !world.relocateVisibleObject(trigger, pt.x, pt.y, map));
 	        }
 
 	        /*

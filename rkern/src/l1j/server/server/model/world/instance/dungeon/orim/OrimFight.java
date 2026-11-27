@@ -147,7 +147,7 @@ class OrimFight extends Thread {
 
 		L1NpcInstance Npc = null;
 
-		Iterator<L1Object> localIterator = CWorld.getInstance().getVisibleObjects(9101).values().iterator();
+		Iterator<L1Object> localIterator = CWorld.getInstance().getMapObjects(9101).iterator();
 
 		while (localIterator.hasNext()) {
 			Object obj = localIterator.next();

@@ -6,6 +6,8 @@ import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.inventory.warehouse.Warehouse;
 import l1j.server.server.model.network.core.sc.packet.SC_DropItem;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
@@ -22,12 +24,14 @@ public class L1GroundInventory extends CInventory {
             Logger.getLogger(L1GroundInventory.class.getName());
 
     public L1GroundInventory(int objectId, int x, int y, short map) {
-        setId(objectId);
-        setX(x);
-        setY(y);
-        setMap(map);
-
+        this(objectId, x, y, L1WorldMap.getInstance().getMap(map));
         CWorld.getInstance().addVisibleObject(this);
+    }
+
+    /** CWorld performs the first publication under the map tile's stable key lock. */
+    public L1GroundInventory(int objectId, int x, int y, L1Map terrain) {
+        setId(objectId);
+        getLocation().set(x, y, terrain);
     }
 
     /** A ground item's visible identity is the item, not this tile bucket. */

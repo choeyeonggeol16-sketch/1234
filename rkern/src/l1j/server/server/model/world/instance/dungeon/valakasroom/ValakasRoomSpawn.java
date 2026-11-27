@@ -35,7 +35,7 @@ public class ValakasRoomSpawn {
 	private ValakasRoomSpawn() {}
 
     static boolean hasPlayers(CInstantZone<?> zone) {
-        for (L1Object obj : CWorld.getInstance().getVisibleObjects(zone.mapId()).values()) {
+        for (L1Object obj : CWorld.getInstance().getMapObjects(zone.mapId())) {
             if (obj instanceof L1PcInstance && obj.getMap() == zone.map()) return true;
         }
         return false;

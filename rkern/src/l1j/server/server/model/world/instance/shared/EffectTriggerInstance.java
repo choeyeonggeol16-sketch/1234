@@ -65,11 +65,11 @@ public class EffectTriggerInstance extends L1Object{
 	}
 
 	public void do_move(int x, int y, int h){
-        setX(x);
-        setY(y);
+        final CWorld world = CWorld.getInstance();
+        if (!world.moveVisibleObject(this, x, y, getMap())) return;
         final l1j.server.server.model.network.core.broadcast.CSharedBroadcast.NativeWireWriter wire = SC_MoveChar.nativeWriter(getId(), x, y, h);
         l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenRecipientsBestEffort(
-                CWorld.getInstance().getRecognizePlayer(this), wire);
+                world.getRecognizePlayer(this), wire);
     }
 
 	public void do_action(int action){
