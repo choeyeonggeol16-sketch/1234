@@ -1,6 +1,11 @@
 package l1j.server.server.model;
 
-public  class L1ReturnStatTemp {
+public class L1ReturnStatTemp {
+    public boolean awaitingElixirs;
+
+    public int allocatedLevelPoints() {
+        return str + Int + wis + dex + con + cha;
+    }
     public HpMpGrowthHistory hpMpGrowth = new HpMpGrowthHistory(1);
 	public int basestr;
 	public int baseint;

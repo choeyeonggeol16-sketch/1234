@@ -1771,7 +1771,7 @@ public final class CacheD {
             activeUsers.put(characterId, user);
             if (++nextSessionEpoch == 0L) ++nextSessionEpoch;
             user.sessionEpoch = nextSessionEpoch;
-            user.karmaReceiptRevision = 0;
+            user.characterReceiptRevision = 0;
             // Only a published session supersedes the previous owner release.
             warehouse.releasingOwnerIds.remove(characterId);
             return user.sessionEpoch;
@@ -1790,9 +1790,16 @@ public final class CacheD {
     }
 
     public void publishKarmaReceipt(int characterId, long sessionEpoch, int revision) {
+        publishCharacterReceiptRevision(characterId, sessionEpoch, revision);
+    }
+
+    public void publishCharacterReceiptRevision(int characterId, long sessionEpoch, int revision) {
         synchronized (lock) {
             CUser user = activeUsers.get(characterId);
-            if (user != null && user.sessionEpoch == sessionEpoch) user.karmaReceiptRevision = revision;
+            // A later permanent stat publication may already have advanced the same epoch.
+            // Signed distance preserves ordering across integer wrap for outstanding owner callbacks.
+            if (user != null && user.sessionEpoch == sessionEpoch && revision - user.characterReceiptRevision > 0)
+                user.characterReceiptRevision = revision;
         }
     }
 
@@ -1815,7 +1822,7 @@ public final class CacheD {
                     || (active == null && snapshot.sessionEpoch != 0L))
                 throw new RejectedExecutionException("Stale character session save: " + snapshot.name);
             if (ownerApplyJobsByOwner.get(snapshot.objectId) != 0
-                    || (active != null && active.karmaReceiptRevision != snapshot.karmaReceiptRevision)) return false;
+                    || (active != null && active.characterReceiptRevision != snapshot.characterReceiptRevision)) return false;
             CUser state = characters.get(snapshot.name);
             if (state == null) {
                 state = activeUsers.get(snapshot.objectId);

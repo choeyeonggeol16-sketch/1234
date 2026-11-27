@@ -1,6 +1,5 @@
 package l1j.server.server.model.Instance;
 
-import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -393,28 +392,25 @@ public class L1NpcInstance extends L1Character {
     // NPC prototype data is shared; only per-creature values are copied.
     // Also used for morphs and the deferred pet/summon/companion construction.
     protected final void CopyFrom(L1Npc template) {
+        if (template == null) throw new IllegalArgumentException("Missing NPC template");
         _npcTemplate = template;
-        double rate = 0;
-        double diff = 0;
 
         setName(template.get_name());
         setNameId(template.get_nameid());
-        int randomlevel = 0;
-        int level = template.get_level();
-        if (template.get_randomlevel() != 0) {
-            randomlevel = ThreadLocalRandom.current().nextInt(template.get_randomlevel() - level + 1);
-            int span = template.get_randomlevel() - level;
-            diff = span;
-            rate = span > 0 ? (double) randomlevel / span : 0D; 
-            randomlevel += template.get_level();
-            level = randomlevel;
-        }
+        final int baseLevel = template.get_level();
+        final int configuredRandomLevel = template.get_randomlevel();
+        // Some legacy rows store a nonzero upper bound below their base level.
+        final int span = configuredRandomLevel > 0 && configuredRandomLevel > baseLevel
+                ? configuredRandomLevel - baseLevel : 0;
+        final int rolled = span > 0 ? ThreadLocalRandom.current().nextInt(span + 1) : 0;
+        final double rate = span > 0 ? (double) rolled / span : 0D;
+        final int level = baseLevel + rolled;
         setLevel(level);
         int ac = template.get_ac();
         if (template.get_randomac() != 0) {
             ac = (int) (ac + calcRandomVal(ac, template.get_randomac(), rate));
         }
-        int bonus = template.get_randomlevel() == 0 ? 0 : (int) diff;
+        int bonus = span;
         CopyBaseParameters(ac, cap127(template.get_str() + bonus),
                 cap127(template.get_con() + bonus), cap127(template.get_dex() + bonus),
                 cap127(template.get_int() + bonus), cap127(template.get_wis() + bonus),
@@ -433,7 +429,7 @@ public class L1NpcInstance extends L1Character {
         }
         setMaxMp(mp);
         setCurrentMp(mp);
-        SetDefaultParameters(template, randomlevel, rate);
+        SetDefaultParameters(template, configuredRandomLevel == 0 ? 0 : level, rate);
     }
 
     // Initialize the NPC-specific defaults after the common creature parameters.
@@ -2192,12 +2188,11 @@ public class L1NpcInstance extends L1Character {
         }
     }
 
-    protected void transform(int transformId) {
+    protected void transform(L1Npc npcTemplate) {
         int transformGfxId = getNpcTemplate().getTransformGfxId();
         if (transformGfxId != 0) {
             SC_SkillSound.broadcast(this, getId(), transformGfxId);
         }
-        L1Npc npcTemplate = CObjectDB.GetNPC(transformId);
         StopRegeneration();
         CopyFrom(npcTemplate);
         StartRegeneration();

@@ -55,8 +55,8 @@ public final class KarmaReceiptCheck {
         }
     }
 
-    static final class L1World {
-        static L1World getInstance() { return new L1World(); }
+    static final class CWorld {
+        static CWorld getInstance() { return new CWorld(); }
         long smartIdOf(L1NpcInstance npc) { return npc.getId(); }
     }
 

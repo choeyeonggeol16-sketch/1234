@@ -15,6 +15,11 @@ for stat in ("Str","Dex","Con","Int","Wis","Cha"):
     old=old.replace(f"add{stat}(newBase{stat} - base{stat});\n\t\tbase{stat} = newBase{stat};",f"int delta = newBase{stat} - base{stat};\n\t\tbase{stat} = newBase{stat};\n\t\tadd{stat}(delta);")
 for stat,cur in (("Str","str"),("Dex","dex"),("Con","con"),("Int","intel"),("Wis","wis"),("Cha","cha")):
     old=old.replace(f"{cur} = base{stat} = added{stat} = 0;",f"{cur} = base{stat} = 0;")
+# Only the non-skill store changes: accumulate reversibly and project at the old boundary.
+for stat in ("Str", "Dex", "Con", "Int", "Wis", "Cha"):
+    old=old.replace(f"private byte added{stat} = 0;", f"private int added{stat} = 0;")
+    old=old.replace(f"added{stat} = checkRange(added{stat} + i, LIMIT_MINUS_MIN);", f"added{stat} += i;")
+    old=old.replace(f"return checkRange(added{stat} +", f"return checkRange(checkRange(added{stat}, LIMIT_MINUS_MIN) +")
 old=re.sub(r"\n[ \t]*pc\.resetBaseMr\(\);[ \t]*","",old)
 old=old.replace("public void init() {","public void init(int s,int d,int c,int i,int w,int a) {")
 for stat,cur,arg in (("Str","str","s"),("Dex","dex","d"),("Con","con","c"),("Int","intel","i"),("Wis","wis","w"),("Cha","cha","a")):
@@ -66,7 +71,12 @@ public class StatAudit {
  }
  static void equal(Object a,Object b){if(!Objects.deepEquals(a,b))throw new AssertionError(a+" != "+b);}
  static void mutate(Object a,Object b,String name,Class<?>[] sig,Object... values)throws Exception{
-  notices.clear();invoke(a,name,sig,values);var before=List.copyOf(notices);
+  notices.clear();invoke(a,name,sig,values);var before=new ArrayList<>(notices);
+  if(name.equals("setSkillPrimaryStats")) {
+   // One skill update publishes weight and SP/MR once at their first existing positions.
+   var combined=new HashSet<Integer>();
+   before.removeIf(n -> (n==2 || n==3) && !combined.add(n));
+  }
   notices.clear();invoke(b,name,sig,values);equal(before,notices);
  }
  public static void main(String[] args)throws Exception{

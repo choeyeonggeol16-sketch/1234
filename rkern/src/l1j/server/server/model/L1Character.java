@@ -63,6 +63,10 @@ public class L1Character extends L1Object {
     private static final AtomicIntegerFieldUpdater<L1Character> CURRENT_HP =
             AtomicIntegerFieldUpdater.newUpdater(L1Character.class, "_currentHp");
 	private volatile int _currentMp;
+    private static final AtomicIntegerFieldUpdater<L1Character> CURRENT_MP =
+            AtomicIntegerFieldUpdater.newUpdater(L1Character.class, "_currentMp");
+
+
 	// Common creature base, non-skill additions and cached effective limits.
 	private int m_nBaseHP;
 	private int m_nAddedHP;
@@ -96,18 +100,32 @@ public class L1Character extends L1Object {
 	private volatile boolean disposed;
 	// CStats: original, permanent and equipment sources, shared by every creature.
 	// Primitive byte lanes preserve the existing signed range and update order.
-	byte m_OriginalStatStr, m_StatStr, m_AddedStatStr;
-	byte m_OriginalStatDex, m_StatDex, m_AddedStatDex;
-	byte m_OriginalStatInt, m_StatInt, m_AddedStatInt;
-	byte m_OriginalStatWis, m_StatWis, m_AddedStatWis;
-	byte m_OriginalStatCon, m_StatCon, m_AddedStatCon;
-	byte m_OriginalStatCha, m_StatCha, m_AddedStatCha;
+	byte m_OriginalStatStr, m_StatStr;
+	byte m_OriginalStatDex, m_StatDex;
+	byte m_OriginalStatInt, m_StatInt;
+	byte m_OriginalStatWis, m_StatWis;
+	byte m_OriginalStatCon, m_StatCon;
+	byte m_OriginalStatCha, m_StatCha;
+	// Keep exact non-skill sums. Equipment and world aura apply on different owners.
+	private volatile int m_AddedStatStr, m_AddedStatDex, m_AddedStatInt;
+	private volatile int m_AddedStatWis, m_AddedStatCon, m_AddedStatCha;
+	private static final java.util.concurrent.atomic.AtomicIntegerFieldUpdater<L1Character>
+			ADDED_STAT_STR = statAccumulator("m_AddedStatStr"),
+			ADDED_STAT_DEX = statAccumulator("m_AddedStatDex"),
+			ADDED_STAT_INT = statAccumulator("m_AddedStatInt"),
+			ADDED_STAT_WIS = statAccumulator("m_AddedStatWis"),
+			ADDED_STAT_CON = statAccumulator("m_AddedStatCon"),
+			ADDED_STAT_CHA = statAccumulator("m_AddedStatCha");
+
+	private static java.util.concurrent.atomic.AtomicIntegerFieldUpdater<L1Character> statAccumulator(String field) {
+		return java.util.concurrent.atomic.AtomicIntegerFieldUpdater.newUpdater(L1Character.class, field);
+	}
 	volatile long m_SkillPrimaryStats;
 	int m_nStatSp;
 	volatile int m_nSkillSp;
 	// BEGIN shared resistance sources (CCreature)
-	int m_nOrgMDefend;
-	int m_nAddedMDefend;
+	volatile int m_nOrgMDefend;
+	volatile int m_nAddedMDefend;
 	int m_nFireResist;
 	int m_nWaterResist;
 	int m_nWindResist;
@@ -136,9 +154,9 @@ public class L1Character extends L1Object {
 	volatile int m_nSkillSpecialPierce;
 	volatile long m_SkillElemental;
 	// END shared resistance sources
-	private int m_nBasePDefend;
+	private volatile int m_nBasePDefend;
 	private int m_nAddedPDefend;
-	private int m_nSkillPDefend;
+	private volatile int m_nSkillPDefend;
 	private volatile int m_nPDefend;
 	
 	private int _status;
@@ -614,13 +632,7 @@ public class L1Character extends L1Object {
 	}
 
 	public void setCurrentHp(int i) {
-		if (i >= getMaxHp()) {
-			i = getMaxHp();
-		}
-		if (i < 0)
-			i = 0;
-
-        CURRENT_HP.set(this, i);
+        CURRENT_HP.set(this, Math.max(0, Math.min(i, getMaxHp())));
     }
 
     protected final int changeHpAtomic(long delta) {
@@ -654,14 +666,16 @@ public class L1Character extends L1Object {
 	}
 
 	public void setCurrentMp(int i) {
-		if (i >= getMaxMp()) {
-			i = getMaxMp();
-		}
-		if (i < 0)
-			i = 0;
-		
-		_currentMp = i;
+        _currentMp = Math.max(0, Math.min(i, getMaxMp()));
 	}
+
+    protected final void restoreLoginMpOverflow(int amount) {
+        int oldMp, next;
+        do {
+            oldMp = _currentMp;
+            next = Math.clamp((long) oldMp + amount, 0, getMaxMp());
+        } while (oldMp != next && !CURRENT_MP.compareAndSet(this, oldMp, next));
+    }
 
 	public boolean isSleeped() {
 		return hasAnySkillEffect(L1SkillId.DARK_BLIND, L1SkillId.PHANTASM, L1SkillId.FOG_OF_SLEEPING);
@@ -1121,8 +1135,8 @@ public class L1Character extends L1Object {
 
 	private volatile long m_SkillHPMP;
 
-	public void setPumpedSkillModifiers(int hp, int mp, int ac, int mr,
-			long primaryStats, long elementalResistance, int evasion, long weapon, long combatRates, int sp, boolean notify) {
+	public final int setPumpedSkillModifiers(int hp, int mp, int ac, int mr,
+			long primaryStats, long elementalResistance, int evasion, long weapon, long combatRates, int sp) {
 		final long previous = m_SkillHPMP;
 		final long updated = ((long) mp << 32) | Integer.toUnsignedLong(hp);
 		if (previous != updated) m_SkillHPMP = updated;
@@ -1130,19 +1144,27 @@ public class L1Character extends L1Object {
 		final long changedPrimary = m_SkillPrimaryStats ^ primaryStats;
 		SetSkillPrimaryStats(primaryStats, false);
 		if ((int) (previous >>> 32) != mp) clampCurrentMp();
-		setSkillAc(ac, notify);
+		final boolean defenseChanged = ApplySkillAc(ac);
 		SetSkillMDefend(mr);
-		if (notify) NotifySkillPrimaryStats(changedPrimary);
 		SetSkillElemental(elementalResistance);
 		if (pumpedEvasion != evasion) pumpedEvasion = evasion;
 		if (m_SkillWeapon != weapon) m_SkillWeapon = weapon;
 		if (m_SkillCombatRates != combatRates) m_SkillCombatRates = combatRates;
 		SetSkillSp(sp);
+		final int defense = defenseChanged ? NOTIFY_DEFENSE : 0;
+		return ChangedPrimaryStats(changedPrimary) | defense;
+	}
+
+	public final void NotifyPumpedSkillModifiers(int changedStats, boolean specialChanged, boolean carryChanged) {
+		if (!(this instanceof L1PcInstance pc)) return;
+		NotifyStatBonuses(changedStats);
+		if (specialChanged && !disposed) SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
+		if (carryChanged && (changedStats & (NOTIFY_STR | NOTIFY_CON)) == 0) SC_Weight.send(pc);
 	}
 
 	public int getMaxHp() {
 		final int delta = (int) m_SkillHPMP;
-		int maxhp = delta == 0 ? m_nMaxHP : Math.clamp((long) (m_nBaseHP + m_nAddedHP) + delta, 1, 10_000_000);
+		int maxhp = delta == 0 ? m_nMaxHP : Math.clamp((long) m_nBaseHP + m_nAddedHP + delta, 1, 10_000_000);
 
         if (this instanceof L1PcInstance)
             maxhp += CPCParamDB.pureHpMpBonus(GetStatCon());
@@ -1151,6 +1173,11 @@ public class L1Character extends L1Object {
 
 	public final int getBaseMaxHp() {
 		return m_nBaseHP;
+	}
+
+	/** Includes permanent companion growth, before transient skill and stat bonuses. */
+	protected final int getBaseAndAddedMaxHp() {
+		return m_nMaxHP;
 	}
 
 	public final void addBaseMaxHp(short i) {
@@ -1174,11 +1201,11 @@ public class L1Character extends L1Object {
 	}
 
 	private void ValidateMaxHP() {
-		m_nMaxHP = IntRange.ensure(m_nBaseHP + m_nAddedHP, 1, 10_000_000);
+		m_nMaxHP = Math.clamp((long) m_nBaseHP + m_nAddedHP, 1, 10_000_000);
 		clampCurrentHp();
 	}
 
-	private void clampCurrentHp() {
+	protected final void clampCurrentHp() {
         for (;;) {
             final int oldHp = CURRENT_HP.get(this);
             final int next = Math.min(oldHp, getMaxHp());
@@ -1188,7 +1215,7 @@ public class L1Character extends L1Object {
 
 	public int getMaxMp() {
 		final int delta = (int) (m_SkillHPMP >>> 32);
-		int maxmp = delta == 0 ? m_nMaxMP : Math.clamp((long) (m_nBaseMP + m_nAddedMP) + delta, 0, 10_000_000);
+		int maxmp = delta == 0 ? m_nMaxMP : Math.clamp((long) m_nBaseMP + m_nAddedMP + delta, 0, 10_000_000);
 
         int wis = this instanceof L1PcInstance ? GetStatWis() : GetTotalStatWis();
         maxmp += CPCParamDB.pureHpMpBonus(wis);
@@ -1197,6 +1224,10 @@ public class L1Character extends L1Object {
 
 	public final int getBaseMaxMp() {
 		return m_nBaseMP;
+	}
+
+	protected final int getBaseAndAddedMaxMp() {
+		return m_nMaxMP;
 	}
 
 	public final void addBaseMaxMp(int i) {
@@ -1220,7 +1251,7 @@ public class L1Character extends L1Object {
 	}
 
 	private void ValidateMaxMP() {
-		m_nMaxMP = IntRange.ensure(m_nBaseMP + m_nAddedMP, 0, 10_000_000);
+		m_nMaxMP = Math.clamp((long) m_nBaseMP + m_nAddedMP, 0, 10_000_000);
 		clampCurrentMp();
 	}
 
@@ -1429,11 +1460,19 @@ public class L1Character extends L1Object {
 	final byte ValidateStat(int value, int minimum) {
 		return (byte) IntRange.ensure(value, minimum, 127);
 	}
+	protected final int getNonSkillAddedStatStr() { return m_AddedStatStr; }
+	protected final int getNonSkillAddedStatCon() { return m_AddedStatCon; }
+	protected final int getNonSkillAddedStatInt() { return m_AddedStatInt; }
+
+	private byte effectiveAddedStat(int nonSkill, int shift) {
+		// Project each source to its existing signed byte boundary, then combine.
+		return ValidateStat(ValidateStat(nonSkill, -128) + (byte) (m_SkillPrimaryStats >>> shift), -128);
+	}
 	public final byte GetStatStr() { return m_StatStr; }
 	public final byte GetOriginalStatStr() { return m_OriginalStatStr; }
 	public final void SetStatStr(int value) { m_StatStr = ValidateStat(value, m_OriginalStatStr); }
-	public final byte GetAddedStatStr() { return ValidateStat(m_AddedStatStr + (byte) (m_SkillPrimaryStats >>> 0), -128); }
-	final void AddAddedStatStr(int value) { m_AddedStatStr = ValidateStat(m_AddedStatStr + value, -128); }
+	public final byte GetAddedStatStr() { return effectiveAddedStat(m_AddedStatStr, 0); }
+	final void AddAddedStatStr(int value) { ADDED_STAT_STR.getAndAdd(this, value); }
 	public final byte GetTotalStatStr() { return ValidateStat(GetStatStr() + GetAddedStatStr(), 0); }
 	public final byte GetStatDex() { return m_StatDex; }
 	public final byte GetOriginalStatDex() { return m_OriginalStatDex; }
@@ -1441,17 +1480,17 @@ public class L1Character extends L1Object {
 		m_StatDex = ValidateStat(value, m_OriginalStatDex);
 		ValidateParameters(VB_PDEFEND);
 	}
-	public final byte GetAddedStatDex() { return ValidateStat(m_AddedStatDex + (byte) (m_SkillPrimaryStats >>> 8), -128); }
+	public final byte GetAddedStatDex() { return effectiveAddedStat(m_AddedStatDex, 8); }
 	final void AddAddedStatDex(int value) {
-		m_AddedStatDex = ValidateStat(m_AddedStatDex + value, -128);
+		ADDED_STAT_DEX.getAndAdd(this, value);
 		ValidateParameters(VB_PDEFEND);
 	}
 	public final byte GetTotalStatDex() { return ValidateStat(GetStatDex() + GetAddedStatDex(), 0); }
 	public final byte GetStatInt() { return m_StatInt; }
 	public final byte GetOriginalStatInt() { return m_OriginalStatInt; }
 	public final void SetStatInt(int value) { m_StatInt = ValidateStat(value, m_OriginalStatInt); }
-	public final byte GetAddedStatInt() { return ValidateStat(m_AddedStatInt + (byte) (m_SkillPrimaryStats >>> 16), -128); }
-	final void AddAddedStatInt(int value) { m_AddedStatInt = ValidateStat(m_AddedStatInt + value, -128); }
+	public final byte GetAddedStatInt() { return effectiveAddedStat(m_AddedStatInt, 16); }
+	final void AddAddedStatInt(int value) { ADDED_STAT_INT.getAndAdd(this, value); }
 	public final byte GetTotalStatInt() { return ValidateStat(GetStatInt() + GetAddedStatInt(), 0); }
 	public final byte GetStatWis() { return m_StatWis; }
 	public final byte GetOriginalStatWis() { return m_OriginalStatWis; }
@@ -1465,10 +1504,10 @@ public class L1Character extends L1Object {
 			ValidateParameters(VB_MP);
 		}
 	}
-	public final byte GetAddedStatWis() { return ValidateStat(m_AddedStatWis + (byte) (m_SkillPrimaryStats >>> 24), -128); }
+	public final byte GetAddedStatWis() { return effectiveAddedStat(m_AddedStatWis, 24); }
 	final void AddAddedStatWis(int value) {
 		final int previous = GetTotalStatWis();
-		m_AddedStatWis = ValidateStat(m_AddedStatWis + value, -128);
+		ADDED_STAT_WIS.getAndAdd(this, value);
 		if (this instanceof L1PcInstance) ValidateParameters(VB_MDEFEND);
 		else if (GetTotalStatWis() < previous) ValidateParameters(VB_MP);
 	}
@@ -1480,14 +1519,14 @@ public class L1Character extends L1Object {
 		m_StatCon = ValidateStat(value, m_OriginalStatCon);
 		if (m_StatCon < previous && this instanceof L1PcInstance) ValidateParameters(VB_HP);
 	}
-	public final byte GetAddedStatCon() { return ValidateStat(m_AddedStatCon + (byte) (m_SkillPrimaryStats >>> 32), -128); }
-	final void AddAddedStatCon(int value) { m_AddedStatCon = ValidateStat(m_AddedStatCon + value, -128); }
+	public final byte GetAddedStatCon() { return effectiveAddedStat(m_AddedStatCon, 32); }
+	final void AddAddedStatCon(int value) { ADDED_STAT_CON.getAndAdd(this, value); }
 	public final byte GetTotalStatCon() { return ValidateStat(GetStatCon() + GetAddedStatCon(), 0); }
 	public final byte GetStatCha() { return m_StatCha; }
 	public final byte GetOriginalStatCha() { return m_OriginalStatCha; }
 	public final void SetStatCha(int value) { m_StatCha = ValidateStat(value, m_OriginalStatCha); }
-	public final byte GetAddedStatCha() { return ValidateStat(m_AddedStatCha + (byte) (m_SkillPrimaryStats >>> 40), -128); }
-	final void AddAddedStatCha(int value) { m_AddedStatCha = ValidateStat(m_AddedStatCha + value, -128); }
+	public final byte GetAddedStatCha() { return effectiveAddedStat(m_AddedStatCha, 40); }
+	final void AddAddedStatCha(int value) { ADDED_STAT_CHA.getAndAdd(this, value); }
 	public final byte GetTotalStatCha() { return ValidateStat(GetStatCha() + GetAddedStatCha(), 0); }
 
 	// BEGIN direct primary-stat operations
@@ -1506,12 +1545,73 @@ public class L1Character extends L1Object {
 		if (notify) NotifySkillPrimaryStats(changed);
 	}
 
+	private static final int NOTIFY_STR = 1, NOTIFY_DEX = 2, NOTIFY_CON = 4, NOTIFY_INT = 8,
+			NOTIFY_WIS = 16, NOTIFY_DEFENSE = 32, NOTIFY_MAGIC = 64;
+
+	private static int ChangedPrimaryStats(long changed) {
+		int notifications = 0;
+		if ((changed & 0x000000ffL) != 0) notifications |= NOTIFY_STR;
+		if ((changed & 0x0000ff00L) != 0) notifications |= NOTIFY_DEX;
+		if ((changed & 0xff00000000L) != 0) notifications |= NOTIFY_CON;
+		if ((changed & 0x00ff0000L) != 0) notifications |= NOTIFY_INT;
+		if ((changed & 0xff000000L) != 0) notifications |= NOTIFY_WIS;
+		return notifications;
+	}
+
 	private void NotifySkillPrimaryStats(long changed) {
-		if ((changed & 0x000000ff) != 0) NotifyStatBonusStr();
-		if ((changed & 0x0000ff00) != 0) NotifyStatBonusDex();
-		if ((changed & 0xff00000000L) != 0) NotifyStatBonusCon();
-		if ((changed & 0x00ff0000) != 0) NotifyStatBonusInt();
-		if ((changed & 0xff000000L) != 0) NotifyStatBonusWis();
+		NotifyStatBonuses(ChangedPrimaryStats(changed));
+	}
+
+	/** Applies one equipment source and sends each dependent display once. */
+	public final void AddStatBonuses(int str, int dex, int con, int intelligence, int wis, int cha,
+			boolean magicChanged) {
+		int notifications = magicChanged ? NOTIFY_MAGIC : 0;
+		if (str != 0) {
+			AddAddedStatStr(str);
+			notifications |= NOTIFY_STR;
+		}
+		if (dex != 0) {
+			AddAddedStatDex(dex);
+			notifications |= NOTIFY_DEX;
+		}
+		if (con != 0) {
+			AddAddedStatCon(con);
+			notifications |= NOTIFY_CON;
+		}
+		if (intelligence != 0) {
+			AddAddedStatInt(intelligence);
+			notifications |= NOTIFY_INT;
+		}
+		if (wis != 0) {
+			AddAddedStatWis(wis);
+			notifications |= NOTIFY_WIS;
+		}
+		if (cha != 0) AddAddedStatCha(cha);
+		NotifyStatBonuses(notifications);
+	}
+
+	private void NotifyStatBonuses(int changed) {
+		if (changed == 0 || !(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
+		if ((changed & (NOTIFY_DEFENSE | NOTIFY_DEX)) == NOTIFY_DEFENSE) SC_OwnCharAttrDef.send(pc);
+		if ((changed & NOTIFY_STR) != 0) {
+			SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Str);
+			SC_Weight.send(pc);
+		}
+		if ((changed & NOTIFY_DEX) != 0) {
+			SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+			SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Dex);
+			SC_OwnCharAttrDef.send(pc);
+		}
+		if ((changed & NOTIFY_CON) != 0) {
+			SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Con);
+			if ((changed & NOTIFY_STR) == 0) SC_Weight.send(pc);
+		}
+		if ((changed & NOTIFY_INT) != 0) {
+			SC_SPMR.send(pc);
+			SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Int);
+		}
+		if ((changed & NOTIFY_WIS) != 0) SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Wis);
+		if ((changed & NOTIFY_INT) == 0 && (changed & (NOTIFY_WIS | NOTIFY_MAGIC)) != 0) SC_SPMR.send(pc);
 	}
 
 	// Stat redistribution resets permanent allocations only; equipment and
@@ -1582,15 +1682,7 @@ public class L1Character extends L1Object {
 
 	public final void AddStatStr(int i) {
 		SetStatStr(GetStatStr() + i);
-		if (this instanceof L1PcInstance) {
-            L1PcInstance pc = (L1PcInstance) this;
-            if (pc.getNetConnection() != null) {
-                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);// 현재순수스탯
-                SC_Weight.send(pc);
-                SC_CHAR_STAT.sendCreate(pc, pc, 2, SC_CHAR_STAT.Stat_Str);
-                SC_OwnCharStatus2.send(pc);
-            }
-        }
+		NotifyPermanentStat(SC_CHAR_STAT.Stat_Str);
 	}
 
 	public final void AddOriginalStatStr(int i) {
@@ -1610,21 +1702,12 @@ public class L1Character extends L1Object {
 	}
 
 	private void NotifyStatBonusStr() {
-		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
-		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Str);
-		SC_Weight.send(pc);
+		NotifyStatBonuses(NOTIFY_STR);
 	}
 
 	public final void AddStatCon(int i) {
 		SetStatCon(GetStatCon() + i);
-		if (this instanceof L1PcInstance) {
-            L1PcInstance pc = (L1PcInstance) this;
-            if (pc.getNetConnection() != null) {
-                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);
-            	SC_Weight.send(pc);
-                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Con);
-            }
-        }
+		NotifyPermanentStat(SC_CHAR_STAT.Stat_Con);
 	}
 
 	public final void AddOriginalStatCon(int i) {
@@ -1644,24 +1727,12 @@ public class L1Character extends L1Object {
 	}
 
 	private void NotifyStatBonusCon() {
-		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
-		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Con);
-		SC_Weight.send(pc);
+		NotifyStatBonuses(NOTIFY_CON);
 	}
 
 	public final void AddStatDex(int i) {
 		SetStatDex(GetStatDex() + i);
-		if (this instanceof L1PcInstance) {
-            L1PcInstance pc = (L1PcInstance) this;
-            if (pc.getNetConnection() != null) {
-                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);// 현재순수스탯
-                SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
-                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Dex);
-                SC_OwnCharStatus2.send(pc);
-                SC_OwnCharAttrDef.send(pc);
-
-            }
-        }
+		NotifyPermanentStat(SC_CHAR_STAT.Stat_Dex);
 	}
 
 	public final void AddOriginalStatDex(int i) {
@@ -1681,10 +1752,7 @@ public class L1Character extends L1Object {
 	}
 
 	private void NotifyStatBonusDex() {
-		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
-		SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
-		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Dex);
-		SC_OwnCharAttrDef.send(pc);
+		NotifyStatBonuses(NOTIFY_DEX);
 	}
 
 	public final void AddStatCha(int i) {
@@ -1708,15 +1776,7 @@ public class L1Character extends L1Object {
 
 	public final void AddStatInt(int i) {
 		SetStatInt(GetStatInt() + i);
-		 if (this instanceof L1PcInstance) {
-	            L1PcInstance pc = (L1PcInstance) this;
-	            if (pc.getNetConnection() != null) {
-	                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);// 현재순수스탯
-	                SC_SPMR.send(pc);
-	                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Int);
-
-	            }
-	        }
+		NotifyPermanentStat(SC_CHAR_STAT.Stat_Int);
 	}
 
 	public final void AddOriginalStatInt(int i) {
@@ -1736,21 +1796,12 @@ public class L1Character extends L1Object {
 	}
 
 	private void NotifyStatBonusInt() {
-		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
-		SC_SPMR.send(pc);
-		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Int);
+		NotifyStatBonuses(NOTIFY_INT);
 	}
 
 	public final void AddStatWis(int i) {
 		SetStatWis(GetStatWis() + i);
-		 if (this instanceof L1PcInstance) {
-	            L1PcInstance pc = (L1PcInstance) this;
-	            if (pc.getNetConnection() != null) {
-	                SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Wis);
-	                SC_SPMR.send(pc);
-	                SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);// 현재순수스탯
-	            }
-	        }
+		NotifyPermanentStat(SC_CHAR_STAT.Stat_Wis);
 	}
 
 	public final void AddOriginalStatWis(int i) {
@@ -1770,9 +1821,44 @@ public class L1Character extends L1Object {
 	}
 
 	private void NotifyStatBonusWis() {
+		NotifyStatBonuses(NOTIFY_WIS);
+	}
+
+	/** Publishes the committed permanent stat using its original packet mode and order. */
+	public final void NotifyPermanentStat(int statType) {
 		if (!(this instanceof L1PcInstance pc) || pc.getNetConnection() == null) return;
-		SC_CHAR_STAT.sendCreate(pc, pc, 8, SC_CHAR_STAT.Stat_Wis);
-		SC_SPMR.send(pc);
+		switch (statType) {
+		case SC_CHAR_STAT.Stat_Str:
+			SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);
+			SC_Weight.send(pc);
+			SC_CHAR_STAT.sendCreate(pc, pc, 2, statType);
+			SC_OwnCharStatus2.send(pc);
+			break;
+		case SC_CHAR_STAT.Stat_Dex:
+			SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);
+			SC_PacketBox.send(pc, SC_PacketBox.ER_UpDate, pc.getTotalER());
+			SC_CHAR_STAT.sendCreate(pc, pc, 8, statType);
+			SC_OwnCharStatus2.send(pc);
+			SC_OwnCharAttrDef.send(pc);
+			break;
+		case SC_CHAR_STAT.Stat_Con:
+			SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);
+			SC_Weight.send(pc);
+			SC_CHAR_STAT.sendCreate(pc, pc, 8, statType);
+			break;
+		case SC_CHAR_STAT.Stat_Int:
+			SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);
+			SC_SPMR.send(pc);
+			SC_CHAR_STAT.sendCreate(pc, pc, 8, statType);
+			break;
+		case SC_CHAR_STAT.Stat_Wis:
+			SC_CHAR_STAT.sendCreate(pc, pc, 8, statType);
+			SC_SPMR.send(pc);
+			SC_CHAR_STAT.sendCreate(pc, pc, SC_CHAR_STAT.STAT_REFRESH);
+			break;
+		default:
+			break;
+		}
 	}
 
 	public final int[] GetOriginalStatDiff(int[] value) {
@@ -1876,7 +1962,7 @@ public class L1Character extends L1Object {
 
 	// BEGIN direct resistance operations
 	public final boolean IsResistanceActive() { return !disposed; }
-    public final void ResetResistanceStats() {
+    public final synchronized void ResetResistanceStats() {
         m_nOrgMDefend = m_nAddedMDefend = 0;
         m_nFireResist = m_nWaterResist = m_nWindResist = m_nEarthResist = 0;
         m_nPvpDamageReduction =  m_nPvpDamage = 0;
@@ -1988,9 +2074,9 @@ public class L1Character extends L1Object {
 
     public final int GetOrgMDefend() 		 { return m_nOrgMDefend; 										}
 
-    public final void AddMDefend(int i) { m_nAddedMDefend += i; }
+    public final synchronized void AddMDefend(int i) { m_nAddedMDefend += i; }
 
-    public final void SetOrgMDefend(int i) { m_nOrgMDefend = CheckMDefendRange(i, 0); 				}
+    public final synchronized void SetOrgMDefend(int i) { m_nOrgMDefend = CheckMDefendRange(i, 0); 				}
 
     public final void SetSkillCombatModifiers(int pvp, long specialResistance, boolean notify) {
         SetSkillCombatModifiers(pvp, specialResistance, 0, notify);
@@ -2004,13 +2090,19 @@ public class L1Character extends L1Object {
 
     public final void SetSkillCombatModifiers(int pvp, long specialResistance, int penalty,
             int pierce, boolean notify) {
+        if (ApplySkillCombatModifiers(pvp, specialResistance, penalty, pierce)
+                && notify && !disposed && this instanceof L1PcInstance pc)
+            SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
+    }
+
+    public final boolean ApplySkillCombatModifiers(int pvp, long specialResistance, int penalty, int pierce) {
         if (m_nSkillPvp != pvp) m_nSkillPvp = pvp;
         if (m_SkillSpecialResistance == specialResistance && m_nSkillSpecialPenalty == penalty
-                && m_nSkillSpecialPierce == pierce) return;
+                && m_nSkillSpecialPierce == pierce) return false;
         m_SkillSpecialResistance = specialResistance;
         m_nSkillSpecialPenalty = penalty;
         m_nSkillSpecialPierce = pierce;
-        if (notify && !disposed && this instanceof L1PcInstance pc) SC_SPECIAL_RESISTANCE_NOTI.sendConstructed(pc, pc);
+        return true;
     }
 
     public final int GetPvpDamageReduction() { return CheckResistanceRange(m_nPvpDamageReduction + (m_nSkillPvp >> 16)); }
@@ -2143,19 +2235,34 @@ public class L1Character extends L1Object {
 	}
 
 	public final void addAc(int i) {
-		m_nAddedPDefend += i;
-		ValidatePDefend(true);
+		final boolean evasionChanged;
+		synchronized (this) {
+			m_nAddedPDefend += i;
+			evasionChanged = ValidatePDefend();
+		}
+		if (evasionChanged) NotifyPDefend();
 	}
 
 	public final void setAc(int i) {
-		m_nAddedPDefend = i - m_nBasePDefend;
-		ValidatePDefend(true);
+		final boolean evasionChanged;
+		synchronized (this) {
+			m_nAddedPDefend = i - m_nBasePDefend;
+			evasionChanged = ValidatePDefend();
+		}
+		if (evasionChanged) NotifyPDefend();
 	}
 
 	public final void setSkillAc(int value, boolean notify) {
-		if (m_nSkillPDefend == value) return;
-		m_nSkillPDefend = value;
-		ValidatePDefend(notify);
+		if (ApplySkillAc(value) && notify) NotifyPDefend();
+	}
+
+	private boolean ApplySkillAc(int value) {
+		if (m_nSkillPDefend == value) return false;
+		synchronized (this) {
+			if (m_nSkillPDefend == value) return false;
+			m_nSkillPDefend = value;
+			return ValidatePDefend();
+		}
 	}
 
 	public final int GetBasePDefend() { return m_nBasePDefend; }
@@ -2173,16 +2280,20 @@ public class L1Character extends L1Object {
 		SetOrgMDefend(mr);
 	}
 
-	protected final void InitPDefend(int value) {
+	protected final synchronized void InitPDefend(int value) {
 		m_nBasePDefend = value;
 		m_nAddedPDefend = 0;
-		ValidatePDefend(false);
+		ValidatePDefend();
 	}
 
 	protected final void SetBasePDefend(int value, boolean notify) {
-		if (m_nBasePDefend == value) return;
-		m_nBasePDefend = value;
-		ValidatePDefend(notify);
+		final boolean evasionChanged;
+		synchronized (this) {
+			if (m_nBasePDefend == value) return;
+			m_nBasePDefend = value;
+			evasionChanged = ValidatePDefend();
+		}
+		if (notify && evasionChanged) NotifyPDefend();
 	}
 
 	private static int GetPDefendEvasion(int ac) {
@@ -2190,13 +2301,16 @@ public class L1Character extends L1Object {
 		return decrease >= 0 ? decrease / 10 + 1 : 0;
 	}
 
-	private void ValidatePDefend(boolean notify) {
+	/** Every AC source update and its effective projection hold this monitor. */
+	private boolean ValidatePDefend() {
 		final int previous = m_nPDefend;
 		final int effective = IntRange.ensure(m_nBasePDefend + m_nAddedPDefend + m_nSkillPDefend, -999, 999);
 		m_nPDefend = effective;
-		if (notify && GetPDefendEvasion(previous) != GetPDefendEvasion(effective) && instanceOf(L1Type.L1TYPE_PC)) {
-			SC_OwnCharAttrDef.send((L1PcInstance) this);
-		}
+		return GetPDefendEvasion(previous) != GetPDefendEvasion(effective);
+	}
+
+	private void NotifyPDefend() {
+		if (instanceOf(L1Type.L1TYPE_PC)) SC_OwnCharAttrDef.send((L1PcInstance) this);
 	}
 
 	public void sendPetCtrlMenu(L1NpcInstance npc, boolean type) {

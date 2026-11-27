@@ -21,8 +21,13 @@ public class MySqlCharacterStorage implements CharacterStorage {
 
 	private static final Logger _log = Logger.getLogger(MySqlCharacterStorage.class.getName());
 
+    @Override
+    public L1PcInstance loadCharacter(String charName) {
+        return loadCharacter(charName, null);
+    }
+
 	@Override
-	public L1PcInstance loadCharacter(String charName) {
+	public L1PcInstance loadCharacter(String charName, LoginVitals vitals) {
 		if (!CacheD.getInstance().flushCharacter(charName, 30000L)) {
 			throw new IllegalStateException("Character CacheD flush incomplete: " + charName);
 		}
@@ -42,6 +47,10 @@ public class MySqlCharacterStorage implements CharacterStorage {
 				pc.setAccountName(rs.getString("account_name"));
 				pc.setId(rs.getInt("objid"));
 				pc.setName(rs.getString("char_name"));
+				int classId = rs.getInt("Class");
+				pc.setClassId(classId);
+				pc.setCurrentSprite(classId);
+				pc.setType(rs.getInt("Type"));
 				pc.setHighLevel(rs.getInt("HighLevel"));
 				pc.setExp(rs.getInt("Exp"));
 				pc.addBaseMaxHp(rs.getShort("MaxHp"));
@@ -68,11 +77,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
 
 				int status = rs.getInt("Status");
 				pc.setCurrentWeapon(status);
-				int classId = rs.getInt("Class");
-				pc.setClassId(classId);
-				pc.setCurrentSprite(classId);
 				pc.set_sex(rs.getInt("Sex"));
-				pc.setType(rs.getInt("Type"));
 				int head = rs.getInt("Heading");
 				if (head > 7) {
 					head = 0;
@@ -149,6 +154,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
                 // saved current vitals against their effective maxima.
                 pc.setCurrentHp(currentHp);
                 pc.setCurrentMp(currentMp);
+                if (vitals != null) vitals.capture(currentHp, currentMp, pc);
 			
 				try {
 					pc.setFishingShopBuyTime_1(rs.getTimestamp("FishingShopBuyTime_1").getTime());
@@ -393,7 +399,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
         public final String name;
         public final int objectId;
         public final long sessionEpoch;
-        public final int karmaReceiptRevision;
+        public final int characterReceiptRevision;
         private final int onlineStatus;
         private final int[] values = new int[65];
         private final String[] strings = new String[5];
@@ -459,7 +465,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
             values[ni++] = pc.getContribution();
             values[ni++] = (pc.isBanned()) ? 1 : 0;
             long karma = pc.captureKarmaForSave();
-            karmaReceiptRevision = (int) (karma >>> 32);
+            characterReceiptRevision = (int) (karma >>> 32);
             values[ni++] = (int) karma;
             times[ti++] = copyStamp(pc.getLastPk());
             times[ti++] = copyStamp(pc.getDeleteTime());
@@ -496,7 +502,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
             return other != null
                     && objectId == other.objectId
                     && sessionEpoch == other.sessionEpoch
-                    && karmaReceiptRevision == other.karmaReceiptRevision
+                    && characterReceiptRevision == other.characterReceiptRevision
                     && onlineStatus == other.onlineStatus
                     && java.util.Arrays.equals(values, other.values)
                     && java.util.Arrays.equals(strings, other.strings)

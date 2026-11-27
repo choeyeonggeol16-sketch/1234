@@ -354,10 +354,7 @@ public final class CS_Craft {
 	}
 
 	private static void handleNewStat(L1PcInstance pc, CUserSocket client, StatContext ctx) {
-		/*
-		 * 원본 그대로.
-		 */
-		if (pc == null || !ctx.resolve(pc)) {
+		if (pc == null || ctx == null || !ctx.resolve(pc)) {
 			return;
 		}
 		SC_CHAR_STAT.sendCreate(client, client, ctx);

@@ -1023,6 +1023,7 @@ public final class CIOThreadCallback {
     private static final byte SKILL_OP_SUPPORT_ADVANCE = 8;
     private static final byte SKILL_OP_ELEMENTAL_FALL_DOWN = 9;
     private static final byte SKILL_OP_NPC_BERSERKERS = 10;
+    private static final byte SKILL_OP_COMA_REWARD = 11;
     private static final byte SKILL_OP_REPLACE = 6;
 	private static final byte SKILL_OP_ARM = 5;
 
@@ -2660,6 +2661,11 @@ public final class CIOThreadCallback {
 		return submitPcSkillEffect(pc, SKILL_OP_PUMP_START, skillId, duration);
 	}
 
+    public boolean submitComaReward(L1PcInstance pc, boolean large) {
+        return submitPcSkillEffect(pc, SKILL_OP_COMA_REWARD,
+                large ? L1SkillId.COMA_B : L1SkillId.COMA_A, large ? 7200 : 3600);
+    }
+
 	public boolean submitSupportAdvance(L1PcInstance pc, int duration) {
 		return submitPcSkillEffect(pc, SKILL_OP_SUPPORT_ADVANCE, 0, duration);
 	}
@@ -2838,6 +2844,9 @@ public final class CIOThreadCallback {
             break;
 		case SKILL_OP_PUMP_START:
 			CSkillInfo.pumpStartFromOwner((L1PcInstance) cha, skillId, timeMillis);
+			break;
+		case SKILL_OP_COMA_REWARD:
+			SkillHandlers.startComaRewardFromOwner((L1PcInstance) cha, skillId, timeMillis);
 			break;
 		case SKILL_OP_SUPPORT_ADVANCE:
 			SkillHandlers.startSupportAdvanceFromOwner((L1PcInstance) cha, timeMillis);

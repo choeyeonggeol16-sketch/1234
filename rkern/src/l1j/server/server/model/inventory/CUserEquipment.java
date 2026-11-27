@@ -889,41 +889,20 @@ public final class CUserEquipment {
 		ItemStat.BLESS_CONSUMO.apply(_owner, sign * item.get_addeinhasadper());
 		ItemStat.MAX_HP.apply(_owner, sign * item.get_addhp());
 		ItemStat.MAX_MP.apply(_owner, sign * item.get_addmp());
-		if (item.get_addstr() != 0) {
-			try { _owner.AddStatBonusStr((byte) (sign * item.get_addstr())); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (item.get_addcon() != 0) {
-			try { _owner.AddStatBonusCon((byte) (sign * item.get_addcon())); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (item.get_adddex() != 0) {
-			try { _owner.AddStatBonusDex((byte) (sign * item.get_adddex())); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (item.get_addint() != 0) {
-			try { _owner.AddStatBonusInt((byte) (sign * item.get_addint())); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (item.get_addwis() != 0) {
-			try { _owner.AddStatBonusWis((byte) (sign * item.get_addwis())); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
 		_owner.add_missile_critical_rate(sign * item.get_missile_critical_probability());
 		_owner.add_melee_critical_rate(sign * item.get_melee_critical_probability());
-		_owner.AddStatBonusCha((byte) (sign * item.get_addcha()));
 
 		int magicResistance = equipment.getMr();
 		if (_owner.isElf()) magicResistance += EquipmentTraits.forItem(item.getItemId()).elfMr();
-		if (magicResistance != 0) {
-			ItemStat.MR.apply(_owner, sign * magicResistance);
-			try { SC_SPMR.send(_owner); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
-		}
-		if (item.get_addsp() != 0) {
-			ItemStat.SP.apply(_owner, sign * item.get_addsp());
-			try { SC_SPMR.send(_owner); }
-			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
+		final int spellPower = item.get_addsp();
+		if (magicResistance != 0) ItemStat.MR.apply(_owner, sign * magicResistance);
+		if (spellPower != 0) ItemStat.SP.apply(_owner, sign * spellPower);
+		try {
+			_owner.AddStatBonuses(sign * item.get_addstr(), sign * item.get_adddex(), sign * item.get_addcon(),
+					sign * item.get_addint(), sign * item.get_addwis(), sign * item.get_addcha(),
+					magicResistance != 0 || spellPower != 0);
+		} catch (RuntimeException notice) {
+			equipmentNoticeFailed(notice);
 		}
 	}
 

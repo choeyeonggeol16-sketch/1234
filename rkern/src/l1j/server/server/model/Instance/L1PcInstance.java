@@ -1035,7 +1035,7 @@ public class L1PcInstance extends L1Character {
 	private L1ItemInstance defaultItem;
 	private int _currentWeapon; // 로봇 관련
 	private final L1Karma _karma = new L1Karma();
-	private int karmaReceiptRevision;
+	private int characterReceiptRevision;
 	private final CUserInventory _inventory;
 	private final L1DwarfForPackageInventory _dwarfForPackage;
 
@@ -2165,6 +2165,18 @@ public class L1PcInstance extends L1Character {
 			getParty().refreshPartyMemberStatus(this);
 		}
 	}
+
+    /** Add only the previously clipped part; retain any damage or cost during world entry. */
+    public void restoreLoginVitalOverflow(int hp, int mp) {
+        if (isDead() || getCurrentHp() <= 0 || (hp == 0 && mp == 0)) return;
+        if (hp > 0 && changeHpAtomic(hp) >= 0)
+            SC_HpUpdate.send(this, getCurrentHp(), getMaxHp());
+        if (mp > 0) {
+            restoreLoginMpOverflow(mp);
+            SC_MpUpdate.send(this, getCurrentMp(), getMaxMp());
+        }
+        if (isInParty()) getParty().refreshPartyMemberStatus(this);
+    }
 
 	@Override
 	public void setCurrentMp(int i) {
@@ -5206,16 +5218,24 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	/** Both values must come from the same instant for a CacheD save. */
 	public long captureKarmaForSave() {
 		synchronized (_karma) {
-			return ((long) karmaReceiptRevision << 32) | (_karma.get() & 0xFFFFFFFFL);
+			return ((long) characterReceiptRevision << 32) | (_karma.get() & 0xFFFFFFFFL);
 		}
 	}
 
-	public int applyKarmaReceipt(int delta) {
-		synchronized (_karma) {
-			_karma.add(delta);
-			return ++karmaReceiptRevision;
-		}
-	}
+    /** Caller owns the permanent-stat mutation and its matching snapshot boundary. */
+    public void publishPermanentStatRevision() {
+        synchronized (_karma) {
+            CacheD.getInstance().publishCharacterReceiptRevision(getId(), getCacheDSessionEpoch(),
+                    ++characterReceiptRevision);
+        }
+    }
+
+    public int applyKarmaReceipt(int delta) {
+        synchronized (_karma) {
+            _karma.add(delta);
+            return ++characterReceiptRevision;
+        }
+    }
 
 	public int getKarmaLevel() {
 		return _karma.getLevel();
@@ -5269,11 +5289,11 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	}
 
 
-	public void setPumpedCarryArmorAndAccuracy(long value, boolean notify) {
+	public boolean setPumpedCarryArmorAndAccuracy(long value) {
 		final long previous = pumpedCarryArmorAndAccuracy;
-		if (previous == value) return;
+		if (previous == value) return false;
 		pumpedCarryArmorAndAccuracy = value;
-		if (notify && (short) previous != (short) value) SC_Weight.send(this);
+		return (short) previous != (short) value;
 	}
 
 	public int getWeightReduction() {
@@ -5318,7 +5338,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	}
 	
 
-	public final void RefreshBasePDefend() {
+	public final synchronized void RefreshBasePDefend() {
 		int base = GetStatPDefend();
 		final int div = getBaseAcLevelDiv();
 		if (div > 0) base -= getLevel() / div;
@@ -5337,7 +5357,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	    return 0;
 	}
 
-	public final void RefreshBaseMDefend() {
+	public final synchronized void RefreshBaseMDefend() {
 		SetOrgMDefend(GetStatMDefend(getType()) + getLevel() / 2);
 	}
 
@@ -6683,56 +6703,61 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	        return false;
 	    }
 
-	    String stat = statName.toLowerCase();
-	    boolean isWeightUpdated = false;
-
-	    synchronized (this) {
+	    final String name = statName.toLowerCase();
+	    final int stat;
+	    final boolean capped;
+	    final CUserInventory inventory = getInventory();
+	    if (!inventory.tryBeginEquipmentChange()) return false;
+	    lockUserState();
+	    try {
+	        if (getReturnStat() != 0) return false;
 	        final int bonusStats = getBonusStats();
-	        if (getLevel() - 50 <= bonusStats) {
-	            return false;
-	        }
-	        // 스탯 수치 추출
-	        int currentStatVal;
-	        switch (stat) {
-	        case "str": currentStatVal = GetStatStr(); break;
-	        case "dex": currentStatVal = GetStatDex(); break;
-	        case "con": currentStatVal = GetStatCon(); break;
-	        case "int": currentStatVal = GetStatInt(); break;
-	        case "wis": currentStatVal = GetStatWis(); break;
-	        case "cha": currentStatVal = GetStatCha(); break;
-	        default: throw new Exception(statName);
-	        }
+	        if (getLevel() - 50 <= bonusStats) return false;
 
-	        int maxStat = (getLevel() >= 90) ? 50 : 45;
-	        if (currentStatVal >= maxStat) {
-	            SC_ServerMessage.send(this, 481);
-	            throw new Exception(statName);
-	        }
+	        stat = switch (name) {
+	            case "str" -> SC_CHAR_STAT.Stat_Str;
+	            case "dex" -> SC_CHAR_STAT.Stat_Dex;
+	            case "con" -> SC_CHAR_STAT.Stat_Con;
+	            case "int" -> SC_CHAR_STAT.Stat_Int;
+	            case "wis" -> SC_CHAR_STAT.Stat_Wis;
+	            case "cha" -> SC_CHAR_STAT.Stat_Cha;
+	            default -> throw new Exception(statName);
+	        };
 
-	        switch (stat) {
-	        case "str":
-	        	AddStatStr((byte) 1);
-	        	isWeightUpdated = true;
-	        	break;
-	        case "dex":
-	        	AddStatDex((byte) 1);
-	        	resetBaseAc();
-	        	break;
-	        case "con":
-	        	AddStatCon((byte) 1);
-	        	isWeightUpdated = true;
-	        	break;
-	        case "int": AddStatInt((byte) 1); break;
-	        case "wis": AddStatWis((byte) 1); break;
-	        case "cha": AddStatCha((byte) 1); break;
+	        int currentStatVal = switch (stat) {
+	            case SC_CHAR_STAT.Stat_Str -> GetStatStr();
+	            case SC_CHAR_STAT.Stat_Dex -> GetStatDex();
+	            case SC_CHAR_STAT.Stat_Con -> GetStatCon();
+	            case SC_CHAR_STAT.Stat_Int -> GetStatInt();
+	            case SC_CHAR_STAT.Stat_Wis -> GetStatWis();
+	            case SC_CHAR_STAT.Stat_Cha -> GetStatCha();
+	            default -> throw new AssertionError(stat);
+	        };
+
+	        capped = currentStatVal >= ((getLevel() >= 90) ? 50 : 45);
+	        if (!capped) {
+	            switch (stat) {
+	                case SC_CHAR_STAT.Stat_Str -> SetStatStr(currentStatVal + 1);
+	                case SC_CHAR_STAT.Stat_Dex -> SetStatDex(currentStatVal + 1);
+	                case SC_CHAR_STAT.Stat_Con -> SetStatCon(currentStatVal + 1);
+	                case SC_CHAR_STAT.Stat_Int -> SetStatInt(currentStatVal + 1);
+	                case SC_CHAR_STAT.Stat_Wis -> SetStatWis(currentStatVal + 1);
+	                case SC_CHAR_STAT.Stat_Cha -> SetStatCha(currentStatVal + 1);
+	            }
+	            setBonusStats(bonusStats + 1);
+	            publishPermanentStatRevision();
 	        }
-	        setBonusStats(bonusStats + 1);
+	    } finally {
+	        unlockUserState();
+	        inventory.endEquipmentChange();
 	    }
-	    SC_OwnCharStatus2.send(this);
-	    SC_CharVisualUpdate.sendPacked(this, SC_CharVisualUpdate.pack(this));    
-	    if (isWeightUpdated) {
-	        SC_Weight.send(this);
+	    if (capped) {
+	        SC_ServerMessage.send(this, 481);
+	        throw new Exception(statName);
 	    }
+	    NotifyPermanentStat(stat);
+	    if (stat != SC_CHAR_STAT.Stat_Str && stat != SC_CHAR_STAT.Stat_Dex) SC_OwnCharStatus2.send(this);
+	    SC_CharVisualUpdate.sendPacked(this, SC_CharVisualUpdate.pack(this));
 	    save(); 
 	    CheckStatus();
 

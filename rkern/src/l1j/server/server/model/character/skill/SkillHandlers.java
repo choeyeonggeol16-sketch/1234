@@ -1716,6 +1716,20 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		return HandlerResult.HANDLED;
 	}
 
+    public static void startComaRewardFromOwner(L1PcInstance pc, int skillId, int seconds) {
+        final boolean large = skillId == L1SkillId.COMA_B;
+        pc.skillEffectRemoveFromOwner(large ? L1SkillId.COMA_A : L1SkillId.COMA_B, true);
+        if (pc.hasSkillEffect(skillId)) {
+            pc.skillEffectSetFromOwner(skillId, seconds * 1000);
+        } else {
+            CSkillInfo.pumpStartFromOwner(pc, skillId, seconds);
+            SC_OwnCharStatus.send(pc);
+        }
+        final int sound = large ? 7383 : 7382;
+        SC_SkillSound.send(pc, pc.getId(), sound);
+        SC_SkillSound.broadcast(pc, pc.getId(), sound);
+    }
+
 	static void startComa(L1PcInstance pc, int skillId, int duration) {
 		pc.applySkillModifierFromOwner(skillId, 0);
 		if (skillId == L1SkillId.COMA_B) sendSpMr(pc);

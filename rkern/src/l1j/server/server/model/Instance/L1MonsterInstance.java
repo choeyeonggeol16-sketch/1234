@@ -545,9 +545,10 @@ public class L1MonsterInstance extends L1NpcInstance {
 						}
 					}
 				}
-				int transformId = getNpcTemplate().getTransformId(); 
+				final int transformId = getNpcTemplate().getTransformId();
+				final L1Npc transformTemplate = transformId > 0 ? CObjectDB.GetNPC(transformId) : null;
 
-				if (transformId == -1) {
+				if (transformTemplate == null) {
 					if ((getNpcTemplate().get_gfxid() == 7684 || getNpcTemplate().get_gfxid() == 7805
 							|| getNpcTemplate().get_gfxid() == 8063) && _PapPearlMonster != null) {
 						_PapPearlMonster.begin();
@@ -555,7 +556,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 					}
 					onDeath(attacker);
 				} else {
-					transform(transformId);
+					transform(transformTemplate);
 				}
 			}
             if (newHp > 0) {
@@ -1326,12 +1327,12 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
 	}
 
 	@Override
-	protected synchronized void transform(int transformId) {
+	protected synchronized void transform(L1Npc template) {
         if (_destroyed || isDead() || isDeathProcessing() || _dropRemovalRequest != 0) return;
         cancelDigestItems();
 		if(_transformHandler != null)
 			_transformHandler.onTransFormNotify(this);
-		super.transform(transformId);
+		super.transform(template);
 		getInventory().clearItems();
 		DropTable.getInstance().setDrop(this, getInventory());
 		getInventory().shuffle();

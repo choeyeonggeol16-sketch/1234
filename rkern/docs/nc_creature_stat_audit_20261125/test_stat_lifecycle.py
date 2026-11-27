@@ -17,8 +17,8 @@ vfields="\n".join(re.search(r"[^\n]*\b"+n+r"\s*;",src).group(0) for n in (
     "m_nBaseHP","m_nAddedHP","m_nMaxHP","m_nBaseMP","m_nAddedMP","m_nMaxMP","m_SkillHPMP",
     "m_nOrgMeleeDamage","m_nOrgMeleeHit","m_SkillWeapon"))
 methods="\n".join(method(src,s) for s in (
-    "public final void ResetPrimaryStats(","public final void SetSkillPrimaryStats(","private void NotifySkillPrimaryStats(","public void setPumpedSkillModifiers(",
-    "public int getMaxHp(","public int getMaxMp(","private void clampCurrentHp(","private void clampCurrentMp(",
+    "public final void ResetPrimaryStats(","public final void SetSkillPrimaryStats(","public final int setPumpedSkillModifiers(",
+    "public int getMaxHp(","public int getMaxMp(","protected final void clampCurrentHp(","private void clampCurrentMp(",
     "public void setMaxHp(","public void setMaxMp(","private void ValidateMaxHP(","private void ValidateMaxMP(",
     "public int getDmgup(","public void addDmgup(","public int getHitup(","public void addHitup("))
 template=method(npc,"private void SetTemplateAttackBonus(")
@@ -34,10 +34,13 @@ class L1Character {
  volatile int _currentHp,_currentMp;
  private static final AtomicIntegerFieldUpdater<L1Character> CURRENT_HP=AtomicIntegerFieldUpdater.newUpdater(L1Character.class,"_currentHp");
  private int pumpedEvasion; private long m_SkillCombatRates;
- void NotifyStatBonusStr(){} void NotifyStatBonusDex(){} void NotifyStatBonusInt(){} void NotifyStatBonusCon(){} void NotifyStatBonusWis(){}
- void setSkillAc(int v,boolean n){} void SetSkillMDefend(int v){} void SetSkillElemental(long v){} void SetSkillSp(int v){}
+ // The lifecycle assertions below exercise vitals and base fields, not client sends.
+ void NotifySkillPrimaryStats(long changed){}
+ private static int ChangedPrimaryStats(long changed){return 0;}
+ private static final int NOTIFY_DEFENSE = 32;
+ boolean ApplySkillAc(int ac){return false;} void SetSkillMDefend(int v){} void SetSkillElemental(long v){} void SetSkillSp(int v){}
  void fill(){_currentHp=getMaxHp();_currentMp=getMaxMp();}
- void pump(int hp,int mp,long stats){setPumpedSkillModifiers(hp,mp,0,0,stats,0,0,0,0,0,false);}
+ void pump(int hp,int mp,long stats){setPumpedSkillModifiers(hp,mp,0,0,stats,0,0,0,0,0);}
 }
 class L1PcInstance extends L1Character {
  void RefreshBaseMDefend(){} void RefreshBasePDefend(){}

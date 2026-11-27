@@ -17,23 +17,23 @@ def method(src, signature):
 fields=creature[creature.index("// CStats: original,"):creature.index("// BEGIN shared resistance sources")]
 methods=creature[creature.index("// CStats lane operations."):creature.index("// BEGIN direct primary-stat operations")]
 methods+="\n".join(method(creature,s) for s in (
-    "public synchronized void setLevel(", "public final void SetSkillPrimaryStats(", "private void NotifySkillPrimaryStats(",
-    "public final void ResetPrimaryStats(", "public final int GetStatMDefend(", "public final void SetOrgMDefend(",
-    "public final int GetOrgMDefend(", "public final void AddMDefend(",
+    "public synchronized void setLevel(", "public final void SetSkillPrimaryStats(",
+    "public final void ResetPrimaryStats(", "public final int GetStatMDefend(", "public final synchronized void SetOrgMDefend(",
+    "public final int GetOrgMDefend(", "public final synchronized void AddMDefend(",
     "public final int GetMDefend()", "private int CheckMDefendRange(", "public final void SetSkillMDefend("))
 # GetMDefend reads the passive bit; fixture supplies the same state shape.
 res=creature.split("// BEGIN shared resistance sources (CCreature)",1)[1].split("// END shared resistance sources",1)[0]
-pcmethods="\n".join(method(pc,s) for s in ("public final void RefreshBaseMDefend(", "public void resetBaseMr()", "public void setType("))
+pcmethods="\n".join(method(pc,s) for s in ("public final synchronized void RefreshBaseMDefend(", "public void resetBaseMr()", "public void setType("))
 assert "ValidateParameters(VB_MDEFEND);" in pcmethods
 # Use actual CPCParamDB base table and formula.
 base=re.search(r"(?:private|public)\s+static\s+final\s+int\[\]\s+BASE_MR\s*=\s*\{[^}]+\};",calc).group(0)
 calcMethods=method(calc,"public static int 마법방어(")
 stub="""
 class L1Character {
-  int _level=1; int getLevel(){return _level;} boolean passive;
+  int _level=1; int getLevel(){return _level;} boolean passive, disposed;
   private void clampCurrentHp(){} private void clampCurrentMp(){}
   boolean isPassive(int id){return passive;}
-  void NotifyStatBonusStr(){} void NotifyStatBonusDex(){} void NotifyStatBonusInt(){} void NotifyStatBonusCon(){} void NotifyStatBonusWis(){}
+  void NotifySkillPrimaryStats(long changed){}
   """+fields+res+methods+"""
 }
 class L1PcInstance extends L1Character {

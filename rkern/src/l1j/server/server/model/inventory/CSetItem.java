@@ -9,6 +9,7 @@ import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.item.ItemStat;
+import l1j.server.server.model.network.core.sc.packet.SC_OwnCharAttrDef;
 import l1j.server.server.templates.L1ArmorSets;
 import l1j.server.server.utils.ItemPresentOutStream;
 
@@ -130,19 +131,15 @@ public final class CSetItem {
         ItemStat.MPR.apply(pc, sign * mpr);
         ItemStat.MR.apply(pc, sign * mr);
 
-        final var ability = pc;
-        ability.AddStatBonusStr((byte) (sign * str));
-        ability.AddStatBonusDex((byte) (sign * dex));
-        ability.AddStatBonusCon((byte) (sign * con));
-        ability.AddStatBonusWis((byte) (sign * wis));
-        ability.AddStatBonusCha((byte) (sign * cha));
-        ability.AddStatBonusInt((byte) (sign * intelligence));
+        pc.AddWaterResist(sign * water);
+        pc.AddEarthResist(sign * earth);
+        pc.AddWindResist(sign * wind);
+        pc.AddFireResist(sign * fire);
 
-        final var resistance = pc;
-        resistance.AddWaterResist(sign * water);
-        resistance.AddEarthResist(sign * earth);
-        resistance.AddWindResist(sign * wind);
-        resistance.AddFireResist(sign * fire);
+        pc.AddStatBonuses(sign * str, sign * dex, sign * con, sign * intelligence, sign * wis,
+                sign * cha, mr != 0);
+        // A set can alter defenses without reaching the DEX notification.
+        if (dex == 0 && (ac | water | earth | wind | fire) != 0) SC_OwnCharAttrDef.send(pc);
     }
 
     boolean isValid(CUserEquipment slot) {

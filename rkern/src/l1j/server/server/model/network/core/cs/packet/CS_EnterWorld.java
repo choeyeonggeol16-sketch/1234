@@ -21,6 +21,7 @@ import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.SkillCheck;
 import l1j.server.server.datatables.CharacterSlotItemTable;
 import l1j.server.server.datatables.CharacterTable;
+import l1j.server.server.storage.CharacterStorage.LoginVitals;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.GetBackRestartTable;
 import l1j.server.server.datatables.SkillsTable;
@@ -162,6 +163,7 @@ public final class CS_EnterWorld {
 	
 	
     private static final class EnterData {
+        final LoginVitals vitals = new LoginVitals();
         L1PcInstance pc;
         ArrayList<L1ItemInstance> items;
         List<List<L1ItemInstance>> warehouseItems;
@@ -336,7 +338,7 @@ public final class CS_EnterWorld {
 
     private static EnterData loadEnterData(String charName, Account sessionAccount) throws Exception {
         EnterData data = new EnterData();
-        data.pc = L1PcInstance.load(charName);
+        data.pc = CharacterTable.getInstance().loadCharacter(charName, data.vitals);
         if (data.pc == null || data.pc.getAccountName() == null || !data.pc.getAccountName().equals(sessionAccount.getName())) return data;
         data.items = CharactersItemStorage.create().loadItems(data.pc.getId());
         // Bookmark metadata belongs to these detached item images. Its SQL
@@ -430,6 +432,7 @@ public final class CS_EnterWorld {
             sendEnterData(pc, client, data);
             postEnterProcess(pc, client, data);
             finalizeEnter(pc, client);
+            data.vitals.restore(pc);
             pc.setCacheDSessionEpoch(CacheD.getInstance().registerLoadedCharacterSession(
                     pc.getAccountName(), pc.getName(), pc.getId()));
             // Map, self object and all login initialization packets precede ground sprites.

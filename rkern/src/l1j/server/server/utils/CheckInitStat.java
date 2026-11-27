@@ -21,19 +21,13 @@ public class CheckInitStat{
 	 * @return true : 정상 or 운영자, false : 비정상
 	 */
 	public static boolean CheckPcStat(L1PcInstance pc){
-		if(pc == null){ // 만약 pc가 없다면
-			return false;
-		}
-		if(pc.isGm()){ // pc가 운영자라면
-			return true;
-		}
-		
-		int str = pc.GetOriginalStatStr();
-		int dex = pc.GetOriginalStatDex();
-		int cha = pc.GetOriginalStatCha();
-		int con = pc.GetOriginalStatCon();
-		int intel = pc.GetOriginalStatInt();
-		int wis = pc.GetOriginalStatWis();
+        return pc != null && CheckBaseStats(pc, pc.GetOriginalStatStr(), pc.GetOriginalStatDex(),
+                pc.GetOriginalStatCon(), pc.GetOriginalStatInt(), pc.GetOriginalStatWis(),
+                pc.GetOriginalStatCha());
+    }
+
+    public static boolean CheckBaseStats(L1PcInstance pc, int str, int dex, int con, int intel, int wis, int cha) {
+        if (pc.isGm()) return true;
 		int basestr = 0;
 		int basedex = 0;
 		int basecon = 0;

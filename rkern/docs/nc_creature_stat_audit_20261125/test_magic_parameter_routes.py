@@ -18,10 +18,10 @@ assert "attacker.GetStatSp()" in body and "defender.GetMDefendBySkill()" in body
 assert "_targetPc.getMr()" not in source
 assert "_calcType == PC_PC && skillId == CANCELLATION && (cancellationMr = _targetPc.GetMDefendBySkill())" in source
 for path, pattern in [
-    ("Instance/L1PetInstance.java",r"pet\.addSp\("),
+    ("Instance/L1CompanionInstance.java",r"\.addSp\("),
     ("L1WeaponSkill.java",r"pc\.getSp\("),
     ("item/ItemStat.java",r"\bCHARACTER_SP\b"),
-    ("EquipmentEnchantOptions.java",r"\bCHARACTER_SP\b"),
+    ("inventory/EquipmentEnchantOptions.java",r"\bCHARACTER_SP\b"),
 ]:
     assert not re.search(pattern,(model/path).read_text(encoding="utf-8")),path
 stub="""

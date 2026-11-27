@@ -28,39 +28,35 @@ public class StatContext {
     public boolean resolve(L1PcInstance pc) {
         if (pc == null) return false;
         
-        var ability = pc;
-        
-        int[] currentStats = {
-            ability.GetStatStr() + ability.GetAddedStatStr(),
-            ability.GetStatInt() + ability.GetAddedStatInt(),
-            ability.GetStatWis() + ability.GetAddedStatWis(),
-            ability.GetStatDex() + ability.GetAddedStatDex(),
-            ability.GetStatCon() + ability.GetAddedStatCon(),
-            ability.GetStatCha() + ability.GetAddedStatCha()
+        final boolean redistributing = pc.getReturnStat() != 0;
+        final var stage = redistributing ? pc.rst : null;
+        final int[] currentStats = stage == null ? new int[] {
+            pc.GetTotalStatStr(), pc.GetTotalStatInt(), pc.GetTotalStatWis(),
+            pc.GetTotalStatDex(), pc.GetTotalStatCon(), pc.GetTotalStatCha()
+        } : new int[] {
+            effective(stage.basestr + stage.str + pc.GetAddedStatStr()),
+            effective(stage.baseint + stage.Int + pc.GetAddedStatInt()),
+            effective(stage.basewis + stage.wis + pc.GetAddedStatWis()),
+            effective(stage.basedex + stage.dex + pc.GetAddedStatDex()),
+            effective(stage.basecon + stage.con + pc.GetAddedStatCon()),
+            effective(stage.basecha + stage.cha + pc.GetAddedStatCha())
         };
 
         this.targetType = 0;
         for (int i = 0; i < stats.length; i++) {
-            if (this.stats[i] == -1) {
-                this.stats[i] = currentStats[i];
-            } else if (this.targetType == 0 && this.stats[i] != currentStats[i]) {
-                this.targetType = i + 1;
+            if (stats[i] == -1) {
+                stats[i] = currentStats[i];
+            } else {
+                stats[i] = effective(stats[i]);
+                if (targetType == 0 && stats[i] != currentStats[i]) targetType = i + 1;
             }
         }
 
-        if (pc.getReturnStat() != 0) {
-            ability.SetStatStr((byte) (this.stats[0] - ability.GetAddedStatStr()));
-            ability.SetStatInt((byte) (this.stats[1] - ability.GetAddedStatInt()));
-            ability.SetStatWis((byte) (this.stats[2] - ability.GetAddedStatWis()));
-            ability.SetStatDex((byte) (this.stats[3] - ability.GetAddedStatDex()));
-            ability.SetStatCon((byte) (this.stats[4] - ability.GetAddedStatCon()));
-            ability.SetStatCha((byte) (this.stats[5] - ability.GetAddedStatCha()));
-            return true;
-        }
-
-        return this.targetType > 0;
+        return redistributing || targetType > 0;
     }
     
+    private static int effective(int stat) { return Math.clamp(stat, 0, 127); }
+
     public int[] getStats() { 
         return stats.clone(); 
     }

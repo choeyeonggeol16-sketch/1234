@@ -68,17 +68,17 @@ public final class SkillEffectContainer {
 		// Potential captures six independent values once, with two extra packed pairs.
 		long potentialMagic, potentialEvasion;
 
-		// Independent unsigned bytes: STR, DEX, INT, WIS, CON, CHA.
-		long primaryStats, primaryPenalty;
+		// Store the full signed sums during the pump. A benefit and penalty
+		// cancel before the published signed-byte lanes are clamped.
+		int primaryStr, primaryDex, primaryInt, primaryWis, primaryCon, primaryCha;
 
-		// Six signed 8-bit stat deltas share one word. An ordinary long +
-		// propagates a carry from STR into DEX (and so on) when one byte
-		// overflows. Accumulate alternating byte lanes independently.
-		static long addPrimaryLanes(long current, long delta) {
-			final long even = 0x00ff00ff00ffL;
-			final long odd = 0xff00ff00ff00L;
-			return (((current & even) + (delta & even)) & even)
-					| (((current & odd) + (delta & odd)) & odd);
+		void addPrimaryLanes(long delta, int sign) {
+			primaryStr += sign * ((int) delta & 0xff);
+			primaryDex += sign * ((int) (delta >>> 8) & 0xff);
+			primaryInt += sign * ((int) (delta >>> 16) & 0xff);
+			primaryWis += sign * ((int) (delta >>> 24) & 0xff);
+			primaryCon += sign * ((int) (delta >>> 32) & 0xff);
+			primaryCha += sign * ((int) (delta >>> 40) & 0xff);
 		}
 
 		// Independent totals for water, wind, earth, and fire.
@@ -86,7 +86,7 @@ public final class SkillEffectContainer {
 
 		void initializeSkillMod() {
 			hp = mp = ac = mr = er = dg = meleeHit = meleeDamage = rangedDamage = sp = 0;
-			primaryStats = primaryPenalty = 0L;
+			primaryStr = primaryDex = primaryInt = primaryWis = primaryCon = primaryCha = 0;
 			waterResistance = windResistance = earthResistance = fireResistance = 0;
 			carryLimit = armorReduction = baseMagicHit = 0;
 			rangedHit = rangedCritical = magicCritical = weaponHitRate = magicHit = weaponDamageRate = 0;
@@ -138,14 +138,14 @@ public final class SkillEffectContainer {
 		}
 
 		long effectivePrimaryStats() {
-			if (primaryPenalty == 0) return primaryStats;
-			long combined = 0;
-			for (int shift = 0; shift < 48; shift += 8) {
-				final int bonus = (int) (primaryStats >>> shift) & 0xff;
-				final int penalty = (int) (primaryPenalty >>> shift) & 0xff;
-				combined |= ((bonus - penalty) & 0xffL) << shift;
-			}
-			return combined;
+			if ((primaryStr | primaryDex | primaryInt | primaryWis | primaryCon | primaryCha) == 0) return 0L;
+			return packedPrimaryLane(primaryStr, 0) | packedPrimaryLane(primaryDex, 8)
+					| packedPrimaryLane(primaryInt, 16) | packedPrimaryLane(primaryWis, 24)
+					| packedPrimaryLane(primaryCon, 32) | packedPrimaryLane(primaryCha, 40);
+		}
+
+		private static long packedPrimaryLane(int sum, int shift) {
+			return (Math.clamp(sum, Byte.MIN_VALUE, Byte.MAX_VALUE) & 0xffL) << shift;
 		}
 	}
 
@@ -203,14 +203,16 @@ public final class SkillEffectContainer {
 	public void validateSkillMod(boolean notify) {
 		CCreatureSkillMod state = m_SkillMod;
 		if (state == null) {
-			owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0L, 0L, 0, notify);
-			owner.SetSkillCombatModifiers(0, 0L, 0, 0, notify);
+			final int changed = owner.setPumpedSkillModifiers(0, 0, 0, 0, 0, 0, 0, 0L, 0L, 0);
+			final boolean specialChanged = owner.ApplySkillCombatModifiers(0, 0L, 0, 0);
+			boolean carryChanged = false;
 			if (owner instanceof L1PcInstance pc) {
-				pc.setPumpedCarryArmorAndAccuracy(0, notify);
+				carryChanged = pc.setPumpedCarryArmorAndAccuracy(0);
 				pc.setPumpedRegenAndWeaponRates(0);
 				pc.setPumpedBowRates(0L);
 				pc.setPumpedPvPMagicDamageReduction(0);
 			}
+			if (notify) owner.NotifyPumpedSkillModifiers(changed, specialChanged, carryChanged);
 			return;
 		}
 		state.initializeSkillMod();
@@ -223,15 +225,16 @@ public final class SkillEffectContainer {
                 | ((state.magicCritical & 0xffffL) << 16) | (state.rangedCritical & 0xffffL);
         final long elements = ((long) state.fireResistance << 48) | ((state.earthResistance & 0xffffL) << 32)
                 | ((state.windResistance & 0xffffL) << 16) | (state.waterResistance & 0xffffL);
-		owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
-				state.effectivePrimaryStats(), elements, evasion, weapon, combatRates, state.sp, notify);
+		final int changed = owner.setPumpedSkillModifiers(state.hp, state.mp, state.ac, state.mr,
+				state.effectivePrimaryStats(), elements, evasion, weapon, combatRates, state.sp);
 		final int pvp = (state.pvpReduction << 16) | (state.pvpDamage & 0xffff);
-		owner.SetSkillCombatModifiers(pvp, state.specialResistance,
-				state.specialPenalty, state.specialPierce, notify);
+		final boolean specialChanged = owner.ApplySkillCombatModifiers(pvp, state.specialResistance,
+				state.specialPenalty, state.specialPierce);
+		boolean carryChanged = false;
 		if (owner instanceof L1PcInstance pc) {
 			final long carryArmorAndAccuracy = ((long) state.baseMagicHit << 32)
                     | ((state.armorReduction & 0xffffL) << 16) | (state.carryLimit & 0xffffL);
-			pc.setPumpedCarryArmorAndAccuracy(carryArmorAndAccuracy, notify);
+			carryChanged = pc.setPumpedCarryArmorAndAccuracy(carryArmorAndAccuracy);
 			final long regenAndWeaponRates = ((long) state.impactProbability << 48)
                     | ((state.weaponDamageRate & 0xffffL) << 32)
                     | ((state.mpRegen & 0xffffL) << 16) | (state.hpRegen & 0xffffL);
@@ -240,6 +243,7 @@ public final class SkillEffectContainer {
                     | Integer.toUnsignedLong(state.bowDamageRate));
             pc.setPumpedPvPMagicDamageReduction(state.pvpMagicReduction);
 		}
+		if (notify) owner.NotifyPumpedSkillModifiers(changed, specialChanged, carryChanged);
 	}
 
 	public boolean contains(int skillId) {

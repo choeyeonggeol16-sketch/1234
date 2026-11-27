@@ -7,7 +7,7 @@ public final class CUser extends CPendingState {
     public final String name;
     public int objectId;
     public long sessionEpoch;
-    public int karmaReceiptRevision;
+    public int characterReceiptRevision;
     public String accountName;
     public CharacterSnapshot latest;
     // Keep only the last SQL-committed snapshot while this owner is active.

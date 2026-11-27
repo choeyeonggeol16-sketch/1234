@@ -17,12 +17,12 @@ import l1j.server.server.model.network.core.sc.packet.SC_ReturnedStat;
 
 import l1j.server.server.utils.CPCParamDB;
 import l1j.server.server.utils.CheckInitStat;
+import l1j.server.server.storage.CacheD;
 
 public final class CS_ReturnStatus {
 
 	private static final int BASE_STAT_SUM_MAX = 80;
 
-	private static final int BONUS_LEVEL_START = 51;
 	private static final int BONUS_LEVEL_BASE = 50;
 
 	private static final int STAT_STR = 1;
@@ -36,7 +36,7 @@ public final class CS_ReturnStatus {
 
 	public static void handle(CUserSocket client, int type, int levelup, int statusup, long packedStats) {
 
-		if (client == null) {
+		if (client == null || !client.ownsReadyGameSession()) {
 			return;
 		}
 
@@ -46,9 +46,14 @@ public final class CS_ReturnStatus {
 			return;
 		}
 
+        final int stamp = pc.getSessionStamp();
+        final boolean finalSelection = type == 3 || type == 2 && levelup == 8;
+        final var inventory = pc.getInventory();
+        if (finalSelection && !inventory.tryBeginEquipmentChange()) return;
 		pc.lockUserState();
 		try {
-			if (pc.getReturnStat() == 0) return;
+			if (pc.getReturnStat() == 0 || !pc.isItemTransferSession(client, stamp)
+                    || finalSelection && CacheD.getInstance().hasPendingOwnerApply(pc.getId())) return;
 			switch (type) {
 			case 1:
 				handleType1Start(client, pc, packedStats);
@@ -59,7 +64,7 @@ public final class CS_ReturnStatus {
 				return;
 
 			case 3:
-				handleType3Elixir(client, pc, packedStats);
+				handleType3Elixir(pc, packedStats);
 				return;
 
 			default:
@@ -72,6 +77,7 @@ public final class CS_ReturnStatus {
 			 */
 		} finally {
 			pc.unlockUserState();
+            if (finalSelection) inventory.endEquipmentChange();
 		}
 	}
 
@@ -88,13 +94,13 @@ public final class CS_ReturnStatus {
 		final int con = statCon(packedStats);
 		final int cha = statCha(packedStats);
 
-		if (isInvalidBaseStats(str, dex, con, wis, intel, cha)) {
+		if (isInvalidBaseStats(str, dex, con, wis, intel, cha)
+                || !CheckInitStat.CheckBaseStats(pc, str, dex, con, intel, wis, cha)) {
 			kickStatBug(client, pc);
 			return;
 		}
 
 		final L1ReturnStatTemp rst = new L1ReturnStatTemp();
-		pc.rst = rst;
 
 		rst.basestr = str;
 		rst.baseint = intel;
@@ -115,17 +121,9 @@ public final class CS_ReturnStatus {
 		rst.upMp = 0;
 		rst.ac = 10;
 
-		pc.ResetPrimaryStats(str, dex, con, intel, wis, cha);
-
-		pc.SetOriginalStatStr(str);
-		pc.SetOriginalStatInt(intel);
-		pc.SetOriginalStatWis(wis);
-		pc.SetOriginalStatDex(dex);
-		pc.SetOriginalStatCon(con);
-		pc.SetOriginalStatCha(cha);
-
 		rst.baseHp = getInitHp(pc);
 		rst.baseMp = getInitMp(pc, rst.basewis);
+        pc.rst = rst;
 
 		SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.LEVELUP);
 	}
@@ -145,9 +143,11 @@ public final class CS_ReturnStatus {
 
 	private static void handleType2LevelUp(CUserSocket client, L1PcInstance pc, int levelup, int statusup) {
 
-		if (pc.rst == null) {
-			return;
-		}
+		if (pc.rst == null) return;
+        if (pc.rst.awaitingElixirs) {
+            if (levelup == 8) SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.END);
+            return;
+        }
 
 		/*
 		 * 레벨 범위 방어 로직.
@@ -185,7 +185,7 @@ public final class CS_ReturnStatus {
 		case STAT_DEX:
 		case STAT_CON:
 		case STAT_CHA:
-			if (!incStatOrKick(client, pc, levelup)) {
+			if (!allocateLevelPoint(pc, levelup)) {
 				return;
 			}
 
@@ -236,7 +236,7 @@ public final class CS_ReturnStatus {
 			case STAT_DEX:
 			case STAT_CON:
 			case STAT_CHA:
-				if (!incStatOrKick(client, pc, statusup)) {
+				if (!allocateLevelPoint(pc, statusup)) {
 					return;
 				}
 				break;
@@ -249,166 +249,75 @@ public final class CS_ReturnStatus {
 		 * 엘릭서가 있으면 클라이언트에 엘릭서 스탯 입력 단계를 요청합니다.
 		 */
 		if (pc.getElixirStats() > 0) {
+            pc.rst.awaitingElixirs = true;
 			SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.END);
 			return;
 		}
 
-		applyFinalAndFinish(client, pc);
+        final L1ReturnStatTemp stage = pc.rst;
+        applyFinalAndFinish(pc, stage, stage.basestr + stage.str, stage.baseint + stage.Int,
+                stage.basewis + stage.wis, stage.basedex + stage.dex,
+                stage.basecon + stage.con, stage.basecha + stage.cha, false);
 	}
 
 	// =========================================================
 	// TYPE 3: 엘릭서 사용
 	// =========================================================
 
-	private static void handleType3Elixir(CUserSocket client, L1PcInstance pc, long packedStats) {
+    private static void handleType3Elixir(L1PcInstance pc, long packedStats) {
+        final L1ReturnStatTemp stage = pc.rst;
+        if (stage == null || !stage.awaitingElixirs || pc.getElixirStats() <= 0
+                || !hasCompleteResetGrowth(pc)) return;
 
-		if (pc.rst == null) {
-			return;
-		}
-        if (!hasCompleteResetGrowth(pc)) {
-            kick(client);
+        final int str = statStr(packedStats), intel = statInt(packedStats), wis = statWis(packedStats);
+        final int dex = statDex(packedStats), con = statCon(packedStats), cha = statCha(packedStats);
+        final int dStr = str - stage.basestr - stage.str, dInt = intel - stage.baseint - stage.Int;
+        final int dWis = wis - stage.basewis - stage.wis, dDex = dex - stage.basedex - stage.dex;
+        final int dCon = con - stage.basecon - stage.con, dCha = cha - stage.basecha - stage.cha;
+        final int maximum = permanentLimit(pc);
+        if (dStr < 0 || dInt < 0 || dWis < 0 || dDex < 0 || dCon < 0 || dCha < 0
+                || str > maximum || intel > maximum || wis > maximum
+                || dex > maximum || con > maximum || cha > maximum
+                || dStr + dInt + dWis + dDex + dCon + dCha != pc.getElixirStats()) {
+            SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.END);
             return;
         }
+        applyFinalAndFinish(pc, stage, str, intel, wis, dex, con, cha, true);
+    }
 
-		final int str = statStr(packedStats);
-		final int intel = statInt(packedStats);
-		final int wis = statWis(packedStats);
-		final int dex = statDex(packedStats);
-		final int con = statCon(packedStats);
-		final int cha = statCha(packedStats);
+    /** The reset window owns a detached allocation. Publish only a validated final selection. */
+    private static void applyFinalAndFinish(L1PcInstance pc, L1ReturnStatTemp stage,
+            int str, int intel, int wis, int dex, int con, int cha, boolean withElixirs) {
+        pc.setBonusStats(stage.allocatedLevelPoints());
+        pc.setExp(pc.getReturnStat());
+        pc.ResetPrimaryStats(stage.basestr, stage.basedex, stage.basecon, stage.baseint, stage.basewis, stage.basecha);
+        pc.SetStatStr(str);
+        pc.SetStatInt(intel);
+        pc.SetStatWis(wis);
+        pc.SetStatDex(dex);
+        pc.SetStatCon(con);
+        pc.SetStatCha(cha);
+        pc.addBaseMaxHp((short) (stage.baseHp + stage.upHp - pc.getBaseMaxHp()));
+        pc.addBaseMaxMp((short) (stage.baseMp + stage.upMp - pc.getBaseMaxMp()));
+        pc.setCurrentHp(pc.getMaxHp());
+        pc.setCurrentMp(pc.getMaxMp());
+        pc.completeStatResetGrowth(stage.hpMpGrowth);
+        pc.setReturnStat(0);
+        pc.rst = null;
+        pc.publishPermanentStatRevision();
+        saveCharacterState(pc);
 
-		if (str <= 0 || dex <= 0 || con <= 0 || wis <= 0 || intel <= 0 || cha <= 0) {
-			kickStatBug(client, pc);
-			return;
-		}
-
-		final int addStr = str - pc.GetStatStr();
-		final int addInt = intel - pc.GetStatInt();
-		final int addWis = wis - pc.GetStatWis();
-		final int addDex = dex - pc.GetStatDex();
-		final int addCon = con - pc.GetStatCon();
-		final int addCha = cha - pc.GetStatCha();
-
-		pc.AddStatStr((byte) addStr);
-		pc.AddStatInt((byte) addInt);
-		pc.AddStatWis((byte) addWis);
-		pc.AddStatDex((byte) addDex);
-		pc.AddStatCon((byte) addCon);
-		pc.AddStatCha((byte) addCha);
-
-		if (pc.getLevel() >= BONUS_LEVEL_START) {
-			pc.setBonusStats(pc.getLevel() - BONUS_LEVEL_BASE);
-		} else {
-			pc.setBonusStats(0);
-		}
-
-		pc.resetBaseAc();
-
-		pc.setExp(pc.getReturnStat());
-
-		SC_OwnCharStatus.send(pc);
-		SC_OwnCharAttrDef.send(pc);
-		SC_OwnCharStatus2.send(pc);
-		SC_SPMR.send(pc);
-
-		pc.addBaseMaxHp((short) (pc.rst.baseHp - pc.getBaseMaxHp()));
-		pc.addBaseMaxMp((short) (pc.rst.baseMp - pc.getBaseMaxMp()));
-
-		pc.addBaseMaxHp((short) pc.rst.upHp);
-		pc.addBaseMaxMp((short) pc.rst.upMp);
-
-		pc.setCurrentHp(pc.getMaxHp());
-		pc.setCurrentMp(pc.getMaxMp());
-
-		SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-		SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-
-		pc.start_teleport(33430, 32810, 4, pc.getHeading(), 169, true, false);
-
-		pc.CheckStatus();
-
-		if (!CheckInitStat.CheckPcStat(pc)) {
-			kick(client);
-			return;
-		}
-
-		pc.completeStatResetGrowth(pc.rst.hpMpGrowth);
-		pc.setReturnStat(0);
-		pc.rst = null;
-		saveCharacterState(pc);
-	}
-
-	// =========================================================
-	// FINAL: 최종 스탯 반영 및 마무리
-	// =========================================================
-
-	private static void applyFinalAndFinish(CUserSocket client, L1PcInstance pc) {
-
-		try {
-			if (pc.rst.level >= BONUS_LEVEL_START) {
-				pc.setBonusStats(pc.rst.level - BONUS_LEVEL_BASE);
-			} else {
-				pc.setBonusStats(0);
-			}
-
-			pc.setExp(pc.getReturnStat());
-
-			pc.addBaseMaxHp((short) (pc.rst.baseHp - pc.getBaseMaxHp()));
-			pc.addBaseMaxMp((short) (pc.rst.baseMp - pc.getBaseMaxMp()));
-
-			pc.addBaseMaxHp((short) pc.rst.upHp);
-			pc.addBaseMaxMp((short) pc.rst.upMp);
-
-			pc.start_teleport(33430, 32810, 4, pc.getHeading(), 169, true, false);
-
-			pc.ResetPrimaryStats(pc.rst.basestr, pc.rst.basedex, pc.rst.basecon, pc.rst.baseint, pc.rst.basewis, pc.rst.basecha);
-			pc.SetOriginalStatStr(pc.rst.basestr);
-			pc.SetOriginalStatInt(pc.rst.baseint);
-			pc.SetOriginalStatWis(pc.rst.basewis);
-			pc.SetOriginalStatDex(pc.rst.basedex);
-			pc.SetOriginalStatCon(pc.rst.basecon);
-			pc.SetOriginalStatCha(pc.rst.basecha);
-
-			pc.AddStatStr((byte) pc.rst.str);
-			pc.AddStatInt((byte) pc.rst.Int);
-			pc.AddStatWis((byte) pc.rst.wis);
-			pc.AddStatDex((byte) pc.rst.dex);
-			pc.AddStatCon((byte) pc.rst.con);
-			pc.AddStatCha((byte) pc.rst.cha);
-
-            // Permanent allocations can open the 25/35/45 max-HP/MP bonus.
-            // Fill and notify only after those final maxima are available.
-            pc.setCurrentHp(pc.getMaxHp());
-            pc.setCurrentMp(pc.getMaxMp());
-            SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-            SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-
-			pc.resetBaseAc();
-
-			SC_SPMR.send(pc);
-			SC_OwnCharStatus2.send(pc);
-			SC_OwnCharStatus.send(pc);
-			SC_OwnCharAttrDef.send(pc);
-
-			SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.END);
-
-			pc.RenewStat();
-			pc.CheckStatus();
-
-			if (!CheckInitStat.CheckPcStat(pc)) {
-				kick(client);
-				return;
-			}
-
-			pc.completeStatResetGrowth(pc.rst.hpMpGrowth);
-			pc.setReturnStat(0);
-			pc.rst = null;
-			saveCharacterState(pc);
-
-		} catch (Throwable ignored) {
-			/* 기존 semantics 유지 */
-		}
-	}
+        SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
+        SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
+        SC_SPMR.send(pc);
+        SC_OwnCharStatus2.send(pc);
+        SC_OwnCharStatus.send(pc);
+        SC_OwnCharAttrDef.send(pc);
+        if (!withElixirs) SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.END);
+        pc.start_teleport(33430, 32810, 4, pc.getHeading(), 169, true, false);
+        if (!withElixirs) pc.RenewStat();
+        pc.CheckStatus();
+    }
 
 	// =========================================================
 	// STAT 로직
@@ -425,46 +334,35 @@ public final class CS_ReturnStatus {
         return true;
     }
 
-	private static boolean incStatOrKick(CUserSocket client, L1PcInstance pc, int type) {
+    private static boolean allocateLevelPoint(L1PcInstance pc, int type) {
+        final L1ReturnStatTemp stage = pc.rst;
+        final int value = switch (type) {
+            case STAT_STR -> stage.basestr + stage.str;
+            case STAT_INT -> stage.baseint + stage.Int;
+            case STAT_WIS -> stage.basewis + stage.wis;
+            case STAT_DEX -> stage.basedex + stage.dex;
+            case STAT_CON -> stage.basecon + stage.con;
+            case STAT_CHA -> stage.basecha + stage.cha;
+            default -> throw new IllegalArgumentException("Unknown stat " + type);
+        };
+        if (value >= permanentLimit(pc) || stage.allocatedLevelPoints() >= stage.level - BONUS_LEVEL_BASE) {
+            SC_ReturnedStat.sendPc(pc, SC_ReturnedStat.LEVELUP);
+            return false;
+        }
+        switch (type) {
+            case STAT_STR -> ++stage.str;
+            case STAT_INT -> ++stage.Int;
+            case STAT_WIS -> ++stage.wis;
+            case STAT_DEX -> ++stage.dex;
+            case STAT_CON -> ++stage.con;
+            case STAT_CHA -> ++stage.cha;
+        }
+        return true;
+    }
 
-		final int value;
-
-		switch (type) {
-		case STAT_STR:
-			value = ++pc.rst.str;
-			break;
-		case STAT_INT:
-			value = ++pc.rst.Int;
-			break;
-		case STAT_WIS:
-			value = ++pc.rst.wis;
-			break;
-		case STAT_DEX:
-			value = ++pc.rst.dex;
-			break;
-		case STAT_CON:
-			value = ++pc.rst.con;
-			break;
-		case STAT_CHA:
-			value = ++pc.rst.cha;
-			break;
-		default:
-			return false;
-		}
-
-		if (!checking(pc, value)) {
-			return true;
-		}
-
-		System.out.print(String.format("%s 스텟 오버 감지.. %s : %d", safeName(pc), statName(type), value));
-		kick(client);
-		return false;
-	}
-
-	private static boolean checking(L1PcInstance pc, int stat) {
-		final int maximum = pc.getHighLevel() >= 90 ? 50 : 45;
-		return stat > maximum || stat < 1;
-	}
+    private static int permanentLimit(L1PcInstance pc) {
+        return pc.getHighLevel() >= 90 ? 50 : 45;
+    }
 
 	private static void statup(L1PcInstance pc) {
 
@@ -546,18 +444,6 @@ public final class CS_ReturnStatus {
             SC_SystemMessage.send(pc, "능력치 저장에 실패했습니다. 다시 접속하기 전에 관리자에게 문의해 주세요.");
         }
     }
-
-	private static String statName(int type) {
-		switch (type) {
-		case STAT_STR: return "STR";
-		case STAT_INT: return "INT";
-		case STAT_WIS: return "WIS";
-		case STAT_DEX: return "DEX";
-		case STAT_CON: return "CON";
-		case STAT_CHA: return "CHA";
-		default:       return "?";
-		}
-	}
 
 	private static String safeName(L1PcInstance pc) {
 		try {

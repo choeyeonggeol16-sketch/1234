@@ -153,11 +153,11 @@ public final class DollPotentialEffects {
                 case RESIST_SPIRIT -> pc.AddSpecialResistance(eKind.SPIRIT, v);
                 case RESIST_DRAGON_SPELL -> pc.AddSpecialResistance(eKind.DRAGON_SPELL, v);
                 case RESIST_FEAR -> pc.AddSpecialResistance(eKind.FEAR, v);
-                case STR -> pc.AddStatBonusStr((byte) v);
-                case DEX -> pc.AddStatBonusDex((byte) v);
-                case CON -> pc.AddStatBonusCon((byte) v);
-                case WIS -> pc.AddStatBonusWis((byte) v);
-                case INT -> pc.AddStatBonusInt((byte) v);
+                case STR -> pc.AddStatBonusStr(v);
+                case DEX -> pc.AddStatBonusDex(v);
+                case CON -> pc.AddStatBonusCon(v);
+                case WIS -> pc.AddStatBonusWis(v);
+                case INT -> pc.AddStatBonusInt(v);
                 case SP -> pc.AddStatSp(v);
                 case MAGIC_HIT -> pc.addBaseMagicHitUp(v);
                 case PIERCE_ABILITY -> pc.AddSpecialPierce(eKind.ABILITY, v);

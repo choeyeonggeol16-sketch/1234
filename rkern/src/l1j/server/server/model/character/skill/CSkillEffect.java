@@ -38,10 +38,10 @@ interface CSkillEffect {
             out.mr += (int) (captured >>> 32);
         }},
         PRIMARY_STATS { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
-            out.primaryStats = SkillEffectContainer.CCreatureSkillMod.addPrimaryLanes(out.primaryStats, captured);
+            out.addPrimaryLanes(captured, 1);
         }},
         PRIMARY_PENALTY { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
-            out.primaryPenalty = SkillEffectContainer.CCreatureSkillMod.addPrimaryLanes(out.primaryPenalty, captured);
+            out.addPrimaryLanes(captured, -1);
         }},
         ELEMENTAL_RESISTANCE { @Override public void pump(long captured, SkillEffectContainer.CCreatureSkillMod out) {
             out.waterResistance += (int) captured & 0xff;

@@ -29,5 +29,28 @@ public interface CharacterStorage {
 
 	public void updateAccountName(L1PcInstance pc) throws Exception;
 
-	public L1PcInstance loadCharacter(String charName) throws Exception;
+	L1PcInstance loadCharacter(String charName) throws Exception;
+
+    default L1PcInstance loadCharacter(String charName, LoginVitals vitals) throws Exception {
+        return loadCharacter(charName);
+    }
+
+    /** Detached login state; some saved health or mana may require equipped items or active buffs. */
+    final class LoginVitals {
+        private int savedHp, savedMp, initialHp, initialMp;
+
+        public void capture(int hp, int mp, L1PcInstance pc) {
+            savedHp = hp;
+            savedMp = mp;
+            initialHp = pc.getCurrentHp();
+            initialMp = pc.getCurrentMp();
+        }
+
+        public void restore(L1PcInstance pc) {
+            int hp = Math.max(0, Math.min(savedHp, pc.getMaxHp()) - initialHp);
+            int mp = Math.max(0, Math.min(savedMp, pc.getMaxMp()) - initialMp);
+            savedHp = savedMp = 0;
+            pc.restoreLoginVitalOverflow(hp, mp);
+        }
+    }
 }

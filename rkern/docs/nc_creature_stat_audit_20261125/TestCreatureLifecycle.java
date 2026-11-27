@@ -1,9 +1,14 @@
 package l1j.server.server.model;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.inventory.CUserEquipment;
+import l1j.server.server.templates.L1Armor;
+import l1j.server.server.templates.L1Item;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.model.character.skill.SkillEffectContainer;
@@ -56,11 +61,146 @@ public final class TestCreatureLifecycle {
     private static int[] snapshot(L1PcInstance p){
         return new int[]{p.GetTotalStatStr(),p.GetTotalStatDex(),p.GetTotalStatCon(),p.GetTotalStatInt(),p.GetTotalStatWis(),
             p.getAc(),p.GetMDefend(),p.GetStatSp(),p.getMaxHp(),p.getMaxMp(),p.getHpr(),p.getMpr(),
-            p.getTotalMagicHitup(),p.getBaseMagicCritical(),p.getMaxWeight(),p.GetStatPAttack(false),p.GetStatPAttack(true)};
+            p.getTotalMagicHitup(),p.getBaseMagicCritical(),p.getMaxWeight(),p.GetStatPAttack(false),p.GetStatPAttack(true),p.GetTotalStatCha()};
     }
     private static void compare(int[] a,int[] b,String context){
         for(int i=0;i<a.length;i++)eq(a[i],b[i],context+" field "+i);
     }
+    private static void verifyEquipmentSource() throws Exception {
+        L1PcInstance p = create(1);
+        L1Armor armor = new L1Armor();
+        armor.setItemId(900001);
+        armor.set_addstr((byte) -128);
+        armor.set_adddex((byte) 10);
+        armor.set_addcon((byte) 6);
+        armor.set_addint((byte) 4);
+        armor.set_addwis((byte) 8);
+        armor.set_addcha((byte) 5);
+        armor.set_addhp(31);
+        armor.set_addmp(29);
+        armor.set_addsp(7);
+        armor.set_mdef(13);
+        L1ItemInstance item = new L1ItemInstance(armor);
+        Method apply = CUserEquipment.class.getDeclaredMethod("applyStatBonus",
+                L1ItemInstance.class, L1Item.class, int.class);
+        apply.setAccessible(true);
+        int[] before = snapshot(p);
+        for (int i = 0; i < 100; i++) {
+            apply.invoke(p.getEquipment(), item, armor, 1);
+            eq(0, p.GetTotalStatStr(), "equipped negative STR clamps only for display");
+            eq(before[1] + 10, p.GetTotalStatDex(), "equipment DEX");
+            eq(before[2] + 6, p.GetTotalStatCon(), "equipment CON");
+            eq(before[3] + 4, p.GetTotalStatInt(), "equipment INT");
+            eq(before[4] + 8, p.GetTotalStatWis(), "equipment WIS");
+            eq(before[17] + 5, p.GetTotalStatCha(), "equipment CHA");
+            eq(7, p.GetStatSp() - p.GetStatBaseSp(), "equipment SP");
+            eq(before[8] + 31, p.getMaxHp(), "equipment source HP");
+            eq(before[9] + 29, p.getMaxMp(), "equipment source MP");
+            apply.invoke(p.getEquipment(), item, armor, -1);
+            compare(before, snapshot(p), "template replacement and signed removal");
+        }
+    }
+
+    private static void verifyCompoundBuffs() {
+        L1PcInstance p = create(1);
+        int[] before = snapshot(p);
+        SkillEffectContainer effects = new SkillEffectContainer(p);
+        for (int i = 0; i < 100; i++) {
+            effects.applySkillModifier(L1SkillId.혈맹버프올스텟, 0);
+            eq(before[0] + 3, p.GetTotalStatStr(), "clan buff STR");
+            eq(before[1] + 3, p.GetTotalStatDex(), "clan buff DEX");
+            eq(before[2] + 3, p.GetTotalStatCon(), "clan buff CON");
+            eq(before[17] + 3, p.GetTotalStatCha(), "clan buff CHA");
+            effects.applySkillModifier(L1SkillId.지식빙수, (6L << 32) | 7);
+            eq(before[3] + 4, p.GetTotalStatInt(), "clan plus shaved ice INT");
+            eq(7, p.GetStatSp() - p.GetStatBaseSp(), "compound buff final SP");
+            eq(before[9] + 50, p.getMaxMp(), "compound buff MP");
+            yes(effects.removeSkillModifier(L1SkillId.지식빙수, true), "remove compound food");
+            yes(effects.removeSkillModifier(L1SkillId.혈맹버프올스텟, true), "remove clan buff");
+            compare(before, snapshot(p), "compound modifier reversal");
+        }
+    }
+
+    private static void assertProjectionUsesMonitor(L1PcInstance p, Runnable change) throws Exception {
+        CountDownLatch ready = new CountDownLatch(1);
+        Thread updater = new Thread(() -> {
+            ready.countDown();
+            change.run();
+        });
+        updater.setDaemon(true);
+        synchronized (p) {
+            updater.start();
+            yes(ready.await(3, TimeUnit.SECONDS), "stat update worker started");
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+            while (updater.isAlive() && updater.getState() != Thread.State.BLOCKED
+                    && System.nanoTime() < deadline) Thread.yield();
+            yes(updater.getState() == Thread.State.BLOCKED, "projection waits for common actor monitor");
+        }
+        updater.join(3000);
+        yes(!updater.isAlive(), "stat update worker completes after monitor release");
+    }
+
+    private static void verifyConcurrentDefense() throws Exception {
+        L1PcInstance p = create(1);
+        assertProjectionUsesMonitor(p, p::RefreshBasePDefend);
+        assertProjectionUsesMonitor(p, p::RefreshBaseMDefend);
+        assertProjectionUsesMonitor(p, () -> p.addAc(0));
+        assertProjectionUsesMonitor(p, () -> p.AddMDefend(0));
+        assertProjectionUsesMonitor(p, () -> p.setSkillAc(-1, false));
+
+        for (int round = 0; round < 20; round++) {
+            L1PcInstance actor = create(1);
+            CountDownLatch gate = new CountDownLatch(1);
+            Runnable equipment = () -> {
+                for (int i = 0; i < 40; i++) {
+                    actor.addAc(-1);
+                    actor.AddMDefend(1);
+                }
+            };
+            Thread[] writers = {
+                startWriter(gate, equipment),
+                startWriter(gate, equipment),
+                startWriter(gate, () -> {
+                    for (int i = 0; i < 40; i++) {
+                        actor.SetStatDex(25 + (i & 1));
+                        actor.SetStatWis(27 + (i & 1));
+                    }
+                }),
+                startWriter(gate, () -> {
+                    for (int i = 0; i < 40; i++) {
+                        long modifiers = ((long) (i & 7) << 24) | ((long) (i & 3) << 8);
+                        actor.setPumpedSkillModifiers(0, 0, -3 - (i & 1), 5 + (i & 1),
+                                modifiers, 0, 0, 0, 0, 0);
+                    }
+                })
+            };
+            gate.countDown();
+            for (Thread writer : writers) {
+                writer.join(3000);
+                yes(!writer.isAlive(), "concurrent defense writer finished");
+            }
+            verify(actor);
+            eq(actor.GetBasePDefend() - 80 - 4, actor.getAc(), "equipment plus skill AC");
+            eq(Math.min(250, actor.GetOrgMDefend() + 80 + 6), actor.GetMDefend(),
+                    "equipment plus skill MR");
+        }
+    }
+
+    private static Thread startWriter(CountDownLatch gate, Runnable update) {
+        Thread writer = new Thread(() -> {
+            try {
+                if (!gate.await(3, TimeUnit.SECONDS)) throw new AssertionError("write gate timeout");
+                update.run();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError(e);
+            }
+        });
+        writer.setDaemon(true);
+        writer.start();
+        return writer;
+    }
+
     private static final class DeferredNpc extends L1NpcInstance {
         DeferredNpc() { super(null); }
         void apply(L1Npc t) { CopyFrom(t); }
@@ -111,6 +251,9 @@ public final class TestCreatureLifecycle {
         System.out.println("PASS NPC prototype sharing, per-instance state, deferred creation and repeated replacement");
     }
     public static void main(String[] args)throws Exception{
+        verifyEquipmentSource();
+        verifyCompoundBuffs();
+        verifyConcurrentDefense();
         for(int t=0;t<8;t++){
             L1PcInstance p=create(t);
             int[] hp=new int[100],mp=new int[100];
@@ -132,14 +275,15 @@ public final class TestCreatureLifecycle {
             p.setType(t);p.setClassId(IDS[t]);verify(p);
             int[] before=snapshot(p);
             for(int k=0;k<100;k++){
-                p.AddStatBonusStr(3);p.AddStatBonusDex(4);p.AddStatBonusInt(5);p.AddStatBonusWis(6);p.AddStatBonusCon(2);
+                p.AddStatBonuses(3,4,2,5,6,7,true);
                 ItemStat.AC.apply(p,-10);ItemStat.MR.apply(p,15);ItemStat.MAX_HP.apply(p,100);
                 ItemStat.MAX_MP.apply(p,50);ItemStat.SP.apply(p,3);ItemStat.MPR.apply(p,4);ItemStat.WEIGHT.apply(p,200);
                 verify(p);eq(before[0]+3,p.GetTotalStatStr(),"gear STR");eq(before[1]+4,p.GetTotalStatDex(),"gear DEX");
+                eq(before[17]+7,p.GetTotalStatCha(),"gear CHA");
                 eq(before[8]+100,p.getMaxHp(),"gear HP");eq(before[9]+50,p.getMaxMp(),"gear MP");
                 ItemStat.WEIGHT.apply(p,-200);ItemStat.MPR.apply(p,-4);ItemStat.SP.apply(p,-3);
                 ItemStat.MAX_MP.apply(p,-50);ItemStat.MAX_HP.apply(p,-100);ItemStat.MR.apply(p,-15);ItemStat.AC.apply(p,10);
-                p.AddStatBonusCon(-2);p.AddStatBonusWis(-6);p.AddStatBonusInt(-5);p.AddStatBonusDex(-4);p.AddStatBonusStr(-3);
+                p.AddStatBonuses(-3,-4,-2,-5,-6,-7,true);
                 compare(before,snapshot(p),"equipment source round trip");
             }
             SkillEffectContainer effects=new SkillEffectContainer(p);

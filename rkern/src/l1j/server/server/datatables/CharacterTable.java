@@ -138,7 +138,11 @@ public class CharacterTable {
 	}
 
     public L1PcInstance loadCharacter(String charName) throws Exception {
-        final L1PcInstance pc = restoreCharacter(charName);
+        return loadCharacter(charName, null);
+    }
+
+    public L1PcInstance loadCharacter(String charName, CharacterStorage.LoginVitals vitals) throws Exception {
+        final L1PcInstance pc = _charStorage.loadCharacter(charName, vitals);
         if (pc == null) return null;
         try {
             final L1Map map = L1WorldMap.getInstance().getMap(pc.getMapId());

@@ -16,8 +16,6 @@ import l1j.server.server.model.world.instance.dungeon.training.BossTrainingSyste
 import l1j.server.server.model.world.instance.dungeon.orim.OrimController;
 import l1j.server.server.model.world.instance.dungeon.fanstasyisland.FantasyIslandSystem;
 
-import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
-import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.datatables.UBTable;
 import l1j.server.server.model.L1HauntedHouse;
@@ -25,10 +23,8 @@ import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.L1UltimateBattle;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
-import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -210,30 +206,12 @@ final class NpcGameEventActions {
     private static void commitComa(L1InventoryTransaction tx, L1PcInstance pc, int type, int objid, String failurePage) {
         tx.onFailure(() -> SC_NPCTalkReturn.send(pc, objid, failurePage));
         tx.commitAfterInventoryRelease(() -> {
-            applyComa(pc, type);
+            if (!CIOThreadCallback.getInstance().submitComaReward(pc, type == 5))
+                throw new IllegalStateException("Coma reward owner is no longer available");
             SC_NPCTalkReturn.send(pc, objid, "");
         });
     }
 
-    private static void applyComa(L1PcInstance pc, int type) {
-        final boolean large = type == 5;
-        final int skill = large ? L1SkillId.COMA_B : L1SkillId.COMA_A;
-        pc.removeSkillEffect(large ? L1SkillId.COMA_A : L1SkillId.COMA_B);
-        if (!pc.hasSkillEffect(skill)) {
-            if (large) pc.AddStatSp(1);
-            pc.AddStatBonusCon(large ? 3 : 1);
-            pc.AddStatBonusDex(5);
-            pc.AddStatBonusStr(5);
-            pc.addHitRate(large ? 5 : 3);
-            pc.addAc(large ? -8 : -3);
-            SC_OwnCharStatus.send(pc);
-            if (large) SC_SPMR.send(pc);
-        }
-        final int sound = large ? 7383 : 7382;
-        SC_SkillSound.send(pc, pc.getId(), sound);
-        SC_SkillSound.broadcast(pc, pc.getId(), sound);
-        pc.setSkillEffect(skill, large ? 7200 * 1000 : 3600 * 1000);
-    }
 
 	static void resetPiece(L1PcInstance pc) {
 		pc.setComaFirstPiece(0);
